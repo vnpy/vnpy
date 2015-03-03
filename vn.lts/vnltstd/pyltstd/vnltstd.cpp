@@ -323,22 +323,25 @@ void TdApi::OnRspQryTradingAccount(CSecurityFtdcTradingAccountField *pTradingAcc
 
 void TdApi::OnRspQryDepthMarketData(CSecurityFtdcDepthMarketDataField *pDepthMarketData, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYDEPTHMARKETDATA;
-	task.task_data = *pDepthMarketData;
-	if (pRspInfo)
+	if (pDepthMarketData)		//手动修改，因为有可能出现pDepthMarketData为空指针的情况
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYDEPTHMARKETDATA;
+		task.task_data = *pDepthMarketData;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRspQryBondInterest(CSecurityFtdcBondInterestField *pBondInterest, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -383,22 +386,25 @@ void TdApi::OnRspQryMarketRationInfo(CSecurityFtdcMarketRationInfoField *pMarket
 
 void TdApi::OnRspQryInstrumentCommissionRate(CSecurityFtdcInstrumentCommissionRateField *pInstrumentCommissionRate, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYINSTRUMENTCOMMISSIONRATE;
-	task.task_data = *pInstrumentCommissionRate;
-	if (pRspInfo)
+	if (pInstrumentCommissionRate)		//手动修改，因为有可能出现空指针的情况
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYINSTRUMENTCOMMISSIONRATE;
+		task.task_data = *pInstrumentCommissionRate;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRspQryETFInstrument(CSecurityFtdcETFInstrumentField *pETFInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -483,62 +489,71 @@ void TdApi::OnRspQrySFInstrument(CSecurityFtdcSFInstrumentField *pSFInstrument, 
 
 void TdApi::OnRspQryOrder(CSecurityFtdcOrderField *pOrder, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYORDER;
-	task.task_data = *pOrder;
-	if (pRspInfo)
+	if (pOrder)		//手动修改，因为有可能出现pOrder为空指针的情况
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYORDER;
+		task.task_data = *pOrder;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRspQryTrade(CSecurityFtdcTradeField *pTrade, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYTRADE;
-	task.task_data = *pTrade;
-	if (pRspInfo)
+	if (pTrade)		//手动修改，因为有可能出现pTrade为空指针的情况
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYTRADE;
+		task.task_data = *pTrade;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRspQryInvestorPosition(CSecurityFtdcInvestorPositionField *pInvestorPosition, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYINVESTORPOSITION;
-	task.task_data = *pInvestorPosition;
-	if (pRspInfo)
+	if (pInvestorPosition)		//手动修改，防止空指针
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYINVESTORPOSITION;
+		task.task_data = *pInvestorPosition;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRtnOrder(CSecurityFtdcOrderField *pOrder)
@@ -649,22 +664,25 @@ void TdApi::OnRtnFundInByBank(CSecurityFtdcFundTransferField *pFundTransfer)
 
 void TdApi::OnRspQryFundTransferSerial(CSecurityFtdcFundTransferField *pFundTransfer, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYFUNDTRANSFERSERIAL;
-	task.task_data = *pFundTransfer;
-	if (pRspInfo)
+	if (pFundTransfer)		//手动修改，防止空指针
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYFUNDTRANSFERSERIAL;
+		task.task_data = *pFundTransfer;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRspFundInterTransfer(CSecurityFtdcFundInterTransferField *pFundInterTransfer, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -689,22 +707,25 @@ void TdApi::OnRspFundInterTransfer(CSecurityFtdcFundInterTransferField *pFundInt
 
 void TdApi::OnRspQryFundInterTransferSerial(CSecurityFtdcFundInterTransferSerialField *pFundInterTransferSerial, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	Task task = Task();
-	task.task_name = ONRSPQRYFUNDINTERTRANSFERSERIAL;
-	task.task_data = *pFundInterTransferSerial;
-	if (pRspInfo)
+	if (pFundInterTransferSerial)		//手动修改，防止空指针
 	{
-		task.task_error = *pRspInfo;
+		Task task = Task();
+		task.task_name = ONRSPQRYFUNDINTERTRANSFERSERIAL;
+		task.task_data = *pFundInterTransferSerial;
+		if (pRspInfo)
+		{
+			task.task_error = *pRspInfo;
+		}
+		else
+		{
+			CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+			memset(&empty_error, 0, sizeof(empty_error));
+			task.task_error = empty_error;
+		}
+		task.task_id = nRequestID;
+		task.task_last = bIsLast;
+		this->task_queue.push(task);
 	}
-	else
-	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
-		memset(&empty_error, 0, sizeof(empty_error));
-		task.task_error = empty_error;
-	}
-	task.task_id = nRequestID;
-	task.task_last = bIsLast;
-	this->task_queue.push(task);
 };
 
 void TdApi::OnRtnFundInterTransferSerial(CSecurityFtdcFundInterTransferSerialField *pFundInterTransferSerial)
@@ -2208,14 +2229,13 @@ int TdApi::reqUserLogout(dict req, int nRequestID)
 
 int TdApi::reqOrderInsert(dict req, int nRequestID)
 {
+	//该函数进行了手动编辑，主要因为Direction和CombOffsetFlag两个字段的特殊性
 	CSecurityFtdcInputOrderField myreq = CSecurityFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
-	getChar(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getChar(req, "UserID", myreq.UserID);
 	getChar(req, "LimitPrice", myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
-	getChar(req, "Direction", &myreq.Direction);
 	getInt(req, "VolumeTotalOriginal", &myreq.VolumeTotalOriginal);
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
 	getChar(req, "TimeCondition", &myreq.TimeCondition);
@@ -2233,6 +2253,33 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 	getChar(req, "InvestorID", myreq.InvestorID);
 	getChar(req, "VolumeCondition", &myreq.VolumeCondition);
 	getInt(req, "RequestID", &myreq.RequestID);
+
+	//处理Direction
+	if (req.has_key("Direction"))
+	{
+		object o1 = req["Direction"];
+		extract<string> x1(o1);
+		if (x1.check())
+		{
+			string s1 = x1();
+			const char *buffer1 = s1.c_str();
+			myreq.Direction = *buffer1;
+		}
+	}
+
+	//处理CombOffsetFlag
+	if (req.has_key("CombOffsetFlag"))
+	{
+		object o2 = req["CombOffsetFlag"];
+		extract<string> x2(o2);
+		if (x2.check())
+		{
+			string s2 = x2();
+			const char *buffer2 = s2.c_str();
+			myreq.CombOffsetFlag[0] = *buffer2;
+		}
+	}
+
 	int i = this->api->ReqOrderInsert(&myreq, nRequestID);
 	return i;
 };
@@ -2464,6 +2511,7 @@ int TdApi::reqQryInvestorPosition(dict req, int nRequestID)
 
 int TdApi::reqFundOutByLiber(dict req, int nRequestID)
 {
+	//手动修改，结构体生成错误
 	CSecurityFtdcInputFundTransferField myreq = CSecurityFtdcInputFundTransferField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "UserID", myreq.UserID);
@@ -2471,7 +2519,7 @@ int TdApi::reqFundOutByLiber(dict req, int nRequestID)
 	getChar(req, "BrokerID", myreq.BrokerID);
 	getChar(req, "AccountType", &myreq.AccountType);
 	getChar(req, "Password", myreq.Password);
-	getChar(req, "Password", myreq.Password);
+	getDouble(req, "TradeAmount", &myreq.TradeAmount);
 	getChar(req, "Digest", myreq.Digest);
 	getChar(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqFundOutByLiber(&myreq, nRequestID);
@@ -2524,236 +2572,550 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 {
 	virtual void onFrontConnected()
 	{
+		//在向python环境中调用回调函数推送数据前，需要先获取全局锁GIL，防止解释器崩溃
 		PyLock lock;
-		this->get_override("onFrontConnected")();
+		
+		//以下的try...catch...可以实现捕捉python环境中错误的功能，防止C++直接出现原因未知的崩溃
+		try
+		{
+			this->get_override("onFrontConnected")();
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onFrontDisconnected(int i)
 	{
 		PyLock lock;
-		this->get_override("onFrontDisconnected")(i);
+
+		try
+		{
+			this->get_override("onFrontDisconnected")(i);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onHeartBeatWarning(int i)
 	{
 		PyLock lock;
-		this->get_override("onHeartBeatWarning")(i);
+		
+		try
+		{
+			this->get_override("onHeartBeatWarning")(i);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspError(dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspError")(error, id, last);
+		
+		try
+		{
+			this->get_override("onRspError")(error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspUserLogin")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspUserLogin")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspUserLogout")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspUserLogout")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspOrderInsert(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspOrderInsert")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspOrderInsert")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspOrderAction(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspOrderAction")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspOrderAction")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspUserPasswordUpdate(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspUserPasswordUpdate")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspUserPasswordUpdate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspTradingAccountPasswordUpdate")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspTradingAccountPasswordUpdate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryExchange(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryExchange")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryExchange")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryInstrument(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryInstrument")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryInstrument")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryInvestor(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryInvestor")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryInvestor")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryTradingCode(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryTradingCode")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryTradingCode")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryTradingAccount(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryTradingAccount")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryTradingAccount")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryDepthMarketData(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryDepthMarketData")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryDepthMarketData")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryBondInterest(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryBondInterest")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryBondInterest")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryMarketRationInfo(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryMarketRationInfo")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryMarketRationInfo")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryInstrumentCommissionRate(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryInstrumentCommissionRate")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryInstrumentCommissionRate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryETFInstrument(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryETFInstrument")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryETFInstrument")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryETFBasket(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspQryETFBasket")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryETFBasket")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryOFInstrument(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryOFInstrument")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryOFInstrument")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQrySFInstrument(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQrySFInstrument")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspQrySFInstrument")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryOrder(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryOrder")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryOrder")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryTrade(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryTrade")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryTrade")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryInvestorPosition")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryInvestorPosition")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRtnOrder(dict data) 
 	{
 		PyLock lock;
-		this->get_override("onRtnOrder")(data);
+
+		try
+		{
+			this->get_override("onRtnOrder")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRtnTrade(dict data) 
 	{
 		PyLock lock;
-		this->get_override("onRtnTrade")(data);
+
+		try
+		{
+			this->get_override("onRtnTrade")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onErrRtnOrderInsert(dict data, dict error) 
 	{
 		PyLock lock;
-		this->get_override("onErrRtnOrderInsert")(data, error);
+
+		try
+		{
+			this->get_override("onErrRtnOrderInsert")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onErrRtnOrderAction(dict data, dict error) 
 	{
 		PyLock lock;
-		this->get_override("onErrRtnOrderAction")(data, error);
+
+		try
+		{
+			this->get_override("onErrRtnOrderAction")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspFundOutByLiber(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspFundOutByLiber")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspFundOutByLiber")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRtnFundOutByLiber(dict data)
 	{
 		PyLock lock;
-		this->get_override("onRtnFundOutByLiber")(data);
+
+		try
+		{
+			this->get_override("onRtnFundOutByLiber")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onErrRtnFundOutByLiber(dict data, dict error) 
 	{
 		PyLock lock;
-		this->get_override("onErrRtnFundOutByLiber")(data, error);
+
+		try
+		{
+			this->get_override("onErrRtnFundOutByLiber")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRtnFundInByBank(dict data) 
 	{
 		PyLock lock;
-		this->get_override("onRtnFundInByBank")(data);
+
+		try
+		{
+			this->get_override("onRtnFundInByBank")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryFundTransferSerial(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryFundTransferSerial")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryFundTransferSerial")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspFundInterTransfer(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspFundInterTransfer")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspFundInterTransfer")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspQryFundInterTransferSerial(dict data, dict error, int id, bool last) 
 	{
 		PyLock lock;
-		this->get_override("onRspQryFundInterTransferSerial")(data, error, id, last);
+
+		try
+		{
+			this->get_override("onRspQryFundInterTransferSerial")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRtnFundInterTransferSerial(dict data) 
 	{
 		PyLock lock;
-		this->get_override("onRtnFundInterTransferSerial")(data);
+
+		try
+		{
+			this->get_override("onRtnFundInterTransferSerial")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onErrRtnFundInterTransfer(dict data, dict error) 
 	{
 		PyLock lock;
-		this->get_override("onErrRtnFundInterTransfer")(data, error);
+
+		try
+		{
+			this->get_override("onErrRtnFundInterTransfer")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 };
 

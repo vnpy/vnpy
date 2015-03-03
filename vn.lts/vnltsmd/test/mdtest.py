@@ -1,4 +1,4 @@
-# encoding = UTF-8
+# encoding: UTF-8
 
 import sys
 from time import sleep
@@ -10,14 +10,14 @@ from vnltsmd import *
 
 #----------------------------------------------------------------------
 def print_dict(d):
-    """°´ÕÕ¼üÖµ´òÓ¡Ò»¸ö×Öµä"""
+    """æŒ‰ç…§é”®å€¼æ‰“å°ä¸€ä¸ªå­—å…¸"""
     for key,value in d.items():
         print key + ':' + str(value)
         
         
 #----------------------------------------------------------------------
 def simple_log(func):
-    """¼òµ¥×°ÊÎÆ÷ÓÃÓÚÊä³öº¯ÊıÃû"""
+    """ç®€å•è£…é¥°å™¨ç”¨äºè¾“å‡ºå‡½æ•°å"""
     def wrapper(*args, **kw):
         print ""
         print str(func.__name__)
@@ -27,7 +27,7 @@ def simple_log(func):
 
 ########################################################################
 class TestMdApi(MdApi):
-    """²âÊÔÓÃÊµÀı"""
+    """æµ‹è¯•ç”¨å®ä¾‹"""
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -37,112 +37,112 @@ class TestMdApi(MdApi):
     #----------------------------------------------------------------------
     @simple_log    
     def onFrontConnected(self):
-        """·şÎñÆ÷Á¬½Ó"""
+        """æœåŠ¡å™¨è¿æ¥"""
         pass
     
     #----------------------------------------------------------------------
     @simple_log    
     def onFrontDisconnected(self, n):
-        """·şÎñÆ÷¶Ï¿ª"""
+        """æœåŠ¡å™¨æ–­å¼€"""
         print n
         
     #----------------------------------------------------------------------
     @simple_log    
     def onHeartBeatWarning(self, n):
-        """ĞÄÌø±¨¾¯"""
+        """å¿ƒè·³æŠ¥è­¦"""
         print n
     
     #----------------------------------------------------------------------
     @simple_log    
     def onRspError(self, error, n, last):
-        """´íÎó"""
+        """é”™è¯¯"""
         print_dict(error)
     
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
-        """µÇÂ½»Ø±¨"""
+        """ç™»é™†å›æŠ¥"""
         print_dict(data)
         print_dict(error)
         
     #----------------------------------------------------------------------
     @simple_log    
     def onRspUserLogout(self, data, error, n, last):
-        """µÇ³ö»Ø±¨"""
+        """ç™»å‡ºå›æŠ¥"""
         print_dict(data)
         print_dict(error)
         
     #----------------------------------------------------------------------
     @simple_log    
     def onRspSubMarketData(self, data, error, n, last):
-        """¶©ÔÄºÏÔ¼»Ø±¨"""
+        """è®¢é˜…åˆçº¦å›æŠ¥"""
         print_dict(data)
         print_dict(error)
         
     #----------------------------------------------------------------------
     @simple_log    
     def onRspUnSubMarketData(self, data, error, n, last):
-        """ÍË¶©ºÏÔ¼»Ø±¨"""
+        """é€€è®¢åˆçº¦å›æŠ¥"""
         print_dict(data)
         print_dict(error)    
         
     #----------------------------------------------------------------------
     @simple_log    
     def onRtnDepthMarketData(self, data):
-        """ĞĞÇéÍÆËÍ"""
+        """è¡Œæƒ…æ¨é€"""
         print_dict(data)
         
 
 
 #----------------------------------------------------------------------
 def main():
-    """Ö÷²âÊÔº¯Êı£¬³öÏÖ¶ÂÈûÊ±¿ÉÒÔ¿¼ÂÇÊ¹ÓÃsleep"""
+    """ä¸»æµ‹è¯•å‡½æ•°ï¼Œå‡ºç°å µå¡æ—¶å¯ä»¥è€ƒè™‘ä½¿ç”¨sleep"""
     reqid = 0
     
-    # ´´½¨QtÓ¦ÓÃ¶ÔÏó£¬ÓÃÓÚÊÂ¼şÑ­»·
+    # åˆ›å»ºQtåº”ç”¨å¯¹è±¡ï¼Œç”¨äºäº‹ä»¶å¾ªç¯
     app = QtGui.QApplication(sys.argv)
 
-    # ´´½¨API¶ÔÏó
+    # åˆ›å»ºAPIå¯¹è±¡
     api = TestMdApi()
     
-    # ÔÚC++»·¾³ÖĞ´´½¨MdApi¶ÔÏó£¬´«Èë²ÎÊıÊÇÏ£ÍûÓÃÀ´±£´æ.conÎÄ¼şµÄµØÖ·
+    # åœ¨C++ç¯å¢ƒä¸­åˆ›å»ºMdApiå¯¹è±¡ï¼Œä¼ å…¥å‚æ•°æ˜¯å¸Œæœ›ç”¨æ¥ä¿å­˜.conæ–‡ä»¶çš„åœ°å€
     api.createFtdcMdApi('')
     
-    # ×¢²áÇ°ÖÃ»úµØÖ·
-    api.registerFront("tcp://101.231.210.1:24513")
+    # æ³¨å†Œå‰ç½®æœºåœ°å€
+    api.registerFront("tcp://211.144.195.163:34513")
     
-    # ³õÊ¼»¯api£¬Á¬½ÓÇ°ÖÃ»ú
+    # åˆå§‹åŒ–apiï¼Œè¿æ¥å‰ç½®æœº
     api.init()
     sleep(0.5)
     
-    # µÇÂ½
-    loginReq = {}                           # ´´½¨Ò»¸ö¿Õ×Öµä
-    loginReq['UserID'] = ''                 # ²ÎÊı×÷Îª×Öµä¼üÖµµÄ·½Ê½´«Èë
-    loginReq['Password'] = ''               # ¼üÃûºÍC++ÖĞµÄ½á¹¹Ìå³ÉÔ±Ãû¶ÔÓ¦
-    loginReq['BrokerID'] = '2011'    
-    reqid = reqid + 1                       # ÇëÇóÊı±ØĞë±£³ÖÎ¨Ò»ĞÔ
+    # ç™»é™†
+    loginReq = {}                           # åˆ›å»ºä¸€ä¸ªç©ºå­—å…¸
+    loginReq['UserID'] = ''                 # å‚æ•°ä½œä¸ºå­—å…¸é”®å€¼çš„æ–¹å¼ä¼ å…¥
+    loginReq['Password'] = ''               # é”®åå’ŒC++ä¸­çš„ç»“æ„ä½“æˆå‘˜åå¯¹åº”
+    loginReq['BrokerID'] = ''    
+    reqid = reqid + 1                       # è¯·æ±‚æ•°å¿…é¡»ä¿æŒå”¯ä¸€æ€§
     i = api.reqUserLogin(loginReq, 1)
     sleep(0.5)
     
-    ## µÇ³ö
+    ## ç™»å‡º
     #reqid = reqid + 1
     #i = api.reqUserLogout({}, 1)
     #sleep(0.5)
     
-    # »ñÈ¡½»Ò×ÈÕ£¬Ä¿Ç°Êä³öÎª¿Õ
+    # è·å–äº¤æ˜“æ—¥ï¼Œç›®å‰è¾“å‡ºä¸ºç©º
     #day = api.getTradingDay()
     #print 'Trading Day is:' + str(day)
     #sleep(0.5)
     
-    # ¶©ÔÄºÏÔ¼
+    # è®¢é˜…åˆçº¦
     subReq = {}
-    subReq['InstrumentID'] = '600600'
+    subReq['InstrumentID'] = '11000061'
     subReq['ExchangeID'] = 'SSE'
     i = api.subscribeMarketData(subReq)
     
-    ## ÍË¶©ºÏÔ¼
+    ## é€€è®¢åˆçº¦
     #i = api.unSubscribeMarketData(subReq)
     
-    # Á¬ĞøÔËĞĞ£¬ÓÃÓÚÊä³öĞĞÇé
+    # è¿ç»­è¿è¡Œï¼Œç”¨äºè¾“å‡ºè¡Œæƒ…
     app.exec_()
     
     

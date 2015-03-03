@@ -505,56 +505,130 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 {
 	virtual void onFrontConnected()
 	{
+		//在向python环境中调用回调函数推送数据前，需要先获取全局锁GIL，防止解释器崩溃
 		PyLock lock;
-		this->get_override("onFrontConnected")();
+
+		//以下的try...catch...可以实现捕捉python环境中错误的功能，防止C++直接出现原因未知的崩溃
+		try
+		{
+			this->get_override("onFrontConnected")();
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onFrontDisconnected(int i)
 	{
 		PyLock lock;
-		this->get_override("onFrontDisconnected")(i);
+
+		try
+		{
+			this->get_override("onFrontDisconnected")(i);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onHeartBeatWarning(int i)
 	{
 		PyLock lock;
-		this->get_override("onHeartBeatWarning")(i);
+
+		try
+		{
+			this->get_override("onHeartBeatWarning")(i);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspError(dict data, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspError")(data, id, last);
+		
+		try
+		{
+			this->get_override("onRspError")(data, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspUserLogin")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspUserLogin")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspUserLogout")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspUserLogout")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspSubMarketData(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspSubMarketData")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspSubMarketData")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRspUnSubMarketData(dict data, dict error, int id, bool last)
 	{
 		PyLock lock;
-		this->get_override("onRspUnSubMarketData")(data, error, id, last);
+		
+		try
+		{
+			this->get_override("onRspUnSubMarketData")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 
 	virtual void onRtnDepthMarketData(dict data)
 	{
 		PyLock lock;
-		this->get_override("onRtnDepthMarketData")(data);
+		
+		try
+		{
+			this->get_override("onRtnDepthMarketData")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 };
 
