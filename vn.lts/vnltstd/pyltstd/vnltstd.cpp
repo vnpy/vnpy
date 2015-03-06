@@ -2127,6 +2127,15 @@ int TdApi::join()
 	return i;
 };
 
+int TdApi::exit()
+{
+	//该函数在原生API里没有，用于安全退出API用，原生的join似乎不太稳定
+	this->api->RegisterSpi(NULL);
+	this->api->Release();
+	this->api = NULL;
+	return 1;
+};
+
 string TdApi::getTradingDay()
 {
 	string day = this->api->GetTradingDay();
@@ -3129,6 +3138,7 @@ BOOST_PYTHON_MODULE(vnltstd)
 		.def("release", &TdApiWrap::release)
 		.def("init", &TdApiWrap::init)
 		.def("join", &TdApiWrap::join)
+		.def("exit", &TdApiWrap::exit)
 		.def("getTradingDay", &TdApiWrap::getTradingDay)
 		.def("registerFront", &TdApiWrap::registerFront)
 		.def("subscribePrivateTopic", &TdApiWrap::subscribePrivateTopic)

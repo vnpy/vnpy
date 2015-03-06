@@ -433,6 +433,15 @@ int MdApi::join()
 	return i;
 };
 
+int MdApi::exit()
+{
+	//该函数在原生API里没有，用于安全退出API用，原生的join似乎不太稳定
+	this->api->RegisterSpi(NULL);
+	this->api->Release();
+	this->api = NULL;
+	return 1;
+};
+
 string MdApi::getTradingDay()
 {
 	string day = this->api->GetTradingDay();
@@ -642,6 +651,7 @@ BOOST_PYTHON_MODULE(vnltsmd)
 		.def("release", &MdApiWrap::release)
 		.def("init", &MdApiWrap::init)
 		.def("join", &MdApiWrap::join)
+		.def("exit", &MdApiWrap::exit)
 		.def("getTradingDay", &MdApiWrap::getTradingDay)
 		.def("registerFront", &MdApiWrap::registerFront)
 		.def("subscribeMarketData", &MdApiWrap::subscribeMarketData)

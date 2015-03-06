@@ -345,6 +345,9 @@ def main():
     #i = api.reqUserLogout({}, 1)
     #sleep(0.5)
     
+    ## 安全退出，测试通过
+    #i = api.exit()
+    
     ## 获取交易日，目前输出为空，测试通过
     #day = api.getTradingDay()
     #print 'Trading Day is:' + str(day)

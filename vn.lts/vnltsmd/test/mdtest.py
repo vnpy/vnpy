@@ -128,16 +128,19 @@ def main():
     #i = api.reqUserLogout({}, 1)
     #sleep(0.5)
     
+    ## 安全退出，测试通过
+    #i = api.exit()
+    
     # 获取交易日，目前输出为空
     #day = api.getTradingDay()
     #print 'Trading Day is:' + str(day)
     #sleep(0.5)
     
-    # 订阅合约
-    subReq = {}
-    subReq['InstrumentID'] = '11000061'
-    subReq['ExchangeID'] = 'SSE'
-    i = api.subscribeMarketData(subReq)
+    ## 订阅合约
+    #subReq = {}
+    #subReq['InstrumentID'] = '11000061'
+    #subReq['ExchangeID'] = 'SSE'
+    #i = api.subscribeMarketData(subReq)
     
     ## 退订合约
     #i = api.unSubscribeMarketData(subReq)

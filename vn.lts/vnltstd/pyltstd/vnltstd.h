@@ -496,6 +496,8 @@ public:
 
 	int join();
 
+	int exit();
+
 	string getTradingDay();
 
 	void registerFront(string pszFrontAddress);
