@@ -25,5 +25,6 @@ eventEngine：包含事件驱动引擎实现
 ## 联系作者 ##
 作者知乎名：用python的trader，想要联系作者可以通过知乎私信。
 
-
+## License ##
+MIT
 
