@@ -1,4 +1,4 @@
-ReqUserLogin
+int TdApi::reqUserLogin(dict req, int nRequestID)
 {
 	CSecurityFtdcReqUserLoginField myreq = CSecurityFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -17,7 +17,7 @@ ReqUserLogin
 	return i;
 };
 
-ReqUserLogout
+int TdApi::reqUserLogout(dict req, int nRequestID)
 {
 	CSecurityFtdcUserLogoutField myreq = CSecurityFtdcUserLogoutField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -27,7 +27,7 @@ ReqUserLogout
 	return i;
 };
 
-ReqOrderInsert
+int TdApi::reqOrderInsert(dict req, int nRequestID)
 {
 	CSecurityFtdcInputOrderField myreq = CSecurityFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -58,7 +58,7 @@ ReqOrderInsert
 	return i;
 };
 
-ReqOrderAction
+int TdApi::reqOrderAction(dict req, int nRequestID)
 {
 	CSecurityFtdcInputOrderActionField myreq = CSecurityFtdcInputOrderActionField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -81,7 +81,7 @@ ReqOrderAction
 	return i;
 };
 
-ReqUserPasswordUpdate
+int TdApi::reqUserPasswordUpdate(dict req, int nRequestID)
 {
 	CSecurityFtdcUserPasswordUpdateField myreq = CSecurityFtdcUserPasswordUpdateField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -93,7 +93,7 @@ ReqUserPasswordUpdate
 	return i;
 };
 
-ReqTradingAccountPasswordUpdate
+int TdApi::reqTradingAccountPasswordUpdate(dict req, int nRequestID)
 {
 	CSecurityFtdcTradingAccountPasswordUpdateField myreq = CSecurityFtdcTradingAccountPasswordUpdateField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -105,7 +105,7 @@ ReqTradingAccountPasswordUpdate
 	return i;
 };
 
-ReqQryExchange
+int TdApi::reqQryExchange(dict req, int nRequestID)
 {
 	CSecurityFtdcQryExchangeField myreq = CSecurityFtdcQryExchangeField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -114,7 +114,7 @@ ReqQryExchange
 	return i;
 };
 
-ReqQryInstrument
+int TdApi::reqQryInstrument(dict req, int nRequestID)
 {
 	CSecurityFtdcQryInstrumentField myreq = CSecurityFtdcQryInstrumentField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -126,7 +126,7 @@ ReqQryInstrument
 	return i;
 };
 
-ReqQryInvestor
+int TdApi::reqQryInvestor(dict req, int nRequestID)
 {
 	CSecurityFtdcQryInvestorField myreq = CSecurityFtdcQryInvestorField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -136,7 +136,7 @@ ReqQryInvestor
 	return i;
 };
 
-ReqQryTradingCode
+int TdApi::reqQryTradingCode(dict req, int nRequestID)
 {
 	CSecurityFtdcQryTradingCodeField myreq = CSecurityFtdcQryTradingCodeField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -148,7 +148,7 @@ ReqQryTradingCode
 	return i;
 };
 
-ReqQryTradingAccount
+int TdApi::reqQryTradingAccount(dict req, int nRequestID)
 {
 	CSecurityFtdcQryTradingAccountField myreq = CSecurityFtdcQryTradingAccountField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -158,7 +158,7 @@ ReqQryTradingAccount
 	return i;
 };
 
-ReqQryDepthMarketData
+int TdApi::reqQryDepthMarketData(dict req, int nRequestID)
 {
 	CSecurityFtdcQryDepthMarketDataField myreq = CSecurityFtdcQryDepthMarketDataField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -167,7 +167,7 @@ ReqQryDepthMarketData
 	return i;
 };
 
-ReqQryBondInterest
+int TdApi::reqQryBondInterest(dict req, int nRequestID)
 {
 	CSecurityFtdcQryBondInterestField myreq = CSecurityFtdcQryBondInterestField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -177,7 +177,7 @@ ReqQryBondInterest
 	return i;
 };
 
-ReqQryMarketRationInfo
+int TdApi::reqQryMarketRationInfo(dict req, int nRequestID)
 {
 	CSecurityFtdcQryMarketRationInfoField myreq = CSecurityFtdcQryMarketRationInfoField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -188,7 +188,7 @@ ReqQryMarketRationInfo
 	return i;
 };
 
-ReqQryInstrumentCommissionRate
+int TdApi::reqQryInstrumentCommissionRate(dict req, int nRequestID)
 {
 	CSecurityFtdcQryInstrumentCommissionRateField myreq = CSecurityFtdcQryInstrumentCommissionRateField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -202,7 +202,7 @@ ReqQryInstrumentCommissionRate
 	return i;
 };
 
-ReqQryETFInstrument
+int TdApi::reqQryETFInstrument(dict req, int nRequestID)
 {
 	CSecurityFtdcQryETFInstrumentField myreq = CSecurityFtdcQryETFInstrumentField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -212,7 +212,7 @@ ReqQryETFInstrument
 	return i;
 };
 
-ReqQryETFBasket
+int TdApi::reqQryETFBasket(dict req, int nRequestID)
 {
 	CSecurityFtdcQryETFBasketField myreq = CSecurityFtdcQryETFBasketField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -222,7 +222,7 @@ ReqQryETFBasket
 	return i;
 };
 
-ReqQryOFInstrument
+int TdApi::reqQryOFInstrument(dict req, int nRequestID)
 {
 	CSecurityFtdcQryOFInstrumentField myreq = CSecurityFtdcQryOFInstrumentField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -232,7 +232,7 @@ ReqQryOFInstrument
 	return i;
 };
 
-ReqQrySFInstrument
+int TdApi::reqQrySFInstrument(dict req, int nRequestID)
 {
 	CSecurityFtdcQrySFInstrumentField myreq = CSecurityFtdcQrySFInstrumentField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -242,7 +242,7 @@ ReqQrySFInstrument
 	return i;
 };
 
-ReqQryOrder
+int TdApi::reqQryOrder(dict req, int nRequestID)
 {
 	CSecurityFtdcQryOrderField myreq = CSecurityFtdcQryOrderField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -257,7 +257,7 @@ ReqQryOrder
 	return i;
 };
 
-ReqQryTrade
+int TdApi::reqQryTrade(dict req, int nRequestID)
 {
 	CSecurityFtdcQryTradeField myreq = CSecurityFtdcQryTradeField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -272,7 +272,7 @@ ReqQryTrade
 	return i;
 };
 
-ReqQryInvestorPosition
+int TdApi::reqQryInvestorPosition(dict req, int nRequestID)
 {
 	CSecurityFtdcQryInvestorPositionField myreq = CSecurityFtdcQryInvestorPositionField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -283,7 +283,7 @@ ReqQryInvestorPosition
 	return i;
 };
 
-ReqFundOutByLiber
+int TdApi::reqFundOutByLiber(dict req, int nRequestID)
 {
 	CSecurityFtdcInputFundTransferField myreq = CSecurityFtdcInputFundTransferField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -299,7 +299,7 @@ ReqFundOutByLiber
 	return i;
 };
 
-ReqQryFundTransferSerial
+int TdApi::reqQryFundTransferSerial(dict req, int nRequestID)
 {
 	CSecurityFtdcQryFundTransferSerialField myreq = CSecurityFtdcQryFundTransferSerialField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -310,7 +310,7 @@ ReqQryFundTransferSerial
 	return i;
 };
 
-ReqFundInterTransfer
+int TdApi::reqFundInterTransfer(dict req, int nRequestID)
 {
 	CSecurityFtdcFundInterTransferField myreq = CSecurityFtdcFundInterTransferField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -326,7 +326,7 @@ ReqFundInterTransfer
 	return i;
 };
 
-ReqQryFundInterTransferSerial
+int TdApi::reqQryFundInterTransferSerial(dict req, int nRequestID)
 {
 	CSecurityFtdcQryFundInterTransferSerialField myreq = CSecurityFtdcQryFundInterTransferSerialField();
 	memset(&myreq, 0, sizeof(myreq));

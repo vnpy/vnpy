@@ -26,6 +26,7 @@ void TdApi::OnRspError(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool
 {
 	Task task = Task();
 	task.task_name = ONRSPERROR;
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -45,7 +46,18 @@ void TdApi::OnRspUserLogin(CSecurityFtdcRspUserLoginField *pRspUserLogin, CSecur
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGIN;
-	task.task_data = *pRspUserLogin;
+
+	if (pRspUserLogin)
+	{
+		task.task_data = *pRspUserLogin;
+	}
+	else
+	{
+		CSecurityFtdcRspUserLoginField empty_data = CSecurityFtdcRspUserLoginField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -65,7 +77,18 @@ void TdApi::OnRspUserLogout(CSecurityFtdcUserLogoutField *pUserLogout, CSecurity
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGOUT;
-	task.task_data = *pUserLogout;
+
+	if (pUserLogout)
+	{
+		task.task_data = *pUserLogout;
+	}
+	else
+	{
+		CSecurityFtdcUserLogoutField empty_data = CSecurityFtdcUserLogoutField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -85,7 +108,18 @@ void TdApi::OnRspOrderInsert(CSecurityFtdcInputOrderField *pInputOrder, CSecurit
 {
 	Task task = Task();
 	task.task_name = ONRSPORDERINSERT;
-	task.task_data = *pInputOrder;
+
+	if (pInputOrder)
+	{
+		task.task_data = *pInputOrder;
+	}
+	else
+	{
+		CSecurityFtdcInputOrderField empty_data = CSecurityFtdcInputOrderField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -105,7 +139,18 @@ void TdApi::OnRspOrderAction(CSecurityFtdcInputOrderActionField *pInputOrderActi
 {
 	Task task = Task();
 	task.task_name = ONRSPORDERACTION;
-	task.task_data = *pInputOrderAction;
+
+	if (pInputOrderAction)
+	{
+		task.task_data = *pInputOrderAction;
+	}
+	else
+	{
+		CSecurityFtdcInputOrderActionField empty_data = CSecurityFtdcInputOrderActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -125,7 +170,18 @@ void TdApi::OnRspUserPasswordUpdate(CSecurityFtdcUserPasswordUpdateField *pUserP
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERPASSWORDUPDATE;
-	task.task_data = *pUserPasswordUpdate;
+
+	if (pUserPasswordUpdate)
+	{
+		task.task_data = *pUserPasswordUpdate;
+	}
+	else
+	{
+		CSecurityFtdcUserPasswordUpdateField empty_data = CSecurityFtdcUserPasswordUpdateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -145,7 +201,18 @@ void TdApi::OnRspTradingAccountPasswordUpdate(CSecurityFtdcTradingAccountPasswor
 {
 	Task task = Task();
 	task.task_name = ONRSPTRADINGACCOUNTPASSWORDUPDATE;
-	task.task_data = *pTradingAccountPasswordUpdate;
+
+	if (pTradingAccountPasswordUpdate)
+	{
+		task.task_data = *pTradingAccountPasswordUpdate;
+	}
+	else
+	{
+		CSecurityFtdcTradingAccountPasswordUpdateField empty_data = CSecurityFtdcTradingAccountPasswordUpdateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -165,7 +232,18 @@ void TdApi::OnRspQryExchange(CSecurityFtdcExchangeField *pExchange, CSecurityFtd
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYEXCHANGE;
-	task.task_data = *pExchange;
+
+	if (pExchange)
+	{
+		task.task_data = *pExchange;
+	}
+	else
+	{
+		CSecurityFtdcExchangeField empty_data = CSecurityFtdcExchangeField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -185,7 +263,18 @@ void TdApi::OnRspQryInstrument(CSecurityFtdcInstrumentField *pInstrument, CSecur
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYINSTRUMENT;
-	task.task_data = *pInstrument;
+
+	if (pInstrument)
+	{
+		task.task_data = *pInstrument;
+	}
+	else
+	{
+		CSecurityFtdcInstrumentField empty_data = CSecurityFtdcInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -205,7 +294,18 @@ void TdApi::OnRspQryInvestor(CSecurityFtdcInvestorField *pInvestor, CSecurityFtd
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYINVESTOR;
-	task.task_data = *pInvestor;
+
+	if (pInvestor)
+	{
+		task.task_data = *pInvestor;
+	}
+	else
+	{
+		CSecurityFtdcInvestorField empty_data = CSecurityFtdcInvestorField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -225,7 +325,18 @@ void TdApi::OnRspQryTradingCode(CSecurityFtdcTradingCodeField *pTradingCode, CSe
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYTRADINGCODE;
-	task.task_data = *pTradingCode;
+
+	if (pTradingCode)
+	{
+		task.task_data = *pTradingCode;
+	}
+	else
+	{
+		CSecurityFtdcTradingCodeField empty_data = CSecurityFtdcTradingCodeField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -245,7 +356,18 @@ void TdApi::OnRspQryTradingAccount(CSecurityFtdcTradingAccountField *pTradingAcc
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYTRADINGACCOUNT;
-	task.task_data = *pTradingAccount;
+
+	if (pTradingAccount)
+	{
+		task.task_data = *pTradingAccount;
+	}
+	else
+	{
+		CSecurityFtdcTradingAccountField empty_data = CSecurityFtdcTradingAccountField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -265,7 +387,18 @@ void TdApi::OnRspQryDepthMarketData(CSecurityFtdcDepthMarketDataField *pDepthMar
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYDEPTHMARKETDATA;
-	task.task_data = *pDepthMarketData;
+
+	if (pDepthMarketData)
+	{
+		task.task_data = *pDepthMarketData;
+	}
+	else
+	{
+		CSecurityFtdcDepthMarketDataField empty_data = CSecurityFtdcDepthMarketDataField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -285,7 +418,18 @@ void TdApi::OnRspQryBondInterest(CSecurityFtdcBondInterestField *pBondInterest, 
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYBONDINTEREST;
-	task.task_data = *pBondInterest;
+
+	if (pBondInterest)
+	{
+		task.task_data = *pBondInterest;
+	}
+	else
+	{
+		CSecurityFtdcBondInterestField empty_data = CSecurityFtdcBondInterestField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -305,7 +449,18 @@ void TdApi::OnRspQryMarketRationInfo(CSecurityFtdcMarketRationInfoField *pMarket
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYMARKETRATIONINFO;
-	task.task_data = *pMarketRationInfo;
+
+	if (pMarketRationInfo)
+	{
+		task.task_data = *pMarketRationInfo;
+	}
+	else
+	{
+		CSecurityFtdcMarketRationInfoField empty_data = CSecurityFtdcMarketRationInfoField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -325,7 +480,18 @@ void TdApi::OnRspQryInstrumentCommissionRate(CSecurityFtdcInstrumentCommissionRa
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYINSTRUMENTCOMMISSIONRATE;
-	task.task_data = *pInstrumentCommissionRate;
+
+	if (pInstrumentCommissionRate)
+	{
+		task.task_data = *pInstrumentCommissionRate;
+	}
+	else
+	{
+		CSecurityFtdcInstrumentCommissionRateField empty_data = CSecurityFtdcInstrumentCommissionRateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -345,7 +511,18 @@ void TdApi::OnRspQryETFInstrument(CSecurityFtdcETFInstrumentField *pETFInstrumen
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYETFINSTRUMENT;
-	task.task_data = *pETFInstrument;
+
+	if (pETFInstrument)
+	{
+		task.task_data = *pETFInstrument;
+	}
+	else
+	{
+		CSecurityFtdcETFInstrumentField empty_data = CSecurityFtdcETFInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -365,7 +542,18 @@ void TdApi::OnRspQryETFBasket(CSecurityFtdcETFBasketField *pETFBasket, CSecurity
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYETFBASKET;
-	task.task_data = *pETFBasket;
+
+	if (pETFBasket)
+	{
+		task.task_data = *pETFBasket;
+	}
+	else
+	{
+		CSecurityFtdcETFBasketField empty_data = CSecurityFtdcETFBasketField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -385,7 +573,18 @@ void TdApi::OnRspQryOFInstrument(CSecurityFtdcOFInstrumentField *pOFInstrument, 
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYOFINSTRUMENT;
-	task.task_data = *pOFInstrument;
+
+	if (pOFInstrument)
+	{
+		task.task_data = *pOFInstrument;
+	}
+	else
+	{
+		CSecurityFtdcOFInstrumentField empty_data = CSecurityFtdcOFInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -405,7 +604,18 @@ void TdApi::OnRspQrySFInstrument(CSecurityFtdcSFInstrumentField *pSFInstrument, 
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYSFINSTRUMENT;
-	task.task_data = *pSFInstrument;
+
+	if (pSFInstrument)
+	{
+		task.task_data = *pSFInstrument;
+	}
+	else
+	{
+		CSecurityFtdcSFInstrumentField empty_data = CSecurityFtdcSFInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -425,7 +635,18 @@ void TdApi::OnRspQryOrder(CSecurityFtdcOrderField *pOrder, CSecurityFtdcRspInfoF
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYORDER;
-	task.task_data = *pOrder;
+
+	if (pOrder)
+	{
+		task.task_data = *pOrder;
+	}
+	else
+	{
+		CSecurityFtdcOrderField empty_data = CSecurityFtdcOrderField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -445,7 +666,18 @@ void TdApi::OnRspQryTrade(CSecurityFtdcTradeField *pTrade, CSecurityFtdcRspInfoF
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYTRADE;
-	task.task_data = *pTrade;
+
+	if (pTrade)
+	{
+		task.task_data = *pTrade;
+	}
+	else
+	{
+		CSecurityFtdcTradeField empty_data = CSecurityFtdcTradeField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -465,7 +697,18 @@ void TdApi::OnRspQryInvestorPosition(CSecurityFtdcInvestorPositionField *pInvest
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYINVESTORPOSITION;
-	task.task_data = *pInvestorPosition;
+
+	if (pInvestorPosition)
+	{
+		task.task_data = *pInvestorPosition;
+	}
+	else
+	{
+		CSecurityFtdcInvestorPositionField empty_data = CSecurityFtdcInvestorPositionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -485,7 +728,17 @@ void TdApi::OnRtnOrder(CSecurityFtdcOrderField *pOrder)
 {
 	Task task = Task();
 	task.task_name = ONRTNORDER;
-	task.task_data = *pOrder;
+
+	if (pOrder)
+	{
+		task.task_data = *pOrder;
+	}
+	else
+	{
+		CSecurityFtdcOrderField empty_data = CSecurityFtdcOrderField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -493,7 +746,17 @@ void TdApi::OnRtnTrade(CSecurityFtdcTradeField *pTrade)
 {
 	Task task = Task();
 	task.task_name = ONRTNTRADE;
-	task.task_data = *pTrade;
+
+	if (pTrade)
+	{
+		task.task_data = *pTrade;
+	}
+	else
+	{
+		CSecurityFtdcTradeField empty_data = CSecurityFtdcTradeField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -501,7 +764,18 @@ void TdApi::OnErrRtnOrderInsert(CSecurityFtdcInputOrderField *pInputOrder, CSecu
 {
 	Task task = Task();
 	task.task_name = ONERRRTNORDERINSERT;
-	task.task_data = *pInputOrder;
+
+	if (pInputOrder)
+	{
+		task.task_data = *pInputOrder;
+	}
+	else
+	{
+		CSecurityFtdcInputOrderField empty_data = CSecurityFtdcInputOrderField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -519,7 +793,18 @@ void TdApi::OnErrRtnOrderAction(CSecurityFtdcOrderActionField *pOrderAction, CSe
 {
 	Task task = Task();
 	task.task_name = ONERRRTNORDERACTION;
-	task.task_data = *pOrderAction;
+
+	if (pOrderAction)
+	{
+		task.task_data = *pOrderAction;
+	}
+	else
+	{
+		CSecurityFtdcOrderActionField empty_data = CSecurityFtdcOrderActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -537,7 +822,18 @@ void TdApi::OnRspFundOutByLiber(CSecurityFtdcInputFundTransferField *pInputFundT
 {
 	Task task = Task();
 	task.task_name = ONRSPFUNDOUTBYLIBER;
-	task.task_data = *pInputFundTransfer;
+
+	if (pInputFundTransfer)
+	{
+		task.task_data = *pInputFundTransfer;
+	}
+	else
+	{
+		CSecurityFtdcInputFundTransferField empty_data = CSecurityFtdcInputFundTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -557,7 +853,17 @@ void TdApi::OnRtnFundOutByLiber(CSecurityFtdcFundTransferField *pFundTransfer)
 {
 	Task task = Task();
 	task.task_name = ONRTNFUNDOUTBYLIBER;
-	task.task_data = *pFundTransfer;
+
+	if (pFundTransfer)
+	{
+		task.task_data = *pFundTransfer;
+	}
+	else
+	{
+		CSecurityFtdcFundTransferField empty_data = CSecurityFtdcFundTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -565,7 +871,18 @@ void TdApi::OnErrRtnFundOutByLiber(CSecurityFtdcInputFundTransferField *pInputFu
 {
 	Task task = Task();
 	task.task_name = ONERRRTNFUNDOUTBYLIBER;
-	task.task_data = *pInputFundTransfer;
+
+	if (pInputFundTransfer)
+	{
+		task.task_data = *pInputFundTransfer;
+	}
+	else
+	{
+		CSecurityFtdcInputFundTransferField empty_data = CSecurityFtdcInputFundTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -583,7 +900,17 @@ void TdApi::OnRtnFundInByBank(CSecurityFtdcFundTransferField *pFundTransfer)
 {
 	Task task = Task();
 	task.task_name = ONRTNFUNDINBYBANK;
-	task.task_data = *pFundTransfer;
+
+	if (pFundTransfer)
+	{
+		task.task_data = *pFundTransfer;
+	}
+	else
+	{
+		CSecurityFtdcFundTransferField empty_data = CSecurityFtdcFundTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -591,7 +918,18 @@ void TdApi::OnRspQryFundTransferSerial(CSecurityFtdcFundTransferField *pFundTran
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYFUNDTRANSFERSERIAL;
-	task.task_data = *pFundTransfer;
+
+	if (pFundTransfer)
+	{
+		task.task_data = *pFundTransfer;
+	}
+	else
+	{
+		CSecurityFtdcFundTransferField empty_data = CSecurityFtdcFundTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -611,7 +949,18 @@ void TdApi::OnRspFundInterTransfer(CSecurityFtdcFundInterTransferField *pFundInt
 {
 	Task task = Task();
 	task.task_name = ONRSPFUNDINTERTRANSFER;
-	task.task_data = *pFundInterTransfer;
+
+	if (pFundInterTransfer)
+	{
+		task.task_data = *pFundInterTransfer;
+	}
+	else
+	{
+		CSecurityFtdcFundInterTransferField empty_data = CSecurityFtdcFundInterTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -631,7 +980,18 @@ void TdApi::OnRspQryFundInterTransferSerial(CSecurityFtdcFundInterTransferSerial
 {
 	Task task = Task();
 	task.task_name = ONRSPQRYFUNDINTERTRANSFERSERIAL;
-	task.task_data = *pFundInterTransferSerial;
+
+	if (pFundInterTransferSerial)
+	{
+		task.task_data = *pFundInterTransferSerial;
+	}
+	else
+	{
+		CSecurityFtdcFundInterTransferSerialField empty_data = CSecurityFtdcFundInterTransferSerialField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -651,7 +1011,17 @@ void TdApi::OnRtnFundInterTransferSerial(CSecurityFtdcFundInterTransferSerialFie
 {
 	Task task = Task();
 	task.task_name = ONRTNFUNDINTERTRANSFERSERIAL;
-	task.task_data = *pFundInterTransferSerial;
+
+	if (pFundInterTransferSerial)
+	{
+		task.task_data = *pFundInterTransferSerial;
+	}
+	else
+	{
+		CSecurityFtdcFundInterTransferSerialField empty_data = CSecurityFtdcFundInterTransferSerialField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -659,7 +1029,18 @@ void TdApi::OnErrRtnFundInterTransfer(CSecurityFtdcFundInterTransferField *pFund
 {
 	Task task = Task();
 	task.task_name = ONERRRTNFUNDINTERTRANSFER;
-	task.task_data = *pFundInterTransfer;
+
+	if (pFundInterTransfer)
+	{
+		task.task_data = *pFundInterTransfer;
+	}
+	else
+	{
+		CSecurityFtdcFundInterTransferField empty_data = CSecurityFtdcFundInterTransferField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;

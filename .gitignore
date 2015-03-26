@@ -23,3 +23,6 @@ Release/
 
 # API的.con文件
 *.con
+
+# visual studio
+*.opensdf
