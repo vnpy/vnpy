@@ -1,20 +1,24 @@
 void MdApi::processFrontConnected(Task task)
 {
+	PyLock lock;
 	this->onFrontConnected();
 };
 
 void MdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
 void MdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
 void MdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
 	data["CZCETime"] = task_data.CZCETime;
@@ -41,6 +45,7 @@ void MdApi::processRspUserLogin(Task task)
 
 void MdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CThostFtdcUserLogoutField task_data = any_cast<CThostFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -56,6 +61,7 @@ void MdApi::processRspUserLogout(Task task)
 
 void MdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -66,6 +72,7 @@ void MdApi::processRspError(Task task)
 
 void MdApi::processRspSubMarketData(Task task)
 {
+	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -80,6 +87,7 @@ void MdApi::processRspSubMarketData(Task task)
 
 void MdApi::processRspUnSubMarketData(Task task)
 {
+	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -94,6 +102,7 @@ void MdApi::processRspUnSubMarketData(Task task)
 
 void MdApi::processRspSubForQuoteRsp(Task task)
 {
+	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -108,6 +117,7 @@ void MdApi::processRspSubForQuoteRsp(Task task)
 
 void MdApi::processRspUnSubForQuoteRsp(Task task)
 {
+	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -122,6 +132,7 @@ void MdApi::processRspUnSubForQuoteRsp(Task task)
 
 void MdApi::processRtnDepthMarketData(Task task)
 {
+	PyLock lock;
 	CThostFtdcDepthMarketDataField task_data = any_cast<CThostFtdcDepthMarketDataField>(task.task_data);
 	dict data;
 	data["HighestPrice"] = task_data.HighestPrice;
@@ -174,6 +185,7 @@ void MdApi::processRtnDepthMarketData(Task task)
 
 void MdApi::processRtnForQuoteRsp(Task task)
 {
+	PyLock lock;
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;

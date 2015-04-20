@@ -80,8 +80,6 @@ def createWrap(cbName):
     if on_line is not '':
         fwrap.write(on_line)
         fwrap.write('{\n')
-        fwrap.write('\t PyLock lock;\n')
-        fwrap.write('\n')
         fwrap.write('\ttry\n')
         fwrap.write('\t{\n')
         fwrap.write('\t\tthis->get_override'+override_line)
@@ -158,6 +156,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
     # 从队列中提取任务，并转化为python字典
     fprocess.write("void " + apiName + '::' + cbName.replace('On', 'process') + '(Task task)' + "\n")
     fprocess.write("{\n")
+    fprocess.write("\tPyLock lock;\n")
 
     onArgsList = []
 

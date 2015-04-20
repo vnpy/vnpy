@@ -536,21 +536,25 @@ void L2MdApi::processTask()
 
 void L2MdApi::processFrontConnected(Task task)
 {
+	PyLock lock;
 	this->onFrontConnected();
 };
 
 void L2MdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
 void L2MdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
 void L2MdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -561,6 +565,7 @@ void L2MdApi::processRspError(Task task)
 
 void L2MdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLoginField task_data = any_cast<CSecurityFtdcUserLoginField>(task.task_data);
 	dict data;
 	data["TradingDay"] = task_data.TradingDay;
@@ -579,6 +584,7 @@ void L2MdApi::processRspUserLogin(Task task)
 
 void L2MdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLogoutField task_data = any_cast<CSecurityFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -594,6 +600,7 @@ void L2MdApi::processRspUserLogout(Task task)
 
 void L2MdApi::processRspSubL2MarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -609,6 +616,7 @@ void L2MdApi::processRspSubL2MarketData(Task task)
 
 void L2MdApi::processRspUnSubL2MarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -624,6 +632,7 @@ void L2MdApi::processRspUnSubL2MarketData(Task task)
 
 void L2MdApi::processRspSubL2Index(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -639,6 +648,7 @@ void L2MdApi::processRspSubL2Index(Task task)
 
 void L2MdApi::processRspUnSubL2Index(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -654,6 +664,7 @@ void L2MdApi::processRspUnSubL2Index(Task task)
 
 void L2MdApi::processRtnL2MarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2MarketDataField task_data = any_cast<CSecurityFtdcL2MarketDataField>(task.task_data);
 	dict data;
 	data["BidCount8"] = task_data.BidCount8;
@@ -745,6 +756,7 @@ void L2MdApi::processRtnL2MarketData(Task task)
 
 void L2MdApi::processRtnL2Index(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2IndexField task_data = any_cast<CSecurityFtdcL2IndexField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -765,6 +777,7 @@ void L2MdApi::processRtnL2Index(Task task)
 
 void L2MdApi::processRspSubL2OrderAndTrade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -775,6 +788,7 @@ void L2MdApi::processRspSubL2OrderAndTrade(Task task)
 
 void L2MdApi::processRspUnSubL2OrderAndTrade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -785,6 +799,7 @@ void L2MdApi::processRspUnSubL2OrderAndTrade(Task task)
 
 void L2MdApi::processRtnL2Order(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2OrderField task_data = any_cast<CSecurityFtdcL2OrderField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -802,6 +817,7 @@ void L2MdApi::processRtnL2Order(Task task)
 
 void L2MdApi::processRtnL2Trade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2TradeField task_data = any_cast<CSecurityFtdcL2TradeField>(task.task_data);
 	dict data;
 	data["TradeGroupID"] = task_data.TradeGroupID;
@@ -822,6 +838,7 @@ void L2MdApi::processRtnL2Trade(Task task)
 void L2MdApi::processNtfCheckOrderList(Task task)
 {
 	//该函数为手动实现
+	PyLock lock;
 	string instrumentID = any_cast<string>(task.task_data);
 	string functionCode = any_cast<string>(task.task_data);
 
@@ -967,9 +984,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 {
 	virtual void onFrontConnected()
 	{
-		//在向python环境中调用回调函数推送数据前，需要先获取全局锁GIL，防止解释器崩溃
-		PyLock lock;
-
 		//以下的try...catch...可以实现捕捉python环境中错误的功能，防止C++直接出现原因未知的崩溃
 		try
 		{
@@ -983,8 +997,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onFrontDisconnected(int i)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onFrontDisconnected")(i);
@@ -997,8 +1009,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onHeartBeatWarning(int i)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onHeartBeatWarning")(i);
@@ -1011,8 +1021,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspError(dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspError")(error, id, last);
@@ -1025,8 +1033,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspUserLogin")(data, error, id, last);
@@ -1039,8 +1045,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspUserLogout")(data, error, id, last);
@@ -1053,8 +1057,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspSubL2MarketData(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspSubL2MarketData")(data, error, id, last);
@@ -1067,8 +1069,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspUnSubL2MarketData(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspUnSubL2MarketData")(data, error, id, last);
@@ -1081,8 +1081,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspSubL2Index(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspSubL2Index")(data, error, id, last);
@@ -1095,8 +1093,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRspUnSubL2Index(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspUnSubL2Index")(data, error, id, last);
@@ -1109,8 +1105,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRtnL2MarketData(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnL2MarketData")(data);
@@ -1123,8 +1117,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRtnL2Index(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnL2Index")(data);
@@ -1135,13 +1127,11 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 		}
 	};
 
-	virtual void onRspSubL2OrderAndTrade(dict error, int id, bool last)
+	virtual void onRspSubL2OrderAndTrade(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
-			this->get_override("onRspSubL2OrderAndTrade")(error, id, last);
+			this->get_override("onRspSubL2OrderAndTrade")(data, error, id, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -1149,13 +1139,11 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 		}
 	};
 
-	virtual void onRspUnSubL2OrderAndTrade(dict error, int id, bool last)
+	virtual void onRspUnSubL2OrderAndTrade(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
-			this->get_override("onRspUnSubL2OrderAndTrade")(error, id, last);
+			this->get_override("onRspUnSubL2OrderAndTrade")(data, error, id, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -1165,8 +1153,6 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRtnL2Order(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnL2Order")(data);
@@ -1179,25 +1165,9 @@ struct L2MdApiWrap : L2MdApi, wrapper < L2MdApi >
 
 	virtual void onRtnL2Trade(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnL2Trade")(data);
-		}
-		catch (error_already_set const &)
-		{
-			PyErr_Print();
-		}
-	};
-
-	virtual void onNtfCheckOrderList(string instrumentID, string functionCode)
-	{
-		PyLock lock;
-
-		try
-		{
-			this->get_override("onNtfCheckOrderList")(instrumentID, functionCode);
 		}
 		catch (error_already_set const &)
 		{

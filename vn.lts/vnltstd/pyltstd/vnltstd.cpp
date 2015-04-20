@@ -1367,21 +1367,25 @@ void TdApi::processTask()
 
 void TdApi::processFrontConnected(Task task)
 {
+	PyLock lock;
 	this->onFrontConnected();
 };
 
 void TdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
 void TdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
 void TdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -1392,6 +1396,7 @@ void TdApi::processRspError(Task task)
 
 void TdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspUserLoginField task_data = any_cast<CSecurityFtdcRspUserLoginField>(task.task_data);
 	dict data;
 	data["MaxOrderRef"] = task_data.MaxOrderRef;
@@ -1413,6 +1418,7 @@ void TdApi::processRspUserLogin(Task task)
 
 void TdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLogoutField task_data = any_cast<CSecurityFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -1428,6 +1434,7 @@ void TdApi::processRspUserLogout(Task task)
 
 void TdApi::processRspOrderInsert(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInputOrderField task_data = any_cast<CSecurityFtdcInputOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -1464,6 +1471,7 @@ void TdApi::processRspOrderInsert(Task task)
 
 void TdApi::processRspOrderAction(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInputOrderActionField task_data = any_cast<CSecurityFtdcInputOrderActionField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1492,6 +1500,7 @@ void TdApi::processRspOrderAction(Task task)
 
 void TdApi::processRspUserPasswordUpdate(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserPasswordUpdateField task_data = any_cast<CSecurityFtdcUserPasswordUpdateField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -1509,6 +1518,7 @@ void TdApi::processRspUserPasswordUpdate(Task task)
 
 void TdApi::processRspTradingAccountPasswordUpdate(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcTradingAccountPasswordUpdateField task_data = any_cast<CSecurityFtdcTradingAccountPasswordUpdateField>(task.task_data);
 	dict data;
 	data["NewPassword"] = task_data.NewPassword;
@@ -1526,6 +1536,7 @@ void TdApi::processRspTradingAccountPasswordUpdate(Task task)
 
 void TdApi::processRspQryExchange(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcExchangeField task_data = any_cast<CSecurityFtdcExchangeField>(task.task_data);
 	dict data;
 	data["ExchangeProperty"] = task_data.ExchangeProperty;
@@ -1542,6 +1553,7 @@ void TdApi::processRspQryExchange(Task task)
 
 void TdApi::processRspQryInstrument(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInstrumentField task_data = any_cast<CSecurityFtdcInstrumentField>(task.task_data);
 	dict data;
 	data["IsTrading"] = task_data.IsTrading;
@@ -1588,6 +1600,7 @@ void TdApi::processRspQryInstrument(Task task)
 
 void TdApi::processRspQryInvestor(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInvestorField task_data = any_cast<CSecurityFtdcInvestorField>(task.task_data);
 	dict data;
 	data["SZBranchID"] = task_data.SZBranchID;
@@ -1612,6 +1625,7 @@ void TdApi::processRspQryInvestor(Task task)
 
 void TdApi::processRspQryTradingCode(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcTradingCodeField task_data = any_cast<CSecurityFtdcTradingCodeField>(task.task_data);
 	dict data;
 	data["PBU"] = task_data.PBU;
@@ -1633,6 +1647,7 @@ void TdApi::processRspQryTradingCode(Task task)
 
 void TdApi::processRspQryTradingAccount(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcTradingAccountField task_data = any_cast<CSecurityFtdcTradingAccountField>(task.task_data);
 	dict data;
 	data["MarginTradeAmount"] = task_data.MarginTradeAmount;
@@ -1691,6 +1706,7 @@ void TdApi::processRspQryTradingAccount(Task task)
 
 void TdApi::processRspQryDepthMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcDepthMarketDataField task_data = any_cast<CSecurityFtdcDepthMarketDataField>(task.task_data);
 	dict data;
 	data["HighestPrice"] = task_data.HighestPrice;
@@ -1748,6 +1764,7 @@ void TdApi::processRspQryDepthMarketData(Task task)
 
 void TdApi::processRspQryBondInterest(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcBondInterestField task_data = any_cast<CSecurityFtdcBondInterestField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1765,6 +1782,7 @@ void TdApi::processRspQryBondInterest(Task task)
 
 void TdApi::processRspQryMarketRationInfo(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcMarketRationInfoField task_data = any_cast<CSecurityFtdcMarketRationInfoField>(task.task_data);
 	dict data;
 	data["InvestorID"] = task_data.InvestorID;
@@ -1782,6 +1800,7 @@ void TdApi::processRspQryMarketRationInfo(Task task)
 
 void TdApi::processRspQryInstrumentCommissionRate(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInstrumentCommissionRateField task_data = any_cast<CSecurityFtdcInstrumentCommissionRateField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1809,6 +1828,7 @@ void TdApi::processRspQryInstrumentCommissionRate(Task task)
 
 void TdApi::processRspQryETFInstrument(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcETFInstrumentField task_data = any_cast<CSecurityFtdcETFInstrumentField>(task.task_data);
 	dict data;
 	data["ETFInstrumentID"] = task_data.ETFInstrumentID;
@@ -1829,6 +1849,7 @@ void TdApi::processRspQryETFInstrument(Task task)
 
 void TdApi::processRspQryETFBasket(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcETFBasketField task_data = any_cast<CSecurityFtdcETFBasketField>(task.task_data);
 	dict data;
 	data["ETFInstrumentID"] = task_data.ETFInstrumentID;
@@ -1850,6 +1871,7 @@ void TdApi::processRspQryETFBasket(Task task)
 
 void TdApi::processRspQryOFInstrument(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcOFInstrumentField task_data = any_cast<CSecurityFtdcOFInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1867,6 +1889,7 @@ void TdApi::processRspQryOFInstrument(Task task)
 
 void TdApi::processRspQrySFInstrument(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSFInstrumentField task_data = any_cast<CSecurityFtdcSFInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1888,6 +1911,7 @@ void TdApi::processRspQrySFInstrument(Task task)
 
 void TdApi::processRspQryOrder(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcOrderField task_data = any_cast<CSecurityFtdcOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -1960,6 +1984,7 @@ void TdApi::processRspQryOrder(Task task)
 
 void TdApi::processRspQryTrade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcTradeField task_data = any_cast<CSecurityFtdcTradeField>(task.task_data);
 	dict data;
 	data["TradeType"] = task_data.TradeType;
@@ -2004,6 +2029,7 @@ void TdApi::processRspQryTrade(Task task)
 
 void TdApi::processRspQryInvestorPosition(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInvestorPositionField task_data = any_cast<CSecurityFtdcInvestorPositionField>(task.task_data);
 	dict data;
 	data["LockPosition"] = task_data.LockPosition;
@@ -2074,6 +2100,7 @@ void TdApi::processRspQryInvestorPosition(Task task)
 
 void TdApi::processRtnOrder(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcOrderField task_data = any_cast<CSecurityFtdcOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -2141,6 +2168,7 @@ void TdApi::processRtnOrder(Task task)
 
 void TdApi::processRtnTrade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcTradeField task_data = any_cast<CSecurityFtdcTradeField>(task.task_data);
 	dict data;
 	data["TradeType"] = task_data.TradeType;
@@ -2180,6 +2208,7 @@ void TdApi::processRtnTrade(Task task)
 
 void TdApi::processErrRtnOrderInsert(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInputOrderField task_data = any_cast<CSecurityFtdcInputOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -2216,6 +2245,7 @@ void TdApi::processErrRtnOrderInsert(Task task)
 
 void TdApi::processErrRtnOrderAction(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcOrderActionField task_data = any_cast<CSecurityFtdcOrderActionField>(task.task_data);
 	dict data;
 	data["ActionTime"] = task_data.ActionTime;
@@ -2255,6 +2285,7 @@ void TdApi::processErrRtnOrderAction(Task task)
 
 void TdApi::processRspFundOutByLiber(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInputFundTransferField task_data = any_cast<CSecurityFtdcInputFundTransferField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -2276,6 +2307,7 @@ void TdApi::processRspFundOutByLiber(Task task)
 
 void TdApi::processRtnFundOutByLiber(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundTransferField task_data = any_cast<CSecurityFtdcFundTransferField>(task.task_data);
 	dict data;
 	data["PlateSerial"] = task_data.PlateSerial;
@@ -2300,6 +2332,7 @@ void TdApi::processRtnFundOutByLiber(Task task)
 
 void TdApi::processErrRtnFundOutByLiber(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcInputFundTransferField task_data = any_cast<CSecurityFtdcInputFundTransferField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -2321,6 +2354,7 @@ void TdApi::processErrRtnFundOutByLiber(Task task)
 
 void TdApi::processRtnFundInByBank(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundTransferField task_data = any_cast<CSecurityFtdcFundTransferField>(task.task_data);
 	dict data;
 	data["PlateSerial"] = task_data.PlateSerial;
@@ -2345,6 +2379,7 @@ void TdApi::processRtnFundInByBank(Task task)
 
 void TdApi::processRspQryFundTransferSerial(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundTransferField task_data = any_cast<CSecurityFtdcFundTransferField>(task.task_data);
 	dict data;
 	data["PlateSerial"] = task_data.PlateSerial;
@@ -2374,6 +2409,7 @@ void TdApi::processRspQryFundTransferSerial(Task task)
 
 void TdApi::processRspFundInterTransfer(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundInterTransferField task_data = any_cast<CSecurityFtdcFundInterTransferField>(task.task_data);
 	dict data;
 	data["SerialID"] = task_data.SerialID;
@@ -2395,6 +2431,7 @@ void TdApi::processRspFundInterTransfer(Task task)
 
 void TdApi::processRspQryFundInterTransferSerial(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundInterTransferSerialField task_data = any_cast<CSecurityFtdcFundInterTransferSerialField>(task.task_data);
 	dict data;
 	data["SerialID"] = task_data.SerialID;
@@ -2419,6 +2456,7 @@ void TdApi::processRspQryFundInterTransferSerial(Task task)
 
 void TdApi::processRtnFundInterTransferSerial(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundInterTransferSerialField task_data = any_cast<CSecurityFtdcFundInterTransferSerialField>(task.task_data);
 	dict data;
 	data["SerialID"] = task_data.SerialID;
@@ -2438,6 +2476,7 @@ void TdApi::processRtnFundInterTransferSerial(Task task)
 
 void TdApi::processErrRtnFundInterTransfer(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcFundInterTransferField task_data = any_cast<CSecurityFtdcFundInterTransferField>(task.task_data);
 	dict data;
 	data["SerialID"] = task_data.SerialID;
@@ -2982,8 +3021,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspError(dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspError")(error, id, last);
@@ -2996,8 +3033,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspUserLogin")(data, error, id, last);
@@ -3010,8 +3045,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspUserLogout")(data, error, id, last);
@@ -3024,8 +3057,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspOrderInsert(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspOrderInsert")(data, error, id, last);
@@ -3038,8 +3069,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspOrderAction(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspOrderAction")(data, error, id, last);
@@ -3052,8 +3081,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspUserPasswordUpdate(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspUserPasswordUpdate")(data, error, id, last);
@@ -3066,8 +3093,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspTradingAccountPasswordUpdate")(data, error, id, last);
@@ -3080,8 +3105,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryExchange(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryExchange")(data, error, id, last);
@@ -3094,8 +3117,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryInstrument(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryInstrument")(data, error, id, last);
@@ -3108,8 +3129,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryInvestor(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryInvestor")(data, error, id, last);
@@ -3122,8 +3141,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryTradingCode(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryTradingCode")(data, error, id, last);
@@ -3136,8 +3153,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryTradingAccount(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryTradingAccount")(data, error, id, last);
@@ -3148,10 +3163,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryDepthMarketData(dict data, dict error, int id, bool last) 
+	virtual void onRspQryDepthMarketData(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryDepthMarketData")(data, error, id, last);
@@ -3164,8 +3177,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryBondInterest(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryBondInterest")(data, error, id, last);
@@ -3178,8 +3189,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryMarketRationInfo(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryMarketRationInfo")(data, error, id, last);
@@ -3192,8 +3201,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryInstrumentCommissionRate(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryInstrumentCommissionRate")(data, error, id, last);
@@ -3206,8 +3213,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryETFInstrument(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryETFInstrument")(data, error, id, last);
@@ -3220,8 +3225,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspQryETFBasket(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryETFBasket")(data, error, id, last);
@@ -3232,10 +3235,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryOFInstrument(dict data, dict error, int id, bool last) 
+	virtual void onRspQryOFInstrument(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryOFInstrument")(data, error, id, last);
@@ -3246,10 +3247,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQrySFInstrument(dict data, dict error, int id, bool last) 
+	virtual void onRspQrySFInstrument(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspQrySFInstrument")(data, error, id, last);
@@ -3260,10 +3259,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryOrder(dict data, dict error, int id, bool last) 
+	virtual void onRspQryOrder(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryOrder")(data, error, id, last);
@@ -3274,10 +3271,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryTrade(dict data, dict error, int id, bool last) 
+	virtual void onRspQryTrade(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryTrade")(data, error, id, last);
@@ -3288,10 +3283,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last) 
+	virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryInvestorPosition")(data, error, id, last);
@@ -3302,10 +3295,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRtnOrder(dict data) 
+	virtual void onRtnOrder(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnOrder")(data);
@@ -3316,10 +3307,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRtnTrade(dict data) 
+	virtual void onRtnTrade(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnTrade")(data);
@@ -3330,10 +3319,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onErrRtnOrderInsert(dict data, dict error) 
+	virtual void onErrRtnOrderInsert(dict data, dict error)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onErrRtnOrderInsert")(data, error);
@@ -3344,10 +3331,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onErrRtnOrderAction(dict data, dict error) 
+	virtual void onErrRtnOrderAction(dict data, dict error)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onErrRtnOrderAction")(data, error);
@@ -3360,8 +3345,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRspFundOutByLiber(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspFundOutByLiber")(data, error, id, last);
@@ -3374,8 +3357,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 	virtual void onRtnFundOutByLiber(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnFundOutByLiber")(data);
@@ -3386,10 +3367,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onErrRtnFundOutByLiber(dict data, dict error) 
+	virtual void onErrRtnFundOutByLiber(dict data, dict error)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onErrRtnFundOutByLiber")(data, error);
@@ -3400,10 +3379,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRtnFundInByBank(dict data) 
+	virtual void onRtnFundInByBank(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnFundInByBank")(data);
@@ -3414,10 +3391,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryFundTransferSerial(dict data, dict error, int id, bool last) 
+	virtual void onRspQryFundTransferSerial(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryFundTransferSerial")(data, error, id, last);
@@ -3428,10 +3403,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspFundInterTransfer(dict data, dict error, int id, bool last) 
+	virtual void onRspFundInterTransfer(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspFundInterTransfer")(data, error, id, last);
@@ -3442,10 +3415,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryFundInterTransferSerial(dict data, dict error, int id, bool last) 
+	virtual void onRspQryFundInterTransferSerial(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRspQryFundInterTransferSerial")(data, error, id, last);
@@ -3456,10 +3427,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRtnFundInterTransferSerial(dict data) 
+	virtual void onRtnFundInterTransferSerial(dict data)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onRtnFundInterTransferSerial")(data);
@@ -3470,10 +3439,8 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onErrRtnFundInterTransfer(dict data, dict error) 
+	virtual void onErrRtnFundInterTransfer(dict data, dict error)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onErrRtnFundInterTransfer")(data, error);
@@ -3483,6 +3450,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 			PyErr_Print();
 		}
 	};
+
 };
 
 

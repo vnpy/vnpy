@@ -1,11 +1,11 @@
-void TdApi::OnFrontConnected()
+void L2MdApi::OnFrontConnected()
 {
 	Task task = Task();
 	task.task_name = ONFRONTCONNECTED;
 	this->task_queue.push(task);
 };
 
-void TdApi::OnFrontDisconnected(int nReason)
+void L2MdApi::OnFrontDisconnected(int nReason)
 {
 	Task task = Task();
 	task.task_name = ONFRONTDISCONNECTED;
@@ -13,7 +13,7 @@ void TdApi::OnFrontDisconnected(int nReason)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnHeartBeatWarning(int nTimeLapse)
+void L2MdApi::OnHeartBeatWarning(int nTimeLapse)
 {
 	Task task = Task();
 	task.task_name = ONHEARTBEATWARNING;
@@ -21,7 +21,7 @@ void TdApi::OnHeartBeatWarning(int nTimeLapse)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspError(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspError(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPERROR;
@@ -41,7 +41,7 @@ void TdApi::OnRspError(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspUserLogin(CSecurityFtdcUserLoginField *pUserLogin, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspUserLogin(CSecurityFtdcUserLoginField *pUserLogin, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGIN;
@@ -72,7 +72,7 @@ void TdApi::OnRspUserLogin(CSecurityFtdcUserLoginField *pUserLogin, CSecurityFtd
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspUserLogout(CSecurityFtdcUserLogoutField *pUserLogout, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspUserLogout(CSecurityFtdcUserLogoutField *pUserLogout, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGOUT;
@@ -103,7 +103,7 @@ void TdApi::OnRspUserLogout(CSecurityFtdcUserLogoutField *pUserLogout, CSecurity
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspSubL2MarketData(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspSubL2MarketData(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBL2MARKETDATA;
@@ -134,7 +134,7 @@ void TdApi::OnRspSubL2MarketData(CSecurityFtdcSpecificInstrumentField *pSpecific
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspUnSubL2MarketData(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspUnSubL2MarketData(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBL2MARKETDATA;
@@ -165,7 +165,7 @@ void TdApi::OnRspUnSubL2MarketData(CSecurityFtdcSpecificInstrumentField *pSpecif
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspSubL2Index(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspSubL2Index(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBL2INDEX;
@@ -196,7 +196,7 @@ void TdApi::OnRspSubL2Index(CSecurityFtdcSpecificInstrumentField *pSpecificInstr
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspUnSubL2Index(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspUnSubL2Index(CSecurityFtdcSpecificInstrumentField *pSpecificInstrument, CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBL2INDEX;
@@ -227,7 +227,7 @@ void TdApi::OnRspUnSubL2Index(CSecurityFtdcSpecificInstrumentField *pSpecificIns
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRtnL2MarketData(CSecurityFtdcL2MarketDataField *pL2MarketData) 
+void L2MdApi::OnRtnL2MarketData(CSecurityFtdcL2MarketDataField *pL2MarketData) 
 {
 	Task task = Task();
 	task.task_name = ONRTNL2MARKETDATA;
@@ -245,7 +245,7 @@ void TdApi::OnRtnL2MarketData(CSecurityFtdcL2MarketDataField *pL2MarketData)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRtnL2Index(CSecurityFtdcL2IndexField *pL2Index) 
+void L2MdApi::OnRtnL2Index(CSecurityFtdcL2IndexField *pL2Index) 
 {
 	Task task = Task();
 	task.task_name = ONRTNL2INDEX;
@@ -263,7 +263,7 @@ void TdApi::OnRtnL2Index(CSecurityFtdcL2IndexField *pL2Index)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspSubL2OrderAndTrade(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspSubL2OrderAndTrade(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBL2ORDERANDTRADE;
@@ -283,7 +283,7 @@ void TdApi::OnRspSubL2OrderAndTrade(CSecurityFtdcRspInfoField *pRspInfo, int nRe
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRspUnSubL2OrderAndTrade(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+void L2MdApi::OnRspUnSubL2OrderAndTrade(CSecurityFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBL2ORDERANDTRADE;
@@ -303,7 +303,7 @@ void TdApi::OnRspUnSubL2OrderAndTrade(CSecurityFtdcRspInfoField *pRspInfo, int n
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRtnL2Order(CSecurityFtdcL2OrderField *pL2Order) 
+void L2MdApi::OnRtnL2Order(CSecurityFtdcL2OrderField *pL2Order) 
 {
 	Task task = Task();
 	task.task_name = ONRTNL2ORDER;
@@ -321,7 +321,7 @@ void TdApi::OnRtnL2Order(CSecurityFtdcL2OrderField *pL2Order)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRtnL2Trade(CSecurityFtdcL2TradeField *pL2Trade) 
+void L2MdApi::OnRtnL2Trade(CSecurityFtdcL2TradeField *pL2Trade) 
 {
 	Task task = Task();
 	task.task_name = ONRTNL2TRADE;
@@ -339,7 +339,7 @@ void TdApi::OnRtnL2Trade(CSecurityFtdcL2TradeField *pL2Trade)
 	this->task_queue.push(task);
 };
 
-void TdApi::OnNtfCheckOrderList(TSecurityFtdcInstrumentIDType InstrumentID, TSecurityFtdcFunctionCodeType FunctionCode) 
+void L2MdApi::OnNtfCheckOrderList(TSecurityFtdcInstrumentIDType InstrumentID, TSecurityFtdcFunctionCodeType FunctionCode) 
 {
 	Task task = Task();
 	task.task_name = ONNTFCHECKORDERLIST;

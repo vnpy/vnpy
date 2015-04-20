@@ -1,20 +1,24 @@
 void MdApi::processFrontConnected(Task task)
 {
+	PyLock lock;
 	this->onFrontConnected();
 };
 
 void MdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
 void MdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
 void MdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -25,6 +29,7 @@ void MdApi::processRspError(Task task)
 
 void MdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspUserLoginField task_data = any_cast<CSecurityFtdcRspUserLoginField>(task.task_data);
 	dict data;
 	data["MaxOrderRef"] = task_data.MaxOrderRef;
@@ -46,6 +51,7 @@ void MdApi::processRspUserLogin(Task task)
 
 void MdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLogoutField task_data = any_cast<CSecurityFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -61,6 +67,7 @@ void MdApi::processRspUserLogout(Task task)
 
 void MdApi::processRspSubMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -76,6 +83,7 @@ void MdApi::processRspSubMarketData(Task task)
 
 void MdApi::processRspUnSubMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -91,6 +99,7 @@ void MdApi::processRspUnSubMarketData(Task task)
 
 void MdApi::processRtnDepthMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcDepthMarketDataField task_data = any_cast<CSecurityFtdcDepthMarketDataField>(task.task_data);
 	dict data;
 	data["HighestPrice"] = task_data.HighestPrice;

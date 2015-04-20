@@ -264,21 +264,26 @@ void MdApi::processTask()
 
 void MdApi::processFrontConnected(Task task)
 {
+	//在向python环境中调用回调函数推送数据前，需要先获取全局锁GIL，防止解释器崩溃
+	PyLock lock;
 	this->onFrontConnected();
 };
 
 void MdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
 void MdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
 void MdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -289,6 +294,7 @@ void MdApi::processRspError(Task task)
 
 void MdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspUserLoginField task_data = any_cast<CSecurityFtdcRspUserLoginField>(task.task_data);
 	dict data;
 	data["MaxOrderRef"] = task_data.MaxOrderRef;
@@ -310,6 +316,7 @@ void MdApi::processRspUserLogin(Task task)
 
 void MdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLogoutField task_data = any_cast<CSecurityFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -325,6 +332,7 @@ void MdApi::processRspUserLogout(Task task)
 
 void MdApi::processRspSubMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -340,6 +348,7 @@ void MdApi::processRspSubMarketData(Task task)
 
 void MdApi::processRspUnSubMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -355,6 +364,7 @@ void MdApi::processRspUnSubMarketData(Task task)
 
 void MdApi::processRtnDepthMarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcDepthMarketDataField task_data = any_cast<CSecurityFtdcDepthMarketDataField>(task.task_data);
 	dict data;
 	data["HighestPrice"] = task_data.HighestPrice;
@@ -514,9 +524,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 {
 	virtual void onFrontConnected()
 	{
-		//在向python环境中调用回调函数推送数据前，需要先获取全局锁GIL，防止解释器崩溃
-		PyLock lock;
-
 		//以下的try...catch...可以实现捕捉python环境中错误的功能，防止C++直接出现原因未知的崩溃
 		try
 		{
@@ -530,8 +537,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onFrontDisconnected(int i)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onFrontDisconnected")(i);
@@ -544,8 +549,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onHeartBeatWarning(int i)
 	{
-		PyLock lock;
-
 		try
 		{
 			this->get_override("onHeartBeatWarning")(i);
@@ -558,8 +561,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onRspError(dict data, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspError")(data, id, last);
@@ -572,8 +573,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspUserLogin")(data, error, id, last);
@@ -586,8 +585,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspUserLogout")(data, error, id, last);
@@ -600,8 +597,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onRspSubMarketData(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspSubMarketData")(data, error, id, last);
@@ -614,8 +609,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onRspUnSubMarketData(dict data, dict error, int id, bool last)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRspUnSubMarketData")(data, error, id, last);
@@ -628,8 +621,6 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 	virtual void onRtnDepthMarketData(dict data)
 	{
-		PyLock lock;
-		
 		try
 		{
 			this->get_override("onRtnDepthMarketData")(data);

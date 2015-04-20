@@ -1,20 +1,24 @@
 void TdApi::processFrontConnected(Task task)
 {
+	PyLock lock;
 	this->onFrontConnected();
 };
 
 void TdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
 void TdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
 void TdApi::processRspAuthenticate(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspAuthenticateField task_data = any_cast<CThostFtdcRspAuthenticateField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -31,6 +35,7 @@ void TdApi::processRspAuthenticate(Task task)
 
 void TdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
 	data["CZCETime"] = task_data.CZCETime;
@@ -57,6 +62,7 @@ void TdApi::processRspUserLogin(Task task)
 
 void TdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CThostFtdcUserLogoutField task_data = any_cast<CThostFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -72,6 +78,7 @@ void TdApi::processRspUserLogout(Task task)
 
 void TdApi::processRspUserPasswordUpdate(Task task)
 {
+	PyLock lock;
 	CThostFtdcUserPasswordUpdateField task_data = any_cast<CThostFtdcUserPasswordUpdateField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -89,6 +96,7 @@ void TdApi::processRspUserPasswordUpdate(Task task)
 
 void TdApi::processRspTradingAccountPasswordUpdate(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradingAccountPasswordUpdateField task_data = any_cast<CThostFtdcTradingAccountPasswordUpdateField>(task.task_data);
 	dict data;
 	data["CurrencyID"] = task_data.CurrencyID;
@@ -107,6 +115,7 @@ void TdApi::processRspTradingAccountPasswordUpdate(Task task)
 
 void TdApi::processRspOrderInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputOrderField task_data = any_cast<CThostFtdcInputOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -143,6 +152,7 @@ void TdApi::processRspOrderInsert(Task task)
 
 void TdApi::processRspParkedOrderInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcParkedOrderField task_data = any_cast<CThostFtdcParkedOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -185,6 +195,7 @@ void TdApi::processRspParkedOrderInsert(Task task)
 
 void TdApi::processRspParkedOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcParkedOrderActionField task_data = any_cast<CThostFtdcParkedOrderActionField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -217,6 +228,7 @@ void TdApi::processRspParkedOrderAction(Task task)
 
 void TdApi::processRspOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputOrderActionField task_data = any_cast<CThostFtdcInputOrderActionField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -244,6 +256,7 @@ void TdApi::processRspOrderAction(Task task)
 
 void TdApi::processRspQueryMaxOrderVolume(Task task)
 {
+	PyLock lock;
 	CThostFtdcQueryMaxOrderVolumeField task_data = any_cast<CThostFtdcQueryMaxOrderVolumeField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -264,6 +277,7 @@ void TdApi::processRspQueryMaxOrderVolume(Task task)
 
 void TdApi::processRspSettlementInfoConfirm(Task task)
 {
+	PyLock lock;
 	CThostFtdcSettlementInfoConfirmField task_data = any_cast<CThostFtdcSettlementInfoConfirmField>(task.task_data);
 	dict data;
 	data["ConfirmTime"] = task_data.ConfirmTime;
@@ -281,6 +295,7 @@ void TdApi::processRspSettlementInfoConfirm(Task task)
 
 void TdApi::processRspRemoveParkedOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcRemoveParkedOrderField task_data = any_cast<CThostFtdcRemoveParkedOrderField>(task.task_data);
 	dict data;
 	data["InvestorID"] = task_data.InvestorID;
@@ -297,6 +312,7 @@ void TdApi::processRspRemoveParkedOrder(Task task)
 
 void TdApi::processRspRemoveParkedOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcRemoveParkedOrderActionField task_data = any_cast<CThostFtdcRemoveParkedOrderActionField>(task.task_data);
 	dict data;
 	data["InvestorID"] = task_data.InvestorID;
@@ -313,6 +329,7 @@ void TdApi::processRspRemoveParkedOrderAction(Task task)
 
 void TdApi::processRspExecOrderInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputExecOrderField task_data = any_cast<CThostFtdcInputExecOrderField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -340,6 +357,7 @@ void TdApi::processRspExecOrderInsert(Task task)
 
 void TdApi::processRspExecOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputExecOrderActionField task_data = any_cast<CThostFtdcInputExecOrderActionField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -365,6 +383,7 @@ void TdApi::processRspExecOrderAction(Task task)
 
 void TdApi::processRspForQuoteInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputForQuoteField task_data = any_cast<CThostFtdcInputForQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -383,6 +402,7 @@ void TdApi::processRspForQuoteInsert(Task task)
 
 void TdApi::processRspQuoteInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputQuoteField task_data = any_cast<CThostFtdcInputQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -411,6 +431,7 @@ void TdApi::processRspQuoteInsert(Task task)
 
 void TdApi::processRspQuoteAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputQuoteActionField task_data = any_cast<CThostFtdcInputQuoteActionField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -436,6 +457,7 @@ void TdApi::processRspQuoteAction(Task task)
 
 void TdApi::processRspQryOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcOrderField task_data = any_cast<CThostFtdcOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -506,6 +528,7 @@ void TdApi::processRspQryOrder(Task task)
 
 void TdApi::processRspQryTrade(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradeField task_data = any_cast<CThostFtdcTradeField>(task.task_data);
 	dict data;
 	data["TradeType"] = task_data.TradeType;
@@ -549,6 +572,7 @@ void TdApi::processRspQryTrade(Task task)
 
 void TdApi::processRspQryInvestorPosition(Task task)
 {
+	PyLock lock;
 	CThostFtdcInvestorPositionField task_data = any_cast<CThostFtdcInvestorPositionField>(task.task_data);
 	dict data;
 	data["ShortFrozenAmount"] = task_data.ShortFrozenAmount;
@@ -606,6 +630,7 @@ void TdApi::processRspQryInvestorPosition(Task task)
 
 void TdApi::processRspQryTradingAccount(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradingAccountField task_data = any_cast<CThostFtdcTradingAccountField>(task.task_data);
 	dict data;
 	data["SpecProductFrozenCommission"] = task_data.SpecProductFrozenCommission;
@@ -667,6 +692,7 @@ void TdApi::processRspQryTradingAccount(Task task)
 
 void TdApi::processRspQryInvestor(Task task)
 {
+	PyLock lock;
 	CThostFtdcInvestorField task_data = any_cast<CThostFtdcInvestorField>(task.task_data);
 	dict data;
 	data["CommModelID"] = task_data.CommModelID;
@@ -693,6 +719,7 @@ void TdApi::processRspQryInvestor(Task task)
 
 void TdApi::processRspQryTradingCode(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradingCodeField task_data = any_cast<CThostFtdcTradingCodeField>(task.task_data);
 	dict data;
 	data["ExchangeID"] = task_data.ExchangeID;
@@ -712,6 +739,7 @@ void TdApi::processRspQryTradingCode(Task task)
 
 void TdApi::processRspQryInstrumentMarginRate(Task task)
 {
+	PyLock lock;
 	CThostFtdcInstrumentMarginRateField task_data = any_cast<CThostFtdcInstrumentMarginRateField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -735,6 +763,7 @@ void TdApi::processRspQryInstrumentMarginRate(Task task)
 
 void TdApi::processRspQryInstrumentCommissionRate(Task task)
 {
+	PyLock lock;
 	CThostFtdcInstrumentCommissionRateField task_data = any_cast<CThostFtdcInstrumentCommissionRateField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -758,6 +787,7 @@ void TdApi::processRspQryInstrumentCommissionRate(Task task)
 
 void TdApi::processRspQryExchange(Task task)
 {
+	PyLock lock;
 	CThostFtdcExchangeField task_data = any_cast<CThostFtdcExchangeField>(task.task_data);
 	dict data;
 	data["ExchangeProperty"] = task_data.ExchangeProperty;
@@ -774,6 +804,7 @@ void TdApi::processRspQryExchange(Task task)
 
 void TdApi::processRspQryProduct(Task task)
 {
+	PyLock lock;
 	CThostFtdcProductField task_data = any_cast<CThostFtdcProductField>(task.task_data);
 	dict data;
 	data["MaxLimitOrderVolume"] = task_data.MaxLimitOrderVolume;
@@ -804,6 +835,7 @@ void TdApi::processRspQryProduct(Task task)
 
 void TdApi::processRspQryInstrument(Task task)
 {
+	PyLock lock;
 	CThostFtdcInstrumentField task_data = any_cast<CThostFtdcInstrumentField>(task.task_data);
 	dict data;
 	data["IsTrading"] = task_data.IsTrading;
@@ -848,6 +880,7 @@ void TdApi::processRspQryInstrument(Task task)
 
 void TdApi::processRspQryDepthMarketData(Task task)
 {
+	PyLock lock;
 	CThostFtdcDepthMarketDataField task_data = any_cast<CThostFtdcDepthMarketDataField>(task.task_data);
 	dict data;
 	data["HighestPrice"] = task_data.HighestPrice;
@@ -905,6 +938,7 @@ void TdApi::processRspQryDepthMarketData(Task task)
 
 void TdApi::processRspQrySettlementInfo(Task task)
 {
+	PyLock lock;
 	CThostFtdcSettlementInfoField task_data = any_cast<CThostFtdcSettlementInfoField>(task.task_data);
 	dict data;
 	data["SettlementID"] = task_data.SettlementID;
@@ -924,6 +958,7 @@ void TdApi::processRspQrySettlementInfo(Task task)
 
 void TdApi::processRspQryTransferBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcTransferBankField task_data = any_cast<CThostFtdcTransferBankField>(task.task_data);
 	dict data;
 	data["BankName"] = task_data.BankName;
@@ -941,6 +976,7 @@ void TdApi::processRspQryTransferBank(Task task)
 
 void TdApi::processRspQryInvestorPositionDetail(Task task)
 {
+	PyLock lock;
 	CThostFtdcInvestorPositionDetailField task_data = any_cast<CThostFtdcInvestorPositionDetailField>(task.task_data);
 	dict data;
 	data["PositionProfitByDate"] = task_data.PositionProfitByDate;
@@ -980,6 +1016,7 @@ void TdApi::processRspQryInvestorPositionDetail(Task task)
 
 void TdApi::processRspQryNotice(Task task)
 {
+	PyLock lock;
 	CThostFtdcNoticeField task_data = any_cast<CThostFtdcNoticeField>(task.task_data);
 	dict data;
 	data["Content"] = task_data.Content;
@@ -996,6 +1033,7 @@ void TdApi::processRspQryNotice(Task task)
 
 void TdApi::processRspQrySettlementInfoConfirm(Task task)
 {
+	PyLock lock;
 	CThostFtdcSettlementInfoConfirmField task_data = any_cast<CThostFtdcSettlementInfoConfirmField>(task.task_data);
 	dict data;
 	data["ConfirmTime"] = task_data.ConfirmTime;
@@ -1013,6 +1051,7 @@ void TdApi::processRspQrySettlementInfoConfirm(Task task)
 
 void TdApi::processRspQryInvestorPositionCombineDetail(Task task)
 {
+	PyLock lock;
 	CThostFtdcInvestorPositionCombineDetailField task_data = any_cast<CThostFtdcInvestorPositionCombineDetailField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1046,6 +1085,7 @@ void TdApi::processRspQryInvestorPositionCombineDetail(Task task)
 
 void TdApi::processRspQryCFMMCTradingAccountKey(Task task)
 {
+	PyLock lock;
 	CThostFtdcCFMMCTradingAccountKeyField task_data = any_cast<CThostFtdcCFMMCTradingAccountKeyField>(task.task_data);
 	dict data;
 	data["KeyID"] = task_data.KeyID;
@@ -1064,6 +1104,7 @@ void TdApi::processRspQryCFMMCTradingAccountKey(Task task)
 
 void TdApi::processRspQryEWarrantOffset(Task task)
 {
+	PyLock lock;
 	CThostFtdcEWarrantOffsetField task_data = any_cast<CThostFtdcEWarrantOffsetField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1085,6 +1126,7 @@ void TdApi::processRspQryEWarrantOffset(Task task)
 
 void TdApi::processRspQryInvestorProductGroupMargin(Task task)
 {
+	PyLock lock;
 	CThostFtdcInvestorProductGroupMarginField task_data = any_cast<CThostFtdcInvestorProductGroupMarginField>(task.task_data);
 	dict data;
 	data["ExchMargin"] = task_data.ExchMargin;
@@ -1125,6 +1167,7 @@ void TdApi::processRspQryInvestorProductGroupMargin(Task task)
 
 void TdApi::processRspQryExchangeMarginRate(Task task)
 {
+	PyLock lock;
 	CThostFtdcExchangeMarginRateField task_data = any_cast<CThostFtdcExchangeMarginRateField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1145,6 +1188,7 @@ void TdApi::processRspQryExchangeMarginRate(Task task)
 
 void TdApi::processRspQryExchangeMarginRateAdjust(Task task)
 {
+	PyLock lock;
 	CThostFtdcExchangeMarginRateAdjustField task_data = any_cast<CThostFtdcExchangeMarginRateAdjustField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1173,6 +1217,7 @@ void TdApi::processRspQryExchangeMarginRateAdjust(Task task)
 
 void TdApi::processRspQryExchangeRate(Task task)
 {
+	PyLock lock;
 	CThostFtdcExchangeRateField task_data = any_cast<CThostFtdcExchangeRateField>(task.task_data);
 	dict data;
 	data["FromCurrencyID"] = task_data.FromCurrencyID;
@@ -1191,6 +1236,7 @@ void TdApi::processRspQryExchangeRate(Task task)
 
 void TdApi::processRspQrySecAgentACIDMap(Task task)
 {
+	PyLock lock;
 	CThostFtdcSecAgentACIDMapField task_data = any_cast<CThostFtdcSecAgentACIDMapField>(task.task_data);
 	dict data;
 	data["CurrencyID"] = task_data.CurrencyID;
@@ -1209,6 +1255,7 @@ void TdApi::processRspQrySecAgentACIDMap(Task task)
 
 void TdApi::processRspQryOptionInstrTradeCost(Task task)
 {
+	PyLock lock;
 	CThostFtdcOptionInstrTradeCostField task_data = any_cast<CThostFtdcOptionInstrTradeCostField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1231,6 +1278,7 @@ void TdApi::processRspQryOptionInstrTradeCost(Task task)
 
 void TdApi::processRspQryOptionInstrCommRate(Task task)
 {
+	PyLock lock;
 	CThostFtdcOptionInstrCommRateField task_data = any_cast<CThostFtdcOptionInstrCommRateField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1256,6 +1304,7 @@ void TdApi::processRspQryOptionInstrCommRate(Task task)
 
 void TdApi::processRspQryExecOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcExecOrderField task_data = any_cast<CThostFtdcExecOrderField>(task.task_data);
 	dict data;
 	data["NotifySequence"] = task_data.NotifySequence;
@@ -1307,6 +1356,7 @@ void TdApi::processRspQryExecOrder(Task task)
 
 void TdApi::processRspQryForQuote(Task task)
 {
+	PyLock lock;
 	CThostFtdcForQuoteField task_data = any_cast<CThostFtdcForQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1340,6 +1390,7 @@ void TdApi::processRspQryForQuote(Task task)
 
 void TdApi::processRspQryQuote(Task task)
 {
+	PyLock lock;
 	CThostFtdcQuoteField task_data = any_cast<CThostFtdcQuoteField>(task.task_data);
 	dict data;
 	data["NotifySequence"] = task_data.NotifySequence;
@@ -1394,6 +1445,7 @@ void TdApi::processRspQryQuote(Task task)
 
 void TdApi::processRspQryTransferSerial(Task task)
 {
+	PyLock lock;
 	CThostFtdcTransferSerialField task_data = any_cast<CThostFtdcTransferSerialField>(task.task_data);
 	dict data;
 	data["BankNewAccount"] = task_data.BankNewAccount;
@@ -1435,6 +1487,7 @@ void TdApi::processRspQryTransferSerial(Task task)
 
 void TdApi::processRspQryAccountregister(Task task)
 {
+	PyLock lock;
 	CThostFtdcAccountregisterField task_data = any_cast<CThostFtdcAccountregisterField>(task.task_data);
 	dict data;
 	data["BankAccount"] = task_data.BankAccount;
@@ -1465,6 +1518,7 @@ void TdApi::processRspQryAccountregister(Task task)
 
 void TdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -1475,6 +1529,7 @@ void TdApi::processRspError(Task task)
 
 void TdApi::processRtnOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcOrderField task_data = any_cast<CThostFtdcOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -1540,6 +1595,7 @@ void TdApi::processRtnOrder(Task task)
 
 void TdApi::processRtnTrade(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradeField task_data = any_cast<CThostFtdcTradeField>(task.task_data);
 	dict data;
 	data["TradeType"] = task_data.TradeType;
@@ -1578,6 +1634,7 @@ void TdApi::processRtnTrade(Task task)
 
 void TdApi::processErrRtnOrderInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputOrderField task_data = any_cast<CThostFtdcInputOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -1614,6 +1671,7 @@ void TdApi::processErrRtnOrderInsert(Task task)
 
 void TdApi::processErrRtnOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcOrderActionField task_data = any_cast<CThostFtdcOrderActionField>(task.task_data);
 	dict data;
 	data["ActionTime"] = task_data.ActionTime;
@@ -1652,6 +1710,7 @@ void TdApi::processErrRtnOrderAction(Task task)
 
 void TdApi::processRtnInstrumentStatus(Task task)
 {
+	PyLock lock;
 	CThostFtdcInstrumentStatusField task_data = any_cast<CThostFtdcInstrumentStatusField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1668,6 +1727,7 @@ void TdApi::processRtnInstrumentStatus(Task task)
 
 void TdApi::processRtnTradingNotice(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradingNoticeInfoField task_data = any_cast<CThostFtdcTradingNoticeInfoField>(task.task_data);
 	dict data;
 	data["SequenceSeries"] = task_data.SequenceSeries;
@@ -1682,6 +1742,7 @@ void TdApi::processRtnTradingNotice(Task task)
 
 void TdApi::processRtnErrorConditionalOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcErrorConditionalOrderField task_data = any_cast<CThostFtdcErrorConditionalOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -1749,6 +1810,7 @@ void TdApi::processRtnErrorConditionalOrder(Task task)
 
 void TdApi::processRtnExecOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcExecOrderField task_data = any_cast<CThostFtdcExecOrderField>(task.task_data);
 	dict data;
 	data["NotifySequence"] = task_data.NotifySequence;
@@ -1795,6 +1857,7 @@ void TdApi::processRtnExecOrder(Task task)
 
 void TdApi::processErrRtnExecOrderInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputExecOrderField task_data = any_cast<CThostFtdcInputExecOrderField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1822,6 +1885,7 @@ void TdApi::processErrRtnExecOrderInsert(Task task)
 
 void TdApi::processErrRtnExecOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcExecOrderActionField task_data = any_cast<CThostFtdcExecOrderActionField>(task.task_data);
 	dict data;
 	data["ActionTime"] = task_data.ActionTime;
@@ -1859,6 +1923,7 @@ void TdApi::processErrRtnExecOrderAction(Task task)
 
 void TdApi::processErrRtnForQuoteInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputForQuoteField task_data = any_cast<CThostFtdcInputForQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1877,6 +1942,7 @@ void TdApi::processErrRtnForQuoteInsert(Task task)
 
 void TdApi::processRtnQuote(Task task)
 {
+	PyLock lock;
 	CThostFtdcQuoteField task_data = any_cast<CThostFtdcQuoteField>(task.task_data);
 	dict data;
 	data["NotifySequence"] = task_data.NotifySequence;
@@ -1926,6 +1992,7 @@ void TdApi::processRtnQuote(Task task)
 
 void TdApi::processErrRtnQuoteInsert(Task task)
 {
+	PyLock lock;
 	CThostFtdcInputQuoteField task_data = any_cast<CThostFtdcInputQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -1954,6 +2021,7 @@ void TdApi::processErrRtnQuoteInsert(Task task)
 
 void TdApi::processErrRtnQuoteAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcQuoteActionField task_data = any_cast<CThostFtdcQuoteActionField>(task.task_data);
 	dict data;
 	data["ActionTime"] = task_data.ActionTime;
@@ -1990,6 +2058,7 @@ void TdApi::processErrRtnQuoteAction(Task task)
 
 void TdApi::processRtnForQuoteRsp(Task task)
 {
+	PyLock lock;
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -2003,6 +2072,7 @@ void TdApi::processRtnForQuoteRsp(Task task)
 
 void TdApi::processRspQryContractBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcContractBankField task_data = any_cast<CThostFtdcContractBankField>(task.task_data);
 	dict data;
 	data["BankName"] = task_data.BankName;
@@ -2020,6 +2090,7 @@ void TdApi::processRspQryContractBank(Task task)
 
 void TdApi::processRspQryParkedOrder(Task task)
 {
+	PyLock lock;
 	CThostFtdcParkedOrderField task_data = any_cast<CThostFtdcParkedOrderField>(task.task_data);
 	dict data;
 	data["ContingentCondition"] = task_data.ContingentCondition;
@@ -2062,6 +2133,7 @@ void TdApi::processRspQryParkedOrder(Task task)
 
 void TdApi::processRspQryParkedOrderAction(Task task)
 {
+	PyLock lock;
 	CThostFtdcParkedOrderActionField task_data = any_cast<CThostFtdcParkedOrderActionField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -2094,6 +2166,7 @@ void TdApi::processRspQryParkedOrderAction(Task task)
 
 void TdApi::processRspQryTradingNotice(Task task)
 {
+	PyLock lock;
 	CThostFtdcTradingNoticeField task_data = any_cast<CThostFtdcTradingNoticeField>(task.task_data);
 	dict data;
 	data["SequenceSeries"] = task_data.SequenceSeries;
@@ -2115,6 +2188,7 @@ void TdApi::processRspQryTradingNotice(Task task)
 
 void TdApi::processRspQryBrokerTradingParams(Task task)
 {
+	PyLock lock;
 	CThostFtdcBrokerTradingParamsField task_data = any_cast<CThostFtdcBrokerTradingParamsField>(task.task_data);
 	dict data;
 	data["MarginPriceType"] = task_data.MarginPriceType;
@@ -2135,6 +2209,7 @@ void TdApi::processRspQryBrokerTradingParams(Task task)
 
 void TdApi::processRspQryBrokerTradingAlgos(Task task)
 {
+	PyLock lock;
 	CThostFtdcBrokerTradingAlgosField task_data = any_cast<CThostFtdcBrokerTradingAlgosField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -2154,6 +2229,7 @@ void TdApi::processRspQryBrokerTradingAlgos(Task task)
 
 void TdApi::processRtnFromBankToFutureByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2207,6 +2283,7 @@ void TdApi::processRtnFromBankToFutureByBank(Task task)
 
 void TdApi::processRtnFromFutureToBankByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2260,6 +2337,7 @@ void TdApi::processRtnFromFutureToBankByBank(Task task)
 
 void TdApi::processRtnRepealFromBankToFutureByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2320,6 +2398,7 @@ void TdApi::processRtnRepealFromBankToFutureByBank(Task task)
 
 void TdApi::processRtnRepealFromFutureToBankByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2380,6 +2459,7 @@ void TdApi::processRtnRepealFromFutureToBankByBank(Task task)
 
 void TdApi::processRtnFromBankToFutureByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2433,6 +2513,7 @@ void TdApi::processRtnFromBankToFutureByFuture(Task task)
 
 void TdApi::processRtnFromFutureToBankByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2486,6 +2567,7 @@ void TdApi::processRtnFromFutureToBankByFuture(Task task)
 
 void TdApi::processRtnRepealFromBankToFutureByFutureManual(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2546,6 +2628,7 @@ void TdApi::processRtnRepealFromBankToFutureByFutureManual(Task task)
 
 void TdApi::processRtnRepealFromFutureToBankByFutureManual(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2606,6 +2689,7 @@ void TdApi::processRtnRepealFromFutureToBankByFutureManual(Task task)
 
 void TdApi::processRtnQueryBankBalanceByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcNotifyQueryAccountField task_data = any_cast<CThostFtdcNotifyQueryAccountField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2654,6 +2738,7 @@ void TdApi::processRtnQueryBankBalanceByFuture(Task task)
 
 void TdApi::processErrRtnBankToFutureByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2710,6 +2795,7 @@ void TdApi::processErrRtnBankToFutureByFuture(Task task)
 
 void TdApi::processErrRtnFutureToBankByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2766,6 +2852,7 @@ void TdApi::processErrRtnFutureToBankByFuture(Task task)
 
 void TdApi::processErrRtnRepealBankToFutureByFutureManual(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqRepealField task_data = any_cast<CThostFtdcReqRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2829,6 +2916,7 @@ void TdApi::processErrRtnRepealBankToFutureByFutureManual(Task task)
 
 void TdApi::processErrRtnRepealFutureToBankByFutureManual(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqRepealField task_data = any_cast<CThostFtdcReqRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2892,6 +2980,7 @@ void TdApi::processErrRtnRepealFutureToBankByFutureManual(Task task)
 
 void TdApi::processErrRtnQueryBankBalanceByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqQueryAccountField task_data = any_cast<CThostFtdcReqQueryAccountField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -2941,6 +3030,7 @@ void TdApi::processErrRtnQueryBankBalanceByFuture(Task task)
 
 void TdApi::processRtnRepealFromBankToFutureByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -3001,6 +3091,7 @@ void TdApi::processRtnRepealFromBankToFutureByFuture(Task task)
 
 void TdApi::processRtnRepealFromFutureToBankByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -3061,6 +3152,7 @@ void TdApi::processRtnRepealFromFutureToBankByFuture(Task task)
 
 void TdApi::processRspFromBankToFutureByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -3117,6 +3209,7 @@ void TdApi::processRspFromBankToFutureByFuture(Task task)
 
 void TdApi::processRspFromFutureToBankByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -3173,6 +3266,7 @@ void TdApi::processRspFromFutureToBankByFuture(Task task)
 
 void TdApi::processRspQueryBankAccountMoneyByFuture(Task task)
 {
+	PyLock lock;
 	CThostFtdcReqQueryAccountField task_data = any_cast<CThostFtdcReqQueryAccountField>(task.task_data);
 	dict data;
 	data["BrokerBranchID"] = task_data.BrokerBranchID;
@@ -3222,6 +3316,7 @@ void TdApi::processRspQueryBankAccountMoneyByFuture(Task task)
 
 void TdApi::processRtnOpenAccountByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcOpenAccountField task_data = any_cast<CThostFtdcOpenAccountField>(task.task_data);
 	dict data;
 	data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
@@ -3276,6 +3371,7 @@ void TdApi::processRtnOpenAccountByBank(Task task)
 
 void TdApi::processRtnCancelAccountByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcCancelAccountField task_data = any_cast<CThostFtdcCancelAccountField>(task.task_data);
 	dict data;
 	data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
@@ -3330,6 +3426,7 @@ void TdApi::processRtnCancelAccountByBank(Task task)
 
 void TdApi::processRtnChangeAccountByBank(Task task)
 {
+	PyLock lock;
 	CThostFtdcChangeAccountField task_data = any_cast<CThostFtdcChangeAccountField>(task.task_data);
 	dict data;
 	data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;

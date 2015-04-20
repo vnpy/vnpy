@@ -1,20 +1,24 @@
-void TdApi::processFrontConnected(Task task)
+void L2MdApi::processFrontConnected(Task task)
 {
+	PyLock lock;
 	this->onFrontConnected();
 };
 
-void TdApi::processFrontDisconnected(Task task)
+void L2MdApi::processFrontDisconnected(Task task)
 {
+	PyLock lock;
 	this->onFrontDisconnected(task.task_id);
 };
 
-void TdApi::processHeartBeatWarning(Task task)
+void L2MdApi::processHeartBeatWarning(Task task)
 {
+	PyLock lock;
 	this->onHeartBeatWarning(task.task_id);
 };
 
-void TdApi::processRspError(Task task)
+void L2MdApi::processRspError(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -23,8 +27,9 @@ void TdApi::processRspError(Task task)
 	this->onRspError(error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspUserLogin(Task task)
+void L2MdApi::processRspUserLogin(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLoginField task_data = any_cast<CSecurityFtdcUserLoginField>(task.task_data);
 	dict data;
 	data["TradingDay"] = task_data.TradingDay;
@@ -41,8 +46,9 @@ void TdApi::processRspUserLogin(Task task)
 	this->onRspUserLogin(data, error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspUserLogout(Task task)
+void L2MdApi::processRspUserLogout(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcUserLogoutField task_data = any_cast<CSecurityFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
@@ -56,8 +62,9 @@ void TdApi::processRspUserLogout(Task task)
 	this->onRspUserLogout(data, error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspSubL2MarketData(Task task)
+void L2MdApi::processRspSubL2MarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -71,8 +78,9 @@ void TdApi::processRspSubL2MarketData(Task task)
 	this->onRspSubL2MarketData(data, error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspUnSubL2MarketData(Task task)
+void L2MdApi::processRspUnSubL2MarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -86,8 +94,9 @@ void TdApi::processRspUnSubL2MarketData(Task task)
 	this->onRspUnSubL2MarketData(data, error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspSubL2Index(Task task)
+void L2MdApi::processRspSubL2Index(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -101,8 +110,9 @@ void TdApi::processRspSubL2Index(Task task)
 	this->onRspSubL2Index(data, error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspUnSubL2Index(Task task)
+void L2MdApi::processRspUnSubL2Index(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcSpecificInstrumentField task_data = any_cast<CSecurityFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -116,8 +126,9 @@ void TdApi::processRspUnSubL2Index(Task task)
 	this->onRspUnSubL2Index(data, error, task.task_id, task.task_last);
 };
 
-void TdApi::processRtnL2MarketData(Task task)
+void L2MdApi::processRtnL2MarketData(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2MarketDataField task_data = any_cast<CSecurityFtdcL2MarketDataField>(task.task_data);
 	dict data;
 	data["BidCount8"] = task_data.BidCount8;
@@ -207,8 +218,9 @@ void TdApi::processRtnL2MarketData(Task task)
 	this->onRtnL2MarketData(data);
 };
 
-void TdApi::processRtnL2Index(Task task)
+void L2MdApi::processRtnL2Index(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2IndexField task_data = any_cast<CSecurityFtdcL2IndexField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -227,8 +239,9 @@ void TdApi::processRtnL2Index(Task task)
 	this->onRtnL2Index(data);
 };
 
-void TdApi::processRspSubL2OrderAndTrade(Task task)
+void L2MdApi::processRspSubL2OrderAndTrade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -237,8 +250,9 @@ void TdApi::processRspSubL2OrderAndTrade(Task task)
 	this->onRspSubL2OrderAndTrade(error, task.task_id, task.task_last);
 };
 
-void TdApi::processRspUnSubL2OrderAndTrade(Task task)
+void L2MdApi::processRspUnSubL2OrderAndTrade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcRspInfoField task_error = any_cast<CSecurityFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
@@ -247,8 +261,9 @@ void TdApi::processRspUnSubL2OrderAndTrade(Task task)
 	this->onRspUnSubL2OrderAndTrade(error, task.task_id, task.task_last);
 };
 
-void TdApi::processRtnL2Order(Task task)
+void L2MdApi::processRtnL2Order(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2OrderField task_data = any_cast<CSecurityFtdcL2OrderField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
@@ -264,8 +279,9 @@ void TdApi::processRtnL2Order(Task task)
 	this->onRtnL2Order(data);
 };
 
-void TdApi::processRtnL2Trade(Task task)
+void L2MdApi::processRtnL2Trade(Task task)
 {
+	PyLock lock;
 	CSecurityFtdcL2TradeField task_data = any_cast<CSecurityFtdcL2TradeField>(task.task_data);
 	dict data;
 	data["TradeGroupID"] = task_data.TradeGroupID;
@@ -283,8 +299,9 @@ void TdApi::processRtnL2Trade(Task task)
 	this->onRtnL2Trade(data);
 };
 
-void TdApi::processNtfCheckOrderList(Task task)
+void L2MdApi::processNtfCheckOrderList(Task task)
 {
+	PyLock lock;
 	this->onNtfCheckOrderList();
 };
 

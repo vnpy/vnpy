@@ -88,6 +88,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
     # 从队列中提取任务，并转化为python字典
     fprocess.write("void " + apiName + '::' + cbName.replace('On', 'process') + '(Task task)' + "\n")
     fprocess.write("{\n")
+    fprocess.write("\tPyLock lock;\n")
 
     onArgsList = []
 

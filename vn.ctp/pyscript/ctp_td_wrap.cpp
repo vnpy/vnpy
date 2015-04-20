@@ -1,7 +1,5 @@
 virtual void onRspAuthenticate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspAuthenticate")(data, error, id, last);
@@ -14,8 +12,6 @@ virtual void onRspAuthenticate(dict data, dict error, int id, bool last)
 
 virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspUserLogin")(data, error, id, last);
@@ -28,8 +24,6 @@ virtual void onRspUserLogin(dict data, dict error, int id, bool last)
 
 virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspUserLogout")(data, error, id, last);
@@ -42,8 +36,6 @@ virtual void onRspUserLogout(dict data, dict error, int id, bool last)
 
 virtual void onRspUserPasswordUpdate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspUserPasswordUpdate")(data, error, id, last);
@@ -56,8 +48,6 @@ virtual void onRspUserPasswordUpdate(dict data, dict error, int id, bool last)
 
 virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspTradingAccountPasswordUpdate")(data, error, id, last);
@@ -70,8 +60,6 @@ virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bo
 
 virtual void onRspOrderInsert(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspOrderInsert")(data, error, id, last);
@@ -84,8 +72,6 @@ virtual void onRspOrderInsert(dict data, dict error, int id, bool last)
 
 virtual void onRspParkedOrderInsert(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspParkedOrderInsert")(data, error, id, last);
@@ -98,8 +84,6 @@ virtual void onRspParkedOrderInsert(dict data, dict error, int id, bool last)
 
 virtual void onRspParkedOrderAction(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspParkedOrderAction")(data, error, id, last);
@@ -112,8 +96,6 @@ virtual void onRspParkedOrderAction(dict data, dict error, int id, bool last)
 
 virtual void onRspOrderAction(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspOrderAction")(data, error, id, last);
@@ -126,8 +108,6 @@ virtual void onRspOrderAction(dict data, dict error, int id, bool last)
 
 virtual void onRspQueryMaxOrderVolume(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQueryMaxOrderVolume")(data, error, id, last);
@@ -140,8 +120,6 @@ virtual void onRspQueryMaxOrderVolume(dict data, dict error, int id, bool last)
 
 virtual void onRspSettlementInfoConfirm(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspSettlementInfoConfirm")(data, error, id, last);
@@ -154,8 +132,6 @@ virtual void onRspSettlementInfoConfirm(dict data, dict error, int id, bool last
 
 virtual void onRspRemoveParkedOrder(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspRemoveParkedOrder")(data, error, id, last);
@@ -168,8 +144,6 @@ virtual void onRspRemoveParkedOrder(dict data, dict error, int id, bool last)
 
 virtual void onRspRemoveParkedOrderAction(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspRemoveParkedOrderAction")(data, error, id, last);
@@ -182,8 +156,6 @@ virtual void onRspRemoveParkedOrderAction(dict data, dict error, int id, bool la
 
 virtual void onRspExecOrderInsert(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspExecOrderInsert")(data, error, id, last);
@@ -196,8 +168,6 @@ virtual void onRspExecOrderInsert(dict data, dict error, int id, bool last)
 
 virtual void onRspExecOrderAction(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspExecOrderAction")(data, error, id, last);
@@ -210,8 +180,6 @@ virtual void onRspExecOrderAction(dict data, dict error, int id, bool last)
 
 virtual void onRspForQuoteInsert(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspForQuoteInsert")(data, error, id, last);
@@ -224,8 +192,6 @@ virtual void onRspForQuoteInsert(dict data, dict error, int id, bool last)
 
 virtual void onRspQuoteInsert(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQuoteInsert")(data, error, id, last);
@@ -238,8 +204,6 @@ virtual void onRspQuoteInsert(dict data, dict error, int id, bool last)
 
 virtual void onRspQuoteAction(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQuoteAction")(data, error, id, last);
@@ -252,8 +216,6 @@ virtual void onRspQuoteAction(dict data, dict error, int id, bool last)
 
 virtual void onRspQryOrder(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryOrder")(data, error, id, last);
@@ -266,8 +228,6 @@ virtual void onRspQryOrder(dict data, dict error, int id, bool last)
 
 virtual void onRspQryTrade(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryTrade")(data, error, id, last);
@@ -280,8 +240,6 @@ virtual void onRspQryTrade(dict data, dict error, int id, bool last)
 
 virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInvestorPosition")(data, error, id, last);
@@ -294,8 +252,6 @@ virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last)
 
 virtual void onRspQryTradingAccount(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryTradingAccount")(data, error, id, last);
@@ -308,8 +264,6 @@ virtual void onRspQryTradingAccount(dict data, dict error, int id, bool last)
 
 virtual void onRspQryInvestor(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInvestor")(data, error, id, last);
@@ -322,8 +276,6 @@ virtual void onRspQryInvestor(dict data, dict error, int id, bool last)
 
 virtual void onRspQryTradingCode(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryTradingCode")(data, error, id, last);
@@ -336,8 +288,6 @@ virtual void onRspQryTradingCode(dict data, dict error, int id, bool last)
 
 virtual void onRspQryInstrumentMarginRate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInstrumentMarginRate")(data, error, id, last);
@@ -350,8 +300,6 @@ virtual void onRspQryInstrumentMarginRate(dict data, dict error, int id, bool la
 
 virtual void onRspQryInstrumentCommissionRate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInstrumentCommissionRate")(data, error, id, last);
@@ -364,8 +312,6 @@ virtual void onRspQryInstrumentCommissionRate(dict data, dict error, int id, boo
 
 virtual void onRspQryExchange(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryExchange")(data, error, id, last);
@@ -378,8 +324,6 @@ virtual void onRspQryExchange(dict data, dict error, int id, bool last)
 
 virtual void onRspQryProduct(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryProduct")(data, error, id, last);
@@ -392,8 +336,6 @@ virtual void onRspQryProduct(dict data, dict error, int id, bool last)
 
 virtual void onRspQryInstrument(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInstrument")(data, error, id, last);
@@ -406,8 +348,6 @@ virtual void onRspQryInstrument(dict data, dict error, int id, bool last)
 
 virtual void onRspQryDepthMarketData(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryDepthMarketData")(data, error, id, last);
@@ -420,8 +360,6 @@ virtual void onRspQryDepthMarketData(dict data, dict error, int id, bool last)
 
 virtual void onRspQrySettlementInfo(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQrySettlementInfo")(data, error, id, last);
@@ -434,8 +372,6 @@ virtual void onRspQrySettlementInfo(dict data, dict error, int id, bool last)
 
 virtual void onRspQryTransferBank(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryTransferBank")(data, error, id, last);
@@ -448,8 +384,6 @@ virtual void onRspQryTransferBank(dict data, dict error, int id, bool last)
 
 virtual void onRspQryInvestorPositionDetail(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInvestorPositionDetail")(data, error, id, last);
@@ -462,8 +396,6 @@ virtual void onRspQryInvestorPositionDetail(dict data, dict error, int id, bool 
 
 virtual void onRspQryNotice(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryNotice")(data, error, id, last);
@@ -476,8 +408,6 @@ virtual void onRspQryNotice(dict data, dict error, int id, bool last)
 
 virtual void onRspQrySettlementInfoConfirm(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQrySettlementInfoConfirm")(data, error, id, last);
@@ -490,8 +420,6 @@ virtual void onRspQrySettlementInfoConfirm(dict data, dict error, int id, bool l
 
 virtual void onRspQryInvestorPositionCombineDetail(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInvestorPositionCombineDetail")(data, error, id, last);
@@ -504,8 +432,6 @@ virtual void onRspQryInvestorPositionCombineDetail(dict data, dict error, int id
 
 virtual void onRspQryCFMMCTradingAccountKey(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryCFMMCTradingAccountKey")(data, error, id, last);
@@ -518,8 +444,6 @@ virtual void onRspQryCFMMCTradingAccountKey(dict data, dict error, int id, bool 
 
 virtual void onRspQryEWarrantOffset(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryEWarrantOffset")(data, error, id, last);
@@ -532,8 +456,6 @@ virtual void onRspQryEWarrantOffset(dict data, dict error, int id, bool last)
 
 virtual void onRspQryInvestorProductGroupMargin(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryInvestorProductGroupMargin")(data, error, id, last);
@@ -546,8 +468,6 @@ virtual void onRspQryInvestorProductGroupMargin(dict data, dict error, int id, b
 
 virtual void onRspQryExchangeMarginRate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryExchangeMarginRate")(data, error, id, last);
@@ -560,8 +480,6 @@ virtual void onRspQryExchangeMarginRate(dict data, dict error, int id, bool last
 
 virtual void onRspQryExchangeMarginRateAdjust(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryExchangeMarginRateAdjust")(data, error, id, last);
@@ -574,8 +492,6 @@ virtual void onRspQryExchangeMarginRateAdjust(dict data, dict error, int id, boo
 
 virtual void onRspQryExchangeRate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryExchangeRate")(data, error, id, last);
@@ -588,8 +504,6 @@ virtual void onRspQryExchangeRate(dict data, dict error, int id, bool last)
 
 virtual void onRspQrySecAgentACIDMap(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQrySecAgentACIDMap")(data, error, id, last);
@@ -602,8 +516,6 @@ virtual void onRspQrySecAgentACIDMap(dict data, dict error, int id, bool last)
 
 virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryOptionInstrTradeCost")(data, error, id, last);
@@ -616,8 +528,6 @@ virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int id, bool la
 
 virtual void onRspQryOptionInstrCommRate(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryOptionInstrCommRate")(data, error, id, last);
@@ -630,8 +540,6 @@ virtual void onRspQryOptionInstrCommRate(dict data, dict error, int id, bool las
 
 virtual void onRspQryExecOrder(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryExecOrder")(data, error, id, last);
@@ -644,8 +552,6 @@ virtual void onRspQryExecOrder(dict data, dict error, int id, bool last)
 
 virtual void onRspQryForQuote(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryForQuote")(data, error, id, last);
@@ -658,8 +564,6 @@ virtual void onRspQryForQuote(dict data, dict error, int id, bool last)
 
 virtual void onRspQryQuote(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryQuote")(data, error, id, last);
@@ -672,8 +576,6 @@ virtual void onRspQryQuote(dict data, dict error, int id, bool last)
 
 virtual void onRspQryTransferSerial(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryTransferSerial")(data, error, id, last);
@@ -686,8 +588,6 @@ virtual void onRspQryTransferSerial(dict data, dict error, int id, bool last)
 
 virtual void onRspQryAccountregister(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryAccountregister")(data, error, id, last);
@@ -700,8 +600,6 @@ virtual void onRspQryAccountregister(dict data, dict error, int id, bool last)
 
 virtual void onRspError(dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspError")(error, id, last);
@@ -714,8 +612,6 @@ virtual void onRspError(dict error, int id, bool last)
 
 virtual void onRtnOrder(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnOrder")(data);
@@ -728,8 +624,6 @@ virtual void onRtnOrder(dict data)
 
 virtual void onRtnTrade(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnTrade")(data);
@@ -742,8 +636,6 @@ virtual void onRtnTrade(dict data)
 
 virtual void onErrRtnOrderInsert(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnOrderInsert")(data, error);
@@ -756,8 +648,6 @@ virtual void onErrRtnOrderInsert(dict data, dict error)
 
 virtual void onErrRtnOrderAction(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnOrderAction")(data, error);
@@ -770,8 +660,6 @@ virtual void onErrRtnOrderAction(dict data, dict error)
 
 virtual void onRtnInstrumentStatus(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnInstrumentStatus")(data);
@@ -784,8 +672,6 @@ virtual void onRtnInstrumentStatus(dict data)
 
 virtual void onRtnTradingNotice(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnTradingNotice")(data);
@@ -798,8 +684,6 @@ virtual void onRtnTradingNotice(dict data)
 
 virtual void onRtnErrorConditionalOrder(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnErrorConditionalOrder")(data);
@@ -812,8 +696,6 @@ virtual void onRtnErrorConditionalOrder(dict data)
 
 virtual void onRtnExecOrder(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnExecOrder")(data);
@@ -826,8 +708,6 @@ virtual void onRtnExecOrder(dict data)
 
 virtual void onErrRtnExecOrderInsert(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnExecOrderInsert")(data, error);
@@ -840,8 +720,6 @@ virtual void onErrRtnExecOrderInsert(dict data, dict error)
 
 virtual void onErrRtnExecOrderAction(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnExecOrderAction")(data, error);
@@ -854,8 +732,6 @@ virtual void onErrRtnExecOrderAction(dict data, dict error)
 
 virtual void onErrRtnForQuoteInsert(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnForQuoteInsert")(data, error);
@@ -868,8 +744,6 @@ virtual void onErrRtnForQuoteInsert(dict data, dict error)
 
 virtual void onRtnQuote(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnQuote")(data);
@@ -882,8 +756,6 @@ virtual void onRtnQuote(dict data)
 
 virtual void onErrRtnQuoteInsert(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnQuoteInsert")(data, error);
@@ -896,8 +768,6 @@ virtual void onErrRtnQuoteInsert(dict data, dict error)
 
 virtual void onErrRtnQuoteAction(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnQuoteAction")(data, error);
@@ -910,8 +780,6 @@ virtual void onErrRtnQuoteAction(dict data, dict error)
 
 virtual void onRtnForQuoteRsp(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnForQuoteRsp")(data);
@@ -924,8 +792,6 @@ virtual void onRtnForQuoteRsp(dict data)
 
 virtual void onRspQryContractBank(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryContractBank")(data, error, id, last);
@@ -938,8 +804,6 @@ virtual void onRspQryContractBank(dict data, dict error, int id, bool last)
 
 virtual void onRspQryParkedOrder(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryParkedOrder")(data, error, id, last);
@@ -952,8 +816,6 @@ virtual void onRspQryParkedOrder(dict data, dict error, int id, bool last)
 
 virtual void onRspQryParkedOrderAction(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryParkedOrderAction")(data, error, id, last);
@@ -966,8 +828,6 @@ virtual void onRspQryParkedOrderAction(dict data, dict error, int id, bool last)
 
 virtual void onRspQryTradingNotice(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryTradingNotice")(data, error, id, last);
@@ -980,8 +840,6 @@ virtual void onRspQryTradingNotice(dict data, dict error, int id, bool last)
 
 virtual void onRspQryBrokerTradingParams(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryBrokerTradingParams")(data, error, id, last);
@@ -994,8 +852,6 @@ virtual void onRspQryBrokerTradingParams(dict data, dict error, int id, bool las
 
 virtual void onRspQryBrokerTradingAlgos(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQryBrokerTradingAlgos")(data, error, id, last);
@@ -1008,8 +864,6 @@ virtual void onRspQryBrokerTradingAlgos(dict data, dict error, int id, bool last
 
 virtual void onRtnFromBankToFutureByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnFromBankToFutureByBank")(data);
@@ -1022,8 +876,6 @@ virtual void onRtnFromBankToFutureByBank(dict data)
 
 virtual void onRtnFromFutureToBankByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnFromFutureToBankByBank")(data);
@@ -1036,8 +888,6 @@ virtual void onRtnFromFutureToBankByBank(dict data)
 
 virtual void onRtnRepealFromBankToFutureByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnRepealFromBankToFutureByBank")(data);
@@ -1050,8 +900,6 @@ virtual void onRtnRepealFromBankToFutureByBank(dict data)
 
 virtual void onRtnRepealFromFutureToBankByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnRepealFromFutureToBankByBank")(data);
@@ -1064,8 +912,6 @@ virtual void onRtnRepealFromFutureToBankByBank(dict data)
 
 virtual void onRtnFromBankToFutureByFuture(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnFromBankToFutureByFuture")(data);
@@ -1078,8 +924,6 @@ virtual void onRtnFromBankToFutureByFuture(dict data)
 
 virtual void onRtnFromFutureToBankByFuture(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnFromFutureToBankByFuture")(data);
@@ -1092,8 +936,6 @@ virtual void onRtnFromFutureToBankByFuture(dict data)
 
 virtual void onRtnRepealFromBankToFutureByFutureManual(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnRepealFromBankToFutureByFutureManual")(data);
@@ -1106,8 +948,6 @@ virtual void onRtnRepealFromBankToFutureByFutureManual(dict data)
 
 virtual void onRtnRepealFromFutureToBankByFutureManual(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnRepealFromFutureToBankByFutureManual")(data);
@@ -1120,8 +960,6 @@ virtual void onRtnRepealFromFutureToBankByFutureManual(dict data)
 
 virtual void onRtnQueryBankBalanceByFuture(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnQueryBankBalanceByFuture")(data);
@@ -1134,8 +972,6 @@ virtual void onRtnQueryBankBalanceByFuture(dict data)
 
 virtual void onErrRtnBankToFutureByFuture(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnBankToFutureByFuture")(data, error);
@@ -1148,8 +984,6 @@ virtual void onErrRtnBankToFutureByFuture(dict data, dict error)
 
 virtual void onErrRtnFutureToBankByFuture(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnFutureToBankByFuture")(data, error);
@@ -1162,8 +996,6 @@ virtual void onErrRtnFutureToBankByFuture(dict data, dict error)
 
 virtual void onErrRtnRepealBankToFutureByFutureManual(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnRepealBankToFutureByFutureManual")(data, error);
@@ -1176,8 +1008,6 @@ virtual void onErrRtnRepealBankToFutureByFutureManual(dict data, dict error)
 
 virtual void onErrRtnRepealFutureToBankByFutureManual(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnRepealFutureToBankByFutureManual")(data, error);
@@ -1190,8 +1020,6 @@ virtual void onErrRtnRepealFutureToBankByFutureManual(dict data, dict error)
 
 virtual void onErrRtnQueryBankBalanceByFuture(dict data, dict error)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onErrRtnQueryBankBalanceByFuture")(data, error);
@@ -1204,8 +1032,6 @@ virtual void onErrRtnQueryBankBalanceByFuture(dict data, dict error)
 
 virtual void onRtnRepealFromBankToFutureByFuture(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnRepealFromBankToFutureByFuture")(data);
@@ -1218,8 +1044,6 @@ virtual void onRtnRepealFromBankToFutureByFuture(dict data)
 
 virtual void onRtnRepealFromFutureToBankByFuture(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnRepealFromFutureToBankByFuture")(data);
@@ -1232,8 +1056,6 @@ virtual void onRtnRepealFromFutureToBankByFuture(dict data)
 
 virtual void onRspFromBankToFutureByFuture(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspFromBankToFutureByFuture")(data, error, id, last);
@@ -1246,8 +1068,6 @@ virtual void onRspFromBankToFutureByFuture(dict data, dict error, int id, bool l
 
 virtual void onRspFromFutureToBankByFuture(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspFromFutureToBankByFuture")(data, error, id, last);
@@ -1260,8 +1080,6 @@ virtual void onRspFromFutureToBankByFuture(dict data, dict error, int id, bool l
 
 virtual void onRspQueryBankAccountMoneyByFuture(dict data, dict error, int id, bool last)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRspQueryBankAccountMoneyByFuture")(data, error, id, last);
@@ -1274,8 +1092,6 @@ virtual void onRspQueryBankAccountMoneyByFuture(dict data, dict error, int id, b
 
 virtual void onRtnOpenAccountByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnOpenAccountByBank")(data);
@@ -1288,8 +1104,6 @@ virtual void onRtnOpenAccountByBank(dict data)
 
 virtual void onRtnCancelAccountByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnCancelAccountByBank")(data);
@@ -1302,8 +1116,6 @@ virtual void onRtnCancelAccountByBank(dict data)
 
 virtual void onRtnChangeAccountByBank(dict data)
 {
-	 PyLock lock;
-
 	try
 	{
 		this->get_override("onRtnChangeAccountByBank")(data);
