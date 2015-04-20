@@ -1,6 +1,20 @@
 # vn.py 
 基于python的开源交易平台开发框架
 
+## 2015/4/20项目状态##
+发布了用于展示如何使用vn.py框架开发的vn.demo，使用了vn.event和vn.lts模块，可以用于华宝证券LTS柜台的手动交易。
+
+demo的简单说明：
+
+- demoApi.py主要包含了程序的底层接口，对vn.lts中的API进行了简化封装
+- demoEngine.py主要包含了程序的中间层，负责调用底层接口
+- demoUi.py主要包含了用于数据监控和主动函数调用相关的GUI组件
+- demoMain.py包含了程序的主函数入口，双击运行
+- demoMain.pyw功能和demoMain.py一样，双击时会自动调用pythonw.exe运行（无cmd界面）
+
+
+接下来将会发布几篇和vn.demo相关的教程在vnpy.org网站上。
+
 ## 2015/3/26项目状态##
 因为有不少人问CTP的接口，正好我最近的项目也要用到，就把开发CTP封装的工作提前了。
 
