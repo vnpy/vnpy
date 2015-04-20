@@ -787,7 +787,6 @@ class TradingWidget(QtGui.QWidget):
     dictDirection['R'] = u'行权'    
     
     dictOffset = OrderedDict()
-    dictOffset[''] = u'股票'
     dictOffset['0'] = u'开仓'
     dictOffset['1'] = u'平仓' 
     
