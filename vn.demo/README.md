@@ -25,7 +25,7 @@ demo的实现参考了盈佳和尔易的LTS交易平台，功能如下：
 ##nuitka编译说明
 要执行nuikta编译，请在本文件夹下打开cmd，并输入以下命令：
 
-nuitka --recurse-all --windows-disable-console --icon=C:\vn.demo\vnpy.ico demoMain.py
+nuitka --standalone --windows-disable-console --icon=C:\vn.demo\vnpy.ico demoMain.py
 
 其中C:\vn.demo\vnpy.ico需要修改为用户vn.demo文件夹的路径。
 
