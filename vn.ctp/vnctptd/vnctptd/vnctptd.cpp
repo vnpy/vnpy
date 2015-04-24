@@ -6925,14 +6925,13 @@ int TdApi::reqTradingAccountPasswordUpdate(dict req, int nRequestID)
 
 int TdApi::reqOrderInsert(dict req, int nRequestID)
 {
+	//手动处理
 	CThostFtdcInputOrderField myreq = CThostFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
-	getChar(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getChar(req, "UserID", myreq.UserID);
-	getChar(req, "UserID", myreq.UserID);
+	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
-	getChar(req, "Direction", &myreq.Direction);
 	getInt(req, "IsSwapOrder", &myreq.IsSwapOrder);
 	getInt(req, "VolumeTotalOriginal", &myreq.VolumeTotalOriginal);
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
@@ -6950,6 +6949,33 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 	getChar(req, "InvestorID", myreq.InvestorID);
 	getChar(req, "VolumeCondition", &myreq.VolumeCondition);
 	getInt(req, "RequestID", &myreq.RequestID);
+
+	//处理Direction
+	if (req.has_key("Direction"))
+	{
+		object o1 = req["Direction"];
+		extract<string> x1(o1);
+		if (x1.check())
+		{
+			string s1 = x1();
+			const char *buffer1 = s1.c_str();
+			myreq.Direction = *buffer1;
+		}
+	}
+
+	//处理CombOffsetFlag
+	if (req.has_key("CombOffsetFlag"))
+	{
+		object o2 = req["CombOffsetFlag"];
+		extract<string> x2(o2);
+		if (x2.check())
+		{
+			string s2 = x2();
+			const char *buffer2 = s2.c_str();
+			myreq.CombOffsetFlag[0] = *buffer2;
+		}
+	}
+
 	int i = this->api->ReqOrderInsert(&myreq, nRequestID);
 	return i;
 };
