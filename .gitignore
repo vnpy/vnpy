@@ -26,3 +26,6 @@ Release/
 
 # visual studio
 *.opensdf
+
+# 本地持久化文件
+*.vn

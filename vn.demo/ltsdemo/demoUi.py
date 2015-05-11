@@ -450,7 +450,7 @@ class OrderMonitor(QtGui.QTableWidget):
 
         self.dictOrderData[orderref] = data
 
-        # 如果之前已经收到过这个账户的数据, 则直接更新
+        # 如果之前已经收到过这个订单的数据, 则直接更新
         if orderref in self.dictOrder:
             d = self.dictOrder[orderref]
 
@@ -646,12 +646,14 @@ class LoginWidget(QtGui.QDialog):
 
         # 设置组件
         labelUserID = QtGui.QLabel(u'账号：')
-        labelPassword = QtGui.QLabel(u'密码：')
+        labelMdPassword = QtGui.QLabel(u'行情密码：')
+        labelTdPassword = QtGui.QLabel(u'交易密码：')
         labelMdAddress = QtGui.QLabel(u'行情服务器：')
         labelTdAddress = QtGui.QLabel(u'交易服务器：')
 
         self.editUserID = QtGui.QLineEdit()
-        self.editPassword = QtGui.QLineEdit()
+        self.editMdPassword = QtGui.QLineEdit()
+        self.editTdPassword = QtGui.QLineEdit()
         self.editMdAddress = QtGui.QLineEdit()
         self.editTdAddress = QtGui.QLineEdit()
 
@@ -670,14 +672,16 @@ class LoginWidget(QtGui.QDialog):
 
         grid = QtGui.QGridLayout()
         grid.addWidget(labelUserID, 0, 0)
-        grid.addWidget(labelPassword, 1, 0)
-        grid.addWidget(labelMdAddress, 2, 0)
-        grid.addWidget(labelTdAddress, 3, 0)
+        grid.addWidget(labelMdPassword, 1, 0)
+        grid.addWidget(labelTdPassword, 2, 0)
+        grid.addWidget(labelMdAddress, 3, 0)
+        grid.addWidget(labelTdAddress, 4, 0)
         grid.addWidget(self.editUserID, 0, 1)
-        grid.addWidget(self.editPassword, 1, 1)
-        grid.addWidget(self.editMdAddress, 2, 1)
-        grid.addWidget(self.editTdAddress, 3, 1)
-        grid.addLayout(buttonHBox, 4, 0, 1, 2)
+        grid.addWidget(self.editMdPassword, 1, 1)
+        grid.addWidget(self.editTdPassword, 2, 1)
+        grid.addWidget(self.editMdAddress, 3, 1)
+        grid.addWidget(self.editTdAddress, 4, 1)
+        grid.addLayout(buttonHBox, 5, 0, 1, 2)
 
         self.setLayout(grid)
 
@@ -685,12 +689,13 @@ class LoginWidget(QtGui.QDialog):
     def login(self):
         """登录"""
         userid = str(self.editUserID.text())
-        password = str(self.editPassword.text())
+        mdPassword = str(self.editMdPassword.text())
+        tdPassword = str(self.editTdPassword.text())
         mdAddress = str(self.editMdAddress.text())
         tdAddress = str(self.editTdAddress.text())
         brokerid = '2011'
 
-        self.__mainEngine.login(userid, password, brokerid, mdAddress, tdAddress)
+        self.__mainEngine.login(userid, mdPassword, tdPassword, brokerid, mdAddress, tdAddress)
         self.close()
 
     #----------------------------------------------------------------------
@@ -701,12 +706,14 @@ class LoginWidget(QtGui.QDialog):
         try:
             setting = f['login']
             userid = setting['userid']
-            password = setting['password']
+            mdPassword = setting['mdPassword']
+            tdPassword = setting['tdPassword']
             mdAddress = setting['mdAddress']
             tdAddress = setting['tdAddress']
 
             self.editUserID.setText(userid)
-            self.editPassword.setText(password)
+            self.editMdPassword.setText(mdPassword)
+            self.editTdPassword.setText(tdPassword)
             self.editMdAddress.setText(mdAddress)
             self.editTdAddress.setText(tdAddress)
         except KeyError:
@@ -719,7 +726,8 @@ class LoginWidget(QtGui.QDialog):
         """保存数据"""
         setting = {}
         setting['userid'] = str(self.editUserID.text())
-        setting['password'] = str(self.editPassword.text())
+        setting['mdPassword'] = str(self.editMdPassword.text())
+        setting['tdPassword'] = str(self.editTdPassword.text())
         setting['mdAddress'] = str(self.editMdAddress.text())
         setting['tdAddress'] = str(self.editTdAddress.text())
 

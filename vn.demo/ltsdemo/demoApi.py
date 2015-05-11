@@ -54,7 +54,7 @@ class DemoMdApi(MdApi):
         self.__setSubscribed = set()
         
         # 初始化.con文件的保存目录为\mdconnection，注意这个目录必须已存在，否则会报错
-        self.createFtdcMdApi(os.getcwd() + '\\mdconnection\\')                
+        self.createFtdcMdApi(os.getcwd() + '\\mdconnection\\')
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):

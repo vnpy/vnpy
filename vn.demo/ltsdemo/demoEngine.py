@@ -44,10 +44,10 @@ class MainEngine:
         self.ee.register(EVENT_INSTRUMENT, self.insertInstrument)
         
     #----------------------------------------------------------------------
-    def login(self, userid, password, brokerid, mdAddress, tdAddress):
+    def login(self, userid, mdPassword, tdPassword, brokerid, mdAddress, tdAddress):
         """登陆"""
-        self.md.login(mdAddress, userid, password, brokerid)
-        self.td.login(tdAddress, userid, password, brokerid)
+        self.md.login(mdAddress, userid, mdPassword, brokerid)
+        self.td.login(tdAddress, userid, tdPassword, brokerid)
     
     #----------------------------------------------------------------------
     def subscribe(self, instrumentid, exchangeid):
