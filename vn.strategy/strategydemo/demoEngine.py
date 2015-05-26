@@ -82,7 +82,7 @@ class MainEngine:
     def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset):
         """发单"""
         ref = self.td.sendOrder(instrumentid, exchangeid, price, pricetype, volume, direction, offset)
-        return ref
+        return str(ref)
     
     #----------------------------------------------------------------------
     def cancelOrder(self, instrumentid, exchangeid, orderref, frontid, sessionid):
