@@ -234,13 +234,10 @@ class SimpleEmaStrategy(StrategyTemplate):
                     self.short(self.currentTick.lowerLimit, 1)
         
             # 记录日志
-            log = self.name + u'当前时间：' + str(time) + \
+            log = self.name + u'，K线时间：' + str(time) + '\n' + \
                 u'，快速EMA：' + str(self.fastEMA) + u'，慢速EMA：' + \
                 str(self.slowEMA)
             self.engine.writeLog(log)
-            
-        print 'onBar', o, h, l, c, time
-        print 'fastEMA:', self.fastEMA, '|slowEMA:', self.slowEMA
             
     #----------------------------------------------------------------------
     def strToTime(self, t, ms):
@@ -278,7 +275,7 @@ def main():
     me.login(userid, password, brokerid, mdAddress, tdAddress)
     
     # 等待10秒钟（初始化合约数据等）
-    sleep(10)
+    sleep(5)
     
     # 创建策略引擎对象
     se = StrategyEngine(me.ee, me)

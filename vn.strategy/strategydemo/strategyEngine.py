@@ -360,10 +360,8 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def __updateTrade(self, event):
         """成交更新"""
-        print 'updateTrade'
         data = event.dict_['data']
         orderRef = data['OrderRef']
-        print 'trade:', orderRef
         
         if orderRef in self.__dictOrderRefStrategy:
             
@@ -405,8 +403,6 @@ class StrategyEngine(object):
                                             offset)
             
         self.__dictOrderRefStrategy[ref] = strategy
-        print 'ref:', ref
-        print 'strategy:', strategy.name
         
         return ref
 
@@ -585,7 +581,7 @@ class StrategyTemplate(object):
             return None
     
     #----------------------------------------------------------------------
-    def cover(self, price, volume, StopOrder=False):
+    def cover(self, price, volume, stopOrder=False):
         """买入平仓"""
         if self.trading:
             if stopOrder:

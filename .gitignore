@@ -29,3 +29,7 @@ Release/
 
 # 本地持久化文件
 *.vn
+
+# word文档
+*.doc
+*.docx
