@@ -68,7 +68,7 @@ class Tick:
 
 
 ########################################################################
-class Trade:
+class Trade(object):
     """成交数据对象"""
 
     #----------------------------------------------------------------------
@@ -86,7 +86,7 @@ class Trade:
  
 
 ########################################################################
-class Order:
+class Order(object):
     """报单数据对象"""
 
     #----------------------------------------------------------------------
@@ -112,7 +112,7 @@ class Order:
 
 
 ########################################################################
-class StopOrder:
+class StopOrder(object):
     """
     停止单对象
     用于实现价格突破某一水平后自动追入
@@ -135,10 +135,11 @@ class StrategyEngine(object):
     """策略引擎"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine, mainEngine):
+    def __init__(self, eventEngine, mainEngine, backtesting=False):
         """Constructor"""
         self.__eventEngine = eventEngine
         self.mainEngine = mainEngine
+        self.backtesting = backtesting      # 是否在进行回测
         
         # 获取代表今日的datetime
         t = datetime.today()
@@ -209,17 +210,22 @@ class StrategyEngine(object):
             self.__mongoTickDB[symbol].insert(data)
         
     #----------------------------------------------------------------------
-    def loadTick(self, symbol, dt):
+    def loadTick(self, symbol, startDate, endDate=None):
         """从MongoDB中读取Tick数据"""
         if self.__mongoConnected:
             collection = self.__mongoTickDB[symbol]
-            cx = collection.find({'date':{'$gte':dt}})
+            
+            # 如果输入了读取TICK的最后日期
+            if endDate:
+                cx = collection.find({'date':{'$gte':startDate, '$lte':endDate}})
+            else:
+                cx = collection.find({'date':{'$gte':startDate}})
             return cx
         else:
             return None  
 
     #----------------------------------------------------------------------
-    def __updateMarketData(self, event):
+    def updateMarketData(self, event):
         """行情更新"""
         data = event.dict_['data']
         symbol = data['InstrumentID']
@@ -275,7 +281,8 @@ class StrategyEngine(object):
                 strategy.onTick(tick) 
         
         # 将数据插入MongoDB数据库，实盘建议另开程序记录TICK数据
-        self.__recordTick(data)
+        if not self.backtesting:
+            self.__recordTick(data)
             
     #----------------------------------------------------------------------
     def __processStopOrder(self, tick):
@@ -325,7 +332,7 @@ class StrategyEngine(object):
                 del self.__dictStopOrder[symbol]
     
     #----------------------------------------------------------------------
-    def __updateOrder(self, event):
+    def updateOrder(self, event):
         """报单更新"""
         data = event.dict_['data']
         orderRef = data['OrderRef']
@@ -358,7 +365,7 @@ class StrategyEngine(object):
         self.__dictOrder[orderRef] = data
     
     #----------------------------------------------------------------------
-    def __updateTrade(self, event):
+    def updateTrade(self, event):
         """成交更新"""
         data = event.dict_['data']
         orderRef = data['OrderRef']
@@ -425,9 +432,9 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def __registerEvent(self):
         """注册事件监听"""
-        self.__eventEngine.register(EVENT_MARKETDATA, self.__updateMarketData)
-        self.__eventEngine.register(EVENT_ORDER, self.__updateOrder)
-        self.__eventEngine.register(EVENT_TRADE ,self.__updateTrade)
+        self.__eventEngine.register(EVENT_MARKETDATA, self.updateMarketData)
+        self.__eventEngine.register(EVENT_ORDER, self.updateOrder)
+        self.__eventEngine.register(EVENT_TRADE ,self.updateTrade)
         
     #----------------------------------------------------------------------
     def writeLog(self, log):

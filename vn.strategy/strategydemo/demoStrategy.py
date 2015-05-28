@@ -74,14 +74,21 @@ class SimpleEmaStrategy(StrategyTemplate):
         except KeyError:
             self.engine.writeLog(self.name + u'读取参数设定出错，请检查参数字典')
         
-        self.initStrategy()
+        try:
+            self.initStrategy(setting['startDate'])
+        except KeyError:
+            self.initStrategy()
         
     #----------------------------------------------------------------------
-    def initStrategy(self):
+    def initStrategy(self, startDate=None):
         """初始化"""
         td = timedelta(days=3)     # 读取3天的历史TICK数据
-        today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-        cx = self.engine.loadTick(self.symbol, today-td)  
+        
+        if startDate:
+            cx = self.engine.loadTick(self.symbol, startDate-td)
+        else:
+            today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+            cx = self.engine.loadTick(self.symbol, today-td)  
         
         if cx:
             for data in cx:
