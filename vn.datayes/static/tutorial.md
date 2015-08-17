@@ -1,9 +1,6 @@
 
 #VN.DATAYES - Welcome!
-
-##0. Tutorial - ipythonNotebook
-http://nbviewer.ipython.org/github/zedyang/vn.past-demo/blob/master/static/tutorial.ipynb
-
+***
 ##1. Preface
 
 ###1.1
@@ -28,14 +25,14 @@ pymongo,  pandas,  requests,  json
 ###1.3 开发测试环境：
 Mac OS X 10.10; Windows 7 || Anaconda.Python 2.7
 
-
+* * *
 ##2. Get Started
 ###2.1 准备
 
 * 下载并安装MongoDB: https://www.mongodb.org/downloads
 * 获取API token，以通联数据为例。
 
-![fig1](static/figs/fig1.png)
+![fig1](figs/fig1.png)
 
 * 更新pymongo至3.0以上版本; 更新requests等包。 
 ```
@@ -58,28 +55,28 @@ Mac OS X 10.10; Windows 7 || Anaconda.Python 2.7
 ###2.2 数据库初始化与下载
 * **api.Config** 对象包含了向API进行数据请求所需的信息，我们需要一个用户token来初始化这个对象。
 
-```
+
     from storage import *
     
     myConfig = Config(head="Zed's Config", 
                       token='7c2e59e212dbff90ffd6b382c7afb57bc987a99307d382b058af6748f591d723')
     myConfig.body
-```
 
 
-```
+
+
     {'domain': 'api.wmcloud.com/data',
      'header': {'Authorization': 'Bearer 7c2e59e212dbff90ffd6b382c7afb57bc987a99307d382b058af6748f591d723',
       'Connection': 'keep-alive'},
      'ssl': False,
      'version': 'v1'}
-```
 
 
 
+* * *
 * **storage.DBConfig** 对象包含了数据库配置。我们需要自己编写一个json字典来填充这个对象。举例来说，我们希望下载股票日线数据和指数日线数据，数据库名称为DATAYES_EQUITY_D1和DATAYES_INDEX_D1，index为日期“date”。那么json字典是这样的：
 
-```
+
     client = pymongo.MongoClient() # pymongo.connection object.
     
     body = {
@@ -106,10 +103,10 @@ Mac OS X 10.10; Windows 7 || Anaconda.Python 2.7
     myDbConfig = DBConfig()
     
     myDbConfig.body
-```
 
 
-```
+
+
     {'client': MongoClient('localhost', 27017),
      'dbNames': ['EQU_M1', 'EQU_D1', 'FUT_D1', 'OPT_D1', 'FUD_D1', 'IDX_D1'],
      'dbs': {'EQU_D1': {'collNames': 'equTicker',
@@ -130,55 +127,57 @@ Mac OS X 10.10; Windows 7 || Anaconda.Python 2.7
       'OPT_D1': {'collNames': 'optTicker',
        'index': 'date',
        'self': Database(MongoClient('localhost', 27017), u'DATAYES_OPTION_D1')}}}
-```
 
 
 
+* * *
 * **api.PyApi**是向网络数据源进行请求的主要对象。**storage.MongodController**是进行数据库管理的对象。当我们完成了配置对象的构造，即可初始化PyApi与MongodController。**MongodController._get_coll_names()** 和**MongodController._ensure_index()** 是数据库初始化所调用的方法，为了模块开发的方便，它们暂时没有被放进构造函数中自动执行。
 
-```
+
     myApi = PyApi(myConfig) # construct PyApi object.
     mc = MongodController(api=myApi, config=myDbConfig) # construct MongodController object, 
                                                         # on the top of PyApi.
     mc._get_coll_names()    # get names of collections.
     mc._ensure_index()      # ensure collection indices.
-```
-```
+
     [MONGOD]: Collection names gotten.
     [MONGOD]: MongoDB index set.
-```
 
 
 
 
-![fig2](static/figs/fig2.png)
+
+    1
+
+
+
+![fig2](figs/fig2.png)
 
 * 使用**MongodController.download#()**方法进行下载。
 
 
     mc.download_index_D1('20150101','20150801')
 
-![fig3](static/figs/fig3.png)
+![fig3](figs/fig3.png)
 
 ###2.3 数据库更新
 * 使用**MongodController.update#()**方法进行更新。脚本会自动寻找数据库中的最后一日并更新至最新交易日。
 
-```
+
     from datetime import datetime
     datetime.now()
-```
 
 
-```
+
+
     datetime.datetime(2015, 8, 17, 10, 49, 21, 37758)
-```
 
 
-```
+
+
     mc.update_index_D1()
-```
 
-![fig4](static/figs/fig4.png)
+![fig4](figs/fig4.png)
 
 ###2.4 Mac OS或Linux下的下载与更新
 模块中包含了一些shell脚本，方面在linux-like os下的数据下载、更新。
@@ -188,8 +187,8 @@ Mac OS X 10.10; Windows 7 || Anaconda.Python 2.7
 ~$ ./prepare.sh
 ```
 
-![fig5](static/figs/fig5.png)
-![fig6](static/figs/fig6.png)
+![fig5](figs/fig5.png)
+![fig6](figs/fig6.png)
 
 
     
