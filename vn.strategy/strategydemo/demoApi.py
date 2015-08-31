@@ -477,12 +477,13 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
         """查询结算信息回报"""
-        event = Event(type_=EVENT_LOG)
-        log = u'结算信息查询完成'
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
-        
-        self.confirmSettlement()    # 查询完成后立即确认结算信息
+        if last:
+            event = Event(type_=EVENT_LOG)
+            log = u'结算信息查询完成'
+            event.dict_['log'] = log
+            self.__eventEngine.put(event)
+            
+            self.confirmSettlement()    # 查询完成后立即确认结算信息
     
     #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):

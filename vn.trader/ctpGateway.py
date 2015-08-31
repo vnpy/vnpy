@@ -1,84 +1,79 @@
 # encoding: UTF-8
 
-"""
-该文件中包含的是交易平台的底层接口相关的部分，
-主要对API进行了一定程度的简化封装，方便开发。
-"""
+from vnctpmd import MdApi
+from vnctptd import TdApi
+
+from gateway import *
 
 import os
 
-from vnctpmd import MdApi
-from vnctptd import TdApi
-from eventEngine import *
-from ctp_data_type import defineDict
-
-#----------------------------------------------------------------------
-def print_dict(d):
-    """打印API收到的字典，该函数主要用于开发时的debug"""
-    print '-'*60
-    l = d.keys()
-    l.sort()
-    for key in l:
-        print key, ':', d[key]
-    
 
 ########################################################################
-class DemoMdApi(MdApi):
-    """
-    Demo中的行情API封装
-    封装后所有数据自动推送到事件驱动引擎中，由其负责推送到各个监听该事件的回调函数上
-    
-    对用户暴露的主动函数包括:
-    登陆 login
-    订阅合约 subscribe
-    """
+class CtpGateway(VtGateway):
+    """CTP接口"""
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine):
-        """
-        API对象的初始化函数
-        """
-        super(DemoMdApi, self).__init__()
+        """Constructor"""
+        super(CtpGateway, self).__init__(eventEngine)
         
-        # 事件引擎，所有数据都推送到其中，再由事件引擎进行分发
-        self.__eventEngine = eventEngine  
+        self.mdApi = None           # 行情API
+        self.tdApi = None           # 交易API
         
-        # 请求编号，由api负责管理
-        self.__reqid = 0
+        self.mdConnected = False    # 行情API连接状态
+        self.tdConnected = False    # 交易API连接状态
         
-        # 以下变量用于实现连接和重连后的自动登陆
-        self.__userid = ''
-        self.__password = ''
-        self.__brokerid = ''
+    
+    
+
+
+########################################################################
+class CtpMdApi(MdApi):
+    """CTP行情API实现"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, gateway, userID, password, brokerID, address):
+        """Constructor"""
+        super(CtpMdApi, self).__init__()
         
-        # 以下集合用于重连后自动订阅之前已订阅的合约，使用集合为了防止重复
-        self.__setSubscribed = set()
+        self.gateway = gateway                  # gateway对象
+        self.gatewayName = gateway.gatewayName  # gateway对象名称
         
-        # 初始化.con文件的保存目录为\mdconnection，注意这个目录必须已存在，否则会报错
-        self.createFtdcMdApi(os.getcwd() + '\\mdconnection\\')                
+        self.reqID = EMPTY_INT              # 操作请求编号
+        
+        self.connectionStatus = False       # 连接状态
+        self.loginStatus = False            # 登录状态
+        
+        self.userID = userID                # 账号
+        self.password = password            # 密码
+        self.brokerID = brokerID            # 经纪商代码
+        self.address = address              # 服务器地址
+        
+        self.subscribedSymbols = set()      # 已订阅合约代码
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
-        event = Event(type_=EVENT_LOG)
-        event.dict_['log'] = u'行情服务器连接成功'
-        self.__eventEngine.put(event)
+        self.connectionStatus = True
         
-        # 如果用户已经填入了用户名等等，则自动尝试连接
-        if self.__userid:
-            req = {}
-            req['UserID'] = self.__userid
-            req['Password'] = self.__password
-            req['BrokerID'] = self.__brokerid
-            self.__reqid = self.__reqid + 1
-            self.reqUserLogin(req, self.__reqid)
-            
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'行情服务器连接成功'
+        self.gateway.onLog(log)
+        
+        self.login()
+    
     #----------------------------------------------------------------------  
     def onFrontDisconnected(self, n):
         """服务器断开"""
-        event = Event(type_=EVENT_LOG)
-        event.dict_['log'] = u'行情服务器连接断开'
-        self.__eventEngine.put(event)
+        self.connectionStatus = False
+        self.loginStatus = False
+        self.gateway.mdConnected = False
+        
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'行情服务器连接断开'
+        self.gateway.onLog(log)        
         
     #---------------------------------------------------------------------- 
     def onHeartBeatWarning(self, n):
@@ -89,41 +84,56 @@ class DemoMdApi(MdApi):
     #----------------------------------------------------------------------   
     def onRspError(self, error, n, last):
         """错误回报"""
-        event = Event(type_=EVENT_LOG)
-        log = u'行情错误回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
-    
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
+        
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
-        event = Event(type_=EVENT_LOG)
-        
+        # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
-            log = u'行情服务器登陆成功'
+            self.loginStatus = True
+            self.gateway.mdConnected = True
+            
+            log = VtLogData()
+            log.logContent = u'行情服务器登录完成'
+            self.gateway.onLog(log)
+            
+            # 重新订阅之前订阅的合约
+            for subscribeReq in self.subscribedSymbols:
+                self.subscribe(subscribeReq)
+                
+        # 否则，推送错误信息
         else:
-            log = u'登陆回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
-        
-        ## 重连后自动订阅之前已经订阅过的合约
-        #if self.__setSubscribed:
-            #for instrument in self.__setSubscribed:
-                #self.subscribe(instrument[0], instrument[1])
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
                 
     #---------------------------------------------------------------------- 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
-        event = Event(type_=EVENT_LOG)
-        
+        # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
-            log = u'行情服务器登出成功'
+            self.loginStatus = False
+            self.gateway.tdConnected = False
+            
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'行情服务器登出完成'
+            self.gateway.onLog(log)
+                
+        # 否则，推送错误信息
         else:
-            log = u'登出回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
         
     #----------------------------------------------------------------------  
     def onRspSubMarketData(self, data, error, n, last):
@@ -140,17 +150,23 @@ class DemoMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
-        # 行情推送收到后，同时触发常规行情事件，以及特定合约行情事件，用于满足不同类型的监听
+        tick = VtTickData()
         
-        # 常规行情事件
-        event1 = Event(type_=EVENT_MARKETDATA)
-        event1.dict_['data'] = data
-        self.__eventEngine.put(event1)
+        tick.symbol = data['InstrumentID']
+        tick.vtSymbol = '.'.join([self.gatewayName, tick.symbol])
         
-        # 特定合约行情事件
-        event2 = Event(type_=(EVENT_MARKETDATA_CONTRACT+data['InstrumentID']))
-        event2.dict_['data'] = data
-        self.__eventEngine.put(event2)
+        tick.lastPrice = data['LastPrice']
+        tick.volume = data['Volume']
+        tick.openInterest = data['OpenInterest']
+        tick.tickTime = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100]))
+        
+        # CTP只有一档行情
+        tick.bidPrice1 = data['BidPrice1']
+        tick.bidVolume1 = data['BidVolume1']
+        tick.askPrice1 = data['AskPrice1']
+        tick.askVolume1 = data['AskVolume1']
+        
+        self.gateway.onTick(tick)
         
     #---------------------------------------------------------------------- 
     def onRspSubForQuoteRsp(self, data, error, n, last):
@@ -168,88 +184,92 @@ class DemoMdApi(MdApi):
         pass        
         
     #----------------------------------------------------------------------
-    def login(self, address, userid, password, brokerid):
-        """连接服务器"""
-        self.__userid = userid
-        self.__password = password
-        self.__brokerid = brokerid
-        
-        # 注册服务器地址
-        self.registerFront(address)
-        
-        # 初始化连接，成功会调用onFrontConnected
-        self.init()
+    def connect(self):
+        """初始化连接"""
+        # 如果尚未建立服务器连接，则进行连接
+        if not self.connectionStatus:
+            # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
+            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            if not os.path.exists(path):
+                os.makedirs(path)
+            self.createFtdcMdApi(path)
+            
+            # 注册服务器地址
+            self.registerFront(self.address)
+            
+            # 初始化连接，成功会调用onFrontConnected
+            self.init()
+            
+        # 若已经连接但尚未登录，则进行登录
+        else:
+            if not self.loginStatus:
+                self.login()
         
     #----------------------------------------------------------------------
-    def subscribe(self, instrumentid, exchangeid):
+    def subscribe(self, subscribeReq):
         """订阅合约"""
-        self.subscribeMarketData(instrumentid)
+        self.subscribeMarketData(subscribeReq.symbol)
+        self.subscribedSymbols.add(subscribeReq)   
         
-        instrument = (instrumentid, exchangeid)
-        self.__setSubscribed.add(instrument)
+    #----------------------------------------------------------------------
+    def login(self):
+        """登录"""
+        # 如果填入了用户名密码等，则登录
+        if self.userID and self.password and self.brokerID:
+            req = {}
+            req['UserID'] = self.userID
+            req['Password'] = self.password
+            req['BrokerID'] = self.brokerID
+            self.reqID += 1
+            self.reqUserLogin(req, self.reqID)        
 
 
 ########################################################################
-class DemoTdApi(TdApi):
-    """
-    Demo中的交易API封装
-    主动函数包括：
-    login 登陆
-    getInstrument 查询合约信息
-    getAccount 查询账号资金
-    getInvestor 查询投资者
-    getPosition 查询持仓
-    sendOrder 发单
-    cancelOrder 撤单
-    """
+class CtpTdApi(TdApi):
+    """CTP交易API实现"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine):
+    def __init__(self, gateway, userID, password, brokerID, address):
         """API对象的初始化函数"""
-        super(DemoTdApi, self).__init__()
+        super(CtpTdApi, self).__init__()
         
-        # 事件引擎，所有数据都推送到其中，再由事件引擎进行分发
-        self.__eventEngine = eventEngine
+        self.gateway = gateway                  # gateway对象
+        self.gatewayName = gateway.gatewayName  # gateway对象名称
         
-        # 请求编号，由api负责管理
-        self.__reqid = 0
+        self.reqID = EMPTY_INT              # 操作请求编号
+        self.orderRef = EMPTY_INT           # 订单编号
         
-        # 报单编号，由api负责管理
-        self.__orderref = 0
+        self.connectionStatus = False       # 连接状态
+        self.loginStatus = False            # 登录状态
         
-        # 以下变量用于实现连接和重连后的自动登陆
-        self.__userid = ''
-        self.__password = ''
-        self.__brokerid = ''   
-        
-        # 合约字典（保存合约查询数据）
-        self.__dictInstrument = {}
-        
-        # 初始化.con文件的保存目录为\tdconnection
-        self.createFtdcTraderApi(os.getcwd() + '\\tdconnection\\')    
+        self.userID = userID                # 账号
+        self.password = password            # 密码
+        self.brokerID = brokerID            # 经纪商代码
+        self.address = address              # 服务器地址
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
-        event = Event(type_=EVENT_LOG)
-        event.dict_['log'] = u'交易服务器连接成功'
-        self.__eventEngine.put(event)
+        self.connectionStatus = True
         
-        # 如果用户已经填入了用户名等等，则自动尝试连接
-        if self.__userid:
-            req = {}
-            req['UserID'] = self.__userid
-            req['Password'] = self.__password
-            req['BrokerID'] = self.__brokerid
-            self.__reqid = self.__reqid + 1
-            self.reqUserLogin(req, self.__reqid)
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'交易服务器连接成功'
+        self.gateway.onLog(log)
+        
+        self.login()
     
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, n):
         """服务器断开"""
-        event = Event(type_=EVENT_LOG)
-        event.dict_['log'] = u'交易服务器连接断开'
-        self.__eventEngine.put(event)
+        self.connectionStatus = False
+        self.loginStatus = False
+        self.gateway.tdConnected = False
+        
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'交易服务器连接断开'
+        self.gateway.onLog(log)      
     
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
@@ -264,30 +284,51 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
-        event = Event(type_=EVENT_LOG)
-        
+        # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
-            log = u'交易服务器登陆成功'
+            self.loginStatus = True
+            self.gateway.mdConnected = True
+            
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易服务器登录完成'
+            self.gateway.onLog(log)
+            
+            # 确认结算信息
+            req = {}
+            req['BrokerID'] = self.brokerID
+            req['InvestorID'] = self.userID
+            self.reqID += 1
+            self.reqSettlementInfoConfirm(req, self.reqID)              
+                
+        # 否则，推送错误信息
         else:
-            log = u'登陆回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
-        
-        self.getSettlement()    # 登录完成后立即查询结算信息
+            err = VtErrorData()
+            err.gatewayName = self.gateway
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
-        event = Event(type_=EVENT_LOG)
-        
+        # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
-            log = u'交易服务器登出成功'
+            self.loginStatus = False
+            self.gateway.tdConnected = False
+            
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易服务器登出完成'
+            self.gateway.onLog(log)
+                
+        # 否则，推送错误信息
         else:
-            log = u'登出回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, n, last):
@@ -302,10 +343,11 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
-        event = Event(type_=EVENT_LOG)
-        log = u' 发单错误回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)   
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspParkedOrderInsert(self, data, error, n, last):
@@ -320,10 +362,11 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
-        event = Event(type_=EVENT_LOG)
-        log = u'撤单错误回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspQueryMaxOrderVolume(self, data, error, n, last):
@@ -333,14 +376,15 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
-        event = Event(type_=EVENT_LOG)
-        log = u'结算信息确认完成'
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'结算信息确认完成'
+        self.gateway.onLog(log)
         
-        event = Event(type_=EVENT_TDLOGIN)
-        self.__eventEngine.put(event)    
-    
+        # 查询合约代码
+        self.reqID += 1
+        self.reqQryInstrument({}, self.reqID)
+        
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrder(self, data, error, n, last):
         """"""
@@ -415,15 +459,7 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
         """投资者查询回报"""
-        if error['ErrorID'] == 0:
-            event = Event(type_=EVENT_INVESTOR)
-            event.dict_['data'] = data
-            self.__eventEngine.put(event)
-        else:
-            event = Event(type_=EVENT_LOG)
-            log = u'合约投资者回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-            event.dict_['log'] = log
-            self.__eventEngine.put(event)
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryTradingCode(self, data, error, n, last):
@@ -477,13 +513,7 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
         """查询结算信息回报"""
-        if last:
-            event = Event(type_=EVENT_LOG)
-            log = u'结算信息查询完成'
-            event.dict_['log'] = log
-            self.__eventEngine.put(event)
-            
-            self.confirmSettlement()    # 查询完成后立即确认结算信息
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):
@@ -583,27 +613,40 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
         """错误回报"""
-        event = Event(type_=EVENT_LOG)
-        log = u'交易错误回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRtnOrder(self, data):
         """报单回报"""
         # 更新最大报单编号
         newref = data['OrderRef']
-        self.__orderref = max(self.__orderref, int(newref))
+        self.orderRef = max(self.orderRef, int(newref))
         
-        # 常规报单事件
-        event1 = Event(type_=EVENT_ORDER)
-        event1.dict_['data'] = data
-        self.__eventEngine.put(event1)
+        # 创建报单数据对象
+        order = VtOrderData()
+        order.gatewayName = self.gatewayName
         
-        # 特定合约行情事件
-        event2 = Event(type_=(EVENT_ORDER_ORDERREF+data['OrderRef']))
-        event2.dict_['data'] = data
-        self.__eventEngine.put(event2)
+        # 保存代码和报单号
+        order.symbol = data['InstrumentID']
+        order.vtSymbol = '.'.join([self.gatewayName, order.symbol])
+        
+        order.orderID = data['OrderRef']
+        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+        
+        # 方向
+        if data['Direction'] == '0':
+            order.direction = DIRECTION_LONG
+        elif data['Direction'] == '1':
+            order.direction = DIRECTION_SHORT
+        else:
+            order.direction = DIRECTION_UNKNOWN
+            
+        # 多空
+        if data['']
     
     #----------------------------------------------------------------------
     def onRtnTrade(self, data):
@@ -621,18 +664,20 @@ class DemoTdApi(TdApi):
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
-        event = Event(type_=EVENT_LOG)
-        log = u'发单错误回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
-        event = Event(type_=EVENT_LOG)
-        log = u'撤单错误回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-        event.dict_['log'] = log
-        self.__eventEngine.put(event)
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRtnInstrumentStatus(self, data):
