@@ -9,16 +9,36 @@ EMPTY_INT = 0
 EMPTY_FLOAT = 0.0
 
 # 方向常量
-DIRECTION_NONE = 'none'
-DIRECTION_LONG = 'long'
-DIRECTION_SHORT = 'short'
-DIRECTION_UNKNOWN = 'unknown'
+DIRECTION_NONE = u'无方向'
+DIRECTION_LONG = u'多'
+DIRECTION_SHORT = u'空'
+DIRECTION_UNKNOWN = u'未知'
+DIRECTION_NET = u'净'
 
 # 开平常量
-OFFSET_NONE = 'none'
-OFFSET_OPEN = 'open'
-OFFSET_CLOSE = 'close'
-OFFSET_UNKNOWN = 'unknown'
+OFFSET_NONE = u'无开平'
+OFFSET_OPEN = u'开仓'
+OFFSET_CLOSE = u'平仓'
+OFFSET_UNKNOWN = u'未知'
+
+# 状态常量
+STATUS_NOTTRADED = u'未成交'
+STATUS_PARTTRADED = u'部分成交'
+STATUS_ALLTRADED = u'全部成交'
+STATUS_CANCELLED = u'已撤销'
+STATUS_UNKNOWN = u'未知'
+
+# 合约类型常量
+PRODUCT_EQUITY = u'股票'
+PRODUCT_FUTURES = u'期货'
+PRODUCT_OPTION = u'期权'
+PRODUCT_INDEX = u'指数'
+PRODUCT_COMBINATION = u'组合'
+
+# 期权类型
+OPTION_CALL = u'看涨期权'
+OPTION_PUT = u'看跌期权'
+
 
 
 ########################################################################
@@ -105,6 +125,14 @@ class VtGateway(object):
         event1 = Event(type_=EVENT_LOG)
         event1.dict_['data'] = log
         self.eventEngine.put(event1)
+        
+    #----------------------------------------------------------------------
+    def onContract(self, contract):
+        """合约基础信息推送"""
+        # 通用事件
+        event1 = Event(type_=EVENT_CONTRACT)
+        event1.dict_['data'] = contract
+        self.eventEngine.put(event1)        
     
     #----------------------------------------------------------------------
     def connect(self):
@@ -208,8 +236,8 @@ class VtTradeData(VtBaseData):
         self.vtOrderID = EMPTY_STRING           # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
         
         # 成交相关
-        self.direction = EMPTY_STRING           # 成交方向
-        self.offset = EMPTY_STRING              # 成交开平仓
+        self.direction = EMPTY_UNICODE          # 成交方向
+        self.offset = EMPTY_UNICODE             # 成交开平仓
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
@@ -232,12 +260,12 @@ class VtOrderData(VtBaseData):
         self.vtOrderID = EMPTY_STRING           # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
         
         # 报单相关
-        self.direction = EMPTY_STRING           # 报单方向
-        self.offset = EMPTY_STRING              # 报单开平仓
+        self.direction = EMPTY_UNICODE          # 报单方向
+        self.offset = EMPTY_UNICODE             # 报单开平仓
         self.price = EMPTY_FLOAT                # 报单价格
         self.totalVolume = EMPTY_INT            # 报单总数量
         self.tradedVolume = EMPTY_INT           # 报单成交数量
-        self.status = EMPTY_STRING              # 报单状态
+        self.status = EMPTY_UNICODE             # 报单状态
         
         self.orderTime = EMPTY_STRING           # 发单时间
         self.cancelTime = EMPTY_STRING          # 撤单时间
@@ -281,7 +309,7 @@ class VtAccountData(VtBaseData):
         self.accountID = EMPTY_STRING           # 账户代码
         self.vtAccountID = EMPTY_STRING         # 账户在vt中的唯一代码，通常是 Gateway名.账户代码
         
-        # 代码相关
+        # 数值相关
         self.preBalance = EMPTY_FLOAT           # 昨日账户结算净值
         self.balance = EMPTY_FLOAT              # 账户净值
         self.available = EMPTY_FLOAT            # 可用资金
@@ -325,7 +353,17 @@ class VtContractData(VtBaseData):
         """Constructor"""
         super(VtBaseData, self).__init__()
         
+        self.symbol = EMPTY_STRING
+        self.vtSymbol = EMPTY_STRING
+        
+        self.productClass = EMPTY_STRING
+        self.size = EMPTY_INT
         self.priceTick = EMPTY_FLOAT
+        
+        # 期权相关
+        self.strikePrice = EMPTY_FLOAT
+        self.underlyingSymbol = EMPTY_STRING
+        self.optionType = EMPTY_UNICODE
 
 
 ########################################################################
@@ -337,12 +375,34 @@ class VtSubscribeReq:
         """Constructor"""
         self.symbol = EMPTY_STRING
         self.exchange = EMPTY_STRING
+
+
+########################################################################
+class VtOrderReq:
+    """发单时传入的对象类"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.symbol = EMPTY_STRING
         
+
+
+########################################################################
+class VtCancelOrderReq:
+    """撤单时传入的对象类"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.symbol = EMPTY_STRING
+        self.exchange = EMPTY_STRING
+        self.
         
     
     
-        
     
+
     
     
     
