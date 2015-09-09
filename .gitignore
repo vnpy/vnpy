@@ -33,3 +33,7 @@ Release/
 # word文档
 *.doc
 *.docx
+
+# 其他文件
+*.dump
+*.vssettings
