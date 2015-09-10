@@ -27,6 +27,7 @@ class CtpGateway(VtGateway):
     
 
 
+
 ########################################################################
 class CtpMdApi(MdApi):
     """CTP行情API实现"""
@@ -222,6 +223,7 @@ class CtpMdApi(MdApi):
             req['BrokerID'] = self.brokerID
             self.reqID += 1
             self.reqUserLogin(req, self.reqID)        
+
 
 
 ########################################################################
@@ -433,28 +435,63 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        if error['ErrorID'] == 0:
-            event = Event(type_=EVENT_POSITION)
-            event.dict_['data'] = data
-            self.__eventEngine.put(event)
-        else:
-            event = Event(type_=EVENT_LOG)
-            log = u'持仓查询回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-            event.dict_['log'] = log
-            self.__eventEngine.put(event)
+        pos = VtPositionData()
+        pos.gatewayName = self.gatewayName
+        
+        # 保存代码
+        pos.symbol = data['InstrumentID']
+        pos.vtSymbol = '.'.join([self.gatewayName, pos.symbol])   
+        
+        # 方向和持仓冻结数量
+        if data['PosiDirection'] == '1':
+            pos.direction = DIRECTION_NET
+            pos.frozen = data['LongFrozen']
+        if data['PosiDirection'] == '2':
+            pos.direction = DIRECTION_LONG
+            pos.frozen = data['LongFrozen']
+        elif data['PosiDirection'] == '3':
+            pos.direction = DIRECTION_SHORT      
+            pos.frozen = data['ShortFrozen']
+        
+        # 持仓量
+        pos.position = data['Position']
+        
+        # 持仓均价
+        if pos.position:
+            pos.price = data['PositionCost'] / pos.position
+        
+        # VT系统持仓名
+        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+        
+        # 推送
+        self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
-        if error['ErrorID'] == 0:
-            event = Event(type_=EVENT_ACCOUNT)
-            event.dict_['data'] = data
-            self.__eventEngine.put(event)
-        else:
-            event = Event(type_=EVENT_LOG)
-            log = u'账户查询回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-            event.dict_['log'] = log
-            self.__eventEngine.put(event)
+        account = VtAccountData()
+        account.gatewayName = self.gatewayName
+        
+        # 账户代码
+        account.accountID = data['AccountID']
+        account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
+        
+        # 数值相关
+        account.preBalance = data['PreBalance']
+        account.available = data['Available']
+        account.commission = data['Commission']
+        account.margin = data['CurrMargin']
+        account.closeProfit = data['CloseProfit']
+        account.positionProfit = data['PositionProfit']
+        
+        # 这里的balance和快期中的账户不确定是否一样，需要测试
+        account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
+                           data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
+                           data['ClostProfit'] + data['PositionProfit'] + data['CashIn'] -
+                           data['Commission'])
+        
+        # 推送
+        self.gateway.onAccount(account)
     
     #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
@@ -488,22 +525,35 @@ class CtpTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
-        """
-        合约查询回报
-        由于该回报的推送速度极快，因此不适合全部存入队列中处理，
-        选择先储存在一个本地字典中，全部收集完毕后再推送到队列中
-        （由于耗时过长目前使用其他进程读取）
-        """
-        if error['ErrorID'] == 0:
-            event = Event(type_=EVENT_INSTRUMENT)
-            event.dict_['data'] = data
-            event.dict_['last'] = last
-            self.__eventEngine.put(event)
-        else:
-            event = Event(type_=EVENT_LOG)
-            log = u'合约投资者回报，错误代码：' + unicode(error['ErrorID']) + u',' + u'错误信息：' + error['ErrorMsg'].decode('gbk')
-            event.dict_['log'] = log
-            self.__eventEngine.put(event)   
+        """合约查询回报"""
+        contract = VtContractData()
+        contract.gatewayName = self.gatewayName
+        
+        contract.symbol = data['InstrumentID']
+        contract.vtSymbol = '.'.join([self.gatewayName, contract.symbol])
+        
+        # 合约数值
+        contract.size = data['VolumeMultiple']
+        contract.priceTick = data['PriceTick']
+        contract.strikePrice = data['StrikePrice']
+        contract.underlyingSymbol = data['UnderlyingInstrID']
+        
+        # 合约类型
+        if data['ProductClass'] == '1':
+            contract.productClass == PRODUCT_FUTURES
+        elif data['ProductClass'] == '2':
+            contract.productClass = PRODUCT_OPTION
+        elif data['ProductClass'] == '3':
+            contract.productClass = PRODUCT_COMBINATION
+        
+        # 期权类型
+        if data['OptionType'] == '1':
+            contract.optionType = OPTION_CALL
+        elif data['OptionType'] == '2':
+            contract.optionType = OPTION_PUT
+        
+        # 推送
+        self.gateway.onContract(contract)
     
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
@@ -645,21 +695,78 @@ class CtpTdApi(TdApi):
         else:
             order.direction = DIRECTION_UNKNOWN
             
-        # 多空
-        if data['']
+        # 开平
+        if data['CombOffsetFlag'] == '0':
+            order.offset = OFFSET_OPEN
+        elif data['CombOffsetFlag'] == '1':
+            order.offset = OFFSET_CLOSE
+        else:
+            order.offset = OFFSET_UNKNOWN
+            
+        # 状态
+        if data['OrderStatus'] == '0':
+            order.status = STATUS_ALLTRADED
+        elif data['OrderStatus'] == '1':
+            order.status = STATUS_PARTTRADED
+        elif data['OrderStatus'] == '3':
+            order.status = STATUS_NOTTRADED
+        elif data['OrderStatus'] == '5':
+            order.status = STATUS_CANCELLED
+        else:
+            order.status = STATUS_UNKNOWN
+            
+        # 价格、报单量等数值
+        order.price = data['LimitPrice']
+        order.totalVolume = data['VolumeTotalOriginal']
+        order.tradedVolume = data['VolumeTraded']
+        order.orderTime = data['InsertTime']
+        order.cancelTime = data['CancelTime']
+        order.frontID = data['FrontID']
+        order.sessionID = data['SessionID']
+        
+        # 推送
+        self.gateway.onOrder(order)
     
     #----------------------------------------------------------------------
     def onRtnTrade(self, data):
         """成交回报"""
-        # 常规成交事件
-        event1 = Event(type_=EVENT_TRADE)
-        event1.dict_['data'] = data
-        self.__eventEngine.put(event1)
+        # 创建报单数据对象
+        trade = VtTradeData()
+        order.gatewayName = self.gatewayName
         
-        # 特定合约成交事件
-        event2 = Event(type_=(EVENT_TRADE_CONTRACT+data['InstrumentID']))
-        event2.dict_['data'] = data
-        self.__eventEngine.put(event2)
+        # 保存代码和报单号
+        trade.symbol = data['InstrumentID']
+        trade.vtSymbol = '.'.join([self.gatewayName, trade.symbol])
+        
+        trade.tradeID = data['TradeID']
+        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+        
+        trade.orderID = data['OrderRef']
+        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
+        
+        # 方向
+        if data['Direction'] == '0':
+            trade.direction = DIRECTION_LONG
+        elif data['Direction'] == '1':
+            trade.direction = DIRECTION_SHORT
+        else:
+            trade.direction = DIRECTION_UNKNOWN
+            
+        # 开平
+        if data['OffsetFlag'] == '0':
+            trade.offset = OFFSET_OPEN
+        elif data['OffsetFlag'] == '1':
+            trade.offset = OFFSET_CLOSE
+        else:
+            trade.offset = OFFSET_UNKNOW
+            
+        # 价格、报单量等数值
+        trade.price = data['Price']
+        trade.volume = data['Volume']
+        trade.tradeTime = data['TradeTime']
+        
+        # 推送
+        self.gateway.onTrade(trade)
     
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
@@ -875,53 +982,60 @@ class CtpTdApi(TdApi):
         pass
     
     #----------------------------------------------------------------------
-    def login(self, address, userid, password, brokerid):
-        """连接服务器"""
-        self.__userid = userid
-        self.__password = password
-        self.__brokerid = brokerid
-        
-        # 数据重传模式设为从本日开始
-        self.subscribePrivateTopic(0)       
-        self.subscribePublicTopic(0)            
-        
-        # 注册服务器地址
-        self.registerFront(address)
-        
-        # 初始化连接，成功会调用onFrontConnected
-        self.init()    
-        
+    def connect(self):
+        """初始化连接"""
+        # 如果尚未建立服务器连接，则进行连接
+        if not self.connectionStatus:
+            # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
+            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            if not os.path.exists(path):
+                os.makedirs(path)
+            self.createFtdcTraderApi(path)
+            
+            # 注册服务器地址
+            self.registerFront(self.address)
+            
+            # 初始化连接，成功会调用onFrontConnected
+            self.init()
+            
+        # 若已经连接但尚未登录，则进行登录
+        else:
+            if not self.loginStatus:
+                self.login()    
+    
     #----------------------------------------------------------------------
-    def getInstrument(self):
-        """查询合约"""
-        self.__reqid = self.__reqid + 1
-        self.reqQryInstrument({}, self.__reqid)
+    def login(self):
+        """连接服务器"""
+        # 如果填入了用户名密码等，则登录
+        if self.userID and self.password and self.brokerID:
+            req = {}
+            req['UserID'] = self.userID
+            req['Password'] = self.password
+            req['BrokerID'] = self.brokerID
+            self.reqID += 1
+            self.reqUserLogin(req, self.reqID)   
         
     #----------------------------------------------------------------------
     def getAccount(self):
         """查询账户"""
-        self.__reqid = self.__reqid + 1
-        self.reqQryTradingAccount({}, self.__reqid)
-        
-    #----------------------------------------------------------------------
-    def getInvestor(self):
-        """查询投资者"""
-        self.__reqid = self.__reqid + 1
-        self.reqQryInvestor({}, self.__reqid)
+        self.reqID += 1
+        self.reqQryTradingAccount({}, self.reqID)
         
     #----------------------------------------------------------------------
     def getPosition(self):
         """查询持仓"""
-        self.__reqid = self.__reqid + 1
+        self.reqID += 1
         req = {}
-        req['BrokerID'] = self.__brokerid
-        req['InvestorID'] = self.__userid
-        self.reqQryInvestorPosition(req, self.__reqid)
+        req['BrokerID'] = self.brokerID
+        req['InvestorID'] = self.userID
+        self.reqQryInvestorPosition(req, self.reqID)
         
     #----------------------------------------------------------------------
-    def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset):
+    def sendOrder(self, orderReq):
         """发单"""
-        self.__reqid = self.__reqid + 1
+        self.reqID += 1
+        self.orderRef += 1
+        
         req = {}
         
         req['InstrumentID'] = instrumentid
@@ -931,12 +1045,14 @@ class CtpTdApi(TdApi):
         req['Direction'] = direction
         req['CombOffsetFlag'] = offset
         
-        self.__orderref = self.__orderref + 1
-        req['OrderRef'] = str(self.__orderref)
         
-        req['InvestorID'] = self.__userid
-        req['UserID'] = self.__userid
-        req['BrokerID'] = self.__brokerid
+        
+        req['OrderRef'] = str(self.orderRef)
+        
+        req['InvestorID'] = self.userID
+        req['UserID'] = self.userID
+        req['BrokerID'] = self.brokerID
+        
         req['CombHedgeFlag'] = defineDict['THOST_FTDC_HF_Speculation']       # 投机单
         req['ContingentCondition'] = defineDict['THOST_FTDC_CC_Immediately'] # 立即发单
         req['ForceCloseReason'] = defineDict['THOST_FTDC_FCC_NotForceClose'] # 非强平
@@ -945,47 +1061,28 @@ class CtpTdApi(TdApi):
         req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']              # 任意成交量
         req['MinVolume'] = 1                                                 # 最小成交量为1
         
-        self.reqOrderInsert(req, self.__reqid)
+        self.reqOrderInsert(req, self.reqID)
         
         # 返回订单号，便于某些算法进行动态管理
-        return self.__orderref
+        return self.orderRef
     
     #----------------------------------------------------------------------
-    def cancelOrder(self, instrumentid, exchangeid, orderref, frontid, sessionid):
+    def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        self.__reqid = self.__reqid + 1
+        self.reqID += 1
+        self.orderRef += 1
+        
         req = {}
         
         req['InstrumentID'] = instrumentid
         req['ExchangeID'] = exchangeid
         req['OrderRef'] = orderref
+        
         req['FrontID'] = frontid
         req['SessionID'] = sessionid   
         
         req['ActionFlag'] = defineDict['THOST_FTDC_AF_Delete']
-        req['BrokerID'] = self.__brokerid
-        req['InvestorID'] = self.__userid
+        req['BrokerID'] = self.brokerID
+        req['InvestorID'] = self.userID
         
-        self.reqOrderAction(req, self.__reqid)
-    
-    #----------------------------------------------------------------------
-    def getSettlement(self):
-        """查询结算信息"""
-        self.__reqid = self.__reqid + 1
-        req = {}
-        
-        req['BrokerID'] = self.__brokerid
-        req['InvestorID'] = self.__userid
-        
-        self.reqQrySettlementInfo(req, self.__reqid)
-        
-    #----------------------------------------------------------------------
-    def confirmSettlement(self):
-        """确认结算信息"""
-        self.__reqid = self.__reqid + 1
-        req = {}
-        
-        req['BrokerID'] = self.__brokerid
-        req['InvestorID'] = self.__userid
-        
-        self.reqSettlementInfoConfirm(req, self.__reqid)    
+        self.reqOrderAction(req, self.reqID)
