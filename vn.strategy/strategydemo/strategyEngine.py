@@ -1,11 +1,18 @@
 # encoding: UTF-8
 
 from datetime import datetime
+print u'StragegyEngine.py import datetime.datetime success'
 
-from pymongo import Connection
+from pymongo import  MongoClient as Connection
+print u'demoStrategy.py import pymongo.Connection success'
+
 from pymongo.errors import *
+print u'demoStrategy.py import pymongo.errors.* success'
 
 from eventEngine import *
+print u'demoStrategy.py import eventEngine.* success'
+
+
 
 
 # 常量定义

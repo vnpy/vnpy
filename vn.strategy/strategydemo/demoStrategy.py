@@ -2,15 +2,21 @@
 
 # 首先写系统内置模块
 import sys
+print u'demoStrategy.py import sys success'
 from datetime import datetime, timedelta, time
+print u'demoStrategy.py import datetime.datetime/timedelta/time success'
 from time import sleep
+print u'demoStrategy.py import time.sleep success'
 
 # 然后是第三方库模块（如PyQt4等）
 import sip
+print u'demoStrategy.py import sip success'
 from PyQt4 import QtCore
+print u'demoStrategy.py import PyQt4.QtCore success'
 
 # 然后是自己编写的模块
 from demoEngine import MainEngine
+print u'demoStrategy.py import demoEngine.MainEngine success'
 from strategyEngine import *
 
 
@@ -265,9 +271,12 @@ def main():
     """运行在CMD中的演示程度"""
     # 创建PyQt4应用对象
     app = QtCore.QCoreApplication(sys.argv)
-    
+    print u'demoStrategy.py Main call QtCore.QCoreApplication(sys.argv) success'
+
     # 创建主引擎对象
     me = MainEngine()
+    print u'demoStrategy.py Main call MainEngine() success'
+
     
     # 注册事件监听
     me.ee.register(EVENT_LOG, print_log)

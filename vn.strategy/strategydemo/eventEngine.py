@@ -2,13 +2,20 @@
 
 # 系统模块
 from Queue import Queue, Empty
+print u'eventEngine.py import Queue.Queue/Empty success'
+
 from threading import Thread
+print u'eventEngine.py import threading.Thread success'
 
 # 第三方模块
 from PyQt4.QtCore import QTimer
+print u'eventEngine.py import PyQt4.QtCore.QTimer success'
 
 # 自己开发的模块
 from eventType import *
+print u'eventEngine.py import eventType.* success'
+
+
 
 
 ########################################################################

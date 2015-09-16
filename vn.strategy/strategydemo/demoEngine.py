@@ -27,10 +27,14 @@ class MainEngine:
     def __init__(self):
         """Constructor"""
         self.ee = EventEngine()         # 创建事件驱动引擎
-        
+        print u'demoEngine.MainEngine create EventEngine() success'
+
         self.md = DemoMdApi(self.ee)    # 创建API接口
+        print u'demoEngine.MainEngine create DemoMdApi() success'
+
         self.td = DemoTdApi(self.ee)
-        
+        print u'demoEngine.MainEngine create DemoTdApi() success'
+
         self.ee.start()                 # 启动事件驱动引擎
         
         # 循环查询持仓和账户相关

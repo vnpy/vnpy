@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pymongo import Connection
+from pymongo import  MongoClient as Connection
 from pymongo.errors import *
 
 from eventEngine import *
