@@ -23,7 +23,7 @@ from strategyEngine import *
 
 ########################################################################
 class SimpleEmaStrategy(StrategyTemplate):
-    """简单双指数移动均线EMA策略"""
+    """简单双指数移动均线EMA演示策略"""
 
     #----------------------------------------------------------------------
     def __init__(self, name, symbol, engine):
@@ -31,8 +31,10 @@ class SimpleEmaStrategy(StrategyTemplate):
         super(SimpleEmaStrategy, self).__init__(name, symbol, engine)
         
         # 策略在外部设置的参数
-        self.fastAlpha = 0.2    # 快速EMA的参数
-        self.slowAlpha = 0.05   # 慢速EMA的参数  
+        #self.fastAlpha = 0.2    # 快速EMA的参数
+        self.fastAlpha = 0.2
+        #self.slowAlpha = 0.05   # 慢速EMA的参数
+        self.fastAlpha = 0.05
         
         # 最新TICK数据（市场报价）
         self.currentTick = None
@@ -88,56 +90,75 @@ class SimpleEmaStrategy(StrategyTemplate):
     #----------------------------------------------------------------------
     def initStrategy(self, startDate=None):
         """初始化"""
-        td = timedelta(days=3)     # 读取3天的历史TICK数据
+        self.engine.writeLog(u'读取3天的历史TICK数据')
+        td = timedelta(days=1)
+
         
         if startDate:
-            cx = self.engine.loadTick(self.symbol, startDate-td)
+            #读取历史Tick数据
+            #cx = self.engine.loadTickFromMongo(self.symbol, startDate-td)
+            historyStartDate=self.engine.getMysqlDeltaDate(self.symbol,startDate,3)
+            cx = self.engine.loadTickFromMysql(self.symbol, historyStartDate, startDate-td)
+
         else:
             today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-            cx = self.engine.loadTick(self.symbol, today-td)  
-        
+            #cx = self.engine.loadTickFromMongo(self.symbol, today-td)
+            historyStartDate=self.engine.getMysqlDeltaDate(self.symbol,today,3)
+            cx = self.engine.loadTickFromMysql(self.symbol, historyStartDate,today-td)
+
         if cx:
             for data in cx:
+                #InstrumentID, UpdateTime, LastPrice, Volume, OpenInterest, BidPrice1, BidVolume1, AskPrice1, AskVolume1 = data
+
                 tick = Tick(data['InstrumentID'])
-            
-                tick.openPrice = data['OpenPrice']
-                tick.highPrice = data['HighestPrice']
-                tick.lowPrice = data['LowestPrice']
-                tick.lastPrice = data['LastPrice']
+                #tick = Tick(InstrumentID)
+
+                #tick.openPrice = data['OpenPrice']
+                #tick.highPrice = data['HighestPrice']
+                #tick.lowPrice = data['LowestPrice']
+                tick.lastPrice = float(data['LastPrice'])
+                #tick.lastPrice = LastPrice
                 
                 tick.volume = data['Volume']
                 tick.openInterest = data['OpenInterest']
+                #tick.volume = Volume
+                #tick.openInterest = OpenInterest
                 
-                tick.upperLimit = data['UpperLimitPrice']
-                tick.lowerLimit = data['LowerLimitPrice']
+                #tick.upperLimit = data['UpperLimitPrice']
+                #tick.lowerLimit = data['LowerLimitPrice']
                 
                 tick.time = data['UpdateTime']
-                tick.ms = data['UpdateMillisec']
+                #tick.ms = data['UpdateMillisec']
+                #tick.time = UpdateTime
                 
-                tick.bidPrice1 = data['BidPrice1']
-                tick.bidPrice2 = data['BidPrice2']
-                tick.bidPrice3 = data['BidPrice3']
-                tick.bidPrice4 = data['BidPrice4']
-                tick.bidPrice5 = data['BidPrice5']
-                
-                tick.askPrice1 = data['AskPrice1']
-                tick.askPrice2 = data['AskPrice2']
-                tick.askPrice3 = data['AskPrice3']
-                tick.askPrice4 = data['AskPrice4']
-                tick.askPrice5 = data['AskPrice5']   
+                tick.bidPrice1 =float(data['BidPrice1'])
+                #tick.bidPrice2 = data['BidPrice2']
+                #tick.bidPrice3 = data['BidPrice3']
+                #tick.bidPrice4 = data['BidPrice4']
+                #tick.bidPrice5 = data['BidPrice5']
+                #tick.bidPrice1 = BidPrice1
+
+                tick.askPrice1 = float(data['AskPrice1'])
+                #tick.askPrice2 = data['AskPrice2']
+                #tick.askPrice3 = data['AskPrice3']
+                #tick.askPrice4 = data['AskPrice4']
+                #tick.askPrice5 = data['AskPrice5']
+                #tick.askPrice1 = AskPrice1
                 
                 tick.bidVolume1 = data['BidVolume1']
-                tick.bidVolume2 = data['BidVolume2']
-                tick.bidVolume3 = data['BidVolume3']
-                tick.bidVolume4 = data['BidVolume4']
-                tick.bidVolume5 = data['BidVolume5']
-                
+                #tick.bidVolume2 = data['BidVolume2']
+                #tick.bidVolume3 = data['BidVolume3']
+                #tick.bidVolume4 = data['BidVolume4']
+                #tick.bidVolume5 = data['BidVolume5']
+                #tick.bidVolume1 = BidVolume1
+
                 tick.askVolume1 = data['AskVolume1']
-                tick.askVolume2 = data['AskVolume2']
-                tick.askVolume3 = data['AskVolume3']
-                tick.askVolume4 = data['AskVolume4']
-                tick.askVolume5 = data['AskVolume5']   
-                
+                #tick.askVolume2 = data['AskVolume2']
+                #tick.askVolume3 = data['AskVolume3']
+                #tick.askVolume4 = data['AskVolume4']
+                #tick.askVolume5 = data['AskVolume5']
+                #tick.askVolume1 = AskVolume1
+
                 self.onTick(tick)
                 
         self.initCompleted = True
@@ -151,8 +172,9 @@ class SimpleEmaStrategy(StrategyTemplate):
         self.currentTick = tick
         
         # 首先生成datetime.time格式的时间（便于比较）
-        ticktime = self.strToTime(tick.time, tick.ms)
-        
+        #ticktime = self.strToTime(tick.time, tick.ms)
+        ticktime = tick.time
+
         # 假设是收到的第一个TICK
         if self.barOpen == 0:
             # 初始化新的K线数据
@@ -282,11 +304,11 @@ def main():
     me.ee.register(EVENT_LOG, print_log)
     
     # 登录
-    userid = ''
-    password = ''
-    brokerid = ''
-    mdAddress = ''
-    tdAddress = ''
+    userid = '033513'
+    password = 'jiajia'
+    brokerid = '9999'
+    mdAddress = 'tcp://180.168.146.187:10010'
+    tdAddress = 'tcp://180.168.146.187:10000'
     
     me.login(userid, password, brokerid, mdAddress, tdAddress)
     
