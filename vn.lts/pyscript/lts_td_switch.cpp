@@ -34,6 +34,12 @@ case ONRSPUSERLOGOUT:
 	break;
 }
 
+case ONRSPFETCHAUTHRANDCODE:
+{
+	this->processRspFetchAuthRandCode(task);
+	break;
+}
+
 case ONRSPORDERINSERT:
 {
 	this->processRspOrderInsert(task);
@@ -55,102 +61,6 @@ case ONRSPUSERPASSWORDUPDATE:
 case ONRSPTRADINGACCOUNTPASSWORDUPDATE:
 {
 	this->processRspTradingAccountPasswordUpdate(task);
-	break;
-}
-
-case ONRSPQRYEXCHANGE:
-{
-	this->processRspQryExchange(task);
-	break;
-}
-
-case ONRSPQRYINSTRUMENT:
-{
-	this->processRspQryInstrument(task);
-	break;
-}
-
-case ONRSPQRYINVESTOR:
-{
-	this->processRspQryInvestor(task);
-	break;
-}
-
-case ONRSPQRYTRADINGCODE:
-{
-	this->processRspQryTradingCode(task);
-	break;
-}
-
-case ONRSPQRYTRADINGACCOUNT:
-{
-	this->processRspQryTradingAccount(task);
-	break;
-}
-
-case ONRSPQRYDEPTHMARKETDATA:
-{
-	this->processRspQryDepthMarketData(task);
-	break;
-}
-
-case ONRSPQRYBONDINTEREST:
-{
-	this->processRspQryBondInterest(task);
-	break;
-}
-
-case ONRSPQRYMARKETRATIONINFO:
-{
-	this->processRspQryMarketRationInfo(task);
-	break;
-}
-
-case ONRSPQRYINSTRUMENTCOMMISSIONRATE:
-{
-	this->processRspQryInstrumentCommissionRate(task);
-	break;
-}
-
-case ONRSPQRYETFINSTRUMENT:
-{
-	this->processRspQryETFInstrument(task);
-	break;
-}
-
-case ONRSPQRYETFBASKET:
-{
-	this->processRspQryETFBasket(task);
-	break;
-}
-
-case ONRSPQRYOFINSTRUMENT:
-{
-	this->processRspQryOFInstrument(task);
-	break;
-}
-
-case ONRSPQRYSFINSTRUMENT:
-{
-	this->processRspQrySFInstrument(task);
-	break;
-}
-
-case ONRSPQRYORDER:
-{
-	this->processRspQryOrder(task);
-	break;
-}
-
-case ONRSPQRYTRADE:
-{
-	this->processRspQryTrade(task);
-	break;
-}
-
-case ONRSPQRYINVESTORPOSITION:
-{
-	this->processRspQryInvestorPosition(task);
 	break;
 }
 
@@ -202,21 +112,9 @@ case ONRTNFUNDINBYBANK:
 	break;
 }
 
-case ONRSPQRYFUNDTRANSFERSERIAL:
-{
-	this->processRspQryFundTransferSerial(task);
-	break;
-}
-
 case ONRSPFUNDINTERTRANSFER:
 {
 	this->processRspFundInterTransfer(task);
-	break;
-}
-
-case ONRSPQRYFUNDINTERTRANSFERSERIAL:
-{
-	this->processRspQryFundInterTransferSerial(task);
 	break;
 }
 

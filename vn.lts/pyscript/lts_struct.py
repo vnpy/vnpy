@@ -17,6 +17,8 @@ structDict = {}
 
 
 
+
+
 #响应信息
 CSecurityFtdcRspInfoField = {}
 #错误代码
@@ -355,6 +357,12 @@ CSecurityFtdcTradingAccountField["SSStockValue"] = "float"
 CSecurityFtdcTradingAccountField["CreditRatio"] = "float"
 #行权冻结资金
 CSecurityFtdcTradingAccountField["FrozenExecCash"] = "float"
+#期权买入资金(SSE)
+CSecurityFtdcTradingAccountField["SSEOptionsBuyAmount"] = "float"
+#期权买入冻结资金(SSE)
+CSecurityFtdcTradingAccountField["SSEOptionsBuyFrozenAmount"] = "float"
+#结算保证金总额
+CSecurityFtdcTradingAccountField["SettleMargin"] = "float"
 structDict['CSecurityFtdcTradingAccountField'] = CSecurityFtdcTradingAccountField
 
 
@@ -392,7 +400,7 @@ CSecurityFtdcDepthMarketDataField["HighestPrice"] = "float"
 #最低价
 CSecurityFtdcDepthMarketDataField["LowestPrice"] = "float"
 #数量
-CSecurityFtdcDepthMarketDataField["Volume"] = "int"
+CSecurityFtdcDepthMarketDataField["Volume"] = "float"
 #成交金额
 CSecurityFtdcDepthMarketDataField["Turnover"] = "float"
 #持仓量
@@ -409,6 +417,12 @@ CSecurityFtdcDepthMarketDataField["LowerLimitPrice"] = "float"
 CSecurityFtdcDepthMarketDataField["PreDelta"] = "float"
 #今虚实度
 CSecurityFtdcDepthMarketDataField["CurrDelta"] = "float"
+#昨日基金净值
+CSecurityFtdcDepthMarketDataField["PreIOPV"] = "float"
+#基金净值
+CSecurityFtdcDepthMarketDataField["IOPV"] = "float"
+#动态参考价格
+CSecurityFtdcDepthMarketDataField["AuctionPrice"] = "float"
 #最后修改时间
 CSecurityFtdcDepthMarketDataField["UpdateTime"] = "string"
 #最后修改毫秒
@@ -416,47 +430,51 @@ CSecurityFtdcDepthMarketDataField["UpdateMillisec"] = "int"
 #申买价一
 CSecurityFtdcDepthMarketDataField["BidPrice1"] = "float"
 #申买量一
-CSecurityFtdcDepthMarketDataField["BidVolume1"] = "int"
+CSecurityFtdcDepthMarketDataField["BidVolume1"] = "float"
 #申卖价一
 CSecurityFtdcDepthMarketDataField["AskPrice1"] = "float"
 #申卖量一
-CSecurityFtdcDepthMarketDataField["AskVolume1"] = "int"
+CSecurityFtdcDepthMarketDataField["AskVolume1"] = "float"
 #申买价二
 CSecurityFtdcDepthMarketDataField["BidPrice2"] = "float"
 #申买量二
-CSecurityFtdcDepthMarketDataField["BidVolume2"] = "int"
+CSecurityFtdcDepthMarketDataField["BidVolume2"] = "float"
 #申卖价二
 CSecurityFtdcDepthMarketDataField["AskPrice2"] = "float"
 #申卖量二
-CSecurityFtdcDepthMarketDataField["AskVolume2"] = "int"
+CSecurityFtdcDepthMarketDataField["AskVolume2"] = "float"
 #申买价三
 CSecurityFtdcDepthMarketDataField["BidPrice3"] = "float"
 #申买量三
-CSecurityFtdcDepthMarketDataField["BidVolume3"] = "int"
+CSecurityFtdcDepthMarketDataField["BidVolume3"] = "float"
 #申卖价三
 CSecurityFtdcDepthMarketDataField["AskPrice3"] = "float"
 #申卖量三
-CSecurityFtdcDepthMarketDataField["AskVolume3"] = "int"
+CSecurityFtdcDepthMarketDataField["AskVolume3"] = "float"
 #申买价四
 CSecurityFtdcDepthMarketDataField["BidPrice4"] = "float"
 #申买量四
-CSecurityFtdcDepthMarketDataField["BidVolume4"] = "int"
+CSecurityFtdcDepthMarketDataField["BidVolume4"] = "float"
 #申卖价四
 CSecurityFtdcDepthMarketDataField["AskPrice4"] = "float"
 #申卖量四
-CSecurityFtdcDepthMarketDataField["AskVolume4"] = "int"
+CSecurityFtdcDepthMarketDataField["AskVolume4"] = "float"
 #申买价五
 CSecurityFtdcDepthMarketDataField["BidPrice5"] = "float"
 #申买量五
-CSecurityFtdcDepthMarketDataField["BidVolume5"] = "int"
+CSecurityFtdcDepthMarketDataField["BidVolume5"] = "float"
 #申卖价五
 CSecurityFtdcDepthMarketDataField["AskPrice5"] = "float"
 #申卖量五
-CSecurityFtdcDepthMarketDataField["AskVolume5"] = "int"
+CSecurityFtdcDepthMarketDataField["AskVolume5"] = "float"
 #当日均价
 CSecurityFtdcDepthMarketDataField["AveragePrice"] = "float"
 #业务日期
 CSecurityFtdcDepthMarketDataField["ActionDay"] = "string"
+#交易阶段
+CSecurityFtdcDepthMarketDataField["TradingPhase"] = "string"
+#开仓限制
+CSecurityFtdcDepthMarketDataField["OpenRestriction"] = "string"
 structDict['CSecurityFtdcDepthMarketDataField'] = CSecurityFtdcDepthMarketDataField
 
 
@@ -498,7 +516,7 @@ CSecurityFtdcInvestorPositionDetailField["OpenDate"] = "string"
 #成交编号
 CSecurityFtdcInvestorPositionDetailField["TradeID"] = "string"
 #数量
-CSecurityFtdcInvestorPositionDetailField["Volume"] = "int"
+CSecurityFtdcInvestorPositionDetailField["Volume"] = "float"
 #开仓价
 CSecurityFtdcInvestorPositionDetailField["OpenPrice"] = "float"
 #交易日
@@ -516,7 +534,7 @@ CSecurityFtdcInvestorPositionDetailField["LastSettlementPrice"] = "float"
 #结算价
 CSecurityFtdcInvestorPositionDetailField["SettlementPrice"] = "float"
 #平仓量
-CSecurityFtdcInvestorPositionDetailField["CloseVolume"] = "int"
+CSecurityFtdcInvestorPositionDetailField["CloseVolume"] = "float"
 #平仓金额
 CSecurityFtdcInvestorPositionDetailField["CloseAmount"] = "float"
 #过户费
@@ -528,11 +546,11 @@ CSecurityFtdcInvestorPositionDetailField["Commission"] = "float"
 #AccountID
 CSecurityFtdcInvestorPositionDetailField["AccountID"] = "string"
 #质押入库数量
-CSecurityFtdcInvestorPositionDetailField["PledgeInPosition"] = "int"
+CSecurityFtdcInvestorPositionDetailField["PledgeInPosition"] = "float"
 #质押入库冻结数量
-CSecurityFtdcInvestorPositionDetailField["PledgeInFrozenPosition"] = "int"
+CSecurityFtdcInvestorPositionDetailField["PledgeInFrozenPosition"] = "float"
 #正回购使用的标准券数量
-CSecurityFtdcInvestorPositionDetailField["RepurchasePosition"] = "int"
+CSecurityFtdcInvestorPositionDetailField["RepurchasePosition"] = "float"
 #融资融券金额
 CSecurityFtdcInvestorPositionDetailField["Amount"] = "float"
 #标的合约代码
@@ -561,8 +579,8 @@ CSecurityFtdcMarketRationInfoField["BrokerID"] = "string"
 CSecurityFtdcMarketRationInfoField["InvestorID"] = "string"
 #交易所代码
 CSecurityFtdcMarketRationInfoField["ExchangeID"] = "string"
-#可配售手数
-CSecurityFtdcMarketRationInfoField["RationVolume"] = "int"
+#可配售数量
+CSecurityFtdcMarketRationInfoField["RationVolume"] = "float"
 structDict['CSecurityFtdcMarketRationInfoField'] = CSecurityFtdcMarketRationInfoField
 
 
@@ -596,6 +614,8 @@ CSecurityFtdcInstrumentCommissionRateField["TradeFeeByVolume"] = "float"
 CSecurityFtdcInstrumentCommissionRateField["MarginByMoney"] = "float"
 #最小交易费
 CSecurityFtdcInstrumentCommissionRateField["MinTradeFee"] = "float"
+#最小过户费
+CSecurityFtdcInstrumentCommissionRateField["MinTransferFee"] = "float"
 structDict['CSecurityFtdcInstrumentCommissionRateField'] = CSecurityFtdcInstrumentCommissionRateField
 
 
@@ -610,9 +630,9 @@ CSecurityFtdcExcessStockInfoField["ExchangeID"] = "string"
 #合约代码
 CSecurityFtdcExcessStockInfoField["InstrumentID"] = "string"
 #余券数量
-CSecurityFtdcExcessStockInfoField["ExcessVolume"] = "int"
+CSecurityFtdcExcessStockInfoField["ExcessVolume"] = "float"
 #余券冻结数量
-CSecurityFtdcExcessStockInfoField["ExcessFrozenVolume"] = "int"
+CSecurityFtdcExcessStockInfoField["ExcessFrozenVolume"] = "float"
 structDict['CSecurityFtdcExcessStockInfoField'] = CSecurityFtdcExcessStockInfoField
 
 
@@ -632,6 +652,10 @@ CSecurityFtdcETFInstrumentField["Maxcashratio"] = "float"
 CSecurityFtdcETFInstrumentField["Creationredemption"] = "string"
 #预估金额
 CSecurityFtdcETFInstrumentField["EstimateCashComponent"] = "float"
+#基金申赎单位净值
+CSecurityFtdcETFInstrumentField["ETFNetValue"] = "float"
+#基金类别
+CSecurityFtdcETFInstrumentField["FundClass"] = "string"
 structDict['CSecurityFtdcETFInstrumentField'] = CSecurityFtdcETFInstrumentField
 
 
@@ -666,10 +690,12 @@ CSecurityFtdcOFInstrumentField["InstrumentID"] = "string"
 CSecurityFtdcOFInstrumentField["Creationredemption"] = "string"
 #基金净值
 CSecurityFtdcOFInstrumentField["NetPrice"] = "float"
+#基金类别
+CSecurityFtdcOFInstrumentField["FundClass"] = "string"
 structDict['CSecurityFtdcOFInstrumentField'] = CSecurityFtdcOFInstrumentField
 
 
-#ETF合约
+#SF合约
 CSecurityFtdcSFInstrumentField = {}
 #交易所代码
 CSecurityFtdcSFInstrumentField["ExchangeID"] = "string"
@@ -690,6 +716,230 @@ CSecurityFtdcSFInstrumentField["NetPrice"] = "float"
 structDict['CSecurityFtdcSFInstrumentField'] = CSecurityFtdcSFInstrumentField
 
 
+#合约单手保证金
+CSecurityFtdcInstrumentUnitMarginField = {}
+#经纪公司代码
+CSecurityFtdcInstrumentUnitMarginField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcInstrumentUnitMarginField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcInstrumentUnitMarginField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcInstrumentUnitMarginField["InstrumentID"] = "string"
+#合约单手保证金
+CSecurityFtdcInstrumentUnitMarginField["UnitMargin"] = "float"
+structDict['CSecurityFtdcInstrumentUnitMarginField'] = CSecurityFtdcInstrumentUnitMarginField
+
+
+#期权资金限制参数
+CSecurityFtdcOptionsFundLimitParamField = {}
+#经纪公司代码
+CSecurityFtdcOptionsFundLimitParamField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcOptionsFundLimitParamField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcOptionsFundLimitParamField["ExchangeID"] = "string"
+#最大可买金额
+CSecurityFtdcOptionsFundLimitParamField["MaxBuyAmount"] = "float"
+structDict['CSecurityFtdcOptionsFundLimitParamField'] = CSecurityFtdcOptionsFundLimitParamField
+
+
+#投资者期权持仓
+CSecurityFtdcInvestorOptionsPositionField = {}
+#经纪公司代码
+CSecurityFtdcInvestorOptionsPositionField["BrokerID"] = "string"
+#投资者范围
+CSecurityFtdcInvestorOptionsPositionField["InvestorRange"] = "string"
+#投资者代码
+CSecurityFtdcInvestorOptionsPositionField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcInvestorOptionsPositionField["ExchangeID"] = "string"
+#InstrumentID
+CSecurityFtdcInvestorOptionsPositionField["InstrumentID"] = "string"
+#最大多头仓位限制
+CSecurityFtdcInvestorOptionsPositionField["MaxLongPositionLimit"] = "float"
+#最大买开量限制
+CSecurityFtdcInvestorOptionsPositionField["MaxBuyVolLimit"] = "float"
+#最大总仓位限制
+CSecurityFtdcInvestorOptionsPositionField["MaxPositionLimit"] = "float"
+#多头持仓
+CSecurityFtdcInvestorOptionsPositionField["LongPosition"] = "float"
+#空头持仓
+CSecurityFtdcInvestorOptionsPositionField["ShortPosition"] = "float"
+#买开量
+CSecurityFtdcInvestorOptionsPositionField["BuyVolume"] = "float"
+#买开冻结量
+CSecurityFtdcInvestorOptionsPositionField["BuyFrozenVolume"] = "float"
+#多头冻结持仓
+CSecurityFtdcInvestorOptionsPositionField["LongFrozenPosition"] = "float"
+#空头冻结持仓
+CSecurityFtdcInvestorOptionsPositionField["ShortFrozenPosition"] = "float"
+structDict['CSecurityFtdcInvestorOptionsPositionField'] = CSecurityFtdcInvestorOptionsPositionField
+
+
+#预交割信息
+CSecurityFtdcPreDelivInfoField = {}
+#经纪公司代码
+CSecurityFtdcPreDelivInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcPreDelivInfoField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcPreDelivInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcPreDelivInfoField["InstrumentID"] = "string"
+#交割类型
+CSecurityFtdcPreDelivInfoField["DelivType"] = "string"
+#标的合约代码
+CSecurityFtdcPreDelivInfoField["UnderlyingInstrumentID"] = "string"
+#交割数量
+CSecurityFtdcPreDelivInfoField["DelivVolume"] = "float"
+#交割金额
+CSecurityFtdcPreDelivInfoField["DelivAmount"] = "float"
+#期权执行数量
+CSecurityFtdcPreDelivInfoField["ExecVolume"] = "float"
+#买卖方向
+CSecurityFtdcPreDelivInfoField["Direction"] = "string"
+structDict['CSecurityFtdcPreDelivInfoField'] = CSecurityFtdcPreDelivInfoField
+
+
+#可融券分配信息
+CSecurityFtdcCreditStockAssignInfoField = {}
+#经纪公司代码
+CSecurityFtdcCreditStockAssignInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcCreditStockAssignInfoField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcCreditStockAssignInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcCreditStockAssignInfoField["InstrumentID"] = "string"
+#融券限量
+CSecurityFtdcCreditStockAssignInfoField["LimitVolume"] = "float"
+#上日融券数量
+CSecurityFtdcCreditStockAssignInfoField["YDVolume"] = "float"
+#剩余可融券数量
+CSecurityFtdcCreditStockAssignInfoField["LeftVolume"] = "float"
+#冻结融券数量
+CSecurityFtdcCreditStockAssignInfoField["FrozenVolume"] = "float"
+structDict['CSecurityFtdcCreditStockAssignInfoField'] = CSecurityFtdcCreditStockAssignInfoField
+
+
+#可融资分配信息
+CSecurityFtdcCreditCashAssignInfoField = {}
+#经纪公司代码
+CSecurityFtdcCreditCashAssignInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcCreditCashAssignInfoField["InvestorID"] = "string"
+#融资限额
+CSecurityFtdcCreditCashAssignInfoField["LimitAmount"] = "float"
+#上日融资金额
+CSecurityFtdcCreditCashAssignInfoField["YDAmount"] = "float"
+structDict['CSecurityFtdcCreditCashAssignInfoField'] = CSecurityFtdcCreditCashAssignInfoField
+
+
+#证券折算率
+CSecurityFtdcConversionRateField = {}
+#交易所代码
+CSecurityFtdcConversionRateField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcConversionRateField["InstrumentID"] = "string"
+#折算比率
+CSecurityFtdcConversionRateField["ConversionRate"] = "float"
+#当前是否支持融资交易
+CSecurityFtdcConversionRateField["IsTradingForMargin"] = "int"
+#当前是否支持融券交易
+CSecurityFtdcConversionRateField["IsTradingForShort"] = "int"
+structDict['CSecurityFtdcConversionRateField'] = CSecurityFtdcConversionRateField
+
+
+#历史信用负债信息
+CSecurityFtdcHisCreditDebtInfoField = {}
+#经纪公司代码
+CSecurityFtdcHisCreditDebtInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcHisCreditDebtInfoField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcHisCreditDebtInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcHisCreditDebtInfoField["InstrumentID"] = "string"
+#开仓日期
+CSecurityFtdcHisCreditDebtInfoField["OpenDate"] = "string"
+#负债类型
+CSecurityFtdcHisCreditDebtInfoField["Direction"] = "string"
+#开仓价
+CSecurityFtdcHisCreditDebtInfoField["OpenPrice"] = "float"
+#数量
+CSecurityFtdcHisCreditDebtInfoField["Volume"] = "float"
+#融资融券金额
+CSecurityFtdcHisCreditDebtInfoField["Amount"] = "float"
+structDict['CSecurityFtdcHisCreditDebtInfoField'] = CSecurityFtdcHisCreditDebtInfoField
+
+
+#行情静态信息
+CSecurityFtdcMarketDataStaticInfoField = {}
+#交易所代码
+CSecurityFtdcMarketDataStaticInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcMarketDataStaticInfoField["InstrumentID"] = "string"
+#涨停板价
+CSecurityFtdcMarketDataStaticInfoField["UpperLimitPrice"] = "float"
+#跌停板价
+CSecurityFtdcMarketDataStaticInfoField["LowerLimitPrice"] = "float"
+#昨结算
+CSecurityFtdcMarketDataStaticInfoField["PreSettlementPrice"] = "float"
+#昨收盘
+CSecurityFtdcMarketDataStaticInfoField["PreClosePrice"] = "float"
+#昨日基金净值
+CSecurityFtdcMarketDataStaticInfoField["PreIOPV"] = "float"
+#是否非交易业务
+CSecurityFtdcMarketDataStaticInfoField["IsNotTrade"] = "int"
+structDict['CSecurityFtdcMarketDataStaticInfoField'] = CSecurityFtdcMarketDataStaticInfoField
+
+
+#到期回购信息
+CSecurityFtdcExpireRepurchInfoField = {}
+#经纪公司代码
+CSecurityFtdcExpireRepurchInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcExpireRepurchInfoField["InvestorID"] = "string"
+#资金账户代码
+CSecurityFtdcExpireRepurchInfoField["AccountID"] = "string"
+#到期类型
+CSecurityFtdcExpireRepurchInfoField["ExpireType"] = "string"
+#交易所代码
+CSecurityFtdcExpireRepurchInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcExpireRepurchInfoField["InstrumentID"] = "string"
+#数量
+CSecurityFtdcExpireRepurchInfoField["Volume"] = "float"
+#金额
+CSecurityFtdcExpireRepurchInfoField["Amount"] = "float"
+#利息
+CSecurityFtdcExpireRepurchInfoField["Interest"] = "float"
+structDict['CSecurityFtdcExpireRepurchInfoField'] = CSecurityFtdcExpireRepurchInfoField
+
+
+#债券质押为标准券比例
+CSecurityFtdcBondPledgeRateField = {}
+#交易所代码
+CSecurityFtdcBondPledgeRateField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcBondPledgeRateField["InstrumentID"] = "string"
+#折算比率
+CSecurityFtdcBondPledgeRateField["Ratio"] = "float"
+structDict['CSecurityFtdcBondPledgeRateField'] = CSecurityFtdcBondPledgeRateField
+
+
+#债券质押代码对照关系
+CSecurityFtdcPledgeBondField = {}
+#交易所代码
+CSecurityFtdcPledgeBondField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcPledgeBondField["InstrumentID"] = "string"
+#质押代码
+CSecurityFtdcPledgeBondField["PledgeID"] = "string"
+structDict['CSecurityFtdcPledgeBondField'] = CSecurityFtdcPledgeBondField
+
+
 #交易所交易员报盘机
 CSecurityFtdcTraderOfferField = {}
 #交易所代码
@@ -700,6 +950,8 @@ CSecurityFtdcTraderOfferField["BranchPBU"] = "string"
 CSecurityFtdcTraderOfferField["ParticipantID"] = "string"
 #密码
 CSecurityFtdcTraderOfferField["Password"] = "string"
+#报盘类型
+CSecurityFtdcTraderOfferField["OfferType"] = "string"
 #安装编号
 CSecurityFtdcTraderOfferField["InstallID"] = "int"
 #本地报单编号
@@ -739,6 +991,8 @@ CSecurityFtdcMDTraderOfferField["BranchPBU"] = "string"
 CSecurityFtdcMDTraderOfferField["ParticipantID"] = "string"
 #密码
 CSecurityFtdcMDTraderOfferField["Password"] = "string"
+#报盘类型
+CSecurityFtdcMDTraderOfferField["OfferType"] = "string"
 #安装编号
 CSecurityFtdcMDTraderOfferField["InstallID"] = "int"
 #本地报单编号
@@ -922,7 +1176,7 @@ CSecurityFtdcOrderField["BrokerOrderSeq"] = "int"
 CSecurityFtdcOrderField["RelativeOrderSysID"] = "string"
 #营业部编号
 CSecurityFtdcOrderField["BranchID"] = "string"
-#成交数量
+#成交金额
 CSecurityFtdcOrderField["TradeAmount"] = "float"
 #是否ETF
 CSecurityFtdcOrderField["IsETF"] = "int"
@@ -1186,21 +1440,21 @@ CSecurityFtdcInvestorPositionField["HedgeFlag"] = "string"
 #持仓日期
 CSecurityFtdcInvestorPositionField["PositionDate"] = "string"
 #上日持仓
-CSecurityFtdcInvestorPositionField["YdPosition"] = "int"
-#今日持仓
-CSecurityFtdcInvestorPositionField["Position"] = "int"
+CSecurityFtdcInvestorPositionField["YdPosition"] = "float"
+#总持仓
+CSecurityFtdcInvestorPositionField["Position"] = "float"
 #多头冻结
-CSecurityFtdcInvestorPositionField["LongFrozen"] = "int"
+CSecurityFtdcInvestorPositionField["LongFrozen"] = "float"
 #空头冻结
-CSecurityFtdcInvestorPositionField["ShortFrozen"] = "int"
+CSecurityFtdcInvestorPositionField["ShortFrozen"] = "float"
 #开仓冻结金额
 CSecurityFtdcInvestorPositionField["LongFrozenAmount"] = "float"
 #开仓冻结金额
 CSecurityFtdcInvestorPositionField["ShortFrozenAmount"] = "float"
 #开仓量
-CSecurityFtdcInvestorPositionField["OpenVolume"] = "int"
+CSecurityFtdcInvestorPositionField["OpenVolume"] = "float"
 #平仓量
-CSecurityFtdcInvestorPositionField["CloseVolume"] = "int"
+CSecurityFtdcInvestorPositionField["CloseVolume"] = "float"
 #开仓金额
 CSecurityFtdcInvestorPositionField["OpenAmount"] = "float"
 #平仓金额
@@ -1224,13 +1478,13 @@ CSecurityFtdcInvestorPositionField["OpenCost"] = "float"
 #交易所保证金
 CSecurityFtdcInvestorPositionField["ExchangeMargin"] = "float"
 #今日持仓
-CSecurityFtdcInvestorPositionField["TodayPosition"] = "int"
+CSecurityFtdcInvestorPositionField["TodayPosition"] = "float"
 #过户费
 CSecurityFtdcInvestorPositionField["TransferFee"] = "float"
 #印花税
 CSecurityFtdcInvestorPositionField["StampTax"] = "float"
 #今日申购赎回数量
-CSecurityFtdcInvestorPositionField["TodayPurRedVolume"] = "int"
+CSecurityFtdcInvestorPositionField["TodayPurRedVolume"] = "float"
 #折算率
 CSecurityFtdcInvestorPositionField["ConversionRate"] = "float"
 #折算金额
@@ -1242,27 +1496,27 @@ CSecurityFtdcInvestorPositionField["ExchangeID"] = "string"
 #AccountID
 CSecurityFtdcInvestorPositionField["AccountID"] = "string"
 #质押入库数量
-CSecurityFtdcInvestorPositionField["PledgeInPosition"] = "int"
+CSecurityFtdcInvestorPositionField["PledgeInPosition"] = "float"
 #正回购使用的标准券数量
-CSecurityFtdcInvestorPositionField["RepurchasePosition"] = "int"
+CSecurityFtdcInvestorPositionField["RepurchasePosition"] = "float"
 #ETF申赎空头冻结
-CSecurityFtdcInvestorPositionField["PurRedShortFrozen"] = "int"
+CSecurityFtdcInvestorPositionField["PurRedShortFrozen"] = "float"
 #融资买入数量
-CSecurityFtdcInvestorPositionField["MarginTradeVolume"] = "int"
+CSecurityFtdcInvestorPositionField["MarginTradeVolume"] = "float"
 #融资买入金额
 CSecurityFtdcInvestorPositionField["MarginTradeAmount"] = "float"
 #融资买入冻结数量
-CSecurityFtdcInvestorPositionField["MarginTradeFrozenVolume"] = "int"
+CSecurityFtdcInvestorPositionField["MarginTradeFrozenVolume"] = "float"
 #融资买入冻结金额
 CSecurityFtdcInvestorPositionField["MarginTradeFrozenAmount"] = "float"
 #融资买入盈亏
 CSecurityFtdcInvestorPositionField["MarginTradeConversionProfit"] = "float"
 #融券卖出数量
-CSecurityFtdcInvestorPositionField["ShortSellVolume"] = "int"
+CSecurityFtdcInvestorPositionField["ShortSellVolume"] = "float"
 #融券卖出金额
 CSecurityFtdcInvestorPositionField["ShortSellAmount"] = "float"
 #融券卖出冻结数量
-CSecurityFtdcInvestorPositionField["ShortSellFrozenVolume"] = "int"
+CSecurityFtdcInvestorPositionField["ShortSellFrozenVolume"] = "float"
 #融券卖出冻结金额
 CSecurityFtdcInvestorPositionField["ShortSellFrozenAmount"] = "float"
 #融券卖出盈亏
@@ -1270,23 +1524,25 @@ CSecurityFtdcInvestorPositionField["ShortSellConversionProfit"] = "float"
 #融券总市值
 CSecurityFtdcInvestorPositionField["SSStockValue"] = "float"
 #今日融资持仓
-CSecurityFtdcInvestorPositionField["TodayMTPosition"] = "int"
+CSecurityFtdcInvestorPositionField["TodayMTPosition"] = "float"
 #今日融券持仓
-CSecurityFtdcInvestorPositionField["TodaySSPosition"] = "int"
+CSecurityFtdcInvestorPositionField["TodaySSPosition"] = "float"
 #历史持仓开仓成本
 CSecurityFtdcInvestorPositionField["YdOpenCost"] = "float"
 #锁定仓位
-CSecurityFtdcInvestorPositionField["LockPosition"] = "int"
+CSecurityFtdcInvestorPositionField["LockPosition"] = "float"
 #备兑仓位
-CSecurityFtdcInvestorPositionField["CoverPosition"] = "int"
+CSecurityFtdcInvestorPositionField["CoverPosition"] = "float"
 #锁定冻结仓位
-CSecurityFtdcInvestorPositionField["LockFrozenPosition"] = "int"
+CSecurityFtdcInvestorPositionField["LockFrozenPosition"] = "float"
 #解锁冻结仓位
-CSecurityFtdcInvestorPositionField["UnlockFrozenPosition"] = "int"
+CSecurityFtdcInvestorPositionField["UnlockFrozenPosition"] = "float"
 #备兑冻结仓位
-CSecurityFtdcInvestorPositionField["CoverFrozenPosition"] = "int"
+CSecurityFtdcInvestorPositionField["CoverFrozenPosition"] = "float"
 #行权冻结仓位
-CSecurityFtdcInvestorPositionField["ExecFrozenPosition"] = "int"
+CSecurityFtdcInvestorPositionField["ExecFrozenPosition"] = "float"
+#上日备兑仓位
+CSecurityFtdcInvestorPositionField["YDCoverPosition"] = "float"
 structDict['CSecurityFtdcInvestorPositionField'] = CSecurityFtdcInvestorPositionField
 
 
@@ -1302,7 +1558,7 @@ CSecurityFtdcSyncDepositField["InvestorID"] = "string"
 CSecurityFtdcSyncDepositField["Deposit"] = "float"
 #是否强制进行
 CSecurityFtdcSyncDepositField["IsForce"] = "int"
-#账户代
+#账户代码
 CSecurityFtdcSyncDepositField["AccountID"] = "string"
 structDict['CSecurityFtdcSyncDepositField'] = CSecurityFtdcSyncDepositField
 
@@ -1548,6 +1804,136 @@ CSecurityFtdcQrySFInstrumentField["ExchangeID"] = "string"
 #ETF证券代码
 CSecurityFtdcQrySFInstrumentField["SFInstrumentID"] = "string"
 structDict['CSecurityFtdcQrySFInstrumentField'] = CSecurityFtdcQrySFInstrumentField
+
+
+#查询合约单手保证金
+CSecurityFtdcQryInstrumentUnitMarginField = {}
+#经纪公司代码
+CSecurityFtdcQryInstrumentUnitMarginField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryInstrumentUnitMarginField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcQryInstrumentUnitMarginField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryInstrumentUnitMarginField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryInstrumentUnitMarginField'] = CSecurityFtdcQryInstrumentUnitMarginField
+
+
+#查询期权资金限制参数
+CSecurityFtdcQryOptionsFundLimitParamField = {}
+#经纪公司代码
+CSecurityFtdcQryOptionsFundLimitParamField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryOptionsFundLimitParamField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcQryOptionsFundLimitParamField["ExchangeID"] = "string"
+structDict['CSecurityFtdcQryOptionsFundLimitParamField'] = CSecurityFtdcQryOptionsFundLimitParamField
+
+
+#查询投资者期权持仓
+CSecurityFtdcQryInvestorOptionsPositionField = {}
+#经纪公司代码
+CSecurityFtdcQryInvestorOptionsPositionField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryInvestorOptionsPositionField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcQryInvestorOptionsPositionField["ExchangeID"] = "string"
+#标的合约代码
+CSecurityFtdcQryInvestorOptionsPositionField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryInvestorOptionsPositionField'] = CSecurityFtdcQryInvestorOptionsPositionField
+
+
+#查询预交割信息
+CSecurityFtdcQryPreDelivInfoField = {}
+#经纪公司代码
+CSecurityFtdcQryPreDelivInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryPreDelivInfoField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcQryPreDelivInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryPreDelivInfoField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryPreDelivInfoField'] = CSecurityFtdcQryPreDelivInfoField
+
+
+#查询可融券分配信息
+CSecurityFtdcQryCreditStockAssignInfoField = {}
+#经纪公司代码
+CSecurityFtdcQryCreditStockAssignInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryCreditStockAssignInfoField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcQryCreditStockAssignInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryCreditStockAssignInfoField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryCreditStockAssignInfoField'] = CSecurityFtdcQryCreditStockAssignInfoField
+
+
+#查询可融资分配信息
+CSecurityFtdcQryCreditCashAssignInfoField = {}
+#经纪公司代码
+CSecurityFtdcQryCreditCashAssignInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryCreditCashAssignInfoField["InvestorID"] = "string"
+structDict['CSecurityFtdcQryCreditCashAssignInfoField'] = CSecurityFtdcQryCreditCashAssignInfoField
+
+
+#查询证券折算率
+CSecurityFtdcQryConversionRateField = {}
+#交易所代码
+CSecurityFtdcQryConversionRateField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryConversionRateField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryConversionRateField'] = CSecurityFtdcQryConversionRateField
+
+
+#查询历史信用负债信息
+CSecurityFtdcQryHisCreditDebtInfoField = {}
+#经纪公司代码
+CSecurityFtdcQryHisCreditDebtInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryHisCreditDebtInfoField["InvestorID"] = "string"
+#交易所代码
+CSecurityFtdcQryHisCreditDebtInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryHisCreditDebtInfoField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryHisCreditDebtInfoField'] = CSecurityFtdcQryHisCreditDebtInfoField
+
+
+#查询行情静态信息
+CSecurityFtdcQryMarketDataStaticInfoField = {}
+#交易所代码
+CSecurityFtdcQryMarketDataStaticInfoField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryMarketDataStaticInfoField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryMarketDataStaticInfoField'] = CSecurityFtdcQryMarketDataStaticInfoField
+
+
+#查询到期回购信息
+CSecurityFtdcQryExpireRepurchInfoField = {}
+#经纪公司代码
+CSecurityFtdcQryExpireRepurchInfoField["BrokerID"] = "string"
+#投资者代码
+CSecurityFtdcQryExpireRepurchInfoField["InvestorID"] = "string"
+structDict['CSecurityFtdcQryExpireRepurchInfoField'] = CSecurityFtdcQryExpireRepurchInfoField
+
+
+#查询债券质押为标准券比例
+CSecurityFtdcQryBondPledgeRateField = {}
+#交易所代码
+CSecurityFtdcQryBondPledgeRateField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryBondPledgeRateField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryBondPledgeRateField'] = CSecurityFtdcQryBondPledgeRateField
+
+
+#查询债券质押代码对照关系
+CSecurityFtdcQryPledgeBondField = {}
+#交易所代码
+CSecurityFtdcQryPledgeBondField["ExchangeID"] = "string"
+#合约代码
+CSecurityFtdcQryPledgeBondField["InstrumentID"] = "string"
+structDict['CSecurityFtdcQryPledgeBondField'] = CSecurityFtdcQryPledgeBondField
 
 
 #查询交易员报盘机
@@ -1836,6 +2222,10 @@ CSecurityFtdcReqUserLoginField["OneTimePassword"] = "string"
 CSecurityFtdcReqUserLoginField["ClientIPAddress"] = "string"
 #客户端认证码
 CSecurityFtdcReqUserLoginField["AuthCode"] = "string"
+#随机码
+CSecurityFtdcReqUserLoginField["RandCode"] = "string"
+#硬盘序列号
+CSecurityFtdcReqUserLoginField["HDSerialNumber"] = "string"
 structDict['CSecurityFtdcReqUserLoginField'] = CSecurityFtdcReqUserLoginField
 
 
@@ -1896,6 +2286,13 @@ CSecurityFtdcActivateBrokerUserField["BrokerID"] = "string"
 #用户代码
 CSecurityFtdcActivateBrokerUserField["UserID"] = "string"
 structDict['CSecurityFtdcActivateBrokerUserField'] = CSecurityFtdcActivateBrokerUserField
+
+
+#认证随机码
+CSecurityFtdcAuthRandCodeField = {}
+#随机码
+CSecurityFtdcAuthRandCodeField["RandCode"] = "string"
+structDict['CSecurityFtdcAuthRandCodeField'] = CSecurityFtdcAuthRandCodeField
 
 
 #输入报单
@@ -2012,6 +2409,8 @@ CSecurityFtdcMarketDataBaseField["PreClosePrice"] = "float"
 CSecurityFtdcMarketDataBaseField["PreOpenInterest"] = "float"
 #昨虚实度
 CSecurityFtdcMarketDataBaseField["PreDelta"] = "float"
+#昨日基金净值
+CSecurityFtdcMarketDataBaseField["PreIOPV"] = "float"
 structDict['CSecurityFtdcMarketDataBaseField'] = CSecurityFtdcMarketDataBaseField
 
 
@@ -2033,6 +2432,10 @@ CSecurityFtdcMarketDataStaticField["LowerLimitPrice"] = "float"
 CSecurityFtdcMarketDataStaticField["SettlementPrice"] = "float"
 #今虚实度
 CSecurityFtdcMarketDataStaticField["CurrDelta"] = "float"
+#基金净值
+CSecurityFtdcMarketDataStaticField["IOPV"] = "float"
+#动态参考价格
+CSecurityFtdcMarketDataStaticField["AuctionPrice"] = "float"
 structDict['CSecurityFtdcMarketDataStaticField'] = CSecurityFtdcMarketDataStaticField
 
 
@@ -2041,7 +2444,7 @@ CSecurityFtdcMarketDataLastMatchField = {}
 #最新价
 CSecurityFtdcMarketDataLastMatchField["LastPrice"] = "float"
 #数量
-CSecurityFtdcMarketDataLastMatchField["Volume"] = "int"
+CSecurityFtdcMarketDataLastMatchField["Volume"] = "float"
 #成交金额
 CSecurityFtdcMarketDataLastMatchField["Turnover"] = "float"
 #持仓量
@@ -2054,11 +2457,11 @@ CSecurityFtdcMarketDataBestPriceField = {}
 #申买价一
 CSecurityFtdcMarketDataBestPriceField["BidPrice1"] = "float"
 #申买量一
-CSecurityFtdcMarketDataBestPriceField["BidVolume1"] = "int"
+CSecurityFtdcMarketDataBestPriceField["BidVolume1"] = "float"
 #申卖价一
 CSecurityFtdcMarketDataBestPriceField["AskPrice1"] = "float"
 #申卖量一
-CSecurityFtdcMarketDataBestPriceField["AskVolume1"] = "int"
+CSecurityFtdcMarketDataBestPriceField["AskVolume1"] = "float"
 structDict['CSecurityFtdcMarketDataBestPriceField'] = CSecurityFtdcMarketDataBestPriceField
 
 
@@ -2067,11 +2470,11 @@ CSecurityFtdcMarketDataBid23Field = {}
 #申买价二
 CSecurityFtdcMarketDataBid23Field["BidPrice2"] = "float"
 #申买量二
-CSecurityFtdcMarketDataBid23Field["BidVolume2"] = "int"
+CSecurityFtdcMarketDataBid23Field["BidVolume2"] = "float"
 #申买价三
 CSecurityFtdcMarketDataBid23Field["BidPrice3"] = "float"
 #申买量三
-CSecurityFtdcMarketDataBid23Field["BidVolume3"] = "int"
+CSecurityFtdcMarketDataBid23Field["BidVolume3"] = "float"
 structDict['CSecurityFtdcMarketDataBid23Field'] = CSecurityFtdcMarketDataBid23Field
 
 
@@ -2080,11 +2483,11 @@ CSecurityFtdcMarketDataAsk23Field = {}
 #申卖价二
 CSecurityFtdcMarketDataAsk23Field["AskPrice2"] = "float"
 #申卖量二
-CSecurityFtdcMarketDataAsk23Field["AskVolume2"] = "int"
+CSecurityFtdcMarketDataAsk23Field["AskVolume2"] = "float"
 #申卖价三
 CSecurityFtdcMarketDataAsk23Field["AskPrice3"] = "float"
 #申卖量三
-CSecurityFtdcMarketDataAsk23Field["AskVolume3"] = "int"
+CSecurityFtdcMarketDataAsk23Field["AskVolume3"] = "float"
 structDict['CSecurityFtdcMarketDataAsk23Field'] = CSecurityFtdcMarketDataAsk23Field
 
 
@@ -2093,11 +2496,11 @@ CSecurityFtdcMarketDataBid45Field = {}
 #申买价四
 CSecurityFtdcMarketDataBid45Field["BidPrice4"] = "float"
 #申买量四
-CSecurityFtdcMarketDataBid45Field["BidVolume4"] = "int"
+CSecurityFtdcMarketDataBid45Field["BidVolume4"] = "float"
 #申买价五
 CSecurityFtdcMarketDataBid45Field["BidPrice5"] = "float"
 #申买量五
-CSecurityFtdcMarketDataBid45Field["BidVolume5"] = "int"
+CSecurityFtdcMarketDataBid45Field["BidVolume5"] = "float"
 structDict['CSecurityFtdcMarketDataBid45Field'] = CSecurityFtdcMarketDataBid45Field
 
 
@@ -2106,11 +2509,11 @@ CSecurityFtdcMarketDataAsk45Field = {}
 #申卖价四
 CSecurityFtdcMarketDataAsk45Field["AskPrice4"] = "float"
 #申卖量四
-CSecurityFtdcMarketDataAsk45Field["AskVolume4"] = "int"
+CSecurityFtdcMarketDataAsk45Field["AskVolume4"] = "float"
 #申卖价五
 CSecurityFtdcMarketDataAsk45Field["AskPrice5"] = "float"
 #申卖量五
-CSecurityFtdcMarketDataAsk45Field["AskVolume5"] = "int"
+CSecurityFtdcMarketDataAsk45Field["AskVolume5"] = "float"
 structDict['CSecurityFtdcMarketDataAsk45Field'] = CSecurityFtdcMarketDataAsk45Field
 
 
@@ -2124,6 +2527,10 @@ CSecurityFtdcMarketDataUpdateTimeField["UpdateTime"] = "string"
 CSecurityFtdcMarketDataUpdateTimeField["UpdateMillisec"] = "int"
 #业务日期
 CSecurityFtdcMarketDataUpdateTimeField["ActionDay"] = "string"
+#交易阶段
+CSecurityFtdcMarketDataUpdateTimeField["TradingPhase"] = "string"
+#开仓限制
+CSecurityFtdcMarketDataUpdateTimeField["OpenRestriction"] = "string"
 structDict['CSecurityFtdcMarketDataUpdateTimeField'] = CSecurityFtdcMarketDataUpdateTimeField
 
 
@@ -2309,7 +2716,12 @@ CSecurityFtdcMDUserInfoField["UserName"] = "string"
 CSecurityFtdcMDUserInfoField["Password"] = "string"
 #行情系统编号
 CSecurityFtdcMDUserInfoField["MDSysID"] = "int"
+#股票最大订阅数量
+CSecurityFtdcMDUserInfoField["MaxStockCount"] = "int"
+#期权最大订阅数量
+CSecurityFtdcMDUserInfoField["MaxOptionsCount"] = "int"
 structDict['CSecurityFtdcMDUserInfoField'] = CSecurityFtdcMDUserInfoField
+
 
 
 

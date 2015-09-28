@@ -539,6 +539,12 @@ defineDict["SECURITY_FTDC_D_Covered"] = 'P'
 defineDict["SECURITY_FTDC_D_Freeze"] = 'Q'
 #行权
 defineDict["SECURITY_FTDC_D_Execute"] = 'R'
+#CB回售
+defineDict["SECURITY_FTDC_D_CBRed"] = 'S'
+#CB转股
+defineDict["SECURITY_FTDC_D_CBConv"] = 'T'
+#OF认购
+defineDict["SECURITY_FTDC_D_OFSub"] = 'U'
 
 typedefDict["TSecurityFtdcDirectionType"] = "string"
 
@@ -590,6 +596,10 @@ defineDict["SECURITY_FTDC_ETFCRS_Forbidden"] = '0'
 defineDict["SECURITY_FTDC_ETFCRS_Allow"] = '1'
 #必须现金替代
 defineDict["SECURITY_FTDC_ETFCRS_Force"] = '2'
+#跨市场股票退补现金替代
+defineDict["SECURITY_FTDC_ETFCRS_CrossMarketComp"] = '3'
+#跨市场必须现金替代
+defineDict["SECURITY_FTDC_ETFCRS_CrossMarketFroce"] = '4'
 
 typedefDict["TSecurityFtdcETFCurrenceReplaceStatusType"] = "string"
 
@@ -694,6 +704,8 @@ defineDict["SECURITY_FTDC_TPID_StartOrderLocalID"] = 'O'
 defineDict["SECURITY_FTDC_TPID_RepayStockAlgo"] = 'R'
 #衍生品账户资金提取线
 defineDict["SECURITY_FTDC_TPID_DeriveWithdrawRatio"] = 'D'
+#期权行权冻结可用起始时间
+defineDict["SECURITY_FTDC_TPID_ExecuteStartTime"] = 'T'
 
 typedefDict["TSecurityFtdcTradeParamIDType"] = "string"
 
@@ -726,6 +738,11 @@ typedefDict["TSecurityFtdcMarketIDType"] = "string"
 #TFtdcMacAddressType是一个Mac地址类型
 #//////////////////////////////////////////////////////////////////////
 typedefDict["TSecurityFtdcMacAddressType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcHDSerialNumberType是一个硬盘序列号类型
+#//////////////////////////////////////////////////////////////////////
+typedefDict["TSecurityFtdcHDSerialNumberType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
 #TFtdcInstrumentNameType是一个合约名称类型
@@ -1979,8 +1996,8 @@ typedefDict["TSecurityFtdcRepayStockAlgoType"] = "string"
 #//////////////////////////////////////////////////////////////////////
 #普通业务
 defineDict["SECURITY_FTDC_TS_Common"] = '1'
-#个股期权
-defineDict["SECURITY_FTDC_TS_Options"] = '2'
+#转账
+defineDict["SECURITY_FTDC_TS_Transfer"] = '2'
 
 typedefDict["TSecurityFtdcTradeSpanType"] = "string"
 
@@ -2047,6 +2064,8 @@ defineDict["SECURITY_FTDC_IT_Normal"] = '0'
 defineDict["SECURITY_FTDC_IT_CallOptions"] = '1'
 #看跌期权
 defineDict["SECURITY_FTDC_IT_PutOptions"] = '2'
+#普通(STEP)
+defineDict["SECURITY_FTDC_IT_Normal_STEP"] = '3'
 
 typedefDict["TSecurityFtdcInstrumentTypeType"] = "string"
 
@@ -2073,4 +2092,90 @@ defineDict["SECURITY_FTDC_CD_CloseSell"] = '@'
 defineDict["SECURITY_FTDC_CD_CloseCover"] = '#'
 
 typedefDict["TSecurityFtdcCloseDirectionType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcDelivTypeType是一个交割类型类型
+#//////////////////////////////////////////////////////////////////////
+#看涨期权执行
+defineDict["SECURITY_FTDC_DT_ExecCallOptions"] = '0'
+#看跌期权执行
+defineDict["SECURITY_FTDC_DT_ExecPutOptions"] = '1'
+#在途证券
+defineDict["SECURITY_FTDC_DT_UnavailStock"] = '2'
+#赎回在途资金
+defineDict["SECURITY_FTDC_DT_UnavailRedMoney"] = '2'
+
+typedefDict["TSecurityFtdcDelivTypeType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcExpireTypeType是一个到期类型类型
+#//////////////////////////////////////////////////////////////////////
+#正回购到期
+defineDict["SECURITY_FTDC_ET_Repurchase"] = '0'
+#逆回购到期
+defineDict["SECURITY_FTDC_ET_ReverseRepurch"] = '1'
+#债券到期
+defineDict["SECURITY_FTDC_ET_Bond"] = '2'
+
+typedefDict["TSecurityFtdcExpireTypeType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcFundClassType是一个基金类别类型
+#//////////////////////////////////////////////////////////////////////
+#发行期
+defineDict["SECURITY_FTDC_FC_Subscription"] = '0'
+#普通型
+defineDict["SECURITY_FTDC_FC_Normal"] = '1'
+#货币型
+defineDict["SECURITY_FTDC_FC_Monetary"] = '2'
+
+typedefDict["TSecurityFtdcFundClassType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcTradingPhaseType是一个交易阶段类型
+#//////////////////////////////////////////////////////////////////////
+#非交易时段
+defineDict["SECURITY_FTDC_TP_NonTrade"] = '0'
+#集合竞价时段
+defineDict["SECURITY_FTDC_TP_Bidding"] = '1'
+#连续交易时段
+defineDict["SECURITY_FTDC_TP_Continuous"] = '2'
+#停牌时段
+defineDict["SECURITY_FTDC_TP_Suspension"] = '3'
+#熔断时段
+defineDict["SECURITY_FTDC_TP_Fuse"] = '4'
+
+typedefDict["TSecurityFtdcTradingPhaseType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcOpenRestrictionType是一个开仓限制类型
+#//////////////////////////////////////////////////////////////////////
+#无开仓限制
+defineDict["SECURITY_FTDC_OR_None"] = '0'
+#限制备兑开仓
+defineDict["SECURITY_FTDC_OR_NoCoverOpen"] = '1'
+#限制卖出开仓
+defineDict["SECURITY_FTDC_OR_NoSellOpen"] = '2'
+#限制卖出开仓、备兑开仓
+defineDict["SECURITY_FTDC_OR_NoSellAndCoverOpen"] = '3'
+#限制买入开仓
+defineDict["SECURITY_FTDC_OR_NoBuyOpen"] = '4'
+#限制买入开仓、备兑开仓
+defineDict["SECURITY_FTDC_OR_NoBuyAndCoverOpen"] = '5'
+#限制买入开仓、卖出开仓
+defineDict["SECURITY_FTDC_OR_NoBuyAndSellOpen"] = '6'
+#限制买入开仓、卖出开仓、备兑开仓
+defineDict["SECURITY_FTDC_OR_NoBuySellAndCoverOpen"] = '7'
+
+typedefDict["TSecurityFtdcOpenRestrictionType"] = "string"
+
+#//////////////////////////////////////////////////////////////////////
+#TFtdcOfferTypeType是一个报盘类型类型
+#//////////////////////////////////////////////////////////////////////
+#普通报盘
+defineDict["SECURITY_FTDC_OT_Normal"] = '0'
+#期权报盘
+defineDict["SECURITY_FTDC_OT_Options"] = '1'
+
+typedefDict["TSecurityFtdcOfferTypeType"] = "string"
 

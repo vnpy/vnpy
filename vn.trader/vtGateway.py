@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+import time
+
 from eventEngine import *
 
 # 默认空值
@@ -19,6 +21,8 @@ DIRECTION_NET = u'净'
 OFFSET_NONE = u'无开平'
 OFFSET_OPEN = u'开仓'
 OFFSET_CLOSE = u'平仓'
+OFFSET_CLOSETODAY = u'平今'
+OFFSET_CLOSESYESTERDAY = u'平昨'
 OFFSET_UNKNOWN = u'未知'
 
 # 状态常量
@@ -35,10 +39,13 @@ PRODUCT_OPTION = u'期权'
 PRODUCT_INDEX = u'指数'
 PRODUCT_COMBINATION = u'组合'
 
+# 价格类型常量
+PRICETYPE_LIMITPRICE = u'限价'
+PRICETYPE_MARKETPRICE = u'市价'
+
 # 期权类型
 OPTION_CALL = u'看涨期权'
 OPTION_PUT = u'看跌期权'
-
 
 
 ########################################################################
@@ -46,9 +53,10 @@ class VtGateway(object):
     """交易接口"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine):
+    def __init__(self, eventEngine, gatewayName):
         """Constructor"""
         self.eventEngine = eventEngine
+        self.gatewayName = gatewayName
         
     #----------------------------------------------------------------------
     def onTick(self, tick):
@@ -140,18 +148,28 @@ class VtGateway(object):
         pass
     
     #----------------------------------------------------------------------
-    def subscribe(self):
+    def subscribe(self, subscribeReq):
         """订阅行情"""
         pass
     
     #----------------------------------------------------------------------
-    def sendOrder(self):
+    def sendOrder(self, orderReq):
         """发单"""
         pass
     
     #----------------------------------------------------------------------
-    def cancelOrder(self):
+    def cancelOrder(self, cancelOrderReq):
         """撤单"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def getAccount(self):
+        """查询账户资金"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def getPosition(self):
+        """查询持仓"""
         pass
     
     #----------------------------------------------------------------------
@@ -189,6 +207,11 @@ class VtTickData(VtBaseData):
         self.volume = EMPTY_INT                 # 最新成交量
         self.openInterest = EMPTY_INT           # 持仓量
         self.tickTime = EMPTY_STRING            # 更新时间
+        
+        # 常规行情
+        self.openPrice = EMPTY_FLOAT            # 今日开盘价
+        self.highPrice = EMPTY_FLOAT            # 今日最高价
+        self.lowPrice = EMPTY_FLOAT             # 今日最低价
         
         # 五档行情
         self.bidPrice1 = EMPTY_FLOAT
@@ -241,7 +264,7 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
-        
+   
 
 ########################################################################
 class VtOrderData(VtBaseData):
@@ -341,7 +364,8 @@ class VtLogData(VtBaseData):
         """Constructor"""
         super(VtLogData, self).__init__()
         
-        self.logContent = EMPTY_UNICODE         # 日志信息
+        self.logTime = time.strftime('%X', time.localtime())    # 日志生成时间
+        self.logContent = EMPTY_UNICODE                         # 日志信息
 
 
 ########################################################################
@@ -353,17 +377,18 @@ class VtContractData(VtBaseData):
         """Constructor"""
         super(VtBaseData, self).__init__()
         
-        self.symbol = EMPTY_STRING
-        self.vtSymbol = EMPTY_STRING
+        self.symbol = EMPTY_STRING              # 代码
+        self.vtSymbol = EMPTY_STRING            # 合约在vt系统中的唯一代码，通常是 Gateway名.合约代码 
+        self.name = EMPTY_UNICODE               # 合约中文名
         
-        self.productClass = EMPTY_STRING
-        self.size = EMPTY_INT
-        self.priceTick = EMPTY_FLOAT
+        self.productClass = EMPTY_UNICODE       # 合约类型
+        self.size = EMPTY_INT                   # 合约大小
+        self.priceTick = EMPTY_FLOAT            # 合约最小价格TICK
         
         # 期权相关
-        self.strikePrice = EMPTY_FLOAT
-        self.underlyingSymbol = EMPTY_STRING
-        self.optionType = EMPTY_UNICODE
+        self.strikePrice = EMPTY_FLOAT          # 期权行权价
+        self.underlyingSymbol = EMPTY_STRING    # 标的物合约代码
+        self.optionType = EMPTY_UNICODE         # 期权类型
 
 
 ########################################################################
@@ -373,8 +398,8 @@ class VtSubscribeReq:
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.symbol = EMPTY_STRING
-        self.exchange = EMPTY_STRING
+        self.symbol = EMPTY_STRING              # 代码
+        self.exchange = EMPTY_STRING            # 交易所
 
 
 ########################################################################
@@ -385,8 +410,13 @@ class VtOrderReq:
     def __init__(self):
         """Constructor"""
         self.symbol = EMPTY_STRING
+        self.price = EMPTY_FLOAT
+        self.volume = EMPTY_INT
         
-
+        self.priceType = EMPTY_STRING
+        self.direction = EMPTY_STRING
+        self.offset = EMPTY_STRING
+        
 
 ########################################################################
 class VtCancelOrderReq:
@@ -397,7 +427,13 @@ class VtCancelOrderReq:
         """Constructor"""
         self.symbol = EMPTY_STRING
         self.exchange = EMPTY_STRING
-        self.
+        
+        # 以下字段主要和CTP、LTS类接口相关
+        self.orderRef = EMPTY_STRING
+        self.frontID = EMPTY_STRING
+        self.sessionID = EMPTY_STRING
+        
+        
         
     
     
