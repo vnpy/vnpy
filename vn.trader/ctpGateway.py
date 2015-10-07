@@ -1,11 +1,12 @@
 # encoding: UTF-8
 
+import os
+import json
+
 from vnctpmd import MdApi
 from vnctptd import TdApi
-
-from gateway import *
-
-import os
+from ctpDataType import *
+from vtGateway import *
 
 
 ########################################################################
@@ -13,19 +14,79 @@ class CtpGateway(VtGateway):
     """CTP接口"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine):
+    def __init__(self, eventEngine, gatewayName='CTP'):
         """Constructor"""
-        super(CtpGateway, self).__init__(eventEngine)
+        super(CtpGateway, self).__init__(eventEngine, gatewayName)
         
-        self.mdApi = None           # 行情API
-        self.tdApi = None           # 交易API
+        self.mdApi = CtpMdApi(self)     # 行情API
+        self.tdApi = CtpTdApi(self)     # 交易API
         
-        self.mdConnected = False    # 行情API连接状态
-        self.tdConnected = False    # 交易API连接状态
+        self.mdConnected = False        # 行情API连接状态，登录完成后为True
+        self.tdConnected = False        # 交易API连接状态
         
+    #----------------------------------------------------------------------
+    def connect(self):
+        """连接"""
+        # 载入json文件
+        fileName = self.gatewayName + '_connect.json'
+        try:
+            f = file(fileName)
+        except IOError:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'读取连接配置出错，请检查'
+            self.onLog(log)
+            return
+        
+        # 解析json文件
+        setting = json.load(f)
+        try:
+            userID = str(setting['userID'])
+            password = str(setting['password'])
+            brokerID = str(setting['brokerID'])
+            tdAddress = str(setting['tdAddress'])
+            mdAddress = str(setting['mdAddress'])
+        except KeyError:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'连接配置缺少字段，请检查'
+            self.onLog(log)
+            return            
+        
+        # 创建行情和交易接口对象
+        self.mdApi.connect(userID, password, brokerID, mdAddress)
+        self.tdApi.connect(userID, password, brokerID, tdAddress)
     
-    
-
+    #----------------------------------------------------------------------
+    def subscribe(self, subscribeReq):
+        """订阅行情"""
+        self.mdApi(subscribeReq)
+        
+    #----------------------------------------------------------------------
+    def sendOrder(self, orderReq):
+        """发单"""
+        return self.tdApi.sendOrder(orderReq)
+        
+    #----------------------------------------------------------------------
+    def cancelOrder(self, cancelOrderReq):
+        """撤单"""
+        self.tdApi.cancelOrder(cancelOrderReq)
+        
+    #----------------------------------------------------------------------
+    def getAccount(self):
+        """查询账户资金"""
+        self.tdApi.getAccount()
+        
+    #----------------------------------------------------------------------
+    def getPosition(self):
+        """查询持仓"""
+        self.tdApi.getPosition()
+        
+    #----------------------------------------------------------------------
+    def close(self):
+        """关闭"""
+        self.mdApi.close()
+        self.tdApi.close()
 
 
 ########################################################################
@@ -33,7 +94,7 @@ class CtpMdApi(MdApi):
     """CTP行情API实现"""
 
     #----------------------------------------------------------------------
-    def __init__(self, gateway, userID, password, brokerID, address):
+    def __init__(self, gateway):
         """Constructor"""
         super(CtpMdApi, self).__init__()
         
@@ -45,12 +106,13 @@ class CtpMdApi(MdApi):
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
         
-        self.userID = userID                # 账号
-        self.password = password            # 密码
-        self.brokerID = brokerID            # 经纪商代码
-        self.address = address              # 服务器地址
         
-        self.subscribedSymbols = set()      # 已订阅合约代码
+        self.subscribedSymbols = set()      # 已订阅合约代码        
+        
+        self.userID = EMPTY_STRING          # 账号
+        self.password = EMPTY_STRING        # 密码
+        self.brokerID = EMPTY_STRING        # 经纪商代码
+        self.address = EMPTY_STRING         # 服务器地址
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
@@ -159,7 +221,11 @@ class CtpMdApi(MdApi):
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
-        tick.tickTime = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100]))
+        tick.tickTime = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        
+        tick.openPrice = data['OpenPrice']
+        tick.highPrice = data['HighestPrice']
+        tick.lowPrice = data['LowestPrice']
         
         # CTP只有一档行情
         tick.bidPrice1 = data['BidPrice1']
@@ -185,8 +251,13 @@ class CtpMdApi(MdApi):
         pass        
         
     #----------------------------------------------------------------------
-    def connect(self):
+    def connect(self, userID, password, brokerID, address):
         """初始化连接"""
+        self.userID = userID                # 账号
+        self.password = password            # 密码
+        self.brokerID = brokerID            # 经纪商代码
+        self.address = address              # 服务器地址
+        
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
@@ -222,16 +293,41 @@ class CtpMdApi(MdApi):
             req['Password'] = self.password
             req['BrokerID'] = self.brokerID
             self.reqID += 1
-            self.reqUserLogin(req, self.reqID)        
-
+            self.reqUserLogin(req, self.reqID)    
+    
+    #----------------------------------------------------------------------
+    def close(self):
+        """关闭"""
+        self.exit()
 
 
 ########################################################################
 class CtpTdApi(TdApi):
     """CTP交易API实现"""
+    
+    # 以下为一些VT类型和CTP类型的映射字典
+    # 价格类型映射
+    priceTypeMap = {}
+    priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
+    priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
+    priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
+    
+    # 方向类型映射
+    directionMap = {}
+    directionMap[DIRECTION_LONG] = defineDict['THOST_FTDC_D_Buy']
+    directionMap[DIRECTION_SHORT] = defineDict['THOST_FTDC_D_Sell']
+    directionMapReverse = {v: k for k, v in directionMap.items()}
+    
+    # 开平类型映射
+    offsetMap = {}
+    offsetMap[OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
+    offsetMap[OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
+    offsetMap[OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
+    offsetMap[OFFSET_CLOSESYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
+    offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
     #----------------------------------------------------------------------
-    def __init__(self, gateway, userID, password, brokerID, address):
+    def __init__(self, gateway):
         """API对象的初始化函数"""
         super(CtpTdApi, self).__init__()
         
@@ -244,10 +340,10 @@ class CtpTdApi(TdApi):
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
         
-        self.userID = userID                # 账号
-        self.password = password            # 密码
-        self.brokerID = brokerID            # 经纪商代码
-        self.address = address              # 服务器地址
+        self.userID = EMPTY_STRING          # 账号
+        self.password = EMPTY_STRING        # 密码
+        self.brokerID = EMPTY_STRING        # 经纪商代码
+        self.address = EMPTY_STRING         # 服务器地址
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
@@ -531,6 +627,7 @@ class CtpTdApi(TdApi):
         
         contract.symbol = data['InstrumentID']
         contract.vtSymbol = '.'.join([self.gatewayName, contract.symbol])
+        contract.name = data['InstrumentName']
         
         # 合约数值
         contract.size = data['VolumeMultiple']
@@ -982,8 +1079,13 @@ class CtpTdApi(TdApi):
         pass
     
     #----------------------------------------------------------------------
-    def connect(self):
+    def connect(self, userID, password, brokerID, address):
         """初始化连接"""
+        self.userID = userID                # 账号
+        self.password = password            # 密码
+        self.brokerID = brokerID            # 经纪商代码
+        self.address = address              # 服务器地址
+        
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
@@ -1038,17 +1140,19 @@ class CtpTdApi(TdApi):
         
         req = {}
         
-        req['InstrumentID'] = instrumentid
-        req['OrderPriceType'] = pricetype
-        req['LimitPrice'] = price
-        req['VolumeTotalOriginal'] = volume
-        req['Direction'] = direction
-        req['CombOffsetFlag'] = offset
+        req['InstrumentID'] = orderReq.symbol
+        req['LimitPrice'] = orderReq.price
+        req['VolumeTotalOriginal'] = orderReq.volume
         
-        
-        
+        # 下面如果由于传入的类型本接口不支持，则会返回空字符串
+        try:
+            req['OrderPriceType'] = self.priceTypeMap[orderReq.priceType]
+            req['Direction'] = self.directionMap[orderReq.priceType]
+            req['CombOffsetFlag'] = self.offsetMap[orderReq.offset]
+        except KeyError:
+            return ''
+            
         req['OrderRef'] = str(self.orderRef)
-        
         req['InvestorID'] = self.userID
         req['UserID'] = self.userID
         req['BrokerID'] = self.brokerID
@@ -1063,26 +1167,29 @@ class CtpTdApi(TdApi):
         
         self.reqOrderInsert(req, self.reqID)
         
-        # 返回订单号，便于某些算法进行动态管理
-        return self.orderRef
+        # 返回订单号（字符串），便于某些算法进行动态管理
+        return str(self.orderRef)
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.reqID += 1
-        self.orderRef += 1
-        
+
         req = {}
         
-        req['InstrumentID'] = instrumentid
-        req['ExchangeID'] = exchangeid
-        req['OrderRef'] = orderref
-        
-        req['FrontID'] = frontid
-        req['SessionID'] = sessionid   
+        req['InstrumentID'] = cancelOrderReq.symbol
+        req['ExchangeID'] = cancelOrderReq.exchange
+        req['OrderRef'] = cancelOrderReq.orderRef
+        req['FrontID'] = cancelOrderReq.frontID
+        req['SessionID'] = cancelOrderReq.sessionID
         
         req['ActionFlag'] = defineDict['THOST_FTDC_AF_Delete']
         req['BrokerID'] = self.brokerID
         req['InvestorID'] = self.userID
         
         self.reqOrderAction(req, self.reqID)
+        
+    #----------------------------------------------------------------------
+    def close(self):
+        """关闭"""
+        self.exit()

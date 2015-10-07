@@ -136,15 +136,20 @@ void MdApi::processRtnDepthMarketData(Task task)
 	data["InstrumentID"] = task_data.InstrumentID;
 	data["ClosePrice"] = task_data.ClosePrice;
 	data["ExchangeID"] = task_data.ExchangeID;
+	data["PreIOPV"] = task_data.PreIOPV;
 	data["TradingDay"] = task_data.TradingDay;
+	data["IOPV"] = task_data.IOPV;
 	data["PreDelta"] = task_data.PreDelta;
 	data["OpenInterest"] = task_data.OpenInterest;
 	data["CurrDelta"] = task_data.CurrDelta;
 	data["Turnover"] = task_data.Turnover;
 	data["LastPrice"] = task_data.LastPrice;
+	data["OpenRestriction"] = task_data.OpenRestriction;
 	data["SettlementPrice"] = task_data.SettlementPrice;
 	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["TradingPhase"] = task_data.TradingPhase;
 	data["LowestPrice"] = task_data.LowestPrice;
+	data["AuctionPrice"] = task_data.AuctionPrice;
 	data["ActionDay"] = task_data.ActionDay;
 
 	this->onRtnDepthMarketData(data);
