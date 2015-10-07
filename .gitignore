@@ -37,3 +37,8 @@ Release/
 # 其他文件
 *.dump
 *.vssettings
+vnpy.pyproj.user
+.idea/workspace.xml
+.idea/.name
+.idea/vnpy.iml
+*.xml

@@ -129,8 +129,7 @@ class DemoMdApi(MdApi):
             #for instrument in self.__setSubscribed:
                 #self.subscribe(instrument[0], instrument[1])
 
-        onRspUserLogin
-        
+
         print u'DemoApi.py DemoMdApi.onRspUserLogin() end'     
            
     #---------------------------------------------------------------------- 
@@ -162,9 +161,7 @@ class DemoMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRspUnSubMarketData(self, data, error, n, last):
         """退订合约回报"""
-
-        onRspUnSubMarketData
-
+        print u'DemoApi.py DemoMdApi.onRspUnSubMarketData()'
         # 同上
         pass  
         
