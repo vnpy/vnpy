@@ -1,7 +1,9 @@
 //说明部分
 
 //系统
+#ifndef __GNU__
 #include "stdafx.h"
+#endif
 #include <string>
 #include <queue>
 
@@ -39,7 +41,9 @@ using namespace boost;
 #define ONRTNFORQUOTERSP 12
 
 
-
+#ifdef __GNU__
+#define strcpy_s(dest, len, src)  strncpy(dest, src, len)
+#endif
 ///-------------------------------------------------------------------------------------
 ///API中的部分组件
 ///-------------------------------------------------------------------------------------

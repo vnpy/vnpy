@@ -240,7 +240,9 @@ typedef char TThostFtdcIdentifiedCardNoType[51];
 ///商业登记证
 #define THOST_FTDC_ICT_BusinessRegistration  'H'
 ///港澳永久性居民身份证
-#define THOST_FTDC_ICT_HKMCIDCard  'I'
+#define THOST_FTDC_ICT_HKMCIDCard 'I'
+///人行开户许可证
+#define THOST_FTDC_ICT_AccountsPermits 'J'
 ///其他证件
 #define THOST_FTDC_ICT_OtherCard 'x'
 
@@ -735,6 +737,8 @@ typedef char TThostFtdcClientIDTypeType;
 #define THOST_FTDC_OPT_BidPrice1PlusTwoTicks 'E'
 ///买一价浮动上浮3个ticks
 #define THOST_FTDC_OPT_BidPrice1PlusThreeTicks 'F'
+///五档价
+#define THOST_FTDC_OPT_FiveLevelPrice 'G'
 
 typedef char TThostFtdcOrderPriceTypeType;
 
@@ -2748,6 +2752,11 @@ typedef int TThostFtdcAMLFileAmountType;
 ///TFtdcCFMMCKeyType是一个密钥类型(保证金监管)类型
 /////////////////////////////////////////////////////////////////////////
 typedef char TThostFtdcCFMMCKeyType[21];
+
+/////////////////////////////////////////////////////////////////////////
+///TFtdcCFMMCTokenType是一个令牌类型(保证金监管)类型
+/////////////////////////////////////////////////////////////////////////
+typedef char TThostFtdcCFMMCTokenType[21];
 
 /////////////////////////////////////////////////////////////////////////
 ///TFtdcCFMMCKeyKindType是一个动态密钥类别(保证金监管)类型
@@ -6095,6 +6104,8 @@ typedef char TThostFtdcStrikeTimeType[13];
 #define THOST_FTDC_COMBT_STG '4'
 ///备兑组合
 #define THOST_FTDC_COMBT_PRT '5'
+///时间价差组合
+#define THOST_FTDC_COMBT_CLD '6'
 
 typedef char TThostFtdcCombinationTypeType;
 
@@ -6139,18 +6150,6 @@ typedef char TThostFtdcActionTypeType;
 #define THOST_FTDC_FQST_Rejected 'c'
 
 typedef char TThostFtdcForQuoteStatusType;
-
-/////////////////////////////////////////////////////////////////////////
-///TFtdcQuotStatusType是一个报价状态类型
-/////////////////////////////////////////////////////////////////////////
-///未知
-#define THOST_FTDC_QTST_Unknown 'a'
-///已经接受
-#define THOST_FTDC_QTST_Accepted 'b'
-///已经撤销
-#define THOST_FTDC_QTST_Canceled 'c'
-
-typedef char TThostFtdcQuotStatusType;
 
 /////////////////////////////////////////////////////////////////////////
 ///TFtdcValueMethodType是一个取值方式类型
@@ -6263,5 +6262,15 @@ typedef char TThostFtdcSHFEUploadFileNameType;
 #define THOST_FTDC_CFUFN_SUFN_S 'S'
 
 typedef char TThostFtdcCFFEXUploadFileNameType;
+
+/////////////////////////////////////////////////////////////////////////
+///TFtdcCombDirectionType是一个组合指令方向类型
+/////////////////////////////////////////////////////////////////////////
+///申请组合
+#define THOST_FTDC_CMDR_Comb '0'
+///申请拆分
+#define THOST_FTDC_CMDR_UnComb '1'
+
+typedef char TThostFtdcCombDirectionType;
 
 #endif

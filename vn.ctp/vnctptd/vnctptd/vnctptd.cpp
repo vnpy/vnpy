@@ -1,7 +1,9 @@
 // vnctptd.cpp : 定义 DLL 应用程序的导出函数。
 //
 
+#ifndef __GNU__
 #include "stdafx.h"
+#endif
 #include "vnctptd.h"
 
 
@@ -3888,7 +3890,9 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	data["Position"] = task_data.Position;
 	data["FrozenCommission"] = task_data.FrozenCommission;
 	data["CombShortFrozen"] = task_data.CombShortFrozen;
+#ifndef __GNU__
 	data["OptionValue"] = task_data.OptionValue;
+#endif
 	data["CloseProfitByDate"] = task_data.CloseProfitByDate;
 	data["SettlementPrice"] = task_data.SettlementPrice;
 	data["LongFrozenAmount"] = task_data.LongFrozenAmount;
@@ -3925,7 +3929,9 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["AccountID"] = task_data.AccountID;
 	data["Available"] = task_data.Available;
 	data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
+#ifndef __GNU__
 	data["OptionCloseProfit"] = task_data.OptionCloseProfit;
+#endif
 	data["PreCredit"] = task_data.PreCredit;
 	data["PreMortgage"] = task_data.PreMortgage;
 	data["InterestBase"] = task_data.InterestBase;
@@ -3941,7 +3947,9 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["BrokerID"] = task_data.BrokerID;
 	data["FrozenCash"] = task_data.FrozenCash;
 	data["Withdraw"] = task_data.Withdraw;
+#ifndef __GNU__
 	data["OptionValue"] = task_data.OptionValue;
+#endif
 	data["Balance"] = task_data.Balance;
 	data["SpecProductMargin"] = task_data.SpecProductMargin;
 	data["SpecProductPositionProfitByAlg"] = task_data.SpecProductPositionProfitByAlg;
