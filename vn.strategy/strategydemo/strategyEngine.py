@@ -329,7 +329,7 @@ class StrategyEngine(object):
                 self.writeLog(u'MysqlDB未连接，请检查')
 
         except MySQLdb.Error, e:
-            self.writeLog(u'MysqlDB载入数据失败，请检查.Error {0}: {1}'.format(e.arg[0],e.arg[1]))
+            self.writeLog(u'MysqlDB载入数据失败，请检查.Error %d: %s'.format(e.arg[0],e.arg[1]))
 
         td = timedelta(days=3)
 
@@ -406,6 +406,7 @@ class StrategyEngine(object):
         if not self.backtesting:
             #self.__recordTickToMongo(data)
             self.__recordTickToMysql(data)
+
     #----------------------------------------------------------------------
     def __processStopOrder(self, tick):
         """处理停止单"""
@@ -416,6 +417,9 @@ class StrategyEngine(object):
         
         # 如果当前有该合约上的止损单
         if symbol in self.__dictStopOrder:
+
+            print u'strategyEngine.py __processStopOrder() has stop order.'
+
             # 获取止损单列表
             listSO = self.__dictStopOrder[symbol]     # SO:stop order
             
@@ -426,6 +430,7 @@ class StrategyEngine(object):
                 # 如果是买入停止单，且最新成交价大于停止触发价
                 if so.direction == DIRECTION_BUY and lastPrice >= so.price:
                     # 以当日涨停价发出限价单买入
+                    print u'sendOrder({0},{1},{2},{3},{4}'.format(symbol,'Direction_Buy',so.offset,upperLimit,so.volume)
                     ref = self.sendOrder(symbol, DIRECTION_BUY, so.offset, 
                                          upperLimit, so.volume, strategy)    
                     
@@ -437,6 +442,7 @@ class StrategyEngine(object):
                 
                 # 如果是卖出停止单，且最新成交价小于停止触发价
                 elif so.direction == DIRECTION_SELL and lastPrice <= so.price:
+                    print u'sendOrder({0},{1},{2},{3},{4}'.format(symbol,'Direction_Sell',so.offset,upperLimit,so.volume)
                     ref = self.sendOrder(symbol, DIRECTION_SELL, so.offset,
                                          lowerLimit, so.volume, strategy)
                     
@@ -452,10 +458,15 @@ class StrategyEngine(object):
             # 检查停止单列表是否为空，若为空，则从停止单字典中移除该合约代码
             if not listSO:
                 del self.__dictStopOrder[symbol]
-    
+
+
+
     #----------------------------------------------------------------------
     def updateOrder(self, event):
-        """报单更新"""
+        """事件响应：报单更新"""
+
+        #print u'strategyEngine.py updateOrder() begin.'
+
         data = event.dict_['data']
         orderRef = data['OrderRef']
         
@@ -485,10 +496,14 @@ class StrategyEngine(object):
             
         # 记录该Order的数据
         self.__dictOrder[orderRef] = data
-    
+
+        #print u'strategyEngine.py updateOrder() end.'
+
     #----------------------------------------------------------------------
     def updateTrade(self, event):
-        """成交更新"""
+        """事件响应：成交更新"""
+
+        #print u'strategyEngine.py updateTrade() begin.'
         data = event.dict_['data']
         orderRef = data['OrderRef']
         
@@ -507,8 +522,10 @@ class StrategyEngine(object):
             
             # 推送给策略
             strategy = self.__dictOrderRefStrategy[orderRef]
-            strategy.onTrade(trade)            
-        
+            strategy.onTrade(trade)
+
+        #print u'strategyEngine.py updateTrade() end.'
+
     #----------------------------------------------------------------------
     def sendOrder(self, symbol, direction, offset, price, volume, strategy):
         """
@@ -520,9 +537,12 @@ class StrategyEngine(object):
         volume：下单手数
         strategy：策略对象 
         """
+
+        #print u'strategyEngine.py sendOrder() begin.'
         contract = self.mainEngine.selectInstrument(symbol)
         
         if contract:
+            #放入事件引擎
             ref = self.mainEngine.sendOrder(symbol,
                                             contract['ExchangeID'],
                                             price,
@@ -532,7 +552,9 @@ class StrategyEngine(object):
                                             offset)
             
         self.__dictOrderRefStrategy[ref] = strategy
-        
+
+        #print u'strategyEngine.py sendOrder() end.'
+
         return ref
 
     #----------------------------------------------------------------------
@@ -540,6 +562,7 @@ class StrategyEngine(object):
         """
         撤单
         """
+        print u'strategyEngine.py cancelOrder() begin.'
         order = self.__dictOrder[orderRef]
         symbol = order['InstrumentID']
         contract = self.mainEngine.selectInstrument(symbol)
@@ -550,12 +573,20 @@ class StrategyEngine(object):
                                         orderRef,
                                         order['FrontID'],
                                         order['SessionID'])
-        
+
+        print u'strategyEngine.py cancelOrder() end.'
+
     #----------------------------------------------------------------------
     def __registerEvent(self):
         """注册事件监听"""
+
+        #注册订阅行情数据更新事件
         self.__eventEngine.register(EVENT_MARKETDATA, self.updateMarketData)
+
+        #注册订阅订单更新事件
         self.__eventEngine.register(EVENT_ORDER, self.updateOrder)
+
+        #注册订阅交易响应事件
         self.__eventEngine.register(EVENT_TRADE ,self.updateTrade)
         
     #----------------------------------------------------------------------
@@ -568,6 +599,7 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def registerStrategy(self, symbol, strategy):
         """注册策略对合约TICK数据的监听"""
+        print u'strategyEngine.py registerStrategy() begin.'
         # 尝试获取监听该合约代码的策略的列表，若无则创建
         try:
             listStrategy = self.__dictSymbolStrategy[symbol]
@@ -579,6 +611,8 @@ class StrategyEngine(object):
         if strategy not in listStrategy:
             listStrategy.append(strategy)
 
+        print u'strategyEngine.py registerStrategy() end.'
+
     #----------------------------------------------------------------------
     def placeStopOrder(self, symbol, direction, offset, price, volume, strategy):
         """
@@ -586,6 +620,8 @@ class StrategyEngine(object):
         注意这里的price是停止单的触发价
         """
         # 创建止损单对象
+        print u'strategyEngine.py placeStopOrder() begin.'
+
         so = StopOrder(symbol, direction, offset, price, volume, strategy)
         
         # 获取该合约相关的止损单列表
@@ -597,12 +633,17 @@ class StrategyEngine(object):
         
         # 将该止损单插入列表中
         listSO.append(so)
-        
+
+        print u'strategyEngine.py placeStopOrder() end.'
+
         return so
     
     #----------------------------------------------------------------------
     def cancelStopOrder(self, so):
         """撤销停止单"""
+
+        print u'strategyEngine.py cancelStopOrder() begin.'
+
         symbol = so.symbol
         
         try:
@@ -615,6 +656,8 @@ class StrategyEngine(object):
                 del self.__dictStopOrder[symbol]
         except KeyError:
             pass
+
+        print u'strategyEngine.py cancelStopOrder() end.'
         
     #----------------------------------------------------------------------
     def startAll(self):
@@ -700,6 +743,8 @@ class StrategyTemplate(object):
     #----------------------------------------------------------------------
     def buy(self, price, volume, stopOrder=False):
         """买入开仓"""
+        print u'strategyEngine.py StrategyTemplate({3}) buy() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
+
         if self.trading:
             if stopOrder:
                 so = self.engine.placeStopOrder(self.symbol, DIRECTION_BUY, 
@@ -711,10 +756,15 @@ class StrategyTemplate(object):
                 return ref
         else:
             return None
-    
+
+        #print (u'strategyEngine.py buy() end.')
+
     #----------------------------------------------------------------------
     def cover(self, price, volume, stopOrder=False):
         """买入平仓"""
+
+        print u'strategyEngine.py StrategyTemplate({3}) cover() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
+
         if self.trading:
             if stopOrder:
                 so = self.engine.placeStopOrder(self.symbol, DIRECTION_BUY,
@@ -726,10 +776,14 @@ class StrategyTemplate(object):
                 return ref
         else:
             return None
-    
+        print (u'strategyEngine.py cover() end.')
+
     #----------------------------------------------------------------------
     def sell(self, price, volume, stopOrder=False):
         """卖出平仓"""
+
+        print u'strategyEngine.py  StrategyTemplate({3}) sell() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
+
         if self.trading:
             if stopOrder:
                 so = self.engine.placeStopOrder(self.symbol, DIRECTION_SELL,
@@ -741,10 +795,12 @@ class StrategyTemplate(object):
                 return ref
         else:
             return None
-    
+        #print u'strategyEngine.py sell() end.'
+
     #----------------------------------------------------------------------
     def short(self, price, volume, stopOrder=False):
         """卖出开仓"""
+        print u'strategyEngine.py StrategyTemplate({3}) short() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
         if self.trading:
             if stopOrder:
                 so = self.engine.placeStopOrder(self.symbol, DIRECTION_SELL,
@@ -756,7 +812,8 @@ class StrategyTemplate(object):
                 return ref    
         else:
             return None
-    
+        #print u'strategyEngine.py short() end.'
+
     #----------------------------------------------------------------------
     def cancelOrder(self, orderRef):
         """撤单"""

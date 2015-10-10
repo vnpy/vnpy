@@ -126,7 +126,7 @@ class SimpleEmaStrategy(StrategyTemplate):
                 
                 #tick.upperLimit = data['UpperLimitPrice']
                 #tick.lowerLimit = data['LowerLimitPrice']
-                
+
                 tick.time = data['UpdateTime']
                 #tick.ms = data['UpdateMillisec']
                 #tick.time = UpdateTime
@@ -254,19 +254,28 @@ class SimpleEmaStrategy(StrategyTemplate):
                 # 如果当前手头无仓位，则直接做多
                 if self.pos == 0:
                     # 涨停价买入开仓
-                    self.buy(self.currentTick.upperLimit, 1)
+                    # Modified by Incense Lee ：回测时，Tick数据中没有涨停价，只能使用当前价
+                    #self.buy(self.currentTick.upperLimit, 1)
+                    self.buy(self.currentTick.lastPrice, 1)
                 # 手头有空仓，则先平空，再开多
                 elif self.pos < 0:
-                    self.cover(self.currentTick.upperLimit, 1)
-                    self.buy(self.currentTick.upperLimit, 1)
+                    #self.cover(self.currentTick.upperLimit, 1)
+                    self.cover(self.currentTick.lastPrice, 1)
+                    #self.buy(self.currentTick.upperLimit, 1)
+                    self.buy(self.currentTick.lastPrice, 1)
             
             # 反之，做空
             elif self.fastEMA < self.slowEMA:
                 if self.pos == 0:
-                    self.short(self.currentTick.lowerLimit, 1)
+                    # Modified by Incense Lee ：回测时，Tick数据中没有最低价价，只能使用当前价
+                    #self.short(self.currentTick.lowerLimit, 1)
+                    self.short(self.currentTick.lastPrice, 1)
                 elif self.pos > 0:
-                    self.sell(self.currentTick.lowerLimit, 1)
-                    self.short(self.currentTick.lowerLimit, 1)
+                    #self.sell(self.currentTick.lowerLimit, 1)
+                    self.sell(self.currentTick.lastPrice, 1)
+
+                    #self.short(self.currentTick.lowerLimit, 1)
+                    self.short(self.currentTick.lastPrice, 1)
         
             # 记录日志
             log = self.name + u'，K线时间：' + str(time) + '\n' + \
@@ -322,7 +331,8 @@ def main():
     setting = {}
     setting['fastAlpha'] = 0.2
     setting['slowAlpha'] = 0.05
-    se.createStrategy(u'EMA演示策略', 'IF1506', SimpleEmaStrategy, setting)
+    #se.createStrategy(u'EMA演示策略', 'IF1506', SimpleEmaStrategy, setting)
+    se.createStrategy(u'EMA演示策略', 'a', SimpleEmaStrategy, setting)
     
     # 启动所有策略
     se.startAll()

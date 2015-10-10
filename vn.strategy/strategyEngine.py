@@ -429,8 +429,13 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def __registerEvent(self):
         """注册事件监听"""
+         #注册订阅行情数据更新事件
         self.__eventEngine.register(EVENT_MARKETDATA, self.__updateMarketData)
+
+        #注册订阅订单更新事件
         self.__eventEngine.register(EVENT_ORDER, self.__updateOrder)
+
+        #注册订阅交易响应事件
         self.__eventEngine.register(EVENT_TRADE ,self.__updateTrade)
         
     #----------------------------------------------------------------------

@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, time
 from strategyEngine import *
 
 
+
 ########################################################################
 class LimitOrder(object):
     """限价单对象"""
@@ -252,9 +253,16 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def startBacktesting(self):
         """开始回测"""
-        self.writeLog(u'开始回测')
-        
+
+        ISOTIMEFORMAT = '%Y-%m-%d %X'
+
+        t1 = datetime.now()
+
+        self.writeLog(u'开始回测,{0}'.format(str(t1 )))
+
         for data in self.listDataHistory:
+
+
             # 记录最新的TICK数据
             self.currentData = data
             
@@ -267,8 +275,11 @@ class BacktestingEngine(object):
             self.strategyEngine.updateMarketData(event)
             
         self.saveTradeData()
-        
-        self.writeLog(u'回测结束')
+
+        t2 = datetime.now()
+        self.writeLog(u'回测结束,{0},耗时:{1}秒'.format(str(t2),(t2-t1).seconds))
+
+
     
     #----------------------------------------------------------------------
     def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset):
