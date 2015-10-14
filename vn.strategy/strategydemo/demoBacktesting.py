@@ -24,7 +24,7 @@ if __name__ == '__main__':
     be.connectMysql()
     #be.loadMongoDataHistory(symbol, datetime(2015,5,1), datetime.today())
     #be.loadMongoDataHistory(symbol, datetime(2012,1,9), datetime(2012,1,14))
-    be.loadMysqlDataHistory(symbol, datetime(2012,1,9), datetime(2012,3,30))
+    be.loadMysqlDataHistory(symbol, datetime(2012,1,9), datetime(2012,1,30))
 
     # 创建策略对象
     setting = {}

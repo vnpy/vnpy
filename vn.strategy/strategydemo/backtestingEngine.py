@@ -25,6 +25,9 @@ class LimitOrder(object):
         self.direction = None
         self.offset = None
 
+        #Modified by Incense Lee
+        self.orderTime = datetime.now()         #下单时间
+
 
 ########################################################################
 class BacktestingEngine(object):
@@ -37,15 +40,15 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.eventEngine = EventEngine()
+        self.eventEngine = EventEngine()    # 实例化
         
         # 策略引擎
-        self.strategyEngine = None
-        
+        self.strategyEngine = None          # 通过setStrategyEngine进行设置
+
         # TICK历史数据列表，由于要使用For循环来实现仿真回放
         # 使用list的速度比Numpy和Pandas都要更快
         self.listDataHistory = []
-        
+
         # 限价单字典
         self.dictOrder = {}
         
@@ -60,6 +63,9 @@ class BacktestingEngine(object):
         
         # 成交编号
         self.tradeID = 0
+
+        # 回测编号
+        self.Id = datetime.now().strftime('%Y%m%d-%H%M%S')
         
     #----------------------------------------------------------------------
     def setStrategyEngine(self, engine):
@@ -114,6 +120,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadMysqlDataHistory(self, symbol, startDate, endDate):
         """从Mysql载入历史TICK数据,"""
+        #Todo :判断开始和结束时间，如果间隔天过长，数据量会过大，需要批次提取。
         try:
 
             if self.__mysqlConnected:
@@ -147,18 +154,41 @@ class BacktestingEngine(object):
                 self.writeLog(sqlstring)
 
                 count = cur.execute(sqlstring)
+                self.writeLog(u'历史TICK数据共{0}条'.format(count))
 
                 # 将TICK数据读入内存
-                self.listDataHistory = cur.fetchall()
+                #self.listDataHistory = cur.fetchall()
 
-                self.writeLog(u'历史TICK数据载入完成，共{0}条'.format(count))
+                fetch_counts = 0
+                fetch_size = 10000
+
+                while True:
+                    results = cur.fetchmany(fetch_size)
+
+                    if not results:
+                        break
+
+                    fetch_counts = fetch_counts+fetch_size
+
+                    if not self.listDataHistory:
+
+                        self.listDataHistory =results
+
+                    else:
+                        self.listDataHistory =  self.listDataHistory + results
+
+                    self.writeLog(u'历史TICK数据载入{0}条'.format(fetch_counts))
+
+                self.writeLog(u'历史TICK数据载入完成，{1}~{2},共{0}条'.format(count,startDate,endDate))
+
             else:
                 self.writeLog(u'MysqlDB未连接，请检查')
         except MySQLdb.Error, e:
-            self.writeLog(u'MysqlDB载入数据失败，请检查.Error {0}: {1}'.format(e.arg[0],e.arg[1]))
+            self.writeLog(u'MysqlDB载入数据失败，请检查.Error {0}'.format(e))
 
     #----------------------------------------------------------------------
     def getMysqlDeltaDate(self,symbol, startDate, decreaseDays):
+        """从mysql库中获取交易日前若干天"""
         try:
             if self.__mysqlConnected:
 
@@ -193,7 +223,10 @@ class BacktestingEngine(object):
 
     #----------------------------------------------------------------------
     def processLimitOrder(self):
-        """处理限价单"""
+        """
+        处理限价单
+        为体现准确性，回测引擎需要真实tick数据的买一或卖一价比对。
+        """
         for ref, order in self.dictOrder.items():
             # 如果是买单，且限价大于等于当前TICK的卖一价，则假设成交
             if order.direction == DIRECTION_BUY and \
@@ -206,7 +239,10 @@ class BacktestingEngine(object):
     
     #----------------------------------------------------------------------
     def executeLimitOrder(self, ref, order, price):
-        """限价单成交处理"""
+        """
+        模拟限价单成交处理
+        回测引擎模拟成交
+        """
         # 成交回报
         self.tradeID = self.tradeID + 1
         
@@ -218,6 +254,7 @@ class BacktestingEngine(object):
         tradeData['OffsetFlag'] = order.offset
         tradeData['Price'] = price
         tradeData['Volume'] = order.volume
+        tradeData['TradeTime'] = order.insertTime
 
         print tradeData
 
@@ -243,10 +280,10 @@ class BacktestingEngine(object):
         orderEvent = Event()
         orderEvent.dict_['data'] = orderData
         self.strategyEngine.updateOrder(orderEvent)
-        
+
         # 记录该成交到列表中
         self.listTrade.append(tradeData)
-        
+
         # 删除该限价单
         del self.dictOrder[ref]
                 
@@ -265,16 +302,17 @@ class BacktestingEngine(object):
 
             # 记录最新的TICK数据
             self.currentData = data
-            
+
             # 处理限价单
             self.processLimitOrder()
-            
+
             # 推送到策略引擎中
             event = Event()
             event.dict_['data'] = data
             self.strategyEngine.updateMarketData(event)
-            
-        self.saveTradeData()
+
+        #保存到数据库中
+        self.saveTradeDataToMysql()
 
         t2 = datetime.now()
         self.writeLog(u'回测结束,{0},耗时:{1}秒'.format(str(t2),(t2-t1).seconds))
@@ -282,13 +320,15 @@ class BacktestingEngine(object):
 
     
     #----------------------------------------------------------------------
-    def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset):
+    def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset, orderTime=datetime.now()):
         """回测发单"""
         order = LimitOrder(instrumentid)
         order.price = price
         order.direction = direction
         order.volume = volume
         order.offset = offset
+        order.orderTime = orderTime
+
         
         self.orderRef = self.orderRef + 1
         self.dictOrder[str(self.orderRef)] = order
@@ -330,4 +370,37 @@ class BacktestingEngine(object):
         """仿真订阅合约"""
         pass
 
+    #----------------------------------------------------------------------
+    def saveTradeDataToMysql(self):
+        """保存交易记录到mysql,added by Incense Lee"""
+        if self.__mysqlConnected:
+            sql='insert into BackTest.TB_Trade values '
+            values = ''
+
+            for tradeItem in self.listTrade:
+
+                if len(values) > 0:
+                    values = values + ','
+
+                values = values + '(\'{0}\',\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',{6},{7})'.format(
+                    self.Id,
+                    tradeItem['InstrumentID'],
+                    tradeItem['OrderRef'],
+                    tradeItem['TradeID'],
+                    tradeItem['Direction'],
+                    tradeItem['OffsetFlag'],
+                    tradeItem['Price'],
+                    tradeItem['Volume'])
+
+            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+
+            try:
+                cur.execute(sql+values)
+                self.__mysqlConnection.commit()
+            except Exception, e:
+                print e
+
+        else:
+            self.saveTradeData()
 

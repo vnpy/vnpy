@@ -90,6 +90,8 @@ class Trade(object):
         self.offset = None          # 开平
         self.price = 0              # 成交价
         self.volume = 0             # 成交量
+
+        self.tradeTime = ''         # 成交时间
  
 
 ########################################################################
@@ -144,8 +146,8 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, mainEngine, backtesting=False):
         """Constructor"""
-        self.__eventEngine = eventEngine
-        self.mainEngine = mainEngine
+        self.__eventEngine = eventEngine    # 引用事件引擎
+        self.mainEngine = mainEngine        # 主引擎，在回测中，为backtestingEngin,在交易中，为demoEngine
         self.backtesting = backtesting      # 是否在进行回测
         
         # 获取代表今日的datetime
@@ -192,7 +194,7 @@ class StrategyEngine(object):
         
     #----------------------------------------------------------------------
     def createStrategy(self, strategyName, strategySymbol, strategyClass, strategySetting):
-        """创建策略"""
+        """创建策略（实例化）"""
         strategy = strategyClass(strategyName, strategySymbol, self)
 
         self.writeLog(u"创建策略:{0}".format(strategyName))
@@ -203,7 +205,7 @@ class StrategyEngine(object):
 
         # 订阅合约行情，注意这里因为是CTP，所以ExchangeID可以忽略
         self.mainEngine.subscribe(strategySymbol, None)
-        
+
         # 注册策略监听
         self.registerStrategy(strategySymbol, strategy)
     
@@ -225,7 +227,8 @@ class StrategyEngine(object):
     #         symbol = data['InstrumentID']
     #         data['date'] = self.today
     #         self.__mongoTickDB[symbol].insert(data)
-    # #
+    #
+
     # #----------------------------------------------------------------------
     # def loadTickFromMongo(self, symbol, startDate, endDate=None):
     #     """从MongoDB中读取Tick数据"""
@@ -257,7 +260,8 @@ class StrategyEngine(object):
         #    symbol = data['InstrumentID']
         #    data['date'] = self.today
         #    self.__mongoTickDB[symbol].insert(data)
-        pass;
+        pass
+
     #----------------------------------------------------------------------
     def loadTickFromMysql(self, symbol, startDate, endDate=None):
         """从MysqlDB中读取Tick数据"""
@@ -295,7 +299,7 @@ class StrategyEngine(object):
 
             cx = cur.fetchall()
 
-            self.writeLog(u'历史TICK数据载入完成，共{0}条'.format(count))
+            self.writeLog(u'历史TICK数据载入完成，{1}~{2},共{0}条'.format(count,startDate,endDate))
 
             return cx
         else:
@@ -303,6 +307,7 @@ class StrategyEngine(object):
 
     #----------------------------------------------------------------------
     def getMysqlDeltaDate(self,symbol, startDate, decreaseDays):
+        """从mysql获取交易日天数差"""
         try:
             if self.__mysqlConnected:
 
@@ -329,7 +334,7 @@ class StrategyEngine(object):
                 self.writeLog(u'MysqlDB未连接，请检查')
 
         except MySQLdb.Error, e:
-            self.writeLog(u'MysqlDB载入数据失败，请检查.Error %d: %s'.format(e.arg[0],e.arg[1]))
+            self.writeLog(u'MysqlDB载入数据失败，请检查.Error %s'.format(e))
 
         td = timedelta(days=3)
 
@@ -432,7 +437,7 @@ class StrategyEngine(object):
                     # 以当日涨停价发出限价单买入
                     print u'sendOrder({0},{1},{2},{3},{4}'.format(symbol,'Direction_Buy',so.offset,upperLimit,so.volume)
                     ref = self.sendOrder(symbol, DIRECTION_BUY, so.offset, 
-                                         upperLimit, so.volume, strategy)    
+                                         upperLimit, so.volume,tick.time, strategy)
                     
                     # 触发策略的止损单发出更新
                     so.strategy.onStopOrder(ref)
@@ -444,7 +449,7 @@ class StrategyEngine(object):
                 elif so.direction == DIRECTION_SELL and lastPrice <= so.price:
                     print u'sendOrder({0},{1},{2},{3},{4}'.format(symbol,'Direction_Sell',so.offset,upperLimit,so.volume)
                     ref = self.sendOrder(symbol, DIRECTION_SELL, so.offset,
-                                         lowerLimit, so.volume, strategy)
+                                         lowerLimit, so.volume,tick.time, strategy)
                     
                     so.strategy.onStopOrder(ref)
                     
@@ -527,7 +532,7 @@ class StrategyEngine(object):
         #print u'strategyEngine.py updateTrade() end.'
 
     #----------------------------------------------------------------------
-    def sendOrder(self, symbol, direction, offset, price, volume, strategy):
+    def sendOrder(self, symbol, direction, offset, price, volume, orderTime, strategy):
         """
         发单（仅允许限价单）
         symbol：合约代码
@@ -535,6 +540,7 @@ class StrategyEngine(object):
         offset：开平，OFFSET_OPEN/OFFSET_CLOSE
         price：下单价格
         volume：下单手数
+        orderTime:下单时间（回归测试使用）
         strategy：策略对象 
         """
 
@@ -542,14 +548,15 @@ class StrategyEngine(object):
         contract = self.mainEngine.selectInstrument(symbol)
         
         if contract:
-            #放入事件引擎
+            #调用主引擎的发单函数
             ref = self.mainEngine.sendOrder(symbol,
                                             contract['ExchangeID'],
                                             price,
                                             PRICETYPE_LIMIT,
                                             volume,
                                             direction,
-                                            offset)
+                                            offset,
+                                            orderTime)
             
         self.__dictOrderRefStrategy[ref] = strategy
 
@@ -568,6 +575,7 @@ class StrategyEngine(object):
         contract = self.mainEngine.selectInstrument(symbol)
         
         if contract:
+            #调用主引擎的撤单函数
             self.mainEngine.cancelOrder(symbol,
                                         contract['ExchangeID'],
                                         orderRef,
@@ -616,7 +624,7 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def placeStopOrder(self, symbol, direction, offset, price, volume, strategy):
         """
-        下停止单（运行于本地引擎中）
+        下停止单（止损单，运行于本地引擎中）
         注意这里的price是停止单的触发价
         """
         # 创建止损单对象
@@ -741,7 +749,7 @@ class StrategyTemplate(object):
         raise NotImplementedError
         
     #----------------------------------------------------------------------
-    def buy(self, price, volume, stopOrder=False):
+    def buy(self, price, volume, stopOrder=False, orderTime=datetime.now()):
         """买入开仓"""
         print u'strategyEngine.py StrategyTemplate({3}) buy() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
 
@@ -752,7 +760,7 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_BUY,
-                                              OFFSET_OPEN, price, volume, self)
+                                              OFFSET_OPEN, price, volume, orderTime, self)
                 return ref
         else:
             return None
@@ -760,7 +768,7 @@ class StrategyTemplate(object):
         #print (u'strategyEngine.py buy() end.')
 
     #----------------------------------------------------------------------
-    def cover(self, price, volume, stopOrder=False):
+    def cover(self, price, volume, stopOrder=False, orderTime=datetime.now()):
         """买入平仓"""
 
         print u'strategyEngine.py StrategyTemplate({3}) cover() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
@@ -772,14 +780,14 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_BUY,
-                                              OFFSET_CLOSE, price, volume, self)
+                                              OFFSET_CLOSE, price, volume, orderTime, self)
                 return ref
         else:
             return None
         print (u'strategyEngine.py cover() end.')
 
     #----------------------------------------------------------------------
-    def sell(self, price, volume, stopOrder=False):
+    def sell(self, price, volume, stopOrder=False, orderTime=datetime.now()):
         """卖出平仓"""
 
         print u'strategyEngine.py  StrategyTemplate({3}) sell() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
@@ -791,14 +799,14 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_SELL,
-                                              OFFSET_CLOSE, price, volume, self)
+                                              OFFSET_CLOSE, price, volume, orderTime, self)
                 return ref
         else:
             return None
         #print u'strategyEngine.py sell() end.'
 
     #----------------------------------------------------------------------
-    def short(self, price, volume, stopOrder=False):
+    def short(self, price, volume, stopOrder=False, orderTime=datetime.now()):
         """卖出开仓"""
         print u'strategyEngine.py StrategyTemplate({3}) short() begin. symbol:{0}, price:{1},volume:{2}'.format(self.symbol, price, volume, self.name)
         if self.trading:
@@ -808,7 +816,7 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_SELL, 
-                                              OFFSET_OPEN, price, volume, self)
+                                              OFFSET_OPEN, price, volume, orderTime, self)
                 return ref    
         else:
             return None

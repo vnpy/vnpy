@@ -230,7 +230,7 @@ class SimpleEmaStrategy(StrategyTemplate):
     
     #----------------------------------------------------------------------
     def onBar(self, o, h, l, c, volume, time):
-        """K线数据更新"""
+        """K线数据更新，同时进行策略的买入、卖出逻辑计算"""
         # 保存K线序列数据
         self.listOpen.append(o)
         self.listHigh.append(h)

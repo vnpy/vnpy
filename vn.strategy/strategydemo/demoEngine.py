@@ -27,7 +27,7 @@ class MainEngine:
     def __init__(self):
         """Constructor"""
         self.ee = EventEngine()         # 创建事件驱动引擎
-        print u'demoEngine.MainEngine create EventEngine() success'
+        print u'demoEngine.MainEngineee create EventEngine() success'
 
         self.md = DemoMdApi(self.ee)    # 创建API接口
         print u'demoEngine.MainEngine create DemoMdApi() success'
