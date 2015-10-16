@@ -101,7 +101,7 @@ def test_mktbar_M1_get_interM():
 
 if __name__ == '__main__':
 	#test_config()
-	#test_mktbar_D1()
+	test_mktbar_D1()
 	#test_bond_D1()
 	#test_fut_D1()
 	#test_fund_D1()
@@ -116,4 +116,4 @@ if __name__ == '__main__':
 	#test_mongod_get_all()
 	#test_mktbar_M1_get_drudgery()
 	#test_mktbar_M1_get_all()
-	test_mktbar_M1_get_interM()
+	#test_mktbar_M1_get_interM()

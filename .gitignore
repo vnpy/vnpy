@@ -37,3 +37,6 @@ Release/
 # 其他文件
 *.dump
 *.vssettings
+
+# 不想同步的
+*.local

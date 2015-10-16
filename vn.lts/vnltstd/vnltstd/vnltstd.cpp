@@ -1414,7 +1414,7 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 	CSecurityFtdcInputOrderField myreq = CSecurityFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
-	getChar(req, "CombOffsetFlag", myreq.CombOffsetFlag);
+	//getChar(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getChar(req, "UserID", myreq.UserID);
 	getChar(req, "LimitPrice", myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
@@ -1435,6 +1435,19 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 	getChar(req, "VolumeCondition", &myreq.VolumeCondition);
 	getInt(req, "RequestID", &myreq.RequestID);
 	getChar(req, "Direction", &myreq.Direction);
+
+	//¥¶¿ÌCombOffsetFlag
+	if (req.has_key("CombOffsetFlag"))
+	{
+		object o2 = req["CombOffsetFlag"];
+		extract<string> x2(o2);
+		if (x2.check())
+		{
+			string s2 = x2();
+			const char *buffer2 = s2.c_str();
+			myreq.CombOffsetFlag[0] = *buffer2;
+		}
+	}
 
 	int i = this->api->ReqOrderInsert(&myreq, nRequestID);
 	return i;

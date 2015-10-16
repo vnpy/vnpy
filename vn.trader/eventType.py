@@ -24,6 +24,12 @@ EVENT_ACCOUNT = 'eAccount.'             # 账户回报事件
 EVENT_CONTRACT = 'eContract.'           # 合约基础信息回报事件
 EVENT_ERROR = 'eError.'                 # 错误回报事件
 
+# CTA模块相关
+EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
+
+# Wind接口相关
+EVENT_WIND_CONNECTREQ = 'eWindConnectReq'   # Wind接口请求连接事件
+
 
 #----------------------------------------------------------------------
 def test():
