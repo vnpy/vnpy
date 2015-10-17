@@ -19,14 +19,14 @@ class LimitOrder(object):
     #----------------------------------------------------------------------
     def __init__(self, symbol):
         """Constructor"""
-        self.symbol = symbol
-        self.price = 0
-        self.volume = 0
-        self.direction = None
-        self.offset = None
+        self.symbol = symbol             # 报单合约
+        self.price = 0                   # 报单价格
+        self.volume = 0                  # 报单合约数量
+        self.direction = None            # 方向
+        self.offset = None               # 开/平
 
         #Modified by Incense Lee
-        self.orderTime = datetime.now()         #下单时间
+        self.orderTime = datetime.now()  # 下单时间
 
 
 ########################################################################
@@ -40,10 +40,10 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.eventEngine = EventEngine()    # 实例化
+        self.eventEngine = EventEngine()  # 实例化
         
         # 策略引擎
-        self.strategyEngine = None          # 通过setStrategyEngine进行设置
+        self.strategyEngine = None        # 通过setStrategyEngine进行设置
 
         # TICK历史数据列表，由于要使用For循环来实现仿真回放
         # 使用list的速度比Numpy和Pandas都要更快
@@ -254,7 +254,7 @@ class BacktestingEngine(object):
         tradeData['OffsetFlag'] = order.offset
         tradeData['Price'] = price
         tradeData['Volume'] = order.volume
-        tradeData['TradeTime'] = order.insertTime
+        tradeData['TradeTime'] = order.orderTime
 
         print tradeData
 
@@ -271,7 +271,7 @@ class BacktestingEngine(object):
         orderData['LimitPrice'] = price
         orderData['VolumeTotalOriginal'] = order.volume
         orderData['VolumeTraded'] = order.volume
-        orderData['InsertTime'] = ''
+        orderData['InsertTime'] = order.orderTime
         orderData['CancelTime'] = ''
         orderData['FrontID'] = ''
         orderData['SessionID'] = ''
@@ -322,17 +322,18 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset, orderTime=datetime.now()):
         """回测发单"""
-        order = LimitOrder(instrumentid)
-        order.price = price
-        order.direction = direction
-        order.volume = volume
+        order = LimitOrder(instrumentid)        # 限价报单
+        order.price = price                     # 报单价格
+        order.direction = direction             # 买卖方向
+        order.volume = volume                   # 报单数量
         order.offset = offset
-        order.orderTime = orderTime
+        order.orderTime = orderTime             # 报单时间
 
-        
-        self.orderRef = self.orderRef + 1
+
+        self.orderRef = self.orderRef + 1       # 报单编号
+
         self.dictOrder[str(self.orderRef)] = order
-        
+
         return str(self.orderRef)
     
     #----------------------------------------------------------------------
@@ -374,15 +375,16 @@ class BacktestingEngine(object):
     def saveTradeDataToMysql(self):
         """保存交易记录到mysql,added by Incense Lee"""
         if self.__mysqlConnected:
-            sql='insert into BackTest.TB_Trade values '
+            sql='insert into BackTest.TB_Trade (Id,symbol,orderRef,tradeID,direction,offset,price,volume,tradeTime) values '
             values = ''
 
+            print u'共{0}条交易记录.'.format(len(self.listTrade))
             for tradeItem in self.listTrade:
 
                 if len(values) > 0:
                     values = values + ','
 
-                values = values + '(\'{0}\',\'{1}\',\'{2}\',\'{3}\',\'{4}\',\'{5}\',{6},{7})'.format(
+                values = values + '(\'{0}\',\'{1}\',{2},{3},{4},{5},{6},{7},\'{8}\')'.format(
                     self.Id,
                     tradeItem['InstrumentID'],
                     tradeItem['OrderRef'],
@@ -390,7 +392,8 @@ class BacktestingEngine(object):
                     tradeItem['Direction'],
                     tradeItem['OffsetFlag'],
                     tradeItem['Price'],
-                    tradeItem['Volume'])
+                    tradeItem['Volume'],
+                    tradeItem['TradeTime'].strftime('%Y-%m-%d %H:%M:%S'))
 
             cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
 

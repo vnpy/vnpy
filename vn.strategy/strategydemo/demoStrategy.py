@@ -48,12 +48,12 @@ class SimpleEmaStrategy(StrategyTemplate):
         self.barTime = None
         
         # 保存K线数据的列表对象
-        self.listOpen = []
-        self.listHigh = []
-        self.listLow = []
-        self.listClose = []
-        self.listVolume = []
-        self.listTime = []
+        #self.listOpen = []
+        #self.listHigh = []
+        #self.listLow = []
+        #self.listClose = []
+        #self.listVolume = []
+        #s#elf.listTime = []
         
         # 持仓
         self.pos = 0
@@ -70,7 +70,16 @@ class SimpleEmaStrategy(StrategyTemplate):
         self.initCompleted = False
         
         # 初始化时读取的历史数据的起始日期(可以选择外部设置)
-        self.startDate = None     
+        self.startDate = None
+
+        # Added by Incense Lee
+        # 属于updateMarketData推送的第一个Tick数据,忽略交易逻辑
+        self.firstMarketTick = True
+
+        self.lineK = []         # K线数据
+        self.lineEMA = []   # 快速、慢速EMA数据
+
+
         
     #----------------------------------------------------------------------
     def loadSetting(self, setting):
@@ -186,7 +195,7 @@ class SimpleEmaStrategy(StrategyTemplate):
             self.barTime = ticktime
         else:
             # 如果是当前一分钟内的数据
-            if ticktime.minute == self.barTime.minute:
+            if ticktime.minute == self.barTime.minute and ticktime.hour == self.barTime.hour:
                 # 汇总TICK生成K线
                 self.barHigh = max(self.barHigh, tick.lastPrice)
                 self.barLow = min(self.barLow, tick.lastPrice)
@@ -196,9 +205,9 @@ class SimpleEmaStrategy(StrategyTemplate):
             # 如果是新一分钟的数据
             else:
                 # 首先推送K线数据
-                self.onBar(self.barOpen, self.barHigh, self.barLow, self.barClose, 
+                self.onBar(self.barOpen, self.barHigh, self.barLow, self.barClose,
                            self.barVolume, self.barTime)
-                
+
                 # 初始化新的K线数据
                 self.barOpen = tick.lastPrice
                 self.barHigh = tick.lastPrice
@@ -216,6 +225,7 @@ class SimpleEmaStrategy(StrategyTemplate):
             self.pos = self.pos - trade.volume 
             
         log = self.name + u'当前持仓：' + str(self.pos)
+        print log
         self.engine.writeLog(log)
         
     #----------------------------------------------------------------------
@@ -229,16 +239,28 @@ class SimpleEmaStrategy(StrategyTemplate):
         pass
     
     #----------------------------------------------------------------------
-    def onBar(self, o, h, l, c, volume, time):
+    def onBar(self, o, h, l, c, volume, t):
         """K线数据更新，同时进行策略的买入、卖出逻辑计算"""
         # 保存K线序列数据
-        self.listOpen.append(o)
-        self.listHigh.append(h)
-        self.listLow.append(l)
-        self.listClose.append(c)
-        self.listVolume.append(volume)
-        self.listTime.append(time)
-        
+        #self.listOpen.append(o)
+        #self.listHigh.append(h)
+        #self.listLow.append(l)
+        #self.listClose.append(c)
+        #self.listVolume.append(volume)
+        #self.listTime.append(t)
+
+        # 保存K线数据
+        k = Bar()
+        k.open = o
+        k.high = h
+        k.low = l
+        k.close = c
+        k.volume = volume
+        k.date = t.date#
+        k.datetime = t
+
+        self.lineK.append(k)
+
         # 计算EMA
         if self.fastEMA:
             self.fastEMA = c*self.fastAlpha + self.fastEMA*(1-self.fastAlpha)
@@ -246,9 +268,25 @@ class SimpleEmaStrategy(StrategyTemplate):
         else:
             self.fastEMA = c
             self.slowEMA = c
-        
+
+        emaData = EmaData()
+        emaData.fastEMA = self.fastEMA
+        emaData.slowEMA = self.slowEMA
+        emaData.date = t.date
+        emaData.time = t.time
+        emaData.datetime = t
+        self.lineEMA.append(emaData)
+
         # 交易逻辑
         if self.initCompleted:      # 首先检查是否是实盘运行还是数据预处理阶段
+
+            # Added by Incense Lee
+            # 属于updateMarketData推送的第一个Tick数据,忽略交易逻辑
+            if self.firstMarketTick:
+                self.firstMarketTick = False
+                return
+            # End added
+
             # 快速EMA在慢速EMA上方，做多
             if self.fastEMA > self.slowEMA:
                 # 如果当前手头无仓位，则直接做多
@@ -256,29 +294,29 @@ class SimpleEmaStrategy(StrategyTemplate):
                     # 涨停价买入开仓
                     # Modified by Incense Lee ：回测时，Tick数据中没有涨停价，只能使用当前价
                     #self.buy(self.currentTick.upperLimit, 1)
-                    self.buy(self.currentTick.lastPrice, 1)
+                    self.buy(self.currentTick.lastPrice, 1, t)   # 价格，数量，下单时间
                 # 手头有空仓，则先平空，再开多
                 elif self.pos < 0:
                     #self.cover(self.currentTick.upperLimit, 1)
-                    self.cover(self.currentTick.lastPrice, 1)
+                    self.cover(self.currentTick.lastPrice, 1, t)     # 价格，数量， 下单时间
                     #self.buy(self.currentTick.upperLimit, 1)
-                    self.buy(self.currentTick.lastPrice, 1)
+                    self.buy(self.currentTick.lastPrice, 1, t)
             
             # 反之，做空
             elif self.fastEMA < self.slowEMA:
                 if self.pos == 0:
                     # Modified by Incense Lee ：回测时，Tick数据中没有最低价价，只能使用当前价
                     #self.short(self.currentTick.lowerLimit, 1)
-                    self.short(self.currentTick.lastPrice, 1)
+                    self.short(self.currentTick.lastPrice, 1, t)
                 elif self.pos > 0:
                     #self.sell(self.currentTick.lowerLimit, 1)
-                    self.sell(self.currentTick.lastPrice, 1)
+                    self.sell(self.currentTick.lastPrice, 1, t)
 
                     #self.short(self.currentTick.lowerLimit, 1)
-                    self.short(self.currentTick.lastPrice, 1)
+                    self.short(self.currentTick.lastPrice, 1, t)
         
             # 记录日志
-            log = self.name + u'，K线时间：' + str(time) + '\n' + \
+            log = self.name + u'，K线时间：' + str(t) + '\n' + \
                 u'，快速EMA：' + str(self.fastEMA) + u'，慢速EMA：' + \
                 str(self.slowEMA)
             self.engine.writeLog(log)
