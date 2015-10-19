@@ -76,8 +76,8 @@ class SimpleEmaStrategy(StrategyTemplate):
         # 属于updateMarketData推送的第一个Tick数据,忽略交易逻辑
         self.firstMarketTick = True
 
-        self.lineK = []         # K线数据
-        self.lineEMA = []   # 快速、慢速EMA数据
+        self.lineBar = []       # K线数据
+        self.lineEMA = []       # 快速、慢速EMA数据
 
 
         
@@ -250,16 +250,18 @@ class SimpleEmaStrategy(StrategyTemplate):
         #self.listTime.append(t)
 
         # 保存K线数据
-        k = Bar()
-        k.open = o
-        k.high = h
-        k.low = l
-        k.close = c
-        k.volume = volume
-        k.date = t.date#
-        k.datetime = t
+        bar = Bar()
+        bar.symbol = self.symbol
+        bar.open = o
+        bar.high = h
+        bar.low = l
+        bar.close = c
+        bar.volume = volume
+        bar.date = t.strftime('%Y-%m-%d')
+        bar.time = t.strftime('%H:%M:%S')
+        bar.datetime = t
 
-        self.lineK.append(k)
+        self.lineBar.append(bar)
 
         # 计算EMA
         if self.fastEMA:
@@ -270,10 +272,11 @@ class SimpleEmaStrategy(StrategyTemplate):
             self.slowEMA = c
 
         emaData = EmaData()
+        emaData.symbol = self.symbol
         emaData.fastEMA = self.fastEMA
         emaData.slowEMA = self.slowEMA
-        emaData.date = t.date
-        emaData.time = t.time
+        emaData.date = t.strftime('%Y-%m-%d')
+        emaData.time = t.strftime('%H:%M:%S')
         emaData.datetime = t
         self.lineEMA.append(emaData)
 
@@ -327,6 +330,17 @@ class SimpleEmaStrategy(StrategyTemplate):
         hh, mm, ss = t.split(':')
         tt = time(int(hh), int(mm), int(ss), microsecond=ms)
         return tt
+
+     #----------------------------------------------------------------------
+    def saveData(self, id):
+         """保存过程数据"""
+         # 保存K线
+         print u'{0}保存K线'.format(self.name)
+         self.engine.saveBarToMysql(id, self.lineBar)
+
+         # 保存快速EMA和慢速EMA
+         self.engine.saveEmaToMysql(id, self.lineEMA)
+
 
 #----------------------------------------------------------------------
 def print_log(event):

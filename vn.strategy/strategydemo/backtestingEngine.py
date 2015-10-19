@@ -160,7 +160,7 @@ class BacktestingEngine(object):
                 #self.listDataHistory = cur.fetchall()
 
                 fetch_counts = 0
-                fetch_size = 10000
+                fetch_size = 1000
 
                 while True:
                     results = cur.fetchmany(fetch_size)
@@ -311,11 +311,16 @@ class BacktestingEngine(object):
             event.dict_['data'] = data
             self.strategyEngine.updateMarketData(event)
 
-        #保存到数据库中
+        # 保存交易到数据库中
         self.saveTradeDataToMysql()
 
+
         t2 = datetime.now()
+
         self.writeLog(u'回测结束,{0},耗时:{1}秒'.format(str(t2),(t2-t1).seconds))
+
+        # 保存策略过程数据到数据库
+        self.strategyEngine.saveData(self.Id)
 
 
     

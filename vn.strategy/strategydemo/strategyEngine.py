@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-from datetime import datetime
+from datetime import datetime,timedelta
 print u'StragegyEngine.py import datetime.datetime success'
 
 from pymongo import  MongoClient as Connection
@@ -87,7 +87,7 @@ class Bar(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        #self.vtSymbol = EMPTY_STRING        # vt系统代码
+
         self.symbol = EMPTY_STRING          # 代码
         #self.exchange = EMPTY_STRING        # 交易所
 
@@ -111,9 +111,9 @@ class EmaData(object):
     def __init__(self):
         """Constructor"""
 
-
-        self.fastEMA = EMPTY_FLOAT             # 快速EMA的数值
-        self.slowEMA = EMPTY_FLOAT             # 慢速EMA的数值
+        self.symbol = EMPTY_STRING          # 代码
+        self.fastEMA = EMPTY_FLOAT          # 快速EMA的数值
+        self.slowEMA = EMPTY_FLOAT          # 慢速EMA的数值
 
         self.date = EMPTY_STRING            # EMA开始的时间，日期
         self.time = EMPTY_STRING            # 时间
@@ -344,9 +344,31 @@ class StrategyEngine(object):
 
             count = cur.execute(sqlstring)
 
-            cx = cur.fetchall()
+            # cx = cur.fetchall()
+            fetch_counts = 0
 
-            print u'历史TICK数据载入完成，{1}~{2},共{0}条'.format(count,startDate,endDate)
+            fetch_size = 1000
+
+            while True:
+                results = cur.fetchmany(fetch_size)
+
+                if not results:
+                    break
+
+
+
+                if fetch_counts == 0:
+                    cx = results
+                else:
+                    cx = cx + results
+
+                fetch_counts = fetch_counts+fetch_size
+
+                print u'历史TICK数据载入{0}条'.format(fetch_counts)
+
+            self.writeLog(u'历史TICK数据载入完成，{1}~{2},共{0}条'.format(count,startDate,endDate))
+
+            print u'策略引擎：历史TICK数据载入完成，{1}~{2},共{0}条'.format(count,startDate,endDate)
 
             return cx
         else:
@@ -386,6 +408,118 @@ class StrategyEngine(object):
         td = timedelta(days=3)
 
         return startDate-td;
+    #----------------------------------------------------------------------
+    def saveBarToMysql(self,id, barList):
+        """
+        保存K线数据到数据库
+        id， 回测ID
+        barList， 对象为Bar的列表
+        """
+        if self.__mysqlConnected:
+            sql='insert into BackTest.TB_Bar (Id, symbol ,open ,high ,low ,close ,date ,time ,datetime, volume, openInterest) values '
+            values = ''
+
+            print u'共{0}条Bar记录.'.format(len(barList))
+
+            steps = 0
+
+            for bar in barList:
+
+                if len(values) > 0:
+                    values = values + ','
+
+                values = values + '(\'{0}\',\'{1}\',{2},{3},{4},{5},\'{6}\',\'{7}\',\'{8}\',{9},{10})'.format(
+                    id,
+                    bar.symbol,
+                    bar.open,
+                    bar.high,
+                    bar.low,
+                    bar.close,
+                    bar.date,
+                    bar.time,
+                    bar.datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                    bar.volume,
+                    bar.openInterest)
+
+                if steps > 3600:
+
+                        cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+                        steps = 0
+
+                        values = EMPTY_STRING
+
+                        try:
+                            cur.execute(sql+values)
+                            self.__mysqlConnection.commit()
+                        except Exception, e:
+                            print e
+
+                else:
+                    steps = steps + 1
+
+            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+            try:
+                 cur.execute(sql+values)
+                 self.__mysqlConnection.commit()
+            except Exception, e:
+                 print e
+
+    #----------------------------------------------------------------------
+    def saveEmaToMysql(self, id, emaList):
+        """
+        保存EMA到数据库
+        id,回测的编号
+        """
+        if self.__mysqlConnected:
+            sql='insert into BackTest.TB_Ema (Id, symbol ,fastEMA,slowEMA ,date ,time ,datetime) values '
+            values = ''
+
+            print u'共{0}条EMA记录.'.format(len(emaList))
+
+            steps = 0
+
+            for ema in emaList:
+
+                if len(values) > 0:
+                    values = values + ','
+
+                values = values + '(\'{0}\',\'{1}\',{2},{3},\'{4}\',\'{5}\',\'{6}\')'.format(
+                    id,
+                    ema.symbol,
+                    ema.fastEMA,
+                    ema.slowEMA,
+                    ema.date,
+                    ema.time,
+                    ema.datetime.strftime('%Y-%m-%d %H:%M:%S'))
+
+                if steps > 3600:
+
+                        cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+                        steps = 0
+
+                        values = EMPTY_STRING
+
+                        try:
+                            cur.execute(sql+values)
+                            self.__mysqlConnection.commit()
+                        except Exception, e:
+                            print e
+
+                else:
+                    steps = steps + 1
+
+            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+            try:
+                 cur.execute(sql+values)
+                 self.__mysqlConnection.commit()
+
+            except Exception, e:
+                 print e
+
 
     #----------------------------------------------------------------------
     def updateMarketData(self, event):
@@ -732,6 +866,12 @@ class StrategyEngine(object):
         for strategy in self.dictStrategy.values():
             strategy.stop()
 
+    #----------------------------------------------------------------------
+    def saveData(self,id):
+        """保存所有策略的过程数据"""
+        print(u'保存所有策略的过程数据')
+        for strategy in self.dictStrategy.values():
+            strategy.saveData(id)
 
 ########################################################################
 class StrategyTemplate(object):
@@ -780,7 +920,12 @@ class StrategyTemplate(object):
         """
         self.trading = True
         self.engine.writeLog(self.name + u'开始运行')
-        
+
+    #----------------------------------------------------------------------
+    def saveData(self,Id):
+        """保存数据"""
+        raise NotImplementedError
+
     #----------------------------------------------------------------------
     def stop(self):
         """
