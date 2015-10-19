@@ -77,6 +77,9 @@ class MainWindow(QtGui.QMainWindow):
         connectWindAction = QtGui.QAction(u'连接Wind', self)
         connectWindAction.triggered.connect(self.connectWind)
         
+        connectIbAction = QtGui.QAction(u'连接IB', self)
+        connectIbAction.triggered.connect(self.connectIb)        
+        
         testAction = QtGui.QAction(u'测试', self)
         testAction.triggered.connect(self.testSubscribe)
         
@@ -99,6 +102,7 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpAction)
         sysMenu.addAction(connectLtsAction)
         sysMenu.addAction(connectWindAction)
+        sysMenu.addAction(connectIbAction)
         sysMenu.addAction(testAction)
         sysMenu.addAction(exitAction)
         
@@ -154,37 +158,31 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('Wind')
     
     #----------------------------------------------------------------------
+    def connectIb(self):
+        """连接Ib"""
+        self.mainEngine.connect('IB')
+        
+    #----------------------------------------------------------------------
     def testSubscribe(self):
         """测试订阅"""
         req = VtSubscribeReq()
-        req.symbol = '600000'
-        req.exchange = EXCHANGE_SSE
-        self.mainEngine.subscribe(req, 'Wind')
+        req.symbol = 'GOOG'
+        req.productClass = PRODUCT_EQUITY
+        req.exchange = EXCHANGE_SMART
+        req.currency = CURRENCY_USD
+        self.mainEngine.subscribe(req, 'IB')
         
-        req = VtSubscribeReq()
-        req.symbol = '000062'
-        req.exchange = EXCHANGE_SZSE
-        self.mainEngine.subscribe(req, 'Wind')        
+        req.symbol = 'AAPL'
+        self.mainEngine.subscribe(req, 'IB')
         
-        req = VtSubscribeReq()
-        req.symbol = 'IF1511'
-        req.exchange = EXCHANGE_CFFEX
-        self.mainEngine.subscribe(req, 'Wind')
+        req.symbol = 'YHOO'
+        self.mainEngine.subscribe(req, 'IB')
         
-        req = VtSubscribeReq()
-        req.symbol = 'CU1601'
-        req.exchange = EXCHANGE_SHFE
-        self.mainEngine.subscribe(req, 'Wind')
+        req.symbol = 'MSFT'
+        self.mainEngine.subscribe(req, 'IB')
         
-        req = VtSubscribeReq()
-        req.symbol = 'C1601'
-        req.exchange = EXCHANGE_DCE
-        self.mainEngine.subscribe(req, 'Wind')       
-        
-        req = VtSubscribeReq()
-        req.symbol = 'SR1601'
-        req.exchange = EXCHANGE_CZCE
-        self.mainEngine.subscribe(req, 'Wind')             
+        req.symbol = 'GE'
+        self.mainEngine.subscribe(req, 'IB')        
         
     #----------------------------------------------------------------------
     def openAbout(self):

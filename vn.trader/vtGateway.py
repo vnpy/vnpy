@@ -164,7 +164,8 @@ class VtTickData(VtBaseData):
         
         # 成交数据
         self.lastPrice = EMPTY_FLOAT            # 最新成交价
-        self.volume = EMPTY_INT                 # 最新成交量
+        self.lastVolume = EMPTY_INT             # 最新成交量
+        self.volume = EMPTY_INT                 # 今天总成交量
         self.openInterest = EMPTY_INT           # 持仓量
         self.time = EMPTY_STRING                # 时间 11:20:56.5
         self.date = EMPTY_STRING                # 日期 20151009
@@ -370,6 +371,13 @@ class VtSubscribeReq:
         """Constructor"""
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所
+        
+        # 以下为IB相关
+        self.productClass = EMPTY_UNICODE       # 合约类型
+        self.currency = EMPTY_STRING            # 合约货币
+        self.expiry = EMPTY_STRING              # 到期日
+        self.strikePrice = EMPTY_FLOAT          # 行权价
+        self.optionType = EMPTY_UNICODE         # 期权类型
 
 
 ########################################################################
@@ -387,6 +395,13 @@ class VtOrderReq:
         self.priceType = EMPTY_STRING           # 价格类型
         self.direction = EMPTY_STRING           # 买卖
         self.offset = EMPTY_STRING              # 开平
+        
+        # 以下为IB相关
+        self.productClass = EMPTY_UNICODE       # 合约类型
+        self.currency = EMPTY_STRING            # 合约货币
+        self.expiry = EMPTY_STRING              # 到期日
+        self.strikePrice = EMPTY_FLOAT          # 行权价
+        self.optionType = EMPTY_UNICODE         # 期权类型        
         
 
 ########################################################################
