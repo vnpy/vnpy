@@ -1,5 +1,13 @@
 # encoding: UTF-8
 
+'''
+vn.ctp的gateway接入
+
+考虑到现阶段大部分CTP中的ExchangeID字段返回的都是空值
+vtSymbol直接使用symbol
+'''
+
+
 import os
 import json
 
@@ -7,6 +15,47 @@ from vnctpmd import MdApi
 from vnctptd import TdApi
 from ctpDataType import *
 from vtGateway import *
+
+# 以下为一些VT类型和CTP类型的映射字典
+# 价格类型映射
+priceTypeMap = {}
+priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
+priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
+priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
+
+# 方向类型映射
+directionMap = {}
+directionMap[DIRECTION_LONG] = defineDict['THOST_FTDC_D_Buy']
+directionMap[DIRECTION_SHORT] = defineDict['THOST_FTDC_D_Sell']
+directionMapReverse = {v: k for k, v in directionMap.items()}
+
+# 开平类型映射
+offsetMap = {}
+offsetMap[OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
+offsetMap[OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
+offsetMap[OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
+offsetMap[OFFSET_CLOSESYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
+offsetMapReverse = {v:k for k,v in offsetMap.items()}
+
+# 交易所类型映射
+exchangeMap = {}
+#exchangeMap[EXCHANGE_CFFEX] = defineDict['THOST_FTDC_EIDT_CFFEX']
+#exchangeMap[EXCHANGE_SHFE] = defineDict['THOST_FTDC_EIDT_SHFE']
+#exchangeMap[EXCHANGE_CZCE] = defineDict['THOST_FTDC_EIDT_CZCE']
+#exchangeMap[EXCHANGE_DCE] = defineDict['THOST_FTDC_EIDT_DCE']
+exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
+exchangeMap[EXCHANGE_SHFE] = 'SHFE'
+exchangeMap[EXCHANGE_CZCE] = 'CZCE'
+exchangeMap[EXCHANGE_DCE] = 'DCE'
+exchangeMap[EXCHANGE_UNKNOWN] = ''
+exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
+
+# 持仓类型映射
+posiDirectionMap = {}
+posiDirectionMap[DIRECTION_NET] = defineDict["THOST_FTDC_PD_Net"]
+posiDirectionMap[DIRECTION_LONG] = defineDict["THOST_FTDC_PD_Long"]
+posiDirectionMap[DIRECTION_SHORT] = defineDict["THOST_FTDC_PD_Short"]
+posiDirectionMapReverse = {v:k for k,v in posiDirectionMap.items()}
 
 
 ########################################################################
@@ -23,6 +72,8 @@ class CtpGateway(VtGateway):
         
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
+        
+        self.qryEnabled = False         # 是否要启动循环查询
         
     #----------------------------------------------------------------------
     def connect(self):
@@ -56,11 +107,14 @@ class CtpGateway(VtGateway):
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
         self.tdApi.connect(userID, password, brokerID, tdAddress)
+        
+        # 初始化并启动查询
+        self.initQuery()
     
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        self.mdApi(subscribeReq)
+        self.mdApi.subscribe(subscribeReq)
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -85,8 +139,52 @@ class CtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        self.mdApi.close()
-        self.tdApi.close()
+        if self.mdConnected:
+            self.mdApi.close()
+        if self.tdConnected:
+            self.tdApi.close()
+        
+    #----------------------------------------------------------------------
+    def initQuery(self):
+        """初始化连续查询"""
+        if self.qryEnabled:
+            # 需要循环的查询函数列表
+            self.qryFunctionList = [self.getAccount, self.getPosition]
+            
+            self.qryCount = 0           # 查询触发倒计时
+            self.qryTrigger = 2         # 查询触发点
+            self.qryNextFunction = 0    # 上次运行的查询函数索引
+            
+            self.startQuery()
+    
+    #----------------------------------------------------------------------
+    def query(self, event):
+        """注册到事件处理引擎上的查询函数"""
+        self.qryCount += 1
+        
+        if self.qryCount > self.qryTrigger:
+            # 清空倒计时
+            self.qryCount = 0
+            
+            # 执行查询函数
+            function = self.qryFunctionList[self.qryNextFunction]
+            function()
+            
+            # 计算下次查询函数的索引，如果超过了列表长度，则重新设为0
+            self.qryNextFunction += 1
+            if self.qryNextFunction == len(self.qryFunctionList):
+                self.qryNextFunction = 0
+    
+    #----------------------------------------------------------------------
+    def startQuery(self):
+        """启动连续查询"""
+        self.eventEngine.register(EVENT_TIMER, self.query)
+    
+    #----------------------------------------------------------------------
+    def setQryEnabled(self, qryEnabled):
+        """设置是否要启动循环查询"""
+        self.qryEnabled = qryEnabled
+    
 
 
 ########################################################################
@@ -106,7 +204,6 @@ class CtpMdApi(MdApi):
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
         
-        
         self.subscribedSymbols = set()      # 已订阅合约代码        
         
         self.userID = EMPTY_STRING          # 账号
@@ -123,7 +220,6 @@ class CtpMdApi(MdApi):
         log.gatewayName = self.gatewayName
         log.logContent = u'行情服务器连接成功'
         self.gateway.onLog(log)
-        
         self.login()
     
     #----------------------------------------------------------------------  
@@ -162,6 +258,7 @@ class CtpMdApi(MdApi):
             self.gateway.mdConnected = True
             
             log = VtLogData()
+            log.gatewayName = self.gatewayName
             log.logContent = u'行情服务器登录完成'
             self.gateway.onLog(log)
             
@@ -214,18 +311,25 @@ class CtpMdApi(MdApi):
     def onRtnDepthMarketData(self, data):
         """行情推送"""
         tick = VtTickData()
+        tick.gatewayName = self.gatewayName
         
         tick.symbol = data['InstrumentID']
-        tick.vtSymbol = '.'.join([self.gatewayName, tick.symbol])
+        tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
+        tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
         
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
-        tick.tickTime = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        tick.date = data['TradingDay']
         
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
         tick.lowPrice = data['LowestPrice']
+        tick.preClosePrice = data['PreClosePrice']
+        
+        tick.upperLimit = data['UpperLimitPrice']
+        tick.lowerLimit = data['LowerLimitPrice']
         
         # CTP只有一档行情
         tick.bidPrice1 = data['BidPrice1']
@@ -280,7 +384,7 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅合约"""
-        self.subscribeMarketData(subscribeReq.symbol)
+        self.subscribeMarketData(str(subscribeReq.symbol))
         self.subscribedSymbols.add(subscribeReq)   
         
     #----------------------------------------------------------------------
@@ -305,27 +409,6 @@ class CtpMdApi(MdApi):
 class CtpTdApi(TdApi):
     """CTP交易API实现"""
     
-    # 以下为一些VT类型和CTP类型的映射字典
-    # 价格类型映射
-    priceTypeMap = {}
-    priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
-    priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
-    priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
-    
-    # 方向类型映射
-    directionMap = {}
-    directionMap[DIRECTION_LONG] = defineDict['THOST_FTDC_D_Buy']
-    directionMap[DIRECTION_SHORT] = defineDict['THOST_FTDC_D_Sell']
-    directionMapReverse = {v: k for k, v in directionMap.items()}
-    
-    # 开平类型映射
-    offsetMap = {}
-    offsetMap[OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
-    offsetMap[OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
-    offsetMap[OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
-    offsetMap[OFFSET_CLOSESYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
-    offsetMapReverse = {v:k for k,v in offsetMap.items()}
-
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """API对象的初始化函数"""
@@ -344,6 +427,9 @@ class CtpTdApi(TdApi):
         self.password = EMPTY_STRING        # 密码
         self.brokerID = EMPTY_STRING        # 经纪商代码
         self.address = EMPTY_STRING         # 服务器地址
+        
+        self.frontID = EMPTY_INT            # 前置机编号
+        self.sessionID = EMPTY_INT          # 会话编号
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
@@ -384,6 +470,8 @@ class CtpTdApi(TdApi):
         """登陆回报"""
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
+            self.frontID = str(data['FrontID'])
+            self.sessionID = str(data['SessionID'])
             self.loginStatus = True
             self.gateway.mdConnected = True
             
@@ -536,17 +624,13 @@ class CtpTdApi(TdApi):
         
         # 保存代码
         pos.symbol = data['InstrumentID']
-        pos.vtSymbol = '.'.join([self.gatewayName, pos.symbol])   
+        pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
         
         # 方向和持仓冻结数量
-        if data['PosiDirection'] == '1':
-            pos.direction = DIRECTION_NET
+        pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+        if pos.direction == DIRECTION_NET or pos.direction == DIRECTION_LONG:
             pos.frozen = data['LongFrozen']
-        if data['PosiDirection'] == '2':
-            pos.direction = DIRECTION_LONG
-            pos.frozen = data['LongFrozen']
-        elif data['PosiDirection'] == '3':
-            pos.direction = DIRECTION_SHORT      
+        elif pos.direction == DIRECTION_SHORT:   
             pos.frozen = data['ShortFrozen']
         
         # 持仓量
@@ -583,7 +667,7 @@ class CtpTdApi(TdApi):
         # 这里的balance和快期中的账户不确定是否一样，需要测试
         account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
                            data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
-                           data['ClostProfit'] + data['PositionProfit'] + data['CashIn'] -
+                           data['CloseProfit'] + data['PositionProfit'] + data['CashIn'] -
                            data['Commission'])
         
         # 推送
@@ -624,10 +708,11 @@ class CtpTdApi(TdApi):
         """合约查询回报"""
         contract = VtContractData()
         contract.gatewayName = self.gatewayName
-        
+
         contract.symbol = data['InstrumentID']
-        contract.vtSymbol = '.'.join([self.gatewayName, contract.symbol])
-        contract.name = data['InstrumentName']
+        contract.exchange = exchangeMapReverse[data['ExchangeID']]
+        contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
+        contract.name = data['InstrumentName'].decode('GBK')
         
         # 合约数值
         contract.size = data['VolumeMultiple']
@@ -637,20 +722,28 @@ class CtpTdApi(TdApi):
         
         # 合约类型
         if data['ProductClass'] == '1':
-            contract.productClass == PRODUCT_FUTURES
+            contract.productClass = PRODUCT_FUTURES
         elif data['ProductClass'] == '2':
             contract.productClass = PRODUCT_OPTION
         elif data['ProductClass'] == '3':
             contract.productClass = PRODUCT_COMBINATION
+        else:
+            contract.productClass = PRODUCT_UNKNOWN
         
         # 期权类型
-        if data['OptionType'] == '1':
+        if data['OptionsType'] == '1':
             contract.optionType = OPTION_CALL
-        elif data['OptionType'] == '2':
+        elif data['OptionsType'] == '2':
             contract.optionType = OPTION_PUT
         
         # 推送
         self.gateway.onContract(contract)
+        
+        if last:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易合约信息获取完成'
+            self.gateway.onLog(log)
     
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
@@ -779,10 +872,10 @@ class CtpTdApi(TdApi):
         
         # 保存代码和报单号
         order.symbol = data['InstrumentID']
-        order.vtSymbol = '.'.join([self.gatewayName, order.symbol])
+        order.exchange = exchangeMapReverse[data['ExchangeID']]
+        order.vtSymbol = order.symbol #'.'.join([order.symbol, order.exchange])
         
         order.orderID = data['OrderRef']
-        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
         
         # 方向
         if data['Direction'] == '0':
@@ -821,6 +914,12 @@ class CtpTdApi(TdApi):
         order.frontID = data['FrontID']
         order.sessionID = data['SessionID']
         
+        # CTP的报单号一致性维护需要基于frontID, sessionID, orderID三个字段
+        # 但在本接口设计中，已经考虑了CTP的OrderRef的自增性，避免重复
+        # 唯一可能出现OrderRef重复的情况是多处登录并在非常接近的时间内（几乎同时发单）
+        # 考虑到VtTrader的应用场景，认为以上情况不会构成问题
+        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+        
         # 推送
         self.gateway.onOrder(order)
     
@@ -829,11 +928,12 @@ class CtpTdApi(TdApi):
         """成交回报"""
         # 创建报单数据对象
         trade = VtTradeData()
-        order.gatewayName = self.gatewayName
+        trade.gatewayName = self.gatewayName
         
         # 保存代码和报单号
         trade.symbol = data['InstrumentID']
-        trade.vtSymbol = '.'.join([self.gatewayName, trade.symbol])
+        trade.exchange = exchangeMapReverse[data['ExchangeID']]
+        trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
         
         trade.tradeID = data['TradeID']
         trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
@@ -842,20 +942,10 @@ class CtpTdApi(TdApi):
         trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
         
         # 方向
-        if data['Direction'] == '0':
-            trade.direction = DIRECTION_LONG
-        elif data['Direction'] == '1':
-            trade.direction = DIRECTION_SHORT
-        else:
-            trade.direction = DIRECTION_UNKNOWN
+        trade.direction = directionMapReverse.get(data['Direction'], '')
             
         # 开平
-        if data['OffsetFlag'] == '0':
-            trade.offset = OFFSET_OPEN
-        elif data['OffsetFlag'] == '1':
-            trade.offset = OFFSET_CLOSE
-        else:
-            trade.offset = OFFSET_UNKNOW
+        trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
             
         # 价格、报单量等数值
         trade.price = data['Price']
@@ -1146,9 +1236,9 @@ class CtpTdApi(TdApi):
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
         try:
-            req['OrderPriceType'] = self.priceTypeMap[orderReq.priceType]
-            req['Direction'] = self.directionMap[orderReq.priceType]
-            req['CombOffsetFlag'] = self.offsetMap[orderReq.offset]
+            req['OrderPriceType'] = priceTypeMap[orderReq.priceType]
+            req['Direction'] = directionMap[orderReq.direction]
+            req['CombOffsetFlag'] = offsetMap[orderReq.offset]
         except KeyError:
             return ''
             
@@ -1168,7 +1258,8 @@ class CtpTdApi(TdApi):
         self.reqOrderInsert(req, self.reqID)
         
         # 返回订单号（字符串），便于某些算法进行动态管理
-        return str(self.orderRef)
+        vtOrderID = '.'.join([self.gatewayName, str(self.orderRef)])
+        return vtOrderID
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
@@ -1179,7 +1270,7 @@ class CtpTdApi(TdApi):
         
         req['InstrumentID'] = cancelOrderReq.symbol
         req['ExchangeID'] = cancelOrderReq.exchange
-        req['OrderRef'] = cancelOrderReq.orderRef
+        req['OrderRef'] = cancelOrderReq.orderID
         req['FrontID'] = cancelOrderReq.frontID
         req['SessionID'] = cancelOrderReq.sessionID
         
@@ -1193,3 +1284,29 @@ class CtpTdApi(TdApi):
     def close(self):
         """关闭"""
         self.exit()
+
+
+#----------------------------------------------------------------------
+def test():
+    """测试"""
+    from PyQt4 import QtCore
+    import sys
+    
+    def print_log(event):
+        log = event.dict_['data']
+        print ':'.join([log.logTime, log.logContent])
+    
+    app = QtCore.QCoreApplication(sys.argv)    
+
+    eventEngine = EventEngine()
+    eventEngine.register(EVENT_LOG, print_log)
+    eventEngine.start()
+    
+    gateway = CtpGateway(eventEngine)
+    gateway.connect()
+    
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    test()

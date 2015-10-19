@@ -143,7 +143,7 @@ class EventEngine:
         """注销事件处理函数监听"""
         # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求
         try:
-            handlerList = self.handlers[type_]
+            handlerList = self.__handlers[type_]
             
             # 如果该函数存在于列表中，则移除
             if handler in handlerList:
@@ -151,7 +151,7 @@ class EventEngine:
 
             # 如果函数列表为空，则从引擎中移除该事件类型
             if not handlerList:
-                del self.handlers[type_]
+                del self.__handlers[type_]
         except KeyError:
             pass     
         
