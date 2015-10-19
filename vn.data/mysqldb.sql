@@ -14,7 +14,7 @@ CREATE TABLE `TB_Trade` (
   `fee` float DEFAULT '0',
   `profit` float DEFAULT '0',
   `profitRate` float DEFAULT '0'
-) 
+)
 
 create table TB_Bar
 (

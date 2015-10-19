@@ -1,6 +1,10 @@
 # encoding: UTF-8
 
 import shelve
+<<<<<<< HEAD
+=======
+from collections import OrderedDict
+>>>>>>> refs/remotes/vnpy/master
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -8,9 +12,17 @@ from pymongo.errors import ConnectionFailure
 from eventEngine import *
 from ctpGateway import CtpGateway
 from ltsGateway import LtsGateway
+<<<<<<< HEAD
 from windGateway import WindGateway
 from vtGateway import *
 import uiBasicWidget
+=======
+#from windGateway import WindGateway
+from ibGateway import IbGateway
+from vtGateway import *
+import uiBasicWidget
+from ctaEngine import CtaEngine
+>>>>>>> refs/remotes/vnpy/master
 
 
 ########################################################################
@@ -29,7 +41,7 @@ class MainEngine(object):
         uiBasicWidget.NameCell.setDataEngine(uiBasicWidget.NameCell, self.dataEngine)   # 将数据引擎对象传给NameCell
         
         # 用来保存接口对象的字典
-        self.gatewayDict = {}
+        self.gatewayDict = OrderedDict()
         
         # 创建我们想要接入的接口对象
         self.addGateway(CtpGateway, 'CTP')
@@ -40,8 +52,18 @@ class MainEngine(object):
         
         #self.addGateway(WindGateway, 'Wind')    # 没有Wind的请注释掉这一行
         
+<<<<<<< HEAD
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
+=======
+        self.addGateway(IbGateway, 'IB')
+        
+        # MongoDB数据库相关
+        self.dbClient = None    # MongoDB客户端对象
+        
+        # CTA引擎
+        self.ctaEngine = CtaEngine(self, self.eventEngine, self.dataEngine)
+>>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -56,7 +78,11 @@ class MainEngine(object):
             gateway.connect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> refs/remotes/vnpy/master
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""

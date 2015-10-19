@@ -39,8 +39,7 @@ class Config(object):
 	toke_ = '44ebc0f058981f85382595f9f15f967' + \
 			'0c7eaf2695de30dd752e8f33e9022baa0'
 
-	token = '7c2e59e212dbff90ffd6b382c7afb57' + \
-			'bc987a99307d382b058af6748f591d723'
+	token = '575593eb7696aec7339224c0fac2313780d8645f68b77369dcb35f8bcb419a0b'
 
 	body = {
 		'ssl': False,

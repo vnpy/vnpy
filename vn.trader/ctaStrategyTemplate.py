@@ -1,5 +1,9 @@
 # encoding: UTF-8
 
+<<<<<<< HEAD
+=======
+from vtConstant import *
+>>>>>>> refs/remotes/vnpy/master
 from ctaConstant import *
 
 
@@ -13,12 +17,22 @@ class CtaStrategyTemplate(object):
     paramList = ['vtSymbol']
     
     # 变量列表，保存了变量的名称
+<<<<<<< HEAD
     varList = []
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting=None):
         """Constructor"""
         self.ctaEngine = ctaEngine
+=======
+    varList = ['trading']
+
+    #----------------------------------------------------------------------
+    def __init__(self, ctaEngine, name, setting=None):
+        """Constructor"""
+        self.ctaEngine = ctaEngine
+        self.name = name
+>>>>>>> refs/remotes/vnpy/master
         
         self.vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
         
@@ -153,12 +167,86 @@ class CtaStrategyTemplate(object):
         d = self.__dict__
         for key in self.paramList:
             if key in setting:
+<<<<<<< HEAD
                 d[key] = paramDict[key]
+=======
+                d[key] = setting[key]
+>>>>>>> refs/remotes/vnpy/master
                 
     #----------------------------------------------------------------------
     def getToday(self):
         """查询当前日期"""
         return self.ctaEngine.getToday()
     
+<<<<<<< HEAD
+=======
+    #----------------------------------------------------------------------
+    def writeCtaLog(self, content):
+        """记录CTA日志"""
+        self.ctaEngine.writeCtaLog(content)
+    
+
+
+########################################################################
+class TestStrategy(CtaStrategyTemplate):
+    """测试策略"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self, ctaEngine, name, setting=None):
+        """Constructor"""
+        super(TestStrategy, self).__init__(ctaEngine, name, setting)
+        
+        self.strategyClassName = 'TestStrategy'
+        
+        self.author = u'用Python的交易员'    # 作者
+        
+        self.pos = EMPTY_INT            # 持仓
+        self.lastPrice = EMPTY_FLOAT    # 最新价
+        
+        # 参数和变量列表设置
+        self.paramList.append(u'author')
+        
+        self.varList.append('pos')
+        self.varList.append('lastPrice')
+    
+    #----------------------------------------------------------------------
+    def init(self):
+        """初始化策略（必须由用户继承实现）"""
+        self.writeCtaLog(u'测试策略%s初始化' %self.name)
+    
+    #----------------------------------------------------------------------
+    def start(self):
+        """启动策略（必须由用户继承实现）"""
+        self.writeCtaLog(u'测试策略%s启动' %self.name)
+    
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止策略（必须由用户继承实现）"""
+        self.writeCtaLog(u'测试策略%s停止' %self.name)
+        
+    #----------------------------------------------------------------------
+    def onTick(self, tick):
+        """收到行情TICK推送（必须由用户继承实现）"""
+        self.writeCtaLog(u'测试策略%s收到Tick' %self.name)
+        self.lastPrice = tick.lastPrice
+        
+    #----------------------------------------------------------------------
+    def onOrder(self, order):
+        """收到委托变化推送（必须由用户继承实现）"""
+        self.writeCtaLog(u'onOrder不会被调用')
+    
+    #----------------------------------------------------------------------
+    def onTrade(self, trade):
+        """收到成交推送（必须由用户继承实现）"""
+        self.writeCtaLog(u'onTrade不会被调用')
+    
+    #----------------------------------------------------------------------
+    def onBar(self, bar):
+        """收到Bar推送（必须由用户继承实现）"""
+        self.writeCtaLog(u'测试策略%s收到Bar' %self.name)    
+        
+        
+    
+>>>>>>> refs/remotes/vnpy/master
     
     

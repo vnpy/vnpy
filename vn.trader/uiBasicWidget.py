@@ -27,7 +27,14 @@ class BasicCell(QtGui.QTableWidgetItem):
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
+<<<<<<< HEAD
         self.setText(text)
+=======
+        if text == '0' or text == '0.0':
+            self.setText('')
+        else:
+            self.setText(text)
+>>>>>>> refs/remotes/vnpy/master
 
 
 ########################################################################
@@ -533,7 +540,24 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_DCE,
                     EXCHANGE_CZCE,
                     EXCHANGE_SSE,
+<<<<<<< HEAD
                     EXCHANGE_SZSE]
+=======
+                    EXCHANGE_SZSE,
+                    EXCHANGE_SMART,
+                    EXCHANGE_GLOBEX,
+                    EXCHANGE_IDEALPRO]
+    
+    currencyList = [CURRENCY_CNY,
+                    CURRENCY_USD]
+    
+    productClassList = [PRODUCT_UNKNOWN,
+                        PRODUCT_EQUITY,
+                        PRODUCT_FUTURES,
+                        PRODUCT_OPTION]
+    
+    gatewayList = ['']
+>>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, dataEngine, parent=None):
@@ -544,6 +568,12 @@ class TradingWidget(QtGui.QFrame):
         self.dataEngine = dataEngine
         
         self.symbol = ''
+<<<<<<< HEAD
+=======
+        
+        # 添加交易接口
+        self.gatewayList.extend(mainEngine.gatewayDict.keys())
+>>>>>>> refs/remotes/vnpy/master
 
         self.initUi()
         self.connectSignal()
@@ -565,6 +595,12 @@ class TradingWidget(QtGui.QFrame):
         labelVolume = QtGui.QLabel(u'数量')
         labelPriceType = QtGui.QLabel(u'价格类型')
         labelExchange = QtGui.QLabel(u'交易所') 
+<<<<<<< HEAD
+=======
+        labelCurrency = QtGui.QLabel(u'货币')
+        labelProductClass = QtGui.QLabel(u'产品类型')
+        labelGateway = QtGui.QLabel(u'交易接口')
+>>>>>>> refs/remotes/vnpy/master
 
         self.lineSymbol = QtGui.QLineEdit()
         self.lineName = QtGui.QLineEdit()
@@ -588,7 +624,20 @@ class TradingWidget(QtGui.QFrame):
         self.comboPriceType.addItems(self.priceTypeList)
         
         self.comboExchange = QtGui.QComboBox()
+<<<<<<< HEAD
         self.comboExchange.addItems(self.exchangeList)        
+=======
+        self.comboExchange.addItems(self.exchangeList)      
+        
+        self.comboCurrency = QtGui.QComboBox()
+        self.comboCurrency.addItems(self.currencyList)
+        
+        self.comboProductClass = QtGui.QComboBox()
+        self.comboProductClass.addItems(self.productClassList)     
+        
+        self.comboGateway = QtGui.QComboBox()
+        self.comboGateway.addItems(self.gatewayList)          
+>>>>>>> refs/remotes/vnpy/master
 
         gridleft = QtGui.QGridLayout()
         gridleft.addWidget(labelSymbol, 0, 0)
@@ -599,6 +648,13 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(labelVolume, 5, 0)
         gridleft.addWidget(labelPriceType, 6, 0)
         gridleft.addWidget(labelExchange, 7, 0)
+<<<<<<< HEAD
+=======
+        gridleft.addWidget(labelCurrency, 8, 0)
+        gridleft.addWidget(labelProductClass, 9, 0)   
+        gridleft.addWidget(labelGateway, 10, 0)
+        
+>>>>>>> refs/remotes/vnpy/master
         gridleft.addWidget(self.lineSymbol, 0, 1)
         gridleft.addWidget(self.lineName, 1, 1)
         gridleft.addWidget(self.comboDirection, 2, 1)
@@ -607,6 +663,12 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(self.spinVolume, 5, 1)
         gridleft.addWidget(self.comboPriceType, 6, 1)	
         gridleft.addWidget(self.comboExchange, 7, 1)
+<<<<<<< HEAD
+=======
+        gridleft.addWidget(self.comboCurrency, 8, 1)	
+        gridleft.addWidget(self.comboProductClass, 9, 1) 
+        gridleft.addWidget(self.comboGateway, 10, 1)
+>>>>>>> refs/remotes/vnpy/master
 
         # 右边部分
         labelBid1 = QtGui.QLabel(u'买一')
@@ -716,13 +778,25 @@ class TradingWidget(QtGui.QFrame):
     #----------------------------------------------------------------------
     def updateSymbol(self):
         """合约变化"""
+<<<<<<< HEAD
         symbol = unicode(self.lineSymbol.text())
         exchange = unicode(self.comboExchange.currentText())
         
+=======
+        # 读取组件数据
+        symbol = unicode(self.lineSymbol.text())
+        exchange = unicode(self.comboExchange.currentText())
+        currency = unicode(self.comboCurrency.currentText())
+        productClass = unicode(self.comboProductClass.currentText())           
+        gatewayName = unicode(self.comboGateway.currentText())
+        
+        # 查询合约
+>>>>>>> refs/remotes/vnpy/master
         if exchange:
             vtSymbol = '.'.join([symbol, exchange])
             contract = self.dataEngine.getContract(vtSymbol)
         else:
+<<<<<<< HEAD
             contract = self.dataEngine.getContract(symbol)
         
         if contract:
@@ -770,6 +844,59 @@ class TradingWidget(QtGui.QFrame):
 
             # 更新组件当前交易的合约
             self.symbol = contract.vtSymbol
+=======
+            vtSymbol = symbol
+            contract = self.dataEngine.getContract(symbol)   
+        
+        if contract:
+            gatewayName = contract.gatewayName
+            self.lineName.setText(contract.name)
+            exchange = contract.exchange    # 保证有交易所代码
+            
+        # 清空价格数量
+        self.spinPrice.setValue(0)
+        self.spinVolume.setValue(0)
+
+        # 清空行情显示
+        self.labelBidPrice1.setText('')
+        self.labelBidPrice2.setText('')
+        self.labelBidPrice3.setText('')
+        self.labelBidPrice4.setText('')
+        self.labelBidPrice5.setText('')
+        self.labelBidVolume1.setText('')
+        self.labelBidVolume2.setText('')
+        self.labelBidVolume3.setText('')
+        self.labelBidVolume4.setText('')
+        self.labelBidVolume5.setText('')	
+        self.labelAskPrice1.setText('')
+        self.labelAskPrice2.setText('')
+        self.labelAskPrice3.setText('')
+        self.labelAskPrice4.setText('')
+        self.labelAskPrice5.setText('')
+        self.labelAskVolume1.setText('')
+        self.labelAskVolume2.setText('')
+        self.labelAskVolume3.setText('')
+        self.labelAskVolume4.setText('')
+        self.labelAskVolume5.setText('')
+        self.labelLastPrice.setText('')
+        self.labelReturn.setText('')
+
+        # 重新注册事件监听
+        self.eventEngine.unregister(EVENT_TICK + self.symbol, self.signal.emit)
+        self.eventEngine.register(EVENT_TICK + vtSymbol, self.signal.emit)
+
+        # 订阅合约
+        req = VtSubscribeReq()
+        req.symbol = symbol
+        req.exchange = exchange
+        req.currency = currency
+        req.productClass = productClass
+        
+        self.mainEngine.subscribe(req, gatewayName)
+
+        # 更新组件当前交易的合约
+        self.symbol = vtSymbol
+>>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
     def updateTick(self, event):
@@ -804,8 +931,17 @@ class TradingWidget(QtGui.QFrame):
                 self.labelAskVolume5.setText(str(tick.askVolume5))	
 
             self.labelLastPrice.setText(str(tick.lastPrice))
+<<<<<<< HEAD
             rt = (tick.lastPrice/tick.preClosePrice)-1
             self.labelReturn.setText(('%.2f' %(rt*100))+'%')
+=======
+            
+            if tick.preClosePrice:
+                rt = (tick.lastPrice/tick.preClosePrice)-1
+                self.labelReturn.setText(('%.2f' %(rt*100))+'%')
+            else:
+                self.labelReturn.setText('')
+>>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
     def connectSignal(self):
@@ -815,13 +951,24 @@ class TradingWidget(QtGui.QFrame):
     #----------------------------------------------------------------------
     def sendOrder(self):
         """发单"""
+<<<<<<< HEAD
         symbol = str(self.lineSymbol.text())
         exchange = str(self.comboExchange.currentText())
 
+=======
+        symbol = unicode(self.lineSymbol.text())
+        exchange = unicode(self.comboExchange.currentText())
+        currency = unicode(self.comboCurrency.currentText())
+        productClass = unicode(self.comboProductClass.currentText())           
+        gatewayName = unicode(self.comboGateway.currentText())        
+
+        # 查询合约
+>>>>>>> refs/remotes/vnpy/master
         if exchange:
             vtSymbol = '.'.join([symbol, exchange])
             contract = self.dataEngine.getContract(vtSymbol)
         else:
+<<<<<<< HEAD
             contract = self.dataEngine.getContract(symbol)
             
         if contract:
@@ -834,6 +981,27 @@ class TradingWidget(QtGui.QFrame):
             req.priceType = unicode(self.comboPriceType.currentText())
             req.offset = unicode(self.comboOffset.currentText())
             self.mainEngine.sendOrder(req, contract.gatewayName)
+=======
+            vtSymbol = symbol
+            contract = self.dataEngine.getContract(symbol)
+        
+        if contract:
+            gatewayName = contract.gatewayName
+            exchange = contract.exchange    # 保证有交易所代码
+            
+        req = VtOrderReq()
+        req.symbol = symbol
+        req.exchange = exchange
+        req.price = self.spinPrice.value()
+        req.volume = self.spinVolume.value()
+        req.direction = unicode(self.comboDirection.currentText())
+        req.priceType = unicode(self.comboPriceType.currentText())
+        req.offset = unicode(self.comboOffset.currentText())
+        req.currency = currency
+        req.productClass = productClass
+        
+        self.mainEngine.sendOrder(req, gatewayName)
+>>>>>>> refs/remotes/vnpy/master
             
     #----------------------------------------------------------------------
     def cancelAll(self):

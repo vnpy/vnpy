@@ -3,7 +3,11 @@
 import psutil
 
 from uiBasicWidget import *
+<<<<<<< HEAD
 
+=======
+from uiCtaWidget import CtaEngineManager
+>>>>>>> refs/remotes/vnpy/master
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -77,6 +81,12 @@ class MainWindow(QtGui.QMainWindow):
         connectWindAction = QtGui.QAction(u'连接Wind', self)
         connectWindAction.triggered.connect(self.connectWind)
         
+<<<<<<< HEAD
+=======
+        connectIbAction = QtGui.QAction(u'连接IB', self)
+        connectIbAction.triggered.connect(self.connectIb)        
+        
+>>>>>>> refs/remotes/vnpy/master
         testAction = QtGui.QAction(u'测试', self)
         testAction.triggered.connect(self.testSubscribe)
         
@@ -89,6 +99,12 @@ class MainWindow(QtGui.QMainWindow):
         contractAction = QtGui.QAction(u'查询合约', self)
         contractAction.triggered.connect(self.openContract)
         
+<<<<<<< HEAD
+=======
+        ctaAction = QtGui.QAction(u'CTA策略', self)
+        ctaAction.triggered.connect(self.openCta)
+        
+>>>>>>> refs/remotes/vnpy/master
         # 创建菜单
         menubar = self.menuBar()
         
@@ -96,11 +112,19 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpAction)
         sysMenu.addAction(connectLtsAction)
         sysMenu.addAction(connectWindAction)
+<<<<<<< HEAD
+=======
+        sysMenu.addAction(connectIbAction)
+>>>>>>> refs/remotes/vnpy/master
         sysMenu.addAction(testAction)
         sysMenu.addAction(exitAction)
         
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(contractAction)
+<<<<<<< HEAD
+=======
+        functionMenu.addAction(ctaAction)
+>>>>>>> refs/remotes/vnpy/master
         
         helpMenu = menubar.addMenu(u'帮助')
         helpMenu.addAction(aboutAction)
@@ -150,6 +174,7 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('Wind')
     
     #----------------------------------------------------------------------
+<<<<<<< HEAD
     def testSubscribe(self):
         """测试订阅"""
         req = VtSubscribeReq()
@@ -181,6 +206,33 @@ class MainWindow(QtGui.QMainWindow):
         req.symbol = 'SR1601'
         req.exchange = EXCHANGE_CZCE
         self.mainEngine.subscribe(req, 'Wind')             
+=======
+    def connectIb(self):
+        """连接Ib"""
+        self.mainEngine.connect('IB')
+        
+    #----------------------------------------------------------------------
+    def testSubscribe(self):
+        """测试订阅"""
+        req = VtSubscribeReq()
+        req.symbol = 'GOOG'
+        req.productClass = PRODUCT_EQUITY
+        req.exchange = EXCHANGE_SMART
+        req.currency = CURRENCY_USD
+        self.mainEngine.subscribe(req, 'IB')
+        
+        req.symbol = 'AAPL'
+        self.mainEngine.subscribe(req, 'IB')
+        
+        req.symbol = 'YHOO'
+        self.mainEngine.subscribe(req, 'IB')
+        
+        req.symbol = 'MSFT'
+        self.mainEngine.subscribe(req, 'IB')
+        
+        req.symbol = 'GE'
+        self.mainEngine.subscribe(req, 'IB')        
+>>>>>>> refs/remotes/vnpy/master
         
     #----------------------------------------------------------------------
     def openAbout(self):
@@ -199,6 +251,18 @@ class MainWindow(QtGui.QMainWindow):
         except AttributeError:
             self.contractM = ContractMonitor(self.mainEngine.dataEngine)
             self.contractM.show()
+<<<<<<< HEAD
+=======
+            
+    #----------------------------------------------------------------------
+    def openCta(self):
+        """打开CTA组件"""
+        try:
+            self.ctaM.show()
+        except AttributeError:
+            self.ctaM = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
+            self.ctaM.show()
+>>>>>>> refs/remotes/vnpy/master
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):

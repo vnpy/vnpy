@@ -37,8 +37,23 @@ Release/
 # 其他文件
 *.dump
 *.vssettings
+<<<<<<< HEAD
 vnpy.pyproj.user
 .idea/workspace.xml
 .idea/.name
 .idea/vnpy.iml
 *.xml
+=======
+
+<<<<<<< HEAD
+# 不想同步的
+*.local
+=======
+vn.ctp/build/*
+vn.lts/build/*
+.idea
+>>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+>>>>>>> refs/remotes/vnpy/master
+*.json
+*.json
+*.json
