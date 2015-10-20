@@ -347,6 +347,8 @@ class StrategyEngine(object):
             # cx = cur.fetchall()
             fetch_counts = 0
 
+            cx = None
+
             fetch_size = 1000
 
             while True:
@@ -354,8 +356,6 @@ class StrategyEngine(object):
 
                 if not results:
                     break
-
-
 
                 if fetch_counts == 0:
                     cx = results
@@ -421,6 +421,9 @@ class StrategyEngine(object):
 
             print u'共{0}条Bar记录.'.format(len(barList))
 
+            if len(barList) == 0:
+                return
+
             steps = 0
 
             for bar in barList:
@@ -477,6 +480,9 @@ class StrategyEngine(object):
             values = ''
 
             print u'共{0}条EMA记录.'.format(len(emaList))
+
+            if len(emaList) == 0:
+                return
 
             steps = 0
 

@@ -384,12 +384,22 @@ class BacktestingEngine(object):
             values = ''
 
             print u'共{0}条交易记录.'.format(len(self.listTrade))
+
+            if len(self.listTrade) == 0:
+                return
+
             for tradeItem in self.listTrade:
 
                 if len(values) > 0:
                     values = values + ','
 
-                values = values + '(\'{0}\',\'{1}\',{2},{3},{4},{5},{6},{7},\'{8}\')'.format(
+                if tradeItem['OffsetFlag'] == '0':
+                    amount = 0-float(tradeItem['Price'])*int(tradeItem['Volume'])
+                else:
+                    amount = float(tradeItem['Price'])*int(tradeItem['Volume'])
+
+
+                values = values + '(\'{0}\',\'{1}\',{2},{3},{4},{5},{6},{7},\'{8}\',{9})'.format(
                     self.Id,
                     tradeItem['InstrumentID'],
                     tradeItem['OrderRef'],
@@ -398,7 +408,7 @@ class BacktestingEngine(object):
                     tradeItem['OffsetFlag'],
                     tradeItem['Price'],
                     tradeItem['Volume'],
-                    tradeItem['TradeTime'].strftime('%Y-%m-%d %H:%M:%S'))
+                    tradeItem['TradeTime'].strftime('%Y-%m-%d %H:%M:%S'),amount)
 
             cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
 
