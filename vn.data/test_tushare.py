@@ -5,7 +5,7 @@ import ipdb
 
 data = ts.get_hist_data('600848', start='2015-04-01', end='2015-10-20') #一次性获取全部日k线数据
 
-#print data.tail(10)
+print data.tail(10)
 
 data.plot()
 

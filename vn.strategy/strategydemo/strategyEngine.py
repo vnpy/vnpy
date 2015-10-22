@@ -300,7 +300,7 @@ class StrategyEngine(object):
             self.writeLog(u'策略引擎连接MysqlDB成功')
         except ConnectionFailure:
             self.writeLog(u'策略引擎连接MysqlDB失败')
-     #----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def __recordTickToMysql(self, data):
         """将Tick数据插入到MysqlDB中"""
         #if self.__mongoConnected:
@@ -308,6 +308,27 @@ class StrategyEngine(object):
         #    data['date'] = self.today
         #    self.__mongoTickDB[symbol].insert(data)
         pass
+
+    #----------------------------------------------------------------------
+    def __executeMysql(self, sql):
+        """执行mysql语句"""
+        if not self.__mysqlConnected:
+            self.__connectMysql()
+
+        cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+        try:
+            cur.execute(sql)
+            self.__mysqlConnection.commit()
+
+        except Exception, e:
+            print e
+            print sql
+
+            self.__connectMysql()
+            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+            cur.execute(sql)
+            self.__mysqlConnection.commit()
 
     #----------------------------------------------------------------------
     def loadTickFromMysql(self, symbol, startDate, endDate=None):
@@ -424,7 +445,7 @@ class StrategyEngine(object):
             if len(barList) == 0:
                 return
 
-            steps = 0
+            counts = 0
 
             for bar in barList:
 
@@ -444,30 +465,25 @@ class StrategyEngine(object):
                     bar.volume,
                     bar.openInterest)
 
-                if steps > 3600:
+                if counts >= 3600:
 
-                        cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
 
-                        steps = 0
 
-                        values = EMPTY_STRING
+                    self.__executeMysql(sql+values)
 
-                        try:
-                            cur.execute(sql+values)
-                            self.__mysqlConnection.commit()
-                        except Exception, e:
-                            print e
+                    print u'写入{0}条Bar记录'.format(counts)
+
+                    counts = 0
+                    values = ''
 
                 else:
-                    steps = steps + 1
+                    counts = counts + 1
 
-            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+            if counts > 0:
 
-            try:
-                 cur.execute(sql+values)
-                 self.__mysqlConnection.commit()
-            except Exception, e:
-                 print e
+                self.__executeMysql(sql+values)
+                print u'写入{0}条Bar记录'.format(counts)
+
 
     #----------------------------------------------------------------------
     def saveEmaToMysql(self, id, emaList):
@@ -484,7 +500,7 @@ class StrategyEngine(object):
             if len(emaList) == 0:
                 return
 
-            steps = 0
+            counts = 0
 
             for ema in emaList:
 
@@ -500,31 +516,21 @@ class StrategyEngine(object):
                     ema.time,
                     ema.datetime.strftime('%Y-%m-%d %H:%M:%S'))
 
-                if steps > 3600:
+                if counts >= 3600:
 
-                        cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+                    self.__executeMysql(sql+values)
+                    print u'写入{0}条EMA记录'.format(counts)
 
-                        steps = 0
-
-                        values = EMPTY_STRING
-
-                        try:
-                            cur.execute(sql+values)
-                            self.__mysqlConnection.commit()
-                        except Exception, e:
-                            print e
+                    counts = 0
+                    values = ''
 
                 else:
-                    steps = steps + 1
+                    counts = counts + 1
 
-            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+            if counts > 0:
 
-            try:
-                 cur.execute(sql+values)
-                 self.__mysqlConnection.commit()
-
-            except Exception, e:
-                 print e
+                self.__executeMysql(sql+values)
+                print u'写入{0}条EMA记录'.format(counts)
 
 
     #----------------------------------------------------------------------

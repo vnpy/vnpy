@@ -382,7 +382,7 @@ def main():
     # 创建策略对象
     setting = {}
     setting['fastAlpha'] = 0.2
-    setting['slowAlpha'] = 0.05
+    setting['slowAlpha'] = 0.09
     #se.createStrategy(u'EMA演示策略', 'IF1506', SimpleEmaStrategy, setting)
     se.createStrategy(u'EMA演示策略', 'a', SimpleEmaStrategy, setting)
     

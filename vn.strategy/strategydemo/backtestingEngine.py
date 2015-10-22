@@ -380,7 +380,7 @@ class BacktestingEngine(object):
     def saveTradeDataToMysql(self):
         """保存交易记录到mysql,added by Incense Lee"""
         if self.__mysqlConnected:
-            sql='insert into BackTest.TB_Trade (Id,symbol,orderRef,tradeID,direction,offset,price,volume,tradeTime) values '
+            sql='insert into BackTest.TB_Trade (Id,symbol,orderRef,tradeID,direction,offset,price,volume,tradeTime,amount) values '
             values = ''
 
             print u'共{0}条交易记录.'.format(len(self.listTrade))

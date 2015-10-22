@@ -44,3 +44,6 @@ create table TB_Ema
 
 );
 
+delete from TB_Trade;
+delete from TB_Bar;
+delete from TB_Ema;

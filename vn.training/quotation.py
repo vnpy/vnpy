@@ -514,23 +514,30 @@ class Test(QtGui.QWidget):
 
         data = ts.get_hist_data('600120') #一次性获取全部日k线数据
 
-        print data.tail(100)
 
 
-        for row in data:
-            vars = row.split(' ')
-            self.stk_data['list']['time'].append(vars[1])
-            self.stk_data['list']['open'].append(float(vars[2]))
-            self.stk_data['list']['high'].append(float(vars[3]))
-            self.stk_data['list']['low'].append(float(vars[4]))
-            self.stk_data['list']['close'].append(float(vars[5]))
-            self.stk_data['list']['vol'].append(int(float(vars[6])))
-            self.stk_data['list']['amount'].append(int(float(vars[7])))
 
-            sum_vol = sum(self.stk_data['list']['vol'])
-            sum_amt = sum(self.stk_data['list']['amount'])
-
-            self.stk_data['list']['mma'].append(float(sum_amt)/(sum_vol*100.00))
+        #for row in data:
+        #    vars = row.split(' ')
+        #    self.stk_data['list']['time'].append(vars[1])
+        #    self.stk_data['list']['open'].append(float(vars[2]))
+        #    self.stk_data['list']['high'].append(float(vars[3]))
+        #    self.stk_data['list']['low'].append(float(vars[4]))
+        #    self.stk_data['list']['close'].append(float(vars[5]))
+        #    self.stk_data['list']['vol'].append(int(float(vars[6])))
+        #    self.stk_data['list']['amount'].append(int(float(vars[7])))
+#
+        #    sum_vol = sum(self.stk_data['list']['vol'])
+        #    sum_amt = sum(self.stk_data['list']['amount'])
+#
+        #    self.stk_data['list']['mma'].append(float(sum_amt)/(sum_vol*100.00))
+        self.stk_data['list'] = data.datetime
+        self.stk_data['list']
+        self.stk_data['list']
+        self.stk_data['list']
+        self.stk_data['list']
+        self.stk_data['list']
+        self.stk_data['list']
 
         self.stk_data['lastclose'] = 10.12 #上一个交易日收盘价
         self.stk_data['open'] = self.stk_data['list']['open'][0]       #开盘价

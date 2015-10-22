@@ -13,32 +13,49 @@ try:
 
     symbol = 'a'
 
-    #执行脚本，返回记录数
-    count = cur.execute('select open,high,low, close,datetime from TB_Bar where Id=\'20151019-161753\'')
-    print 'there has %s rows record' % count
+    backtestingId = '20151021-170626'
 
+    #执行脚本，返回记录数
+    count = cur.execute('select open,high,low, close,datetime from TB_Bar where Id=\'{0}\''.format(backtestingId))
+    print 'there has %s rows bar record' % count
 
     results = cur.fetchall()
 
-
-    t = []
-
+    t1 = []
     o = []
-
     i = 0
 
     for r in results:
         i = i+1
-        t.append(i)
+        t1.append(i)
         # t.append(r['datetime'])
         o.append(r['open'])
+
+    count = cur.execute('select fastEMA,slowEMA,datetime from TB_Ema where Id=\'{0}\''.format(backtestingId))
+    print 'there has %s rows ema record' % count
+
+    results = cur.fetchall()
+
+    fastEma = []
+    slowEma = []
+    t2 = []
+    i = 0
+
+    for r in results:
+        i = i+1
+        t2.append(i)
+
+        fastEma.append(r['fastEMA'])
+        slowEma.append(r['slowEMA'])
 
 
     #关闭指针，关闭连接
     cur.close()
     conn.close()
 
-    plt.plot(t,o,label='data')
+    plt.plot(t1,o,label='data')
+    plt.plot(t2,fastEma,label='fastEma')
+    plt.plot(t2,slowEma,label='slowEma')
     plt.xlabel('Time')
     plt.ylabel('price')
     plt.show()
