@@ -57,3 +57,4 @@ vn.lts/build/*
 *.json
 *.json
 *.json
+*.pickle
