@@ -951,7 +951,7 @@ if __name__ == '__main__':
 
 	程序目录= os.getcwd()
 
-	pfile= open(file=os.path.join(程序目录, '绘图数据.pickle'), mode='rb')
+	pfile= open(file=os.path.join(程序目录, 'draw_data.pickle'), mode='rb')
 	绘图数据= pickle.load(pfile)
 	pfile.close()
 

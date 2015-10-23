@@ -9,6 +9,9 @@ from pymongo.errors import *
 from datetime import datetime, timedelta, time
 
 from strategyEngine import *
+import sys
+import os
+import cPickle
 
 
 
@@ -117,6 +120,71 @@ class BacktestingEngine(object):
             self.writeLog(u'回测引擎连接MysqlDB成功')
         except ConnectionFailure:
             self.writeLog(u'回测引擎连接MysqlDB失败')
+
+    #----------------------------------------------------------------------
+    def loadDataHistory(self, symbol, startDate, endDate):
+        """载入历史TICK数据,"""
+        if not endDate:
+            endDate = datetime.today()
+
+        # 看本地缓存是否存在
+        if self.__loadDataHistoryFromLocalCache(symbol, startDate, endDate):
+            self.writeLog(u'历史TICK数据从Cache载入')
+            return
+
+        intervalDays = 10
+
+        for i in range (0,(endDate - startDate).days +1, intervalDays):
+            d1 = startDate + timedelta(days = i )
+
+            if (endDate - d1).days > 10:
+                d2 = startDate + timedelta(days = i + intervalDays -1 )
+            else:
+                d2 = endDate
+
+            self.loadMysqlDataHistory(symbol, d1, d2)
+
+        self.writeLog(u'历史TICK数据共载入{0}条'.format(len(self.listDataHistory)))
+        self.__saveDataHistoryToLocalCache(symbol, startDate, endDate)
+
+
+    def __loadDataHistoryFromLocalCache(self, symbol, startDate, endDate):
+        """看本地缓存是否存在"""
+
+        cacheFolder = os.getcwd()+'\\cache'
+
+
+        cacheFile = u'{0}\\{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
+
+        if not os.path.isfile(cacheFile):
+            return False
+
+        else:
+            cache = open(cacheFile,mode='r')
+            self.listDataHistory = cPickle.load(cache)
+            return True
+
+    def __saveDataHistoryToLocalCache(self, symbol, startDate, endDate):
+        """保存本地缓存"""
+        cacheFolder = os.getcwd()+'\\cache'
+
+        if not os.path.isdir(cacheFolder):
+            os.mkdir(cacheFolder)
+
+        cacheFile = u'{0}\\{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
+
+        if os.path.isfile(cacheFile):
+            return False
+
+        else:
+            cache= open(cacheFile, mode='w')
+
+            cPickle.dump(self.listDataHistory,cache)
+
+            cache.close()
+
+            return True
+
     #----------------------------------------------------------------------
     def loadMysqlDataHistory(self, symbol, startDate, endDate):
         """从Mysql载入历史TICK数据,"""
@@ -124,6 +192,7 @@ class BacktestingEngine(object):
         try:
 
             if self.__mysqlConnected:
+
 
                 #获取指针
                 cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
@@ -154,7 +223,7 @@ class BacktestingEngine(object):
                 self.writeLog(sqlstring)
 
                 count = cur.execute(sqlstring)
-                self.writeLog(u'历史TICK数据共{0}条'.format(count))
+                #self.writeLog(u'历史TICK数据共{0}条'.format(count))
 
                 # 将TICK数据读入内存
                 #self.listDataHistory = cur.fetchall()
@@ -168,7 +237,7 @@ class BacktestingEngine(object):
                     if not results:
                         break
 
-                    fetch_counts = fetch_counts+fetch_size
+                    fetch_counts = fetch_counts + len(results)
 
                     if not self.listDataHistory:
 
@@ -177,9 +246,8 @@ class BacktestingEngine(object):
                     else:
                         self.listDataHistory =  self.listDataHistory + results
 
-                    self.writeLog(u'历史TICK数据载入{0}条'.format(fetch_counts))
+                    self.writeLog(u'{1}~{2}历史TICK数据载入共{0}条'.format(fetch_counts,startDate,endDate))
 
-                self.writeLog(u'历史TICK数据载入完成，{1}~{2},共{0}条'.format(count,startDate,endDate))
 
             else:
                 self.writeLog(u'MysqlDB未连接，请检查')
@@ -311,8 +379,12 @@ class BacktestingEngine(object):
             event.dict_['data'] = data
             self.strategyEngine.updateMarketData(event)
 
+        # 保存交易到本地结果
+        self.saveTradeData()
+
         # 保存交易到数据库中
         self.saveTradeDataToMysql()
+
 
 
         t2 = datetime.now()
@@ -370,15 +442,33 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def saveTradeData(self):
         """保存交易记录"""
-        f = shelve.open('result.vn')
-        f['listTrade'] = self.listTrade
-        f.close()
+        #f = shelve.open('result.vn')
+        #f['listTrade'] = self.listTrade
+        #f.close()
+
+        # 保存本地pickle文件
+        resultPath=os.getcwd()+'\\result'
+
+        if not os.path.isdir(resultPath):
+            os.mkdir(resultPath)
+
+        resultFile = u'{0}\\{1}_Trade.pickle'.format(resultPath, self.Id)
+
+        cache= open(resultFile, mode='w')
+
+        cPickle.dump(self.listTrade,cache)
+
+        cache.close()
+
         """仿真订阅合约"""
         pass
 
     #----------------------------------------------------------------------
     def saveTradeDataToMysql(self):
         """保存交易记录到mysql,added by Incense Lee"""
+
+        self.connectMysql()
+
         if self.__mysqlConnected:
             sql='insert into BackTest.TB_Trade (Id,symbol,orderRef,tradeID,direction,offset,price,volume,tradeTime,amount) values '
             values = ''

@@ -16,6 +16,9 @@ from vtConstant import *
 
 import MySQLdb
 
+import os
+import sys
+import cPickle
 
 # 常量定义
 OFFSET_OPEN = '0'           # 开仓
@@ -165,6 +168,8 @@ class Order(object):
         self.sessionID = 0          # 会话编号
         
         self.status = ''            # 报单状态代码
+
+        self.preTradeID = ''        # 上一成交单编号（用于平仓）
 
 
 ########################################################################
@@ -436,6 +441,25 @@ class StrategyEngine(object):
         id， 回测ID
         barList， 对象为Bar的列表
         """
+
+        # 保存本地pickle文件
+        resultPath=os.getcwd()+'\\result'
+
+        if not os.path.isdir(resultPath):
+            os.mkdir(resultPath)
+
+        resultFile = u'{0}\\{1}_Bar.pickle'.format(resultPath,id)
+
+        cache= open(resultFile, mode='w')
+
+        cPickle.dump(barList,cache)
+
+        cache.close()
+
+        # 保存数据库
+
+        self.__connectMysql()
+
         if self.__mysqlConnected:
             sql='insert into BackTest.TB_Bar (Id, symbol ,open ,high ,low ,close ,date ,time ,datetime, volume, openInterest) values '
             values = ''
@@ -491,6 +515,23 @@ class StrategyEngine(object):
         保存EMA到数据库
         id,回测的编号
         """
+
+        # 保存本地pickle文件
+        resultPath=os.getcwd()+'\\result'
+
+        if not os.path.isdir(resultPath):
+            os.mkdir(resultPath)
+
+        resultFile = u'{0}\\{1}_Ema.pickle'.format(resultPath, id)
+
+        cache= open(resultFile, mode='w')
+
+        cPickle.dump(emaList,cache)
+
+        cache.close()
+
+        self.__connectMysql()
+
         if self.__mysqlConnected:
             sql='insert into BackTest.TB_Ema (Id, symbol ,fastEMA,slowEMA ,date ,time ,datetime) values '
             values = ''
