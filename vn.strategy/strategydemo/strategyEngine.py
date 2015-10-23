@@ -443,7 +443,7 @@ class StrategyEngine(object):
         """
 
         # 保存本地pickle文件
-        resultPath=os.getcwd()+'\\result'
+        resultPath=os.getcwd()+'\/result'
 
         if not os.path.isdir(resultPath):
             os.mkdir(resultPath)
@@ -517,7 +517,7 @@ class StrategyEngine(object):
         """
 
         # 保存本地pickle文件
-        resultPath=os.getcwd()+'\\result'
+        resultPath=os.getcwd()+'\/result'
 
         if not os.path.isdir(resultPath):
             os.mkdir(resultPath)
@@ -1084,7 +1084,7 @@ class StrategyTemplate(object):
     def cancelOrder(self, orderRef):
         """撤单"""
         self.engine.cancelOrder(orderRef)
-        
+
     #----------------------------------------------------------------------
     def cancelStopOrder(self, so):
         """撤销停止单"""

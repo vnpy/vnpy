@@ -151,10 +151,10 @@ class BacktestingEngine(object):
     def __loadDataHistoryFromLocalCache(self, symbol, startDate, endDate):
         """看本地缓存是否存在"""
 
-        cacheFolder = os.getcwd()+'\\cache'
+        cacheFolder = os.getcwd()+'\/cache'
 
 
-        cacheFile = u'{0}\\{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
+        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
 
         if not os.path.isfile(cacheFile):
             return False
@@ -166,12 +166,12 @@ class BacktestingEngine(object):
 
     def __saveDataHistoryToLocalCache(self, symbol, startDate, endDate):
         """保存本地缓存"""
-        cacheFolder = os.getcwd()+'\\cache'
+        cacheFolder = os.getcwd()+'\/cache'
 
         if not os.path.isdir(cacheFolder):
             os.mkdir(cacheFolder)
 
-        cacheFile = u'{0}\\{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
+        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
 
         if os.path.isfile(cacheFile):
             return False
