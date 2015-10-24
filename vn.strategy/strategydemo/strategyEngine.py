@@ -461,7 +461,10 @@ class StrategyEngine(object):
         self.__connectMysql()
 
         if self.__mysqlConnected:
-            sql='insert into BackTest.TB_Bar (Id, symbol ,open ,high ,low ,close ,date ,time ,datetime, volume, openInterest) values '
+            sql = 'insert into BackTest.TB_Bar ' \
+                  '(Id, symbol, open,high, low,close,date,time,datetime, volume, openInterest) ' \
+                  'values '
+
             values = ''
 
             print u'共{0}条Bar记录.'.format(len(barList))
@@ -523,17 +526,17 @@ class StrategyEngine(object):
             os.mkdir(resultPath)
 
         resultFile = u'{0}\\{1}_Ema.pickle'.format(resultPath, id)
-
         cache= open(resultFile, mode='w')
-
         cPickle.dump(emaList,cache)
-
         cache.close()
 
         self.__connectMysql()
 
         if self.__mysqlConnected:
-            sql='insert into BackTest.TB_Ema (Id, symbol ,fastEMA,slowEMA ,date ,time ,datetime) values '
+            sql = 'insert into BackTest.TB_Ema ' \
+                    '(Id, symbol ,fastEMA,slowEMA ,date ,time ,datetime) ' \
+                    'values '
+
             values = ''
 
             print u'共{0}条EMA记录.'.format(len(emaList))
@@ -578,61 +581,50 @@ class StrategyEngine(object):
     def updateMarketData(self, event):
         """行情更新"""
         data = event.dict_['data']
-        #InstrumentID, UpdateTime, LastPrice, Volume, OpenInterest, BidPrice1, BidVolume1, AskPrice1, AskVolume1 = data
 
         symbol = data['InstrumentID']
-        #symbol = InstrumentID
         
         # 检查是否存在交易该合约的策略
         if symbol in self.__dictSymbolStrategy:
             # 创建TICK数据对象并更新数据
             tick = Tick(symbol)
 
-            #tick.openPrice = data['OpenPrice']
-            #tick.highPrice = data['HighestPrice']
-            #tick.lowPrice = data['LowestPrice']
+            # tick.openPrice = data['OpenPrice']
+            # tick.highPrice = data['HighestPrice']
+            # tick.lowPrice = data['LowestPrice']
             tick.lastPrice = float(data['LastPrice'])
-            #tick.lastPrice = LastPrice
 
             tick.volume = data['Volume']
             tick.openInterest = data['OpenInterest']
-            #tick.volume = Volume
-            #tick.openInterest = OpenInterest
 
-            #tick.upperLimit = data['UpperLimitPrice']
-            #tick.lowerLimit = data['LowerLimitPrice']
+            #  tick.upperLimit = data['UpperLimitPrice']
+            #  tick.lowerLimit = data['LowerLimitPrice']
 
             tick.time = data['UpdateTime']
-            #tick.time = UpdateTime
-            #tick.ms = data['UpdateMillisec']
 
             tick.bidPrice1 = float(data['BidPrice1'])
-            #tick.bidPrice2 = data['BidPrice2']
-            #tick.bidPrice3 = data['BidPrice3']
-            #tick.bidPrice4 = data['BidPrice4']
-            #tick.bidPrice5 = data['BidPrice5']
-            #tick.bidPrice1 = BidPrice1
+            # tick.bidPrice2 = data['BidPrice2']
+            # tick.bidPrice3 = data['BidPrice3']
+            # tick.bidPrice4 = data['BidPrice4']
+            # tick.bidPrice5 = data['BidPrice5']
 
             tick.askPrice1 = float(data['AskPrice1'])
-            #tick.askPrice2 = data['AskPrice2']
-            #tick.askPrice3 = data['AskPrice3']
-            #tick.askPrice4 = data['AskPrice4']
-            #tick.askPrice5 = data['AskPrice5']
-            #tick.askPrice1 = AskPrice1
+            # tick.askPrice2 = data['AskPrice2']
+            # tick.askPrice3 = data['AskPrice3']
+            # tick.askPrice4 = data['AskPrice4']
+            # tick.askPrice5 = data['AskPrice5']
 
             tick.bidVolume1 = data['BidVolume1']
-            #tick.bidVolume2 = data['BidVolume2']
-            #tick.bidVolume3 = data['BidVolume3']
-            #tick.bidVolume4 = data['BidVolume4']
-            #tick.bidVolume5 = data['BidVolume5']
-            #tick.bidVolume1 = BidVolume1
+            # tick.bidVolume2 = data['BidVolume2']
+            # tick.bidVolume3 = data['BidVolume3']
+            # tick.bidVolume4 = data['BidVolume4']
+            # tick.bidVolume5 = data['BidVolume5']
 
             tick.askVolume1 = data['AskVolume1']
-            #tick.askVolume2 = data['AskVolume2']
-            #tick.askVolume3 = data['AskVolume3']
-            #tick.askVolume4 = data['AskVolume4']
-            #tick.askVolume5 = data['AskVolume5']
-            #tick.askVolume1 = AskVolume1
+            # tick.askVolume2 = data['AskVolume2']
+            # tick.askVolume3 = data['AskVolume3']
+            # tick.askVolume4 = data['AskVolume4']
+            # tick.askVolume5 = data['AskVolume5']
 
             # 首先检查停止单是否需要发出
             self.__processStopOrder(tick)
@@ -643,7 +635,7 @@ class StrategyEngine(object):
         
         # 将数据插入MongoDB/Mysql数据库，实盘建议另开程序记录TICK数据
         if not self.backtesting:
-            #self.__recordTickToMongo(data)
+            # self.__recordTickToMongo(data)
             self.__recordTickToMysql(data)
 
     #----------------------------------------------------------------------
@@ -656,8 +648,6 @@ class StrategyEngine(object):
         
         # 如果当前有该合约上的止损单
         if symbol in self.__dictStopOrder:
-
-            #print u'strategyEngine.py __processStopOrder() has stop order.'
 
             # 获取止损单列表
             listSO = self.__dictStopOrder[symbol]     # SO:stop order
@@ -704,8 +694,6 @@ class StrategyEngine(object):
     def updateOrder(self, event):
         """事件响应：报单更新"""
 
-        #print u'strategyEngine.py updateOrder() begin.'
-
         data = event.dict_['data']
         orderRef = data['OrderRef']
         
@@ -736,13 +724,10 @@ class StrategyEngine(object):
         # 记录该Order的数据
         self.__dictOrder[orderRef] = data
 
-        #print u'strategyEngine.py updateOrder() end.'
-
     #----------------------------------------------------------------------
     def updateTrade(self, event):
         """事件响应：成交更新"""
 
-        #print u'strategyEngine.py updateTrade() begin.'
         data = event.dict_['data']
         orderRef = data['OrderRef']
         
@@ -765,8 +750,6 @@ class StrategyEngine(object):
             strategy = self.__dictOrderRefStrategy[orderRef]
             strategy.onTrade(trade)
 
-        #print u'strategyEngine.py updateTrade() end.'
-
     #----------------------------------------------------------------------
     def sendOrder(self, symbol, direction, offset, price, volume, ordertime, strategy):
         """
@@ -780,7 +763,6 @@ class StrategyEngine(object):
         strategy：策略对象 
         """
 
-        #print u'strategyEngine.py sendOrder() begin.'
         contract = self.mainEngine.selectInstrument(symbol)
         
         if contract:
@@ -797,7 +779,6 @@ class StrategyEngine(object):
             # 添加报单编号及其映射的策略
         self.__dictOrderRefStrategy[ref] = strategy
 
-        #print u'strategyEngine.py sendOrder() end.'
 
         return ref
 
@@ -825,13 +806,13 @@ class StrategyEngine(object):
     def __registerEvent(self):
         """注册事件监听"""
 
-        #注册订阅行情数据更新事件
+        # 注册 订阅行情数据更新事件
         self.__eventEngine.register(EVENT_MARKETDATA, self.updateMarketData)
 
-        #注册订阅订单更新事件
+        # 注册 订阅订单更新事件
         self.__eventEngine.register(EVENT_ORDER, self.updateOrder)
 
-        #注册订阅交易响应事件
+        # 注册 订阅交易响应事件
         self.__eventEngine.register(EVENT_TRADE ,self.updateTrade)
         
     #----------------------------------------------------------------------
@@ -865,7 +846,8 @@ class StrategyEngine(object):
         注意这里的price是停止单的触发价
         """
         # 创建止损单对象
-        print u'strategyEngine.py placeStopOrder() symbol:{0}, direction:{1}, offset:{2}, price:{3}, volume:{4}.'.format(symbol, direction, offset, price, volume)
+        print u'strategyEngine.py placeStopOrder() symbol:{0}, direction:{1}, offset:{2}, price:{3}, volume:{4}.'\
+            .format(symbol, direction, offset, price, volume)
 
         so = StopOrder(symbol, direction, offset, price, volume, strategy)
         
@@ -879,15 +861,11 @@ class StrategyEngine(object):
         # 将该止损单插入列表中
         listSO.append(so)
 
-        #print u'strategyEngine.py placeStopOrder() end.'
-
         return so
     
     #----------------------------------------------------------------------
     def cancelStopOrder(self, so):
         """撤销停止单"""
-
-        print u'strategyEngine.py cancelStopOrder() begin.'
 
         symbol = so.symbol
         
@@ -902,7 +880,6 @@ class StrategyEngine(object):
         except KeyError:
             pass
 
-        print u'strategyEngine.py cancelStopOrder() end.'
         
     #----------------------------------------------------------------------
     def startAll(self):
@@ -1000,7 +977,8 @@ class StrategyTemplate(object):
     def buy(self, price, volume, orderTime, stopOrder=False ):
         """买入开仓"""
 
-        print u'strategyEngine.py StrategyTemplate({3}) buy() begin. symbol:{0}, price:{1},volume:{2},time:{4}'.format(self.symbol, price, volume, self.name,orderTime)
+        print u'strategyEngine.py StrategyTemplate({3}) buy(symbol:{0}, price:{1},volume:{2},time:{4})'.\
+            format(self.symbol, price, volume, self.name,orderTime)
 
         if self.trading:
             if stopOrder:
@@ -1022,7 +1000,8 @@ class StrategyTemplate(object):
     def cover(self, price, volume,orderTime, stopOrder=False):
         """买入平仓"""
 
-        print u'strategyEngine.py StrategyTemplate({3}) cover() begin. symbol:{0}, price:{1},volume:{2},time:{4}'.format(self.symbol, price, volume, self.name, orderTime)
+        print u'strategyEngine.py StrategyTemplate({3}) cover(symbol:{0}, price:{1},volume:{2},time:{4})'.\
+            format(self.symbol, price, volume, self.name, orderTime)
 
         if self.trading:
             if stopOrder:
@@ -1044,7 +1023,8 @@ class StrategyTemplate(object):
     def sell(self, price, volume, orderTime, stopOrder=False):
         """卖出平仓"""
 
-        print u'strategyEngine.py  StrategyTemplate({3}) sell() begin. symbol:{0}, price:{1},volume:{2},time:{4}'.format(self.symbol, price, volume, self.name, orderTime)
+        print u'strategyEngine.py  StrategyTemplate({3}) sell(symbol:{0}, price:{1},volume:{2},time:{4})'.\
+            format(self.symbol, price, volume, self.name, orderTime)
 
         if self.trading:
             if stopOrder:
@@ -1064,7 +1044,8 @@ class StrategyTemplate(object):
     #----------------------------------------------------------------------
     def short(self, price, volume, orderTime, stopOrder=False):
         """卖出开仓"""
-        print u'strategyEngine.py StrategyTemplate({3}) short() begin. symbol:{0}, price:{1},volume:{2},time:{4}'.format(self.symbol, price, volume, self.name, orderTime)
+        print u'strategyEngine.py StrategyTemplate({3}) short(symbol:{0}, price:{1},volume:{2},time:{4})'.\
+            format(self.symbol, price, volume, self.name, orderTime)
         if self.trading:
             if stopOrder:
                 # 止损单
@@ -1078,7 +1059,7 @@ class StrategyTemplate(object):
                 return ref    
         else:
             return None
-        #print u'strategyEngine.py short() end.'
+
 
     #----------------------------------------------------------------------
     def cancelOrder(self, orderRef):

@@ -31,10 +31,10 @@ class SimpleEmaStrategy(StrategyTemplate):
         super(SimpleEmaStrategy, self).__init__(name, symbol, engine)
         
         # 策略在外部设置的参数
-        #self.fastAlpha = 0.2    # 快速EMA的参数
+        # self.fastAlpha = 0.2    # 快速EMA的参数
         self.fastAlpha = 0.2
-        #self.slowAlpha = 0.05   # 慢速EMA的参数
-        self.fastAlpha = 0.05
+        # self.slowAlpha = 0.05   # 慢速EMA的参数
+        self.slowAlpha = 0.05
         
         # 最新TICK数据（市场报价）
         self.currentTick = None
@@ -48,12 +48,12 @@ class SimpleEmaStrategy(StrategyTemplate):
         self.barTime = None
         
         # 保存K线数据的列表对象
-        #self.listOpen = []
-        #self.listHigh = []
-        #self.listLow = []
-        #self.listClose = []
-        #self.listVolume = []
-        #s#elf.listTime = []
+        # self.listOpen = []
+        # self.listHigh = []
+        # self.listLow = []
+        # self.listClose = []
+        # self.listVolume = []
+        # s#elf.listTime = []
         
         # 持仓
         self.pos = 0
@@ -102,71 +102,61 @@ class SimpleEmaStrategy(StrategyTemplate):
         self.engine.writeLog(u'读取3天的历史TICK数据')
         td = timedelta(days=1)
 
-        
         if startDate:
-            #读取历史Tick数据
-            #cx = self.engine.loadTickFromMongo(self.symbol, startDate-td)
-            historyStartDate=self.engine.getMysqlDeltaDate(self.symbol,startDate,3)
+            # 读取历史Tick数据
+            # cx = self.engine.loadTickFromMongo(self.symbol, startDate-td)
+            historyStartDate = self.engine.getMysqlDeltaDate(self.symbol,startDate,3)
             cx = self.engine.loadTickFromMysql(self.symbol, historyStartDate, startDate-td)
 
         else:
             today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-            #cx = self.engine.loadTickFromMongo(self.symbol, today-td)
-            historyStartDate=self.engine.getMysqlDeltaDate(self.symbol,today,3)
+            # cx = self.engine.loadTickFromMongo(self.symbol, today-td)
+            historyStartDate = self.engine.getMysqlDeltaDate(self.symbol,today,3)
             cx = self.engine.loadTickFromMysql(self.symbol, historyStartDate,today-td)
 
         if cx:
             for data in cx:
-                #InstrumentID, UpdateTime, LastPrice, Volume, OpenInterest, BidPrice1, BidVolume1, AskPrice1, AskVolume1 = data
 
                 tick = Tick(data['InstrumentID'])
-                #tick = Tick(InstrumentID)
+                # tick = Tick(InstrumentID)
 
-                #tick.openPrice = data['OpenPrice']
-                #tick.highPrice = data['HighestPrice']
-                #tick.lowPrice = data['LowestPrice']
+                # tick.openPrice = data['OpenPrice']
+                # tick.highPrice = data['HighestPrice']
+                # tick.lowPrice = data['LowestPrice']
                 tick.lastPrice = float(data['LastPrice'])
-                #tick.lastPrice = LastPrice
-                
+
                 tick.volume = data['Volume']
                 tick.openInterest = data['OpenInterest']
-                #tick.volume = Volume
-                #tick.openInterest = OpenInterest
                 
-                #tick.upperLimit = data['UpperLimitPrice']
-                #tick.lowerLimit = data['LowerLimitPrice']
+                # tick.upperLimit = data['UpperLimitPrice']
+                # tick.lowerLimit = data['LowerLimitPrice']
 
                 tick.time = data['UpdateTime']
-                #tick.ms = data['UpdateMillisec']
-                #tick.time = UpdateTime
+                # tick.ms = data['UpdateMillisec']
                 
-                tick.bidPrice1 =float(data['BidPrice1'])
-                #tick.bidPrice2 = data['BidPrice2']
-                #tick.bidPrice3 = data['BidPrice3']
-                #tick.bidPrice4 = data['BidPrice4']
-                #tick.bidPrice5 = data['BidPrice5']
-                #tick.bidPrice1 = BidPrice1
+                tick.bidPrice1 = float(data['BidPrice1'])
+                # tick.bidPrice2 = data['BidPrice2']
+                # tick.bidPrice3 = data['BidPrice3']
+                # tick.bidPrice4 = data['BidPrice4']
+                # tick.bidPrice5 = data['BidPrice5']
 
                 tick.askPrice1 = float(data['AskPrice1'])
-                #tick.askPrice2 = data['AskPrice2']
-                #tick.askPrice3 = data['AskPrice3']
-                #tick.askPrice4 = data['AskPrice4']
-                #tick.askPrice5 = data['AskPrice5']
-                #tick.askPrice1 = AskPrice1
-                
+                # tick.askPrice2 = data['AskPrice2']
+                # tick.askPrice3 = data['AskPrice3']
+                # tick.askPrice4 = data['AskPrice4']
+                # tick.askPrice5 = data['AskPrice5']
+
                 tick.bidVolume1 = data['BidVolume1']
-                #tick.bidVolume2 = data['BidVolume2']
-                #tick.bidVolume3 = data['BidVolume3']
-                #tick.bidVolume4 = data['BidVolume4']
-                #tick.bidVolume5 = data['BidVolume5']
-                #tick.bidVolume1 = BidVolume1
+                # tick.bidVolume2 = data['BidVolume2']
+                # tick.bidVolume3 = data['BidVolume3']
+                # tick.bidVolume4 = data['BidVolume4']
+                # tick.bidVolume5 = data['BidVolume5']
 
                 tick.askVolume1 = data['AskVolume1']
-                #tick.askVolume2 = data['AskVolume2']
-                #tick.askVolume3 = data['AskVolume3']
-                #tick.askVolume4 = data['AskVolume4']
-                #tick.askVolume5 = data['AskVolume5']
-                #tick.askVolume1 = AskVolume1
+                # tick.askVolume2 = data['AskVolume2']
+                # tick.askVolume3 = data['AskVolume3']
+                # tick.askVolume4 = data['AskVolume4']
+                # tick.askVolume5 = data['AskVolume5']
 
                 self.onTick(tick)
                 
@@ -176,12 +166,14 @@ class SimpleEmaStrategy(StrategyTemplate):
             
     #----------------------------------------------------------------------
     def onTick(self, tick):
-        """行情更新"""
+        """行情更新
+        :type tick: object
+        """
         # 保存最新的TICK
         self.currentTick = tick
         
         # 首先生成datetime.time格式的时间（便于比较）
-        #ticktime = self.strToTime(tick.time, tick.ms)
+        # ticktime = self.strToTime(tick.time, tick.ms)
         ticktime = tick.time
 
         # 假设是收到的第一个TICK
@@ -201,7 +193,8 @@ class SimpleEmaStrategy(StrategyTemplate):
                 self.barLow = min(self.barLow, tick.lastPrice)
                 self.barClose = tick.lastPrice
                 self.barVolume = self.barVolume + tick.volume
-                self.barTime = ticktime                
+                self.barTime = ticktime
+
             # 如果是新一分钟的数据
             else:
                 # 首先推送K线数据
@@ -242,12 +235,12 @@ class SimpleEmaStrategy(StrategyTemplate):
     def onBar(self, o, h, l, c, volume, t):
         """K线数据更新，同时进行策略的买入、卖出逻辑计算"""
         # 保存K线序列数据
-        #self.listOpen.append(o)
-        #self.listHigh.append(h)
-        #self.listLow.append(l)
-        #self.listClose.append(c)
-        #self.listVolume.append(volume)
-        #self.listTime.append(t)
+        # self.listOpen.append(o)
+        # self.listHigh.append(h)
+        # self.listLow.append(l)
+        # self.listClose.append(c)
+        # self.listVolume.append(volume)
+        # self.listTime.append(t)
 
         # 保存K线数据
         bar = Bar()
@@ -260,7 +253,6 @@ class SimpleEmaStrategy(StrategyTemplate):
         bar.date = t.strftime('%Y-%m-%d')
         bar.time = t.strftime('%H:%M:%S')
         bar.datetime = t
-
         self.lineBar.append(bar)
 
         # 计算EMA
@@ -296,26 +288,27 @@ class SimpleEmaStrategy(StrategyTemplate):
                 if self.pos == 0:
                     # 涨停价买入开仓
                     # Modified by Incense Lee ：回测时，Tick数据中没有涨停价，只能使用当前价
-                    #self.buy(self.currentTick.upperLimit, 1)
+                    # self.buy(self.currentTick.upperLimit, 1)
                     self.buy(self.currentTick.lastPrice, 1, t)   # 价格，数量，下单时间
+
                 # 手头有空仓，则先平空，再开多
                 elif self.pos < 0:
-                    #self.cover(self.currentTick.upperLimit, 1)
+                    # self.cover(self.currentTick.upperLimit, 1)
                     self.cover(self.currentTick.lastPrice, 1, t)     # 价格，数量， 下单时间
-                    #self.buy(self.currentTick.upperLimit, 1)
+                    # self.buy(self.currentTick.upperLimit, 1)
                     self.buy(self.currentTick.lastPrice, 1, t)
-            
+
             # 反之，做空
             elif self.fastEMA < self.slowEMA:
                 if self.pos == 0:
                     # Modified by Incense Lee ：回测时，Tick数据中没有最低价价，只能使用当前价
-                    #self.short(self.currentTick.lowerLimit, 1)
+                    # self.short(self.currentTick.lowerLimit, 1)
                     self.short(self.currentTick.lastPrice, 1, t)
                 elif self.pos > 0:
-                    #self.sell(self.currentTick.lowerLimit, 1)
+                    # self.sell(self.currentTick.lowerLimit, 1)
                     self.sell(self.currentTick.lastPrice, 1, t)
 
-                    #self.short(self.currentTick.lowerLimit, 1)
+                    # self.short(self.currentTick.lowerLimit, 1)
                     self.short(self.currentTick.lastPrice, 1, t)
         
             # 记录日志
@@ -333,13 +326,13 @@ class SimpleEmaStrategy(StrategyTemplate):
 
      #----------------------------------------------------------------------
     def saveData(self, id):
-         """保存过程数据"""
-         # 保存K线
-         print u'{0}保存K线'.format(self.name)
-         self.engine.saveBarToMysql(id, self.lineBar)
+        """保存过程数据"""
+        # 保存K线
+        print u'{0}保存K线'.format(self.name)
+        self.engine.saveBarToMysql(id, self.lineBar)
 
-         # 保存快速EMA和慢速EMA
-         self.engine.saveEmaToMysql(id, self.lineEMA)
+        # 保存快速EMA和慢速EMA
+        self.engine.saveEmaToMysql(id, self.lineEMA)
 
 
 #----------------------------------------------------------------------
@@ -360,7 +353,6 @@ def main():
     me = MainEngine()
     print u'demoStrategy.py Main call MainEngine() success'
 
-    
     # 注册事件监听
     me.ee.register(EVENT_LOG, print_log)
     
@@ -383,7 +375,7 @@ def main():
     setting = {}
     setting['fastAlpha'] = 0.2
     setting['slowAlpha'] = 0.09
-    #se.createStrategy(u'EMA演示策略', 'IF1506', SimpleEmaStrategy, setting)
+    # se.createStrategy(u'EMA演示策略', 'IF1506', SimpleEmaStrategy, setting)
     se.createStrategy(u'EMA演示策略', 'a', SimpleEmaStrategy, setting)
     
     # 启动所有策略
@@ -392,7 +384,7 @@ def main():
     # 让程序连续运行
     sys.exit(app.exec_())
     
-    
+     
 if __name__ == '__main__':
     main()
     

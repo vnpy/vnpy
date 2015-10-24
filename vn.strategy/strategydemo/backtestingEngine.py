@@ -132,6 +132,7 @@ class BacktestingEngine(object):
             self.writeLog(u'历史TICK数据从Cache载入')
             return
 
+        # 每次获取日期周期
         intervalDays = 10
 
         for i in range (0,(endDate - startDate).days +1, intervalDays):
@@ -142,47 +143,58 @@ class BacktestingEngine(object):
             else:
                 d2 = endDate
 
+            # 从Mysql 提取数据
             self.loadMysqlDataHistory(symbol, d1, d2)
 
         self.writeLog(u'历史TICK数据共载入{0}条'.format(len(self.listDataHistory)))
+
+        # 保存本地cache文件
         self.__saveDataHistoryToLocalCache(symbol, startDate, endDate)
 
 
     def __loadDataHistoryFromLocalCache(self, symbol, startDate, endDate):
         """看本地缓存是否存在"""
 
+        # 运行路径下cache子目录
         cacheFolder = os.getcwd()+'\/cache'
 
-
-        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
+        # cache文件
+        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.\
+                    format(cacheFolder, symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
 
         if not os.path.isfile(cacheFile):
             return False
 
         else:
+            # 从cache文件加载
             cache = open(cacheFile,mode='r')
             self.listDataHistory = cPickle.load(cache)
+            cache.close()
             return True
 
     def __saveDataHistoryToLocalCache(self, symbol, startDate, endDate):
         """保存本地缓存"""
+
+        # 运行路径下cache子目录
         cacheFolder = os.getcwd()+'\/cache'
 
+        # 创建cache子目录
         if not os.path.isdir(cacheFolder):
             os.mkdir(cacheFolder)
 
-        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.format(cacheFolder,symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
+        # cache 文件名
+        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.\
+                    format(cacheFolder, symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
 
+        # 重复存在 返回
         if os.path.isfile(cacheFile):
             return False
 
         else:
-            cache= open(cacheFile, mode='w')
-
+            # 写入cache文件
+            cache = open(cacheFile, mode='w')
             cPickle.dump(self.listDataHistory,cache)
-
             cache.close()
-
             return True
 
     #----------------------------------------------------------------------
@@ -194,40 +206,48 @@ class BacktestingEngine(object):
             if self.__mysqlConnected:
 
 
-                #获取指针
+                # 获取指针
                 cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
 
                 if endDate:
 
-                   sqlstring = ' select \'{0}\' as InstrumentID, str_to_date(concat(ndate,\' \', ntime),' \
+                    # 开始日期 ~ 结束日期
+                    sqlstring = ' select \'{0}\' as InstrumentID, str_to_date(concat(ndate,\' \', ntime),' \
                                '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume,' \
                                'position_vol as OpenInterest,bid1_price as BidPrice1,bid1_vol as BidVolume1, ' \
                                'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB_{0}MI ' \
-                               'where ndate between cast(\'{1}\' as date) and cast(\'{2}\' as date)'.format(symbol,  startDate, endDate)
+                               'where ndate between cast(\'{1}\' as date) and cast(\'{2}\' as date)'.\
+                               format(symbol,  startDate, endDate)
 
                 elif startDate:
 
-                   sqlstring = ' select \'{0}\' as InstrumentID,str_to_date(concat(ndate,\' \', ntime),' \
+                    # 开始日期 - 当前
+                    sqlstring = ' select \'{0}\' as InstrumentID,str_to_date(concat(ndate,\' \', ntime),' \
                                '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume,' \
                                'position_vol as OpenInterest,bid1_price as BidPrice1,bid1_vol as BidVolume1, ' \
                                'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB__{0}MI ' \
-                               'where ndate > cast(\'{1}\' as date)'.format( symbol, startDate)
+                               'where ndate > cast(\'{1}\' as date)'.\
+                               format( symbol, startDate)
 
                 else:
 
-                   sqlstring =' select \'{0}\' as InstrumentID,str_to_date(concat(ndate,\' \', ntime),' \
+                    # 所有数据
+                    sqlstring =' select \'{0}\' as InstrumentID,str_to_date(concat(ndate,\' \', ntime),' \
                               '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume,' \
                               'position_vol as OpenInterest,bid1_price as BidPrice1,bid1_vol as BidVolume1, ' \
-                              'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB__{0}MI '.format(symbol)
+                              'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB__{0}MI '.\
+                              format(symbol)
 
-                self.writeLog(sqlstring)
+                # self.writeLog(sqlstring)
 
+                # 执行查询
                 count = cur.execute(sqlstring)
                 #self.writeLog(u'历史TICK数据共{0}条'.format(count))
 
-                # 将TICK数据读入内存
+                # 将TICK数据一次性读入内存
                 #self.listDataHistory = cur.fetchall()
 
+                # 分批次读取
                 fetch_counts = 0
                 fetch_size = 1000
 
@@ -240,7 +260,6 @@ class BacktestingEngine(object):
                     fetch_counts = fetch_counts + len(results)
 
                     if not self.listDataHistory:
-
                         self.listDataHistory =results
 
                     else:
@@ -251,7 +270,9 @@ class BacktestingEngine(object):
 
             else:
                 self.writeLog(u'MysqlDB未连接，请检查')
+
         except MySQLdb.Error, e:
+
             self.writeLog(u'MysqlDB载入数据失败，请检查.Error {0}'.format(e))
 
     #----------------------------------------------------------------------
@@ -260,18 +281,19 @@ class BacktestingEngine(object):
         try:
             if self.__mysqlConnected:
 
-                #获取指针
+                # 获取mysql指针
                 cur = self.__mysqlConnection.cursor()
 
                 sqlstring='select distinct ndate from TB_{0}MI where ndate < ' \
                           'cast(\'{1}\' as date) order by ndate desc limit {2},1'.format(symbol, startDate, decreaseDays-1)
 
-                self.writeLog(sqlstring)
+                # self.writeLog(sqlstring)
 
                 count = cur.execute(sqlstring)
 
                 if count > 0:
 
+                    # 提取第一条记录
                     result = cur.fetchone()
 
                     return result[0]
@@ -283,11 +305,11 @@ class BacktestingEngine(object):
                 self.writeLog(u'MysqlDB未连接，请检查')
 
         except MySQLdb.Error, e:
+
             self.writeLog(u'MysqlDB载入数据失败，请检查.Error {0}: {1}'.format(e.arg[0],e.arg[1]))
 
-        td = timedelta(days=3)
-
-        return startDate-td;
+        # 出错后缺省返回
+        return startDate-timedelta(days=3)
 
     #----------------------------------------------------------------------
     def processLimitOrder(self):
