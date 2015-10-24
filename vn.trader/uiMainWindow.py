@@ -4,7 +4,11 @@ import psutil
 
 from uiBasicWidget import *
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+from uiCtaWidget import CtaEngineManager
+>>>>>>> refs/remotes/vnpy/master
 =======
 from uiCtaWidget import CtaEngineManager
 >>>>>>> refs/remotes/vnpy/master
@@ -82,6 +86,12 @@ class MainWindow(QtGui.QMainWindow):
         connectWindAction.triggered.connect(self.connectWind)
         
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        connectIbAction = QtGui.QAction(u'连接IB', self)
+        connectIbAction.triggered.connect(self.connectIb)        
+        
+>>>>>>> refs/remotes/vnpy/master
 =======
         connectIbAction = QtGui.QAction(u'连接IB', self)
         connectIbAction.triggered.connect(self.connectIb)        
@@ -100,6 +110,12 @@ class MainWindow(QtGui.QMainWindow):
         contractAction.triggered.connect(self.openContract)
         
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        ctaAction = QtGui.QAction(u'CTA策略', self)
+        ctaAction.triggered.connect(self.openCta)
+        
+>>>>>>> refs/remotes/vnpy/master
 =======
         ctaAction = QtGui.QAction(u'CTA策略', self)
         ctaAction.triggered.connect(self.openCta)
@@ -113,6 +129,10 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectLtsAction)
         sysMenu.addAction(connectWindAction)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        sysMenu.addAction(connectIbAction)
+>>>>>>> refs/remotes/vnpy/master
 =======
         sysMenu.addAction(connectIbAction)
 >>>>>>> refs/remotes/vnpy/master
@@ -122,6 +142,10 @@ class MainWindow(QtGui.QMainWindow):
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(contractAction)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        functionMenu.addAction(ctaAction)
+>>>>>>> refs/remotes/vnpy/master
 =======
         functionMenu.addAction(ctaAction)
 >>>>>>> refs/remotes/vnpy/master
@@ -175,6 +199,7 @@ class MainWindow(QtGui.QMainWindow):
     
     #----------------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
     def testSubscribe(self):
         """测试订阅"""
         req = VtSubscribeReq()
@@ -207,6 +232,8 @@ class MainWindow(QtGui.QMainWindow):
         req.exchange = EXCHANGE_CZCE
         self.mainEngine.subscribe(req, 'Wind')             
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
     def connectIb(self):
         """连接Ib"""
         self.mainEngine.connect('IB')
@@ -232,6 +259,9 @@ class MainWindow(QtGui.QMainWindow):
         
         req.symbol = 'GE'
         self.mainEngine.subscribe(req, 'IB')        
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         
     #----------------------------------------------------------------------
@@ -252,7 +282,10 @@ class MainWindow(QtGui.QMainWindow):
             self.contractM = ContractMonitor(self.mainEngine.dataEngine)
             self.contractM.show()
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
             
     #----------------------------------------------------------------------
     def openCta(self):
@@ -262,6 +295,9 @@ class MainWindow(QtGui.QMainWindow):
         except AttributeError:
             self.ctaM = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
             self.ctaM.show()
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
     
     #----------------------------------------------------------------------

@@ -7,7 +7,11 @@ from collections import OrderedDict
 from eventEngine import *
 from vtConstant import *
 <<<<<<< HEAD
+<<<<<<< HEAD
 from vtGateway import VtOrderReq, VtCancelOrderReq
+=======
+from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
+>>>>>>> refs/remotes/vnpy/master
 =======
 from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 >>>>>>> refs/remotes/vnpy/master
@@ -142,6 +146,12 @@ class CtaEngine(object):
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
         
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        # 注册事件监听
+        self.registerEvent()
+        
+>>>>>>> refs/remotes/vnpy/master
 =======
         # 注册事件监听
         self.registerEvent()
@@ -254,8 +264,14 @@ class CtaEngine(object):
         
     #----------------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
     def procecssTick(self, tick):
         """处理行情推送"""
+=======
+    def procecssTickEvent(self, event):
+        """处理行情推送"""
+        tick = event.dict_['data']
+>>>>>>> refs/remotes/vnpy/master
 =======
     def procecssTickEvent(self, event):
         """处理行情推送"""
@@ -271,7 +287,12 @@ class CtaEngine(object):
             d = ctaTick.__dict__
             for key in d.keys():
 <<<<<<< HEAD
+<<<<<<< HEAD
                 d[key] = tick.__getattribute__(key)
+=======
+                if key != 'datetime':
+                    d[key] = tick.__getattribute__(key)
+>>>>>>> refs/remotes/vnpy/master
 =======
                 if key != 'datetime':
                     d[key] = tick.__getattribute__(key)
@@ -286,13 +307,19 @@ class CtaEngine(object):
     
     #----------------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
     def processOrder(self, order):
         """处理委托推送"""
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
     def processOrderEvent(self, event):
         """处理委托推送"""
         order = event.dict_['data']
         
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         if order.vtOrderID in self.orderStrategyDict:
             strategy = self.orderStrategyDict[order.vtOrderID]            
@@ -300,13 +327,19 @@ class CtaEngine(object):
     
     #----------------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
     def processTrade(self, trade):
         """处理成交推送"""
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
     def processTradeEvent(self, event):
         """处理成交推送"""
         trade = event.dict_['data']
         
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         if trade.vtOrderID in self.orderStrategyDict:
             strategy = self.orderStrategyDict[order.vtOrderID]
@@ -316,9 +349,15 @@ class CtaEngine(object):
     def registerEvent(self):
         """注册事件监听"""
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.eventEngine.register(EVENT_TICK, self.procecssTick)
         self.eventEngine.register(EVENT_ORDER, self.processOrder)
         self.eventEngine.register(EVENT_TRADE, self.processTrade)
+=======
+        self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
+        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+>>>>>>> refs/remotes/vnpy/master
 =======
         self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
@@ -380,8 +419,11 @@ class CtaEngine(object):
         # 防止策略重名
         if name not in self.strategyDict:
 <<<<<<< HEAD
+<<<<<<< HEAD
             self.strategyDict[name] = strategyClass(self, paramDict)  # 创建策略对象
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
             # 创建策略对象
             strategy = strategyClass(self, name, paramDict)  
             self.strategyDict[name] = strategy
@@ -401,6 +443,9 @@ class CtaEngine(object):
                 req.symbol = contract.symbol
                 req.exchange = contract.exchange
                 self.mainEngine.subscribe(req, contract.gatewayName)
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         else:
             self.writeCtaLog(u'存在策略对象重名：' + name)
@@ -473,7 +518,11 @@ class CtaEngine(object):
     
     #----------------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
     def getStrategyVarialbe(self, name):
+=======
+    def getStrategyVar(self, name):
+>>>>>>> refs/remotes/vnpy/master
 =======
     def getStrategyVar(self, name):
 >>>>>>> refs/remotes/vnpy/master
@@ -494,7 +543,11 @@ class CtaEngine(object):
     
     #----------------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
     def getStrategyParameter(self, name):
+=======
+    def getStrategyParam(self, name):
+>>>>>>> refs/remotes/vnpy/master
 =======
     def getStrategyParam(self, name):
 >>>>>>> refs/remotes/vnpy/master
@@ -502,6 +555,7 @@ class CtaEngine(object):
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
             d = strategy.__dict__
+<<<<<<< HEAD
 <<<<<<< HEAD
             varDict = OrderedDict()
             
@@ -511,6 +565,8 @@ class CtaEngine(object):
             
             return varDict
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
             paramDict = OrderedDict()
             
             for key in strategy.paramList:
@@ -518,6 +574,9 @@ class CtaEngine(object):
                     paramDict[key] = d[key]
             
             return paramDict
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         else:
             self.writeCtaLog(u'策略对象不存在：' + name)    

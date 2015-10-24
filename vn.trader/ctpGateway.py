@@ -385,12 +385,18 @@ class CtpMdApi(MdApi):
     def subscribe(self, subscribeReq):
         """订阅合约"""
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.subscribeMarketData(str(subscribeReq.symbol))
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
         if self.loginStatus:
             self.subscribeMarketData(str(subscribeReq.symbol))
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         self.subscribedSymbols.add(subscribeReq)   
         

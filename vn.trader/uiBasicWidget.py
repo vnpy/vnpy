@@ -28,12 +28,18 @@ class BasicCell(QtGui.QTableWidgetItem):
     def setContent(self, text):
         """设置内容"""
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.setText(text)
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
         if text == '0' or text == '0.0':
             self.setText('')
         else:
             self.setText(text)
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
 
 
@@ -541,8 +547,11 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_CZCE,
                     EXCHANGE_SSE,
 <<<<<<< HEAD
+<<<<<<< HEAD
                     EXCHANGE_SZSE]
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
                     EXCHANGE_SZSE,
                     EXCHANGE_SMART,
                     EXCHANGE_GLOBEX,
@@ -557,6 +566,9 @@ class TradingWidget(QtGui.QFrame):
                         PRODUCT_OPTION]
     
     gatewayList = ['']
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
@@ -569,6 +581,12 @@ class TradingWidget(QtGui.QFrame):
         
         self.symbol = ''
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        
+        # 添加交易接口
+        self.gatewayList.extend(mainEngine.gatewayDict.keys())
+>>>>>>> refs/remotes/vnpy/master
 =======
         
         # 添加交易接口
@@ -596,6 +614,12 @@ class TradingWidget(QtGui.QFrame):
         labelPriceType = QtGui.QLabel(u'价格类型')
         labelExchange = QtGui.QLabel(u'交易所') 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        labelCurrency = QtGui.QLabel(u'货币')
+        labelProductClass = QtGui.QLabel(u'产品类型')
+        labelGateway = QtGui.QLabel(u'交易接口')
+>>>>>>> refs/remotes/vnpy/master
 =======
         labelCurrency = QtGui.QLabel(u'货币')
         labelProductClass = QtGui.QLabel(u'产品类型')
@@ -625,8 +649,11 @@ class TradingWidget(QtGui.QFrame):
         
         self.comboExchange = QtGui.QComboBox()
 <<<<<<< HEAD
+<<<<<<< HEAD
         self.comboExchange.addItems(self.exchangeList)        
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
         self.comboExchange.addItems(self.exchangeList)      
         
         self.comboCurrency = QtGui.QComboBox()
@@ -637,6 +664,9 @@ class TradingWidget(QtGui.QFrame):
         
         self.comboGateway = QtGui.QComboBox()
         self.comboGateway.addItems(self.gatewayList)          
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
 
         gridleft = QtGui.QGridLayout()
@@ -649,11 +679,17 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(labelPriceType, 6, 0)
         gridleft.addWidget(labelExchange, 7, 0)
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
         gridleft.addWidget(labelCurrency, 8, 0)
         gridleft.addWidget(labelProductClass, 9, 0)   
         gridleft.addWidget(labelGateway, 10, 0)
         
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         gridleft.addWidget(self.lineSymbol, 0, 1)
         gridleft.addWidget(self.lineName, 1, 1)
@@ -664,6 +700,12 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(self.comboPriceType, 6, 1)	
         gridleft.addWidget(self.comboExchange, 7, 1)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        gridleft.addWidget(self.comboCurrency, 8, 1)	
+        gridleft.addWidget(self.comboProductClass, 9, 1) 
+        gridleft.addWidget(self.comboGateway, 10, 1)
+>>>>>>> refs/remotes/vnpy/master
 =======
         gridleft.addWidget(self.comboCurrency, 8, 1)	
         gridleft.addWidget(self.comboProductClass, 9, 1) 
@@ -779,10 +821,13 @@ class TradingWidget(QtGui.QFrame):
     def updateSymbol(self):
         """合约变化"""
 <<<<<<< HEAD
+<<<<<<< HEAD
         symbol = unicode(self.lineSymbol.text())
         exchange = unicode(self.comboExchange.currentText())
         
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
         # 读取组件数据
         symbol = unicode(self.lineSymbol.text())
         exchange = unicode(self.comboExchange.currentText())
@@ -791,11 +836,15 @@ class TradingWidget(QtGui.QFrame):
         gatewayName = unicode(self.comboGateway.currentText())
         
         # 查询合约
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         if exchange:
             vtSymbol = '.'.join([symbol, exchange])
             contract = self.dataEngine.getContract(vtSymbol)
         else:
+<<<<<<< HEAD
 <<<<<<< HEAD
             contract = self.dataEngine.getContract(symbol)
         
@@ -845,6 +894,8 @@ class TradingWidget(QtGui.QFrame):
             # 更新组件当前交易的合约
             self.symbol = contract.vtSymbol
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
             vtSymbol = symbol
             contract = self.dataEngine.getContract(symbol)   
         
@@ -896,6 +947,9 @@ class TradingWidget(QtGui.QFrame):
 
         # 更新组件当前交易的合约
         self.symbol = vtSymbol
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
@@ -932,15 +986,21 @@ class TradingWidget(QtGui.QFrame):
 
             self.labelLastPrice.setText(str(tick.lastPrice))
 <<<<<<< HEAD
+<<<<<<< HEAD
             rt = (tick.lastPrice/tick.preClosePrice)-1
             self.labelReturn.setText(('%.2f' %(rt*100))+'%')
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
             
             if tick.preClosePrice:
                 rt = (tick.lastPrice/tick.preClosePrice)-1
                 self.labelReturn.setText(('%.2f' %(rt*100))+'%')
             else:
                 self.labelReturn.setText('')
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
@@ -952,10 +1012,13 @@ class TradingWidget(QtGui.QFrame):
     def sendOrder(self):
         """发单"""
 <<<<<<< HEAD
+<<<<<<< HEAD
         symbol = str(self.lineSymbol.text())
         exchange = str(self.comboExchange.currentText())
 
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
         symbol = unicode(self.lineSymbol.text())
         exchange = unicode(self.comboExchange.currentText())
         currency = unicode(self.comboCurrency.currentText())
@@ -963,11 +1026,15 @@ class TradingWidget(QtGui.QFrame):
         gatewayName = unicode(self.comboGateway.currentText())        
 
         # 查询合约
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         if exchange:
             vtSymbol = '.'.join([symbol, exchange])
             contract = self.dataEngine.getContract(vtSymbol)
         else:
+<<<<<<< HEAD
 <<<<<<< HEAD
             contract = self.dataEngine.getContract(symbol)
             
@@ -982,6 +1049,8 @@ class TradingWidget(QtGui.QFrame):
             req.offset = unicode(self.comboOffset.currentText())
             self.mainEngine.sendOrder(req, contract.gatewayName)
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
             vtSymbol = symbol
             contract = self.dataEngine.getContract(symbol)
         
@@ -1001,6 +1070,9 @@ class TradingWidget(QtGui.QFrame):
         req.productClass = productClass
         
         self.mainEngine.sendOrder(req, gatewayName)
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
             
     #----------------------------------------------------------------------

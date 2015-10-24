@@ -1,6 +1,10 @@
 # encoding: UTF-8
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+from vtConstant import *
+>>>>>>> refs/remotes/vnpy/master
 =======
 from vtConstant import *
 >>>>>>> refs/remotes/vnpy/master
@@ -18,6 +22,7 @@ class CtaStrategyTemplate(object):
     
     # 变量列表，保存了变量的名称
 <<<<<<< HEAD
+<<<<<<< HEAD
     varList = []
 
     #----------------------------------------------------------------------
@@ -25,6 +30,8 @@ class CtaStrategyTemplate(object):
         """Constructor"""
         self.ctaEngine = ctaEngine
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
     varList = ['trading']
 
     #----------------------------------------------------------------------
@@ -32,6 +39,9 @@ class CtaStrategyTemplate(object):
         """Constructor"""
         self.ctaEngine = ctaEngine
         self.name = name
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
         
         self.vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
@@ -168,7 +178,11 @@ class CtaStrategyTemplate(object):
         for key in self.paramList:
             if key in setting:
 <<<<<<< HEAD
+<<<<<<< HEAD
                 d[key] = paramDict[key]
+=======
+                d[key] = setting[key]
+>>>>>>> refs/remotes/vnpy/master
 =======
                 d[key] = setting[key]
 >>>>>>> refs/remotes/vnpy/master
@@ -179,7 +193,10 @@ class CtaStrategyTemplate(object):
         return self.ctaEngine.getToday()
     
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
@@ -247,6 +264,9 @@ class TestStrategy(CtaStrategyTemplate):
         
         
     
+<<<<<<< HEAD
+>>>>>>> refs/remotes/vnpy/master
+=======
 >>>>>>> refs/remotes/vnpy/master
     
     

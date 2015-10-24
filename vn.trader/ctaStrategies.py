@@ -5,7 +5,14 @@
 '''
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 strategyClassDict = {}
+=======
+from ctaStrategyTemplate import TestStrategy
+
+strategyClassDict = {}
+strategyClassDict[u'TestStrategy'] = TestStrategy
+>>>>>>> refs/remotes/vnpy/master
 =======
 from ctaStrategyTemplate import TestStrategy
 

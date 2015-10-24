@@ -3,7 +3,10 @@
 '''CTA模块相关的GUI控制组件'''
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> refs/remotes/vnpy/master
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
 
@@ -247,5 +250,9 @@ class CtaEngineManager(QtGui.QWidget):
 
 
     
+<<<<<<< HEAD
+    
+>>>>>>> refs/remotes/vnpy/master
+=======
     
 >>>>>>> refs/remotes/vnpy/master
