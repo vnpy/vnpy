@@ -384,7 +384,7 @@ def main():
     # 让程序连续运行
     sys.exit(app.exec_())
     
-     
+
 if __name__ == '__main__':
     main()
     
