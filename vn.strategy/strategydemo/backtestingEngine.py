@@ -69,6 +69,16 @@ class BacktestingEngine(object):
 
         # 回测编号
         self.Id = datetime.now().strftime('%Y%m%d-%H%M%S')
+
+        # 回测对象
+        self.symbol = ''
+
+        # 回测开始日期
+        self.startDate = None
+
+        # 回测结束日期
+        self.endDate = None
+
         
     #----------------------------------------------------------------------
     def setStrategyEngine(self, engine):
@@ -114,16 +124,27 @@ class BacktestingEngine(object):
     def connectMysql(self):
         """连接MysqlDB"""
         try:
-            self.__mysqlConnection = MySQLdb.connect(host='vnpy.cloudapp.net', user='stockcn',
-                                                     passwd='7uhb*IJN', db='stockcn', port=3306)
+            self.__mysqlConnection = MySQLdb.connect(host='vnpy.cloudapp.net', user='vnpy',
+                                                     passwd='vnpy', db='stockcn', port=3306)
             self.__mysqlConnected = True
             self.writeLog(u'回测引擎连接MysqlDB成功')
         except ConnectionFailure:
             self.writeLog(u'回测引擎连接MysqlDB失败')
 
     #----------------------------------------------------------------------
+    def setDataHistory(self, symbol, startDate, endDate):
+        """设置Tick历史数据的加载要求"""
+        self.symbol = symbol
+        self.startDate = startDate
+        self.endDate = endDate
+
+
+    #----------------------------------------------------------------------
     def loadDataHistory(self, symbol, startDate, endDate):
-        """载入历史TICK数据,"""
+        """载入历史TICK数据
+        如果加载过多数据会导致加载失败,间隔不要超过半年
+        """
+
         if not endDate:
             endDate = datetime.today()
 
@@ -156,10 +177,10 @@ class BacktestingEngine(object):
         """看本地缓存是否存在"""
 
         # 运行路径下cache子目录
-        cacheFolder = os.getcwd()+'\/cache'
+        cacheFolder = os.getcwd()+'/cache'
 
         # cache文件
-        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.\
+        cacheFile = u'{0}/{1}_{2}_{3}.pickle'.\
                     format(cacheFolder, symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
 
         if not os.path.isfile(cacheFile):
@@ -176,14 +197,14 @@ class BacktestingEngine(object):
         """保存本地缓存"""
 
         # 运行路径下cache子目录
-        cacheFolder = os.getcwd()+'\/cache'
+        cacheFolder = os.getcwd()+'/cache'
 
         # 创建cache子目录
         if not os.path.isdir(cacheFolder):
             os.mkdir(cacheFolder)
 
         # cache 文件名
-        cacheFile = u'{0}\/{1}_{2}_{3}.pickle'.\
+        cacheFile = u'{0}/{1}_{2}_{3}.pickle'.\
                     format(cacheFolder, symbol, startDate.strftime('%Y-%m-%d'), endDate.strftime('%Y-%m-%d'))
 
         # 重复存在 返回
@@ -202,7 +223,7 @@ class BacktestingEngine(object):
         """从Mysql载入历史TICK数据,"""
         #Todo :判断开始和结束时间，如果间隔天过长，数据量会过大，需要批次提取。
         try:
-
+            self.connectMysql()
             if self.__mysqlConnected:
 
 
@@ -381,25 +402,50 @@ class BacktestingEngine(object):
     def startBacktesting(self):
         """开始回测"""
 
-        ISOTIMEFORMAT = '%Y-%m-%d %X'
+        if not self.startDate:
+            self.writeLog(u'回测开始日期未设置。')
+            return
+
+        if not self.endDate:
+            self.endDate = datetime.today()
+
+        if len(self.symbol)<1:
+            self.writeLog(u'回测对象未设置。')
+            return
 
         t1 = datetime.now()
-
         self.writeLog(u'开始回测,{0}'.format(str(t1 )))
 
-        for data in self.listDataHistory:
+        # 每次获取日期周期
+        intervalDays = 90
 
+        for i in range (0,(self.endDate - self.startDate).days +1, intervalDays):
+            d1 = self.startDate + timedelta(days = i )
 
-            # 记录最新的TICK数据
-            self.currentData = data
+            if (self.endDate - d1).days > 10:
+                d2 = self.startDate + timedelta(days = i + intervalDays -1 )
+            else:
+                d2 = self.endDate
 
-            # 处理限价单
-            self.processLimitOrder()
+            # 提取历史数据
+            self.loadDataHistory(self.symbol, d1, d2)
 
-            # 推送到策略引擎中
-            event = Event()
-            event.dict_['data'] = data
-            self.strategyEngine.updateMarketData(event)
+            # 将逐笔数据推送
+            for data in self.listDataHistory:
+
+                # 记录最新的TICK数据
+                self.currentData = data
+
+                # 处理限价单
+                self.processLimitOrder()
+
+                # 推送到策略引擎中
+                event = Event()
+                event.dict_['data'] = data
+                self.strategyEngine.updateMarketData(event)
+
+            # 清空历史数据
+            self.listDataHistory = []
 
         # 保存交易到本地结果
         self.saveTradeData()

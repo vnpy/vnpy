@@ -443,12 +443,12 @@ class StrategyEngine(object):
         """
 
         # 保存本地pickle文件
-        resultPath=os.getcwd()+'\/result'
+        resultPath=os.getcwd()+'/result'
 
         if not os.path.isdir(resultPath):
             os.mkdir(resultPath)
 
-        resultFile = u'{0}\\{1}_Bar.pickle'.format(resultPath,id)
+        resultFile = u'{0}/{1}_Bar.pickle'.format(resultPath,id)
 
         cache= open(resultFile, mode='w')
 
@@ -520,12 +520,12 @@ class StrategyEngine(object):
         """
 
         # 保存本地pickle文件
-        resultPath=os.getcwd()+'\/result'
+        resultPath=os.getcwd()+'/result'
 
         if not os.path.isdir(resultPath):
             os.mkdir(resultPath)
 
-        resultFile = u'{0}\\{1}_Ema.pickle'.format(resultPath, id)
+        resultFile = u'{0}/{1}_Ema.pickle'.format(resultPath, id)
         cache= open(resultFile, mode='w')
         cPickle.dump(emaList,cache)
         cache.close()

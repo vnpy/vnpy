@@ -22,7 +22,8 @@ def main():
     be.connectMysql()
     # be.loadMongoDataHistory(symbol, datetime(2015,5,1), datetime.today())
     # be.loadMongoDataHistory(symbol, datetime(2012,1,9), datetime(2012,1,14))
-    be.loadDataHistory(symbol, datetime(2012,1,1), datetime(2012,1,30))
+
+    be.setDataHistory(symbol, datetime(2012,1,1), datetime(2012,12,31))
 
     # 创建策略对象
     setting = {}
