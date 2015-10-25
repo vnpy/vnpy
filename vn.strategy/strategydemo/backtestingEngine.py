@@ -417,12 +417,12 @@ class BacktestingEngine(object):
         self.writeLog(u'开始回测,{0}'.format(str(t1 )))
 
         # 每次获取日期周期
-        intervalDays = 90
+        intervalDays = 30
 
         for i in range (0,(self.endDate - self.startDate).days +1, intervalDays):
             d1 = self.startDate + timedelta(days = i )
 
-            if (self.endDate - d1).days > 10:
+            if (self.endDate - d1).days > intervalDays:
                 d2 = self.startDate + timedelta(days = i + intervalDays -1 )
             else:
                 d2 = self.endDate
