@@ -515,12 +515,12 @@ class BacktestingEngine(object):
         #f.close()
 
         # 保存本地pickle文件
-        resultPath=os.getcwd()+'\\result'
+        resultPath=os.getcwd()+'/result'
 
         if not os.path.isdir(resultPath):
             os.mkdir(resultPath)
 
-        resultFile = u'{0}\\{1}_Trade.pickle'.format(resultPath, self.Id)
+        resultFile = u'{0}/{1}_Trade.pickle'.format(resultPath, self.Id)
 
         cache= open(resultFile, mode='w')
 
@@ -551,10 +551,18 @@ class BacktestingEngine(object):
                 if len(values) > 0:
                     values = values + ','
 
-                if tradeItem['OffsetFlag'] == '0':
-                    amount = 0-float(tradeItem['Price'])*int(tradeItem['Volume'])
-                else:
-                    amount = float(tradeItem['Price'])*int(tradeItem['Volume'])
+                if tradeItem['Direction'] == '0':
+
+                    if tradeItem['OffsetFlag'] == '0' :
+                        amount = 0-float(tradeItem['Price'])*int(tradeItem['Volume'])
+                    else:
+                        amount = float(tradeItem['Price'])*int(tradeItem['Volume'])
+                else :
+                    if tradeItem['OffsetFlag'] == '0' :
+                        amount = float(tradeItem['Price'])*int(tradeItem['Volume'])
+                    else:
+                        amount = 0 - float(tradeItem['Price'])*int(tradeItem['Volume'])
+
 
 
                 values = values + '(\'{0}\',\'{1}\',{2},{3},{4},{5},{6},{7},\'{8}\',{9})'.format(
