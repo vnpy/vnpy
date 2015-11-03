@@ -3,6 +3,7 @@ int TdApi::reqUserLogin(dict req, int nRequestID)
 	CSecurityFtdcReqUserLoginField myreq = CSecurityFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "MacAddress", myreq.MacAddress);
+	getChar(req, "RandCode", myreq.RandCode);
 	getChar(req, "UserProductInfo", myreq.UserProductInfo);
 	getChar(req, "UserID", myreq.UserID);
 	getChar(req, "AuthCode", myreq.AuthCode);
@@ -13,6 +14,7 @@ int TdApi::reqUserLogin(dict req, int nRequestID)
 	getChar(req, "OneTimePassword", myreq.OneTimePassword);
 	getChar(req, "ProtocolInfo", myreq.ProtocolInfo);
 	getChar(req, "Password", myreq.Password);
+	getChar(req, "HDSerialNumber", myreq.HDSerialNumber);
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);
 	return i;
 };
@@ -24,6 +26,15 @@ int TdApi::reqUserLogout(dict req, int nRequestID)
 	getChar(req, "UserID", myreq.UserID);
 	getChar(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqUserLogout(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqFetchAuthRandCode(dict req, int nRequestID)
+{
+	CSecurityFtdcAuthRandCodeField myreq = CSecurityFtdcAuthRandCodeField();
+	memset(&myreq, 0, sizeof(myreq));
+	getChar(req, "RandCode", myreq.RandCode);
+	int i = this->api->ReqFetchAuthRandCode(&myreq, nRequestID);
 	return i;
 };
 
@@ -105,184 +116,6 @@ int TdApi::reqTradingAccountPasswordUpdate(dict req, int nRequestID)
 	return i;
 };
 
-int TdApi::reqQryExchange(dict req, int nRequestID)
-{
-	CSecurityFtdcQryExchangeField myreq = CSecurityFtdcQryExchangeField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	int i = this->api->ReqQryExchange(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryInstrument(dict req, int nRequestID)
-{
-	CSecurityFtdcQryInstrumentField myreq = CSecurityFtdcQryInstrumentField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "ExchangeInstID", myreq.ExchangeInstID);
-	getChar(req, "ProductID", myreq.ProductID);
-	int i = this->api->ReqQryInstrument(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryInvestor(dict req, int nRequestID)
-{
-	CSecurityFtdcQryInvestorField myreq = CSecurityFtdcQryInvestorField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	int i = this->api->ReqQryInvestor(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryTradingCode(dict req, int nRequestID)
-{
-	CSecurityFtdcQryTradingCodeField myreq = CSecurityFtdcQryTradingCodeField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "ClientID", myreq.ClientID);
-	int i = this->api->ReqQryTradingCode(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryTradingAccount(dict req, int nRequestID)
-{
-	CSecurityFtdcQryTradingAccountField myreq = CSecurityFtdcQryTradingAccountField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	int i = this->api->ReqQryTradingAccount(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryDepthMarketData(dict req, int nRequestID)
-{
-	CSecurityFtdcQryDepthMarketDataField myreq = CSecurityFtdcQryDepthMarketDataField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	int i = this->api->ReqQryDepthMarketData(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryBondInterest(dict req, int nRequestID)
-{
-	CSecurityFtdcQryBondInterestField myreq = CSecurityFtdcQryBondInterestField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	int i = this->api->ReqQryBondInterest(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryMarketRationInfo(dict req, int nRequestID)
-{
-	CSecurityFtdcQryMarketRationInfoField myreq = CSecurityFtdcQryMarketRationInfoField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	int i = this->api->ReqQryMarketRationInfo(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryInstrumentCommissionRate(dict req, int nRequestID)
-{
-	CSecurityFtdcQryInstrumentCommissionRateField myreq = CSecurityFtdcQryInstrumentCommissionRateField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "OffsetFlag", myreq.OffsetFlag);
-	getChar(req, "Direction", myreq.Direction);
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	int i = this->api->ReqQryInstrumentCommissionRate(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryETFInstrument(dict req, int nRequestID)
-{
-	CSecurityFtdcQryETFInstrumentField myreq = CSecurityFtdcQryETFInstrumentField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "ETFInstrumentID", myreq.ETFInstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	int i = this->api->ReqQryETFInstrument(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryETFBasket(dict req, int nRequestID)
-{
-	CSecurityFtdcQryETFBasketField myreq = CSecurityFtdcQryETFBasketField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "ETFInstrumentID", myreq.ETFInstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	int i = this->api->ReqQryETFBasket(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryOFInstrument(dict req, int nRequestID)
-{
-	CSecurityFtdcQryOFInstrumentField myreq = CSecurityFtdcQryOFInstrumentField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "OFInstrumentID", myreq.OFInstrumentID);
-	int i = this->api->ReqQryOFInstrument(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQrySFInstrument(dict req, int nRequestID)
-{
-	CSecurityFtdcQrySFInstrumentField myreq = CSecurityFtdcQrySFInstrumentField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "SFInstrumentID", myreq.SFInstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	int i = this->api->ReqQrySFInstrument(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryOrder(dict req, int nRequestID)
-{
-	CSecurityFtdcQryOrderField myreq = CSecurityFtdcQryOrderField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "InsertTimeStart", myreq.InsertTimeStart);
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "OrderSysID", myreq.OrderSysID);
-	getChar(req, "InsertTimeEnd", myreq.InsertTimeEnd);
-	int i = this->api->ReqQryOrder(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryTrade(dict req, int nRequestID)
-{
-	CSecurityFtdcQryTradeField myreq = CSecurityFtdcQryTradeField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "TradeTimeStart", myreq.TradeTimeStart);
-	getChar(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "TradeID", myreq.TradeID);
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "TradeTimeEnd", myreq.TradeTimeEnd);
-	int i = this->api->ReqQryTrade(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryInvestorPosition(dict req, int nRequestID)
-{
-	CSecurityFtdcQryInvestorPositionField myreq = CSecurityFtdcQryInvestorPositionField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	int i = this->api->ReqQryInvestorPosition(&myreq, nRequestID);
-	return i;
-};
-
 int TdApi::reqFundOutByLiber(dict req, int nRequestID)
 {
 	CSecurityFtdcInputFundTransferField myreq = CSecurityFtdcInputFundTransferField();
@@ -299,17 +132,6 @@ int TdApi::reqFundOutByLiber(dict req, int nRequestID)
 	return i;
 };
 
-int TdApi::reqQryFundTransferSerial(dict req, int nRequestID)
-{
-	CSecurityFtdcQryFundTransferSerialField myreq = CSecurityFtdcQryFundTransferSerialField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "AccountType", myreq.AccountType);
-	getChar(req, "AccountID", myreq.AccountID);
-	int i = this->api->ReqQryFundTransferSerial(&myreq, nRequestID);
-	return i;
-};
-
 int TdApi::reqFundInterTransfer(dict req, int nRequestID)
 {
 	CSecurityFtdcFundInterTransferField myreq = CSecurityFtdcFundInterTransferField();
@@ -323,16 +145,6 @@ int TdApi::reqFundInterTransfer(dict req, int nRequestID)
 	getChar(req, "Password", myreq.Password);
 	getChar(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqFundInterTransfer(&myreq, nRequestID);
-	return i;
-};
-
-int TdApi::reqQryFundInterTransferSerial(dict req, int nRequestID)
-{
-	CSecurityFtdcQryFundInterTransferSerialField myreq = CSecurityFtdcQryFundInterTransferSerialField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	int i = this->api->ReqQryFundInterTransferSerial(&myreq, nRequestID);
 	return i;
 };
 

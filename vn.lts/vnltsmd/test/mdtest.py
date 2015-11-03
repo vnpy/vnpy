@@ -1,12 +1,11 @@
 # encoding: UTF-8
 
+# 内置模块
 import sys
 from time import sleep
 
-from PyQt4 import QtGui
-
+# 测试模块
 from vnltsmd import *
-
 
 #----------------------------------------------------------------------
 def print_dict(d):
@@ -59,6 +58,7 @@ class TestMdApi(MdApi):
         print_dict(error)
     
     #----------------------------------------------------------------------
+    @simple_log
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
         print_dict(data)
@@ -90,16 +90,12 @@ class TestMdApi(MdApi):
     def onRtnDepthMarketData(self, data):
         """行情推送"""
         print_dict(data)
-        
 
 
 #----------------------------------------------------------------------
 def main():
     """主测试函数，出现堵塞时可以考虑使用sleep"""
     reqid = 0
-    
-    # 创建Qt应用对象，用于事件循环
-    app = QtGui.QApplication(sys.argv)
 
     # 创建API对象
     api = TestMdApi()
@@ -118,37 +114,30 @@ def main():
     loginReq = {}                           # 创建一个空字典
     loginReq['UserID'] = ''                 # 参数作为字典键值的方式传入
     loginReq['Password'] = ''               # 键名和C++中的结构体成员名对应
-    loginReq['BrokerID'] = ''    
+    loginReq['BrokerID'] = '2011'    
     reqid = reqid + 1                       # 请求数必须保持唯一性
     i = api.reqUserLogin(loginReq, 1)
     sleep(0.5)
     
-    ## 登出
-    #reqid = reqid + 1
-    #i = api.reqUserLogout({}, 1)
-    #sleep(0.5)
-    
     ## 安全退出，测试通过
     #i = api.exit()
     
-    # 获取交易日，目前输出为空
-    #day = api.getTradingDay()
-    #print 'Trading Day is:' + str(day)
-    #sleep(0.5)
+    #获取交易日，测试通过
+    day = api.getTradingDay()
+    print 'Trading Day is:' + str(day)
+    sleep(0.5)
     
-    ## 订阅合约
-    #subReq = {}
-    #subReq['InstrumentID'] = '11000061'
-    #subReq['ExchangeID'] = 'SSE'
-    #i = api.subscribeMarketData(subReq)
+    # 订阅合约，测试通过
+    subReq = {}
+    subReq['InstrumentID'] = '510050'
+    subReq['ExchangeID'] = 'SSE'
+    i = api.subscribeMarketData(subReq)
     
-    ## 退订合约
+    ## 退订合约，测试通过
     #i = api.unSubscribeMarketData(subReq)
     
-    # 连续运行，用于输出行情
-    app.exec_()
-    
-    
+    while 1:
+        sleep(1)
     
 if __name__ == '__main__':
     main()
