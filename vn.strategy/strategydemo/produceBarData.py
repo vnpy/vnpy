@@ -2,7 +2,7 @@
 
 from strategyEngine import *
 from backtestingEngine import *
-from stratetyProduceBar import StrategyProduceBar
+from strategyProduceBar import StrategyProduceBar
 import decimal
 
 def main():
