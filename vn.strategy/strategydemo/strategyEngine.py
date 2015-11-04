@@ -1081,6 +1081,7 @@ class StrategyTemplate(object):
                 return ref
         else:
             return None
+        
         print (u'strategyEngine.py cover() end.')
 
     #----------------------------------------------------------------------
