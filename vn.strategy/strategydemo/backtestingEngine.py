@@ -553,15 +553,15 @@ class BacktestingEngine(object):
 
                 if tradeItem['Direction'] == '0':
 
-                    if tradeItem['OffsetFlag'] == '0' :
+                    if tradeItem['OffsetFlag'] == '0':      # 开多仓 Buy
                         amount = 0-float(tradeItem['Price'])*int(tradeItem['Volume'])
-                    else:
+                    else:                                   # 平空仓 Cover
+                        amount = 0 -float(tradeItem['Price'])*int(tradeItem['Volume'])
+                else:
+                    if tradeItem['OffsetFlag'] == '0':      # 开空 Short
                         amount = float(tradeItem['Price'])*int(tradeItem['Volume'])
-                else :
-                    if tradeItem['OffsetFlag'] == '0' :
+                    else:                                   # 平多 sell
                         amount = float(tradeItem['Price'])*int(tradeItem['Volume'])
-                    else:
-                        amount = 0 - float(tradeItem['Price'])*int(tradeItem['Volume'])
 
 
 

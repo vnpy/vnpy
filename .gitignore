@@ -64,3 +64,8 @@ vn.lts/build/*
 *.pickle
 =======
 >>>>>>> refs/remotes/vnpy/master
+vn.strategy/strategydemo/strategy01.py
+tk.csv
+vn.strategy/strategydemo/backtestingStrategy02.py
+vn.strategy/strategydemo/strategy01.py
+vn.strategy/strategydemo/strategy02.py

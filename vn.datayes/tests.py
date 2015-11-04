@@ -1,4 +1,6 @@
+# encoding: UTF-8
 from api import *
+import matplotlib.pyplot as plt
 
 def test_config():
 	cfig = Config()
@@ -99,9 +101,38 @@ def test_mktbar_M1_get_interM():
 	api = PyApi(Config())
 	api.get_equity_M1_interMonth(db=db, id=0, tasks=['000001.XSHE','000002.XSHE'])
 
+def test_mktfutd():
+
+	api = PyApi(Config())
+
+	data = api.get_future_D1(ticker='au1512',start='20151010', end='20151029',field='tradeDate,ticker,openPrice,highestPrice,lowestPrice,closePrice,preClosePrice,CHG,CHG1,CHGPct').body.tail(10)
+
+	print data
+
+	#data['TR'] = abs(data['closePrice']-data['openPrice'])
+
+    #atr = 0.0
+
+	#atr = (data['TR'].sum())/10
+
+	#print atr
+
+def test_MktEqudGet():
+
+	api = PyApi(Config())
+
+	# DataAPI.MktEqudGet返回pandas.DataFrame格式
+	MarketEqud =  api.get_equity_D1(secID = "000002.XSHE",
+                  field = ["shortNM", "closePrice", "turnoverValue", "capitalInflow"],
+                  start = "20000106",
+                  end = "20140110").body
+
+	# 绘制返回的数据
+	plt(MarketEqud, settings = {'x':'tradeDate','y':'closePrice', 'title':u'万科历史收盘价格'})
+
 if __name__ == '__main__':
 	#test_config()
-	test_mktbar_D1()
+	#test_mktbar_D1()
 	#test_bond_D1()
 	#test_fut_D1()
 	#test_fund_D1()
@@ -117,3 +148,5 @@ if __name__ == '__main__':
 	#test_mktbar_M1_get_drudgery()
 	#test_mktbar_M1_get_all()
 	#test_mktbar_M1_get_interM()
+	#test_mktfutd()
+	test_MktEqudGet()
