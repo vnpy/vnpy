@@ -24,16 +24,16 @@ import cPickle
 OFFSET_OPEN = '0'           # 开仓
 OFFSET_CLOSE = '1'          # 平仓
 
-DIRECTION_BUY = '0'         # 买入
-DIRECTION_SELL = '1'        # 卖出
+DIRECTION_BUY = '0'         # 买入 多
+DIRECTION_SELL = '1'        # 卖出 空
 
 PRICETYPE_LIMIT = '2'       # 限价
 
-# buy   买入开仓    : DIRECTION_BUY = '0'   OFFSET_OPEN = '0'
-# sell  卖出平仓    : DIRECTION_SELL = '1'  OFFSET_CLOSE = '1'
+# buy   买入开仓 开多   : DIRECTION_BUY = '0'   OFFSET_OPEN = '0'
+# sell  卖出平仓 平多    : DIRECTION_SELL = '1'  OFFSET_CLOSE = '1'
 
-# short 卖出开仓    : DIRECTION_SELL = '1'  OFFSET_OPEN = '0'
-# cover 买入平仓    : DIRECTION_BUY = '0'   OFFSET_CLOSE = '1'
+# short 卖出开仓 开空   : DIRECTION_SELL = '1'  OFFSET_OPEN = '0'
+# cover 买入平仓 平空   : DIRECTION_BUY = '0'   OFFSET_CLOSE = '1'
 
 ########################################################################
 class Tick:
@@ -401,6 +401,72 @@ class StrategyEngine(object):
             return None
 
     #----------------------------------------------------------------------
+    def loadBarFromMysql(self, symbol, startDate, endDate, barType='M5'):
+        """从MysqlDB中读取Bar数据
+        startDate,（包含）开始日期
+        endDate， （包含）结束日期
+        barType ='M1' K线类型,1分钟线
+        barType ='M5' K线类型，5分钟线
+        barType = 'D1' K线类型，日线
+        """
+
+        if self.__mysqlConnected:
+
+            #获取指针
+            cur = self.__mysqlConnection.cursor(MySQLdb.cursors.DictCursor)
+
+            if endDate:
+                # 指定开始与结束日期
+                sqlstring = 'select open,high,low,close,volume,date,time,datetime from TB_{0}{1} ' \
+                            'where date between cast(\'{2}\' as date) and cast(\'{3}\' as date) ' \
+                            'order by datetime'.format(symbol, barType, startDate, endDate)
+
+            elif startDate:
+                # 指定开始日期
+                sqlstring = 'select open,high,low,close,volume,date,time,datetime from TB_{0}{1} ' \
+                            'where date > cast(\'{2}\' as date)  order by datetime'.format(symbol,
+                                                                                           barType, startDate)
+
+            else:
+                # 没有指定，所有日期数据
+                sqlstring = 'select open,high,low,close,volume,date,time,datetime from TB_{0}{1} ' \
+                            ' order by datetime'.format(symbol, barType)
+
+            print sqlstring
+
+            count = cur.execute(sqlstring)
+
+            # cx = cur.fetchall()
+            fetch_counts = 0
+
+            cx = None
+
+            fetch_size = 1000
+
+            while True:
+                results = cur.fetchmany(fetch_size)
+
+                if not results:
+                    break
+
+                if fetch_counts == 0:
+                    cx = results
+                else:
+                    cx = cx + results
+
+                fetch_counts = fetch_counts+fetch_size
+
+                print u'历史{0}Bar数据载入{1}条'.format(barType, fetch_counts)
+
+            self.writeLog(u'历史{0}Bar数据载入完成，{1}~{2},共{3}条'.format(barType,startDate, endDate, count))
+
+            print u'策略引擎：历史{0}Bar数据载入完成，{1}~{2},共{3}条'.format(barType,startDate, endDate, count)
+
+            return cx
+        else:
+            return None
+
+    #----------------------------------------------------------------------
     def getMysqlDeltaDate(self,symbol, startDate, decreaseDays):
         """从mysql获取交易日天数差"""
         try:
@@ -493,8 +559,6 @@ class StrategyEngine(object):
                     bar.openInterest)
 
                 if counts >= 3600:
-
-
 
                     self.__executeMysql(sql+values)
 
