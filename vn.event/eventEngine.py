@@ -182,7 +182,7 @@ class EventEngine:
 
         # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求
         try:
-            handlerList = self.handlers[type_]
+            handlerList = self.__handlers[type_]
             
             # 如果该函数存在于列表中，则移除
             if handler in handlerList:
