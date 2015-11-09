@@ -12,7 +12,7 @@ from strategyEngine import *
 import sys
 import os
 import cPickle
-
+import json
 
 
 ########################################################################
@@ -123,9 +123,32 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def connectMysql(self):
         """连接MysqlDB"""
+
+        # 载入json文件
+        fileName = 'mysql_connect.json'
         try:
-            self.__mysqlConnection = MySQLdb.connect(host='vnpy.cloudapp.net', user='vnpy',
-                                                     passwd='vnpy', db='stockcn', port=3306)
+            f = file(fileName)
+        except IOError:
+            self.writeLog(u'回测引擎读取Mysql_connect.json失败')
+            return
+
+        # 解析json文件
+        setting = json.load(f)
+        try:
+            mysql_host = str(setting['host'])
+            mysql_port = int(setting['port'])
+            mysql_user = str(setting['user'])
+            mysql_passwd = str(setting['passwd'])
+            mysql_db = str(setting['db'])
+
+
+        except IOError:
+            self.writeLog(u'回测引擎读取Mysql_connect.json,连接配置缺少字段，请检查')
+            return
+
+        try:
+            self.__mysqlConnection = MySQLdb.connect(host=mysql_host, user=mysql_user,
+                                                     passwd=mysql_passwd, db=mysql_db, port=mysql_port)
             self.__mysqlConnected = True
             self.writeLog(u'回测引擎连接MysqlDB成功')
         except ConnectionFailure:
@@ -554,7 +577,7 @@ class BacktestingEngine(object):
                 if tradeItem['Direction'] == '0':
 
                     if tradeItem['OffsetFlag'] == '0':      # 开多仓 Buy
-                        amount = 0-float(tradeItem['Price'])*int(tradeItem['Volume'])
+                        amount = 0 - float(tradeItem['Price'])*int(tradeItem['Volume'])
                     else:                                   # 平空仓 Cover
                         amount = 0 -float(tradeItem['Price'])*int(tradeItem['Volume'])
                 else:

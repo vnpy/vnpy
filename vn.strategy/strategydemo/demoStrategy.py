@@ -212,10 +212,10 @@ class SimpleEmaStrategy(StrategyTemplate):
     #----------------------------------------------------------------------
     def onTrade(self, trade):
         """交易更新"""
-        if trade.direction == DIRECTION_BUY:
-            self.pos = self.pos + trade.volume
-        else:
-            self.pos = self.pos - trade.volume 
+        #if trade.direction == DIRECTION_BUY:
+        #    self.pos = self.pos + trade.volume
+        #else:
+        #    self.pos = self.pos - trade.volume
             
         log = self.name + u'当前持仓：' + str(self.pos)
         print log
@@ -282,6 +282,9 @@ class SimpleEmaStrategy(StrategyTemplate):
                 return
             # End added
 
+            # 每日收市平仓
+            self.__dailyCloseMarket(o, t)
+
             # 快速EMA在慢速EMA上方，做多
             if self.fastEMA > self.slowEMA:
                 # 如果当前手头无仓位，则直接做多
@@ -290,6 +293,7 @@ class SimpleEmaStrategy(StrategyTemplate):
                     # Modified by Incense Lee ：回测时，Tick数据中没有涨停价，只能使用当前价
                     # self.buy(self.currentTick.upperLimit, 1)
                     self.buy(self.currentTick.lastPrice, 1, t)   # 价格，数量，下单时间
+                    self.pos = 1
 
                 # 手头有空仓，则先平空，再开多
                 elif self.pos < 0:
@@ -297,6 +301,7 @@ class SimpleEmaStrategy(StrategyTemplate):
                     self.cover(self.currentTick.lastPrice, 1, t)     # 价格，数量， 下单时间
                     # self.buy(self.currentTick.upperLimit, 1)
                     self.buy(self.currentTick.lastPrice, 1, t)
+                    self.pos = 1
 
             # 反之，做空
             elif self.fastEMA < self.slowEMA:
@@ -304,12 +309,17 @@ class SimpleEmaStrategy(StrategyTemplate):
                     # Modified by Incense Lee ：回测时，Tick数据中没有最低价价，只能使用当前价
                     # self.short(self.currentTick.lowerLimit, 1)
                     self.short(self.currentTick.lastPrice, 1, t)
+                    self.pos = - 1
+
                 elif self.pos > 0:
                     # self.sell(self.currentTick.lowerLimit, 1)
                     self.sell(self.currentTick.lastPrice, 1, t)
 
+
                     # self.short(self.currentTick.lowerLimit, 1)
                     self.short(self.currentTick.lastPrice, 1, t)
+
+                    self.pos = -1
         
             # 记录日志
             log = self.name + u'，K线时间：' + str(t) + '\n' + \
@@ -333,7 +343,20 @@ class SimpleEmaStrategy(StrategyTemplate):
 
         # 保存快速EMA和慢速EMA
         self.engine.saveEmaToMysql(id, self.lineEMA)
+    #----------------------------------------------------------------------
+    def __dailyCloseMarket(self, o, t):
+        """每日收市平仓"""
 
+        if not (t.hour == 14 and t.minute == 55):
+            return
+
+        if self.pos > 0:
+            self.sell(o, self.pos, t)
+            self.pos = 0
+
+        if self.pos < 0:
+            self.cover(o, 0-self.pos, t)
+            self.pos = 0
 
 #----------------------------------------------------------------------
 def print_log(event):

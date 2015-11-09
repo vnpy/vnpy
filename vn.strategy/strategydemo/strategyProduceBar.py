@@ -368,8 +368,31 @@ class StrategyProduceBar(StrategyTemplate):
 #----------------------------------------------------------------------
     def __connectMysql(self):
         """连接MysqlDB"""
+
+        # 载入json文件
+        fileName = 'mysql_connect.json'
         try:
-            self.__mysqlConnection = MySQLdb.connect(host='vnpy.cloudapp.net', user='stockcn', passwd='7uhb*IJN', db='stockcn', port=3306)
+            f = file(fileName)
+        except IOError:
+            self.writeLog(u'回测引擎读取Mysql_connect.json失败')
+            return
+        # 解析json文件
+        setting = json.load(f)
+        try:
+            mysql_host = str(setting['host'])
+            mysql_port = int(setting['port'])
+            mysql_user = str(setting['user'])
+            mysql_passwd = str(setting['passwd'])
+            mysql_db = str(setting['db'])
+
+
+        except IOError:
+            self.writeLog(u'回测引擎读取Mysql_connect.json,连接配置缺少字段，请检查')
+            return
+
+        try:
+            self.__mysqlConnection = MySQLdb.connect(host=mysql_host, user=mysql_user,
+                                                     passwd=mysql_passwd, db=mysql_db, port=mysql_port)
             self.__mysqlConnected = True
             print u'策略连接MysqlDB成功'
         except ConnectionFailure:
