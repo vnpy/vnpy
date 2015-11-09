@@ -4,20 +4,9 @@
     "qryAddress": "tcp://211.144.195.163:54506",  
     "mdAddress": "tcp://211.144.195.163:54513",
     "productInfo": "LTS-Test", 
-    "authCode": "N3EHKP4CYHZGM9VJ", 
-<<<<<<< HEAD
-<<<<<<< HEAD
+    "authCode": "N3EHKP4CYHZGM9VJ",
     "tdPassword": "150601", 
     "mdPassword": "123", 
     "userID": "020090002037"
-=======
-    "tdPassword": "华宝证券申请", 
-    "mdPassword": "华宝证券申请", 
-    "userID": "华宝证券申请"
->>>>>>> refs/remotes/vnpy/master
-=======
-    "tdPassword": "华宝证券申请", 
-    "mdPassword": "华宝证券申请", 
-    "userID": "华宝证券申请"
->>>>>>> refs/remotes/vnpy/master
+
 }

@@ -395,23 +395,14 @@ class VtOrderReq:
         self.priceType = EMPTY_STRING           # 价格类型
         self.direction = EMPTY_STRING           # 买卖
         self.offset = EMPTY_STRING              # 开平
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
-        
+
         # 以下为IB相关
         self.productClass = EMPTY_UNICODE       # 合约类型
         self.currency = EMPTY_STRING            # 合约货币
         self.expiry = EMPTY_STRING              # 到期日
         self.strikePrice = EMPTY_FLOAT          # 行权价
         self.optionType = EMPTY_UNICODE         # 期权类型        
-<<<<<<< HEAD
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
-        
+
 
 ########################################################################
 class VtCancelOrderReq:

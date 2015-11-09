@@ -12,14 +12,7 @@ DIRECTION_LONG = u'多'
 DIRECTION_SHORT = u'空'
 DIRECTION_UNKNOWN = u'未知'
 DIRECTION_NET = u'净'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 DIRECTION_SELL = u'卖出'      # IB接口
->>>>>>> refs/remotes/vnpy/master
-=======
-DIRECTION_SELL = u'卖出'      # IB接口
->>>>>>> refs/remotes/vnpy/master
 
 # 开平常量
 OFFSET_NONE = u'无开平'
@@ -42,14 +35,7 @@ PRODUCT_FUTURES = u'期货'
 PRODUCT_OPTION = u'期权'
 PRODUCT_INDEX = u'指数'
 PRODUCT_COMBINATION = u'组合'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 PRODUCT_FOREX = u'外汇'
->>>>>>> refs/remotes/vnpy/master
-=======
-PRODUCT_FOREX = u'外汇'
->>>>>>> refs/remotes/vnpy/master
 PRODUCT_UNKNOWN = u'未知'
 
 # 价格类型常量
@@ -69,14 +55,6 @@ EXCHANGE_CFFEX = u'CFFEX'   # 中金所
 EXCHANGE_SHFE = u'SHFE'     # 上期所
 EXCHANGE_CZCE = u'CZCE'     # 郑商所
 EXCHANGE_DCE = u'DCE'       # 大商所
-<<<<<<< HEAD
-<<<<<<< HEAD
-EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
-EXCHANGE_NONE = ''          # 空交易所
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
-
 EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
 EXCHANGE_NONE = ''          # 空交易所
 
@@ -87,9 +65,4 @@ EXCHANGE_IDEALPRO = u'IDEALPRO' # IB外汇ECN
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币
-<<<<<<< HEAD
 CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
->>>>>>> refs/remotes/vnpy/master
-=======
-CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
->>>>>>> refs/remotes/vnpy/master

@@ -1,14 +1,7 @@
 # encoding: UTF-8
 
 import shelve
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 from collections import OrderedDict
->>>>>>> refs/remotes/vnpy/master
-=======
-from collections import OrderedDict
->>>>>>> refs/remotes/vnpy/master
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -16,23 +9,11 @@ from pymongo.errors import ConnectionFailure
 from eventEngine import *
 from ctpGateway import CtpGateway
 from ltsGateway import LtsGateway
-<<<<<<< HEAD
-<<<<<<< HEAD
-from windGateway import WindGateway
-from vtGateway import *
-import uiBasicWidget
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
 #from windGateway import WindGateway
 from ibGateway import IbGateway
 from vtGateway import *
 import uiBasicWidget
 from ctaEngine import CtaEngine
-<<<<<<< HEAD
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
 
 
 ########################################################################
@@ -61,25 +42,14 @@ class MainEngine(object):
         self.gatewayDict['LTS'].setQryEnabled(True)
         
         #self.addGateway(WindGateway, 'Wind')    # 没有Wind的请注释掉这一行
-        
-<<<<<<< HEAD
-<<<<<<< HEAD
+
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
+
         self.addGateway(IbGateway, 'IB')
-        
-        # MongoDB数据库相关
-        self.dbClient = None    # MongoDB客户端对象
-        
+
         # CTA引擎
         self.ctaEngine = CtaEngine(self, self.eventEngine, self.dataEngine)
-<<<<<<< HEAD
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -94,14 +64,7 @@ class MainEngine(object):
             gateway.connect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
-        
->>>>>>> refs/remotes/vnpy/master
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""

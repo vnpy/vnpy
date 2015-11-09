@@ -393,21 +393,13 @@ class  LtsMdApi(MdApi):
         req = {}
         req['InstrumentID'] = str(subscribeReq.symbol)
         req['ExchangeID'] = str(subscribeReq.exchange)
-<<<<<<< HEAD
-<<<<<<< HEAD
-        self.subscribeMarketData(req)
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
+
         
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
         if self.loginStatus:
             self.subscribeMarketData(req)
-<<<<<<< HEAD
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
+
         
         self.subscribedSymbols.add(subscribeReq)   
         
@@ -579,16 +571,7 @@ class LtsTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRtnOrder(self, data):
         """报单回报"""       
-<<<<<<< HEAD
-<<<<<<< HEAD
-        print '-'*20
-        for k, v in data.items():
-            print k, ':', v
-            
-=======
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
+
         # 更新最大报单编号
         newref = data['OrderRef']
         self.orderRef = max(self.orderRef, int(newref))
@@ -682,16 +665,11 @@ class LtsTdApi(TdApi):
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
-<<<<<<< HEAD
-<<<<<<< HEAD
-        print '-'*20
-        for k, v in data.items():
-            print k, ':', v
-            
-=======
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
+
+        #print '-'*20
+        #for k, v in data.items():
+        #    print k, ':', v
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
