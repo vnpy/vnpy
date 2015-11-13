@@ -8,7 +8,7 @@ import decimal
 def main():
     """回测程序主函数"""
     # symbol = 'IF1506'
-    symbol = 'a'
+    symbol = 'au'
 
     # 创建回测引擎
     be = BacktestingEngine()
@@ -23,14 +23,14 @@ def main():
     # be.loadMongoDataHistory(symbol, datetime(2015,5,1), datetime.today())
     # be.loadMongoDataHistory(symbol, datetime(2012,1,9), datetime(2012,1,14))
 
-    be.setDataHistory(symbol, datetime(2012,1,1), datetime(2012,12,31))
+    be.setDataHistory(symbol, datetime(2015,7,3), datetime(2015,7,30))
 
     # 创建策略对象
     setting = {}
     setting['fastAlpha'] = 0.2
-    setting['slowAlpha'] =  0.05
+    setting['slowAlpha'] = 0.05
     # setting['startDate'] = datetime(year=2015, month=5, day=20)
-    setting['startDate'] = datetime(year=2012, month=1, day=1)
+    setting['startDate'] = datetime(year=2015, month=7, day=3)
 
     se.createStrategy(u'EMA演示策略', symbol, SimpleEmaStrategy, setting)
 

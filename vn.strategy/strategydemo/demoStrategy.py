@@ -337,17 +337,19 @@ class SimpleEmaStrategy(StrategyTemplate):
      #----------------------------------------------------------------------
     def saveData(self, id):
         """保存过程数据"""
+        pass
+
         # 保存K线
-        print u'{0}保存K线'.format(self.name)
-        self.engine.saveBarToMysql(id, self.lineBar)
+        # print u'{0}保存K线'.format(self.name)
+        # self.engine.saveBarToMysql(id, self.lineBar)
 
         # 保存快速EMA和慢速EMA
-        self.engine.saveEmaToMysql(id, self.lineEMA)
+        # self.engine.saveEmaToMysql(id, self.lineEMA)
     #----------------------------------------------------------------------
     def __dailyCloseMarket(self, o, t):
         """每日收市平仓"""
 
-        if not (t.hour == 14 and t.minute == 55):
+        if not ((t.hour == 14 and t.minute == 55) or (t.hour == 2 and t.minute == 25)):
             return
 
         if self.pos > 0:

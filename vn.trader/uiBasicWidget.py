@@ -773,7 +773,7 @@ class TradingWidget(QtGui.QFrame):
             vtSymbol = '.'.join([symbol, exchange])
             contract = self.dataEngine.getContract(vtSymbol)
         else:
-
+            vtSymbol = symbol
             contract = self.dataEngine.getContract(symbol)
         
         if contract:

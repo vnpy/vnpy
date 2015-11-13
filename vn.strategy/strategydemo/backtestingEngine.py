@@ -440,7 +440,7 @@ class BacktestingEngine(object):
         self.writeLog(u'开始回测,{0}'.format(str(t1 )))
 
         # 每次获取日期周期
-        intervalDays = 30
+        intervalDays = 20
 
         for i in range (0,(self.endDate - self.startDate).days +1, intervalDays):
             d1 = self.startDate + timedelta(days = i )
@@ -475,8 +475,6 @@ class BacktestingEngine(object):
 
         # 保存交易到数据库中
         self.saveTradeDataToMysql()
-
-
 
         t2 = datetime.now()
 
