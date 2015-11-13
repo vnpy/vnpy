@@ -2,11 +2,7 @@
 
 '''CTA模块相关的GUI控制组件'''
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
+
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
 
@@ -241,18 +237,3 @@ class CtaEngineManager(QtGui.QWidget):
         self.signal.connect(self.updateCtaLog)
         self.eventEngine.register(EVENT_CTA_LOG, self.signal.emit)
         
-        
-    
-    
-    
-    
-
-
-
-    
-<<<<<<< HEAD
-    
->>>>>>> refs/remotes/vnpy/master
-=======
-    
->>>>>>> refs/remotes/vnpy/master

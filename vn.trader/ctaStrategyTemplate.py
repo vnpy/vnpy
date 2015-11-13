@@ -1,13 +1,7 @@
 # encoding: UTF-8
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 from vtConstant import *
->>>>>>> refs/remotes/vnpy/master
-=======
-from vtConstant import *
->>>>>>> refs/remotes/vnpy/master
+
 from ctaConstant import *
 
 
@@ -21,17 +15,7 @@ class CtaStrategyTemplate(object):
     paramList = ['vtSymbol']
     
     # 变量列表，保存了变量的名称
-<<<<<<< HEAD
-<<<<<<< HEAD
-    varList = []
 
-    #----------------------------------------------------------------------
-    def __init__(self, ctaEngine, setting=None):
-        """Constructor"""
-        self.ctaEngine = ctaEngine
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
     varList = ['trading']
 
     #----------------------------------------------------------------------
@@ -39,11 +23,7 @@ class CtaStrategyTemplate(object):
         """Constructor"""
         self.ctaEngine = ctaEngine
         self.name = name
-<<<<<<< HEAD
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
-        
+
         self.vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
         
         self.tickDbName = EMPTY_STRING      # tick数据库名称
@@ -177,26 +157,15 @@ class CtaStrategyTemplate(object):
         d = self.__dict__
         for key in self.paramList:
             if key in setting:
-<<<<<<< HEAD
-<<<<<<< HEAD
-                d[key] = paramDict[key]
-=======
+
                 d[key] = setting[key]
->>>>>>> refs/remotes/vnpy/master
-=======
-                d[key] = setting[key]
->>>>>>> refs/remotes/vnpy/master
-                
+
     #----------------------------------------------------------------------
     def getToday(self):
         """查询当前日期"""
         return self.ctaEngine.getToday()
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> refs/remotes/vnpy/master
+
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
@@ -263,10 +232,4 @@ class TestStrategy(CtaStrategyTemplate):
         self.writeCtaLog(u'测试策略%s收到Bar' %self.name)    
         
         
-    
-<<<<<<< HEAD
->>>>>>> refs/remotes/vnpy/master
-=======
->>>>>>> refs/remotes/vnpy/master
-    
     
