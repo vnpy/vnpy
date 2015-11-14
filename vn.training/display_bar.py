@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 try:
     #连接数据库
-    conn = MySQLdb.connect(host='vnpy.cloudapp.net', user='stockcn', passwd='7uhb*IJN', db='BackTest', port=3306)
+    conn = MySQLdb.connect(host='vnpy.cloudapp.net', user='vnpy', passwd='vnpy', db='BackTest', port=3306)
 
     #获取指针
     cur = conn.cursor(MySQLdb.cursors.DictCursor)
