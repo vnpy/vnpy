@@ -67,7 +67,7 @@ class WindGateway(VtGateway):
     
     wsqParam = ','.join(wsqParamMap.keys())
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName='Wind'):
         """Constructor"""
         super(WindGateway, self).__init__(eventEngine, gatewayName)
@@ -81,7 +81,7 @@ class WindGateway(VtGateway):
         
         self.registerEvent()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 由于w.start方法会阻塞较长时间
@@ -90,13 +90,13 @@ class WindGateway(VtGateway):
         event = Event(type_=EVENT_WIND_CONNECTREQ)
         self.eventEngine.put(event)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
         windSymbol = '.'.join([subscribeReq.symbol, exchangeMap[subscribeReq.exchange]])
         data = self.w.wsq(windSymbol, self.wsqParam, func=self.wsqCallBack)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         log = VtLogData()
@@ -104,7 +104,7 @@ class WindGateway(VtGateway):
         log.logContent = u'Wind接口未实现发单功能'
         self.onLog(log) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         log = VtLogData()
@@ -112,7 +112,7 @@ class WindGateway(VtGateway):
         log.logContent = u'Wind接口未实现撤单功能'
         self.onLog(log) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def getAccount(self):
         """查询账户资金"""
         log = VtLogData()
@@ -120,7 +120,7 @@ class WindGateway(VtGateway):
         log.logContent = u'Wind接口未实现查询账户功能'
         self.onLog(log) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def getPosition(self):
         """查询持仓"""
         log = VtLogData()
@@ -128,16 +128,16 @@ class WindGateway(VtGateway):
         log.logContent = u'Wind接口未实现查询持仓功能'
         self.onLog(log) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def close(self):
         self.w.stop()
      
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
         self.eventEngine.register(EVENT_WIND_CONNECTREQ, self.wConnect)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def wsqCallBack(self, data):
         """收到wsq推送"""
         windSymbol = data.Codes[0]
@@ -168,7 +168,7 @@ class WindGateway(VtGateway):
         
         self.onTick(tick)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def wConnect(self, event):
         """利用事件处理线程去异步连接Wind接口"""
         result = self.w.start()

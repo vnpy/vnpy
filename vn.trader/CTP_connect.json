@@ -1,7 +1,8 @@
 {
-    "brokerID": "8070",
-    "tdAddress": "tcp://180.168.214.246:41213",
-    "password": "154815",
-    "mdAddress": "tcp://180.168.214.246:41205",
-    "userID": "887733"
+"brokerID":"9999",
+"tdAddress":"tcp://180.168.146.187:10000",
+"password":"jiajia",
+"mdAddress":"tcp://180.168.146.187:10010",
+"userID":"033513"
 }
+

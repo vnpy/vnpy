@@ -10,7 +10,7 @@ from uiCtaWidget import CtaEngineManager
 class MainWindow(QtGui.QMainWindow):
     """主窗口"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, dataEngine):
         """Constructor"""
         super(MainWindow, self).__init__()
@@ -21,7 +21,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.initUi()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle('VnTrader')
@@ -29,7 +29,7 @@ class MainWindow(QtGui.QMainWindow):
         self.initMenu()
         self.initStatusBar()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
         marketM = MarketMonitor(self.eventEngine)
@@ -65,13 +65,23 @@ class MainWindow(QtGui.QMainWindow):
         central.setLayout(grid)
         self.setCentralWidget(central)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initMenu(self):
         """初始化菜单"""
+
         # 创建操作
-        connectCtpAction = QtGui.QAction(u'连接CTP', self)
-        connectCtpAction.triggered.connect(self.connectCtp)
-        
+        connectCtpProdAction = QtGui.QAction(u'连接生产CTP', self)
+        connectCtpProdAction.triggered.connect(self.connectCtpProd)
+
+        connectCtpPostAction = QtGui.QAction(u'连接盘后CTP', self)
+        connectCtpPostAction.triggered.connect(self.connectCtpPost)
+
+        connectCtpTestAction = QtGui.QAction(u'连接测试CTP', self)
+        connectCtpTestAction.triggered.connect(self.connectCtpTest)
+
+        #connectCtpAction = QtGui.QAction(u'连接CTP', self)
+        #connectCtpAction.triggered.connect(self.connectCtp)
+
         connectLtsAction = QtGui.QAction(u'连接LTS', self)
         connectLtsAction.triggered.connect(self.connectLts)
         
@@ -104,7 +114,11 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         
         sysMenu = menubar.addMenu(u'系统')
-        sysMenu.addAction(connectCtpAction)
+        sysMenu.addAction(connectCtpProdAction)
+        sysMenu.addAction(connectCtpPostAction)
+        sysMenu.addAction(connectCtpTestAction)
+        #sysMenu.addAction(connectCtpAction)
+
         sysMenu.addAction(connectLtsAction)
         sysMenu.addAction(connectWindAction)
 
@@ -121,7 +135,7 @@ class MainWindow(QtGui.QMainWindow):
         helpMenu = menubar.addMenu(u'帮助')
         helpMenu.addAction(aboutAction)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initStatusBar(self):
         """初始化状态栏"""
         self.statusLabel = QtGui.QLabel()
@@ -134,7 +148,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sbTrigger = 10     # 10秒刷新一次
         self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateStatusBar(self, event):
         """在状态栏更新CPU和内存信息"""
         self.sbCount += 1
@@ -143,35 +157,48 @@ class MainWindow(QtGui.QMainWindow):
             self.sbCount = 0
             self.statusLabel.setText(self.getCpuMemory())
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def getCpuMemory(self):
         """获取CPU和内存状态信息"""
         cpuPercent = psutil.cpu_percent()
         memoryPercent = psutil.virtual_memory().percent
         return u'CPU使用率：%d%%   内存使用率：%d%%' % (cpuPercent, memoryPercent)        
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    def connectCtpProd(self):
+        """连接生产环境CTP接口"""
+        self.mainEngine.connect('CTP_Prod')
+
+    # ----------------------------------------------------------------------
+    def connectCtpPost(self):
+        """连接盘后CTP接口"""
+        self.mainEngine.connect('CTP_Post')
+
+    def connectCtpTest(self):
+        """连接测试环境CTP接口"""
+        self.mainEngine.connect('CTP_Test')
+
     def connectCtp(self):
         """连接CTP接口"""
         self.mainEngine.connect('CTP')
-        
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')    
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connectWind(self):
         """连接Wind接口"""
         self.mainEngine.connect('Wind')
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def connectIb(self):
         """连接Ib"""
         self.mainEngine.connect('IB')
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def testSubscribe(self):
         """测试订阅"""
         req = VtSubscribeReq()
@@ -193,7 +220,7 @@ class MainWindow(QtGui.QMainWindow):
         req.symbol = 'GE'
         self.mainEngine.subscribe(req, 'IB')        
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openAbout(self):
         """打开关于"""
         try:
@@ -202,7 +229,7 @@ class MainWindow(QtGui.QMainWindow):
             self.aboutW = AboutWidget(self)
             self.aboutW.show()
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openContract(self):
         """打开合约查询"""
         try:
@@ -212,7 +239,7 @@ class MainWindow(QtGui.QMainWindow):
             self.contractM.show()
 
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openCta(self):
         """打开CTA组件"""
         try:
@@ -222,7 +249,7 @@ class MainWindow(QtGui.QMainWindow):
             self.ctaM.show()
 
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
         reply = QtGui.QMessageBox.question(self, u'退出',
@@ -240,14 +267,14 @@ class MainWindow(QtGui.QMainWindow):
 class AboutWidget(QtGui.QDialog):
     """显示关于信息"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, parent=None):
         """Constructor"""
         super(AboutWidget, self).__init__(parent)
 
         self.initUi()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """"""
         self.setWindowTitle(u'关于')

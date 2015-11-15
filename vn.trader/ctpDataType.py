@@ -2448,7 +2448,7 @@ typedefDict["TThostFtdcCloseStyleType"] = "string"
 #//////////////////////////////////////////////////////////////////////
 #TFtdcStatModeType是一个统计方式类型
 #//////////////////////////////////////////////////////////////////////
-#----
+# ----
 defineDict["THOST_FTDC_SM_Non"] = '0'
 #按合约统计
 defineDict["THOST_FTDC_SM_Instrument"] = '1'

@@ -16,7 +16,7 @@ BASIC_FONT = QtGui.QFont(u'微软雅黑', 12)
 class BasicCell(QtGui.QTableWidgetItem):
     """基础的单元格"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, text=None):
         """Constructor"""
         super(BasicCell, self).__init__()
@@ -24,7 +24,7 @@ class BasicCell(QtGui.QTableWidgetItem):
         if text:
             self.setContent(text)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
 
@@ -38,7 +38,7 @@ class BasicCell(QtGui.QTableWidgetItem):
 class DirectionCell(QtGui.QTableWidgetItem):
     """用来显示买卖方向的单元格"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, text=None):
         """Constructor"""
         super(DirectionCell, self).__init__()
@@ -46,7 +46,7 @@ class DirectionCell(QtGui.QTableWidgetItem):
         if text:
             self.setContent(text)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
         if text == DIRECTION_LONG or text == DIRECTION_NET:
@@ -61,7 +61,7 @@ class NameCell(QtGui.QTableWidgetItem):
     """用来显示合约中文的单元格"""
     dataEngine = None
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, text=None, dataEngine=None):
         """Constructor"""
         super(NameCell, self).__init__()
@@ -69,13 +69,13 @@ class NameCell(QtGui.QTableWidgetItem):
         if text:
             self.setContent(text)
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     @staticmethod
     def setDataEngine(self, dataEngine):
         """设置读取合约用的数据引擎对象"""
         self.dataEngine = dataEngine
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
         if self.dataEngine:
@@ -97,7 +97,7 @@ class NameCell(QtGui.QTableWidgetItem):
 class BidCell(QtGui.QTableWidgetItem):
     """买价单元格"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, text=None):
         """Constructor"""
         super(BidCell, self).__init__()
@@ -108,7 +108,7 @@ class BidCell(QtGui.QTableWidgetItem):
         if text:
             self.setContent(text)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
         self.setText(text)
@@ -118,7 +118,7 @@ class BidCell(QtGui.QTableWidgetItem):
 class AskCell(QtGui.QTableWidgetItem):
     """买价单元格"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, text=None):
         """Constructor"""
         super(AskCell, self).__init__()
@@ -129,7 +129,7 @@ class AskCell(QtGui.QTableWidgetItem):
         if text:
             self.setContent(text)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
         self.setText(text)
@@ -146,7 +146,7 @@ class BasicMonitor(QtGui.QTableWidget):
     """
     signal = QtCore.pyqtSignal(type(Event()))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine=None, parent=None):
         """Constructor"""
         super(BasicMonitor, self).__init__(parent)
@@ -170,33 +170,33 @@ class BasicMonitor(QtGui.QTableWidget):
         # 保存数据对象到单元格
         self.saveData = False
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setHeaderDict(self, headerDict):
         """设置表头有序字典"""
         self.headerDict = headerDict
         self.headerList = headerDict.keys()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setDataKey(self, dataKey):
         """设置数据字典的键"""
         self.dataKey = dataKey
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setEventType(self, eventType):
         """设置监控的事件类型"""
         self.eventType = eventType
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setFont(self, font):
         """设置字体"""
         self.font = font
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setSaveData(self, saveData):
         """设置是否要保存数据到单元格"""
         self.saveData = saveData
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initTable(self):
         """初始化表格"""
         # 设置表格的列数
@@ -216,19 +216,19 @@ class BasicMonitor(QtGui.QTableWidget):
         # 设为行交替颜色
         self.setAlternatingRowColors(True)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def registerEvent(self):
         """注册GUI更新相关的事件监听"""
         self.signal.connect(self.updateEvent)
         self.eventEngine.register(self.eventType, self.signal.emit)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateEvent(self, event):
         """收到事件更新"""
         data = event.dict_['data']
         self.updateData(data)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateData(self, data):
         """将数据更新到表格中"""
         # 如果设置了dataKey，则采用存量更新模式
@@ -281,7 +281,7 @@ class BasicMonitor(QtGui.QTableWidget):
         # 调整列宽
         self.resizeColumns()
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def resizeColumns(self):
         """调整各列的大小"""
         self.horizontalHeader().resizeSections(QtGui.QHeaderView.ResizeToContents)    
@@ -291,7 +291,7 @@ class BasicMonitor(QtGui.QTableWidget):
 class MarketMonitor(BasicMonitor):
     """市场监控组件"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(MarketMonitor, self).__init__(eventEngine, parent)
@@ -334,7 +334,7 @@ class MarketMonitor(BasicMonitor):
 class LogMonitor(BasicMonitor):
     """日志监控"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(LogMonitor, self).__init__(eventEngine, parent)
@@ -355,7 +355,7 @@ class LogMonitor(BasicMonitor):
 class ErrorMonitor(BasicMonitor):
     """错误监控"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(ErrorMonitor, self).__init__(eventEngine, parent)
@@ -377,7 +377,7 @@ class ErrorMonitor(BasicMonitor):
 class TradeMonitor(BasicMonitor):
     """成交监控"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(TradeMonitor, self).__init__(eventEngine, parent)
@@ -405,7 +405,7 @@ class TradeMonitor(BasicMonitor):
 class OrderMonitor(BasicMonitor):
     """委托监控"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, mainEngine, parent=None):
         """Constructor"""
         super(OrderMonitor, self).__init__(eventEngine, parent)
@@ -439,13 +439,13 @@ class OrderMonitor(BasicMonitor):
         
         self.connectSignal()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connectSignal(self):
         """连接信号"""
         # 双击单元格撤单
         self.itemDoubleClicked.connect(self.cancelOrder) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cell):
         """根据单元格的数据撤单"""
         order = cell.data
@@ -463,7 +463,7 @@ class OrderMonitor(BasicMonitor):
 class PositionMonitor(BasicMonitor):
     """持仓监控"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(PositionMonitor, self).__init__(eventEngine, parent)
@@ -489,7 +489,7 @@ class PositionMonitor(BasicMonitor):
 class AccountMonitor(BasicMonitor):
     """账户监控"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(AccountMonitor, self).__init__(eventEngine, parent)
@@ -552,7 +552,7 @@ class TradingWidget(QtGui.QFrame):
     
     gatewayList = ['']
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, dataEngine, parent=None):
         """Constructor"""
         super(TradingWidget, self).__init__(parent)
@@ -568,7 +568,7 @@ class TradingWidget(QtGui.QFrame):
         self.initUi()
         self.connectSignal()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(u'交易')
@@ -756,7 +756,7 @@ class TradingWidget(QtGui.QFrame):
         buttonCancelAll.clicked.connect(self.cancelAll)
         self.lineSymbol.returnPressed.connect(self.updateSymbol)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateSymbol(self):
         """合约变化"""
 
@@ -874,7 +874,7 @@ class TradingWidget(QtGui.QFrame):
         # 更新组件当前交易的合约
         self.symbol = vtSymbol
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateTick(self, event):
         """更新行情"""
         tick = event.dict_['data']
@@ -914,12 +914,12 @@ class TradingWidget(QtGui.QFrame):
             else:
                 self.labelReturn.setText('')
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connectSignal(self):
         """连接Signal"""
         self.signal.connect(self.updateTick)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sendOrder(self):
         """发单"""
 
@@ -954,7 +954,7 @@ class TradingWidget(QtGui.QFrame):
         
         self.mainEngine.sendOrder(req, gatewayName)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelAll(self):
         """一键撤销所有委托"""
         l = self.dataEngine.getAllWorkingOrders()
@@ -972,7 +972,7 @@ class TradingWidget(QtGui.QFrame):
 class ContractMonitor(BasicMonitor):
     """合约查询"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, dataEngine, parent=None):
         """Constructor"""
         super(ContractMonitor, self).__init__(parent=parent)
@@ -994,7 +994,7 @@ class ContractMonitor(BasicMonitor):
         
         self.initUi()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(u'合约查询')
@@ -1003,7 +1003,7 @@ class ContractMonitor(BasicMonitor):
         self.initTable()
         self.initMenu()
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def showAllContracts(self):
         """显示所有合约数据"""
         l = self.dataEngine.getAllContracts()
@@ -1029,7 +1029,7 @@ class ContractMonitor(BasicMonitor):
             
             row = row + 1
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def refresh(self):
         """刷新"""
         self.clearContents()
@@ -1037,7 +1037,7 @@ class ContractMonitor(BasicMonitor):
         self.showAllContracts()
         self.menu.close()   # 关闭菜单
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initMenu(self):
         """初始化右键菜单"""
         refreshAction = QtGui.QAction(u'刷新', self)
@@ -1046,12 +1046,12 @@ class ContractMonitor(BasicMonitor):
         self.menu = QtGui.QMenu(self)    
         self.menu.addAction(refreshAction)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def contextMenuEvent(self, event):
         """右键点击事件"""
         self.menu.popup(QtGui.QCursor.pos())
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def show(self):
         """显示"""
         super(ContractMonitor, self).show()
