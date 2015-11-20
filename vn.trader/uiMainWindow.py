@@ -6,6 +6,7 @@ from uiBasicWidget import *
 
 from uiCtaWidget import CtaEngineManager
 
+
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
     """主窗口"""
@@ -18,6 +19,8 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         self.dataEngine = dataEngine
+        
+        self.widgetDict = {}    # 用来保存子窗口的字典
         
         self.initUi()
         
@@ -90,7 +93,10 @@ class MainWindow(QtGui.QMainWindow):
         
 
         connectIbAction = QtGui.QAction(u'连接IB', self)
-        connectIbAction.triggered.connect(self.connectIb)        
+        connectIbAction.triggered.connect(self.connectIb) 
+        
+        connectDbAction = QtGui.QAction(u'连接数据库', self)
+        connectDbAction.triggered.connect(self.mainEngine.dbConnect)
         
 
         testAction = QtGui.QAction(u'测试', self)
@@ -124,16 +130,25 @@ class MainWindow(QtGui.QMainWindow):
 
         sysMenu.addAction(connectIbAction)
 
+        sysMenu.addSeparator()
+        sysMenu.addAction(connectDbAction)
+        sysMenu.addSeparator()
+
         sysMenu.addAction(testAction)
         sysMenu.addAction(exitAction)
         
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(contractAction)
 
-        functionMenu.addAction(ctaAction)
+        
+        # 算法相关
+        algoMenu = menubar.addMenu(u'算法')
+        algoMenu.addAction(ctaAction)
+        
+        # 帮助
 
         helpMenu = menubar.addMenu(u'帮助')
-        helpMenu.addAction(aboutAction)
+        helpMenu.addAction(aboutAction)        
     
     # ----------------------------------------------------------------------
     def initStatusBar(self):
@@ -201,54 +216,58 @@ class MainWindow(QtGui.QMainWindow):
     # ----------------------------------------------------------------------
     def testSubscribe(self):
         """测试订阅"""
-        req = VtSubscribeReq()
-        req.symbol = 'GOOG'
-        req.productClass = PRODUCT_EQUITY
-        req.exchange = EXCHANGE_SMART
-        req.currency = CURRENCY_USD
-        self.mainEngine.subscribe(req, 'IB')
+        api = self.mainEngine.gatewayDict['LTS'].qryApi
+        api.reqID += 1
+        api.reqQryOFInstrument({}, api.reqID)
         
-        req.symbol = 'AAPL'
-        self.mainEngine.subscribe(req, 'IB')
+        #req = VtSubscribeReq()
+        #req.symbol = 'GOOG'
+        #req.productClass = PRODUCT_EQUITY
+        #req.exchange = EXCHANGE_SMART
+        #req.currency = CURRENCY_USD
+        #self.mainEngine.subscribe(req, 'IB')
         
-        req.symbol = 'YHOO'
-        self.mainEngine.subscribe(req, 'IB')
+        #req.symbol = 'AAPL'
+        #self.mainEngine.subscribe(req, 'IB')
         
-        req.symbol = 'MSFT'
-        self.mainEngine.subscribe(req, 'IB')
+        #req.symbol = 'YHOO'
+        #self.mainEngine.subscribe(req, 'IB')
         
-        req.symbol = 'GE'
-        self.mainEngine.subscribe(req, 'IB')        
+        #req.symbol = 'MSFT'
+        #self.mainEngine.subscribe(req, 'IB')
+        
 
+        #req.symbol = 'GE'
+        #self.mainEngine.subscribe(req, 'IB')        
+        
     # ----------------------------------------------------------------------
     def openAbout(self):
         """打开关于"""
         try:
-            self.aboutW.show()
-        except AttributeError:
-            self.aboutW = AboutWidget(self)
-            self.aboutW.show()
+            self.widgetDict['aboutW'].show()
+        except KeyError:
+            self.widgetDict['aboutW'] = AboutWidget(self)
+            self.widgetDict['aboutW'].show()
     
     # ----------------------------------------------------------------------
     def openContract(self):
         """打开合约查询"""
         try:
-            self.contractM.show()
-        except AttributeError:
-            self.contractM = ContractMonitor(self.mainEngine.dataEngine)
-            self.contractM.show()
 
-            
+            self.widgetDict['contractM'].show()
+        except KeyError:
+            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine.dataEngine)
+            self.widgetDict['contractM'].show()
+
     # ----------------------------------------------------------------------
     def openCta(self):
         """打开CTA组件"""
         try:
-            self.ctaM.show()
-        except AttributeError:
-            self.ctaM = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
-            self.ctaM.show()
-
-
+            self.widgetDict['ctaM'].show()
+        except KeyError:
+            self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
+            self.widgetDict['ctaM'].show()
+    
     # ----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
@@ -256,7 +275,9 @@ class MainWindow(QtGui.QMainWindow):
                                            u'确认退出?', QtGui.QMessageBox.Yes | 
                                            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.Yes:        
+        if reply == QtGui.QMessageBox.Yes: 
+            for widget in self.widgetDict.values():
+                widget.close()
             self.mainEngine.exit()
             event.accept()
         else:

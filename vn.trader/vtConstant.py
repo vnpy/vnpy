@@ -49,18 +49,20 @@ OPTION_CALL = u'看涨期权'
 OPTION_PUT = u'看跌期权'
 
 # 交易所类型
-EXCHANGE_SSE = u'SSE'       # 上交所
-EXCHANGE_SZSE = u'SZSE'     # 深交所
-EXCHANGE_CFFEX = u'CFFEX'   # 中金所
-EXCHANGE_SHFE = u'SHFE'     # 上期所
-EXCHANGE_CZCE = u'CZCE'     # 郑商所
-EXCHANGE_DCE = u'DCE'       # 大商所
+
+EXCHANGE_SSE = 'SSE'       # 上交所
+EXCHANGE_SZSE = 'SZSE'     # 深交所
+EXCHANGE_CFFEX = 'CFFEX'   # 中金所
+EXCHANGE_SHFE = 'SHFE'     # 上期所
+EXCHANGE_CZCE = 'CZCE'     # 郑商所
+EXCHANGE_DCE = 'DCE'       # 大商所
+
 EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
 EXCHANGE_NONE = ''          # 空交易所
 
-EXCHANGE_SMART = u'SMART'       # IB智能路由（股票、期权）
-EXCHANGE_GLOBEX = u'GLOBEX'     # CME电子交易平台
-EXCHANGE_IDEALPRO = u'IDEALPRO' # IB外汇ECN
+EXCHANGE_SMART = 'SMART'       # IB智能路由（股票、期权）
+EXCHANGE_GLOBEX = 'GLOBEX'     # CME电子交易平台
+EXCHANGE_IDEALPRO = 'IDEALPRO' # IB外汇ECN
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元

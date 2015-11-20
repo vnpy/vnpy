@@ -190,7 +190,7 @@ class TestStrategy(CtaStrategyTemplate):
         self.lastPrice = EMPTY_FLOAT    # 最新价
         
         # 参数和变量列表设置
-        self.paramList.append(u'author')
+        self.paramList.append('author')
         
         self.varList.append('pos')
         self.varList.append('lastPrice')

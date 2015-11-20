@@ -3,7 +3,8 @@
 '''
 Wind Python API的gateway接入
 '''
-from threading import Thread
+
+from copy import copy
 
 try:
     from WindPy import w
@@ -166,7 +167,8 @@ class WindGateway(VtGateway):
             value = values[n][0]
             d[key] = value
         
-        self.onTick(tick)
+        newtick = copy(tick)
+        self.onTick(newtick)
     
     # ----------------------------------------------------------------------
     def wConnect(self, event):
