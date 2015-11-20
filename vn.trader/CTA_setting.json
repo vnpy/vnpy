@@ -1,14 +1,10 @@
 {
-    "Test1": {
-        "strategyClassName": "TestStrategy", 
-        "vtSymbol": "IF1511"
-    }, 
-    "Test3": {
-        "strategyClassName": "TestStrategy", 
+    "DR_IF1512": {
+        "strategyClassName": "DataRecorder", 
         "vtSymbol": "IF1512"
     }, 
-    "Test2": {
-        "strategyClassName": "TestStrategy", 
-        "vtSymbol": "IH1511"
+    "DR_IH1512": {
+        "strategyClassName": "DataRecorder", 
+        "vtSymbol": "IH1512"
     }
 }

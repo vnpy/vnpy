@@ -321,7 +321,7 @@ class  LtsMdApi(MdApi):
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
-        tick.tickTime = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
         tick.date = data['TradingDay']
         
         tick.openPrice = data['OpenPrice']
@@ -392,7 +392,7 @@ class  LtsMdApi(MdApi):
         """订阅合约"""
         req = {}
         req['InstrumentID'] = str(subscribeReq.symbol)
-        req['ExchangeID'] = str(subscribeReq.exchange)
+        req['ExchangeID'] = exchangeMap.get(str(subscribeReq.exchange), '')
         
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
@@ -579,7 +579,7 @@ class LtsTdApi(TdApi):
         
         # 保存代码和报单号
         order.symbol = data['InstrumentID']
-        order.exchange = exchangeMapReverse[data['ExchangeID']]
+        order.exchange = exchangeMapReverse.get(data['ExchangeID'], '')
         order.vtSymbol = '.'.join([order.symbol, order.exchange])
         
         order.orderID = data['OrderRef']
@@ -613,7 +613,7 @@ class LtsTdApi(TdApi):
             order.status = STATUS_UNKNOWN
             
         # 价格、报单量等数值
-        order.price = data['LimitPrice']
+        order.price = float(data['LimitPrice'])
         order.totalVolume = data['VolumeTotalOriginal']
         order.tradedVolume = data['VolumeTraded']
         order.orderTime = data['InsertTime']
@@ -636,7 +636,7 @@ class LtsTdApi(TdApi):
         
         # 保存代码和报单号
         trade.symbol = data['InstrumentID']
-        trade.exchange = exchangeMapReverse[data['ExchangeID']]
+        trade.exchange = exchangeMapReverse.get(data['ExchangeID'], '')
         trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
         
         trade.tradeID = data['TradeID']
@@ -652,7 +652,7 @@ class LtsTdApi(TdApi):
         trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
             
         # 价格、报单量等数值
-        trade.price = data['Price']
+        trade.price = float(data['Price'])
         trade.volume = data['Volume']
         trade.tradeTime = data['TradeTime']
         
@@ -764,10 +764,10 @@ class LtsTdApi(TdApi):
         
         req = {}
         
-        req['InstrumentID'] = orderReq.symbol
+        req['InstrumentID'] = str(orderReq.symbol)
         req['LimitPrice'] = str(orderReq.price)     # LTS里的价格是字符串
-        req['VolumeTotalOriginal'] = orderReq.volume
-        req['ExchangeID'] = orderReq.exchange
+        req['VolumeTotalOriginal'] = int(orderReq.volume)
+        req['ExchangeID'] = exchangeMap.get(orderReq.exchange, '')
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
         try:
@@ -1059,11 +1059,21 @@ class LtsQryApi(QryApi):
     def onRspQryOFInstrument(self, data, error, n, last):
         """OF合约查询回报"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQrySFInstrument(self, data, error, n, last):
         """SF合约查询回报"""
-        pass
+        event1 = Event(type_=EVENT_LTS_SF)
+        event1.dict_['data'] = data
+        self.gateway.eventEngine.put(event1)
+        
+        symbol = data['InstrumentID']
+        exchange = exchangeMapReverse[data['ExchangeID']]
+        vtSymbol = '.'.join([symbol, exchange])
+
+        event2 = Event(type_=EVENT_LTS_SF + vtSymbol)
+        event2.dict_['data'] = data
+        self.gateway.eventEngine.put(event2)    
     
     #----------------------------------------------------------------------
     def onRspQryInstrumentUnitMargin(self, data, error, n, last):
@@ -1133,11 +1143,12 @@ class LtsQryApi(QryApi):
         
         # 保存代码
         pos.symbol = data['InstrumentID']
-        pos.exchange = data['ExchangeID']
+        pos.exchange = exchangeMapReverse.get(data['ExchangeID'], '')
         pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])     
         
         # 方向和持仓冻结数量
         pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+
         if pos.direction == DIRECTION_NET or pos.direction == DIRECTION_LONG:
             pos.frozen = data['LongFrozen']
         elif pos.direction == DIRECTION_SHORT:   
@@ -1145,6 +1156,7 @@ class LtsQryApi(QryApi):
         
         # 持仓量
         pos.position = data['Position']
+        pos.ydPosition = data['YdPosition']
         
         # 持仓均价
         if pos.position:

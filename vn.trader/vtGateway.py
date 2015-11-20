@@ -33,10 +33,15 @@ class VtGateway(object):
     #----------------------------------------------------------------------
     def onTrade(self, trade):
         """成交信息推送"""
-        # 因为成交通常都是事后才会知道成交编号，因此只需要推送通用事件
+        # 通用事件
         event1 = Event(type_=EVENT_TRADE)
         event1.dict_['data'] = trade
         self.eventEngine.put(event1)
+        
+        # 特定合约的成交事件
+        event2 = Event(type_=EVENT_TRADE+trade.vtSymbol)
+        event2.dict_['data'] = trade
+        self.eventEngine.put(event2)        
     
     #----------------------------------------------------------------------
     def onOrder(self, order):
@@ -60,7 +65,7 @@ class VtGateway(object):
         self.eventEngine.put(event1)
         
         # 特定合约代码的事件
-        event2 = Event(type_=EVENT_POSITION+position.vtPositionName)
+        event2 = Event(type_=EVENT_POSITION+position.vtSymbol)
         event2.dict_['data'] = position
         self.eventEngine.put(event2)
     
@@ -286,6 +291,9 @@ class VtPositionData(VtBaseData):
         self.frozen = EMPTY_INT                 # 冻结数量
         self.price = EMPTY_FLOAT                # 持仓均价
         self.vtPositionName = EMPTY_STRING      # 持仓在vt系统中的唯一代码，通常是vtSymbol.方向
+        
+        # 20151020添加
+        self.ydPosition = EMPTY_INT             # 昨持仓
 
 
 ########################################################################
@@ -363,7 +371,7 @@ class VtContractData(VtBaseData):
 
 
 ########################################################################
-class VtSubscribeReq:
+class VtSubscribeReq(object):
     """订阅行情时传入的对象类"""
 
     #----------------------------------------------------------------------
@@ -381,7 +389,7 @@ class VtSubscribeReq:
 
 
 ########################################################################
-class VtOrderReq:
+class VtOrderReq(object):
     """发单时传入的对象类"""
 
     #----------------------------------------------------------------------
@@ -405,7 +413,7 @@ class VtOrderReq:
         
 
 ########################################################################
-class VtCancelOrderReq:
+class VtCancelOrderReq(object):
     """撤单时传入的对象类"""
 
     #----------------------------------------------------------------------
@@ -418,9 +426,9 @@ class VtCancelOrderReq:
         self.orderID = EMPTY_STRING             # 报单号
         self.frontID = EMPTY_STRING             # 前置机号
         self.sessionID = EMPTY_STRING           # 会话号
-        
-        
-        
+  
+    
+    
     
     
     

@@ -641,6 +641,7 @@ class CtpTdApi(TdApi):
         
         # 持仓量
         pos.position = data['Position']
+        pos.ydPosition = data['YdPosition']        
         
         # 持仓均价
         if pos.position:

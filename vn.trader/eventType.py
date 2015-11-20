@@ -30,6 +30,13 @@ EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
 # Wind接口相关
 EVENT_WIND_CONNECTREQ = 'eWindConnectReq'   # Wind接口请求连接事件
 
+# 20151020后更新
+# LTS Gateway相关
+EVENT_LTS_SF = 'eLtsSf.'                # SF基金查询推送事件
+
+# 分级A算法相关
+EVENT_FUNDA_DATA = 'eFaData.'           # 分级A基金更新事件
+EVENT_FUNDA_LOG = 'eFaLog'              # 分级A算法日志事件
 
 #----------------------------------------------------------------------
 def test():
