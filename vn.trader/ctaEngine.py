@@ -78,7 +78,7 @@ class CtaEngine(object):
             req.direction = DIRECTION_LONG
             req.offset = OFFSET_CLOSE
         
-        vtOrderID = self.mainEngine.sendOrder(req)  # 发单
+        vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
         self.orderDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
         return vtOrderID
     
