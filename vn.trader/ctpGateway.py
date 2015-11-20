@@ -662,14 +662,14 @@ class CtpTdApi(TdApi):
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
         
         # 数值相关
-        account.preBalance = data['PreBalance']
-        account.available = data['Available']
-        account.commission = data['Commission']
-        account.margin = data['CurrMargin']
-        account.closeProfit = data['CloseProfit']
-        account.positionProfit = data['PositionProfit']
+        account.preBalance = data['PreBalance']     # 上次结算准备金
+        account.available = data['Available']       # 可用资金
+        account.commission = data['Commission']     # 手续费
+        account.margin = data['CurrMargin']         # 当前保证金总额
+        account.closeProfit = data['CloseProfit']   # 平仓盈亏
+        account.positionProfit = data['PositionProfit'] #持仓盈亏
         
-        # 这里的balance和快期中的账户不确定是否一样，需要测试
+        # 结算准备金。这里的balance和快期中的账户不确定是否一样，需要测试
         account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
                            data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
                            data['CloseProfit'] + data['PositionProfit'] + data['CashIn'] -
