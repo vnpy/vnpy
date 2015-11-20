@@ -472,6 +472,7 @@ class PositionMonitor(BasicMonitor):
         d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
         d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
         d['position'] = {'chinese':u'持仓量', 'cellType':BasicCell}
+        d['ydPosition'] = {'chinese':u'昨持仓', 'cellType':BasicCell}
         d['frozen'] = {'chinese':u'冻结量', 'cellType':BasicCell}
         d['price'] = {'chinese':u'价格', 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
@@ -755,7 +756,7 @@ class TradingWidget(QtGui.QFrame):
     def updateSymbol(self):
         """合约变化"""
         # 读取组件数据
-        symbol = unicode(self.lineSymbol.text())
+        symbol = str(self.lineSymbol.text())
         exchange = unicode(self.comboExchange.currentText())
         currency = unicode(self.comboCurrency.currentText())
         productClass = unicode(self.comboProductClass.currentText())           
@@ -866,7 +867,7 @@ class TradingWidget(QtGui.QFrame):
     #----------------------------------------------------------------------
     def sendOrder(self):
         """发单"""
-        symbol = unicode(self.lineSymbol.text())
+        symbol = str(self.lineSymbol.text())
         exchange = unicode(self.comboExchange.currentText())
         currency = unicode(self.comboCurrency.currentText())
         productClass = unicode(self.comboProductClass.currentText())           

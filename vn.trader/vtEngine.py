@@ -7,10 +7,6 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
-from ctpGateway import CtpGateway
-from ltsGateway import LtsGateway
-#from windGateway import WindGateway
-from ibGateway import IbGateway
 from vtGateway import *
 import uiBasicWidget
 from ctaEngine import CtaEngine
@@ -35,15 +31,31 @@ class MainEngine(object):
         self.gatewayDict = OrderedDict()
         
         # 创建我们想要接入的接口对象
-        self.addGateway(CtpGateway, 'CTP')
-        self.gatewayDict['CTP'].setQryEnabled(True)
+        try:
+            from ctpGateway import CtpGateway
+            self.addGateway(CtpGateway, 'CTP')
+            self.gatewayDict['CTP'].setQryEnabled(True)
+        except Exception, e:
+            print e
         
-        self.addGateway(LtsGateway, 'LTS')
-        self.gatewayDict['LTS'].setQryEnabled(True)
+        try:
+            from ltsGateway import LtsGateway
+            self.addGateway(LtsGateway, 'LTS')
+            self.gatewayDict['LTS'].setQryEnabled(True)
+        except Exception, e:
+            print e
         
-        #self.addGateway(WindGateway, 'Wind')    # 没有Wind的请注释掉这一行
+        try:
+            from windGateway import WindGateway
+            self.addGateway(WindGateway, 'Wind') 
+        except Exception, e:
+            print e
         
-        self.addGateway(IbGateway, 'IB')
+        try:
+            from ibGateway import IbGateway
+            self.addGateway(IbGateway, 'IB')
+        except Exception, e:
+            print e
         
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
