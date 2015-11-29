@@ -7,6 +7,9 @@ vn.ctp的gateway接入
 vtSymbol直接使用symbol
 '''
 
+import sys
+reload(sys)
+sys.setdefaultencoding( "utf-8" )
 
 import os
 import json
@@ -90,7 +93,7 @@ class CtpGateway(VtGateway):
             return
         
         # 解析json文件
-        setting = json.load(f)
+        setting = json.load(f, 'utf-8')
         try:
             userID = str(setting['userID'])
             password = str(setting['password'])
