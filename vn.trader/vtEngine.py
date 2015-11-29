@@ -10,7 +10,7 @@ from eventEngine import *
 from ctpGateway import CtpGateway
 from ltsGateway import LtsGateway
 #from windGateway import WindGateway
-from ibGateway import IbGateway
+#from ibGateway import IbGateway
 from vtGateway import *
 import uiBasicWidget
 from ctaEngine import CtaEngine
@@ -43,7 +43,7 @@ class MainEngine(object):
         
         #self.addGateway(WindGateway, 'Wind')    # 没有Wind的请注释掉这一行
         
-        self.addGateway(IbGateway, 'IB')
+        # self.addGateway(IbGateway, 'IB')
         
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象

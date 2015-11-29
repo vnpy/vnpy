@@ -163,10 +163,10 @@ def main():
     #i = api.unSubscribeMarketData('IF1505')
     
     # 订阅询价，测试通过
-    i = api.subscribeForQuoteRsp('IO1504-C-3900')
+    i = api.subscribeForQuoteRsp('IO1601-C-3900')
     
     # 退订询价，测试通过
-    i = api.unSubscribeForQuoteRsp('IO1504-C-3900')
+    i = api.unSubscribeForQuoteRsp('IO1601-C-3900')
     
     # 连续运行，用于输出行情
     app.exec_()
