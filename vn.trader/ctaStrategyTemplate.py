@@ -42,7 +42,7 @@ class CtaStrategyTemplate(object):
     #----------------------------------------------------------------------
     def start(self):
         """启动策略（必须由用户继承实现）"""
-        raise NotImplementedError
+        self.trading = True
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -190,6 +190,9 @@ class TestStrategy(CtaStrategyTemplate):
         
         self.varList.append('pos')
         self.varList.append('lastPrice')
+        
+        # 测试用计数
+        self.count = 0
     
     #----------------------------------------------------------------------
     def init(self):
@@ -215,17 +218,25 @@ class TestStrategy(CtaStrategyTemplate):
     #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
-        self.writeCtaLog(u'onOrder不会被调用')
+        print u'收到委托回报，委托编号%s' %order.orderID
     
     #----------------------------------------------------------------------
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
-        self.writeCtaLog(u'onTrade不会被调用')
+        print u'收到成交回报，成交编号%s' %order.orderID
     
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        self.writeCtaLog(u'测试策略%s收到Bar' %self.name)    
+        self.count += 1
+        
+        if self.count == 10:
+            self.buy(bar.close, 1)
+        if self.count == 20:
+            self.sell(bar.close, 1)
+            self.count = 0
+        
+        #print u'收到推送'
         
         
     

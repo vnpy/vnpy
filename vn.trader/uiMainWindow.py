@@ -77,6 +77,9 @@ class MainWindow(QtGui.QMainWindow):
         connectLtsAction = QtGui.QAction(u'连接LTS', self)
         connectLtsAction.triggered.connect(self.connectLts)
         
+        connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
+        connectKsotpAction.triggered.connect(self.connectKsotp)
+        
         connectWindAction = QtGui.QAction(u'连接Wind', self)
         connectWindAction.triggered.connect(self.connectWind)
         
@@ -107,8 +110,9 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu = menubar.addMenu(u'系统')
         sysMenu.addAction(connectCtpAction)
         sysMenu.addAction(connectLtsAction)
+        sysMenu.addAction(connectKsotpAction)
+        sysMenu.addAction(connectIbAction)        
         sysMenu.addAction(connectWindAction)
-        sysMenu.addAction(connectIbAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
         sysMenu.addSeparator()
@@ -164,6 +168,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')    
+        
+    #----------------------------------------------------------------------
+    def connectKsotp(self):
+        """连接金仕达期权接口"""
+        self.mainEngine.connect('KSOTP')        
     
     #----------------------------------------------------------------------
     def connectWind(self):

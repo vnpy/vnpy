@@ -46,6 +46,13 @@ class MainEngine(object):
             print e
         
         try:
+            from ksotpGateway import KsotpGateway
+            self.addGateway(KsotpGateway, 'KSOTP')
+            self.gatewayDict['KSOTP'].setQryEnabled(True)
+        except Exception, e:
+            print e    
+        
+        try:
             from windGateway import WindGateway
             self.addGateway(WindGateway, 'Wind') 
         except Exception, e:

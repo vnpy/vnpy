@@ -771,6 +771,7 @@ class TradingWidget(QtGui.QFrame):
             contract = self.dataEngine.getContract(symbol)   
         
         if contract:
+            vtSymbol = contract.vtSymbol
             gatewayName = contract.gatewayName
             self.lineName.setText(contract.name)
             exchange = contract.exchange    # 保证有交易所代码
