@@ -85,15 +85,15 @@ class CtpGateway(VtGateway):
         fileName = self.gatewayName + '_connect.json'
         try:
             f = file(fileName)
+            # 解析json文件
+            setting = json.load(f, 'utf-8')
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'读取连接配置出错，请检查'
             self.onLog(log)
             return
-        
-        # 解析json文件
-        setting = json.load(f, 'utf-8')
+
         try:
             userID = str(setting['userID'])
             password = str(setting['password'])
@@ -718,7 +718,7 @@ class CtpTdApi(TdApi):
 
         contract.symbol = data['InstrumentID']
         contract.exchange = exchangeMapReverse[data['ExchangeID']]
-        contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
+        contract.vtSymbol = contract.symbol #  '.'.join([contract.symbol, contract.exchange])
         contract.name = data['InstrumentName'].decode('GBK')
         
         # 合约数值
@@ -742,7 +742,7 @@ class CtpTdApi(TdApi):
             contract.optionType = OPTION_CALL
         elif data['OptionsType'] == '2':
             contract.optionType = OPTION_PUT
-        
+
         # 推送
         self.gateway.onContract(contract)
         
