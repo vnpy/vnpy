@@ -762,9 +762,11 @@ class TradingWidget(QtGui.QFrame):
         try:
             self.lineSymbol.setText(tick['symbol'])
             self.lineName.setText(tick['name'])
-            self.comboExchange.setEditText(tick['exchange'])
+            ec = self.comboExchange.findText(tick['exchange'])
+            self.comboExchange.setCurrentIndex(ec)
             pc = self.comboProductClass.findText(tick['productClass'])
             self.comboProductClass.setCurrentIndex(pc)
+            self.updateSymbol()
         except:
             pass
 
