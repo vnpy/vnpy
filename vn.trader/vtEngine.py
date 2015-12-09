@@ -49,31 +49,31 @@ class MainEngine(object):
         except Exception, e:
             print e
 
-        try:
-            from ltsGateway import LtsGateway
-            self.addGateway(LtsGateway, 'LTS')
-            self.gatewayDict['LTS'].setQryEnabled(True)
-        except Exception, e:
-            print e
+        #try:
+        #    from ltsGateway import LtsGateway
+        #    self.addGateway(LtsGateway, 'LTS')
+        #    self.gatewayDict['LTS'].setQryEnabled(True)
+        #except Exception, e:
+        #    print e
         
 
-        try:
-            from windGateway import WindGateway
-            self.addGateway(WindGateway, 'Wind') 
-        except Exception, e:
-            print e
+        #try:
+        #    from windGateway import WindGateway
+        #    self.addGateway(WindGateway, 'Wind')
+        #except Exception, e:
+        #    print e
         
-        try:
-            from ibGateway import IbGateway
-            self.addGateway(IbGateway, 'IB')
-        except Exception, e:
-            print e
+        #try:
+        #    from ibGateway import IbGateway
+        #    self.addGateway(IbGateway, 'IB')
+        #except Exception, e:
+        #    print e
         
 
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
 
-        self.addGateway(IbGateway, 'IB')
+#        self.addGateway(IbGateway, 'IB')
 
         # CTA引擎
         self.ctaEngine = CtaEngine(self, self.eventEngine, self.dataEngine)

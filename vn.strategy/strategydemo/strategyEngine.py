@@ -691,13 +691,13 @@ class StrategyEngine(object):
 
             tick.time = data['UpdateTime']
 
-            tick.bidPrice1 = float(data['BidPrice1'])
+            tick.bidPrice1 = float(data['BidPrice1'])  # 叫买价1
             # tick.bidPrice2 = data['BidPrice2']
             # tick.bidPrice3 = data['BidPrice3']
             # tick.bidPrice4 = data['BidPrice4']
             # tick.bidPrice5 = data['BidPrice5']
 
-            tick.askPrice1 = float(data['AskPrice1'])
+            tick.askPrice1 = float(data['AskPrice1'])   # 叫卖价1
             # tick.askPrice2 = data['AskPrice2']
             # tick.askPrice3 = data['AskPrice3']
             # tick.askPrice4 = data['AskPrice4']
@@ -903,6 +903,7 @@ class StrategyEngine(object):
 
         # 注册 订阅交易响应事件
         self.__eventEngine.register(EVENT_TRADE ,self.updateTrade)
+
         
     #----------------------------------------------------------------------
     def writeLog(self, log):

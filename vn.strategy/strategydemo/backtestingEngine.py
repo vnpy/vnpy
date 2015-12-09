@@ -79,6 +79,7 @@ class BacktestingEngine(object):
         # 回测结束日期
         self.endDate = None
 
+        self.eventEngine.register(EVENT_LOG, self.printLog)
         
     #----------------------------------------------------------------------
     def setStrategyEngine(self, engine):
@@ -515,7 +516,9 @@ class BacktestingEngine(object):
         """写日志"""
         print log
 
-
+    def printLog(self, event):
+        log = event.dict_['log']
+        print log
     #----------------------------------------------------------------------
     def subscribe(self, symbol, exchange):
         """仿真订阅合约"""

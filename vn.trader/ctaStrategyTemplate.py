@@ -24,17 +24,17 @@ class CtaStrategyTemplate(object):
         self.ctaEngine = ctaEngine
         self.name = name
 
-        self.vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
+        self.vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码 AU1606，SR605
+        self.symbol = EMPTY_STRING          # 交易的合约代码（除郑商所外与vtSymbol一致，一般为两位代码+两位年份+两位月份）AU1606，SR1605
         
         self.tickDbName = EMPTY_STRING      # tick数据库名称
         self.barDbName = EMPTY_STRING       # bar数据库名称
         
         self.trading = False                # 控制是否启动交易
-        
-        self.init()                         # 初始化策略
-        
-        if setting:
-            self.setParam(setting)
+
+        #self.init()                         # 初始化策略 Move to inhert strategy
+        #if setting:
+        #    self.setParam(setting)
     
     # ----------------------------------------------------------------------
     def init(self):
@@ -77,8 +77,10 @@ class CtaStrategyTemplate(object):
         # 如果stop为True，则意味着发本地停止单
         if self.trading:
             if stop:
+                self.writeCtaLog(u'本地停止单，Buy买开,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_BUY, price, volume, self)
             else:
+                self.writeCtaLog(u'Buy买开,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_BUY, price, volume, self)
             return orderID
         else:
@@ -90,8 +92,10 @@ class CtaStrategyTemplate(object):
         # 如果stop为True，则意味着发本地停止单
         if self.trading:
             if stop:
+                self.writeCtaLog(u'本地停止单，sell卖平,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_SELL, price, volume, self)
             else:
+                self.writeCtaLog(u'sell卖平,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_SELL, price, volume, self)  
             return orderID
         else:
@@ -103,8 +107,10 @@ class CtaStrategyTemplate(object):
         # 如果stop为True，则意味着发本地停止单
         if self.trading:
             if stop:
+                self.writeCtaLog(u'本地停止单，short卖开,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_SHORT, price, volume, self)
             else:
+                self.writeCtaLog(u'short卖开,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_SHORT, price, volume, self)   
             return orderID
         else:
@@ -116,8 +122,11 @@ class CtaStrategyTemplate(object):
         if self.trading:
             # 如果stop为True，则意味着发本地停止单
             if stop:
+                self.writeCtaLog(u'本地停止单，cover，买平,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_COVER, price, volume, self)
             else:
+                self.writeCtaLog(u'Short卖开,cover:{0},Volume:{1}'.format(price, volume))
+
                 orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_COVER, price, volume, self) 
             return orderID
         else:
@@ -169,7 +178,7 @@ class CtaStrategyTemplate(object):
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
-        self.ctaEngine.writeCtaLog(content)
+        self.ctaEngine.writeCtaLog(self.name+':'+content)
     
 
 

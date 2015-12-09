@@ -3891,7 +3891,7 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	data["FrozenCommission"] = task_data.FrozenCommission;
 	data["CombShortFrozen"] = task_data.CombShortFrozen;
 #ifndef __GNU__
-	data["OptionValue"] = task_data.OptionValue;
+	//data["OptionValue"] = task_data.OptionValue;
 #endif
 	data["CloseProfitByDate"] = task_data.CloseProfitByDate;
 	data["SettlementPrice"] = task_data.SettlementPrice;
@@ -3930,7 +3930,7 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["Available"] = task_data.Available;
 	data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
 #ifndef __GNU__
-	data["OptionCloseProfit"] = task_data.OptionCloseProfit;
+	//data["OptionCloseProfit"] = task_data.OptionCloseProfit;
 #endif
 	data["PreCredit"] = task_data.PreCredit;
 	data["PreMortgage"] = task_data.PreMortgage;
@@ -3948,7 +3948,7 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["FrozenCash"] = task_data.FrozenCash;
 	data["Withdraw"] = task_data.Withdraw;
 #ifndef __GNU__
-	data["OptionValue"] = task_data.OptionValue;
+	//data["OptionValue"] = task_data.OptionValue;
 #endif
 	data["Balance"] = task_data.Balance;
 	data["SpecProductMargin"] = task_data.SpecProductMargin;

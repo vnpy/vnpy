@@ -33,8 +33,11 @@ directionMapReverse = {v: k for k, v in directionMap.items()}
 offsetMap = {}
 offsetMap[OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
 offsetMap[OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
+offsetMap[OFFSET_FORCECLOSE] = defineDict['THOST_FTDC_OF_ForceClose']
 offsetMap[OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
 offsetMap[OFFSET_CLOSESYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
+offsetMap[OFFSET_FORCECOFF] = defineDict['THOST_FTDC_OF_ForceOff']
+offsetMap[OFFSET_LOCALFORCECLOSE] = defineDict['THOST_FTDC_OF_LocalForceClose']
 offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
 # 交易所类型映射

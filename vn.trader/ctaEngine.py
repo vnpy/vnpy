@@ -71,24 +71,27 @@ class CtaEngine(object):
         req.priceType = PRICETYPE_LIMITPRICE     # 价格类型
         
         # CTA委托类型映射
+        # 对于中金所，只有close有用
+        # 对于上期所，应该分别使用closeYesterday或者closeToday
+
         if orderType == CTAORDER_BUY:
             req.direction = DIRECTION_LONG      # 合约方向
             req.offset = OFFSET_OPEN            # 开/平
         elif orderType == CTAORDER_SELL:
             req.direction = DIRECTION_SHORT
-            req.offset = OFFSET_CLOSE
+            req.offset = OFFSET_CLOSETODAY      #OFFSET_CLOSE
         elif orderType == CTAORDER_SHORT:
             req.direction = DIRECTION_SHORT
             req.offset = OFFSET_OPEN
         elif orderType == CTAORDER_COVER:
             req.direction = DIRECTION_LONG
-            req.offset = OFFSET_CLOSE
+            req.offset = OFFSET_CLOSETODAY      #OFFSET_CLOSE
 
 
         # 3.调用主引擎的发单接口进行发单，保存OrderID与策略映射关系
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
 
-        self.orderDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
+        self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
 
         return vtOrderID
     
