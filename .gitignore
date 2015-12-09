@@ -10,6 +10,7 @@ Release/
 *.filters
 *.vcxproj
 *.cd
+*.vcxproj.filters
 
 # Python编译文件
 *.pyc

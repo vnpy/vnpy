@@ -79,7 +79,7 @@ class CtaEngine(object):
             req.offset = OFFSET_CLOSE
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
-        self.orderDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
+        self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
         return vtOrderID
     
     #----------------------------------------------------------------------
@@ -109,12 +109,24 @@ class CtaEngine(object):
         
         so = StopOrder()
         so.vtSymbol = vtSymbol
-        so.orderType = orderType
         so.price = price
         so.volume = volume
         so.strategy = strategy
         so.stopOrderID = stopOrderID
         so.status = STOPORDER_WAITING
+        
+        if orderType == CTAORDER_BUY:
+            so.direction = DIRECTION_LONG
+            so.offset = OFFSET_OPEN
+        elif orderType == CTAORDER_SELL:
+            so.direction = DIRECTION_SHORT
+            so.offset = OFFSET_CLOSE
+        elif orderType == CTAORDER_SHORT:
+            so.direction = DIRECTION_SHORT
+            so.offset = OFFSET_OPEN
+        elif orderType == CTAORDER_COVER:
+            so.direction = DIRECTION_LONG
+            so.offset = OFFSET_CLOSE           
         
         # 保存stopOrder对象到字典中
         self.stopOrderDict[stopOrderID] = so
