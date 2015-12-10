@@ -38,6 +38,7 @@ Release/
 # 其他文件
 *.dump
 *.vssettings
+*.klg
 
 <<<<<<< HEAD
 # 不想同步的

@@ -169,6 +169,9 @@ class BasicMonitor(QtGui.QTableWidget):
         # 保存数据对象到单元格
         self.saveData = False
         
+        # 默认不允许根据表头进行排序，需要的组件可以开启
+        self.sorting = False
+        
     #----------------------------------------------------------------------
     def setHeaderDict(self, headerDict):
         """设置表头有序字典"""
@@ -214,6 +217,9 @@ class BasicMonitor(QtGui.QTableWidget):
         
         # 设为行交替颜色
         self.setAlternatingRowColors(True)
+        
+        # 设置允许排序
+        self.setSortingEnabled(self.sorting)
 
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -230,6 +236,10 @@ class BasicMonitor(QtGui.QTableWidget):
     #----------------------------------------------------------------------
     def updateData(self, data):
         """将数据更新到表格中"""
+        # 如果允许了排序功能，则插入数据前必须关闭，否则插入新的数据会变乱
+        if self.sorting:
+            self.setSortingEnabled(False)
+        
         # 如果设置了dataKey，则采用存量更新模式
         if self.dataKey:
             key = data.__getattribute__(self.dataKey)
@@ -279,11 +289,21 @@ class BasicMonitor(QtGui.QTableWidget):
                 
         # 调整列宽
         self.resizeColumns()
+        
+        # 重新打开排序
+        if self.sorting:
+            self.setSortingEnabled(True)
     
     #----------------------------------------------------------------------
     def resizeColumns(self):
         """调整各列的大小"""
         self.horizontalHeader().resizeSections(QtGui.QHeaderView.ResizeToContents)    
+        
+    #----------------------------------------------------------------------
+    def setSorting(self, sorting):
+        """设置是否允许根据表头排序"""
+        self.sorting = sorting
+        
     
 
 ########################################################################
@@ -321,6 +341,9 @@ class MarketMonitor(BasicMonitor):
         
         # 设置字体
         self.setFont(BASIC_FONT)
+        
+        # 设置允许排序
+        self.setSorting(True)
         
         # 初始化表格
         self.initTable()
