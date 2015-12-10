@@ -280,7 +280,7 @@ class BasicMonitor(QtGui.QTableWidget):
                 
         # 调整列宽
         self.resizeColumns()
-    
+
     #----------------------------------------------------------------------
     def resizeColumns(self):
         """调整各列的大小"""
@@ -295,7 +295,7 @@ class MarketMonitor(BasicMonitor):
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(MarketMonitor, self).__init__(eventEngine, parent)
-        
+
         # 设置表头有序字典
         d = OrderedDict()
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
@@ -313,22 +313,40 @@ class MarketMonitor(BasicMonitor):
         d['time'] = {'chinese':u'时间', 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
-        
+
         # 设置数据键
         self.setDataKey('vtSymbol')
-        
+
         # 设置监控事件类型
         self.setEventType(EVENT_TICK)
-        
+
         # 设置字体
         self.setFont(BASIC_FONT)
-        
+
         # 初始化表格
         self.initTable()
-        
+
         # 注册事件监听
         self.registerEvent()
+        self.initMenu()
 
+    def initMenu(self):
+        """初始化右键菜单"""
+        refreshAction = QtGui.QAction(u'清除所有', self)
+        refreshAction.triggered.connect(self.remove_all)
+
+        self.menu = QtGui.QMenu(self)
+        self.menu.addAction(refreshAction)
+
+    def remove_all(self):
+        self.clearContents()
+        self.setRowCount(0)
+        self.dataDict.clear()
+
+    def contextMenuEvent(self, event):
+        """右键点击事件"""
+        self.menu.popup(QtGui.QCursor.pos())
+    #----------------------------------------------------------------------
 
 ########################################################################
 class LogMonitor(BasicMonitor):
