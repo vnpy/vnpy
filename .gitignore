@@ -76,3 +76,5 @@ vn.trader/CTP_connect.json
 *.vt
 vn.trader/ctaStrategy02.py
 *.pyd
+vn.trader/vnctpmd.pyd_old
+*.pyd_old
