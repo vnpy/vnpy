@@ -42,7 +42,7 @@ class MainWindow(QtGui.QMainWindow):
         positionM = PositionMonitor(self.eventEngine)
         accountM = AccountMonitor(self.eventEngine)
         
-        tradingW = TradingWidget(self.mainEngine, self.mainEngine.eventEngine, self.mainEngine.dataEngine)
+        self.tradingW = TradingWidget(self.mainEngine, self.mainEngine.eventEngine, self.mainEngine.dataEngine)
         
         leftTab = QtGui.QTabWidget()
         leftTab.addTab(logM, u'日志')
@@ -55,7 +55,7 @@ class MainWindow(QtGui.QMainWindow):
         rightTab.addTab(positionM, u'持仓')
     
         hbox = QtGui.QHBoxLayout()
-        hbox.addWidget(tradingW)
+        hbox.addWidget(self.tradingW)
         hbox.addWidget(marketM)
         
         grid = QtGui.QGridLayout()
@@ -236,7 +236,9 @@ class MainWindow(QtGui.QMainWindow):
         except KeyError:
             self.widgetDict['contractM'] = ContractMonitor(self.mainEngine.dataEngine)
             self.widgetDict['contractM'].show()
-            
+
+        self.widgetDict['contractM'].click_item.connect(self.tradingW.set_tick_context)
+
     #----------------------------------------------------------------------
     def openCta(self):
         """打开CTA组件"""

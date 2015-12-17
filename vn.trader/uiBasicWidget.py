@@ -3,6 +3,7 @@
 from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import pyqtSignal
 
 from eventEngine import *
 from vtFunction import *
@@ -314,7 +315,7 @@ class MarketMonitor(BasicMonitor):
     def __init__(self, eventEngine, parent=None):
         """Constructor"""
         super(MarketMonitor, self).__init__(eventEngine, parent)
-        
+
         # 设置表头有序字典
         d = OrderedDict()
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
@@ -332,13 +333,13 @@ class MarketMonitor(BasicMonitor):
         d['time'] = {'chinese':u'时间', 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
-        
+
         # 设置数据键
         self.setDataKey('vtSymbol')
-        
+
         # 设置监控事件类型
         self.setEventType(EVENT_TICK)
-        
+
         # 设置字体
         self.setFont(BASIC_FONT)
         
@@ -347,10 +348,28 @@ class MarketMonitor(BasicMonitor):
         
         # 初始化表格
         self.initTable()
-        
+
         # 注册事件监听
         self.registerEvent()
+        self.initMenu()
 
+    def initMenu(self):
+        """初始化右键菜单"""
+        refreshAction = QtGui.QAction(u'清除所有', self)
+        refreshAction.triggered.connect(self.remove_all)
+
+        self.menu = QtGui.QMenu(self)
+        self.menu.addAction(refreshAction)
+
+    def remove_all(self):
+        self.clearContents()
+        self.setRowCount(0)
+        self.dataDict.clear()
+
+    def contextMenuEvent(self, event):
+        """右键点击事件"""
+        self.menu.popup(QtGui.QCursor.pos())
+    #----------------------------------------------------------------------
 
 ########################################################################
 class LogMonitor(BasicMonitor):
@@ -775,6 +794,23 @@ class TradingWidget(QtGui.QFrame):
         buttonCancelAll.clicked.connect(self.cancelAll)
         self.lineSymbol.returnPressed.connect(self.updateSymbol)
 
+    def set_tick_context(self, tick):
+        """
+        响应查询合约对话框信号槽，设置下单界面信息
+        :param tick: 本义合约对话框的信息。
+        :return:
+        """
+        try:
+            self.lineSymbol.setText(tick['symbol'])
+            self.lineName.setText(tick['name'])
+            ec = self.comboExchange.findText(tick['exchange'])
+            self.comboExchange.setCurrentIndex(ec)
+            pc = self.comboProductClass.findText(tick['productClass'])
+            self.comboProductClass.setCurrentIndex(pc)
+            self.updateSymbol()
+        except:
+            pass
+
     #----------------------------------------------------------------------
     def updateSymbol(self):
         """合约变化"""
@@ -940,13 +976,14 @@ class TradingWidget(QtGui.QFrame):
 class ContractMonitor(BasicMonitor):
     """合约查询"""
 
+    click_item = pyqtSignal(dict, name='click_item')
     #----------------------------------------------------------------------
     def __init__(self, dataEngine, parent=None):
         """Constructor"""
         super(ContractMonitor, self).__init__(parent=parent)
-        
+
         self.dataEngine = dataEngine
-        
+
         d = OrderedDict()
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
         d['exchange'] = {'chinese':u'交易所', 'cellType':BasicCell}
@@ -959,9 +996,9 @@ class ContractMonitor(BasicMonitor):
         #d['underlyingSymbol'] = {'chinese':u'期权标的物', 'cellType':BasicCell}
         #d['optionType'] = {'chinese':u'期权类型', 'cellType':BasicCell}     
         self.setHeaderDict(d)
-        
+
         self.initUi()
-        
+
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
@@ -970,8 +1007,22 @@ class ContractMonitor(BasicMonitor):
         self.setFont(BASIC_FONT)
         self.initTable()
         self.initMenu()
-    
-    #----------------------------------------------------------------------
+
+    def mouseDoubleClickEvent(self, event):
+        """
+        鼠标双击事件，
+        :param event:
+        :return:
+        """
+        row = OrderedDict()
+        i = 0
+        for item in self.headerDict:
+            row[item] = self.item(self.currentRow(), i).text()
+            i+=1
+
+        self.click_item.emit(row)
+
+    # ----------------------------------------------------------------------
     def showAllContracts(self):
         """显示所有合约数据"""
         l = self.dataEngine.getAllContracts()
@@ -981,44 +1032,44 @@ class ContractMonitor(BasicMonitor):
 
         self.setRowCount(len(l2))
         row = 0
-        
+
         for key in l2:
             contract = d[key]
-            
+
             for n, header in enumerate(self.headerList):
                 content = safeUnicode(contract.__getattribute__(header))
                 cellType = self.headerDict[header]['cellType']
                 cell = cellType(content)
-                
+
                 if self.font:
                     cell.setFont(self.font)  # 如果设置了特殊字体，则进行单元格设置
-                    
+
                 self.setItem(row, n, cell)
-            
+
             row = row + 1
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def refresh(self):
         """刷新"""
         self.clearContents()
         self.setRowCount(0)
         self.showAllContracts()
         self.menu.close()   # 关闭菜单
-    
+
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化右键菜单"""
         refreshAction = QtGui.QAction(u'刷新', self)
         refreshAction.triggered.connect(self.refresh)
-    
-        self.menu = QtGui.QMenu(self)    
+
+        self.menu = QtGui.QMenu(self)
         self.menu.addAction(refreshAction)
-        
+
     #----------------------------------------------------------------------
     def contextMenuEvent(self, event):
         """右键点击事件"""
         self.menu.popup(QtGui.QCursor.pos())
-    
+
     #----------------------------------------------------------------------
     def show(self):
         """显示"""
