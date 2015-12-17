@@ -34,7 +34,7 @@ offsetMap = {}
 offsetMap[OFFSET_OPEN] = defineDict['THOST_FTDC_OF_Open']
 offsetMap[OFFSET_CLOSE] = defineDict['THOST_FTDC_OF_Close']
 offsetMap[OFFSET_CLOSETODAY] = defineDict['THOST_FTDC_OF_CloseToday']
-offsetMap[OFFSET_CLOSESYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
+offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['THOST_FTDC_OF_CloseYesterday']
 offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
 # 交易所类型映射

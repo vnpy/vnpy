@@ -546,7 +546,7 @@ class TradingWidget(QtGui.QFrame):
 
     offsetList = [OFFSET_OPEN,
                   OFFSET_CLOSE,
-                  OFFSET_CLOSESYESTERDAY,
+                  OFFSET_CLOSEYESTERDAY,
                   OFFSET_CLOSETODAY]
     
     priceTypeList = [PRICETYPE_LIMITPRICE,

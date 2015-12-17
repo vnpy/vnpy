@@ -80,6 +80,9 @@ class MainWindow(QtGui.QMainWindow):
         connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
         connectKsotpAction.triggered.connect(self.connectKsotp)
         
+        connectFemasAction = QtGui.QAction(u'连接飞马', self)
+        connectFemasAction.triggered.connect(self.connectFemas)        
+        
         connectWindAction = QtGui.QAction(u'连接Wind', self)
         connectWindAction.triggered.connect(self.connectWind)
         
@@ -111,6 +114,7 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpAction)
         sysMenu.addAction(connectLtsAction)
         sysMenu.addAction(connectKsotpAction)
+        sysMenu.addAction(connectFemasAction)
         sysMenu.addAction(connectIbAction)        
         sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
@@ -173,6 +177,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectKsotp(self):
         """连接金仕达期权接口"""
         self.mainEngine.connect('KSOTP')        
+        
+    #----------------------------------------------------------------------
+    def connectFemas(self):
+        """连接飞马接口"""
+        self.mainEngine.connect('FEMAS')        
     
     #----------------------------------------------------------------------
     def connectWind(self):

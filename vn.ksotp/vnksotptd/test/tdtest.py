@@ -120,9 +120,9 @@ def main():
     
     # 登陆
     loginReq = {}                           # 创建一个空字典
-    loginReq['UserID'] = '90093625 '                 # 参数作为字典键值的方式传入
-    loginReq['Password'] = '624001'               # 键名和C++中的结构体成员名对应
-    loginReq['BrokerID'] = '3748FD77'    
+    loginReq['UserID'] = ''                 # 参数作为字典键值的方式传入
+    loginReq['Password'] = ''               # 键名和C++中的结构体成员名对应
+    loginReq['BrokerID'] = ''    
     reqid = reqid + 1                       # 请求数必须保持唯一性
     i = api.reqUserLogin(loginReq, 1)
     sleep(3)

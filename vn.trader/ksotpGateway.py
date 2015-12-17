@@ -31,7 +31,7 @@ offsetMap = {}
 offsetMap[OFFSET_OPEN] = defineDict['KS_OTP_OF_Open']
 offsetMap[OFFSET_CLOSE] = defineDict['KS_OTP_OF_Close']
 offsetMap[OFFSET_CLOSETODAY] = defineDict['KS_OTP_OF_CloseToday']
-offsetMap[OFFSET_CLOSESYESTERDAY] = defineDict['KS_OTP_OF_CloseYesterday']
+offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['KS_OTP_OF_CloseYesterday']
 offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
 # 交易所类型映射
