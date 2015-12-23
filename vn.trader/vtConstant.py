@@ -37,6 +37,8 @@ PRODUCT_INDEX = u'指数'
 PRODUCT_COMBINATION = u'组合'
 PRODUCT_FOREX = u'外汇'
 PRODUCT_UNKNOWN = u'未知'
+PRODUCT_SPOT = u'现货'
+PRODUCT_DEFER = u'延期'
 
 # 价格类型常量
 PRICETYPE_LIMITPRICE = u'限价'
@@ -55,7 +57,7 @@ EXCHANGE_CFFEX = 'CFFEX'   # 中金所
 EXCHANGE_SHFE = 'SHFE'     # 上期所
 EXCHANGE_CZCE = 'CZCE'     # 郑商所
 EXCHANGE_DCE = 'DCE'       # 大商所
-
+EXCHANGE_SGE = 'SGE'       # 上金所
 EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
 EXCHANGE_NONE = ''          # 空交易所
 

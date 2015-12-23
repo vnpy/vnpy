@@ -80,6 +80,8 @@ class CtpGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
+        fileName = os.getcwd() + '\\ctpGateway\\' + fileName
+        
         try:
             f = file(fileName)
         except IOError:

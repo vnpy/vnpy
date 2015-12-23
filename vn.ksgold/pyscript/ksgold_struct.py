@@ -22,63 +22,26 @@ CThostFtdcReqUserLoginField["loginType"] = "int"
 CThostFtdcReqUserLoginField["memberID"] = "string"
 CThostFtdcReqUserLoginField["password"] = "string"
 CThostFtdcReqUserLoginField["tradeDate"] = "string"
-CThostFtdcReqUserLoginField["ipGatewayAddress"] = "string"
-CThostFtdcReqUserLoginField["portGateway"] = "int"
-CThostFtdcReqUserLoginField["localOrderNo"] = "string"
-CThostFtdcReqUserLoginField["machineID"] = "int"
-CThostFtdcReqUserLoginField["loginbatch"] = "int"
-CThostFtdcReqUserLoginField["clientName"] = "string"
-CThostFtdcReqUserLoginField["lastLoginIp"] = "string"
-CThostFtdcReqUserLoginField["lastLoginDate"] = "string"
-CThostFtdcReqUserLoginField["lastLoginTime"] = "string"
-CThostFtdcReqUserLoginField["gateWayCurLinkNum"] = "int"
-CThostFtdcReqUserLoginField["gateWayYYBDB"] = "string"
-CThostFtdcReqUserLoginField["obligate"] = "string"
-CThostFtdcReqUserLoginField["msg"] = "string"
 structDict['CThostFtdcReqUserLoginField'] = CThostFtdcReqUserLoginField
 
 
 #用户登录应答
 CThostFtdcRspUserLoginField = {}
-CThostFtdcRspUserLoginField["traderID"] = "string"
-CThostFtdcRspUserLoginField["memberID"] = "string"
-CThostFtdcRspUserLoginField["password"] = "string"
 CThostFtdcRspUserLoginField["tradeDate"] = "string"
-CThostFtdcRspUserLoginField["ipAddress"] = "string"
 CThostFtdcRspUserLoginField["localOrderNo"] = "string"
-CThostFtdcRspUserLoginField["machineID"] = "int"
 CThostFtdcRspUserLoginField["loginbatch"] = "int"
+CThostFtdcRspUserLoginField["tradeCode"] = "string"
+CThostFtdcRspUserLoginField["clientID"] = "string"
+CThostFtdcRspUserLoginField["SeatNo"] = "string"
 CThostFtdcRspUserLoginField["clientName"] = "string"
 CThostFtdcRspUserLoginField["lastLoginIp"] = "string"
 CThostFtdcRspUserLoginField["lastLoginDate"] = "string"
 CThostFtdcRspUserLoginField["lastLoginTime"] = "string"
-CThostFtdcRspUserLoginField["gateWayCurLinkNum"] = "int"
-CThostFtdcRspUserLoginField["gateWayYYBDB"] = "string"
-CThostFtdcRspUserLoginField["obligate"] = "string"
-CThostFtdcRspUserLoginField["msg"] = "string"
-CThostFtdcRspUserLoginField["SeatNo"] = "string"
-CThostFtdcRspUserLoginField["tradeCode"] = "string"
-CThostFtdcRspUserLoginField["clientID"] = "string"
 structDict['CThostFtdcRspUserLoginField'] = CThostFtdcRspUserLoginField
 
 #用户登出请求
 CThostFtdcUserLogoutField = {}
 CThostFtdcUserLogoutField["traderID"] = "string"
-CThostFtdcUserLogoutField["memberID"] = "string"
-CThostFtdcUserLogoutField["password"] = "string"
-CThostFtdcUserLogoutField["tradeDate"] = "string"
-CThostFtdcUserLogoutField["ipAddress"] = "string"
-CThostFtdcUserLogoutField["localOrderNo"] = "string"
-CThostFtdcUserLogoutField["machineID"] = "int"
-CThostFtdcUserLogoutField["loginbatch"] = "int"
-CThostFtdcUserLogoutField["clientName"] = "string"
-CThostFtdcUserLogoutField["lastLoginIp"] = "string"
-CThostFtdcUserLogoutField["lastLoginDate"] = "string"
-CThostFtdcUserLogoutField["lastLoginTime"] = "string"
-CThostFtdcUserLogoutField["gateWayCurLinkNum"] = "int"
-CThostFtdcUserLogoutField["gateWayYYBDB"] = "string"
-CThostFtdcUserLogoutField["obligate"] = "string"
-CThostFtdcUserLogoutField["msg"] = "string"
 structDict['CThostFtdcUserLogoutField'] = CThostFtdcUserLogoutField
 
 
@@ -107,11 +70,7 @@ structDict['CThostFtdcInstrumentField'] = CThostFtdcInstrumentField
 
 
 CThostFtdcQryTradingAccountField = {}
-CThostFtdcQryTradingAccountField["memberID"] = "string"
-CThostFtdcQryTradingAccountField["accountType"] = "string"
-CThostFtdcQryTradingAccountField["traderID"] = "string"
-CThostFtdcQryTradingAccountField["clientID"] = "string"
-CThostFtdcQryTradingAccountField["marketID"] = "string"
+CThostFtdcQryTradingAccountField["remian"] = "string"
 structDict['CThostFtdcQryTradingAccountField'] = CThostFtdcQryTradingAccountField
 
 
@@ -138,7 +97,6 @@ structDict['CThostFtdcTradingAccountField'] = CThostFtdcTradingAccountField
 
 #投资者持仓
 CThostFtdcInvestorPositionField = {}
-CThostFtdcInvestorPositionField["clientID"] = "string"
 CThostFtdcInvestorPositionField["instID"] = "string"
 CThostFtdcInvestorPositionField["longPosi"] = "int"
 CThostFtdcInvestorPositionField["longPosiAvgPrice"] = "float"
@@ -220,37 +178,23 @@ structDict['CThostFtdcDepthMarketDataField'] = CThostFtdcDepthMarketDataField
 #输入报单
 CThostFtdcInputOrderField = {}
 CThostFtdcInputOrderField["seatID"] = "string"
-CThostFtdcInputOrderField["clientID"] = "string"
-CThostFtdcInputOrderField["exchangeID"] = "string"
+CThostFtdcInputOrderField["tradeCode"] = "string"
 CThostFtdcInputOrderField["instID"] = "string"
 CThostFtdcInputOrderField["buyOrSell"] = "string"
 CThostFtdcInputOrderField["offsetFlag"] = "string"
 CThostFtdcInputOrderField["amount"] = "int"
-CThostFtdcInputOrderField["weight"] = "float"
 CThostFtdcInputOrderField["middleFlag"] = "string"
-CThostFtdcInputOrderField["orderFlag"] = "string"
 CThostFtdcInputOrderField["priceFlag"] = "string"
 CThostFtdcInputOrderField["price"] = "float"
 CThostFtdcInputOrderField["trigPrice"] = "float"
 CThostFtdcInputOrderField["marketID"] = "string"
-CThostFtdcInputOrderField["validDate"] = "string"
-CThostFtdcInputOrderField["orderNo"] = "string"
 CThostFtdcInputOrderField["LocalOrderNo"] = "string"
-CThostFtdcInputOrderField["matchQty"] = "int"
-CThostFtdcInputOrderField["matchWeight"] = "float"
-CThostFtdcInputOrderField["status"] = "string"
-CThostFtdcInputOrderField["entrustTime"] = "string"
-CThostFtdcInputOrderField["forceoffset_flag"] = "string"
-CThostFtdcInputOrderField["cancelQty"] = "int"
-CThostFtdcInputOrderField["cancelTime"] = "string"
-CThostFtdcInputOrderField["volumnCheck"] = "int"
 CThostFtdcInputOrderField["tradeWay"] = "string"
 structDict['CThostFtdcInputOrderField'] = CThostFtdcInputOrderField
 
 
 #报单
 CThostFtdcOrderField = {}
-
 CThostFtdcOrderField["orderNo"] = "string"
 CThostFtdcOrderField["localOrderNo"] = "string"
 CThostFtdcOrderField["marketID"] = "string"
@@ -271,14 +215,21 @@ CThostFtdcOrderField["tradeWay"] = "string"
 structDict['CThostFtdcOrderField'] = CThostFtdcOrderField
 
 
+#报单撤单回报
+CThostFtdcOrderRtnField = {}
+CThostFtdcOrderRtnField["orderNo"] = "string"
+CThostFtdcOrderRtnField["localOrderNo"] = "string"
+CThostFtdcOrderRtnField["status"] = "string"
+CThostFtdcOrderRtnField["cancelQty"] = "int"
+structDict['CThostFtdcOrderRtnField'] = CThostFtdcOrderRtnField
+
+
 
 #输入报单操作(cancel order)
 CThostFtdcInputOrderActionField = {}
 CThostFtdcInputOrderActionField["localOrderNo"] = "string"
-CThostFtdcInputOrderActionField["orderFlag"] = "string"
 CThostFtdcInputOrderActionField["marketID"] = "string"
-CThostFtdcInputOrderActionField["traderID"] = "string"
-CThostFtdcInputOrderActionField["tradeWay"] = "string"
+CThostFtdcInputOrderActionField["status"] = "string"
 structDict['CThostFtdcInputOrderActionField'] = CThostFtdcInputOrderActionField
 
 
@@ -293,7 +244,6 @@ structDict['CThostFtdcOrderActionField'] = CThostFtdcOrderActionField
 
 #成交
 CThostFtdcTradeField = {}
-
 CThostFtdcTradeField["orderNo"] = "string"
 CThostFtdcTradeField["matchNo"] = "string"
 CThostFtdcTradeField["instID"] = "string"
@@ -325,15 +275,10 @@ structDict['CThostFtdcQryInstrumentField'] = CThostFtdcQryInstrumentField
 
 #查询成交
 CThostFtdcQryTradeField = {}
+CThostFtdcQryTradeField["matchNo"] = "string"
 CThostFtdcQryTradeField["instID"] = "string"
 CThostFtdcQryTradeField["marketID"] = "string"
-CThostFtdcQryTradeField["orderNo"] = "string"
-CThostFtdcQryTradeField["clientID"] = "string"
-CThostFtdcQryTradeField["memberID"] = "string"
-CThostFtdcQryTradeField["matchNo"] = "string"
-CThostFtdcQryTradeField["exchangeID"] = "string"
 CThostFtdcQryTradeField["localOrderNo"] = "string"
-CThostFtdcQryTradeField["traderID"] = "string"
 structDict['CThostFtdcQryTradeField'] = CThostFtdcQryTradeField
 
 
@@ -342,13 +287,6 @@ structDict['CThostFtdcQryTradeField'] = CThostFtdcQryTradeField
 CThostFtdcQryOrderField = {}
 CThostFtdcQryOrderField["instID"] = "string"
 CThostFtdcQryOrderField["marketID"] = "string"
-CThostFtdcQryOrderField["orderNo"] = "string"
-CThostFtdcQryOrderField["clientID"] = "string"
-CThostFtdcQryOrderField["memberID"] = "string"
-CThostFtdcQryOrderField["offsetFlag"] = "string"
-CThostFtdcQryOrderField["traderID"] = "string"
-CThostFtdcQryOrderField["status"] = "string"
-CThostFtdcQryOrderField["exchangeID"] = "string"
 CThostFtdcQryOrderField["localOrderNo"] = "string"
 structDict['CThostFtdcQryOrderField'] = CThostFtdcQryOrderField
 
@@ -358,20 +296,15 @@ structDict['CThostFtdcQryOrderField'] = CThostFtdcQryOrderField
 
 #查询投资者持仓
 CThostFtdcQryInvestorPositionField = {}
-CThostFtdcQryInvestorPositionField["clientID"] = "string"
-CThostFtdcQryInvestorPositionField["memberID"] = "string"
 CThostFtdcQryInvestorPositionField["marketID"] = "string"
 CThostFtdcQryInvestorPositionField["instID"] = "string"
-CThostFtdcQryInvestorPositionField["traderID"] = "string"
 structDict['CThostFtdcQryInvestorPositionField'] = CThostFtdcQryInvestorPositionField
 
 
 
 #查询库存
 CThostFtdcQryStorageField = {}
-CThostFtdcQryStorageField["clientID"] = "string"
-CThostFtdcQryStorageField["memberID"] = "string"
-CThostFtdcQryStorageField["traderID"] = "string"
+CThostFtdcQryStorageField["varietyID"] = "string"
 structDict['CThostFtdcQryStorageField'] = CThostFtdcQryStorageField
 
 
@@ -399,13 +332,9 @@ structDict['CThostFtdcStorageField'] = CThostFtdcStorageField
 
 
 
-
-
 CThostFtdcMarketStatusField = {}
 CThostFtdcMarketStatusField["MktStatus"] = "string"
 CThostFtdcMarketStatusField["marketID"] = "string"
-CThostFtdcMarketStatusField["ExchCode"] = "string"
-CThostFtdcMarketStatusField["MktChgTime"] = "string"
 structDict['CThostFtdcMarketStatusField'] = CThostFtdcMarketStatusField
 
 #指定的合约

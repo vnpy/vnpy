@@ -202,7 +202,7 @@ void TdApi::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFt
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRtnOrder(CThostFtdcOrderField *pOrder) 
+void TdApi::OnRtnOrder(CThostFtdcOrderRtnField *pOrder) 
 {
 	Task task = Task();
 	task.task_name = ONRTNORDER;
@@ -213,7 +213,7 @@ void TdApi::OnRtnOrder(CThostFtdcOrderField *pOrder)
 	}
 	else
 	{
-		CThostFtdcOrderField empty_data = CThostFtdcOrderField();
+		CThostFtdcOrderRtnField empty_data = CThostFtdcOrderRtnField();
 		memset(&empty_data, 0, sizeof(empty_data));
 		task.task_data = empty_data;
 	}

@@ -75,6 +75,8 @@ class LtsGateway(VtGateway):
         """连接"""
         # 载入json 文件
         fileName = self.gatewayName + '_connect.json'
+        fileName = os.getcwd() + '\\ltsGateway\\' + fileName
+        
         try:
             f = file(fileName)
         except IOError:

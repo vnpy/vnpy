@@ -16,7 +16,7 @@
 #include <boost/python/module.hpp>	//python封装
 #include <boost/python/def.hpp>		//python封装
 #include <boost/python/dict.hpp>	//python封装
-#include <boost/python/object.hpp>	//python封装
+#include <boost/python/object.hpp>	//python封装 
 #include <boost/python.hpp>			//python封装
 #include <boost/thread.hpp>			//任务队列的线程功能
 #include <boost/bind.hpp>			//任务队列的线程功能
@@ -24,6 +24,7 @@
 
 //API
 #include "GoldTradeApi.h"
+#include "Constant.h"
 
 //命名空间
 using namespace std;
@@ -195,7 +196,6 @@ public:
 	///请求查询合约响应
 	virtual void OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
-
 	///深度行情通知
 	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData);
 
@@ -206,7 +206,8 @@ public:
 	virtual void OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo);
 
 	///报单通知
-	virtual void OnRtnOrder(CThostFtdcOrderField *pOrder);
+	//virtual void OnRtnOrder(CThostFtdcOrderField *pOrder); //错误
+	virtual void OnRtnOrder(CThostFtdcOrderRtnField *pOrder);
 
 	//强退通知
 	virtual void OnForceLogout(CThostFtdcUserLogoutField *pLogout);
@@ -354,6 +355,10 @@ public:
 	int reqUserLogout(dict req, int nRequestID);
 
 	int reqUserReLogin();
+
+	int subscribeMarketData(string instrumentID);
+
+	int unSubscribeMarketData(string instrumentID);
 
 	int reqQryInstrument(dict req, int nRequestID);
 

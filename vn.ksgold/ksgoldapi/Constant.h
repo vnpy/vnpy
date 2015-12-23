@@ -40,6 +40,32 @@
 #define BUY		'0'     //买
 #define SELL	'1'     //卖
 
+//委托类型
+#define  SPOT_ENTRUST     '0' //现货
+#define  TN_ENTRUST       '4' //现货T+N
+#define  DEFER_ENTRUST    '1' //现货延期
+#define  DELIVERY_ENTRUST '2' //交割
+#define  MIDDLE_ENTRUST   '3' //中立仓
 
+//渠道类型
+#define  COUNTER_CHANNEL  '1' //柜台
+#define  TEL_CHANNEL      '2' //电话银行
+#define  NET_CHANNEL      '3' //网银
+#define  TRADER_CHANNEL   '4' //交易员
+#define  SELF_CHANNEL	  '5' //自助终端
+#define  PHONE_CHANNEL	  '6' //手机银行
+#define  TRADEAPI_CHANNEL '7' //交易API
+
+//客户类别
+#define CLIENT_SPOT    '0' //现货
+#define CLIENT_FUTURE  '1' //期货
+#define CLIENT_GENERAL '2' //通用
+
+//登录类型
+#define BANKACC_TYPE   "1" //银行账号登录
+#define TRADECODE_TYPE "2" //交易编码登录
+
+//活跃标志
+#define ACTIVITY_ON '1' //询价合约
 
 #endif _NEWCONSTANT_H

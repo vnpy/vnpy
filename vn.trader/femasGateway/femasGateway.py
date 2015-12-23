@@ -78,6 +78,8 @@ class FemasGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
+        fileName = os.getcwd() + '\\femasGateway\\' + fileName
+        
         try:
             f = file(fileName)
         except IOError:

@@ -18,6 +18,7 @@
 class CGoldTradeSpi	//回调接口
 {
  public:
+	virtual ~CGoldTradeSpi(){};
 	 //连接建立通知
 	virtual void OnFrontConnected(){};
 
@@ -48,7 +49,7 @@ class CGoldTradeSpi	//回调接口
 	virtual void OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo) {};
 
 	///报单通知
-	virtual void OnRtnOrder(CThostFtdcOrderField *pOrder) {};
+	virtual void OnRtnOrder(CThostFtdcOrderRtnField *pOrder) {};
 
 	//强退通知
 	virtual void OnForceLogout(CThostFtdcUserLogoutField *pLogout) {};

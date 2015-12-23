@@ -83,6 +83,9 @@ class MainWindow(QtGui.QMainWindow):
         connectFemasAction = QtGui.QAction(u'连接飞马', self)
         connectFemasAction.triggered.connect(self.connectFemas)        
         
+        connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
+        connectKsgoldAction.triggered.connect(self.connectKsgold)           
+        
         connectWindAction = QtGui.QAction(u'连接Wind', self)
         connectWindAction.triggered.connect(self.connectWind)
         
@@ -93,7 +96,7 @@ class MainWindow(QtGui.QMainWindow):
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
         
         testAction = QtGui.QAction(u'测试', self)
-        testAction.triggered.connect(self.testSubscribe)
+        testAction.triggered.connect(self.test)
         
         exitAction = QtGui.QAction(u'退出', self)
         exitAction.triggered.connect(self.close)
@@ -113,14 +116,15 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu = menubar.addMenu(u'系统')
         sysMenu.addAction(connectCtpAction)
         sysMenu.addAction(connectLtsAction)
-        sysMenu.addAction(connectKsotpAction)
         sysMenu.addAction(connectFemasAction)
-        sysMenu.addAction(connectIbAction)        
+        sysMenu.addAction(connectKsotpAction)
+        sysMenu.addAction(connectKsgoldAction)
+        sysMenu.addAction(connectIbAction)    
+        sysMenu.addSeparator()
         sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
         sysMenu.addSeparator()
-        sysMenu.addAction(testAction)
         sysMenu.addAction(exitAction)
         
         functionMenu = menubar.addMenu(u'功能')
@@ -132,7 +136,8 @@ class MainWindow(QtGui.QMainWindow):
         
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')
-        helpMenu.addAction(aboutAction)        
+        helpMenu.addAction(aboutAction)  
+        helpMenu.addAction(testAction)
     
     #----------------------------------------------------------------------
     def initStatusBar(self):
@@ -182,6 +187,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectFemas(self):
         """连接飞马接口"""
         self.mainEngine.connect('FEMAS')        
+        
+    #----------------------------------------------------------------------
+    def connectKsgold(self):
+        """连接金仕达黄金接口"""
+        self.mainEngine.connect('KSGOLD')            
     
     #----------------------------------------------------------------------
     def connectWind(self):
@@ -194,31 +204,13 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('IB')
         
     #----------------------------------------------------------------------
-    def testSubscribe(self):
-        """测试订阅"""
-        api = self.mainEngine.gatewayDict['LTS'].qryApi
+    def test(self):
+        """测试按钮用的函数"""
+        api = self.mainEngine.gatewayDict['KSGOLD'].tdApi
         api.reqID += 1
-        api.reqQryOFInstrument({}, api.reqID)
-        
-        #req = VtSubscribeReq()
-        #req.symbol = 'GOOG'
-        #req.productClass = PRODUCT_EQUITY
-        #req.exchange = EXCHANGE_SMART
-        #req.currency = CURRENCY_USD
-        #self.mainEngine.subscribe(req, 'IB')
-        
-        #req.symbol = 'AAPL'
-        #self.mainEngine.subscribe(req, 'IB')
-        
-        #req.symbol = 'YHOO'
-        #self.mainEngine.subscribe(req, 'IB')
-        
-        #req.symbol = 'MSFT'
-        #self.mainEngine.subscribe(req, 'IB')
-        
-        #req.symbol = 'GE'
-        #self.mainEngine.subscribe(req, 'IB')        
-        
+        api.reqQryOrder({}, api.reqID)
+        #api.reqQryTrade({}, api.reqID)
+
     #----------------------------------------------------------------------
     def openAbout(self):
         """打开关于"""

@@ -20,63 +20,26 @@ struct CThostFtdcReqUserLoginField
 	TThostFtdcMemberIDType   memberID;				//会员代码
 	TThostFtdcPasswordType   password;				//密码
 	TThostFtdcDateType       tradeDate;				//交易日期
-	TThostFtdcIPAddressType	 ipGatewayAddress;      //连接网关所在的IP
-	TThostFtdcServerPortType portGateway;	        //连接网关所用端口
-	TThostFtdcOrderRefType   localOrderNo;			//最大本地报单号
-	TThostFtdcMachineIDType  machineID;				//前置机编号
-	TThostFtdcLoginBatchType         loginbatch;	//登录批次
-	TThostFtdcCSRCInvestorNameType clientName;		//客户名称
-	TThostFtdcIPAddressType	lastLoginIp;			//上次登录IP地址
-	TThostFtdcDateType		lastLoginDate;			//上次登录日期
-	TThostFtdcTimeType		lastLoginTime;			//上次登录时间
-	TThostFtdcGateWayCurLinkNumType			gateWayCurLinkNum;		//网关当前的连接数量
-	TThostFtdcGateWayYYBDBType	gateWayYYBDB;			//网关的营业部代码
-	TThostFtdcObligateType obligate;				//预留字段
-	TThostFtdcMSGType		msg;					//消息
 };
 
 ///用户登录应答
 struct CThostFtdcRspUserLoginField
 {
-	TThostFtdcTraderIDType  traderID;				//交易员代码
-	TThostFtdcMemberIDType  memberID;				//会员代码
-	TThostFtdcPasswordType  password;				//密码
 	TThostFtdcDateType       tradeDate;				//交易日期
-	TThostFtdcIPAddressType  ipAddress;				//IP地址
-	TThostFtdcOrderRefType  localOrderNo;				//最大本地报单号
-	TThostFtdcMachineIDType  machineID;				//前置机编号
-	TThostFtdcLoginBatchType         loginbatch;				//登录批次
-	TThostFtdcCSRCInvestorNameType clientName;				//客户名称
+	TThostFtdcOrderRefType  localOrderNo;			//最大本地报单号
+	TThostFtdcLoginBatchType  loginbatch;			//登录批次
+	TThostFtdcClientIDType  tradeCode;			   	//交易编码		
+	TThostFtdcClientIDType  clientID;         		//客户号
+	TThostFtdcSeatIDType    SeatNo ;				//席位号
+	TThostFtdcCSRCInvestorNameType clientName;		//客户名称
 	TThostFtdcIPAddressType	lastLoginIp;			//上次登录IP地址
 	TThostFtdcDateType		lastLoginDate;			//上次登录日期
 	TThostFtdcTimeType		lastLoginTime;			//上次登录时间
-	TThostFtdcGateWayCurLinkNumType			gateWayCurLinkNum;		//网关当前的连接数量
-	TThostFtdcGateWayYYBDBType	gateWayYYBDB;			//网关的营业部代码
-	TThostFtdcObligateType obligate;				//预留字段
-	TThostFtdcMSGType		msg;					//消息
-	TThostFtdcSeatIDType    SeatNo ;                 //席位号
-	TThostFtdcClientIDType  tradeCode;         		//交易编码	是	
-	TThostFtdcClientIDType  clientID;         		//客户号	是
 };
 ///用户登出请求
 struct CThostFtdcUserLogoutField
 {
-	TThostFtdcTraderIDType  traderID;				//交易员代码
-	TThostFtdcMemberIDType  memberID;				//会员代码
-	TThostFtdcPasswordType  password;				//密码
-	TThostFtdcDateType       tradeDate;				//交易日期
-	TThostFtdcIPAddressType  ipAddress;				//IP地址
-	TThostFtdcOrderRefType  localOrderNo;				//最大本地报单号
-	TThostFtdcMachineIDType  machineID;				//前置机编号
-	TThostFtdcLoginBatchType         loginbatch;				//登录批次
-	TThostFtdcCSRCInvestorNameType clientName;				//客户名称
-	TThostFtdcIPAddressType	lastLoginIp;			//上次登录IP地址
-	TThostFtdcDateType		lastLoginDate;			//上次登录日期
-	TThostFtdcTimeType		lastLoginTime;			//上次登录时间
-	TThostFtdcGateWayCurLinkNumType			gateWayCurLinkNum;		//网关当前的连接数量
-	TThostFtdcGateWayYYBDBType	gateWayYYBDB;			//网关的营业部代码
-	TThostFtdcObligateType obligate;				//预留字段
-	TThostFtdcMSGType		msg;					//消息
+	TThostFtdcTraderIDType  traderID;				//客户号
 };
 
 
@@ -105,11 +68,7 @@ struct CThostFtdcInstrumentField
 //查询资金账户
 struct CThostFtdcQryTradingAccountField
 {
-	TThostFtdcMemberIDType  memberID;				//会员代码
-	TThostFtdcAccountType  accountType;			//帐户类型
-	TThostFtdcTraderIDType  traderID;				//交易员代码
-	TThostFtdcClientIDType  clientID;				//客户代码
-	TThostFtdcMarketIDType  marketID;				//市场代码	
+	TThostFtdcMSGType remian; //保留字段	
 };
 
 ///资金账户
@@ -136,7 +95,6 @@ struct CThostFtdcTradingAccountField
 ///投资者持仓
 struct CThostFtdcInvestorPositionField
 {
-	TThostFtdcClientIDType  clientID;         //1		客户号	是	
 	TThostFtdcInstrumentIDType    instID;			 //4		合约代码	是	
 	TThostFtdcVolumeType    longPosi;		 //5		可用买持仓量	是	
 	TThostFtdcPriceType     longPosiAvgPrice; //6		买持均价	是	
@@ -191,14 +149,14 @@ struct CThostFtdcDepthMarketDataField
 	TThostFtdcVolumeType			BidLot3 ;			/**<最高买量三 */
 	TThostFtdcPriceType				Ask3 ;				/**<最低卖价三 */
 	TThostFtdcVolumeType			AskLot3 ;			/**<最低卖量三 */
-	TThostFtdcPriceType				Bid4 ;				/**<最高买价三 */
-	TThostFtdcVolumeType			BidLot4 ;			/**<最高买量三 */
-	TThostFtdcPriceType				Ask4 ;				/**<最低卖价三 */
-	TThostFtdcVolumeType			AskLot4 ;			/**<最低卖量三 */
-	TThostFtdcPriceType				Bid5 ;				/**<最高买价三 */
-	TThostFtdcVolumeType			BidLot5 ;			/**<最高买量三 */
-	TThostFtdcPriceType				Ask5 ;				/**<最低卖价三 */
-	TThostFtdcVolumeType			AskLot5 ;			/**<最低卖量三 */
+	TThostFtdcPriceType				Bid4 ;				/**<最高买价四 */
+	TThostFtdcVolumeType			BidLot4 ;			/**<最高买量四 */
+	TThostFtdcPriceType				Ask4 ;				/**<最低卖价四 */
+	TThostFtdcVolumeType			AskLot4 ;			/**<最低卖量四 */
+	TThostFtdcPriceType				Bid5 ;				/**<最高买价五 */
+	TThostFtdcVolumeType			BidLot5 ;			/**<最高买量五 */
+	TThostFtdcPriceType				Ask5 ;				/**<最低卖价五 */
+	TThostFtdcVolumeType			AskLot5 ;			/**<最低卖量五 */
 	TThostFtdcVolumeType			Volume ;			/**<成交量（双边） */
 	TThostFtdcVolumeType			OpenInt ;			/**<持仓量（双边） */
 	TThostFtdcPriceType				UpDown ;			/**<涨跌 */
@@ -218,37 +176,23 @@ struct CThostFtdcDepthMarketDataField
 struct CThostFtdcInputOrderField
 {
 	TThostFtdcSeatIDType			seatID;          //2		席位号	是	
-	TThostFtdcClientIDType			clientID;        //3		交易编码	是	
-	TThostFtdcExchangeIDType		exchangeID;      //4		交易所代码	是	
+	TThostFtdcClientIDType			tradeCode;        //3		交易编码	是		
 	TThostFtdcInstrumentIDType      instID;          //5		品种代码	是	
-	TThostFtdcBsFlagType			buyOrSell;       //6		买卖方向	是	
+	TThostFtdcBsFlagType			buyOrSell;       //6		买卖方向	是
 	TThostFtdcOffsetFlagType		offsetFlag;      //7		开平标志	是	
 	TThostFtdcVolumeType			amount;          //8		委托数量	是	
-	TThostFtdcWeightType			weight;				//10		委托重量	是	常量为0
-	TThostFtdcByteType				middleFlag;      //9		中立仓标志	是	常量为0
-	TThostFtdcByteType				orderFlag;	      //10		委托标志	是	
+	TThostFtdcByteType				middleFlag;      //9		中立仓标志	是	常量为0	
 	TThostFtdcByteType				priceFlag;       //11		条件委托价格类型	是	
 	TThostFtdcPriceType				price;           //12		预委托价格	是	
 	TThostFtdcPriceType				trigPrice;	      //13       预委托触发价格	是	
 	TThostFtdcMarketIDType			marketID;        //14		市场代码	是	
-	TThostFtdcDateType				validDate;       //15		有效日期	是	
-	TThostFtdcOrderNoType			orderNo;		 //1		系统报单号	是	
-	TThostFtdcOrderRefType			LocalOrderNo;//本地报单号
-	TThostFtdcVolumeType			matchQty;				//12		成交手数	是	
-	TThostFtdcWeightType			matchWeight;			 //13		成交重量	是	
-	TThostFtdcOrderStatusType		status;				//14       委托状态	是	
-	TThostFtdcTimeType				entrustTime;				//15		委托时间	是	
-	TThostFtdcByteType				forceoffset_flag;			 //16		强平标志	是	
-	TThostFtdcVolumeType			cancelQty;			//17		撤单手数	是	
-	TThostFtdcTimeType				cancelTime;			 //18撤单时间
-	TThostFtdcVolumnCheck           volumnCheck;		//数量检查标志 
-	TThostFtdcTradeWayType			tradeWay;				//19		交易渠道	是	
+	TThostFtdcOrderRefType			LocalOrderNo;	 //			本地报单号
+	TThostFtdcTradeWayType			tradeWay;		 //19		交易渠道	是	
 };
 
 ///报单
 struct CThostFtdcOrderField
 {
-
 	TThostFtdcOrderNoType			orderNo;				//1		系统报单号	是	
 	TThostFtdcOrderRefType			localOrderNo;;			//2		本地报单号	是	
 	TThostFtdcMarketIDType			marketID;				//4		市场代码	是	
@@ -268,15 +212,22 @@ struct CThostFtdcOrderField
 	TThostFtdcTradeWayType			tradeWay;				//19		交易渠道	是	
 };
 
+///报单撤单回报
+struct CThostFtdcOrderRtnField
+{
+	TThostFtdcOrderNoType			orderNo;				//1		系统报单号	是	
+	TThostFtdcOrderRefType			localOrderNo;;			//2		本地报单号	是	
+	TThostFtdcOrderStatusType		status;					//14    委托状态	是	
+	TThostFtdcVolumeType			cancelQty;				//17	撤单手数	是
+};
+
 
 ///输入报单操作(cancel order)
 struct CThostFtdcInputOrderActionField
 {
-	TThostFtdcOrderRefType		localOrderNo;     //1		本地报单号	是	
-	TThostFtdcByteType			orderFlag;       //2		委托标志	是	
-	TThostFtdcMarketIDType		marketID;		  //3		市场代码	是	
-	TThostFtdcTraderIDType		traderID;         //6		撤单操作员	是	
-	TThostFtdcTradeWayType      tradeWay;         //7		委托渠道	是	写死"5"
+	TThostFtdcOrderRefType		localOrderNo;     //1		本地报单号	是
+	TThostFtdcMarketIDType		marketID;		  //2		市场代码	是
+	TThostFtdcOrderStatusType	status;			  //14      委托状态	
 };
 
 ///报单操作
@@ -291,7 +242,6 @@ struct CThostFtdcOrderActionField
 ///成交
 struct CThostFtdcTradeField
 {
-
 	TThostFtdcOrderNoType			orderNo;           //1		系统报单号	是	
 	TThostFtdcMatchNoType			matchNo;           //2		成交单编号	是	
 	TThostFtdcInstrumentIDType		instID;            //3		合约代码	是	
@@ -308,8 +258,8 @@ struct CThostFtdcTradeField
 	TThostFtdcMarketIDType			marketID;	     //15		市场代码	是	
 	TThostFtdcMoneyType				trade_fee;         //16		手续费	是	
 	TThostFtdcByteType				forceoffset_flag;  //17		强平标志	是	
-	TThostFtdcVolumeType			forcebatchnum ;    //18		强平批次号	是	
-	TThostFtdcTradeWayType			tradeWay;          //19		渠道标志	是	
+	TThostFtdcVolumeType			forcebatchnum ;    //18		强平批次号	是
+	TThostFtdcTradeWayType			tradeWay;          //渠道标志
 };
 
 ///查询合约
@@ -323,15 +273,10 @@ struct CThostFtdcQryInstrumentField
 ///查询成交
 struct CThostFtdcQryTradeField
 {
+	TThostFtdcMatchNoType		matchNo;			//成交编号
 	TThostFtdcInstrumentIDType  instID;				//合约代码
 	TThostFtdcMarketIDType		marketID;			//市场代码
-	TThostFtdcOrderNoType		orderNo;				//报单号
-	TThostFtdcClientIDType		clientID;			//客户代码
-	TThostFtdcMemberIDType		memberID;			//会员代码
-	TThostFtdcMatchNoType		matchNo;				//成交编号
-	TThostFtdcExchangeIDType	exchangeID;			//交易所代码(wph)
-	TThostFtdcOrderRefType		localOrderNo;			//本地报单编号
-	TThostFtdcTraderIDType		traderID;			//交易员代码(wph)
+	TThostFtdcOrderRefType		localOrderNo;		//本地报单编号
 };
 
 
@@ -340,14 +285,7 @@ struct CThostFtdcQryOrderField
 {
 	TThostFtdcInstrumentIDType  instID;				//合约代码
 	TThostFtdcMarketIDType		marketID;			//市场代码
-	TThostFtdcOrderNoType		orderNo;				//报单号
-	TThostFtdcClientIDType		clientID;			//客户代码
-	TThostFtdcMemberIDType		memberID;			//会员代码
-	TThostFtdcOffsetFlagType	offsetFlag;		//开平标志
-	TThostFtdcTraderIDType		traderID;			//交易员代码(wph)
-	TThostFtdcOrderStatusType	status;				//状态
-	TThostFtdcExchangeIDType	exchangeID;			//交易所代码(wph)
-	TThostFtdcOrderRefType		localOrderNo;				//本地报单编号
+	TThostFtdcOrderRefType		localOrderNo;		//本地报单编号
 };
 
 
@@ -356,20 +294,15 @@ struct CThostFtdcQryOrderField
 ///查询投资者持仓
 struct CThostFtdcQryInvestorPositionField
 {
-	TThostFtdcClientIDType		clientID;				//客户代码
-	TThostFtdcMemberIDType		memberID;				//会员代码
-	TThostFtdcMarketIDType		marketID;				//市场代码
-	TThostFtdcInstrumentIDType  instID;				    //合约代码
-	TThostFtdcTraderIDType		traderID;			    //交易员代码(wph)
+	TThostFtdcMarketIDType		marketID;			//市场代码
+	TThostFtdcInstrumentIDType	instID;         //合约代码
 };
 
 
 ///查询库存
 struct CThostFtdcQryStorageField
 {
-	TThostFtdcClientIDType		clientID;				//客户代码
-	TThostFtdcMemberIDType		memberID;				//会员代码
-	TThostFtdcTraderIDType		traderID;			    //交易员代码(wph)
+	TThostFtdcVarietyIDType  varietyID;            //交割品种代码
 };
 
 //库存应答
@@ -391,19 +324,15 @@ struct CThostFtdcStorageField
 	TThostFtdcWeightType     lawFrozen;            //17		法律冻结库存	是	
 	TThostFtdcWeightType     bankFrozen;           //18		银行冻结库存	是	
 	TThostFtdcByteType       customType;           //19		客户类别	是	
-	TThostFtdcWeightType     storageCost;           //20		库存成本	是	
-	TThostFtdcWeightType     impawnFrozen ;        //22		质押冻结库存	是	
+	TThostFtdcWeightType     storageCost;          //20		库存成本	是	
+	TThostFtdcWeightType     impawnFrozen;        //22		质押冻结库存	是	
 };
 
-
-//市场状态
 //市场状态
 struct CThostFtdcMarketStatusField
 {
 	TThostFtdcMktStatusType   MktStatus;           /*市场状态*/
-	TThostFtdcMarketIDType    marketID  ;         /*市场代码*/
-	TThostFtdcExchCodeType   ExchCode;            /*交易所代码*/
-	TThostFtdcMktChgTimeType  MktChgTime;          /*状态触发时间*/
+	TThostFtdcMarketIDType    marketID;         /*市场代码*/
 };
 ///指定的合约
 struct CThostFtdcSpecificInstrumentField

@@ -277,7 +277,7 @@ void TdApi::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFt
 	this->task_queue.push(task);
 };
 
-void TdApi::OnRtnOrder(CThostFtdcOrderField *pOrder)
+void TdApi::OnRtnOrder(CThostFtdcOrderRtnField *pOrder)
 {
 	Task task = Task();
 	task.task_name = ONRTNORDER;
@@ -288,7 +288,7 @@ void TdApi::OnRtnOrder(CThostFtdcOrderField *pOrder)
 	}
 	else
 	{
-		CThostFtdcOrderField empty_data = CThostFtdcOrderField();
+		CThostFtdcOrderRtnField empty_data = CThostFtdcOrderRtnField();
 		memset(&empty_data, 0, sizeof(empty_data));
 		task.task_data = empty_data;
 	}
@@ -541,6 +541,9 @@ void TdApi::OnRspQryClientStorage(CThostFtdcStorageField *pStorage, CThostFtdcRs
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
+
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
 	this->task_queue.push(task);
 };
 
@@ -728,24 +731,15 @@ void TdApi::processRspUserLogin(Task task)
 	PyLock lock;
 	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
-	data["loginbatch"] = task_data.loginbatch;
 	data["SeatNo"] = task_data.SeatNo;
-	data["gateWayYYBDB"] = task_data.gateWayYYBDB;
 	data["tradeDate"] = task_data.tradeDate;
 	data["tradeCode"] = task_data.tradeCode;
-	data["machineID"] = task_data.machineID;
 	data["localOrderNo"] = task_data.localOrderNo;
-	data["traderID"] = task_data.traderID;
-	data["memberID"] = task_data.memberID;
+	data["loginbatch"] = task_data.loginbatch;
 	data["clientID"] = task_data.clientID;
-	data["obligate"] = task_data.obligate;
-	data["gateWayCurLinkNum"] = task_data.gateWayCurLinkNum;
 	data["lastLoginDate"] = task_data.lastLoginDate;
 	data["lastLoginTime"] = task_data.lastLoginTime;
-	data["msg"] = task_data.msg;
 	data["lastLoginIp"] = task_data.lastLoginIp;
-	data["password"] = task_data.password;
-	data["ipAddress"] = task_data.ipAddress;
 	data["clientName"] = task_data.clientName;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
@@ -761,22 +755,7 @@ void TdApi::processRspUserLogout(Task task)
 	PyLock lock;
 	CThostFtdcUserLogoutField task_data = any_cast<CThostFtdcUserLogoutField>(task.task_data);
 	dict data;
-	data["loginbatch"] = task_data.loginbatch;
-	data["gateWayYYBDB"] = task_data.gateWayYYBDB;
-	data["tradeDate"] = task_data.tradeDate;
-	data["machineID"] = task_data.machineID;
-	data["localOrderNo"] = task_data.localOrderNo;
 	data["traderID"] = task_data.traderID;
-	data["memberID"] = task_data.memberID;
-	data["obligate"] = task_data.obligate;
-	data["gateWayCurLinkNum"] = task_data.gateWayCurLinkNum;
-	data["lastLoginDate"] = task_data.lastLoginDate;
-	data["lastLoginTime"] = task_data.lastLoginTime;
-	data["msg"] = task_data.msg;
-	data["lastLoginIp"] = task_data.lastLoginIp;
-	data["password"] = task_data.password;
-	data["ipAddress"] = task_data.ipAddress;
-	data["clientName"] = task_data.clientName;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -793,8 +772,6 @@ void TdApi::processNtyMktStatus(Task task)
 	dict data;
 	data["mktStatus"] = task_data.MktStatus;
 	data["marketID"] = task_data.marketID;
-	data["exchCode"] = task_data.ExchCode;
-	data["mktChgTime"] = task_data.MktChgTime;
 
 	this->onNtyMktStatus(data);
 };
@@ -884,32 +861,20 @@ void TdApi::processRspOrderInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputOrderField task_data = any_cast<CThostFtdcInputOrderField>(task.task_data);
 	dict data;
-	data["offsetFlag"] = task_data.offsetFlag;
-	data["weight"] = task_data.weight;
-	data["entrustTime"] = task_data.entrustTime;
-	data["LocalOrderNo"] = task_data.LocalOrderNo;
-	data["marketID"] = task_data.marketID;
-	data["orderNo"] = task_data.orderNo;
-	data["tradeWay"] = task_data.tradeWay;
-	data["buyOrSell"] = task_data.buyOrSell;
-	data["instID"] = task_data.instID;
-	data["seatID"] = task_data.seatID;
-	data["status"] = task_data.status;
-	data["cancelTime"] = task_data.cancelTime;
+
+	data["offsetFlag"] = (char) task_data.offsetFlag;
+	data["buyOrSell"] = (char) task_data.buyOrSell;
 	data["middleFlag"] = task_data.middleFlag;
+	data["tradeCode"] = task_data.tradeCode;
+	data["instID"] = task_data.instID;
 	data["price"] = task_data.price;
-	data["validDate"] = task_data.validDate;
-	data["matchQty"] = task_data.matchQty;
-	data["clientID"] = task_data.clientID;
+	data["marketID"] = task_data.marketID;
 	data["trigPrice"] = task_data.trigPrice;
-	data["forceoffset_flag"] = task_data.forceoffset_flag;
-	data["orderFlag"] = task_data.orderFlag;
-	data["volumnCheck"] = task_data.volumnCheck;
-	data["cancelQty"] = task_data.cancelQty;
-	data["priceFlag"] = task_data.priceFlag;
-	data["exchangeID"] = task_data.exchangeID;
 	data["amount"] = task_data.amount;
-	data["matchWeight"] = task_data.matchWeight;
+	data["seatID"] = task_data.seatID;
+	data["priceFlag"] = task_data.priceFlag;
+	data["LocalOrderNo"] = task_data.LocalOrderNo;
+	data["tradeWay"] = task_data.tradeWay;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -925,31 +890,18 @@ void TdApi::processErrRtnOrderInsert(Task task)
 	CThostFtdcInputOrderField task_data = any_cast<CThostFtdcInputOrderField>(task.task_data);
 	dict data;
 	data["offsetFlag"] = task_data.offsetFlag;
-	data["weight"] = task_data.weight;
-	data["entrustTime"] = task_data.entrustTime;
-	data["LocalOrderNo"] = task_data.LocalOrderNo;
-	data["marketID"] = task_data.marketID;
-	data["orderNo"] = task_data.orderNo;
-	data["tradeWay"] = task_data.tradeWay;
 	data["buyOrSell"] = task_data.buyOrSell;
-	data["instID"] = task_data.instID;
-	data["seatID"] = task_data.seatID;
-	data["status"] = task_data.status;
-	data["cancelTime"] = task_data.cancelTime;
 	data["middleFlag"] = task_data.middleFlag;
+	data["tradeCode"] = task_data.tradeCode;
+	data["instID"] = task_data.instID;
 	data["price"] = task_data.price;
-	data["validDate"] = task_data.validDate;
-	data["matchQty"] = task_data.matchQty;
-	data["clientID"] = task_data.clientID;
+	data["marketID"] = task_data.marketID;
 	data["trigPrice"] = task_data.trigPrice;
-	data["forceoffset_flag"] = task_data.forceoffset_flag;
-	data["orderFlag"] = task_data.orderFlag;
-	data["volumnCheck"] = task_data.volumnCheck;
-	data["cancelQty"] = task_data.cancelQty;
-	data["priceFlag"] = task_data.priceFlag;
-	data["exchangeID"] = task_data.exchangeID;
 	data["amount"] = task_data.amount;
-	data["matchWeight"] = task_data.matchWeight;
+	data["seatID"] = task_data.seatID;
+	data["priceFlag"] = task_data.priceFlag;
+	data["LocalOrderNo"] = task_data.LocalOrderNo;
+	data["tradeWay"] = task_data.tradeWay;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -962,25 +914,12 @@ void TdApi::processErrRtnOrderInsert(Task task)
 void TdApi::processRtnOrder(Task task)
 {
 	PyLock lock;
-	CThostFtdcOrderField task_data = any_cast<CThostFtdcOrderField>(task.task_data);
+	CThostFtdcOrderRtnField task_data = any_cast<CThostFtdcOrderRtnField>(task.task_data);
 	dict data;
-	data["status"] = task_data.status;
-	data["cancelTime"] = task_data.cancelTime;
-	data["offsetFlag"] = task_data.offsetFlag;
-	data["buyOrSell"] = task_data.buyOrSell;
-	data["instID"] = task_data.instID;
-	data["localOrderNo"] = task_data.localOrderNo;
-	data["matchQty"] = task_data.matchQty;
-	data["weight"] = task_data.weight;
-	data["marketID"] = task_data.marketID;
-	data["amount"] = task_data.amount;
-	data["forceoffset_flag"] = task_data.forceoffset_flag;
-	data["entrustTime"] = task_data.entrustTime;
+	data["status"] = (char) task_data.status;
 	data["orderNo"] = task_data.orderNo;
+	data["localOrderNo"] = task_data.localOrderNo;
 	data["cancelQty"] = task_data.cancelQty;
-	data["matchWeight"] = task_data.matchWeight;
-	data["price"] = task_data.price;
-	data["tradeWay"] = task_data.tradeWay;
 
 	this->onRtnOrder(data);
 };
@@ -990,22 +929,7 @@ void TdApi::processForceLogout(Task task)
 	PyLock lock;
 	CThostFtdcUserLogoutField task_data = any_cast<CThostFtdcUserLogoutField>(task.task_data);
 	dict data;
-	data["loginbatch"] = task_data.loginbatch;
-	data["gateWayYYBDB"] = task_data.gateWayYYBDB;
-	data["tradeDate"] = task_data.tradeDate;
-	data["machineID"] = task_data.machineID;
-	data["localOrderNo"] = task_data.localOrderNo;
 	data["traderID"] = task_data.traderID;
-	data["memberID"] = task_data.memberID;
-	data["obligate"] = task_data.obligate;
-	data["gateWayCurLinkNum"] = task_data.gateWayCurLinkNum;
-	data["lastLoginDate"] = task_data.lastLoginDate;
-	data["lastLoginTime"] = task_data.lastLoginTime;
-	data["msg"] = task_data.msg;
-	data["lastLoginIp"] = task_data.lastLoginIp;
-	data["password"] = task_data.password;
-	data["ipAddress"] = task_data.ipAddress;
-	data["clientName"] = task_data.clientName;
 
 	this->onForceLogout(data);
 };
@@ -1015,11 +939,9 @@ void TdApi::processRspOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcInputOrderActionField task_data = any_cast<CThostFtdcInputOrderActionField>(task.task_data);
 	dict data;
-	data["tradeWay"] = task_data.tradeWay;
+	data["status"] = task_data.status;
 	data["localOrderNo"] = task_data.localOrderNo;
 	data["marketID"] = task_data.marketID;
-	data["traderID"] = task_data.traderID;
-	data["orderFlag"] = task_data.orderFlag;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -1053,8 +975,8 @@ void TdApi::processRtnTrade(Task task)
 	PyLock lock;
 	CThostFtdcTradeField task_data = any_cast<CThostFtdcTradeField>(task.task_data);
 	dict data;
-	data["offSetFlag"] = task_data.offSetFlag;
-	data["buyOrSell"] = task_data.buyOrSell;
+	data["offSetFlag"] = (char) task_data.offSetFlag;
+	data["buyOrSell"] = (char) task_data.buyOrSell;
 	data["order_flag"] = task_data.order_flag;
 	data["instID"] = task_data.instID;
 	data["price"] = task_data.price;
@@ -1070,7 +992,7 @@ void TdApi::processRtnTrade(Task task)
 	data["forcebatchnum"] = task_data.forcebatchnum;
 	data["localOrderNo"] = task_data.localOrderNo;
 	data["matchDate"] = task_data.matchDate;
-	data["forceoffset_flag"] = task_data.forceoffset_flag;
+	data["forceoffset_flag"] = task_data.forceoffset_flag; 
 
 	this->onRtnTrade(data);
 };
@@ -1110,23 +1032,23 @@ void TdApi::processRspQryOrder(Task task)
 	PyLock lock;
 	CThostFtdcOrderField task_data = any_cast<CThostFtdcOrderField>(task.task_data);
 	dict data;
-	data["status"] = task_data.status;
+	data["status"] = (char) task_data.status;
 	data["cancelTime"] = task_data.cancelTime;
-	data["offsetFlag"] = task_data.offsetFlag;
-	data["buyOrSell"] = task_data.buyOrSell;
+	data["offsetFlag"] = (char) task_data.offsetFlag;
+	data["buyOrSell"] = (char) task_data.buyOrSell;
 	data["instID"] = task_data.instID;
 	data["localOrderNo"] = task_data.localOrderNo;
 	data["matchQty"] = task_data.matchQty;
 	data["weight"] = task_data.weight;
 	data["marketID"] = task_data.marketID;
 	data["amount"] = task_data.amount;
-	data["forceoffset_flag"] = task_data.forceoffset_flag;
+	data["forceoffset_flag"] = (char) task_data.forceoffset_flag;
 	data["entrustTime"] = task_data.entrustTime;
 	data["orderNo"] = task_data.orderNo;
 	data["cancelQty"] = task_data.cancelQty;
 	data["matchWeight"] = task_data.matchWeight;
 	data["price"] = task_data.price;
-	data["tradeWay"] = task_data.tradeWay;
+	data["tradeWay"] = (char) task_data.tradeWay;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -1141,8 +1063,8 @@ void TdApi::processRspQryTrade(Task task)
 	PyLock lock;
 	CThostFtdcTradeField task_data = any_cast<CThostFtdcTradeField>(task.task_data);
 	dict data;
-	data["offSetFlag"] = task_data.offSetFlag;
-	data["buyOrSell"] = task_data.buyOrSell;
+	data["offSetFlag"] = (char) task_data.offSetFlag;
+	data["buyOrSell"] = (char) task_data.buyOrSell;
 	data["order_flag"] = task_data.order_flag;
 	data["instID"] = task_data.instID;
 	data["price"] = task_data.price;
@@ -1158,7 +1080,7 @@ void TdApi::processRspQryTrade(Task task)
 	data["forcebatchnum"] = task_data.forcebatchnum;
 	data["localOrderNo"] = task_data.localOrderNo;
 	data["matchDate"] = task_data.matchDate;
-	data["forceoffset_flag"] = task_data.forceoffset_flag;
+	data["forceoffset_flag"] = (char) task_data.forceoffset_flag;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -1180,7 +1102,6 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	data["todayOffsetLong"] = task_data.todayOffsetLong;
 	data["shortPosiFrozen"] = task_data.shortPosiFrozen;
 	data["instID"] = task_data.instID;
-	data["clientID"] = task_data.clientID;
 	data["lastShort"] = task_data.lastShort;
 	data["todayOffsetShort"] = task_data.todayOffsetShort;
 	data["longPosiAvgPrice"] = task_data.longPosiAvgPrice;
@@ -1288,28 +1209,32 @@ void TdApi::registerFront(string pszFrontAddress)
 	this->api->RegisterFront((char*)pszFrontAddress.c_str());
 };
 
+int TdApi::subscribeMarketData(string instrumentID)
+{
+	char* buffer = (char*)instrumentID.c_str();
+	char* myreq[1] = { buffer };
+	int i = this->api->SubscribeMarketData(myreq, 1);
+	return i;
+};
+
+int TdApi::unSubscribeMarketData(string instrumentID)
+{
+	char* buffer = (char*)instrumentID.c_str();
+	char* myreq[1] = { buffer };;
+	int i = this->api->UnSubscribeMarketData(myreq, 1);
+	return i;
+};
+
 int TdApi::reqUserLogin(dict req, int nRequestID)
 {
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "ipGatewayAddress", myreq.ipGatewayAddress);
-	getChar(req, "obligate", myreq.obligate);
-	getInt(req, "loginType", &myreq.loginType);
-	getInt(req, "gateWayCurLinkNum", &myreq.gateWayCurLinkNum);
-	getChar(req, "gateWayYYBDB", myreq.gateWayYYBDB);
-	getChar(req, "lastLoginTime", myreq.lastLoginTime);
-	getChar(req, "lastLoginIp", myreq.lastLoginIp);
 	getChar(req, "password", myreq.password);
-	getChar(req, "clientName", myreq.clientName);
-	getChar(req, "msg", myreq.msg);
-	getChar(req, "lastLoginDate", myreq.lastLoginDate);
-	getInt(req, "machineID", &myreq.machineID);
-	getChar(req, "accountID", myreq.accountID);
-	getInt(req, "loginbatch", &myreq.loginbatch);
-	getChar(req, "localOrderNo", myreq.localOrderNo);
 	getChar(req, "tradeDate", myreq.tradeDate);
-	getInt(req, "portGateway", &myreq.portGateway);
 	getChar(req, "memberID", myreq.memberID);
+	getInt(req, "loginType", &myreq.loginType);
+	getChar(req, "accountID", myreq.accountID);
+
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);
 	return i;
 };
@@ -1318,22 +1243,7 @@ int TdApi::reqUserLogout(dict req, int nRequestID)
 {
 	CThostFtdcUserLogoutField myreq = CThostFtdcUserLogoutField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "obligate", myreq.obligate);
-	getChar(req, "tradeDate", myreq.tradeDate);
-	getChar(req, "localOrderNo", myreq.localOrderNo);
-	getInt(req, "gateWayCurLinkNum", &myreq.gateWayCurLinkNum);
-	getChar(req, "gateWayYYBDB", myreq.gateWayYYBDB);
-	getChar(req, "lastLoginTime", myreq.lastLoginTime);
-	getChar(req, "lastLoginIp", myreq.lastLoginIp);
-	getChar(req, "password", myreq.password);
-	getChar(req, "clientName", myreq.clientName);
-	getChar(req, "ipAddress", myreq.ipAddress);
-	getInt(req, "machineID", &myreq.machineID);
-	getInt(req, "loginbatch", &myreq.loginbatch);
-	getChar(req, "msg", myreq.msg);
-	getChar(req, "lastLoginDate", myreq.lastLoginDate);
 	getChar(req, "traderID", myreq.traderID);
-	getChar(req, "memberID", myreq.memberID);
 	int i = this->api->ReqUserLogout(&myreq, nRequestID);
 	return i;
 };
@@ -1343,35 +1253,6 @@ int TdApi::reqUserReLogin()
 	int i = this->api->ReqUserReLogin();
 	return i;
 }
-
-int TdApi::reqQryTradingAccount(dict req, int nRequestID)
-{
-	CThostFtdcQryTradingAccountField myreq = CThostFtdcQryTradingAccountField();
-	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "clientID", myreq.clientID);
-	getChar(req, "traderID", myreq.traderID);
-	getChar(req, "memberID", myreq.memberID);
-	getChar(req, "marketID", myreq.marketID);
-
-	//getChar(req, "accountType", &myreq.accountType);
-
-	//以下为手动改写
-	if (req.has_key("accountType"))
-	{
-		object o = req["accountType"];
-		extract<string> x(o);
-		if (x.check())
-		{
-			string s = x();
-			const char *buffer = s.c_str();
-			myreq.accountType = (unsigned char) *buffer;
-		}
-	}
-
-
-	int i = this->api->ReqQryTradingAccount(&myreq, nRequestID);
-	return i;
-};
 
 int TdApi::reqQryInstrument(dict req, int nRequestID)
 {
@@ -1387,30 +1268,60 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 {
 	CThostFtdcInputOrderField myreq = CThostFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
-	getUnsignedChar(req, "offsetFlag", &myreq.offsetFlag);
-	getChar(req, "entrustTime", myreq.entrustTime);
-	getChar(req, "LocalOrderNo", myreq.LocalOrderNo);
-	getChar(req, "marketID", myreq.marketID);
-	getChar(req, "orderNo", myreq.orderNo);
-	getUnsignedChar(req, "tradeWay", &myreq.tradeWay);
-	getUnsignedChar(req, "buyOrSell", &myreq.buyOrSell);
+
+	getChar(req, "tradeCode", myreq.tradeCode);
 	getChar(req, "instID", myreq.instID);
+	getChar(req, "marketID", myreq.marketID);
+	getInt(req, "amount", &myreq.amount);
 	getChar(req, "seatID", myreq.seatID);
-	getUnsignedChar(req, "status", &myreq.status);
-	getChar(req, "cancelTime", myreq.cancelTime);
-	getUnsignedChar(req, "middleFlag", &myreq.middleFlag);
-	getChar(req, "validDate", myreq.validDate);
-	getInt(req, "matchQty", &myreq.matchQty);
-	getChar(req, "clientID", myreq.clientID);
-	getChar(req, "clientID", myreq.clientID);
-	getUnsignedChar(req, "forceoffset_flag", &myreq.forceoffset_flag);
-	getUnsignedChar(req, "orderFlag", &myreq.orderFlag);
-	getInt(req, "volumnCheck", &myreq.volumnCheck);
-	getInt(req, "cancelQty", &myreq.cancelQty);
 	getUnsignedChar(req, "priceFlag", &myreq.priceFlag);
-	getChar(req, "exchangeID", myreq.exchangeID);
-	getInt(req, "amount", &myreq.amount);
-	getInt(req, "amount", &myreq.amount);
+	getChar(req, "LocalOrderNo", myreq.LocalOrderNo);
+	getUnsignedChar(req, "tradeWay", &myreq.tradeWay);
+	getUnsignedChar(req, "middleFlag", &myreq.middleFlag);
+	getDouble(req, "price", &myreq.price);
+
+	//以下代码为手写
+
+	if (req.has_key("offsetFlag"))
+	{
+		object o = req["offsetFlag"];
+		extract<string> x(o);
+		if (x.check())
+		{
+			string s = x();
+			const char *offsetBuffer = s.c_str();
+			
+			if (*offsetBuffer == '0')
+			{
+				myreq.offsetFlag = '0';
+			}
+			else if (*offsetBuffer == '1')
+			{
+				myreq.offsetFlag = '1';
+			}
+		}
+	}
+
+	if (req.has_key("buyOrSell"))
+	{
+		object o2 = req["buyOrSell"];
+		extract<string> x2(o2);
+		if (x2.check())
+		{
+			string s2 = x2();
+			const char *bsBuffer = s2.c_str();
+
+			if (*bsBuffer == '0')
+			{
+				myreq.buyOrSell = '0';
+			}
+			else if (*bsBuffer == '1')
+			{
+				myreq.buyOrSell = '1';
+			}
+		}
+	}
+
 	int i = this->api->ReqOrderInsert(&myreq, nRequestID);
 	return i;
 };
@@ -1419,11 +1330,9 @@ int TdApi::reqOrderAction(dict req, int nRequestID)
 {
 	CThostFtdcInputOrderActionField myreq = CThostFtdcInputOrderActionField();
 	memset(&myreq, 0, sizeof(myreq));
-	getUnsignedChar(req, "tradeWay", &myreq.tradeWay);
+	getUnsignedChar(req, "status", &myreq.status);
 	getChar(req, "localOrderNo", myreq.localOrderNo);
 	getChar(req, "marketID", myreq.marketID);
-	getChar(req, "traderID", myreq.traderID);
-	getUnsignedChar(req, "orderFlag", &myreq.orderFlag);
 	int i = this->api->ReqOrderAction(&myreq, nRequestID);
 	return i;
 };
@@ -1433,11 +1342,17 @@ int TdApi::reqQryInvestorPosition(dict req, int nRequestID)
 	CThostFtdcQryInvestorPositionField myreq = CThostFtdcQryInvestorPositionField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "instID", myreq.instID);
-	getChar(req, "traderID", myreq.traderID);
-	getChar(req, "memberID", myreq.memberID);
-	getChar(req, "clientID", myreq.clientID);
 	getChar(req, "marketID", myreq.marketID);
 	int i = this->api->ReqQryInvestorPosition(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQryTradingAccount(dict req, int nRequestID)
+{
+	CThostFtdcQryTradingAccountField myreq = CThostFtdcQryTradingAccountField();
+	memset(&myreq, 0, sizeof(myreq));
+	getChar(req, "remian", myreq.remian);
+	int i = this->api->ReqQryTradingAccount(&myreq, nRequestID);
 	return i;
 };
 
@@ -1445,15 +1360,10 @@ int TdApi::reqQryTrade(dict req, int nRequestID)
 {
 	CThostFtdcQryTradeField myreq = CThostFtdcQryTradeField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "exchangeID", myreq.exchangeID);
 	getChar(req, "instID", myreq.instID);
 	getChar(req, "localOrderNo", myreq.localOrderNo);
-	getChar(req, "traderID", myreq.traderID);
-	getChar(req, "memberID", myreq.memberID);
-	getChar(req, "clientID", myreq.clientID);
-	getChar(req, "marketID", myreq.marketID);
 	getChar(req, "matchNo", myreq.matchNo);
-	getChar(req, "orderNo", myreq.orderNo);
+	getChar(req, "marketID", myreq.marketID);
 	int i = this->api->ReqQryTrade(&myreq, nRequestID);
 	return i;
 };
@@ -1462,16 +1372,9 @@ int TdApi::reqQryOrder(dict req, int nRequestID)
 {
 	CThostFtdcQryOrderField myreq = CThostFtdcQryOrderField();
 	memset(&myreq, 0, sizeof(myreq));
-	getUnsignedChar(req, "status", &myreq.status);
-	getChar(req, "exchangeID", myreq.exchangeID);
-	getUnsignedChar(req, "offsetFlag", &myreq.offsetFlag);
 	getChar(req, "instID", myreq.instID);
 	getChar(req, "localOrderNo", myreq.localOrderNo);
-	getChar(req, "traderID", myreq.traderID);
-	getChar(req, "memberID", myreq.memberID);
-	getChar(req, "clientID", myreq.clientID);
 	getChar(req, "marketID", myreq.marketID);
-	getChar(req, "orderNo", myreq.orderNo);
 	int i = this->api->ReqQryOrder(&myreq, nRequestID);
 	return i;
 };
@@ -1480,9 +1383,7 @@ int TdApi::reqQryStorage(dict req, int nRequestID)
 {
 	CThostFtdcQryStorageField myreq = CThostFtdcQryStorageField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "traderID", myreq.traderID);
-	getChar(req, "memberID", myreq.memberID);
-	getChar(req, "clientID", myreq.clientID);
+	getChar(req, "varietyID", myreq.varietyID);
 	int i = this->api->ReqQryStorage(&myreq, nRequestID);
 	return i;
 };
@@ -1713,7 +1614,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 };
 
-BOOST_PYTHON_MODULE(vnctptd)
+BOOST_PYTHON_MODULE(vnksgoldtd)
 {
 	PyEval_InitThreads();	//导入时运行，保证先创建GIL
 
@@ -1726,6 +1627,8 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("registerFront", &TdApiWrap::registerFront)
 		.def("reqUserLogin", &TdApiWrap::reqUserLogin)
 		.def("reqUserLogout", &TdApiWrap::reqUserLogout)
+		.def("subscribeMarketData", &TdApiWrap::subscribeMarketData)
+		.def("unSubscribeMarketData", &TdApiWrap::unSubscribeMarketData)
 		.def("reqUserReLogin", &TdApiWrap::reqUserReLogin)
 		.def("reqQryInstrument", &TdApiWrap::reqQryInstrument)
 		.def("reqOrderInsert", &TdApiWrap::reqOrderInsert)
