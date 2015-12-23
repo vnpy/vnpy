@@ -39,6 +39,7 @@ Release/
 *.dump
 *.vssettings
 *.klg
+*.lkc
 
 <<<<<<< HEAD
 # 不想同步的
