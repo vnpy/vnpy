@@ -130,14 +130,14 @@ class LtsGateway(VtGateway):
         self.tdApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户资金"""
-        self.qryApi.getAccount()
+        self.qryApi.qryAccount()
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
-        self.qryApi.getPosition()
+        self.qryApi.qryPosition()
         
     #----------------------------------------------------------------------
     def close(self):
@@ -154,7 +154,7 @@ class LtsGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            self.qryFunctionList = [self.getAccount, self.getPosition]
+            self.qryFunctionList = [self.qryAccount, self.qryPosition]
             
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 2         # 查询触发点
@@ -1227,7 +1227,7 @@ class LtsQryApi(QryApi):
             self.reqUserLogin(req, self.reqID)   
             
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户"""
         self.reqID += 1
         #是否需要INVESTERID, BROKERID?
@@ -1237,7 +1237,7 @@ class LtsQryApi(QryApi):
         self.reqQryTradingAccount(req, self.reqID)
          
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
         self.reqID += 1
         req = {}

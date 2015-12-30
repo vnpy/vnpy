@@ -17,7 +17,7 @@ def main():
     app.setFont(BASIC_FONT)
     
     mainEngine = MainEngine()
-    mainWindow = MainWindow(mainEngine, mainEngine.eventEngine, mainEngine.dataEngine)
+    mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
     mainWindow.showMaximized()
     
     sys.exit(app.exec_())

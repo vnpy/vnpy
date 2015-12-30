@@ -123,14 +123,14 @@ class KsotpGateway(VtGateway):
         self.tdApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户资金"""
-        self.tdApi.getAccount()
+        self.tdApi.qryAccount()
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
-        self.tdApi.getPosition()
+        self.tdApi.qryPosition()
         
     #----------------------------------------------------------------------
     def close(self):
@@ -145,7 +145,7 @@ class KsotpGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            self.qryFunctionList = [self.getAccount, self.getPosition]
+            self.qryFunctionList = [self.qryAccount, self.qryPosition]
             
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 2         # 查询触发点，金仕达接口查询非常慢，因此不适合频繁查询
@@ -1169,7 +1169,7 @@ class KsotpTdApi(TdApi):
             self.reqUserLogin(req, self.reqID)   
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户"""
         self.reqID += 1
         req = {}
@@ -1178,7 +1178,7 @@ class KsotpTdApi(TdApi):
         self.reqQryTradingAccount(req, self.reqID)
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
         self.reqID += 1
         req = {}

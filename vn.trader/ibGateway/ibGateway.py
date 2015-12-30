@@ -6,7 +6,7 @@ ibpy的gateway接入
 注意事项：
 1. ib api只能获取和操作当前连接后下的单，并且每次重启程序后，之前下的单子收不到
 2. ib api的成交也只会推送当前连接后的成交
-3. ib api的持仓和账户更新可以订阅成主推模式，因此getAccount和getPosition就用不到了
+3. ib api的持仓和账户更新可以订阅成主推模式，因此qryAccount和qryPosition就用不到了
 4. 目前只支持股票和期货交易，ib api里期权合约的确定是基于Contract对象的多个字段，比较复杂暂时没做
 5. 海外市场的交易规则和国内有很多细节上的不同，所以一些字段类型的映射可能不合理，如果发现问题欢迎指出
 '''
@@ -230,7 +230,7 @@ class IbGateway(VtGateway):
         self.connection.cancelOrder(cancelOrderReq.orderID)
     
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户资金"""
         log = VtLogData()
         log.gatewayName = self.gatewayName        
@@ -238,7 +238,7 @@ class IbGateway(VtGateway):
         self.onLog(log) 
     
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
         log = VtLogData()
         log.gatewayName = self.gatewayName        

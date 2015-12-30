@@ -15,12 +15,6 @@ from vnksgoldtd import TdApi
 from ksgoldDataType import *
 from vtGateway import *
 
-# 价格类型映射
-#priceTypeMap = {}
-#priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["THOST_FTDC_OPT_LimitPrice"]
-#priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["THOST_FTDC_OPT_AnyPrice"]
-#priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
-
 # 以下类型映射参考的是原生API里的Constant.h
 
 # 方向类型映射
@@ -103,14 +97,14 @@ class KsgoldGateway(VtGateway):
         self.tdApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户资金"""
-        self.tdApi.getAccount()
+        self.tdApi.qryAccount()
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
-        self.tdApi.getPosition()
+        self.tdApi.qryPosition()
         
     #----------------------------------------------------------------------
     def close(self):
@@ -124,7 +118,7 @@ class KsgoldGateway(VtGateway):
     def initQuery(self):
         """初始化连续查询"""
         # 需要循环的查询函数列表
-        self.qryFunctionList = [self.getAccount, self.getPosition]
+        self.qryFunctionList = [self.qryAccount, self.qryPosition]
         
         self.qryCount = 0           # 查询触发倒计时
         self.qryTrigger = 2         # 查询触发点
@@ -696,13 +690,13 @@ class KsgoldTdApi(TdApi):
             self.reqUserLogin(req, self.reqID)  
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户"""
         self.reqID += 1
         self.reqQryTradingAccount({}, self.reqID)
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
         self.reqID += 1
         self.reqQryInvestorPosition({}, self.reqID)

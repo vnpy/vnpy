@@ -127,12 +127,12 @@ class VtGateway(object):
         pass
     
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户资金"""
         pass
     
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
         pass
     

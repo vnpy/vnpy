@@ -127,14 +127,14 @@ class FemasGateway(VtGateway):
         self.tdApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户资金"""
-        self.tdApi.getAccount()
+        self.tdApi.qryAccount()
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
-        self.tdApi.getPosition()
+        self.tdApi.qryPosition()
         
     #----------------------------------------------------------------------
     def close(self):
@@ -149,7 +149,7 @@ class FemasGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            self.qryFunctionList = [self.getAccount, self.getPosition]
+            self.qryFunctionList = [self.qryAccount, self.qryPosition]
             
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 2         # 查询触发点
@@ -478,7 +478,7 @@ class FemasTdApi(TdApi):
             self.reqUserLogin(req, self.reqID)   
         
     #----------------------------------------------------------------------
-    def getAccount(self):
+    def qryAccount(self):
         """查询账户"""
         self.reqID += 1
         req = {}
@@ -487,7 +487,7 @@ class FemasTdApi(TdApi):
         self.reqQryInvestorAccount(req, self.reqID)
         
     #----------------------------------------------------------------------
-    def getPosition(self):
+    def qryPosition(self):
         """查询持仓"""
         self.reqID += 1
         req = {}

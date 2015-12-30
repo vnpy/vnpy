@@ -11,13 +11,12 @@ class MainWindow(QtGui.QMainWindow):
     """主窗口"""
 
     #----------------------------------------------------------------------
-    def __init__(self, mainEngine, eventEngine, dataEngine):
+    def __init__(self, mainEngine, eventEngine):
         """Constructor"""
         super(MainWindow, self).__init__()
         
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
-        self.dataEngine = dataEngine
         
         self.widgetDict = {}    # 用来保存子窗口的字典
         
@@ -34,15 +33,15 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
-        marketM = MarketMonitor(self.eventEngine)
-        logM = LogMonitor(self.eventEngine)
-        errorM = ErrorMonitor(self.eventEngine)
-        tradeM = TradeMonitor(self.eventEngine)
-        orderM = OrderMonitor(self.eventEngine, self.mainEngine)
-        positionM = PositionMonitor(self.eventEngine)
-        accountM = AccountMonitor(self.eventEngine)
+        marketM = MarketMonitor(self.mainEngine, self.eventEngine)
+        logM = LogMonitor(self.mainEngine, self.eventEngine)
+        errorM = ErrorMonitor(self.mainEngine, self.eventEngine)
+        tradeM = TradeMonitor(self.mainEngine, self.eventEngine)
+        orderM = OrderMonitor(self.mainEngine, self.eventEngine)
+        positionM = PositionMonitor(self.mainEngine, self.eventEngine)
+        accountM = AccountMonitor(self.mainEngine, self.eventEngine)
         
-        tradingW = TradingWidget(self.mainEngine, self.mainEngine.eventEngine, self.mainEngine.dataEngine)
+        tradingW = TradingWidget(self.mainEngine, self.eventEngine)
         
         leftTab = QtGui.QTabWidget()
         leftTab.addTab(logM, u'日志')
@@ -226,7 +225,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             self.widgetDict['contractM'].show()
         except KeyError:
-            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine.dataEngine)
+            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
             self.widgetDict['contractM'].show()
             
     #----------------------------------------------------------------------

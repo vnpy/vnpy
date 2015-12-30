@@ -19,11 +19,10 @@ class CtaEngine(object):
     settingFileName = 'CTA_setting.json'
 
     #----------------------------------------------------------------------
-    def __init__(self, mainEngine, eventEngine, dataEngine):
+    def __init__(self, mainEngine, eventEngine):
         """Constructor"""
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
-        self.dataEngine = dataEngine
         
         # 保存策略对象的字典
         # key为策略名称，value为策略对象，注意策略名称不允许重复
@@ -53,7 +52,7 @@ class CtaEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
         """发单"""
-        contract = self.dataEngine.getContract(vtSymbol)
+        contract = self.mainEngine.getContract(vtSymbol)
         
         req = VtOrderReq()
         req.symbol = contract.symbol
@@ -86,7 +85,7 @@ class CtaEngine(object):
     def cancelOrder(self, vtOrderID):
         """撤单"""
         # 查询报单对象
-        order = self.dataEngine.getOrder(vtOrderID)
+        order = self.mainEngine.getOrder(vtOrderID)
         
         # 如果查询成功
         if order:
@@ -282,7 +281,7 @@ class CtaEngine(object):
             l.append(strategy)
             
             # 订阅合约
-            contract = self.dataEngine.getContract(strategy.vtSymbol)
+            contract = self.mainEngine.getContract(strategy.vtSymbol)
             if contract:
                 req = VtSubscribeReq()
                 req.symbol = contract.symbol
