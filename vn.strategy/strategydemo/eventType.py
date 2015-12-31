@@ -32,6 +32,9 @@ EVENT_INSTRUMENT = 'eInstrument'            # 合约查询回报事件
 EVENT_INVESTOR = 'eInvestor'                # 投资者查询回报事件
 EVENT_ACCOUNT = 'eAccount'                  # 账户查询回报事件
 
+EVENT_DYFUTURETICK = 'eDyFutureTick'        # 通联期货tick数据
+EVENT_DYFUTURETICK_CONTRACT = 'eDyFutureTick' # 通联特定合约行情事件
+
 #----------------------------------------------------------------------
 def test():
     """检查是否存在内容重复的常量定义"""
