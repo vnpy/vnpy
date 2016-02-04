@@ -1,68 +1,63 @@
 # encoding: UTF-8
 
-'''CTA模块相关的GUI控制组件'''
+'''
+CTA模块相关的GUI控制组件
+'''
+
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
 
 
 ########################################################################
-class ValueMonitor(QtGui.QTableWidget):
-    """数值监控"""
-    signal = QtCore.pyqtSignal()
+class CtaValueMonitor(QtGui.QTableWidget):
+    """参数监控"""
 
     #----------------------------------------------------------------------
     def __init__(self, parent=None):
         """Constructor"""
-        super(ValueMonitor , self).__init__(parent)
+        super(CtaValueMonitor, self).__init__(parent)
         
         self.keyCellDict = {}
-        self.row = 0
         self.data = None
+        self.inited = False
         
         self.initUi()
-        self.signal.connect(self.updateTable)
         
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setColumnCount(2)
-        
-        self.verticalHeader().setVisible(False)        
-        self.horizontalHeader().setVisible(False)
-        
+        self.setRowCount(1)
+        self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
-        self.setAlternatingRowColors(True)
+        
+        self.setMaximumHeight(self.sizeHint().height())
         
     #----------------------------------------------------------------------
     def updateData(self, data):
         """更新数据"""
-        self.data = data
-        self.signal.emit()
-        
-    #----------------------------------------------------------------------
-    def updateTable(self):
-        """更新表格"""
-        for key, value in self.data.items():
-            if key in self.keyCellDict:
-                cell = self.keyCellDict[key]
-                cell.setText(unicode(value))
-            else:
-                # 创建并保存单元格
-                keyCell = BasicCell(unicode(key))
-                cell = BasicCell(unicode(value))
-                self.keyCellDict[key] = cell
-                
-                # 移动到下一行
-                self.insertRow(self.row)
-                self.setItem(self.row, 0, keyCell)
-                self.setItem(self.row, 1, cell)
-                self.row += 1
+        if not self.inited:
+            self.setColumnCount(len(data))
+            self.setHorizontalHeaderLabels(data.keys())
+            
+            col = 0
+            for k, v in data.items():
+                cell = QtGui.QTableWidgetItem(unicode(v))
+                self.keyCellDict[k] = cell
+                self.setItem(0, col, cell)
+                col += 1
+            
+            self.inited = True
+        else:
+            for k, v in data.items():
+                cell = self.keyCellDict[k]
+                cell.setText(unicode(v))
 
 
 ########################################################################
 class CtaStrategyManager(QtGui.QGroupBox):
     """策略管理组件"""
+    signal = QtCore.pyqtSignal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, eventEngine, name, parent=None):
@@ -82,28 +77,37 @@ class CtaStrategyManager(QtGui.QGroupBox):
         """初始化界面"""
         self.setTitle(self.name)
         
-        paramLabel = QtGui.QLabel(u'参数')
-        varLabel = QtGui.QLabel(u'变量')
+        self.paramMonitor = CtaValueMonitor(self)
+        self.varMonitor = CtaValueMonitor(self)
         
-        self.paramMonitor = ValueMonitor(self)
-        self.varMonitor = ValueMonitor(self)
+        maxHeight = 60
+        self.paramMonitor.setMaximumHeight(maxHeight)
+        self.varMonitor.setMaximumHeight(maxHeight)
         
+        buttonInit = QtGui.QPushButton(u'初始化')
         buttonStart = QtGui.QPushButton(u'启动')
         buttonStop = QtGui.QPushButton(u'停止')
+        buttonInit.clicked.connect(self.init)
         buttonStart.clicked.connect(self.start)
         buttonStop.clicked.connect(self.stop)
         
-        hbox = QtGui.QHBoxLayout()        
-        hbox.addWidget(buttonStart)
-        hbox.addWidget(buttonStop)
-        hbox.addStretch()
+        hbox1 = QtGui.QHBoxLayout()     
+        hbox1.addWidget(buttonInit)
+        hbox1.addWidget(buttonStart)
+        hbox1.addWidget(buttonStop)
+        hbox1.addStretch()
+        
+        hbox2 = QtGui.QHBoxLayout()
+        hbox2.addWidget(self.paramMonitor)
+        
+        hbox3 = QtGui.QHBoxLayout()
+        hbox3.addWidget(self.varMonitor)
         
         vbox = QtGui.QVBoxLayout()
-        vbox.addLayout(hbox)
-        vbox.addWidget(paramLabel)
-        vbox.addWidget(self.paramMonitor)
-        vbox.addWidget(varLabel)
-        vbox.addWidget(self.varMonitor)
+        vbox.addLayout(hbox1)
+        vbox.addLayout(hbox2)
+        vbox.addLayout(hbox3)
+
         self.setLayout(vbox)
         
     #----------------------------------------------------------------------
@@ -120,7 +124,13 @@ class CtaStrategyManager(QtGui.QGroupBox):
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
-        self.eventEngine.register(EVENT_TIMER, self.updateMonitor)
+        self.signal.connect(self.updateMonitor)
+        self.eventEngine.register(EVENT_CTA_STRATEGY+self.name, self.signal.emit)
+    
+    #----------------------------------------------------------------------
+    def init(self):
+        """初始化策略"""
+        self.ctaEngine.initStrategy(self.name)
     
     #----------------------------------------------------------------------
     def start(self):
@@ -131,7 +141,6 @@ class CtaStrategyManager(QtGui.QGroupBox):
     def stop(self):
         """停止策略"""
         self.ctaEngine.stopStrategy(self.name)
-
 
 
 ########################################################################
@@ -162,23 +171,28 @@ class CtaEngineManager(QtGui.QWidget):
         
         # 按钮
         loadButton = QtGui.QPushButton(u'加载策略')
+        initAllButton = QtGui.QPushButton(u'全部初始化')
         startAllButton = QtGui.QPushButton(u'全部启动')
         stopAllButton = QtGui.QPushButton(u'全部停止')
         
         loadButton.clicked.connect(self.load)
+        initAllButton.clicked.connect(self.initAll)
         startAllButton.clicked.connect(self.startAll)
         stopAllButton.clicked.connect(self.stopAll)
         
         # 滚动区域，放置所有的CtaStrategyManager
         self.scrollArea = QtGui.QScrollArea()
+        self.scrollArea.setWidgetResizable(True)
         
         # CTA组件的日志监控
         self.ctaLogMonitor = QtGui.QTextEdit()
         self.ctaLogMonitor.setReadOnly(True)
+        self.ctaLogMonitor.setMaximumHeight(200)
         
         # 设置布局
         hbox2 = QtGui.QHBoxLayout()
         hbox2.addWidget(loadButton)
+        hbox2.addWidget(initAllButton)
         hbox2.addWidget(startAllButton)
         hbox2.addWidget(stopAllButton)
         hbox2.addStretch()
@@ -193,14 +207,22 @@ class CtaEngineManager(QtGui.QWidget):
     def initStrategyManager(self):
         """初始化策略管理组件界面"""        
         w = QtGui.QWidget()
-        hbox = QtGui.QHBoxLayout()
+        vbox = QtGui.QVBoxLayout()
         
         for name in self.ctaEngine.strategyDict.keys():
             strategyManager = CtaStrategyManager(self.ctaEngine, self.eventEngine, name)
-            hbox.addWidget(strategyManager)
+            vbox.addWidget(strategyManager)
         
-        w.setLayout(hbox)
-        self.scrollArea.setWidget(w)        
+        vbox.addStretch()
+        
+        w.setLayout(vbox)
+        self.scrollArea.setWidget(w)   
+        
+    #----------------------------------------------------------------------
+    def initAll(self):
+        """全部初始化"""
+        for name in self.ctaEngine.strategyDict.keys():
+            self.ctaEngine.initStrategy(name)    
             
     #----------------------------------------------------------------------
     def startAll(self):
@@ -218,7 +240,7 @@ class CtaEngineManager(QtGui.QWidget):
     def load(self):
         """加载策略"""
         if not self.strategyLoaded:
-            self.ctaEngine.loadStrategySetting()
+            self.ctaEngine.loadSetting()
             self.initStrategyManager()
             self.strategyLoaded = True
             self.ctaEngine.writeCtaLog(u'策略加载成功')

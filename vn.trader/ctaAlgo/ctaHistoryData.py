@@ -1,13 +1,20 @@
 # encoding: UTF-8
 
+"""
+本模块中主要包含：
+1. 从通联数据下载历史行情的引擎
+2. 用来把MultiCharts导出的历史数据载入到MongoDB中用的函数
+"""
+
 from datetime import datetime, timedelta
 import pymongo
 from time import time
 from multiprocessing.pool import ThreadPool
 
-from vtConstant import EXCHANGE_CFFEX, EXCHANGE_DCE, EXCHANGE_CZCE, EXCHANGE_SHFE
+from ctaBase import *
+from vtConstant import *
 from datayesClient import DatayesClient
-from ctaObject import CtaBarData
+
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 
 VT_TO_DATAYES_EXCHANGE = {}
@@ -15,13 +22,7 @@ VT_TO_DATAYES_EXCHANGE[EXCHANGE_CFFEX] = 'CCFX'     # 中金所
 VT_TO_DATAYES_EXCHANGE[EXCHANGE_SHFE] = 'XSGE'      # 上期所 
 VT_TO_DATAYES_EXCHANGE[EXCHANGE_CZCE] = 'XZCE'       # 郑商所
 VT_TO_DATAYES_EXCHANGE[EXCHANGE_DCE] = 'XDCE'       # 大商所
-
 DATAYES_TO_VT_EXCHANGE = {v:k for k,v in VT_TO_DATAYES_EXCHANGE.items()}
-
-# 数据库名称
-DAILY_DB_NAME = 'VtTrader_Daily_Db'
-MINUTE_DB_NAME = 'VtTrader_1Min_Db'
-SETTING_DB_NAME = 'VtTrader_Setting_Db'
 
 
 ########################################################################

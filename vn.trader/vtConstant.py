@@ -39,6 +39,7 @@ PRODUCT_FOREX = u'外汇'
 PRODUCT_UNKNOWN = u'未知'
 PRODUCT_SPOT = u'现货'
 PRODUCT_DEFER = u'延期'
+PRODUCT_NONE = ''
 
 # 价格类型常量
 PRICETYPE_LIMITPRICE = u'限价'
@@ -69,3 +70,4 @@ EXCHANGE_IDEALPRO = 'IDEALPRO' # IB外汇ECN
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币
 CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
+CURRENCY_NONE = ''              # 空货币

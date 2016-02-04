@@ -8,9 +8,9 @@
 在CTA_setting.json中写入具体每个策略对象的类和合约设置。
 '''
 
-from ctaStrategyTemplate import TestStrategy
-from ctaDataRecorder import DataRecorder
+from ctaTemplate import DataRecorder
+from ctaDemo import DoubleEmaDemo
 
-strategyClassDict = {}
-strategyClassDict['TestStrategy'] = TestStrategy
-strategyClassDict['DataRecorder'] = DataRecorder
+STRATEGY_CLASS = {}
+STRATEGY_CLASS['DataRecorder'] = DataRecorder
+STRATEGY_CLASS['DoubleEmaDemo'] = DoubleEmaDemo

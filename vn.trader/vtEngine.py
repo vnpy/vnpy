@@ -8,8 +8,7 @@ from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
 from vtGateway import *
-import uiBasicWidget
-from ctaEngine import CtaEngine
+from ctaAlgo.ctaEngine import CtaEngine
 
 
 ########################################################################

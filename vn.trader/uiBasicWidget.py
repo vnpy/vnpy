@@ -276,7 +276,7 @@ class BasicMonitor(QtGui.QTableWidget):
                 for header in self.headerList:
                     content = safeUnicode(data.__getattribute__(header))
                     cell = d[header]
-                    cell.setContent(content, self.mainEngine)
+                    cell.setContent(content)
                     
                     if self.saveData:            # 如果设置了保存数据对象，则进行对象保存
                         cell.data = data                    
@@ -575,10 +575,11 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO]
     
-    currencyList = [CURRENCY_CNY,
+    currencyList = [CURRENCY_NONE,
+                    CURRENCY_CNY,
                     CURRENCY_USD]
     
-    productClassList = [PRODUCT_UNKNOWN,
+    productClassList = [PRODUCT_NONE,
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
                         PRODUCT_OPTION]

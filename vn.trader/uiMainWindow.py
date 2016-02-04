@@ -3,7 +3,7 @@
 import psutil
 
 from uiBasicWidget import *
-from uiCtaWidget import CtaEngineManager
+from ctaAlgo.uiCtaWidget import CtaEngineManager
 
 
 ########################################################################
