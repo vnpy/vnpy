@@ -7,7 +7,7 @@ if (CMAKE_COMPILER_IS_GNUC OR CMAKE_COMPILER_IS_GNUCXX)
 endif ()
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
 option(USE_64BITS "comiple 64bits" ON)
 if (USE_64BITS)
@@ -16,7 +16,14 @@ if (USE_64BITS)
   #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 endif()
 
-set(CTPAPI_PATH ctpapi)
+if (WIN32)
+    set(CTPAPI_PATH ctpapi)
+elseif (UNIX)
+    message("Under unix: " ${CMAKE_SIZEOF_VOID_P})
+    if (CMAKE_SIZEOF_VOID_P MATCHES "8")
+        set(CTPAPI_PATH ctpapi/x64_linux)
+    endif()
+endif()
 include_directories(${CTPAPI_PATH})
 set(CTPAPI_LIBRARY )
 find_library(CTPAPI_MD_LIBRARY
@@ -47,17 +54,27 @@ if (BUILD_CTP_TD)
 endif()
 
 
-set(PYTHON_INCLUDE_PATH C:/Python27/include)
 set(PYTHON_LIBRARY )
+if (WIN32)
+set(PYTHON_INCLUDE_PATH C:/Python27/include)
 find_library(PYTHON_LIBRARY
   NAMES python27
   PATHS C:/Python27/libs)
 include_directories(${PYTHON_INCLUDE_PATH})
+else()
+set(PYTHON_INCLUDE_PATH /usr/include/python2.7/)
+find_library(PYTHON_LIBRARY
+  NAMES python2.7
+  PATHS /usr/lib/x86_64-linux-gnu)
+include_directories(${PYTHON_INCLUDE_PATH})
+endif()
 
 # 链接boost库，anaconda
-set(Boost_USE_STATIC_LIBS        ON)    #链接boost静态库
+if (WIN32)
+    set(Boost_USE_STATIC_LIBS        ON)    #链接boost静态库
+endif()
 set(Boost_USE_MULTITHREADED      ON)
-find_package(Boost 1.57.0 COMPONENTS python thread date_time system chrono REQUIRED) # 如果boost库没有完全编译，需要将编译的库明确地指出，否者message(${Boost_LIBRARIES})会出错
+find_package(Boost 1.55.0 COMPONENTS python thread date_time system chrono REQUIRED) # 如果boost库没有完全编译，需要将编译的库明确地指出，否者message(${Boost_LIBRARIES})会出错
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
