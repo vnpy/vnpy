@@ -1,7 +1,6 @@
 // vnctptd.cpp : 定义 DLL 应用程序的导出函数。
 //
 
-#include "stdafx.h"
 #include "vnctptd.h"
 
 
@@ -47,7 +46,11 @@ void getChar(dict d, string key, char *value)
 			const char *buffer = s.c_str();
 			//对字符串指针赋值必须使用strcpy_s, vs2013使用strcpy编译通不过
 			//+1应该是因为C++字符串的结尾符号？不是特别确定，不加这个1会出错
+#ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
+#elif __GNUC__
+			strncpy(value, buffer, strlen(buffer) + 1);
+#endif
 		}
 	}
 }
@@ -3888,7 +3891,9 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	data["Position"] = task_data.Position;
 	data["FrozenCommission"] = task_data.FrozenCommission;
 	data["CombShortFrozen"] = task_data.CombShortFrozen;
+#ifdef WIN32
 	data["OptionValue"] = task_data.OptionValue;
+#endif
 	data["CloseProfitByDate"] = task_data.CloseProfitByDate;
 	data["SettlementPrice"] = task_data.SettlementPrice;
 	data["LongFrozenAmount"] = task_data.LongFrozenAmount;
@@ -3925,7 +3930,10 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["AccountID"] = task_data.AccountID;
 	data["Available"] = task_data.Available;
 	data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
+#ifdef WIN32
+	data["OptionValue"] = task_data.OptionValue;
 	data["OptionCloseProfit"] = task_data.OptionCloseProfit;
+#endif
 	data["PreCredit"] = task_data.PreCredit;
 	data["PreMortgage"] = task_data.PreMortgage;
 	data["InterestBase"] = task_data.InterestBase;
@@ -3941,7 +3949,6 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["BrokerID"] = task_data.BrokerID;
 	data["FrozenCash"] = task_data.FrozenCash;
 	data["Withdraw"] = task_data.Withdraw;
-	data["OptionValue"] = task_data.OptionValue;
 	data["Balance"] = task_data.Balance;
 	data["SpecProductMargin"] = task_data.SpecProductMargin;
 	data["SpecProductPositionProfitByAlg"] = task_data.SpecProductPositionProfitByAlg;
