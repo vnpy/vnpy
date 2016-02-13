@@ -19,6 +19,16 @@
 * [Anaconda1.9.2](http://repo.continuum.io/archive/index.html): 量化相关包的Python发行版
 * 编译工具：windows下选择visual studio 2013；linux下使用g++。
 
+Linux: (Debian jessie)
+* apt-get install build-essential
+* apt-get install libboost-all-dev
+* apt-get install python-dev
+* apt-get install cmake
+* 下载ctp api tar包，比如v6.3.5_20150803_tradeapi_linux64.tar，重命名ctp api so文件名：
+** thostmduserapi.so --> libthostmduserapi.so
+** thosttraderapi.so --> libthosttraderapi.so
+
+
 # 编译过程
 -------------
 
@@ -28,3 +38,6 @@
 * 点击generate。如果没有错误则配置成功
 * 进入build目录，双击vn_ctp_api.sln打开解决方案
 * 点击编译按钮,建议编译release库
+
+Linux: (Debian jessie)
+* 当前目录运行build.sh，完成编译
