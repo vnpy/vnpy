@@ -10,7 +10,7 @@ from vtGateway import *
 
 BASIC_FONT = QtGui.QFont(u'微软雅黑', 12)
 
-
+# test
 ########################################################################
 class BasicCell(QtGui.QTableWidgetItem):
     """基础的单元格"""
