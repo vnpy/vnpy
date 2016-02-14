@@ -78,3 +78,7 @@ vn.trader/ctaStrategy02.py
 *.pyd
 vn.trader/vnctpmd.pyd_old
 *.pyd_old
+vn.trader/ctaStrategy06.py
+vn.trader/ctaStrategy03.py
+vn.trader/ctaStrategy05.py
+vn.trader/ctaStrategy04.py
