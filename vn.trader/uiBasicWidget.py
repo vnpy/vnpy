@@ -613,7 +613,9 @@ class TradingWidget(QtGui.QFrame):
         labelDirection = QtGui.QLabel(u'方向类型')
         labelOffset = QtGui.QLabel(u'开平')
         labelPrice = QtGui.QLabel(u'价格')
+        self.checkFixed = QtGui.QCheckBox(u'固定')  # 价格固定选择框
         labelVolume = QtGui.QLabel(u'数量')
+        self.checkVolumeFixed = QtGui.QCheckBox(u'锁定')  # 锁定Volume为0
         labelPriceType = QtGui.QLabel(u'价格类型')
         labelExchange = QtGui.QLabel(u'交易所') 
         labelCurrency = QtGui.QLabel(u'货币')
@@ -666,17 +668,19 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(labelProductClass, 9, 0)   
         gridleft.addWidget(labelGateway, 10, 0)
         
-        gridleft.addWidget(self.lineSymbol, 0, 1)
-        gridleft.addWidget(self.lineName, 1, 1)
-        gridleft.addWidget(self.comboDirection, 2, 1)
-        gridleft.addWidget(self.comboOffset, 3, 1)
+        gridleft.addWidget(self.lineSymbol, 0, 1, 1, -1)
+        gridleft.addWidget(self.lineName, 1, 1, 1, -1)
+        gridleft.addWidget(self.comboDirection, 2, 1, 1, -1)
+        gridleft.addWidget(self.comboOffset, 3, 1, 1, -1)
         gridleft.addWidget(self.spinPrice, 4, 1)
+        gridleft.addWidget(self.checkFixed, 4, 2)
         gridleft.addWidget(self.spinVolume, 5, 1)
-        gridleft.addWidget(self.comboPriceType, 6, 1)	
-        gridleft.addWidget(self.comboExchange, 7, 1)
-        gridleft.addWidget(self.comboCurrency, 8, 1)	
-        gridleft.addWidget(self.comboProductClass, 9, 1) 
-        gridleft.addWidget(self.comboGateway, 10, 1)
+        gridleft.addWidget(self.checkVolumeFixed, 5, 2)
+        gridleft.addWidget(self.comboPriceType, 6, 1, 1, -1)
+        gridleft.addWidget(self.comboExchange, 7, 1, 1, -1)
+        gridleft.addWidget(self.comboCurrency, 8, 1, 1, -1)
+        gridleft.addWidget(self.comboProductClass, 9, 1, 1, -1)
+        gridleft.addWidget(self.comboGateway, 10, 1, 1, -1)
 
         # 右边部分
         labelBid1 = QtGui.QLabel(u'买一')
