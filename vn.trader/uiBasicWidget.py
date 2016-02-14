@@ -8,7 +8,7 @@ from eventEngine import *
 from vtFunction import *
 from vtGateway import *
 
-BASIC_FONT = QtGui.QFont(u'微软雅黑', 10)
+BASIC_FONT = QtGui.QFont(u'微软雅黑', 12)
 
 ########################################################################
 class BasicCell(QtGui.QTableWidgetItem):
@@ -603,7 +603,7 @@ class TradingWidget(QtGui.QFrame):
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(u'交易')
-        self.setMaximumWidth(350)
+        self.setMaximumWidth(400)
         self.setFrameShape(self.Box)    # 设置边框
         self.setLineWidth(1)           
 
@@ -613,7 +613,6 @@ class TradingWidget(QtGui.QFrame):
         labelDirection = QtGui.QLabel(u'方向类型')
         labelOffset = QtGui.QLabel(u'开平')
         labelPrice = QtGui.QLabel(u'价格')
-        self.checkFixed = QtGui.QCheckBox(u'固定')  # 价格固定选择框
         labelVolume = QtGui.QLabel(u'数量')
         labelPriceType = QtGui.QLabel(u'价格类型')
         labelExchange = QtGui.QLabel(u'交易所') 
@@ -624,25 +623,11 @@ class TradingWidget(QtGui.QFrame):
         self.lineSymbol = QtGui.QLineEdit()
         self.lineName = QtGui.QLineEdit()
 
-        # self.comboDirection = QtGui.QComboBox()
-        # self.comboDirection.addItems(self.directionList)
-        self.groupDirection = QtGui.QButtonGroup()
-        self.longDirectionButton = QtGui.QRadioButton(self.directionList[0])
-        self.shortDirectionButton = QtGui.QRadioButton(self.directionList[1])
-        self.groupDirection.addButton(self.longDirectionButton, 0)
-        self.groupDirection.addButton(self.shortDirectionButton, 1)
+        self.comboDirection = QtGui.QComboBox()
+        self.comboDirection.addItems(self.directionList)
 
-        # self.comboOffset = QtGui.QComboBox()
-        # self.comboOffset.addItems(self.offsetList)
-        self.groupOffset = QtGui.QButtonGroup()
-        self.openOffsetButton = QtGui.QRadioButton(self.offsetList[0])
-        self.closeOffsetButton = QtGui.QRadioButton(self.offsetList[1])
-        self.closeYesterdayOffsetButton = QtGui.QRadioButton(self.offsetList[2])
-        self.closeTodayOffsetButton = QtGui.QRadioButton(self.offsetList[3])
-        self.groupOffset.addButton(self.openOffsetButton, 0)
-        self.groupOffset.addButton(self.closeOffsetButton, 1)
-        self.groupOffset.addButton(self.closeYesterdayOffsetButton, 2)
-        self.groupOffset.addButton(self.closeTodayOffsetButton, 3)
+        self.comboOffset = QtGui.QComboBox()
+        self.comboOffset.addItems(self.offsetList)
 
         self.spinPrice = QtGui.QDoubleSpinBox()
         self.spinPrice.setDecimals(4)
@@ -653,18 +638,9 @@ class TradingWidget(QtGui.QFrame):
         self.spinVolume.setMinimum(0)
         self.spinVolume.setMaximum(1000000)
 
-        # self.comboPriceType = QtGui.QComboBox()
-        # self.comboPriceType.addItems(self.priceTypeList)
-        self.groupPriceType = QtGui.QButtonGroup()
-        self.limitPriceTypeButton = QtGui.QRadioButton(self.priceTypeList[0])
-        self.marketPriceTypeButton = QtGui.QRadioButton(self.priceTypeList[1])
-        self.fakPriceTypeButton = QtGui.QRadioButton(self.priceTypeList[2])
-        self.fokPriceTypeButton = QtGui.QRadioButton(self.priceTypeList[3])
-        self.groupPriceType.addButton(self.limitPriceTypeButton, 0)
-        self.groupPriceType.addButton(self.marketPriceTypeButton, 1)
-        self.groupPriceType.addButton(self.fakPriceTypeButton, 2)
-        self.groupPriceType.addButton(self.fokPriceTypeButton, 3)
-
+        self.comboPriceType = QtGui.QComboBox()
+        self.comboPriceType.addItems(self.priceTypeList)
+        
         self.comboExchange = QtGui.QComboBox()
         self.comboExchange.addItems(self.exchangeList)      
         
@@ -682,36 +658,25 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(labelName, 1, 0)
         gridleft.addWidget(labelDirection, 2, 0)
         gridleft.addWidget(labelOffset, 3, 0)
-        gridleft.addWidget(labelPrice, 5, 0)
-        gridleft.addWidget(labelVolume, 6, 0)
-        gridleft.addWidget(labelPriceType, 7, 0)
-        gridleft.addWidget(labelExchange, 9, 0)
-        gridleft.addWidget(labelCurrency, 10, 0)
-        gridleft.addWidget(labelProductClass, 11, 0)
-        gridleft.addWidget(labelGateway, 12, 0)
+        gridleft.addWidget(labelPrice, 4, 0)
+        gridleft.addWidget(labelVolume, 5, 0)
+        gridleft.addWidget(labelPriceType, 6, 0)
+        gridleft.addWidget(labelExchange, 7, 0)
+        gridleft.addWidget(labelCurrency, 8, 0)
+        gridleft.addWidget(labelProductClass, 9, 0)   
+        gridleft.addWidget(labelGateway, 10, 0)
         
-        gridleft.addWidget(self.lineSymbol, 0, 1, 1, -1)
-        gridleft.addWidget(self.lineName, 1, 1, 1, -1)
-        # gridleft.addWidget(self.comboDirection, 2, 1)
-        gridleft.addWidget(self.longDirectionButton, 2, 1)
-        gridleft.addWidget(self.shortDirectionButton, 2, 2)
-        # gridleft.addWidget(self.comboOffset, 3, 1)
-        gridleft.addWidget(self.openOffsetButton, 3, 1)
-        gridleft.addWidget(self.closeOffsetButton, 3, 2)
-        gridleft.addWidget(self.closeYesterdayOffsetButton, 4, 1)
-        gridleft.addWidget(self.closeTodayOffsetButton, 4, 2)
-        gridleft.addWidget(self.spinPrice, 5, 1)
-        gridleft.addWidget(self.checkFixed, 5, 2)
-        gridleft.addWidget(self.spinVolume, 6, 1, 1, -1)
-        # gridleft.addWidget(self.comboPriceType, 6, 1)
-        gridleft.addWidget(self.limitPriceTypeButton, 7, 1)
-        gridleft.addWidget(self.marketPriceTypeButton, 7, 2)
-        gridleft.addWidget(self.fakPriceTypeButton, 8, 1)
-        gridleft.addWidget(self.fokPriceTypeButton, 8, 2)
-        gridleft.addWidget(self.comboExchange, 9, 1, 1, -1)
-        gridleft.addWidget(self.comboCurrency, 10, 1, 1, -1)
-        gridleft.addWidget(self.comboProductClass, 11, 1, 1, -1)
-        gridleft.addWidget(self.comboGateway, 12, 1, 1, -1)
+        gridleft.addWidget(self.lineSymbol, 0, 1)
+        gridleft.addWidget(self.lineName, 1, 1)
+        gridleft.addWidget(self.comboDirection, 2, 1)
+        gridleft.addWidget(self.comboOffset, 3, 1)
+        gridleft.addWidget(self.spinPrice, 4, 1)
+        gridleft.addWidget(self.spinVolume, 5, 1)
+        gridleft.addWidget(self.comboPriceType, 6, 1)	
+        gridleft.addWidget(self.comboExchange, 7, 1)
+        gridleft.addWidget(self.comboCurrency, 8, 1)	
+        gridleft.addWidget(self.comboProductClass, 9, 1) 
+        gridleft.addWidget(self.comboGateway, 10, 1)
 
         # 右边部分
         labelBid1 = QtGui.QLabel(u'买一')
