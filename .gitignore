@@ -52,9 +52,6 @@ vn.lts/build/*
 >>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
 TT.txt
 # CTP账户文件
-vn.trader/ctpGateway/CTP_connect@Real/*
+vn.trader/ctpGateway/CTP_connect.json
 vn.trader/ctpGateway/CTP_connect@sim/*
-# 当前CTP账户文件
-vn.trader/ctpGateway/CTP_connect.json
-vn.trader/ctpGateway/CTP_connect.json
-vn.trader/ctpGateway/CTP_connect.json
+vn.trader/ctpGateway/CTP_connect@Real/*
