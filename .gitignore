@@ -51,3 +51,5 @@ vn.lts/build/*
 .idea
 >>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
 TT.txt
+vn.trader/ctpGateway/CTP_connect@Real/*
+vn.trader/ctpGateway/CTP_connect@sim/*
