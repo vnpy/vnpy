@@ -69,13 +69,13 @@ class MainEngine(object):
         except Exception, e:
             print e  
             
-        try:
-            from ksgoldGateway.ksgoldGateway import KsgoldGateway
-            self.addGateway(KsgoldGateway, 'KSGOLD')
-            self.gatewayDict['KSGOLD'].setQryEnabled(True)
-        except Exception, e:
-            print e
-            
+        # try:
+        #     from ksgoldGateway.ksgoldGateway import KsgoldGateway
+        #     self.addGateway(KsgoldGateway, 'KSGOLD')
+        #     self.gatewayDict['KSGOLD'].setQryEnabled(True)
+        # except Exception, e:
+        #     print e
+        #
         # try:
         #     from windGateway.windGateway import WindGateway
         #     self.addGateway(WindGateway, 'Wind')

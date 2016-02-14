@@ -82,8 +82,8 @@ class MainWindow(QtGui.QMainWindow):
         connectFemasAction = QtGui.QAction(u'连接飞马', self)
         connectFemasAction.triggered.connect(self.connectFemas)        
         
-        connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
-        connectKsgoldAction.triggered.connect(self.connectKsgold)           
+        # connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
+        # connectKsgoldAction.triggered.connect(self.connectKsgold)
         
         # connectWindAction = QtGui.QAction(u'连接Wind', self)
         # connectWindAction.triggered.connect(self.connectWind)
@@ -117,7 +117,7 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectLtsAction)
         sysMenu.addAction(connectFemasAction)
         sysMenu.addAction(connectKsotpAction)
-        sysMenu.addAction(connectKsgoldAction)
+        # sysMenu.addAction(connectKsgoldAction)
         # sysMenu.addAction(connectIbAction)
         sysMenu.addSeparator()
         # sysMenu.addAction(connectWindAction)
@@ -187,10 +187,10 @@ class MainWindow(QtGui.QMainWindow):
         """连接飞马接口"""
         self.mainEngine.connect('FEMAS')        
         
-    #----------------------------------------------------------------------
-    def connectKsgold(self):
-        """连接金仕达黄金接口"""
-        self.mainEngine.connect('KSGOLD')            
+    # #----------------------------------------------------------------------
+    # def connectKsgold(self):
+    #     """连接金仕达黄金接口"""
+    #     self.mainEngine.connect('KSGOLD')
     
     # #----------------------------------------------------------------------
     # def connectWind(self):
@@ -205,7 +205,7 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def test(self):
         """测试按钮用的函数"""
-        api = self.mainEngine.gatewayDict['KSGOLD'].tdApi
+        api = self.mainEngine.gatewayDict['CTP'].tdApi
         api.reqID += 1
         api.reqQryOrder({}, api.reqID)
         #api.reqQryTrade({}, api.reqID)
