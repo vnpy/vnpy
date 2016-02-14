@@ -76,17 +76,17 @@ class MainEngine(object):
         except Exception, e:
             print e
             
-        try:
-            from windGateway.windGateway import WindGateway
-            self.addGateway(WindGateway, 'Wind') 
-        except Exception, e:
-            print e
-        
-        try:
-            from ibGateway.ibGateway import IbGateway
-            self.addGateway(IbGateway, 'IB')
-        except Exception, e:
-            print e
+        # try:
+        #     from windGateway.windGateway import WindGateway
+        #     self.addGateway(WindGateway, 'Wind')
+        # except Exception, e:
+        #     print e
+        #
+        # try:
+        #     from ibGateway.ibGateway import IbGateway
+        #     self.addGateway(IbGateway, 'IB')
+        # except Exception, e:
+        #     print e
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):

@@ -85,11 +85,11 @@ class MainWindow(QtGui.QMainWindow):
         connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
         connectKsgoldAction.triggered.connect(self.connectKsgold)           
         
-        connectWindAction = QtGui.QAction(u'连接Wind', self)
-        connectWindAction.triggered.connect(self.connectWind)
-        
-        connectIbAction = QtGui.QAction(u'连接IB', self)
-        connectIbAction.triggered.connect(self.connectIb) 
+        # connectWindAction = QtGui.QAction(u'连接Wind', self)
+        # connectWindAction.triggered.connect(self.connectWind)
+        #
+        # connectIbAction = QtGui.QAction(u'连接IB', self)
+        # connectIbAction.triggered.connect(self.connectIb)
         
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
@@ -118,9 +118,9 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectFemasAction)
         sysMenu.addAction(connectKsotpAction)
         sysMenu.addAction(connectKsgoldAction)
-        sysMenu.addAction(connectIbAction)    
+        # sysMenu.addAction(connectIbAction)
         sysMenu.addSeparator()
-        sysMenu.addAction(connectWindAction)
+        # sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
         sysMenu.addSeparator()
@@ -192,15 +192,15 @@ class MainWindow(QtGui.QMainWindow):
         """连接金仕达黄金接口"""
         self.mainEngine.connect('KSGOLD')            
     
-    #----------------------------------------------------------------------
-    def connectWind(self):
-        """连接Wind接口"""
-        self.mainEngine.connect('Wind')
-    
-    #----------------------------------------------------------------------
-    def connectIb(self):
-        """连接Ib"""
-        self.mainEngine.connect('IB')
+    # #----------------------------------------------------------------------
+    # def connectWind(self):
+    #     """连接Wind接口"""
+    #     self.mainEngine.connect('Wind')
+    #
+    # #----------------------------------------------------------------------
+    # def connectIb(self):
+    #     """连接Ib"""
+    #     self.mainEngine.connect('IB')
         
     #----------------------------------------------------------------------
     def test(self):
