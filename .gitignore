@@ -46,3 +46,19 @@ vn.ctp/build/*
 vn.lts/build/*
 .idea
 >>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+*.pickle
+vn.strategy/strategydemo/backtestingStrategy02.py
+vn.trader/ctaStrategy02.py
+vn.trader/ctaStrategy04.py
+vn.trader/CTP_Post_connect.json
+vn.trader/ctaStrategy06.py
+vn.data/tk.csv
+tk.csv
+vn.trader/ctaStrategy05.py
+vn.strategy/strategydemo/strategy01.py
+*.pyd_old
+vn.trader/CTP_Test_connect.json
+vn.trader/ctaStrategy03.py
+vn.strategy/strategydemo/strategy02.py
+vn.trader/CTP_Prod_connect.json
+vn.strategy/strategydemo/mysql_connect.json
