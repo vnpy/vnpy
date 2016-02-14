@@ -85,15 +85,15 @@ class MainWindow(QtGui.QMainWindow):
         #connectCtpAction = QtGui.QAction(u'连接CTP', self)
         #connectCtpAction.triggered.connect(self.connectCtp)
 
-        connectLtsAction = QtGui.QAction(u'连接LTS', self)
-        connectLtsAction.triggered.connect(self.connectLts)
+        #connectLtsAction = QtGui.QAction(u'连接LTS', self)
+        #connectLtsAction.triggered.connect(self.connectLts)
         
-        connectWindAction = QtGui.QAction(u'连接Wind', self)
-        connectWindAction.triggered.connect(self.connectWind)
+        #connectWindAction = QtGui.QAction(u'连接Wind', self)
+        #connectWindAction.triggered.connect(self.connectWind)
         
 
-        connectIbAction = QtGui.QAction(u'连接IB', self)
-        connectIbAction.triggered.connect(self.connectIb) 
+        #connectIbAction = QtGui.QAction(u'连接IB', self)
+        #connectIbAction.triggered.connect(self.connectIb)
         
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
@@ -125,10 +125,10 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpTestAction)
         #sysMenu.addAction(connectCtpAction)
 
-        sysMenu.addAction(connectLtsAction)
-        sysMenu.addAction(connectWindAction)
+        #sysMenu.addAction(connectLtsAction)
+        #sysMenu.addAction(connectWindAction)
 
-        sysMenu.addAction(connectIbAction)
+        #sysMenu.addAction(connectIbAction)
 
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)

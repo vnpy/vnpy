@@ -6,6 +6,11 @@ EMPTY_UNICODE = u''
 EMPTY_INT = 0
 EMPTY_FLOAT = 0.0
 
+# k线颜色
+COLOR_RED = u'Red'      # 上升K线
+COLOR_BLUE = u'Blue'    # 下降K线
+COLOR_EQUAL = u'Equal'  # 平K线
+
 # 方向常量
 DIRECTION_NONE = u'无方向'
 DIRECTION_LONG = u'多'

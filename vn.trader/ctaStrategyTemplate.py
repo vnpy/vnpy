@@ -4,6 +4,7 @@ from vtConstant import *
 
 from ctaConstant import *
 
+from datetime import datetime
 
 ########################################################################
 class CtaStrategyTemplate(object):
@@ -26,11 +27,20 @@ class CtaStrategyTemplate(object):
 
         self.vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码 AU1606，SR605
         self.symbol = EMPTY_STRING          # 交易的合约代码（除郑商所外与vtSymbol一致，一般为两位代码+两位年份+两位月份）AU1606，SR1605
+        self.shortSymbol = EMPTY_STRING     # 合约类型代码
         
         self.tickDbName = EMPTY_STRING      # tick数据库名称
         self.barDbName = EMPTY_STRING       # bar数据库名称
         
         self.trading = False                # 控制是否启动交易
+
+        # 委托单状态
+        self.entrust = 0            # 0 表示没有委托，1 表示存在多仓的委托，-1 表示存在空仓的委托
+
+        # 保存委托单编号和相关委托单的字典
+        # key为委托单编号
+        # value为该合约相关的委托单
+        self.uncompletedOrders = {}
 
         #self.init()                         # 初始化策略 Move to inhert strategy
         #if setting:
@@ -72,7 +82,7 @@ class CtaStrategyTemplate(object):
         raise NotImplementedError
     
     # ----------------------------------------------------------------------
-    def buy(self, price, volume, stop=False):
+    def buy(self, price, volume, stop=False,orderTime=datetime.now()):
         """买开"""
         # 如果stop为True，则意味着发本地停止单
         if self.trading:
@@ -81,13 +91,24 @@ class CtaStrategyTemplate(object):
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_BUY, price, volume, self)
             else:
                 self.writeCtaLog(u'Buy买开,Price:{0},Volume:{1}'.format(price, volume))
+
                 orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_BUY, price, volume, self)
+
+                if orderID:
+                    self.entrust = 1                            # 委托状态
+
+                    self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_LONG,
+                                           'OFFSET': OFFSET_OPEN,
+                                           'Volume': volume,
+                                           'Price': price,
+                                           'OrderTime': orderTime
+                                           }
             return orderID
         else:
             return None
     
     # ----------------------------------------------------------------------
-    def sell(self, price, volume, stop=False):
+    def sell(self, price, volume, stop=False, orderTime=datetime.now()):
         """卖平"""
         # 如果stop为True，则意味着发本地停止单
         if self.trading:
@@ -96,13 +117,25 @@ class CtaStrategyTemplate(object):
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_SELL, price, volume, self)
             else:
                 self.writeCtaLog(u'sell卖平,Price:{0},Volume:{1}'.format(price, volume))
-                orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_SELL, price, volume, self)  
+
+                orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_SELL, price, volume, self)
+
+                if orderID:
+                    self.entrust = -1                           # 置当前策略的委托单状态
+                    # 记录委托单
+                    self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
+                                           'OFFSET': OFFSET_CLOSE,
+                                           'Volume': volume,
+                                           'Price': price,
+                                           'OrderTime': orderTime
+                                           }
+
             return orderID
         else:
             return None            
 
     # ----------------------------------------------------------------------
-    def short(self, price, volume, stop=False):
+    def short(self, price, volume, stop=False, orderTime=datetime.now()):
         """卖开"""
         # 如果stop为True，则意味着发本地停止单
         if self.trading:
@@ -111,13 +144,23 @@ class CtaStrategyTemplate(object):
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_SHORT, price, volume, self)
             else:
                 self.writeCtaLog(u'short卖开,Price:{0},Volume:{1}'.format(price, volume))
-                orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_SHORT, price, volume, self)   
+                orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_SHORT, price, volume, self)
+
+                if orderID:
+                    self.entrust = -1                           # 委托状态
+                    self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
+                                           'OFFSET': OFFSET_OPEN,
+                                           'Volume': volume,
+                                           'Price': price,
+                                           'OrderTime':  orderTime
+                                           }
+
             return orderID
         else:
             return None            
  
     # ----------------------------------------------------------------------
-    def cover(self, price, volume, stop=False):
+    def cover(self, price, volume, stop=False,orderTime=datetime.now()):
         """买平"""
         if self.trading:
             # 如果stop为True，则意味着发本地停止单
@@ -125,9 +168,20 @@ class CtaStrategyTemplate(object):
                 self.writeCtaLog(u'本地停止单，cover，买平,Price:{0},Volume:{1}'.format(price, volume))
                 orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, CTAORDER_COVER, price, volume, self)
             else:
-                self.writeCtaLog(u'Short卖开,cover:{0},Volume:{1}'.format(price, volume))
+                self.writeCtaLog(u'Cover买平,Price:{0},Volume:{1}'.format(price, volume))
 
-                orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_COVER, price, volume, self) 
+                orderID = self.ctaEngine.sendOrder(self.vtSymbol, CTAORDER_COVER, price, volume, self)
+
+                if orderID:
+                    self.entrust = -1                           # 置当前策略的委托单状态
+                    # 记录委托单
+                    self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
+                                           'OFFSET': OFFSET_CLOSE,
+                                           'Volume': volume,
+                                           'Price': price,
+                                           'OrderTime': orderTime
+                                           }
+
             return orderID
         else:
             return None        
@@ -179,7 +233,6 @@ class CtaStrategyTemplate(object):
     def writeCtaLog(self, content):
         """记录CTA日志"""
         self.ctaEngine.writeCtaLog(self.name+':'+content)
-    
 
 
 ########################################################################

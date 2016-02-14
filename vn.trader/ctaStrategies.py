@@ -12,8 +12,18 @@
 
 from ctaStrategyTemplate import TestStrategy
 from ctaDataRecorder import DataRecorder
+from ctaStrategy02 import Strategy02
+from ctaStrategy03 import Strategy03
+from ctaStrategy04 import Strategy04
+from ctaStrategy05 import Strategy05
+from ctaStrategy06 import Strategy06
 
 strategyClassDict = {}
 
-strategyClassDict['TestStrategy'] = TestStrategy
-strategyClassDict['DataRecorder'] = DataRecorder
+#strategyClassDict['TestStrategy'] = TestStrategy
+#strategyClassDict['DataRecorder'] = DataRecorder
+strategyClassDict['Strategy02'] = Strategy02
+strategyClassDict['Strategy03'] = Strategy03
+strategyClassDict['Strategy04'] = Strategy04
+strategyClassDict['Strategy05'] = Strategy05
+strategyClassDict['Strategy06'] = Strategy06

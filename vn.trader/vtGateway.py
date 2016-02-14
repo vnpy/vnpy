@@ -2,6 +2,8 @@
 
 import time
 
+from datetime import datetime
+
 from eventEngine import *
 
 from vtConstant import *
@@ -342,7 +344,8 @@ class VtLogData(VtBaseData):
         """Constructor"""
         super(VtLogData, self).__init__()
         
-        self.logTime = time.strftime('%X', time.localtime())    # 日志生成时间
+        #self.logTime = time.strftime('%X:%f', time.localtime())    # 日志生成时间
+        self.logTime = datetime.now().strftime('%X:%f')
         self.logContent = EMPTY_UNICODE                         # 日志信息
 
 

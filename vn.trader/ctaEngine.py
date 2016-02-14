@@ -153,15 +153,20 @@ class CtaEngine(object):
     
     # ----------------------------------------------------------------------
     def cancelStopOrder(self, stopOrderID):
-        """撤销停止单"""
+        """撤销停止单
+        Incense Li modified 20160124：
+        增加返回True 和 False
+        """
         # 1.检查停止单是否存在
         if stopOrderID in self.workingStopOrderDict:
             so = self.workingStopOrderDict[stopOrderID]
             so.status = STOPORDER_CANCELLED                 # STOPORDER_WAITING =》STOPORDER_CANCELLED
             del self.workingStopOrderDict[stopOrderID]      # 删除
             self.writeCtaLog(u'撤销停止单:{0}成功.'.format(stopOrderID))
+            return True
         else:
             self.writeCtaLog(u'撤销停止单:{0}失败，不存在Id.'.format(stopOrderID))
+            return False
             
     # ----------------------------------------------------------------------
     def processStopOrder(self, tick):
@@ -240,6 +245,8 @@ class CtaEngine(object):
 
             # 4.触发策略的委托推送事件方法
             strategy.onOrder(order)
+        else:
+            self.writeCtaLog(u'当前订单不在字典中:OrderId:{0}'.format(order.vtOrderID))
     
     # ----------------------------------------------------------------------
 
