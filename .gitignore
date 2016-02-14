@@ -51,5 +51,6 @@ vn.lts/build/*
 .idea
 >>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
 TT.txt
+# 账户配置文件
 vn.trader/ctpGateway/CTP_connect@Real/*
 vn.trader/ctpGateway/CTP_connect@sim/*
