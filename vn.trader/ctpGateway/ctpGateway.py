@@ -10,6 +10,7 @@ vtSymbol直接使用symbol
 
 import os
 import json
+import time
 
 from vnctpmd import MdApi
 from vnctptd import TdApi
@@ -883,6 +884,7 @@ class CtpTdApi(TdApi):
         
         order.orderID = data['OrderRef']
         order.orderSysID = data['OrderSysID']       # 添加exchange报单编号字段
+        order.orderDate = time.strftime('%Y-%m-%d',time.localtime())       # 添加日期字段
 
         # 方向
         if data['Direction'] == '0':
