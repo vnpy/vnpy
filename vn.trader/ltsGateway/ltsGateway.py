@@ -585,7 +585,8 @@ class LtsTdApi(TdApi):
         order.vtSymbol = '.'.join([order.symbol, order.exchange])
         
         order.orderID = data['OrderRef']
-        
+        order.orderSysID = data['OrderSysID']       # 添加exchange报单编号字段
+
         # 方向
         if data['Direction'] == '0':
             order.direction = DIRECTION_LONG

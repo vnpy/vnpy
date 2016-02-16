@@ -112,7 +112,7 @@ class CtpGateway(VtGateway):
         
         # 初始化并启动查询
         self.initQuery()
-    
+
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
@@ -882,7 +882,8 @@ class CtpTdApi(TdApi):
         order.vtSymbol = order.symbol #'.'.join([order.symbol, order.exchange])
         
         order.orderID = data['OrderRef']
-        
+        order.orderSysID = data['OrderSysID']       # 添加exchange报单编号字段
+
         # 方向
         if data['Direction'] == '0':
             order.direction = DIRECTION_LONG
