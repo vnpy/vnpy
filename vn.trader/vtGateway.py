@@ -236,7 +236,8 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
-   
+        self.tradeDate = EMPTY_STRING           # 成交日期
+
 
 ########################################################################
 class VtOrderData(VtBaseData):
@@ -254,7 +255,9 @@ class VtOrderData(VtBaseData):
         
         self.orderID = EMPTY_STRING             # 订单编号
         self.vtOrderID = EMPTY_STRING           # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
-        
+
+        self.orderSysID = EMPTY_STRING             # 交易所订单编号
+
         # 报单相关
         self.direction = EMPTY_UNICODE          # 报单方向
         self.offset = EMPTY_UNICODE             # 报单开平仓
@@ -262,7 +265,9 @@ class VtOrderData(VtBaseData):
         self.totalVolume = EMPTY_INT            # 报单总数量
         self.tradedVolume = EMPTY_INT           # 报单成交数量
         self.status = EMPTY_UNICODE             # 报单状态
-        
+
+        self.orderDate = EMPTY_STRING           # 发单日期
+
         self.orderTime = EMPTY_STRING           # 发单时间
         self.cancelTime = EMPTY_STRING          # 撤单时间
         

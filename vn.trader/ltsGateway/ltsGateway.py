@@ -660,7 +660,8 @@ class LtsTdApi(TdApi):
         trade.price = float(data['Price'])
         trade.volume = data['Volume']
         trade.tradeTime = data['TradeTime']
-        
+        trade.tradeDate = time.strftime('%Y-%m-%d',time.localtime())
+
         # 推送
         self.gateway.onTrade(trade)
     
