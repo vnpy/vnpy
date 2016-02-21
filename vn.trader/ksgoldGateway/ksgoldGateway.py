@@ -109,8 +109,6 @@ class KsgoldGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        if self.mdConnected:
-            self.mdApi.close()
         if self.tdConnected:
             self.tdApi.close()
         
