@@ -1,28 +1,40 @@
-# vn.py 
-###基于python的开源交易平台开发框架
+# vn.py - 基于python的开源交易平台开发框架
 
 ---
 ### Quick Start
 
 对于大部分用户来说，无需自行编译API接口，可以直接使用vn.trader进行交易和策略开发：
 1. 准备一台Windows 7 64位系统的电脑
+
 2. 安装[Anaconda](http://www.continuum.io/downloads)：下载Python 2.7 32位版本，**注意必须是32位**
+
 3. 安装[MongoDB](https://www.mongodb.org/downloads#production)：下载Windows 64-bit 2008 R2+版本
+
 4. 安装pymongo：在cmd中运行pip install pymongo
+
 5. 参考[这里](http://jingyan.baidu.com/article/6b97984dbeef881ca2b0bf3e.html)，将MongoDB注册为Windows服务并启动
+
 6. 安装[Visual C++  Redistributable Packages for VS2013](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)，中英文随意
+
 6. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
+
 7. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
+
 8. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+
 9. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
 
 对于想研究API封装的用户，可以参考[vnpy.org](vnpy.org)上面的教程一步步操作。
 
 其他作者建议使用的软件工具：
 * [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
+
 * [Robomongo](https://robomongo.org/)：MongoDB的图形化客户端，方便监控和修改数据
+
 * [Sublime Text](http://www.sublimetext.com/)：针对编程的文本编辑器，当然你也可以使用Vim或者Emacs
+
 * [PyQtGraph](http://www.pyqtgraph.org/)：适用于开发实时更新数据的图表，如Tick图、K线图、期权波动率曲线等（Matplotlib渲染开销太大，用于实盘绘图可能拖慢整个程序）
+
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
 ---
