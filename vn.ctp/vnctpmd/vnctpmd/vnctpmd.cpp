@@ -1,7 +1,6 @@
 // vnctpmd.cpp : 定义 DLL 应用程序的导出函数。
 //
 
-#include "stdafx.h"
 #include "vnctpmd.h"
 
 ///-------------------------------------------------------------------------------------
@@ -46,7 +45,11 @@ void getChar(dict d, string key, char *value)
 			const char *buffer = s.c_str();
 			//对字符串指针赋值必须使用strcpy_s, vs2013使用strcpy编译通不过
 			//+1应该是因为C++字符串的结尾符号？不是特别确定，不加这个1会出错
+#ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
+#elif __GNUC__
+			strncpy(value, buffer, strlen(buffer) + 1);
+#endif
 		}
 	}
 };

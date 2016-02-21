@@ -113,20 +113,20 @@ class CtaTemplate(object):
         if self.trading:
             # 如果stop为True，则意味着发本地停止单
             if stop:
-                orderID = self.ctaEngine.sendStopOrder(self.vtSymbol, orderType, price, volume, self)
+                vtOrderID = self.ctaEngine.sendStopOrder(self.vtSymbol, orderType, price, volume, self)
             else:
-                orderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
-            return orderID
+                vtOrderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
+            return vtOrderID
         else:
             return None        
         
     #----------------------------------------------------------------------
-    def cancelOrder(self, orderID):
+    def cancelOrder(self, vtOrderID):
         """撤单"""
-        if STOPORDERPREFIX in orderID:
-            self.ctaEngine.cancelStopOrder(orderID)
+        if STOPORDERPREFIX in vtOrderID:
+            self.ctaEngine.cancelStopOrder(vtOrderID)
         else:
-            self.ctaEngine.cancelOrder(orderID)
+            self.ctaEngine.cancelOrder(vtOrderID)
     
     #----------------------------------------------------------------------
     def insertTick(self, tick):

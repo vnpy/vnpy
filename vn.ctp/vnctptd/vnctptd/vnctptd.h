@@ -7,7 +7,9 @@
 
 
 //ϵͳ
+#ifdef WIN32
 #include "stdafx.h"
+#endif
 #include <string>
 #include <queue>
 
