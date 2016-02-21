@@ -910,10 +910,10 @@ class TradingWidget(QtGui.QFrame):
         # 查询合约
         if exchange:
             vtSymbol = '.'.join([symbol, exchange])
-            contract = self.dataEngine.getContract(vtSymbol)
+            contract = self.mainEngine.getContract(vtSymbol)
         else:
             vtSymbol = symbol
-            contract = self.dataEngine.getContract(symbol)
+            contract = self.mainEngine.getContract(symbol)
         
         if contract:
             gatewayName = contract.gatewayName
