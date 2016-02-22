@@ -1,4 +1,4 @@
-﻿# C++源代码
+# C++源代码
 ipch/
 Release/
 
@@ -58,6 +58,5 @@ vn.trader/ctpGateway/CTP_connect@Real/*
 vn.trader/ltsGateway/LTS_connect.json
 vn.trader/ctpGateway/CTP_connect.json
 vn.trader/ksotpGateway/KSOTP_connect.json
-vn.trader/ContractData.vt
 vn.trader/ContractData.vt
 vn.trader/ContractData.vt
