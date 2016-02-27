@@ -240,7 +240,9 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     for key, value in struct.items():
         if value == 'string':
-            line = '\tgetChar(req, "' + key + '", myreq.' + key + ');\n'
+            line = '\tgetStr(req, "' + key + '", myreq.' + key + ');\n'
+        elif value == 'char':
+            line = '\tgetChar(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'int':
             line = '\tgetInt(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'double':

@@ -11,6 +11,8 @@ OANDA外汇交易接口，基于REST API开发，实现了以下功能：
 
 4. 获取Forex Lab中的日历、订单簿、历史持仓比、价差、交易商持仓、Autochartist
 
+目前该API尚处于测试阶段，如果发现bug或者需要改进的地方请在github上开issue给我。
+
 ### 特点
 相比较于[OANDA官网](http://developer.oanda.com/rest-live/sample-code/)上贴出的一些Python API（如pyoanda、oanda-trading-environment等），vn.oanda的一些不同：
 

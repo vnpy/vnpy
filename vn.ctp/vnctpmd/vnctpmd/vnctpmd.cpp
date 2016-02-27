@@ -33,7 +33,7 @@ void getDouble(dict d, string key, double *value)
 	}
 };
 
-void getChar(dict d, string key, char *value)
+void getStr(dict d, string key, char *value)
 {
 	if (d.has_key(key))
 	{
@@ -54,6 +54,20 @@ void getChar(dict d, string key, char *value)
 	}
 };
 
+void getChar(dict d, string key, char *value)
+{
+	if (d.has_key(key))
+	{
+		object o = d[key];
+		extract<string> x(o);
+		if (x.check())
+		{
+			string s = x();
+			const char *buffer = s.c_str();
+			*value = *buffer;
+		}
+	}
+};
 
 
 ///-------------------------------------------------------------------------------------
@@ -61,7 +75,8 @@ void getChar(dict d, string key, char *value)
 ///-------------------------------------------------------------------------------------
 
 void MdApi::OnFrontConnected()
-{Task task = Task();
+{
+	Task task = Task();
 	task.task_name = ONFRONTCONNECTED;
 	this->task_queue.push(task);
 };
@@ -86,7 +101,18 @@ void MdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtd
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGIN;
-	task.task_data = *pRspUserLogin;
+
+	if (pRspUserLogin)
+	{
+		task.task_data = *pRspUserLogin;
+	}
+	else
+	{
+		CThostFtdcRspUserLoginField empty_data = CThostFtdcRspUserLoginField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -106,7 +132,18 @@ void MdApi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRs
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGOUT;
-	task.task_data = *pUserLogout;
+
+	if (pUserLogout)
+	{
+		task.task_data = *pUserLogout;
+	}
+	else
+	{
+		CThostFtdcUserLogoutField empty_data = CThostFtdcUserLogoutField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -126,6 +163,7 @@ void MdApi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bI
 {
 	Task task = Task();
 	task.task_name = ONRSPERROR;
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -145,7 +183,18 @@ void MdApi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstr
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBMARKETDATA;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -165,7 +214,18 @@ void MdApi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificIns
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBMARKETDATA;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -185,7 +245,18 @@ void MdApi::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInst
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBFORQUOTERSP;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -205,7 +276,18 @@ void MdApi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificIn
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBFORQUOTERSP;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
@@ -225,7 +307,17 @@ void MdApi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDat
 {
 	Task task = Task();
 	task.task_name = ONRTNDEPTHMARKETDATA;
-	task.task_data = *pDepthMarketData;
+
+	if (pDepthMarketData)
+	{
+		task.task_data = *pDepthMarketData;
+	}
+	else
+	{
+		CThostFtdcDepthMarketDataField empty_data = CThostFtdcDepthMarketDataField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -233,7 +325,17 @@ void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 {
 	Task task = Task();
 	task.task_name = ONRTNFORQUOTERSP;
-	task.task_data = *pForQuoteRsp;
+
+	if (pForQuoteRsp)
+	{
+		task.task_data = *pForQuoteRsp;
+	}
+	else
+	{
+		CThostFtdcForQuoteRspField empty_data = CThostFtdcForQuoteRspField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -251,77 +353,77 @@ void MdApi::processTask()
 
 		switch (task.task_name)
 		{
-			case ONFRONTCONNECTED:
-			{
-				this->processFrontConnected(task);
-				break;
-			}
+		case ONFRONTCONNECTED:
+		{
+			this->processFrontConnected(task);
+			break;
+		}
 
-			case ONFRONTDISCONNECTED:
-			{
-				this->processFrontDisconnected(task);
-				break;
-			}
+		case ONFRONTDISCONNECTED:
+		{
+			this->processFrontDisconnected(task);
+			break;
+		}
 
-			case ONHEARTBEATWARNING:
-			{
-				this->processHeartBeatWarning(task);
-				break;
-			}
+		case ONHEARTBEATWARNING:
+		{
+			this->processHeartBeatWarning(task);
+			break;
+		}
 
-			case ONRSPUSERLOGIN:
-			{
-				this->processRspUserLogin(task);
-				break;
-			}
+		case ONRSPUSERLOGIN:
+		{
+			this->processRspUserLogin(task);
+			break;
+		}
 
-			case ONRSPUSERLOGOUT:
-			{
-				this->processRspUserLogout(task);
-				break;
-			}
+		case ONRSPUSERLOGOUT:
+		{
+			this->processRspUserLogout(task);
+			break;
+		}
 
-			case ONRSPERROR:
-			{
-				this->processRspError(task);
-				break;
-			}
+		case ONRSPERROR:
+		{
+			this->processRspError(task);
+			break;
+		}
 
-			case ONRSPSUBMARKETDATA:
-			{
-				this->processRspSubMarketData(task);
-				break;
-			}
+		case ONRSPSUBMARKETDATA:
+		{
+			this->processRspSubMarketData(task);
+			break;
+		}
 
-			case ONRSPUNSUBMARKETDATA:
-			{
-				this->processRspUnSubMarketData(task);
-				break;
-			}
+		case ONRSPUNSUBMARKETDATA:
+		{
+			this->processRspUnSubMarketData(task);
+			break;
+		}
 
-			case ONRSPSUBFORQUOTERSP:
-			{
-				this->processRspSubForQuoteRsp(task);
-				break;
-			}
+		case ONRSPSUBFORQUOTERSP:
+		{
+			this->processRspSubForQuoteRsp(task);
+			break;
+		}
 
-			case ONRSPUNSUBFORQUOTERSP:
-			{
-				this->processRspUnSubForQuoteRsp(task);
-				break;
-			}
+		case ONRSPUNSUBFORQUOTERSP:
+		{
+			this->processRspUnSubForQuoteRsp(task);
+			break;
+		}
 
-			case ONRTNDEPTHMARKETDATA:
-			{
-				this->processRtnDepthMarketData(task);
-				break;
-			}
+		case ONRTNDEPTHMARKETDATA:
+		{
+			this->processRtnDepthMarketData(task);
+			break;
+		}
 
-			case ONRTNFORQUOTERSP:
-			{
-				this->processRtnForQuoteRsp(task);
-				break;
-			}
+		case ONRTNFORQUOTERSP:
+		{
+			this->processRtnForQuoteRsp(task);
+			break;
+		}
 		};
 	}
 };
@@ -517,10 +619,11 @@ void MdApi::processRtnForQuoteRsp(Task task)
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
-	data["TradingDay"] = task_data.TradingDay;
-	data["ForQuoteTime"] = task_data.ForQuoteTime;
-	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["ActionDay"] = task_data.ActionDay;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
+	data["ForQuoteTime"] = task_data.ForQuoteTime;
 
 	this->onRtnForQuoteRsp(data);
 };
@@ -609,16 +712,16 @@ int MdApi::reqUserLogin(dict req, int nRequestID)
 {
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "MacAddress", myreq.MacAddress);
-	getChar(req, "UserProductInfo", myreq.UserProductInfo);
-	getChar(req, "UserID", myreq.UserID);
-	getChar(req, "TradingDay", myreq.TradingDay);
-	getChar(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "ClientIPAddress", myreq.ClientIPAddress);
-	getChar(req, "OneTimePassword", myreq.OneTimePassword);
-	getChar(req, "ProtocolInfo", myreq.ProtocolInfo);
-	getChar(req, "Password", myreq.Password);
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
+	getStr(req, "OneTimePassword", myreq.OneTimePassword);
+	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
+	getStr(req, "Password", myreq.Password);
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);
 	return i;
 };
@@ -627,8 +730,8 @@ int MdApi::reqUserLogout(dict req, int nRequestID)
 {
 	CThostFtdcUserLogoutField myreq = CThostFtdcUserLogoutField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "UserID", myreq.UserID);
-	getChar(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqUserLogout(&myreq, nRequestID);
 	return i;
 };

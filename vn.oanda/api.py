@@ -590,7 +590,6 @@ class OandaApi(object):
                'stream': True}
         r, error = self.processRequest(req)
         if r:
-            
             for line in r.iter_lines():
                 if line:
                     try:

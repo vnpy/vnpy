@@ -14,7 +14,8 @@ def main():
     fpy.write('structDict = {}\n')
     fpy.write('\n')
 
-    for line in fcpp:
+    for no, line in enumerate(fcpp):
+        
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]
@@ -24,7 +25,7 @@ def main():
             py_line = '#' + line[4:]
 
         # 结构体申明
-        elif 'struct' in line:
+        elif 'struct ' in line:
             content = line.split(' ')
             name = content[1].replace('\n','')
             py_line = '%s = {}\n' % name

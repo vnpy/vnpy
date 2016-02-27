@@ -189,10 +189,11 @@ void MdApi::processRtnForQuoteRsp(Task task)
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
-	data["TradingDay"] = task_data.TradingDay;
-	data["ForQuoteTime"] = task_data.ForQuoteTime;
-	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["ActionDay"] = task_data.ActionDay;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
+	data["ForQuoteTime"] = task_data.ForQuoteTime;
 
 	this->onRtnForQuoteRsp(data);
 };
