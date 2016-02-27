@@ -20,13 +20,13 @@ CTP柜台API接口的Python封装，基于pyscript目录下的脚本自动分析头文件生成封装代码模
 
 * [Boost1.57.0](http://sourceforge.net/projects/boost/files/boost/1.57.0/)库：编译的方法可以参考[Boost Getting Started](http://www.boost.org/doc/libs/1_58_0/more/getting_started/)右下角的链接
 
-** 设置环境变量：eg: BOOST_ROOT = C:\boost_1_57_0
+* 设置环境变量：eg: BOOST_ROOT = C:\boost_1_57_0
 
-** 编译32位库还是64位库任意选择
+* 编译32位库还是64位库任意选择
 
-** 需要编译boost python, thread, system, chrono, date_time共5个库：若编译全部库则会浪费大量时间和硬盘空间。
+* 需要编译boost python, thread, system, chrono, date_time共5个库：若编译全部库则会浪费大量时间和硬盘空间。
 
-** boost python的动态库64bits可能编译不成功，需加选项address-model=64。或者编译静态库
+* boost python的动态库64bits可能编译不成功，需加选项address-model=64。或者编译静态库
 
 * [Anaconda1.9.2](http://repo.continuum.io/archive/index.html): 量化相关包的Python发行版
 
@@ -44,9 +44,9 @@ Linux: (Debian jessie)
 
 * 下载ctp api tar包，比如v6.3.5_20150803_tradeapi_linux64.tar，重命名ctp api so文件名：
 
-** thostmduserapi.so --> libthostmduserapi.so
+* thostmduserapi.so --> libthostmduserapi.so
 
-** thosttraderapi.so --> libthosttraderapi.so
+* thosttraderapi.so --> libthosttraderapi.so
 
 
 **编译过程**
@@ -63,13 +63,18 @@ Linux: (Debian jessie)
 
 * 点击编译按钮,建议编译release库
 
-Linux: (Debian jessie)
+**Linux: (Debian jessie)**
+
 * 当前目录运行build.sh，完成编译
 
 
 ## API版本
 日期：2015-08-04
+
 名称：fsopt_traderapi
+
 描述：个股期权API  
+
 链接：[http://www.sfit.com.cn/5_2_DocumentDown.htm](http://www.sfit.com.cn/5_2_DocumentDown.htm)
+
 说明：ctpapi文件夹下的是Windows的32位版本，其下文件夹x64_linux中的是Linux的64位版本
