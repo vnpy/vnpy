@@ -83,6 +83,10 @@ public:
 	///modify for udp marketdata
 	static CThostFtdcMdApi *CreateFtdcMdApi(const char *pszFlowPath = "", const bool bIsUsingUdp=false, const bool bIsMulticast=false);
 	
+	///获取API的版本信息
+	///@retrun 获取到的版本号
+	static const char *GetApiVersion();
+	
 	///删除接口对象本身
 	///@remark 不再使用本接口对象时,调用该函数删除接口对象
 	virtual void Release() = 0;
