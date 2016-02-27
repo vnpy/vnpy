@@ -36,5 +36,7 @@ OANDA外汇交易接口，基于REST API开发，实现了以下功能：
 6. 将test.py中想要测试的功能取消注释，开始使用吧！
 
 ### API版本
-OANDA REST API
+日期：2016-02-27
+
+链接：[http://developer.oanda.com/rest-live/introduction/](http://developer.oanda.com/rest-live/introduction/)
 
