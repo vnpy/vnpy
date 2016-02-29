@@ -124,6 +124,18 @@ case ONRSPQUOTEACTION:
 	break;
 }
 
+case ONRSPLOCKINSERT:
+{
+	this->processRspLockInsert(task);
+	break;
+}
+
+case ONRSPCOMBACTIONINSERT:
+{
+	this->processRspCombActionInsert(task);
+	break;
+}
+
 case ONRSPQRYORDER:
 {
 	this->processRspQryOrder(task);
@@ -274,6 +286,18 @@ case ONRSPQRYSECAGENTACIDMAP:
 	break;
 }
 
+case ONRSPQRYPRODUCTEXCHRATE:
+{
+	this->processRspQryProductExchRate(task);
+	break;
+}
+
+case ONRSPQRYPRODUCTGROUP:
+{
+	this->processRspQryProductGroup(task);
+	break;
+}
+
 case ONRSPQRYOPTIONINSTRTRADECOST:
 {
 	this->processRspQryOptionInstrTradeCost(task);
@@ -301,6 +325,42 @@ case ONRSPQRYFORQUOTE:
 case ONRSPQRYQUOTE:
 {
 	this->processRspQryQuote(task);
+	break;
+}
+
+case ONRSPQRYLOCK:
+{
+	this->processRspQryLock(task);
+	break;
+}
+
+case ONRSPQRYLOCKPOSITION:
+{
+	this->processRspQryLockPosition(task);
+	break;
+}
+
+case ONRSPQRYINVESTORLEVEL:
+{
+	this->processRspQryInvestorLevel(task);
+	break;
+}
+
+case ONRSPQRYEXECFREEZE:
+{
+	this->processRspQryExecFreeze(task);
+	break;
+}
+
+case ONRSPQRYCOMBINSTRUMENTGUARD:
+{
+	this->processRspQryCombInstrumentGuard(task);
+	break;
+}
+
+case ONRSPQRYCOMBACTION:
+{
+	this->processRspQryCombAction(task);
 	break;
 }
 
@@ -412,6 +472,36 @@ case ONRTNFORQUOTERSP:
 	break;
 }
 
+case ONRTNCFMMCTRADINGACCOUNTTOKEN:
+{
+	this->processRtnCFMMCTradingAccountToken(task);
+	break;
+}
+
+case ONRTNLOCK:
+{
+	this->processRtnLock(task);
+	break;
+}
+
+case ONERRRTNLOCKINSERT:
+{
+	this->processErrRtnLockInsert(task);
+	break;
+}
+
+case ONRTNCOMBACTION:
+{
+	this->processRtnCombAction(task);
+	break;
+}
+
+case ONERRRTNCOMBACTIONINSERT:
+{
+	this->processErrRtnCombActionInsert(task);
+	break;
+}
+
 case ONRSPQRYCONTRACTBANK:
 {
 	this->processRspQryContractBank(task);
@@ -445,6 +535,12 @@ case ONRSPQRYBROKERTRADINGPARAMS:
 case ONRSPQRYBROKERTRADINGALGOS:
 {
 	this->processRspQryBrokerTradingAlgos(task);
+	break;
+}
+
+case ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN:
+{
+	this->processRspQueryCFMMCTradingAccountToken(task);
 	break;
 }
 

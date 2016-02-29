@@ -1,4 +1,4 @@
-// dllmain.cpp : 定义 DLL 应用程序的入口点。
+// dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
 
 BOOL APIENTRY DllMain( HMODULE hModule,

@@ -5,9 +5,10 @@ __author__ = 'CHENXY'
 # C++和python类型的映射字典
 type_dict = {
     'int': 'int',
-    'char': 'string',
+    'char': 'char',
     'double': 'float',
-    'short': 'int'
+    'short': 'int',
+    'string': 'string'
 }
 
 
@@ -41,6 +42,9 @@ def process_typedef(line):
     """处理类型申明"""
     content = line.split(' ')
     type_ = type_dict[content[1]]
+
+    if type_ == 'char' and '[' in line:
+        type_ = 'string'
 
     keyword = content[2]
     if '[' in keyword:
