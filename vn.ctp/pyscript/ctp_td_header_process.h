@@ -40,6 +40,10 @@ void processRspQuoteInsert(Task task);
 
 void processRspQuoteAction(Task task);
 
+void processRspLockInsert(Task task);
+
+void processRspCombActionInsert(Task task);
+
 void processRspQryOrder(Task task);
 
 void processRspQryTrade(Task task);
@@ -90,6 +94,10 @@ void processRspQryExchangeRate(Task task);
 
 void processRspQrySecAgentACIDMap(Task task);
 
+void processRspQryProductExchRate(Task task);
+
+void processRspQryProductGroup(Task task);
+
 void processRspQryOptionInstrTradeCost(Task task);
 
 void processRspQryOptionInstrCommRate(Task task);
@@ -99,6 +107,18 @@ void processRspQryExecOrder(Task task);
 void processRspQryForQuote(Task task);
 
 void processRspQryQuote(Task task);
+
+void processRspQryLock(Task task);
+
+void processRspQryLockPosition(Task task);
+
+void processRspQryInvestorLevel(Task task);
+
+void processRspQryExecFreeze(Task task);
+
+void processRspQryCombInstrumentGuard(Task task);
+
+void processRspQryCombAction(Task task);
 
 void processRspQryTransferSerial(Task task);
 
@@ -136,6 +156,16 @@ void processErrRtnQuoteAction(Task task);
 
 void processRtnForQuoteRsp(Task task);
 
+void processRtnCFMMCTradingAccountToken(Task task);
+
+void processRtnLock(Task task);
+
+void processErrRtnLockInsert(Task task);
+
+void processRtnCombAction(Task task);
+
+void processErrRtnCombActionInsert(Task task);
+
 void processRspQryContractBank(Task task);
 
 void processRspQryParkedOrder(Task task);
@@ -147,6 +177,8 @@ void processRspQryTradingNotice(Task task);
 void processRspQryBrokerTradingParams(Task task);
 
 void processRspQryBrokerTradingAlgos(Task task);
+
+void processRspQueryCFMMCTradingAccountToken(Task task);
 
 void processRtnFromBankToFutureByBank(Task task);
 

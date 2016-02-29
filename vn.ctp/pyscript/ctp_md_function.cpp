@@ -1,27 +1,27 @@
-ReqUserLogin
+int MdApi::reqUserLogin(dict req, int nRequestID)
 {
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "MacAddress", myreq.MacAddress);
-	getChar(req, "UserProductInfo", myreq.UserProductInfo);
-	getChar(req, "UserID", myreq.UserID);
-	getChar(req, "TradingDay", myreq.TradingDay);
-	getChar(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
-	getChar(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "ClientIPAddress", myreq.ClientIPAddress);
-	getChar(req, "OneTimePassword", myreq.OneTimePassword);
-	getChar(req, "ProtocolInfo", myreq.ProtocolInfo);
-	getChar(req, "Password", myreq.Password);
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
+	getStr(req, "OneTimePassword", myreq.OneTimePassword);
+	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
+	getStr(req, "Password", myreq.Password);
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);
 	return i;
 };
 
-ReqUserLogout
+int MdApi::reqUserLogout(dict req, int nRequestID)
 {
 	CThostFtdcUserLogoutField myreq = CThostFtdcUserLogoutField();
 	memset(&myreq, 0, sizeof(myreq));
-	getChar(req, "UserID", myreq.UserID);
-	getChar(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqUserLogout(&myreq, nRequestID);
 	return i;
 };

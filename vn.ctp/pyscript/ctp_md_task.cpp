@@ -25,14 +25,25 @@ void MdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtd
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGIN;
-	task.task_data = *pRspUserLogin;
+
+	if (pRspUserLogin)
+	{
+		task.task_data = *pRspUserLogin;
+	}
+	else
+	{
+		CThostFtdcRspUserLoginField empty_data = CThostFtdcRspUserLoginField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -45,14 +56,25 @@ void MdApi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRs
 {
 	Task task = Task();
 	task.task_name = ONRSPUSERLOGOUT;
-	task.task_data = *pUserLogout;
+
+	if (pUserLogout)
+	{
+		task.task_data = *pUserLogout;
+	}
+	else
+	{
+		CThostFtdcUserLogoutField empty_data = CThostFtdcUserLogoutField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -65,13 +87,14 @@ void MdApi::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bI
 {
 	Task task = Task();
 	task.task_name = ONRSPERROR;
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -84,14 +107,25 @@ void MdApi::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstr
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBMARKETDATA;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -104,14 +138,25 @@ void MdApi::OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificIns
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBMARKETDATA;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -124,14 +169,25 @@ void MdApi::OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInst
 {
 	Task task = Task();
 	task.task_name = ONRSPSUBFORQUOTERSP;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -144,14 +200,25 @@ void MdApi::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificIn
 {
 	Task task = Task();
 	task.task_name = ONRSPUNSUBFORQUOTERSP;
-	task.task_data = *pSpecificInstrument;
+
+	if (pSpecificInstrument)
+	{
+		task.task_data = *pSpecificInstrument;
+	}
+	else
+	{
+		CThostFtdcSpecificInstrumentField empty_data = CThostFtdcSpecificInstrumentField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
 	if (pRspInfo)
 	{
 		task.task_error = *pRspInfo;
 	}
 	else
 	{
-		CSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
 		memset(&empty_error, 0, sizeof(empty_error));
 		task.task_error = empty_error;
 	}
@@ -164,7 +231,17 @@ void MdApi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketDat
 {
 	Task task = Task();
 	task.task_name = ONRTNDEPTHMARKETDATA;
-	task.task_data = *pDepthMarketData;
+
+	if (pDepthMarketData)
+	{
+		task.task_data = *pDepthMarketData;
+	}
+	else
+	{
+		CThostFtdcDepthMarketDataField empty_data = CThostFtdcDepthMarketDataField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 
@@ -172,7 +249,17 @@ void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 {
 	Task task = Task();
 	task.task_name = ONRTNFORQUOTERSP;
-	task.task_data = *pForQuoteRsp;
+
+	if (pForQuoteRsp)
+	{
+		task.task_data = *pForQuoteRsp;
+	}
+	else
+	{
+		CThostFtdcForQuoteRspField empty_data = CThostFtdcForQuoteRspField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
 	this->task_queue.push(task);
 };
 

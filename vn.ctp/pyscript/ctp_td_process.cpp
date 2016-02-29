@@ -131,6 +131,7 @@ void TdApi::processRspOrderInsert(Task task)
 	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
 	data["StopPrice"] = task_data.StopPrice;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["MinVolume"] = task_data.MinVolume;
 	data["ForceCloseReason"] = task_data.ForceCloseReason;
 	data["BrokerID"] = task_data.BrokerID;
@@ -263,6 +264,7 @@ void TdApi::processRspQueryMaxOrderVolume(Task task)
 	data["Direction"] = task_data.Direction;
 	data["OffsetFlag"] = task_data.OffsetFlag;
 	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BrokerID"] = task_data.BrokerID;
 	data["MaxVolume"] = task_data.MaxVolume;
@@ -334,6 +336,7 @@ void TdApi::processRspExecOrderInsert(Task task)
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
 	data["ExecOrderRef"] = task_data.ExecOrderRef;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["CloseFlag"] = task_data.CloseFlag;
 	data["OffsetFlag"] = task_data.OffsetFlag;
 	data["PosiDirection"] = task_data.PosiDirection;
@@ -387,10 +390,11 @@ void TdApi::processRspForQuoteInsert(Task task)
 	CThostFtdcInputForQuoteField task_data = any_cast<CThostFtdcInputForQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ForQuoteRef"] = task_data.ForQuoteRef;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["UserID"] = task_data.UserID;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BrokerID"] = task_data.BrokerID;
-	data["UserID"] = task_data.UserID;
-	data["ForQuoteRef"] = task_data.ForQuoteRef;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -406,20 +410,24 @@ void TdApi::processRspQuoteInsert(Task task)
 	CThostFtdcInputQuoteField task_data = any_cast<CThostFtdcInputQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["AskHedgeFlag"] = task_data.AskHedgeFlag;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["AskPrice"] = task_data.AskPrice;
 	data["UserID"] = task_data.UserID;
 	data["AskOffsetFlag"] = task_data.AskOffsetFlag;
 	data["BidVolume"] = task_data.BidVolume;
+	data["AskOrderRef"] = task_data.AskOrderRef;
 	data["AskVolume"] = task_data.AskVolume;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BidOffsetFlag"] = task_data.BidOffsetFlag;
 	data["BrokerID"] = task_data.BrokerID;
 	data["RequestID"] = task_data.RequestID;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["BidPrice"] = task_data.BidPrice;
 	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
 	data["QuoteRef"] = task_data.QuoteRef;
+	data["BidOrderRef"] = task_data.BidOrderRef;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -453,6 +461,54 @@ void TdApi::processRspQuoteAction(Task task)
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQuoteAction(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspLockInsert(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputLockField task_data = any_cast<CThostFtdcInputLockField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["UserID"] = task_data.UserID;
+	data["LockRef"] = task_data.LockRef;
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+	data["RequestID"] = task_data.RequestID;
+	data["LockType"] = task_data.LockType;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspLockInsert(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspCombActionInsert(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputCombActionField task_data = any_cast<CThostFtdcInputCombActionField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["Direction"] = task_data.Direction;
+	data["CombActionRef"] = task_data.CombActionRef;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["UserID"] = task_data.UserID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+	data["CombDirection"] = task_data.CombDirection;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspCombActionInsert(data, error, task.task_id, task.task_last);
 };
 
 void TdApi::processRspQryOrder(Task task)
@@ -506,6 +562,7 @@ void TdApi::processRspQryOrder(Task task)
 	data["CancelTime"] = task_data.CancelTime;
 	data["GTDDate"] = task_data.GTDDate;
 	data["OrderLocalID"] = task_data.OrderLocalID;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["SequenceNo"] = task_data.SequenceNo;
@@ -594,8 +651,10 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	data["OpenVolume"] = task_data.OpenVolume;
 	data["CloseVolume"] = task_data.CloseVolume;
 	data["ExchangeMargin"] = task_data.ExchangeMargin;
+	data["YdStrikeFrozen"] = task_data.YdStrikeFrozen;
 	data["InstrumentID"] = task_data.InstrumentID;
 	data["PositionDate"] = task_data.PositionDate;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["CloseProfitByTrade"] = task_data.CloseProfitByTrade;
 	data["PreMargin"] = task_data.PreMargin;
 	data["SettlementID"] = task_data.SettlementID;
@@ -611,7 +670,6 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	data["Position"] = task_data.Position;
 	data["FrozenCommission"] = task_data.FrozenCommission;
 	data["CombShortFrozen"] = task_data.CombShortFrozen;
-	data["OptionValue"] = task_data.OptionValue;
 	data["CloseProfitByDate"] = task_data.CloseProfitByDate;
 	data["SettlementPrice"] = task_data.SettlementPrice;
 	data["LongFrozenAmount"] = task_data.LongFrozenAmount;
@@ -648,7 +706,6 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["AccountID"] = task_data.AccountID;
 	data["Available"] = task_data.Available;
 	data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
-	data["OptionCloseProfit"] = task_data.OptionCloseProfit;
 	data["PreCredit"] = task_data.PreCredit;
 	data["PreMortgage"] = task_data.PreMortgage;
 	data["InterestBase"] = task_data.InterestBase;
@@ -657,6 +714,7 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["PreFundMortgageIn"] = task_data.PreFundMortgageIn;
 	data["PreMargin"] = task_data.PreMargin;
 	data["SettlementID"] = task_data.SettlementID;
+	data["BizType"] = task_data.BizType;
 	data["FundMortgageIn"] = task_data.FundMortgageIn;
 	data["DeliveryMargin"] = task_data.DeliveryMargin;
 	data["SpecProductFrozenMargin"] = task_data.SpecProductFrozenMargin;
@@ -664,7 +722,6 @@ void TdApi::processRspQryTradingAccount(Task task)
 	data["BrokerID"] = task_data.BrokerID;
 	data["FrozenCash"] = task_data.FrozenCash;
 	data["Withdraw"] = task_data.Withdraw;
-	data["OptionValue"] = task_data.OptionValue;
 	data["Balance"] = task_data.Balance;
 	data["SpecProductMargin"] = task_data.SpecProductMargin;
 	data["SpecProductPositionProfitByAlg"] = task_data.SpecProductPositionProfitByAlg;
@@ -723,6 +780,8 @@ void TdApi::processRspQryTradingCode(Task task)
 	CThostFtdcTradingCodeField task_data = any_cast<CThostFtdcTradingCodeField>(task.task_data);
 	dict data;
 	data["ExchangeID"] = task_data.ExchangeID;
+	data["BranchID"] = task_data.BranchID;
+	data["BizType"] = task_data.BizType;
 	data["ClientID"] = task_data.ClientID;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BrokerID"] = task_data.BrokerID;
@@ -769,7 +828,9 @@ void TdApi::processRspQryInstrumentCommissionRate(Task task)
 	data["InstrumentID"] = task_data.InstrumentID;
 	data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
 	data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
+	data["BizType"] = task_data.BizType;
 	data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BrokerID"] = task_data.BrokerID;
 	data["InvestorRange"] = task_data.InvestorRange;
@@ -846,6 +907,7 @@ void TdApi::processRspQryInstrument(Task task)
 	data["UnderlyingMultiple"] = task_data.UnderlyingMultiple;
 	data["PositionType"] = task_data.PositionType;
 	data["ProductClass"] = task_data.ProductClass;
+	data["MinSellVolume"] = task_data.MinSellVolume;
 	data["InstrumentName"] = task_data.InstrumentName;
 	data["ShortMarginRatio"] = task_data.ShortMarginRatio;
 	data["VolumeMultiple"] = task_data.VolumeMultiple;
@@ -861,6 +923,8 @@ void TdApi::processRspQryInstrument(Task task)
 	data["OptionsType"] = task_data.OptionsType;
 	data["StartDelivDate"] = task_data.StartDelivDate;
 	data["DeliveryMonth"] = task_data.DeliveryMonth;
+	data["InstrumentCode"] = task_data.InstrumentCode;
+	data["MinBuyVolume"] = task_data.MinBuyVolume;
 	data["PriceTick"] = task_data.PriceTick;
 	data["InstLifePhase"] = task_data.InstLifePhase;
 	data["ExchangeInstID"] = task_data.ExchangeInstID;
@@ -1253,12 +1317,47 @@ void TdApi::processRspQrySecAgentACIDMap(Task task)
 	this->onRspQrySecAgentACIDMap(data, error, task.task_id, task.task_last);
 };
 
+void TdApi::processRspQryProductExchRate(Task task)
+{
+	PyLock lock;
+	CThostFtdcProductExchRateField task_data = any_cast<CThostFtdcProductExchRateField>(task.task_data);
+	dict data;
+	data["QuoteCurrencyID"] = task_data.QuoteCurrencyID;
+	data["ExchangeRate"] = task_data.ExchangeRate;
+	data["ProductID"] = task_data.ProductID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryProductExchRate(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryProductGroup(Task task)
+{
+	PyLock lock;
+	CThostFtdcProductGroupField task_data = any_cast<CThostFtdcProductGroupField>(task.task_data);
+	dict data;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["ProductGroupID"] = task_data.ProductGroupID;
+	data["ProductID"] = task_data.ProductID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryProductGroup(data, error, task.task_id, task.task_last);
+};
+
 void TdApi::processRspQryOptionInstrTradeCost(Task task)
 {
 	PyLock lock;
 	CThostFtdcOptionInstrTradeCostField task_data = any_cast<CThostFtdcOptionInstrTradeCostField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["ExchMiniMargin"] = task_data.ExchMiniMargin;
 	data["HedgeFlag"] = task_data.HedgeFlag;
 	data["InvestorID"] = task_data.InvestorID;
@@ -1286,6 +1385,7 @@ void TdApi::processRspQryOptionInstrCommRate(Task task)
 	data["StrikeRatioByMoney"] = task_data.StrikeRatioByMoney;
 	data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
 	data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BrokerID"] = task_data.BrokerID;
 	data["InvestorRange"] = task_data.InvestorRange;
@@ -1337,6 +1437,7 @@ void TdApi::processRspQryExecOrder(Task task)
 	data["ExecOrderLocalID"] = task_data.ExecOrderLocalID;
 	data["ParticipantID"] = task_data.ParticipantID;
 	data["CancelTime"] = task_data.CancelTime;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["SequenceNo"] = task_data.SequenceNo;
@@ -1399,6 +1500,7 @@ void TdApi::processRspQryQuote(Task task)
 	data["TraderID"] = task_data.TraderID;
 	data["UserID"] = task_data.UserID;
 	data["AskVolume"] = task_data.AskVolume;
+	data["BidOrderRef"] = task_data.BidOrderRef;
 	data["ActiveUserID"] = task_data.ActiveUserID;
 	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
 	data["QuoteRef"] = task_data.QuoteRef;
@@ -1424,11 +1526,14 @@ void TdApi::processRspQryQuote(Task task)
 	data["InsertTime"] = task_data.InsertTime;
 	data["QuoteSysID"] = task_data.QuoteSysID;
 	data["ClearingPartID"] = task_data.ClearingPartID;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["CancelTime"] = task_data.CancelTime;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["AskPrice"] = task_data.AskPrice;
 	data["SequenceNo"] = task_data.SequenceNo;
+	data["AskOrderRef"] = task_data.AskOrderRef;
 	data["InvestorID"] = task_data.InvestorID;
 	data["ExchangeInstID"] = task_data.ExchangeInstID;
 	data["RequestID"] = task_data.RequestID;
@@ -1441,6 +1546,170 @@ void TdApi::processRspQryQuote(Task task)
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryQuote(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryLock(Task task)
+{
+	PyLock lock;
+	CThostFtdcLockField task_data = any_cast<CThostFtdcLockField>(task.task_data);
+	dict data;
+	data["LockStatus"] = task_data.LockStatus;
+	data["NotifySequence"] = task_data.NotifySequence;
+	data["ActiveUserID"] = task_data.ActiveUserID;
+	data["UserProductInfo"] = task_data.UserProductInfo;
+	data["TraderID"] = task_data.TraderID;
+	data["UserID"] = task_data.UserID;
+	data["LockLocalID"] = task_data.LockLocalID;
+	data["InstallID"] = task_data.InstallID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["ClientID"] = task_data.ClientID;
+	data["Volume"] = task_data.Volume;
+	data["SessionID"] = task_data.SessionID;
+	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["SettlementID"] = task_data.SettlementID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["BrokerID"] = task_data.BrokerID;
+	data["InsertTime"] = task_data.InsertTime;
+	data["ClearingPartID"] = task_data.ClearingPartID;
+	data["CancelTime"] = task_data.CancelTime;
+	data["BranchID"] = task_data.BranchID;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["InsertDate"] = task_data.InsertDate;
+	data["BrokerLockSeq"] = task_data.BrokerLockSeq;
+	data["SequenceNo"] = task_data.SequenceNo;
+	data["LockRef"] = task_data.LockRef;
+	data["InvestorID"] = task_data.InvestorID;
+	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["RequestID"] = task_data.RequestID;
+	data["FrontID"] = task_data.FrontID;
+	data["LockSysID"] = task_data.LockSysID;
+	data["LockType"] = task_data.LockType;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryLock(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryLockPosition(Task task)
+{
+	PyLock lock;
+	CThostFtdcLockPositionField task_data = any_cast<CThostFtdcLockPositionField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["FrozenVolume"] = task_data.FrozenVolume;
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryLockPosition(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryInvestorLevel(Task task)
+{
+	PyLock lock;
+	CThostFtdcInvestorLevelField task_data = any_cast<CThostFtdcInvestorLevelField>(task.task_data);
+	dict data;
+	data["InvestorID"] = task_data.InvestorID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["LevelType"] = task_data.LevelType;
+	data["BrokerID"] = task_data.BrokerID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryInvestorLevel(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryExecFreeze(Task task)
+{
+	PyLock lock;
+	CThostFtdcExecFreezeField task_data = any_cast<CThostFtdcExecFreezeField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["OptionsType"] = task_data.OptionsType;
+	data["PosiDirection"] = task_data.PosiDirection;
+	data["FrozenAmount"] = task_data.FrozenAmount;
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryExecFreeze(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryCombInstrumentGuard(Task task)
+{
+	PyLock lock;
+	CThostFtdcCombInstrumentGuardField task_data = any_cast<CThostFtdcCombInstrumentGuardField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["GuarantRatio"] = task_data.GuarantRatio;
+	data["BrokerID"] = task_data.BrokerID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryCombInstrumentGuard(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryCombAction(Task task)
+{
+	PyLock lock;
+	CThostFtdcCombActionField task_data = any_cast<CThostFtdcCombActionField>(task.task_data);
+	dict data;
+	data["NotifySequence"] = task_data.NotifySequence;
+	data["UserProductInfo"] = task_data.UserProductInfo;
+	data["TraderID"] = task_data.TraderID;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["ActionStatus"] = task_data.ActionStatus;
+	data["CombDirection"] = task_data.CombDirection;
+	data["Direction"] = task_data.Direction;
+	data["InstallID"] = task_data.InstallID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["InvestorID"] = task_data.InvestorID;
+	data["ClientID"] = task_data.ClientID;
+	data["Volume"] = task_data.Volume;
+	data["SessionID"] = task_data.SessionID;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["SettlementID"] = task_data.SettlementID;
+	data["UserID"] = task_data.UserID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["BrokerID"] = task_data.BrokerID;
+	data["CombActionRef"] = task_data.CombActionRef;
+	data["SequenceNo"] = task_data.SequenceNo;
+	data["ActionLocalID"] = task_data.ActionLocalID;
+	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["FrontID"] = task_data.FrontID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQryCombAction(data, error, task.task_id, task.task_last);
 };
 
 void TdApi::processRspQryTransferSerial(Task task)
@@ -1578,6 +1847,7 @@ void TdApi::processRtnOrder(Task task)
 	data["CancelTime"] = task_data.CancelTime;
 	data["GTDDate"] = task_data.GTDDate;
 	data["OrderLocalID"] = task_data.OrderLocalID;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["SequenceNo"] = task_data.SequenceNo;
@@ -1650,6 +1920,7 @@ void TdApi::processErrRtnOrderInsert(Task task)
 	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
 	data["StopPrice"] = task_data.StopPrice;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["MinVolume"] = task_data.MinVolume;
 	data["ForceCloseReason"] = task_data.ForceCloseReason;
 	data["BrokerID"] = task_data.BrokerID;
@@ -1694,6 +1965,7 @@ void TdApi::processErrRtnOrderAction(Task task)
 	data["ClientID"] = task_data.ClientID;
 	data["ActionDate"] = task_data.ActionDate;
 	data["OrderLocalID"] = task_data.OrderLocalID;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["OrderRef"] = task_data.OrderRef;
 	data["ActionLocalID"] = task_data.ActionLocalID;
@@ -1792,6 +2064,7 @@ void TdApi::processRtnErrorConditionalOrder(Task task)
 	data["CancelTime"] = task_data.CancelTime;
 	data["GTDDate"] = task_data.GTDDate;
 	data["OrderLocalID"] = task_data.OrderLocalID;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["SequenceNo"] = task_data.SequenceNo;
@@ -1843,6 +2116,7 @@ void TdApi::processRtnExecOrder(Task task)
 	data["ExecOrderLocalID"] = task_data.ExecOrderLocalID;
 	data["ParticipantID"] = task_data.ParticipantID;
 	data["CancelTime"] = task_data.CancelTime;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["SequenceNo"] = task_data.SequenceNo;
@@ -1862,6 +2136,7 @@ void TdApi::processErrRtnExecOrderInsert(Task task)
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
 	data["ExecOrderRef"] = task_data.ExecOrderRef;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["CloseFlag"] = task_data.CloseFlag;
 	data["OffsetFlag"] = task_data.OffsetFlag;
 	data["PosiDirection"] = task_data.PosiDirection;
@@ -1907,6 +2182,7 @@ void TdApi::processErrRtnExecOrderAction(Task task)
 	data["BrokerID"] = task_data.BrokerID;
 	data["ExecOrderLocalID"] = task_data.ExecOrderLocalID;
 	data["ActionDate"] = task_data.ActionDate;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["ActionLocalID"] = task_data.ActionLocalID;
 	data["RequestID"] = task_data.RequestID;
@@ -1927,10 +2203,11 @@ void TdApi::processErrRtnForQuoteInsert(Task task)
 	CThostFtdcInputForQuoteField task_data = any_cast<CThostFtdcInputForQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ForQuoteRef"] = task_data.ForQuoteRef;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["UserID"] = task_data.UserID;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BrokerID"] = task_data.BrokerID;
-	data["UserID"] = task_data.UserID;
-	data["ForQuoteRef"] = task_data.ForQuoteRef;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -1951,6 +2228,7 @@ void TdApi::processRtnQuote(Task task)
 	data["TraderID"] = task_data.TraderID;
 	data["UserID"] = task_data.UserID;
 	data["AskVolume"] = task_data.AskVolume;
+	data["BidOrderRef"] = task_data.BidOrderRef;
 	data["ActiveUserID"] = task_data.ActiveUserID;
 	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
 	data["QuoteRef"] = task_data.QuoteRef;
@@ -1976,11 +2254,14 @@ void TdApi::processRtnQuote(Task task)
 	data["InsertTime"] = task_data.InsertTime;
 	data["QuoteSysID"] = task_data.QuoteSysID;
 	data["ClearingPartID"] = task_data.ClearingPartID;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["CancelTime"] = task_data.CancelTime;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["InsertDate"] = task_data.InsertDate;
 	data["AskPrice"] = task_data.AskPrice;
 	data["SequenceNo"] = task_data.SequenceNo;
+	data["AskOrderRef"] = task_data.AskOrderRef;
 	data["InvestorID"] = task_data.InvestorID;
 	data["ExchangeInstID"] = task_data.ExchangeInstID;
 	data["RequestID"] = task_data.RequestID;
@@ -1996,20 +2277,24 @@ void TdApi::processErrRtnQuoteInsert(Task task)
 	CThostFtdcInputQuoteField task_data = any_cast<CThostFtdcInputQuoteField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
 	data["AskHedgeFlag"] = task_data.AskHedgeFlag;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["AskPrice"] = task_data.AskPrice;
 	data["UserID"] = task_data.UserID;
 	data["AskOffsetFlag"] = task_data.AskOffsetFlag;
 	data["BidVolume"] = task_data.BidVolume;
+	data["AskOrderRef"] = task_data.AskOrderRef;
 	data["AskVolume"] = task_data.AskVolume;
 	data["InvestorID"] = task_data.InvestorID;
 	data["BidOffsetFlag"] = task_data.BidOffsetFlag;
 	data["BrokerID"] = task_data.BrokerID;
 	data["RequestID"] = task_data.RequestID;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["BidPrice"] = task_data.BidPrice;
 	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
 	data["QuoteRef"] = task_data.QuoteRef;
+	data["BidOrderRef"] = task_data.BidOrderRef;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -2043,6 +2328,7 @@ void TdApi::processErrRtnQuoteAction(Task task)
 	data["BrokerID"] = task_data.BrokerID;
 	data["QuoteSysID"] = task_data.QuoteSysID;
 	data["ActionDate"] = task_data.ActionDate;
+	data["BranchID"] = task_data.BranchID;
 	data["BusinessUnit"] = task_data.BusinessUnit;
 	data["ActionLocalID"] = task_data.ActionLocalID;
 	data["RequestID"] = task_data.RequestID;
@@ -2062,12 +2348,152 @@ void TdApi::processRtnForQuoteRsp(Task task)
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
 	data["InstrumentID"] = task_data.InstrumentID;
-	data["TradingDay"] = task_data.TradingDay;
-	data["ForQuoteTime"] = task_data.ForQuoteTime;
-	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
 	data["ActionDay"] = task_data.ActionDay;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
+	data["ForQuoteTime"] = task_data.ForQuoteTime;
 
 	this->onRtnForQuoteRsp(data);
+};
+
+void TdApi::processRtnCFMMCTradingAccountToken(Task task)
+{
+	PyLock lock;
+	CThostFtdcCFMMCTradingAccountTokenField task_data = any_cast<CThostFtdcCFMMCTradingAccountTokenField>(task.task_data);
+	dict data;
+	data["Token"] = task_data.Token;
+	data["KeyID"] = task_data.KeyID;
+	data["BrokerID"] = task_data.BrokerID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["AccountID"] = task_data.AccountID;
+
+	this->onRtnCFMMCTradingAccountToken(data);
+};
+
+void TdApi::processRtnLock(Task task)
+{
+	PyLock lock;
+	CThostFtdcLockField task_data = any_cast<CThostFtdcLockField>(task.task_data);
+	dict data;
+	data["LockStatus"] = task_data.LockStatus;
+	data["NotifySequence"] = task_data.NotifySequence;
+	data["ActiveUserID"] = task_data.ActiveUserID;
+	data["UserProductInfo"] = task_data.UserProductInfo;
+	data["TraderID"] = task_data.TraderID;
+	data["UserID"] = task_data.UserID;
+	data["LockLocalID"] = task_data.LockLocalID;
+	data["InstallID"] = task_data.InstallID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["ClientID"] = task_data.ClientID;
+	data["Volume"] = task_data.Volume;
+	data["SessionID"] = task_data.SessionID;
+	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["SettlementID"] = task_data.SettlementID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["BrokerID"] = task_data.BrokerID;
+	data["InsertTime"] = task_data.InsertTime;
+	data["ClearingPartID"] = task_data.ClearingPartID;
+	data["CancelTime"] = task_data.CancelTime;
+	data["BranchID"] = task_data.BranchID;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["InsertDate"] = task_data.InsertDate;
+	data["BrokerLockSeq"] = task_data.BrokerLockSeq;
+	data["SequenceNo"] = task_data.SequenceNo;
+	data["LockRef"] = task_data.LockRef;
+	data["InvestorID"] = task_data.InvestorID;
+	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["RequestID"] = task_data.RequestID;
+	data["FrontID"] = task_data.FrontID;
+	data["LockSysID"] = task_data.LockSysID;
+	data["LockType"] = task_data.LockType;
+
+	this->onRtnLock(data);
+};
+
+void TdApi::processErrRtnLockInsert(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputLockField task_data = any_cast<CThostFtdcInputLockField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["UserID"] = task_data.UserID;
+	data["LockRef"] = task_data.LockRef;
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+	data["RequestID"] = task_data.RequestID;
+	data["LockType"] = task_data.LockType;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onErrRtnLockInsert(data, error);
+};
+
+void TdApi::processRtnCombAction(Task task)
+{
+	PyLock lock;
+	CThostFtdcCombActionField task_data = any_cast<CThostFtdcCombActionField>(task.task_data);
+	dict data;
+	data["NotifySequence"] = task_data.NotifySequence;
+	data["UserProductInfo"] = task_data.UserProductInfo;
+	data["TraderID"] = task_data.TraderID;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["ActionStatus"] = task_data.ActionStatus;
+	data["CombDirection"] = task_data.CombDirection;
+	data["Direction"] = task_data.Direction;
+	data["InstallID"] = task_data.InstallID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["InvestorID"] = task_data.InvestorID;
+	data["ClientID"] = task_data.ClientID;
+	data["Volume"] = task_data.Volume;
+	data["SessionID"] = task_data.SessionID;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["SettlementID"] = task_data.SettlementID;
+	data["UserID"] = task_data.UserID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["BrokerID"] = task_data.BrokerID;
+	data["CombActionRef"] = task_data.CombActionRef;
+	data["SequenceNo"] = task_data.SequenceNo;
+	data["ActionLocalID"] = task_data.ActionLocalID;
+	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["FrontID"] = task_data.FrontID;
+
+	this->onRtnCombAction(data);
+};
+
+void TdApi::processErrRtnCombActionInsert(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputCombActionField task_data = any_cast<CThostFtdcInputCombActionField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["Direction"] = task_data.Direction;
+	data["CombActionRef"] = task_data.CombActionRef;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["UserID"] = task_data.UserID;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+	data["CombDirection"] = task_data.CombDirection;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onErrRtnCombActionInsert(data, error);
 };
 
 void TdApi::processRspQryContractBank(Task task)
@@ -2225,6 +2651,22 @@ void TdApi::processRspQryBrokerTradingAlgos(Task task)
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryBrokerTradingAlgos(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQueryCFMMCTradingAccountToken(Task task)
+{
+	PyLock lock;
+	CThostFtdcQueryCFMMCTradingAccountTokenField task_data = any_cast<CThostFtdcQueryCFMMCTradingAccountTokenField>(task.task_data);
+	dict data;
+	data["InvestorID"] = task_data.InvestorID;
+	data["BrokerID"] = task_data.BrokerID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspQueryCFMMCTradingAccountToken(data, error, task.task_id, task.task_last);
 };
 
 void TdApi::processRtnFromBankToFutureByBank(Task task)
