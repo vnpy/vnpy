@@ -44,6 +44,8 @@ class BacktestingEngine(object):
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
         
+        self.slippage = 0           # 回测时假设的滑点
+        
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
         
@@ -251,9 +253,11 @@ class BacktestingEngine(object):
         if self.mode == self.BAR_MODE:
             buyCrossPrice = self.bar.low    # 若买入方向限价单价格高于该价格，则会成交
             sellCrossPrice = self.bar.high  # 若卖出方向限价单价格低于该价格，则会成交
+            bestCrossPrice = self.bar.open  # 在当前时间点前发出的委托可能的最优成交价
         else:
             buyCrossPrice = self.tick.lastPrice
             sellCrossPrice = self.tick.lastPrice
+            bestCrossPrice = self.tick.lastPrice
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
@@ -274,7 +278,16 @@ class BacktestingEngine(object):
                 trade.vtOrderID = order.orderID
                 trade.direction = order.direction
                 trade.offset = order.offset
-                trade.price = order.price
+                
+                # 以买入为例：
+                # 1. 假设当根K线的OHLC分别为：100, 125, 90, 110
+                # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
+                # 3. 则在实际中的成交价会是100而不是105，因为委托发出时市场的最优价格是100
+                if buyCross:
+                    trade.price = min(order.price, bestCrossPrice)
+                else:
+                    trade.price = max(order.price, bestCrossPrice)
+                
                 trade.volume = order.totalVolume
                 trade.tradeTime = str(self.dt)
                 trade.dt = self.dt
@@ -401,7 +414,8 @@ class BacktestingEngine(object):
                 # 当前多头交易为平空
                 else:
                     entryTrade = shortTrade.pop(0)
-                    pnl = (trade.price - entryTrade.price) * trade.volume * (-1)
+                    # 滑点对于交易而言永远是不利的方向，因此每笔交易开平需要减去两倍的滑点
+                    pnl = (trade.price - entryTrade.price - self.slippage * 2) * trade.volume * (-1)
                     pnlDict[trade.dt] = pnl
             # 空头交易        
             else:
@@ -411,7 +425,7 @@ class BacktestingEngine(object):
                 # 当前空头交易为平多
                 else:
                     entryTrade = longTrade.pop(0)
-                    pnl = (trade.price - entryTrade.price) * trade.volume
+                    pnl = (trade.price - entryTrade.price - self.slippage * 2) * trade.volume
                     pnlDict[trade.dt] = pnl
         
         # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
@@ -463,6 +477,10 @@ class BacktestingEngine(object):
         """发送策略更新事件，回测中忽略"""
         pass
 
+    #----------------------------------------------------------------------
+    def setSlippage(self, slippage):
+        """设置滑点"""
+        self.slippage = slippage
 
 
 if __name__ == '__main__':
@@ -476,6 +494,9 @@ if __name__ == '__main__':
     
     # 设置引擎的回测模式为K线
     engine.setBacktestingMode(engine.BAR_MODE)
+    
+    # 设置滑点
+    engine.setSlippage(0.2)     # 股指1跳
     
     # 设置回测用的数据起始日期
     engine.setStartDate('20100416')
