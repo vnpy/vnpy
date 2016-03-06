@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from api import OandaApi
+from vnoanda import OandaApi
 
     
 if __name__ == '__main__':
