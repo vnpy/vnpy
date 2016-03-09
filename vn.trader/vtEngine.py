@@ -87,6 +87,13 @@ class MainEngine(object):
             self.addGateway(IbGateway, 'IB')
         except Exception, e:
             print e
+            
+        try:
+            from oandaGateway.oandaGateway import OandaGateway
+            self.addGateway(OandaGateway, 'OANDA')
+            self.gatewayDict['OANDA'].setQryEnabled(True)
+        except Exception, e:
+            print e
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
