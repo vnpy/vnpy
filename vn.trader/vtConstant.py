@@ -66,6 +66,8 @@ EXCHANGE_SMART = 'SMART'       # IB智能路由（股票、期权）
 EXCHANGE_GLOBEX = 'GLOBEX'     # CME电子交易平台
 EXCHANGE_IDEALPRO = 'IDEALPRO' # IB外汇ECN
 
+EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
+
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币

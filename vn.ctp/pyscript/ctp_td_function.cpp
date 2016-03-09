@@ -70,7 +70,7 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
 	getStr(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getStr(req, "UserID", myreq.UserID);
-	getStr(req, "UserID", myreq.UserID);
+	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
 	getChar(req, "Direction", &myreq.Direction);
 	getInt(req, "IsSwapOrder", &myreq.IsSwapOrder);
@@ -78,7 +78,7 @@ int TdApi::reqOrderInsert(dict req, int nRequestID)
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
 	getChar(req, "TimeCondition", &myreq.TimeCondition);
 	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
-	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
+	getDouble(req, "StopPrice", &myreq.StopPrice);
 	getStr(req, "InstrumentID", myreq.InstrumentID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getInt(req, "MinVolume", &myreq.MinVolume);
@@ -102,7 +102,7 @@ int TdApi::reqParkedOrderInsert(dict req, int nRequestID)
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
 	getStr(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getStr(req, "UserID", myreq.UserID);
-	getStr(req, "UserID", myreq.UserID);
+	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
 	getChar(req, "Status", &myreq.Status);
 	getChar(req, "Direction", &myreq.Direction);
@@ -112,7 +112,7 @@ int TdApi::reqParkedOrderInsert(dict req, int nRequestID)
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
 	getChar(req, "TimeCondition", &myreq.TimeCondition);
 	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
-	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
+	getDouble(req, "StopPrice", &myreq.StopPrice);
 	getStr(req, "InstrumentID", myreq.InstrumentID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getInt(req, "MinVolume", &myreq.MinVolume);
@@ -144,7 +144,7 @@ int TdApi::reqParkedOrderAction(dict req, int nRequestID)
 	getChar(req, "UserType", &myreq.UserType);
 	getStr(req, "ErrorMsg", myreq.ErrorMsg);
 	getStr(req, "UserID", myreq.UserID);
-	getStr(req, "UserID", myreq.UserID);
+	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getStr(req, "OrderRef", myreq.OrderRef);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getInt(req, "SessionID", &myreq.SessionID);
@@ -168,7 +168,7 @@ int TdApi::reqOrderAction(dict req, int nRequestID)
 	getChar(req, "ActionFlag", &myreq.ActionFlag);
 	getInt(req, "OrderActionRef", &myreq.OrderActionRef);
 	getStr(req, "UserID", myreq.UserID);
-	getStr(req, "UserID", myreq.UserID);
+	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getStr(req, "OrderRef", myreq.OrderRef);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getInt(req, "SessionID", &myreq.SessionID);
@@ -296,7 +296,7 @@ int TdApi::reqQuoteInsert(dict req, int nRequestID)
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getChar(req, "AskHedgeFlag", &myreq.AskHedgeFlag);
 	getStr(req, "BusinessUnit", myreq.BusinessUnit);
-	getStr(req, "BusinessUnit", myreq.BusinessUnit);
+	getDouble(req, "AskPrice", &myreq.AskPrice);
 	getStr(req, "UserID", myreq.UserID);
 	getChar(req, "AskOffsetFlag", &myreq.AskOffsetFlag);
 	getInt(req, "BidVolume", &myreq.BidVolume);
@@ -307,7 +307,7 @@ int TdApi::reqQuoteInsert(dict req, int nRequestID)
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getInt(req, "RequestID", &myreq.RequestID);
 	getStr(req, "ForQuoteSysID", myreq.ForQuoteSysID);
-	getStr(req, "ForQuoteSysID", myreq.ForQuoteSysID);
+	getDouble(req, "BidPrice", &myreq.BidPrice);
 	getChar(req, "BidHedgeFlag", &myreq.BidHedgeFlag);
 	getStr(req, "QuoteRef", myreq.QuoteRef);
 	getStr(req, "BidOrderRef", myreq.BidOrderRef);
@@ -680,9 +680,9 @@ int TdApi::reqQryOptionInstrTradeCost(dict req, int nRequestID)
 	CThostFtdcQryOptionInstrTradeCostField myreq = CThostFtdcQryOptionInstrTradeCostField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
-	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getDouble(req, "InputPrice", &myreq.InputPrice);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
-	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getDouble(req, "UnderlyingPrice", &myreq.UnderlyingPrice);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
@@ -953,10 +953,10 @@ int TdApi::reqFromBankToFutureByFuture(dict req, int nRequestID)
 	getChar(req, "TransferStatus", &myreq.TransferStatus);
 	getChar(req, "IdCardType", &myreq.IdCardType);
 	getInt(req, "PlateSerial", &myreq.PlateSerial);
-	getInt(req, "PlateSerial", &myreq.PlateSerial);
+	getDouble(req, "FutureFetchAmount", &myreq.FutureFetchAmount);
 	getStr(req, "TradeDate", myreq.TradeDate);
 	getStr(req, "CurrencyID", myreq.CurrencyID);
-	getStr(req, "CurrencyID", myreq.CurrencyID);
+	getDouble(req, "BrokerFee", &myreq.BrokerFee);
 	getChar(req, "BankAccType", &myreq.BankAccType);
 	getChar(req, "LastFragment", &myreq.LastFragment);
 	getInt(req, "FutureSerial", &myreq.FutureSerial);
@@ -964,8 +964,8 @@ int TdApi::reqFromBankToFutureByFuture(dict req, int nRequestID)
 	getStr(req, "BrokerIDByBank", myreq.BrokerIDByBank);
 	getChar(req, "SecuPwdFlag", &myreq.SecuPwdFlag);
 	getStr(req, "Message", myreq.Message);
-	getStr(req, "Message", myreq.Message);
-	getStr(req, "Message", myreq.Message);
+	getDouble(req, "CustFee", &myreq.CustFee);
+	getDouble(req, "TradeAmount", &myreq.TradeAmount);
 	getStr(req, "Digest", myreq.Digest);
 	int i = this->api->ReqFromBankToFutureByFuture(&myreq, nRequestID);
 	return i;
@@ -1004,10 +1004,10 @@ int TdApi::reqFromFutureToBankByFuture(dict req, int nRequestID)
 	getChar(req, "TransferStatus", &myreq.TransferStatus);
 	getChar(req, "IdCardType", &myreq.IdCardType);
 	getInt(req, "PlateSerial", &myreq.PlateSerial);
-	getInt(req, "PlateSerial", &myreq.PlateSerial);
+	getDouble(req, "FutureFetchAmount", &myreq.FutureFetchAmount);
 	getStr(req, "TradeDate", myreq.TradeDate);
 	getStr(req, "CurrencyID", myreq.CurrencyID);
-	getStr(req, "CurrencyID", myreq.CurrencyID);
+	getDouble(req, "BrokerFee", &myreq.BrokerFee);
 	getChar(req, "BankAccType", &myreq.BankAccType);
 	getChar(req, "LastFragment", &myreq.LastFragment);
 	getInt(req, "FutureSerial", &myreq.FutureSerial);
@@ -1015,8 +1015,8 @@ int TdApi::reqFromFutureToBankByFuture(dict req, int nRequestID)
 	getStr(req, "BrokerIDByBank", myreq.BrokerIDByBank);
 	getChar(req, "SecuPwdFlag", &myreq.SecuPwdFlag);
 	getStr(req, "Message", myreq.Message);
-	getStr(req, "Message", myreq.Message);
-	getStr(req, "Message", myreq.Message);
+	getDouble(req, "CustFee", &myreq.CustFee);
+	getDouble(req, "TradeAmount", &myreq.TradeAmount);
 	getStr(req, "Digest", myreq.Digest);
 	int i = this->api->ReqFromFutureToBankByFuture(&myreq, nRequestID);
 	return i;
