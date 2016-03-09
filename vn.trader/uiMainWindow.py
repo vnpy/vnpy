@@ -91,6 +91,9 @@ class MainWindow(QtGui.QMainWindow):
         # connectIbAction = QtGui.QAction(u'连接IB', self)
         # connectIbAction.triggered.connect(self.connectIb)
         
+        connectOandaAction = QtGui.QAction(u'连接OANDA', self)
+        connectOandaAction.triggered.connect(self.connectOanda)
+        
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
         
@@ -119,6 +122,7 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectKsotpAction)
         # sysMenu.addAction(connectKsgoldAction)
         # sysMenu.addAction(connectIbAction)
+        sysMenu.addAction(connectOandaAction)
         sysMenu.addSeparator()
         # sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
@@ -201,6 +205,11 @@ class MainWindow(QtGui.QMainWindow):
     # def connectIb(self):
     #     """连接Ib"""
     #     self.mainEngine.connect('IB')
+        
+    #----------------------------------------------------------------------
+    def connectOanda(self):
+        """连接OANDA"""
+        self.mainEngine.connect('OANDA')
         
     #----------------------------------------------------------------------
     def test(self):

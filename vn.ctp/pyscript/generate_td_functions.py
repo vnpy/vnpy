@@ -245,9 +245,13 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
             line = '\tgetChar(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'int':
             line = '\tgetInt(req, "' + key + '", &myreq.' + key + ');\n'
-        elif value == 'double':
+        elif value == 'float':
             line = '\tgetDouble(req, "' + key + '", &myreq.' + key + ');\n'
         ffunction.write(line)
+
+        if type_ == 'CThostFtdcInputOrderField':
+            print key, value
+            print line
 
     ffunction.write('\tint i = this->api->' + fcName + '(&myreq, nRequestID);\n')
     ffunction.write('\treturn i;\n')
@@ -290,3 +294,5 @@ fheaderprocess.close()
 fheaderon.close()
 fheaderfunction.close()
 fwrap.close()
+
+input()
