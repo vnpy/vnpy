@@ -9,7 +9,8 @@ from pymongo.errors import ConnectionFailure
 from eventEngine import *
 from vtGateway import *
 from ctaAlgo.ctaEngine import CtaEngine
-
+import json
+import os
 
 ########################################################################
 class MainEngine(object):
@@ -179,13 +180,39 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""
+
+        # 载入json文件
+        fileName = 'Mongo_connect.json'
+        fileName = os.getcwd() + '\\mongo_connect\\' + fileName
+
+        try:
+            f = file(fileName)
+        except IOError:
+            self.writeLog(u'读取MongoDB连接配置出错，请检查')
+            return
+
+        # 解析json文件
+        setting = json.load(f)
+        try:
+            IP = str(setting['IP'])
+            replicaset = str(setting['replicaset'])
+            readPreference = str(setting['readPreference'])
+            col = str(setting['col'])
+            userID = str(setting['userID'])
+            password = str(setting['password'])
+
+        except KeyError:
+            self.writeLog(u'MongoDB连接配置缺少字段，请检查')
+
         if not self.dbClient:
             try:
-                self.dbClient = MongoClient()
+                self.dbClient = MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
+                db = self.client[col]
+                db.authenticate(userID, password)
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
-    
+
     #----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
