@@ -183,7 +183,7 @@ class MainEngine(object):
 
         # 载入json文件
         fileName = 'Mongo_connect.json'
-        fileName = os.getcwd() + '\\mongo_connect\\' + fileName
+        fileName = os.getcwd() + '\\mongoConnect\\' + fileName
 
         try:
             f = file(fileName)
@@ -207,7 +207,7 @@ class MainEngine(object):
         if not self.dbClient:
             try:
                 self.dbClient = MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
-                db = self.client[col]
+                db = self.dbClient[col]
                 db.authenticate(userID, password)
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:

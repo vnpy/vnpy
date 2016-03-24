@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 import json
 import pymongo
-
+import os
 from ctaBase import *
 from ctaSetting import *
 
@@ -69,7 +69,42 @@ class BacktestingEngine(object):
         self.tick = None
         self.bar = None
         self.dt = None      # 最新的时间
-        
+
+    #----------------------------------------------------------------------
+    def dbConnect(self):
+        """连接MongoDB数据库"""
+
+        # 载入json文件
+        fileName = 'Mongo_connect.json'
+        fileName = os.path.dirname(os.getcwd()) + '\\mongoConnect\\' + fileName
+
+        try:
+            f = file(fileName)
+        except IOError:
+            print u'读取MongoDB连接配置出错，请检查'
+            return
+
+        # 解析json文件
+        setting = json.load(f)
+        try:
+            IP = str(setting['IP'])
+            replicaset = str(setting['replicaset'])
+            readPreference = str(setting['readPreference'])
+            col = str(setting['col'])
+            userID = str(setting['userID'])
+            password = str(setting['password'])
+
+        except KeyError:
+            print u'MongoDB连接配置缺少字段，请检查'
+
+        if not self.dbClient:
+            try:
+                self.dbClient = pymongo.MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
+                db = self.dbClient[col]
+                db.authenticate(userID, password)
+                print u'MongoDB连接成功'
+            except pymongo.ConnectionFailure:
+                print u'MongoDB连接失败'
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
         """设置回测的启动日期"""
@@ -95,7 +130,9 @@ class BacktestingEngine(object):
             dataClass = CtaTickData
         
         # 从数据库进行查询
-        self.dbClient = pymongo.MongoClient()
+        if self.dbClient == None:
+            self.dbConnect()
+
         collection = self.dbClient[dbName][symbol]
         
         flt = {'datetime':{'$gte':self.dataStartDate}}   # 数据过滤条件
@@ -455,7 +492,7 @@ class BacktestingEngine(object):
         pCapital = plt.subplot(3, 1, 1)
         pCapital.set_ylabel("capital")
         pCapital.plot(capitalList)
-        
+
         pDD = plt.subplot(3, 1, 2)
         pDD.set_ylabel("DD")
         pDD.bar(range(len(drawdownList)), drawdownList)         
@@ -487,32 +524,57 @@ if __name__ == '__main__':
     # 以下内容是一段回测脚本的演示，用户可以根据自己的需求修改
     # 建议使用ipython notebook或者spyder来做回测
     # 同样可以在命令模式下进行回测（一行一行输入运行）
-    from ctaDemo import *
-    
+    # from ctaDemo import *
+    #
+    # # 创建回测引擎
+    # engine = BacktestingEngine()
+    #
+    # # 设置引擎的回测模式为K线
+    # engine.setBacktestingMode(engine.BAR_MODE)
+    #
+    # # 设置滑点
+    # engine.setSlippage(0.2)     # 股指1跳
+    #
+    # # 设置回测用的数据起始日期
+    # engine.setStartDate('20100416')
+    #
+    # # 载入历史数据到引擎中
+    # engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
+    #
+    # # 在引擎中创建策略对象
+    # engine.initStrategy(DoubleEmaDemo, {})
+    #
+    # # 开始跑回测
+    # engine.runBacktesting()
+    #
+    # # 显示回测结果
+    # # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
+    # # 直接在cmd中回测则只会打印一些回测数值
+    # engine.showBacktestingResult()
+
+    from talibDemo import *
     # 创建回测引擎
     engine = BacktestingEngine()
-    
+
     # 设置引擎的回测模式为K线
     engine.setBacktestingMode(engine.BAR_MODE)
-    
+
     # 设置滑点
-    engine.setSlippage(0.2)     # 股指1跳
-    
+    engine.setSlippage(2)     # pp2跳
+
     # 设置回测用的数据起始日期
-    engine.setStartDate('20100416')
-    
+    engine.setStartDate('20160101')
+
     # 载入历史数据到引擎中
-    engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
-    
+    engine.loadHistoryData(MINUTE_DB_NAME, 'pp_hot')
+
     # 在引擎中创建策略对象
-    engine.initStrategy(DoubleEmaDemo, {})
-    
+    engine.initStrategy(TalibDoubleSmaDemo, {})
+
     # 开始跑回测
     engine.runBacktesting()
-    
+
     # 显示回测结果
     # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
     # 直接在cmd中回测则只会打印一些回测数值
     engine.showBacktestingResult()
-    
-    
