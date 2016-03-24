@@ -1,8 +1,8 @@
 {
-    "IP": "今年过节不收礼",
-    "replicaset": "今年过节不收礼",
-    "readPreference": "今年过节不收礼",
-    "col": "今年过节不收礼",
-    "userID": "今年过节不收礼",
-    "password":"今年过节不收礼"
+    "IP": "221.2.40.243",
+    "replicaset": "RTDB",
+    "readPreference": "secondary",
+    "col": "admin",
+    "userID": "paolo",
+    "password":"RT10010"
 }
