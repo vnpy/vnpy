@@ -3,5 +3,10 @@
         "name": "double ema",
         "className": "DoubleEmaDemo",
         "vtSymbol": "IF1603"
+    },
+    {
+        "name": "Data Recorder",
+        "className": "DataRecorder",
+        "vtSymbol": "pp1605"
     }
 ]
