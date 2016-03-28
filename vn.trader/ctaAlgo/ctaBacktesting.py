@@ -320,11 +320,14 @@ class BacktestingEngine(object):
                 # 1. 假设当根K线的OHLC分别为：100, 125, 90, 110
                 # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
                 # 3. 则在实际中的成交价会是100而不是105，因为委托发出时市场的最优价格是100
+                # 同时更新策略对象的持仓情况
                 if buyCross:
                     trade.price = min(order.price, bestCrossPrice)
+                    self.strategy.pos += order.totalVolume
                 else:
                     trade.price = max(order.price, bestCrossPrice)
-                
+                    self.strategy.pos -= order.totalVolume
+                    
                 trade.volume = order.totalVolume
                 trade.tradeTime = str(self.dt)
                 trade.dt = self.dt
@@ -359,6 +362,12 @@ class BacktestingEngine(object):
             
             # 如果发生了成交
             if buyCross or sellCross:
+                # 更新策略对象的持仓情况
+                if buyCross:
+                    self.strategy.pos += order.totalVolume
+                else:
+                    self.strategy.pos -= order.totalVolume
+                    
                 # 推送成交数据
                 self.tradeCount += 1            # 成交编号自增1
                 tradeID = str(self.tradeCount)
@@ -500,6 +509,8 @@ class BacktestingEngine(object):
         pPnl = plt.subplot(3, 1, 3)
         pPnl.set_ylabel("pnl")
         pPnl.hist(pnlList, bins=20)
+        
+        plt.show()
 
         # 输出
         self.output('-' * 50)
