@@ -19,7 +19,7 @@ if __name__ == '__main__':
     #api.getPrices({'instruments': 'EUR_USD'})
     
     # 获取历史数据，失败
-    #api.getPriceHisory({'instruments': 'EUR_USD',
+    #api.getPriceHisory({'instrument': 'EUR_USD',
                         #'granularity': 'D',
                         #'candleFormat': 'midpoint',
                         #'count': '50'})

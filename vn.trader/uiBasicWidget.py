@@ -52,25 +52,6 @@ class DirectionCell(QtGui.QTableWidgetItem):
             self.setForeground(QtGui.QColor('green'))
         self.setText(text)
 
-
-########################################################################
-class NameCell(QtGui.QTableWidgetItem):
-    """用来显示合约中文名的单元格"""
-
-    #----------------------------------------------------------------------
-    def __init__(self, text=None, mainEngine=None):
-        """Constructor"""
-        super(NameCell, self).__init__()
-        self.data = None
-        if text:
-            self.setContent(text)
-    
-    #----------------------------------------------------------------------
-    def setContent(self, text):
-        """设置内容"""
-        self.setText(text)
-
-
 ########################################################################
 class NameCell(QtGui.QTableWidgetItem):
     """用来显示合约中文的单元格"""
