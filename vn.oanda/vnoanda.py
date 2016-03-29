@@ -177,8 +177,9 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def exit(self):
         """退出接口"""
-        self.active = False
-        self.reqThread.join()
+        if self.active:
+            self.active = False
+            self.reqThread.join()
         
     #----------------------------------------------------------------------
     def initFunctionSetting(self, code, setting):

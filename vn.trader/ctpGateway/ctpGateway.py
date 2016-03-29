@@ -10,6 +10,7 @@ vtSymbol直接使用symbol
 
 import os
 import json
+from copy import copy
 
 from vnctpmd import MdApi
 from vnctptd import TdApi
@@ -436,6 +437,8 @@ class CtpTdApi(TdApi):
         self.frontID = EMPTY_INT            # 前置机编号
         self.sessionID = EMPTY_INT          # 会话编号
         
+        self.posDict = {}                   # 缓存持仓数据的字典
+        
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
@@ -624,33 +627,47 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        pos = VtPositionData()
-        pos.gatewayName = self.gatewayName
+        # 获取缓存字典中的持仓对象，若无则创建并初始化
+        positionName = '.'.join([data['InstrumentID'], data['PosiDirection']])
         
-        # 保存代码
-        pos.symbol = data['InstrumentID']
-        pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
+        if positionName in self.posDict:
+            pos = self.posDict[positionName]
+        else:
+            pos = VtPositionData()
+            self.posDict[positionName] = pos
+            
+            pos.gatewayName = self.gatewayName
         
-        # 方向和持仓冻结数量
-        pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+            # 保存代码
+            pos.symbol = data['InstrumentID']
+            pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
+            
+            # 方向
+            pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+            
+            # VT系统持仓名
+            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])            
+        
+        # 持仓冻结数量
         if pos.direction == DIRECTION_NET or pos.direction == DIRECTION_LONG:
             pos.frozen = data['LongFrozen']
         elif pos.direction == DIRECTION_SHORT:   
             pos.frozen = data['ShortFrozen']
         
         # 持仓量
-        pos.position = data['Position']
-        pos.ydPosition = data['YdPosition']        
+        if data['Position']:
+            pos.position = data['Position']
+            
+        if data['YdPosition']:
+            pos.ydPosition = data['YdPosition']        
         
         # 持仓均价
         if pos.position:
             pos.price = data['PositionCost'] / pos.position
-        
-        # VT系统持仓名
-        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-        
+
         # 推送
-        self.gateway.onPosition(pos)
+        newpos = copy(pos)
+        self.gateway.onPosition(newpos)
     
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
