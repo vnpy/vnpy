@@ -60,5 +60,5 @@ vn.trader/ctpGateway/CTP_connect@Real/*
 vn.trader/ksotpGateway/KSOTP_connect@Sim/*
 vn.trader/ltsGateway/LTS_connect@Sim/*
 vn.trader/oandaGateway/OANDA_connect@Sim/*
-
+vn.trader/ctaAlgo/data/*
 # vn.trader/ContractData.vt
