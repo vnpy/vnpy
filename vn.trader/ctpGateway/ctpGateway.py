@@ -275,7 +275,7 @@ class CtpMdApi(MdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-                
+
     #---------------------------------------------------------------------- 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
