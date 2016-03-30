@@ -83,7 +83,10 @@ class MainWindow(QtGui.QMainWindow):
         connectFemasAction.triggered.connect(self.connectFemas)        
         
         connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
-        connectKsgoldAction.triggered.connect(self.connectKsgold)           
+        connectKsgoldAction.triggered.connect(self.connectKsgold)  
+        
+        connectSgitAction = QtGui.QAction(u'连接飞鼠', self)
+        connectSgitAction.triggered.connect(self.connectSgit)         
         
         connectWindAction = QtGui.QAction(u'连接Wind', self)
         connectWindAction.triggered.connect(self.connectWind)
@@ -121,6 +124,7 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectFemasAction)
         sysMenu.addAction(connectKsotpAction)
         sysMenu.addAction(connectKsgoldAction)
+        sysMenu.addAction(connectSgitAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectIbAction)    
         sysMenu.addAction(connectOandaAction)
@@ -196,6 +200,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectKsgold(self):
         """连接金仕达黄金接口"""
         self.mainEngine.connect('KSGOLD')            
+        
+    #----------------------------------------------------------------------
+    def connectSgit(self):
+        """连接飞鼠接口"""
+        self.mainEngine.connect('SGIT')     
     
     #----------------------------------------------------------------------
     def connectWind(self):

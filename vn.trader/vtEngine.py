@@ -77,6 +77,13 @@ class MainEngine(object):
             print e
             
         try:
+            from sgitGateway.sgitGateway import SgitGateway
+            self.addGateway(SgitGateway, 'SGIT')
+            self.gatewayDict['SGIT'].setQryEnabled(True)
+        except Exception, e:
+            print e        
+            
+        try:
             from windGateway.windGateway import WindGateway
             self.addGateway(WindGateway, 'Wind') 
         except Exception, e:
