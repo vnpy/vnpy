@@ -45,6 +45,8 @@ class BacktestingEngine(object):
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
         
         self.slippage = 0           # 回测时假设的滑点
+        self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
+        self.size = 1               # 合约大小，默认为1        
         
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
@@ -285,8 +287,10 @@ class BacktestingEngine(object):
                 # 3. 则在实际中的成交价会是100而不是105，因为委托发出时市场的最优价格是100
                 if buyCross:
                     trade.price = min(order.price, bestCrossPrice)
+                    self.strategy.pos += order.totalVolume
                 else:
                     trade.price = max(order.price, bestCrossPrice)
+                    self.strategy.pos -= order.totalVolume
                 
                 trade.volume = order.totalVolume
                 trade.tradeTime = str(self.dt)
@@ -310,9 +314,11 @@ class BacktestingEngine(object):
         if self.mode == self.BAR_MODE:
             buyCrossPrice = self.bar.high    # 若买入方向停止单价格低于该价格，则会成交
             sellCrossPrice = self.bar.low    # 若卖出方向限价单价格高于该价格，则会成交
+            bestCrossPrice = self.bar.open   # 最优成交价，买入停止单不能低于，卖出停止单不能高于
         else:
             buyCrossPrice = self.tick.lastPrice
             sellCrossPrice = self.tick.lastPrice
+            bestCrossPrice = self.tick.lastPrice
         
         # 遍历停止单字典中的所有停止单
         for stopOrderID, so in self.workingStopOrderDict.items():
@@ -330,6 +336,13 @@ class BacktestingEngine(object):
                 trade.tradeID = tradeID
                 trade.vtTradeID = tradeID
                 
+                if buyCross:
+                    self.strategy.pos += so.volume
+                    trade.price = max(bestCrossPrice, so.price)
+                else:
+                    self.strategy.pos -= so.volume
+                    trade.price = min(bestCrossPrice, so.price)                
+                
                 self.limitOrderCount += 1
                 orderID = str(self.limitOrderCount)
                 trade.orderID = orderID
@@ -337,7 +350,6 @@ class BacktestingEngine(object):
                 
                 trade.direction = so.direction
                 trade.offset = so.offset
-                trade.price = so.price
                 trade.volume = so.volume
                 trade.tradeTime = str(self.dt)
                 trade.dt = self.dt
@@ -405,6 +417,9 @@ class BacktestingEngine(object):
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
         
+        # 计算滑点，一个来回包括两次
+        totalSlippage = self.slippage * 2 
+        
         for trade in self.tradeDict.values():
             # 多头交易
             if trade.direction == DIRECTION_LONG:
@@ -414,8 +429,11 @@ class BacktestingEngine(object):
                 # 当前多头交易为平空
                 else:
                     entryTrade = shortTrade.pop(0)
-                    # 滑点对于交易而言永远是不利的方向，因此每笔交易开平需要减去两倍的滑点
-                    pnl = (trade.price - entryTrade.price - self.slippage * 2) * trade.volume * (-1)
+                    # 计算比例佣金
+                    commission = (trade.price+entryTrade.price) * self.rate
+                    # 计算盈亏
+                    pnl = ((trade.price - entryTrade.price)*(-1) - totalSlippage - commission) \
+                        * trade.volume * self.size
                     pnlDict[trade.dt] = pnl
             # 空头交易        
             else:
@@ -425,7 +443,11 @@ class BacktestingEngine(object):
                 # 当前空头交易为平多
                 else:
                     entryTrade = longTrade.pop(0)
-                    pnl = (trade.price - entryTrade.price - self.slippage * 2) * trade.volume
+                    # 计算比例佣金
+                    commission = (trade.price+entryTrade.price) * self.rate    
+                    # 计算盈亏
+                    pnl = ((trade.price - entryTrade.price) - totalSlippage - commission) \
+                        * trade.volume * self.size
                     pnlDict[trade.dt] = pnl
         
         # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
@@ -449,6 +471,14 @@ class BacktestingEngine(object):
             maxCapitalList.append(maxCapital)
             drawdownList.append(drawdown)
             
+        # 输出
+        self.output('-' * 50)
+        self.output(u'第一笔交易时间：%s' % timeList[0])
+        self.output(u'最后一笔交易时间：%s' % timeList[-1])
+        self.output(u'总交易次数：%s' % len(pnlList))
+        self.output(u'总盈亏：%s' % capitalList[-1])
+        self.output(u'最大回撤: %s' % min(drawdownList))        
+            
         # 绘图
         import matplotlib.pyplot as plt
         
@@ -463,14 +493,8 @@ class BacktestingEngine(object):
         pPnl = plt.subplot(3, 1, 3)
         pPnl.set_ylabel("pnl")
         pPnl.hist(pnlList, bins=20)
-
-        # 输出
-        self.output('-' * 50)
-        self.output(u'第一笔交易时间：%s' % timeList[0])
-        self.output(u'最后一笔交易时间：%s' % timeList[-1])
-        self.output(u'总交易次数：%s' % len(pnlList))
-        self.output(u'总盈亏：%s' % capitalList[-1])
-        self.output(u'最大回撤: %s' % min(drawdownList))
+        
+        plt.show()
     
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):
@@ -481,6 +505,17 @@ class BacktestingEngine(object):
     def setSlippage(self, slippage):
         """设置滑点"""
         self.slippage = slippage
+        
+    #----------------------------------------------------------------------
+    def setSize(self, size):
+        """设置合约大小"""
+        self.size = size
+        
+    #----------------------------------------------------------------------
+    def setRate(self, rate):
+        """设置佣金比例"""
+        self.rate = rate
+
 
 
 if __name__ == '__main__':
@@ -494,15 +529,17 @@ if __name__ == '__main__':
     
     # 设置引擎的回测模式为K线
     engine.setBacktestingMode(engine.BAR_MODE)
-    
-    # 设置滑点
-    engine.setSlippage(0.2)     # 股指1跳
-    
+
     # 设置回测用的数据起始日期
-    engine.setStartDate('20100416')
+    engine.setStartDate('20110101')
     
     # 载入历史数据到引擎中
     engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
+    
+    # 设置产品相关参数
+    engine.setSlippage(0.2)     # 股指1跳
+    engine.setRate(0.3/10000)   # 万0.3
+    engine.setSize(300)         # 股指合约大小    
     
     # 在引擎中创建策略对象
     engine.initStrategy(DoubleEmaDemo, {})

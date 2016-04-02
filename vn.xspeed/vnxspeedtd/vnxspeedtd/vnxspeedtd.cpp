@@ -2978,7 +2978,7 @@ int TdApi::reqInsertOrder(dict req)
 	getString(req, "instrumentID", myreq.instrumentID);
 	getInt(req, "openCloseType", &myreq.openCloseType);
 	getLong(req, "localOrderID", &myreq.localOrderID);
-	getLong(req, "localOrderID", &myreq.localOrderID);
+	getDouble(req, "insertPrice", &myreq.insertPrice);
 	getChar(req, "orderProperty", &myreq.orderProperty);
 	getShort(req, "buySellType", &myreq.buySellType);
 	getInt(req, "orderType", &myreq.orderType);
@@ -2988,7 +2988,7 @@ int TdApi::reqInsertOrder(dict req)
 	getInt(req, "reservedType2", &myreq.reservedType2);
 	getInt(req, "insertType", &myreq.insertType);
 	getLong(req, "orderAmount", &myreq.orderAmount);
-	getLong(req, "orderAmount", &myreq.orderAmount);
+	getDouble(req, "profitLossPrice", &myreq.profitLossPrice);
 	getString(req, "customCategory", myreq.customCategory);
 	getInt(req, "instrumentType", &myreq.instrumentType);
 	getString(req, "accountID", myreq.accountID);
@@ -3197,7 +3197,7 @@ int TdApi::reqQuoteInsert(dict req)
 	getString(req, "quoteID", myreq.quoteID);
 	getInt(req, "sOpenCloseType", &myreq.sOpenCloseType);
 	getLong(req, "bOrderAmount", &myreq.bOrderAmount);
-	getLong(req, "bOrderAmount", &myreq.bOrderAmount);
+	getDouble(req, "sInsertPrice", &myreq.sInsertPrice);
 	getLong(req, "lRequestID", &myreq.lRequestID);
 	getInt(req, "insertType", &myreq.insertType);
 	getLong(req, "sOrderAmount", &myreq.sOrderAmount);
@@ -3205,7 +3205,7 @@ int TdApi::reqQuoteInsert(dict req)
 	getLong(req, "localOrderID", &myreq.localOrderID);
 	getInt(req, "bSpeculator", &myreq.bSpeculator);
 	getString(req, "customCategory", myreq.customCategory);
-	getString(req, "customCategory", myreq.customCategory);
+	getDouble(req, "bInsertPrice", &myreq.bInsertPrice);
 	getInt(req, "instrumentType", &myreq.instrumentType);
 	getString(req, "accountID", myreq.accountID);
 	int i = this->api->ReqQuoteInsert(&myreq);
@@ -3307,7 +3307,7 @@ int TdApi::reqFromBankToFutureByFuture(dict req)
 	getLong(req, "lRequestID", &myreq.lRequestID);
 	getString(req, "bankID", myreq.bankID);
 	getString(req, "password", myreq.password);
-	getString(req, "password", myreq.password);
+	getDouble(req, "tradeAmount", &myreq.tradeAmount);
 	getString(req, "accountID", myreq.accountID);
 	int i = this->api->ReqFromBankToFutureByFuture(&myreq);
 	return i;
@@ -3323,7 +3323,7 @@ int TdApi::reqFromFutureToBankByFuture(dict req)
 	getLong(req, "lRequestID", &myreq.lRequestID);
 	getString(req, "bankID", myreq.bankID);
 	getString(req, "password", myreq.password);
-	getString(req, "password", myreq.password);
+	getDouble(req, "tradeAmount", &myreq.tradeAmount);
 	getString(req, "accountID", myreq.accountID);
 	int i = this->api->ReqFromFutureToBankByFuture(&myreq);
 	return i;
@@ -3349,7 +3349,6 @@ int TdApi::reqQryDepthMarketData(dict req)
 	int i = this->api->ReqQryDepthMarketData(&myreq);
 	return i;
 };
-
 
 
 ///-------------------------------------------------------------------------------------
@@ -3479,11 +3478,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryOrderInfo(dict data, dict error)
+	virtual void onRspQryOrderInfo(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryOrderInfo")(data, error);
+			this->get_override("onRspQryOrderInfo")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3491,11 +3490,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryMatchInfo(dict data, dict error)
+	virtual void onRspQryMatchInfo(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryMatchInfo")(data, error);
+			this->get_override("onRspQryMatchInfo")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3503,11 +3502,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryPosition(dict data, dict error)
+	virtual void onRspQryPosition(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryPosition")(data, error);
+			this->get_override("onRspQryPosition")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3515,11 +3514,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspCustomerCapital(dict data, dict error)
+	virtual void onRspCustomerCapital(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspCustomerCapital")(data, error);
+			this->get_override("onRspCustomerCapital")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3527,11 +3526,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryExchangeInstrument(dict data, dict error)
+	virtual void onRspQryExchangeInstrument(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryExchangeInstrument")(data, error);
+			this->get_override("onRspQryExchangeInstrument")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3551,11 +3550,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQrySpecifyInstrument(dict data, dict error)
+	virtual void onRspQrySpecifyInstrument(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQrySpecifyInstrument")(data, error);
+			this->get_override("onRspQrySpecifyInstrument")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3563,11 +3562,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryPositionDetail(dict data, dict error)
+	virtual void onRspQryPositionDetail(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryPositionDetail")(data, error);
+			this->get_override("onRspQryPositionDetail")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3599,11 +3598,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryTradeCode(dict data, dict error)
+	virtual void onRspQryTradeCode(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryTradeCode")(data, error);
+			this->get_override("onRspQryTradeCode")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3635,11 +3634,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryBill(dict data, dict error)
+	virtual void onRspQryBill(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryBill")(data, error);
+			this->get_override("onRspQryBill")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3743,11 +3742,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryQuoteNotice(dict data, dict error)
+	virtual void onRspQryQuoteNotice(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryQuoteNotice")(data, error);
+			this->get_override("onRspQryQuoteNotice")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3779,11 +3778,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryQuoteOrderInfo(dict data, dict error)
+	virtual void onRspQryQuoteOrderInfo(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryQuoteOrderInfo")(data, error);
+			this->get_override("onRspQryQuoteOrderInfo")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3791,11 +3790,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryForQuote(dict data, dict error)
+	virtual void onRspQryForQuote(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryForQuote")(data, error);
+			this->get_override("onRspQryForQuote")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3803,11 +3802,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryTransferBank(dict data, dict error)
+	virtual void onRspQryTransferBank(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryTransferBank")(data, error);
+			this->get_override("onRspQryTransferBank")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3815,11 +3814,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryTransferSerial(dict data, dict error)
+	virtual void onRspQryTransferSerial(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryTransferSerial")(data, error);
+			this->get_override("onRspQryTransferSerial")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3887,11 +3886,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryExchangeStatus(dict data, dict error)
+	virtual void onRspQryExchangeStatus(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryExchangeStatus")(data, error);
+			this->get_override("onRspQryExchangeStatus")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -3911,11 +3910,11 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
-	virtual void onRspQryDepthMarketData(dict data, dict error)
+	virtual void onRspQryDepthMarketData(dict data, dict error, bool last)
 	{
 		try
 		{
-			this->get_override("onRspQryDepthMarketData")(data, error);
+			this->get_override("onRspQryDepthMarketData")(data, error, last);
 		}
 		catch (error_already_set const &)
 		{

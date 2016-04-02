@@ -94,11 +94,11 @@ virtual void onRtnCancelOrder(dict data)
 	}
 };
 
-virtual void onRspQryOrderInfo(dict data, dict error)
+virtual void onRspQryOrderInfo(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryOrderInfo")(data, error);
+		this->get_override("onRspQryOrderInfo")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -106,11 +106,11 @@ virtual void onRspQryOrderInfo(dict data, dict error)
 	}
 };
 
-virtual void onRspQryMatchInfo(dict data, dict error)
+virtual void onRspQryMatchInfo(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryMatchInfo")(data, error);
+		this->get_override("onRspQryMatchInfo")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -118,11 +118,11 @@ virtual void onRspQryMatchInfo(dict data, dict error)
 	}
 };
 
-virtual void onRspQryPosition(dict data, dict error)
+virtual void onRspQryPosition(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryPosition")(data, error);
+		this->get_override("onRspQryPosition")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -142,11 +142,11 @@ virtual void onRspCustomerCapital(dict data, dict error)
 	}
 };
 
-virtual void onRspQryExchangeInstrument(dict data, dict error)
+virtual void onRspQryExchangeInstrument(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryExchangeInstrument")(data, error);
+		this->get_override("onRspQryExchangeInstrument")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -166,11 +166,11 @@ virtual void onRspArbitrageInstrument(dict data, dict error)
 	}
 };
 
-virtual void onRspQrySpecifyInstrument(dict data, dict error)
+virtual void onRspQrySpecifyInstrument(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQrySpecifyInstrument")(data, error);
+		this->get_override("onRspQrySpecifyInstrument")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -178,11 +178,11 @@ virtual void onRspQrySpecifyInstrument(dict data, dict error)
 	}
 };
 
-virtual void onRspQryPositionDetail(dict data, dict error)
+virtual void onRspQryPositionDetail(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryPositionDetail")(data, error);
+		this->get_override("onRspQryPositionDetail")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -214,11 +214,11 @@ virtual void onRspResetPassword(dict data, dict error)
 	}
 };
 
-virtual void onRspQryTradeCode(dict data, dict error)
+virtual void onRspQryTradeCode(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryTradeCode")(data, error);
+		this->get_override("onRspQryTradeCode")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -250,11 +250,11 @@ virtual void onRspEquityComputMode(dict data, dict error)
 	}
 };
 
-virtual void onRspQryBill(dict data, dict error)
+virtual void onRspQryBill(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryBill")(data, error);
+		this->get_override("onRspQryBill")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -358,11 +358,11 @@ virtual void onRspCancelAllOrder(dict data, dict error)
 	}
 };
 
-virtual void onRspQryQuoteNotice(dict data, dict error)
+virtual void onRspQryQuoteNotice(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryQuoteNotice")(data, error);
+		this->get_override("onRspQryQuoteNotice")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -394,11 +394,11 @@ virtual void onRtnForQuote(dict data)
 	}
 };
 
-virtual void onRspQryQuoteOrderInfo(dict data, dict error)
+virtual void onRspQryQuoteOrderInfo(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryQuoteOrderInfo")(data, error);
+		this->get_override("onRspQryQuoteOrderInfo")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -406,11 +406,11 @@ virtual void onRspQryQuoteOrderInfo(dict data, dict error)
 	}
 };
 
-virtual void onRspQryForQuote(dict data, dict error)
+virtual void onRspQryForQuote(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryForQuote")(data, error);
+		this->get_override("onRspQryForQuote")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -418,11 +418,11 @@ virtual void onRspQryForQuote(dict data, dict error)
 	}
 };
 
-virtual void onRspQryTransferBank(dict data, dict error)
+virtual void onRspQryTransferBank(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryTransferBank")(data, error);
+		this->get_override("onRspQryTransferBank")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -430,11 +430,11 @@ virtual void onRspQryTransferBank(dict data, dict error)
 	}
 };
 
-virtual void onRspQryTransferSerial(dict data, dict error)
+virtual void onRspQryTransferSerial(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryTransferSerial")(data, error);
+		this->get_override("onRspQryTransferSerial")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -502,11 +502,11 @@ virtual void onRtnRepealFromFutureToBankByBank(dict data)
 	}
 };
 
-virtual void onRspQryExchangeStatus(dict data, dict error)
+virtual void onRspQryExchangeStatus(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryExchangeStatus")(data, error);
+		this->get_override("onRspQryExchangeStatus")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -526,11 +526,11 @@ virtual void onRtnExchangeStatus(dict data)
 	}
 };
 
-virtual void onRspQryDepthMarketData(dict data, dict error)
+virtual void onRspQryDepthMarketData(dict data, dict error, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryDepthMarketData")(data, error);
+		this->get_override("onRspQryDepthMarketData")(data, error, last);
 	}
 	catch (error_already_set const &)
 	{
