@@ -87,7 +87,7 @@ class OandaApi(object):
         self.initFunctionSetting(FUNCTIONCODE_GETPRICES, {'path': '/v1/prices',
                                                           'method': 'GET'})        
         
-        self.initFunctionSetting(FUNCTIONCODE_GETPRICEHISTORY, {'path': 'v1/candles',
+        self.initFunctionSetting(FUNCTIONCODE_GETPRICEHISTORY, {'path': '/v1/candles',
                                                                 'method': 'GET'})
         
         self.initFunctionSetting(FUNCTIONCODE_GETACCOUNTS, {'path': '/v1/accounts',
@@ -177,8 +177,9 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def exit(self):
         """退出接口"""
-        self.active = False
-        self.reqThread.join()
+        if self.active:
+            self.active = False
+            self.reqThread.join()
         
     #----------------------------------------------------------------------
     def initFunctionSetting(self, code, setting):
