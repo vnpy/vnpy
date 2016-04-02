@@ -531,7 +531,7 @@ if __name__ == '__main__':
     engine.setBacktestingMode(engine.BAR_MODE)
 
     # 设置回测用的数据起始日期
-    engine.setStartDate('20120101')
+    engine.setStartDate('20110101')
     
     # 载入历史数据到引擎中
     engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')

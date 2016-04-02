@@ -498,7 +498,7 @@ class CtpTdApi(TdApi):
         # 否则，推送错误信息
         else:
             err = VtErrorData()
-            err.gatewayName = self.gateway
+            err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
