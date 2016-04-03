@@ -6,6 +6,7 @@ vn.xspeed的gateway接入
 
 import os
 import json
+import time
 from copy import copy
 
 from vnxspeedmd import MdApi
@@ -50,6 +51,7 @@ orderStatusMap[STATUS_PARTTRADED] = defineDict["DFITC_SPD_PARTIAL"]
 orderStatusMap[STATUS_NOTTRADED] = defineDict["DFITC_SPD_IN_QUEUE"]
 orderStatusMap[STATUS_CANCELLED] = defineDict["DFITC_SPD_CANCELED"]
 orderStatusMapReverse = {v:k for k,v in orderStatusMap.items()}
+orderStatusMapReverse[defineDict["DFITC_SPD_PARTIAL_CANCELED"]] = STATUS_CANCELLED
 
 
 ########################################################################
@@ -422,6 +424,7 @@ class XspeedTdApi(TdApi):
         
         self.posDict = {}                   # 缓存持仓数据的字典
         self.orderDict = {}                 # 缓存委托数据的字典
+        self.spdOrderDict = {}              # 飞创柜台委托号字典
     
     #----------------------------------------------------------------------
     def connect(self, accountID, password, address):
@@ -514,7 +517,13 @@ class XspeedTdApi(TdApi):
         req['accountID'] = self.accountID
         req['lRequestID'] = self.reqID
         
-        self.reqOrderAction(req, self.reqID)
+        # 添加柜台委托号字段
+        localID = int(cancelOrderReq.orderID)
+        if localID in self.spdOrderDict:
+            req['spdOrderID'] = self.spdOrderDict[localID]
+            del req['localOrderID']
+
+        self.reqCancelOrder(req)
         
     #----------------------------------------------------------------------
     def close(self):
@@ -653,28 +662,17 @@ class XspeedTdApi(TdApi):
         # 推送
         self.gateway.onTrade(trade)
         
+        # 获取报单数据对象
+        localID = data['localOrderID']
+        if localID not in self.orderDict:
+            return
+        order = self.orderDict[localID]
         
-        # 更新委托信息
-        # 创建报单数据对象
-        order = VtOrderData()
-        order.gatewayName = self.gatewayName
-        
-        # 保存代码和报单号
-        order.symbol = data['instrumentID']
-        order.exchange = exchangeMapReverse[data['exchangeID']]
-        order.vtSymbol = order.symbol
-        order.orderID = str(data['localOrderID'])    
-        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
-
-        order.direction = directionMapReverse.get(data['buySellType'], DIRECTION_UNKNOWN)
-        order.offset = offsetMapReverse.get(data['openCloseType'], OFFSET_UNKNOWN)
         order.status = orderStatusMapReverse.get(data['orderStatus'], STATUS_UNKNOWN)
-
-        order.price = data['insertPrice']
-        order.totalVolume = data['orderAmount']
+        order.tradedVolume += trade.volume
         
         # 推送
-        self.gateway.onOrder(order)
+        self.gateway.onOrder(copy(order))        
         
     #----------------------------------------------------------------------
     def onRtnOrder(self, data) :
@@ -682,12 +680,14 @@ class XspeedTdApi(TdApi):
         # 更新最大报单编号
         newLocalID = data['localOrderID']
         self.localID = max(self.localID, newLocalID)
+        self.spdOrderDict[newLocalID] = data['spdOrderID']
         
         # 获取报单数据对象
         if newLocalID in self.orderDict:
             order = self.orderDict[newLocalID]
         else:
             order = VtOrderData()
+            self.orderDict[newLocalID] = order
             order.gatewayName = self.gatewayName
         
             # 保存后续不会变化的数据
@@ -704,7 +704,8 @@ class XspeedTdApi(TdApi):
             # 价格、报单量等数值
             order.price = data['insertPrice']
             order.totalVolume = data['orderAmount']
-            order.sessionID = data['sessionID']            
+            order.sessionID = data['sessionID']
+            order.orderTime = time.strftime('%H:%M:%S')
         
         order.status = orderStatusMapReverse.get(data['orderStatus'], STATUS_UNKNOWN)
         
@@ -723,6 +724,7 @@ class XspeedTdApi(TdApi):
             order = self.orderDict[newLocalID]
         else:
             order = VtOrderData()
+            self.orderDict[newLocalID] = order
             order.gatewayName = self.gatewayName
         
             # 保存后续不会变化的数据
@@ -756,12 +758,14 @@ class XspeedTdApi(TdApi):
         # 更新最大报单编号
         newLocalID = data['localOrderID']
         self.localID = max(self.localID, int(newLocalID))
+        self.spdOrderDict[newLocalID] = data['spdOrderID']
         
         # 获取报单数据对象
         if newLocalID in self.orderDict:
             order = self.orderDict[newLocalID]
         else:
             order = VtOrderData()
+            self.orderDict[newLocalID] = order
             order.gatewayName = self.gatewayName
         
             # 保存后续不会变化的数据
@@ -773,11 +777,11 @@ class XspeedTdApi(TdApi):
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             
             order.direction = directionMapReverse.get(data['buySellType'], DIRECTION_UNKNOWN)
-            order.offset = offsetMapReverse.get(data['openCloseType'], OFFSET_UNKNOWN)
+            order.offset = offsetMapReverse.get(data['openClose'], OFFSET_UNKNOWN)
 
             order.price = data['insertPrice']
             order.totalVolume = data['orderAmount']
-            order.sessionID = data['sessionID']         
+            #order.sessionID = data['sessionID']         
 
         order.status = orderStatusMapReverse.get(data['orderStatus'], STATUS_UNKNOWN)
         order.tradedVolume = data['matchedAmount']
