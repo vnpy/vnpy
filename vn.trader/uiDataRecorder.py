@@ -9,7 +9,7 @@ Contracts_init.json中写入需要订阅的期货品种，如需要订阅pp和IF
 }
 2. 主力合约判断
 运行程序后，点击‘合约初始化’按钮，程序会获取通联的期货数据，自动判断主力合约。并写入Contracts_init.json中。
-注：通联选择的是持仓量判断主力，本程序选择的是昨日成交量判断，但是会给出提示。
+注：通联选择的是持仓量判断主力，本程序选择的是昨日成交量判断，两者不同时会给出提示。
 3. 合约订阅
 4. Tick存储
 '''
@@ -150,6 +150,7 @@ class DataRecorder(QtGui.QFrame):
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
                 self.writeCtaLog(u'MongoDB连接成功')
+
                 self.mainEngine.dbClient = self.dbClient        # 主引擎数据库连接
 
             except pymongo.errors.ConnectionFailure:
