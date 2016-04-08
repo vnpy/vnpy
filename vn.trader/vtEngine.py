@@ -197,7 +197,7 @@ class MainEngine(object):
             IP = str(setting['IP'])
             replicaset = str(setting['replicaset'])
             readPreference = str(setting['readPreference'])
-            col = str(setting['col'])
+            database = str(setting['db'])
             userID = str(setting['userID'])
             password = str(setting['password'])
 
@@ -207,7 +207,7 @@ class MainEngine(object):
         if not self.dbClient:
             try:
                 self.dbClient = MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
-                db = self.dbClient[col]
+                db = self.dbClient[database]
                 db.authenticate(userID, password)
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:

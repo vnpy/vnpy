@@ -1,8 +1,8 @@
 {
-    "IP": "221.2.40.243",
-    "replicaset": "RTDB",
-    "readPreference": "secondary",
-    "col": "admin",
-    "userID": "paolo",
-    "password":"RT10010"
+    "IP": "0",
+    "replicaset": "0",
+    "readPreference": "0",
+    "db": "0",
+    "userID": "0",
+    "password":"0"
 }
