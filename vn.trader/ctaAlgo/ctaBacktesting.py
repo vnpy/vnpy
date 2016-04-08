@@ -103,7 +103,7 @@ class BacktestingEngine(object):
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
                 print u'MongoDB连接成功'
-            except pymongo.ConnectionFailure:
+            except pymongo.errors.ConnectionFailure:
                 print u'MongoDB连接失败'
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):

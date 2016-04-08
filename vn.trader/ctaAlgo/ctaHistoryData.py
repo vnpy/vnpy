@@ -73,7 +73,7 @@ class HistoryDataEngine(object):
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
                 print u'MongoDB连接成功'
-            except pymongo.ConnectionFailure:
+            except pymongo.errors.ConnectionFailure:
                 print u'MongoDB连接失败'
 
     #----------------------------------------------------------------------
