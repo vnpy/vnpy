@@ -14,7 +14,7 @@ def main():
     
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('vnpy.ico'))
-    #app.setFont(BASIC_FONT)#设置此字体导致win7下主界面超出屏幕，注释掉后正常。
+    app.setFont(BASIC_FONT)
     
     mainEngine = MainEngine()
     mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
