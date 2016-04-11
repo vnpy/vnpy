@@ -17,7 +17,8 @@ import json
 import os
 import pymongo
 import tushare as ts
-ts.set_token('575593eb7696aec7339224c0fac2313780d8645f68b77369dcb35f8bcb419a0b')
+# ts.set_token('575593eb7696aec7339224c0fac2313780d8645f68b77369dcb35f8bcb419a0b')
+ts.set_token('ced15aa738976abf2136cc9e197fbcd34776e0f8183c7660b7fdcd626a715b3b')    # paolo
 import time
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
