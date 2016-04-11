@@ -1,8 +1,6 @@
 # encoding: UTF-8
 
 '''
-也可以使用uiDataRecorder1.py的形式，使用vtEngine中的dbClient，但是ctaLog不好写入，所以使用此版本的自行实现dbConnect方式
-
 1. 合约选择
 Contracts_init.json中写入需要订阅的期货品种，如需要订阅pp和IF，写入
 {
@@ -54,7 +52,6 @@ class DataRecorder(QtGui.QFrame):
         self.eventEngine = eventEngine
         self.ctaEngine = self.mainEngine.ctaEngine
 
-        self.dbClient = None        # 数据库客户端
         self.ctpConnected = False       # 是否登录CTP
         self.contractsDict = {}     # 保存订阅symbol主力合约的字典
 
@@ -123,43 +120,12 @@ class DataRecorder(QtGui.QFrame):
     #----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""
-
-        # 载入json文件
-        fileName = 'Mongo_connect.json'
-        # fileName = os.path.dirname(os.getcwd()) + '\\mongoConnect\\' + fileName
-        fileName = 'mongoConnect\\' + fileName
-        try:
-            f = file(fileName)
-        except IOError:
-            self.writeCtaLog(u'读取MongoDB连接配置出错，请检查')
-            return
-
-        # 解析json文件
-        setting = json.load(f)
-        try:
-            IP = str(setting['IP'])
-            replicaset = str(setting['replicaset'])
-            readPreference = str(setting['readPreference'])
-            database = str(setting['db'])
-            userID = str(setting['userID'])
-            password = str(setting['password'])
-
-        except KeyError:
-            self.writeCtaLog(u'MongoDB连接配置缺少字段，请检查')
-
-        if not self.dbClient:
+        if not self.mainEngine.dbClient:
             try:
-                self.dbClient = pymongo.MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
-                db = self.dbClient[database]
-                db.authenticate(userID, password)
+                self.mainEngine.dbConnect()
                 self.writeCtaLog(u'MongoDB连接成功')
-
-                self.mainEngine.dbClient = self.dbClient        # 主引擎数据库连接
-
             except pymongo.errors.ConnectionFailure:
                 self.writeCtaLog(u'MongoDB连接失败')
-            except ValueError:
-                self.writeCtaLog(u'MongoDB连接配置字段错误，请检查')
 
     #----------------------------------------------------------------------
     def ctpConnect(self):
@@ -241,7 +207,7 @@ class DataRecorder(QtGui.QFrame):
         if self.ctpConnected is False:
             self.writeCtaLog(u'未登录CTP, 期货Tick 订阅失败')
             return
-        if self.dbClient is None:
+        if self.mainEngine.dbClient is None:
             self.writeCtaLog(u'未连接数据库, 期货Tick 订阅失败')
             return
 

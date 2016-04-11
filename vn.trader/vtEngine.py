@@ -212,7 +212,8 @@ class MainEngine(object):
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
-
+            except ValueError:
+                self.writeLog(u'MongoDB连接配置字段错误，请检查')
     #----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
