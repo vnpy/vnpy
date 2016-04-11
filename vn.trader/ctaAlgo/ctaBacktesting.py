@@ -90,7 +90,7 @@ class BacktestingEngine(object):
             IP = str(setting['IP'])
             replicaset = str(setting['replicaset'])
             readPreference = str(setting['readPreference'])
-            col = str(setting['col'])
+            database = str(setting['db'])
             userID = str(setting['userID'])
             password = str(setting['password'])
 
@@ -100,10 +100,10 @@ class BacktestingEngine(object):
         if not self.dbClient:
             try:
                 self.dbClient = pymongo.MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
-                db = self.dbClient[col]
+                db = self.dbClient[database]
                 db.authenticate(userID, password)
                 print u'MongoDB连接成功'
-            except pymongo.ConnectionFailure:
+            except pymongo.errors.ConnectionFailure:
                 print u'MongoDB连接失败'
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
@@ -568,7 +568,7 @@ if __name__ == '__main__':
     engine = BacktestingEngine()
 
     # 设置引擎的回测模式为K线
-    engine.setBacktestingMode(engine.BAR_MODE)
+    engine.setBacktestingMode(engine.TICK_MODE)
 
     # 设置滑点
     engine.setSlippage(2)     # pp2跳

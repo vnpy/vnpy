@@ -213,7 +213,7 @@ class OrderManagementDemo(CtaTemplate):
         """Constructor"""
         super(OrderManagementDemo, self).__init__(ctaEngine, setting)
 		
-	self.lastOrder = None
+        self.lastOrder = None
         self.orderType = ''
 	
     #----------------------------------------------------------------------
