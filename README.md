@@ -25,7 +25,7 @@
 
 9. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
 
-对于想研究API封装的用户，可以参考[vnpy.org](vnpy.org)上面的教程一步步操作。
+对于想研究API封装的用户，可以参考[vnpy.org](http://vnpy.org)上面的教程一步步操作。
 
 其他作者建议使用的软件工具：
 * [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
