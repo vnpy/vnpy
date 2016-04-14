@@ -51,7 +51,7 @@ class KsgoldGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\ksgoldGateway\\' + fileName
+        fileName = os.getcwd() + '/ksgoldGateway/' + fileName
         
         try:
             f = file(fileName)
