@@ -292,6 +292,7 @@ class BacktestingEngine(object):
             sellCrossPrice = self.bar.high  # 若卖出方向限价单价格低于该价格，则会成交
             bestCrossPrice = self.bar.open  # 在当前时间点前发出的委托可能的最优成交价
         else:
+            # self.tick.lastPrice = self.tick.close
             buyCrossPrice = self.tick.lastPrice
             sellCrossPrice = self.tick.lastPrice
             bestCrossPrice = self.tick.lastPrice
