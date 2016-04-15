@@ -4,6 +4,7 @@ import psutil
 
 from uiBasicWidget import *
 from ctaAlgo.uiCtaWidget import CtaEngineManager
+from dataRecorder.uiDrWidget import DrEngineManager
 
 
 ########################################################################
@@ -115,6 +116,9 @@ class MainWindow(QtGui.QMainWindow):
         contractAction = QtGui.QAction(u'查询合约', self)
         contractAction.triggered.connect(self.openContract)
         
+        drAction = QtGui.QAction(u'行情数据记录', self)
+        drAction.triggered.connect(self.openDr)
+        
         ctaAction = QtGui.QAction(u'CTA策略', self)
         ctaAction.triggered.connect(self.openCta)
         
@@ -141,6 +145,7 @@ class MainWindow(QtGui.QMainWindow):
         
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(contractAction)
+        functionMenu.addAction(drAction)
         
         # 算法相关
         algoMenu = menubar.addMenu(u'算法')
@@ -264,6 +269,15 @@ class MainWindow(QtGui.QMainWindow):
         except KeyError:
             self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
             self.widgetDict['ctaM'].show()
+            
+    #----------------------------------------------------------------------
+    def openDr(self):
+        """打开行情数据记录组件"""
+        try:
+            self.widgetDict['drM'].show()
+        except KeyError:
+            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
+            self.widgetDict['drM'].show()    
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):
