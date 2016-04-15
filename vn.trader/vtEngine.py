@@ -8,7 +8,9 @@ from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
 from vtGateway import *
+
 from ctaAlgo.ctaEngine import CtaEngine
+from dataRecorder.drEngine import DrEngine
 
 
 ########################################################################
@@ -28,11 +30,12 @@ class MainEngine(object):
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
         
-        # CTA引擎
-        self.ctaEngine = CtaEngine(self, self.eventEngine)
-        
         # 调用一个个初始化函数
         self.initGateway()
+
+        # 扩展模块
+        self.ctaEngine = CtaEngine(self, self.eventEngine)
+        self.drEngine = DrEngine(self, self.eventEngine)
         
     #----------------------------------------------------------------------
     def initGateway(self):
