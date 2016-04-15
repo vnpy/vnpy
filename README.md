@@ -5,25 +5,58 @@
 
 对于大部分用户来说，无需自行编译API接口，可以直接使用vn.trader进行交易和策略开发：
 
-1. 准备一台Windows 7 64位系统的电脑
+1. 准备一台Windows 7 64位系统的电脑**32位系统单进程有2G限制**
 
-2. 安装[Anaconda](http://www.continuum.io/downloads)：下载Python 2.7 32位版本，**注意必须是32位**
+2. 安装[Anaconda](http://www.continuum.io/downloads)：下载Python 2.7 32位版本，**一次装完大部份包，注意必须是32位，稳定少坑**
 
-3. 安装[MongoDB](https://www.mongodb.org/downloads#production)：下载Windows 64-bit 2008 R2+版本
+3. 安装[MongoDB](https://www.mongodb.org/downloads#production)：下载Windows 64-bit 2008 R2+版本 **注：需用firefox浏览器，不然会看不到下载链接，网站兼容性不好。**
 
-4. 安装pymongo：在cmd中运行pip install pymongo
+4. 安装pymongo：在cmd中运行pip install pymongo  **python下的MongoDB的驱动**
 
 5. 参考[这里](http://jingyan.baidu.com/article/6b97984dbeef881ca2b0bf3e.html)，将MongoDB注册为Windows服务并启动
+     **管理员身份的CMD界面进入：C:\MongoDB目录\bin ，运行Mongod -dbpath "C:\MongoDB目录\Data\db" -logpath "C:\MongoDB目录\Data\log\MongoDB.log"  -install -serviceName  "MongoDB" （Data及下面的db,log目录有时需要自己添加）**
+     **此时服务已经安装成功，运行>net start mongodb (开启服务)**
 
 6. 安装[Visual C++  Redistributable Packages for VS2013](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)，中英文随意
 
-6. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
+7. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
 
-7. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
+8. 获取交易帐号、BrokerID与交易和行情服务器地址
+           对于仿真交易者：
+在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码**
+参考：http://www.simnow.com.cn/product.action
+BrokerID统一为：9999
+第一套：
+    标准CTP：
+        第一组：Trade Front：180.168.146.187:10000，Market Front：180.168.146.187:10010；【电信】
+        第二组：Trade Front：180.168.146.187:10001，Market Front：180.168.146.187:10011；【电信】
+        第三组：Trade Front：218.202.237.33 :10002，Market Front：218.202.237.33 :10012；【移动】
+        交易阶段(服务时间)：与实际生产环境保持一致
+    CTPMini1：
+        第一组：Trade Front：180.168.146.187:10003，Market Front：180.168.146.187:10013；【电信】
+第二套：
+    交易前置：180.168.146.187:10030，行情前置：180.168.146.187:10031；【7x24】
+    第二套环境仅服务于CTP API开发爱好者，仅为用户提供CTP API测试需求，不提供结算等其它服务。
+    新注册用户，需要等到第二个交易日才能使用第二套环境。
+    账户、钱、仓跟第一套环境上一个交易日保持一致。
+    交易阶段(服务时间)：交易日，16：00～次日09：00；非交易日，16：00～次日15：00。
+    用户通过SimNow的账户（上一个交易日之前注册的账户都有效）接入环境，建议通过商业终端进行模拟交易的用户使用第一套环境。
 
-8. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+ 对于实盘交易者：
+      下载快期，找到安装目录，用文本文件打开broker.xml
+           查询你的**交易帐号、BrokerID、交易和行情服务器地址**（注：每家期货公司的ctp前置地址都不一样，有的公司还有盘后查询服务器地址）
 
-9. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
+9. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+{
+    "brokerID": "9999", 
+    "tdAddress": "tcp://前置交易服务器地址", 
+    "password": "密码", 
+    "mdAddress": "tcp://前置行情服务器地址", 
+    "userID": "帐号"
+}
+
+
+10. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
 
 对于想研究API封装的用户，可以参考[vnpy.org](vnpy.org)上面的教程一步步操作。
 
