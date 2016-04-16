@@ -238,10 +238,8 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def test(self):
         """测试按钮用的函数"""
-        api = self.mainEngine.gatewayDict['KSGOLD'].tdApi
-        api.reqID += 1
-        api.reqQryOrder({}, api.reqID)
-        #api.reqQryTrade({}, api.reqID)
+        # 有需要使用手动触发的测试函数可以写在这里
+        pass
 
     #----------------------------------------------------------------------
     def openAbout(self):
@@ -309,40 +307,16 @@ class AboutWidget(QtGui.QDialog):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(u'关于')
+        self.setWindowTitle(u'关于VnTrader')
 
         text = u"""
-            VnTrader
-
-            更新日期：2015/9/29
-
-            作者：用Python的交易员
+            Developed by traders, for traders.
 
             License：MIT
-
-            主页：vnpy.org
-
-            Github：github.com/vnpy/vnpy
-
-            QQ交流群：262656087
-
-
-
-
-            开发环境
-
-            操作系统：Windows 7 专业版 64位
-
-            Python发行版：Python 2.7.6 (Anaconda 1.9.2 Win-32)
-
-            CTP：vn.ctp  2015/6/1版
-
-            图形库：PyQt4 4.11.3 Py2.7-x32
-
-            事件驱动引擎：vn.event
-
-            开发环境：WingIDE 5.0.6
             
+            Website：www.vnpy.org
+
+            Github：www.github.com/vnpy/vnpy
             
             """
 

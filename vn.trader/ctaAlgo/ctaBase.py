@@ -29,9 +29,9 @@ STOPORDERPREFIX = 'CtaStopOrder.'
 
 # 数据库名称
 SETTING_DB_NAME = 'VnTrader_Setting_Db'
-TICK_DB_NAME = 'VtTrader_Tick_Db'
-DAILY_DB_NAME = 'VtTrader_Daily_Db'
-MINUTE_DB_NAME = 'VtTrader_1Min_Db'
+TICK_DB_NAME = 'VnTrader_Tick_Db'
+DAILY_DB_NAME = 'VnTrader_Daily_Db'
+MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 
 
 # CTA引擎中涉及的数据类定义
