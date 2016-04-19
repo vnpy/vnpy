@@ -45,8 +45,8 @@ class StopOrder(object):
     def __init__(self):
         """Constructor"""
         self.vtSymbol = EMPTY_STRING
-        # self.direction = EMPTY_UNICODE
-        # self.offset = EMPTY_UNICODE
+        self.direction = EMPTY_UNICODE
+        self.offset = EMPTY_UNICODE
         self.orderType = EMPTY_UNICODE
         self.price = EMPTY_FLOAT
         self.volume = EMPTY_INT
