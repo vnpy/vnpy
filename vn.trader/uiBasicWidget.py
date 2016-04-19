@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+import json
+import csv
 from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
@@ -9,7 +11,20 @@ from vtFunction import *
 from vtGateway import *
 
 
-BASIC_FONT = QtGui.QFont(u'微软雅黑', 12)
+#----------------------------------------------------------------------
+def loadFont():
+    """载入字体设置"""
+    try:
+        f = file("VT_setting.json")
+        setting = json.load(f)
+        family = setting['fontFamily']
+        size = setting['fontSize']
+        font = QtGui.QFont(family, size)
+    except:
+        font = QtGui.QFont(u'微软雅黑', 12)
+    return font
+
+BASIC_FONT = loadFont()
 
 
 ########################################################################
@@ -181,6 +196,9 @@ class BasicMonitor(QtGui.QTableWidget):
         # 默认不允许根据表头进行排序，需要的组件可以开启
         self.sorting = False
         
+        # 初始化右键菜单
+        self.initMenu()
+        
     #----------------------------------------------------------------------
     def setHeaderDict(self, headerDict):
         """设置表头有序字典"""
@@ -313,7 +331,53 @@ class BasicMonitor(QtGui.QTableWidget):
         """设置是否允许根据表头排序"""
         self.sorting = sorting
         
-    
+    #----------------------------------------------------------------------
+    def saveToCsv(self):
+        """保存表格内容到CSV文件"""
+        # 先隐藏右键菜单
+        self.menu.close()
+        
+        # 获取想要保存的文件名
+        path = QtGui.QFileDialog.getSaveFileName(self, '保存数据', '', 'CSV(*.csv)')
+
+        try:
+            if not path.isEmpty():
+                with open(unicode(path), 'wb') as f:
+                    writer = csv.writer(f)
+                    
+                    # 保存标签
+                    headers = [header.encode('gbk') for header in self.headerList]
+                    writer.writerow(headers)
+                    
+                    # 保存每行内容
+                    for row in range(self.rowCount()):
+                        rowdata = []
+                        for column in range(self.columnCount()):
+                            item = self.item(row, column)
+                            if item is not None:
+                                rowdata.append(
+                                    unicode(item.text()).encode('gbk'))
+                            else:
+                                rowdata.append('')
+                        writer.writerow(rowdata)     
+        except IOError:
+            pass
+
+    #----------------------------------------------------------------------
+    def initMenu(self):
+        """初始化右键菜单"""
+        self.menu = QtGui.QMenu(self)    
+        
+        saveAction = QtGui.QAction(u'保存内容', self)
+        saveAction.triggered.connect(self.saveToCsv)
+        
+        self.menu.addAction(saveAction)
+        
+    #----------------------------------------------------------------------
+    def contextMenuEvent(self, event):
+        """右键点击事件"""
+        self.menu.popup(QtGui.QCursor.pos())    
+
 
 ########################################################################
 class MarketMonitor(BasicMonitor):
@@ -979,7 +1043,7 @@ class ContractMonitor(BasicMonitor):
         self.setMinimumSize(800, 800)
         self.setFont(BASIC_FONT)
         self.initTable()
-        self.initMenu()
+        self.addMenuAction()
     
     #----------------------------------------------------------------------
     def showAllContracts(self):
@@ -1010,24 +1074,18 @@ class ContractMonitor(BasicMonitor):
     #----------------------------------------------------------------------
     def refresh(self):
         """刷新"""
+        self.menu.close()   # 关闭菜单
         self.clearContents()
         self.setRowCount(0)
         self.showAllContracts()
-        self.menu.close()   # 关闭菜单
     
     #----------------------------------------------------------------------
-    def initMenu(self):
-        """初始化右键菜单"""
+    def addMenuAction(self):
+        """增加右键菜单内容"""
         refreshAction = QtGui.QAction(u'刷新', self)
         refreshAction.triggered.connect(self.refresh)
-    
-        self.menu = QtGui.QMenu(self)    
-        self.menu.addAction(refreshAction)
         
-    #----------------------------------------------------------------------
-    def contextMenuEvent(self, event):
-        """右键点击事件"""
-        self.menu.popup(QtGui.QCursor.pos())
+        self.menu.addAction(refreshAction)
     
     #----------------------------------------------------------------------
     def show(self):

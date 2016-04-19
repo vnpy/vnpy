@@ -20,7 +20,7 @@ from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    settingFileName = os.getcwd() + '\\ctaAlgo\\' + settingFileName
+    settingFileName = os.getcwd() + '/ctaAlgo/' + settingFileName
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):

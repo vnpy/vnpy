@@ -94,7 +94,7 @@ class SgitGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\sgitGateway\\' + fileName
+        fileName = os.getcwd() + '/sgitGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -239,7 +239,7 @@ class SgitMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcMdApi(path)
@@ -431,7 +431,7 @@ class SgitTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
