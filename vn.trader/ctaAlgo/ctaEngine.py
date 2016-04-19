@@ -123,19 +123,20 @@ class CtaEngine(object):
         so.strategy = strategy
         so.stopOrderID = stopOrderID
         so.status = STOPORDER_WAITING
+        so.orderType = orderType
         
-        if orderType == CTAORDER_BUY:
-            so.direction = DIRECTION_LONG
-            so.offset = OFFSET_OPEN
-        elif orderType == CTAORDER_SELL:
-            so.direction = DIRECTION_SHORT
-            so.offset = OFFSET_CLOSE
-        elif orderType == CTAORDER_SHORT:
-            so.direction = DIRECTION_SHORT
-            so.offset = OFFSET_OPEN
-        elif orderType == CTAORDER_COVER:
-            so.direction = DIRECTION_LONG
-            so.offset = OFFSET_CLOSE           
+        # if orderType == CTAORDER_BUY:
+        #     so.direction = DIRECTION_LONG
+        #     so.offset = OFFSET_OPEN
+        # elif orderType == CTAORDER_SELL:
+        #     so.direction = DIRECTION_SHORT
+        #     so.offset = OFFSET_CLOSE
+        # elif orderType == CTAORDER_SHORT:
+        #     so.direction = DIRECTION_SHORT
+        #     so.offset = OFFSET_OPEN
+        # elif orderType == CTAORDER_COVER:
+        #     so.direction = DIRECTION_LONG
+        #     so.offset = OFFSET_CLOSE           
         
         # 保存stopOrder对象到字典中
         self.stopOrderDict[stopOrderID] = so
