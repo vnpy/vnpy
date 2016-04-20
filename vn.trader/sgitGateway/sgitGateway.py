@@ -385,6 +385,26 @@ class SgitMdApi(MdApi):
         tick.bidVolume1 = data['BidVolume1']
         tick.askPrice1 = data['AskPrice1']
         tick.askVolume1 = data['AskVolume1']
+
+        tick.bidPrice2 = data['BidPrice2']
+        tick.bidVolume2 = data['BidVolume2']
+        tick.askPrice2 = data['AskPrice2']
+        tick.askVolume2 = data['AskVolume2']
+
+        tick.bidPrice3 = data['BidPrice3']
+        tick.bidVolume3 = data['BidVolume3']
+        tick.askPrice3 = data['AskPrice3']
+        tick.askVolume3 = data['AskVolume3']
+
+        tick.bidPrice4 = data['BidPrice4']
+        tick.bidVolume4 = data['BidVolume4']
+        tick.askPrice4 = data['AskPrice4']
+        tick.askVolume4 = data['AskVolume4']
+
+        tick.bidPrice5 = data['BidPrice5']
+        tick.bidVolume5 = data['BidVolume5']
+        tick.askPrice5 = data['AskPrice5']
+        tick.askVolume5 = data['AskVolume5']
     
         self.gateway.onTick(tick)
 
@@ -411,6 +431,7 @@ class SgitTdApi(TdApi):
         self.password = EMPTY_STRING        # 密码
         self.brokerID = EMPTY_STRING        # 经纪商代码
         self.address = EMPTY_STRING         # 服务器地址
+        self.investorID = EMPTY_STRING      # 投资者代码
         
         self.frontID = EMPTY_INT            # 前置机编号
         self.sessionID = EMPTY_INT          # 会话编号
@@ -500,7 +521,7 @@ class SgitTdApi(TdApi):
             return ''
             
         req['OrderRef'] = strID
-        req['InvestorID'] = self.userID
+        req['InvestorID'] = self.investorID
         req['UserID'] = self.userID
         req['BrokerID'] = self.brokerID
         
@@ -574,7 +595,7 @@ class SgitTdApi(TdApi):
         
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
-        """登陆回报"""
+        '''登陆回报'''
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = True
@@ -588,9 +609,9 @@ class SgitTdApi(TdApi):
             # 调用ready
             self.ready()
             
-            # 查询合约代码
+            # 查询投资者代码
             self.reqID += 1
-            self.reqQryInstrument({}, self.reqID)      
+            self.reqQryInvestor({}, self.reqID)                
             
         # 否则，推送错误信息
         else:
@@ -702,7 +723,17 @@ class SgitTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
         """"""
-        pass
+        self.investorID = data['InvestorID']
+        
+        if last:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'投资者编码获取完成'
+            self.gateway.onLog(log)        
+    
+            # 查询合约
+            self.reqID += 1
+            self.reqQryInstrument({}, self.reqID)              
         
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):

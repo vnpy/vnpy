@@ -557,7 +557,6 @@ class OrderMonitor(BasicMonitor):
 ########################################################################
 class PositionMonitor(BasicMonitor):
     """持仓监控"""
-
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, parent=None):
         """Constructor"""
@@ -577,10 +576,12 @@ class PositionMonitor(BasicMonitor):
         self.setDataKey('vtPositionName')
         self.setEventType(EVENT_POSITION)
         self.setFont(BASIC_FONT)
+        self.setSaveData(True)
+        
         self.initTable()
         self.registerEvent()
-
-
+        
+        
 ########################################################################
 class AccountMonitor(BasicMonitor):
     """账户监控"""
@@ -635,6 +636,7 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_SSE,
                     EXCHANGE_SZSE,
                     EXCHANGE_SGE,
+                    EXCHANGE_HKEX,
                     EXCHANGE_SMART,
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO]
@@ -1008,6 +1010,29 @@ class TradingWidget(QtGui.QFrame):
             req.sessionID = order.sessionID
             req.orderID = order.orderID
             self.mainEngine.cancelOrder(req, order.gatewayName)
+            
+    #----------------------------------------------------------------------
+    def closePosition(self, cell):
+        """根据持仓信息自动填写交易组件"""
+        # 读取持仓数据，cell是一个表格中的单元格对象
+        pos = cell.data
+        symbol = pos.symbol
+        
+        # 更新交易组件的显示合约
+        self.lineSymbol.setText(symbol)
+        self.updateSymbol()
+        
+        # 自动填写信息
+        self.comboPriceType.setCurrentIndex(self.priceTypeList.index(PRICETYPE_LIMITPRICE))
+        self.comboOffset.setCurrentIndex(self.offsetList.index(OFFSET_CLOSE))
+        self.spinVolume.setValue(pos.position)
+
+        if pos.direction == DIRECTION_LONG or pos.direction == DIRECTION_NET:
+            self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_SHORT))
+        else:
+            self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_LONG))
+
+        # 价格留待更新后由用户输入，防止有误操作
 
 
 ########################################################################

@@ -8,6 +8,7 @@ from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
 from vtGateway import *
+from vtFunction import loadMongoSetting
 
 from ctaAlgo.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
@@ -197,8 +198,11 @@ class MainEngine(object):
     def dbConnect(self):
         """连接MongoDB数据库"""
         if not self.dbClient:
+            # 读取MongoDB的设置
+            host, port = loadMongoSetting()
+                
             try:
-                self.dbClient = MongoClient()
+                self.dbClient = MongoClient(host, port)
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')

@@ -24,3 +24,19 @@ def safeUnicode(value):
             value = round(value, ndigits=MAX_DECIMAL)
     
     return unicode(value)
+
+#----------------------------------------------------------------------
+def loadMongoSetting():
+    """载入MongoDB数据库的配置"""
+    try:
+        f = file("VT_setting.json")
+        setting = json.load(f)
+        host = setting['mongoHost']
+        port = setting['mongoPort']
+    except:
+        host = 'localhost'
+        port = 27017
+        
+    return host, port
+
+ 

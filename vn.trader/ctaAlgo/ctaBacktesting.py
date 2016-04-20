@@ -7,7 +7,6 @@
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
-import json
 import pymongo
 
 from ctaBase import *
@@ -15,6 +14,7 @@ from ctaSetting import *
 
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
+from vtFunction import loadMongoSetting
 
 
 ########################################################################
@@ -51,11 +51,12 @@ class BacktestingEngine(object):
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
         
-        self.historyData = []       # 历史数据的列表，回测用
+        #self.historyData = []       # 历史数据的列表，回测用
         self.initData = []          # 初始化用的数据
-        self.backtestingData = []   # 回测用的数据
+        #self.backtestingData = []   # 回测用的数据
         
         self.dataStartDate = None       # 回测数据开始日期，datetime对象
+        self.dataEndDate = None         # 回测数据结束日期，datetime对象
         self.strategyStartDate = None   # 策略启动日期（即前面的数据用于初始化），datetime对象
         
         self.limitOrderDict = OrderedDict()         # 限价单字典
@@ -81,6 +82,12 @@ class BacktestingEngine(object):
         self.strategyStartDate = self.dataStartDate + initTimeDelta
         
     #----------------------------------------------------------------------
+    def setEndDate(self, endDate=''):
+        """设置回测的结束日期"""
+        if endDate:
+            self.dataEndDate= datetime.strptime(endDate, '%Y%m%d')
+        
+    #----------------------------------------------------------------------
     def setBacktestingMode(self, mode):
         """设置回测模式"""
         self.mode = mode
@@ -88,35 +95,53 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self, dbName, symbol):
         """载入历史数据"""
-        self.output(u'开始载入数据')
+        host, port = loadMongoSetting()
         
+        self.dbClient = pymongo.MongoClient(host, port)
+        collection = self.dbClient[dbName][symbol]          
+
+        self.output(u'开始载入数据')
+      
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
             dataClass = CtaBarData
+            func = self.newBar
         else:
             dataClass = CtaTickData
-        
-        # 从数据库进行查询
-        self.dbClient = pymongo.MongoClient()
-        collection = self.dbClient[dbName][symbol]
-        
-        flt = {'datetime':{'$gte':self.dataStartDate}}   # 数据过滤条件
-        self.dbCursor = collection.find(flt)
+            func = self.newTick
+
+        # 载入初始化需要用的数据
+        flt = {'datetime':{'$gte':self.dataStartDate,
+                           '$lt':self.strategyStartDate}}        
+        initCursor = collection.find(flt)
         
         # 将数据从查询指针中读取出，并生成列表
-        for d in self.dbCursor:
+        for d in initCursor:
             data = dataClass()
             data.__dict__ = d
-            if data.datetime < self.strategyStartDate:
-                self.initData.append(data)
-            else:
-                self.backtestingData.append(data)
+            self.initData.append(data)      
         
-        self.output(u'载入完成，数据量：%s' %len(self.backtestingData))
-    
+        # 载入回测数据
+        if not self.dataEndDate:
+            flt = {'datetime':{'$gte':self.strategyStartDate}}   # 数据过滤条件
+        else:
+            flt = {'datetime':{'$gte':self.strategyStartDate,
+                               '$lte':self.dataEndDate}}  
+        self.dbCursor = collection.find(flt)
+        
+        self.output(u'载入完成，数据量：%s' %(initCursor.count() + self.dbCursor.count()))
+        
     #----------------------------------------------------------------------
     def runBacktesting(self):
         """运行回测"""
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            dataClass = CtaBarData
+            func = self.newBar
+        else:
+            dataClass = CtaTickData
+            func = self.newTick
+
         self.output(u'开始回测')
         
         self.strategy.inited = True
@@ -128,13 +153,13 @@ class BacktestingEngine(object):
         self.output(u'策略启动完成')
         
         self.output(u'开始回放数据')
-        if self.mode == self.BAR_MODE:
-            for data in self.backtestingData:
-                self.newBar(data)
-                #print str(data.datetime)
-        else:
-            for data in self.backtestingData:
-                self.newTick(data)
+
+        for d in self.dbCursor:
+            data = dataClass()
+            data.__dict__ = d
+            func(data)     
+            
+        self.output(u'数据回放结束')
         
     #----------------------------------------------------------------------
     def newBar(self, bar):

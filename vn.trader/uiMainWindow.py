@@ -67,6 +67,9 @@ class MainWindow(QtGui.QMainWindow):
         central.setLayout(grid)
         self.setCentralWidget(central)
         
+        # 连接组件之间的信号
+        positionM.itemDoubleClicked.connect(tradingW.closePosition)
+        
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化菜单"""
