@@ -72,6 +72,9 @@ def createWrap(cbName):
     if 'OnRspError' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict error)\n'    
         override_line = '("on' + cbName[2:] + '")(error);\n' 
+    elif 'OnRspQry' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last)\n'
+        override_line = '("on' + cbName[2:] + '")(data, error, last);\n' 
     elif 'OnRsp' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error)\n'
         override_line = '("on' + cbName[2:] + '")(data, error);\n' 
@@ -259,7 +262,8 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
             line = '\tgetLong(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'short':
             line = '\tgetShort(req, "' + key + '", &myreq.' + key + ');\n'
-        elif value == 'double':
+        elif value == 'float':
+            print line
             line = '\tgetDouble(req, "' + key + '", &myreq.' + key + ');\n'
         ffunction.write(line)
 
@@ -306,3 +310,5 @@ fheaderprocess.close()
 fheaderon.close()
 fheaderfunction.close()
 fwrap.close()
+
+input()

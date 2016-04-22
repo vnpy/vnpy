@@ -132,7 +132,7 @@ class IbGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\ibGateway\\' + fileName
+        fileName = os.getcwd() + '/ibGateway/' + fileName
         
         try:
             f = file(fileName)
