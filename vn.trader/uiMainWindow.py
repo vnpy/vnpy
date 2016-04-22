@@ -4,6 +4,7 @@ import psutil
 
 from uiBasicWidget import *
 from ctaAlgo.uiCtaWidget import CtaEngineManager
+from dataRecorder.uiDrWidget import DrEngineManager
 
 
 ########################################################################
@@ -66,6 +67,9 @@ class MainWindow(QtGui.QMainWindow):
         central.setLayout(grid)
         self.setCentralWidget(central)
         
+        # 连接组件之间的信号
+        positionM.itemDoubleClicked.connect(tradingW.closePosition)
+        
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化菜单"""
@@ -79,12 +83,18 @@ class MainWindow(QtGui.QMainWindow):
         connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
         connectKsotpAction.triggered.connect(self.connectKsotp)
         
-        connectFemasAction = QtGui.QAction(u'连接飞马', self)
-        connectFemasAction.triggered.connect(self.connectFemas)        
-        
+        # connectFemasAction = QtGui.QAction(u'连接飞马', self)
+        # connectFemasAction.triggered.connect(self.connectFemas)
+        #
+        # connectXspeedAction = QtGui.QAction(u'连接飞创', self)
+        # connectXspeedAction.triggered.connect(self.connectXspeed)
+        #
         # connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
         # connectKsgoldAction.triggered.connect(self.connectKsgold)
-        
+        #
+        # connectSgitAction = QtGui.QAction(u'连接飞鼠', self)
+        # connectSgitAction.triggered.connect(self.connectSgit)
+
         # connectWindAction = QtGui.QAction(u'连接Wind', self)
         # connectWindAction.triggered.connect(self.connectWind)
         #
@@ -109,6 +119,9 @@ class MainWindow(QtGui.QMainWindow):
         contractAction = QtGui.QAction(u'查询合约', self)
         contractAction.triggered.connect(self.openContract)
         
+        drAction = QtGui.QAction(u'行情数据记录', self)
+        drAction.triggered.connect(self.openDr)
+        
         ctaAction = QtGui.QAction(u'CTA策略', self)
         ctaAction.triggered.connect(self.openCta)
         
@@ -118,9 +131,12 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu = menubar.addMenu(u'系统')
         sysMenu.addAction(connectCtpAction)
         sysMenu.addAction(connectLtsAction)
-        sysMenu.addAction(connectFemasAction)
+        # sysMenu.addAction(connectFemasAction)
+        # sysMenu.addAction(connectXspeedAction)
         sysMenu.addAction(connectKsotpAction)
         # sysMenu.addAction(connectKsgoldAction)
+        # sysMenu.addAction(connectSgitAction)
+        sysMenu.addSeparator()
         # sysMenu.addAction(connectIbAction)
         sysMenu.addAction(connectOandaAction)
         sysMenu.addSeparator()
@@ -132,6 +148,7 @@ class MainWindow(QtGui.QMainWindow):
         
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(contractAction)
+        functionMenu.addAction(drAction)
         
         # 算法相关
         algoMenu = menubar.addMenu(u'算法')
@@ -190,12 +207,22 @@ class MainWindow(QtGui.QMainWindow):
     def connectFemas(self):
         """连接飞马接口"""
         self.mainEngine.connect('FEMAS')        
-        
-    # #----------------------------------------------------------------------
-    # def connectKsgold(self):
-    #     """连接金仕达黄金接口"""
-    #     self.mainEngine.connect('KSGOLD')
+
+    #----------------------------------------------------------------------
+    def connectXspeed(self):
+        """连接飞马接口"""
+        self.mainEngine.connect('XSPEED')             
     
+    #----------------------------------------------------------------------
+    def connectKsgold(self):
+        """连接金仕达黄金接口"""
+        self.mainEngine.connect('KSGOLD')            
+        
+    #----------------------------------------------------------------------
+    def connectSgit(self):
+        """连接飞鼠接口"""
+        self.mainEngine.connect('SGIT')     
+
     # #----------------------------------------------------------------------
     # def connectWind(self):
     #     """连接Wind接口"""
@@ -214,10 +241,13 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def test(self):
         """测试按钮用的函数"""
-        api = self.mainEngine.gatewayDict['CTP'].tdApi
-        api.reqID += 1
-        api.reqQryOrder({}, api.reqID)
-        #api.reqQryTrade({}, api.reqID)
+        # api = self.mainEngine.gatewayDict['CTP'].tdApi
+        # api.reqID += 1
+        # api.reqQryOrder({}, api.reqID)
+        # #api.reqQryTrade({}, api.reqID)
+
+        # 有需要使用手动触发的测试函数可以写在这里
+        pass
 
     #----------------------------------------------------------------------
     def openAbout(self):
@@ -245,6 +275,15 @@ class MainWindow(QtGui.QMainWindow):
         except KeyError:
             self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
             self.widgetDict['ctaM'].show()
+            
+    #----------------------------------------------------------------------
+    def openDr(self):
+        """打开行情数据记录组件"""
+        try:
+            self.widgetDict['drM'].show()
+        except KeyError:
+            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
+            self.widgetDict['drM'].show()    
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):
@@ -276,40 +315,16 @@ class AboutWidget(QtGui.QDialog):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(u'关于')
+        self.setWindowTitle(u'关于VnTrader')
 
         text = u"""
-            VnTrader
-
-            更新日期：2015/9/29
-
-            作者：用Python的交易员
+            Developed by traders, for traders.
 
             License：MIT
-
-            主页：vnpy.org
-
-            Github：github.com/vnpy/vnpy
-
-            QQ交流群：262656087
-
-
-
-
-            开发环境
-
-            操作系统：Windows 7 专业版 64位
-
-            Python发行版：Python 2.7.6 (Anaconda 1.9.2 Win-32)
-
-            CTP：vn.ctp  2015/6/1版
-
-            图形库：PyQt4 4.11.3 Py2.7-x32
-
-            事件驱动引擎：vn.event
-
-            开发环境：WingIDE 5.0.6
             
+            Website：www.vnpy.org
+
+            Github：www.github.com/vnpy/vnpy
             
             """
 

@@ -42,6 +42,7 @@ offsetMapReverse = {v:k for k,v in offsetMap.items()}
 exchangeMap = {}
 exchangeMap[EXCHANGE_SSE] = 'SSE'
 exchangeMap[EXCHANGE_SZSE] = 'SZE'
+exchangeMap[EXCHANGE_HKEX] = 'HGE'
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
 # 持仓类型映射
@@ -76,7 +77,7 @@ class LtsGateway(VtGateway):
         """连接"""
         # 载入json 文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\ltsGateway\\' + fileName
+        fileName = os.getcwd() + '/ltsGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -374,7 +375,7 @@ class  LtsMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcMdApi(path)
@@ -731,7 +732,7 @@ class LtsTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
@@ -1069,17 +1070,7 @@ class LtsQryApi(QryApi):
     #----------------------------------------------------------------------
     def onRspQrySFInstrument(self, data, error, n, last):
         """SF合约查询回报"""
-        event1 = Event(type_=EVENT_LTS_SF)
-        event1.dict_['data'] = data
-        self.gateway.eventEngine.put(event1)
-        
-        symbol = data['InstrumentID']
-        exchange = exchangeMapReverse[data['ExchangeID']]
-        vtSymbol = '.'.join([symbol, exchange])
-
-        event2 = Event(type_=EVENT_LTS_SF + vtSymbol)
-        event2.dict_['data'] = data
-        self.gateway.eventEngine.put(event2)    
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryInstrumentUnitMargin(self, data, error, n, last):
@@ -1197,7 +1188,7 @@ class LtsQryApi(QryApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcQueryApi(path)

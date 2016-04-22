@@ -1,0 +1,13 @@
+{
+	"fontFamily": "微软雅黑",
+	"fontSize": 12,
+
+	"mongoHost": "localhost",
+	"mongoPort": 27017,
+    "IP": "0",
+    "replicaset": "0",
+    "readPreference": "0",
+    "db": "0",
+    "userID": "0",
+    "password":"0"
+}

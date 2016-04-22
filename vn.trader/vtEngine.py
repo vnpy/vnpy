@@ -8,9 +8,13 @@ from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
 from vtGateway import *
+from vtFunction import loadMongoSetting
+
 from ctaAlgo.ctaEngine import CtaEngine
 import json
 import os
+from dataRecorder.drEngine import DrEngine
+
 
 ########################################################################
 class MainEngine(object):
@@ -29,11 +33,12 @@ class MainEngine(object):
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
         
-        # CTA引擎
-        self.ctaEngine = CtaEngine(self, self.eventEngine)
-        
         # 调用一个个初始化函数
         self.initGateway()
+
+        # 扩展模块
+        self.ctaEngine = CtaEngine(self, self.eventEngine)
+        self.drEngine = DrEngine(self, self.eventEngine)
         
     #----------------------------------------------------------------------
     def initGateway(self):
@@ -69,11 +74,26 @@ class MainEngine(object):
             self.gatewayDict['FEMAS'].setQryEnabled(True)
         except Exception, e:
             print e  
-            
+
+
+        # try:
+        #     from xspeedGateway.xspeedGateway import XspeedGateway
+        #     self.addGateway(XspeedGateway, 'XSPEED')
+        #     self.gatewayDict['XSPEED'].setQryEnabled(True)
+        # except Exception, e:
+        #     print e
+        #
         # try:
         #     from ksgoldGateway.ksgoldGateway import KsgoldGateway
         #     self.addGateway(KsgoldGateway, 'KSGOLD')
         #     self.gatewayDict['KSGOLD'].setQryEnabled(True)
+        # except Exception, e:
+        #     print e
+        #
+        # try:
+        #     from sgitGateway.sgitGateway import SgitGateway
+        #     self.addGateway(SgitGateway, 'SGIT')
+        #     self.gatewayDict['SGIT'].setQryEnabled(True)
         # except Exception, e:
         #     print e
         #
@@ -88,7 +108,7 @@ class MainEngine(object):
         #     self.addGateway(IbGateway, 'IB')
         # except Exception, e:
         #     print e
-
+            
         try:
             from oandaGateway.oandaGateway import OandaGateway
             self.addGateway(OandaGateway, 'OANDA')
@@ -205,10 +225,14 @@ class MainEngine(object):
             self.writeLog(u'MongoDB连接配置缺少字段，请检查')
 
         if not self.dbClient:
+            # 读取MongoDB的设置
+            host, port = loadMongoSetting()
+                
             try:
-                self.dbClient = MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
-                db = self.dbClient[database]
-                db.authenticate(userID, password)
+                # self.dbClient = MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
+                # db = self.dbClient[database]
+                # db.authenticate(userID, password)
+                self.dbClient = MongoClient(host, port)
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
