@@ -45,6 +45,8 @@ Release/
 # 不想同步的
 *.local
 *.temp
+*.vt
+*.dat
 =======
 vn.ctp/build/*
 vn.lts/build/*

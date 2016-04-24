@@ -81,7 +81,7 @@ class CtpGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\ctpGateway\\' + fileName
+        fileName = os.getcwd() + '/ctpGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -276,7 +276,7 @@ class CtpMdApi(MdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-                
+
     #---------------------------------------------------------------------- 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -368,7 +368,7 @@ class CtpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcMdApi(path)
@@ -498,7 +498,7 @@ class CtpTdApi(TdApi):
         # 否则，推送错误信息
         else:
             err = VtErrorData()
-            err.gatewayName = self.gateway
+            err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
@@ -1202,7 +1202,7 @@ class CtpTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)

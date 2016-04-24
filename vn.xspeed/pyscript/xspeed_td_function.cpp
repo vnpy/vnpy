@@ -28,7 +28,7 @@ int TdApi::reqInsertOrder(dict req)
 	getString(req, "instrumentID", myreq.instrumentID);
 	getInt(req, "openCloseType", &myreq.openCloseType);
 	getLong(req, "localOrderID", &myreq.localOrderID);
-	getLong(req, "localOrderID", &myreq.localOrderID);
+	getDouble(req, "insertPrice", &myreq.insertPrice);
 	getChar(req, "orderProperty", myreq.orderProperty);
 	getShort(req, "buySellType", &myreq.buySellType);
 	getInt(req, "orderType", &myreq.orderType);
@@ -38,7 +38,7 @@ int TdApi::reqInsertOrder(dict req)
 	getInt(req, "reservedType2", &myreq.reservedType2);
 	getInt(req, "insertType", &myreq.insertType);
 	getLong(req, "orderAmount", &myreq.orderAmount);
-	getLong(req, "orderAmount", &myreq.orderAmount);
+	getDouble(req, "profitLossPrice", &myreq.profitLossPrice);
 	getString(req, "customCategory", myreq.customCategory);
 	getInt(req, "instrumentType", &myreq.instrumentType);
 	getString(req, "accountID", myreq.accountID);
@@ -247,7 +247,7 @@ int TdApi::reqQuoteInsert(dict req)
 	getString(req, "quoteID", myreq.quoteID);
 	getInt(req, "sOpenCloseType", &myreq.sOpenCloseType);
 	getLong(req, "bOrderAmount", &myreq.bOrderAmount);
-	getLong(req, "bOrderAmount", &myreq.bOrderAmount);
+	getDouble(req, "sInsertPrice", &myreq.sInsertPrice);
 	getLong(req, "lRequestID", &myreq.lRequestID);
 	getInt(req, "insertType", &myreq.insertType);
 	getLong(req, "sOrderAmount", &myreq.sOrderAmount);
@@ -255,7 +255,7 @@ int TdApi::reqQuoteInsert(dict req)
 	getLong(req, "localOrderID", &myreq.localOrderID);
 	getInt(req, "bSpeculator", &myreq.bSpeculator);
 	getString(req, "customCategory", myreq.customCategory);
-	getString(req, "customCategory", myreq.customCategory);
+	getDouble(req, "bInsertPrice", &myreq.bInsertPrice);
 	getInt(req, "instrumentType", &myreq.instrumentType);
 	getString(req, "accountID", myreq.accountID);
 	int i = this->api->ReqQuoteInsert(&myreq);
@@ -357,7 +357,7 @@ int TdApi::reqFromBankToFutureByFuture(dict req)
 	getLong(req, "lRequestID", &myreq.lRequestID);
 	getString(req, "bankID", myreq.bankID);
 	getString(req, "password", myreq.password);
-	getString(req, "password", myreq.password);
+	getDouble(req, "tradeAmount", &myreq.tradeAmount);
 	getString(req, "accountID", myreq.accountID);
 	int i = this->api->ReqFromBankToFutureByFuture(&myreq);
 	return i;
@@ -373,7 +373,7 @@ int TdApi::reqFromFutureToBankByFuture(dict req)
 	getLong(req, "lRequestID", &myreq.lRequestID);
 	getString(req, "bankID", myreq.bankID);
 	getString(req, "password", myreq.password);
-	getString(req, "password", myreq.password);
+	getDouble(req, "tradeAmount", &myreq.tradeAmount);
 	getString(req, "accountID", myreq.accountID);
 	int i = this->api->ReqFromFutureToBankByFuture(&myreq);
 	return i;

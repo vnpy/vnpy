@@ -28,16 +28,12 @@ EVENT_ERROR = 'eError.'                 # 错误回报事件
 EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
 EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件
 
+# 行情记录模块相关
+EVENT_DATARECORDER_LOG = 'eDataRecorderLog' # 行情记录日志更新事件
+
 # Wind接口相关
 EVENT_WIND_CONNECTREQ = 'eWindConnectReq'   # Wind接口请求连接事件
 
-# 20151020后更新
-# LTS Gateway相关
-EVENT_LTS_SF = 'eLtsSf.'                # SF基金查询推送事件
-
-# 分级A算法相关
-EVENT_FUNDA_DATA = 'eFaData.'           # 分级A基金更新事件
-EVENT_FUNDA_LOG = 'eFaLog'              # 分级A算法日志事件
 
 #----------------------------------------------------------------------
 def test():

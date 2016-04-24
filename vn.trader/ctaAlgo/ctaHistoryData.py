@@ -13,6 +13,7 @@ from multiprocessing.pool import ThreadPool
 
 from ctaBase import *
 from vtConstant import *
+from vtFunction import loadMongoSetting
 from datayesClient import DatayesClient
 
 
@@ -32,7 +33,9 @@ class HistoryDataEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.dbClient = pymongo.MongoClient()
+        host, port = loadMongoSetting()
+        
+        self.dbClient = pymongo.MongoClient(host, port)
         self.datayesClient = DatayesClient()
         
     #----------------------------------------------------------------------
@@ -319,7 +322,9 @@ def loadMcCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
-    client = pymongo.MongoClient()    
+    host, port = loadMongoSetting()
+    
+    client = pymongo.MongoClient(host, port)    
     collection = client[dbName][symbol]
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
     
