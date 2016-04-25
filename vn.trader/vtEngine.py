@@ -3,7 +3,7 @@
 import shelve
 from collections import OrderedDict
 
-from pymongo import MongoClient
+import pymongo
 from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
@@ -229,7 +229,7 @@ class MainEngine(object):
             # 读取MongoDB的设置
             host, port, replicaset, readPreference, database, userID, password = loadMongoSetting()
             try:
-                self.dbClient = MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
+                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
                 # self.dbClient = MongoClient(host, port)

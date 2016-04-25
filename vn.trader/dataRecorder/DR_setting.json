@@ -3,22 +3,22 @@
 
     "tick":
     [
-        ["IF1605", "SGIT"],
-        ["IF1606", "SGIT"],
-        ["IH1606", "SGIT"],
-        ["IH1606", "SGIT"],
-        ["IC1606", "SGIT"],
-        ["IC1606", "SGIT"]
+        ["IF1605", "CTP"],
+        ["IF1606", "CTP"],
+        ["IH1606", "CTP"],
+        ["IH1606", "CTP"],
+        ["IC1606", "CTP"],
+        ["IC1606", "CTP"]
     ],
 
     "bar":
     [
-        ["IF1605", "SGIT"],
-        ["IF1606", "SGIT"],
-        ["IH1606", "SGIT"],
-        ["IH1606", "SGIT"],
-        ["IC1606", "SGIT"],
-        ["IC1606", "SGIT"]
+        ["IF1605", "CTP"],
+        ["IF1606", "CTP"],
+        ["IH1606", "CTP"],
+        ["IH1606", "CTP"],
+        ["IC1606", "CTP"],
+        ["IC1606", "CTP"]
     ],
 
     "active":

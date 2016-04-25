@@ -26,10 +26,10 @@ def safeUnicode(value):
     return unicode(value)
 
 #----------------------------------------------------------------------
-def loadMongoSetting(fileName = "VT_setting.json"):
+def loadMongoSetting(settingFileName = "VT_setting.json"):
     """载入MongoDB数据库的配置"""
     try:
-        f = file(fileName)
+        f = file(settingFileName)
         setting = json.load(f)
         host = setting['mongoHost']
         port = setting['mongoPort']
