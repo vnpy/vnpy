@@ -7,7 +7,8 @@
 """
 
 from datetime import datetime, timedelta
-import pymongo
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 from time import time
 from multiprocessing.pool import ThreadPool
 import json
@@ -37,10 +38,10 @@ class HistoryDataEngine(object):
         """Constructor"""
 
         # MongoDB数据库相关
-        # self.dbClient = None    # MongoDB客户端对象
-        host, port = loadMongoSetting()
-
-        self.dbClient = pymongo.MongoClient(host, port)
+        self.dbClient = None    # MongoDB客户端对象
+        # host, port = loadMongoSetting()
+        #
+        # self.dbClient = pymongo.MongoClient(host, port)
         self.datayesClient = DatayesClient()
 
         self.dbConnect()
@@ -49,38 +50,22 @@ class HistoryDataEngine(object):
     def dbConnect(self):
         """连接MongoDB数据库"""
 
-        # 载入json文件
-        fileName = 'Mongo_connect.json'
-        fileName = os.path.dirname(os.getcwd()) + '\\mongoConnect\\' + fileName
-
-        try:
-            f = file(fileName)
-        except IOError:
-            print u'读取MongoDB连接配置出错，请检查'
-            return
-
-        # 解析json文件
-        setting = json.load(f)
-        try:
-            IP = str(setting['IP'])
-            replicaset = str(setting['replicaset'])
-            readPreference = str(setting['readPreference'])
-            database = str(setting['db'])
-            userID = str(setting['userID'])
-            password = str(setting['password'])
-
-        except KeyError:
-            print u'MongoDB连接配置缺少字段，请检查'
+        # 读取数据库配置的方法，已转移至vtFunction
 
         if not self.dbClient:
+            # 读取MongoDB的设置
+            fileName = os.path.dirname(os.getcwd()) + "\\VT_setting.json"
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(fileName)
             try:
-                self.dbClient = pymongo.MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
+                self.dbClient = MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
+                # self.dbClient = MongoClient(host, port)
                 print u'MongoDB连接成功'
-            except pymongo.errors.ConnectionFailure:
+            except ConnectionFailure:
                 print u'MongoDB连接失败'
-
+            except ValueError:
+                print u'MongoDB连接配置字段错误，请检查'
     #----------------------------------------------------------------------
     def lastTradeDate(self):
         """获取最近交易日（只考虑工作日，无法检查国内假期）"""
@@ -365,9 +350,8 @@ def loadMcTickCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
 
     # 锁定集合，并创建索引
-    host, port = loadMongoSetting()
-
-    client = pymongo.MongoClient(host, port)
+    e = HistoryDataEngine()
+    client = e.dbClient
     collection = client[dbName][symbol]
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)
 
@@ -401,9 +385,8 @@ def loadMcCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
-    host, port = loadMongoSetting()
-    
-    client = pymongo.MongoClient(host, port)    
+    e = HistoryDataEngine()
+    client = e.dbClient
     collection = client[dbName][symbol]
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
     

@@ -7,7 +7,8 @@
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
-import pymongo
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 import os
 from ctaBase import *
 from ctaSetting import *
@@ -77,37 +78,22 @@ class BacktestingEngine(object):
     def dbConnect(self):
         """连接MongoDB数据库"""
 
-        # 载入json文件
-        fileName = 'Mongo_connect.json'
-        fileName = os.path.dirname(os.getcwd()) + '\\mongoConnect\\' + fileName
-
-        try:
-            f = file(fileName)
-        except IOError:
-            print u'读取MongoDB连接配置出错，请检查'
-            return
-
-        # 解析json文件
-        setting = json.load(f)
-        try:
-            IP = str(setting['IP'])
-            replicaset = str(setting['replicaset'])
-            readPreference = str(setting['readPreference'])
-            database = str(setting['db'])
-            userID = str(setting['userID'])
-            password = str(setting['password'])
-
-        except KeyError:
-            print u'MongoDB连接配置缺少字段，请检查'
+        # 读取数据库配置的方法，已转移至vtFunction
 
         if not self.dbClient:
+            # 读取MongoDB的设置
+            fileName = os.path.dirname(os.getcwd()) + "\\VT_setting.json"
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(fileName)
             try:
-                self.dbClient = pymongo.MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
+                self.dbClient = MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
+                # self.dbClient = MongoClient(host, port)
                 print u'MongoDB连接成功'
-            except pymongo.errors.ConnectionFailure:
+            except ConnectionFailure:
                 print u'MongoDB连接失败'
+            except ValueError:
+                print u'MongoDB连接配置字段错误，请检查'
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
         """设置回测的启动日期"""
@@ -130,9 +116,12 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self, dbName, symbol):
         """载入历史数据"""
-        host, port = loadMongoSetting()
-        
-        self.dbClient = pymongo.MongoClient(host, port)
+        # host, port = loadMongoSetting()
+        #
+        # self.dbClient = pymongo.MongoClient(host, port)
+
+        self.dbConnect()
+
         collection = self.dbClient[dbName][symbol]          
 
         self.output(u'开始载入数据')
