@@ -4,10 +4,9 @@
 
 	"mongoHost": "localhost",
 	"mongoPort": 27017,
-    "IP": "0",
-    "replicaset": "0",
-    "readPreference": "0",
-    "db": "0",
-    "userID": "0",
-    "password":"0"
+    "mongoReplicaset": "0",
+    "mongoReadPreference": "0",
+    "mongoDB": "0",
+    "mongoUserID": "0",
+    "mongoPassword":"0"
 }
