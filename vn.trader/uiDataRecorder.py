@@ -18,6 +18,7 @@ Contracts_init.json中写入需要订阅的期货品种，如需要订阅pp和IF
 import json
 import os
 import pymongo
+from pymongo.errors import ConnectionFailure
 import tushare as ts
 # ts.set_token('575593eb7696aec7339224c0fac2313780d8645f68b77369dcb35f8bcb419a0b')
 ts.set_token('ced15aa738976abf2136cc9e197fbcd34776e0f8183c7660b7fdcd626a715b3b')    # paolo
@@ -25,6 +26,7 @@ import time
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
+from vtFunction import loadMongoSetting
 
 from ctaAlgo.ctaBase import *
 from vtConstant import *
@@ -125,41 +127,21 @@ class DataRecorder(QtGui.QFrame):
         """连接MongoDB数据库"""
 
         # 载入json文件
-        fileName = 'Mongo_connect.json'
-        # fileName = os.path.dirname(os.getcwd()) + '\\mongoConnect\\' + fileName
-        fileName = 'mongoConnect\\' + fileName
-        try:
-            f = file(fileName)
-        except IOError:
-            self.writeCtaLog(u'读取MongoDB连接配置出错，请检查')
-            return
-
-        # 解析json文件
-        setting = json.load(f)
-        try:
-            IP = str(setting['IP'])
-            replicaset = str(setting['replicaset'])
-            readPreference = str(setting['readPreference'])
-            database = str(setting['db'])
-            userID = str(setting['userID'])
-            password = str(setting['password'])
-
-        except KeyError:
-            self.writeCtaLog(u'MongoDB连接配置缺少字段，请检查')
-
         if not self.dbClient:
+            # 读取MongoDB的设置
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting()
             try:
-                self.dbClient = pymongo.MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
+                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
+                # self.dbClient = MongoClient(host, port)
                 self.writeCtaLog(u'MongoDB连接成功')
-
-                self.mainEngine.dbClient = self.dbClient        # 主引擎数据库连接
-
-            except pymongo.errors.ConnectionFailure:
+            except ConnectionFailure:
                 self.writeCtaLog(u'MongoDB连接失败')
             except ValueError:
                 self.writeCtaLog(u'MongoDB连接配置字段错误，请检查')
+
+            self.mainEngine.dbClient = self.dbClient        # 主引擎数据库连接
 
     #----------------------------------------------------------------------
     def ctpConnect(self):

@@ -82,8 +82,9 @@ class BacktestingEngine(object):
 
         if not self.dbClient:
             # 读取MongoDB的设置
-            fileName = os.path.dirname(os.getcwd()) + "/VT_setting.json"
-            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(fileName)
+            settingFileName = "VT_setting.json"
+            settingFileName = os.path.dirname(os.getcwd()) + "/" + settingFileName
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(settingFileName)
             try:
                 self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
@@ -617,7 +618,7 @@ if __name__ == '__main__':
     # 设置产品相关参数
     engine.setSlippage(0.2)     # 股指1跳
     engine.setRate(0.3/10000)   # 万0.3
-    engine.setSize(300)         # 股指合约大小    
+    engine.setSize(300)         # 股指合约大小
     
     # 在引擎中创建策略对象
     engine.initStrategy(TalibDoubleSmaDemo, {})

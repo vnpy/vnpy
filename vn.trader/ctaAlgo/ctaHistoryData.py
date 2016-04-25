@@ -54,8 +54,9 @@ class HistoryDataEngine(object):
 
         if not self.dbClient:
             # 读取MongoDB的设置
-            fileName = os.path.dirname(os.getcwd()) + "/VT_setting.json"
-            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(fileName)
+            settingFileName = "VT_setting.json"
+            settingFileName = os.path.dirname(os.getcwd()) + "/" + settingFileName
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(settingFileName)
             try:
                 self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
