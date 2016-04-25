@@ -5,7 +5,7 @@
 """
 
 import decimal
-
+import json
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
 
@@ -26,17 +26,20 @@ def safeUnicode(value):
     return unicode(value)
 
 #----------------------------------------------------------------------
-def loadMongoSetting():
+def loadMongoSetting(fileName = "VT_setting.json"):
     """载入MongoDB数据库的配置"""
     try:
-        f = file("VT_setting.json")
+        f = file(fileName)
         setting = json.load(f)
         host = setting['mongoHost']
         port = setting['mongoPort']
+        replicaset = setting['mongoReplicaset']
+        readPreference = setting['mongoReadPreference']
+        database = setting['mongoDB']
+        userID = setting['mongoUserID']
+        password = setting['mongoPassword']
     except:
         host = 'localhost'
         port = 27017
-        
-    return host, port
 
- 
+    return host, port, replicaset, readPreference, database, userID, password

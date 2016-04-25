@@ -201,38 +201,38 @@ class MainEngine(object):
     def dbConnect(self):
         """连接MongoDB数据库"""
 
-        # 载入json文件
-        fileName = 'Mongo_connect.json'
-        fileName = os.getcwd() + '\\mongoConnect\\' + fileName
-
-        try:
-            f = file(fileName)
-        except IOError:
-            self.writeLog(u'读取MongoDB连接配置出错，请检查')
-            return
-
-        # 解析json文件
-        setting = json.load(f)
-        try:
-            IP = str(setting['IP'])
-            replicaset = str(setting['replicaset'])
-            readPreference = str(setting['readPreference'])
-            database = str(setting['db'])
-            userID = str(setting['userID'])
-            password = str(setting['password'])
-
-        except KeyError:
-            self.writeLog(u'MongoDB连接配置缺少字段，请检查')
+        # 读取数据库配置的方法，已转移至vtFunction
+        # # 载入json文件
+        # fileName = 'Mongo_connect.json'
+        # fileName = os.getcwd() + '\\mongoConnect\\' + fileName
+        #
+        # try:
+        #     f = file(fileName)
+        # except IOError:
+        #     self.writeLog(u'读取MongoDB连接配置出错，请检查')
+        #     return
+        #
+        # # 解析json文件
+        # setting = json.load(f)
+        # try:
+        #     IP = str(setting['IP'])
+        #     replicaset = str(setting['replicaset'])
+        #     readPreference = str(setting['readPreference'])
+        #     database = str(setting['db'])
+        #     userID = str(setting['userID'])
+        #     password = str(setting['password'])
+        #
+        # except KeyError:
+        #     self.writeLog(u'MongoDB连接配置缺少字段，请检查')
 
         if not self.dbClient:
             # 读取MongoDB的设置
-            host, port = loadMongoSetting()
-                
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting()
             try:
-                # self.dbClient = MongoClient(IP, replicaset=replicaset,readPreference=readPreference)
-                # db = self.dbClient[database]
-                # db.authenticate(userID, password)
-                self.dbClient = MongoClient(host, port)
+                self.dbClient = MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
+                db = self.dbClient[database]
+                db.authenticate(userID, password)
+                # self.dbClient = MongoClient(host, port)
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
