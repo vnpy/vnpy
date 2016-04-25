@@ -7,7 +7,7 @@
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
-from pymongo import MongoClient
+import pymongo
 from pymongo.errors import ConnectionFailure
 import os
 from ctaBase import *
@@ -82,10 +82,10 @@ class BacktestingEngine(object):
 
         if not self.dbClient:
             # 读取MongoDB的设置
-            fileName = os.path.dirname(os.getcwd()) + "\\VT_setting.json"
+            fileName = os.path.dirname(os.getcwd()) + "/VT_setting.json"
             host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(fileName)
             try:
-                self.dbClient = MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
+                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
                 # self.dbClient = MongoClient(host, port)
