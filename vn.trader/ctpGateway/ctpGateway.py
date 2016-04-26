@@ -655,11 +655,8 @@ class CtpTdApi(TdApi):
             pos.frozen = data['ShortFrozen']
         
         # 持仓量
-        if data['Position']:
-            pos.position = data['Position']
-            
-        if data['YdPosition']:
-            pos.ydPosition = data['YdPosition']        
+        pos.position = data['Position']
+        pos.ydPosition = data['Position'] - data['TodayPosition']        
         
         # 持仓均价
         if pos.position:
