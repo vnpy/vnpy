@@ -5,6 +5,7 @@
 """
 
 import decimal
+import json
 
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
