@@ -6,6 +6,7 @@
 
 import decimal
 import json
+import sys
 
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
@@ -24,6 +25,9 @@ def safeUnicode(value):
         if abs(d.as_tuple().exponent) > MAX_DECIMAL:
             value = round(value, ndigits=MAX_DECIMAL)
     
+    # Reload sys, Set default encode to UTF8
+    reload(sys)
+    sys.setdefaultencoding('utf8')
     return unicode(value)
 
 #----------------------------------------------------------------------

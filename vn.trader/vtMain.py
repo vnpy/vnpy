@@ -2,6 +2,7 @@
 
 import sys
 import ctypes
+import platform
 
 from vtEngine import MainEngine
 from uiMainWindow import *
@@ -10,7 +11,8 @@ from uiMainWindow import *
 def main():
     """主程序入口"""
     # 设置底部任务栏图标，win7以下请注释掉
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.py demo')  
+    if platform.uname() == 'Windows':
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.py demo')  
     
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
