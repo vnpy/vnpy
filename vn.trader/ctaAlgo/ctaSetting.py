@@ -10,7 +10,8 @@
 
 from ctaTemplate import DataRecorder
 from ctaDemo import DoubleEmaDemo
+from tickBreaker import TickBreaker
 
 STRATEGY_CLASS = {}
-STRATEGY_CLASS['DataRecorder'] = DataRecorder
+STRATEGY_CLASS['TickBreaker'] = TickBreaker
 STRATEGY_CLASS['DoubleEmaDemo'] = DoubleEmaDemo

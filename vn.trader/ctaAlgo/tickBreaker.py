@@ -6,7 +6,7 @@ import numpy as np
 from ctaBase import *
 from ctaTemplate import CtaTemplate
 
-
+import time
 ########################################################################
 class TickBreaker(CtaTemplate):
     """跳空追击策略(MC版本转化)"""
@@ -22,7 +22,7 @@ class TickBreaker(CtaTemplate):
 
     # 策略变量
     tickHistory = []       # 缓存tick报价的数组
-    maxHistory = 10         # 最大缓存数量
+    maxHistory = 7         # 最大缓存数量
 
 
     forwardNo = EMPTY_INT     # 正向tick数量
@@ -49,6 +49,10 @@ class TickBreaker(CtaTemplate):
                'backwardNo',
                'reForwardNo'
                ]
+
+    # condition1 = False      # >=5个上涨tick
+    # condition2 = False      # 2个下跌tick
+    # condition3 = False      # 1个上涨tick
 
     # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
@@ -79,10 +83,12 @@ class TickBreaker(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         # 把最新的收盘价缓存到列表中
-
+        start = time.time()
         if tick.lastPrice != self.oldPrice:
             self.tickHistory.append(tick.lastPrice)
-
+            self.oldPrice = tick.lastPrice
+        else:
+            return
         # 检查列表长度，如果超过缓存上限则移除最老的数据
         # 这样是为了减少计算用的数据量，提高速度
         if len(self.tickHistory) > self.maxHistory:
@@ -91,44 +97,76 @@ class TickBreaker(CtaTemplate):
         else:
             return
 
-        # 将缓存的收盘价数转化为numpy数组后，传入talib的函数SMA中计算
-        closeArray = np.array(self.closeHistory)
-        sma = ta.SMA(closeArray, self.maPeriod)
+        # # 将缓存的收盘价数转化为numpy数组后，传入talib的函数SMA中计算
+        # closeArray = np.array(self.closeHistory)
+        # sma = ta.SMA(closeArray, self.maPeriod)
 
-        condition1 = 0      # >=5个上涨tick
-        condition2 = 0      # 2个下跌tick
-        condition3 = 0      # 1个上涨tick
+        # # >=5个上涨tick
+        # condition1 = self.tickHistory[0] < self.tickHistory[1] < self.tickHistory[2] < self.tickHistory[3] < self.tickHistory[4]
+        # # 2个下跌tick
+        # condition2 = self.tickHistory[4] > self.tickHistory[5] > self.tickHistory[6]
+        # # 1个上涨tick
+        # condition3 = self.tickHistory[6] < self.tickHistory[7]
+        # print self.tickHistory
+        # print 'buy:    ', int(condition1), '   ', int(condition2), '   ', int(condition3)
+        # buyCondition = condition1 and condition2 and condition3
+        #
+        # # >=5个下跌tick
+        # condition1 = self.tickHistory[0] > self.tickHistory[1] > self.tickHistory[2] > self.tickHistory[3] > self.tickHistory[4]
+        # # 2个上涨tick
+        # condition2 = self.tickHistory[4] < self.tickHistory[5] < self.tickHistory[6]
+        # # 1个下跌tick
+        # condition3 = self.tickHistory[6] > self.tickHistory[7]
+        # print 'sell:    ', int(condition1), '   ', int(condition2), '   ', int(condition3)
+        #
+        # sellCondition = condition1 and condition2 and condition3
 
+        # >=5个上涨tick
+        condition1 = self.tickHistory[0] < self.tickHistory[1] < self.tickHistory[2] < self.tickHistory[3]
+        # 2个下跌tick
+        condition2 = self.tickHistory[3] > self.tickHistory[4] > self.tickHistory[5]
+        # 1个上涨tick
+        condition3 = self.tickHistory[5] < self.tickHistory[6]
+        # print self.tickHistory
+        # print 'buy:    ', int(condition1), '   ', int(condition2), '   ', int(condition3)
+        buyCondition = condition1 and condition2 and condition3
 
+        # >=5个下跌tick
+        condition1 = self.tickHistory[0] > self.tickHistory[1] > self.tickHistory[2] > self.tickHistory[3]
+        # 2个上涨tick
+        condition2 = self.tickHistory[3] < self.tickHistory[4] < self.tickHistory[5]
+        # 1个下跌tick
+        condition3 = self.tickHistory[5] > self.tickHistory[6]
+        # print 'sell:    ', int(condition1), '   ', int(condition2), '   ', int(condition3)
 
-
-
-        # 读取当前K线和上一根K线的数值，用于判断均线交叉
-        self.fastMa0 = fastSMA[-1]
-        self.fastMa1 = fastSMA[-2]
-        self.slowMa0 = slowSMA[-1]
-        self.slowMa1 = slowSMA[-2]
-
-        # 判断买卖
-        crossOver = self.fastMa0>self.slowMa0 and self.fastMa1<self.slowMa1     # 金叉上穿
-        crossBelow = self.fastMa0<self.slowMa0 and self.fastMa1>self.slowMa1    # 死叉下穿
-
+        sellShortCondition = condition1 and condition2 and condition3
         # 金叉和死叉的条件是互斥
-        if crossOver:
+        if buyCondition:
             # 如果金叉时手头没有持仓，则直接做多
             if self.pos == 0:
-                self.buy(bar.close, 1)
+                self.buy(tick.lastPrice, 1)
             # 如果有空头持仓，则先平空，再做多
             elif self.pos < 0:
-                self.cover(bar.close, 1)
-                self.buy(bar.close, 1)
+                self.cover(tick.lastPrice, 1)
+                self.buy(tick.lastPrice, 1)
         # 死叉和金叉相反
-        elif crossBelow:
+        elif sellShortCondition:
             if self.pos == 0:
-                self.short(bar.close, 1)
+                self.short(tick.lastPrice, 1)
             elif self.pos > 0:
-                self.sell(bar.close, 1)
-                self.short(bar.close, 1)
+                self.sell(tick.lastPrice, 1)
+                self.short(tick.lastPrice, 1)
+
+        sellCondition = self.tickHistory[4] > self.tickHistory[5] > self.tickHistory[6]
+        buyCoverCondition = self.tickHistory[4] < self.tickHistory[5] < self.tickHistory[6]
+
+        # if self.pos > 0 and sellCondition:
+        #     self.sell(tick.lastPrice, 1)
+        #
+        # if self.pos < 0 and buyCoverCondition:
+        #     self.cover(tick.lastPrice, 1)
+
+        # print time.time() - start
 
         # 发出状态更新事件
         self.putEvent()
