@@ -106,6 +106,7 @@ class BidCell(QtGui.QTableWidgetItem):
         super(BidCell, self).__init__()
         self.data = None
 
+        self.setForeground(QtGui.QColor('black'))
         self.setBackground(QtGui.QColor(255,174,201))
         
         if text:
@@ -127,6 +128,7 @@ class AskCell(QtGui.QTableWidgetItem):
         super(AskCell, self).__init__()
         self.data = None
 
+        self.setForeground(QtGui.QColor('black'))
         self.setBackground(QtGui.QColor(160,255,160))
         
         if text:
