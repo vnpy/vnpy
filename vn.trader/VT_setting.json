@@ -8,7 +8,7 @@
     "mongoReadPreference": "0",
     "mongoDB": "0",
     "mongoUserID": "0",
-    "mongoPassword":"0"
+    "mongoPassword":"0",
 
 	"darkStyle": true
 }
