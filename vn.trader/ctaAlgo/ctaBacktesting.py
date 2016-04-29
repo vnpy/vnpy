@@ -174,6 +174,7 @@ class BacktestingEngine(object):
     def newTick(self, tick):
         """新的Tick"""
         self.tick = tick
+        self.dt = tick.datetime
         self.crossLimitOrder()
         self.crossStopOrder()
         self.strategy.onTick(tick)

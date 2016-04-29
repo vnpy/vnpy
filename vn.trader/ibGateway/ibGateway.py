@@ -11,6 +11,7 @@ ibpy的gateway接入
 5. 海外市场的交易规则和国内有很多细节上的不同，所以一些字段类型的映射可能不合理，如果发现问题欢迎指出
 '''
 
+import os
 import json
 from time import sleep, strftime, localtime
 from copy import copy
