@@ -14,14 +14,29 @@ def main():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.py demo')
     except:
         pass
+
+    
+    # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('vnpy.ico'))
     app.setFont(BASIC_FONT)
     
+    # 设置Qt的皮肤
+    try:
+        f = file("VT_setting.json")
+        setting = json.load(f)    
+        if setting['darkStyle']:
+            import qdarkstyle
+            app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
+    except:
+        pass
+    
+    # 初始化主引擎和主窗口对象
     mainEngine = MainEngine()
     mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
     mainWindow.showMaximized()
     
+    # 在主线程中启动Qt事件循环
     sys.exit(app.exec_())
     
 if __name__ == '__main__':
