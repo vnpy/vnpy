@@ -199,6 +199,7 @@ class BacktestingEngine(object):
     def newTick(self, tick):
         """新的Tick"""
         self.tick = tick
+        self.dt = tick.datetime
         self.crossLimitOrder()
         self.crossStopOrder()
         self.strategy.onTick(tick)
@@ -470,7 +471,7 @@ class BacktestingEngine(object):
         
         # 计算滑点，一个来回包括两次
         totalSlippage = self.slippage * 2 
-        
+        # print len(self.tradeDict)
         for trade in self.tradeDict.values():
             # 多头交易
             if trade.direction == DIRECTION_LONG:
@@ -480,6 +481,8 @@ class BacktestingEngine(object):
                 # 当前多头交易为平空
                 else:
                     entryTrade = shortTrade.pop(0)
+                    trade.price = float(trade.price)
+                    entryTrade.price = float(entryTrade.price)
                     # 计算比例佣金
                     commission = (trade.price+entryTrade.price) * self.rate
                     # 计算盈亏
@@ -494,6 +497,8 @@ class BacktestingEngine(object):
                 # 当前空头交易为平多
                 else:
                     entryTrade = longTrade.pop(0)
+                    trade.price = float(trade.price)
+                    entryTrade.price = float(entryTrade.price)
                     # 计算比例佣金
                     commission = (trade.price+entryTrade.price) * self.rate    
                     # 计算盈亏
@@ -504,7 +509,7 @@ class BacktestingEngine(object):
         # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
         timeList = pnlDict.keys()
         pnlList = pnlDict.values()
-        
+
         capital = 0
         maxCapital = 0
         drawdown = 0
@@ -601,27 +606,31 @@ if __name__ == '__main__':
     # # 直接在cmd中回测则只会打印一些回测数值
     # engine.showBacktestingResult()
 
-    from talibDemo import *
+    from tickBreaker import *
     # 创建回测引擎
     engine = BacktestingEngine()
 
     # 设置引擎的回测模式为K线
 
-    engine.setBacktestingMode(engine.BAR_MODE)
+    engine.setBacktestingMode(engine.TICK_MODE)
 
     # 设置回测用的数据起始日期
-    engine.setStartDate('20110101')
+    engine.setStartDate('20160101')
     
     # 载入历史数据到引擎中
-    engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
-    
+    # engine.loadHistoryData(, 'IF0000')
+    engine.loadHistoryData('VtTrader_Tick_Db', 'pp_hot')
+
     # 设置产品相关参数
-    engine.setSlippage(0.2)     # 股指1跳
-    engine.setRate(0.3/10000)   # 万0.3
-    engine.setSize(300)         # 股指合约大小
+    # engine.setSlippage(0.2)     # 股指1跳
+    # engine.setRate(0.3/10000)   # 万0.3
+    # engine.setSize(300)         # 股指合约大小
+    engine.setSlippage(0)     # 股指1跳
+    engine.setRate(1.0/10000)   # 万0.3
+    engine.setSize(5)         # 股指合约大小
     
     # 在引擎中创建策略对象
-    engine.initStrategy(TalibDoubleSmaDemo, {})
+    engine.initStrategy(TickBreaker, {})
 
     # 开始跑回测
     engine.runBacktesting()

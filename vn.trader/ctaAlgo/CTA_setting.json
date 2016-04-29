@@ -2,11 +2,11 @@
     {
         "name": "double ema",
         "className": "DoubleEmaDemo",
-        "vtSymbol": "pp1605"
+        "vtSymbol": "pp1609"
     },
     {
-        "name": "Data Recorder",
-        "className": "DataRecorder",
-        "vtSymbol": "pp1605"
+        "name": "TickBreaker",
+        "className": "TickBreaker",
+        "vtSymbol": "pp1609"
     }
 ]
