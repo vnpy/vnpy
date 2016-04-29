@@ -14,6 +14,10 @@ def main():
     if platform.uname() == 'Windows':
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.py demo')  
     
+    # Reload sys, Set default encode to UTF8
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('vnpy.ico'))
