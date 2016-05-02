@@ -10,13 +10,13 @@ from uiMainWindow import *
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
-    # 设置底部任务栏图标，win7以下请注释掉
-    if platform.uname() == 'Windows':
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.py demo')  
-    
-    # Reload sys, Set default encode to UTF8
+    # 重载sys模块，设置默认字符串编码方式为utf8
     reload(sys)
     sys.setdefaultencoding('utf8')
+    
+    # 设置Windows底部任务栏图标
+    if platform.uname() == 'Windows':
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
 
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)

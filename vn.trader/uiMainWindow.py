@@ -22,6 +22,7 @@ class MainWindow(QtGui.QMainWindow):
         self.widgetDict = {}    # 用来保存子窗口的字典
         
         self.initUi()
+        self.loadWindowSettings()
         
     #----------------------------------------------------------------------
     def initUi(self):
@@ -273,6 +274,8 @@ class MainWindow(QtGui.QMainWindow):
         if reply == QtGui.QMessageBox.Yes: 
             for widget in self.widgetDict.values():
                 widget.close()
+            self.saveWindowSettings()
+            
             self.mainEngine.exit()
             event.accept()
         else:
