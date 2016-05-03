@@ -90,6 +90,7 @@ tickFieldMap[5] = 'lastVolume'
 tickFieldMap[6] = 'highPrice'
 tickFieldMap[7] = 'lowPrice'
 tickFieldMap[8] = 'volume'
+tickFieldMap[9] = 'preClosePrice'
 tickFieldMap[14] = 'openPrice'
 tickFieldMap[20] = 'openInterest'
 
