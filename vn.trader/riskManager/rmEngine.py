@@ -9,7 +9,7 @@
 
 import json
 import os
-import winsound
+import platform
 
 from eventEngine import *
 from vtConstant import *
@@ -118,7 +118,10 @@ class RmEngine(object):
     def writeRiskLog(self, content):
         """快速发出日志事件"""
         # 发出报警提示音
-        winsound.PlaySound("SystemHand", winsound.SND_ASYNC) 
+
+        if platform.uname() == 'Windows':
+            import winsound
+            winsound.PlaySound("SystemHand", winsound.SND_ASYNC) 
         
         # 发出日志事件
         log = VtLogData()
