@@ -323,7 +323,6 @@ class IbWrapper(EWrapper):
     #---------------------------------------------------------------------- 
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld):
         """报单成交回报"""
-        pass
         orderId = str(orderId)
         
         if orderId in self.orderDict:
