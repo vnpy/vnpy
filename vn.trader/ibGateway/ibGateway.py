@@ -278,6 +278,9 @@ class IbWrapper(EWrapper):
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
+            # 行情数据更新
+            newtick = copy(tick)
+            self.gateway.onTick(newtick)
         else:
             print field
 

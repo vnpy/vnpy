@@ -395,6 +395,7 @@ class MarketMonitor(BasicMonitor):
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
         d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
         d['lastPrice'] = {'chinese':u'最新价', 'cellType':BasicCell}
+        d['preClosePrice'] = {'chinese':u'昨收盘价', 'cellType':BasicCell}
         d['volume'] = {'chinese':u'成交量', 'cellType':BasicCell}
         d['openInterest'] = {'chinese':u'持仓量', 'cellType':BasicCell}
         d['openPrice'] = {'chinese':u'开盘价', 'cellType':BasicCell}
@@ -650,7 +651,8 @@ class TradingWidget(QtGui.QFrame):
     productClassList = [PRODUCT_NONE,
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
-                        PRODUCT_OPTION]
+                        PRODUCT_OPTION,
+                        PRODUCT_FOREX]
     
     gatewayList = ['']
 
