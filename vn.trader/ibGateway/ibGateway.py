@@ -184,6 +184,9 @@ class IbGateway(VtGateway):
     
         self.connection.reqMktData(self.tickerId, contract, '', False)
         
+        # 获取合约详细信息
+        self.connection.reqContractDetails(self.tickerId, contract)
+        
         # 创建Tick对象并保存到字典中
         tick = VtTickData()
         tick.symbol = subscribeReq.symbol
@@ -429,17 +432,40 @@ class IbWrapper(EWrapper):
 
     #----------------------------------------------------------------------
     def contractDetails(self, reqId, contractDetails):
-        """ generated source for method contractDetails """
-        pass
+        """合约查询回报"""
+        contract = VtContractData()
+        contract.gatewayName = self.gatewayName
+        contract.symbol = contractDetails.m_summary.m_symbol
+        contract.exchange = contractDetails.m_summary.m_exchange
 
+        contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
+        contract.name = contractDetails.m_marketName.decode('UTF-8')
+
+        # 合约类型
+        if contractDetails.m_summary.m_secType == 'STK':
+            contract.productClass = PRODUCT_EQUITY
+        elif contractDetails.m_summary.m_secType == 'CASH':
+            contract.productClass = PRODUCT_FOREX
+        elif contractDetails.m_summary.m_secType == 'FUT':
+            contract.productClass = PRODUCT_FUTURES
+        elif contractDetails.m_summary.m_secType == 'OPT':
+            contract.productClass = PRODUCT_OPTION
+        else:
+            contract.productClass = PRODUCT_UNKNOWN
+        # 推送
+        self.gateway.onContract(contract)
+      
     #----------------------------------------------------------------------
     def bondContractDetails(self, reqId, contractDetails):
         """ generated source for method bondContractDetails """
 
     #----------------------------------------------------------------------
     def contractDetailsEnd(self, reqId):
-        """ generated source for method contractDetailsEnd """
-        pass
+        """ 获取合约结束 """
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'交易合约信息获取完成'
+        self.gateway.onLog(log)
 
     #----------------------------------------------------------------------
     def execDetails(self, reqId, contract, execution):
