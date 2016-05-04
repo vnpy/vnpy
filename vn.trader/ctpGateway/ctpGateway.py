@@ -877,10 +877,6 @@ class CtpTdApi(TdApi):
             order.direction = DIRECTION_LONG
         elif data['Direction'] == '1':
             order.direction = DIRECTION_SHORT
-        elif data['CombOffsetFlag'] == '2':
-            order.offset = OFFSET_CLOSEYESTERDAY
-        elif data['CombOffsetFlag'] == '3':
-            order.offset = OFFSET_CLOSETODAY
         else:
             order.direction = DIRECTION_UNKNOWN
             
@@ -889,6 +885,10 @@ class CtpTdApi(TdApi):
             order.offset = OFFSET_OPEN
         elif data['CombOffsetFlag'] == '1':
             order.offset = OFFSET_CLOSE
+        elif data['CombOffsetFlag'] == '2':
+            order.offset = OFFSET_CLOSEYESTERDAY
+        elif data['CombOffsetFlag'] == '3':
+            order.offset = OFFSET_CLOSETODAY
         else:
             order.offset = OFFSET_UNKNOWN
             
