@@ -95,7 +95,17 @@ class CtaTemplate(object):
     #----------------------------------------------------------------------
     def sell(self, price, volume, stop=False):
         """卖平"""
-        return self.sendOrder(CTAORDER_SELL, price, volume, stop)       
+        return self.sendOrder(CTAORDER_SELL, price, volume, stop)  
+    
+    #----------------------------------------------------------------------
+    def selltoday(self, price, volume, stop=False):
+        """卖平今"""
+        return self.sendOrder(CTAORDER_SELLTODAY, price, volume, stop)
+
+    #----------------------------------------------------------------------
+    def sellyestoday(self, price, volume, stop=False):
+        """卖平昨"""
+        return self.sendOrder(CTAORDER_SELLYESTERDAY, price, volume, stop)
 
     #----------------------------------------------------------------------
     def short(self, price, volume, stop=False):
@@ -106,7 +116,17 @@ class CtaTemplate(object):
     def cover(self, price, volume, stop=False):
         """买平"""
         return self.sendOrder(CTAORDER_COVER, price, volume, stop)
-        
+
+    #----------------------------------------------------------------------
+    def covertoday(self, price, volume, stop=False):
+        """买平今"""
+        return self.sendOrder(CTAORDER_COVERTODAY, price, volume, stop)
+
+    #----------------------------------------------------------------------
+    def coveryestoday(self, price, volume, stop=False):
+        """买平昨"""
+        return self.sendOrder(CTAORDER_COVERYESTERDAY, price, volume, stop)
+    
     #----------------------------------------------------------------------
     def sendOrder(self, orderType, price, volume, stop=False):
         """发送委托"""
