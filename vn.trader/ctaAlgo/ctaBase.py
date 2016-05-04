@@ -16,8 +16,12 @@ sys.path.append('..')
 # CTA引擎中涉及到的交易方向类型
 CTAORDER_BUY = u'买开'
 CTAORDER_SELL = u'卖平'
+CTAORDER_SELLTODAY = u'卖平今'
+CTAORDER_SELLYESTERDAY = u'卖平昨'
 CTAORDER_SHORT = u'卖开'
 CTAORDER_COVER = u'买平'
+CTAORDER_COVERTODAY = u'买平今'
+CTAORDER_COVERYESTERDAY = u'买平昨'
 
 # 本地停止单状态
 STOPORDER_WAITING = u'等待中'
