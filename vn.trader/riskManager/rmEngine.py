@@ -157,7 +157,7 @@ class RmEngine(object):
             return False
         
         # 检查总活动合约
-        workingOrderCount = len(self.mainEngine.getAllWorkingOrders)
+        workingOrderCount = len(self.mainEngine.getAllWorkingOrders())
         if workingOrderCount >= self.workingOrderLimit:
             self.writeRiskLog(u'当前活动委托数量%s，超过限制%s'
                               %(workingOrderCount, self.workingOrderLimit))
