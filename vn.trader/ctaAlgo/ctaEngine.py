@@ -77,12 +77,24 @@ class CtaEngine(object):
         elif orderType == CTAORDER_SELL:
             req.direction = DIRECTION_SHORT
             req.offset = OFFSET_CLOSE
+        elif orderType == CTAORDER_SELLTODAY:
+            req.direction = DIRECTION_SHORT
+            req.offset = OFFSET_CLOSETODAY
+        elif orderType == CTAORDER_SELLYESTERDAY:
+            req.direction = DIRECTION_SHORT
+            req.offset = OFFSET_CLOSEYESTERDAY
         elif orderType == CTAORDER_SHORT:
             req.direction = DIRECTION_SHORT
             req.offset = OFFSET_OPEN
         elif orderType == CTAORDER_COVER:
             req.direction = DIRECTION_LONG
             req.offset = OFFSET_CLOSE
+        elif orderType == CTAORDER_COVERTODAY:
+            req.direction = DIRECTION_LONG
+            req.offset = OFFSET_CLOSETODAY
+        elif orderType == CTAORDER_COVERYESTERDAY:
+            req.direction = DIRECTION_LONG
+            req.offset = OFFSET_CLOSEYESTERDAY
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
         self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
@@ -131,12 +143,24 @@ class CtaEngine(object):
         elif orderType == CTAORDER_SELL:
             so.direction = DIRECTION_SHORT
             so.offset = OFFSET_CLOSE
+        elif orderType == CTAORDER_SELLTODAY:
+            so.direction = DIRECTION_SHORT
+            so.offset = OFFSET_CLOSETODAY
+        elif orderType == CTAORDER_SELLYESTERDAY:
+            so.direction = DIRECTION_SHORT
+            so.offset = OFFSET_CLOSEYESTERDAY
         elif orderType == CTAORDER_SHORT:
             so.direction = DIRECTION_SHORT
             so.offset = OFFSET_OPEN
         elif orderType == CTAORDER_COVER:
             so.direction = DIRECTION_LONG
-            so.offset = OFFSET_CLOSE           
+            so.offset = OFFSET_CLOSE  
+        elif orderType == CTAORDER_COVERTODAY:
+            so.direction = DIRECTION_LONG
+            so.offset = OFFSET_CLOSETODAY
+        elif orderType == CTAORDER_COVERYESTERDAY:
+            so.direction = DIRECTION_LONG
+            so.offset = OFFSET_CLOSEYESTERDAY
         
         # 保存stopOrder对象到字典中
         self.stopOrderDict[stopOrderID] = so
