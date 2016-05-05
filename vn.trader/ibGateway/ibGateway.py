@@ -188,7 +188,7 @@ class IbGateway(VtGateway):
             # 期货 如果没有设置过期时间, 默认设置为下个月
             dt_obj = datetime.now()
             days = calendar.monthrange(dt_obj.year, dt_obj.month)[1]
-            nextMonth = dt_obj + timedelta(days=days)
+            nextMonth = dt_obj + timedelta(days=(days - dt_obj.day + 1))
             contract.m_expiry = nextMonth.strftime('%Y%m')
 
         self.connection.reqMktData(self.tickerId, contract, '', False)
