@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from eventEngine import *
 from vtGateway import VtSubscribeReq, VtLogData
 from drBase import *
+from vtFunction import todayDate
 
 
 ########################################################################
@@ -31,7 +32,7 @@ class DrEngine(object):
         self.eventEngine = eventEngine
         
         # 当前日期
-        self.today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        self.today = todayDate()
         
         # 主力合约代码映射字典，key为具体的合约代码（如IF1604），value为主力合约代码（如IF0000）
         self.activeSymbolDict = {}

@@ -68,6 +68,7 @@ productClassMap[PRODUCT_EQUITY] = 'STK'
 productClassMap[PRODUCT_FUTURES] = 'FUT'
 productClassMap[PRODUCT_OPTION] = 'OPT'
 productClassMap[PRODUCT_FOREX] = 'CASH'
+productClassMapReverse = {v:k for k,v in productClassMap.items()}
 
 # 期权类型映射
 optionTypeMap = {}
@@ -184,6 +185,7 @@ class IbGateway(VtGateway):
         contract.m_strike = subscribeReq.strikePrice
         contract.m_right = optionTypeMap.get(subscribeReq.optionType, '')
         
+        # 考虑设计为针对期货用代码_到期日的方式来代替单纯的代码
         if contract.m_secType == 'FUT' and not subscribeReq.expiry:
             # 期货 如果没有设置过期时间, 默认设置为下个月
             dt_obj = datetime.now()
@@ -469,30 +471,22 @@ class IbWrapper(EWrapper):
         contract.name = contractDetails.m_summary.m_localSymbol.decode('UTF-8')
         
         # 合约类型
-        if contractDetails.m_summary.m_secType == 'STK':
-            contract.productClass = PRODUCT_EQUITY
-        elif contractDetails.m_summary.m_secType == 'CASH':
-            contract.productClass = PRODUCT_FOREX
-        elif contractDetails.m_summary.m_secType == 'FUT':
-            contract.productClass = PRODUCT_FUTURES
-        elif contractDetails.m_summary.m_secType == 'OPT':
-            contract.productClass = PRODUCT_OPTION
-        else:
-            contract.productClass = PRODUCT_UNKNOWN
+        contract.productClass = productClassMapReverse.get(contractDetails.m_summary.m_secType, 
+                                                           PRODUCT_UNKNOWN)
+        
         # 推送
         self.gateway.onContract(contract)
       
     #----------------------------------------------------------------------
     def bondContractDetails(self, reqId, contractDetails):
         """ generated source for method bondContractDetails """
+        pass
 
     #----------------------------------------------------------------------
     def contractDetailsEnd(self, reqId):
         """ 获取合约结束 """
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'交易合约信息获取完成'
-        self.gateway.onLog(log)
+        # 因为IB的合约获取是一个个合约进行的，并不会用于触发其他操作，因此无需发出日志
+        pass
 
     #----------------------------------------------------------------------
     def execDetails(self, reqId, contract, execution):
