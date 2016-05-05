@@ -11,6 +11,7 @@ ibpy的gateway接入
 5. 海外市场的交易规则和国内有很多细节上的不同，所以一些字段类型的映射可能不合理，如果发现问题欢迎指出
 '''
 
+import os
 import json
 from time import sleep, strftime, localtime
 from copy import copy
@@ -89,6 +90,7 @@ tickFieldMap[5] = 'lastVolume'
 tickFieldMap[6] = 'highPrice'
 tickFieldMap[7] = 'lowPrice'
 tickFieldMap[8] = 'volume'
+tickFieldMap[9] = 'preClosePrice'
 tickFieldMap[14] = 'openPrice'
 tickFieldMap[20] = 'openInterest'
 
@@ -132,7 +134,7 @@ class IbGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\ibGateway\\' + fileName
+        fileName = os.getcwd() + '/ibGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -276,6 +278,9 @@ class IbWrapper(EWrapper):
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
+            # 行情数据更新
+            newtick = copy(tick)
+            self.gateway.onTick(newtick)
         else:
             print field
 
@@ -322,7 +327,6 @@ class IbWrapper(EWrapper):
     #---------------------------------------------------------------------- 
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld):
         """报单成交回报"""
-        pass
         orderId = str(orderId)
         
         if orderId in self.orderDict:

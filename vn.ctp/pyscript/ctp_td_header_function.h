@@ -34,6 +34,10 @@ int reqQuoteInsert(dict req, int nRequestID);
 
 int reqQuoteAction(dict req, int nRequestID);
 
+int reqLockInsert(dict req, int nRequestID);
+
+int reqCombActionInsert(dict req, int nRequestID);
+
 int reqQryOrder(dict req, int nRequestID);
 
 int reqQryTrade(dict req, int nRequestID);
@@ -84,6 +88,10 @@ int reqQryExchangeRate(dict req, int nRequestID);
 
 int reqQrySecAgentACIDMap(dict req, int nRequestID);
 
+int reqQryProductExchRate(dict req, int nRequestID);
+
+int reqQryProductGroup(dict req, int nRequestID);
+
 int reqQryOptionInstrTradeCost(dict req, int nRequestID);
 
 int reqQryOptionInstrCommRate(dict req, int nRequestID);
@@ -93,6 +101,18 @@ int reqQryExecOrder(dict req, int nRequestID);
 int reqQryForQuote(dict req, int nRequestID);
 
 int reqQryQuote(dict req, int nRequestID);
+
+int reqQryLock(dict req, int nRequestID);
+
+int reqQryLockPosition(dict req, int nRequestID);
+
+int reqQryInvestorLevel(dict req, int nRequestID);
+
+int reqQryExecFreeze(dict req, int nRequestID);
+
+int reqQryCombInstrumentGuard(dict req, int nRequestID);
+
+int reqQryCombAction(dict req, int nRequestID);
 
 int reqQryTransferSerial(dict req, int nRequestID);
 
@@ -109,6 +129,8 @@ int reqQryTradingNotice(dict req, int nRequestID);
 int reqQryBrokerTradingParams(dict req, int nRequestID);
 
 int reqQryBrokerTradingAlgos(dict req, int nRequestID);
+
+int reqQueryCFMMCTradingAccountToken(dict req, int nRequestID);
 
 int reqFromBankToFutureByFuture(dict req, int nRequestID);
 

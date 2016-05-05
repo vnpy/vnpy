@@ -1,0 +1,30 @@
+{
+    "working": false,
+
+    "tick":
+    [
+        ["IF1605", "SGIT"],
+        ["IF1606", "SGIT"],
+        ["IH1606", "SGIT"],
+        ["IH1606", "SGIT"],
+        ["IC1606", "SGIT"],
+        ["IC1606", "SGIT"]
+    ],
+
+    "bar":
+    [
+        ["IF1605", "SGIT"],
+        ["IF1606", "SGIT"],
+        ["IH1606", "SGIT"],
+        ["IH1606", "SGIT"],
+        ["IC1606", "SGIT"],
+        ["IC1606", "SGIT"]
+    ],
+
+    "active":
+    {
+    	"IF0000": "IF1605",
+        "IH0000": "IH1605",
+        "IC0000": "IC1605"
+    }
+}

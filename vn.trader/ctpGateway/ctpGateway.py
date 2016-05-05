@@ -10,11 +10,13 @@ vtSymbol直接使用symbol
 
 import os
 import json
+from copy import copy
 
 from vnctpmd import MdApi
 from vnctptd import TdApi
 from ctpDataType import *
 from vtGateway import *
+
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -80,7 +82,7 @@ class CtpGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '\\ctpGateway\\' + fileName
+        fileName = os.getcwd() + '/ctpGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -275,7 +277,7 @@ class CtpMdApi(MdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-                
+
     #---------------------------------------------------------------------- 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -367,7 +369,7 @@ class CtpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcMdApi(path)
@@ -436,6 +438,8 @@ class CtpTdApi(TdApi):
         self.frontID = EMPTY_INT            # 前置机编号
         self.sessionID = EMPTY_INT          # 会话编号
         
+        self.posBufferDict = {}             # 缓存持仓数据的字典
+        
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
@@ -495,7 +499,7 @@ class CtpTdApi(TdApi):
         # 否则，推送错误信息
         else:
             err = VtErrorData()
-            err.gatewayName = self.gateway
+            err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
@@ -624,32 +628,17 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        pos = VtPositionData()
-        pos.gatewayName = self.gatewayName
+        # 获取缓存字典中的持仓缓存，若无则创建并初始化
+        positionName = '.'.join([data['InstrumentID'], data['PosiDirection']])
         
-        # 保存代码
-        pos.symbol = data['InstrumentID']
-        pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
+        if positionName in self.posBufferDict:
+            posBuffer = self.posBufferDict[positionName]
+        else:
+            posBuffer = PositionBuffer(data, self.gatewayName)
+            self.posBufferDict[positionName] = posBuffer
         
-        # 方向和持仓冻结数量
-        pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
-        if pos.direction == DIRECTION_NET or pos.direction == DIRECTION_LONG:
-            pos.frozen = data['LongFrozen']
-        elif pos.direction == DIRECTION_SHORT:   
-            pos.frozen = data['ShortFrozen']
-        
-        # 持仓量
-        pos.position = data['Position']
-        pos.ydPosition = data['YdPosition']        
-        
-        # 持仓均价
-        if pos.position:
-            pos.price = data['PositionCost'] / pos.position
-        
-        # VT系统持仓名
-        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-        
-        # 推送
+        # 更新持仓缓存，并获取VT系统中持仓对象的返回值
+        pos = posBuffer.updateBuffer(data)
         self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
@@ -1185,7 +1174,7 @@ class CtpTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '\\temp\\' + self.gatewayName + '\\'
+            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
             if not os.path.exists(path):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
@@ -1241,12 +1230,9 @@ class CtpTdApi(TdApi):
         req['VolumeTotalOriginal'] = orderReq.volume
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
-        try:
-            req['OrderPriceType'] = priceTypeMap[orderReq.priceType]
-            req['Direction'] = directionMap[orderReq.direction]
-            req['CombOffsetFlag'] = offsetMap[orderReq.offset]
-        except KeyError:
-            return ''
+        req['OrderPriceType'] = priceTypeMap.get(orderReq.priceType, '')
+        req['Direction'] = directionMap.get(orderReq.direction, '')
+        req['CombOffsetFlag'] = offsetMap.get(orderReq.offset, '')
             
         req['OrderRef'] = str(self.orderRef)
         req['InvestorID'] = self.userID
@@ -1260,6 +1246,16 @@ class CtpTdApi(TdApi):
         req['TimeCondition'] = defineDict['THOST_FTDC_TC_GFD']               # 今日有效
         req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']              # 任意成交量
         req['MinVolume'] = 1                                                 # 最小成交量为1
+        
+        # 判断FAK和FOK
+        if orderReq.priceType == PRICETYPE_FAK:
+            req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
+            req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
+            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']
+        if orderReq.priceType == PRICETYPE_FOK:
+            req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
+            req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
+            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_CV']        
         
         self.reqOrderInsert(req, self.reqID)
         
@@ -1291,6 +1287,55 @@ class CtpTdApi(TdApi):
         """关闭"""
         self.exit()
 
+
+########################################################################
+class PositionBuffer(object):
+    """用来缓存持仓的数据，处理上期所的数据返回分今昨的问题"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, data, gatewayName):
+        """Constructor"""
+        self.symbol = data['InstrumentID']
+        self.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+        
+        self.todayPosition = EMPTY_INT
+        self.ydPosition = EMPTY_INT
+        self.todayPositionCost = EMPTY_FLOAT
+        self.ydPositionCost = EMPTY_FLOAT
+        
+        # 通过提前创建持仓数据对象并重复使用的方式来降低开销
+        pos = VtPositionData()
+        pos.symbol = self.symbol
+        pos.vtSymbol = self.symbol
+        pos.gatewayName = gatewayName
+        pos.direction = self.direction
+        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
+        self.pos = pos
+        
+    #----------------------------------------------------------------------
+    def updateBuffer(self, data):
+        """更新缓存，返回更新后的持仓数据"""
+        # 昨仓和今仓的数据更新是分在两条记录里的，因此需要判断检查该条记录对应仓位
+        if data['TodayPosition']:
+            self.todayPosition = data['Position']
+            self.todayPositionCost = data['PositionCost']
+        elif data['YdPosition']:
+            self.ydPosition = data['Position']
+            self.ydPositionCost = data['PositionCost']
+            
+        # 持仓的昨仓和今仓相加后为总持仓
+        self.pos.position = self.todayPosition + self.ydPosition
+        self.pos.ydPosition = self.ydPosition
+        
+        # 如果手头还有持仓，则通过加权平均方式计算持仓均价
+        if self.todayPosition or self.ydPosition:
+            self.pos.price = ((self.todayPositionCost + self.ydPositionCost)/
+                              (self.todayPosition + self.ydPosition))
+        # 否则价格为0
+        else:
+            self.pos.price = 0
+            
+        return copy(self.pos)
 
 #----------------------------------------------------------------------
 def test():

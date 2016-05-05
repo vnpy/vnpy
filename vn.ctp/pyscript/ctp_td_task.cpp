@@ -579,6 +579,68 @@ void TdApi::OnRspQuoteAction(CThostFtdcInputQuoteActionField *pInputQuoteAction,
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRspLockInsert(CThostFtdcInputLockField *pInputLock, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPLOCKINSERT;
+
+	if (pInputLock)
+	{
+		task.task_data = *pInputLock;
+	}
+	else
+	{
+		CThostFtdcInputLockField empty_data = CThostFtdcInputLockField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspCombActionInsert(CThostFtdcInputCombActionField *pInputCombAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPCOMBACTIONINSERT;
+
+	if (pInputCombAction)
+	{
+		task.task_data = *pInputCombAction;
+	}
+	else
+	{
+		CThostFtdcInputCombActionField empty_data = CThostFtdcInputCombActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
 void TdApi::OnRspQryOrder(CThostFtdcOrderField *pOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
@@ -1354,6 +1416,68 @@ void TdApi::OnRspQrySecAgentACIDMap(CThostFtdcSecAgentACIDMapField *pSecAgentACI
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRspQryProductExchRate(CThostFtdcProductExchRateField *pProductExchRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYPRODUCTEXCHRATE;
+
+	if (pProductExchRate)
+	{
+		task.task_data = *pProductExchRate;
+	}
+	else
+	{
+		CThostFtdcProductExchRateField empty_data = CThostFtdcProductExchRateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryProductGroup(CThostFtdcProductGroupField *pProductGroup, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYPRODUCTGROUP;
+
+	if (pProductGroup)
+	{
+		task.task_data = *pProductGroup;
+	}
+	else
+	{
+		CThostFtdcProductGroupField empty_data = CThostFtdcProductGroupField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
 void TdApi::OnRspQryOptionInstrTradeCost(CThostFtdcOptionInstrTradeCostField *pOptionInstrTradeCost, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
@@ -1490,6 +1614,192 @@ void TdApi::OnRspQryQuote(CThostFtdcQuoteField *pQuote, CThostFtdcRspInfoField *
 	else
 	{
 		CThostFtdcQuoteField empty_data = CThostFtdcQuoteField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryLock(CThostFtdcLockField *pLock, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYLOCK;
+
+	if (pLock)
+	{
+		task.task_data = *pLock;
+	}
+	else
+	{
+		CThostFtdcLockField empty_data = CThostFtdcLockField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryLockPosition(CThostFtdcLockPositionField *pLockPosition, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYLOCKPOSITION;
+
+	if (pLockPosition)
+	{
+		task.task_data = *pLockPosition;
+	}
+	else
+	{
+		CThostFtdcLockPositionField empty_data = CThostFtdcLockPositionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryInvestorLevel(CThostFtdcInvestorLevelField *pInvestorLevel, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYINVESTORLEVEL;
+
+	if (pInvestorLevel)
+	{
+		task.task_data = *pInvestorLevel;
+	}
+	else
+	{
+		CThostFtdcInvestorLevelField empty_data = CThostFtdcInvestorLevelField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryExecFreeze(CThostFtdcExecFreezeField *pExecFreeze, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYEXECFREEZE;
+
+	if (pExecFreeze)
+	{
+		task.task_data = *pExecFreeze;
+	}
+	else
+	{
+		CThostFtdcExecFreezeField empty_data = CThostFtdcExecFreezeField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryCombInstrumentGuard(CThostFtdcCombInstrumentGuardField *pCombInstrumentGuard, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYCOMBINSTRUMENTGUARD;
+
+	if (pCombInstrumentGuard)
+	{
+		task.task_data = *pCombInstrumentGuard;
+	}
+	else
+	{
+		CThostFtdcCombInstrumentGuardField empty_data = CThostFtdcCombInstrumentGuardField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryCombAction(CThostFtdcCombActionField *pCombAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYCOMBACTION;
+
+	if (pCombAction)
+	{
+		task.task_data = *pCombAction;
+	}
+	else
+	{
+		CThostFtdcCombActionField empty_data = CThostFtdcCombActionField();
 		memset(&empty_data, 0, sizeof(empty_data));
 		task.task_data = empty_data;
 	}
@@ -1938,6 +2248,118 @@ void TdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRtnCFMMCTradingAccountToken(CThostFtdcCFMMCTradingAccountTokenField *pCFMMCTradingAccountToken) 
+{
+	Task task = Task();
+	task.task_name = ONRTNCFMMCTRADINGACCOUNTTOKEN;
+
+	if (pCFMMCTradingAccountToken)
+	{
+		task.task_data = *pCFMMCTradingAccountToken;
+	}
+	else
+	{
+		CThostFtdcCFMMCTradingAccountTokenField empty_data = CThostFtdcCFMMCTradingAccountTokenField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRtnLock(CThostFtdcLockField *pLock) 
+{
+	Task task = Task();
+	task.task_name = ONRTNLOCK;
+
+	if (pLock)
+	{
+		task.task_data = *pLock;
+	}
+	else
+	{
+		CThostFtdcLockField empty_data = CThostFtdcLockField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnErrRtnLockInsert(CThostFtdcInputLockField *pInputLock, CThostFtdcRspInfoField *pRspInfo) 
+{
+	Task task = Task();
+	task.task_name = ONERRRTNLOCKINSERT;
+
+	if (pInputLock)
+	{
+		task.task_data = *pInputLock;
+	}
+	else
+	{
+		CThostFtdcInputLockField empty_data = CThostFtdcInputLockField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRtnCombAction(CThostFtdcCombActionField *pCombAction) 
+{
+	Task task = Task();
+	task.task_name = ONRTNCOMBACTION;
+
+	if (pCombAction)
+	{
+		task.task_data = *pCombAction;
+	}
+	else
+	{
+		CThostFtdcCombActionField empty_data = CThostFtdcCombActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnErrRtnCombActionInsert(CThostFtdcInputCombActionField *pInputCombAction, CThostFtdcRspInfoField *pRspInfo) 
+{
+	Task task = Task();
+	task.task_name = ONERRRTNCOMBACTIONINSERT;
+
+	if (pInputCombAction)
+	{
+		task.task_data = *pInputCombAction;
+	}
+	else
+	{
+		CThostFtdcInputCombActionField empty_data = CThostFtdcInputCombActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	this->task_queue.push(task);
+};
+
 void TdApi::OnRspQryContractBank(CThostFtdcContractBankField *pContractBank, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
 {
 	Task task = Task();
@@ -2105,6 +2527,37 @@ void TdApi::OnRspQryBrokerTradingAlgos(CThostFtdcBrokerTradingAlgosField *pBroke
 	else
 	{
 		CThostFtdcBrokerTradingAlgosField empty_data = CThostFtdcBrokerTradingAlgosField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQueryCFMMCTradingAccountToken(CThostFtdcQueryCFMMCTradingAccountTokenField *pQueryCFMMCTradingAccountToken, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
+{
+	Task task = Task();
+	task.task_name = ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN;
+
+	if (pQueryCFMMCTradingAccountToken)
+	{
+		task.task_data = *pQueryCFMMCTradingAccountToken;
+	}
+	else
+	{
+		CThostFtdcQueryCFMMCTradingAccountTokenField empty_data = CThostFtdcQueryCFMMCTradingAccountTokenField();
 		memset(&empty_data, 0, sizeof(empty_data));
 		task.task_data = empty_data;
 	}

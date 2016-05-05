@@ -214,6 +214,30 @@ virtual void onRspQuoteAction(dict data, dict error, int id, bool last)
 	}
 };
 
+virtual void onRspLockInsert(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspLockInsert")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspCombActionInsert(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspCombActionInsert")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
 virtual void onRspQryOrder(dict data, dict error, int id, bool last)
 {
 	try
@@ -514,6 +538,30 @@ virtual void onRspQrySecAgentACIDMap(dict data, dict error, int id, bool last)
 	}
 };
 
+virtual void onRspQryProductExchRate(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryProductExchRate")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryProductGroup(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryProductGroup")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
 virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int id, bool last)
 {
 	try
@@ -567,6 +615,78 @@ virtual void onRspQryQuote(dict data, dict error, int id, bool last)
 	try
 	{
 		this->get_override("onRspQryQuote")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryLock(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryLock")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryLockPosition(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryLockPosition")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryInvestorLevel(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryInvestorLevel")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryExecFreeze(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryExecFreeze")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryCombInstrumentGuard(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryCombInstrumentGuard")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryCombAction(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryCombAction")(data, error, id, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -790,6 +910,66 @@ virtual void onRtnForQuoteRsp(dict data)
 	}
 };
 
+virtual void onRtnCFMMCTradingAccountToken(dict data)
+{
+	try
+	{
+		this->get_override("onRtnCFMMCTradingAccountToken")(data);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRtnLock(dict data)
+{
+	try
+	{
+		this->get_override("onRtnLock")(data);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onErrRtnLockInsert(dict data, dict error)
+{
+	try
+	{
+		this->get_override("onErrRtnLockInsert")(data, error);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRtnCombAction(dict data)
+{
+	try
+	{
+		this->get_override("onRtnCombAction")(data);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onErrRtnCombActionInsert(dict data, dict error)
+{
+	try
+	{
+		this->get_override("onErrRtnCombActionInsert")(data, error);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
 virtual void onRspQryContractBank(dict data, dict error, int id, bool last)
 {
 	try
@@ -855,6 +1035,18 @@ virtual void onRspQryBrokerTradingAlgos(dict data, dict error, int id, bool last
 	try
 	{
 		this->get_override("onRspQryBrokerTradingAlgos")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQueryCFMMCTradingAccountToken(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQueryCFMMCTradingAccountToken")(data, error, id, last);
 	}
 	catch (error_already_set const &)
 	{

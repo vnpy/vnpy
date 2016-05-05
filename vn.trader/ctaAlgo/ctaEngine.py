@@ -20,7 +20,7 @@ from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    settingFileName = os.getcwd() + '\\ctaAlgo\\' + settingFileName
+    settingFileName = os.getcwd() + '/ctaAlgo/' + settingFileName
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -118,6 +118,7 @@ class CtaEngine(object):
         
         so = StopOrder()
         so.vtSymbol = vtSymbol
+        so.orderType = orderType
         so.price = price
         so.volume = volume
         so.strategy = strategy
@@ -163,7 +164,7 @@ class CtaEngine(object):
             for so in self.workingStopOrderDict.values():
                 if so.vtSymbol == vtSymbol:
                     longTriggered = so.direction==DIRECTION_LONG and tick.lastPrice>=so.price        # 多头停止单被触发
-                    shortTriggered = so.direction==DIRECTION_SHORT and tick.lasatPrice<=so.price     # 空头停止单被触发
+                    shortTriggered = so.direction==DIRECTION_SHORT and tick.lastPrice<=so.price     # 空头停止单被触发
                     
                     if longTriggered or shortTriggered:
                         # 买入和卖出分别以涨停跌停价发单（模拟市价单）
@@ -326,8 +327,12 @@ class CtaEngine(object):
         """初始化策略"""
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
-            strategy.inited = True
-            strategy.onInit()
+            
+            if not strategy.inited:
+                strategy.inited = True
+                strategy.onInit()
+            else:
+                self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
             self.writeCtaLog(u'策略实例不存在：%s' %name)        
 

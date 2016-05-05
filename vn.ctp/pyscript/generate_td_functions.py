@@ -240,12 +240,18 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     for key, value in struct.items():
         if value == 'string':
-            line = '\tgetChar(req, "' + key + '", myreq.' + key + ');\n'
+            line = '\tgetStr(req, "' + key + '", myreq.' + key + ');\n'
+        elif value == 'char':
+            line = '\tgetChar(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'int':
             line = '\tgetInt(req, "' + key + '", &myreq.' + key + ');\n'
-        elif value == 'double':
+        elif value == 'float':
             line = '\tgetDouble(req, "' + key + '", &myreq.' + key + ');\n'
         ffunction.write(line)
+
+        if type_ == 'CThostFtdcInputOrderField':
+            print key, value
+            print line
 
     ffunction.write('\tint i = this->api->' + fcName + '(&myreq, nRequestID);\n')
     ffunction.write('\treturn i;\n')
@@ -288,3 +294,5 @@ fheaderprocess.close()
 fheaderon.close()
 fheaderfunction.close()
 fwrap.close()
+
+input()

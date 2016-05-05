@@ -1,32 +1,48 @@
-﻿========================================================================
-    动态链接库：vnctptd 项目概述
+========================================================================
+    DYNAMIC LINK LIBRARY : vnctptd Project Overview
 ========================================================================
 
-应用程序向导已为您创建了此 vnctptd DLL。
+AppWizard has created this vnctptd DLL for you.
 
-本文件概要介绍组成 vnctptd 应用程序的每个文件的内容。
+This file contains a summary of what you will find in each of the files that
+make up your vnctptd application.
 
 
 vnctptd.vcxproj
-    这是使用应用程序向导生成的 VC++ 项目的主项目文件，其中包含生成该文件的 Visual C++ 的版本信息，以及有关使用应用程序向导选择的平台、配置和项目功能的信息。
+    This is the main project file for VC++ projects generated using an Application Wizard.
+    It contains information about the version of Visual C++ that generated the file, and
+    information about the platforms, configurations, and project features selected with the
+    Application Wizard.
 
 vnctptd.vcxproj.filters
-    这是使用“应用程序向导”生成的 VC++ 项目筛选器文件。它包含有关项目文件与筛选器之间的关联信息。在 IDE 中，通过这种关联，在特定节点下以分组形式显示具有相似扩展名的文件。例如，“.cpp”文件与“源文件”筛选器关联。
+    This is the filters file for VC++ projects generated using an Application Wizard. 
+    It contains information about the association between the files in your project 
+    and the filters. This association is used in the IDE to show grouping of files with
+    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
+    "Source Files" filter).
 
 vnctptd.cpp
-    这是主 DLL 源文件。
+    This is the main DLL source file.
 
-	此 DLL 在创建时不导出任何符号。因此，生成时不会产生 .lib 文件。如果希望此项目成为其他某个项目的项目依赖项，则需要添加代码以从 DLL 导出某些符号，以便产生一个导出库，或者，也可以在项目“属性页”对话框中的“链接器”文件夹中，将“常规”属性页上的“忽略输入库”属性设置为“是”。
+	When created, this DLL does not export any symbols. As a result, it
+	will not produce a .lib file when it is built. If you wish this project
+	to be a project dependency of some other project, you will either need to
+	add code to export some symbols from the DLL so that an export library
+	will be produced, or you can set the Ignore Input Library property to Yes
+	on the General propert page of the Linker folder in the project's Property
+	Pages dialog box.
 
 /////////////////////////////////////////////////////////////////////////////
-其他标准文件:
+Other standard files:
 
 StdAfx.h, StdAfx.cpp
-    这些文件用于生成名为 vnctptd.pch 的预编译头 (PCH) 文件和名为 StdAfx.obj 的预编译类型文件。
+    These files are used to build a precompiled header (PCH) file
+    named vnctptd.pch and a precompiled types file named StdAfx.obj.
 
 /////////////////////////////////////////////////////////////////////////////
-其他注释:
+Other notes:
 
-应用程序向导使用“TODO:”注释来指示应添加或自定义的源代码部分。
+AppWizard uses "TODO:" comments to indicate parts of the source code you
+should add to or customize.
 
 /////////////////////////////////////////////////////////////////////////////

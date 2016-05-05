@@ -34,7 +34,64 @@ def processCallBack(line):
 
     createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine)
     createProcess(cbName, cbArgsTypeList, cbArgsValueList)
+    
+    # 生成.h文件中的process部分
+    process_line = 'void process' + cbName[2:] + '(Task task);\n'
+    fheaderprocess.write(process_line)
+    fheaderprocess.write('\n')
 
+    # 生成.h文件中的on部分
+    if 'OnRspError' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last) {};\n'
+    elif 'OnRsp' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last) {};\n'
+    elif 'OnRtn' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'
+    elif 'OnErrRtn' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error) {};\n'
+    else:
+        on_line = ''
+    fheaderon.write(on_line)
+    fheaderon.write('\n')
+    
+    # 生成封装部分
+    createWrap(cbName)
+    
+
+#----------------------------------------------------------------------
+def createWrap(cbName):
+    """在Python封装段代码中进行处理"""
+    # 生成.h文件中的on部分
+    if 'OnRspError' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'    
+        override_line = '("on' + cbName[2:] + '")(error, id, last);\n' 
+    elif 'OnRsp' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
+        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n' 
+    elif 'OnRtn' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
+        override_line = '("on' + cbName[2:] + '")(data);\n'
+    elif 'OnErrRtn' in cbName:
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error)\n'
+        override_line = '("on' + cbName[2:] + '")(data, error);\n'
+    else:
+        on_line = ''
+        
+    if on_line is not '':
+        fwrap.write(on_line)
+        fwrap.write('{\n')
+        fwrap.write('\ttry\n')
+        fwrap.write('\t{\n')
+        fwrap.write('\t\tthis->get_override'+override_line)
+        fwrap.write('\t}\n')
+        fwrap.write('\tcatch (error_already_set const &)\n')
+        fwrap.write('\t{\n')
+        fwrap.write('\t\tPyErr_Print();\n')
+        fwrap.write('\t}\n')
+        fwrap.write('};\n')
+        fwrap.write('\n')
+    
+    
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
     # 从回调函数生成任务对象，并放入队列
@@ -66,18 +123,29 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
         elif type_ == 'bool':
             ftask.write("\ttask.task_last = " + cbArgsValueList[i] + ";\n")
         elif 'RspInfoField' in type_:
+            ftask.write("\n")
             ftask.write("\tif (pRspInfo)\n")
             ftask.write("\t{\n")
             ftask.write("\t\ttask.task_error = " + cbArgsValueList[i] + ";\n")
             ftask.write("\t}\n")
             ftask.write("\telse\n")
             ftask.write("\t{\n")
-            ftask.write("\t\tCSecurityFtdcRspInfoField empty_error = CSecurityFtdcRspInfoField();\n")
+            ftask.write("\t\tCThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();\n")
             ftask.write("\t\tmemset(&empty_error, 0, sizeof(empty_error));\n")
             ftask.write("\t\ttask.task_error = empty_error;\n")
             ftask.write("\t}\n")
         else:
-            ftask.write("\ttask.task_data = " + cbArgsValueList[i] + ";\n")
+            ftask.write("\n")
+            ftask.write("\tif (" + cbArgsValueList[i][1:] + ")\n")
+            ftask.write("\t{\n")
+            ftask.write("\t\ttask.task_data = " + cbArgsValueList[i] + ";\n")
+            ftask.write("\t}\n")
+            ftask.write("\telse\n")
+            ftask.write("\t{\n")
+            ftask.write("\t\t" + type_ + " empty_data = " + type_ + "();\n")
+            ftask.write("\t\tmemset(&empty_data, 0, sizeof(empty_data));\n")
+            ftask.write("\t\ttask.task_data = empty_data;\n")
+            ftask.write("\t}\n")            
 
     ftask.write("\tthis->task_queue.push(task);\n")
     ftask.write("};\n")
@@ -153,20 +221,28 @@ def processFunction(line):
 
     if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
+        
+    # 生成.h文件中的主动函数部分
+    if 'Req' in fcName:
+        req_line = 'int req' + fcName[3:] + '(dict req, int nRequestID);\n'
+        fheaderfunction.write(req_line)
+        fheaderfunction.write('\n')
 
 
 def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
     type_ = fcArgsTypeList[0]
     struct = structDict[type_]
 
-    ffunction.write(fcName + '\n')
+    ffunction.write('int MdApi::req' + fcName[3:] + '(dict req, int nRequestID)\n')
     ffunction.write('{\n')
     ffunction.write('\t' + type_ +' myreq = ' + type_ + '();\n')
     ffunction.write('\tmemset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
         if value == 'string':
-            line = '\tgetChar(req, "' + key + '", myreq.' + key + ');\n'
+            line = '\tgetStr(req, "' + key + '", myreq.' + key + ');\n'
+        elif value == 'char':
+            line = '\tgetChar(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'int':
             line = '\tgetInt(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'double':
@@ -191,6 +267,10 @@ fprocess = open('ctp_md_process.cpp', 'w')
 ffunction = open('ctp_md_function.cpp', 'w')
 fdefine = open('ctp_md_define.cpp', 'w')
 fswitch = open('ctp_md_switch.cpp', 'w')
+fheaderprocess = open('ctp_md_header_process.h', 'w')
+fheaderon = open('ctp_md_header_on.h', 'w')
+fheaderfunction = open('ctp_md_header_function.h', 'w')
+fwrap = open('ctp_md_wrap.cpp', 'w')
 
 define_count = 1
 
@@ -206,3 +286,7 @@ fprocess.close()
 ffunction.close()
 fswitch.close()
 fdefine.close()
+fheaderprocess.close()
+fheaderon.close()
+fheaderfunction.close()
+fwrap.close()
