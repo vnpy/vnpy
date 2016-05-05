@@ -338,7 +338,7 @@ class IbWrapper(EWrapper):
     def tickString(self, tickerId, tickType, value):
         """行情推送，特殊字段相关"""
         if tickType == 45:            
-            dt_obj = datetime.utcfromtimestamp(int(value))
+            dt_obj = datetime.fromtimestamp(int(value))
             
             tick = self.tickDict[tickerId]
             tick.time = dt_obj.strftime('%H:%M:%S.%f')
@@ -572,7 +572,7 @@ class IbWrapper(EWrapper):
     #----------------------------------------------------------------------
     def currentTime(self, time):
         """ generated source for method currentTime """
-        dt_obj = datetime.utcfromtimestamp(time)
+        dt_obj = datetime.fromtimestamp(time)
         t = dt_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
 
         self.connectionStatus = True
