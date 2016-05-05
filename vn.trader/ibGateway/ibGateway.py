@@ -13,7 +13,8 @@ ibpy的gateway接入
 
 import os
 import json
-from datetime import datetime
+import calendar
+from datetime import datetime, timedelta
 from copy import copy
 
 from PyQt4 import QtGui, QtCore
@@ -45,6 +46,7 @@ directionMapReverse['SLD'] = DIRECTION_SHORT
 # 交易所类型映射
 exchangeMap = {}
 exchangeMap[EXCHANGE_SMART] = 'SMART'
+exchangeMap[EXCHANGE_NYMEX] = 'NYMEX'
 exchangeMap[EXCHANGE_GLOBEX] = 'GLOBEX'
 exchangeMap[EXCHANGE_IDEALPRO] = 'IDEALPRO'
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
@@ -181,7 +183,14 @@ class IbGateway(VtGateway):
         contract.m_expiry = subscribeReq.expiry
         contract.m_strike = subscribeReq.strikePrice
         contract.m_right = optionTypeMap.get(subscribeReq.optionType, '')
-    
+        
+        if contract.m_secType == 'FUT' and not subscribeReq.expiry:
+            # 期货 如果没有设置过期时间, 默认设置为下个月
+            dt_obj = datetime.now()
+            days = calendar.monthrange(dt_obj.year, dt_obj.month)[1]
+            nextMonth = dt_obj + timedelta(days=days)
+            contract.m_expiry = nextMonth.strftime('%Y%m')
+
         self.connection.reqMktData(self.tickerId, contract, '', False)
         
         # 获取合约详细信息
