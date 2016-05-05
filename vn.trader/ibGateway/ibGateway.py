@@ -90,6 +90,7 @@ tickFieldMap[5] = 'lastVolume'
 tickFieldMap[6] = 'highPrice'
 tickFieldMap[7] = 'lowPrice'
 tickFieldMap[8] = 'volume'
+tickFieldMap[9] = 'preClosePrice'
 tickFieldMap[14] = 'openPrice'
 tickFieldMap[20] = 'openInterest'
 
@@ -277,6 +278,9 @@ class IbWrapper(EWrapper):
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
+            # 行情数据更新
+            newtick = copy(tick)
+            self.gateway.onTick(newtick)
         else:
             print field
 
@@ -323,7 +327,6 @@ class IbWrapper(EWrapper):
     #---------------------------------------------------------------------- 
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld):
         """报单成交回报"""
-        pass
         orderId = str(orderId)
         
         if orderId in self.orderDict:

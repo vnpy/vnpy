@@ -12,6 +12,7 @@ from vtFunction import loadMongoSetting
 
 from ctaAlgo.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
+from riskManager.rmEngine import RmEngine
 
 
 ########################################################################
@@ -37,6 +38,7 @@ class MainEngine(object):
         # 扩展模块
         self.ctaEngine = CtaEngine(self, self.eventEngine)
         self.drEngine = DrEngine(self, self.eventEngine)
+        self.rmEngine = RmEngine(self, self.eventEngine)
         
     #----------------------------------------------------------------------
     def initGateway(self):
@@ -139,6 +141,10 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
+        # 如果风控检查失败则不发单
+        if not self.rmEngine.checkRisk(orderReq):
+            return ''    
+        
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             return gateway.sendOrder(orderReq)
