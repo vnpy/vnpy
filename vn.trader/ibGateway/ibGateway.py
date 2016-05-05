@@ -13,7 +13,8 @@ ibpy的gateway接入
 
 import os
 import json
-from time import sleep, strftime, localtime
+import calendar
+from datetime import datetime, timedelta
 from copy import copy
 
 from PyQt4 import QtGui, QtCore
@@ -45,6 +46,7 @@ directionMapReverse['SLD'] = DIRECTION_SHORT
 # 交易所类型映射
 exchangeMap = {}
 exchangeMap[EXCHANGE_SMART] = 'SMART'
+exchangeMap[EXCHANGE_NYMEX] = 'NYMEX'
 exchangeMap[EXCHANGE_GLOBEX] = 'GLOBEX'
 exchangeMap[EXCHANGE_IDEALPRO] = 'IDEALPRO'
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
@@ -181,8 +183,18 @@ class IbGateway(VtGateway):
         contract.m_expiry = subscribeReq.expiry
         contract.m_strike = subscribeReq.strikePrice
         contract.m_right = optionTypeMap.get(subscribeReq.optionType, '')
-    
+        
+        if contract.m_secType == 'FUT' and not subscribeReq.expiry:
+            # 期货 如果没有设置过期时间, 默认设置为下个月
+            dt_obj = datetime.now()
+            days = calendar.monthrange(dt_obj.year, dt_obj.month)[1]
+            nextMonth = dt_obj + timedelta(days=(days - dt_obj.day + 1))
+            contract.m_expiry = nextMonth.strftime('%Y%m')
+
         self.connection.reqMktData(self.tickerId, contract, '', False)
+        
+        # 获取合约详细信息
+        self.connection.reqContractDetails(self.tickerId, contract)
         
         # 创建Tick对象并保存到字典中
         tick = VtTickData()
@@ -190,6 +202,7 @@ class IbGateway(VtGateway):
         tick.exchange = subscribeReq.exchange
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
         tick.gatewayName = self.gatewayName
+        tick.__setattr__('m_secType', productClassMap.get(subscribeReq.productClass, ''))
         self.tickDict[self.tickerId] = tick
     
     #----------------------------------------------------------------------
@@ -278,6 +291,13 @@ class IbWrapper(EWrapper):
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
+                        
+            # 外汇单独设置时间, tickString 没有返回外汇时间
+            if tick.m_secType == 'CASH':
+                dt_obj = datetime.now()
+                tick.time = dt_obj.strftime('%H:%M:%S.%f')
+                tick.date = dt_obj.strftime('%Y%m%d')
+            
             # 行情数据更新
             newtick = copy(tick)
             self.gateway.onTick(newtick)
@@ -290,7 +310,17 @@ class IbWrapper(EWrapper):
         if field in tickFieldMap:
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
-            tick.__setattr__(key, size)       
+            tick.__setattr__(key, size)
+            
+            # 外汇单独设置时间, tickString 没有返回外汇时间
+            if tick.m_secType == 'CASH':
+                dt_obj = datetime.now()
+                tick.time = dt_obj.strftime('%H:%M:%S.%f')
+                tick.date = dt_obj.strftime('%Y%m%d')
+                
+            # 行情数据更新
+            newtick = copy(tick)
+            self.gateway.onTick(newtick)      
         else:
             print field
 
@@ -307,12 +337,12 @@ class IbWrapper(EWrapper):
     #---------------------------------------------------------------------- 
     def tickString(self, tickerId, tickType, value):
         """行情推送，特殊字段相关"""
-        if tickType == 45:
-            lt = localtime(int(value))
+        if tickType == 45:            
+            dt_obj = datetime.fromtimestamp(int(value))
             
             tick = self.tickDict[tickerId]
-            tick.time = strftime('%H:%M:%S', lt)
-            tick.date = strftime('%Y%m%d')
+            tick.time = dt_obj.strftime('%H:%M:%S.%f')
+            tick.date = dt_obj.strftime('%Y%m%d')
             
             # 这里使用copy的目的是为了保证推送到事件系统中的对象
             # 不会被当前的API线程修改，否则可能出现多线程数据同步错误
@@ -429,17 +459,40 @@ class IbWrapper(EWrapper):
 
     #----------------------------------------------------------------------
     def contractDetails(self, reqId, contractDetails):
-        """ generated source for method contractDetails """
-        pass
+        """合约查询回报"""
+        contract = VtContractData()
+        contract.gatewayName = self.gatewayName
+        contract.symbol = contractDetails.m_summary.m_symbol
+        contract.exchange = contractDetails.m_summary.m_exchange
 
+        contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
+        contract.name = contractDetails.m_summary.m_localSymbol.decode('UTF-8')
+        
+        # 合约类型
+        if contractDetails.m_summary.m_secType == 'STK':
+            contract.productClass = PRODUCT_EQUITY
+        elif contractDetails.m_summary.m_secType == 'CASH':
+            contract.productClass = PRODUCT_FOREX
+        elif contractDetails.m_summary.m_secType == 'FUT':
+            contract.productClass = PRODUCT_FUTURES
+        elif contractDetails.m_summary.m_secType == 'OPT':
+            contract.productClass = PRODUCT_OPTION
+        else:
+            contract.productClass = PRODUCT_UNKNOWN
+        # 推送
+        self.gateway.onContract(contract)
+      
     #----------------------------------------------------------------------
     def bondContractDetails(self, reqId, contractDetails):
         """ generated source for method bondContractDetails """
 
     #----------------------------------------------------------------------
     def contractDetailsEnd(self, reqId):
-        """ generated source for method contractDetailsEnd """
-        pass
+        """ 获取合约结束 """
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'交易合约信息获取完成'
+        self.gateway.onLog(log)
 
     #----------------------------------------------------------------------
     def execDetails(self, reqId, contract, execution):
@@ -519,14 +572,15 @@ class IbWrapper(EWrapper):
     #----------------------------------------------------------------------
     def currentTime(self, time):
         """ generated source for method currentTime """
-        t = strftime('%H:%M:%S', localtime(time))
-        
+        dt_obj = datetime.fromtimestamp(time)
+        t = dt_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
+
         self.connectionStatus = True
         self.gateway.connected = True
         
         log = VtLogData()
         log.gatewayName = self.gatewayName
-        log.logContent = (u'IB接口连接成功，当前服务器时间%s' %t)
+        log.logContent = (u'IB接口连接成功，当前服务器时间 %s' %t)
         self.gateway.onLog(log) 
 
     #----------------------------------------------------------------------
