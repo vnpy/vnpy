@@ -15,7 +15,7 @@ def main():
     sys.setdefaultencoding('utf8')
     
     # 设置Windows底部任务栏图标
-    if platform.uname() == 'Windows':
+    if 'Windows' in platform.uname() :
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
 
     # 初始化Qt应用对象
