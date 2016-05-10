@@ -125,6 +125,7 @@ class BidCell(QtGui.QTableWidgetItem):
         super(BidCell, self).__init__()
         self.data = None
 
+        self.setForeground(QtGui.QColor('black'))
         self.setBackground(QtGui.QColor(255,174,201))
         
         if text:
@@ -146,6 +147,7 @@ class AskCell(QtGui.QTableWidgetItem):
         super(AskCell, self).__init__()
         self.data = None
 
+        self.setForeground(QtGui.QColor('black'))
         self.setBackground(QtGui.QColor(160,255,160))
         
         if text:
@@ -393,6 +395,7 @@ class MarketMonitor(BasicMonitor):
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
         d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
         d['lastPrice'] = {'chinese':u'最新价', 'cellType':BasicCell}
+        d['preClosePrice'] = {'chinese':u'昨收盘价', 'cellType':BasicCell}
         d['volume'] = {'chinese':u'成交量', 'cellType':BasicCell}
         d['openInterest'] = {'chinese':u'持仓量', 'cellType':BasicCell}
         d['openPrice'] = {'chinese':u'开盘价', 'cellType':BasicCell}
@@ -638,6 +641,7 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_SGE,
                     EXCHANGE_HKEX,
                     EXCHANGE_SMART,
+                    EXCHANGE_NYMEX,
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO]
     
@@ -648,7 +652,8 @@ class TradingWidget(QtGui.QFrame):
     productClassList = [PRODUCT_NONE,
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
-                        PRODUCT_OPTION]
+                        PRODUCT_OPTION,
+                        PRODUCT_FOREX]
     
     gatewayList = ['']
 
