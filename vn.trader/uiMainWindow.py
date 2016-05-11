@@ -5,7 +5,7 @@ import psutil
 from uiBasicWidget import *
 from ctaAlgo.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
-
+from riskManager.uiRmWidget import RmEngineManager
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -22,6 +22,7 @@ class MainWindow(QtGui.QMainWindow):
         self.widgetDict = {}    # 用来保存子窗口的字典
         
         self.initUi()
+        self.loadWindowSettings()
         
     #----------------------------------------------------------------------
     def initUi(self):
@@ -108,6 +109,9 @@ class MainWindow(QtGui.QMainWindow):
         ctaAction = QtGui.QAction(u'CTA策略', self)
         ctaAction.triggered.connect(self.openCta)
         
+        rmAction = QtGui.QAction(u'风险管理', self)
+        rmAction.triggered.connect(self.openRm)        
+        
         # 创建菜单
         menubar = self.menuBar()
         
@@ -132,6 +136,7 @@ class MainWindow(QtGui.QMainWindow):
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(contractAction)
         functionMenu.addAction(drAction)
+        functionMenu.addAction(rmAction)
         
         # 算法相关
         algoMenu = menubar.addMenu(u'算法')
@@ -267,6 +272,15 @@ class MainWindow(QtGui.QMainWindow):
         except KeyError:
             self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
             self.widgetDict['drM'].showMaximized()
+            
+    #----------------------------------------------------------------------
+    def openRm(self):
+        """打开组件"""
+        try:
+            self.widgetDict['rmM'].show()
+        except KeyError:
+            self.widgetDict['rmM'] = RmEngineManager(self.mainEngine.rmEngine, self.eventEngine)
+            self.widgetDict['rmM'].show()      
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):
@@ -278,6 +292,8 @@ class MainWindow(QtGui.QMainWindow):
         if reply == QtGui.QMessageBox.Yes: 
             for widget in self.widgetDict.values():
                 widget.close()
+            self.saveWindowSettings()
+            
             self.mainEngine.exit()
             event.accept()
         else:
