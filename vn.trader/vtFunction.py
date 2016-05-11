@@ -6,6 +6,8 @@
 
 import decimal
 import json
+from datetime import datetime
+
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
 
@@ -43,3 +45,8 @@ def loadMongoSetting(settingFileName = "VT_setting.json"):
         port = 27017
 
     return host, port, replicaset, readPreference, database, userID, password
+#----------------------------------------------------------------------
+def todayDate():
+    """获取当前本机电脑时间的日期"""
+    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)    
+

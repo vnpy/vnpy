@@ -114,7 +114,7 @@ void TdApi::OnFrontDisconnected(char *pErrMsg)
 
 	if (pErrMsg)
 	{
-		task.task_data = *pErrMsg;
+		task.task_data = string(pErrMsg);
 	}
 	else
 	{
