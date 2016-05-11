@@ -2,6 +2,7 @@
 
 import sys
 import ctypes
+import platform
 
 from vtEngine import MainEngine
 from uiMainWindow import *
@@ -15,7 +16,14 @@ def main():
     except:
         pass
 
-    
+    # 重载sys模块，设置默认字符串编码方式为utf8
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
+    # # 设置Windows底部任务栏图标
+    # if 'Windows' in platform.uname() :
+    #     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')
+
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('vnpy.ico'))

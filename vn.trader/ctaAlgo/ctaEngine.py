@@ -14,6 +14,7 @@ from ctaSetting import STRATEGY_CLASS
 from eventEngine import *
 from vtConstant import *
 from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
+from vtFunction import todayDate
 
 
 ########################################################################
@@ -29,7 +30,7 @@ class CtaEngine(object):
         self.eventEngine = eventEngine
         
         # 当前日期
-        self.today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        self.today = todayDate()
         
         # 保存策略实例的字典
         # key为策略名称，value为策略实例，注意策略名称不允许重复
@@ -429,5 +430,7 @@ class CtaEngine(object):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         event = Event(EVENT_CTA_STRATEGY+name)
         self.eventEngine.put(event)
+        
+
 
 
