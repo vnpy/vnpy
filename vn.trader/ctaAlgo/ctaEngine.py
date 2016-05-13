@@ -68,6 +68,9 @@ class CtaEngine(object):
         req.price = price
         req.volume = volume
         
+        req.productClass = strategy.productClass
+        req.currency = strategy.currency        
+        
         # 设计为CTA引擎发出的委托只允许使用限价单
         req.priceType = PRICETYPE_LIMITPRICE    
         
@@ -87,8 +90,9 @@ class CtaEngine(object):
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
         self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
-        
-        #self.writeCtaLog(u'发送委托：' + str(req.__dict__))
+
+        self.writeCtaLog(u'策略%s发送委托，%s，%s，%s@%s' 
+                         %(strategy.name, vtSymbol, req.direction, volume, price))
         
         return vtOrderID
     
@@ -319,6 +323,11 @@ class CtaEngine(object):
                 req = VtSubscribeReq()
                 req.symbol = contract.symbol
                 req.exchange = contract.exchange
+                
+                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+                req.currency = strategy.currency
+                req.productClass = strategy.productClass
+                
                 self.mainEngine.subscribe(req, contract.gatewayName)
             else:
                 self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))

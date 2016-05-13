@@ -37,8 +37,9 @@ priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()}
 # 方向类型映射
 directionMap = {}
 directionMap[DIRECTION_LONG] = 'BUY'
-directionMap[DIRECTION_SHORT] = 'SSHORT'
-directionMap[DIRECTION_SELL] = 'SELL'
+#directionMap[DIRECTION_SHORT] = 'SSHORT'   # SSHORT在IB系统中代表对股票的融券做空（而不是国内常见的卖出）
+directionMap[DIRECTION_SHORT] = 'SELL'      # 出于和国内的统一性考虑，这里选择把IB里的SELL印射为vt的SHORT
+
 directionMapReverse = {v: k for k, v in directionMap.items()}
 directionMapReverse['BOT'] = DIRECTION_LONG
 directionMapReverse['SLD'] = DIRECTION_SHORT
@@ -130,6 +131,8 @@ class IbGateway(VtGateway):
         
         self.contractDict = {}          # 合约字典
         
+        self.subscribeReqDict = {}      # 用来保存订阅请求的字典 
+        
         self.connected = False          # 连接状态
         
         self.wrapper = IbWrapper(self)                  # 回调接口
@@ -176,6 +179,11 @@ class IbGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
+        # 如果尚未连接行情，则将订阅请求缓存下来后直接返回
+        if not self.connected:
+            self.subscribeReqDict[subscribeReq.symbol] = subscribeReq
+            return
+        
         contract = Contract()
         contract.m_localSymbol = str(subscribeReq.symbol)
         contract.m_exchange = exchangeMap.get(subscribeReq.exchange, '')
@@ -289,6 +297,7 @@ class IbWrapper(EWrapper):
         self.accountDict = gateway.accountDict      # account字典
         self.contractDict = gateway.contractDict    # contract字典
         self.tickProductDict = gateway.tickProductDict
+        self.subscribeReqDict = gateway.subscribeReqDict
        
     #----------------------------------------------------------------------
     def tickPrice(self, tickerId, field, price, canAutoExecute):
@@ -572,6 +581,10 @@ class IbWrapper(EWrapper):
         log.gatewayName = self.gatewayName
         log.logContent = (u'IB接口连接成功，当前服务器时间 %s' %t)
         self.gateway.onLog(log) 
+        
+        for symbol, req in self.subscribeReqDict.items():
+            del self.subscribeReqDict[symbol]
+            self.gateway.subscribe(req)        
 
     #----------------------------------------------------------------------
     def fundamentalData(self, reqId, data):

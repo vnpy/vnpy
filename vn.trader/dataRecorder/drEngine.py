@@ -60,20 +60,39 @@ class DrEngine(object):
             if 'tick' in setting:
                 l = setting['tick']
                 
-                for symbol, gatewayName in l:
+                for setting in l:
+                    symbol = setting[0]
                     drTick = DrTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
                     self.tickDict[symbol] = drTick
                     
                     req = VtSubscribeReq()
-                    req.symbol = symbol
-                    self.mainEngine.subscribe(req, gatewayName)
+                    req.symbol = setting[0]
+                    
+                    # 针对LTS和IB接口，订阅行情需要交易所代码
+                    if len(setting)>=3:
+                        req.exchange = setting[2]
+                    
+                    # 针对IB接口，订阅行情需要货币和产品类型
+                    if len(setting)>=5:
+                        req.currency = setting[3]
+                        req.productClass = setting[4]
+                    
+                    self.mainEngine.subscribe(req, setting[1])
                     
             if 'bar' in setting:
                 l = setting['bar']
                 
-                for symbol, gatewayName in l:
+                for setting in l:
+                    symbol = setting[0]
                     bar = DrBarData()
                     self.barDict[symbol] = bar
+
+                    if len(setting)>=3:
+                        req.exchange = setting[2]
+
+                    if len(setting)>=5:
+                        req.currency = setting[3]
+                        req.productClass = setting[4]                    
                     
                     req = VtSubscribeReq()
                     req.symbol = symbol
