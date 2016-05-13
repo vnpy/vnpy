@@ -62,15 +62,15 @@ class DrEngine(object):
                 
                 for setting in l:
                     symbol = setting[0]
-                    drTick = DrTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
-                    self.tickDict[symbol] = drTick
-                    
+                    vtSymbol = symbol
+
                     req = VtSubscribeReq()
                     req.symbol = setting[0]
                     
                     # 针对LTS和IB接口，订阅行情需要交易所代码
                     if len(setting)>=3:
                         req.exchange = setting[2]
+                        vtSymbol = '.'.join([symbol, req.exchange])
                     
                     # 针对IB接口，订阅行情需要货币和产品类型
                     if len(setting)>=5:
@@ -79,30 +79,38 @@ class DrEngine(object):
                     
                     self.mainEngine.subscribe(req, setting[1])
                     
+                    drTick = DrTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
+                    self.tickDict[vtSymbol] = drTick
+                    
             if 'bar' in setting:
                 l = setting['bar']
                 
                 for setting in l:
                     symbol = setting[0]
-                    bar = DrBarData()
-                    self.barDict[symbol] = bar
+                    vtSymbol = symbol
+                    
+                    req = VtSubscribeReq()
+                    req.symbol = symbol                    
 
                     if len(setting)>=3:
                         req.exchange = setting[2]
+                        vtSymbol = '.'.join([symbol, req.exchange])
 
                     if len(setting)>=5:
                         req.currency = setting[3]
                         req.productClass = setting[4]                    
                     
-                    req = VtSubscribeReq()
-                    req.symbol = symbol
-                    self.mainEngine.subscribe(req, gatewayName)      
+                    self.mainEngine.subscribe(req, setting[1])  
+                    
+                    bar = DrBarData() 
+                    self.barDict[vtSymbol] = bar
                     
             if 'active' in setting:
                 d = setting['active']
                 
-                for activeSymbol, symbol in d.items():
-                    self.activeSymbolDict[symbol] = activeSymbol
+                # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
+                for activeSymbol, vtSymbol in d.items():
+                    self.activeSymbolDict[vtSymbol] = activeSymbol
                     
             # 注册事件监听
             self.registerEvent()            
