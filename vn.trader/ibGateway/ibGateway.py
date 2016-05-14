@@ -250,6 +250,10 @@ class IbGateway(VtGateway):
         
         # 查询下一个有效编号
         self.connection.reqIds(1)
+        
+        # 返回委托编号
+        vtOrderID = '.'.join([self.gatewayName, str(self.orderId)])
+        return vtOrderID
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
