@@ -9,7 +9,9 @@ if [ ! -f $BUILDDIR ]; then
 fi
 pushd $BUILDDIR
 cmake ..
-make VERBOSE=1 -j 2
-ln -fs `pwd`/lib/libvnctpmd.so ../vnctpmd/test/vnctpmd.so
-ln -fs `pwd`/lib/libvnctptd.so ../vnctptd/test/vnctptd.so
+make VERBOSE=1 -j 1
+ln -fs `pwd`/lib/vnctpmd.so ../vnctpmd/test/vnctpmd.so
+ln -fs `pwd`/lib/vnctptd.so ../vnctptd/test/vnctptd.so
+cp ../vnctpmd/test/vnctpmd.* ../../vn.trader/ctpGateway/
+cp ../vnctptd/test/vnctptd.* ../../vn.trader/ctpGateway/
 popd

@@ -115,19 +115,30 @@ class MainWindow(QtGui.QMainWindow):
         # 创建菜单
         menubar = self.menuBar()
         
+        # 设计为只显示存在的接口
         sysMenu = menubar.addMenu(u'系统')
-        sysMenu.addAction(connectCtpAction)
-        sysMenu.addAction(connectLtsAction)
-        sysMenu.addAction(connectFemasAction)
-        sysMenu.addAction(connectXspeedAction)
-        sysMenu.addAction(connectKsotpAction)
-        sysMenu.addAction(connectKsgoldAction)
-        sysMenu.addAction(connectSgitAction)
+        if 'CTP' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectCtpAction)
+        if 'LTS' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectLtsAction)
+        if 'FEMAS' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectFemasAction)
+        if 'XSPEED' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectXspeedAction)
+        if 'KSOTP' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectKsotpAction)
+        if 'KSGOLD' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectKsgoldAction)
+        if 'SGIT' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectSgitAction)
         sysMenu.addSeparator()
-        sysMenu.addAction(connectIbAction)    
-        sysMenu.addAction(connectOandaAction)
+        if 'IB' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectIbAction)    
+        if 'OANDA' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectOandaAction)
         sysMenu.addSeparator()
-        sysMenu.addAction(connectWindAction)
+        if 'Wind' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
         sysMenu.addSeparator()
