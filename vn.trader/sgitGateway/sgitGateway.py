@@ -909,7 +909,7 @@ class SgitTdApi(TdApi):
             pos.frozen = data['ShortFrozen']
         
         # 持仓量
-        pos.position = data['Position']
+        pos.position = data['TodayPosition']
         pos.ydPosition = data['YdPosition']        
         
         # 持仓均价
