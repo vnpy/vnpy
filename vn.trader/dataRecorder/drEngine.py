@@ -50,15 +50,15 @@ class DrEngine(object):
     def loadSetting(self):
         """载入设置"""
         with open(self.settingFileName) as f:
-            setting = json.load(f)
+            drSetting = json.load(f)
             
             # 如果working设为False则不启动行情记录功能
-            working = setting['working']
+            working = drSetting['working']
             if not working:
                 return
             
-            if 'tick' in setting:
-                l = setting['tick']
+            if 'tick' in drSetting:
+                l = drSetting['tick']
                 
                 for setting in l:
                     symbol = setting[0]
@@ -82,8 +82,8 @@ class DrEngine(object):
                     drTick = DrTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
                     self.tickDict[vtSymbol] = drTick
                     
-            if 'bar' in setting:
-                l = setting['bar']
+            if 'bar' in drSetting:
+                l = drSetting['bar']
                 
                 for setting in l:
                     symbol = setting[0]
@@ -105,8 +105,8 @@ class DrEngine(object):
                     bar = DrBarData() 
                     self.barDict[vtSymbol] = bar
                     
-            if 'active' in setting:
-                d = setting['active']
+            if 'active' in drSetting:
+                d = drSetting['active']
                 
                 # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
                 for activeSymbol, vtSymbol in d.items():
