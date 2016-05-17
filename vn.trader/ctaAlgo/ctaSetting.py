@@ -10,7 +10,9 @@
 
 from ctaTemplate import DataRecorder
 from ctaDemo import DoubleEmaDemo
+from strategyAtrRsi import AtrRsiStrategy
 
 STRATEGY_CLASS = {}
 STRATEGY_CLASS['DataRecorder'] = DataRecorder
 STRATEGY_CLASS['DoubleEmaDemo'] = DoubleEmaDemo
+STRATEGY_CLASS['AtrRsiStrategy'] = AtrRsiStrategy

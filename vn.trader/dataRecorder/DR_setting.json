@@ -8,7 +8,9 @@
         ["IH1606", "SGIT"],
         ["IH1606", "SGIT"],
         ["IC1606", "SGIT"],
-        ["IC1606", "SGIT"]
+        ["IC1606", "SGIT"],
+        ["600036", "LTS", "SZSE"],
+        ["EUR.USD", "IB", "IDEALPRO", "USD", "外汇"]
     ],
 
     "bar":

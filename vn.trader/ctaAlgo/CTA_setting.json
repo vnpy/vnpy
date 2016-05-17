@@ -3,5 +3,10 @@
         "name": "double ema",
         "className": "DoubleEmaDemo",
         "vtSymbol": "IF1602"
-    }
+    },
+    {
+        "name": "AtrRsiStrategy",
+        "className": "AtrRsiStrategy",
+        "vtSymbol": "IF1602"
+    }    
 ]

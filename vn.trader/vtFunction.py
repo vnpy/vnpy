@@ -5,6 +5,8 @@
 """
 
 import decimal
+import json
+from datetime import datetime
 
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
@@ -24,3 +26,24 @@ def safeUnicode(value):
             value = round(value, ndigits=MAX_DECIMAL)
     
     return unicode(value)
+
+#----------------------------------------------------------------------
+def loadMongoSetting():
+    """载入MongoDB数据库的配置"""
+    try:
+        f = file("VT_setting.json")
+        setting = json.load(f)
+        host = setting['mongoHost']
+        port = setting['mongoPort']
+    except:
+        host = 'localhost'
+        port = 27017
+        
+    return host, port
+
+#----------------------------------------------------------------------
+def todayDate():
+    """获取当前本机电脑时间的日期"""
+    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)    
+
+ 
