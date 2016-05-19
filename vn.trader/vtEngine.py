@@ -208,7 +208,8 @@ class MainEngine(object):
             host, port = loadMongoSetting()
                 
             try:
-                self.dbClient = MongoClient(host, port)
+                self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=3000)
+                self.dbClient.server_info()
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
