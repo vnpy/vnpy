@@ -208,8 +208,12 @@ class MainEngine(object):
             host, port = loadMongoSetting()
                 
             try:
-                self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=3000)
+                # 设置MongoDB操作的超时时间为0.5秒
+                self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=500)
+                
+                # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
+
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
