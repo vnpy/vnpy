@@ -137,7 +137,7 @@ class MainWindow(QtGui.QMainWindow):
         if 'OANDA' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectOandaAction)
         sysMenu.addSeparator()
-        if 'WIND' in self.mainEngine.gatewayDict:
+        if 'Wind' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
