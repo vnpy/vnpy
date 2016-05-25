@@ -8,14 +8,15 @@
 from datetime import datetime, timedelta
 from collections import OrderedDict
 import pymongo
-from pymongo.errors import ConnectionFailure
-import os
+
 from ctaBase import *
 from ctaSetting import *
+
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
 from vtFunction import loadMongoSetting
 
+import time
 
 ########################################################################
 class BacktestingEngine(object):
@@ -72,28 +73,7 @@ class BacktestingEngine(object):
         self.tick = None
         self.bar = None
         self.dt = None      # 最新的时间
-
-    #----------------------------------------------------------------------
-    def dbConnect(self):
-        """连接MongoDB数据库"""
-
-        # 读取数据库配置的方法，已转移至vtFunction
-
-        if not self.dbClient:
-            # 读取MongoDB的设置
-            settingFileName = "VT_setting.json"
-            settingFileName = os.path.dirname(os.getcwd()) + "/" + settingFileName
-            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(settingFileName)
-            try:
-                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
-                db = self.dbClient[database]
-                db.authenticate(userID, password)
-                # self.dbClient = MongoClient(host, port)
-                print u'MongoDB连接成功'
-            except ConnectionFailure:
-                print u'MongoDB连接失败'
-            except ValueError:
-                print u'MongoDB连接配置字段错误，请检查'
+        
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
         """设置回测的启动日期"""
@@ -116,12 +96,9 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self, dbName, symbol):
         """载入历史数据"""
-        # host, port = loadMongoSetting()
-        #
-        # self.dbClient = pymongo.MongoClient(host, port)
-
-        self.dbConnect()
-
+        host, port = loadMongoSetting()
+        
+        self.dbClient = pymongo.MongoClient(host, port)
         collection = self.dbClient[dbName][symbol]          
 
         self.output(u'开始载入数据')
@@ -138,7 +115,7 @@ class BacktestingEngine(object):
         flt = {'datetime':{'$gte':self.dataStartDate,
                            '$lt':self.strategyStartDate}}        
         initCursor = collection.find(flt)
-
+        
         # 将数据从查询指针中读取出，并生成列表
         for d in initCursor:
             data = dataClass()
@@ -307,7 +284,6 @@ class BacktestingEngine(object):
             sellCrossPrice = self.bar.high  # 若卖出方向限价单价格低于该价格，则会成交
             bestCrossPrice = self.bar.open  # 在当前时间点前发出的委托可能的最优成交价
         else:
-            # self.tick.lastPrice = self.tick.close
             buyCrossPrice = self.tick.lastPrice
             sellCrossPrice = self.tick.lastPrice
             bestCrossPrice = self.tick.lastPrice
@@ -439,27 +415,7 @@ class BacktestingEngine(object):
     def loadBar(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Bar"""
         return self.initData
-    #----------------------------------------------------------------------
-    def loadCursor(self, dbName, collectionName, todayDate, days):
-        """返回数据库查询Cursor，startDate是datetime对象"""
-        todayDate = datetime.strptime(todayDate, "%Y%m%d")
-        startDate = todayDate - timedelta(days)
-
-        d = {"$and":[{'datetime':{'$gte':startDate}},{'datetime':{'$lte':todayDate}}]}
-        cursor = self.dbQuery(dbName, collectionName, d)
-        # print startDate, todayDate
-        return cursor
-    #----------------------------------------------------------------------
-    def dbQuery(self, dbName, collectionName, d):
-        """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
-        if self.dbClient:
-            db = self.dbClient[dbName]
-            collection = db[collectionName]
-            cursor = collection.find(d)
-            return cursor
-        else:
-            return None
-
+    
     #----------------------------------------------------------------------
     def loadTick(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Tick"""
@@ -490,7 +446,7 @@ class BacktestingEngine(object):
         
         # 计算滑点，一个来回包括两次
         totalSlippage = self.slippage * 2 
-        # print len(self.tradeDict)
+        
         for trade in self.tradeDict.values():
             # 多头交易
             if trade.direction == DIRECTION_LONG:
@@ -500,8 +456,6 @@ class BacktestingEngine(object):
                 # 当前多头交易为平空
                 else:
                     entryTrade = shortTrade.pop(0)
-                    trade.price = float(trade.price)
-                    entryTrade.price = float(entryTrade.price)
                     # 计算比例佣金
                     commission = (trade.price+entryTrade.price) * self.rate
                     # 计算盈亏
@@ -516,8 +470,6 @@ class BacktestingEngine(object):
                 # 当前空头交易为平多
                 else:
                     entryTrade = longTrade.pop(0)
-                    trade.price = float(trade.price)
-                    entryTrade.price = float(entryTrade.price)
                     # 计算比例佣金
                     commission = (trade.price+entryTrade.price) * self.rate    
                     # 计算盈亏
@@ -528,7 +480,7 @@ class BacktestingEngine(object):
         # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
         timeList = pnlDict.keys()
         pnlList = pnlDict.values()
-
+        
         capital = 0
         maxCapital = 0
         drawdown = 0
@@ -560,7 +512,7 @@ class BacktestingEngine(object):
         pCapital = plt.subplot(3, 1, 1)
         pCapital.set_ylabel("capital")
         pCapital.plot(capitalList)
-
+        
         pDD = plt.subplot(3, 1, 2)
         pDD.set_ylabel("DD")
         pDD.bar(range(len(drawdownList)), drawdownList)         
@@ -592,70 +544,165 @@ class BacktestingEngine(object):
         self.rate = rate
 
 
+        
+import pyqtgraph as pg
+from pyqtgraph import QtCore, QtGui
+import random
 
+## Create a subclass of GraphicsObject.
+## The only required methods are paint() and boundingRect() 
+## (see QGraphicsItem documentation)
+class CandlestickItem(pg.GraphicsObject):
+    def __init__(self):
+        pg.GraphicsObject.__init__(self)
+        self.flagHasData = False
+
+    def set_data(self, data):
+        self.data = data  ## data must have fields: time, open, close, min, max
+        self.flagHasData = True
+        self.generatePicture()
+        self.informViewBoundsChanged()
+
+    def generatePicture(self):
+        ## pre-computing a QPicture object allows paint() to run much more quickly, 
+        ## rather than re-drawing the shapes every time.
+        self.picture = QtGui.QPicture()
+        p = QtGui.QPainter(self.picture)
+        p.setPen(pg.mkPen('w'))
+        w = (self.data[1][0] - self.data[0][0]) / 3.
+        for (t, open, close, min, max) in self.data:
+            p.drawLine(QtCore.QPointF(t, min), QtCore.QPointF(t, max))
+            if open > close:
+                p.setBrush(pg.mkBrush('r'))
+            else:
+                p.setBrush(pg.mkBrush('g'))
+            p.drawRect(QtCore.QRectF(t-w, open, w*2, close-open))
+        p.end()
+
+    def paint(self, p, *args):
+        if self.flagHasData:
+            p.drawPicture(0, 0, self.picture)
+
+    def boundingRect(self):
+        ## boundingRect _must_ indicate the entire area that will be drawn on
+        ## or else we will get artifacts and possibly crashing.
+        ## (in this case, QPicture does all the work of computing the bouning rect for us)
+        return QtCore.QRectF(self.picture.boundingRect())
+
+
+
+
+def update():
+    global item, data, count
+    d = engine.dbCursor[count]
+    #engine.output(u'count=%s' %(count))
+    #engine.output(u'total=%s' %(engine.dbCursor.count()))
+    mdata = dataClass()
+    mdata.__dict__ = d
+    func(mdata)  # 策略执行
+    
+    new_bar = [count,mdata.open,mdata.close,mdata.low,mdata.high]
+    data.append(new_bar)
+    if len(data) > BAR_COUNT:  # 显示的BAR数目，满屏左移
+        data.pop(0)      
+    item.set_data(data)
+    app.processEvents()  ## force complete redraw for every plot    
+    count = count+1  # 下一个BAR
+    if count >= engine.dbCursor.count():
+        engine.output(u'结束')
+        # 显示回测结果
+        # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
+        # 直接在cmd中回测则只会打印一些回测数值
+        engine.showBacktestingResult()        
+
+
+        
+        
+        
 if __name__ == '__main__':
     # 以下内容是一段回测脚本的演示，用户可以根据自己的需求修改
     # 建议使用ipython notebook或者spyder来做回测
     # 同样可以在命令模式下进行回测（一行一行输入运行）
-    # from ctaDemo import *
-    #
-    # # 创建回测引擎
-    # engine = BacktestingEngine()
-    #
-    # # 设置引擎的回测模式为K线
-    # engine.setBacktestingMode(engine.BAR_MODE)
-    #
-    # # 设置滑点
-    # engine.setSlippage(0.2)     # 股指1跳
-    #
-    # # 设置回测用的数据起始日期
-    # engine.setStartDate('20100416')
-    #
-    # # 载入历史数据到引擎中
-    # engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
-    #
-    # # 在引擎中创建策略对象
-    # engine.initStrategy(DoubleEmaDemo, {})
-    #
-    # # 开始跑回测
-    # engine.runBacktesting()
-    #
-    # # 显示回测结果
-    # # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
-    # # 直接在cmd中回测则只会打印一些回测数值
-    # engine.showBacktestingResult()
 
-    from trader_DualThrust import *
+    from ctaDemo import *
+    
     # 创建回测引擎
     engine = BacktestingEngine()
-
+    
     # 设置引擎的回测模式为K线
-
-    engine.setBacktestingMode(engine.TICK_MODE)
+    engine.setBacktestingMode(engine.BAR_MODE)
 
     # 设置回测用的数据起始日期
-    engine.setStartDate('20160104')
+    engine.setStartDate('20110101')
+    engine.setEndDate('20110116')
     
     # 载入历史数据到引擎中
-    # engine.loadHistoryData(, 'IF0000')
-    engine.loadHistoryData('VnTrader_Tick_Db', 'pp_hot')
-
+    engine.loadHistoryData('VnTrader_1min_Db', 'IF0000')
+    
     # 设置产品相关参数
-    # engine.setSlippage(0.2)     # 股指1跳
-    # engine.setRate(0.3/10000)   # 万0.3
-    # engine.setSize(300)         # 股指合约大小
-    engine.setSlippage(2)     # pp2跳
-    engine.setRate(1.0/10000)   # 万0.3
-    engine.setSize(5)         # pp合约大小
+    engine.setSlippage(0.2)     # 股指1跳
+    engine.setRate(0.3/10000)   # 万0.3
+    engine.setSize(300)         # 股指合约大小    
     
     # 在引擎中创建策略对象
-    # 有的策略需要vtSymbol去读取数据库，比如Dual Thrust, 传入setting
-    engine.initStrategy(DualThrust, {"vtSymbol": "pp_hot"})
-
+    engine.initStrategy(DoubleEmaDemo, {})
+    #engine.initStrategy(ChasingTickDemo, {})  
+    #engine.initStrategy(TalibDoubleSmaDemo, {})  
+    
     # 开始跑回测
-    engine.runBacktesting()
+    #engine.runBacktesting()
 
-    # 显示回测结果
-    # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
-    # 直接在cmd中回测则只会打印一些回测数值
-    engine.showBacktestingResult()
+    if engine.mode == engine.BAR_MODE:
+        dataClass = CtaBarData
+        func = engine.newBar
+    else:
+        dataClass = CtaTickData
+        func = engine.newTick
+
+    engine.output(u'开始回测')
+    
+    engine.strategy.inited = True
+    engine.strategy.onInit()
+    engine.output(u'策略初始化完成')
+    
+    engine.strategy.trading = True
+    engine.strategy.onStart()
+    engine.output(u'策略启动完成')
+    
+    engine.output(u'开始回放数据')
+    
+
+
+
+    app = QtGui.QApplication([])
+    item = CandlestickItem()
+    
+    # 初始值
+    count = 0
+    data = []
+    BAR_COUNT = 60
+    for i in range(0,BAR_COUNT):
+        d = engine.dbCursor[count]
+        mdata = dataClass()
+        mdata.__dict__ = d
+        func(mdata)  # 策略执行        
+        new_bar = [count,mdata.open,mdata.close,mdata.low,mdata.high]
+        data.append(new_bar)  
+        count = count+1
+        
+    item.set_data(data)
+    plt = pg.plot()
+    plt.addItem(item)
+    plt.setWindowTitle('pyqtgraph example: customGraphicsItem')
+
+    # timer = QtCore.QTimer()
+    # timer.timeout.connect(update)
+    # timer.start(200)  # 定时间隔
+
+    import sys
+    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+        QtGui.QApplication.instance().exec_()    
+    
+    
+    
+    

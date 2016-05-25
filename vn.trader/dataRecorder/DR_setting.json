@@ -9,6 +9,8 @@
         ["IH1606", "CTP"],
         ["IC1606", "CTP"],
         ["IC1606", "CTP"]
+        ["600036", "LTS", "SZSE"],
+        ["EUR.USD", "IB", "IDEALPRO", "USD", "外汇"]
     ],
 
     "bar":

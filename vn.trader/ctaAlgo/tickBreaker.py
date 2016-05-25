@@ -12,7 +12,7 @@ class TickBreaker(CtaTemplate):
     """跳空追击策略(MC版本转化)"""
 
     className = 'TickBreaker'
-    author = u'freeitaly'
+    author = u'融拓科技'
 
     # 策略参数
     forward = 5      # 正向tick数量
