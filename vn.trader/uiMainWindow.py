@@ -224,15 +224,15 @@ class MainWindow(QtGui.QMainWindow):
         """连接飞鼠接口"""
         self.mainEngine.connect('SGIT')     
 
-    # #----------------------------------------------------------------------
-    # def connectWind(self):
-    #     """连接Wind接口"""
-    #     self.mainEngine.connect('Wind')
-    #
-    # #----------------------------------------------------------------------
-    # def connectIb(self):
-    #     """连接Ib"""
-    #     self.mainEngine.connect('IB')
+    #----------------------------------------------------------------------
+    def connectWind(self):
+        """连接Wind接口"""
+        self.mainEngine.connect('Wind')
+
+    #----------------------------------------------------------------------
+    def connectIb(self):
+        """连接Ib"""
+        self.mainEngine.connect('IB')
         
     #----------------------------------------------------------------------
     def connectOanda(self):
