@@ -37,8 +37,9 @@ priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()}
 # 方向类型映射
 directionMap = {}
 directionMap[DIRECTION_LONG] = 'BUY'
-directionMap[DIRECTION_SHORT] = 'SSHORT'
-directionMap[DIRECTION_SELL] = 'SELL'
+#directionMap[DIRECTION_SHORT] = 'SSHORT'   # SSHORT在IB系统中代表对股票的融券做空（而不是国内常见的卖出）
+directionMap[DIRECTION_SHORT] = 'SELL'      # 出于和国内的统一性考虑，这里选择把IB里的SELL印射为vt的SHORT
+
 directionMapReverse = {v: k for k, v in directionMap.items()}
 directionMapReverse['BOT'] = DIRECTION_LONG
 directionMapReverse['SLD'] = DIRECTION_SHORT
@@ -95,7 +96,7 @@ tickFieldMap[7] = 'lowPrice'
 tickFieldMap[8] = 'volume'
 tickFieldMap[9] = 'preClosePrice'
 tickFieldMap[14] = 'openPrice'
-tickFieldMap[20] = 'openInterest'
+tickFieldMap[22] = 'openInterest'
 
 # Account数据Key和名称的映射
 accountKeyMap = {}
@@ -121,11 +122,16 @@ class IbGateway(VtGateway):
         
         self.tickerId = 0               # 订阅行情时的代码编号    
         self.tickDict = {}              # tick快照字典，key为tickerId，value为VtTickData对象
+        self.tickProductDict = {}       # tick对应的产品类型字典，key为tickerId，value为产品类型
         
         self.orderId  = 0               # 订单编号
         self.orderDict = {}             # 报单字典，key为orderId，value为VtOrderData对象
         
         self.accountDict = {}           # 账户字典
+        
+        self.contractDict = {}          # 合约字典
+        
+        self.subscribeReqDict = {}      # 用来保存订阅请求的字典 
         
         self.connected = False          # 连接状态
         
@@ -173,30 +179,36 @@ class IbGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        # 订阅行情
-        self.tickerId += 1
+        # 如果尚未连接行情，则将订阅请求缓存下来后直接返回
+        if not self.connected:
+            self.subscribeReqDict[subscribeReq.symbol] = subscribeReq
+            return
         
         contract = Contract()
-        contract.m_symbol = str(subscribeReq.symbol)
+        contract.m_localSymbol = str(subscribeReq.symbol)
         contract.m_exchange = exchangeMap.get(subscribeReq.exchange, '')
         contract.m_secType = productClassMap.get(subscribeReq.productClass, '')
         contract.m_currency = currencyMap.get(subscribeReq.currency, '')
         contract.m_expiry = subscribeReq.expiry
         contract.m_strike = subscribeReq.strikePrice
         contract.m_right = optionTypeMap.get(subscribeReq.optionType, '')
-        
-        # 考虑设计为针对期货用代码_到期日的方式来代替单纯的代码
-        if contract.m_secType == 'FUT' and not subscribeReq.expiry:
-            # 期货 如果没有设置过期时间, 默认设置为下个月
-            dt_obj = datetime.now()
-            days = calendar.monthrange(dt_obj.year, dt_obj.month)[1]
-            nextMonth = dt_obj + timedelta(days=(days - dt_obj.day + 1))
-            contract.m_expiry = nextMonth.strftime('%Y%m')
 
-        self.connection.reqMktData(self.tickerId, contract, '', False)
-        
         # 获取合约详细信息
-        self.connection.reqContractDetails(self.tickerId, contract)
+        self.tickerId += 1
+        self.connection.reqContractDetails(self.tickerId, contract)        
+        
+        # 创建合约对象并保存到字典中
+        ct = VtContractData()
+        ct.gatewayName = self.gatewayName
+        ct.symbol = str(subscribeReq.symbol)
+        ct.exchange = subscribeReq.exchange
+        ct.vtSymbol = '.'.join([ct.symbol, ct.exchange])
+        ct.productClass = subscribeReq.productClass
+        self.contractDict[ct.vtSymbol] = ct
+        
+        # 订阅行情
+        self.tickerId += 1   
+        self.connection.reqMktData(self.tickerId, contract, '', False)
         
         # 创建Tick对象并保存到字典中
         tick = VtTickData()
@@ -204,9 +216,9 @@ class IbGateway(VtGateway):
         tick.exchange = subscribeReq.exchange
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
         tick.gatewayName = self.gatewayName
-        tick.__setattr__('m_secType', productClassMap.get(subscribeReq.productClass, ''))
-        self.tickDict[self.tickerId] = tick
-    
+        self.tickDict[self.tickerId] = tick   
+        self.tickProductDict[self.tickerId] = subscribeReq.productClass
+
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
@@ -216,11 +228,10 @@ class IbGateway(VtGateway):
         
         # 创建合约对象
         contract = Contract()
-        contract.m_symbol = str(orderReq.symbol)
+        contract.m_localSymbol = str(orderReq.symbol)
         contract.m_exchange = exchangeMap.get(orderReq.exchange, '')
         contract.m_secType = productClassMap.get(orderReq.productClass, '')
         contract.m_currency = currencyMap.get(orderReq.currency, '')
-        
         contract.m_expiry = orderReq.expiry
         contract.m_strike = orderReq.strikePrice
         contract.m_right = optionTypeMap.get(orderReq.optionType, '')
@@ -229,7 +240,6 @@ class IbGateway(VtGateway):
         order = Order()
         order.m_orderId = self.orderId
         order.m_clientId = self.clientId
-        
         order.m_action = directionMap.get(orderReq.direction, '')
         order.m_lmtPrice = orderReq.price
         order.m_totalQuantity = orderReq.volume
@@ -240,6 +250,10 @@ class IbGateway(VtGateway):
         
         # 查询下一个有效编号
         self.connection.reqIds(1)
+        
+        # 返回委托编号
+        vtOrderID = '.'.join([self.gatewayName, str(self.orderId)])
+        return vtOrderID
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
@@ -285,6 +299,9 @@ class IbWrapper(EWrapper):
         self.tickDict = gateway.tickDict            # tick快照字典，key为tickerId，value为VtTickData对象
         self.orderDict = gateway.orderDict          # order字典
         self.accountDict = gateway.accountDict      # account字典
+        self.contractDict = gateway.contractDict    # contract字典
+        self.tickProductDict = gateway.tickProductDict
+        self.subscribeReqDict = gateway.subscribeReqDict
        
     #----------------------------------------------------------------------
     def tickPrice(self, tickerId, field, price, canAutoExecute):
@@ -293,12 +310,13 @@ class IbWrapper(EWrapper):
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
-                        
-            # 外汇单独设置时间, tickString 没有返回外汇时间
-            if tick.m_secType == 'CASH':
-                dt_obj = datetime.now()
-                tick.time = dt_obj.strftime('%H:%M:%S.%f')
-                tick.date = dt_obj.strftime('%Y%m%d')
+            
+            if self.tickProductDict[tickerId] == PRODUCT_FOREX:
+                tick.lastPrice = (tick.bidPrice1 + tick.askPrice1) / 2
+            
+            dt = datetime.now()
+            tick.time = dt.strftime('%H:%M:%S.%f')
+            tick.date = dt.strftime('%Y%m%d')
             
             # 行情数据更新
             newtick = copy(tick)
@@ -314,11 +332,9 @@ class IbWrapper(EWrapper):
             key = tickFieldMap[field]
             tick.__setattr__(key, size)
             
-            # 外汇单独设置时间, tickString 没有返回外汇时间
-            if tick.m_secType == 'CASH':
-                dt_obj = datetime.now()
-                tick.time = dt_obj.strftime('%H:%M:%S.%f')
-                tick.date = dt_obj.strftime('%Y%m%d')
+            dt = datetime.now()
+            tick.time = dt.strftime('%H:%M:%S.%f')
+            tick.date = dt.strftime('%Y%m%d')
                 
             # 行情数据更新
             newtick = copy(tick)
@@ -339,17 +355,11 @@ class IbWrapper(EWrapper):
     #---------------------------------------------------------------------- 
     def tickString(self, tickerId, tickType, value):
         """行情推送，特殊字段相关"""
-        if tickType == 45:            
-            dt_obj = datetime.fromtimestamp(int(value))
-            
-            tick = self.tickDict[tickerId]
-            tick.time = dt_obj.strftime('%H:%M:%S.%f')
-            tick.date = dt_obj.strftime('%Y%m%d')
-            
-            # 这里使用copy的目的是为了保证推送到事件系统中的对象
-            # 不会被当前的API线程修改，否则可能出现多线程数据同步错误
-            newtick = copy(tick)
-            self.gateway.onTick(newtick)
+        # 参考了一些其他平台对于IB行情数据的开发建议后，
+        # 发现大部分都选择使用本地电脑时间戳而非IB推送的时间戳，
+        # 猜测原因可能是IB的行情质量一般（本身就是切片了的），
+        # 因此这里也选择使用电脑的本地时间
+        pass
 
     #----------------------------------------------------------------------
     def tickEFP(self, tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuture, holdDays, futureExpiry, dividendImpact, dividendsToExpiry):
@@ -387,7 +397,7 @@ class IbWrapper(EWrapper):
             od = VtOrderData()  # od代表orderData
             od.orderID = orderId
             od.vtOrderID = '.'.join([self.gatewayName, orderId])
-            od.symbol = contract.m_symbol
+            od.symbol = contract.m_localSymbol
             od.exchange = exchangeMapReverse.get(contract.m_exchange, '')
             od.vtSymbol = '.'.join([od.symbol, od.exchange])  
             od.gatewayName = self.gatewayName
@@ -429,8 +439,8 @@ class IbWrapper(EWrapper):
     def updatePortfolio(self, contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName):
         """持仓更新推送"""
         pos = VtPositionData()
-        
-        pos.symbol = contract.m_symbol
+
+        pos.symbol = contract.m_localSymbol
         pos.exchange = exchangeMapReverse.get(contract.m_exchange, contract.m_exchange)
         pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
         pos.direction = DIRECTION_NET
@@ -462,20 +472,19 @@ class IbWrapper(EWrapper):
     #----------------------------------------------------------------------
     def contractDetails(self, reqId, contractDetails):
         """合约查询回报"""
-        contract = VtContractData()
-        contract.gatewayName = self.gatewayName
-        contract.symbol = contractDetails.m_summary.m_symbol
-        contract.exchange = contractDetails.m_summary.m_exchange
+        symbol = contractDetails.m_summary.m_localSymbol
+        exchange = exchangeMapReverse.get(contractDetails.m_summary.m_exchange, EXCHANGE_UNKNOWN)
+        vtSymbol = '.'.join([symbol, exchange])
+        ct = self.contractDict.get(vtSymbol, None)
+        
+        if not ct:
+            return
+        
+        ct.name = contractDetails.m_longName.decode('UTF-8')
+        ct.priceTick = contractDetails.m_minTick        
 
-        contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
-        contract.name = contractDetails.m_summary.m_localSymbol.decode('UTF-8')
-        
-        # 合约类型
-        contract.productClass = productClassMapReverse.get(contractDetails.m_summary.m_secType, 
-                                                           PRODUCT_UNKNOWN)
-        
         # 推送
-        self.gateway.onContract(contract)
+        self.gateway.onContract(ct)
       
     #----------------------------------------------------------------------
     def bondContractDetails(self, reqId, contractDetails):
@@ -496,7 +505,7 @@ class IbWrapper(EWrapper):
         trade.tradeID = execution.m_execId
         trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
         
-        trade.symbol = contract.m_symbol
+        trade.symbol = contract.m_localSymbol
         trade.exchange = exchangeMapReverse.get(contract.m_exchange, '')
         trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])  
         
@@ -566,8 +575,8 @@ class IbWrapper(EWrapper):
     #----------------------------------------------------------------------
     def currentTime(self, time):
         """ generated source for method currentTime """
-        dt_obj = datetime.fromtimestamp(time)
-        t = dt_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
+        dt = datetime.fromtimestamp(time)
+        t = dt.strftime("%Y-%m-%d %H:%M:%S.%f")
 
         self.connectionStatus = True
         self.gateway.connected = True
@@ -576,6 +585,10 @@ class IbWrapper(EWrapper):
         log.gatewayName = self.gatewayName
         log.logContent = (u'IB接口连接成功，当前服务器时间 %s' %t)
         self.gateway.onLog(log) 
+        
+        for symbol, req in self.subscribeReqDict.items():
+            del self.subscribeReqDict[symbol]
+            self.gateway.subscribe(req)        
 
     #----------------------------------------------------------------------
     def fundamentalData(self, reqId, data):
@@ -650,7 +663,7 @@ class IbWrapper(EWrapper):
         
     #----------------------------------------------------------------------
     def connectionClosed(self):
-        """连接断开"""       
+        """连接断开"""      
         self.connectionStatus = False
         self.gateway.connected = False
         
@@ -658,5 +671,3 @@ class IbWrapper(EWrapper):
         log.gatewayName = self.gatewayName
         log.logContent = (u'IB接口连接断开')
         self.gateway.onLog(log) 
-    
-    

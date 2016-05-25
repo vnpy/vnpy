@@ -1,7 +1,9 @@
 //说明部分
 
 //系统
+#ifdef WIN32
 #include "stdafx.h"
+#endif
 #include <string>
 #include <queue>
 
