@@ -235,10 +235,15 @@ class MainEngine(object):
             # 读取MongoDB的设置
             host, port, replicaset, readPreference, database, userID, password = loadMongoSetting()
             try:
-                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
+                # 设置MongoDB操作的超时时间为0.5秒
+                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference, serverSelectionTimeoutMS=500)
                 db = self.dbClient[database]
                 db.authenticate(userID, password)
-                # self.dbClient = MongoClient(host, port)
+                # self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=500)
+                
+                # 调用server_info查询服务器状态，防止服务器异常并未连接成功
+                self.dbClient.server_info()
+
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')

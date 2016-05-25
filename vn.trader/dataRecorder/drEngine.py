@@ -50,40 +50,67 @@ class DrEngine(object):
     def loadSetting(self):
         """载入设置"""
         with open(self.settingFileName) as f:
-            setting = json.load(f)
+            drSetting = json.load(f)
             
             # 如果working设为False则不启动行情记录功能
-            working = setting['working']
+            working = drSetting['working']
             if not working:
                 return
             
-            if 'tick' in setting:
-                l = setting['tick']
+            if 'tick' in drSetting:
+                l = drSetting['tick']
                 
-                for symbol, gatewayName in l:
+                for setting in l:
+                    symbol = setting[0]
+                    vtSymbol = symbol
+
+                    req = VtSubscribeReq()
+                    req.symbol = setting[0]
+                    
+                    # 针对LTS和IB接口，订阅行情需要交易所代码
+                    if len(setting)>=3:
+                        req.exchange = setting[2]
+                        vtSymbol = '.'.join([symbol, req.exchange])
+                    
+                    # 针对IB接口，订阅行情需要货币和产品类型
+                    if len(setting)>=5:
+                        req.currency = setting[3]
+                        req.productClass = setting[4]
+                    
+                    self.mainEngine.subscribe(req, setting[1])
+                    
                     drTick = DrTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
-                    self.tickDict[symbol] = drTick
+                    self.tickDict[vtSymbol] = drTick
+                    
+            if 'bar' in drSetting:
+                l = drSetting['bar']
+                
+                for setting in l:
+                    symbol = setting[0]
+                    vtSymbol = symbol
                     
                     req = VtSubscribeReq()
-                    req.symbol = symbol
-                    self.mainEngine.subscribe(req, gatewayName)
+                    req.symbol = symbol                    
+
+                    if len(setting)>=3:
+                        req.exchange = setting[2]
+                        vtSymbol = '.'.join([symbol, req.exchange])
+
+                    if len(setting)>=5:
+                        req.currency = setting[3]
+                        req.productClass = setting[4]                    
                     
-            if 'bar' in setting:
-                l = setting['bar']
+                    self.mainEngine.subscribe(req, setting[1])  
+                    
+                    bar = DrBarData() 
+                    self.barDict[vtSymbol] = bar
+                    
+            if 'active' in drSetting:
+                d = drSetting['active']
                 
-                for symbol, gatewayName in l:
-                    bar = DrBarData()
-                    self.barDict[symbol] = bar
-                    
-                    req = VtSubscribeReq()
-                    req.symbol = symbol
-                    self.mainEngine.subscribe(req, gatewayName)      
-                    
-            if 'active' in setting:
-                d = setting['active']
-                
-                for activeSymbol, symbol in d.items():
-                    self.activeSymbolDict[symbol] = activeSymbol
+                # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
+                for activeSymbol, vtSymbol in d.items():
+                    self.activeSymbolDict[vtSymbol] = activeSymbol
                     
             # 注册事件监听
             self.registerEvent()            

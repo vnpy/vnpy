@@ -23,6 +23,8 @@ class CtaTemplate(object):
     # 策略的基本参数
     name = EMPTY_UNICODE           # 策略实例名称
     vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码    
+    productClass = EMPTY_STRING    # 产品类型（只有IB接口需要）
+    currency = EMPTY_STRING        # 货币（只有IB接口需要）
     
     # 策略的基本变量，由引擎管理
     inited = False                 # 是否进行了初始化
