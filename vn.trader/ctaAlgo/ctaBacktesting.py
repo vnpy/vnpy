@@ -12,7 +12,6 @@ from pymongo.errors import ConnectionFailure
 import os
 from ctaBase import *
 from ctaSetting import *
-
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
 from vtFunction import loadMongoSetting
@@ -440,7 +439,27 @@ class BacktestingEngine(object):
     def loadBar(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Bar"""
         return self.initData
-    
+    #----------------------------------------------------------------------
+    def loadCursor(self, dbName, collectionName, todayDate, days):
+        """返回数据库查询Cursor，startDate是datetime对象"""
+        todayDate = datetime.strptime(todayDate, "%Y%m%d")
+        startDate = todayDate - timedelta(days)
+
+        d = {"$and":[{'datetime':{'$gte':startDate}},{'datetime':{'$lte':todayDate}}]}
+        cursor = self.dbQuery(dbName, collectionName, d)
+        # print startDate, todayDate
+        return cursor
+    #----------------------------------------------------------------------
+    def dbQuery(self, dbName, collectionName, d):
+        """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
+        if self.dbClient:
+            db = self.dbClient[dbName]
+            collection = db[collectionName]
+            cursor = collection.find(d)
+            return cursor
+        else:
+            return None
+
     #----------------------------------------------------------------------
     def loadTick(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Tick"""
@@ -606,7 +625,7 @@ if __name__ == '__main__':
     # # 直接在cmd中回测则只会打印一些回测数值
     # engine.showBacktestingResult()
 
-    from tickBreaker import *
+    from trader_DualThrust import *
     # 创建回测引擎
     engine = BacktestingEngine()
 
@@ -615,22 +634,23 @@ if __name__ == '__main__':
     engine.setBacktestingMode(engine.TICK_MODE)
 
     # 设置回测用的数据起始日期
-    engine.setStartDate('20160101')
+    engine.setStartDate('20160104')
     
     # 载入历史数据到引擎中
     # engine.loadHistoryData(, 'IF0000')
-    engine.loadHistoryData('VtTrader_Tick_Db', 'pp_hot')
+    engine.loadHistoryData('VnTrader_Tick_Db', 'pp_hot')
 
     # 设置产品相关参数
     # engine.setSlippage(0.2)     # 股指1跳
     # engine.setRate(0.3/10000)   # 万0.3
     # engine.setSize(300)         # 股指合约大小
-    engine.setSlippage(0)     # 股指1跳
+    engine.setSlippage(2)     # pp2跳
     engine.setRate(1.0/10000)   # 万0.3
-    engine.setSize(5)         # 股指合约大小
+    engine.setSize(5)         # pp合约大小
     
     # 在引擎中创建策略对象
-    engine.initStrategy(TickBreaker, {})
+    # 有的策略需要vtSymbol去读取数据库，比如Dual Thrust, 传入setting
+    engine.initStrategy(DualThrust, {"vtSymbol": "pp_hot"})
 
     # 开始跑回测
     engine.runBacktesting()
