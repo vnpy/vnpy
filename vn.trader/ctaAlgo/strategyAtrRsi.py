@@ -194,14 +194,12 @@ class AtrRsiStrategy(CtaTemplate):
                 if self.rsiValue > self.rsiBuy:
                     # 这里为了保证成交，选择超价5个整指数点下单
                     self.buy(bar.close+5, 1)
-                    return
 
-                if self.rsiValue < self.rsiSell:
+                elif self.rsiValue < self.rsiSell:
                     self.short(bar.close-5, 1)
-                    return
 
         # 持有多头仓位
-        if self.pos == 1:
+        elif self.pos == 1:
             # 计算多头持有期内的最高价，以及重置最低价
             self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
             self.intraTradeLow = bar.low
@@ -210,17 +208,15 @@ class AtrRsiStrategy(CtaTemplate):
             # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
             orderID = self.sell(longStop, 1, stop=True)
             self.orderList.append(orderID)
-            return
 
         # 持有空头仓位
-        if self.pos == -1:
+        elif self.pos == -1:
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             self.intraTradeHigh = bar.high
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
             orderID = self.cover(shortStop, 1, stop=True)
             self.orderList.append(orderID)
-            return
 
         # 发出状态更新事件
         self.putEvent()
