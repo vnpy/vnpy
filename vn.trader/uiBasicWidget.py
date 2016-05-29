@@ -458,7 +458,8 @@ class ErrorMonitor(BasicMonitor):
         """Constructor"""
         super(ErrorMonitor, self).__init__(mainEngine, eventEngine, parent)
         
-        d = OrderedDict()        
+        d = OrderedDict()       
+        d['errorTime']  = {'chinese':u'错误时间', 'cellType':BasicCell}
         d['errorID'] = {'chinese':u'错误代码', 'cellType':BasicCell}
         d['errorMsg'] = {'chinese':u'错误信息', 'cellType':BasicCell}
         d['additionalInfo'] = {'chinese':u'补充信息', 'cellType':BasicCell}
