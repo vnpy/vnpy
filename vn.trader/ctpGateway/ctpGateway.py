@@ -1316,12 +1316,13 @@ class PositionBuffer(object):
     def updateBuffer(self, data):
         """更新缓存，返回更新后的持仓数据"""
         # 昨仓和今仓的数据更新是分在两条记录里的，因此需要判断检查该条记录对应仓位
-        if data['TodayPosition']:
-            self.todayPosition = data['Position']
-            self.todayPositionCost = data['PositionCost']
-        elif data['YdPosition']:
+        # 因为今仓字段TodayPosition可能变为0（被全部平仓），因此分辨今昨仓需要用YdPosition字段
+        if data['YdPosition']:
             self.ydPosition = data['Position']
-            self.ydPositionCost = data['PositionCost']
+            self.ydPositionCost = data['PositionCost']   
+        else:
+            self.todayPosition = data['Position']
+            self.todayPositionCost = data['PositionCost']        
             
         # 持仓的昨仓和今仓相加后为总持仓
         self.pos.position = self.todayPosition + self.ydPosition
