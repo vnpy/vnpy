@@ -439,6 +439,7 @@ class CtpTdApi(TdApi):
         self.sessionID = EMPTY_INT          # 会话编号
         
         self.posBufferDict = {}             # 缓存持仓数据的字典
+        self.symbolExchangeDict = {}        # 保存合约代码和交易所的印射关系
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
@@ -638,7 +639,11 @@ class CtpTdApi(TdApi):
             self.posBufferDict[positionName] = posBuffer
         
         # 更新持仓缓存，并获取VT系统中持仓对象的返回值
-        pos = posBuffer.updateBuffer(data)
+        exchange = self.symbolExchangeDict.get(data['InstrumentID'], EXCHANGE_UNKNOWN)
+        if exchange == EXCHANGE_SHFE:
+            pos = posBuffer.updateShfeBuffer(data)
+        else:
+            pos = posBuffer.updateBuffer(data)
         self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
@@ -730,6 +735,9 @@ class CtpTdApi(TdApi):
             contract.optionType = OPTION_CALL
         elif data['OptionsType'] == '2':
             contract.optionType = OPTION_PUT
+            
+        # 缓存代码和交易所的印射关系
+        self.symbolExchangeDict[contract.symbol] = contract.exchange
         
         # 推送
         self.gateway.onContract(contract)
@@ -1313,8 +1321,8 @@ class PositionBuffer(object):
         self.pos = pos
         
     #----------------------------------------------------------------------
-    def updateBuffer(self, data):
-        """更新缓存，返回更新后的持仓数据"""
+    def updateShfeBuffer(self, data):
+        """更新上期所缓存，返回更新后的持仓数据"""
         # 昨仓和今仓的数据更新是分在两条记录里的，因此需要判断检查该条记录对应仓位
         # 因为今仓字段TodayPosition可能变为0（被全部平仓），因此分辨今昨仓需要用YdPosition字段
         if data['YdPosition']:
@@ -1337,6 +1345,21 @@ class PositionBuffer(object):
             self.pos.price = 0
             
         return copy(self.pos)
+    
+    #----------------------------------------------------------------------
+    def updateBuffer(self, data):
+        """更新其他交易所的缓存，返回更新后的持仓数据"""
+        # 其他交易所并不区分今昨，因此只关心总仓位，昨仓设为0
+        self.pos.position = data['Position']
+        self.pos.ydPosition = 0
+        
+        if data['Position']:
+            self.pos.price = data['PositionCost'] / data['Position']
+        else:
+            self.pos.price = 0
+            
+        return copy(self.pos)    
+
 
 #----------------------------------------------------------------------
 def test():
