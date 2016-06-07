@@ -3,9 +3,9 @@ import psutil
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
-from uiDataRecorder import *
+from uiDrWidget import *
 BASIC_FONT = QtGui.QFont(u'微软雅黑', 10)
-
+from dataRecorderAlone.drEngine import DrEngine
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -21,12 +21,12 @@ class MainWindow(QtGui.QMainWindow):
 
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
-
+        self.drEngine = DrEngine(mainEngine, mainEngine.eventEngine)
         self.initUi()
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle(u'期货Tick存储@订阅')
+        self.setWindowTitle(u'期货Tick@Min数据存储、订阅')
         self.initCentral()
         self.initMenu()
         self.initStatusBar()
@@ -35,10 +35,10 @@ class MainWindow(QtGui.QMainWindow):
     def initCentral(self):
         """初始化中心区域"""
 
-        dr_W = DataRecorder(self.mainEngine, self.eventEngine)
+        dr_M = DrEngineManager(self.drEngine, self.eventEngine)
 
         vBox = QtGui.QVBoxLayout()
-        vBox.addWidget(dr_W)
+        vBox.addWidget(dr_M)
 
         central = QtGui.QWidget()
         central.setLayout(vBox)
@@ -101,8 +101,8 @@ class MainWindow(QtGui.QMainWindow):
                                            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes:
-            event.accept()
             self.mainEngine.exit()
+            event.accept()
         else:
             event.ignore()
 
