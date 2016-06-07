@@ -20,7 +20,7 @@ from ctaTemplate import CtaTemplate
 import pandas as pd
 
 ########################################################################
-class DualThrust(CtaTemplate):
+class DualThrustStrategy(CtaTemplate):
     """Dual Thrust策略Demo"""
     className = 'DualThrust'
     author = 'Yang Huabiao'
@@ -71,7 +71,7 @@ class DualThrust(CtaTemplate):
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(DualThrust, self).__init__(ctaEngine, setting)
+        super(DualThrustStrategy, self).__init__(ctaEngine, setting)
 
     #----------------------------------------------------------------------
     def onInit(self):
@@ -215,3 +215,46 @@ class DualThrust(CtaTemplate):
         """收到成交推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         pass
+
+
+if __name__ == '__main__':
+    # 以下内容是一段回测脚本的演示，用户可以根据自己的需求修改
+    # 建议使用ipython notebook或者spyder来做回测
+    # 同样可以在命令模式下进行回测（一行一行输入运行）
+    # 提供直接双击回测的功能
+    # 导入PyQt4的包是为了保证matplotlib使用PyQt4而不是PySide，防止初始化出错
+
+    from ctaBacktesting import *
+
+    # 创建回测引擎
+    engine = BacktestingEngine()
+
+    # 设置引擎的回测模式为K线
+
+    engine.setBacktestingMode(engine.TICK_MODE)
+
+    # 设置回测用的数据起始日期
+    engine.setStartDate('20160104')
+
+    # 载入历史数据到引擎中
+    engine.loadHistoryData('VnTrader_Tick_Db', 'pp_hot')
+
+    # 设置产品相关参数
+    # engine.setSlippage(0.2)     # 股指1跳
+    # engine.setRate(0.3/10000)   # 万0.3
+    # engine.setSize(300)         # 股指合约大小
+    engine.setSlippage(2)     # pp2跳
+    engine.setRate(1.0/10000)   # 万0.3
+    engine.setSize(5)         # pp合约大小
+
+    # 在引擎中创建策略对象
+    # 有的策略需要vtSymbol去读取数据库，比如Dual Thrust, 传入setting
+    engine.initStrategy(DualThrustStrategy, {"vtSymbol": "pp_hot"})
+
+    # 开始跑回测
+    engine.runBacktesting()
+
+    # 显示回测结果
+    # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
+    # 直接在cmd中回测则只会打印一些回测数值
+    engine.showBacktestingResult()
