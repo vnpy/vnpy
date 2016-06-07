@@ -3,7 +3,7 @@
 	"fontSize": 12,
 
 	"mongoHost": "localhost",
-	"mongoPort": 27017,
+	"mongoPort": 28019,
     "mongoReplicaset": "0",
     "mongoReadPreference": "0",
     "mongoDB": "0",

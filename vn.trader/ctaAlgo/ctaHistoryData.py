@@ -58,10 +58,11 @@ class HistoryDataEngine(object):
             settingFileName = os.path.dirname(os.getcwd()) + "/" + settingFileName
             host, port, replicaset, readPreference, database, userID, password = loadMongoSetting(settingFileName)
             try:
-                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
-                db = self.dbClient[database]
-                db.authenticate(userID, password)
-                # self.dbClient = MongoClient(host, port)
+                # self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference)
+                # db = self.dbClient[database]
+                # db.authenticate(userID, password)
+                self.dbClient = pymongo.MongoClient(host, port, serverSelectionTimeoutMS=500)
+
                 print u'MongoDB连接成功'
             except ConnectionFailure:
                 print u'MongoDB连接失败'
@@ -404,7 +405,12 @@ def loadMcCsv(fileName, dbName, symbol):
         bar.date = datetime.strptime(d['Date'], '%Y/%m/%d').strftime('%Y%m%d')
         bar.time = d['Time']
         bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
-        bar.volume = d['TotalVolume']
+        bar.upVolume = int(d['UpVolume'])
+        bar.downVolume = int(d['DownVolume'])
+        bar.volume = int(d['TotalVolume'])
+        bar.upTicks = int(d['UpTicks'])
+        bar.downTicks = int(d['DownTicks'])
+        bar.totalTicks = int(d['TotalTicks'])
 
         flt = {'datetime': bar.datetime}
         collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
@@ -424,4 +430,5 @@ if __name__ == '__main__':
     # loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
     # loadMcTickCsv('pp_hot.csv', TICK_DB_NAME, 'pp_hot')
     # loadMcCsv('pp 1min.txt', MINUTE_DB_NAME, 'pp_hot')
-    loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
+    loadMcCsv(r"t:\Yang.Huabiao\CTA\Trading-System\vn.trader\ctaAlgo\data\TA_hot 20150101~20160526.txt", 'IQ_Futures_1Min_DB', 'TA_hot')
+    # loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
