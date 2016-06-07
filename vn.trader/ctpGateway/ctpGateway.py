@@ -91,6 +91,7 @@ class CtpGateway(VtGateway):
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'读取连接配置出错，请检查'
+            print u'读取连接配置出错，请检查'
             self.onLog(log)
             return
         
@@ -106,6 +107,7 @@ class CtpGateway(VtGateway):
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'连接配置缺少字段，请检查'
+            print u'连接配置缺少字段，请检查'
             self.onLog(log)
             return            
         

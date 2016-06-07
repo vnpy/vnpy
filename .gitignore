@@ -68,3 +68,7 @@ vn.trader/ctaAlgo/data/*
 vn.trader/Contracts_init - 副本.json
 vn.trader/mongoConnect/Mongo_connect - 副本.json
 vn.trader/VT_setting/VT_setting.json
+vn.trader/build/*
+vn.trader/dist/*
+vn.trader/RT.ico
+vn.trader/setup.py
