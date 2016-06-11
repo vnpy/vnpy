@@ -278,7 +278,7 @@ class HistoryDataEngine(object):
         params = {}
         params['ticker'] = symbol
         if last:
-            params['startDate'] = last['date']
+            params['beginDate'] = last['date']
         
         data = self.datayesClient.downloadData(path, params)
         
