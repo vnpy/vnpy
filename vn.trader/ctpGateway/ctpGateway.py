@@ -483,7 +483,7 @@ class CtpTdApi(TdApi):
             self.frontID = str(data['FrontID'])
             self.sessionID = str(data['SessionID'])
             self.loginStatus = True
-            self.gateway.mdConnected = True
+            self.gateway.tdConnected = True
             
             log = VtLogData()
             log.gatewayName = self.gatewayName
