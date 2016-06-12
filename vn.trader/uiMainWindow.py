@@ -10,6 +10,7 @@ from riskManager.uiRmWidget import RmEngineManager
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
     """主窗口"""
+    signalStatusBar = QtCore.pyqtSignal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -169,7 +170,8 @@ class MainWindow(QtGui.QMainWindow):
         
         self.sbCount = 0
         self.sbTrigger = 10     # 10秒刷新一次
-        self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
+        self.signalStatusBar.connect(self.updateStatusBar)
+        self.eventEngine.register(EVENT_TIMER, self.signalStatusBar.emit)
         
     #----------------------------------------------------------------------
     def updateStatusBar(self, event):
