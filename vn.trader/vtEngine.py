@@ -188,6 +188,9 @@ class MainEngine(object):
         # 停止事件引擎
         self.eventEngine.stop()      
         
+        # 停止数据记录引擎
+        self.drEngine.stop()
+        
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
     
