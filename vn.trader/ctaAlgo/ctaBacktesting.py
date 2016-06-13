@@ -284,10 +284,10 @@ class BacktestingEngine(object):
             buyBestCrossPrice = self.bar.open   # 在当前时间点前发出的买入委托可能的最优成交价
             sellBestCrossPrice = self.bar.open  # 在当前时间点前发出的卖出委托可能的最优成交价
         else:
-            buyCrossPrice = self.tick.askPrice
-            sellCrossPrice = self.tick.bidPrice
-            buyBestCrossPrice = self.tick.askPrice
-            sellBestCrossPrice = self.tick.bidPrice
+            buyCrossPrice = self.tick.askPrice1
+            sellCrossPrice = self.tick.bidPrice1
+            buyBestCrossPrice = self.tick.askPrice1
+            sellBestCrossPrice = self.tick.bidPrice1
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
