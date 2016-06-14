@@ -279,13 +279,15 @@ class BacktestingEngine(object):
         """基于最新数据撮合限价单"""
         # 先确定会撮合成交的价格
         if self.mode == self.BAR_MODE:
-            buyCrossPrice = self.bar.low    # 若买入方向限价单价格高于该价格，则会成交
-            sellCrossPrice = self.bar.high  # 若卖出方向限价单价格低于该价格，则会成交
-            bestCrossPrice = self.bar.open  # 在当前时间点前发出的委托可能的最优成交价
+            buyCrossPrice = self.bar.low        # 若买入方向限价单价格高于该价格，则会成交
+            sellCrossPrice = self.bar.high      # 若卖出方向限价单价格低于该价格，则会成交
+            buyBestCrossPrice = self.bar.open   # 在当前时间点前发出的买入委托可能的最优成交价
+            sellBestCrossPrice = self.bar.open  # 在当前时间点前发出的卖出委托可能的最优成交价
         else:
-            buyCrossPrice = self.tick.lastPrice
-            sellCrossPrice = self.tick.lastPrice
-            bestCrossPrice = self.tick.lastPrice
+            buyCrossPrice = self.tick.askPrice1
+            sellCrossPrice = self.tick.bidPrice1
+            buyBestCrossPrice = self.tick.askPrice1
+            sellBestCrossPrice = self.tick.bidPrice1
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
@@ -312,10 +314,10 @@ class BacktestingEngine(object):
                 # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
                 # 3. 则在实际中的成交价会是100而不是105，因为委托发出时市场的最优价格是100
                 if buyCross:
-                    trade.price = min(order.price, bestCrossPrice)
+                    trade.price = min(order.price, buyBestCrossPrice)
                     self.strategy.pos += order.totalVolume
                 else:
-                    trade.price = max(order.price, bestCrossPrice)
+                    trade.price = max(order.price, sellBestCrossPrice)
                     self.strategy.pos -= order.totalVolume
                 
                 trade.volume = order.totalVolume
