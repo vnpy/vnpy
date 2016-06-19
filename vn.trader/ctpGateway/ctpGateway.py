@@ -41,14 +41,11 @@ offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
 # 交易所类型映射
 exchangeMap = {}
-#exchangeMap[EXCHANGE_CFFEX] = defineDict['THOST_FTDC_EIDT_CFFEX']
-#exchangeMap[EXCHANGE_SHFE] = defineDict['THOST_FTDC_EIDT_SHFE']
-#exchangeMap[EXCHANGE_CZCE] = defineDict['THOST_FTDC_EIDT_CZCE']
-#exchangeMap[EXCHANGE_DCE] = defineDict['THOST_FTDC_EIDT_DCE']
 exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
 exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
+exchangeMap[EXCHANGE_SSE] = 'SSE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
