@@ -11,6 +11,8 @@ import os
 import copy
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from Queue import Queue
+from threading import Thread
 
 from eventEngine import *
 from vtGateway import VtSubscribeReq, VtLogData
@@ -52,7 +54,12 @@ class DrEngine(object):
         
         # K线对象字典
         self.barDict = {}
-        
+
+        # 负责执行数据库插入的单独线程相关
+        self.active = False                     # 工作状态
+        self.queue = Queue()                    # 队列
+        self.thread = Thread(target=self.run)   # 线程
+
         # # 载入设置，订阅行情
         # self.loadSetting()
         
@@ -122,8 +129,11 @@ class DrEngine(object):
                 for activeSymbol, vtSymbol in d.items():
                     self.activeSymbolDict[vtSymbol] = activeSymbol
                     
+            # 启动数据插入线程
+            self.start()
+
             # 注册事件监听
-            self.registerEvent()            
+            self.registerEvent()
 
     #----------------------------------------------------------------------
     def procecssTickEvent(self, event):
@@ -204,8 +214,29 @@ class DrEngine(object):
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
         """插入数据到数据库（这里的data可以是CtaTickData或者CtaBarData）"""
-        self.mainEngine.dbInsert(dbName, collectionName, data.__dict__)
-        
+        self.queue.put((dbName, collectionName, data.__dict__))
+
+    #----------------------------------------------------------------------
+    def run(self):
+        """运行插入线程"""
+        while self.active:
+            try:
+                dbName, collectionName, d = self.queue.get(block=True, timeout=1)
+                self.mainEngine.dbInsert(dbName, collectionName, d)
+            except Empty:
+                pass
+    #----------------------------------------------------------------------
+    def start(self):
+        """启动"""
+        self.active = True
+        self.thread.start()
+
+    #----------------------------------------------------------------------
+    def stop(self):
+        """退出"""
+        if self.active:
+            self.active = False
+            self.thread.join()
     #----------------------------------------------------------------------
     def writeDrLog(self, content):
         """快速发出日志事件"""

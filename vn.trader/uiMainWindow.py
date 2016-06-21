@@ -10,6 +10,7 @@ from riskManager.uiRmWidget import RmEngineManager
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
     """主窗口"""
+    signalStatusBar = QtCore.pyqtSignal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -171,7 +172,8 @@ class MainWindow(QtGui.QMainWindow):
         
         self.sbCount = 0
         self.sbTrigger = 10     # 10秒刷新一次
-        self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
+        self.signalStatusBar.connect(self.updateStatusBar)
+        self.eventEngine.register(EVENT_TIMER, self.signalStatusBar.emit)
         
     #----------------------------------------------------------------------
     def updateStatusBar(self, event):
@@ -334,8 +336,17 @@ class MainWindow(QtGui.QMainWindow):
     def loadWindowSettings(self):
         """载入窗口设置"""
         settings = QtCore.QSettings('vn.py', 'vn.trader')
-        self.restoreState(settings.value('state').toByteArray())
-        self.restoreGeometry(settings.value('geometry').toByteArray())    
+        # 这里由于PyQt4的版本不同，settings.value('state')调用返回的结果可能是：
+        # 1. None（初次调用，注册表里无相应记录，因此为空）
+        # 2. QByteArray（比较新的PyQt4）
+        # 3. QVariant（以下代码正确执行所需的返回结果）
+        # 所以为了兼容考虑，这里加了一个try...except，如果是1、2的情况就pass
+        # 可能导致主界面的设置无法载入（每次退出时的保存其实是成功了）
+        try:
+            self.restoreState(settings.value('state').toByteArray())
+            self.restoreGeometry(settings.value('geometry').toByteArray())    
+        except AttributeError:
+            pass
 
 
 ########################################################################

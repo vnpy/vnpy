@@ -8,7 +8,6 @@
 在CTA_setting.json中写入具体每个策略对象的类和合约设置。
 '''
 
-from ctaTemplate import DataRecorder
 from ctaDemo import DoubleEmaDemo
 from tickBreaker import TickBreaker
 

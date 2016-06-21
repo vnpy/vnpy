@@ -61,6 +61,13 @@ class DoubleEmaDemo(CtaTemplate):
         """Constructor"""
         super(DoubleEmaDemo, self).__init__(ctaEngine, setting)
         
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）
+        self.fastMa = []
+        self.slowMa = []
+        
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
