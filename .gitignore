@@ -72,3 +72,4 @@ vn.trader/build/*
 vn.trader/dist/*
 vn.trader/RT.ico
 vn.trader/setup.py
+vn.trader/ctaAlgo/Strategy/*
