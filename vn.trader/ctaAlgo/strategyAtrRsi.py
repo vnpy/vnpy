@@ -80,6 +80,11 @@ class AtrRsiStrategy(CtaTemplate):
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(AtrRsiStrategy, self).__init__(ctaEngine, setting)
+        
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）        
 
     #----------------------------------------------------------------------
     def onInit(self):
@@ -194,14 +199,12 @@ class AtrRsiStrategy(CtaTemplate):
                 if self.rsiValue > self.rsiBuy:
                     # 这里为了保证成交，选择超价5个整指数点下单
                     self.buy(bar.close+5, 1)
-                    return
 
-                if self.rsiValue < self.rsiSell:
+                elif self.rsiValue < self.rsiSell:
                     self.short(bar.close-5, 1)
-                    return
 
         # 持有多头仓位
-        if self.pos == 1:
+        elif self.pos == 1:
             # 计算多头持有期内的最高价，以及重置最低价
             self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
             self.intraTradeLow = bar.low
@@ -210,17 +213,15 @@ class AtrRsiStrategy(CtaTemplate):
             # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
             orderID = self.sell(longStop, 1, stop=True)
             self.orderList.append(orderID)
-            return
 
         # 持有空头仓位
-        if self.pos == -1:
+        elif self.pos == -1:
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             self.intraTradeHigh = bar.high
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
             orderID = self.cover(shortStop, 1, stop=True)
             self.orderList.append(orderID)
-            return
 
         # 发出状态更新事件
         self.putEvent()
