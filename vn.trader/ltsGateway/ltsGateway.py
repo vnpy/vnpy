@@ -1157,7 +1157,7 @@ class LtsQryApi(QryApi):
         
         # 持仓均价
         if pos.position:
-            pos.price = data['PositionCost'] / pos.position
+            pos.price = data['OpenCost'] / pos.position
         
         # VT系统持仓名
         pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
