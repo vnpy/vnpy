@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 import sys
+
 from time import sleep
 
 from PyQt4 import QtGui

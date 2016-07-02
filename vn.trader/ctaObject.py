@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-from vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
+from vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT,COLOR_EQUAL
 
 
 ########################################################################
@@ -42,6 +42,14 @@ class CtaBarData(object):
         
         self.volume = EMPTY_INT             # 成交量
         self.openInterest = EMPTY_INT       # 持仓量
+
+        self.color = COLOR_EQUAL          # k 线颜色,COLOR_RED，COLOR_BLUE
+        self.traded = False
+        self.tradeStatus = EMPTY_STRING     # 当前bar的交易情况: CTAORDER_BUY 、CTAORDER_SELL、
+                                            # CTAORDER_SHORT 、CTAORDER_COVER 、 CTAORDER_OPEN_REJECT 、
+                                            # CTAORDER_OPEN_FAIL 、CTAORDER_CLOSE_FAIL
+
+        self.seconds = EMPTY_INT            # 当前Bar的秒数（针对RenkoBar)
 
 
 ########################################################################

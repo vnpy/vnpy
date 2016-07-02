@@ -2,6 +2,7 @@
 
 '''CTA模块相关的GUI控制组件'''
 
+
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
 
@@ -11,7 +12,7 @@ class ValueMonitor(QtGui.QTableWidget):
     """数值监控"""
     signal = QtCore.pyqtSignal()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, parent=None):
         """Constructor"""
         super(ValueMonitor , self).__init__(parent)
@@ -23,7 +24,7 @@ class ValueMonitor(QtGui.QTableWidget):
         self.initUi()
         self.signal.connect(self.updateTable)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setColumnCount(2)
@@ -34,13 +35,13 @@ class ValueMonitor(QtGui.QTableWidget):
         self.setEditTriggers(self.NoEditTriggers)
         self.setAlternatingRowColors(True)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateData(self, data):
         """更新数据"""
         self.data = data
         self.signal.emit()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateTable(self):
         """更新表格"""
         for key, value in self.data.items():
@@ -62,9 +63,11 @@ class ValueMonitor(QtGui.QTableWidget):
 
 ########################################################################
 class CtaStrategyManager(QtGui.QGroupBox):
-    """策略管理组件"""
+    """策略管理组件
+    即策略的UI，提供了启动、停止，查看参数，参看变量等显示信息
+    """
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, eventEngine, name, parent=None):
         """Constructor"""
         super(CtaStrategyManager, self).__init__(parent)
@@ -77,7 +80,7 @@ class CtaStrategyManager(QtGui.QGroupBox):
         self.updateMonitor()
         self.registerEvent()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setTitle(self.name)
@@ -106,28 +109,32 @@ class CtaStrategyManager(QtGui.QGroupBox):
         vbox.addWidget(self.varMonitor)
         self.setLayout(vbox)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateMonitor(self, event=None):
         """显示策略最新状态"""
+
+        # 调用CTA策略引擎,获取策略的所有参数的值（依赖策略的ParamList配置）
         paramDict = self.ctaEngine.getStrategyParam(self.name)
         if paramDict:
             self.paramMonitor.updateData(paramDict)
-            
+
+        # 调用CTA策略引擎,获取策略的所有变量的值（依赖策略的varList配置）
         varDict = self.ctaEngine.getStrategyVar(self.name)
         if varDict:
             self.varMonitor.updateData(varDict)        
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
+        # 注册定时器，定时更新策略最新状态
         self.eventEngine.register(EVENT_TIMER, self.updateMonitor)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def start(self):
         """启动策略"""
         self.ctaEngine.startStrategy(self.name)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def stop(self):
         """停止策略"""
         self.ctaEngine.stopStrategy(self.name)
@@ -137,9 +144,11 @@ class CtaStrategyManager(QtGui.QGroupBox):
 ########################################################################
 class CtaEngineManager(QtGui.QWidget):
     """CTA引擎管理组件"""
+
+    # 定义信号对象，为Event的类型
     signal = QtCore.pyqtSignal(type(Event()))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, eventEngine, parent=None):
         """Constructor"""
         super(CtaEngineManager, self).__init__(parent)
@@ -155,7 +164,7 @@ class CtaEngineManager(QtGui.QWidget):
         # 记录日志
         self.ctaEngine.writeCtaLog(u'CTA引擎启动成功')        
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(u'CTA策略')
@@ -189,60 +198,66 @@ class CtaEngineManager(QtGui.QWidget):
         vbox.addWidget(self.ctaLogMonitor)
         self.setLayout(vbox)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initStrategyManager(self):
-        """初始化策略管理组件界面"""        
+        """初始化策略管理组件界面"""
+        # 构建组件w
         w = QtGui.QWidget()
+
+        # 构建Layout层
         hbox = QtGui.QHBoxLayout()
-        
+
+        # 将策略UI组件逐一添加Layout层
         for name in self.ctaEngine.strategyDict.keys():
             strategyManager = CtaStrategyManager(self.ctaEngine, self.eventEngine, name)
             hbox.addWidget(strategyManager)
-        
+
+        # w绑定Layout层
         w.setLayout(hbox)
+
+        # 滚动区域，设置为组件w
         self.scrollArea.setWidget(w)        
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def startAll(self):
         """全部启动"""
         for name in self.ctaEngine.strategyDict.keys():
             self.ctaEngine.startStrategy(name)
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def stopAll(self):
         """全部停止"""
         for name in self.ctaEngine.strategyDict.keys():
             self.ctaEngine.stopStrategy(name)
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def load(self):
         """加载策略"""
         if not self.strategyLoaded:
+
+            # 调用策略引擎，加载所有策略设置
             self.ctaEngine.loadStrategySetting()
+
+            # 初始化所有策略的UI组件
             self.initStrategyManager()
+
             self.strategyLoaded = True
+
             self.ctaEngine.writeCtaLog(u'策略加载成功')
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateCtaLog(self, event):
         """更新CTA相关日志"""
         log = event.dict_['data']
         content = '\t'.join([log.logTime, log.logContent])
         self.ctaLogMonitor.append(content)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
+        # 定义信号绑定方法
         self.signal.connect(self.updateCtaLog)
+
+        # 注册EVENT_CAT_LOG类型的事件，触发方法为信号的焕发（emit）
         self.eventEngine.register(EVENT_CTA_LOG, self.signal.emit)
         
-        
-    
-    
-    
-    
-
-
-
-    
-    

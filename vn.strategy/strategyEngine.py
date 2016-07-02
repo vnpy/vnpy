@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pymongo import Connection
+from pymongo import  MongoClient as Connection
 from pymongo.errors import *
 
 from eventEngine import *
@@ -429,8 +429,13 @@ class StrategyEngine(object):
     #----------------------------------------------------------------------
     def __registerEvent(self):
         """注册事件监听"""
+         #注册订阅行情数据更新事件
         self.__eventEngine.register(EVENT_MARKETDATA, self.__updateMarketData)
+
+        #注册订阅订单更新事件
         self.__eventEngine.register(EVENT_ORDER, self.__updateOrder)
+
+        #注册订阅交易响应事件
         self.__eventEngine.register(EVENT_TRADE ,self.__updateTrade)
         
     #----------------------------------------------------------------------
@@ -570,7 +575,7 @@ class StrategyTemplate(object):
         raise NotImplementedError
         
     #----------------------------------------------------------------------
-    def buy(self, price, volume, stopOrder=False):
+    def buy(self, price, volume, orderTime, stopOrder=False):
         """买入开仓"""
         if self.trading:
             if stopOrder:
@@ -579,13 +584,13 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_BUY,
-                                              OFFSET_OPEN, price, volume, self)
+                                              OFFSET_OPEN, price, volume,orderTime, self)
                 return ref
         else:
             return None
     
     #----------------------------------------------------------------------
-    def cover(self, price, volume, StopOrder=False):
+    def cover(self, price, volume, orderTime, StopOrder=False):
         """买入平仓"""
         if self.trading:
             if stopOrder:
@@ -594,13 +599,13 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_BUY,
-                                              OFFSET_CLOSE, price, volume, self)
+                                              OFFSET_CLOSE, price, volume,orderTime, self)
                 return ref
         else:
             return None
     
     #----------------------------------------------------------------------
-    def sell(self, price, volume, stopOrder=False):
+    def sell(self, price, volume,  orderTime,stopOrder=False):
         """卖出平仓"""
         if self.trading:
             if stopOrder:
@@ -609,13 +614,13 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_SELL,
-                                              OFFSET_CLOSE, price, volume, self)
+                                              OFFSET_CLOSE, price, volume,orderTime, self)
                 return ref
         else:
             return None
     
     #----------------------------------------------------------------------
-    def short(self, price, volume, stopOrder=False):
+    def short(self, price, volume,  orderTime,stopOrder=False):
         """卖出开仓"""
         if self.trading:
             if stopOrder:
@@ -624,7 +629,7 @@ class StrategyTemplate(object):
                 return so
             else:
                 ref = self.engine.sendOrder(self.symbol, DIRECTION_SELL, 
-                                              OFFSET_OPEN, price, volume, self)
+                                              OFFSET_OPEN, price, volume,orderTime, self)
                 return ref    
         else:
             return None

@@ -3,7 +3,7 @@
 import shelve
 
 from eventEngine import *
-from pymongo import Connection
+from pymongo import MongoClient as Connection
 from pymongo.errors import *
 
 from strategyEngine import *

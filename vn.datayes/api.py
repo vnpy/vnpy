@@ -617,9 +617,10 @@ class PyApi(object):
 	def get_future_main_D1(self, field='', start='', end='', mark='',
 						   obj='', main=1, one=20150513):
 		"""
-
+        #MktFutureBarRTIntraDayGet
 		"""
-		pass
+
+
 
 	def get_fund_D1(self, field='', start='', end='', secID='',
 					ticker='', one=20150513, output='df'):

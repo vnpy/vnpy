@@ -105,7 +105,7 @@ accountKeyMap['MaintMarginReq'] = 'margin'
 class IbGateway(VtGateway):
     """IB接口"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName='IB'):
         """Constructor"""
         super(IbGateway, self).__init__(eventEngine, gatewayName)
@@ -127,7 +127,7 @@ class IbGateway(VtGateway):
         self.wrapper = IbWrapper(self)                  # 回调接口
         self.connection = EClientSocket(self.wrapper)   # 主动接口
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
@@ -163,7 +163,7 @@ class IbGateway(VtGateway):
         # 请求账户数据主推更新
         self.connection.reqAccountUpdates(True, '')
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
         # 订阅行情
@@ -188,7 +188,7 @@ class IbGateway(VtGateway):
         tick.gatewayName = self.gatewayName
         self.tickDict[self.tickerId] = tick
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         # 增加报单号1，最后再次进行查询
@@ -222,12 +222,12 @@ class IbGateway(VtGateway):
         # 查询下一个有效编号
         self.connection.reqIds(1)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.connection.cancelOrder(cancelOrderReq.orderID)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def getAccount(self):
         """查询账户资金"""
         log = VtLogData()
@@ -235,7 +235,7 @@ class IbGateway(VtGateway):
         log.logContent = u'IB接口账户信息提供主推更新，无需查询'
         self.onLog(log) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def getPosition(self):
         """查询持仓"""
         log = VtLogData()
@@ -243,7 +243,7 @@ class IbGateway(VtGateway):
         log.logContent = u'IB接口持仓信息提供主推更新，无需查询'
         self.onLog(log) 
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def close(self):
         """关闭"""
         self.connection.eDisconnect()
@@ -253,7 +253,7 @@ class IbGateway(VtGateway):
 class IbWrapper(EWrapper):
     """IB回调接口的实现"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
         super(IbWrapper, self).__init__()
@@ -267,7 +267,7 @@ class IbWrapper(EWrapper):
         self.orderDict = gateway.orderDict          # order字典
         self.accountDict = gateway.accountDict      # account字典
        
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def tickPrice(self, tickerId, field, price, canAutoExecute):
         """行情推送（价格相关）"""
         if field in tickFieldMap:
@@ -277,7 +277,7 @@ class IbWrapper(EWrapper):
         else:
             print field
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def tickSize(self, tickerId, field, size):
         """行情推送（量相关）"""
         if field in tickFieldMap:
@@ -287,17 +287,17 @@ class IbWrapper(EWrapper):
         else:
             print field
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def tickOptionComputation(self, tickerId, field, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice):
         """行情推送（期权数值）"""
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def tickGeneric(self, tickerId, tickType, value):
         """行情推送（某些通用字段）"""
         pass
 
-    #---------------------------------------------------------------------- 
+    # ----------------------------------------------------------------------
     def tickString(self, tickerId, tickType, value):
         """行情推送，特殊字段相关"""
         if tickType == 45:
@@ -312,12 +312,12 @@ class IbWrapper(EWrapper):
             newtick = copy(tick)
             self.gateway.onTick(newtick)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def tickEFP(self, tickerId, tickType, basisPoints, formattedBasisPoints, impliedFuture, holdDays, futureExpiry, dividendImpact, dividendsToExpiry):
         """行情推送（合约属性相关）"""
         pass
 
-    #---------------------------------------------------------------------- 
+    # ----------------------------------------------------------------------
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld):
         """报单成交回报"""
         pass
@@ -338,7 +338,7 @@ class IbWrapper(EWrapper):
         newod = copy(od)
         self.gateway.onOrder(newod)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openOrder(self, orderId, contract, order, orderState):
         """报单信息推送"""
         orderId = str(orderId)  # orderId是整数
@@ -362,12 +362,12 @@ class IbWrapper(EWrapper):
         newod = copy(od)
         self.gateway.onOrder(newod)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openOrderEnd(self):
         """ generated source for method openOrderEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateAccountValue(self, key, value, currency, accountName):
         """更新账户数据"""
         # 仅逐个字段更新数据，这里对于没有currency的推送忽略
@@ -387,7 +387,7 @@ class IbWrapper(EWrapper):
                 k = accountKeyMap[key]
                 account.__setattr__(k, float(value))
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updatePortfolio(self, contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName):
         """持仓更新推送"""
         pos = VtPositionData()
@@ -403,7 +403,7 @@ class IbWrapper(EWrapper):
         
         self.gateway.onPosition(pos)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateAccountTime(self, timeStamp):
         """更新账户数据的时间"""
         # 推送数据
@@ -411,31 +411,31 @@ class IbWrapper(EWrapper):
             newaccount = copy(account)
             self.gateway.onAccount(newaccount)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def accountDownloadEnd(self, accountName):
         """ generated source for method accountDownloadEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def nextValidId(self, orderId):
         """下一个有效报单编号更新"""
         self.gateway.orderId = orderId
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def contractDetails(self, reqId, contractDetails):
         """ generated source for method contractDetails """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def bondContractDetails(self, reqId, contractDetails):
         """ generated source for method bondContractDetails """
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def contractDetailsEnd(self, reqId):
         """ generated source for method contractDetailsEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def execDetails(self, reqId, contract, execution):
         """成交推送"""
         trade = VtTradeData()
@@ -455,62 +455,62 @@ class IbWrapper(EWrapper):
         
         self.gateway.onTrade(trade)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def execDetailsEnd(self, reqId):
         """ generated source for method execDetailsEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateMktDepth(self, tickerId, position, operation, side, price, size):
         """ generated source for method updateMktDepth """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateMktDepthL2(self, tickerId, position, marketMaker, operation, side, price, size):
         """ generated source for method updateMktDepthL2 """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateNewsBulletin(self, msgId, msgType, message, origExchange):
         """ generated source for method updateNewsBulletin """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def managedAccounts(self, accountsList):
         """ generated source for method managedAccounts """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def receiveFA(self, faDataType, xml):
         """ generated source for method receiveFA """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def historicalData(self, reqId, date, open, high, low, close, volume, count, WAP, hasGaps):
         """ generated source for method historicalData """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def scannerParameters(self, xml):
         """ generated source for method scannerParameters """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def scannerData(self, reqId, rank, contractDetails, distance, benchmark, projection, legsStr):
         ''' generated source for method scannerData '''
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def scannerDataEnd(self, reqId):
         """ generated source for method scannerDataEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def realtimeBar(self, reqId, time, open, high, low, close, volume, wap, count):
         """ generated source for method realtimeBar """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def currentTime(self, time):
         """ generated source for method currentTime """
         t = strftime('%H:%M:%S', localtime(time))
@@ -523,52 +523,52 @@ class IbWrapper(EWrapper):
         log.logContent = (u'IB接口连接成功，当前服务器时间%s' %t)
         self.gateway.onLog(log) 
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def fundamentalData(self, reqId, data):
         """ generated source for method fundamentalData """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def deltaNeutralValidation(self, reqId, underComp):
         """ generated source for method deltaNeutralValidation """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def tickSnapshotEnd(self, reqId):
         """ generated source for method tickSnapshotEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def marketDataType(self, reqId, marketDataType):
         """ generated source for method marketDataType """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def commissionReport(self, commissionReport):
         """ generated source for method commissionReport """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def position(self, account, contract, pos, avgCost):
         """ generated source for method position """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def positionEnd(self):
         """ generated source for method positionEnd """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def accountSummary(self, reqId, account, tag, value, currency):
         """ generated source for method accountSummary """
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def accountSummaryEnd(self, reqId):
         """ generated source for method accountSummaryEnd """   
         pass
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def error(self, id=None, errorCode=None, errorMsg=None):
         """错误回报"""
         err = VtErrorData()
@@ -577,7 +577,7 @@ class IbWrapper(EWrapper):
         err.errorMsg = errorMsg
         self.gateway.onError(err)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def error_0(self, strval=None):
         """错误回报（单一字符串）"""
         err = VtErrorData()
@@ -585,7 +585,7 @@ class IbWrapper(EWrapper):
         err.errorMsg = strval
         self.gateway.onError(err)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def error_1(self, id=None, errorCode=None, errorMsg=None):
         """错误回报（字符串和代码）"""
         err = VtErrorData()
@@ -594,7 +594,7 @@ class IbWrapper(EWrapper):
         err.errorMsg = errorMsg
         self.gateway.onError(err)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connectionClosed(self):
         """连接断开"""       
         self.connectionStatus = False
