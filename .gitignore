@@ -50,5 +50,17 @@ Release/
 =======
 vn.ctp/build/*
 vn.lts/build/*
+vn.trader/catAlgo/ctaGridTrade.py
+vn.trader/catAlgo/ctaLineBar.py
+vn.trader/catAlgo/ctaPeriod.py
+vn.trader/catAlgo/ctaPolicy.py
+vn.trader/catAlgo/ctaPosition.py
+vn.trader/catAlgo/ctaRangeBar.py
+vn.trader/catAlgo/ctaRenkoBar.py
+vn.trader/ctpGateway/CTP_EBF_connection.json
+vn.trader/ctpGateway/CTP_Post_connection.json
+vn.trader/ctpGateway/CTP_Prod_connection.json
+
+
 .idea
 >>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
