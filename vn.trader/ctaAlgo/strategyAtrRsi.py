@@ -251,21 +251,29 @@ if __name__ == '__main__':
     # 设置回测用的数据起始日期
     engine.setStartDate('20120101')
     
-    # 载入历史数据到引擎中
-    engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
-    
     # 设置产品相关参数
     engine.setSlippage(0.2)     # 股指1跳
     engine.setRate(0.3/10000)   # 万0.3
-    engine.setSize(300)         # 股指合约大小    
+    engine.setSize(300)         # 股指合约大小        
     
-    # 在引擎中创建策略对象
-    engine.initStrategy(AtrRsiStrategy, {})
+    # 设置使用的历史数据库
+    engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
     
-    # 开始跑回测
-    engine.runBacktesting()
+    ## 在引擎中创建策略对象
+    #d = {'atrLength': 11}
+    #engine.initStrategy(AtrRsiStrategy, d)
     
-    # 显示回测结果
-    engine.showBacktestingResult()
+    ## 开始跑回测
+    #engine.runBacktesting()
+    
+    ## 显示回测结果
+    #engine.showBacktestingResult()
+    
+    # 跑优化
+    setting = OptimizationSetting()                 # 新建一个优化任务设置对象
+    setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
+    setting.addParameter('atrLength', 11, 12, 1)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
+    setting.addParameter('atrMa', 20, 30, 5)        # 增加第二个优化参数atrMa，起始20，结束30，步进1
+    engine.runOptimization(AtrRsiStrategy, setting) # 运行优化函数，自动输出结果
     
     

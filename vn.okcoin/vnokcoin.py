@@ -49,6 +49,32 @@ TYPE_SELL = 'sell'
 TYPE_BUY_MARKET = 'buy_market'
 TYPE_SELL_MARKET = 'sell_market'
 
+# 期货合约到期类型
+FUTURE_EXPIRY_THIS_WEEK = 'this_week'
+FUTURE_EXPIRY_NEXT_WEEK = 'next_week'
+FUTURE_EXPIRY_QUARTER = 'quarter'
+
+# 期货委托类型
+FUTURE_TYPE_LONG = 1
+FUTURE_TYPE_SHORT = 2
+FUTURE_TYPE_SELL = 3
+FUTURE_TYPE_COVER = 4
+
+# 期货是否用现价
+FUTURE_ORDER_MARKET = 1
+FUTURE_ORDER_LIMIT = 0
+
+# 期货杠杆
+FUTURE_LEVERAGE_10 = 10
+FUTURE_LEVERAGE_20 = 20
+
+# 委托状态
+ORDER_STATUS_NOTTRADED = 0
+ORDER_STATUS_PARTTRADED = 1
+ORDER_STATUS_ALLTRADED = 2
+ORDER_STATUS_CANCELLED = -1
+ORDER_STATUS_CANCELLING = 4
+
 
 ########################################################################
 class OkCoinApi(object):
@@ -64,7 +90,11 @@ class OkCoinApi(object):
         
         self.ws = None          # websocket应用对象
         self.thread = None      # 工作线程
-        
+    
+    #######################
+    ## 通用函数
+    #######################
+    
     #----------------------------------------------------------------------
     def readData(self, evt):
         """解压缩推送收到的数据"""
@@ -134,7 +164,11 @@ class OkCoinApi(object):
         
         self.thread = Thread(target=self.ws.run_forever)
         self.thread.start()
-        
+    
+    #######################
+    ## 现货相关
+    #######################        
+    
     #----------------------------------------------------------------------
     def sendMarketDataRequest(self, channel):
         """发送行情请求"""
@@ -241,33 +275,107 @@ class OkCoinApi(object):
         channel = 'ok_sub_spot%s_userinfo' %(self.currency)
         
         self.sendTradingRequest(channel, {})
+    
+    #######################
+    ## 期货相关
+    #######################       
+    
+    #----------------------------------------------------------------------
+    def subscribeFutureTicker(self, symbol, expiry):
+        """订阅期货普通报价"""
+        self.sendMarketDataRequest('ok_sub_future%s_%s_ticker_%s' %(self.currency, symbol, expiry))
+    
+    #----------------------------------------------------------------------
+    def subscribeFutureDepth(self, symbol, expiry, depth):
+        """订阅期货深度报价"""
+        self.sendMarketDataRequest('ok_sub_future%s_%s_depth_%s_%s' %(self.currency, symbol, 
+                                                                      expiry, depth))   
         
+    #----------------------------------------------------------------------
+    def subscribeFutureTradeData(self, symbol, expiry):
+        """订阅期货成交记录"""
+        self.sendMarketDataRequest('ok_sub_future%s_%s_trade_%s' %(self.currency, symbol, expiry))
+        
+    #----------------------------------------------------------------------
+    def subscribeFutureKline(self, symbol, expiry, interval):
+        """订阅期货K线"""
+        self.sendMarketDataRequest('ok_sub_future%s_%s_kline_%s_%s' %(self.currency, symbol, 
+                                                                      expiry, interval))
+        
+    #----------------------------------------------------------------------
+    def subscribeFutureIndex(self, symbol):
+        """订阅期货指数"""
+        self.sendMarketDataRequest('ok_sub_future%s_%s_index' %(self.currency, symbol))
+    
+    #----------------------------------------------------------------------
+    def futureTrade(self, symbol, expiry, type_, price, amount, order, leverage):
+        """期货委托"""
+        params = {}
+        params['symbol'] = str(symbol+self.currency)
+        params['type'] = str(type_)
+        params['price'] = str(price)
+        params['amount'] = str(amount)
+        params['contract_type'] = str(expiry)
+        params['match_price'] = str(order)
+        params['lever_rate'] = str(leverage)
+        
+        channel = 'ok_future%s_trade' %(self.currency)
+        
+        self.sendTradingRequest(channel, params)
+        
+    #----------------------------------------------------------------------
+    def futureCancelOrder(self, symbol, expiry, orderid):
+        """期货撤单"""
+        params = {}
+        params['symbol'] = str(symbol+self.currency)
+        params['order_id'] = str(orderid)
+        params['contract_type'] = str(expiry)
+        
+        channel = 'ok_future%s_cancel_order' %(self.currency)
 
-if __name__ == "__main__":
-    # 在OkCoin网站申请这两个Key，分别对应用户名和密码
-    apiKey = ''
-    secretKey = ''
+        self.sendTradingRequest(channel, params)
+        
+    #----------------------------------------------------------------------
+    def futureUserInfo(self):
+        """查询期货账户"""
+        channel = 'ok_future%s_userinfo' %(self.currency)
+        
+        self.sendTradingRequest(channel, {})
+        
+    #----------------------------------------------------------------------
+    def futureOrderInfo(self, symbol, expiry, orderid, status, page, length):
+        """查询期货委托信息"""
+        params = {}
+        params['symbol'] = str(symbol+self.currency)
+        params['order_id'] = str(orderid)
+        params['contract_type'] = expiry
+        params['status'] = status
+        params['current_page'] = page
+        params['page_length'] = length
+        
+        channel = 'ok_future%s_orderinfo'
+        
+        self.sendTradingRequest(channel, params)
+        
+    #----------------------------------------------------------------------
+    def subscribeFutureTrades(self):
+        """订阅期货成交信息"""
+        channel = 'ok_sub_future%s_trades' %(self.currency)
+        
+        self.sendTradingRequest(channel, {})
+        
+    #----------------------------------------------------------------------
+    def subscribeFutureUserInfo(self):
+        """订阅期货账户信息"""
+        channel = 'ok_sub_future%s_userinfo' %(self.currency)
+        
+        self.sendTradingRequest(channel, {})
+        
+    #----------------------------------------------------------------------
+    def subscribeFuturePositions(self):
+        """订阅期货持仓信息"""
+        channel = 'ok_sub_future%s_positions' %(self.currency)
+        
+        self.sendTradingRequest(channel, {})    
     
-    # 创建API对象
-    api = OkCoinApi()
-    
-    # 连接服务器，并等待1秒
-    api.connect(OKCOIN_CNY, apiKey, secretKey, True)
-    
-    sleep(1)
-    
-    # 测试现货行情API
-    #api.subscribeSpotTicker(SYMBOL_BTC)
-    #api.subscribeSpotTradeData(SYMBOL_BTC)
-    #api.subscribeSpotDepth(SYMBOL_BTC, DEPTH_20)
-    #api.subscribeSpotKline(SYMBOL_BTC, INTERVAL_1M)
-    
-    # 测试现货交易API
-    #api.subscribeSpotTrades()
-    #api.subscribeSpotUserInfo()
-    api.spotUserInfo()
-    #api.spotTrade(symbol, type_, price, amount)
-    #api.spotCancelOrder(symbol, orderid)
-    #api.spotOrderInfo(symbol, orderid)
-    
-    raw_input()
+
