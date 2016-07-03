@@ -6,6 +6,11 @@ EMPTY_UNICODE = u''
 EMPTY_INT = 0
 EMPTY_FLOAT = 0.0
 
+# k线颜色
+COLOR_RED = u'Red'      # 上升K线
+COLOR_BLUE = u'Blue'    # 下降K线
+COLOR_EQUAL = u'Equal'  # 平K线
+
 # 方向常量
 DIRECTION_NONE = u'无方向'
 DIRECTION_LONG = u'多'
@@ -18,8 +23,11 @@ DIRECTION_SELL = u'卖出'      # IB接口
 OFFSET_NONE = u'无开平'
 OFFSET_OPEN = u'开仓'
 OFFSET_CLOSE = u'平仓'
+OFFSET_FORCECLOSE = u'强平'
 OFFSET_CLOSETODAY = u'平今'
 OFFSET_CLOSEYESTERDAY = u'平昨'
+OFFSET_FORCECOFF = u'强减'
+OFFSET_LOCALFORCECLOSE = u'本地强平'
 OFFSET_UNKNOWN = u'未知'
 
 # 状态常量
@@ -52,6 +60,7 @@ OPTION_CALL = u'看涨期权'
 OPTION_PUT = u'看跌期权'
 
 # 交易所类型
+
 EXCHANGE_SSE = 'SSE'       # 上交所
 EXCHANGE_SZSE = 'SZSE'     # 深交所
 EXCHANGE_CFFEX = 'CFFEX'   # 中金所

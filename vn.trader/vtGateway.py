@@ -2,6 +2,8 @@
 
 import time
 
+from datetime import datetime
+
 from eventEngine import *
 
 from vtConstant import *
@@ -11,13 +13,13 @@ from vtConstant import *
 class VtGateway(object):
     """交易接口"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName):
         """Constructor"""
         self.eventEngine = eventEngine
         self.gatewayName = gatewayName
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onTick(self, tick):
         """市场行情推送"""
         # 通用事件
@@ -30,7 +32,7 @@ class VtGateway(object):
         event2.dict_['data'] = tick
         self.eventEngine.put(event2)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onTrade(self, trade):
         """成交信息推送"""
         # 通用事件
@@ -43,7 +45,7 @@ class VtGateway(object):
         event2.dict_['data'] = trade
         self.eventEngine.put(event2)        
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onOrder(self, order):
         """订单变化推送"""
         # 通用事件
@@ -56,7 +58,7 @@ class VtGateway(object):
         event2.dict_['data'] = order
         self.eventEngine.put(event2)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onPosition(self, position):
         """持仓信息推送"""
         # 通用事件
@@ -69,7 +71,7 @@ class VtGateway(object):
         event2.dict_['data'] = position
         self.eventEngine.put(event2)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onAccount(self, account):
         """账户信息推送"""
         # 通用事件
@@ -82,7 +84,7 @@ class VtGateway(object):
         event2.dict_['data'] = account
         self.eventEngine.put(event2)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onError(self, error):
         """错误信息推送"""
         # 通用事件
@@ -90,7 +92,7 @@ class VtGateway(object):
         event1.dict_['data'] = error
         self.eventEngine.put(event1)    
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onLog(self, log):
         """日志推送"""
         # 通用事件
@@ -98,7 +100,7 @@ class VtGateway(object):
         event1.dict_['data'] = log
         self.eventEngine.put(event1)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onContract(self, contract):
         """合约基础信息推送"""
         # 通用事件
@@ -106,37 +108,37 @@ class VtGateway(object):
         event1.dict_['data'] = contract
         self.eventEngine.put(event1)        
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self):
         """连接"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def close(self):
         """关闭"""
         pass
@@ -146,7 +148,7 @@ class VtGateway(object):
 class VtBaseData(object):
     """回调函数推送数据的基础类，其他数据类继承于此"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.gatewayName = EMPTY_STRING         # Gateway名称        
@@ -157,7 +159,7 @@ class VtBaseData(object):
 class VtTickData(VtBaseData):
     """Tick行情数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtTickData, self).__init__()
@@ -214,7 +216,7 @@ class VtTickData(VtBaseData):
 class VtTradeData(VtBaseData):
     """成交数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtTradeData, self).__init__()
@@ -242,7 +244,7 @@ class VtTradeData(VtBaseData):
 class VtOrderData(VtBaseData):
     """订单数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtOrderData, self).__init__()
@@ -275,7 +277,7 @@ class VtOrderData(VtBaseData):
 class VtPositionData(VtBaseData):
     """持仓数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtPositionData, self).__init__()
@@ -300,7 +302,7 @@ class VtPositionData(VtBaseData):
 class VtAccountData(VtBaseData):
     """账户数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtAccountData, self).__init__()
@@ -323,7 +325,7 @@ class VtAccountData(VtBaseData):
 class VtErrorData(VtBaseData):
     """错误数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtErrorData, self).__init__()
@@ -337,12 +339,13 @@ class VtErrorData(VtBaseData):
 class VtLogData(VtBaseData):
     """日志数据类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtLogData, self).__init__()
         
-        self.logTime = time.strftime('%X', time.localtime())    # 日志生成时间
+        #self.logTime = time.strftime('%X:%f', time.localtime())    # 日志生成时间
+        self.logTime = datetime.now().strftime('%X:%f')
         self.logContent = EMPTY_UNICODE                         # 日志信息
 
 
@@ -350,7 +353,7 @@ class VtLogData(VtBaseData):
 class VtContractData(VtBaseData):
     """合约详细信息类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(VtBaseData, self).__init__()
@@ -374,7 +377,7 @@ class VtContractData(VtBaseData):
 class VtSubscribeReq(object):
     """订阅行情时传入的对象类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.symbol = EMPTY_STRING              # 代码
@@ -392,7 +395,7 @@ class VtSubscribeReq(object):
 class VtOrderReq(object):
     """发单时传入的对象类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.symbol = EMPTY_STRING              # 代码
@@ -403,20 +406,20 @@ class VtOrderReq(object):
         self.priceType = EMPTY_STRING           # 价格类型
         self.direction = EMPTY_STRING           # 买卖
         self.offset = EMPTY_STRING              # 开平
-        
+
         # 以下为IB相关
         self.productClass = EMPTY_UNICODE       # 合约类型
         self.currency = EMPTY_STRING            # 合约货币
         self.expiry = EMPTY_STRING              # 到期日
         self.strikePrice = EMPTY_FLOAT          # 行权价
         self.optionType = EMPTY_UNICODE         # 期权类型        
-        
+
 
 ########################################################################
 class VtCancelOrderReq(object):
     """撤单时传入的对象类"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.symbol = EMPTY_STRING              # 代码

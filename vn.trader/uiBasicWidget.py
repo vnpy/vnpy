@@ -689,9 +689,12 @@ class TradingWidget(QtGui.QFrame):
         labelVolume = QtGui.QLabel(u'数量')
         labelPriceType = QtGui.QLabel(u'价格类型')
         labelExchange = QtGui.QLabel(u'交易所') 
+
         labelCurrency = QtGui.QLabel(u'货币')
         labelProductClass = QtGui.QLabel(u'产品类型')
         labelGateway = QtGui.QLabel(u'交易接口')
+
+        labelOrder = QtGui.QLabel(u'委托编号')
 
         self.lineSymbol = QtGui.QLineEdit()
         self.lineName = QtGui.QLineEdit()
@@ -704,7 +707,7 @@ class TradingWidget(QtGui.QFrame):
 
         self.spinPrice = QtGui.QDoubleSpinBox()
         self.spinPrice.setDecimals(4)
-        self.spinPrice.setMinimum(0)
+        self.spinPrice.setMinimum(-1000)    # 原来是0，为支持套利，改为-1000
         self.spinPrice.setMaximum(100000)
 
         self.spinVolume = QtGui.QSpinBox()
@@ -715,7 +718,8 @@ class TradingWidget(QtGui.QFrame):
         self.comboPriceType.addItems(self.priceTypeList)
         
         self.comboExchange = QtGui.QComboBox()
-        self.comboExchange.addItems(self.exchangeList)      
+
+        self.comboExchange.addItems(self.exchangeList)
         
         self.comboCurrency = QtGui.QComboBox()
         self.comboCurrency.addItems(self.currencyList)
@@ -726,6 +730,8 @@ class TradingWidget(QtGui.QFrame):
         self.comboGateway = QtGui.QComboBox()
         self.comboGateway.addItems(self.gatewayList)          
 
+        self.lineOrder = QtGui.QLineEdit()
+
         gridleft = QtGui.QGridLayout()
         gridleft.addWidget(labelSymbol, 0, 0)
         gridleft.addWidget(labelName, 1, 0)
@@ -735,10 +741,14 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(labelVolume, 5, 0)
         gridleft.addWidget(labelPriceType, 6, 0)
         gridleft.addWidget(labelExchange, 7, 0)
+
         gridleft.addWidget(labelCurrency, 8, 0)
         gridleft.addWidget(labelProductClass, 9, 0)   
         gridleft.addWidget(labelGateway, 10, 0)
-        
+
+        gridleft.addWidget(labelOrder, 11, 0)
+
+
         gridleft.addWidget(self.lineSymbol, 0, 1)
         gridleft.addWidget(self.lineName, 1, 1)
         gridleft.addWidget(self.comboDirection, 2, 1)
@@ -750,6 +760,9 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(self.comboCurrency, 8, 1)	
         gridleft.addWidget(self.comboProductClass, 9, 1) 
         gridleft.addWidget(self.comboGateway, 10, 1)
+
+        gridleft.addWidget(self.lineOrder, 11, 1)
+
 
         # 右边部分
         labelBid1 = QtGui.QLabel(u'买一')
@@ -832,10 +845,12 @@ class TradingWidget(QtGui.QFrame):
 
         # 发单按钮
         buttonSendOrder = QtGui.QPushButton(u'发单')
+        buttonCancel = QtGui.QPushButton(u'撤单')
         buttonCancelAll = QtGui.QPushButton(u'全撤')
         
         size = buttonSendOrder.sizeHint()
         buttonSendOrder.setMinimumHeight(size.height()*2)   # 把按钮高度设为默认两倍
+        buttonCancel.setMinimumHeight(size.height()*2)
         buttonCancelAll.setMinimumHeight(size.height()*2)
 
         # 整合布局
@@ -846,6 +861,7 @@ class TradingWidget(QtGui.QFrame):
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
         vbox.addWidget(buttonSendOrder)
+        vbox.addWidget(buttonCancel)
         vbox.addWidget(buttonCancelAll)
         vbox.addStretch()
 
@@ -853,6 +869,7 @@ class TradingWidget(QtGui.QFrame):
 
         # 关联更新
         buttonSendOrder.clicked.connect(self.sendOrder)
+        buttonCancel.clicked.connect(self.canelOrder)
         buttonCancelAll.clicked.connect(self.cancelAll)
         self.lineSymbol.returnPressed.connect(self.updateSymbol)
 
@@ -1002,8 +1019,24 @@ class TradingWidget(QtGui.QFrame):
         req.productClass = productClass
         
         self.mainEngine.sendOrder(req, gatewayName)
-            
-    #----------------------------------------------------------------------
+
+    def canelOrder(self):
+        """撤单"""
+        orderRef = str(self.lineOrder.text())
+
+        l = self.dataEngine.getAllWorkingOrders()
+        for order in l:
+            if order.orderID == orderRef:
+                req = VtCancelOrderReq()
+                req.symbol = order.symbol
+                req.exchange = order.exchange
+                req.frontID = order.frontID
+                req.sessionID = order.sessionID
+                req.orderID = order.orderID
+                self.mainEngine.cancelOrder(req, order.gatewayName)
+
+
+    # ----------------------------------------------------------------------
     def cancelAll(self):
         """一键撤销所有委托"""
         l = self.mainEngine.getAllWorkingOrders()

@@ -10,7 +10,9 @@
 
 from ctaTemplate import DataRecorder
 from ctaDemo import DoubleEmaDemo
+from strategy22_ArbitrageGrid import Strategy22
 
 STRATEGY_CLASS = {}
 STRATEGY_CLASS['DataRecorder'] = DataRecorder
 STRATEGY_CLASS['DoubleEmaDemo'] = DoubleEmaDemo
+STRATEGY_CLASS['Strategy22'] = Strategy22

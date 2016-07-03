@@ -7,7 +7,13 @@ import platform
 from vtEngine import MainEngine
 from uiMainWindow import *
 
-#----------------------------------------------------------------------
+#from simple_monitor import *
+
+from setup_logger import setup_logger
+
+setup_logger(filename='logs/vnpy_{0}.log'.format(datetime.now().strftime('%m%d_%H%M')), debug=True)
+
+# ----------------------------------------------------------------------
 def main():
     """主程序入口"""
     # 重载sys模块，设置默认字符串编码方式为utf8

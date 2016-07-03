@@ -19,13 +19,32 @@ CTAORDER_SELL = u'卖平'
 CTAORDER_SHORT = u'卖开'
 CTAORDER_COVER = u'买平'
 
+CTAORDER_OPEN_REJECT = u'开单拒绝'
+CTAORDER_OPEN_FAIL = u'开单失败'
+CTAORDER_CLOSE_FAIL = u'平单失败'
+
+
 # 本地停止单状态
 STOPORDER_WAITING = u'等待中'
 STOPORDER_CANCELLED = u'已撤销'
 STOPORDER_TRIGGERED = u'已触发'
 
+# ATR 仓位管理
+ATRRATE_STOPLOSS = 3
+ATRRATE_YOYOLOSS = 2
+ATRRATE_JUMP = 1
+
 # 本地停止单前缀
 STOPORDERPREFIX = 'CtaStopOrder.'
+
+# 各类商品所在市场
+NIGHT_MARKET_SQ1 = {'AU': 0, 'AG': 0}
+NIGHT_MARKET_SQ2 = {'CU': 0, 'PB': 0, 'AL': 0, 'ZN': 0, 'FU': 0, 'BU': 0, 'RB': 0, 'WR': 0, 'HC': 0}
+NIGHT_MARKET_SQ3 = {'RU': 0}
+NIGHT_MARKET_ZZ = {'TA': 0, 'JR': 0, 'OI': 0, 'RO': 0, 'PM': 0, 'WT': 0, 'WS': 0, 'WH': 0, 'CF': 0, 'SR': 0, 'FG': 0,
+                   'ME': 0, 'MA': 0, 'RS': 0, 'RM': 0, 'TC': 0, 'RI': 0, 'ER': 0}
+NIGHT_MARKET_DL = {'V': 0, 'L': 0, 'BB': 0, 'I': 0, 'FB': 0, 'C': 0, 'PP': 0, 'A': 0, 'B': 0, 'M': 0, 'Y': 0, 'P': 0,
+                   'JM': 0, 'J': 0}
 
 # 数据库名称
 SETTING_DB_NAME = 'VnTrader_Setting_Db'
@@ -33,9 +52,8 @@ TICK_DB_NAME = 'VnTrader_Tick_Db'
 DAILY_DB_NAME = 'VnTrader_Daily_Db'
 MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 
-
 # CTA引擎中涉及的数据类定义
-from vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
+from vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT, COLOR_EQUAL
 
 ########################################################################
 class StopOrder(object):
@@ -78,6 +96,21 @@ class CtaBarData(object):
         
         self.volume = EMPTY_INT             # 成交量
         self.openInterest = EMPTY_INT       # 持仓量
+        self.color = COLOR_EQUAL          # k 线颜色,COLOR_RED，COLOR_BLUE,COLOR_EQUAL
+
+        self.traded = False
+        self.tradeStatus = EMPTY_STRING     # 当前bar的交易情况: CTAORDER_BUY 、CTAORDER_SELL、
+                                            # CTAORDER_SHORT 、CTAORDER_COVER 、 CTAORDER_OPEN_REJECT 、
+                                            # CTAORDER_OPEN_FAIL 、CTAORDER_CLOSE_FAIL
+
+        self.seconds = EMPTY_INT            # 当前Bar的秒数（针对RenkoBar)
+        self.highSeconds = -1               # 当前Bar的上限秒数
+        self.lowSeconds = -1                # 当前bar的下限秒数
+        self.height = EMPTY_FLOAT           # 当前Bar的高度限制（针对RenkoBar和RangeBar类）
+        self.upBand = EMPTY_FLOAT           # 高位区域的基线
+        self.downBand = EMPTY_FLOAT         # 低位区域的基线
+        self.lowTime = None                 # 最后一次进入低位区域的时间
+        self.highTime = None                # 最后一次进入高位区域的时间
 
 
 ########################################################################

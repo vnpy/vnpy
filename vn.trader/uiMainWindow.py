@@ -24,7 +24,7 @@ class MainWindow(QtGui.QMainWindow):
         self.initUi()
         self.loadWindowSettings()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle('VnTrader')
@@ -32,7 +32,7 @@ class MainWindow(QtGui.QMainWindow):
         self.initMenu()
         self.initStatusBar()
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
         widgetMarketM, dockMarketM = self.createDock(MarketMonitor, u'行情', QtCore.Qt.RightDockWidgetArea)
@@ -58,6 +58,15 @@ class MainWindow(QtGui.QMainWindow):
     def initMenu(self):
         """初始化菜单"""
         # 创建操作
+        connectCtpProdAction = QtGui.QAction(u'上海中期CTP', self)
+        connectCtpProdAction.triggered.connect(self.connectCtpProd)
+
+        connectCtpPostAction = QtGui.QAction(u'中期盘后CTP', self)
+        connectCtpPostAction.triggered.connect(self.connectCtpPost)
+
+        connectCtpTestAction = QtGui.QAction(u'光大CTP', self)
+        connectCtpTestAction.triggered.connect(self.connectCtpEBF)
+
         connectCtpAction = QtGui.QAction(u'连接CTP', self)
         connectCtpAction.triggered.connect(self.connectCtp)
         
@@ -117,6 +126,9 @@ class MainWindow(QtGui.QMainWindow):
         
         # 设计为只显示存在的接口
         sysMenu = menubar.addMenu(u'系统')
+        sysMenu.addAction(connectCtpProdAction)
+        sysMenu.addAction(connectCtpPostAction)
+        sysMenu.addAction(connectCtpTestAction)
         if 'CTP' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectCtpAction)
         if 'LTS' in self.mainEngine.gatewayDict:
@@ -158,7 +170,7 @@ class MainWindow(QtGui.QMainWindow):
         helpMenu.addAction(aboutAction)  
         helpMenu.addAction(testAction)
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initStatusBar(self):
         """初始化状态栏"""
         self.statusLabel = QtGui.QLabel()
@@ -171,7 +183,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sbTrigger = 10     # 10秒刷新一次
         self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateStatusBar(self, event):
         """在状态栏更新CPU和内存信息"""
         self.sbCount += 1
@@ -180,19 +192,36 @@ class MainWindow(QtGui.QMainWindow):
             self.sbCount = 0
             self.statusLabel.setText(self.getCpuMemory())
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def getCpuMemory(self):
         """获取CPU和内存状态信息"""
         cpuPercent = psutil.cpu_percent()
         memoryPercent = psutil.virtual_memory().percent
         return u'CPU使用率：%d%%   内存使用率：%d%%' % (cpuPercent, memoryPercent)        
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    def connectCtpProd(self):
+        """连接生产环境CTP接口"""
+        self.mainEngine.connect('CTP_Prod')
+
+    # ----------------------------------------------------------------------
+    def connectCtpPost(self):
+        """连接盘后CTP接口"""
+        self.mainEngine.connect('CTP_Post')
+
+    def connectCtpEBF(self):
+        """连接光大期货CTP接口"""
+        self.mainEngine.connect('CTP_EBF')
+
+    def connectCtpTest(self):
+        """连接测试环境CTP接口"""
+        self.mainEngine.connect('CTP_Test')
+
     def connectCtp(self):
         """连接CTP接口"""
         self.mainEngine.connect('CTP')
-        
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')    
@@ -227,7 +256,8 @@ class MainWindow(QtGui.QMainWindow):
         """连接Wind接口"""
         self.mainEngine.connect('Wind')
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+
     def connectIb(self):
         """连接Ib"""
         self.mainEngine.connect('IB')
@@ -252,16 +282,17 @@ class MainWindow(QtGui.QMainWindow):
             self.widgetDict['aboutW'] = AboutWidget(self)
             self.widgetDict['aboutW'].show()
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openContract(self):
         """打开合约查询"""
         try:
+
             self.widgetDict['contractM'].show()
         except KeyError:
             self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
             self.widgetDict['contractM'].show()
-            
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def openCta(self):
         """打开CTA组件"""
         try:
@@ -335,14 +366,14 @@ class MainWindow(QtGui.QMainWindow):
 class AboutWidget(QtGui.QDialog):
     """显示关于信息"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, parent=None):
         """Constructor"""
         super(AboutWidget, self).__init__(parent)
 
         self.initUi()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """"""
         self.setWindowTitle(u'关于VnTrader')
