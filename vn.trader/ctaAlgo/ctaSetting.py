@@ -9,7 +9,7 @@
 '''
 
 from ctaDemo import DoubleEmaDemo
-from tickBreaker import TickBreaker
+from strategyTickBreaker import TickBreaker
 
 STRATEGY_CLASS = {}
 STRATEGY_CLASS['TickBreaker'] = TickBreaker

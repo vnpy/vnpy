@@ -8,11 +8,11 @@ from ctaTemplate import CtaTemplate
 
 
 ########################################################################
-class TalibDoubleSmaDemo(CtaTemplate):
+class DoubleSmaDemo(CtaTemplate):
     """基于Talib模块的双指数均线策略Demo"""
 
-    className = 'TalibDoubleSmaDemo'
-    author = u'ideaplat'
+    className = 'DoubleSmaDemo'
+    author = u'融拓科技'
 
     # 策略参数
     fastPeriod = 5      # 快速均线参数
@@ -24,7 +24,7 @@ class TalibDoubleSmaDemo(CtaTemplate):
     barMinute = EMPTY_STRING
 
     closeHistory = []       # 缓存K线收盘价的数组
-    maxHistory = 50         # 最大缓存数量
+    maxHistory = 30         # 最大缓存数量
 
     fastMa0 = EMPTY_FLOAT   # 当前最新的快速均线数值
     fastMa1 = EMPTY_FLOAT   # 上一根的快速均线数值
@@ -53,8 +53,24 @@ class TalibDoubleSmaDemo(CtaTemplate):
     # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(TalibDoubleSmaDemo, self).__init__(ctaEngine, setting)
+        super(DoubleSmaDemo, self).__init__(ctaEngine, setting)
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）
 
+        # 策略变量
+        self.bar = None
+        self.barMinute = EMPTY_STRING
+
+        self.closeHistory = []
+        self.maxHistory = 50         # 最大缓存数量
+
+        self.fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
+        self.fastMa1 = EMPTY_FLOAT   # 上一根的快速EMA
+
+        self.slowMa0 = EMPTY_FLOAT
+        self.slowMa1 = EMPTY_FLOAT
     # ----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""

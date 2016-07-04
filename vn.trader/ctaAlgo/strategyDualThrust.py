@@ -20,10 +20,10 @@ from ctaTemplate import CtaTemplate
 import pandas as pd
 
 ########################################################################
-class DualThrustStrategy(CtaTemplate):
+class DualThrust(CtaTemplate):
     """Dual Thrust策略Demo"""
     className = 'DualThrust'
-    author = 'Yang Huabiao'
+    author = u'融拓科技'
 
     # 策略参数
     k_long = 0.1        # 多单k值参数
@@ -36,10 +36,10 @@ class DualThrustStrategy(CtaTemplate):
 
     closeHistory = []       # 缓存K线收盘价的数组
     maxHistory = 50         # 最大缓存数量
-    
+
     hh = EMPTY_FLOAT   # N日High的最高价
     lc = EMPTY_FLOAT   # N日Close的最低价
-    
+
     hc = EMPTY_FLOAT   # N日Close的最高价
     ll = EMPTY_FLOAT    # N日Low的最低价
 
@@ -71,13 +71,31 @@ class DualThrustStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(DualThrustStrategy, self).__init__(ctaEngine, setting)
-
+        super(DualThrust, self).__init__(ctaEngine, setting)
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
         # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
         # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
         # 策略时方便（更多是个编程习惯的选择）
 
+        # 策略变量
+        self.bar = None
+        self.barMinute = EMPTY_STRING
+
+        self.closeHistory = []       # 缓存K线收盘价的数组
+        self.maxHistory = 50         # 最大缓存数量
+
+        self.hh = EMPTY_FLOAT   # N日High的最高价
+        self.lc = EMPTY_FLOAT   # N日Close的最低价
+
+        self.hc = EMPTY_FLOAT   # N日Close的最高价
+        self.ll = EMPTY_FLOAT    # N日Low的最低价
+
+        self.range = EMPTY_FLOAT     # N周期内的价格振幅
+
+        self.date = EMPTY_STRING     # 今日日期，用于判断是否需要重新计算range
+        self.open = EMPTY_FLOAT      # 今日开盘价
+        self.upperPrice = EMPTY_FLOAT      # 今日多单入场价
+        self.lowerPrice = EMPTY_FLOAT      # 今日空单入场价
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -103,8 +121,9 @@ class DualThrustStrategy(CtaTemplate):
 
         # 首先确定range，新交易日更新新的range
         if tick.date != self.date:
+            print tick.date, tick.openPrice, tick.time
             self.date = tick.date
-            self.open = tick.lastPrice
+            self.open = tick.openPrice
             cursor = self.loadCursor(tick.date, self.initDays)
             # print tick.date, cursor
             data = pd.DataFrame(list(cursor))
@@ -254,7 +273,7 @@ if __name__ == '__main__':
 
     # 在引擎中创建策略对象
     # 有的策略需要vtSymbol去读取数据库，比如Dual Thrust, 传入setting
-    engine.initStrategy(DualThrustStrategy, {"vtSymbol": "pp_hot"})
+    engine.initStrategy(DualThrust, {"vtSymbol": "pp_hot"})
 
     # 开始跑回测
     engine.runBacktesting()
