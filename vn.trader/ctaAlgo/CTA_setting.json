@@ -1,7 +1,14 @@
 [
+
     {
-        "name": "double ema",
-        "className": "DoubleEmaDemo",
-        "vtSymbol": "IF1602"
+        "name": "S22_M09M01",
+        "className": "Strategy22",
+        "vtSymbol": "SP m1609&m1701",
+        "symbol": "SP m1609&m1701",
+        "shortSymbol":"SP m1609&m1701",
+        "D1Symbol": "m1609",
+        "D2Symbol": "m1701",
+        "minDiff":1,
+        "inputSS":2
     }
 ]

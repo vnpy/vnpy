@@ -76,14 +76,14 @@ class DoubleEmaDemo(CtaTemplate):
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
         self.writeCtaLog(u'双EMA演示策略启动')
-        self.putEvent()
+
     
     #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
         self.writeCtaLog(u'双EMA演示策略停止')
         self.putEvent()
-        
+        self.putEvent()
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""

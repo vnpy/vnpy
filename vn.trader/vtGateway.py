@@ -8,6 +8,8 @@ from eventEngine import *
 
 from vtConstant import *
 
+import logging
+
 
 ########################################################################
 class VtGateway(object):
@@ -99,6 +101,10 @@ class VtGateway(object):
         event1 = Event(type_=EVENT_LOG)
         event1.dict_['data'] = log
         self.eventEngine.put(event1)
+
+         # 写入本地log日志
+        logging.info(log.logContent)
+
         
     # ----------------------------------------------------------------------
     def onContract(self, contract):
