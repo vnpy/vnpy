@@ -11,8 +11,6 @@ from vtGateway import *
 from vtFunction import loadMongoSetting
 
 from ctaAlgo.ctaEngine import CtaEngine
-import json
-import os
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
 

@@ -430,5 +430,5 @@ if __name__ == '__main__':
     # loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
     # loadMcTickCsv('pp_hot.csv', TICK_DB_NAME, 'pp_hot')
     # loadMcCsv('pp 1min.txt', MINUTE_DB_NAME, 'pp_hot')
-    loadMcCsv(r"t:\Yang.Huabiao\CTA\Trading-System\vn.trader\ctaAlgo\data\TA_hot 20150101~20160526.txt", 'IQ_Futures_1Min_DB', 'TA_hot')
+    loadMcCsv(r"t:\Yang.Huabiao\CTA\Trading-System\vn.trader\ctaAlgo\data\ru 20160622.txt", 'MC_1Min_Db', 'ru_hot')
     # loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
