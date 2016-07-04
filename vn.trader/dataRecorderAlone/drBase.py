@@ -45,6 +45,13 @@ class DrBarData(object):
         self.volume = EMPTY_INT             # 成交量
         self.openInterest = EMPTY_INT       # 持仓量
 
+        # 常规行情
+        self.openPrice = EMPTY_FLOAT            # 今日开盘价
+        self.highPrice = EMPTY_FLOAT            # 今日最高价
+        self.lowPrice = EMPTY_FLOAT             # 今日最低价
+        self.preClosePrice = EMPTY_FLOAT
+
+
 
 ########################################################################
 class DrTickData(object):
@@ -69,7 +76,13 @@ class DrTickData(object):
         self.date = EMPTY_STRING            # 日期
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
-        
+
+        # 常规行情
+        self.openPrice = EMPTY_FLOAT            # 今日开盘价
+        self.highPrice = EMPTY_FLOAT            # 今日最高价
+        self.lowPrice = EMPTY_FLOAT             # 今日最低价
+        self.preClosePrice = EMPTY_FLOAT
+
         # 五档行情
         self.bidPrice1 = EMPTY_FLOAT
         self.bidPrice2 = EMPTY_FLOAT

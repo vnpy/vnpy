@@ -43,6 +43,9 @@ class DrEngine(object):
         # 主力合约检查
         self.contractsOK = False
 
+        # 期货账号
+        self.userID = ''
+
         # 当前日期
         self.today = todayDate()
         
@@ -128,9 +131,10 @@ class DrEngine(object):
                 # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
                 for activeSymbol, vtSymbol in d.items():
                     self.activeSymbolDict[vtSymbol] = activeSymbol
-                    
-            # 启动数据插入线程
-            self.start()
+
+            # 改为由widget中的按钮新建县成
+            # # 启动数据插入线程
+            # self.start()
 
             # 注册事件监听
             self.registerEvent()
@@ -144,9 +148,12 @@ class DrEngine(object):
 
         # 过滤非交易时段tick（粗略过滤，不具体区分不同合约的不同交易时间）
         # http://99qh.fx168.com/cj/industry/1604/1861578.shtml
-        if ('15:01:00' < tick.time < '20:59:00') or ('02:31:00' < tick.time < '08:59:00') or ('11:31:00' < tick.time < '12:59:00'):
+        if ('15:00:00' < tick.time < '21:00:00') or ('02:30:00' < tick.time < '09:00:00') or ('11:30:00' < tick.time < '13:00:00'):
             return
-
+        # 非交易时段启动
+        localtime = time.strftime('%H:%M:%S',time.localtime())
+        if ('15:05:00' < localtime < '20:55:00') or ('02:35:00' < localtime < '08:55:00') or ('11:35:00' < localtime < '12:55:00'):
+            return
         # 转化Tick格式
         drTick = DrTickData()
         d = drTick.__dict__
@@ -199,7 +206,13 @@ class DrEngine(object):
                 bar.time = drTick.time
                 bar.datetime = drTick.datetime
                 bar.volume = drTick.volume
-                bar.openInterest = drTick.openInterest        
+                bar.openInterest = drTick.openInterest
+
+                bar.openPrice = drTick.openPrice            # 今日开盘价
+                bar.highPrice = drTick.highPrice            # 今日最高价
+                bar.lowPrice = drTick.lowPrice             # 今日最低价
+                bar.preClosePrice = drTick.preClosePrice
+
             # 否则继续累加新的K线
             else:                               
                 bar.high = max(bar.high, drTick.lastPrice)
@@ -230,6 +243,7 @@ class DrEngine(object):
         """启动"""
         self.active = True
         self.thread.start()
+        self.writeDrLog(u'启动数据引擎成功')
 
     #----------------------------------------------------------------------
     def stop(self):
@@ -251,11 +265,12 @@ class DrEngine(object):
         self.mainEngine.connect('CTP')
         # 需要等待1秒，否则会登录成功之前就执行完下述判断
         time.sleep(1)
-        if self.mainEngine.gatewayDict['CTP'].mdConnected == True:
+        self.userID = self.mainEngine.gatewayDict['CTP'].mdApi.userID
+        if self.mainEngine.gatewayDict['CTP'].tdConnected == True:
             self.ctpConnected = True
-            self.writeDrLog(u'CTP登录成功')
+            self.writeDrLog(u'CTP登录成功。账号："%s"' % self.userID)
         else:
-            self.writeDrLog(u'CTP登录失败')
+            self.writeDrLog(u'CTP登录失败。账号："%s"' % self.userID)
     #----------------------------------------------------------------------
     def startAll(self):
         if self.ctpConnected is False:
@@ -264,7 +279,9 @@ class DrEngine(object):
         if self.dbClient is None:
             self.writeDrLog(u'未连接数据库, 期货Tick 订阅失败')
             return
-
+        if self.active == False:
+            self.writeDrLog(u'未启动数据引擎, 期货Tick 订阅失败')
+            return
         # 订阅合约
         self.loadSetting()
         self.writeDrLog(u'期货Tick 订阅成功')
@@ -272,6 +289,7 @@ class DrEngine(object):
     def stopAll(self):
         # 取消订阅
         self.eventEngine.unregister(EVENT_TICK, self.procecssTickEvent)
+        # 停止数据记录引擎
         self.writeDrLog(u'期货Tick 取消订阅')
 
     #----------------------------------------------------------------------

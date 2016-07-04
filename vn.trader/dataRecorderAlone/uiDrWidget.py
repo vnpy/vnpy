@@ -57,12 +57,16 @@ class DrEngineManager(QtGui.QWidget):
         initButton = QtGui.QPushButton(u'合约初始化 (判断主力合约)')
         ctpButton = QtGui.QPushButton(u'登录CTP')
         mongoButton = QtGui.QPushButton(u'连接数据库')
-        startButton = QtGui.QPushButton(u'启动订阅')
+        threadButton = QtGui.QPushButton(u'启动数据引擎')
+        startButton = QtGui.QPushButton(u'开始订阅')
         stopButton = QtGui.QPushButton(u'停止订阅')
+        idLabel = QtGui.QLabel(u'期货账号: ')
+        self.userID = QtGui.QLabel()
 
-        ctpButton.clicked.connect(self.drEngine.ctpConnect)
+        ctpButton.clicked.connect(self.ctpConnect)
         mongoButton.clicked.connect(self.drEngine.dbConnect)
         initButton.clicked.connect(self.drEngine.contractsInit)      # 初始化合约，主力合约判断
+        threadButton.clicked.connect(self.drEngine.start)
         startButton.clicked.connect(self.drEngine.startAll)
         stopButton.clicked.connect(self.drEngine.stopAll)
 
@@ -101,12 +105,15 @@ class DrEngineManager(QtGui.QWidget):
         self.logMonitor = QtGui.QTextEdit()
         self.logMonitor.setReadOnly(True)
         self.logMonitor.setMinimumHeight(300)
-        
+
         # 设置布局
         hbox1 = QtGui.QHBoxLayout()
         hbox1.addWidget(initButton)
-        hbox1.addWidget(ctpButton)
         hbox1.addWidget(mongoButton)
+        hbox1.addWidget(threadButton)
+        hbox1.addWidget(ctpButton)
+        hbox1.addWidget(idLabel)
+        hbox1.addWidget(self.userID)
         hbox1.addStretch()
 
         hbox2 = QtGui.QHBoxLayout()
@@ -128,6 +135,12 @@ class DrEngineManager(QtGui.QWidget):
         vbox.addLayout(grid)
         vbox.addWidget(self.logMonitor)
         self.setLayout(vbox)
+
+    #----------------------------------------------------------------------
+    def ctpConnect(self):
+        '''登录CTP，更新CTP账号'''
+        self.drEngine.ctpConnect()
+        self.userID.setText(self.drEngine.userID)
 
     #----------------------------------------------------------------------
     def updateLog(self, event):

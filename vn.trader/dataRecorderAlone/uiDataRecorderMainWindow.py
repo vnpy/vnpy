@@ -102,6 +102,8 @@ class MainWindow(QtGui.QMainWindow):
 
         if reply == QtGui.QMessageBox.Yes:
             self.mainEngine.exit()
+            self.drEngine.stop()
+            self.drEngine.stopAll()
             event.accept()
         else:
             event.ignore()
