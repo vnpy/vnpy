@@ -120,11 +120,16 @@ class CtaTemplate(object):
                 vtOrderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
             return vtOrderID
         else:
-            return None        
+            # 交易停止时发单返回空字符串
+            return ''        
         
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""
+        # 如果发单号为空字符串，则不进行后续操作
+        if not vtOrderID:
+            return
+        
         if STOPORDERPREFIX in vtOrderID:
             self.ctaEngine.cancelStopOrder(vtOrderID)
         else:
