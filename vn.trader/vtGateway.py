@@ -360,7 +360,7 @@ class VtContractData(VtBaseData):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        super(VtBaseData, self).__init__()
+        super(VtContractData, self).__init__()
         
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所代码
