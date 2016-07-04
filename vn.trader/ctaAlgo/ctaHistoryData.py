@@ -88,9 +88,10 @@ class HistoryDataEngine(object):
         path = 'api/master/getTradeCal.json'
 
         params = {}
+
+        params['beginDate'] = today
         params['endDate'] = today
         params['exchangeCD'] = 'XSHG'
-        params['beginDate'] = today
 
         data = self.datayesClient.downloadData(path, params)
         if data[0]['isOpen'] == 1:
