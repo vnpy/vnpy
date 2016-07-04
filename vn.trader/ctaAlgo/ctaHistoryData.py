@@ -80,7 +80,25 @@ class HistoryDataEngine(object):
             today = today - oneday*2        
         
         return today.strftime('%Y%m%d')
-    
+    #----------------------------------------------------------------------
+    def realLastTradeDate(self):
+        """获取真实最近交易日（通联交易所交易日历）"""
+        today = datetime.now().strftime('%Y%m%d')
+
+        path = 'api/master/getTradeCal.json'
+
+        params = {}
+        params['endDate'] = today
+        params['exchangeCD'] = 'XSHG'
+        params['beginDate'] = today
+
+        data = self.datayesClient.downloadData(path, params)
+        if data[0]['isOpen'] == 1:
+            return today
+        else:
+            lastDay = ''.join(data[0]['prevTradeDate'].split('-'))
+            return lastDay
+
     #----------------------------------------------------------------------
     def readFuturesProductSymbol(self):
         """查询所有期货产品代码"""
@@ -97,7 +115,7 @@ class HistoryDataEngine(object):
     def downloadFuturesSymbol(self, tradeDate=''):
         """下载所有期货的代码"""
         if not tradeDate:
-            tradeDate = self.lastTradeDate()
+            tradeDate = self.reallastTradeDate()
         
         self.dbClient[SETTING_DB_NAME]['FuturesSymbol'].ensure_index([('symbol', pymongo.ASCENDING)], 
                                                                        unique=True)
