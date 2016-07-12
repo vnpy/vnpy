@@ -89,6 +89,9 @@ class MainWindow(QtGui.QMainWindow):
         connectOandaAction = QtGui.QAction(u'连接OANDA', self)
         connectOandaAction.triggered.connect(self.connectOanda)
         
+        connectOkcoinAction = QtGui.QAction(u'连接OKCOIN', self)
+        connectOkcoinAction.triggered.connect(self.connectOkcoin)        
+        
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
         
@@ -137,6 +140,8 @@ class MainWindow(QtGui.QMainWindow):
             sysMenu.addAction(connectIbAction)    
         if 'OANDA' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectOandaAction)
+        if 'OKCOIN' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectOkcoinAction)        
         sysMenu.addSeparator()
         if 'Wind' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectWindAction)
@@ -238,6 +243,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectOanda(self):
         """连接OANDA"""
         self.mainEngine.connect('OANDA')
+        
+    #----------------------------------------------------------------------
+    def connectOkcoin(self):
+        """连接OKCOIN"""
+        self.mainEngine.connect('OKCOIN')    
         
     #----------------------------------------------------------------------
     def test(self):
