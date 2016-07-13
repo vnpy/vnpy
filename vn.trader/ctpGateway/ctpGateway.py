@@ -17,6 +17,8 @@ from vnctptd import TdApi
 from ctpDataType import *
 from vtGateway import *
 
+import logging
+
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -538,6 +540,9 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
+
+        logging.info(u'onRspOrderInsert')
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']

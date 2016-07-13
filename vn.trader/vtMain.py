@@ -11,7 +11,7 @@ from uiMainWindow import *
 
 from setup_logger import setup_logger
 
-setup_logger(filename='logs/vnpy_{0}.log'.format(datetime.now().strftime('%m%d_%H%M')), debug=True)
+setup_logger(filename='logs/vnpy_{0}.log'.format(datetime.now().strftime('%m%d_%H%M')), debug=False)
 
 # ----------------------------------------------------------------------
 def main():
