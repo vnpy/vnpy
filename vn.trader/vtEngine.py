@@ -14,6 +14,7 @@ from ctaAlgo.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
 
+import logging
 
 ########################################################################
 class MainEngine(object):
@@ -62,7 +63,8 @@ class MainEngine(object):
             self.gatewayDict['CTP_EBF'].setQryEnabled(True)
         except Exception, e:
             print e
-        
+
+        """
         try:
             from ltsGateway.ltsGateway import LtsGateway
             self.addGateway(LtsGateway, 'LTS')
@@ -123,7 +125,7 @@ class MainEngine(object):
             self.gatewayDict['OANDA'].setQryEnabled(True)
         except Exception, e:
             print e
-
+        """
     # ----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
         """创建接口"""
@@ -207,8 +209,11 @@ class MainEngine(object):
         log.logContent = content
         event = Event(type_=EVENT_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)        
-    
+        self.eventEngine.put(event)
+
+        # 写入本地log日志
+        logging.info(content)
+
     # ----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""

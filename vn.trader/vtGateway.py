@@ -92,7 +92,11 @@ class VtGateway(object):
         # 通用事件
         event1 = Event(type_=EVENT_ERROR)
         event1.dict_['data'] = error
-        self.eventEngine.put(event1)    
+        self.eventEngine.put(event1)
+
+        logMsg = u'{0}:[{1}]:{2}'.format(error.gatewayName, error.errorID,error.errorMsg )
+        # 写入本地log日志
+        logging.info(logMsg)
         
     # ----------------------------------------------------------------------
     def onLog(self, log):
@@ -102,7 +106,7 @@ class VtGateway(object):
         event1.dict_['data'] = log
         self.eventEngine.put(event1)
 
-         # 写入本地log日志
+        # 写入本地log日志
         logging.info(log.logContent)
 
         
