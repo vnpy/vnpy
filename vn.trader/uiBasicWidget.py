@@ -42,7 +42,7 @@ class BasicCell(QtGui.QTableWidgetItem):
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
-        if text == '0' or text == '0.0':
+        if text == '0' or text == '0.0' or type(text) == type(None):
             self.setText('')
         else:
             self.setText(text)
@@ -517,10 +517,10 @@ class OrderMonitor(BasicMonitor):
         d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
         d['offset'] = {'chinese':u'开平', 'cellType':BasicCell}
         d['price'] = {'chinese':u'价格', 'cellType':BasicCell}
-        d['totalVolume'] = {'chinese':u'委托数量', 'cellType':BasicCell}
-        d['tradedVolume'] = {'chinese':u'成交数量', 'cellType':BasicCell}
         d['status'] = {'chinese':u'状态', 'cellType':BasicCell}
         d['orderTime'] = {'chinese':u'委托时间', 'cellType':BasicCell}
+        d['totalVolume'] = {'chinese':u'委托数量', 'cellType':BasicCell}
+        d['tradedVolume'] = {'chinese':u'成交数量', 'cellType':BasicCell}
         d['cancelTime'] = {'chinese':u'撤销时间', 'cellType':BasicCell}
         d['frontID'] = {'chinese':u'前置编号', 'cellType':BasicCell}
         d['sessionID'] = {'chinese':u'会话编号', 'cellType':BasicCell}
@@ -694,7 +694,7 @@ class TradingWidget(QtGui.QFrame):
         labelProductClass = QtGui.QLabel(u'产品类型')
         labelGateway = QtGui.QLabel(u'交易接口')
 
-        labelOrder = QtGui.QLabel(u'委托编号')
+        #labelOrder = QtGui.QLabel(u'委托编号')
 
         self.lineSymbol = QtGui.QLineEdit()
         self.lineName = QtGui.QLineEdit()
@@ -730,7 +730,7 @@ class TradingWidget(QtGui.QFrame):
         self.comboGateway = QtGui.QComboBox()
         self.comboGateway.addItems(self.gatewayList)          
 
-        self.lineOrder = QtGui.QLineEdit()
+        #self.lineOrder = QtGui.QLineEdit()
 
         gridleft = QtGui.QGridLayout()
         gridleft.addWidget(labelSymbol, 0, 0)
@@ -746,7 +746,7 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(labelProductClass, 9, 0)   
         gridleft.addWidget(labelGateway, 10, 0)
 
-        gridleft.addWidget(labelOrder, 11, 0)
+        #gridleft.addWidget(labelOrder, 11, 0)
 
 
         gridleft.addWidget(self.lineSymbol, 0, 1)
@@ -761,7 +761,7 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(self.comboProductClass, 9, 1) 
         gridleft.addWidget(self.comboGateway, 10, 1)
 
-        gridleft.addWidget(self.lineOrder, 11, 1)
+        #gridleft.addWidget(self.lineOrder, 11, 1)
 
 
         # 右边部分
@@ -845,12 +845,12 @@ class TradingWidget(QtGui.QFrame):
 
         # 发单按钮
         buttonSendOrder = QtGui.QPushButton(u'发单')
-        buttonCancel = QtGui.QPushButton(u'撤单')
+        #buttonCancel = QtGui.QPushButton(u'撤单')
         buttonCancelAll = QtGui.QPushButton(u'全撤')
         
         size = buttonSendOrder.sizeHint()
         buttonSendOrder.setMinimumHeight(size.height()*2)   # 把按钮高度设为默认两倍
-        buttonCancel.setMinimumHeight(size.height()*2)
+        #buttonCancel.setMinimumHeight(size.height()*2)
         buttonCancelAll.setMinimumHeight(size.height()*2)
 
         # 整合布局
@@ -861,7 +861,7 @@ class TradingWidget(QtGui.QFrame):
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(hbox)
         vbox.addWidget(buttonSendOrder)
-        vbox.addWidget(buttonCancel)
+        #vbox.addWidget(buttonCancel)
         vbox.addWidget(buttonCancelAll)
         vbox.addStretch()
 
@@ -869,7 +869,7 @@ class TradingWidget(QtGui.QFrame):
 
         # 关联更新
         buttonSendOrder.clicked.connect(self.sendOrder)
-        buttonCancel.clicked.connect(self.canelOrder)
+        #buttonCancel.clicked.connect(self.canelOrder)
         buttonCancelAll.clicked.connect(self.cancelAll)
         self.lineSymbol.returnPressed.connect(self.updateSymbol)
 
@@ -1024,7 +1024,7 @@ class TradingWidget(QtGui.QFrame):
         """撤单"""
         orderRef = str(self.lineOrder.text())
 
-        l = self.dataEngine.getAllWorkingOrders()
+        l = self.mainEngine.getAllWorkingOrders()
         for order in l:
             if order.orderID == orderRef:
                 req = VtCancelOrderReq()
