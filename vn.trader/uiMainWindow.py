@@ -23,6 +23,8 @@ class MainWindow(QtGui.QMainWindow):
         
         self.initUi()
         self.loadWindowSettings()
+
+        self.connectGatewayName = EMPTY_STRING
         
     # ----------------------------------------------------------------------
     def initUi(self):
@@ -70,32 +72,32 @@ class MainWindow(QtGui.QMainWindow):
         connectCtpAction = QtGui.QAction(u'连接CTP', self)
         connectCtpAction.triggered.connect(self.connectCtp)
         
-        connectLtsAction = QtGui.QAction(u'连接LTS', self)
-        connectLtsAction.triggered.connect(self.connectLts)
+        #connectLtsAction = QtGui.QAction(u'连接LTS', self)
+        #connectLtsAction.triggered.connect(self.connectLts)
         
-        connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
-        connectKsotpAction.triggered.connect(self.connectKsotp)
+        #connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
+        #connectKsotpAction.triggered.connect(self.connectKsotp)
         
-        connectFemasAction = QtGui.QAction(u'连接飞马', self)
-        connectFemasAction.triggered.connect(self.connectFemas)  
+        #connectFemasAction = QtGui.QAction(u'连接飞马', self)
+        #connectFemasAction.triggered.connect(self.connectFemas)
         
-        connectXspeedAction = QtGui.QAction(u'连接飞创', self)
-        connectXspeedAction.triggered.connect(self.connectXspeed)          
+        #connectXspeedAction = QtGui.QAction(u'连接飞创', self)
+        #connectXspeedAction.triggered.connect(self.connectXspeed)
         
-        connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
-        connectKsgoldAction.triggered.connect(self.connectKsgold)  
+        #connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
+        #connectKsgoldAction.triggered.connect(self.connectKsgold)
         
-        connectSgitAction = QtGui.QAction(u'连接飞鼠', self)
-        connectSgitAction.triggered.connect(self.connectSgit)         
+        #connectSgitAction = QtGui.QAction(u'连接飞鼠', self)
+        #connectSgitAction.triggered.connect(self.connectSgit)
         
-        connectWindAction = QtGui.QAction(u'连接Wind', self)
-        connectWindAction.triggered.connect(self.connectWind)
+        #connectWindAction = QtGui.QAction(u'连接Wind', self)
+        #connectWindAction.triggered.connect(self.connectWind)
         
-        connectIbAction = QtGui.QAction(u'连接IB', self)
-        connectIbAction.triggered.connect(self.connectIb) 
+        #connectIbAction = QtGui.QAction(u'连接IB', self)
+        #connectIbAction.triggered.connect(self.connectIb)
         
-        connectOandaAction = QtGui.QAction(u'连接OANDA', self)
-        connectOandaAction.triggered.connect(self.connectOanda)
+        #connectOandaAction = QtGui.QAction(u'连接OANDA', self)
+        #connectOandaAction.triggered.connect(self.connectOanda)
         
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
@@ -131,26 +133,26 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpTestAction)
         if 'CTP' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectCtpAction)
-        if 'LTS' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectLtsAction)
-        if 'FEMAS' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectFemasAction)
-        if 'XSPEED' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectXspeedAction)
-        if 'KSOTP' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectKsotpAction)
-        if 'KSGOLD' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectKsgoldAction)
-        if 'SGIT' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectSgitAction)
+        #if 'LTS' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectLtsAction)
+        #if 'FEMAS' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectFemasAction)
+        #if 'XSPEED' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectXspeedAction)
+        #if 'KSOTP' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectKsotpAction)
+        #if 'KSGOLD' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectKsgoldAction)
+        #if 'SGIT' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectSgitAction)
         sysMenu.addSeparator()
-        if 'IB' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectIbAction)    
-        if 'OANDA' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectOandaAction)
-        sysMenu.addSeparator()
-        if 'Wind' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectWindAction)
+        #if 'IB' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectIbAction)
+        #if 'OANDA' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectOandaAction)
+        #sysMenu.addSeparator()
+        #if 'Wind' in self.mainEngine.gatewayDict:
+        #    sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
         sysMenu.addSeparator()
@@ -187,10 +189,18 @@ class MainWindow(QtGui.QMainWindow):
     def updateStatusBar(self, event):
         """在状态栏更新CPU和内存信息"""
         self.sbCount += 1
-        
+
+       # 更新任务栏
         if self.sbCount == self.sbTrigger:
             self.sbCount = 0
             self.statusLabel.setText(self.getCpuMemory())
+
+        # 定时重连
+        dt = datetime.now()
+        if dt.hour == 20 or dt.hour == 8:
+            if dt.minute == 40 and dt.second == 0 and self.connectGatewayName != EMPTY_STRING:
+                self.mainEngine.writeLog(u'重新连接{0}'.format(self.connectGatewayName))
+                self.mainEngine.connect(self.connectGatewayName)
     
     # ----------------------------------------------------------------------
     def getCpuMemory(self):
@@ -201,60 +211,73 @@ class MainWindow(QtGui.QMainWindow):
         
     # ----------------------------------------------------------------------
     def connectCtpProd(self):
-        """连接生产环境CTP接口"""
+        """连接上海中期生产环境CTP接口"""
+
         self.mainEngine.connect('CTP_Prod')
+        self.connectGatewayName = 'CTP_Prod'
 
     # ----------------------------------------------------------------------
     def connectCtpPost(self):
-        """连接盘后CTP接口"""
+        """连接上海中期盘后CTP接口"""
         self.mainEngine.connect('CTP_Post')
+        self.connectGatewayName = 'CTP_Post'
 
     def connectCtpEBF(self):
         """连接光大期货CTP接口"""
         self.mainEngine.connect('CTP_EBF')
+        self.connectGatewayName = 'CTP_EBF'
 
     def connectCtpTest(self):
-        """连接测试环境CTP接口"""
+        """连接SNOW测试环境CTP接口"""
         self.mainEngine.connect('CTP_Test')
+        self.connectGatewayName = 'CTP_Test'
 
     def connectCtp(self):
         """连接CTP接口"""
         self.mainEngine.connect('CTP')
+        self.connectGatewayName = 'CTP'
 
     # ----------------------------------------------------------------------
     def connectLts(self):
         """连接LTS接口"""
-        self.mainEngine.connect('LTS')    
+        self.mainEngine.connect('LTS')
+        self.connectGatewayName = 'LTS'
         
     #----------------------------------------------------------------------
     def connectKsotp(self):
         """连接金仕达期权接口"""
-        self.mainEngine.connect('KSOTP')        
+        self.mainEngine.connect('KSOTP')
+        self.connectGatewayName = 'KSOTP'
         
     #----------------------------------------------------------------------
     def connectFemas(self):
         """连接飞马接口"""
-        self.mainEngine.connect('FEMAS')        
+        self.mainEngine.connect('FEMAS')
+        self.connectGatewayName = 'FEMAS'
     
     #----------------------------------------------------------------------
     def connectXspeed(self):
         """连接飞马接口"""
-        self.mainEngine.connect('XSPEED')             
+        self.mainEngine.connect('XSPEED')
+        self.connectGatewayName = 'XSPEED'
     
     #----------------------------------------------------------------------
     def connectKsgold(self):
         """连接金仕达黄金接口"""
-        self.mainEngine.connect('KSGOLD')            
+        self.mainEngine.connect('KSGOLD')
+        self.connectGatewayName = 'KSGOLD'
         
     #----------------------------------------------------------------------
     def connectSgit(self):
         """连接飞鼠接口"""
-        self.mainEngine.connect('SGIT')     
+        self.mainEngine.connect('SGIT')
+        self.connectGatewayName = 'SGIT'
     
     #----------------------------------------------------------------------
     def connectWind(self):
         """连接Wind接口"""
         self.mainEngine.connect('Wind')
+        self.connectGatewayName = 'Wind'
     
     # ----------------------------------------------------------------------
 
