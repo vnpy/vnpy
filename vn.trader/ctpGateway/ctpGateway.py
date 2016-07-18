@@ -1032,6 +1032,31 @@ class CtpTdApi(TdApi):
         pass
     
     #----------------------------------------------------------------------
+    def onRtnCFMMCTradingAccountToken(self, data):
+        """"""
+        pass        
+
+    #----------------------------------------------------------------------
+    def onRtnLock(self, data):
+        """"""
+        pass        
+
+    #----------------------------------------------------------------------
+    def onErrRtnLockInsert(self, data, error):
+        """"""
+        pass        
+
+    #----------------------------------------------------------------------
+    def onRtnCombAction(self, data):
+        """"""
+        pass        
+
+    #----------------------------------------------------------------------
+    def onErrRtnCombActionInsert(self, data, error):  
+        """"""
+        pass        
+    
+    #----------------------------------------------------------------------
     def onRspQryContractBank(self, data, error, n, last):
         """"""
         pass

@@ -4,6 +4,7 @@
 本文件中包含的是CTA模块的回测引擎，回测引擎的API和CTA引擎一致，
 可以使用和实盘相同的代码进行回测。
 '''
+from __future__ import division
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -504,6 +505,11 @@ class BacktestingEngine(object):
         capitalList = []        # 盈亏汇总的时间序列
         drawdownList = []       # 回撤的时间序列
         
+        winningResult = 0       # 盈利次数
+        losingResult = 0        # 亏损次数
+        totalWinning = 0        # 总盈利金额
+        totalLosing = 0         # 总亏损金额
+        
         for time, result in resultDict.items():
             capital += result.pnl
             maxCapital = max(capital, maxCapital)
@@ -519,6 +525,19 @@ class BacktestingEngine(object):
             totalCommission += result.commission
             totalSlippage += result.slippage
             
+            if result.pnl >= 0:
+                winningResult += 1
+                totalWinning += result.pnl
+            else:
+                losingResult += 1
+                totalLosing += result.pnl
+                
+        # 计算盈亏相关数据
+        winningRate = winningResult/totalResult*100     # 胜率
+        averageWinning = totalWinning/winningResult     # 平均每笔盈利
+        averageLosing = totalLosing/losingResult        # 平均每笔亏损
+        profitLossRatio = -averageWinning/averageLosing # 盈亏比
+        
         # 返回回测结果
         d = {}
         d['capital'] = capital
@@ -531,7 +550,12 @@ class BacktestingEngine(object):
         d['timeList'] = timeList
         d['pnlList'] = pnlList
         d['capitalList'] = capitalList
-        d['drawdownList'] = drawdownList    
+        d['drawdownList'] = drawdownList   
+        d['winningRate'] = winningRate
+        d['averageWinning'] = averageWinning
+        d['averageLosing'] = averageLosing
+        d['profitLossRatio'] = profitLossRatio
+        
         return d
         
     #----------------------------------------------------------------------
@@ -551,6 +575,11 @@ class BacktestingEngine(object):
         self.output(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
         self.output(u'平均每笔滑点：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
+        
+        self.output(u'胜率\t\t%s%%' %formatNumber(d['winningRate']))
+        self.output(u'平均每笔盈利\t%s' %formatNumber(d['averageWinning']))
+        self.output(u'平均每笔亏损\t%s' %formatNumber(d['averageLosing']))
+        self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
             
         # 绘图
         import matplotlib.pyplot as plt
@@ -651,11 +680,11 @@ class TradingResult(object):
         self.exit = exit        # 平仓价格
         self.volume = volume    # 交易数量（+/-代表方向）
         
-        self.turnover = (self.entry+self.exit)*size         # 成交金额
-        self.commission = self.turnover*rate                # 手续费成本
-        self.slippage = slippage*2*size                     # 滑点成本
+        self.turnover = (self.entry+self.exit)*size*abs(volume)     # 成交金额
+        self.commission = self.turnover*rate                        # 手续费成本
+        self.slippage = slippage*2*size*abs(volume)                 # 滑点成本
         self.pnl = ((self.exit - self.entry) * volume * size 
-                    - self.commission - self.slippage)      # 净盈亏
+                    - self.commission - self.slippage)              # 净盈亏
 
 
 ########################################################################
