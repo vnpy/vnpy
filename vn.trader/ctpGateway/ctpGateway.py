@@ -56,6 +56,14 @@ posiDirectionMap[DIRECTION_LONG] = defineDict["THOST_FTDC_PD_Long"]
 posiDirectionMap[DIRECTION_SHORT] = defineDict["THOST_FTDC_PD_Short"]
 posiDirectionMapReverse = {v:k for k,v in posiDirectionMap.items()}
 
+# 产品类型映射
+productClassMap = {}
+productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
+productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
+productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
+productClassMapReverse = {v:k for k,v in productClassMap.items()}
+
+
 
 ########################################################################
 class CtpGateway(VtGateway):
@@ -443,36 +451,36 @@ class CtpTdApi(TdApi):
     def onFrontConnected(self):
         """服务器连接"""
         self.connectionStatus = True
-        
+    
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接成功'
         self.gateway.onLog(log)
-        
-        self.login()
     
+        self.login()
+        
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, n):
         """服务器断开"""
         self.connectionStatus = False
         self.loginStatus = False
         self.gateway.tdConnected = False
-        
+    
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接断开'
-        self.gateway.onLog(log)      
-    
+        self.gateway.onLog(log)   
+        
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspAuthenticate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
@@ -502,7 +510,7 @@ class CtpTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -523,17 +531,17 @@ class CtpTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspTradingAccountPasswordUpdate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
@@ -542,17 +550,17 @@ class CtpTdApi(TdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
         self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onRspParkedOrderInsert(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
@@ -561,12 +569,12 @@ class CtpTdApi(TdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
         self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onRspQueryMaxOrderVolume(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
@@ -574,7 +582,7 @@ class CtpTdApi(TdApi):
         log.gatewayName = self.gatewayName
         log.logContent = u'结算信息确认完成'
         self.gateway.onLog(log)
-        
+    
         # 查询合约代码
         self.reqID += 1
         self.reqQryInstrument({}, self.reqID)
@@ -583,47 +591,57 @@ class CtpTdApi(TdApi):
     def onRspRemoveParkedOrder(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspExecOrderInsert(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspExecOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspForQuoteInsert(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQuoteInsert(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQuoteAction(self, data, error, n, last):
         """"""
         pass
-    
+        
+    #----------------------------------------------------------------------
+    def onRspLockInsert(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspCombActionInsert(self, data, error, n, last):
+        """"""
+        pass
+        
     #----------------------------------------------------------------------
     def onRspQryOrder(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryTrade(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
@@ -644,17 +662,17 @@ class CtpTdApi(TdApi):
         else:
             pos = posBuffer.updateBuffer(data, size)
         self.gateway.onPosition(pos)
-    
+        
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
         account = VtAccountData()
         account.gatewayName = self.gatewayName
-        
+    
         # 账户代码
         account.accountID = data['AccountID']
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
-        
+    
         # 数值相关
         account.preBalance = data['PreBalance']
         account.available = data['Available']
@@ -662,46 +680,46 @@ class CtpTdApi(TdApi):
         account.margin = data['CurrMargin']
         account.closeProfit = data['CloseProfit']
         account.positionProfit = data['PositionProfit']
-        
+    
         # 这里的balance和快期中的账户不确定是否一样，需要测试
         account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
                            data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
                            data['CloseProfit'] + data['PositionProfit'] + data['CashIn'] -
                            data['Commission'])
-        
+    
         # 推送
         self.gateway.onAccount(account)
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
-        """投资者查询回报"""
+        """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryTradingCode(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInstrumentMarginRate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInstrumentCommissionRate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryExchange(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryProduct(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
@@ -712,147 +730,179 @@ class CtpTdApi(TdApi):
         contract.exchange = exchangeMapReverse[data['ExchangeID']]
         contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
         contract.name = data['InstrumentName'].decode('GBK')
-        
+
         # 合约数值
         contract.size = data['VolumeMultiple']
         contract.priceTick = data['PriceTick']
         contract.strikePrice = data['StrikePrice']
         contract.underlyingSymbol = data['UnderlyingInstrID']
-        
-        # 合约类型
-        if data['ProductClass'] == '1':
-            contract.productClass = PRODUCT_FUTURES
-        elif data['ProductClass'] == '2':
-            contract.productClass = PRODUCT_OPTION
-        elif data['ProductClass'] == '3':
-            contract.productClass = PRODUCT_COMBINATION
-        else:
-            contract.productClass = PRODUCT_UNKNOWN
-        
+
+        contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
+
         # 期权类型
         if data['OptionsType'] == '1':
             contract.optionType = OPTION_CALL
         elif data['OptionsType'] == '2':
             contract.optionType = OPTION_PUT
-            
+
         # 缓存代码和交易所的印射关系
         self.symbolExchangeDict[contract.symbol] = contract.exchange
         self.symbolSizeDict[contract.symbol] = contract.size
-        
+
         # 推送
         self.gateway.onContract(contract)
-        
+
         if last:
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'交易合约信息获取完成'
             self.gateway.onLog(log)
-    
+        
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
-        """查询结算信息回报"""
+        """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInvestorPositionDetail(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryNotice(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQrySettlementInfoConfirm(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInvestorPositionCombineDetail(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryCFMMCTradingAccountKey(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryEWarrantOffset(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryInvestorProductGroupMargin(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryExchangeMarginRate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryExchangeMarginRateAdjust(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryExchangeRate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQrySecAgentACIDMap(self, data, error, n, last):
         """"""
         pass
-    
+        
+    #----------------------------------------------------------------------
+    def onRspQryProductExchRate(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspQryProductGroup(self, data, error, n, last):
+        """"""
+        pass
+        
     #----------------------------------------------------------------------
     def onRspQryOptionInstrTradeCost(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryOptionInstrCommRate(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryExecOrder(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryForQuote(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryQuote(self, data, error, n, last):
         """"""
         pass
-    
+        
+    #----------------------------------------------------------------------
+    def onRspQryLock(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspQryLockPosition(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspQryInvestorLevel(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspQryExecFreeze(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspQryCombInstrumentGuard(self, data, error, n, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onRspQryCombAction(self, data, error, n, last):
+        """"""
+        pass
+        
     #----------------------------------------------------------------------
     def onRspQryTransferSerial(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryAccountregister(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
         """错误回报"""
@@ -861,7 +911,7 @@ class CtpTdApi(TdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
         self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onRtnOrder(self, data):
         """报单回报"""
@@ -925,7 +975,7 @@ class CtpTdApi(TdApi):
         
         # 推送
         self.gateway.onOrder(order)
-    
+        
     #----------------------------------------------------------------------
     def onRtnTrade(self, data):
         """成交回报"""
@@ -957,7 +1007,7 @@ class CtpTdApi(TdApi):
         
         # 推送
         self.gateway.onTrade(trade)
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
@@ -966,7 +1016,7 @@ class CtpTdApi(TdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
         self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
@@ -975,227 +1025,233 @@ class CtpTdApi(TdApi):
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
         self.gateway.onError(err)
-    
+        
     #----------------------------------------------------------------------
     def onRtnInstrumentStatus(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnTradingNotice(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnErrorConditionalOrder(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnExecOrder(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnExecOrderInsert(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnExecOrderAction(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnForQuoteInsert(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnQuote(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnQuoteInsert(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnQuoteAction(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnForQuoteRsp(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnCFMMCTradingAccountToken(self, data):
         """"""
-        pass        
-
+        pass
+        
     #----------------------------------------------------------------------
     def onRtnLock(self, data):
         """"""
-        pass        
-
+        pass
+        
     #----------------------------------------------------------------------
     def onErrRtnLockInsert(self, data, error):
         """"""
-        pass        
-
+        pass
+        
     #----------------------------------------------------------------------
     def onRtnCombAction(self, data):
         """"""
-        pass        
-
+        pass
+        
     #----------------------------------------------------------------------
-    def onErrRtnCombActionInsert(self, data, error):  
+    def onErrRtnCombActionInsert(self, data, error):
         """"""
-        pass        
-    
+        pass
+        
     #----------------------------------------------------------------------
     def onRspQryContractBank(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryParkedOrder(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryTradingNotice(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryBrokerTradingParams(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQryBrokerTradingAlgos(self, data, error, n, last):
         """"""
         pass
-    
+        
+    #----------------------------------------------------------------------
+    def onRspQueryCFMMCTradingAccountToken(self, data, error, n, last):
+        """"""
+        pass
+        
     #----------------------------------------------------------------------
     def onRtnFromBankToFutureByBank(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnFromFutureToBankByBank(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnRepealFromBankToFutureByBank(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnRepealFromFutureToBankByBank(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnFromBankToFutureByFuture(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnFromFutureToBankByFuture(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnRepealFromBankToFutureByFutureManual(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnRepealFromFutureToBankByFutureManual(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnQueryBankBalanceByFuture(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnBankToFutureByFuture(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnFutureToBankByFuture(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnRepealBankToFutureByFutureManual(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnRepealFutureToBankByFutureManual(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onErrRtnQueryBankBalanceByFuture(self, data, error):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnRepealFromBankToFutureByFuture(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnRepealFromFutureToBankByFuture(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspFromBankToFutureByFuture(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspFromFutureToBankByFuture(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRspQueryBankAccountMoneyByFuture(self, data, error, n, last):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnOpenAccountByBank(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnCancelAccountByBank(self, data):
         """"""
         pass
-    
+        
     #----------------------------------------------------------------------
     def onRtnChangeAccountByBank(self, data):
         """"""
         pass
-    
+        
+
     #----------------------------------------------------------------------
     def connect(self, userID, password, brokerID, address):
         """初始化连接"""
