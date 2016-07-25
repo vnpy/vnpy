@@ -73,7 +73,7 @@ class CtpGateway(VtGateway):
         
         self.mdApi = CtpMdApi(self)     # 行情API
         self.tdApi = CtpTdApi(self)     # 交易API
-        
+
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
         
@@ -94,7 +94,7 @@ class CtpGateway(VtGateway):
             log.logContent = u'读取连接配置出错，请检查'
             self.onLog(log)
             return
-        
+
         # 解析json文件
         setting = json.load(f)
         try:
@@ -108,7 +108,7 @@ class CtpGateway(VtGateway):
             log.gatewayName = self.gatewayName
             log.logContent = u'连接配置缺少字段，请检查'
             self.onLog(log)
-            return            
+            return
         
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)

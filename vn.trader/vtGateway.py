@@ -344,6 +344,8 @@ class VtErrorData(VtBaseData):
         self.errorMsg = EMPTY_UNICODE           # 错误信息
         self.additionalInfo = EMPTY_UNICODE     # 补充信息
 
+        self.errorTime = time.strftime('%X', time.localtime())    # 错误生成时间
+
 
 ########################################################################
 class VtLogData(VtBaseData):
@@ -366,7 +368,7 @@ class VtContractData(VtBaseData):
     # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        super(VtBaseData, self).__init__()
+        super(VtContractData, self).__init__()
         
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所代码

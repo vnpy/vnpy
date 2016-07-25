@@ -108,7 +108,7 @@ class CtaTemplate(object):
     def buy(self, price, volume, stop=False ,orderTime=datetime.now()):
         """买开"""
         orderID = self.sendOrder(CTAORDER_BUY, price, volume, stop)
-        if orderID:
+        if orderID !='':
             self.entrust = 1                            # 委托状态
 
             self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_LONG,
@@ -119,13 +119,14 @@ class CtaTemplate(object):
                                               }
             return orderID
         else:
-            return None
+            # 交易停止时发单返回空字符串
+            return ''
     
     # ----------------------------------------------------------------------
     def sell(self, price, volume, stop=False, orderTime=datetime.now()):
         """卖平"""
         orderID = self.sendOrder(CTAORDER_SELL, price, volume, stop)
-        if orderID:
+        if orderID !='':
             self.entrust = -1                           # 置当前策略的委托单状态
             # 记录委托单
             self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
@@ -136,13 +137,14 @@ class CtaTemplate(object):
                                               }
             return orderID
         else:
-            return None
+            # 交易停止时发单返回空字符串
+            return ''
 
     # ----------------------------------------------------------------------
     def short(self, price, volume, stop=False, orderTime=datetime.now()):
         """卖开"""
         orderID = self.sendOrder(CTAORDER_SHORT, price, volume, stop)
-        if orderID:
+        if orderID !='':
             self.entrust = -1                           # 委托状态
             self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
                                                'OFFSET': OFFSET_OPEN,
@@ -152,14 +154,15 @@ class CtaTemplate(object):
                                               }
             return orderID
         else:
-            return None
+            # 交易停止时发单返回空字符串
+            return ''
  
     # ----------------------------------------------------------------------
     def cover(self, price, volume, stop=False, orderTime=datetime.now()):
         """买平"""
         orderID = self.sendOrder(CTAORDER_COVER, price, volume, stop)
 
-        if orderID:
+        if orderID !='':
             self.entrust = -1                           # 置当前策略的委托单状态
             # 记录委托单
             self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_LONG,
@@ -170,7 +173,8 @@ class CtaTemplate(object):
                                               }
             return orderID
         else:
-            return None
+            # 交易停止时发单返回空字符串
+            return ''
 
     # ----------------------------------------------------------------------
     def sendOrder(self, orderType, price, volume, stop=False):
@@ -183,11 +187,17 @@ class CtaTemplate(object):
                 vtOrderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
             return vtOrderID
         else:
-            return None        
+            # 交易停止时发单返回空字符串
+            return ''
         
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""
+
+        # 如果发单号为空字符串，则不进行后续操作
+        if not vtOrderID or vtOrderID == '':
+            return
+
         if STOPORDERPREFIX in vtOrderID:
             self.ctaEngine.cancelStopOrder(vtOrderID)
         else:
