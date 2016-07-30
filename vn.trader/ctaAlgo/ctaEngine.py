@@ -484,8 +484,8 @@ class CtaEngine(object):
             strategy = self.strategyDict[name]
             
             if not strategy.inited:
-                strategy.inited = True
                 strategy.onInit()
+                strategy.inited = True
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:

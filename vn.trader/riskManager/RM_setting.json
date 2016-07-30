@@ -1,5 +1,6 @@
 {
     "orderFlowClear": 10, 
+    "percentLimit": 90, 
     "workingOrderLimit": 200, 
     "tradeLimit": 1000, 
     "orderSizeLimit": 100, 

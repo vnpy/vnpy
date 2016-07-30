@@ -7,6 +7,7 @@ CTA模块相关的GUI控制组件
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
+from time import sleep
 
 
 ########################################################################
@@ -212,6 +213,7 @@ class CtaEngineManager(QtGui.QWidget):
         for name in self.ctaEngine.strategyDict.keys():
             strategyManager = CtaStrategyManager(self.ctaEngine, self.eventEngine, name)
             vbox.addWidget(strategyManager)
+            sleep(0.2)
         
         vbox.addStretch()
         
@@ -259,12 +261,3 @@ class CtaEngineManager(QtGui.QWidget):
         self.eventEngine.register(EVENT_CTA_LOG, self.signal.emit)
         
         
-    
-    
-    
-    
-
-
-
-    
-    

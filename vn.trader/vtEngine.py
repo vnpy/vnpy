@@ -154,6 +154,7 @@ class MainEngine(object):
         """对特定接口发单"""
         # 如果风控检查失败则不发单
         if not self.rmEngine.checkRisk(orderReq):
+            self.writeLog(u'风控检查不通过')
             return ''    
         
         if gatewayName in self.gatewayDict:

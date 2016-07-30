@@ -532,11 +532,15 @@ class OrderMonitor(BasicMonitor):
         self.setEventType(EVENT_ORDER)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
-        
+
+        # add by Incense 20160728
+        self.setSorting(True)
+
         self.initTable()
         self.registerEvent()
         
         self.connectSignal()
+
         
     #----------------------------------------------------------------------
     def connectSignal(self):
@@ -581,9 +585,13 @@ class PositionMonitor(BasicMonitor):
         self.setEventType(EVENT_POSITION)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
-        
+
+        # add by Incense 20160728
+        self.setSorting(True)
+
         self.initTable()
         self.registerEvent()
+
         
         
 ########################################################################

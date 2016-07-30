@@ -5,6 +5,7 @@
 1. 委托流控（单位时间内最大允许发出的委托数量）
 2. 总成交限制（每日总成交数量限制）
 3. 单笔委托的委托数量控制
+4. 总仓位控制
 '''
 
 import json
@@ -38,7 +39,10 @@ class RmEngine(object):
         self.orderFlowLimit = EMPTY_INT     # 委托限制
         self.orderFlowClear = EMPTY_INT     # 计数清空时间（秒）
         self.orderFlowTimer = EMPTY_INT     # 计数清空时间计时
-    
+
+        # 仓位相关(0~100+)
+        self.percentLimit = 99              # 仓位比例限制
+        self.percent = EMPTY_FLOAT         # 当前持仓比例
         # 单笔委托相关
         self.orderSizeLimit = EMPTY_INT     # 单笔委托最大限制
     
@@ -62,6 +66,7 @@ class RmEngine(object):
             self.active = d['active']
             
             self.orderFlowLimit = d['orderFlowLimit']
+
             self.orderFlowClear = d['orderFlowClear']
             
             self.orderSizeLimit = d['orderSizeLimit']
@@ -69,7 +74,12 @@ class RmEngine(object):
             self.tradeLimit = d['tradeLimit']
             
             self.workingOrderLimit = d['workingOrderLimit']
-        
+            try:
+                if d['percentLimit']>0 and d['percentLimit']<100:
+                    self.percentLimit = d['percentLimit']
+            except KeyError:
+                self.percentLimit = 99
+
     #----------------------------------------------------------------------
     def saveSetting(self):
         """保存风控参数"""
@@ -87,7 +97,9 @@ class RmEngine(object):
             d['tradeLimit'] = self.tradeLimit
             
             d['workingOrderLimit'] = self.workingOrderLimit
-            
+
+            d['percentLimit'] = self.percentLimit
+
             # 写入json
             jsonD = json.dumps(d, indent=4)
             f.write(jsonD)
@@ -97,6 +109,8 @@ class RmEngine(object):
         """注册事件监听"""
         self.eventEngine.register(EVENT_TRADE, self.updateTrade)
         self.eventEngine.register(EVENT_TIMER, self.updateTimer)
+        self.eventEngine.register(EVENT_ACCOUNT, self.updateAccount)
+
     
     #----------------------------------------------------------------------
     def updateTrade(self, event):
@@ -113,7 +127,20 @@ class RmEngine(object):
         if self.orderFlowTimer >= self.orderFlowClear:
             self.orderFlowCount = 0
             self.orderFlowTimer = 0
-        
+    #----------------------------------------------------------------------
+    def updateAccount(self,event):
+        """更新账号资金
+        add by Incense
+        """
+        account = event.dict_['data']
+        balance = account.balance
+        available = account.available
+
+        if balance == EMPTY_FLOAT:
+            self.percent = EMPTY_FLOAT
+        else:
+            self.pecent = round((balance - available)*100/balance,2)
+
     #----------------------------------------------------------------------
     def writeRiskLog(self, content):
         """快速发出日志事件"""
@@ -162,7 +189,14 @@ class RmEngine(object):
             self.writeRiskLog(u'当前活动委托数量%s，超过限制%s'
                               %(workingOrderCount, self.workingOrderLimit))
             return False
-        
+
+
+        # 检查仓位 add by Incense 20160728
+        if orderReq.offset == OFFSET_OPEN:
+            if self.percent > self.percentLimit:
+                self.writeRiskLog(u'当前仓位:{0},超过限制:{1}，不允许开仓'.format(self.percent, self.percentLimit))
+                return False
+
         # 对于通过风控的委托，增加流控计数
         self.orderFlowCount += 1
         
@@ -179,7 +213,7 @@ class RmEngine(object):
         """清空成交数量计数"""
         self.tradeCount = 0
         self.writeRiskLog(u'清空总成交计数')
-        
+
     #----------------------------------------------------------------------
     def setOrderFlowLimit(self, n):
         """设置流控限制"""
@@ -204,7 +238,11 @@ class RmEngine(object):
     def setWorkingOrderLimit(self, n):
         """设置活动合约限制"""
         self.workingOrderLimit = n
-        
+
+    #----------------------------------------------------------------------
+    def setAccountPercentLimit(self,n):
+        """设置最大开仓比例"""
+        self.percentLimit = n
     #----------------------------------------------------------------------
     def switchEngineStatus(self):
         """开关风控引擎"""
