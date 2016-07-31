@@ -517,7 +517,7 @@ class BacktestingEngine(object):
                         closedVolume = min(exitTrade.volume, entryTrade.volume)
                         result = TradingResult(entryTrade.price, entryTrade.dt, 
                                                exitTrade.price, exitTrade.dt,
-                                               -closedVolume, self.rate, self.slippage, self.size)
+                                               closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
                         
                         # 计算未清算部分
