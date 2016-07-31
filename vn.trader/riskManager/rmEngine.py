@@ -139,7 +139,7 @@ class RmEngine(object):
         if balance == EMPTY_FLOAT:
             self.percent = EMPTY_FLOAT
         else:
-            self.pecent = round((balance - available)*100/balance,2)
+            self.percent = round((balance - available)*100/balance,2)
 
     #----------------------------------------------------------------------
     def writeRiskLog(self, content):
@@ -190,6 +190,7 @@ class RmEngine(object):
                               %(workingOrderCount, self.workingOrderLimit))
             return False
 
+        self.writeRiskLog(u'DEBUG:Offset:{0},percent:{1},Limit:{2}'.format(orderReq.offset, self.percent, self.percentLimit))
 
         # 检查仓位 add by Incense 20160728
         if orderReq.offset == OFFSET_OPEN:
