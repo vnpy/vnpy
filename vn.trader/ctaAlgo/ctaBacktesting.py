@@ -563,6 +563,11 @@ class BacktestingEngine(object):
         capitalList = []        # 盈亏汇总的时间序列
         drawdownList = []       # 回撤的时间序列
         
+        winningResult = 0       # 盈利次数
+        losingResult = 0        # 亏损次数		
+        totalWinning = 0        # 总盈利金额		
+        totalLosing = 0         # 总亏损金额        
+        
         for result in resultList:
             capital += result.pnl
             maxCapital = max(capital, maxCapital)
