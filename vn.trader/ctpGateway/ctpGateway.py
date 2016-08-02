@@ -51,6 +51,7 @@ exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
 exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
+exchangeMap[EXCHANGE_SSE] = 'SSE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
@@ -441,7 +442,9 @@ class CtpTdApi(TdApi):
         self.sessionID = EMPTY_INT          # 会话编号
         
         self.posBufferDict = {}             # 缓存持仓数据的字典
-        
+        self.symbolExchangeDict = {}        # 保存合约代码和交易所的印射关系
+        self.symbolSizeDict = {}            # 保存合约代码和合约大小的印射关系
+
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
@@ -484,7 +487,7 @@ class CtpTdApi(TdApi):
             self.frontID = str(data['FrontID'])
             self.sessionID = str(data['SessionID'])
             self.loginStatus = True
-            self.gateway.mdConnected = True
+            self.gateway.tdConnected = True
             
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -541,12 +544,49 @@ class CtpTdApi(TdApi):
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
 
-        logging.info(u'onRspOrderInsert')
+        try:
+            orderRef = data['OrderRef']
+        except KeyError:
+            orderRef = u'KEYERROR'
+
+        try:
+            # 方向
+            if data['Direction'] == '0':
+                direction = DIRECTION_LONG
+            elif data['Direction'] == '1':
+                direction = DIRECTION_SHORT
+            else:
+                direction = DIRECTION_UNKNOWN
+
+        # 开平
+            if data['CombOffsetFlag'] == '0':
+                offset = OFFSET_OPEN
+            elif data['CombOffsetFlag'] == '1':
+                offset = OFFSET_CLOSE
+            elif data['CombOffsetFlag'] == '2':
+                offset = OFFSET_FORCECLOSE
+            elif data['CombOffsetFlag'] == '3':
+                offset = OFFSET_CLOSETODAY
+            elif data['CombOffsetFlag'] == '4':
+                offset = OFFSET_CLOSEYESTERDAY
+            else:
+                offset = OFFSET_UNKNOWN
+        except KeyError:
+                direction = u'KEYERROR'
+                offset = u'KEYERROR'
+
+        try:
+            symbol = data['InstrumentID']
+        except KeyError:
+            symbol = u'KEYERROR'
+
+        logging.info(u'onRspOrderInsert,RequestID:{0},orderRef:{1},Direction:{2},OffSet:{3}'
+                     .format(n, orderRef, direction, offset))
 
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = error['ErrorMsg'].decode('gbk') + u'{0},{1},{2}'.format(orderRef,direction , offset,)
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -643,7 +683,12 @@ class CtpTdApi(TdApi):
             self.posBufferDict[positionName] = posBuffer
         
         # 更新持仓缓存，并获取VT系统中持仓对象的返回值
-        pos = posBuffer.updateBuffer(data)
+        exchange = self.symbolExchangeDict.get(data['InstrumentID'], EXCHANGE_UNKNOWN)
+        size = self.symbolSizeDict.get(data['InstrumentID'], 1)
+        if exchange == EXCHANGE_SHFE:
+            pos = posBuffer.updateShfeBuffer(data, size)
+        else:
+            pos = posBuffer.updateBuffer(data, size)
         self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
@@ -735,7 +780,11 @@ class CtpTdApi(TdApi):
             contract.optionType = OPTION_CALL
         elif data['OptionsType'] == '2':
             contract.optionType = OPTION_PUT
-        
+
+        # 缓存代码和交易所的印射关系
+        self.symbolExchangeDict[contract.symbol] = contract.exchange
+        self.symbolSizeDict[contract.symbol] = contract.size
+
         # 推送
         self.gateway.onContract(contract)
         
@@ -887,9 +936,15 @@ class CtpTdApi(TdApi):
             
         # 开平
         if data['CombOffsetFlag'] == '0':
-            order.offset = OFFSET_OPEN
+            offset = OFFSET_OPEN
         elif data['CombOffsetFlag'] == '1':
-            order.offset = OFFSET_CLOSE
+            offset = OFFSET_CLOSE
+        elif data['CombOffsetFlag'] == '2':
+            offset = OFFSET_FORCECLOSE
+        elif data['CombOffsetFlag'] == '3':
+            offset = OFFSET_CLOSETODAY
+        elif data['CombOffsetFlag'] == '4':
+            offset = OFFSET_CLOSEYESTERDAY
         else:
             order.offset = OFFSET_UNKNOWN
             
@@ -1318,15 +1373,16 @@ class PositionBuffer(object):
         self.pos = pos
         
     #----------------------------------------------------------------------
-    def updateBuffer(self, data):
-        """更新缓存，返回更新后的持仓数据"""
+    def updateShfeBuffer(self, data, size):
+        """更新上期所缓存，返回更新后的持仓数据"""
         # 昨仓和今仓的数据更新是分在两条记录里的，因此需要判断检查该条记录对应仓位
-        if data['TodayPosition']:
-            self.todayPosition = data['Position']
-            self.todayPositionCost = data['PositionCost']
-        elif data['YdPosition']:
+        # 因为今仓字段TodayPosition可能变为0（被全部平仓），因此分辨今昨仓需要用YdPosition字段
+        if data['YdPosition']:
             self.ydPosition = data['Position']
             self.ydPositionCost = data['PositionCost']
+        else:
+            self.todayPosition = data['Position']
+            self.todayPositionCost = data['PositionCost']
             
         # 持仓的昨仓和今仓相加后为总持仓
         self.pos.position = self.todayPosition + self.ydPosition
@@ -1335,12 +1391,27 @@ class PositionBuffer(object):
         # 如果手头还有持仓，则通过加权平均方式计算持仓均价
         if self.todayPosition or self.ydPosition:
             self.pos.price = ((self.todayPositionCost + self.ydPositionCost)/
-                              (self.todayPosition + self.ydPosition))
+                              ((self.todayPosition + self.ydPosition) * size))
         # 否则价格为0
         else:
             self.pos.price = 0
-            
+
         return copy(self.pos)
+
+    #----------------------------------------------------------------------
+    def updateBuffer(self, data, size):
+        """更新其他交易所的缓存，返回更新后的持仓数据"""
+        # 其他交易所并不区分今昨，因此只关心总仓位，昨仓设为0
+        self.pos.position = data['Position']
+        self.pos.ydPosition = 0
+
+        if data['Position']:
+            self.pos.price = data['PositionCost'] / (data['Position'] * size)
+        else:
+            self.pos.price = 0
+
+        return copy(self.pos)
+
 
 #----------------------------------------------------------------------
 def test():
