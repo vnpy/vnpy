@@ -789,6 +789,7 @@ class CtpTdApi(TdApi):
         self.gateway.onContract(contract)
         
         if last:
+            #print self.symbolSizeDict
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'交易合约信息获取完成'
@@ -965,6 +966,7 @@ class CtpTdApi(TdApi):
         order.totalVolume = data['VolumeTotalOriginal']
         order.tradedVolume = data['VolumeTraded']
         order.orderTime = data['InsertTime']
+        order.updateTime = data['UpdateTime']
         order.cancelTime = data['CancelTime']
         order.frontID = data['FrontID']
         order.sessionID = data['SessionID']
@@ -1405,7 +1407,7 @@ class PositionBuffer(object):
         self.pos.position = data['Position']
         self.pos.ydPosition = 0
 
-        if data['Position']:
+        if data['Position'] != 0 and size!=0:
             self.pos.price = data['PositionCost'] / (data['Position'] * size)
         else:
             self.pos.price = 0

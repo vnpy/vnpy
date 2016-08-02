@@ -276,6 +276,7 @@ class VtOrderData(VtBaseData):
         self.status = EMPTY_UNICODE             # 报单状态
         
         self.orderTime = EMPTY_STRING           # 发单时间
+        self.updateTime = EMPTY_STRING          # 最后更新时间
         self.cancelTime = EMPTY_STRING          # 撤单时间
         
         # CTP/LTS相关

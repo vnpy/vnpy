@@ -190,7 +190,7 @@ class RmEngine(object):
                               %(workingOrderCount, self.workingOrderLimit))
             return False
 
-        self.writeRiskLog(u'DEBUG:Offset:{0},percent:{1},Limit:{2}'.format(orderReq.offset, self.percent, self.percentLimit))
+        #self.writeRiskLog(u'DEBUG:Offset:{0},percent:{1},Limit:{2}'.format(orderReq.offset, self.percent, self.percentLimit))
 
         # 检查仓位 add by Incense 20160728
         if orderReq.offset == OFFSET_OPEN:

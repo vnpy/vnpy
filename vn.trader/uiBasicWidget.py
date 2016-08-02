@@ -522,6 +522,7 @@ class OrderMonitor(BasicMonitor):
         d['orderTime'] = {'chinese':u'委托时间', 'cellType':BasicCell}
         d['totalVolume'] = {'chinese':u'委托数量', 'cellType':BasicCell}
         d['tradedVolume'] = {'chinese':u'成交数量', 'cellType':BasicCell}
+        #d['updateTime'] = {'chinese':u'更新时间', 'cellType':BasicCell}
         d['cancelTime'] = {'chinese':u'撤销时间', 'cellType':BasicCell}
         d['frontID'] = {'chinese':u'前置编号', 'cellType':BasicCell}
         d['sessionID'] = {'chinese':u'会话编号', 'cellType':BasicCell}
