@@ -42,6 +42,9 @@ class BacktestingEngine(object):
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
         
+        # 引擎类型为回测
+        self.engineType = ENGINETYPE_BACKTESTING
+        
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
