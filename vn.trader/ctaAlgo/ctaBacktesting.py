@@ -4,9 +4,11 @@
 本文件中包含的是CTA模块的回测引擎，回测引擎的API和CTA引擎一致，
 可以使用和实盘相同的代码进行回测。
 '''
+from __future__ import division
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
+from itertools import product
 import pymongo
 
 from ctaBase import *
@@ -40,6 +42,9 @@ class BacktestingEngine(object):
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
         
+        # 引擎类型为回测
+        self.engineType = ENGINETYPE_BACKTESTING
+        
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
@@ -54,6 +59,9 @@ class BacktestingEngine(object):
         #self.historyData = []       # 历史数据的列表，回测用
         self.initData = []          # 初始化用的数据
         #self.backtestingData = []   # 回测用的数据
+        
+        self.dbName = ''            # 回测数据库名
+        self.symbol = ''            # 回测集合名
         
         self.dataStartDate = None       # 回测数据开始日期，datetime对象
         self.dataEndDate = None         # 回测数据结束日期，datetime对象
@@ -91,14 +99,20 @@ class BacktestingEngine(object):
     def setBacktestingMode(self, mode):
         """设置回测模式"""
         self.mode = mode
-        
+    
     #----------------------------------------------------------------------
-    def loadHistoryData(self, dbName, symbol):
+    def setDatabase(self, dbName, symbol):
+        """设置历史数据所用的数据库"""
+        self.dbName = dbName
+        self.symbol = symbol
+    
+    #----------------------------------------------------------------------
+    def loadHistoryData(self):
         """载入历史数据"""
         host, port = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
-        collection = self.dbClient[dbName][symbol]          
+        collection = self.dbClient[self.dbName][self.symbol]          
 
         self.output(u'开始载入数据')
       
@@ -134,6 +148,9 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def runBacktesting(self):
         """运行回测"""
+        # 载入历史数据
+        self.loadHistoryData()
+        
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
             dataClass = CtaBarData
@@ -279,13 +296,15 @@ class BacktestingEngine(object):
         """基于最新数据撮合限价单"""
         # 先确定会撮合成交的价格
         if self.mode == self.BAR_MODE:
-            buyCrossPrice = self.bar.low    # 若买入方向限价单价格高于该价格，则会成交
-            sellCrossPrice = self.bar.high  # 若卖出方向限价单价格低于该价格，则会成交
-            bestCrossPrice = self.bar.open  # 在当前时间点前发出的委托可能的最优成交价
+            buyCrossPrice = self.bar.low        # 若买入方向限价单价格高于该价格，则会成交
+            sellCrossPrice = self.bar.high      # 若卖出方向限价单价格低于该价格，则会成交
+            buyBestCrossPrice = self.bar.open   # 在当前时间点前发出的买入委托可能的最优成交价
+            sellBestCrossPrice = self.bar.open  # 在当前时间点前发出的卖出委托可能的最优成交价
         else:
-            buyCrossPrice = self.tick.lastPrice
-            sellCrossPrice = self.tick.lastPrice
-            bestCrossPrice = self.tick.lastPrice
+            buyCrossPrice = self.tick.askPrice1
+            sellCrossPrice = self.tick.bidPrice1
+            buyBestCrossPrice = self.tick.askPrice1
+            sellBestCrossPrice = self.tick.bidPrice1
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
@@ -312,10 +331,10 @@ class BacktestingEngine(object):
                 # 2. 假设在上一根K线结束(也是当前K线开始)的时刻，策略发出的委托为限价105
                 # 3. 则在实际中的成交价会是100而不是105，因为委托发出时市场的最优价格是100
                 if buyCross:
-                    trade.price = min(order.price, bestCrossPrice)
+                    trade.price = min(order.price, buyBestCrossPrice)
                     self.strategy.pos += order.totalVolume
                 else:
-                    trade.price = max(order.price, bestCrossPrice)
+                    trade.price = max(order.price, sellBestCrossPrice)
                     self.strategy.pos -= order.totalVolume
                 
                 trade.volume = order.totalVolume
@@ -429,22 +448,20 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出内容"""
-        print content
-        
+        print str(datetime.now()) + "\t" + content 
+    
     #----------------------------------------------------------------------
-    def showBacktestingResult(self):
+    def calculateBacktestingResult(self):
         """
-        显示回测结果
+        计算回测结果
         """
-        self.output(u'显示回测结果')
+        self.output(u'计算回测结果')
         
         # 首先基于回测后的成交记录，计算每笔交易的盈亏
-        pnlDict = OrderedDict()     # 每笔盈亏的记录 
+        resultList = []             # 交易结果列表
+        
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
-        
-        # 计算滑点，一个来回包括两次
-        totalSlippage = self.slippage * 2 
         
         for trade in self.tradeDict.values():
             # 多头交易
@@ -454,71 +471,191 @@ class BacktestingEngine(object):
                     longTrade.append(trade)
                 # 当前多头交易为平空
                 else:
-                    entryTrade = shortTrade.pop(0)
-                    # 计算比例佣金
-                    commission = (trade.price+entryTrade.price) * self.rate
-                    # 计算盈亏
-                    pnl = ((trade.price - entryTrade.price)*(-1) - totalSlippage - commission) \
-                        * trade.volume * self.size
-                    pnlDict[trade.dt] = pnl
+                    while True:
+                        entryTrade = shortTrade[0]
+                        exitTrade = trade
+                        
+                        # 清算开平仓交易
+                        closedVolume = min(exitTrade.volume, entryTrade.volume)
+                        result = TradingResult(entryTrade.price, entryTrade.dt, 
+                                               exitTrade.price, exitTrade.dt,
+                                               -closedVolume, self.rate, self.slippage, self.size)
+                        resultList.append(result)
+                        
+                        # 计算未清算部分
+                        entryTrade.volume -= closedVolume
+                        exitTrade.volume -= closedVolume
+                        
+                        # 如果开仓交易已经全部清算，则从列表中移除
+                        if not entryTrade.volume:
+                            shortTrade.pop(0)
+                        
+                        # 如果平仓交易已经全部清算，则退出循环
+                        if not exitTrade.volume:
+                            break
+                        
+                        # 如果平仓交易未全部清算，
+                        if exitTrade.volume:
+                            # 且开仓交易已经全部清算完，则平仓交易剩余的部分
+                            # 等于新的反向开仓交易，添加到队列中
+                            if not shortTrade:
+                                longTrade.append(exitTrade)
+                                break
+                            # 如果开仓交易还有剩余，则进入下一轮循环
+                            else:
+                                pass
+                        
             # 空头交易        
             else:
                 # 如果尚无多头交易
                 if not longTrade:
                     shortTrade.append(trade)
                 # 当前空头交易为平多
-                else:
-                    entryTrade = longTrade.pop(0)
-                    # 计算比例佣金
-                    commission = (trade.price+entryTrade.price) * self.rate    
-                    # 计算盈亏
-                    pnl = ((trade.price - entryTrade.price) - totalSlippage - commission) \
-                        * trade.volume * self.size
-                    pnlDict[trade.dt] = pnl
+                else:                    
+                    while True:
+                        entryTrade = longTrade[0]
+                        exitTrade = trade
+                        
+                        # 清算开平仓交易
+                        closedVolume = min(exitTrade.volume, entryTrade.volume)
+                        result = TradingResult(entryTrade.price, entryTrade.dt, 
+                                               exitTrade.price, exitTrade.dt,
+                                               closedVolume, self.rate, self.slippage, self.size)
+                        resultList.append(result)
+                        
+                        # 计算未清算部分
+                        entryTrade.volume -= closedVolume
+                        exitTrade.volume -= closedVolume
+                        
+                        # 如果开仓交易已经全部清算，则从列表中移除
+                        if not entryTrade.volume:
+                            longTrade.pop(0)
+                        
+                        # 如果平仓交易已经全部清算，则退出循环
+                        if not exitTrade.volume:
+                            break
+                        
+                        # 如果平仓交易未全部清算，
+                        if exitTrade.volume:
+                            # 且开仓交易已经全部清算完，则平仓交易剩余的部分
+                            # 等于新的反向开仓交易，添加到队列中
+                            if not longTrade:
+                                shortTrade.append(exitTrade)
+                                break
+                            # 如果开仓交易还有剩余，则进入下一轮循环
+                            else:
+                                pass                    
+                    
+        # 检查是否有交易
+        if not resultList:
+            self.output(u'无交易结果')
+            return {}
         
-        # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
-        timeList = pnlDict.keys()
-        pnlList = pnlDict.values()
+        # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等        
+        capital = 0             # 资金
+        maxCapital = 0          # 资金最高净值
+        drawdown = 0            # 回撤
         
-        capital = 0
-        maxCapital = 0
-        drawdown = 0
+        totalResult = 0         # 总成交数量
+        totalTurnover = 0       # 总成交金额（合约面值）
+        totalCommission = 0     # 总手续费
+        totalSlippage = 0       # 总滑点
         
+        timeList = []           # 时间序列
+        pnlList = []            # 每笔盈亏序列
         capitalList = []        # 盈亏汇总的时间序列
-        maxCapitalList = []     # 最高盈利的时间序列
         drawdownList = []       # 回撤的时间序列
         
-        for pnl in pnlList:
-            capital += pnl
+        winningResult = 0       # 盈利次数
+        losingResult = 0        # 亏损次数		
+        totalWinning = 0        # 总盈利金额		
+        totalLosing = 0         # 总亏损金额        
+        
+        for result in resultList:
+            capital += result.pnl
             maxCapital = max(capital, maxCapital)
             drawdown = capital - maxCapital
             
+            pnlList.append(result.pnl)
+            timeList.append(result.exitDt)      # 交易的时间戳使用平仓时间
             capitalList.append(capital)
-            maxCapitalList.append(maxCapital)
             drawdownList.append(drawdown)
             
-        # 输出
-        self.output('-' * 50)
-        self.output(u'第一笔交易时间：%s' % timeList[0])
-        self.output(u'最后一笔交易时间：%s' % timeList[-1])
-        self.output(u'总交易次数：%s' % len(pnlList))
-        self.output(u'总盈亏：%s' % capitalList[-1])
-        self.output(u'最大回撤: %s' % min(drawdownList))        
+            totalResult += 1
+            totalTurnover += result.turnover
+            totalCommission += result.commission
+            totalSlippage += result.slippage
             
+            if result.pnl >= 0:
+                winningResult += 1
+                totalWinning += result.pnl
+            else:
+                losingResult += 1
+                totalLosing += result.pnl
+                
+        # 计算盈亏相关数据
+        winningRate = winningResult/totalResult*100     # 胜率
+        averageWinning = totalWinning/winningResult     # 平均每笔盈利
+        averageLosing = totalLosing/losingResult        # 平均每笔亏损
+        profitLossRatio = -averageWinning/averageLosing # 盈亏比
+
+        # 返回回测结果
+        d = {}
+        d['capital'] = capital
+        d['maxCapital'] = maxCapital
+        d['drawdown'] = drawdown
+        d['totalResult'] = totalResult
+        d['totalTurnover'] = totalTurnover
+        d['totalCommission'] = totalCommission
+        d['totalSlippage'] = totalSlippage
+        d['timeList'] = timeList
+        d['pnlList'] = pnlList
+        d['capitalList'] = capitalList
+        d['drawdownList'] = drawdownList
+        d['winningRate'] = winningRate
+        d['averageWinning'] = averageWinning
+        d['averageLosing'] = averageLosing
+        d['profitLossRatio'] = profitLossRatio
+        
+        return d
+        
+    #----------------------------------------------------------------------
+    def showBacktestingResult(self):
+        """显示回测结果"""
+        d = self.calculateBacktestingResult()
+        
+        # 输出
+        self.output('-' * 30)
+        self.output(u'第一笔交易：\t%s' % d['timeList'][0])
+        self.output(u'最后一笔交易：\t%s' % d['timeList'][-1])
+        
+        self.output(u'总交易次数：\t%s' % formatNumber(d['totalResult']))        
+        self.output(u'总盈亏：\t%s' % formatNumber(d['capital']))
+        self.output(u'最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))                
+        
+        self.output(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
+        self.output(u'平均每笔滑点：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
+        self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
+        
+        self.output(u'胜率\t\t%s%%' %formatNumber(d['winningRate']))
+        self.output(u'平均每笔盈利\t%s' %formatNumber(d['averageWinning']))
+        self.output(u'平均每笔亏损\t%s' %formatNumber(d['averageLosing']))
+        self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
+    
         # 绘图
         import matplotlib.pyplot as plt
         
         pCapital = plt.subplot(3, 1, 1)
         pCapital.set_ylabel("capital")
-        pCapital.plot(capitalList)
+        pCapital.plot(d['capitalList'])
         
         pDD = plt.subplot(3, 1, 2)
         pDD.set_ylabel("DD")
-        pDD.bar(range(len(drawdownList)), drawdownList)         
+        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'])         
         
         pPnl = plt.subplot(3, 1, 3)
         pPnl.set_ylabel("pnl")
-        pPnl.hist(pnlList, bins=20)
+        pPnl.hist(d['pnlList'], bins=50)
         
         plt.show()
     
@@ -529,7 +666,7 @@ class BacktestingEngine(object):
 
     #----------------------------------------------------------------------
     def setSlippage(self, slippage):
-        """设置滑点"""
+        """设置滑点点数"""
         self.slippage = slippage
         
     #----------------------------------------------------------------------
@@ -542,6 +679,142 @@ class BacktestingEngine(object):
         """设置佣金比例"""
         self.rate = rate
 
+    #----------------------------------------------------------------------
+    def runOptimization(self, strategyClass, optimizationSetting):
+        """优化参数"""
+        # 获取优化设置        
+        settingList = optimizationSetting.generateSetting()
+        targetName = optimizationSetting.optimizeTarget
+        
+        # 检查参数设置问题
+        if not settingList or not targetName:
+            self.output(u'优化设置有问题，请检查')
+        
+        # 遍历优化
+        resultList = []
+        for setting in settingList:
+            self.clearBacktestingResult()
+            self.output('-' * 30)
+            self.output('setting: %s' %str(setting))
+            self.initStrategy(strategyClass, setting)
+            self.runBacktesting()
+            d = self.calculateBacktestingResult()
+            try:
+                targetValue = d[targetName]
+            except KeyError:
+                targetValue = 0
+            resultList.append(([str(setting)], targetValue))
+        
+        # 显示结果
+        resultList.sort(reverse=True, key=lambda result:result[1])
+        self.output('-' * 30)
+        self.output(u'优化结果：')
+        for result in resultList:
+            self.output(u'%s: %s' %(result[0], result[1]))
+            
+    #----------------------------------------------------------------------
+    def clearBacktestingResult(self):
+        """清空之前回测的结果"""
+        # 清空限价单相关
+        self.limitOrderCount = 0
+        self.limitOrderDict.clear()
+        self.workingLimitOrderDict.clear()        
+        
+        # 清空停止单相关
+        self.stopOrderCount = 0
+        self.stopOrderDict.clear()
+        self.workingStopOrderDict.clear()
+        
+        # 清空成交相关
+        self.tradeCount = 0
+        self.tradeDict.clear()
+        
+
+########################################################################
+class TradingResult(object):
+    """每笔交易的结果"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, entryPrice, entryDt, exitPrice, 
+                 exitDt, volume, rate, slippage, size):
+        """Constructor"""
+        self.entryPrice = entryPrice    # 开仓价格
+        self.exitPrice = exitPrice      # 平仓价格
+        
+        self.entryDt = entryDt          # 开仓时间datetime    
+        self.exitDt = exitDt            # 平仓时间
+        
+        self.volume = volume    # 交易数量（+/-代表方向）
+        
+        self.turnover = (self.entryPrice+self.exitPrice)*size*abs(volume)   # 成交金额
+        self.commission = self.turnover*rate                                # 手续费成本
+        self.slippage = slippage*2*size*abs(volume)                         # 滑点成本
+        self.pnl = ((self.exitPrice - self.entryPrice) * volume * size 
+                    - self.commission - self.slippage)                      # 净盈亏
+
+
+########################################################################
+class OptimizationSetting(object):
+    """优化设置"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.paramDict = OrderedDict()
+        
+        self.optimizeTarget = ''        # 优化目标字段
+        
+    #----------------------------------------------------------------------
+    def addParameter(self, name, start, end, step):
+        """增加优化参数"""
+        if end <= start:
+            print u'参数起始点必须小于终止点'
+            return
+        
+        if step <= 0:
+            print u'参数布进必须大于0'
+            return
+        
+        l = []
+        param = start
+        
+        while param <= end:
+            l.append(param)
+            param += step
+        
+        self.paramDict[name] = l
+        
+    #----------------------------------------------------------------------
+    def generateSetting(self):
+        """生成优化参数组合"""
+        # 参数名的列表
+        nameList = self.paramDict.keys()
+        paramList = self.paramDict.values()
+        
+        # 使用迭代工具生产参数对组合
+        productList = list(product(*paramList))
+        
+        # 把参数对组合打包到一个个字典组成的列表中
+        settingList = []
+        for p in productList:
+            d = dict(zip(nameList, p))
+            settingList.append(d)
+    
+        return settingList
+    
+    #----------------------------------------------------------------------
+    def setOptimizeTarget(self, target):
+        """设置优化目标字段"""
+        self.optimizeTarget = target
+
+
+#----------------------------------------------------------------------
+def formatNumber(n):
+    """格式化数字到字符串"""
+    n = round(n, 2)         # 保留两位小数
+    return format(n, ',')   # 加上千分符
+    
+    
 
 
 if __name__ == '__main__':
@@ -560,7 +833,7 @@ if __name__ == '__main__':
     engine.setStartDate('20110101')
     
     # 载入历史数据到引擎中
-    engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
+    engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
     
     # 设置产品相关参数
     engine.setSlippage(0.2)     # 股指1跳

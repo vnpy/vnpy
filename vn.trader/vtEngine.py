@@ -114,6 +114,13 @@ class MainEngine(object):
             self.gatewayDict['OANDA'].setQryEnabled(True)
         except Exception, e:
             print e
+        
+        try:
+            from okcoinGateway.okcoinGateway import OkcoinGateway
+            self.addGateway(OkcoinGateway, 'OKCOIN')
+            self.gatewayDict['OKCOIN'].setQryEnabled(True)
+        except Exception, e:
+            print e        
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -165,7 +172,7 @@ class MainEngine(object):
         """查询特定接口的账户"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.getAccount()
+            gateway.qryAccount()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)        
         
@@ -174,7 +181,7 @@ class MainEngine(object):
         """查询特定接口的持仓"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.getPosition()
+            gateway.qryPosition()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)        
         
@@ -187,6 +194,9 @@ class MainEngine(object):
         
         # 停止事件引擎
         self.eventEngine.stop()      
+        
+        # 停止数据记录引擎
+        self.drEngine.stop()
         
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()

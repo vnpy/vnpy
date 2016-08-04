@@ -70,6 +70,9 @@ class CtaEngine(object):
         # key为vtSymbol，value为PositionBuffer对象
         self.posBufferDict = {}
         
+        # 引擎类型为实盘
+        self.engineType = ENGINETYPE_TRADING
+        
         # 注册事件监听
         self.registerEvent()
  

@@ -72,24 +72,6 @@ class DirectionCell(QtGui.QTableWidgetItem):
 
 ########################################################################
 class NameCell(QtGui.QTableWidgetItem):
-    """用来显示合约中文名的单元格"""
-
-    #----------------------------------------------------------------------
-    def __init__(self, text=None, mainEngine=None):
-        """Constructor"""
-        super(NameCell, self).__init__()
-        self.data = None
-        if text:
-            self.setContent(text)
-    
-    #----------------------------------------------------------------------
-    def setContent(self, text):
-        """设置内容"""
-        self.setText(text)
-
-
-########################################################################
-class NameCell(QtGui.QTableWidgetItem):
     """用来显示合约中文的单元格"""
 
     #----------------------------------------------------------------------
@@ -458,7 +440,8 @@ class ErrorMonitor(BasicMonitor):
         """Constructor"""
         super(ErrorMonitor, self).__init__(mainEngine, eventEngine, parent)
         
-        d = OrderedDict()        
+        d = OrderedDict()       
+        d['errorTime']  = {'chinese':u'错误时间', 'cellType':BasicCell}
         d['errorID'] = {'chinese':u'错误代码', 'cellType':BasicCell}
         d['errorMsg'] = {'chinese':u'错误信息', 'cellType':BasicCell}
         d['additionalInfo'] = {'chinese':u'补充信息', 'cellType':BasicCell}
