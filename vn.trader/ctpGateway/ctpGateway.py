@@ -586,7 +586,8 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk') + u'{0},{1},{2}'.format(orderRef,direction , offset,)
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.additionalInfo = u'onRspOrderInsert():{0},{1},{2},{3}'.format(symbol, orderRef, direction , offset)
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -602,10 +603,16 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
+        try:
+            symbol = data['InstrumentID']
+        except KeyError:
+            symbol = u'KEYERROR'
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.additionalInfo = u'onRspOrderAction,{0}'.format(symbol)
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -903,10 +910,11 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
         """错误回报"""
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = u'onRspError' + error['ErrorMsg'].decode('gbk')
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -937,15 +945,15 @@ class CtpTdApi(TdApi):
             
         # 开平
         if data['CombOffsetFlag'] == '0':
-            offset = OFFSET_OPEN
+            order.offset = OFFSET_OPEN
         elif data['CombOffsetFlag'] == '1':
-            offset = OFFSET_CLOSE
+            order.offset = OFFSET_CLOSE
         elif data['CombOffsetFlag'] == '2':
-            offset = OFFSET_FORCECLOSE
+            order.offset = OFFSET_FORCECLOSE
         elif data['CombOffsetFlag'] == '3':
-            offset = OFFSET_CLOSETODAY
+            order.offset = OFFSET_CLOSETODAY
         elif data['CombOffsetFlag'] == '4':
-            offset = OFFSET_CLOSEYESTERDAY
+            order.offset = OFFSET_CLOSEYESTERDAY
         else:
             order.offset = OFFSET_UNKNOWN
             
@@ -1015,19 +1023,29 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
+
+        symbol = data['InstrumentID']
+        volume = data['VolumeTotalOriginal']
+        orderRef = data['OrderRef']
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.additionalInfo = u'onErrRtnOrderInsert.{0},v:{1},ref:{2}:'.format(symbol, volume,orderRef)
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
+
+        symbol = data['InstrumentID']
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.additionalInfo =u'onErrRtnOrderAction.{0}'.format(symbol)
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
