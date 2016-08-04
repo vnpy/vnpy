@@ -289,7 +289,7 @@ class CtpMdApi(MdApi):
         # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = False
-            self.gateway.tdConnected = False
+            self.gateway.mdConnected = False
             
             log = VtLogData()
             log.gatewayName = self.gatewayName
