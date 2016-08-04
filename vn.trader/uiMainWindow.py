@@ -7,6 +7,8 @@ from ctaAlgo.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
 
+import os
+
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
     """主窗口"""
@@ -41,7 +43,7 @@ class MainWindow(QtGui.QMainWindow):
         widgetLogM, dockLogM = self.createDock(LogMonitor, u'日志', QtCore.Qt.BottomDockWidgetArea)
         widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, u'错误', QtCore.Qt.BottomDockWidgetArea)
         widgetTradeM, dockTradeM = self.createDock(TradeMonitor, u'成交', QtCore.Qt.BottomDockWidgetArea)
-        widgetOrderM, dockOrderM = self.createDock(OrderMonitor, u'委托', QtCore.Qt.RightDockWidgetArea)
+        self.widgetOrderM, dockOrderM = self.createDock(OrderMonitor, u'委托', QtCore.Qt.RightDockWidgetArea)
         widgetPositionM, dockPositionM = self.createDock(PositionMonitor, u'持仓', QtCore.Qt.BottomDockWidgetArea)
         widgetAccountM, dockAccountM = self.createDock(AccountMonitor, u'资金', QtCore.Qt.BottomDockWidgetArea)
         widgetTradingW, dockTradingW = self.createDock(TradingWidget, u'交易', QtCore.Qt.LeftDockWidgetArea)
@@ -201,6 +203,14 @@ class MainWindow(QtGui.QMainWindow):
             if dt.minute == 40 and dt.second == 0 and self.connectGatewayName != EMPTY_STRING:
                 self.mainEngine.writeLog(u'重新连接{0}'.format(self.connectGatewayName))
                 self.mainEngine.connect(self.connectGatewayName)
+
+        # 收盘后保存所有委托记录
+        if dt.hour == 15 and dt.minute == 1 and self.connectGatewayName != EMPTY_STRING:
+            orderfile = os.getcwd() +'/orders/{0}.csv'.format(datetime.now().strftime('%y%m%d'))
+            if os.path.exists(orderfile):
+                return
+            else:
+                self.widgetOrderM.saveToCsv(path=orderfile)
     
     # ----------------------------------------------------------------------
     def getCpuMemory(self):

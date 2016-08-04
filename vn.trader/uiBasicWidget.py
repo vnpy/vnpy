@@ -9,6 +9,7 @@ from PyQt4 import QtGui, QtCore
 from eventEngine import *
 from vtFunction import *
 from vtGateway import *
+import os
 
 
 #----------------------------------------------------------------------
@@ -334,16 +335,21 @@ class BasicMonitor(QtGui.QTableWidget):
         self.sorting = sorting
         
     #----------------------------------------------------------------------
-    def saveToCsv(self):
+    def saveToCsv(self, path=EMPTY_STRING):
         """保存表格内容到CSV文件"""
-        # 先隐藏右键菜单
-        self.menu.close()
-        
+
         # 获取想要保存的文件名
-        path = QtGui.QFileDialog.getSaveFileName(self, '保存数据', '', 'CSV(*.csv)')
+        if not path:
+            # 先隐藏右键菜单
+            self.menu.close()
+
+            path = QtGui.QFileDialog.getSaveFileName(self, '保存数据', '', 'CSV(*.csv)')
+
+        log = VtLogData()
+        log.gatewayName = u'-'
 
         try:
-            if not path.isEmpty():
+            if not os.path.exists(path):
                 with open(unicode(path), 'wb') as f:
                     writer = csv.writer(f)
                     
@@ -361,9 +367,16 @@ class BasicMonitor(QtGui.QTableWidget):
                                     unicode(item.text()).encode('gbk'))
                             else:
                                 rowdata.append('')
-                        writer.writerow(rowdata)     
+                        writer.writerow(rowdata)
+
+                log.logContent = u'数据保存至:{0}'.format(path)
+
         except IOError:
-            pass
+            log.logContent = u'文件IO失败:{0}'.format(path)
+
+        event1 = Event(type_=EVENT_LOG)
+        event1.dict_['data'] = log
+        self.eventEngine.put(event1)
 
     #----------------------------------------------------------------------
     def initMenu(self):
