@@ -88,14 +88,18 @@ class CtaStrategyManager(QtGui.QGroupBox):
         buttonInit = QtGui.QPushButton(u'初始化')
         buttonStart = QtGui.QPushButton(u'启动')
         buttonStop = QtGui.QPushButton(u'停止')
+        buttonInitForce = QtGui.QPushButton(u'强制初始化')
         buttonInit.clicked.connect(self.init)
         buttonStart.clicked.connect(self.start)
         buttonStop.clicked.connect(self.stop)
+        buttonInitForce.clicked.connect(self.initForce)
         
         hbox1 = QtGui.QHBoxLayout()     
         hbox1.addWidget(buttonInit)
         hbox1.addWidget(buttonStart)
         hbox1.addWidget(buttonStop)
+        hbox1.addWidget(buttonInitForce)
+
         hbox1.addStretch()
         
         hbox2 = QtGui.QHBoxLayout()
@@ -132,7 +136,12 @@ class CtaStrategyManager(QtGui.QGroupBox):
     def init(self):
         """初始化策略"""
         self.ctaEngine.initStrategy(self.name)
-    
+
+    def initForce(self):
+
+        """强制初始化策略"""
+        self.ctaEngine.initStrategy(self.name,force = True)
+
     #----------------------------------------------------------------------
     def start(self):
         """启动策略"""

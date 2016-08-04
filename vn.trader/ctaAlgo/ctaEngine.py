@@ -178,6 +178,33 @@ class CtaEngine(object):
             self.writeCtaLog(u'委托单({0}不存在'.format(vtOrderID))
 
     # ----------------------------------------------------------------------
+    def cancelOrders(self, symbol, offset=EMPTY_STRING):
+        """撤销所有单"""
+        # Symbol参数:指定合约的撤单；
+        # OFFSET参数:指定Offset的撤单,缺省不填写时，为所有
+
+        l = self.mainEngine.getAllWorkingOrders()
+
+        self.writeCtaLog(u'撤销所有订单,数量:{0}'.format(len(l)))
+
+        for order in l:
+            if offset == EMPTY_STRING:
+                offsetCond = True
+            else:
+                offsetCond = order.offset == offset
+
+            if order.symbol == symbol and offsetCond:
+                req = VtCancelOrderReq()
+                req.symbol = order.symbol
+                req.exchange = order.exchange
+                req.frontID = order.frontID
+                req.sessionID = order.sessionID
+                req.orderID = order.orderID
+                self.writeCtaLog(u'撤单:{0}/{1},{2}{3}手'
+                                 .format(order.symbol, order.orderID, order.offset, order.totalVolume-order.tradedVolume))
+                self.mainEngine.cancelOrder(req, order.gatewayName)
+
+    # ----------------------------------------------------------------------
     def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
         """发停止单（本地实现）"""
 
@@ -301,6 +328,8 @@ class CtaEngine(object):
         """处理委托推送事件"""
         # 1.获取事件的Order数据
         order = event.dict_['data']
+
+        # order.vtOrderID 在gateway中，已经格式化为 gatewayName.vtOrderID
 
         # 2.判断order是否在映射字典中
         if order.vtOrderID in self.orderStrategyDict:
@@ -478,13 +507,13 @@ class CtaEngine(object):
                 self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))
 
     #----------------------------------------------------------------------
-    def initStrategy(self, name):
+    def initStrategy(self, name, force = False):
         """初始化策略"""
         if name in self.strategyDict:
             strategy = self.strategyDict[name]
             
-            if not strategy.inited:
-                strategy.onInit()
+            if not strategy.inited or force == True:
+                strategy.onInit(force=force)
                 strategy.inited = True
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
