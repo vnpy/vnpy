@@ -168,4 +168,9 @@ class CtaTemplate(object):
     def putEvent(self):
         """发出策略状态变化事件"""
         self.ctaEngine.putStrategyEvent(self.name)
+        
+    #----------------------------------------------------------------------
+    def getEngineType(self):
+        """查询当前运行的环境"""
+        return self.ctaEngine.engineType
     

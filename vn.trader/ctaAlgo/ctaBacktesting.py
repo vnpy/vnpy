@@ -4,6 +4,7 @@
 本文件中包含的是CTA模块的回测引擎，回测引擎的API和CTA引擎一致，
 可以使用和实盘相同的代码进行回测。
 '''
+from __future__ import division
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -40,6 +41,9 @@ class BacktestingEngine(object):
         # key为stopOrderID，value为stopOrder对象
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
+        
+        # 引擎类型为回测
+        self.engineType = ENGINETYPE_BACKTESTING
         
         # 回测相关
         self.strategy = None        # 回测策略
@@ -498,7 +502,8 @@ class BacktestingEngine(object):
         self.output(u'计算回测结果')
         
         # 首先基于回测后的成交记录，计算每笔交易的盈亏
-        resultDict = OrderedDict()  # 交易结果记录
+        resultList = []             # 交易结果列表
+        
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
 
@@ -510,26 +515,83 @@ class BacktestingEngine(object):
                     longTrade.append(trade)
                 # 当前多头交易为平空
                 else:
-                    entryTrade = shortTrade.pop(0)
-
-                    result = TradingResult(entryTrade.price, trade.price, -trade.volume, 
-                                           self.rate, self.slippage, self.size)
-                    resultDict[trade.dt] = result
-            # 空头交易
+                    while True:
+                        entryTrade = shortTrade[0]
+                        exitTrade = trade
+                        
+                        # 清算开平仓交易
+                        closedVolume = min(exitTrade.volume, entryTrade.volume)
+                        result = TradingResult(entryTrade.price, entryTrade.dt, 
+                                               exitTrade.price, exitTrade.dt,
+                                               -closedVolume, self.rate, self.slippage, self.size)
+                        resultList.append(result)
+                        
+                        # 计算未清算部分
+                        entryTrade.volume -= closedVolume
+                        exitTrade.volume -= closedVolume
+                        
+                        # 如果开仓交易已经全部清算，则从列表中移除
+                        if not entryTrade.volume:
+                            shortTrade.pop(0)
+                        
+                        # 如果平仓交易已经全部清算，则退出循环
+                        if not exitTrade.volume:
+                            break
+                        
+                        # 如果平仓交易未全部清算，
+                        if exitTrade.volume:
+                            # 且开仓交易已经全部清算完，则平仓交易剩余的部分
+                            # 等于新的反向开仓交易，添加到队列中
+                            if not shortTrade:
+                                longTrade.append(exitTrade)
+                                break
+                            # 如果开仓交易还有剩余，则进入下一轮循环
+                            else:
+                                pass
+                        
+            # 空头交易        
             else:
                 # 如果尚无多头交易
                 if not longTrade:
                     shortTrade.append(trade)
                 # 当前空头交易为平多
-                else:
-                    entryTrade = longTrade.pop(0)
-
-                    result = TradingResult(entryTrade.price, trade.price, trade.volume, 
-                                           self.rate, self.slippage, self.size)
-                    resultDict[trade.dt] = result           
+                else:                    
+                    while True:
+                        entryTrade = longTrade[0]
+                        exitTrade = trade
+                        
+                        # 清算开平仓交易
+                        closedVolume = min(exitTrade.volume, entryTrade.volume)
+                        result = TradingResult(entryTrade.price, entryTrade.dt, 
+                                               exitTrade.price, exitTrade.dt,
+                                               closedVolume, self.rate, self.slippage, self.size)
+                        resultList.append(result)
+                        
+                        # 计算未清算部分
+                        entryTrade.volume -= closedVolume
+                        exitTrade.volume -= closedVolume
+                        
+                        # 如果开仓交易已经全部清算，则从列表中移除
+                        if not entryTrade.volume:
+                            longTrade.pop(0)
+                        
+                        # 如果平仓交易已经全部清算，则退出循环
+                        if not exitTrade.volume:
+                            break
+                        
+                        # 如果平仓交易未全部清算，
+                        if exitTrade.volume:
+                            # 且开仓交易已经全部清算完，则平仓交易剩余的部分
+                            # 等于新的反向开仓交易，添加到队列中
+                            if not longTrade:
+                                shortTrade.append(exitTrade)
+                                break
+                            # 如果开仓交易还有剩余，则进入下一轮循环
+                            else:
+                                pass                    
                     
         # 检查是否有交易
-        if not resultDict:
+        if not resultList:
             self.output(u'无交易结果')
             return {}
         
@@ -548,13 +610,18 @@ class BacktestingEngine(object):
         capitalList = []        # 盈亏汇总的时间序列
         drawdownList = []       # 回撤的时间序列
         
-        for time, result in resultDict.items():
+        winningResult = 0       # 盈利次数
+        losingResult = 0        # 亏损次数		
+        totalWinning = 0        # 总盈利金额		
+        totalLosing = 0         # 总亏损金额        
+        
+        for result in resultList:
             capital += result.pnl
             maxCapital = max(capital, maxCapital)
             drawdown = capital - maxCapital
             
             pnlList.append(result.pnl)
-            timeList.append(time)
+            timeList.append(result.exitDt)      # 交易的时间戳使用平仓时间
             capitalList.append(capital)
             drawdownList.append(drawdown)
             
@@ -563,6 +630,19 @@ class BacktestingEngine(object):
             totalCommission += result.commission
             totalSlippage += result.slippage
             
+            if result.pnl >= 0:
+                winningResult += 1
+                totalWinning += result.pnl
+            else:
+                losingResult += 1
+                totalLosing += result.pnl
+                
+        # 计算盈亏相关数据
+        winningRate = winningResult/totalResult*100     # 胜率
+        averageWinning = totalWinning/winningResult     # 平均每笔盈利
+        averageLosing = totalLosing/losingResult        # 平均每笔亏损
+        profitLossRatio = -averageWinning/averageLosing # 盈亏比
+
         # 返回回测结果
         d = {}
         d['capital'] = capital
@@ -575,7 +655,12 @@ class BacktestingEngine(object):
         d['timeList'] = timeList
         d['pnlList'] = pnlList
         d['capitalList'] = capitalList
-        d['drawdownList'] = drawdownList    
+        d['drawdownList'] = drawdownList
+        d['winningRate'] = winningRate
+        d['averageWinning'] = averageWinning
+        d['averageLosing'] = averageLosing
+        d['profitLossRatio'] = profitLossRatio
+        
         return d
         
     #----------------------------------------------------------------------
@@ -595,7 +680,12 @@ class BacktestingEngine(object):
         self.output(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
         self.output(u'平均每笔滑点：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
-            
+        
+        self.output(u'胜率\t\t%s%%' %formatNumber(d['winningRate']))
+        self.output(u'平均每笔盈利\t%s' %formatNumber(d['averageWinning']))
+        self.output(u'平均每笔亏损\t%s' %formatNumber(d['averageLosing']))
+        self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
+    
         # 绘图
         import matplotlib.pyplot as plt
         
@@ -689,17 +779,22 @@ class TradingResult(object):
     """每笔交易的结果"""
 
     #----------------------------------------------------------------------
-    def __init__(self, entry, exit, volume, rate, slippage, size):
+    def __init__(self, entryPrice, entryDt, exitPrice, 
+                 exitDt, volume, rate, slippage, size):
         """Constructor"""
-        self.entry = entry      # 开仓价格
-        self.exit = exit        # 平仓价格
+        self.entryPrice = entryPrice    # 开仓价格
+        self.exitPrice = exitPrice      # 平仓价格
+        
+        self.entryDt = entryDt          # 开仓时间datetime    
+        self.exitDt = exitDt            # 平仓时间
+        
         self.volume = volume    # 交易数量（+/-代表方向）
         
-        self.turnover = (self.entry+self.exit)*size         # 成交金额
-        self.commission = self.turnover*rate                # 手续费成本
-        self.slippage = slippage*2*size                     # 滑点成本
-        self.pnl = ((self.exit - self.entry) * volume * size 
-                    - self.commission - self.slippage)      # 净盈亏
+        self.turnover = (self.entryPrice+self.exitPrice)*size*abs(volume)   # 成交金额
+        self.commission = self.turnover*rate                                # 手续费成本
+        self.slippage = slippage*2*size*abs(volume)                         # 滑点成本
+        self.pnl = ((self.exitPrice - self.entryPrice) * volume * size 
+                    - self.commission - self.slippage)                      # 净盈亏
 
 
 ########################################################################

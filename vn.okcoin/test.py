@@ -15,9 +15,9 @@ api.connect(OKCOIN_USD, apiKey, secretKey, True)
 sleep(1)
 
 # 测试现货行情API
-api.subscribeSpotTicker(SYMBOL_BTC)
+#api.subscribeSpotTicker(SYMBOL_BTC)
 #api.subscribeSpotTradeData(SYMBOL_BTC)
-#api.subscribeSpotDepth(SYMBOL_BTC, DEPTH_20)
+api.subscribeSpotDepth(SYMBOL_BTC, DEPTH_20)
 #api.subscribeSpotKline(SYMBOL_BTC, INTERVAL_1M)
 
 # 测试现货交易API
