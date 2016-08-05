@@ -57,7 +57,9 @@ vn.lts/build/*
 # vn.trader/ctpGateway/CTP_connect.json
 # vn.trader/ksotpGateway/KSOTP_connect.json
 
+vn.trader/ctpGateway/CTP_connect@FZ/*
 vn.trader/ctpGateway/CTP_connect@sim/*
+vn.trader/ctpGateway/CTP_connect@SimClose/*
 vn.trader/ctpGateway/CTP_connect@Real/*
 vn.trader/ksotpGateway/KSOTP_connect@Sim/*
 vn.trader/ltsGateway/LTS_connect@Sim/*
@@ -73,3 +75,7 @@ vn.trader/dist/*
 vn.trader/RT.ico
 vn.trader/setup.py
 vn.trader/ctaAlgo/Strategy/*
+vn.trader/swiftTrader/*
+vn.trader/swiftMain.py
+vn.trader/ctaAlgo/strategyBlade.py
+vn.trader/ctaAlgo/strategyRock.py
