@@ -10,7 +10,9 @@
 
 from ctaDemo import DoubleEmaDemo
 from strategyTickBreaker import TickBreaker
+from strategyRock import RockStrategy
 
 STRATEGY_CLASS = {}
 STRATEGY_CLASS['TickBreaker'] = TickBreaker
 STRATEGY_CLASS['DoubleEmaDemo'] = DoubleEmaDemo
+STRATEGY_CLASS['RockStrategy'] = RockStrategy
