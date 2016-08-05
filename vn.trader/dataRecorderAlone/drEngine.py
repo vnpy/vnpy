@@ -158,9 +158,14 @@ class DrEngine(object):
         drTick = DrTickData()
         d = drTick.__dict__
         for key in d.keys():
-            if key != 'datetime':
+            if key in ['lastPrice', 'upperLimit', 'lowerLimit', 'openPrice',
+                       'lowPrice', 'highPrice', 'preClosePrice', 'bidPrice1', 'askPrice1']:
+                d[key] = round(tick.__getattribute__(key), 4)
+            elif key == 'datetime':
+                drTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            else:
                 d[key] = tick.__getattribute__(key)
-        drTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
+
         
         # 更新Tick数据
         if vtSymbol in self.tickDict:
