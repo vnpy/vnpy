@@ -8,11 +8,11 @@ from ctaTemplate import CtaTemplate
 
 
 ########################################################################
-class TalibDoubleSmaDemo(CtaTemplate):
+class DoubleSmaDemo(CtaTemplate):
     """基于Talib模块的双指数均线策略Demo"""
 
-    className = 'TalibDoubleSmaDemo'
-    author = u'ideaplat'
+    className = 'DoubleSmaDemo'
+    author = u'融拓科技'
 
     # 策略参数
     fastPeriod = 5      # 快速均线参数
@@ -24,7 +24,7 @@ class TalibDoubleSmaDemo(CtaTemplate):
     barMinute = EMPTY_STRING
 
     closeHistory = []       # 缓存K线收盘价的数组
-    maxHistory = 50         # 最大缓存数量
+    maxHistory = 30         # 最大缓存数量
 
     fastMa0 = EMPTY_FLOAT   # 当前最新的快速均线数值
     fastMa1 = EMPTY_FLOAT   # 上一根的快速均线数值
@@ -53,8 +53,24 @@ class TalibDoubleSmaDemo(CtaTemplate):
     # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(TalibDoubleSmaDemo, self).__init__(ctaEngine, setting)
+        super(DoubleSmaDemo, self).__init__(ctaEngine, setting)
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）
 
+        # 策略变量
+        self.bar = None
+        self.barMinute = EMPTY_STRING
+
+        self.closeHistory = []
+        self.maxHistory = 50         # 最大缓存数量
+
+        self.fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
+        self.fastMa1 = EMPTY_FLOAT   # 上一根的快速EMA
+
+        self.slowMa0 = EMPTY_FLOAT
+        self.slowMa1 = EMPTY_FLOAT
     # ----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -176,3 +192,44 @@ class TalibDoubleSmaDemo(CtaTemplate):
         """收到成交推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         pass
+
+if __name__ == '__main__':
+    # 提供直接双击回测的功能
+    # 导入PyQt4的包是为了保证matplotlib使用PyQt4而不是PySide，防止初始化出错
+    from ctaBacktesting import *
+    from PyQt4 import QtCore, QtGui
+
+    # 创建回测引擎
+    engine = BacktestingEngine()
+
+    # 设置引擎的回测模式为K线
+    engine.setBacktestingMode(engine.BAR_MODE)
+
+    # 设置回测用的数据起始日期
+    engine.setStartDate('20120101')
+
+    # 设置产品相关参数
+    engine.setSlippage(0.2)     # 股指1跳
+    engine.setRate(0.3/10000)   # 万0.3
+    engine.setSize(300)         # 股指合约大小
+
+    # 设置使用的历史数据库
+    engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
+
+    ## 在引擎中创建策略对象
+    #d = {'atrLength': 11}
+    #engine.initStrategy(AtrRsiStrategy, d)
+
+    ## 开始跑回测
+    #engine.runBacktesting()
+
+    ## 显示回测结果
+    #engine.showBacktestingResult()
+
+    # 跑优化
+    setting = OptimizationSetting()                 # 新建一个优化任务设置对象
+    setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
+    setting.addParameter('fastPeriod', 2, 10, 1)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
+    setting.addParameter('slowPeriod', 11, 30, 1)        # 增加第二个优化参数atrMa，起始20，结束30，步进1
+    engine.runOptimization(DoubleSmaDemo, setting) # 运行优化函数，自动输出结果
+

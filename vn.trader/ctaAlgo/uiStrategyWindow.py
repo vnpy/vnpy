@@ -1,10 +1,14 @@
 # encoding: UTF-8
 
 import psutil
-
+import uiBasicWidget
+from PyQt4 import QtGui
+uiBasicWidget.BASIC_FONT = QtGui.QFont(u'微软雅黑', 10)
 from uiBasicWidget import *
-from ctaAlgo.uiCtaWidget import CtaEngineManager
-from dataRecorder.uiDrWidget import DrEngineManager
+
+# from ctaAlgo.uiCtaWidget import CtaEngineManager
+from ctaAlgo.uiCtaWidget import CtaEngineManager2
+# from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
 
 ########################################################################
@@ -23,7 +27,7 @@ class MainWindow(QtGui.QMainWindow):
         self.widgetDict = {}    # 用来保存子窗口的字典
         
         self.initUi()
-        self.loadWindowSettings()
+        # self.loadWindowSettings()
         
     #----------------------------------------------------------------------
     def initUi(self):
@@ -36,25 +40,33 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
+        widgetCtaW, dockCtaW = self.createCtaDock(CtaEngineManager2, u'策略', QtCore.Qt.LeftDockWidgetArea)
+
         widgetMarketM, dockMarketM = self.createDock(MarketMonitor, u'行情', QtCore.Qt.RightDockWidgetArea)
+        widgetCtaL, docCtaL = self.createCtaLogDock(widgetCtaW.ctaLogMonitor, u'策略日志', QtCore.Qt.BottomDockWidgetArea)
         widgetLogM, dockLogM = self.createDock(LogMonitor, u'日志', QtCore.Qt.BottomDockWidgetArea)
         widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, u'错误', QtCore.Qt.BottomDockWidgetArea)
         widgetTradeM, dockTradeM = self.createDock(TradeMonitor, u'成交', QtCore.Qt.BottomDockWidgetArea)
         widgetOrderM, dockOrderM = self.createDock(OrderMonitor, u'委托', QtCore.Qt.RightDockWidgetArea)
         widgetPositionM, dockPositionM = self.createDock(PositionMonitor, u'持仓', QtCore.Qt.BottomDockWidgetArea)
         widgetAccountM, dockAccountM = self.createDock(AccountMonitor, u'资金', QtCore.Qt.BottomDockWidgetArea)
-        widgetTradingW, dockTradingW = self.createDock(TradingWidget, u'交易', QtCore.Qt.LeftDockWidgetArea)
-    
+
+
+
+        widgetCtaW.setMinimumHeight(450)
+        widgetCtaL.setMaximumWidth(400)
+
         self.tabifyDockWidget(dockTradeM, dockErrorM)
         self.tabifyDockWidget(dockTradeM, dockLogM)
         self.tabifyDockWidget(dockPositionM, dockAccountM)
     
+        dockOrderM.raise_()
         dockTradeM.raise_()
         dockPositionM.raise_()
-    
+
         # 连接组件之间的信号
-        widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
-        
+        # widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
+
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化菜单"""
@@ -89,14 +101,11 @@ class MainWindow(QtGui.QMainWindow):
         connectOandaAction = QtGui.QAction(u'连接OANDA', self)
         connectOandaAction.triggered.connect(self.connectOanda)
         
-        connectOkcoinAction = QtGui.QAction(u'连接OKCOIN', self)
-        connectOkcoinAction.triggered.connect(self.connectOkcoin)        
-        
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
         
-        testAction = QtGui.QAction(u'测试', self)
-        testAction.triggered.connect(self.test)
+        # testAction = QtGui.QAction(u'测试', self)
+        # testAction.triggered.connect(self.test)
         
         exitAction = QtGui.QAction(u'退出', self)
         exitAction.triggered.connect(self.close)
@@ -104,14 +113,14 @@ class MainWindow(QtGui.QMainWindow):
         aboutAction = QtGui.QAction(u'关于', self)
         aboutAction.triggered.connect(self.openAbout)
         
-        contractAction = QtGui.QAction(u'查询合约', self)
-        contractAction.triggered.connect(self.openContract)
+        # contractAction = QtGui.QAction(u'查询合约', self)
+        # contractAction.triggered.connect(self.openContract)
         
-        drAction = QtGui.QAction(u'行情数据记录', self)
-        drAction.triggered.connect(self.openDr)
+        # drAction = QtGui.QAction(u'行情数据记录', self)
+        # drAction.triggered.connect(self.openDr)
         
-        ctaAction = QtGui.QAction(u'CTA策略', self)
-        ctaAction.triggered.connect(self.openCta)
+        # ctaAction = QtGui.QAction(u'CTA策略', self)
+        # ctaAction.triggered.connect(self.openCta)
         
         rmAction = QtGui.QAction(u'风险管理', self)
         rmAction.triggered.connect(self.openRm)        
@@ -141,8 +150,6 @@ class MainWindow(QtGui.QMainWindow):
             sysMenu.addAction(connectIbAction)    
         if 'OANDA' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectOandaAction)
-        if 'OKCOIN' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectOkcoinAction)        
         sysMenu.addSeparator()
         if 'Wind' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectWindAction)
@@ -153,18 +160,18 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(exitAction)
         
         functionMenu = menubar.addMenu(u'功能')
-        functionMenu.addAction(contractAction)
-        functionMenu.addAction(drAction)
+        # functionMenu.addAction(contractAction)
+        # functionMenu.addAction(drAction)
         functionMenu.addAction(rmAction)
         
         # 算法相关
-        algoMenu = menubar.addMenu(u'算法')
-        algoMenu.addAction(ctaAction)
+        # algoMenu = menubar.addMenu(u'算法')
+        # algoMenu.addAction(ctaAction)
         
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')
         helpMenu.addAction(aboutAction)  
-        helpMenu.addAction(testAction)
+        # helpMenu.addAction(testAction)
     
     #----------------------------------------------------------------------
     def initStatusBar(self):
@@ -247,11 +254,6 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('OANDA')
         
     #----------------------------------------------------------------------
-    def connectOkcoin(self):
-        """连接OKCOIN"""
-        self.mainEngine.connect('OKCOIN')    
-        
-    #----------------------------------------------------------------------
     def test(self):
         """测试按钮用的函数"""
         # api = self.mainEngine.gatewayDict['CTP'].tdApi
@@ -272,31 +274,31 @@ class MainWindow(QtGui.QMainWindow):
             self.widgetDict['aboutW'].show()
     
     #----------------------------------------------------------------------
-    def openContract(self):
-        """打开合约查询"""
-        try:
-            self.widgetDict['contractM'].show()
-        except KeyError:
-            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
-            self.widgetDict['contractM'].show()
+    # def openContract(self):
+    #     """打开合约查询"""
+    #     try:
+    #         self.widgetDict['contractM'].show()
+    #     except KeyError:
+    #         self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
+    #         self.widgetDict['contractM'].show()
             
     #----------------------------------------------------------------------
-    def openCta(self):
-        """打开CTA组件"""
-        try:
-            self.widgetDict['ctaM'].showMaximized()
-        except KeyError:
-            self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
-            self.widgetDict['ctaM'].showMaximized()
+    # def openCta(self):
+        # """打开CTA组件"""
+        # try:
+        #     self.widgetDict['ctaM'].showMaximized()
+        # except KeyError:
+        #     self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
+        #     self.widgetDict['ctaM'].showMaximized()
             
     #----------------------------------------------------------------------
-    def openDr(self):
-        """打开行情数据记录组件"""
-        try:
-            self.widgetDict['drM'].showMaximized()
-        except KeyError:
-            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
-            self.widgetDict['drM'].showMaximized()
+    # def openDr(self):
+    #     """打开行情数据记录组件"""
+    #     try:
+    #         self.widgetDict['drM'].showMaximized()
+    #     except KeyError:
+    #         self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
+    #         self.widgetDict['drM'].showMaximized()
             
     #----------------------------------------------------------------------
     def openRm(self):
@@ -334,7 +336,26 @@ class MainWindow(QtGui.QMainWindow):
         dock.setFeatures(dock.DockWidgetFloatable|dock.DockWidgetMovable)
         self.addDockWidget(widgetArea, dock)
         return widget, dock
-    
+    #----------------------------------------------------------------------
+    def createCtaDock(self, widgetClass, widgetName, widgetArea):
+        """创建停靠组件"""
+        widget = widgetClass(self.mainEngine.ctaEngine, self.eventEngine)
+        dock = QtGui.QDockWidget(widgetName)
+        dock.setWidget(widget)
+        dock.setObjectName(widgetName)
+        dock.setFeatures(dock.DockWidgetFloatable|dock.DockWidgetMovable)
+        self.addDockWidget(widgetArea, dock)
+        return widget, dock
+    #----------------------------------------------------------------------
+    def createCtaLogDock(self, widgetClass, widgetName, widgetArea):
+        """创建停靠组件"""
+        widget = widgetClass
+        dock = QtGui.QDockWidget(widgetName)
+        dock.setWidget(widget)
+        dock.setObjectName(widgetName)
+        dock.setFeatures(dock.DockWidgetFloatable|dock.DockWidgetMovable)
+        self.addDockWidget(widgetArea, dock)
+        return widget, dock
     #----------------------------------------------------------------------
     def saveWindowSettings(self):
         """保存窗口设置"""

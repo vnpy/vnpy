@@ -8,10 +8,11 @@
 在CTA_setting.json中写入具体每个策略对象的类和合约设置。
 '''
 
-from ctaTemplate import DataRecorder
 from ctaDemo import DoubleEmaDemo
-from tickBreaker import TickBreaker
+from strategyTickBreaker import TickBreaker
+from strategyRock import RockStrategy
 
 STRATEGY_CLASS = {}
 STRATEGY_CLASS['TickBreaker'] = TickBreaker
 STRATEGY_CLASS['DoubleEmaDemo'] = DoubleEmaDemo
+STRATEGY_CLASS['RockStrategy'] = RockStrategy

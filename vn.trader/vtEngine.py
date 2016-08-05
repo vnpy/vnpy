@@ -11,8 +11,6 @@ from vtGateway import *
 from vtFunction import loadMongoSetting
 
 from ctaAlgo.ctaEngine import CtaEngine
-import json
-import os
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
 
@@ -117,6 +115,13 @@ class MainEngine(object):
             self.gatewayDict['OANDA'].setQryEnabled(True)
         except Exception, e:
             print e
+        
+        try:
+            from okcoinGateway.okcoinGateway import OkcoinGateway
+            self.addGateway(OkcoinGateway, 'OKCOIN')
+            self.gatewayDict['OKCOIN'].setQryEnabled(True)
+        except Exception, e:
+            print e        
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -131,7 +136,7 @@ class MainEngine(object):
             gateway.connect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
-        
+            print (u'接口不存在：%s' %gatewayName)
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
@@ -168,7 +173,7 @@ class MainEngine(object):
         """查询特定接口的账户"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.getAccount()
+            gateway.qryAccount()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)        
         
@@ -177,7 +182,7 @@ class MainEngine(object):
         """查询特定接口的持仓"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.getPosition()
+            gateway.qryPosition()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)        
         
@@ -190,6 +195,9 @@ class MainEngine(object):
         
         # 停止事件引擎
         self.eventEngine.stop()      
+        
+        # 停止数据记录引擎
+        self.drEngine.stop()
         
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
@@ -236,10 +244,11 @@ class MainEngine(object):
             host, port, replicaset, readPreference, database, userID, password = loadMongoSetting()
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
-                self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference, serverSelectionTimeoutMS=500)
-                db = self.dbClient[database]
-                db.authenticate(userID, password)
-                # self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=500)
+                # self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference, serverSelectionTimeoutMS=500)
+                # db = self.dbClient[database]
+                # db.authenticate(userID, password)
+
+                self.dbClient = pymongo.MongoClient(host, port, serverSelectionTimeoutMS=500)
                 
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
@@ -256,7 +265,7 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             collection.insert(d)
-    
+
     #----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""

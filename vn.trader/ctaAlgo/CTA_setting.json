@@ -8,5 +8,10 @@
         "name": "TickBreaker",
         "className": "TickBreaker",
         "vtSymbol": "pp1609"
+    },
+    {
+        "name": "RockStrategy",
+        "className": "RockStrategy",
+        "vtSymbol": "m1609"
     }
 ]

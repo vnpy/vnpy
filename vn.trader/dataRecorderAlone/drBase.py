@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 '''
-本文件中包含了CTA模块中用到的一些基础设置、类和常量等。
+本文件中包含的数据格式和CTA模块通用，用户有必要可以自行添加格式。
 '''
 
 from __future__ import division
@@ -12,55 +12,18 @@ import sys
 sys.path.append('..')
 
 
-# 常量定义
-# CTA引擎中涉及到的交易方向类型
-CTAORDER_BUY = u'买开'
-CTAORDER_SELL = u'卖平'
-CTAORDER_SHORT = u'卖开'
-CTAORDER_COVER = u'买平'
-
-# 本地停止单状态
-STOPORDER_WAITING = u'等待中'
-STOPORDER_CANCELLED = u'已撤销'
-STOPORDER_TRIGGERED = u'已触发'
-
-# 本地停止单前缀
-STOPORDERPREFIX = 'CtaStopOrder.'
-
 # 数据库名称
 SETTING_DB_NAME = 'VnTrader_Setting_Db'
 TICK_DB_NAME = 'VnTrader_Tick_Db'
 DAILY_DB_NAME = 'VnTrader_Daily_Db'
 MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 
-# 引擎类型，用于区分当前策略的运行环境
-ENGINETYPE_BACKTESTING = 'backtesting'  # 回测
-ENGINETYPE_TRADING = 'trading'          # 实盘
-
 # CTA引擎中涉及的数据类定义
 from vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
 
-########################################################################
-class StopOrder(object):
-    """本地停止单"""
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-        """Constructor"""
-        self.vtSymbol = EMPTY_STRING
-        self.orderType = EMPTY_UNICODE
-        self.direction = EMPTY_UNICODE
-        self.offset = EMPTY_UNICODE
-        self.price = EMPTY_FLOAT
-        self.volume = EMPTY_INT
-        
-        self.strategy = None             # 下停止单的策略对象
-        self.stopOrderID = EMPTY_STRING  # 停止单的本地编号 
-        self.status = EMPTY_STRING       # 停止单状态
-
 
 ########################################################################
-class CtaBarData(object):
+class DrBarData(object):
     """K线数据"""
 
     #----------------------------------------------------------------------
@@ -82,9 +45,16 @@ class CtaBarData(object):
         self.volume = EMPTY_INT             # 成交量
         self.openInterest = EMPTY_INT       # 持仓量
 
+        # 常规行情
+        self.openPrice = EMPTY_FLOAT            # 今日开盘价
+        self.highPrice = EMPTY_FLOAT            # 今日最高价
+        self.lowPrice = EMPTY_FLOAT             # 今日最低价
+        self.preClosePrice = EMPTY_FLOAT
+
+
 
 ########################################################################
-class CtaTickData(object):
+class DrTickData(object):
     """Tick数据"""
 
     #----------------------------------------------------------------------
@@ -106,7 +76,13 @@ class CtaTickData(object):
         self.date = EMPTY_STRING            # 日期
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
-        
+
+        # 常规行情
+        self.openPrice = EMPTY_FLOAT            # 今日开盘价
+        self.highPrice = EMPTY_FLOAT            # 今日最高价
+        self.lowPrice = EMPTY_FLOAT             # 今日最低价
+        self.preClosePrice = EMPTY_FLOAT
+
         # 五档行情
         self.bidPrice1 = EMPTY_FLOAT
         self.bidPrice2 = EMPTY_FLOAT

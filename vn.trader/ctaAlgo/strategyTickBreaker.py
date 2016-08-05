@@ -24,7 +24,6 @@ class TickBreaker(CtaTemplate):
     tickHistory = []       # 缓存tick报价的数组
     maxHistory = 7         # 最大缓存数量
 
-
     forwardNo = EMPTY_INT     # 正向tick数量
     backwardNo = EMPTY_INT     # 反向tick数量
     reForwardNo = EMPTY_INT        # 再次转向tick数量
@@ -58,6 +57,19 @@ class TickBreaker(CtaTemplate):
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(TickBreaker, self).__init__(ctaEngine, setting)
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）
+
+        # 策略变量
+        self.tickHistory = []       # 缓存tick报价的数组
+        self.maxHistory = 7         # 最大缓存数量
+
+        self.forwardNo = EMPTY_INT     # 正向tick数量
+        self.backwardNo = EMPTY_INT     # 反向tick数量
+        self.reForwardNo = EMPTY_INT        # 再次转向tick数量
+
         self.oldPrice = 0       # 上一个tick的lastPrice
 
     # ----------------------------------------------------------------------
