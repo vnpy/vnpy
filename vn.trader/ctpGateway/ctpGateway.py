@@ -898,6 +898,10 @@ class CtpTdApi(TdApi):
             order.offset = OFFSET_OPEN
         elif data['CombOffsetFlag'] == '1':
             order.offset = OFFSET_CLOSE
+        elif data['CombOffsetFlag'] == '3':
+            order.offset = OFFSET_CLOSETODAY
+        elif data['CombOffsetFlag'] == '4':
+            order.offset = OFFSET_CLOSEYESTERDAY
         else:
             order.offset = OFFSET_UNKNOWN
             

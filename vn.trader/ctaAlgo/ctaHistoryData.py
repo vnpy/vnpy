@@ -19,6 +19,8 @@ from vtConstant import *
 from vtFunction import loadMongoSetting
 from datayesClient import DatayesClient
 
+import tushare as ts
+ts.set_token('')
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 
 VT_TO_DATAYES_EXCHANGE = {}
@@ -84,7 +86,6 @@ class HistoryDataEngine(object):
     def realLastTradeDate(self):
         """获取真实最近交易日（通联交易所交易日历）"""
         today = datetime.now().strftime('%Y%m%d')
-
         path = 'api/master/getTradeCal.json'
 
         params = {}
@@ -94,7 +95,11 @@ class HistoryDataEngine(object):
         params['exchangeCD'] = 'XSHG'
 
         data = self.datayesClient.downloadData(path, params)
-        if data[0]['isOpen'] == 1:
+
+        # 通联数据18:00更新,之前获取不到当日数据
+        time = datetime.now().strftime('%H:%M:%S')
+
+        if data[0]['isOpen'] == 1 and time >= '18:30:00':
             return today
         else:
             lastDay = ''.join(data[0]['prevTradeDate'].split('-'))
@@ -276,7 +281,51 @@ class HistoryDataEngine(object):
             print u'%s下载完成' %symbol
         else:
             print u'找不到合约%s' %symbol   
+    #----------------------------------------------------------------------
+    def downloadFutureIntraDayTick(self, symbol):
+        """下载期货的日内tick行情"""
+        print u'开始下载%s日内tick行情' %symbol
 
+        # 日内分钟行情只有具体合约
+        st = ts.Market()
+        data = st.FutureTickRTIntraDay(instrumentID=symbol)
+
+        filename = 'D:\\' + symbol + '.csv'
+        data.to_csv(filename)
+
+        # if data:
+        #     today = datetime.now().strftime('%Y%m%d')
+        #
+        #     # 创建datetime索引
+        #     self.dbClient[MINUTE_DB_NAME][symbol].ensure_index([('datetime', pymongo.ASCENDING)],
+        #                                                               unique=True)
+        #
+        #     for d in data:
+        #         bar = CtaBarData()
+        #         bar.vtSymbol = symbol
+        #         bar.symbol = symbol
+        #         try:
+        #             bar.exchange = DATAYES_TO_VT_EXCHANGE.get(d.get('exchangeCD', ''), '')
+        #             bar.open = d.get('openPrice', 0)
+        #             bar.high = d.get('highestPrice', 0)
+        #             bar.low = d.get('lowestPrice', 0)
+        #             bar.close = d.get('closePrice', 0)
+        #             bar.date = today
+        #             bar.time = d.get('barTime', '')
+        #             bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M')
+        #             bar.volume = d.get('totalVolume', 0)
+        #             bar.openInterest = 0
+        #         except KeyError:
+        #             print d
+        #
+        #         flt = {'datetime': bar.datetime}
+        #         self.dbClient[MINUTE_DB_NAME][symbol].update_one(flt, {'$set':bar.__dict__}, upsert=True)
+        #
+        #     print u'%s下载完成' %symbol
+        # else:
+        #     print u'找不到合约%s' %symbol
+
+    #----------------------------------------------------------------------
     #----------------------------------------------------------------------
     def downloadEquitySymbol(self, tradeDate=''):
         """下载所有股票的代码"""
@@ -449,5 +498,9 @@ if __name__ == '__main__':
     # loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
     # loadMcTickCsv('pp_hot.csv', TICK_DB_NAME, 'pp_hot')
     # loadMcCsv('pp 1min.txt', MINUTE_DB_NAME, 'pp_hot')
-    loadMcCsv(r"t:\Yang.Huabiao\CTA\Trading-System\vn.trader\ctaAlgo\data\ru 20160622.txt", 'MC_1Min_Db', 'ru_hot')
+    loadMcCsv(r"t:\Yang.Huabiao\CTA\Trading-System\vn.trader\ctaAlgo\data\600519.txt", 'MC_1Min_Db', '600519')
     # loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
+    # e = HistoryDataEngine()
+    # day = e.realLastTradeDate()
+    # e.downloadFuturesSymbol(day)
+    # e.downloadFutureIntraDayTick('pp1609')
