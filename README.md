@@ -45,6 +45,19 @@
 
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
+
+---
+### How To Contribute
+
+vn.py使用github托管其源代码，贡献代码使用github的PR(Pull Request)的流程，十分的强大与便利:
+
+1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
+2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
+3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+4. 在**dev**修改并将修改push到你的fork上
+5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
+6. 等待review, 需要继续改进，或者被Merge!
+
 ---
 ### 2016年vn.py项目计划
 
