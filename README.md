@@ -24,17 +24,19 @@
 
 6. 安装[Visual C++  Redistributable Packages for VS2013](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)，中英文随意
 
-6. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
+7. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
 
-7. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
+8. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
 
-8. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+9. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
 
-9. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
+10. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
+
 
 对于想研究API封装的用户，可以参考[vnpy.org](http://vnpy.org)上面的教程一步步操作。
 
 其他作者建议使用的软件工具：
+
 * [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
 
 * [Robomongo](https://robomongo.org/)：MongoDB的图形化客户端，方便监控和修改数据
@@ -44,6 +46,54 @@
 * [PyQtGraph](http://www.pyqtgraph.org/)：适用于开发实时更新数据的图表，如Tick图、K线图、期权波动率曲线等（Matplotlib渲染开销太大，用于实盘绘图可能拖慢整个程序）
 
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
+
+
+
+##### 注意:
+
+按照以上方式配置后，便可以使用vn.py的CTP, LTS, KSOTP等大多数交易接口，但在启动vtMain.py时， 你可能会遇到以下错误：
+
+```
+请先安装WindPy接口
+global name 'w' is not defined
+No module named ib.ext.Contract
+No module named websocket
+```
+
+它们分别对应Wind, IB, OKCOIN三个交易接口，如果你不使用这三个接口，可以直接忽略这些错误，不会影响使用。
+
+但如果你需要，可以通过以下方式安装其对应的库：
+
+* WIND - 到[大奖章网站](http://www.dajiangzhang.com/document)注册并下载安装**Wind资讯开放应用接口**个人版即可，使用机构版Wind终端的用户可以直接在终端里安装Python接口
+
+* IB - 参考https://github.com/blampe/IbPy， 基本上是两步：
+
+```
+git clone https://github.com/blampe/IbPy.git
+
+cd IbPy
+python setup.py install
+```
+
+* OKCOIN - ```pip install websocket``` or ```conda install websocket```
+
+
+---
+### How To Contribute
+
+vn.py使用github托管其源代码，贡献代码使用github的PR(Pull Request)的流程，十分的强大与便利:
+
+1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
+
+2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
+
+3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+
+4. 在**dev**修改并将修改push到你的fork上
+
+5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
+
+6. 等待review, 需要继续改进，或者被Merge!
 
 ---
 ### 2016年vn.py项目计划
