@@ -167,7 +167,10 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("\t"+ 'error["' + key + '"] = task_error.' + key + ';\n')
+                if struct[key] == "string":
+                    fprocess.write("\t"+ 'error["' + key + '"] = boost::locale::conv::to_utf<char>(task_error.' + key + ', std::string("GB2312"));\n')
+                else:
+                    fprocess.write("\t" + 'error["' + key + '"] = task_error.' + key + ';\n')
 
             fprocess.write("\n")
 
@@ -179,7 +182,10 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("\t"+ 'data["' + key + '"] = task_data.' + key + ';\n')
+                if struct[key] == "string":
+                    fprocess.write("\t"+ 'data["' + key + '"] = boost::locale::conv::to_utf<char>(task_data.' + key + ', std::string("GB2312"));\n')
+                else:
+                    fprocess.write("\t" + 'data["' + key + '"] = task_data.' + key + ';\n')
 
             fprocess.write("\n")
 
