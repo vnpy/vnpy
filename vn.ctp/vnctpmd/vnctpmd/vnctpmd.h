@@ -17,7 +17,7 @@
 #include <boost/thread.hpp>			//任务队列的线程功能
 #include <boost/bind.hpp>			//任务队列的线程功能
 #include <boost/any.hpp>			//任务队列的任务实现
-#include <boost/locale.hpp>			//字符集转换
+#include <boost/locale.hpp>         //字符集转换函数库
 
 //API
 #include "ThostFtdcMdApi.h"
