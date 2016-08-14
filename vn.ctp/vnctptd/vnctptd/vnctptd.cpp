@@ -1,22 +1,22 @@
-// vnctptd.cpp : ∂®“Â DLL ”¶”√≥Ã–Úµƒµº≥ˆ∫Ø ˝°£
+// vnctptd.cpp : ÂÆö‰πâ DLL Â∫îÁî®Á®ãÂ∫èÁöÑÂØºÂá∫ÂáΩÊï∞„ÄÇ
 //
 
 #include "vnctptd.h"
 
 
 ///-------------------------------------------------------------------------------------
-///¥”Python∂‘œÛµΩC++¿‡–Õ◊™ªª”√µƒ∫Ø ˝
+///‰ªéPythonÂØπË±°Âà∞C++Á±ªÂûãËΩ¨Êç¢Áî®ÁöÑÂáΩÊï∞
 ///-------------------------------------------------------------------------------------
 
 void getInt(dict d, string key, int *value)
 {
-	if (d.has_key(key))		//ºÏ≤È◊÷µ‰÷– «∑Ò¥Ê‘⁄∏√º¸÷µ
+	if (d.has_key(key))		//Ê£ÄÊü•Â≠óÂÖ∏‰∏≠ÊòØÂê¶Â≠òÂú®ËØ•ÈîÆÂÄº
 	{
-		object o = d[key];	//ªÒ»°∏√º¸÷µ
-		extract<int> x(o);	//¥¥Ω®Ã·»°∆˜
-		if (x.check())		//»Áπ˚ø…“‘Ã·»°
+		object o = d[key];	//Ëé∑ÂèñËØ•ÈîÆÂÄº
+		extract<int> x(o);	//ÂàõÂª∫ÊèêÂèñÂô®
+		if (x.check())		//Â¶ÇÊûúÂèØ‰ª•ÊèêÂèñ
 		{
-			*value = x();	//∂‘ƒø±Í’˚ ˝÷∏’Î∏≥÷µ
+			*value = x();	//ÂØπÁõÆÊ†áÊï¥Êï∞ÊåáÈíàËµãÂÄº
 		}
 	}
 }
@@ -44,8 +44,8 @@ void getStr(dict d, string key, char *value)
 		{
 			string s = x();
 			const char *buffer = s.c_str();
-			//∂‘◊÷∑˚¥Æ÷∏’Î∏≥÷µ±ÿ–Î π”√strcpy_s, vs2013 π”√strcpy±‡“ÎÕ®≤ªπ˝
-			//+1”¶∏√ «“ÚŒ™C++◊÷∑˚¥ÆµƒΩ·Œ≤∑˚∫≈£ø≤ª «Ãÿ±»∑∂®£¨≤ªº”’‚∏ˆ1ª·≥ˆ¥Ì
+			//ÂØπÂ≠óÁ¨¶‰∏≤ÊåáÈíàËµãÂÄºÂøÖÈ°ª‰ΩøÁî®strcpy_s, vs2013‰ΩøÁî®strcpyÁºñËØëÈÄö‰∏çËøá
+			//+1Â∫îËØ•ÊòØÂõ†‰∏∫C++Â≠óÁ¨¶‰∏≤ÁöÑÁªìÂ∞æÁ¨¶Âè∑Ôºü‰∏çÊòØÁâπÂà´Á°ÆÂÆöÔºå‰∏çÂä†Ëøô‰∏™1‰ºöÂá∫Èîô
 #ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
@@ -72,7 +72,7 @@ void getChar(dict d, string key, char *value)
 
 
 ///-------------------------------------------------------------------------------------
-///C++µƒªÿµ˜∫Ø ˝Ω´ ˝æ›±£¥ÊµΩ∂”¡–÷–
+///C++ÁöÑÂõûË∞ÉÂáΩÊï∞Â∞ÜÊï∞ÊçÆ‰øùÂ≠òÂà∞ÈòüÂàó‰∏≠
 ///-------------------------------------------------------------------------------------
 
 void TdApi::OnFrontConnected()
@@ -3147,7 +3147,7 @@ void TdApi::OnRtnChangeAccountByBank(CThostFtdcChangeAccountField *pChangeAccoun
 
 
 ///-------------------------------------------------------------------------------------
-///π§◊˜œﬂ≥Ã¥”∂”¡–÷–»°≥ˆ ˝æ›£¨◊™ªØŒ™python∂‘œÛ∫Û£¨Ω¯––Õ∆ÀÕ
+///Â∑•‰ΩúÁ∫øÁ®ã‰ªéÈòüÂàó‰∏≠ÂèñÂá∫Êï∞ÊçÆÔºåËΩ¨Âåñ‰∏∫pythonÂØπË±°ÂêéÔºåËøõË°åÊé®ÈÄÅ
 ///-------------------------------------------------------------------------------------
 
 void TdApi::processTask()
@@ -3868,7 +3868,8 @@ void TdApi::processRspAuthenticate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspAuthenticate(data, error, task.task_id, task.task_last);
@@ -3895,7 +3896,8 @@ void TdApi::processRspUserLogin(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUserLogin(data, error, task.task_id, task.task_last);
@@ -3911,7 +3913,8 @@ void TdApi::processRspUserLogout(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUserLogout(data, error, task.task_id, task.task_last);
@@ -3929,7 +3932,8 @@ void TdApi::processRspUserPasswordUpdate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUserPasswordUpdate(data, error, task.task_id, task.task_last);
@@ -3948,7 +3952,8 @@ void TdApi::processRspTradingAccountPasswordUpdate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspTradingAccountPasswordUpdate(data, error, task.task_id, task.task_last);
@@ -3986,7 +3991,8 @@ void TdApi::processRspOrderInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspOrderInsert(data, error, task.task_id, task.task_last);
@@ -4021,7 +4027,10 @@ void TdApi::processRspParkedOrderInsert(Task task)
 	data["CombHedgeFlag"] = task_data.CombHedgeFlag;
 	data["GTDDate"] = task_data.GTDDate;
 	data["BusinessUnit"] = task_data.BusinessUnit;
-	data["ErrorMsg"] = task_data.ErrorMsg;
+
+	std::string ErrorMsg1 = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+	data["ErrorMsg"] = ErrorMsg1;
+
 	data["OrderRef"] = task_data.OrderRef;
 	data["InvestorID"] = task_data.InvestorID;
 	data["VolumeCondition"] = task_data.VolumeCondition;
@@ -4029,7 +4038,8 @@ void TdApi::processRspParkedOrderInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg2 = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg2;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspParkedOrderInsert(data, error, task.task_id, task.task_last);
@@ -4046,7 +4056,10 @@ void TdApi::processRspParkedOrderAction(Task task)
 	data["ActionFlag"] = task_data.ActionFlag;
 	data["OrderActionRef"] = task_data.OrderActionRef;
 	data["UserType"] = task_data.UserType;
-	data["ErrorMsg"] = task_data.ErrorMsg;
+
+	std::string ErrorMsg1 = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+	data["ErrorMsg"] = ErrorMsg1;
+
 	data["UserID"] = task_data.UserID;
 	data["LimitPrice"] = task_data.LimitPrice;
 	data["OrderRef"] = task_data.OrderRef;
@@ -4062,7 +4075,8 @@ void TdApi::processRspParkedOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg2 = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg2;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspParkedOrderAction(data, error, task.task_id, task.task_last);
@@ -4090,7 +4104,8 @@ void TdApi::processRspOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspOrderAction(data, error, task.task_id, task.task_last);
@@ -4112,7 +4127,8 @@ void TdApi::processRspQueryMaxOrderVolume(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQueryMaxOrderVolume(data, error, task.task_id, task.task_last);
@@ -4130,7 +4146,8 @@ void TdApi::processRspSettlementInfoConfirm(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspSettlementInfoConfirm(data, error, task.task_id, task.task_last);
@@ -4147,7 +4164,8 @@ void TdApi::processRspRemoveParkedOrder(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspRemoveParkedOrder(data, error, task.task_id, task.task_last);
@@ -4164,7 +4182,8 @@ void TdApi::processRspRemoveParkedOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspRemoveParkedOrderAction(data, error, task.task_id, task.task_last);
@@ -4193,7 +4212,8 @@ void TdApi::processRspExecOrderInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspExecOrderInsert(data, error, task.task_id, task.task_last);
@@ -4219,7 +4239,8 @@ void TdApi::processRspExecOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspExecOrderAction(data, error, task.task_id, task.task_last);
@@ -4239,7 +4260,8 @@ void TdApi::processRspForQuoteInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspForQuoteInsert(data, error, task.task_id, task.task_last);
@@ -4272,7 +4294,8 @@ void TdApi::processRspQuoteInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQuoteInsert(data, error, task.task_id, task.task_last);
@@ -4298,7 +4321,8 @@ void TdApi::processRspQuoteAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQuoteAction(data, error, task.task_id, task.task_last);
@@ -4322,7 +4346,8 @@ void TdApi::processRspLockInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspLockInsert(data, error, task.task_id, task.task_last);
@@ -4346,7 +4371,8 @@ void TdApi::processRspCombActionInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspCombActionInsert(data, error, task.task_id, task.task_last);
@@ -4418,7 +4444,8 @@ void TdApi::processRspQryOrder(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryOrder(data, error, task.task_id, task.task_last);
@@ -4462,7 +4489,8 @@ void TdApi::processRspQryTrade(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryTrade(data, error, task.task_id, task.task_last);
@@ -4521,7 +4549,8 @@ void TdApi::processRspQryInvestorPosition(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInvestorPosition(data, error, task.task_id, task.task_last);
@@ -4582,7 +4611,8 @@ void TdApi::processRspQryTradingAccount(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryTradingAccount(data, error, task.task_id, task.task_last);
@@ -4609,7 +4639,8 @@ void TdApi::processRspQryInvestor(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInvestor(data, error, task.task_id, task.task_last);
@@ -4631,7 +4662,8 @@ void TdApi::processRspQryTradingCode(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryTradingCode(data, error, task.task_id, task.task_last);
@@ -4655,7 +4687,8 @@ void TdApi::processRspQryInstrumentMarginRate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInstrumentMarginRate(data, error, task.task_id, task.task_last);
@@ -4681,7 +4714,8 @@ void TdApi::processRspQryInstrumentCommissionRate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInstrumentCommissionRate(data, error, task.task_id, task.task_last);
@@ -4698,7 +4732,8 @@ void TdApi::processRspQryExchange(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryExchange(data, error, task.task_id, task.task_last);
@@ -4729,7 +4764,8 @@ void TdApi::processRspQryProduct(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryProduct(data, error, task.task_id, task.task_last);
@@ -4749,7 +4785,10 @@ void TdApi::processRspQryInstrument(Task task)
 	data["PositionType"] = task_data.PositionType;
 	data["ProductClass"] = task_data.ProductClass;
 	data["MinSellVolume"] = task_data.MinSellVolume;
-	data["InstrumentName"] = task_data.InstrumentName;
+
+	std::string InstrumentName = boost::locale::conv::to_utf<char>(task_data.InstrumentName, std::string("GB2312"));
+	data["InstrumentName"] = InstrumentName;
+
 	data["ShortMarginRatio"] = task_data.ShortMarginRatio;
 	data["VolumeMultiple"] = task_data.VolumeMultiple;
 	data["MaxMarginSideAlgorithm"] = task_data.MaxMarginSideAlgorithm;
@@ -4777,7 +4816,8 @@ void TdApi::processRspQryInstrument(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInstrument(data, error, task.task_id, task.task_last);
@@ -4835,7 +4875,8 @@ void TdApi::processRspQryDepthMarketData(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryDepthMarketData(data, error, task.task_id, task.task_last);
@@ -4855,7 +4896,8 @@ void TdApi::processRspQrySettlementInfo(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQrySettlementInfo(data, error, task.task_id, task.task_last);
@@ -4873,7 +4915,8 @@ void TdApi::processRspQryTransferBank(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryTransferBank(data, error, task.task_id, task.task_last);
@@ -4913,7 +4956,8 @@ void TdApi::processRspQryInvestorPositionDetail(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInvestorPositionDetail(data, error, task.task_id, task.task_last);
@@ -4930,7 +4974,8 @@ void TdApi::processRspQryNotice(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryNotice(data, error, task.task_id, task.task_last);
@@ -4948,7 +4993,8 @@ void TdApi::processRspQrySettlementInfoConfirm(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQrySettlementInfoConfirm(data, error, task.task_id, task.task_last);
@@ -4982,7 +5028,8 @@ void TdApi::processRspQryInvestorPositionCombineDetail(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInvestorPositionCombineDetail(data, error, task.task_id, task.task_last);
@@ -5001,7 +5048,8 @@ void TdApi::processRspQryCFMMCTradingAccountKey(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryCFMMCTradingAccountKey(data, error, task.task_id, task.task_last);
@@ -5023,7 +5071,8 @@ void TdApi::processRspQryEWarrantOffset(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryEWarrantOffset(data, error, task.task_id, task.task_last);
@@ -5064,7 +5113,8 @@ void TdApi::processRspQryInvestorProductGroupMargin(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInvestorProductGroupMargin(data, error, task.task_id, task.task_last);
@@ -5085,7 +5135,8 @@ void TdApi::processRspQryExchangeMarginRate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryExchangeMarginRate(data, error, task.task_id, task.task_last);
@@ -5114,7 +5165,8 @@ void TdApi::processRspQryExchangeMarginRateAdjust(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryExchangeMarginRateAdjust(data, error, task.task_id, task.task_last);
@@ -5133,7 +5185,8 @@ void TdApi::processRspQryExchangeRate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryExchangeRate(data, error, task.task_id, task.task_last);
@@ -5152,7 +5205,8 @@ void TdApi::processRspQrySecAgentACIDMap(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQrySecAgentACIDMap(data, error, task.task_id, task.task_last);
@@ -5169,7 +5223,8 @@ void TdApi::processRspQryProductExchRate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryProductExchRate(data, error, task.task_id, task.task_last);
@@ -5186,7 +5241,8 @@ void TdApi::processRspQryProductGroup(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryProductGroup(data, error, task.task_id, task.task_last);
@@ -5210,7 +5266,8 @@ void TdApi::processRspQryOptionInstrTradeCost(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryOptionInstrTradeCost(data, error, task.task_id, task.task_last);
@@ -5237,7 +5294,8 @@ void TdApi::processRspQryOptionInstrCommRate(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryOptionInstrCommRate(data, error, task.task_id, task.task_last);
@@ -5290,7 +5348,8 @@ void TdApi::processRspQryExecOrder(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryExecOrder(data, error, task.task_id, task.task_last);
@@ -5324,7 +5383,8 @@ void TdApi::processRspQryForQuote(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryForQuote(data, error, task.task_id, task.task_last);
@@ -5383,7 +5443,8 @@ void TdApi::processRspQryQuote(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryQuote(data, error, task.task_id, task.task_last);
@@ -5431,7 +5492,8 @@ void TdApi::processRspQryLock(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryLock(data, error, task.task_id, task.task_last);
@@ -5451,7 +5513,8 @@ void TdApi::processRspQryLockPosition(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryLockPosition(data, error, task.task_id, task.task_last);
@@ -5469,7 +5532,8 @@ void TdApi::processRspQryInvestorLevel(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryInvestorLevel(data, error, task.task_id, task.task_last);
@@ -5491,7 +5555,8 @@ void TdApi::processRspQryExecFreeze(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryExecFreeze(data, error, task.task_id, task.task_last);
@@ -5508,7 +5573,8 @@ void TdApi::processRspQryCombInstrumentGuard(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryCombInstrumentGuard(data, error, task.task_id, task.task_last);
@@ -5547,7 +5613,8 @@ void TdApi::processRspQryCombAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryCombAction(data, error, task.task_id, task.task_last);
@@ -5589,7 +5656,8 @@ void TdApi::processRspQryTransferSerial(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryTransferSerial(data, error, task.task_id, task.task_last);
@@ -5620,7 +5688,8 @@ void TdApi::processRspQryAccountregister(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryAccountregister(data, error, task.task_id, task.task_last);
@@ -5631,7 +5700,8 @@ void TdApi::processRspError(Task task)
 	PyLock lock;
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspError(error, task.task_id, task.task_last);
@@ -5775,7 +5845,8 @@ void TdApi::processErrRtnOrderInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnOrderInsert(data, error);
@@ -5815,7 +5886,8 @@ void TdApi::processErrRtnOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnOrderAction(data, error);
@@ -5993,7 +6065,8 @@ void TdApi::processErrRtnExecOrderInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnExecOrderInsert(data, error);
@@ -6032,7 +6105,8 @@ void TdApi::processErrRtnExecOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnExecOrderAction(data, error);
@@ -6052,7 +6126,8 @@ void TdApi::processErrRtnForQuoteInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnForQuoteInsert(data, error);
@@ -6139,7 +6214,8 @@ void TdApi::processErrRtnQuoteInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnQuoteInsert(data, error);
@@ -6177,7 +6253,8 @@ void TdApi::processErrRtnQuoteAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnQuoteAction(data, error);
@@ -6273,7 +6350,8 @@ void TdApi::processErrRtnLockInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnLockInsert(data, error);
@@ -6331,7 +6409,8 @@ void TdApi::processErrRtnCombActionInsert(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnCombActionInsert(data, error);
@@ -6349,7 +6428,8 @@ void TdApi::processRspQryContractBank(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryContractBank(data, error, task.task_id, task.task_last);
@@ -6392,7 +6472,8 @@ void TdApi::processRspQryParkedOrder(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryParkedOrder(data, error, task.task_id, task.task_last);
@@ -6425,7 +6506,8 @@ void TdApi::processRspQryParkedOrderAction(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryParkedOrderAction(data, error, task.task_id, task.task_last);
@@ -6447,7 +6529,8 @@ void TdApi::processRspQryTradingNotice(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryTradingNotice(data, error, task.task_id, task.task_last);
@@ -6468,7 +6551,8 @@ void TdApi::processRspQryBrokerTradingParams(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryBrokerTradingParams(data, error, task.task_id, task.task_last);
@@ -6488,7 +6572,8 @@ void TdApi::processRspQryBrokerTradingAlgos(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQryBrokerTradingAlgos(data, error, task.task_id, task.task_last);
@@ -6504,7 +6589,8 @@ void TdApi::processRspQueryCFMMCTradingAccountToken(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQueryCFMMCTradingAccountToken(data, error, task.task_id, task.task_last);
@@ -7070,7 +7156,8 @@ void TdApi::processErrRtnBankToFutureByFuture(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnBankToFutureByFuture(data, error);
@@ -7127,7 +7214,8 @@ void TdApi::processErrRtnFutureToBankByFuture(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnFutureToBankByFuture(data, error);
@@ -7191,7 +7279,8 @@ void TdApi::processErrRtnRepealBankToFutureByFutureManual(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnRepealBankToFutureByFutureManual(data, error);
@@ -7255,7 +7344,8 @@ void TdApi::processErrRtnRepealFutureToBankByFutureManual(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnRepealFutureToBankByFutureManual(data, error);
@@ -7305,7 +7395,8 @@ void TdApi::processErrRtnQueryBankBalanceByFuture(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onErrRtnQueryBankBalanceByFuture(data, error);
@@ -7484,7 +7575,8 @@ void TdApi::processRspFromBankToFutureByFuture(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspFromBankToFutureByFuture(data, error, task.task_id, task.task_last);
@@ -7541,7 +7633,8 @@ void TdApi::processRspFromFutureToBankByFuture(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspFromFutureToBankByFuture(data, error, task.task_id, task.task_last);
@@ -7591,7 +7684,8 @@ void TdApi::processRspQueryBankAccountMoneyByFuture(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspQueryBankAccountMoneyByFuture(data, error, task.task_id, task.task_last);
@@ -7761,7 +7855,7 @@ void TdApi::processRtnChangeAccountByBank(Task task)
 
 
 ///-------------------------------------------------------------------------------------
-///÷˜∂Ø∫Ø ˝
+///‰∏ªÂä®ÂáΩÊï∞
 ///-------------------------------------------------------------------------------------
 
 void TdApi::createFtdcTraderApi(string pszFlowPath)
@@ -7788,7 +7882,7 @@ int TdApi::join()
 
 int TdApi::exit()
 {
-	//∏√∫Ø ˝‘⁄‘≠…˙API¿Ô√ª”–£¨”√”⁄∞≤»´ÕÀ≥ˆAPI”√£¨‘≠…˙µƒjoinÀ∆∫ı≤ªÃ´Œ»∂®
+	//ËØ•ÂáΩÊï∞Âú®ÂéüÁîüAPIÈáåÊ≤°ÊúâÔºåÁî®‰∫éÂÆâÂÖ®ÈÄÄÂá∫APIÁî®ÔºåÂéüÁîüÁöÑjoin‰ºº‰πé‰∏çÂ§™Á®≥ÂÆö
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
 	this->api = NULL;
@@ -7808,7 +7902,7 @@ void TdApi::registerFront(string pszFrontAddress)
 
 void TdApi::subscribePrivateTopic(int nType)
 {
-	//∏√∫Ø ˝Œ™ ÷∂Ø±‡–¥
+	//ËØ•ÂáΩÊï∞‰∏∫ÊâãÂä®ÁºñÂÜô
 	THOST_TE_RESUME_TYPE type;
 
 	switch (nType)
@@ -7837,7 +7931,7 @@ void TdApi::subscribePrivateTopic(int nType)
 
 void TdApi::subscribePublicTopic(int nType)
 {
-	//∏√∫Ø ˝Œ™ ÷∂Ø±‡–¥
+	//ËØ•ÂáΩÊï∞‰∏∫ÊâãÂä®ÁºñÂÜô
 	THOST_TE_RESUME_TYPE type;
 
 	switch (nType)
@@ -8934,17 +9028,17 @@ int TdApi::reqQueryBankAccountMoneyByFuture(dict req, int nRequestID)
 
 
 ///-------------------------------------------------------------------------------------
-///Boost.Python∑‚◊∞
+///Boost.PythonÂ∞ÅË£Ö
 ///-------------------------------------------------------------------------------------
 
 struct TdApiWrap : TdApi, wrapper < TdApi >
 {
 	virtual void onFrontConnected()
 	{
-		//‘⁄œÚpythonª∑æ≥÷–µ˜”√ªÿµ˜∫Ø ˝Õ∆ÀÕ ˝æ›«∞£¨–Ë“™œ»ªÒ»°»´æ÷À¯GIL£¨∑¿÷πΩ‚ Õ∆˜±¿¿£
+		//Âú®ÂêëpythonÁéØÂ¢É‰∏≠Ë∞ÉÁî®ÂõûË∞ÉÂáΩÊï∞Êé®ÈÄÅÊï∞ÊçÆÂâçÔºåÈúÄË¶ÅÂÖàËé∑ÂèñÂÖ®Â±ÄÈîÅGILÔºåÈò≤Ê≠¢Ëß£ÈáäÂô®Â¥©Ê∫É
 		PyLock lock;
 
-		//“‘œ¬µƒtry...catch...ø…“‘ µœ÷≤∂◊Ωpythonª∑æ≥÷–¥ÌŒÛµƒπ¶ƒ‹£¨∑¿÷πC++÷±Ω”≥ˆœ÷‘≠“ÚŒ¥÷™µƒ±¿¿£
+		//‰ª•‰∏ãÁöÑtry...catch...ÂèØ‰ª•ÂÆûÁé∞ÊçïÊçâpythonÁéØÂ¢É‰∏≠ÈîôËØØÁöÑÂäüËÉΩÔºåÈò≤Ê≠¢C++Áõ¥Êé•Âá∫Áé∞ÂéüÂõ†Êú™Áü•ÁöÑÂ¥©Ê∫É
 		try
 		{
 			this->get_override("onFrontConnected")();
@@ -10307,7 +10401,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 
 BOOST_PYTHON_MODULE(vnctptd)
 {
-	PyEval_InitThreads();	//µº»Î ±‘À––£¨±£÷§œ»¥¥Ω®GIL
+	PyEval_InitThreads();	//ÂØºÂÖ•Êó∂ËøêË°åÔºå‰øùËØÅÂÖàÂàõÂª∫GIL
 
 	class_<TdApiWrap, boost::noncopyable>("TdApi")
 		.def("createFtdcTraderApi", &TdApiWrap::createFtdcTraderApi)
