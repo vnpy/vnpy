@@ -73,9 +73,9 @@ git clone https://github.com/blampe/IbPy.git
 
 cd IbPy
 python setup.py install
-```
 
-* OKCOIN - ```pip install websocket``` or ```conda install websocket```
+```
+* OKCOIN - ```pip install websocket-client``` or ```conda install websocket-client```
 
 
 ---
