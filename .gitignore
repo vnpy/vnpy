@@ -3,14 +3,10 @@ ipch/
 Release/
 
 *.sdf
-*.sln
 *.suo
 *.exp
 *.pdb
-*.filters
-*.vcxproj
 *.cd
-*.vcxproj.filters
 
 # Python编译文件
 *.pyc
