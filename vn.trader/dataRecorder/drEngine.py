@@ -142,6 +142,7 @@ class DrEngine(object):
         #按照不同合约分类时间list
         ninetoeleven=["bu","rb","hc"]#9点到11点的合约
         ninetohalfeleven=["jm","i","SR","CF","ZC","FG","TA","OI","RM","MA","m","y","a","p","ni","al","zn"]#9点到11点半的合约
+
         whether_in_list=False
         for instrument in ninetoeleven:
             if instrument in vtSymbol:
