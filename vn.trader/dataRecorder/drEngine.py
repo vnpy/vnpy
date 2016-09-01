@@ -145,7 +145,7 @@ class DrEngine(object):
         whether_in_list=False
         for instrument in ninetoeleven:
             if instrument in vtSymbol:
-                time_f=datetime.strptime(drTick.time,"%H:%M:%S.%f")
+                time_f = drTick.datetime
                 if (time_f >= datetime.today().replace(hour=9,minute=0,second=0) and time_f <= datetime.today().replace(hour=15,minute=0,second=0)) or (time_f>=datetime.today().replace(hour=21,minute=0,second=0) and time_f<=datetime.today().replace(hour=23,minute=0,second=0)):
                     # 更新Tick数据
                     if vtSymbol in self.tickDict:
@@ -198,7 +198,7 @@ class DrEngine(object):
                             bar.close = drTick.lastPrice
         for instrument in ninetohalfeleven:
             if instrument in vtSymbol:
-                time_f = datetime.strptime(drTick.time, "%H:%M:%S.%f")
+                time_f = drTick.datetime
                 if (time_f >= datetime.today().replace(hour=9, minute=0, second=0) and time_f <= datetime.today().replace(hour=15, minute=0, second=0)) or (time_f >= datetime.today().replace(hour=21, minute=0, second=0) and time_f <= datetime.today().replace(hour=23, minute=30, second=0)):
                     # 更新Tick数据
                     if vtSymbol in self.tickDict:
@@ -258,7 +258,7 @@ class DrEngine(object):
                 whether_in_list=True
 
         if whether_in_list==False:#如果不在特殊列表里就只存白天的数据
-            time_f = datetime.strptime(drTick.time, "%H:%M:%S.%f")
+            time_f = drTick.datetime
             if (time_f >= datetime.today().replace(hour=9, minute=0, second=0) and time_f <= datetime.today().replace(hour=15, minute=0, second=0)):
                 # 更新Tick数据
                 if vtSymbol in self.tickDict:
