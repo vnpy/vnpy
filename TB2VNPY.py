@@ -1,4 +1,5 @@
 #coding:utf-8
+#输出文件在output目录之中
 import csv
 import os
 for filename in os.listdir(os.getcwd()):
@@ -14,7 +15,7 @@ for filename in os.listdir(os.getcwd()):
             a,b,c,d,e,f,g=line
             #print "a:%s,b:%s,c:%s,d:%s,e:%s,f:%s,g:%s"%(a,b,c,d,e,f,g)
             date=a.split(' ')[0]
-            time=a.split(' ')[1]
+            time=a.split(' ')[1]+":00"
             writer.writerow((date,time,b,c,d,e,f))
-    csvfile.close()
-    csvfile_out.close()
+         csvfile.close()
+         csvfile_out.close()
