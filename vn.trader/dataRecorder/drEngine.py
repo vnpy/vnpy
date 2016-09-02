@@ -19,7 +19,7 @@ from vtGateway import VtSubscribeReq, VtLogData
 from drBase import *
 from vtFunction import todayDate
 
-
+import time
 ########################################################################
 class DrEngine(object):
     """数据记录引擎"""
@@ -140,13 +140,15 @@ class DrEngine(object):
         drTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
 
         #按照不同合约分类时间list
-        ninetoeleven=["bu","rb","hc"]#9点到11点的合约
-        ninetohalfeleven=["jm","i","SR","CF","ZC","FG","TA","OI","RM","MA","m","y","a","p","ni","al","zn"]#9点到11点半的合约
-
+        ninetoeleven=["bu","rb","hc","ru"]#9点到11点的合约
+        ninetohalfeleven=["p","j","m","y","a","b","jm","i","SR","CF","RM","MA","ZC","FG","OI"]#9点到11点半的合约
+        ninetoone = ["cu","al","zn","pb","sn","ni"]  # 9点到1点的合约列表
+        ninetohalftwo=["ag","au"]#9点到2点半的合约
+        #过滤中没有加入国债合约！
         whether_in_list=False
         for instrument in ninetoeleven:
             if instrument in vtSymbol:
-                time_f = drTick.datetime
+                time_f=datetime.now()
                 if (time_f >= datetime.today().replace(hour=9,minute=0,second=0) and time_f <= datetime.today().replace(hour=15,minute=0,second=0)) or (time_f>=datetime.today().replace(hour=21,minute=0,second=0) and time_f<=datetime.today().replace(hour=23,minute=0,second=0)):
                     # 更新Tick数据
                     if vtSymbol in self.tickDict:
@@ -199,8 +201,116 @@ class DrEngine(object):
                             bar.close = drTick.lastPrice
         for instrument in ninetohalfeleven:
             if instrument in vtSymbol:
-                time_f = drTick.datetime
+                time_f = datetime.now()
                 if (time_f >= datetime.today().replace(hour=9, minute=0, second=0) and time_f <= datetime.today().replace(hour=15, minute=0, second=0)) or (time_f >= datetime.today().replace(hour=21, minute=0, second=0) and time_f <= datetime.today().replace(hour=23, minute=30, second=0)):
+                    # 更新Tick数据
+                    if vtSymbol in self.tickDict:
+                        self.insertData(TICK_DB_NAME, vtSymbol, drTick)
+
+                        if vtSymbol in self.activeSymbolDict:
+                            activeSymbol = self.activeSymbolDict[vtSymbol]
+                            self.insertData(TICK_DB_NAME, activeSymbol, drTick)
+
+                        # 发出日志
+                        self.writeDrLog(u'记录Tick数据%s，时间:%s, last:%s, bid:%s, ask:%s'
+                                        % (
+                                        drTick.vtSymbol, drTick.time, drTick.lastPrice, drTick.bidPrice1, drTick.askPrice1))
+
+                    # 更新分钟线数据
+                    if vtSymbol in self.barDict:
+                        bar = self.barDict[vtSymbol]
+
+                        # 如果第一个TICK或者新的一分钟
+                        if not bar.datetime or bar.datetime.minute != drTick.datetime.minute:
+                            if bar.vtSymbol:
+                                newBar = copy.copy(bar)
+                                self.insertData(MINUTE_DB_NAME, vtSymbol, newBar)
+
+                                if vtSymbol in self.activeSymbolDict:
+                                    activeSymbol = self.activeSymbolDict[vtSymbol]
+                                    self.insertData(MINUTE_DB_NAME, activeSymbol, newBar)
+
+                                self.writeDrLog(u'记录分钟线数据%s，时间:%s, O:%s, H:%s, L:%s, C:%s'
+                                                % (bar.vtSymbol, bar.time, bar.open, bar.high,
+                                                   bar.low, bar.close))
+
+                            bar.vtSymbol = drTick.vtSymbol
+                            bar.symbol = drTick.symbol
+                            bar.exchange = drTick.exchange
+
+                            bar.open = drTick.lastPrice
+                            bar.high = drTick.lastPrice
+                            bar.low = drTick.lastPrice
+                            bar.close = drTick.lastPrice
+
+                            bar.date = drTick.date
+                            bar.time = drTick.time
+                            bar.datetime = drTick.datetime
+                            bar.volume = drTick.volume
+                            bar.openInterest = drTick.openInterest
+                            # 否则继续累加新的K线
+                        else:
+                            bar.high = max(bar.high, drTick.lastPrice)
+                            bar.low = min(bar.low, drTick.lastPrice)
+                            bar.close = drTick.lastPrice
+        for instrument in ninetoone:
+            if instrument in vtSymbol:
+                time_f = datetime.now()
+                if (time_f >= datetime.today().replace(hour=9, minute=0, second=0) and time_f <= datetime.today().replace(hour=15, minute=0, second=0)) or (time_f >= datetime.today().replace(hour=21, minute=0, second=0) and time_f <= datetime.today().replace(hour=24, minute=0, second=0)) or (time_f<=datetime.today().replace(hour=1, minute=0, second=0)):
+                    # 更新Tick数据
+                    if vtSymbol in self.tickDict:
+                        self.insertData(TICK_DB_NAME, vtSymbol, drTick)
+
+                        if vtSymbol in self.activeSymbolDict:
+                            activeSymbol = self.activeSymbolDict[vtSymbol]
+                            self.insertData(TICK_DB_NAME, activeSymbol, drTick)
+
+                        # 发出日志
+                        self.writeDrLog(u'记录Tick数据%s，时间:%s, last:%s, bid:%s, ask:%s'
+                                        % (
+                                        drTick.vtSymbol, drTick.time, drTick.lastPrice, drTick.bidPrice1, drTick.askPrice1))
+
+                    # 更新分钟线数据
+                    if vtSymbol in self.barDict:
+                        bar = self.barDict[vtSymbol]
+
+                        # 如果第一个TICK或者新的一分钟
+                        if not bar.datetime or bar.datetime.minute != drTick.datetime.minute:
+                            if bar.vtSymbol:
+                                newBar = copy.copy(bar)
+                                self.insertData(MINUTE_DB_NAME, vtSymbol, newBar)
+
+                                if vtSymbol in self.activeSymbolDict:
+                                    activeSymbol = self.activeSymbolDict[vtSymbol]
+                                    self.insertData(MINUTE_DB_NAME, activeSymbol, newBar)
+
+                                self.writeDrLog(u'记录分钟线数据%s，时间:%s, O:%s, H:%s, L:%s, C:%s'
+                                                % (bar.vtSymbol, bar.time, bar.open, bar.high,
+                                                   bar.low, bar.close))
+
+                            bar.vtSymbol = drTick.vtSymbol
+                            bar.symbol = drTick.symbol
+                            bar.exchange = drTick.exchange
+
+                            bar.open = drTick.lastPrice
+                            bar.high = drTick.lastPrice
+                            bar.low = drTick.lastPrice
+                            bar.close = drTick.lastPrice
+
+                            bar.date = drTick.date
+                            bar.time = drTick.time
+                            bar.datetime = drTick.datetime
+                            bar.volume = drTick.volume
+                            bar.openInterest = drTick.openInterest
+                            # 否则继续累加新的K线
+                        else:
+                            bar.high = max(bar.high, drTick.lastPrice)
+                            bar.low = min(bar.low, drTick.lastPrice)
+                            bar.close = drTick.lastPrice
+        for instrument in ninetohalftwo:
+            if instrument in vtSymbol:
+                time_f = datetime.now()
+                if (time_f >= datetime.today().replace(hour=9, minute=0, second=0) and time_f <= datetime.today().replace(hour=15, minute=0, second=0)) or (time_f >= datetime.today().replace(hour=21, minute=0, second=0) and time_f <= datetime.today().replace(hour=24, minute=0, second=0)) or (time_f<=datetime.today().replace(hour=2, minute=30, second=0)):
                     # 更新Tick数据
                     if vtSymbol in self.tickDict:
                         self.insertData(TICK_DB_NAME, vtSymbol, drTick)
@@ -257,9 +367,8 @@ class DrEngine(object):
         for instrument in ninetohalfeleven:
             if instrument in vtSymbol:
                 whether_in_list=True
-
         if whether_in_list==False:#如果不在特殊列表里就只存白天的数据
-            time_f = drTick.datetime
+            time_f = datetime.now()
             if (time_f >= datetime.today().replace(hour=9, minute=0, second=0) and time_f <= datetime.today().replace(hour=15, minute=0, second=0)):
                 # 更新Tick数据
                 if vtSymbol in self.tickDict:
@@ -312,9 +421,6 @@ class DrEngine(object):
                         bar.high = max(bar.high, drTick.lastPrice)
                         bar.low = min(bar.low, drTick.lastPrice)
                         bar.close = drTick.lastPrice
-
-
-
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
