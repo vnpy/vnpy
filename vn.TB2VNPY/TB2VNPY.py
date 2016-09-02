@@ -1,7 +1,10 @@
 #coding:utf-8
+#直接在TB2VNPY目录中丢下csv文件运行即可
 #输出文件在output目录之中
 import csv
 import os
+if os.path.exists('./output')==False:
+    os.mkdir('./output')
 for filename in os.listdir(os.getcwd()):
     if "csv" in filename:
          path=os.getcwd()+'/'+filename
