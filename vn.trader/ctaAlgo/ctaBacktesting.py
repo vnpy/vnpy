@@ -130,6 +130,7 @@ class BacktestingEngine(object):
         initCursor = collection.find(flt)
         
         # 将数据从查询指针中读取出，并生成列表
+        self.initData = []              # 清空initData列表
         for d in initCursor:
             data = dataClass()
             data.__dict__ = d
