@@ -13,7 +13,7 @@ from vtFunction import loadMongoSetting
 from ctaAlgo.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
-
+from bson.objectid import ObjectId
 
 ########################################################################
 class MainEngine(object):
@@ -234,6 +234,7 @@ class MainEngine(object):
         if self.dbClient:
             db = self.dbClient[dbName]
             collection = db[collectionName]
+            d['_id']=ObjectId()
             collection.insert(d)
     
     #----------------------------------------------------------------------
