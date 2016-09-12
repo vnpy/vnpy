@@ -42,7 +42,7 @@ class MainWindow(QtGui.QMainWindow):
         widgetMarketM, dockMarketM = self.createDock(MarketMonitor, u'行情', QtCore.Qt.RightDockWidgetArea)
         widgetLogM, dockLogM = self.createDock(LogMonitor, u'日志', QtCore.Qt.BottomDockWidgetArea)
         widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, u'错误', QtCore.Qt.BottomDockWidgetArea)
-        widgetTradeM, dockTradeM = self.createDock(TradeMonitor, u'成交', QtCore.Qt.BottomDockWidgetArea)
+        self.widgetTradeM, dockTradeM = self.createDock(TradeMonitor, u'成交', QtCore.Qt.BottomDockWidgetArea)
         self.widgetOrderM, dockOrderM = self.createDock(OrderMonitor, u'委托', QtCore.Qt.RightDockWidgetArea)
         widgetPositionM, dockPositionM = self.createDock(PositionMonitor, u'持仓', QtCore.Qt.BottomDockWidgetArea)
         widgetAccountM, dockAccountM = self.createDock(AccountMonitor, u'资金', QtCore.Qt.BottomDockWidgetArea)
@@ -197,10 +197,18 @@ class MainWindow(QtGui.QMainWindow):
             self.sbCount = 0
             self.statusLabel.setText(self.getCpuMemory())
 
+        if self.connectGatewayName != EMPTY_STRING:
+            self.setWindowTitle(self.connectGatewayName)
+
         # 定时重连
         dt = datetime.now()
-        if dt.hour == 20 or dt.hour == 8:
+        if (dt.hour == 20 or dt.hour == 8) and dt.weekday() < 5:
             if dt.minute == 40 and dt.second == 0 and self.connectGatewayName != EMPTY_STRING:
+
+                self.mainEngine.writeLog(u'清空委托列表')
+                self.widgetOrderM.dataDict.clear()
+                self.mainEngine.writeLog(u'清空交易列表')
+                self.widgetTradeM.dataDict.clear()
                 self.mainEngine.writeLog(u'重新连接{0}'.format(self.connectGatewayName))
                 self.mainEngine.connect(self.connectGatewayName)
 

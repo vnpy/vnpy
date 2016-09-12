@@ -640,7 +640,7 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
-        pass
+        pas
     
     #----------------------------------------------------------------------
     def onRspExecOrderInsert(self, data, error, n, last):
