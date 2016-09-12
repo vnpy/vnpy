@@ -16,7 +16,7 @@ from vnctpmd import MdApi
 from vnctptd import TdApi
 from ctpDataType import *
 from vtGateway import *
-
+from datetime import datetime
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -330,8 +330,8 @@ class CtpMdApi(MdApi):
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
         tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
-        tick.date = data['TradingDay']
-        
+        #tick.date = data['TradingDay']
+        tick.date="".join(str(datetime.today().date()).split('-'))
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
         tick.lowPrice = data['LowestPrice']
