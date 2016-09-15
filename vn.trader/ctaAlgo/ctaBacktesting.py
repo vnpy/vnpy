@@ -610,13 +610,13 @@ class BacktestingEngine(object):
         elif orderType == CTAORDER_COVER:
             order.direction = DIRECTION_LONG
             order.offset = OFFSET_CLOSE     
-        
-        # 保存到限价单字典中
-        self.workingLimitOrderDict[orderID] = order
-        self.limitOrderDict[orderID] = order
 
         # modified by IncenseLee
-        return u'{0}.{1}'.format(order.gatewayName, orderID)
+        key = u'{0}.{1}'.format(order.gatewayName, orderID)
+        # 保存到限价单字典中
+        self.workingLimitOrderDict[key] = order
+        self.limitOrderDict[key] = order
+        return key
     
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
@@ -630,6 +630,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
         """发停止单（本地实现）"""
+
         self.stopOrderCount += 1
         stopOrderID = STOPORDERPREFIX + str(self.stopOrderCount)
         
@@ -858,7 +859,7 @@ class BacktestingEngine(object):
 
                     resultDict[trade.dt] = result
 
-                    self.output(u'{0},short:{1},{2},cover:{3},vol:{4},{5}'
+                    self.writeCtaLog(u'{0},short:{1},{2},cover:{3},vol:{4},{5}'
                                 .format(entryTrade.tradeTime, entryTrade.price,trade.tradeTime,trade.price, trade.volume,result.pnl))
 
             # 空头交易        
@@ -874,7 +875,7 @@ class BacktestingEngine(object):
                                            self.rate, self.slippage, self.size)
                     resultDict[trade.dt] = result
 
-                    self.output(u'{0},buy:{1},{2},sell:{3},vol:{4},{5}'
+                    self.writeCtaLog(u'{0},buy:{1},{2},sell:{3},vol:{4},{5}'
                                 .format(entryTrade.tradeTime, entryTrade.price,trade.tradeTime,trade.price, trade.volume,result.pnl))
 
         # 检查是否有交易
