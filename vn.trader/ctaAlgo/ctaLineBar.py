@@ -58,17 +58,20 @@ class CtaLineBar(object):
         self.paramList.append('inputAtr2Len')
         self.paramList.append('inputAtr3Len')
         self.paramList.append('inputVolLen')
-        self.paramList.append('inputRsiLen')
+        self.paramList.append('inputRsi1Len')
+        self.paramList.append('inputRsi2Len')
         self.paramList.append('inputCmiLen')
         self.paramList.append('inputBollLen')
         self.paramList.append('inputBollStdRate')
-
+        self.paramList.append('inputKdjLen')
+        self.paramList.append('inputMacdFastPeriodLen')
+        self.paramList.append('inputMacdSlowPeriodLen')
+        self.paramList.append('inputMacdSignalPeriodLen')
 
         self.paramList.append('minDiff')
         self.paramList.append('shortSymbol')
         self.paramList.append('activeDayJump')
         self.paramList.append('name')
-
 
         # 输入参数
         self.name = u'LineBar'
@@ -88,7 +91,8 @@ class CtaLineBar(object):
 
         self.inputVolLen = EMPTY_INT    # 14           # 平均交易量的计算周期
 
-        self.inputRsiLen = EMPTY_INT    # 7    # RSI 相对强弱指数
+        self.inputRsi1Len = EMPTY_INT    # 7     # RSI 相对强弱指数（快曲线）
+        self.inputRsi2Len = EMPTY_INT    # 14    # RSI 相对强弱指数（慢曲线）
 
         self.shortSymbol = EMPTY_STRING # 商品的短代码
         self.minDiff = 1                # 商品的最小价格单位
@@ -150,7 +154,8 @@ class CtaLineBar(object):
         self.lineAvgVol = []        # K 线的交易量平均
 
         # K线的RSI计算数据
-        self.lineRsi = []           # 记录K线对应的RSI数值，只保留inputRsiLen*8
+        self.lineRsi1 = []           # 记录K线对应的RSI数值，只保留inputRsi1Len*8
+        self.lineRsi2 = []           # 记录K线对应的RSI数值，只保留inputRsi2Len*8
 
         self.lowRsi = 30            # RSI的最低线
         self.highRsi = 70           # RSI的最高线
@@ -170,6 +175,21 @@ class CtaLineBar(object):
         self.lineUpperBand = []            # 上轨
         self.lineMiddleBand = []           # 中线
         self.lineLowerBand = []            # 下轨
+
+        # K线的KDJ指标计算数据
+        self.inputKdjLen = EMPTY_INT    # KDJ指标的长度,缺省是9
+        self.lineK = []                 # K为快速指标
+        self.lineD = []                 # D为慢速指标
+        self.lineJ = []                 #
+
+        # K线的MACD计算数据
+        self.inputMacdFastPeriodLen = EMPTY_INT
+        self.inputMacdSlowPeriodLen = EMPTY_INT
+        self.inputMacdSignalPeriodLen = EMPTY_INT
+
+        self.lineDif = []           # DIF = EMA12 - EMA26，即为talib-MACD返回值macd
+        self.lineDea = []           # DEA = （前一日DEA X 8/10 + 今日DIF X 2/10），即为talib-MACD返回值
+        self.lineMacd = []          # (dif-dea)*2，但是talib中MACD的计算是bar = (dif-dea)*1,国内一般是乘以2
 
         if setting:
             self.setParam(setting)
@@ -223,7 +243,6 @@ class CtaLineBar(object):
         lastBar.low = min(lastBar.low, bar.low)
         lastBar.volume = lastBar.volume + bar.volume
 
-
     def onBar(self, bar):
         """OnBar事件"""
         # 计算相关数据
@@ -235,13 +254,61 @@ class CtaLineBar(object):
         self.__recountRsi()
         self.__recountCmi()
         self.__recountBoll()
-
+        self.__recountMacd()
 
         # 回调上层调用者
         self.onBarFunc(bar)
 
+    def displayLastBar(self):
+        """显示最后一个Bar的信息"""
+        msg = self.name
 
-    def __firstTick(self,tick):
+        if len(self.lineBar) < 2:
+            return msg
+
+        msg = msg + u'{0} o:{1};h{2};l:{3};c:{4},v:{5}'.\
+            format(self.lineBar[-2].datetime, self.lineBar[-2].open, self.lineBar[-2].high,
+                   self.lineBar[-2].low, self.lineBar[-2].close, self.lineBar[-2].volume)
+
+        if self.inputEma1Len > 0 and len(self.lineEma1) > 0:
+            msg = msg + u',EMA({0}):{1}'.format(self.inputEma1Len, self.lineEma1[-1])
+
+        if self.inputEma2Len > 0 and len(self.lineEma2) > 0:
+            msg = msg + u',EMA({0}):{1}'.format(self.inputEma2Len, self.lineEma2[-1])
+
+        if self.inputDmiLen > 0 and len(self.linePdi) > 0:
+            msg = msg + u',Pdi:{1};Mdi:{1};Adx:{2}'.format(self.linePdi[-1], self.lineMdi[-1], self.lineAdx[-1])
+
+        if self.inputAtr1Len > 0 and len(self.lineAtr1) > 0:
+            msg = msg + u',Atr({0}):{1}'.format(self.inputAtr1Len, self.lineAtr1[-1])
+
+        if self.inputAtr2Len > 0 and len(self.lineAtr2) > 0:
+            msg = msg + u',Atr({0}):{1}'.format(self.inputAtr2Len, self.lineAtr2[-1])
+
+        if self.inputAtr3Len > 0 and len(self.lineAtr3) > 0:
+            msg = msg + u',Atr({0}):{1}'.format(self.inputAtr3Len, self.lineAtr3[-1])
+
+        if self.inputVolLen > 0 and len(self.lineAvgVol) > 0:
+            msg = msg + u',AvgVol({0}):{1}'.format(self.inputVolLen, self.lineAvgVol[-1])
+
+        if self.inputRsi1Len > 0 and len(self.lineRsi1) > 0:
+            msg = msg + u',Rsi({0}):{1}'.format(self.inputRsi1Len, self.lineRsi1[-1])
+
+        if self.inputRsi2Len > 0 and len(self.lineRsi2) > 0:
+            msg = msg + u',Rsi({0}):{1}'.format(self.inputRsi2Len, self.lineRsi2[-1])
+
+        if self.inputBollLen > 0 and len(self.lineUpperBand)>0:
+            msg = msg + u',Boll({0}):u:{1},m:{2},l:{3}'.\
+                format(self.inputBollLen, round(self.lineUpperBand[-1], 2),
+                       round(self.lineMiddleBand[-1], 2), round(self.lineLowerBand[-1]), 2)
+
+        if self.inputMacdFastPeriodLen >0 and len(self.lineDif)>0:
+            msg = msg + u',MACD({0},{1},{2}):Dif:{3},Dea{4},Macd:{5}'.\
+                format(self.inputMacdFastPeriodLen,self.inputMacdSlowPeriodLen,self.inputMacdSignalPeriodLen,
+                       round(self.lineDif[-1],2),round(self.lineDea[-1],2),round(self.lineMacd[-1],2))
+        return msg
+
+    def __firstTick(self, tick):
         """ K线的第一个Tick数据"""
         self.bar = CtaBarData()                  # 创建新的K线
 
@@ -722,53 +789,72 @@ class CtaLineBar(object):
     def __recountRsi(self):
         """计算K线的RSI"""
 
-        if self.inputRsiLen <= 0: return
-
-        # 1、lineBar满足长度才执行计算
-        if len(self.lineBar) < self.inputRsiLen+2:
-            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算RSI需要：{1}'.
-                             format(len(self.lineBar), self.inputRsiLen+2))
+        if self.inputRsi1Len <= 0 and self.inputRsi2Len <= 0:
             return
 
-        # 3、inputRsiLen(包含当前周期）的相对强弱
-        listClose=[x.close for x in self.lineBar[-self.inputRsiLen - 2:]]
-        barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsiLen)[-1]
+        # 1、lineBar满足长度才执行计算
+        if len(self.lineBar) < self.inputRsi1Len+2:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算RSI需要：{1}'.
+                             format(len(self.lineBar), self.inputRsi1Len + 2))
+            return
+
+        # 计算第1根RSI曲线
+
+        # 3、inputRsi1Len(包含当前周期）的相对强弱
+        listClose=[x.close for x in self.lineBar[-self.inputRsi1Len - 2:-1]]
+        barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi1Len)[-1]
         barRsi = round(float(barRsi), 3)
 
-        l = len(self.lineRsi)
-        if l > self.inputRsiLen*8:
-            del self.lineRsi[0]
+        l = len(self.lineRsi1)
+        if l > self.inputRsi1Len*8:
+            del self.lineRsi1[0]
 
-        self.lineRsi.append(barRsi)
+        self.lineRsi1.append(barRsi)
 
         if l > 3:
             # 峰
-            if self.lineRsi[-1] < self.lineRsi[-2] and self.lineRsi[-3] < self.lineRsi[-2]:
+            if self.lineRsi1[-1] < self.lineRsi1[-2] and self.lineRsi1[-3] < self.lineRsi1[-2]:
 
                 t={}
                 t["Type"] = u'T'
-                t["RSI"] = self.lineRsi[-2]
+                t["RSI"] = self.lineRsi1[-2]
                 t["Close"] = self.lineBar[-2].close
 
 
-                if len(self.lineRsiTop) > self.inputRsiLen:
+                if len(self.lineRsiTop) > self.inputRsi1Len:
                     del self.lineRsiTop[0]
 
                 self.lineRsiTop.append( t )
                 self.lastRsiTopButtom = self.lineRsiTop[-1]
 
             # 谷
-            elif self.lineRsi[-1] > self.lineRsi[-2] and self.lineRsi[-3] > self.lineRsi[-2]:
+            elif self.lineRsi1[-1] > self.lineRsi1[-2] and self.lineRsi1[-3] > self.lineRsi1[-2]:
 
                 b={}
                 b["Type"] = u'B'
-                b["RSI"] = self.lineRsi[-2]
+                b["RSI"] = self.lineRsi1[-2]
                 b["Close"] = self.lineBar[-2].close
 
-                if len(self.lineRsiButtom) > self.inputRsiLen:
+                if len(self.lineRsiButtom) > self.inputRsi1Len:
                     del self.lineRsiButtom[0]
                 self.lineRsiButtom.append(b)
                 self.lastRsiTopButtom = self.lineRsiButtom[-1]
+
+        # 计算第二根RSI曲线
+        if self.inputRsi2Len > 0:
+
+            if len(self.lineBar) < self.inputRsi2Len+2:
+                return
+
+            listClose=[x.close for x in self.lineBar[-self.inputRsi2Len - 2:]]
+            barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi2Len)[-1]
+            barRsi = round(float(barRsi), 3)
+
+            l = len(self.lineRsi2)
+            if l > self.inputRsi2Len*8:
+                del self.lineRsi2[0]
+
+            self.lineRsi2.append(barRsi)
 
     def __recountCmi(self):
         """市场波动指数（Choppy Market Index，CMI）是一个用来判断市场走势类型的技术分析指标。
@@ -790,7 +876,7 @@ class CtaLineBar(object):
                              format(len(self.lineBar), self.inputCmiLen))
             return
 
-        listClose =[x.close for x in self.lineBar[-self.inputCmiLen:]]
+        listClose =[x.close for x in self.lineBar[-self.inputCmiLen:-1]]
         hhv = max(listClose)
         llv = min(listClose)
 
@@ -808,7 +894,7 @@ class CtaLineBar(object):
 
     def __recountBoll(self):
         """布林特线"""
-        if self.inputBollLen < EMPTY_INT: return
+        if self.inputBollLen <= EMPTY_INT: return
 
         l = len(self.lineBar)
 
@@ -828,11 +914,120 @@ class CtaLineBar(object):
         upper, middle, lower = ta.BBANDS(numpy.array(listClose, dtype=float),
                                          timeperiod=bollLen, nbdevup=self.inputBollStdRate,
                                          nbdevdn=self.inputBollStdRate, matype=0)
+        if len(self.lineUpperBand) > self.inputBollLen*8:
+            del self.lineUpperBand[0]
+        if len(self.lineMiddleBand) > self.inputBollLen*8:
+            del self.lineMiddleBand[0]
+        if len(self.lineLowerBand) > self.inputBollLen*8:
+            del self.lineLowerBand[0]
 
         self.lineUpperBand.append(upper[-1])
         self.lineMiddleBand.append(middle[-1])
         self.lineLowerBand.append(lower[-1])
 
+    def __recountKdj(self):
+        """KDJ指标"""
+        """
+        KDJ指标的中文名称又叫随机指标，是一个超买超卖指标,最早起源于期货市场，由乔治·莱恩（George Lane）首创。
+        随机指标KDJ最早是以KD指标的形式出现，而KD指标是在威廉指标的基础上发展起来的。
+        不过KD指标只判断股票的超买超卖的现象，在KDJ指标中则融合了移动平均线速度上的观念，形成比较准确的买卖信号依据。在实践中，K线与D线配合J线组成KDJ指标来使用。
+        KDJ指标在设计过程中主要是研究最高价、最低价和收盘价之间的关系，同时也融合了动量观念、强弱指标和移动平均线的一些优点。
+        因此，能够比较迅速、快捷、直观地研判行情，被广泛用于股市的中短期趋势分析，是期货和股票市场上最常用的技术分析工具。
+ 
+        第一步 计算RSV：即未成熟随机值（Raw Stochastic Value）。
+        RSV 指标主要用来分析市场是处于“超买”还是“超卖”状态：
+            - RSV高于80%时候市场即为超买状况，行情即将见顶，应当考虑出仓；
+            - RSV低于20%时候，市场为超卖状况，行情即将见底，此时可以考虑加仓。
+        N日RSV=(N日收盘价-N日内最低价）÷(N日内最高价-N日内最低价）×100%
+        第二步 计算K值：当日K值 = 2/3前1日K值 + 1/3当日RSV ; 
+        第三步 计算D值：当日D值 = 2/3前1日D值 + 1/3当日K值； 
+        第四步 计算J值：当日J值 = 3当日K值 - 2当日D值. 
+
+        """
+        if self.inputKdjLen <= EMPTY_INT: return
+
+        if len(self.lineBar) < self.inputKdjLen+1:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算KDJ需要：{1}'.format(len(self.lineBar), self.inputKdjLen+1))
+            return
+
+        listClose =[x.close for x in self.lineBar[-self.inputKdjLen:-1]]
+        hhv = max(listClose)
+        llv = min(listClose)
+
+        if len(self.lineK) > 0:
+            lastK =  self.lineK[-1]
+        else:
+            lastK = 0
+
+        if len(self.lineD) > 0:
+            lastD = self.lineD[-1]
+        else:
+            lastD = 0
+
+        rsv= ( self.lineBar[-1].close - llv)/(hhv - llv) * 100
+
+        k = 2*lastK/3 + rsv/3
+        if k < 0: k = 0
+        if k > 100: k = 100
+
+        d = 2*lastD/3 + k/3
+        if d < 0: d = 0
+        if d > 100: d = 100
+
+        j = 3*k - 2*d
+
+        if len(self.lineK) > self.inputKdjLen * 8:
+            del self.lineK[0]
+        self.lineK.append(k)
+
+        if len(self.lineD) > self.inputKdjLen * 8:
+            del self.lineD[0]
+        self.lineD.append(d)
+
+        if len(self.lineJ) > self.inputKdjLen * 8:
+            del self.lineJ[0]
+        self.lineJ.append(j)
+
+    def __recountMacd(self):
+        """
+        Macd计算方法：
+        12日EMA的计算：EMA12 = 前一日EMA12 X 11/13 + 今日收盘 X 2/13
+        26日EMA的计算：EMA26 = 前一日EMA26 X 25/27 + 今日收盘 X 2/27
+        差离值（DIF）的计算： DIF = EMA12 - EMA26，即为talib-MACD返回值macd
+        根据差离值计算其9日的EMA，即离差平均值，是所求的DEA值。
+        今日DEA = （前一日DEA X 8/10 + 今日DIF X 2/10），即为talib-MACD返回值signal
+        DIF与它自己的移动平均之间差距的大小一般BAR=（DIF-DEA)2，即为MACD柱状图。
+        但是talib中MACD的计算是bar = (dif-dea)1
+        """
+
+
+        if self.inputMacdFastPeriodLen <= EMPTY_INT: return
+        if self.inputMacdSlowPeriodLen <= EMPTY_INT: return
+        if self.inputMacdSignalPeriodLen <= EMPTY_INT: return
+
+        maxLen = max(self.inputMacdFastPeriodLen,self.inputMacdSlowPeriodLen)+self.inputMacdSignalPeriodLen
+
+        if len(self.lineBar) < maxLen:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算MACD需要：{1}'.format(len(self.lineBar), maxLen))
+            return
+
+        listClose =[x.close for x in self.lineBar[-maxLen:-1]]
+
+        dif, dea, macd = ta.MACD(numpy.array(listClose, dtype=float), fastperiod=self.inputMacdFastPeriodLen,
+                       slowperiod=self.inputMacdSlowPeriodLen, signalperiod=self.inputMacdSignalPeriodLen)
+
+
+        if len(self.lineDif) > maxLen:
+            del self.lineDif[0]
+        self.lineDif.append(dif[-1])
+
+        if len(self.lineDea) > maxLen:
+            del self.lineDea[0]
+        self.lineDea.append(dea[-1])
+
+        if len(self.lineMacd) > maxLen:
+            del self.lineMacd[0]
+        self.lineMacd.append(macd[-1]*2)
 
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
