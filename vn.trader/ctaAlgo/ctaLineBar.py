@@ -39,6 +39,12 @@ class CtaLineBar(object):
 
     """
 
+    # 区别：
+    # -使用tick模式时，当tick到达后，最新一个lineBar[-1]是当前的正在拟合的bar，不断累积tick，传统按照OnBar来计算的话，是使用LineBar[-2]。
+    # -使用bar模式时，当一个bar到达时，lineBar[-1]是当前生成出来的Bar,不再更新
+    TICK_MODE = 'tick'
+    BAR_MODE = 'bar'
+
     # 参数列表，保存了参数的名称
     paramList = ['vtSymbol']
 
@@ -52,6 +58,8 @@ class CtaLineBar(object):
         self.paramList.append('inputPreLen')
         self.paramList.append('inputEma1Len')
         self.paramList.append('inputEma2Len')
+        self.paramList.append('inputMa1Len')
+        self.paramList.append('inputMa2Len')
         self.paramList.append('inputDmiLen')
         self.paramList.append('inputDmiMax')
         self.paramList.append('inputAtr1Len')
@@ -75,9 +83,15 @@ class CtaLineBar(object):
 
         # 输入参数
         self.name = u'LineBar'
+
+        self.mode = self.TICK_MODE
+
         self.barTimeInterval = 300
 
         self.inputPreLen = EMPTY_INT    #1
+
+        self.inputMa1Len = EMPTY_INT   # 60
+        self.inputMa2Len = EMPTY_INT   # 240
 
         self.inputEma1Len = EMPTY_INT   # 13
         self.inputEma2Len = EMPTY_INT   # 21
@@ -115,10 +129,14 @@ class CtaLineBar(object):
         self.preHigh = []               # K线的前inputPreLen的的最高
         self.preLow = []                # K线的前inputPreLen的的最低
 
-        self.lineEma1 = []              # K线的EMA1均线，周期是InputEmaLen1，包含当前bar
+
+        self.lineMa1 = []              # K线的MA1均线，周期是InputMaLen1，不包含当前bar
+        self.lineMa2 = []              # K线的MA2均线，周期是InputMaLen2，不包含当前bar
+
+        self.lineEma1 = []              # K线的EMA1均线，周期是InputEmaLen1，不包含当前bar
         self.lineEma1MtmRate = []       # K线的EMA1均线 的momentum(3) 动能
 
-        self.lineEma2 = []              # K线的EMA2均线，周期是InputEmaLen2，包含当前bar
+        self.lineEma2 = []              # K线的EMA2均线，周期是InputEmaLen2，不包含当前bar
         self.lineEma2MtmRate = []       # K线的EMA2均线 的momentum(3) 动能
 
         # K线的DMI( Pdi，Mdi，ADX，Adxr) 计算数据
@@ -202,6 +220,10 @@ class CtaLineBar(object):
 
                 d[key] = setting[key]
 
+    def setMode(self,mode):
+        """Tick/Bar模式"""
+        self.mode = mode
+
     def onTick(self, tick):
         """行情更新
         :type tick: object
@@ -247,6 +269,7 @@ class CtaLineBar(object):
         """OnBar事件"""
         # 计算相关数据
         self.__recountPreHighLow()
+        self.__recountMa()
         self.__recountEma()
         self.__recountDmi()
         self.__recountAtr()
@@ -261,14 +284,25 @@ class CtaLineBar(object):
 
     def displayLastBar(self):
         """显示最后一个Bar的信息"""
-        msg = self.name
+        msg = u'['+self.name+u']'
+
+        if self.mode == self.TICK_MODE:
+            displayBar = self.lineBar[-2]
+        else:
+            displayBar = self.lineBar[-1]
 
         if len(self.lineBar) < 2:
             return msg
 
         msg = msg + u'{0} o:{1};h{2};l:{3};c:{4},v:{5}'.\
-            format(self.lineBar[-2].datetime, self.lineBar[-2].open, self.lineBar[-2].high,
-                   self.lineBar[-2].low, self.lineBar[-2].close, self.lineBar[-2].volume)
+            format(displayBar.datetime, displayBar.open, displayBar.high,
+                   displayBar.low, displayBar.close, displayBar.volume)
+
+        if self.inputMa1Len > 0 and len(self.lineMa1) > 0:
+            msg = msg + u',MA({0}):{1}'.format(self.inputMa1Len, self.lineMa1[-1])
+
+        if self.inputMa2Len > 0 and len(self.lineMa2) > 0:
+            msg = msg + u',MA({0}):{1}'.format(self.inputMa2Len, self.lineMa2[-1])
 
         if self.inputEma1Len > 0 and len(self.lineEma1) > 0:
             msg = msg + u',EMA({0}):{1}'.format(self.inputEma1Len, self.lineEma1[-1])
@@ -469,7 +503,12 @@ class CtaLineBar(object):
         preHigh = EMPTY_FLOAT
         preLow = EMPTY_FLOAT
 
-        for i in range(len(self.lineBar)-2, len(self.lineBar)-2-self.inputPreLen, -1):
+        if self.mode == self.TICK_MODE:
+            idx = 2
+        else:
+            idx = 1
+
+        for i in range(len(self.lineBar)-idx, len(self.lineBar)-idx-self.inputPreLen, -1):
 
             if self.lineBar[i].high > preHigh or preHigh == EMPTY_FLOAT:
                 preHigh = self.lineBar[i].high    # 前InputPreLen周期高点
@@ -488,8 +527,61 @@ class CtaLineBar(object):
         self.preLow.append(preLow)
 
     #----------------------------------------------------------------------
+    def __recountMa(self):
+        """计算K线的MA1 和MA2"""
+        l = len(self.lineBar)
 
+        # 1、lineBar满足长度才执行计算
+        if len(self.lineBar) < max(7, self.inputMa1Len, self.inputMa2Len)+2:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算MA需要：{1}'.
+                             format(len(self.lineBar), max(7, self.inputMa1Len, self.inputMa2Len)+2))
+            return
 
+        # 计算第一条MA均线
+        if self.inputMa1Len > 0:
+
+            if self.inputMa1Len > l:
+                ma1Len = l
+            else:
+                ma1Len = self.inputMa1Len
+
+            # 3、获取前InputN周期(不包含当前周期）的K线
+            if self.mode == self.TICK_MODE:
+                listClose=[x.close for x in self.lineBar[-ma1Len - 1:-1]]
+            else:
+                listClose=[x.close for x in self.lineBar[-ma1Len:]]
+
+            barMa1 = ta.MA(numpy.array(listClose, dtype=float), ma1Len)[-1]
+
+            barMa1 = round(float(barMa1), 3)
+
+            if len(self.lineMa1) > self.inputMa1Len*8:
+                del self.lineMa1[0]
+            self.lineMa1.append(barMa1)
+
+        # 计算第二条MA均线
+        if self.inputMa2Len > 0:
+
+            if self.inputMa2Len > l:
+                ma2Len = l
+            else:
+                ma2Len = self.inputMa2Len
+
+            # 3、获取前InputN周期(不包含当前周期）的K线
+            if self.mode == self.TICK_MODE:
+                listClose=[x.close for x in self.lineBar[-ma2Len - 1:-1]]
+            else:
+                listClose=[x.close for x in self.lineBar[-ma2Len:]]
+
+            barMa2 = ta.MA(numpy.array(listClose, dtype=float), ma2Len)[-1]
+
+            barMa2 = round(float(barMa2), 3)
+
+            if len(self.lineMa2) > self.inputMa2Len*8:
+                del self.lineMa2[0]
+            self.lineMa2.append(barMa2)
+
+    #----------------------------------------------------------------------
     def __recountEma(self):
         """计算K线的EMA1 和EMA2"""
         l = len(self.lineBar)
@@ -508,8 +600,11 @@ class CtaLineBar(object):
             else:
                 ema1Len = self.inputEma1Len
 
-            # 3、获取前InputN周期(不包含当前周期）的自适应均线
-            listClose=[x.close for x in self.lineBar[-ema1Len - 1:-1]]
+            # 3、获取前InputN周期(不包含当前周期）的K线
+            if self.mode == self.TICK_MODE:
+                listClose=[x.close for x in self.lineBar[-ema1Len - 1:-1]]
+            else:
+                listClose=[x.close for x in self.lineBar[-ema1Len:]]
 
             barEma1 = ta.EMA(numpy.array(listClose, dtype=float), ema1Len)[-1]
 
@@ -528,7 +623,11 @@ class CtaLineBar(object):
                 ema2Len = self.inputEma2Len
 
             # 3、获取前InputN周期(不包含当前周期）的自适应均线
-            listClose=[x.close for x in self.lineBar[-ema2Len - 1:-1]]
+            if self.mode == self.TICK_MODE:
+                listClose=[x.close for x in self.lineBar[-ema2Len - 1:-1]]
+            else:
+                listClose=[x.close for x in self.lineBar[-ema2Len:]]
+
             barEma2 = ta.EMA(numpy.array(listClose, dtype=float), ema2Len)[-1]
 
             barEma2 = round(float(barEma2), 3)
@@ -555,7 +654,12 @@ class CtaLineBar(object):
         barPdm = EMPTY_FLOAT      # InputP周期内的做多价差之和
         barMdm = EMPTY_FLOAT      # InputP周期内的做空价差之和
 
-        for i in range(len(self.lineBar)-2, len(self.lineBar)-2-self.inputDmiLen, -1):  # 周期 inputDmiLen
+        if self.mode == self.TICK_MODE:
+            idx = 2
+        else:
+            idx = 1
+
+        for i in range(len(self.lineBar)-idx, len(self.lineBar)-idx-self.inputDmiLen, -1):  # 周期 inputDmiLen
             # 3.1、计算TR1
 
             # 当前周期最高与最低的价差
@@ -686,6 +790,11 @@ class CtaLineBar(object):
                              format(len(self.lineBar), maxAtrLen+1))
             return
 
+        if self.mode == self.TICK_MODE:
+            idx = 2
+        else:
+            idx = 1
+
         # 首次计算
         if (self.inputAtr1Len > 0 and len(self.lineAtr1) < 1) \
                 or (self.inputAtr2Len > 0 and len(self.lineAtr2) < 1) \
@@ -697,7 +806,8 @@ class CtaLineBar(object):
             barTr3 = EMPTY_FLOAT      # 获取inputAtr3Len周期内的价差最大值之和
 
             j = 0
-            for i in range(len(self.lineBar)-2, len(self.lineBar)-2-maxAtrLen, -1):  # 周期 inputP
+
+            for i in range(len(self.lineBar)-idx, len(self.lineBar)-idx-maxAtrLen, -1):  # 周期 inputP
                 # 3.1、计算TR
 
                 # 当前周期最高与最低的价差
@@ -721,11 +831,11 @@ class CtaLineBar(object):
         else: # 只计算一个
 
             # 当前周期最高与最低的价差
-            high_low_spread = self.lineBar[-2].high - self.lineBar[-2].low
+            high_low_spread = self.lineBar[0-idx].high - self.lineBar[0-idx].low
             # 当前周期最高与昨收价的价差
-            high_preclose_spread = abs(self.lineBar[-2].high - self.lineBar[-3].close)
+            high_preclose_spread = abs(self.lineBar[0-idx].high - self.lineBar[-1-idx].close)
             # 当前周期最低与昨收价的价差
-            low_preclose_spread = abs(self.lineBar[-2].low - self.lineBar[-3].close)
+            low_preclose_spread = abs(self.lineBar[0-idx].low - self.lineBar[-1-idx].close)
 
             # 最大价差
             barTr1 = max(high_low_spread, high_preclose_spread, low_preclose_spread)
@@ -777,7 +887,10 @@ class CtaLineBar(object):
                              format(len(self.lineBar), self.inputVolLen+1))
             return
 
-        listVol = [x.volume for x in self.lineBar[-self.inputVolLen-1: -1]]
+        if self.mode == self.TICK_MODE:
+            listVol = [x.volume for x in self.lineBar[-self.inputVolLen-1: -1]]
+        else:
+            listVol = [x.volume for x in self.lineBar[-self.inputVolLen:]]
 
         sumVol = ta.SUM(numpy.array(listVol, dtype=float), timeperiod=self.inputVolLen)[-1]
 
@@ -801,7 +914,11 @@ class CtaLineBar(object):
         # 计算第1根RSI曲线
 
         # 3、inputRsi1Len(包含当前周期）的相对强弱
-        listClose=[x.close for x in self.lineBar[-self.inputRsi1Len - 2:-1]]
+        if self.mode == self.TICK_MODE:
+            listClose=[x.close for x in self.lineBar[-self.inputRsi1Len - 2:-1]]
+        else:
+            listClose=[x.close for x in self.lineBar[-self.inputRsi1Len-1:]]
+
         barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi1Len)[-1]
         barRsi = round(float(barRsi), 3)
 
@@ -846,7 +963,11 @@ class CtaLineBar(object):
             if len(self.lineBar) < self.inputRsi2Len+2:
                 return
 
-            listClose=[x.close for x in self.lineBar[-self.inputRsi2Len - 2:]]
+            if self.mode == self.TICK_MODE:
+                listClose=[x.close for x in self.lineBar[-self.inputRsi2Len - 2:-1]]
+            else:
+                listClose=[x.close for x in self.lineBar[-self.inputRsi2Len - 1:]]
+
             barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi2Len)[-1]
             barRsi = round(float(barRsi), 3)
 
@@ -876,14 +997,20 @@ class CtaLineBar(object):
                              format(len(self.lineBar), self.inputCmiLen))
             return
 
-        listClose =[x.close for x in self.lineBar[-self.inputCmiLen:-1]]
+        if self.mode == self.TICK_MODE:
+            listClose =[x.close for x in self.lineBar[-self.inputCmiLen-1:-1]]
+            idx = 2
+        else:
+            listClose =[x.close for x in self.lineBar[-self.inputCmiLen:]]
+            idx = 1
+
         hhv = max(listClose)
         llv = min(listClose)
 
         if hhv==llv:
             cmi = 100
         else:
-            cmi = abs(self.lineBar[-1].close-self.lineBar[-2].close)*100/(hhv-llv)
+            cmi = abs(self.lineBar[0-idx].close-self.lineBar[-1-idx].close)*100/(hhv-llv)
 
         cmi = round(cmi, 2)
 
@@ -909,7 +1036,10 @@ class CtaLineBar(object):
             bollLen = self.inputBollLen
 
         # 不包含当前最新的Bar
-        listClose=[x.close for x in self.lineBar[-bollLen - 1:-1]]
+        if self.mode == self.TICK_MODE:
+            listClose=[x.close for x in self.lineBar[-bollLen - 1:-1]]
+        else:
+            listClose=[x.close for x in self.lineBar[-bollLen :]]
         #
         upper, middle, lower = ta.BBANDS(numpy.array(listClose, dtype=float),
                                          timeperiod=bollLen, nbdevup=self.inputBollStdRate,
@@ -950,7 +1080,11 @@ class CtaLineBar(object):
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算KDJ需要：{1}'.format(len(self.lineBar), self.inputKdjLen+1))
             return
 
-        listClose =[x.close for x in self.lineBar[-self.inputKdjLen:-1]]
+        if self.mode == self.TICK_MODE:
+            listClose =[x.close for x in self.lineBar[-self.inputKdjLen-1:-1]]
+        else:
+            listClose =[x.close for x in self.lineBar[-self.inputKdjLen:]]
+
         hhv = max(listClose)
         llv = min(listClose)
 
@@ -996,8 +1130,8 @@ class CtaLineBar(object):
         差离值（DIF）的计算： DIF = EMA12 - EMA26，即为talib-MACD返回值macd
         根据差离值计算其9日的EMA，即离差平均值，是所求的DEA值。
         今日DEA = （前一日DEA X 8/10 + 今日DIF X 2/10），即为talib-MACD返回值signal
-        DIF与它自己的移动平均之间差距的大小一般BAR=（DIF-DEA)2，即为MACD柱状图。
-        但是talib中MACD的计算是bar = (dif-dea)1
+        DIF与它自己的移动平均之间差距的大小一般BAR=（DIF-DEA)*2，即为MACD柱状图。
+        但是talib中MACD的计算是bar = (dif-dea)*1
         """
 
 
@@ -1005,17 +1139,26 @@ class CtaLineBar(object):
         if self.inputMacdSlowPeriodLen <= EMPTY_INT: return
         if self.inputMacdSignalPeriodLen <= EMPTY_INT: return
 
-        maxLen = max(self.inputMacdFastPeriodLen,self.inputMacdSlowPeriodLen)+self.inputMacdSignalPeriodLen
+        maxLen = max(self.inputMacdFastPeriodLen,self.inputMacdSlowPeriodLen)+self.inputMacdSignalPeriodLen+1
+
+        maxLen = maxLen * 3             # 注：数据长度需要足够，才能准确。测试过，3倍长度才可以与国内的文华等软件一致
 
         if len(self.lineBar) < maxLen:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算MACD需要：{1}'.format(len(self.lineBar), maxLen))
             return
 
-        listClose =[x.close for x in self.lineBar[-maxLen:-1]]
+        if self.mode == self.TICK_MODE:
+            listClose =[x.close for x in self.lineBar[-maxLen:-1]]
+        else:
+            listClose =[x.close for x in self.lineBar[-maxLen-1:]]
 
         dif, dea, macd = ta.MACD(numpy.array(listClose, dtype=float), fastperiod=self.inputMacdFastPeriodLen,
                        slowperiod=self.inputMacdSlowPeriodLen, signalperiod=self.inputMacdSignalPeriodLen)
 
+        #dif, dea, macd = ta.MACDEXT(numpy.array(listClose, dtype=float),
+        #                            fastperiod=self.inputMacdFastPeriodLen, fastmatype=1,
+        #                            slowperiod=self.inputMacdSlowPeriodLen, slowmatype=1,
+        #                            signalperiod=self.inputMacdSignalPeriodLen, signalmatype=1)
 
         if len(self.lineDif) > maxLen:
             del self.lineDif[0]
@@ -1027,7 +1170,7 @@ class CtaLineBar(object):
 
         if len(self.lineMacd) > maxLen:
             del self.lineMacd[0]
-        self.lineMacd.append(macd[-1]*2)
+        self.lineMacd.append(macd[-1]*2)            # 国内一般是2倍
 
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
