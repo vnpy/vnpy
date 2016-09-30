@@ -445,6 +445,71 @@ class BacktestingEngine(object):
         return startDate-timedelta(days=3)
 
     #----------------------------------------------------------------------
+    def runBackTestingWithFile(self, filename):
+        """运行回测（使用本地csv数据)
+        added by IncenseLee
+        """
+        if not filename:
+            self.writeCtaLog(u'请指定回测数据文件')
+            return
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        import os
+
+        if not os.path.isfile(filename):
+            self.writeCtaLog(u'{0}文件不存在'.format(filename))
+
+        if len(self.symbol)<1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        # 首先根据回测模式，确认要使用的数据类
+        if not self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'文件仅支持bar模式，若扩展tick模式，需要修改本方法')
+            return
+
+        self.output(u'开始回测')
+
+        #self.strategy.inited = True
+        self.strategy.onInit()
+        self.output(u'策略初始化完成')
+
+        self.strategy.trading = True
+        self.strategy.onStart()
+        self.output(u'策略启动完成')
+
+        self.output(u'开始回放数据')
+
+        import csv
+
+        csvfile = file(filename,'rb')
+
+        reader = csv.DictReader((line.replace('\0','') for line in csvfile),delimiter=",")
+
+        for row in reader:
+
+            bar = CtaBarData()
+            bar.open = float(row['Open'])
+            bar.high = float(row['High'])
+            bar.low = float(row['Low'])
+            bar.close = float(row['Close'])
+            bar.volume = float(row['TotalVolume'])
+            bar.date = row['Date']
+            bar.time = row['Time']
+            bar.datetime = datetime.strptime(bar.date+' '+ bar.time, '%Y/%m/%d %H:%M:%S')
+
+            if not (bar.datetime < self.dataStartDate or bar.datetime > self.dataEndDate):
+
+                self.newBar(bar)
+
+
+    #----------------------------------------------------------------------
     def runBacktestingWithMysql(self):
         """运行回测(使用Mysql数据）
         added by IncenseLee
@@ -460,7 +525,6 @@ class BacktestingEngine(object):
         if len(self.symbol)<1:
             self.writeCtaLog(u'回测对象未设置。')
             return
-
 
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
@@ -695,6 +759,7 @@ class BacktestingEngine(object):
             if buyCross or sellCross:
                 # 推送成交数据
                 self.tradeCount += 1            # 成交编号自增1
+
                 tradeID = str(self.tradeCount)
                 trade = VtTradeData()
                 trade.vtSymbol = order.vtSymbol
@@ -722,10 +787,12 @@ class BacktestingEngine(object):
                 self.strategy.onTrade(trade)
                 
                 self.tradeDict[tradeID] = trade
+                self.writeCtaLog(u'TradeId:{0}'.format(tradeID))
                 
                 # 推送委托数据
                 order.tradedVolume = order.totalVolume
                 order.status = STATUS_ALLTRADED
+
                 self.strategy.onOrder(order)
                 
                 # 从字典中删除该限价单
@@ -844,12 +911,24 @@ class BacktestingEngine(object):
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
 
-        for trade in self.tradeDict.values():
+        i = 0
+
+        longid = EMPTY_STRING
+        shortid = EMPTY_STRING
+
+        for tradeid in self.tradeDict.keys():
+
+            trade = self.tradeDict[tradeid]
+
+            if tradeid == '127':
+                pass
+
             # 多头交易
             if trade.direction == DIRECTION_LONG:
                 # 如果尚无空头交易
                 if not shortTrade:
                     longTrade.append(trade)
+                    longid = tradeid
                 # 当前多头交易为平空
                 else:
                     entryTrade = shortTrade.pop(0)
@@ -859,14 +938,18 @@ class BacktestingEngine(object):
 
                     resultDict[trade.dt] = result
 
-                    self.writeCtaLog(u'{0},short:{1},{2},cover:{3},vol:{4},{5}'
-                                .format(entryTrade.tradeTime, entryTrade.price,trade.tradeTime,trade.price, trade.volume,result.pnl))
+                    i = i+1
+                    self.writeCtaLog(u'{6}.{7}.开空{0},short:{1},{8}.平空{2},cover:{3},vol:{4},净盈亏:{5}'
+                                .format(entryTrade.tradeTime, entryTrade.price,
+                                        trade.tradeTime,trade.price, trade.volume,result.pnl,
+                                        i,shortid,tradeid))
 
             # 空头交易        
             else:
                 # 如果尚无多头交易
                 if not longTrade:
                     shortTrade.append(trade)
+                    shortid = tradeid
                 # 当前空头交易为平多
                 else:
                     entryTrade = longTrade.pop(0)
@@ -875,8 +958,11 @@ class BacktestingEngine(object):
                                            self.rate, self.slippage, self.size)
                     resultDict[trade.dt] = result
 
-                    self.writeCtaLog(u'{0},buy:{1},{2},sell:{3},vol:{4},{5}'
-                                .format(entryTrade.tradeTime, entryTrade.price,trade.tradeTime,trade.price, trade.volume,result.pnl))
+                    i = i+1
+                    self.writeCtaLog(u'{6}.{7}开多{0},buy:{1},{8}.平多{2},sell:{3},vol:{4},净盈亏：{5}'
+                                .format(entryTrade.tradeTime, entryTrade.price,
+                                        trade.tradeTime,trade.price, trade.volume,result.pnl,
+                                        i,longid,tradeid))
 
         # 检查是否有交易
         if not resultDict:
@@ -950,21 +1036,21 @@ class BacktestingEngine(object):
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
             
         # 绘图
-        #import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
         
-        #pCapital = plt.subplot(3, 1, 1)
-        #pCapital.set_ylabel("capital")
-        #pCapital.plot(d['capitalList'])
+        pCapital = plt.subplot(3, 1, 1)
+        pCapital.set_ylabel("capital")
+        pCapital.plot(d['capitalList'])
         
-        #pDD = plt.subplot(3, 1, 2)
-        #pDD.set_ylabel("DD")
-        #pDD.bar(range(len(d['drawdownList'])), d['drawdownList'])
+        pDD = plt.subplot(3, 1, 2)
+        pDD.set_ylabel("DD")
+        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'])
         
-        #pPnl = plt.subplot(3, 1, 3)
-        #pPnl.set_ylabel("pnl")
-        #pPnl.hist(d['pnlList'], bins=50)
+        pPnl = plt.subplot(3, 1, 3)
+        pPnl.set_ylabel("pnl")
+        pPnl.hist(d['pnlList'], bins=50)
         
-        #plt.show()
+        plt.show()
     
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):
