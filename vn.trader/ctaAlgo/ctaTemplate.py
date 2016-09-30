@@ -22,7 +22,7 @@ class CtaTemplate(object):
     barDbName = MINUTE_DB_NAME
     
     # 策略的基本参数
-    name = EMPTY_UNICODE           # 策略实例名称
+    name = 'StrategyName'           # 策略实例名称
     vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码
     symbol = EMPTY_STRING          # 交易的合约代码（除郑商所外与vtSymbol一致，一般为两位代码+两位年份+两位月份）AU1606，SR1605
     shortSymbol = EMPTY_STRING     # 合约类型代码
@@ -163,7 +163,7 @@ class CtaTemplate(object):
         orderID = self.sendOrder(CTAORDER_COVER, price, volume, stop)
 
         if orderID !='':
-            self.entrust = -1                           # 置当前策略的委托单状态
+            self.entrust = 1                           # 置当前策略的委托单状态
             # 记录委托单
             self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_LONG,
                                                'OFFSET': OFFSET_CLOSE,
