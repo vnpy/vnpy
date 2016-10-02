@@ -65,6 +65,9 @@ class MainWindow(QtGui.QMainWindow):
         connectLtsAction = QtGui.QAction(u'连接LTS', self)
         connectLtsAction.triggered.connect(self.connectLts)
         
+        connectXtpAction = QtGui.QAction(u'连接XTP', self)
+        connectXtpAction.triggered.connect(self.connectXtp)        
+        
         connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
         connectKsotpAction.triggered.connect(self.connectKsotp)
         
@@ -125,6 +128,8 @@ class MainWindow(QtGui.QMainWindow):
             sysMenu.addAction(connectCtpAction)
         if 'LTS' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectLtsAction)
+        if 'XTP' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectXtpAction)            
         if 'FEMAS' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectFemasAction)
         if 'XSPEED' in self.mainEngine.gatewayDict:
@@ -203,6 +208,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')    
+        
+    #----------------------------------------------------------------------
+    def connectXtp(self):
+        """连接XTP接口"""
+        self.mainEngine.connect('XTP')           
         
     #----------------------------------------------------------------------
     def connectKsotp(self):
