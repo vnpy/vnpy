@@ -25,7 +25,7 @@ if __name__ == '__main__':
     subAddress = 'tcp://localhost:0602'
     
     tc = TestClient(reqAddress, subAddress)
-
+    tc.subscribe('')
     tc.start()
     
     while 1:

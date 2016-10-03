@@ -33,5 +33,5 @@ if __name__ == '__main__':
     while 1:
         content = 'current server time is %s' % time()
         print content
-        ts.publish(content)
+        ts.publish('test', content)
         sleep(2)
