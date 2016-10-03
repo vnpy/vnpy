@@ -62,6 +62,13 @@ class MainEngine(object):
             print e
         
         try:
+            from xtpGateway.xtpGateway import XtpGateway
+            self.addGateway(XtpGateway, 'XTP')
+            self.gatewayDict['XTP'].setQryEnabled(True)
+        except Exception, e:
+            print e        
+        
+        try:
             from ksotpGateway.ksotpGateway import KsotpGateway
             self.addGateway(KsotpGateway, 'KSOTP')
             self.gatewayDict['KSOTP'].setQryEnabled(True)
