@@ -2,10 +2,15 @@
 
 import threading
 import traceback
+import signal
 
 import zmq
 from msgpack import packb, unpackb
 from json import dumps, loads
+
+
+# 实现Ctrl-c中断recv
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 ########################################################################
