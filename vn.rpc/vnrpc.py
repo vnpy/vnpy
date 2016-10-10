@@ -241,10 +241,10 @@ class RpcClient(RpcObject):
             data = self.unpack(datab)
 
             # 调用回调函数处理
-            self.callback(data)
+            self.callback(topic, data)
             
     #----------------------------------------------------------------------
-    def callback(self, data):
+    def callback(self, topic, data):
         """回调函数，必须由用户实现"""
         raise NotImplementedError
     

@@ -15,9 +15,9 @@ class TestClient(RpcClient):
         super(TestClient, self).__init__(reqAddress, subAddress)
         
     #----------------------------------------------------------------------
-    def callback(self, data):
+    def callback(self, topic, data):
         """回调函数实现"""
-        print 'client received:', data
+        print 'client received topic:', topic, ', data:', data
     
 
 if __name__ == '__main__':
