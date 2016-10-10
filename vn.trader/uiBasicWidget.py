@@ -1027,7 +1027,8 @@ class TradingWidget(QtGui.QFrame):
             contract = self.mainEngine.getContract(symbol)
         
         if contract:
-            gatewayName = contract.gatewayName
+            if not gatewayName:
+                gatewayName = contract.gatewayName
             exchange = contract.exchange    # 保证有交易所代码
             
         req = VtOrderReq()

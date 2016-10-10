@@ -1032,7 +1032,7 @@ class BacktestingEngine(object):
         self.output(u'最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))
 
         self.output(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
-        self.output(u'平均每笔滑点：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
+        self.output(u'平均每笔滑点成本：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
             
         # 绘图
@@ -1070,7 +1070,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def setRate(self, rate):
         """设置佣金比例"""
-        self.rate = rate
+        self.rate = float(rate)
 
     #----------------------------------------------------------------------
     def runOptimization(self, strategyClass, optimizationSetting):
@@ -1135,7 +1135,7 @@ class TradingResult(object):
         self.volume = volume    # 交易数量（+/-代表方向）
 
         self.turnover = (self.entry+self.exit)*size         # 成交金额
-        self.commission = self.turnover*rate                # 手续费成本
+        self.commission =round(float(self.turnover*rate),4)              # 手续费成本
         self.slippage = slippage*2*size                     # 滑点成本
         self.pnl = ((self.exit - self.entry) * volume * size
                     - self.commission - self.slippage)      # 净盈亏

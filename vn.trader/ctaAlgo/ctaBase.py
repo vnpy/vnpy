@@ -90,7 +90,7 @@ class CtaBarData(object):
         self.low = EMPTY_FLOAT
         self.close = EMPTY_FLOAT
         
-        self.date = EMPTY_STRING            # bar开始的时间，日期
+        self.date = EMPTY_STRING            # bar开始的时间，日期（通过tick生成的bar时间，为开始时间，其他为结束时间）
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
         
@@ -102,6 +102,9 @@ class CtaBarData(object):
         self.tradeStatus = EMPTY_STRING     # 当前bar的交易情况: CTAORDER_BUY 、CTAORDER_SELL、
                                             # CTAORDER_SHORT 、CTAORDER_COVER 、 CTAORDER_OPEN_REJECT 、
                                             # CTAORDER_OPEN_FAIL 、CTAORDER_CLOSE_FAIL
+
+        self.mid4 = EMPTY_FLOAT             # (2*CLOSE+HIGH+LOW)/4;
+        self.mid5 = EMPTY_FLOAT             # (2*CLOSE+HIGH+LOW+OPEN)/5
 
         self.seconds = EMPTY_INT            # 当前Bar的秒数（针对RenkoBar)
         self.highSeconds = -1               # 当前Bar的上限秒数

@@ -254,7 +254,7 @@ class CtaLineBar(object):
         # 与最后一个BAR的时间比对，判断是否超过K线的周期
         lastBar = self.lineBar[-1]
 
-        if (bar.datetime - lastBar.datetime).seconds >= self.barTimeInterval:
+        if abs((bar.datetime - lastBar.datetime).seconds) >= self.barTimeInterval:
             self.lineBar.append(bar)
             self.onBar(bar)
             return
@@ -265,9 +265,15 @@ class CtaLineBar(object):
         lastBar.low = min(lastBar.low, bar.low)
         lastBar.volume = lastBar.volume + bar.volume
 
+        lastBar.mid4 = round((2*lastBar.close + lastBar.high+lastBar.low)/4,2)
+        lastBar.mid5 = round((2*lastBar.close + lastBar.open+ lastBar.high+lastBar.low)/5,2)
+
     def onBar(self, bar):
         """OnBar事件"""
         # 计算相关数据
+        bar.mid4 = round((2*bar.close + bar.high+bar.low)/4,2)
+        bar.mid5 = round((2*bar.close + bar.open+ bar.high+bar.low)/5,2)
+
         self.__recountPreHighLow()
         self.__recountMa()
         self.__recountEma()
@@ -355,6 +361,10 @@ class CtaLineBar(object):
         self.bar.low = tick.lastPrice
         self.bar.close = tick.lastPrice
 
+        self.bar.mid4 = tick.lastPrice             # 四价均价
+        self.bar.mid5 = tick.lastPrice             # 四价均价
+
+
         # K线的日期时间
         self.bar.date = tick.date                # K线的日期时间（去除秒）设为第一个Tick的时间
         self.bar.time = tick.time              # K线的日期时间（去除秒）设为第一个Tick的时间
@@ -379,7 +389,7 @@ class CtaLineBar(object):
             self.onBar(self.bar)
             return
 
-        # 清除8交易小时前的数据，
+        # 清除480周期前的数据，
         if l1 > 60 * 8:
             del self.lineBar[0]
 
