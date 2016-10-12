@@ -34,14 +34,16 @@ class CtaTemplate(object):
     inited = False                 # 是否进行了初始化
     trading = False                # 是否启动交易，由引擎管理
     pos = 0                        # 持仓情况
-    
+    backtesting = False            # 是否回测
+
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
                  'author',
                  'vtSymbol',
                  'symbol',
-                 'shortSymbol']
+                 'shortSymbol',
+                 'backtesting']
     
     # 变量列表，保存了变量的名称
     varList = ['inited',
