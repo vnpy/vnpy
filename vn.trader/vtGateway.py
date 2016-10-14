@@ -186,6 +186,7 @@ class VtTickData(VtBaseData):
         self.openInterest = EMPTY_INT           # 持仓量
         self.time = EMPTY_STRING                # 时间 11:20:56.5
         self.date = EMPTY_STRING                # 日期 20151009
+        self.tradingDay = EMPTY_STRING          # 交易日期
         
         # 常规行情
         self.openPrice = EMPTY_FLOAT            # 今日开盘价
