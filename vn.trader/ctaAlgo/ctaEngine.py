@@ -87,7 +87,6 @@ class CtaEngine(object):
         req.price = price                   # 价格
         req.volume = volume                 # 数量
 
-
         req.productClass = strategy.productClass
         req.currency = strategy.currency        
         
@@ -144,8 +143,8 @@ class CtaEngine(object):
 
         self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
 
-        self.writeCtaLog(u'策略%s发送委托，%s，%s，%s@%s' 
-                         %(strategy.name, vtSymbol, req.direction, volume, price))
+        self.writeCtaLog(u'策略%s发送委托，%s, %s，%s，%s@%s'
+                         %(strategy.name, vtSymbol, req.offset, req.direction, volume, price))
         
         return vtOrderID
     
@@ -185,7 +184,7 @@ class CtaEngine(object):
 
         l = self.mainEngine.getAllWorkingOrders()
 
-        self.writeCtaLog(u'撤销所有订单,数量:{0}'.format(len(l)))
+        self.writeCtaLog(u'从所有订单{0}中撤销{1}'.format(len(l), symbol))
 
         for order in l:
             if offset == EMPTY_STRING:
@@ -317,6 +316,15 @@ class CtaEngine(object):
 
             # 5.添加datetime字段
             ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+
+            # 修正，交易日期不一定是OpenDate
+            dt = datetime.now()
+            if (ctaTick.datetime - dt).seconds > 10:
+                today = dt.strftime('%Y%m%d')
+                if today == tick.date:
+                    ctaTick.datetime = dt
+                else:
+                    ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
             
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
@@ -514,7 +522,7 @@ class CtaEngine(object):
             
             if not strategy.inited or force == True:
                 strategy.onInit(force=force)
-                strategy.inited = True
+                #strategy.inited = True
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
