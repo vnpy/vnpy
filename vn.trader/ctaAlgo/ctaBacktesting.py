@@ -39,6 +39,9 @@ class BacktestingEngine(object):
     TICK_MODE = 'tick'
     BAR_MODE = 'bar'
 
+    REALTIME_MODE ='RealTime'       # 逐笔交易计算资金，供策略获取资金容量，计算开仓数量
+    FINAL_MODE = 'Final'            # 最后才统计交易，不适合按照百分比等开仓数量计算
+
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
@@ -54,7 +57,7 @@ class BacktestingEngine(object):
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
-        
+
         self.slippage = 0           # 回测时假设的滑点
         self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
         self.size = 1               # 合约大小，默认为1        
@@ -88,7 +91,44 @@ class BacktestingEngine(object):
         self.dt = None      # 最新的时间
         self.gatewayName = u'BackTest'
 
-        self.usageCompounding = False    # 是否使用简单复利
+
+        # 费用情况
+        self.avaliable = EMPTY_FLOAT
+        self.percent = EMPTY_FLOAT
+        self.percentLimit = 30         # 投资仓位比例上限
+
+        # 回测计算相关
+        self.calculateMode = self.FINAL_MODE
+        self.usageCompounding = False       # 是否使用简单复利 （只针对FINAL_MODE有效）
+
+        self.initCapital = 10000            # 期初资金
+        self.capital = self.initCapital     # 资金  （相当于Balance）
+        self.maxCapital = self.initCapital          # 资金最高净值
+
+        self.maxPnl = 0                     # 最高盈利
+        self.minPnl = 0                     # 最大亏损
+        self.maxVolume = 1                  # 最大仓位数
+        self.wins = 0                       # 盈利次数
+
+        self.totalResult = 0         # 总成交数量
+        self.totalTurnover = 0       # 总成交金额（合约面值）
+        self.totalCommission = 0     # 总手续费
+        self.totalSlippage = 0       # 总滑点
+
+        self.timeList = []           # 时间序列
+        self.pnlList = []            # 每笔盈亏序列
+        self.capitalList = []        # 盈亏汇总的时间序列
+        self.drawdownList = []       # 回撤的时间序列
+        self.drawdownRateList = []   # 最大回撤比例的时间序列
+
+
+    def getAccountInfo(self):
+        """返回账号的实时权益，可用资金，仓位比例,投资仓位比例上限"""
+        if self.capital == EMPTY_FLOAT:
+            self.percent = EMPTY_FLOAT
+
+        return self.capital, self.avaliable, self.percent, self.percentLimit
+
         
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
@@ -452,6 +492,9 @@ class BacktestingEngine(object):
         """运行回测（使用本地csv数据)
         added by IncenseLee
         """
+
+        self.capital = self.initCapital      # 更新设置期初资金
+
         if not filename:
             self.writeCtaLog(u'请指定回测数据文件')
             return
@@ -517,6 +560,7 @@ class BacktestingEngine(object):
         """运行回测(使用Mysql数据）
         added by IncenseLee
         """
+        self.capital = self.initCapital      # 更新设置期初资金
 
         if not self.dataStartDate:
             self.writeCtaLog(u'回测开始日期未设置。')
@@ -587,6 +631,9 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def runBacktesting(self):
         """运行回测"""
+
+        self.capital = self.initCapital      # 更新设置期初资金
+
         # 载入历史数据
         self.loadHistoryData()
 
@@ -800,6 +847,9 @@ class BacktestingEngine(object):
                 
                 # 从字典中删除该限价单
                 del self.workingLimitOrderDict[orderID]
+
+                if self.calculateMode == self.REALTIME_MODE:
+                    self.realtimeCalculate()
                 
     #----------------------------------------------------------------------
     def crossStopOrder(self):
@@ -871,7 +921,11 @@ class BacktestingEngine(object):
                 self.limitOrderDict[orderID] = order
                 
                 # 从字典中删除该限价单
-                del self.workingStopOrderDict[stopOrderID]        
+                del self.workingStopOrderDict[stopOrderID]
+
+                if self.calculateMode == self.REALTIME_MODE:
+                    self.realtimeCalculate()
+
 
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -902,6 +956,268 @@ class BacktestingEngine(object):
         """输出内容"""
         print str(datetime.now()) + "\t" + content
 
+    def realtimeCalculate(self):
+        """实时计算交易结果"""
+
+        resultDict = OrderedDict()  # 交易结果记录
+
+        longTrade = []              # 未平仓的多头交易
+        shortTrade = []             # 未平仓的空头交易
+        longid = EMPTY_STRING
+        shortid = EMPTY_STRING
+
+        for tradeid in self.tradeDict.keys():
+            trade = self.tradeDict[tradeid]
+            # 多头交易
+            if trade.direction == DIRECTION_LONG:
+                # 如果尚无空头交易
+                if not shortTrade:
+                    longTrade.append(trade)
+                    longid = tradeid
+
+                # 当前多头交易为平空
+                else:
+                    gId = tradeid    # 交易组（多个平仓数为一组）
+                    gr = None       # 组合的交易结果
+
+                    coverVolume = trade.volume
+
+                    while coverVolume > 0:
+                        if len(shortTrade)==0:
+                            self.writeCtaLog(u'异常，没有开空仓的数据')
+                            break
+
+                        # 从未平仓的空头交易
+                        entryTrade = shortTrade.pop(0)
+
+                        # 开空volume，不大于平仓volume
+                        if coverVolume >= entryTrade.volume:
+                            coverVolume = coverVolume - entryTrade.volume
+                            result = TradingResult(entryTrade.price, trade.price, -entryTrade.volume,
+                                               self.rate, self.slippage, self.size, groupId=gId)
+
+                            self.writeCtaLog(u'{6} [{7}:开空{0},short:{1}]-[{8}:平空{2},cover:{3},vol:{4}],净盈亏:{5}'
+                                    .format(entryTrade.tradeTime, entryTrade.price,
+                                            trade.tradeTime, trade.price, entryTrade.volume, result.pnl,
+                                            gId, shortid, tradeid))
+
+                            if type(gr) == type(None):
+                                if coverVolume > 0:
+                                    # 属于组合
+                                    gr = copy.deepcopy(result)
+
+                                    # 删除开空交易单
+                                    del self.tradeDict[entryTrade.tradeID]
+
+                                else:
+                                    # 不属于组合
+                                    resultDict[entryTrade.dt] = result
+
+                                    # 删除平空交易单，
+                                    del self.tradeDict[trade.tradeID]
+                                    # 删除开空交易单
+                                    del self.tradeDict[entryTrade.tradeID]
+
+                            else:
+                                # 更新组合的数据
+                                gr.turnover = gr.turnover + result.turnover
+                                gr.commission = gr.commission + result.commission
+                                gr.slippage = gr.slippage + result.slippage
+                                gr.pnl = gr.pnl + result.pnl
+
+                                # 删除开空交易单
+                                del self.tradeDict[entryTrade.tradeID]
+
+                                # 所有仓位平完
+                                if coverVolume == 0:
+                                    gr.volume = trade.volume
+                                    resultDict[entryTrade.dt] = gr
+                                    # 删除平空交易单，
+                                    del self.tradeDict[trade.tradeID]
+
+
+                        # 开空volume,大于平仓volume，需要更新减少tradeDict的数量。
+                        else:
+                            shortVolume = entryTrade.volume - coverVolume
+
+                            result = TradingResult(entryTrade.price, trade.price, -coverVolume,
+                                               self.rate, self.slippage, self.size, groupId=gId)
+
+                            self.writeCtaLog(u'{6} [{7}:开空{0},short:{1}]-[{8}:平空{2},cover:{3},vol:{4}],净盈亏:{5}'
+                                    .format(entryTrade.tradeTime, entryTrade.price,
+                                            trade.tradeTime, trade.price, coverVolume, result.pnl,
+                                            gId, shortid, tradeid))
+
+                            # 更新（减少）开仓单的volume
+                            entryTrade.volume = shortVolume
+
+                            coverVolume = 0
+
+                            if type(gr) == type(None):
+                                resultDict[entryTrade.dt] = result
+
+                            else:
+                                # 更新组合的数据
+                                gr.turnover = gr.turnover + result.turnover
+                                gr.commission = gr.commission + result.commission
+                                gr.slippage = gr.slippage + result.slippage
+                                gr.pnl = gr.pnl + result.pnl
+                                gr.volume = trade.volume
+                                resultDict[entryTrade.dt] = gr
+
+                            # 删除平空交易单，
+                            del self.tradeDict[trade.tradeID]
+
+
+                    if type(gr) != type(None):
+                        self.writeCtaLog(u'组合净盈亏:{0}'.format(gr.pnl))
+
+                    self.writeCtaLog(u'-------------')
+
+            # 空头交易
+            else:
+                # 如果尚无多头交易
+                if not longTrade:
+                    shortTrade.append(trade)
+                    shortid = tradeid
+                # 当前空头交易为平多
+                else:
+                    gId = tradeid     # 交易组（多个平仓数为一组）
+                    gr = None   # 组合的交易结果
+
+                    sellVolume = trade.volume
+
+                    while sellVolume > 0:
+                        if len(longTrade)==0:
+                            self.writeCtaLog(u'异常，没有开多单')
+                            break
+
+                        entryTrade = longTrade.pop(0)
+
+                         # 开多volume，不大于平仓volume
+                        if sellVolume >= entryTrade.volume:
+                            sellVolume = sellVolume - entryTrade.volume
+
+                            result = TradingResult(entryTrade.price, trade.price, entryTrade.volume,
+                                               self.rate, self.slippage, self.size, groupId= gId)
+
+                            self.writeCtaLog(u'{6} [{7}:开多{0},buy:{1}]-[{8}.平多{2},sell:{3},vol:{4}],净盈亏：{5}'
+                                    .format(entryTrade.tradeTime, entryTrade.price,
+                                            trade.tradeTime,trade.price, entryTrade.volume, result.pnl,
+                                            gId, longid, tradeid))
+
+                            if type(gr) == type(None):
+                                if sellVolume > 0:
+                                    # 属于组合
+                                    gr = copy.deepcopy(result)
+                                    # 删除开多交易单
+                                    del self.tradeDict[entryTrade.tradeID]
+
+                                else:
+                                    # 不属于组合
+                                    resultDict[entryTrade.dt] = result
+
+                                    # 删除平多交易单，
+                                    del self.tradeDict[trade.tradeID]
+                                    # 删除开多交易单
+                                    del self.tradeDict[entryTrade.tradeID]
+
+                            else:
+                                # 更新组合的数据
+                                gr.turnover = gr.turnover + result.turnover
+                                gr.commission = gr.commission + result.commission
+                                gr.slippage = gr.slippage + result.slippage
+                                gr.pnl = gr.pnl + result.pnl
+
+                                # 删除开多交易单
+                                del self.tradeDict[entryTrade.tradeID]
+
+                                if sellVolume == 0:
+                                    gr.volume = trade.volume
+                                    resultDict[entryTrade.dt] = gr
+                                    # 删除平多交易单，
+                                    del self.tradeDict[trade.tradeID]
+
+                        # 开多volume,大于平仓volume，需要更新减少tradeDict的数量。
+                        else:
+                            longVolume = entryTrade.volume -sellVolume
+
+                            result = TradingResult(entryTrade.price, trade.price, sellVolume,
+                                               self.rate, self.slippage, self.size, groupId= gId)
+
+                            self.writeCtaLog(u'{6} [{7}:开多{0},buy:{1}]-[{8}.平多{2},sell:{3},vol:{4}],净盈亏：{5}'
+                                    .format(entryTrade.tradeTime, entryTrade.price,
+                                            trade.tradeTime,trade.price, sellVolume, result.pnl,
+                                            gId, longid, tradeid))
+
+                            # 减少开多volume
+                            entryTrade.volume = longVolume
+
+                            sellVolume = 0
+
+                            if type(gr) == type(None):
+                                resultDict[entryTrade.dt] = result
+
+                            else:
+                                # 更新组合的数据
+                                gr.turnover = gr.turnover + result.turnover
+                                gr.commission = gr.commission + result.commission
+                                gr.slippage = gr.slippage + result.slippage
+                                gr.pnl = gr.pnl + result.pnl
+                                gr.volume = trade.volume
+                                resultDict[entryTrade.dt] = gr
+
+                            # 删除平多交易单，
+                            del self.tradeDict[trade.tradeID]
+
+                    if type(gr) != type(None):
+                        self.writeCtaLog(u'组合净盈亏:{0}'.format(gr.pnl))
+
+                    self.writeCtaLog(u'-------------')
+
+        # 检查是否有平交易
+        if not resultDict:
+            # Todo:计算仓位比例
+            occupyMoney = EMPTY_FLOAT
+
+            if len(longTrade) > 0:
+                for t in longTrade:
+                    occupyMoney += t.price * abs(t.volume) * self.size*0.11
+
+            if len(shortTrade)>0:
+                for t in longTrade:
+                    occupyMoney += t.price * abs(t.volume) * self.size*0.11
+
+
+            self.avaliable = self.capital - occupyMoney
+            self.percent = round(float(self.avaliable*100/self.capital),2)
+
+            return
+
+        for time, result in resultDict.items():
+
+            if result.pnl > 0:
+                self.wins += 1
+            self.capital += result.pnl
+            self.maxCapital = max(self.capital, self.maxCapital)
+            self.maxVolume = max(self.maxVolume, result.volume)
+            drawdown = self.capital - self.maxCapital
+            drawdownRate = round(float(drawdown*100/self.maxCapital),4)
+
+            self.pnlList.append(result.pnl)
+            self.timeList.append(time)
+            self.capitalList.append(self.capital)
+            self.drawdownList.append(drawdown)
+            self.drawdownRateList.append(drawdownRate)
+
+            self.totalResult += 1
+            self.totalTurnover += result.turnover
+            self.totalCommission += result.commission
+            self.totalSlippage += result.slippage
+
+            self.output(u'[{5}]Vol:{0},盈亏:{1},回撤:{2}/{3},权益:{4}'.
+                        format(abs(result.volume), result.pnl, drawdown, drawdownRate, self.capital, result.groupId))
+
     #----------------------------------------------------------------------
     def calculateBacktestingResult(self):
         """
@@ -911,7 +1227,10 @@ class BacktestingEngine(object):
         例如，前面共有6次开仓（1手开仓+5次加仓，每次1手），平仓只有1次（六手）。那么，交易次数是6次（开仓+平仓）。
         暂不支持每次加仓数目不一致的核对（因为比较复杂）
 
-        增加组合的支持。
+        增加组合的支持。（组合中，仍然按照1手逐步加仓和多手平仓的方法，即使启用了复利模式，也仍然按照这个规则，只是在计算收益时才乘以系数）
+
+        增加期初权益，每次交易后的权益，可用资金，仓位比例。
+
         """
         self.output(u'计算回测结果')
         
@@ -1036,77 +1355,86 @@ class BacktestingEngine(object):
             return {}
         
         # 然后基于每笔交易的结果，我们可以计算具体的盈亏曲线和最大回撤等
+
+        """
         initCapital = 40000     # 期初资金
         capital = initCapital   # 资金
         maxCapital = initCapital          # 资金最高净值
-        drawdown = 0            # 回撤
+
         maxPnl = 0              # 最高盈利
         minPnl = 0              # 最大亏损
         maxVolume = 1             # 最大仓位数
-        compounding = 1        # 简单的复利基数（如果资金是期初资金的x倍，就扩大开仓比例,例如3w开1手，6w开2手，12w开4手)
+
         wins = 0
-        
+
         totalResult = 0         # 总成交数量
         totalTurnover = 0       # 总成交金额（合约面值）
         totalCommission = 0     # 总手续费
         totalSlippage = 0       # 总滑点
-        
+
         timeList = []           # 时间序列
         pnlList = []            # 每笔盈亏序列
         capitalList = []        # 盈亏汇总的时间序列
         drawdownList = []       # 回撤的时间序列
         drawdownRateList = []   # 最大回撤比例的时间序列
-        
+        """
+        drawdown = 0            # 回撤
+        compounding = 1        # 简单的复利基数（如果资金是期初资金的x倍，就扩大开仓比例,例如3w开1手，6w开2手，12w开4手)
+
         for time, result in resultDict.items():
 
             # 是否使用简单复利
             if self.usageCompounding:
-                compounding = int(capital/initCapital)
+                compounding = int(self.capital/self.initCapital)
 
             if result.pnl > 0:
-                wins += 1
-            capital += result.pnl*compounding
-            maxCapital = max(capital, maxCapital)
-            maxVolume = max(maxVolume, result.volume*compounding)
-            drawdown = capital - maxCapital
-            drawdownRate = round(float(drawdown*100/maxCapital),4)
-            
-            pnlList.append(result.pnl*compounding)
-            timeList.append(time)
-            capitalList.append(capital)
-            drawdownList.append(drawdown)
-            drawdownRateList.append(drawdownRate)
-            
-            totalResult += 1
-            totalTurnover += result.turnover*compounding
-            totalCommission += result.commission*compounding
-            totalSlippage += result.slippage*compounding
+                self.wins += 1
+            self.capital += result.pnl*compounding
+            self.maxCapital = max(self.capital, self.maxCapital)
+            self.maxVolume = max(self.maxVolume, result.volume*compounding)
+            drawdown = self.capital - self.maxCapital
+            drawdownRate = round(float(drawdown*100/self.maxCapital),4)
 
+            self.pnlList.append(result.pnl*compounding)
+            self.timeList.append(time)
+            self.capitalList.append(self.capital)
+            self.drawdownList.append(drawdown)
+            self.drawdownRateList.append(drawdownRate)
+
+            self.totalResult += 1
+            self.totalTurnover += result.turnover*compounding
+            self.totalCommission += result.commission*compounding
+            self.totalSlippage += result.slippage*compounding
+
+    def getResult(self):
         # 返回回测结果
         d = {}
-        d['initCapital'] = initCapital
-        d['capital'] = capital - initCapital
-        d['maxCapital'] = maxCapital
-        d['drawdown'] = drawdown
-        d['maxPnl'] = max(pnlList)
-        d['minPnl'] = min(pnlList)
-        d['maxVolume'] = maxVolume
-        d['totalResult'] = totalResult
-        d['totalTurnover'] = totalTurnover
-        d['totalCommission'] = totalCommission
-        d['totalSlippage'] = totalSlippage
-        d['timeList'] = timeList
-        d['pnlList'] = pnlList
-        d['capitalList'] = capitalList
-        d['drawdownList'] = drawdownList
-        d['drawdownRateList'] = drawdownRateList
-        d['winRate'] = round(100*wins/len(pnlList),4)
+        d['initCapital'] = self.initCapital
+        d['capital'] = self.capital - self.initCapital
+        d['maxCapital'] = self.maxCapital
+
+        d['maxPnl'] = max(self.pnlList)
+        d['minPnl'] = min(self.pnlList)
+        d['maxVolume'] = self.maxVolume
+        d['totalResult'] = self.totalResult
+        d['totalTurnover'] = self.totalTurnover
+        d['totalCommission'] = self.totalCommission
+        d['totalSlippage'] = self.totalSlippage
+        d['timeList'] = self.timeList
+        d['pnlList'] = self.pnlList
+        d['capitalList'] = self.capitalList
+        d['drawdownList'] = self.drawdownList
+        d['drawdownRateList'] = self.drawdownRateList
+        d['winRate'] = round(100*self.wins/len(self.pnlList),4)
         return d
 
     #----------------------------------------------------------------------
     def showBacktestingResult(self):
         """显示回测结果"""
-        d = self.calculateBacktestingResult()
+        if self.calculateMode != self.REALTIME_MODE :
+            self.calculateBacktestingResult()
+
+        d = self.getResult()
 
         if len(d)== 0:
             self.output(u'无交易结果')
