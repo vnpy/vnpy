@@ -393,6 +393,10 @@ class BasicMonitor(QtGui.QTableWidget):
         """右键点击事件"""
         self.menu.popup(QtGui.QCursor.pos())    
 
+    def clearData(self):
+        """清空数据"""
+        self.dataDict = {}
+        self.setRowCount(0)
 
 ########################################################################
 class MarketMonitor(BasicMonitor):

@@ -26,8 +26,9 @@ class MainWindow(QtGui.QMainWindow):
         self.initUi()
         self.loadWindowSettings()
 
-        self.connectGatewayName = EMPTY_STRING
-        
+        self.connected = False
+
+        self.connectGatewayDict = {}
     # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
@@ -197,23 +198,45 @@ class MainWindow(QtGui.QMainWindow):
             self.sbCount = 0
             self.statusLabel.setText(self.getCpuMemory())
 
-        if self.connectGatewayName != EMPTY_STRING:
-            self.setWindowTitle(self.connectGatewayName)
+        if len(self.connectGatewayDict) > 0:
+            s = u''.join(str(e) for e in self.connectGatewayDict.values())
+
+            if not self.connected:
+                s = s + u' [已断开]'
+
+            self.setWindowTitle(s)
+
+        # 定时断开
+        if self.connected and self.trade_off():
+           self.disconnect()
+           self.mainEngine.writeLog(u'断开连接{0}'.format(self.connectGatewayDict.values()))
+           self.mainEngine.writeLog(u'清空数据引擎')
+           self.mainEngine.clearData()
+           self.mainEngine.writeLog(u'清空委托列表')
+           self.widgetOrderM.clearData()
+           self.mainEngine.writeLog(u'清空交易列表')
+           self.widgetTradeM.clearData()
 
         # 定时重连
-        dt = datetime.now()
-        if (dt.hour == 20 or dt.hour == 8) and dt.weekday() < 5:
-            if dt.minute == 40 and dt.second == 0 and self.connectGatewayName != EMPTY_STRING:
+        if not self.connected and not self.trade_off() and len(self.connectGatewayDict) > 0:
 
+                self.mainEngine.writeLog(u'清空数据引擎')
+                self.mainEngine.clearData()
                 self.mainEngine.writeLog(u'清空委托列表')
-                self.widgetOrderM.dataDict.clear()
+                self.widgetOrderM.clearData()
                 self.mainEngine.writeLog(u'清空交易列表')
-                self.widgetTradeM.dataDict.clear()
-                self.mainEngine.writeLog(u'重新连接{0}'.format(self.connectGatewayName))
-                self.mainEngine.connect(self.connectGatewayName)
+                self.widgetTradeM.clearData()
+                s = u''.join(str(e) for e in self.connectGatewayDict.values())
+                self.mainEngine.writeLog(u'重新连接{0}'.format(s))
+
+                for key in self.connectGatewayDict.keys():
+                    self.mainEngine.connect(key)
+
+                self.connected = True
 
         # 收盘后保存所有委托记录
-        if dt.hour == 15 and dt.minute == 1 and self.connectGatewayName != EMPTY_STRING:
+        dt = datetime.now()
+        if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0:
             orderfile = os.getcwd() +'/orders/{0}.csv'.format(datetime.now().strftime('%y%m%d'))
             if os.path.exists(orderfile):
                 return
@@ -232,81 +255,97 @@ class MainWindow(QtGui.QMainWindow):
         """连接上海中期生产环境CTP接口"""
 
         self.mainEngine.connect('CTP_Prod')
-        self.connectGatewayName = 'CTP_Prod'
+        self.connectGatewayDict['CTP_Prod'] = u'上海中期CTP'
+        self.connected = True
 
     # ----------------------------------------------------------------------
     def connectCtpPost(self):
         """连接上海中期盘后CTP接口"""
         self.mainEngine.connect('CTP_Post')
-        self.connectGatewayName = 'CTP_Post'
+        self.connectGatewayDict['CTP_Post'] = u'中期盘后CTP'
+        self.connected = True
 
     def connectCtpEBF(self):
         """连接光大期货CTP接口"""
         self.mainEngine.connect('CTP_EBF')
-        self.connectGatewayName = 'CTP_EBF'
+        self.connectGatewayDict['CTP_EBF'] = u'光大CTP'
+        self.connected = True
 
     def connectCtpTest(self):
         """连接SNOW测试环境CTP接口"""
         self.mainEngine.connect('CTP_Test')
-        self.connectGatewayName = 'CTP_Test'
+        self.connectGatewayDict['CTP_Test'] = u'SNOW测试'
+        self.connected = True
 
     def connectCtp(self):
         """连接CTP接口"""
         self.mainEngine.connect('CTP')
-        self.connectGatewayName = 'CTP'
+        self.connectGatewayDict['CTP'] = u'CTP'
+        self.connected = True
 
     # ----------------------------------------------------------------------
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')
-        self.connectGatewayName = 'LTS'
+        self.connectGatewayDict['LTS'] = u'LTS'
+        self.connected = True
         
     #----------------------------------------------------------------------
     def connectKsotp(self):
         """连接金仕达期权接口"""
         self.mainEngine.connect('KSOTP')
-        self.connectGatewayName = 'KSOTP'
+        self.connectGatewayDict['KSOTP'] = u'金仕达期权'
+        self.connected = True
         
     #----------------------------------------------------------------------
     def connectFemas(self):
         """连接飞马接口"""
         self.mainEngine.connect('FEMAS')
-        self.connectGatewayName = 'FEMAS'
+        self.connectGatewayDict['FEMAS'] = u'FEMAS飞马'
+        self.connected = True
     
     #----------------------------------------------------------------------
     def connectXspeed(self):
         """连接飞马接口"""
         self.mainEngine.connect('XSPEED')
-        self.connectGatewayName = 'XSPEED'
+        self.connectGatewayDict['XSPEED'] = u'XSPEED飞马接口'
+        self.connected = True
     
     #----------------------------------------------------------------------
     def connectKsgold(self):
         """连接金仕达黄金接口"""
         self.mainEngine.connect('KSGOLD')
-        self.connectGatewayName = 'KSGOLD'
+        self.connectGatewayDict ['KSGOLD'] = u'金仕达黄金'
+        self.connected = True
         
     #----------------------------------------------------------------------
     def connectSgit(self):
         """连接飞鼠接口"""
         self.mainEngine.connect('SGIT')
-        self.connectGatewayName = 'SGIT'
+        self.connectGatewayDict['SGIT'] = u'飞鼠'
+        self.connected = True
     
     #----------------------------------------------------------------------
     def connectWind(self):
         """连接Wind接口"""
         self.mainEngine.connect('Wind')
-        self.connectGatewayName = 'Wind'
+        self.connectGatewayDict['Wind'] = u'Wind'
+        self.connected = True
     
     # ----------------------------------------------------------------------
 
     def connectIb(self):
         """连接Ib"""
         self.mainEngine.connect('IB')
+        self.connectGatewayDict['IB'] = u'盈透'
+        self.connected = True
         
     #----------------------------------------------------------------------
     def connectOanda(self):
         """连接OANDA"""
         self.mainEngine.connect('OANDA')
+        self.connectGatewayDict['OANDA'] = u'OANDA'
+        self.connected = True
         
     #----------------------------------------------------------------------
     def test(self):
@@ -411,6 +450,23 @@ class MainWindow(QtGui.QMainWindow):
         except AttributeError:
             pass
 
+
+
+    def disconnect(self):
+        """"断开底层gateway的连接"""
+        self.mainEngine.disconnect()
+        self.connected = False
+
+    def trade_off(self):
+        """检查现在是否为非交易时间"""
+        now = datetime.now()
+        a = datetime.now().replace(hour=2, minute=35, second=0, microsecond=0)
+        b = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
+        c = datetime.now().replace(hour=15, minute=30, second=0, microsecond=0)
+        d = datetime.now().replace(hour=20, minute=30, second=0, microsecond=0)
+        weekend = (now.isoweekday() == 6 and now >= a) or (now.isoweekday() == 7)
+        off = (a<= now <= b) or (c <= now <= d) or weekend
+        return off
 
 ########################################################################
 class AboutWidget(QtGui.QDialog):
