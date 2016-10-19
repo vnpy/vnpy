@@ -25,6 +25,7 @@ class CtaPosition:
 
         self.posList = []
 
+
         self.avgPrice = EMPTY_FLOAT
 
     def avaliablePos2Add(self):

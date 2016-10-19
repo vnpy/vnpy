@@ -180,7 +180,7 @@ class CtaLineBar(object):
 
         self.lineRsiTop = []        # 记录RSI的最高峰，只保留 inputRsiLen个
         self.lineRsiButtom = []     # 记录RSI的最低谷，只保留 inputRsiLen个
-        self.lastRsiTopButtom = None # 最近的一个波峰/波谷
+        self.lastRsiTopButtom = {}  # 最近的一个波峰/波谷
 
          # K线的CMI计算数据
         self.inputCmiLen = EMPTY_INT
@@ -199,6 +199,9 @@ class CtaLineBar(object):
         self.lineK = []                 # K为快速指标
         self.lineD = []                 # D为慢速指标
         self.lineJ = []                 #
+        self.lineKdjTop = []            # 记录KDJ最高峰，只保留 inputKdjLen个
+        self.lineKdjButtom = []         # 记录KDJ的最低谷，只保留 inputKdjLen个
+        self.lastKdjTopButtom = {}      # 最近的一个波峰/波谷
 
         # K线的MACD计算数据
         self.inputMacdFastPeriodLen = EMPTY_INT
@@ -282,6 +285,7 @@ class CtaLineBar(object):
         self.__recoundAvgVol()
         self.__recountRsi()
         self.__recountCmi()
+        self.__recountKdj()
         self.__recountBoll()
         self.__recountMacd()
 
@@ -336,6 +340,9 @@ class CtaLineBar(object):
 
         if self.inputRsi2Len > 0 and len(self.lineRsi2) > 0:
             msg = msg + u',Rsi({0}):{1}'.format(self.inputRsi2Len, self.lineRsi2[-1])
+
+        if self.inputKdjLen > 0 and len(self.lineK) > 0:
+            msg = msg + u',KDJ({0}):{1},{2},{3}'.format(self.inputKdjLen, self.lineK[-1],self.lineD[-1],self.lineJ[-1])
 
         if self.inputBollLen > 0 and len(self.lineUpperBand)>0:
             msg = msg + u',Boll({0}):u:{1},m:{2},l:{3}'.\
@@ -926,8 +933,10 @@ class CtaLineBar(object):
         # 3、inputRsi1Len(包含当前周期）的相对强弱
         if self.mode == self.TICK_MODE:
             listClose=[x.close for x in self.lineBar[-self.inputRsi1Len - 2:-1]]
+            idx = 2
         else:
             listClose=[x.close for x in self.lineBar[-self.inputRsi1Len-1:]]
+            idx = 1
 
         barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi1Len)[-1]
         barRsi = round(float(barRsi), 3)
@@ -945,7 +954,7 @@ class CtaLineBar(object):
                 t={}
                 t["Type"] = u'T'
                 t["RSI"] = self.lineRsi1[-2]
-                t["Close"] = self.lineBar[-2].close
+                t["Close"] = self.lineBar[-1-idx].close
 
 
                 if len(self.lineRsiTop) > self.inputRsi1Len:
@@ -960,7 +969,7 @@ class CtaLineBar(object):
                 b={}
                 b["Type"] = u'B'
                 b["RSI"] = self.lineRsi1[-2]
-                b["Close"] = self.lineBar[-2].close
+                b["Close"] = self.lineBar[-1-idx].close
 
                 if len(self.lineRsiButtom) > self.inputRsi1Len:
                     del self.lineRsiButtom[0]
@@ -1092,8 +1101,10 @@ class CtaLineBar(object):
 
         if self.mode == self.TICK_MODE:
             listClose =[x.close for x in self.lineBar[-self.inputKdjLen-1:-1]]
+            idx = 2
         else:
             listClose =[x.close for x in self.lineBar[-self.inputKdjLen:]]
+            idx = 1
 
         hhv = max(listClose)
         llv = min(listClose)
@@ -1108,7 +1119,10 @@ class CtaLineBar(object):
         else:
             lastD = 0
 
-        rsv= ( self.lineBar[-1].close - llv)/(hhv - llv) * 100
+        if hhv == llv:
+            rsv = 50
+        else:
+            rsv= (self.lineBar[-1].close - llv)/(hhv - llv) * 100
 
         k = 2*lastK/3 + rsv/3
         if k < 0: k = 0
@@ -1128,9 +1142,40 @@ class CtaLineBar(object):
             del self.lineD[0]
         self.lineD.append(d)
 
-        if len(self.lineJ) > self.inputKdjLen * 8:
+        l = len(self.lineJ)
+        if l > self.inputKdjLen * 8:
             del self.lineJ[0]
         self.lineJ.append(j)
+
+        #增加KDJ的J谷顶和波底
+        if l > 3:
+            # 峰
+            if self.lineJ[-1] < self.lineJ[-2] and self.lineJ[-3] <= self.lineJ[-2]:
+
+                t={}
+                t["Type"] = u'T'
+                t["J"] = self.lineJ[-2]
+                t["Close"] = self.lineBar[-1-idx].close
+
+                if len(self.lineKdjTop) > self.inputKdjLen:
+                    del self.lineKdjTop[0]
+
+                self.lineKdjTop.append( t )
+                self.lastKdjTopButtom = self.lineKdjTop[-1]
+
+            # 谷
+            elif self.lineJ[-1] > self.lineJ[-2] and self.lineJ[-3] >= self.lineJ[-2]:
+
+                b={}
+                b["Type"] = u'B'
+                b["J"] = self.lineJ[-2]
+                b["Close"] = self.lineBar[-1-idx].close
+
+                if len(self.lineKdjButtom) > self.inputKdjLen:
+                    del self.lineKdjButtom[0]
+                self.lineKdjButtom.append(b)
+                self.lastKdjTopButtom = self.lineKdjButtom[-1]
+
 
     def __recountMacd(self):
         """

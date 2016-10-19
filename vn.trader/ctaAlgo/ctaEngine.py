@@ -321,7 +321,7 @@ class CtaEngine(object):
             dt = datetime.now()
             if (ctaTick.datetime - dt).seconds > 10:
                 today = dt.strftime('%Y%m%d')
-                if today == tick.date:
+                if today != tick.date:
                     ctaTick.datetime = dt
                 else:
                     ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
@@ -633,12 +633,20 @@ class CtaEngine(object):
             self.writeCtaLog(u'策略实例不存在：' + name)    
             return None   
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def putStrategyEvent(self, name):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         event = Event(EVENT_CTA_STRATEGY+name)
         self.eventEngine.put(event)
-        
+
+    # ----------------------------------------------------------------------
+    def getAccountInfo(self):
+        """获取账号的实时权益、可用资金、仓位比例
+        Added by Incenselee
+        暂不支持多接口同时运行哦
+        """
+        return self.mainEngine.getAccountInfo()
+
 
 
 ########################################################################
