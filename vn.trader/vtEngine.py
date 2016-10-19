@@ -180,7 +180,15 @@ class MainEngine(object):
             gateway.getAccount()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)        
-        
+
+    def getAccountInfo(self):
+        """读取风控的账号与仓位数据
+        # Added by IncenseLee
+        仅支持一个账号。不支持多账号
+        以后支持跨市场套利才更新吧。
+        """
+        return self.rmEngine.getAccountInfo()
+
     #----------------------------------------------------------------------
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
@@ -202,7 +210,12 @@ class MainEngine(object):
         
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
-    
+
+    def disconnect(self):
+        """断开底层gateway的连接"""
+        for gateway in self.gatewayDict.values():
+            gateway.close()
+
     # ----------------------------------------------------------------------
     def writeLog(self, content):
         """快速发出日志事件"""
@@ -271,7 +284,10 @@ class MainEngine(object):
     def getAllWorkingOrders(self):
         """查询所有的活跃的委托（返回列表）"""
         return self.dataEngine.getAllWorkingOrders()
-    
+
+    def clearData(self):
+        """清空数据引擎的数据"""
+        self.dataEngine.clearData()
 
 ########################################################################
 class DataEngine(object):
@@ -368,5 +384,9 @@ class DataEngine(object):
         self.eventEngine.register(EVENT_CONTRACT, self.updateContract)
         self.eventEngine.register(EVENT_ORDER, self.updateOrder)
         
-    
+    def clearData(self):
+        """清空数据"""
+
+        self.orderDict = {}
+        self.workingOrderDict = {}
     
