@@ -23,7 +23,7 @@ class MainWindow(QtGui.QMainWindow):
         self.widgetDict = {}    # 用来保存子窗口的字典
         
         self.initUi()
-        self.loadWindowSettings()
+        self.loadWindowSettings('custom')
         
     #----------------------------------------------------------------------
     def initUi(self):
@@ -55,6 +55,9 @@ class MainWindow(QtGui.QMainWindow):
         # 连接组件之间的信号
         widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
         
+        # 保存默认设置
+        self.saveWindowSettings('default')
+        
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化菜单"""
@@ -64,9 +67,6 @@ class MainWindow(QtGui.QMainWindow):
         
         connectLtsAction = QtGui.QAction(u'连接LTS', self)
         connectLtsAction.triggered.connect(self.connectLts)
-        
-        connectXtpAction = QtGui.QAction(u'连接XTP', self)
-        connectXtpAction.triggered.connect(self.connectXtp)        
         
         connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
         connectKsotpAction.triggered.connect(self.connectKsotp)
@@ -117,7 +117,10 @@ class MainWindow(QtGui.QMainWindow):
         ctaAction.triggered.connect(self.openCta)
         
         rmAction = QtGui.QAction(u'风险管理', self)
-        rmAction.triggered.connect(self.openRm)        
+        rmAction.triggered.connect(self.openRm)     
+        
+        restoreAction = QtGui.QAction(u'还原窗口', self)
+        restoreAction.triggered.connect(self.restoreWindow)
         
         # 创建菜单
         menubar = self.menuBar()
@@ -128,8 +131,6 @@ class MainWindow(QtGui.QMainWindow):
             sysMenu.addAction(connectCtpAction)
         if 'LTS' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectLtsAction)
-        if 'XTP' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectXtpAction)            
         if 'FEMAS' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectFemasAction)
         if 'XSPEED' in self.mainEngine.gatewayDict:
@@ -166,6 +167,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')
+        helpMenu.addAction(restoreAction)
         helpMenu.addAction(aboutAction)  
         helpMenu.addAction(testAction)
     
@@ -208,11 +210,6 @@ class MainWindow(QtGui.QMainWindow):
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')    
-        
-    #----------------------------------------------------------------------
-    def connectXtp(self):
-        """连接XTP接口"""
-        self.mainEngine.connect('XTP')           
         
     #----------------------------------------------------------------------
     def connectKsotp(self):
@@ -320,7 +317,7 @@ class MainWindow(QtGui.QMainWindow):
         if reply == QtGui.QMessageBox.Yes: 
             for widget in self.widgetDict.values():
                 widget.close()
-            self.saveWindowSettings()
+            self.saveWindowSettings('custom')
             
             self.mainEngine.exit()
             event.accept()
@@ -339,16 +336,16 @@ class MainWindow(QtGui.QMainWindow):
         return widget, dock
     
     #----------------------------------------------------------------------
-    def saveWindowSettings(self):
+    def saveWindowSettings(self, settingName):
         """保存窗口设置"""
-        settings = QtCore.QSettings('vn.py', 'vn.trader')
+        settings = QtCore.QSettings('vn.trader', settingName)
         settings.setValue('state', self.saveState())
         settings.setValue('geometry', self.saveGeometry())
         
     #----------------------------------------------------------------------
-    def loadWindowSettings(self):
+    def loadWindowSettings(self, settingName):
         """载入窗口设置"""
-        settings = QtCore.QSettings('vn.py', 'vn.trader')
+        settings = QtCore.QSettings('vn.trader', settingName)
         # 这里由于PyQt4的版本不同，settings.value('state')调用返回的结果可能是：
         # 1. None（初次调用，注册表里无相应记录，因此为空）
         # 2. QByteArray（比较新的PyQt4）
@@ -360,6 +357,12 @@ class MainWindow(QtGui.QMainWindow):
             self.restoreGeometry(settings.value('geometry').toByteArray())    
         except AttributeError:
             pass
+        
+    #----------------------------------------------------------------------
+    def restoreWindow(self):
+        """还原默认窗口设置（还原停靠组件位置）"""
+        self.loadWindowSettings('default')
+        self.showMaximized()
 
 
 ########################################################################

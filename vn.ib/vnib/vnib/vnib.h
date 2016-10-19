@@ -9,9 +9,16 @@
 #include <boost/python/module.hpp>	//python封装
 #include <boost/python/def.hpp>		//python封装
 #include <boost/python/object.hpp>	//python封装
+
+#include <boost/python/register_ptr_to_python.hpp>					//Python封装
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>	//Python封装
+
 #include <boost/python.hpp>			//python封装
 #include <boost/thread.hpp>			//任务队列的线程功能
 #include <boost/bind.hpp>			//任务队列的线程功能
+
+#include <boost/shared_ptr.hpp>
+
 
 //API
 #include "EWrapper.h"
@@ -51,13 +58,20 @@ public:
 
 
 ///-------------------------------------------------------------------------------------
+///强制转化相关
+///-------------------------------------------------------------------------------------
+
+boost::python::list tagvaluelist_to_pylist();
+
+TagValueListSPtr pylist_to_tagvaluelist();
+
+///-------------------------------------------------------------------------------------
 ///声明类
 ///-------------------------------------------------------------------------------------
 
 class VnIbApi;
 
 class IbWrapper;
-
 
 ///-------------------------------------------------------------------------------------
 ///C++ SPI的回调函数方法实现

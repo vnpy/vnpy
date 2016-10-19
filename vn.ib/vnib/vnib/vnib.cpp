@@ -4,6 +4,13 @@
 #include "StdAfx.h"
 #include "vnib.h"
 
+#include "Contract.h"
+#include "OrderState.h"
+#include "Execution.h"
+#include "CommissionReport.h"
+#include "ScannerSubscription.h"
+#include "TagValue.h"
+
 
 ///-------------------------------------------------------------------------------------
 ///C++的回调函数将数据保存到队列中
@@ -416,10 +423,52 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 };
 
 
+
+
+struct TagValue_Wrapper : TagValue
+{
+	TagValue_Wrapper(PyObject* self_) : self(self_) {}
+	PyObject* self;
+};
+
+
+// 特殊封装相关
+namespace boost {
+	namespace python {
+		template <class T> struct pointee< ibapi::shared_ptr<T> >
+		{
+			typedef T type;
+		};
+	}
+}
+
+template<class T> inline T * get_pointer(ibapi::shared_ptr<T> const & p)
+{
+	return p.get();
+}
+
+/*
+template<class T>
+bool ibapi::shared_ptr::operator==(ibapi::shared_ptr<T> const & a)
+{
+	return a.get() == this->get();
+}
+
+template<class T>
+bool ibapi::shared_ptr::operator!=(ibapi::shared_ptr<T> const & a)
+{
+	return a.get() != this->get();
+}
+*/
+
 BOOST_PYTHON_MODULE(vnib)
 {
-	PyEval_InitThreads();	//导入时运行，保证先创建GIL
+	using namespace boost::python;
 
+	//导入时运行，保证先创建GIL
+	PyEval_InitThreads();	
+
+	//API类封装
 	class_<IbApiWrap, boost::noncopyable>("IbApi")
 		.def("eConnect", &IbApiWrap::eConnect)
 		.def("eDisconnect", &IbApiWrap::eDisconnect)
@@ -434,6 +483,112 @@ BOOST_PYTHON_MODULE(vnib)
 		.def("error", pure_virtual(&IbApiWrap::error))
 		.def("accountSummary", pure_virtual(&IbApiWrap::accountSummary))
 		.def("accountSummaryEnd", pure_virtual(&IbApiWrap::accountSummaryEnd))
+		;
+
+	//结构体封装
+	class_<OrderState>("OrderState")
+		.def_readwrite("status", &OrderState::status)
+		.def_readwrite("initMargin", &OrderState::initMargin)
+		.def_readwrite("maintMargin", &OrderState::maintMargin)
+		.def_readwrite("equityWithLoan", &OrderState::equityWithLoan)
+		.def_readwrite("commission", &OrderState::commission)
+		.def_readwrite("minCommission", &OrderState::minCommission)
+		.def_readwrite("maxCommission", &OrderState::maxCommission)
+		.def_readwrite("commissionCurrency", &OrderState::commissionCurrency)
+		.def_readwrite("warningText  ", &OrderState::warningText)
+		;
+
+	class_<Execution>("Execution")
+		.def_readwrite("execId", &Execution::execId)
+		.def_readwrite("time", &Execution::time)
+		.def_readwrite("acctNumber", &Execution::acctNumber)
+		.def_readwrite("exchange", &Execution::exchange)
+		.def_readwrite("side", &Execution::side)
+		.def_readwrite("shares", &Execution::shares)
+		.def_readwrite("price", &Execution::price)
+		.def_readwrite("permId", &Execution::permId)
+		.def_readwrite("clientId  ", &Execution::clientId)
+		.def_readwrite("orderId  ", &Execution::orderId)
+		.def_readwrite("liquidation  ", &Execution::liquidation)
+		.def_readwrite("cumQty  ", &Execution::cumQty)
+		.def_readwrite("avgPrice  ", &Execution::avgPrice)
+		.def_readwrite("orderRef  ", &Execution::orderRef)
+		.def_readwrite("evRule  ", &Execution::evRule)
+		.def_readwrite("evMultiplier  ", &Execution::evMultiplier)
+		.def_readwrite("modelCode  ", &Execution::modelCode)
+		;
+
+	class_<UnderComp>("UnderComp")
+		.def_readwrite("conId", &UnderComp::conId)
+		.def_readwrite("delta", &UnderComp::delta)
+		.def_readwrite("price", &UnderComp::price)
+		;
+
+	class_<CommissionReport>("CommissionReport")
+		.def_readwrite("execId", &CommissionReport::execId)
+		.def_readwrite("commission", &CommissionReport::commission)
+		.def_readwrite("currency", &CommissionReport::currency)
+		.def_readwrite("realizedPNL", &CommissionReport::realizedPNL)
+		.def_readwrite("yield", &CommissionReport::yield)
+		.def_readwrite("yieldRedemptionDate", &CommissionReport::yieldRedemptionDate)
+		;
+
+	class_<ExecutionFilter>("ExecutionFilter")
+		.def_readwrite("m_clientId", &ExecutionFilter::m_clientId)
+		.def_readwrite("m_acctCode", &ExecutionFilter::m_acctCode)
+		.def_readwrite("m_time", &ExecutionFilter::m_time)
+		.def_readwrite("m_symbol", &ExecutionFilter::m_symbol)
+		.def_readwrite("m_secType", &ExecutionFilter::m_secType)
+		.def_readwrite("m_exchange", &ExecutionFilter::m_exchange)
+		.def_readwrite("m_side", &ExecutionFilter::m_side)
+		;
+
+	class_<ScannerSubscription>("ScannerSubscription")
+		.def_readwrite("numberOfRows", &ScannerSubscription::numberOfRows)
+		.def_readwrite("instrument", &ScannerSubscription::instrument)
+		.def_readwrite("locationCode", &ScannerSubscription::locationCode)
+		.def_readwrite("scanCode", &ScannerSubscription::scanCode)
+		.def_readwrite("abovePrice", &ScannerSubscription::abovePrice)
+		.def_readwrite("belowPrice", &ScannerSubscription::belowPrice)
+		.def_readwrite("aboveVolume", &ScannerSubscription::aboveVolume)
+		.def_readwrite("marketCapAbove", &ScannerSubscription::marketCapAbove)
+		.def_readwrite("marketCapBelow", &ScannerSubscription::marketCapBelow)
+		.def_readwrite("moodyRatingAbove", &ScannerSubscription::moodyRatingAbove)
+		.def_readwrite("moodyRatingBelow", &ScannerSubscription::moodyRatingBelow)
+		.def_readwrite("spRatingAbove", &ScannerSubscription::spRatingAbove)
+		.def_readwrite("spRatingBelow", &ScannerSubscription::spRatingBelow)
+		.def_readwrite("maturityDateAbove", &ScannerSubscription::maturityDateAbove)
+		.def_readwrite("maturityDateBelow", &ScannerSubscription::maturityDateBelow)
+		.def_readwrite("couponRateAbove", &ScannerSubscription::couponRateAbove)
+		.def_readwrite("couponRateBelow", &ScannerSubscription::couponRateBelow)
+		.def_readwrite("excludeConvertible", &ScannerSubscription::excludeConvertible)
+		.def_readwrite("averageOptionVolumeAbove", &ScannerSubscription::averageOptionVolumeAbove)
+		.def_readwrite("scannerSettingPairs", &ScannerSubscription::scannerSettingPairs)
+		.def_readwrite("stockTypeFilter", &ScannerSubscription::stockTypeFilter)
+		;
+
+	class_<TagValue, TagValueSPtr>("TagValue")
+	//class_<TagValue>("TagValue")
+		.def_readwrite("tag", &TagValue::tag)
+		.def_readwrite("value", &TagValue::value)
+		;
+
+	class_<TagValueList, TagValueListSPtr>("TagValueList")
+	//class_<TagValueList>("TagValueList")
+		.def(vector_indexing_suite<TagValueList, true>());    //这个true非常重要
+
+	//register_ptr_to_python<TagValueSPtr>();
+	//register_ptr_to_python<TagValueListSPtr>();
+
+	class_<ComboLeg>("ComboLeg")
+		.def_readwrite("conId", &ComboLeg::conId)
+		.def_readwrite("ratio", &ComboLeg::ratio)
+		.def_readwrite("action", &ComboLeg::action)
+		.def_readwrite("exchange", &ComboLeg::exchange)
+		.def_readwrite("openClose", &ComboLeg::openClose)
+		.def_readwrite("shortSaleSlot", &ComboLeg::shortSaleSlot)
+		.def_readwrite("designatedLocation", &ComboLeg::designatedLocation)
+		.def_readwrite("exemptCode", &ComboLeg::exemptCode)
 		;
 };
 
