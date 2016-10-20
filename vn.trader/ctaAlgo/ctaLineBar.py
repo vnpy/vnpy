@@ -374,8 +374,10 @@ class CtaLineBar(object):
 
         # K线的日期时间
         self.bar.date = tick.date                # K线的日期时间（去除秒）设为第一个Tick的时间
-        self.bar.time = tick.time              # K线的日期时间（去除秒）设为第一个Tick的时间
+
         self.bar.datetime = tick.datetime
+        self.bar.datetime.replace(second=0, microsecond=0)         # K线的日期时间（去除秒）设为第一个Tick的时间
+        self.bar.time = self.bar.datetime.strftime('%H:%M:%S')     # K线的日期时间（去除秒）设为第一个Tick的时间
 
         self.bar.volume = tick.volume
         self.bar.openInterest = tick.openInterest
