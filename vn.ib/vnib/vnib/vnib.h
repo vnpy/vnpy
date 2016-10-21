@@ -1,21 +1,21 @@
-//ËµÃ÷²¿·Ö
+//è¯´æ˜éƒ¨åˆ†
 
-//ÏµÍ³
+//ç³»ç»Ÿ
 #include "StdAfx.h"
 #include <string>
 
 //Boost
 #define BOOST_PYTHON_STATIC_LIB
-#include <boost/python/module.hpp>	//python·â×°
-#include <boost/python/def.hpp>		//python·â×°
-#include <boost/python/object.hpp>	//python·â×°
+#include <boost/python/module.hpp>	//pythonå°è£…
+#include <boost/python/def.hpp>		//pythonå°è£…
+#include <boost/python/object.hpp>	//pythonå°è£…
 
-#include <boost/python/register_ptr_to_python.hpp>					//Python·â×°
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>	//Python·â×°
+#include <boost/python/register_ptr_to_python.hpp>					//Pythonå°è£…
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>	//Pythonå°è£…
 
-#include <boost/python.hpp>			//python·â×°
-#include <boost/thread.hpp>			//ÈÎÎñ¶ÓÁĞµÄÏß³Ì¹¦ÄÜ
-#include <boost/bind.hpp>			//ÈÎÎñ¶ÓÁĞµÄÏß³Ì¹¦ÄÜ
+#include <boost/python.hpp>			//pythonå°è£…
+#include <boost/thread.hpp>			//ä»»åŠ¡é˜Ÿåˆ—çš„çº¿ç¨‹åŠŸèƒ½
+#include <boost/bind.hpp>			//ä»»åŠ¡é˜Ÿåˆ—çš„çº¿ç¨‹åŠŸèƒ½
 
 #include <boost/shared_ptr.hpp>
 
@@ -25,31 +25,31 @@
 #include "EClientSocket.h"
 #include "EReader.h"
 
-//ÃüÃû¿Õ¼ä
+//å‘½åç©ºé—´
 using namespace std;
 using namespace boost::python;
 using namespace boost;
 
 
 ///-------------------------------------------------------------------------------------
-///APIÖĞµÄ²¿·Ö×é¼ş
+///APIä¸­çš„éƒ¨åˆ†ç»„ä»¶
 ///-------------------------------------------------------------------------------------
 
-//GILÈ«¾ÖËø¼ò»¯»ñÈ¡ÓÃ£¬
-//ÓÃÓÚ°ïÖúC++Ïß³Ì»ñµÃGILËø£¬´Ó¶ø·ÀÖ¹python±ÀÀ£
+//GILå…¨å±€é”ç®€åŒ–è·å–ç”¨ï¼Œ
+//ç”¨äºå¸®åŠ©C++çº¿ç¨‹è·å¾—GILé”ï¼Œä»è€Œé˜²æ­¢pythonå´©æºƒ
 class PyLock
 {
 private:
 	PyGILState_STATE gil_state;
 
 public:
-	//ÔÚÄ³¸öº¯Êı·½·¨ÖĞ´´½¨¸Ã¶ÔÏóÊ±£¬»ñµÃGILËø
+	//åœ¨æŸä¸ªå‡½æ•°æ–¹æ³•ä¸­åˆ›å»ºè¯¥å¯¹è±¡æ—¶ï¼Œè·å¾—GILé”
 	PyLock()
 	{
 		gil_state = PyGILState_Ensure();
 	};
 
-	//ÔÚÄ³¸öº¯ÊıÍê³ÉºóÏú»Ù¸Ã¶ÔÏóÊ±£¬½â·ÅGILËø
+	//åœ¨æŸä¸ªå‡½æ•°å®Œæˆåé”€æ¯è¯¥å¯¹è±¡æ—¶ï¼Œè§£æ”¾GILé”
 	~PyLock()
 	{
 		PyGILState_Release(gil_state);
@@ -58,7 +58,7 @@ public:
 
 
 ///-------------------------------------------------------------------------------------
-///Ç¿ÖÆ×ª»¯Ïà¹Ø
+///å¼ºåˆ¶è½¬åŒ–ç›¸å…³
 ///-------------------------------------------------------------------------------------
 
 boost::python::list tagvaluelist_to_pylist();
@@ -66,7 +66,7 @@ boost::python::list tagvaluelist_to_pylist();
 TagValueListSPtr pylist_to_tagvaluelist();
 
 ///-------------------------------------------------------------------------------------
-///ÉùÃ÷Àà
+///å£°æ˜ç±»
 ///-------------------------------------------------------------------------------------
 
 class VnIbApi;
@@ -74,7 +74,7 @@ class VnIbApi;
 class IbWrapper;
 
 ///-------------------------------------------------------------------------------------
-///C++ SPIµÄ»Øµ÷º¯Êı·½·¨ÊµÏÖ
+///C++ SPIçš„å›è°ƒå‡½æ•°æ–¹æ³•å®ç°
 ///-------------------------------------------------------------------------------------
 
 class IbWrapper : public EWrapper
@@ -223,7 +223,7 @@ public:
 
 
 ///-------------------------------------------------------------------------------------
-///·â×°ºóµÄAPIÀà
+///å°è£…åçš„APIç±»
 ///-------------------------------------------------------------------------------------
 
 class VnIbApi
@@ -248,24 +248,17 @@ public:
 
 	~VnIbApi()
 	{
-		if (this->client)
-		{
-			delete this->client;
-		}
-
-		if (this->wrapper)
-		{
-			delete this->wrapper;
-		}
+		delete this->client;
+		delete this->wrapper;
 	};
 
 	//-------------------------------------------------------------------------------------
-	//¸ºÔğµ÷ÓÃcheckMessagesµÄÏß³Ì¹¤×÷º¯Êı
+	//è´Ÿè´£è°ƒç”¨checkMessagesçš„çº¿ç¨‹å·¥ä½œå‡½æ•°
 	//-------------------------------------------------------------------------------------
 	void run();
 
 	//-------------------------------------------------------------------------------------
-	//»Øµ÷º¯Êı
+	//å›è°ƒå‡½æ•°
 	//-------------------------------------------------------------------------------------
 
 	virtual void nextValidId(OrderId orderId){};
@@ -408,7 +401,7 @@ public:
 	*/
 
 	//-------------------------------------------------------------------------------------
-	//Ö÷¶¯º¯Êı
+	//ä¸»åŠ¨å‡½æ•°
 	//-------------------------------------------------------------------------------------
 
 	bool eConnect(string host, int port, int clientId, bool extraAuth);
