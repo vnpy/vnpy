@@ -89,6 +89,9 @@ class MainWindow(QtGui.QMainWindow):
         connectIbAction = QtGui.QAction(u'连接IB', self)
         connectIbAction.triggered.connect(self.connectIb) 
         
+        connectShzdAction = QtGui.QAction(u'连接直达', self)
+        connectShzdAction.triggered.connect(self.connectShzd)        
+        
         connectOandaAction = QtGui.QAction(u'连接OANDA', self)
         connectOandaAction.triggered.connect(self.connectOanda)
         
@@ -144,6 +147,8 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addSeparator()
         if 'IB' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectIbAction)    
+        if 'SHZD' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectShzdAction)          
         if 'OANDA' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectOandaAction)
         if 'OKCOIN' in self.mainEngine.gatewayDict:
@@ -245,6 +250,11 @@ class MainWindow(QtGui.QMainWindow):
     def connectIb(self):
         """连接Ib"""
         self.mainEngine.connect('IB')
+        
+    #----------------------------------------------------------------------
+    def connectShzd(self):
+        """连接Ib"""
+        self.mainEngine.connect('SHZD')    
         
     #----------------------------------------------------------------------
     def connectOanda(self):

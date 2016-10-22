@@ -116,6 +116,12 @@ class MainEngine(object):
             print e
             
         try:
+            from shzdGateway.shzdGateway import ShzdGateway
+            self.addGateway(ShzdGateway, 'SHZD')
+        except Exception, e:
+            print e       
+            
+        try:
             from oandaGateway.oandaGateway import OandaGateway
             self.addGateway(OandaGateway, 'OANDA')
             self.gatewayDict['OANDA'].setQryEnabled(True)

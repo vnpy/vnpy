@@ -44,8 +44,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\vn.shzd\shzdapi;D:\Anaconda2\include;D:\boost_1_60_0;$(IncludePath)</IncludePath>
-    <ReferencePath>D:\vn.shzd\shzdapi;D:\boost_1_60_0\libs;D:\Anaconda2\libs;$(ReferencePath)</ReferencePath>
+    <IncludePath>X:\GithubProject\vnpy\vn.shzd\shzdapi;D:\Anaconda2\include;D:\boost_1_57_0;$(IncludePath)</IncludePath>
+    <ReferencePath>D:\boost_1_57_0\libs;X:\GithubProject\vnpy\vn.shzd\shzdapi;D:\Anaconda2\libs;$(ReferencePath)</ReferencePath>
     <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -76,7 +76,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>D:\boost_1_60_0\stage\lib;D:\Anaconda2\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\boost_1_57_0\stage\lib;D:\Anaconda2\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

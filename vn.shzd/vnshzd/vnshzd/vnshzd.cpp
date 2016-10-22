@@ -146,7 +146,7 @@ void ShzdApi::processMarketInfo(Task* task)
 		}
 	}
 
-	this->onReceiveTradeInfo(data);
+	this->onReceiveMarketInfo(data);
 
 	delete task->task_data;
 	delete task;

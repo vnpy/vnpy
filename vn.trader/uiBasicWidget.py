@@ -624,6 +624,7 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_SGE,
                     EXCHANGE_HKEX,
                     EXCHANGE_SMART,
+                    EXCHANGE_ICE,
                     EXCHANGE_NYMEX,
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO]
