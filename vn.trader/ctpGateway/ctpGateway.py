@@ -16,6 +16,7 @@ from vnctpmd import MdApi
 from vnctptd import TdApi
 from ctpDataType import *
 from vtGateway import *
+from datetime import datetime
 
 import logging
 
@@ -71,9 +72,9 @@ class CtpGateway(VtGateway):
     def __init__(self, eventEngine, gatewayName='CTP'):
         """Constructor"""
         super(CtpGateway, self).__init__(eventEngine, gatewayName)
-        
-        self.mdApi = CtpMdApi(self)     # 行情API
-        self.tdApi = CtpTdApi(self)     # 交易API
+
+        self.mdApi = None     # 行情API
+        self.tdApi = None     # 交易API
 
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
@@ -86,7 +87,13 @@ class CtpGateway(VtGateway):
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
         fileName = os.getcwd() + '/ctpGateway/' + fileName
-        
+
+        if self.mdApi is None:
+            self.mdApi = CtpMdApi(self)     # 行情API
+
+        if self.tdApi is None:
+            self.tdApi = CtpTdApi(self)     # 交易API
+
         try:
             f = file(fileName)
         except IOError:
@@ -121,35 +128,48 @@ class CtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        self.mdApi.subscribe(subscribeReq)
+        if self.mdApi is not None:
+            self.mdApi.subscribe(subscribeReq)
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
-        return self.tdApi.sendOrder(orderReq)
+        if self.tdApi is not None:
+            return self.tdApi.sendOrder(orderReq)
         
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        self.tdApi.cancelOrder(cancelOrderReq)
+        if self.tdApi is not None:
+            self.tdApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
-        self.tdApi.qryAccount()
+        if self.tdApi is not None:
+            self.tdApi.qryAccount()
         
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
+        if self.tdApi is None:
+            return
         self.tdApi.qryPosition()
         
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        if self.mdConnected:
+        if self.mdConnected and self.mdApi is not None:
             self.mdApi.close()
-        if self.tdConnected:
+            self.mdApi = None
+        if self.tdConnected and self.tdApi is not None:
             self.tdApi.close()
+            self.tdApi = None
+
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'主动断开连接'
+        self.onLog(log)
         
     #----------------------------------------------------------------------
     def initQuery(self):
@@ -329,7 +349,10 @@ class CtpMdApi(MdApi):
         tick.openInterest = data['OpenInterest']
         tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
         tick.date = data['TradingDay']
-        
+
+        # add by Incense Lee
+        tick.tradingDay = data['TradingDay']
+
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
         tick.lowPrice = data['LowestPrice']
@@ -343,6 +366,26 @@ class CtpMdApi(MdApi):
         tick.bidVolume1 = data['BidVolume1']
         tick.askPrice1 = data['AskPrice1']
         tick.askVolume1 = data['AskVolume1']
+
+        #tick.bidPrice2 = data['BidPrice2']
+        #tick.bidVolume2 = data['BidVolume2']
+        #tick.askPrice2 = data['AskPrice2']
+        #tick.askVolume2 = data['AskVolume2']
+#
+        #tick.bidPrice3 = data['BidPrice3']
+        #tick.bidVolume3 = data['BidVolume3']
+        #tick.askPrice3= data['AskPrice3']
+        #tick.askVolume3 = data['AskVolume3']
+#
+        #tick.bidPrice4 = data['BidPrice4']
+        #tick.bidVolume4 = data['BidVolume4']
+        #tick.askPrice4 = data['AskPrice4']
+        #tick.askVolume4 = data['AskVolume4']
+#
+        #tick.bidPrice5 = data['BidPrice5']
+        #tick.bidVolume5 = data['BidVolume5']
+        #tick.askPrice5 = data['AskPrice5']
+        #tick.askVolume5 = data['AskVolume5']
         
         self.gateway.onTick(tick)
         
