@@ -115,6 +115,7 @@ class CtaLineBar(object):
 
         # 当前的Tick
         self.curTick = None
+        self.curTradingDay = EMPTY_STRING
 
         # K 线服务的策略
         self.strategy = strategy
@@ -251,11 +252,14 @@ class CtaLineBar(object):
 
         if l1 == 0:
             self.lineBar.append(bar)
+            self.curTradingDay = bar.date
             self.onBar(bar)
             return
 
         # 与最后一个BAR的时间比对，判断是否超过K线的周期
         lastBar = self.lineBar[-1]
+
+        self.curTradingDay = bar.tradingDay
 
         if abs((bar.datetime - lastBar.datetime).seconds) >= self.barTimeInterval:
             self.lineBar.append(bar)
@@ -263,13 +267,15 @@ class CtaLineBar(object):
             return
 
         # 更新最后一个bar
+        # 此段代码，针对一部分短周期生成长周期的k线更新，如3根5分钟k线，合并成1根15分钟k线。
         lastBar.close = bar.close
         lastBar.high = max(lastBar.high, bar.high)
         lastBar.low = min(lastBar.low, bar.low)
         lastBar.volume = lastBar.volume + bar.volume
+        lastBar.dayVolume = bar.dayVolume
 
-        lastBar.mid4 = round((2*lastBar.close + lastBar.high+lastBar.low)/4,2)
-        lastBar.mid5 = round((2*lastBar.close + lastBar.open+ lastBar.high+lastBar.low)/5,2)
+        lastBar.mid4 = round((2*lastBar.close + lastBar.high + lastBar.low)/4, 2)
+        lastBar.mid5 = round((2*lastBar.close + lastBar.open + lastBar.high + lastBar.low)/5, 2)
 
     def onBar(self, bar):
         """OnBar事件"""
@@ -296,16 +302,16 @@ class CtaLineBar(object):
         """显示最后一个Bar的信息"""
         msg = u'['+self.name+u']'
 
+        if len(self.lineBar) < 2:
+            return msg
+
         if self.mode == self.TICK_MODE:
             displayBar = self.lineBar[-2]
         else:
             displayBar = self.lineBar[-1]
 
-        if len(self.lineBar) < 2:
-            return msg
-
         msg = msg + u'{0} o:{1};h{2};l:{3};c:{4},v:{5}'.\
-            format(displayBar.datetime, displayBar.open, displayBar.high,
+            format(displayBar.date+' '+displayBar.time, displayBar.open, displayBar.high,
                    displayBar.low, displayBar.close, displayBar.volume)
 
         if self.inputMa1Len > 0 and len(self.lineMa1) > 0:
@@ -342,7 +348,7 @@ class CtaLineBar(object):
             msg = msg + u',Rsi({0}):{1}'.format(self.inputRsi2Len, self.lineRsi2[-1])
 
         if self.inputKdjLen > 0 and len(self.lineK) > 0:
-            msg = msg + u',KDJ({0}):{1},{2},{3}'.format(self.inputKdjLen, self.lineK[-1],self.lineD[-1],self.lineJ[-1])
+            msg = msg + u',KDJ({0}):{1},{2},{3}'.format(self.inputKdjLen, self.lineK[-1], self.lineD[-1], self.lineJ[-1])
 
         if self.inputBollLen > 0 and len(self.lineUpperBand)>0:
             msg = msg + u',Boll({0}):u:{1},m:{2},l:{3}'.\
@@ -351,8 +357,8 @@ class CtaLineBar(object):
 
         if self.inputMacdFastPeriodLen >0 and len(self.lineDif)>0:
             msg = msg + u',MACD({0},{1},{2}):Dif:{3},Dea{4},Macd:{5}'.\
-                format(self.inputMacdFastPeriodLen,self.inputMacdSlowPeriodLen,self.inputMacdSignalPeriodLen,
-                       round(self.lineDif[-1],2),round(self.lineDea[-1],2),round(self.lineMacd[-1],2))
+                format(self.inputMacdFastPeriodLen, self.inputMacdSlowPeriodLen, self.inputMacdSignalPeriodLen,
+                       round(self.lineDif[-1], 2), round(self.lineDea[-1], 2), round(self.lineMacd[-1], 2))
         return msg
 
     def __firstTick(self, tick):
@@ -368,18 +374,27 @@ class CtaLineBar(object):
         self.bar.low = tick.lastPrice
         self.bar.close = tick.lastPrice
 
-        self.bar.mid4 = tick.lastPrice             # 四价均价
-        self.bar.mid5 = tick.lastPrice             # 四价均价
-
+        self.bar.mid4 = tick.lastPrice             # 4价均价
+        self.bar.mid5 = tick.lastPrice             # 5价均价
 
         # K线的日期时间
-        self.bar.date = tick.date                # K线的日期时间（去除秒）设为第一个Tick的时间
+        self.bar.tradingDay = tick.tradingDay    # K线所在的交易日期
+        self.bar.date = tick.date                # K线的日期，（夜盘的话，与交易日期不同哦）
 
         self.bar.datetime = tick.datetime
         self.bar.datetime.replace(second=0, microsecond=0)         # K线的日期时间（去除秒）设为第一个Tick的时间
         self.bar.time = self.bar.datetime.strftime('%H:%M:%S')     # K线的日期时间（去除秒）设为第一个Tick的时间
 
-        self.bar.volume = tick.volume
+        # K线的日总交易量，k线内交易量
+        self.bar.dayVolume = tick.volume
+        if self.curTradingDay != self.bar.tradingDay or not self.lineBar:
+            # bar的交易日与记录的当前交易日不一致：即该bar为新的交易日,bar的交易量为当前的tick.volume
+            self.bar.volume = tick.volume
+            self.curTradingDay = self.bar.tradingDay
+        else:
+            # bar的交易日与记录的当前交易日一致, 交易量为tick的volume，减去上一根bar的日总交易量
+            self.bar.volume = tick.volume - self.lineBar[-1].dayVolume
+
         self.bar.openInterest = tick.openInterest
 
         self.barFirstTick = True                  # 标识该Tick属于该Bar的第一个tick数据
@@ -395,7 +410,6 @@ class CtaLineBar(object):
         # 保存第一个K线数据
         if l1 == 0:
             self.__firstTick(tick)
-            self.onBar(self.bar)
             return
 
         # 清除480周期前的数据，
@@ -479,9 +493,8 @@ class CtaLineBar(object):
             if tick.datetime.hour == 23 and tick.datetime.minute == 30:
                 endtick = True
 
-        # 满足时间要求
+        # 满足时间要求,tick的时间，距离最后一个bar的开始时间，已经超出bar的时间周期（barTimeInterval），并且不是最后一个结束tick
         if (tick.datetime-lastBar.datetime).seconds >= self.barTimeInterval and not endtick:
-
             # 创建并推入新的Bar
             self.__firstTick(tick)
             # 触发OnBar事件
@@ -495,7 +508,19 @@ class CtaLineBar(object):
             lastBar.high = max(lastBar.high, tick.lastPrice)
             lastBar.low = min(lastBar.low, tick.lastPrice)
             lastBar.close = tick.lastPrice
-            lastBar.volume = lastBar.volume + tick.volume
+
+            # 更新日内总交易量，和bar内交易量
+            lastBar.dayVolume = tick.volume
+            if l1 == 1:
+                # 针对第一个bar的tick volume更新
+                lastBar.volume = tick.volume
+            else:
+                # 针对新交易日的第一个bar：于上一个bar的时间在14，当前bar的时间不在14点,初始化为tick.volume
+                if self.lineBar[-2].datetime.hour == 14 and tick.datetime.hour != 14:
+                    lastBar.volume = tick.volume
+                else:
+                    # 其他情况，bar为同一交易日，将tick的volume，减去上一bar的dayVolume
+                    lastBar.volume = tick.volume - self.lineBar[-2].dayVolume
 
             # 更新Bar的颜色
             if lastBar.close > lastBar.open:
