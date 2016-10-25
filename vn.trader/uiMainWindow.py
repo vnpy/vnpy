@@ -122,7 +122,7 @@ class MainWindow(QtGui.QMainWindow):
         rmAction = QtGui.QAction(u'风险管理', self)
         rmAction.triggered.connect(self.openRm)     
         
-        restoreAction = QtGui.QAction(u'还原窗口', self)
+        restoreAction = QtGui.QAction(u'还原', self)
         restoreAction.triggered.connect(self.restoreWindow)
         
         # 创建菜单

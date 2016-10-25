@@ -118,6 +118,7 @@ class MainEngine(object):
         try:
             from shzdGateway.shzdGateway import ShzdGateway
             self.addGateway(ShzdGateway, 'SHZD')
+            self.gatewayDict['SHZD'].setQryEnabled(True)
         except Exception, e:
             print e       
             

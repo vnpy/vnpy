@@ -2,6 +2,11 @@
 
 '''
 vn.shzd的gateway接入
+
+1. 期权合约数量太多，为了方便起见默认接口只接收期货合约数据
+2. 直达接口的撤单操作也被视作一个独立的委托，但是在vn.trader中选择忽略
+3. 持仓全部平光后，再次查询时会没有该合约的推送（和CTP不同），为了避免最后平仓
+   不更新的情况，使用缓存机制来处理
 '''
 
 
@@ -201,7 +206,7 @@ class ShzdGatewayApi(ShzdApi):
         self.accountNoList = []         # 账号列表
         
         self.tradeCallbacks = {}    # 交易回调函数映射
-        self.marketCallbacks = {}   # 行情回调函数映射
+        self.marketCallbacks = {}   # 行情回调函数映射        
         
         # 委托相关
         self.localNo = EMPTY_INT    # 本地委托号
@@ -209,6 +214,13 @@ class ShzdGatewayApi(ShzdApi):
         self.orderNoDict = {}       # key为OrderNo，value为localNo
         self.localNoDict = {}       # key为str(localNo)，value为(SystemNo, OrderNo)
         self.cancelDict = {}        # key为等待撤单的str(localNo)，value为CancelOrderReq
+        
+        # 委托号前缀
+        n = datetime.now()
+        self.orderPrefix = n.strftime("%H%M%S.")
+        
+        # 持仓缓存
+        self.posDict = {}           # key为vtPositionName，value为VtPositionData
         
         self.initCallbacks()
         
@@ -260,13 +272,12 @@ class ShzdGatewayApi(ShzdApi):
     #----------------------------------------------------------------------
     def onMarketData(self, data):
         """行情推送"""
-        printDict(data)
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
     
         tick.symbol = data['307']
         tick.exchange = exchangeMapReverse.get(data['306'], EXCHANGE_UNKNOWN)
-        tick.vtSymbol = '.'.join([tick.symbol, EXCHANGE_UNKNOWN])
+        tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
     
         tick.volume = int(data['513'])
         tick.openInterest = int(data['514'])
@@ -284,9 +295,29 @@ class ShzdGatewayApi(ShzdApi):
         
             # 可以实现5档深度
             tick.bidPrice1 = float(data['500'])
+            tick.bidPrice2 = float(data['515'])
+            tick.bidPrice3 = float(data['516'])
+            tick.bidPrice4 = float(data['517'])
+            tick.bidPrice5 = float(data['518'])
+            
             tick.bidVolume1 = int(data['501'])
+            tick.bidVolume2 = int(data['519'])
+            tick.bidVolume3 = int(data['520'])
+            tick.bidVolume4 = int(data['521'])
+            tick.bidVolume5 = int(data['522'])
+            
             tick.askPrice1 = float(data['502'])
+            tick.askPrice2 = float(data['523'])
+            tick.askPrice3 = float(data['524'])
+            tick.askPrice4 = float(data['525'])
+            tick.askPrice5 = float(data['526'])
+
             tick.askVolume1 = int(data['503'])
+            tick.askVolume2 = int(data['527'])
+            tick.askVolume3 = int(data['528'])
+            tick.askVolume4 = int(data['529'])
+            tick.askVolume5 = int(data['530'])
+            
         except ValueError:
             pass
     
@@ -304,7 +335,7 @@ class ShzdGatewayApi(ShzdApi):
             
         if '410' in data and data['410'] == '1':
             self.gateway.writeLog(u'登录成功')
-            self.qryContract()
+            #self.qryContract()
             self.qryOrder()
             self.qryTrade()
             
@@ -329,7 +360,8 @@ class ShzdGatewayApi(ShzdApi):
             order.orderTime = data['346']
             
             self.orderDict[order.orderID] = order
-            self.localNoDict[order.orderID] = (order['300'], order['301'])
+            self.localNoDict[order.orderID] = (data['300'], data['301'])
+            self.orderNoDict[data['301']] = order.orderID
 
             # 委托查询
             if '315' in data:
@@ -396,10 +428,18 @@ class ShzdGatewayApi(ShzdApi):
     #----------------------------------------------------------------------
     def onOrder(self, data):
         """委托变化推送"""
-        orderID = self.orderNoDict[data['301']]
-        order = self.orderDict[orderID]
-        order.tradedVolume = int(data['315'])
-        self.gateway.onOrder(copy(order))
+        orderID = self.orderNoDict.get(data['301'], None)
+        if orderID:
+            order = self.orderDict[orderID]
+            order.tradedVolume = int(data['315'])
+            
+            if order.tradedVolume > 0:
+                if order.tradedVolume < order.totalVolume:
+                    order.status = STATUS_PARTTRADED
+                else:
+                    order.status = STATUS_ALLTRADED
+            
+            self.gateway.onOrder(copy(order))
     
     #----------------------------------------------------------------------
     def onQryOrder(self, data):
@@ -427,9 +467,11 @@ class ShzdGatewayApi(ShzdApi):
             order.totalVolume = int(data['309'])
             order.status = orderStatusMapReverse.get(data['405'], STATUS_UNKNOWN)
             order.orderTime = data['346']
+            order.cancelTime = data['326']
             
             self.orderDict[order.orderID] = order
             self.localNoDict[order.orderID] = (data['300'], data['301'])
+            self.orderNoDict[data['301']] = order.orderID            
 
             order.tradedVolume = int(data['315'])
             
@@ -448,20 +490,36 @@ class ShzdGatewayApi(ShzdApi):
             pos.exchange = exchangeMapReverse.get(data['306'], EXCHANGE_UNKNOWN)
             pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
             
-            longPos = copy(pos)
-            longPos.direction = DIRECTION_LONG
+            # 多头仓位
+            longPosName = '.'.join([pos.vtSymbol, DIRECTION_LONG])
+            try:
+                longPos = self.posDict[longPosName]
+            except KeyError:
+                longPos = copy(pos)
+                longPos.direction = DIRECTION_LONG
+                longPos.vtPositionName = longPosName
+                self.posDict[longPosName] = longPos
+            
             longPos.position = int(data['442'])
             longPos.price = float(data['443'])
-            longPos.vtPositionName = '.'.join([longPos.vtSymbol, longPos.direction])
             
-            shortPos = copy(pos)
-            shortPos.direction = DIRECTION_SHORT
+            # 空头仓位    
+            shortPosName = '.'.join([pos.vtSymbol, DIRECTION_SHORT])
+            try:
+                shortPos = self.posDict[shortPosName]
+            except KeyError:
+                shortPos = copy(pos)
+                shortPos.direction = DIRECTION_SHORT
+                shortPos.vtPositionName = shortPosName 
+                self.posDict[shortPosName] = shortPos
+            
             shortPos.position = int(data['445'])
             shortPos.price = float(data['446'])
-            shortPos.vtPositionName = '.'.join([shortPos.vtSymbol, shortPos.direction])            
-            
-            self.gateway.onPosition(longPos)
-            self.gateway.onPosition(shortPos)
+        
+        # 所有持仓数据推送完成后才向事件引擎中更新持仓数据
+        if '410' in data and data['410'] == '1':
+            for pos in self.posDict.values():
+                self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
     def onQryAccount(self, data):
@@ -473,7 +531,8 @@ class ShzdGatewayApi(ShzdApi):
             account.accountID = data['11']
             account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
             account.preBalance = float(data['218'])
-            account.available = float(data['203'])
+            account.balance = float(data['203'])
+            account.available = float(data['201'])
             account.commission = float(data['221'])
             account.margin = float(data['212'])
             account.closeProfit = float(data['205'])
@@ -497,7 +556,9 @@ class ShzdGatewayApi(ShzdApi):
             contract.size = float(data['336'])
             contract.priceTick = float(data['337'])
             
-            self.gateway.onContract(contract)
+            # 期权合约数量太多，为了方便起见默认接口只接收期货合约数据
+            if contract.productClass == PRODUCT_FUTURES:
+                self.gateway.onContract(contract)
         
         if '410' in data and data['410'] == '1':
             self.gateway.writeLog(u'合约查询完成')
@@ -565,7 +626,7 @@ class ShzdGatewayApi(ShzdApi):
         req['401'] = priceTypeMap.get(orderReq.priceType, '')
         
         self.localNo += 1
-        req['305'] = str(self.localNo)
+        req['305'] = self.orderPrefix + str(self.localNo).rjust(10, '0')
         
         self.shzdSendInfoToTrade(req)
         
@@ -583,6 +644,7 @@ class ShzdGatewayApi(ShzdApi):
             order = self.orderDict[cancelReq.orderID]
             
             req = {}
+            req['msgtype'] = 'C'
             req['12'] = self.userId
             req['11'] = self.accountNo
             req['300'] = systemNo
@@ -590,9 +652,11 @@ class ShzdGatewayApi(ShzdApi):
             req['306'] = exchangeMap.get(order.exchange, '')
             req['307'] = order.symbol
             req['308'] = directionMap.get(order.direction, '')
-            req['309'] = str(order.volume)
-            req['310'] = 0
-            req['315'] = 0
+            req['309'] = str(order.totalVolume)
+            req['310'] = str(order.price)
+            req['315'] = str(order.tradedVolume)
+            
+            self.shzdSendInfoToTrade(req)
         else:
             self.cancelSet.add(cancelReq)
     
@@ -613,6 +677,11 @@ class ShzdGatewayApi(ShzdApi):
         req['12'] = self.userId
         req['11'] = self.accountNo
         self.shzdSendInfoToTrade(req)
+        
+        # 清空持仓数据
+        for pos in self.posDict.values():
+            pos.price = 0
+            pos.position = 0
     
     #----------------------------------------------------------------------
     def qryContract(self):
@@ -650,34 +719,3 @@ def printDict(d):
     for k in l:
         print k, ':', d[k]
     
-
-
-if __name__ == '__main__':
-    
-    api = TestApi()
-    
-    # 初始化连接
-    api.initShZdServer()
-    
-    # 注册前置机地址
-    print api.registerFront('222.73.119.230', 7003)
-    print api.registerMarket('222.73.119.230', 9003)
-    
-    # 登录
-    sleep(1)
-    data = {}
-    data['msgtype'] = 'A'
-    data['12'] = 'demo000604'
-    data['16'] = '888888'
-    api.shzdSendInfoToTrade(data)
-    
-    # 订阅行情
-    sleep(1)
-    data = {}
-    data['msgtype'] = 'MA'
-    data['11'] = '00010337'
-    data['201'] = '+'
-    data['307'] = "CME,6J1609"
-    api.shzdSendInfoToMarket(data)
-    
-    raw_input()
