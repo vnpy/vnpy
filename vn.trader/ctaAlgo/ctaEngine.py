@@ -321,9 +321,9 @@ class CtaEngine(object):
             dt = datetime.now()
             if ctaTick.datetime > dt and (ctaTick.datetime - dt).seconds > 100:
                 today = dt.strftime('%Y%m%d')
-                self.writeCtaLog(u'fix tick{0},{1}'.format(ctaTick.datetime.strftime(' %Y%m%d %H:%M:%S.%f'), dt.strftime('%Y%m%d %H:%M:%S.%f')))
                 if today != ctaTick.date:
                     # 当前日期不等于交易日,ctaTick.date修正为当日，保留ctaTick.tradingDay
+                    self.writeCtaLog(u'fix tick{0},{1}'.format(ctaTick.datetime.strftime(' %Y%m%d %H:%M:%S.%f'), dt.strftime('%Y%m%d %H:%M:%S.%f')))
                     ctaTick.date = today
                     # 重新计算时间
                     ctaTick.datetime = datetime.strptime(' '.join([ctaTick.date, ctaTick.time]), '%Y%m%d %H:%M:%S.%f')

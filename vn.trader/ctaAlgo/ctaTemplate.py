@@ -224,6 +224,11 @@ class CtaTemplate(object):
     def loadBar(self, days):
         """读取bar数据"""
         return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
+
+    def saveBar(self):
+        """保持bar数据"""
+        pass
+
     # ----------------------------------------------------------------------
     def setParam(self, setting):
         """设置参数"""

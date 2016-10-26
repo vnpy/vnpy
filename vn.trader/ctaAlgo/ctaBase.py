@@ -89,12 +89,14 @@ class CtaBarData(object):
         self.high = EMPTY_FLOAT
         self.low = EMPTY_FLOAT
         self.close = EMPTY_FLOAT
-        
+
+        self.tradingDay = EMPTY_STRING      # 交易日期
         self.date = EMPTY_STRING            # bar开始的时间，日期（通过tick生成的bar时间，为开始时间，其他为结束时间）
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
         
         self.volume = EMPTY_INT             # 成交量
+        self.dayVolume = EMPTY_INT          # 当日累计成交量（ctp是提供这个的）
         self.openInterest = EMPTY_INT       # 持仓量
         self.color = COLOR_EQUAL          # k 线颜色,COLOR_RED，COLOR_BLUE,COLOR_EQUAL
 
@@ -130,12 +132,14 @@ class CtaTickData(object):
         # 成交数据
         self.lastPrice = EMPTY_FLOAT            # 最新成交价
         self.volume = EMPTY_INT                 # 最新成交量
+        self.preOpenInterest = EMPTY_INT        # 昨持仓量
         self.openInterest = EMPTY_INT           # 持仓量
         
         self.upperLimit = EMPTY_FLOAT           # 涨停价
         self.lowerLimit = EMPTY_FLOAT           # 跌停价
         
         # tick的时间
+        self.tradingDay = EMPTY_STRING      # 交易日期
         self.date = EMPTY_STRING            # 日期
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象

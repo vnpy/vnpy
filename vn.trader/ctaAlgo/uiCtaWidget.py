@@ -78,8 +78,8 @@ class CtaStrategyManager(QtGui.QGroupBox):
         """初始化界面"""
         self.setTitle(self.name)
         
-        self.paramMonitor = CtaValueMonitor(self)
-        self.varMonitor = CtaValueMonitor(self)
+        self.paramMonitor = CtaValueMonitor(self)           # 参数监控
+        self.varMonitor = CtaValueMonitor(self)             # 变量监控
         
         maxHeight = 60
         self.paramMonitor.setMaximumHeight(maxHeight)
@@ -118,10 +118,13 @@ class CtaStrategyManager(QtGui.QGroupBox):
     #----------------------------------------------------------------------
     def updateMonitor(self, event=None):
         """显示策略最新状态"""
+
+        # 获取策略的参数目录
         paramDict = self.ctaEngine.getStrategyParam(self.name)
         if paramDict:
             self.paramMonitor.updateData(paramDict)
-            
+
+        # 获取策略的变量目录
         varDict = self.ctaEngine.getStrategyVar(self.name)
         if varDict:
             self.varMonitor.updateData(varDict)        
@@ -129,7 +132,11 @@ class CtaStrategyManager(QtGui.QGroupBox):
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
+
+        # 绑定事件的更新函数为updateMonitor
         self.signal.connect(self.updateMonitor)
+
+        # 注册事件
         self.eventEngine.register(EVENT_CTA_STRATEGY+self.name, self.signal.emit)
     
     #----------------------------------------------------------------------
@@ -138,7 +145,6 @@ class CtaStrategyManager(QtGui.QGroupBox):
         self.ctaEngine.initStrategy(self.name)
 
     def initForce(self):
-
         """强制初始化策略"""
         self.ctaEngine.initStrategy(self.name,force = True)
 
@@ -220,6 +226,7 @@ class CtaEngineManager(QtGui.QWidget):
         vbox = QtGui.QVBoxLayout()
         
         for name in self.ctaEngine.strategyDict.keys():
+            # 为每一个策略实例，创建对应的管理组件实例
             strategyManager = CtaStrategyManager(self.ctaEngine, self.eventEngine, name)
             vbox.addWidget(strategyManager)
             sleep(0.2)

@@ -53,7 +53,7 @@ class BacktestingEngine(object):
         # key为stopOrderID，value为stopOrder对象
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
-        
+
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
@@ -80,22 +80,24 @@ class BacktestingEngine(object):
         self.workingLimitOrderDict = OrderedDict()  # 活动限价单字典，用于进行撮合用
         self.limitOrderCount = 0                    # 限价单编号
         
-        self.tradeCount = 0             # 成交编号
-        self.tradeDict = OrderedDict()  # 成交字典
+        self.tradeCount = 0                 # 成交编号
+        self.tradeDict = OrderedDict()      # 成交字典
         
-        self.logList = []               # 日志记录
+        self.logList = []                   # 日志记录
         
         # 当前最新数据，用于模拟成交用
         self.tick = None
         self.bar = None
-        self.dt = None      # 最新的时间
+        self.dt = None                      # 最新的时间
         self.gatewayName = u'BackTest'
 
+        # csvFile相关
+        self.barTimeInterval = 60          # csv文件，属于K线类型，K线的周期（秒数）,缺省是1分钟
 
         # 费用情况
         self.avaliable = EMPTY_FLOAT
         self.percent = EMPTY_FLOAT
-        self.percentLimit = 30         # 投资仓位比例上限
+        self.percentLimit = 30              # 投资仓位比例上限
 
         # 回测计算相关
         self.calculateMode = self.FINAL_MODE
@@ -337,7 +339,7 @@ class BacktestingEngine(object):
 
                     # 开始日期 ~ 结束日期
                     sqlstring = ' select \'{0}\' as InstrumentID, str_to_date(concat(ndate,\' \', ntime),' \
-                               '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume,' \
+                               '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume, day_vol as DayVolume,' \
                                'position_vol as OpenInterest,bid1_price as BidPrice1,bid1_vol as BidVolume1, ' \
                                'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB_{0}MI ' \
                                'where ndate between cast(\'{1}\' as date) and cast(\'{2}\' as date) order by UpdateTime'.\
@@ -347,7 +349,7 @@ class BacktestingEngine(object):
 
                     # 开始日期 - 当前
                     sqlstring = ' select \'{0}\' as InstrumentID,str_to_date(concat(ndate,\' \', ntime),' \
-                               '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume,' \
+                               '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume, day_vol as DayVolume,' \
                                'position_vol as OpenInterest,bid1_price as BidPrice1,bid1_vol as BidVolume1, ' \
                                'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB__{0}MI ' \
                                'where ndate > cast(\'{1}\' as date) order by UpdateTime'.\
@@ -357,7 +359,7 @@ class BacktestingEngine(object):
 
                     # 所有数据
                     sqlstring =' select \'{0}\' as InstrumentID,str_to_date(concat(ndate,\' \', ntime),' \
-                              '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume,' \
+                              '\'%Y-%m-%d %H:%i:%s\') as UpdateTime,price as LastPrice,vol as Volume, day_vol as DayVolume,' \
                               'position_vol as OpenInterest,bid1_price as BidPrice1,bid1_vol as BidVolume1, ' \
                               'sell1_price as AskPrice1, sell1_vol as AskVolume1 from TB__{0}MI order by UpdateTime'.\
                               format(symbol)
@@ -413,7 +415,11 @@ class BacktestingEngine(object):
         # tick.lowPrice = data['LowestPrice']
         tick.lastPrice = float(data['LastPrice'])
 
-        tick.volume = data['Volume']
+        # bug fix:
+        # ctp日常传送的volume数据，是交易日日内累加值。数据库的volume，是数据商自行计算整理的
+        # 因此，改为使用DayVolume，与CTP实盘一致
+        #tick.volume = data['Volume']
+        tick.volume = data['DayVolume']
         tick.openInterest = data['OpenInterest']
 
         #  tick.upperLimit = data['UpperLimitPrice']
@@ -422,6 +428,8 @@ class BacktestingEngine(object):
         tick.datetime = data['UpdateTime']
         tick.date = tick.datetime.strftime('%Y-%m-%d')
         tick.time = tick.datetime.strftime('%H:%M:%S')
+        # 数据库中并没有tradingDay的数据，回测时，暂时按照date授予。
+        tick.tradingDay = tick.date
 
         tick.bidPrice1 = float(data['BidPrice1'])
         # tick.bidPrice2 = data['BidPrice2']
@@ -536,23 +544,33 @@ class BacktestingEngine(object):
 
         csvfile = file(filename,'rb')
 
-        reader = csv.DictReader((line.replace('\0','') for line in csvfile),delimiter=",")
+        reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
 
         for row in reader:
 
-            bar = CtaBarData()
-            bar.open = float(row['Open'])
-            bar.high = float(row['High'])
-            bar.low = float(row['Low'])
-            bar.close = float(row['Close'])
-            bar.volume = float(row['TotalVolume'])
-            bar.date = row['Date']
-            bar.time = row['Time']
-            bar.datetime = datetime.strptime(bar.date+' '+ bar.time, '%Y/%m/%d %H:%M:%S')
+            try:
 
-            if not (bar.datetime < self.dataStartDate or bar.datetime > self.dataEndDate):
+                bar = CtaBarData()
+                bar.open = float(row['Open'])
+                bar.high = float(row['High'])
+                bar.low = float(row['Low'])
+                bar.close = float(row['Close'])
+                bar.volume = float(row['TotalVolume'])
 
-                self.newBar(bar)
+                barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
+
+                # 使用Bar的开始时间作为datetime
+                bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
+
+                bar.date = bar.datetime.strftime('%Y-%m-%d')
+                bar.time = bar.datetime.strftime('%H:%M:%S')
+
+                if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
+                    self.newBar(bar)
+
+            except Exception, ex:
+                self.writeCtaLog(u'{0}:{1}'.format(Exception,ex))
+                continue
 
 
     #----------------------------------------------------------------------
@@ -1215,8 +1233,9 @@ class BacktestingEngine(object):
             self.totalCommission += result.commission
             self.totalSlippage += result.slippage
 
-            self.output(u'[{5}]Vol:{0},盈亏:{1},回撤:{2}/{3},权益:{4}'.
-                        format(abs(result.volume), result.pnl, drawdown, drawdownRate, self.capital, result.groupId))
+            self.output(u'[{5}],{6} Vol:{0},盈亏:{1},回撤:{2}/{3},权益:{4}'.
+                        format(abs(result.volume), result.pnl, drawdown,
+                               drawdownRate, self.capital, result.groupId, time))
 
     #----------------------------------------------------------------------
     def calculateBacktestingResult(self):
@@ -1431,7 +1450,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def showBacktestingResult(self):
         """显示回测结果"""
-        if self.calculateMode != self.REALTIME_MODE :
+        if self.calculateMode != self.REALTIME_MODE:
             self.calculateBacktestingResult()
 
         d = self.getResult()
