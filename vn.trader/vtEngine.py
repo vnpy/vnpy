@@ -289,6 +289,9 @@ class MainEngine(object):
         """清空数据引擎的数据"""
         self.dataEngine.clearData()
 
+    def saveData(self):
+        self.ctaEngine.saveStrategyData()
+
 ########################################################################
 class DataEngine(object):
     """数据引擎"""

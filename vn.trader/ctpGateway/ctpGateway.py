@@ -80,6 +80,8 @@ class CtpGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
         
         self.qryEnabled = False         # 是否要启动循环查询
+
+        self.subscribedSymbols = set()  # 已订阅合约代码
         
     #----------------------------------------------------------------------
     def connect(self):
@@ -130,6 +132,9 @@ class CtpGateway(VtGateway):
         """订阅行情"""
         if self.mdApi is not None:
             self.mdApi.subscribe(subscribeReq)
+
+        # Allow the strategies to start before the connection
+        self.subscribedSymbols.add(subscribeReq)
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -231,7 +236,7 @@ class CtpMdApi(MdApi):
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
         
-        self.subscribedSymbols = set()      # 已订阅合约代码        
+        self.subscribedSymbols = gateway.subscribedSymbols     # 已订阅合约代码
         
         self.userID = EMPTY_STRING          # 账号
         self.password = EMPTY_STRING        # 密码

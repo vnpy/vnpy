@@ -183,6 +183,7 @@ class VtTickData(VtBaseData):
         self.lastPrice = EMPTY_FLOAT            # 最新成交价
         self.lastVolume = EMPTY_INT             # 最新成交量
         self.volume = EMPTY_INT                 # 今天总成交量
+        self.preOpenInterest = EMPTY_INT        # 昨持仓量
         self.openInterest = EMPTY_INT           # 持仓量
         self.time = EMPTY_STRING                # 时间 11:20:56.5
         self.date = EMPTY_STRING                # 日期 20151009
@@ -192,7 +193,7 @@ class VtTickData(VtBaseData):
         self.openPrice = EMPTY_FLOAT            # 今日开盘价
         self.highPrice = EMPTY_FLOAT            # 今日最高价
         self.lowPrice = EMPTY_FLOAT             # 今日最低价
-        self.preClosePrice = EMPTY_FLOAT
+        self.preClosePrice = EMPTY_FLOAT        # 昨收盘价
         
         self.upperLimit = EMPTY_FLOAT           # 涨停价
         self.lowerLimit = EMPTY_FLOAT           # 跌停价

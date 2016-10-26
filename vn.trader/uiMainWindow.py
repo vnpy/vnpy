@@ -28,6 +28,8 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connected = False
 
+        self.autoDisConnect = False
+
         self.connectGatewayDict = {}
     # ----------------------------------------------------------------------
     def initUi(self):
@@ -104,6 +106,9 @@ class MainWindow(QtGui.QMainWindow):
         
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
+
+        autoDisconnetAction = QtGui.QAction(u'自动断开重连', self)
+        autoDisconnetAction.triggered.connect(self.setAutoDisconnect)
         
         testAction = QtGui.QAction(u'测试', self)
         testAction.triggered.connect(self.test)
@@ -149,6 +154,7 @@ class MainWindow(QtGui.QMainWindow):
         #if 'SGIT' in self.mainEngine.gatewayDict:
         #    sysMenu.addAction(connectSgitAction)
         sysMenu.addSeparator()
+        sysMenu.addAction(autoDisconnetAction)
         #if 'IB' in self.mainEngine.gatewayDict:
         #    sysMenu.addAction(connectIbAction)
         #if 'OANDA' in self.mainEngine.gatewayDict:
@@ -196,7 +202,12 @@ class MainWindow(QtGui.QMainWindow):
        # 更新任务栏
         if self.sbCount == self.sbTrigger:
             self.sbCount = 0
-            self.statusLabel.setText(self.getCpuMemory())
+            info = self.getCpuMemory()
+
+            if self.autoDisConnect:
+                info = info + u'[自动断开重连]'
+
+            self.statusLabel.setText(info)
 
         if len(self.connectGatewayDict) > 0:
             s = u''.join(str(e) for e in self.connectGatewayDict.values())
@@ -204,10 +215,11 @@ class MainWindow(QtGui.QMainWindow):
             if not self.connected:
                 s = s + u' [已断开]'
 
+
             self.setWindowTitle(s)
 
         # 定时断开
-        if self.connected and self.trade_off():
+        if self.connected and self.trade_off() and self.autoDisConnect:
            self.disconnect()
            self.mainEngine.writeLog(u'断开连接{0}'.format(self.connectGatewayDict.values()))
            self.mainEngine.writeLog(u'清空数据引擎')
@@ -218,7 +230,10 @@ class MainWindow(QtGui.QMainWindow):
            self.widgetTradeM.clearData()
 
         # 定时重连
-        if not self.connected and not self.trade_off() and len(self.connectGatewayDict) > 0:
+        if not self.connected \
+                and self.autoDisConnect \
+                and not self.trade_off()\
+                and len(self.connectGatewayDict) > 0:
 
                 self.mainEngine.writeLog(u'清空数据引擎')
                 self.mainEngine.clearData()
@@ -346,11 +361,20 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('OANDA')
         self.connectGatewayDict['OANDA'] = u'OANDA'
         self.connected = True
-        
+
+    def setAutoDisconnect(self):
+
+        if self.autoDisConnect:
+            self.autoDisConnect = False
+        else:
+            self.autoDisConnect = True
+
+
     #----------------------------------------------------------------------
     def test(self):
         """测试按钮用的函数"""
         # 有需要使用手动触发的测试函数可以写在这里
+        self.mainEngine.saveData()
         pass
 
     #----------------------------------------------------------------------
