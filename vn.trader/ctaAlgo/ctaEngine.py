@@ -319,13 +319,19 @@ class CtaEngine(object):
 
             # 修正，交易日期不一定是OpenDate
             dt = datetime.now()
-            if (ctaTick.datetime - dt).seconds > 10:
+            if ctaTick.datetime > dt and (ctaTick.datetime - dt).seconds > 100:
                 today = dt.strftime('%Y%m%d')
-                if today != tick.date:
-                    ctaTick.datetime = dt
+                self.writeCtaLog(u'fix tick{0},{1}'.format(ctaTick.datetime.strftime(' %Y%m%d %H:%M:%S.%f'), dt.strftime('%Y%m%d %H:%M:%S.%f')))
+                if today != ctaTick.date:
+                    # 当前日期不等于交易日,ctaTick.date修正为当日，保留ctaTick.tradingDay
+                    ctaTick.date = today
+                    # 重新计算时间
+                    ctaTick.datetime = datetime.strptime(' '.join([ctaTick.date, ctaTick.time]), '%Y%m%d %H:%M:%S.%f')
                 else:
-                    ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
-            
+                    # 修正出现偏差的时间
+                    ctaTick.datetime = dt
+                    self.writeCtaLog(u'fix 修正出现偏差的时间')
+
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
@@ -610,7 +616,8 @@ class CtaEngine(object):
             varDict = OrderedDict()
             
             for key in strategy.varList:
-                varDict[key] = strategy.__getattribute__(key)
+                if hasattr(strategy,key):
+                    varDict[key] = strategy.__getattribute__(key)
             
             return varDict
         else:
@@ -625,8 +632,9 @@ class CtaEngine(object):
             strategy = self.strategyDict[name]
             paramDict = OrderedDict()
             
-            for key in strategy.paramList:  
-                paramDict[key] = strategy.__getattribute__(key)
+            for key in strategy.paramList:
+                if hasattr(strategy, key):
+                    paramDict[key] = strategy.__getattribute__(key)
             
             return paramDict
         else:
@@ -647,6 +655,24 @@ class CtaEngine(object):
         """
         return self.mainEngine.getAccountInfo()
 
+     # ---------------------------------------------------------------------
+    def saveStrategyData(self):
+        """保存策略的数据"""
+
+        # 1.判断策略名称是否存在字典中
+        for key in self.strategyDict.keys():
+
+            # 2.提取策略
+            strategy = self.strategyDict[key]
+
+            if strategy is None:
+                continue
+
+            # 3.判断策略是否运行
+            if strategy.inited and strategy.trading:
+
+                # 5.保存策略数据
+                strategy.saveBar()
 
 
 ########################################################################
