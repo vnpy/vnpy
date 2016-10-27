@@ -314,23 +314,15 @@ class CtaEngine(object):
                 if key != 'datetime':
                     d[key] = tick.__getattribute__(key)
 
-            # 5.添加datetime字段
             ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
 
-            # 修正，交易日期不一定是OpenDate
-            dt = datetime.now()
-            if ctaTick.datetime > dt and (ctaTick.datetime - dt).seconds > 100:
+            # 5.添加datetime字段
+            if ctaTick.datetime.hour >= 20:
+                dt = datetime.now()
                 today = dt.strftime('%Y%m%d')
-                if today != ctaTick.date:
-                    # 当前日期不等于交易日,ctaTick.date修正为当日，保留ctaTick.tradingDay
-                    self.writeCtaLog(u'fix tick{0},{1}'.format(ctaTick.datetime.strftime(' %Y%m%d %H:%M:%S.%f'), dt.strftime('%Y%m%d %H:%M:%S.%f')))
-                    ctaTick.date = today
-                    # 重新计算时间
-                    ctaTick.datetime = datetime.strptime(' '.join([ctaTick.date, ctaTick.time]), '%Y%m%d %H:%M:%S.%f')
-                else:
-                    # 修正出现偏差的时间
-                    ctaTick.datetime = dt
-                    self.writeCtaLog(u'fix 修正出现偏差的时间')
+                ctaTick.datetime = datetime.strptime(' '.join([today, tick.time]), '%Y%m%d %H:%M:%S.%f')
+                ctaTick.date = today
+
 
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
