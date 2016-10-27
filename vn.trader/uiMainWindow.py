@@ -249,15 +249,22 @@ class MainWindow(QtGui.QMainWindow):
 
                 self.connected = True
 
-        # 收盘后保存所有委托记录
+        # 交易日收盘后保存所有委托记录，
         dt = datetime.now()
         if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0:
+            self.mainEngine.writeLog(u'保存所有委托记录')
             orderfile = os.getcwd() +'/orders/{0}.csv'.format(datetime.now().strftime('%y%m%d'))
             if os.path.exists(orderfile):
                 return
             else:
                 self.widgetOrderM.saveToCsv(path=orderfile)
-    
+
+        # 调用各策略保存数据
+        if ((dt.hour == 15 and dt.minute == 1) or (dt.hour == 2 and dt.minute == 31))  \
+            and len(self.connectGatewayDict) > 0:
+            self.mainEngine.writeLog(u'调用各策略保存数据')
+            self.mainEngine.saveData()
+
     # ----------------------------------------------------------------------
     def getCpuMemory(self):
         """获取CPU和内存状态信息"""
