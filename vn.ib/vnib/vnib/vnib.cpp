@@ -17,42 +17,95 @@
 ///C++的回调函数将数据保存到队列中
 ///-------------------------------------------------------------------------------------
 
-void IbWrapper::tickPrice(TickerId tickerId, TickType field, double price, int canAutoExecute){};
+void IbWrapper::tickPrice(TickerId tickerId, TickType field, double price, int canAutoExecute)
+{
+	PyLock lock;
+	this->api->tickPrice(tickerId, field, price, canAutoExecute);
+};
 
-void IbWrapper::tickSize(TickerId tickerId, TickType field, int size){};
+void IbWrapper::tickSize(TickerId tickerId, TickType field, int size)
+{
+	PyLock lock;
+	this->api->tickSize(tickerId, field, size);
+};
 
-void IbWrapper::tickOptionComputation(TickerId tickerId, TickType tickType, double impliedVol, double delta,
-	double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice){};
+void IbWrapper::tickOptionComputation(TickerId tickerId, TickType tickType, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
+{
+	PyLock lock;
+	this->api->tickOptionComputation(tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+};
 
-void IbWrapper::tickGeneric(TickerId tickerId, TickType tickType, double value){};
+void IbWrapper::tickGeneric(TickerId tickerId, TickType tickType, double value)
+{
+	PyLock lock;
+	this->api->tickGeneric(tickerId, tickType, value);
+};
 
-void IbWrapper::tickString(TickerId tickerId, TickType tickType, const std::string& value){};
+void IbWrapper::tickString(TickerId tickerId, TickType tickType, const std::string& value)
+{
+	PyLock lock;
+	this->api->tickString(tickerId, tickType, value);
+};
 
-void IbWrapper::tickEFP(TickerId tickerId, TickType tickType, double basisPoints, const std::string& formattedBasisPoints,
-	double totalDividends, int holdDays, const std::string& futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate){};
+void IbWrapper::tickEFP(TickerId tickerId, TickType tickType, double basisPoints, const std::string& formattedBasisPoints, double totalDividends, int holdDays, const std::string& futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate)
+{
+	PyLock lock;
+	this->api->tickEFP(tickerId, tickType, basisPoints, formattedBasisPoints, totalDividends, holdDays, futureLastTradeDate, dividendImpact, dividendsToLastTradeDate);
+};
 
-void IbWrapper::orderStatus(OrderId orderId, const std::string& status, double filled,
-	double remaining, double avgFillPrice, int permId, int parentId,
-	double lastFillPrice, int clientId, const std::string& whyHeld){};
+void IbWrapper::orderStatus(OrderId orderId, const std::string& status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, const std::string& whyHeld)
+{
+	PyLock lock;
+	this->api->orderStatus(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
+};
 
-void IbWrapper::openOrder(OrderId orderId, const Contract&, const Order&, const OrderState&){};
+void IbWrapper::openOrder(OrderId orderId, const Contract& contract, const Order& order, const OrderState& orderState)
+{
+	PyLock lock;
+	this->api->openOrder(orderId, contract, order, orderState);
+};
 
-void IbWrapper::openOrderEnd(){};
+void IbWrapper::openOrderEnd()
+{
+	PyLock lock;
+	this->api->openOrderEnd();
+};
 
-void IbWrapper::winError(const std::string& str, int lastError){};
+void IbWrapper::winError(const std::string& str, int lastError)
+{
+	PyLock lock;
+	this->api->winError(str, lastError);
+};
 
-void IbWrapper::connectionClosed(){};
+void IbWrapper::connectionClosed()
+{
+	PyLock lock;
+	this->api->connectionClosed();
+};
 
-void IbWrapper::updateAccountValue(const std::string& key, const std::string& val,
-	const std::string& currency, const std::string& accountName){};
+void IbWrapper::updateAccountValue(const std::string& key, const std::string& val, const std::string& currency, const std::string& accountName)
+{
+	PyLock lock;
+	this->api->updateAccountValue(key, val, currency, accountName);
+};
 
-void IbWrapper::updatePortfolio(const Contract& contract, double position,
-	double marketPrice, double marketValue, double averageCost,
-	double unrealizedPNL, double realizedPNL, const std::string& accountName){};
+void IbWrapper::updatePortfolio(const Contract& contract, double position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, const std::string& accountName)
+{
+	PyLock lock;
+	this->api->updatePortfolio(contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);
+};
 
-void IbWrapper::updateAccountTime(const std::string& timeStamp){};
+void IbWrapper::updateAccountTime(const std::string& timeStamp)
+{
+	PyLock lock;
+	this->api->updateAccountTime(timeStamp);
+};
 
-void IbWrapper::accountDownloadEnd(const std::string& accountName){};
+void IbWrapper::accountDownloadEnd(const std::string& accountName)
+{
+	PyLock lock;
+	this->api->accountDownloadEnd(accountName);
+};
 
 void IbWrapper::nextValidId(OrderId orderId)
 {
@@ -60,15 +113,35 @@ void IbWrapper::nextValidId(OrderId orderId)
 	this->api->nextValidId(orderId);
 };
 
-void IbWrapper::contractDetails(int reqId, const ContractDetails& contractDetails){};
+void IbWrapper::contractDetails(int reqId, const ContractDetails& contractDetails)
+{
+	PyLock lock;
+	this->api->contractDetails(reqId, contractDetails);
+};
 
-void IbWrapper::bondContractDetails(int reqId, const ContractDetails& contractDetails){};
+void IbWrapper::bondContractDetails(int reqId, const ContractDetails& contractDetails)
+{
+	PyLock lock;
+	this->api->bondContractDetails(reqId, contractDetails);
+};
 
-void IbWrapper::contractDetailsEnd(int reqId){};
+void IbWrapper::contractDetailsEnd(int reqId)
+{
+	PyLock lock;
+	this->api->contractDetailsEnd(reqId);
+};
 
-void IbWrapper::execDetails(int reqId, const Contract& contract, const Execution& execution){};
+void IbWrapper::execDetails(int reqId, const Contract& contract, const Execution& execution)
+{
+	PyLock lock;
+	this->api->execDetails(reqId, contract, execution);
+};
 
-void IbWrapper::execDetailsEnd(int reqId){};
+void IbWrapper::execDetailsEnd(int reqId)
+{
+	PyLock lock;
+	this->api->execDetailsEnd(reqId);
+};
 
 void IbWrapper::error(const int id, const int errorCode, const std::string errorString)
 {
@@ -76,32 +149,65 @@ void IbWrapper::error(const int id, const int errorCode, const std::string error
 	this->api->error(id, errorCode, errorString);
 };
 
-void IbWrapper::updateMktDepth(TickerId id, int position, int operation, int side,
-	double price, int size){};
+void IbWrapper::updateMktDepth(TickerId id, int position, int operation, int side, double price, int size)
+{
+	PyLock lock;
+	this->api->updateMktDepth(id, position, operation, side, price, size);
+};
 
-void IbWrapper::updateMktDepthL2(TickerId id, int position, std::string marketMaker, int operation,
-	int side, double price, int size){};
+void IbWrapper::updateMktDepthL2(TickerId id, int position, std::string marketMaker, int operation, int side, double price, int size)
+{
+	PyLock lock;
+	this->api->updateMktDepthL2(id, position, marketMaker, operation, side, price, size);
+};
 
-void IbWrapper::updateNewsBulletin(int msgId, int msgType, const std::string& newsMessage, const std::string& originExch){};
+void IbWrapper::updateNewsBulletin(int msgId, int msgType, const std::string& newsMessage, const std::string& originExch)
+{
+	PyLock lock;
+	this->api->updateNewsBulletin(msgId, msgType, newsMessage, originExch);
+};
 
-void IbWrapper::managedAccounts(const std::string& accountsList){};
+void IbWrapper::managedAccounts(const std::string& accountsList)
+{
+	PyLock lock;
+	this->api->managedAccounts(accountsList);
+};
 
-void IbWrapper::receiveFA(faDataType pFaDataType, const std::string& cxml){};
+void IbWrapper::receiveFA(faDataType pFaDataType, const std::string& cxml)
+{
+	PyLock lock;
+	this->api->receiveFA(pFaDataType, cxml);
+};
 
-void IbWrapper::historicalData(TickerId reqId, const std::string& date, double open, double high,
+void IbWrapper::historicalData(TickerId reqId, const std::string& date, double open, double high, double low, double close, int volume, int barCount, double WAP, int hasGaps)
+{
+	PyLock lock;
+	this->api->historicalData(reqId, date, open, high, low, close, volume, barCount, WAP, hasGaps);
+};
 
-	double low, double close, int volume, int barCount, double WAP, int hasGaps){};
+void IbWrapper::scannerParameters(const std::string& xml)
+{
+	PyLock lock;
+	this->api->scannerParameters(xml);
+};
 
-void IbWrapper::scannerParameters(const std::string& xml){};
+void IbWrapper::scannerData(int reqId, int rank, const ContractDetails& contractDetails, const std::string& distance, const std::string& benchmark, const std::string& projection, const std::string& legsStr)
+{
+	PyLock lock;
+	this->api->scannerData(reqId, rank, contractDetails, distance, benchmark, projection, legsStr);
+};
 
-void IbWrapper::scannerData(int reqId, int rank, const ContractDetails& contractDetails,
-	const std::string& distance, const std::string& benchmark, const std::string& projection,
-	const std::string& legsStr){};
+void IbWrapper::scannerDataEnd(int reqId)
+{
+	PyLock lock;
+	this->api->scannerDataEnd(reqId);
+};
 
-void IbWrapper::scannerDataEnd(int reqId){};
-
-void IbWrapper::realtimeBar(TickerId reqId, long time, double open, double high, double low, double close,
-	long volume, double wap, int count){};
+void IbWrapper::realtimeBar(TickerId reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
+{
+	PyLock lock;
+	this->api->realtimeBar(reqId, time, open, high, low, close, volume, wap, count);
+};
 
 void IbWrapper::currentTime(long time)
 {
@@ -109,19 +215,47 @@ void IbWrapper::currentTime(long time)
 	this->api->currentTime(time);
 };
 
-void IbWrapper::fundamentalData(TickerId reqId, const std::string& data){};
+void IbWrapper::fundamentalData(TickerId reqId, const std::string& data)
+{
+	PyLock lock;
+	this->api->fundamentalData(reqId, data);
+};
 
-void IbWrapper::deltaNeutralValidation(int reqId, const UnderComp& underComp){};
+void IbWrapper::deltaNeutralValidation(int reqId, const UnderComp& underComp)
+{
+	PyLock lock;
+	this->api->deltaNeutralValidation(reqId, underComp);
+};
 
-void IbWrapper::tickSnapshotEnd(int reqId){};
+void IbWrapper::tickSnapshotEnd(int reqId)
+{
+	PyLock lock;
+	this->api->tickSnapshotEnd(reqId);
+};
 
-void IbWrapper::marketDataType(TickerId reqId, int marketDataType){};
+void IbWrapper::marketDataType(TickerId reqId, int marketDataType)
+{
+	PyLock lock;
+	this->api->marketDataType(reqId, marketDataType);
+};
 
-void IbWrapper::commissionReport(const CommissionReport& commissionReport){};
+void IbWrapper::commissionReport(const CommissionReport& commissionReport)
+{
+	PyLock lock;
+	this->api->commissionReport(commissionReport);
+};
 
-void IbWrapper::position(const std::string& account, const Contract& contract, double position, double avgCost){};
+void IbWrapper::position(const std::string& account, const Contract& contract, double position, double avgCost)
+{
+	PyLock lock;
+	this->api->position(account, contract, position, avgCost);
+};
 
-void IbWrapper::positionEnd(){};
+void IbWrapper::positionEnd()
+{
+	PyLock lock;
+	this->api->positionEnd();
+};
 
 void IbWrapper::accountSummary(int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string& curency)
 {
@@ -135,17 +269,41 @@ void IbWrapper::accountSummaryEnd(int reqId)
 	this->api->accountSummaryEnd(reqId);
 };
 
-void IbWrapper::verifyMessageAPI(const std::string& apiData){};
+void IbWrapper::verifyMessageAPI(const std::string& apiData)
+{
+	PyLock lock;
+	this->api->verifyMessageAPI(apiData);
+};
 
-void IbWrapper::verifyCompleted(bool isSuccessful, const std::string& errorText){};
+void IbWrapper::verifyCompleted(bool isSuccessful, const std::string& errorText)
+{
+	PyLock lock;
+	this->api->verifyCompleted(isSuccessful, errorText);
+};
 
-void IbWrapper::displayGroupList(int reqId, const std::string& groups){};
+void IbWrapper::displayGroupList(int reqId, const std::string& groups)
+{
+	PyLock lock;
+	this->api->displayGroupList(reqId, groups);
+};
 
-void IbWrapper::displayGroupUpdated(int reqId, const std::string& contractInfo){};
+void IbWrapper::displayGroupUpdated(int reqId, const std::string& contractInfo)
+{
+	PyLock lock;
+	this->api->displayGroupUpdated(reqId, contractInfo);
+};
 
-void IbWrapper::verifyAndAuthMessageAPI(const std::string& apiData, const std::string& xyzChallange){};
+void IbWrapper::verifyAndAuthMessageAPI(const std::string& apiData, const std::string& xyzChallange)
+{
+	PyLock lock;
+	this->api->verifyAndAuthMessageAPI(apiData, xyzChallange);
+};
 
-void IbWrapper::verifyAndAuthCompleted(bool isSuccessful, const std::string& errorText){};
+void IbWrapper::verifyAndAuthCompleted(bool isSuccessful, const std::string& errorText)
+{
+	PyLock lock;
+	this->api->verifyAndAuthCompleted(isSuccessful, errorText);
+};
 
 void IbWrapper::connectAck()
 {
@@ -153,21 +311,41 @@ void IbWrapper::connectAck()
 	this->api->connectAck();
 };
 
-void IbWrapper::positionMulti(int reqId, const std::string& account, const std::string& modelCode, const Contract& contract, double pos, double
-	avgCost){};
+void IbWrapper::positionMulti(int reqId, const std::string& account, const std::string& modelCode, const Contract& contract, double pos, double avgCost)
+{
+	PyLock lock;
+	this->api->positionMulti(reqId, account, modelCode, contract, pos, avgCost);
+};
 
-void IbWrapper::positionMultiEnd(int reqId){};
+void IbWrapper::positionMultiEnd(int reqId)
+{
+	PyLock lock;
+	this->api->positionMultiEnd(reqId);
+}
 
-void IbWrapper::accountUpdateMulti(int reqId, const std::string& account, const std::string& modelCode, const std::string& key, const std::string&
-	value, const std::string& currency){};
+void IbWrapper::accountUpdateMulti(int reqId, const std::string& account, const std::string& modelCode, const std::string& key, const std::string& value, const std::string& currency)
+{
+	PyLock lock;
+	this->api->accountUpdateMulti(reqId, account, modelCode, key, value, currency);
+};
 
-void IbWrapper::accountUpdateMultiEnd(int reqId){};
+void IbWrapper::accountUpdateMultiEnd(int reqId)
+{
+	PyLock lock;
+	this->api->accountUpdateMultiEnd(reqId);
+}
 
-void IbWrapper::securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass,
-	const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes){};
+void IbWrapper::securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes)
+{
+	PyLock lock;
+	this->api->securityDefinitionOptionalParameter(reqId, exchange, underlyingConId, tradingClass, multiplier, expirations, strikes);
+};
 
-void IbWrapper::securityDefinitionOptionalParameterEnd(int reqId){};
-
+void IbWrapper::securityDefinitionOptionalParameterEnd(int reqId)
+{
+	PyLock lock;
+	this->api->securityDefinitionOptionalParameterEnd(reqId);
+};
 
 
 ///-------------------------------------------------------------------------------------
@@ -214,6 +392,9 @@ void VnIbApi::eDisconnect()
 
 int VnIbApi::serverVersion()
 {
+	//int i = this->client->serverVersion();
+	//return i;
+	return 0;
 };
 
 std::string VnIbApi::TwsConnectionTime()
@@ -221,125 +402,271 @@ std::string VnIbApi::TwsConnectionTime()
 	return this->client->TwsConnectionTime();
 };
 
-void VnIbApi::reqMktData(TickerId id, const Contract& contract,
-	const std::string& genericTicks, bool snapshot, const TagValueListSPtr& mktDataOptions){};
+void VnIbApi::reqMktData(TickerId id, const Contract& contract, const std::string& genericTicks, bool snapshot, const TagValueListSPtr& mktDataOptions)
+{
+	this->client->reqMktData(id, contract, genericTicks, snapshot, mktDataOptions);
+};
 
-void VnIbApi::cancelMktData(TickerId id){};
+void VnIbApi::cancelMktData(TickerId id)
+{
+	this->client->cancelMktData(id);
+};
 
-void VnIbApi::placeOrder(OrderId id, const Contract& contract, const Order& order){};
+void VnIbApi::placeOrder(OrderId id, const Contract& contract, const Order& order)
+{
+	this->client->placeOrder(id, contract, order);
+};
 
-void VnIbApi::cancelOrder(OrderId id){};
+void VnIbApi::cancelOrder(OrderId id)
+{
+	this->client->cancelOrder(id);
+};
 
-void VnIbApi::reqOpenOrders(){};
+void VnIbApi::reqOpenOrders()
+{
+	this->client->reqOpenOrders();
+};
 
-void VnIbApi::reqAccountUpdates(bool subscribe, const std::string& acctCode){};
+void VnIbApi::reqAccountUpdates(bool subscribe, const std::string& acctCode)
+{
+	this->client->reqAccountUpdates(subscribe, acctCode);
+};
 
-void VnIbApi::reqExecutions(int reqId, const ExecutionFilter& filter){};
+void VnIbApi::reqExecutions(int reqId, const ExecutionFilter& filter)
+{
+	this->client->reqExecutions(reqId, filter);
+};
 
-void VnIbApi::reqIds(int numIds){};
+void VnIbApi::reqIds(int numIds)
+{
+	this->client->reqIds(numIds);
+};
 
-void VnIbApi::reqContractDetails(int reqId, const Contract& contract){};
+void VnIbApi::reqContractDetails(int reqId, const Contract& contract)
+{
+	this->client->reqContractDetails(reqId, contract);
+};
 
-void VnIbApi::reqMktDepth(TickerId tickerId, const Contract& contract, int numRows, const TagValueListSPtr& mktDepthOptions){};
+void VnIbApi::reqMktDepth(TickerId tickerId, const Contract& contract, int numRows, const TagValueListSPtr& mktDepthOptions)
+{
+	this->client->reqMktDepth(tickerId, contract, numRows, mktDepthOptions);
+};
 
-void VnIbApi::cancelMktDepth(TickerId tickerId){};
+void VnIbApi::cancelMktDepth(TickerId tickerId)
+{
+	this->client->cancelMktDepth(tickerId);
+};
 
-void VnIbApi::reqNewsBulletins(bool allMsgs){};
+void VnIbApi::reqNewsBulletins(bool allMsgs)
+{
+	this->client->reqNewsBulletins(allMsgs);
+};
 
-void VnIbApi::cancelNewsBulletins(){};
+void VnIbApi::cancelNewsBulletins()
+{
+	this->client->cancelNewsBulletins();
+};
 
-void VnIbApi::setServerLogLevel(int level){};
+void VnIbApi::setServerLogLevel(int level)
+{
+	this->client->setServerLogLevel(level);
+};
 
-void VnIbApi::reqAutoOpenOrders(bool bAutoBind){};
+void VnIbApi::reqAutoOpenOrders(bool bAutoBind)
+{
+	this->client->reqAutoOpenOrders(bAutoBind);
+};
 
-void VnIbApi::reqAllOpenOrders(){};
+void VnIbApi::reqAllOpenOrders()
+{
+	this->client->reqAllOpenOrders();
+};
 
-void VnIbApi::reqManagedAccts(){};
+void VnIbApi::reqManagedAccts()
+{
+	this->client->reqManagedAccts();
+};
 
-void VnIbApi::requestFA(faDataType pFaDataType){};
+void VnIbApi::requestFA(faDataType pFaDataType)
+{
+	this->client->requestFA(pFaDataType);
+};
 
-void VnIbApi::replaceFA(faDataType pFaDataType, const std::string& cxml){};
+void VnIbApi::replaceFA(faDataType pFaDataType, const std::string& cxml)
+{
+	this->client->replaceFA(pFaDataType, cxml);
+};
 
-void VnIbApi::reqHistoricalData(TickerId id, const Contract& contract,
-	const std::string& endDateTime, const std::string& durationStr,
-	const std::string&  barSizeSetting, const std::string& whatToShow,
-	int useRTH, int formatDate, const TagValueListSPtr& chartOptions){};
+void VnIbApi::reqHistoricalData(TickerId id, const Contract& contract, const std::string& endDateTime, const std::string& durationStr, const std::string&  barSizeSetting, const std::string& whatToShow, int useRTH, int formatDate, const TagValueListSPtr& chartOptions)
+{
+	this->client->reqHistoricalData(id, contract, endDateTime, durationStr, barSizeSetting, whatToShow, useRTH, formatDate, chartOptions);
+};
 
-void VnIbApi::exerciseOptions(TickerId tickerId, const Contract& contract,
-	int exerciseAction, int exerciseQuantity,
-	const std::string& account, int override){};
+void VnIbApi::exerciseOptions(TickerId tickerId, const Contract& contract, int exerciseAction, int exerciseQuantity, const std::string& account, int override)
+{
+	this->client->exerciseOptions(tickerId, contract, exerciseAction, exerciseQuantity, account, override);
+};
 
-void VnIbApi::cancelHistoricalData(TickerId tickerId){};
+void VnIbApi::cancelHistoricalData(TickerId tickerId)
+{
+	this->client->cancelHistoricalData(tickerId);
+};
 
-void VnIbApi::reqRealTimeBars(TickerId id, const Contract& contract, int barSize,
-	const std::string& whatToShow, bool useRTH, const TagValueListSPtr& realTimeBarsOptions){};
+void VnIbApi::reqRealTimeBars(TickerId id, const Contract& contract, int barSize, const std::string& whatToShow, bool useRTH, const TagValueListSPtr& realTimeBarsOptions)
+{
+	this->client->reqRealTimeBars(id, contract, barSize, whatToShow, useRTH, realTimeBarsOptions);
+};
 
-void VnIbApi::cancelRealTimeBars(TickerId tickerId){};
+void VnIbApi::cancelRealTimeBars(TickerId tickerId)
+{
+	this->client->cancelRealTimeBars(tickerId);
+};
 
-void VnIbApi::cancelScannerSubscription(int tickerId){};
+void VnIbApi::cancelScannerSubscription(int tickerId)
+{
+	this->client->cancelScannerSubscription(tickerId);
+};
 
-void VnIbApi::reqScannerParameters(){};
+void VnIbApi::reqScannerParameters()
+{
+	this->client->reqScannerParameters();
+};
 
-void VnIbApi::reqScannerSubscription(int tickerId, const ScannerSubscription& subscription, const TagValueListSPtr& scannerSubscriptionOptions){};
+void VnIbApi::reqScannerSubscription(int tickerId, const ScannerSubscription& subscription, const TagValueListSPtr& scannerSubscriptionOptions)
+{
+	this->client->reqScannerSubscription(tickerId, subscription, scannerSubscriptionOptions);
+};
 
 void VnIbApi::reqCurrentTime()
 {
 	this->client->reqCurrentTime();
 };
 
-void VnIbApi::reqFundamentalData(TickerId reqId, const Contract&, const std::string& reportType){};
+void VnIbApi::reqFundamentalData(TickerId reqId, const Contract& contract, const std::string& reportType)
+{
+	this->client->reqFundamentalData(reqId, contract, reportType);
+};
 
-void VnIbApi::cancelFundamentalData(TickerId reqId){};
+void VnIbApi::cancelFundamentalData(TickerId reqId)
+{
+	this->client->cancelFundamentalData(reqId);
+};
 
-void VnIbApi::calculateImpliedVolatility(TickerId reqId, const Contract& contract, double optionPrice, double underPrice){};
+void VnIbApi::calculateImpliedVolatility(TickerId reqId, const Contract& contract, double optionPrice, double underPrice)
+{
+	this->client->calculateImpliedVolatility(reqId, contract, optionPrice, underPrice);
+};
 
-void VnIbApi::calculateOptionPrice(TickerId reqId, const Contract& contract, double volatility, double underPrice){};
+void VnIbApi::calculateOptionPrice(TickerId reqId, const Contract& contract, double volatility, double underPrice)
+{
+	this->client->calculateOptionPrice(reqId, contract, volatility, underPrice);
+};
 
-void VnIbApi::cancelCalculateImpliedVolatility(TickerId reqId){};
+void VnIbApi::cancelCalculateImpliedVolatility(TickerId reqId)
+{
+	this->client->cancelCalculateImpliedVolatility(reqId);
+};
 
-void VnIbApi::cancelCalculateOptionPrice(TickerId reqId){};
+void VnIbApi::cancelCalculateOptionPrice(TickerId reqId)
+{
+	this->client->cancelCalculateOptionPrice(reqId);
+};
 
-void VnIbApi::reqGlobalCancel(){};
+void VnIbApi::reqGlobalCancel()
+{
+	this->client->reqGlobalCancel();
+};
 
-void VnIbApi::reqMarketDataType(int marketDataType){};
+void VnIbApi::reqMarketDataType(int marketDataType)
+{
+	this->client->reqMarketDataType(marketDataType);
+};
 
-void VnIbApi::reqPositions(){};
+void VnIbApi::reqPositions()
+{
+	this->client->reqPositions();
+};
 
-void VnIbApi::cancelPositions(){};
+void VnIbApi::cancelPositions()
+{
+	this->client->cancelPositions();
+};
 
 void VnIbApi::reqAccountSummary(int reqId, const std::string& groupName, const std::string& tags)
 {
 	this->client->reqAccountSummary(reqId, groupName, tags);
 };
 
-void VnIbApi::cancelAccountSummary(int reqId){};
+void VnIbApi::cancelAccountSummary(int reqId)
+{
+	this->client->cancelAccountSummary(reqId);
+};
 
-void VnIbApi::verifyRequest(const std::string& apiName, const std::string& apiVersion){};
+void VnIbApi::verifyRequest(const std::string& apiName, const std::string& apiVersion)
+{
+	this->client->verifyRequest(apiName, apiVersion);
+};
 
-void VnIbApi::verifyMessage(const std::string& apiData){};
+void VnIbApi::verifyMessage(const std::string& apiData)
+{
+	this->client->verifyMessage(apiData);
+};
 
-void VnIbApi::verifyAndAuthRequest(const std::string& apiName, const std::string& apiVersion, const std::string& opaqueIsvKey){};
+void VnIbApi::verifyAndAuthRequest(const std::string& apiName, const std::string& apiVersion, const std::string& opaqueIsvKey)
+{
+	this->client->verifyAndAuthRequest(apiName, apiVersion, opaqueIsvKey);
+};
 
-void VnIbApi::verifyAndAuthMessage(const std::string& apiData, const std::string& xyzResponse){};
+void VnIbApi::verifyAndAuthMessage(const std::string& apiData, const std::string& xyzResponse)
+{
+	this->client->verifyAndAuthMessage(apiData, xyzResponse);
+};
 
-void VnIbApi::queryDisplayGroups(int reqId){};
+void VnIbApi::queryDisplayGroups(int reqId)
+{
+	this->client->queryDisplayGroups(reqId);
+};
 
-void VnIbApi::subscribeToGroupEvents(int reqId, int groupId){};
+void VnIbApi::subscribeToGroupEvents(int reqId, int groupId)
+{
+	this->client->subscribeToGroupEvents(reqId, groupId);
+};
 
-void VnIbApi::updateDisplayGroup(int reqId, const std::string& contractInfo){};
+void VnIbApi::updateDisplayGroup(int reqId, const std::string& contractInfo)
+{
+	this->client->updateDisplayGroup(reqId, contractInfo);
+};
 
-void VnIbApi::unsubscribeFromGroupEvents(int reqId){};
+void VnIbApi::unsubscribeFromGroupEvents(int reqId)
+{
+	this->client->unsubscribeFromGroupEvents(reqId);
+};
 
-void VnIbApi::reqPositionsMulti(int reqId, const std::string& account, const std::string& modelCode){};
+void VnIbApi::reqPositionsMulti(int reqId, const std::string& account, const std::string& modelCode)
+{
+	this->client->reqPositionsMulti(reqId, account, modelCode);
+};
 
-void VnIbApi::cancelPositionsMulti(int reqId){};
+void VnIbApi::cancelPositionsMulti(int reqId)
+{
+	this->client->cancelPositionsMulti(reqId);
+};
 
-void VnIbApi::reqAccountUpdatessMulti(int reqId, const std::string& account, const std::string& modelCode, bool ledgerAndNLV){};
+void VnIbApi::reqAccountUpdatessMulti(int reqId, const std::string& account, const std::string& modelCode, bool ledgerAndNLV)
+{
+	this->client->reqAccountUpdatessMulti(reqId, account, modelCode, ledgerAndNLV);
+};
 
-void VnIbApi::cancelAccountUpdatesMulti(int reqId){};
+void VnIbApi::cancelAccountUpdatesMulti(int reqId)
+{
+	this->client->cancelAccountUpdatesMulti(reqId);
+};
 
-void VnIbApi::reqSecDefOptParams(int reqId, const std::string& underlyingSymbol, const std::string& futFopExchange, const std::string&
-	underlyingSecType, int underlyingConId){};
+void VnIbApi::reqSecDefOptParams(int reqId, const std::string& underlyingSymbol, const std::string& futFopExchange, const std::string& underlyingSecType, int underlyingConId)
+{
+	this->client->reqSecDefOptParams(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
+};
+
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python封装
@@ -396,8 +723,7 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 		}
 	};
 
-
-	virtual void accountSummary(int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string &curency)
+	virtual void accountSummary(int reqId, const std::string& account, const std::string& tag, const std::string& value, const std::string& curency)
 	{
 		try
 		{
@@ -408,7 +734,6 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 			PyErr_Print();
 		}
 	};
-
 
 	virtual void accountSummaryEnd(int reqId)
 	{
@@ -421,6 +746,595 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 			PyErr_Print();
 		}
 	};
+
+	virtual void tickPrice(TickerId tickerId, TickType field, double price, int canAutoExecute)
+	{
+		try
+		{
+			this->get_override("tickPrice")(tickerId, field, price, canAutoExecute);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void tickSize(TickerId tickerId, TickType field, int size)
+	{
+		try
+		{
+			this->get_override("tickSize")(tickerId, field, size);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void tickOptionComputation(TickerId tickerId, TickType tickType, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
+	{
+		try
+		{
+			this->get_override("tickOptionComputation")(tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void tickGeneric(TickerId tickerId, TickType tickType, double value)
+	{
+		try
+		{
+			this->get_override("tickGeneric")(tickerId, tickType, value);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void tickString(TickerId tickerId, TickType tickType, const std::string& value)
+	{
+		try
+		{
+			this->get_override("tickString")(tickerId, tickType, value);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void tickEFP(TickerId tickerId, TickType tickType, double basisPoints, const std::string& formattedBasisPoints, double totalDividends, int holdDays, const std::string& futureLastTradeDate, double dividendImpact, double dividendsToLastTradeDate)
+	{
+		try
+		{
+			this->get_override("tickEFP")(tickerId, tickType, basisPoints, formattedBasisPoints, totalDividends, holdDays, futureLastTradeDate, dividendImpact, dividendsToLastTradeDate);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void orderStatus(OrderId orderId, const std::string& status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, const std::string& whyHeld)
+	{
+		try
+		{
+			this->get_override("orderStatus")(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void openOrder(OrderId orderId, const Contract& contract, const Order& order, const OrderState& orderState)
+	{
+		try
+		{
+			this->get_override("openOrder")(orderId, contract, order, orderState);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void openOrderEnd()
+	{
+		try
+		{
+			this->get_override("openOrderEnd")();
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void winError(const std::string& str, int lastError)
+	{
+		try
+		{
+			this->get_override("winError")(str, lastError);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void connectionClosed()
+	{
+		try
+		{
+			this->get_override("connectionClosed")();
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void updateAccountValue(const std::string& key, const std::string& val, const std::string& currency, const std::string& accountName)
+	{
+		try
+		{
+			this->get_override("updateAccountValue")(key, val, currency, accountName);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void updatePortfolio(const Contract& contract, double position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL, double realizedPNL, const std::string& accountName)
+	{
+		try
+		{
+			this->get_override("updatePortfolio")(contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void updateAccountTime(const std::string& timeStamp)
+	{
+		try
+		{
+			this->get_override("updateAccountTime")(timeStamp);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void accountDownloadEnd(const std::string& accountName)
+	{
+		try
+		{
+			this->get_override("accountDownloadEnd")(accountName);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void contractDetails(int reqId, const ContractDetails& contractDetails)
+	{
+		try
+		{
+			this->get_override("contractDetails")(reqId, contractDetails);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void bondContractDetails(int reqId, const ContractDetails& contractDetails)
+	{
+		try
+		{
+			this->get_override("bondContractDetails")(reqId, contractDetails);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void contractDetailsEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("contractDetailsEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void execDetails(int reqId, const Contract& contract, const Execution& execution)
+	{
+		try
+		{
+			this->get_override("execDetails")(reqId, contract, execution);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void execDetailsEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("execDetailsEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void updateMktDepth(TickerId id, int position, int operation, int side, double price, int size)
+	{
+		try
+		{
+			this->get_override("updateMktDepth")(id, position, operation, side, price, size);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void updateMktDepthL2(TickerId id, int position, std::string marketMaker, int operation, int side, double price, int size)
+	{
+		try
+		{
+			this->get_override("updateMktDepthL2")(id, position, marketMaker, operation, side, price, size);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void updateNewsBulletin(int msgId, int msgType, const std::string& newsMessage, const std::string& originExch)
+	{
+		try
+		{
+			this->get_override("updateNewsBulletin")(msgId, msgType, newsMessage, originExch);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void managedAccounts(const std::string& accountsList)
+	{
+		try
+		{
+			this->get_override("managedAccounts")(accountsList);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void receiveFA(faDataType pFaDataType, const std::string& cxml)
+	{
+		try
+		{
+			this->get_override("receiveFA")(pFaDataType, cxml);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void historicalData(TickerId reqId, const std::string& date, double open, double high, double low, double close, int volume, int barCount, double WAP, int hasGaps)
+	{
+		try
+		{
+			this->get_override("historicalData")(reqId, date, open, high, low, close, volume, barCount, WAP, hasGaps);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void scannerParameters(const std::string& xml)
+	{
+		try
+		{
+			this->get_override("scannerParameters")(xml);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void scannerData(int reqId, int rank, const ContractDetails& contractDetails, const std::string& distance, const std::string& benchmark, const std::string& projection, const std::string& legsStr)
+	{
+		try
+		{
+			this->get_override("scannerData")(reqId, rank, contractDetails, distance, benchmark, projection, legsStr);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void scannerDataEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("scannerDataEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void realtimeBar(TickerId reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
+	{
+		try
+		{
+			this->get_override("realtimeBar")(reqId, time, open, high, low, close, volume, wap, count);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void fundamentalData(TickerId reqId, const std::string& data)
+	{
+		try
+		{
+			this->get_override("fundamentalData")(reqId, data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void deltaNeutralValidation(int reqId, const UnderComp& underComp)
+	{
+		try
+		{
+			this->get_override("deltaNeutralValidation")(reqId, underComp);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void tickSnapshotEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("tickSnapshotEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void marketDataType(TickerId reqId, int marketDataType)
+	{
+		try
+		{
+			this->get_override("marketDataType")(reqId, marketDataType);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void commissionReport(const CommissionReport& commissionReport)
+	{
+		try
+		{
+			this->get_override("commissionReport")(commissionReport);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void position(const std::string& account, const Contract& contract, double position, double avgCost)
+	{
+		try
+		{
+			this->get_override("position")(account, contract, position, avgCost);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void positionEnd()
+	{
+		try
+		{
+			this->get_override("positionEnd")();
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void verifyMessageAPI(const std::string& apiData)
+	{
+		try
+		{
+			this->get_override("verifyMessageAPI")(apiData);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void verifyCompleted(bool isSuccessful, const std::string& errorText)
+	{
+		try
+		{
+			this->get_override("verifyCompleted")(isSuccessful, errorText);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void displayGroupList(int reqId, const std::string& groups)
+	{
+		try
+		{
+			this->get_override("displayGroupList")(reqId, groups);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void displayGroupUpdated(int reqId, const std::string& contractInfo)
+	{
+		try
+		{
+			this->get_override("displayGroupUpdated")(reqId, contractInfo);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void verifyAndAuthMessageAPI(const std::string& apiData, const std::string& xyzChallange)
+	{
+		try
+		{
+			this->get_override("verifyAndAuthMessageAPI")(apiData, xyzChallange);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void verifyAndAuthCompleted(bool isSuccessful, const std::string& errorText)
+	{
+		try
+		{
+			this->get_override("verifyAndAuthCompleted")(isSuccessful, errorText);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void positionMulti(int reqId, const std::string& account, const std::string& modelCode, const Contract& contract, double pos, double avgCost)
+	{
+		try
+		{
+			this->get_override("positionMulti")(reqId, account, modelCode, contract, pos, avgCost);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void positionMultiEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("positionMultiEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void accountUpdateMulti(int reqId, const std::string& account, const std::string& modelCode, const std::string& key, const std::string& value, const std::string& currency)
+	{
+		try
+		{
+			this->get_override("accountUpdateMulti")(reqId, account, modelCode, key, value, currency);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void accountUpdateMultiEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("accountUpdateMultiEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes)
+	{
+		try
+		{
+			this->get_override("securityDefinitionOptionalParameter")(reqId, exchange, underlyingConId, tradingClass, multiplier, expirations, strikes);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void securityDefinitionOptionalParameterEnd(int reqId)
+	{
+		try
+		{
+			this->get_override("securityDefinitionOptionalParameterEnd")(reqId);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
 };
 
 
@@ -473,17 +1387,117 @@ BOOST_PYTHON_MODULE(vnib)
 	class_<IbApiWrap, boost::noncopyable>("IbApi")
 		.def("eConnect", &IbApiWrap::eConnect)
 		.def("eDisconnect", &IbApiWrap::eDisconnect)
+		.def("serverVersion", &IbApiWrap::serverVersion)
 		.def("TwsConnectionTime", &IbApiWrap::TwsConnectionTime)
+		.def("reqMktData", &IbApiWrap::reqMktData)
+		.def("cancelMktData", &IbApiWrap::cancelMktData)
+		.def("placeOrder", &IbApiWrap::placeOrder)
+		.def("cancelOrder", &IbApiWrap::cancelOrder)
+		.def("reqOpenOrders", &IbApiWrap::reqOpenOrders)
+		.def("reqAccountUpdates", &IbApiWrap::reqAccountUpdates)
+		.def("reqExecutions", &IbApiWrap::reqExecutions)
+		.def("reqIds", &IbApiWrap::reqIds)
+		.def("reqContractDetails", &IbApiWrap::reqContractDetails)
+		.def("reqMktDepth", &IbApiWrap::reqMktDepth)
+		.def("cancelMktDepth", &IbApiWrap::cancelMktDepth)
+		.def("reqNewsBulletins", &IbApiWrap::reqNewsBulletins)
+		.def("cancelNewsBulletins", &IbApiWrap::cancelNewsBulletins)
+		.def("setServerLogLevel", &IbApiWrap::setServerLogLevel)
+		.def("reqAutoOpenOrders", &IbApiWrap::reqAutoOpenOrders)
+		.def("reqAllOpenOrders", &IbApiWrap::reqAllOpenOrders)
+		.def("reqManagedAccts", &IbApiWrap::reqManagedAccts)
+		.def("requestFA", &IbApiWrap::requestFA)
+		.def("replaceFA", &IbApiWrap::replaceFA)
+		.def("reqHistoricalData", &IbApiWrap::reqHistoricalData)
+		.def("exerciseOptions", &IbApiWrap::exerciseOptions)
+		.def("cancelHistoricalData", &IbApiWrap::cancelHistoricalData)
+		.def("reqRealTimeBars", &IbApiWrap::reqRealTimeBars)
+		.def("cancelRealTimeBars", &IbApiWrap::cancelRealTimeBars)
+		.def("cancelScannerSubscription", &IbApiWrap::cancelScannerSubscription)
+		.def("reqScannerParameters", &IbApiWrap::reqScannerParameters)
+		.def("reqScannerSubscription", &IbApiWrap::reqScannerSubscription)
 		.def("reqCurrentTime", &IbApiWrap::reqCurrentTime)
+		.def("reqFundamentalData", &IbApiWrap::reqFundamentalData)
+		.def("cancelFundamentalData", &IbApiWrap::cancelFundamentalData)
+		.def("calculateImpliedVolatility", &IbApiWrap::calculateImpliedVolatility)
+		.def("calculateOptionPrice", &IbApiWrap::calculateOptionPrice)
+		.def("cancelCalculateImpliedVolatility", &IbApiWrap::cancelCalculateImpliedVolatility)
+		.def("cancelCalculateOptionPrice", &IbApiWrap::cancelCalculateOptionPrice)
+		.def("reqGlobalCancel", &IbApiWrap::reqGlobalCancel)
+		.def("reqMarketDataType", &IbApiWrap::reqMarketDataType)
+		.def("reqPositions", &IbApiWrap::reqPositions)
+		.def("cancelPositions", &IbApiWrap::cancelPositions)
 		.def("reqAccountSummary", &IbApiWrap::reqAccountSummary)
+		.def("cancelAccountSummary", &IbApiWrap::cancelAccountSummary)
+		.def("verifyRequest", &IbApiWrap::verifyRequest)
+		.def("verifyMessage", &IbApiWrap::verifyMessage)
+		.def("verifyAndAuthRequest", &IbApiWrap::verifyAndAuthRequest)
+		.def("verifyAndAuthMessage", &IbApiWrap::verifyAndAuthMessage)
+		.def("queryDisplayGroups", &IbApiWrap::queryDisplayGroups)
+		.def("subscribeToGroupEvents", &IbApiWrap::subscribeToGroupEvents)
+		.def("updateDisplayGroup", &IbApiWrap::updateDisplayGroup)
+		.def("unsubscribeFromGroupEvents", &IbApiWrap::unsubscribeFromGroupEvents)
+		.def("reqPositionsMulti", &IbApiWrap::reqPositionsMulti)
+		.def("cancelPositionsMulti", &IbApiWrap::cancelPositionsMulti)
+		.def("reqAccountUpdatessMulti", &IbApiWrap::reqAccountUpdatessMulti)
+		.def("cancelAccountUpdatesMulti", &IbApiWrap::cancelAccountUpdatesMulti)
+		.def("reqSecDefOptParams", &IbApiWrap::reqSecDefOptParams)
 
-
+		.def("tickPrice", pure_virtual(&IbApiWrap::tickPrice))
+		.def("tickSize", pure_virtual(&IbApiWrap::tickSize))
+		.def("tickOptionComputation", pure_virtual(&IbApiWrap::tickOptionComputation))
+		.def("tickGeneric", pure_virtual(&IbApiWrap::tickGeneric))
+		.def("tickString", pure_virtual(&IbApiWrap::tickString))
+		.def("tickEFP", pure_virtual(&IbApiWrap::tickEFP))
+		.def("orderStatus", pure_virtual(&IbApiWrap::orderStatus))
+		.def("openOrder", pure_virtual(&IbApiWrap::openOrder))
+		.def("openOrderEnd", pure_virtual(&IbApiWrap::openOrderEnd))
+		.def("winError", pure_virtual(&IbApiWrap::winError))
+		.def("connectionClosed", pure_virtual(&IbApiWrap::connectionClosed))
+		.def("updateAccountValue", pure_virtual(&IbApiWrap::updateAccountValue))
+		.def("updatePortfolio", pure_virtual(&IbApiWrap::updatePortfolio))
+		.def("updateAccountTime", pure_virtual(&IbApiWrap::updateAccountTime))
+		.def("accountDownloadEnd", pure_virtual(&IbApiWrap::accountDownloadEnd))
 		.def("nextValidId", pure_virtual(&IbApiWrap::nextValidId))
-		.def("currentTime", pure_virtual(&IbApiWrap::currentTime))
-		.def("connectAck", pure_virtual(&IbApiWrap::connectAck))
+		.def("contractDetails", pure_virtual(&IbApiWrap::contractDetails))
+		.def("bondContractDetails", pure_virtual(&IbApiWrap::bondContractDetails))
+		.def("contractDetailsEnd", pure_virtual(&IbApiWrap::contractDetailsEnd))
+		.def("execDetails", pure_virtual(&IbApiWrap::execDetails))
+		.def("execDetailsEnd", pure_virtual(&IbApiWrap::execDetailsEnd))
 		.def("error", pure_virtual(&IbApiWrap::error))
+		.def("updateMktDepth", pure_virtual(&IbApiWrap::updateMktDepth))
+		.def("updateMktDepthL2", pure_virtual(&IbApiWrap::updateMktDepthL2))
+		.def("updateNewsBulletin", pure_virtual(&IbApiWrap::updateNewsBulletin))
+		.def("managedAccounts", pure_virtual(&IbApiWrap::managedAccounts))
+		.def("receiveFA", pure_virtual(&IbApiWrap::receiveFA))
+		.def("historicalData", pure_virtual(&IbApiWrap::historicalData))
+		.def("scannerParameters", pure_virtual(&IbApiWrap::scannerParameters))
+		.def("scannerData", pure_virtual(&IbApiWrap::scannerData))
+		.def("scannerDataEnd", pure_virtual(&IbApiWrap::scannerDataEnd))
+		.def("realtimeBar", pure_virtual(&IbApiWrap::realtimeBar))
+		.def("currentTime", pure_virtual(&IbApiWrap::currentTime))
+		.def("fundamentalData", pure_virtual(&IbApiWrap::fundamentalData))
+		.def("deltaNeutralValidation", pure_virtual(&IbApiWrap::deltaNeutralValidation))
+		.def("tickSnapshotEnd", pure_virtual(&IbApiWrap::tickSnapshotEnd))
+		.def("marketDataType", pure_virtual(&IbApiWrap::marketDataType))
+		.def("commissionReport", pure_virtual(&IbApiWrap::commissionReport))
+		.def("position", pure_virtual(&IbApiWrap::position))
+		.def("positionEnd", pure_virtual(&IbApiWrap::positionEnd))
 		.def("accountSummary", pure_virtual(&IbApiWrap::accountSummary))
 		.def("accountSummaryEnd", pure_virtual(&IbApiWrap::accountSummaryEnd))
+		.def("verifyMessageAPI", pure_virtual(&IbApiWrap::verifyMessageAPI))
+		.def("verifyCompleted", pure_virtual(&IbApiWrap::verifyCompleted))
+		.def("displayGroupList", pure_virtual(&IbApiWrap::displayGroupList))
+		.def("displayGroupUpdated", pure_virtual(&IbApiWrap::displayGroupUpdated))
+		.def("verifyAndAuthMessageAPI", pure_virtual(&IbApiWrap::verifyAndAuthMessageAPI))
+		.def("verifyAndAuthCompleted", pure_virtual(&IbApiWrap::verifyAndAuthCompleted))
+		.def("connectAck", pure_virtual(&IbApiWrap::connectAck))
+		.def("positionMulti", pure_virtual(&IbApiWrap::positionMulti))
+		.def("positionMultiEnd", pure_virtual(&IbApiWrap::positionMultiEnd))
+		.def("accountUpdateMulti", pure_virtual(&IbApiWrap::accountUpdateMulti))
+		.def("accountUpdateMultiEnd", pure_virtual(&IbApiWrap::accountUpdateMultiEnd))
+		.def("securityDefinitionOptionalParameter", pure_virtual(&IbApiWrap::securityDefinitionOptionalParameter))
+		.def("securityDefinitionOptionalParameterEnd", pure_virtual(&IbApiWrap::securityDefinitionOptionalParameterEnd))
 		;
 
 	//结构体封装

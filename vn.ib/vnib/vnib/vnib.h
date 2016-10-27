@@ -274,8 +274,6 @@ public:
 
 	virtual void accountSummaryEnd(int reqId){};
 
-	/*
-
 	virtual void tickPrice(TickerId tickerId, TickType field, double price, int canAutoExecute){};
 
 	virtual void tickSize(TickerId tickerId, TickType field, int size){};
@@ -323,8 +321,6 @@ public:
 
 	virtual void execDetailsEnd(int reqId) = 0{};
 
-	
-
 	virtual void updateMktDepth(TickerId id, int position, int operation, int side,
 		double price, int size){};
 
@@ -351,8 +347,6 @@ public:
 	virtual void realtimeBar(TickerId reqId, long time, double open, double high, double low, double close,
 		long volume, double wap, int count){};
 
-
-
 	virtual void fundamentalData(TickerId reqId, const std::string& data){};
 
 	virtual void deltaNeutralValidation(int reqId, const UnderComp& underComp){};
@@ -367,8 +361,6 @@ public:
 
 	virtual void positionEnd(){};
 
-
-
 	virtual void verifyMessageAPI(const std::string& apiData){};
 
 	virtual void verifyCompleted(bool isSuccessful, const std::string& errorText){};
@@ -381,8 +373,6 @@ public:
 
 	virtual void verifyAndAuthCompleted(bool isSuccessful, const std::string& errorText){};
 
-	
-	
 	virtual void positionMulti(int reqId, const std::string& account, const std::string& modelCode, const Contract& contract, double pos,
 		double avgCost){};
 
@@ -397,8 +387,6 @@ public:
 		tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes){};
 
 	virtual void securityDefinitionOptionalParameterEnd(int reqId){};
-
-	*/
 
 	//-------------------------------------------------------------------------------------
 	//主动函数
