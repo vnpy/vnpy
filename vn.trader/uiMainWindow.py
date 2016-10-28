@@ -27,8 +27,10 @@ class MainWindow(QtGui.QMainWindow):
         self.loadWindowSettings()
 
         self.connected = False
-
         self.autoDisConnect = False
+
+        self.orderSaveDate = EMPTY_STRING
+        self.barSaveDate = EMPTY_STRING
 
         self.connectGatewayDict = {}
     # ----------------------------------------------------------------------
@@ -251,9 +253,11 @@ class MainWindow(QtGui.QMainWindow):
 
         # 交易日收盘后保存所有委托记录，
         dt = datetime.now()
-        if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0:
+        today = datetime.now().strftime('%y%m%d')
+        if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0 and today!=self.orderSaveDate:
+            self.orderSaveDate = today
             self.mainEngine.writeLog(u'保存所有委托记录')
-            orderfile = os.getcwd() +'/orders/{0}.csv'.format(datetime.now().strftime('%y%m%d'))
+            orderfile = os.getcwd() +'/orders/{0}.csv'.format(self.orderSaveDate)
             if os.path.exists(orderfile):
                 return
             else:
@@ -261,9 +265,14 @@ class MainWindow(QtGui.QMainWindow):
 
         # 调用各策略保存数据
         if ((dt.hour == 15 and dt.minute == 1) or (dt.hour == 2 and dt.minute == 31))  \
-            and len(self.connectGatewayDict) > 0:
+            and len(self.connectGatewayDict) > 0 \
+            and today != self.barSaveDate:
+            self.barSaveDate = today
             self.mainEngine.writeLog(u'调用各策略保存数据')
             self.mainEngine.saveData()
+
+        if not (dt.hour == 15 or dt.hour == 2):
+            self.barSaveDate = EMPTY_STRING
 
     # ----------------------------------------------------------------------
     def getCpuMemory(self):
