@@ -49,6 +49,31 @@ class BasicCell(QtGui.QTableWidgetItem):
 
 
 ########################################################################
+class NumCell(QtGui.QTableWidgetItem):
+    """用来显示数字的单元格"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, text=None, mainEngine=None):
+        """Constructor"""
+        super(NumCell, self).__init__()
+        self.data = None
+        if text:
+            self.setContent(text)
+    
+    #----------------------------------------------------------------------
+    def setContent(self, text):
+        """设置内容"""
+        # 考虑到NumCell主要用来显示OrderID和TradeID之类的整数字段，
+        # 这里的数据转化方式使用int类型。但是由于部分交易接口的委托
+        # 号和成交号可能不是纯数字的形式，因此补充了一个try...except
+        try:
+            num = int(text)
+            self.setData(QtCore.Qt.DisplayRole, num)
+        except ValueError:
+            self.setText(text)
+            
+
+########################################################################
 class DirectionCell(QtGui.QTableWidgetItem):
     """用来显示买卖方向的单元格"""
 
@@ -464,8 +489,8 @@ class TradeMonitor(BasicMonitor):
         super(TradeMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['tradeID'] = {'chinese':u'成交编号', 'cellType':BasicCell}
-        d['orderID'] = {'chinese':u'委托编号', 'cellType':BasicCell}
+        d['tradeID'] = {'chinese':u'成交编号', 'cellType':NumCell}
+        d['orderID'] = {'chinese':u'委托编号', 'cellType':NumCell}
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
         d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
         d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
@@ -478,6 +503,8 @@ class TradeMonitor(BasicMonitor):
         
         self.setEventType(EVENT_TRADE)
         self.setFont(BASIC_FONT)
+        self.setSorting(True)
+        
         self.initTable()
         self.registerEvent()
 
@@ -494,7 +521,7 @@ class OrderMonitor(BasicMonitor):
         self.mainEngine = mainEngine
         
         d = OrderedDict()
-        d['orderID'] = {'chinese':u'委托编号', 'cellType':BasicCell}
+        d['orderID'] = {'chinese':u'委托编号', 'cellType':NumCell}
         d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
         d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
         d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
@@ -514,10 +541,10 @@ class OrderMonitor(BasicMonitor):
         self.setEventType(EVENT_ORDER)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
+        self.setSorting(True)
         
         self.initTable()
         self.registerEvent()
-        
         self.connectSignal()
         
     #----------------------------------------------------------------------
