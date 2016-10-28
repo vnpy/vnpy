@@ -25,7 +25,8 @@ class DrEngine(object):
     """数据记录引擎"""
     
     settingFileName = 'DR_setting.json'
-    settingFileName = os.getcwd() + '/dataRecorder/' + settingFileName
+    path = os.path.abspath(os.path.dirname(__file__))
+    settingFileName = os.path.join(path, settingFileName)    
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):

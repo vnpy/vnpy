@@ -2,6 +2,7 @@
 
 import json
 import csv
+import os
 from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
@@ -14,8 +15,12 @@ from vtGateway import *
 #----------------------------------------------------------------------
 def loadFont():
     """载入字体设置"""
+    fileName = 'VT_setting.json'
+    path = os.path.abspath(os.path.dirname(__file__)) 
+    fileName = os.path.join(path, fileName)  
+    
     try:
-        f = file("VT_setting.json")
+        f = file(fileName)
         setting = json.load(f)
         family = setting['fontFamily']
         size = setting['fontSize']

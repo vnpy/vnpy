@@ -33,7 +33,8 @@ from vtFunction import todayDate
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    settingFileName = os.getcwd() + '/ctaAlgo/' + settingFileName
+    path = os.path.abspath(os.path.dirname(__file__))
+    settingFileName = os.path.join(path, settingFileName)      
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
