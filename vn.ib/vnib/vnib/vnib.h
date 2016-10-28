@@ -383,8 +383,11 @@ public:
 
 	virtual void accountUpdateMultiEnd(int reqId){};
 	
+	//virtual void securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string&
+	//	tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes){};
+
 	virtual void securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string&
-		tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes){};
+		tradingClass, const std::string& multiplier, std::vector<std::string> expirations, std::vector<double> strikes){};
 
 	virtual void securityDefinitionOptionalParameterEnd(int reqId){};
 
@@ -395,8 +398,6 @@ public:
 	bool eConnect(string host, int port, int clientId, bool extraAuth);
 
 	void eDisconnect();
-
-	int serverVersion();
 
 	std::string TwsConnectionTime();
 

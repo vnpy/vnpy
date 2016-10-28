@@ -338,7 +338,12 @@ void IbWrapper::accountUpdateMultiEnd(int reqId)
 void IbWrapper::securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes)
 {
 	PyLock lock;
-	this->api->securityDefinitionOptionalParameter(reqId, exchange, underlyingConId, tradingClass, multiplier, expirations, strikes);
+
+	//这里因为boost.python中没有提供std::set的封装，因此选择转化成vector
+	std::vector<std::string> expirationsVector(expirations.begin(), expirations.end());
+	std::vector<double> strikesVector(strikes.begin(), strikes.end());
+
+	this->api->securityDefinitionOptionalParameter(reqId, exchange, underlyingConId, tradingClass, multiplier, expirationsVector, strikesVector);
 };
 
 void IbWrapper::securityDefinitionOptionalParameterEnd(int reqId)
@@ -388,13 +393,6 @@ bool VnIbApi::eConnect(string host, int port, int clientId, bool extraAuth)
 void VnIbApi::eDisconnect()
 {
 	this->client->eDisconnect();
-};
-
-int VnIbApi::serverVersion()
-{
-	//int i = this->client->serverVersion();
-	//return i;
-	return 0;
 };
 
 std::string VnIbApi::TwsConnectionTime()
@@ -1311,7 +1309,8 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 		}
 	};
 
-	virtual void securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes)
+	//virtual void securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass, const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes)
+	virtual void securityDefinitionOptionalParameter(int reqId, const std::string& exchange, int underlyingConId, const std::string& tradingClass, const std::string& multiplier, std::vector<std::string> expirations, std::vector<double> strikes)
 	{
 		try
 		{
@@ -1338,16 +1337,7 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 };
 
 
-
-
-struct TagValue_Wrapper : TagValue
-{
-	TagValue_Wrapper(PyObject* self_) : self(self_) {}
-	PyObject* self;
-};
-
-
-// 特殊封装相关
+// 将ibapi自带的智能指针注册到boost.python的环境中，让boost.python实现自动识别
 namespace boost {
 	namespace python {
 		template <class T> struct pointee< ibapi::shared_ptr<T> >
@@ -1362,20 +1352,8 @@ template<class T> inline T * get_pointer(ibapi::shared_ptr<T> const & p)
 	return p.get();
 }
 
-/*
-template<class T>
-bool ibapi::shared_ptr::operator==(ibapi::shared_ptr<T> const & a)
-{
-	return a.get() == this->get();
-}
 
-template<class T>
-bool ibapi::shared_ptr::operator!=(ibapi::shared_ptr<T> const & a)
-{
-	return a.get() != this->get();
-}
-*/
-
+// 封装模块
 BOOST_PYTHON_MODULE(vnib)
 {
 	using namespace boost::python;
@@ -1387,7 +1365,6 @@ BOOST_PYTHON_MODULE(vnib)
 	class_<IbApiWrap, boost::noncopyable>("IbApi")
 		.def("eConnect", &IbApiWrap::eConnect)
 		.def("eDisconnect", &IbApiWrap::eDisconnect)
-		.def("serverVersion", &IbApiWrap::serverVersion)
 		.def("TwsConnectionTime", &IbApiWrap::TwsConnectionTime)
 		.def("reqMktData", &IbApiWrap::reqMktData)
 		.def("cancelMktData", &IbApiWrap::cancelMktData)
@@ -1500,7 +1477,7 @@ BOOST_PYTHON_MODULE(vnib)
 		.def("securityDefinitionOptionalParameterEnd", pure_virtual(&IbApiWrap::securityDefinitionOptionalParameterEnd))
 		;
 
-	//结构体封装
+	//结构体相关的封装
 	class_<OrderState>("OrderState")
 		.def_readwrite("status", &OrderState::status)
 		.def_readwrite("initMargin", &OrderState::initMargin)
@@ -1583,14 +1560,9 @@ BOOST_PYTHON_MODULE(vnib)
 		;
 
 	class_<TagValue, TagValueSPtr>("TagValue")
-	//class_<TagValue>("TagValue")
 		.def_readwrite("tag", &TagValue::tag)
 		.def_readwrite("value", &TagValue::value)
 		;
-
-	class_<TagValueList, TagValueListSPtr>("TagValueList")
-	//class_<TagValueList>("TagValueList")
-		.def(vector_indexing_suite<TagValueList, true>());    //这个true非常重要
 
 	class_<ComboLeg, ComboLegSPtr>("ComboLeg")
 		.def_readwrite("conId", &ComboLeg::conId)
@@ -1602,9 +1574,6 @@ BOOST_PYTHON_MODULE(vnib)
 		.def_readwrite("designatedLocation", &ComboLeg::designatedLocation)
 		.def_readwrite("exemptCode", &ComboLeg::exemptCode)
 		;
-
-	class_<Contract::ComboLegList, Contract::ComboLegListSPtr>("ComboLegList")
-		.def(vector_indexing_suite<Contract::ComboLegList, true>()); 
 
 	class_<Contract>("Contract")
 		.def_readwrite("conId", &Contract::conId)
@@ -1662,19 +1631,8 @@ BOOST_PYTHON_MODULE(vnib)
 		.def_readwrite("nextOptionPartial", &ContractDetails::nextOptionPartial)
 		.def_readwrite("notes", &ContractDetails::notes)
 		;
-
-	enum_<OrderCondition::OrderConditionType>("OrderConditionType")
-		.value("Price", OrderCondition::Price)
-		.value("Time", OrderCondition::Time)
-		.value("Margin", OrderCondition::Margin)
-		.value("Execution", OrderCondition::Execution)
-		.value("Volume", OrderCondition::Volume)
-		.value("PercentChange", OrderCondition::PercentChange)
-		;
-
-
-	//实现不完全，暂时不清楚作用
-	class_<OrderCondition>("OrderCondition")
+	
+	class_<OrderCondition>("OrderCondition")			//实现不完全，暂时不清楚作用
 		.def("toString", &OrderCondition::toString)
 		.def("type", &OrderCondition::type)
 		;
@@ -1682,12 +1640,6 @@ BOOST_PYTHON_MODULE(vnib)
 	class_<OrderComboLeg, OrderComboLegSPtr>("OrderComboLeg")
 		.def_readwrite("price", &OrderComboLeg::price)
 		;
-
-	class_<Order::OrderComboLegList, Order::OrderComboLegListSPtr>("OrderComboLegList")
-		.def(vector_indexing_suite<Order::OrderComboLegList, true>());
-
-	class_<std::vector<ibapi::shared_ptr<OrderCondition>>>("OrderConditionList")
-		.def(vector_indexing_suite<std::vector<ibapi::shared_ptr<OrderCondition>>, true>());
 
 	class_<Order>("Order")
 		.def_readwrite("orderId", &Order::orderId)
@@ -1804,10 +1756,37 @@ BOOST_PYTHON_MODULE(vnib)
 		.def_readwrite("extOperator", &Order::extOperator)
 		;
 
-	//register_ptr_to_python<TagValueSPtr>();
-	//register_ptr_to_python<TagValueListSPtr>();
-	//register_ptr_to_python<OrderComboLegSPtr>();
+	//vector相关的封装
+	class_<TagValueList, TagValueListSPtr>("TagValueList")
+		.def(vector_indexing_suite<TagValueList, true>());    //这个true非常重要
 
+	class_<Contract::ComboLegList, Contract::ComboLegListSPtr>("ComboLegList")
+		.def(vector_indexing_suite<Contract::ComboLegList, true>());
+
+	class_<Order::OrderComboLegList, Order::OrderComboLegListSPtr>("OrderComboLegList")
+		.def(vector_indexing_suite<Order::OrderComboLegList, true>());
+
+	class_<std::vector<ibapi::shared_ptr<OrderCondition>>>("OrderConditionList")
+		.def(vector_indexing_suite<std::vector<ibapi::shared_ptr<OrderCondition>>, true>());
+
+	class_<std::vector<ibapi::shared_ptr<OrderCondition>>>("OrderConditionList")
+		.def(vector_indexing_suite<std::vector<ibapi::shared_ptr<OrderCondition>>, true>());
+
+	class_<std::vector<std::string>>("StringList")
+		.def(vector_indexing_suite<std::vector<std::string>, true>());
+
+	class_<std::vector<double>>("DoubleList")
+		.def(vector_indexing_suite<std::vector<double>, true>());
+
+	//enum相关的封装
+	enum_<OrderCondition::OrderConditionType>("OrderConditionType")
+		.value("Price", OrderCondition::Price)
+		.value("Time", OrderCondition::Time)
+		.value("Margin", OrderCondition::Margin)
+		.value("Execution", OrderCondition::Execution)
+		.value("Volume", OrderCondition::Volume)
+		.value("PercentChange", OrderCondition::PercentChange)
+		;
 
 	enum_<TickType>("TickType")
 		.value("BID_SIZE", BID_SIZE)
@@ -1886,5 +1865,10 @@ BOOST_PYTHON_MODULE(vnib)
 		.value("DELAYED_OPEN", DELAYED_OPEN)
 		.value("NOT_SET", NOT_SET)
 		;
+
+	//注册智能指针到boost.python环境中，暂时无用
+	//register_ptr_to_python<TagValueSPtr>();
+	//register_ptr_to_python<TagValueListSPtr>();
+	//register_ptr_to_python<OrderComboLegSPtr>();
 };
 
