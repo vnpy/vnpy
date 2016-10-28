@@ -235,7 +235,7 @@ class CtaEngine(object):
                         del self.workingStopOrderDict[so.stopOrderID]
 
     #----------------------------------------------------------------------
-    def procecssTickEvent(self, event):
+    def processTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
         # 收到tick行情后，先处理本地停止单（检查是否要立即发出）
@@ -308,7 +308,7 @@ class CtaEngine(object):
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
-        self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
+        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
