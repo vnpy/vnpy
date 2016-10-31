@@ -252,11 +252,16 @@ if __name__ == '__main__':
     engine.setStartDate('20120101')
     
     # 设置产品相关参数
-    engine.setSlippage(0.2)     # 股指1跳
-    engine.setRate(0.3/10000)   # 万0.3
-    engine.setSize(300)         # 股指合约大小        
-    
+    # engine.setSlippage(0.2)     # 股指1跳
+    # engine.setRate(0.3/10000)   # 万0.3
+    # engine.setSize(300)         # 股指合约大小
+
+    engine.setSlippage(0)     # 股指1跳
+    engine.setRate(1.0570/10000)   # 万0.3
+    engine.setSize(10)         # 股指合约大小
     # 设置使用的历史数据库
+    # engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
+    # engine.setDatabase('MC_1Min_Db', 'ru_hot')
     engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
     
     # 在引擎中创建策略对象

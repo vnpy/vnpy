@@ -3,7 +3,7 @@
 import shelve
 from collections import OrderedDict
 
-from pymongo import MongoClient
+import pymongo
 from pymongo.errors import ConnectionFailure
 
 from eventEngine import *
@@ -74,39 +74,40 @@ class MainEngine(object):
             self.gatewayDict['FEMAS'].setQryEnabled(True)
         except Exception, e:
             print e  
-        
-        try:
-            from xspeedGateway.xspeedGateway import XspeedGateway
-            self.addGateway(XspeedGateway, 'XSPEED')
-            self.gatewayDict['XSPEED'].setQryEnabled(True)
-        except Exception, e:
-            print e          
-        
-        try:
-            from ksgoldGateway.ksgoldGateway import KsgoldGateway
-            self.addGateway(KsgoldGateway, 'KSGOLD')
-            self.gatewayDict['KSGOLD'].setQryEnabled(True)
-        except Exception, e:
-            print e
-            
-        try:
-            from sgitGateway.sgitGateway import SgitGateway
-            self.addGateway(SgitGateway, 'SGIT')
-            self.gatewayDict['SGIT'].setQryEnabled(True)
-        except Exception, e:
-            print e        
-            
-        try:
-            from windGateway.windGateway import WindGateway
-            self.addGateway(WindGateway, 'Wind') 
-        except Exception, e:
-            print e
-        
-        try:
-            from ibGateway.ibGateway import IbGateway
-            self.addGateway(IbGateway, 'IB')
-        except Exception, e:
-            print e
+
+
+        # try:
+        #     from xspeedGateway.xspeedGateway import XspeedGateway
+        #     self.addGateway(XspeedGateway, 'XSPEED')
+        #     self.gatewayDict['XSPEED'].setQryEnabled(True)
+        # except Exception, e:
+        #     print e
+        #
+        # try:
+        #     from ksgoldGateway.ksgoldGateway import KsgoldGateway
+        #     self.addGateway(KsgoldGateway, 'KSGOLD')
+        #     self.gatewayDict['KSGOLD'].setQryEnabled(True)
+        # except Exception, e:
+        #     print e
+        #
+        # try:
+        #     from sgitGateway.sgitGateway import SgitGateway
+        #     self.addGateway(SgitGateway, 'SGIT')
+        #     self.gatewayDict['SGIT'].setQryEnabled(True)
+        # except Exception, e:
+        #     print e
+        #
+        # try:
+        #     from windGateway.windGateway import WindGateway
+        #     self.addGateway(WindGateway, 'Wind')
+        # except Exception, e:
+        #     print e
+        #
+        # try:
+        #     from ibGateway.ibGateway import IbGateway
+        #     self.addGateway(IbGateway, 'IB')
+        # except Exception, e:
+        #     print e
             
         try:
             from oandaGateway.oandaGateway import OandaGateway
@@ -135,7 +136,7 @@ class MainEngine(object):
             gateway.connect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
-        
+            print (u'接口不存在：%s' %gatewayName)
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
@@ -213,13 +214,41 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""
+
+        # 读取数据库配置的方法，已转移至vtFunction
+        # # 载入json文件
+        # fileName = 'Mongo_connect.json'
+        # fileName = os.getcwd() + '\\mongoConnect\\' + fileName
+        #
+        # try:
+        #     f = file(fileName)
+        # except IOError:
+        #     self.writeLog(u'读取MongoDB连接配置出错，请检查')
+        #     return
+        #
+        # # 解析json文件
+        # setting = json.load(f)
+        # try:
+        #     IP = str(setting['IP'])
+        #     replicaset = str(setting['replicaset'])
+        #     readPreference = str(setting['readPreference'])
+        #     database = str(setting['db'])
+        #     userID = str(setting['userID'])
+        #     password = str(setting['password'])
+        #
+        # except KeyError:
+        #     self.writeLog(u'MongoDB连接配置缺少字段，请检查')
+
         if not self.dbClient:
             # 读取MongoDB的设置
-            host, port = loadMongoSetting()
-                
+            host, port, replicaset, readPreference, database, userID, password = loadMongoSetting()
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
-                self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=500)
+                # self.dbClient = pymongo.MongoClient(host+':'+str(port), replicaset=replicaset,readPreference=readPreference, serverSelectionTimeoutMS=500)
+                # db = self.dbClient[database]
+                # db.authenticate(userID, password)
+
+                self.dbClient = pymongo.MongoClient(host, port, serverSelectionTimeoutMS=500)
                 
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
@@ -227,7 +256,8 @@ class MainEngine(object):
                 self.writeLog(u'MongoDB连接成功')
             except ConnectionFailure:
                 self.writeLog(u'MongoDB连接失败')
-    
+            except ValueError:
+                self.writeLog(u'MongoDB连接配置字段错误，请检查')
     #----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
@@ -235,7 +265,7 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             collection.insert(d)
-    
+
     #----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""

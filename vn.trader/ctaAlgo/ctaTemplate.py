@@ -154,7 +154,10 @@ class CtaTemplate(object):
     def loadBar(self, days):
         """读取bar数据"""
         return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
-    
+    #----------------------------------------------------------------------
+    def loadCursor(self, todayDate, days):
+        """获取数据库Cursor"""
+        return self.ctaEngine.loadCursor(self.barDbName, self.vtSymbol, todayDate, days)
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""

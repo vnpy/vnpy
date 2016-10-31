@@ -20,7 +20,7 @@ import json
 import os
 from collections import OrderedDict
 from datetime import datetime, timedelta
-
+import time
 from ctaBase import *
 from ctaSetting import STRATEGY_CLASS
 from eventEngine import *
@@ -334,7 +334,18 @@ class CtaEngine(object):
                 l.append(bar)
             
         return l
-    
+    #----------------------------------------------------------------------
+    def loadCursor(self, dbName, collectionName, todayDate, days):
+        """返回数据库查询Cursor，startDate是datetime对象"""
+        todayDate = datetime.strptime(todayDate, "%Y%m%d")
+
+        startDate = todayDate - timedelta(days)
+
+        d = {'datetime':{"and":[{'$gte':startDate}, {'$lte':todayDate}]}}
+        cursor = self.mainEngine.dbQuery(dbName, collectionName, d)
+
+        return cursor
+
     #----------------------------------------------------------------------
     def loadTick(self, dbName, collectionName, days):
         """从数据库中读取Tick数据，startDate是datetime对象"""

@@ -41,14 +41,41 @@ Release/
 *.klg
 *.lkc
 
-<<<<<<< HEAD
 # 不想同步的
 *.local
 *.temp
 *.vt
 *.dat
-=======
 vn.ctp/build/*
 vn.lts/build/*
 .idea
->>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+
+
+# CTP/LTS账户文件
+# vn.trader/ctpGateway/CTP_connect.json
+# vn.trader/ltsGateway/LTS_connect.json
+# vn.trader/ctpGateway/CTP_connect.json
+# vn.trader/ksotpGateway/KSOTP_connect.json
+
+vn.trader/ctpGateway/CTP_connect@FZ/*
+vn.trader/ctpGateway/CTP_connect@sim/*
+vn.trader/ctpGateway/CTP_connect@SimClose/*
+vn.trader/ctpGateway/CTP_connect@Real/*
+vn.trader/ksotpGateway/KSOTP_connect@Sim/*
+vn.trader/ltsGateway/LTS_connect@Sim/*
+vn.trader/oandaGateway/OANDA_connect@Sim/*
+vn.trader/mongoConnect/Mongo_connect@Real/*
+vn.trader/ctaAlgo/data/*
+# vn.trader/ContractData.vt
+vn.trader/Contracts_init - 副本.json
+vn.trader/mongoConnect/Mongo_connect - 副本.json
+vn.trader/VT_setting/VT_setting.json
+vn.trader/build/*
+vn.trader/dist/*
+vn.trader/RT.ico
+vn.trader/setup.py
+vn.trader/ctaAlgo/Strategy/*
+vn.trader/swiftTrader/*
+vn.trader/swiftMain.py
+vn.trader/ctaAlgo/strategyBlade.py
+vn.trader/ctaAlgo/strategyRock.py

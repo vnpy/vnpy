@@ -20,17 +20,20 @@ from ctaTemplate import CtaTemplate
 class DoubleEmaDemo(CtaTemplate):
     """双指数均线策略Demo"""
     className = 'DoubleEmaDemo'
-    author = u'用Python的交易员'
+    author = u'融拓科技'
     
     # 策略参数
-    fastK = 0.9     # 快速EMA参数
-    slowK = 0.1     # 慢速EMA参数
+    fastD = 5     # 快速EMA天数
+    slowD = 20     # 慢速EMA天数
     initDays = 10   # 初始化数据所用的天数
-    
+
+    fastK = 2.0 / (1 + fastD)     # 快速EMA参数
+    slowK = 2.0 / (1 + slowD)     # 慢速EMA参数
+
     # 策略变量
     bar = None
     barMinute = EMPTY_STRING
-    
+
     fastMa = []             # 快速EMA均线数组
     fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
     fastMa1 = EMPTY_FLOAT   # 上一根的快速EMA
@@ -44,8 +47,8 @@ class DoubleEmaDemo(CtaTemplate):
                  'className',
                  'author',
                  'vtSymbol',
-                 'fastK',
-                 'slowK']    
+                 'fastD',
+                 'slowD']
     
     # 变量列表，保存了变量的名称
     varList = ['inited',
@@ -60,18 +63,27 @@ class DoubleEmaDemo(CtaTemplate):
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(DoubleEmaDemo, self).__init__(ctaEngine, setting)
-        
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
         # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
         # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
         # 策略时方便（更多是个编程习惯的选择）
-        self.fastMa = []
-        self.slowMa = []
-        
+
+        # 策略变量
+        self.bar = None
+        self.barMinute = EMPTY_STRING
+
+        self.fastMa = []             # 快速EMA均线数组
+        self.fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
+        self.fastMa1 = EMPTY_FLOAT   # 上一根的快速EMA
+
+        self.slowMa = []             # 与上面相同
+        self.slowMa0 = EMPTY_FLOAT
+        self.slowMa1 = EMPTY_FLOAT
+
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略初始化')
+        self.writeCtaLog(u'双均线演示策略初始化')
         
         initData = self.loadBar(self.initDays)
         for bar in initData:
@@ -82,13 +94,13 @@ class DoubleEmaDemo(CtaTemplate):
     #----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略启动')
+        self.writeCtaLog(u'双均线演示策略启动')
         self.putEvent()
     
     #----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略停止')
+        self.writeCtaLog(u'双均线演示策略停止')
         self.putEvent()
         
     #----------------------------------------------------------------------
@@ -188,107 +200,3 @@ class DoubleEmaDemo(CtaTemplate):
     
     
 ########################################################################################
-class OrderManagementDemo(CtaTemplate):
-    """基于tick级别细粒度撤单追单测试demo"""
-    
-    className = 'OrderManagementDemo'
-    author = u'用Python的交易员'
-    
-    # 策略参数
-    initDays = 10   # 初始化数据所用的天数
-    
-    # 策略变量
-    bar = None
-    barMinute = EMPTY_STRING
-    
-    
-    # 参数列表，保存了参数的名称
-    paramList = ['name',
-                 'className',
-                 'author',
-                 'vtSymbol']
-    
-    # 变量列表，保存了变量的名称
-    varList = ['inited',
-               'trading',
-               'pos']
-
-    #----------------------------------------------------------------------
-    def __init__(self, ctaEngine, setting):
-        """Constructor"""
-        super(OrderManagementDemo, self).__init__(ctaEngine, setting)
-
-        self.lastOrder = None
-        self.orderType = ''
-        
-    #----------------------------------------------------------------------
-    def onInit(self):
-        """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略初始化')
-        
-        initData = self.loadBar(self.initDays)
-        for bar in initData:
-            self.onBar(bar)
-        
-        self.putEvent()
-        
-    #----------------------------------------------------------------------
-    def onStart(self):
-        """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略启动')
-        self.putEvent()
-    
-    #----------------------------------------------------------------------
-    def onStop(self):
-        """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'双EMA演示策略停止')
-        self.putEvent()
-        
-    #----------------------------------------------------------------------
-    def onTick(self, tick):
-        """收到行情TICK推送（必须由用户继承实现）"""
-
-        # 建立不成交买单测试单        
-        if self.lastOrder == None:
-            self.buy(tick.lastprice - 10.0, 1)
-
-        # CTA委托类型映射
-        if self.lastOrder != None and self.lastOrder.direction == u'多' and self.lastOrder.offset == u'开仓':
-            self.orderType = u'买开'
-
-        elif self.lastOrder != None and self.lastOrder.direction == u'多' and self.lastOrder.offset == u'平仓':
-            self.orderType = u'买平'
-
-        elif self.lastOrder != None and self.lastOrder.direction == u'空' and self.lastOrder.offset == u'开仓':
-            self.orderType = u'卖开'
-
-        elif self.lastOrder != None and self.lastOrder.direction == u'空' and self.lastOrder.offset == u'平仓':
-            self.orderType = u'卖平'
-                
-        # 不成交，即撤单，并追单
-        if self.lastOrder != None and self.lastOrder.status == u'未成交':
-
-            self.cancelOrder(self.lastOrder.vtOrderID)
-            self.lastOrder = None
-        elif self.lastOrder != None and self.lastOrder.status == u'已撤销':
-        # 追单并设置为不能成交
-            
-            self.sendOrder(self.orderType, self.tick.lastprice - 10, 1)
-            self.lastOrder = None
-            
-    #----------------------------------------------------------------------
-    def onBar(self, bar):
-        """收到Bar推送（必须由用户继承实现）"""
-        pass
-    
-    #----------------------------------------------------------------------
-    def onOrder(self, order):
-        """收到委托变化推送（必须由用户继承实现）"""
-        # 对于无需做细粒度委托控制的策略，可以忽略onOrder
-        self.lastOrder = order
-    
-    #----------------------------------------------------------------------
-    def onTrade(self, trade):
-        """收到成交推送（必须由用户继承实现）"""
-        # 对于无需做细粒度委托控制的策略，可以忽略onOrder
-        pass

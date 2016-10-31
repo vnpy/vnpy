@@ -2,6 +2,16 @@
     {
         "name": "double ema",
         "className": "DoubleEmaDemo",
-        "vtSymbol": "IF1602"
+        "vtSymbol": "pp1609"
+    },
+    {
+        "name": "TickBreaker",
+        "className": "TickBreaker",
+        "vtSymbol": "pp1609"
+    },
+    {
+        "name": "RockStrategy",
+        "className": "RockStrategy",
+        "vtSymbol": "m1609"
     }
 ]

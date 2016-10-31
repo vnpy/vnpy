@@ -8,7 +8,7 @@ from threading import Thread
 
 API_SETTING = {}
 API_SETTING['practice'] = {'rest': 'https://api-fxpractice.oanda.com',
-                           'stream': 'https://stream-fxpractice.oanda.com'}
+                           'stream': 'https://stream-fxpractice.oanda.com/'}
 API_SETTING['trade'] = {'rest': 'https://api-fxtrade.oanda.com',
                         'stream': 'https://stream-fxtrade.oanda.com/'}
 

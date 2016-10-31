@@ -5,7 +5,7 @@ import ctypes
 import platform
 
 from vtEngine import MainEngine
-from uiMainWindow import *
+from ctaAlgo.uiStrategyWindow import *
 
 #----------------------------------------------------------------------
 def main():
