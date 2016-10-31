@@ -87,8 +87,7 @@ class CtpGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
+        fileName = os.getcwd() + '/ctpGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -659,10 +658,15 @@ class CtpTdApi(TdApi):
         exchange = self.symbolExchangeDict.get(data['InstrumentID'], EXCHANGE_UNKNOWN)
         size = self.symbolSizeDict.get(data['InstrumentID'], 1)
         if exchange == EXCHANGE_SHFE:
-            pos = posBuffer.updateShfeBuffer(data, size)
+            posBuffer.updateShfeBuffer(data, size)
         else:
-            pos = posBuffer.updateBuffer(data, size)
-        self.gateway.onPosition(pos)
+            posBuffer.updateBuffer(data, size)
+            
+        # 所有持仓数据都更新后，再将缓存中的持仓情况发送到事件引擎中
+        if last:
+            for buf in self.posBufferDict.values():
+                pos = buf.getPos()
+                self.gateway.onPosition(pos)
         
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
@@ -1441,6 +1445,11 @@ class PositionBuffer(object):
             self.pos.price = 0
             
         return copy(self.pos)    
+    
+    #----------------------------------------------------------------------
+    def getPos(self):
+        """获取当前的持仓数据"""
+        return copy(self.pos)
 
 
 #----------------------------------------------------------------------

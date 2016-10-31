@@ -46,7 +46,7 @@ CTP柜台API接口的Python封装，基于pyscript目录下的脚本自动分析头文件生成封装代码模
 
 * 参考[这里](http://www.continuum.io/downloads)的教程下载并安装Anaconda的Linux 64位版本
 
-* 使用apt-get安装编译相关的工具：
+* 使用apt-get安装编译相关的工具，注意某些老的Ubuntu必须指定使用boost 1.58.0版本：
 
     - apt-get install build-essential
 
