@@ -17,7 +17,6 @@ from eventType import *
 class EventEngine(object):
     """
     事件驱动引擎
-
     事件驱动引擎中所有的变量都设置为了私有，这是为了防止不小心
     从外部修改了这些变量的值或状态，导致bug。
     
@@ -129,9 +128,12 @@ class EventEngine(object):
     #----------------------------------------------------------------------
     def register(self, type_, handler):
         """注册事件处理函数监听"""
+        # 尝试获取该事件类型对应的处理函数列表，若无defaultDict会自动创建新的list
+        handlerList = self.__handlers[type_]
+        
         # 若要注册的处理器不在该事件的处理器列表中，则注册该事件
-        if handler not in self.__handlers[type_]:
-            self.__handlers[type_].append(handler)
+        if handler not in handlerList:
+            handlerList.append(handler)
             
     #----------------------------------------------------------------------
     def unregister(self, type_, handler):
@@ -146,6 +148,7 @@ class EventEngine(object):
         # 如果函数列表为空，则从引擎中移除该事件类型
         if not handlerList:
             del self.__handlers[type_]
+            
     #----------------------------------------------------------------------
     def put(self, event):
         """向事件队列中存入事件"""
@@ -177,7 +180,7 @@ class EventEngine2(object):
         
         # 这里的__handlers是一个字典，用来保存对应的事件调用关系
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
-        self.__handlers = {}
+        self.__handlers = defaultdict(list)
         
     #----------------------------------------------------------------------
     def __run(self):
@@ -243,12 +246,8 @@ class EventEngine2(object):
     #----------------------------------------------------------------------
     def register(self, type_, handler):
         """注册事件处理函数监听"""
-        # 尝试获取该事件类型对应的处理函数列表，若无则创建
-        try:
-            handlerList = self.__handlers[type_]
-        except KeyError:
-            handlerList = []
-            self.__handlers[type_] = handlerList
+        # 尝试获取该事件类型对应的处理函数列表，若无defaultDict会自动创建新的list
+        handlerList = self.__handlers[type_]
         
         # 若要注册的处理器不在该事件的处理器列表中，则注册该事件
         if handler not in handlerList:
@@ -257,19 +256,16 @@ class EventEngine2(object):
     #----------------------------------------------------------------------
     def unregister(self, type_, handler):
         """注销事件处理函数监听"""
-        # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求
-        try:
-            handlerList = self.__handlers[type_]
+        # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求   
+        handlerList = self.__handlers[type_]
             
-            # 如果该函数存在于列表中，则移除
-            if handler in handlerList:
-                handlerList.remove(handler)
+        # 如果该函数存在于列表中，则移除
+        if handler in handlerList:
+            handlerList.remove(handler)
 
-            # 如果函数列表为空，则从引擎中移除该事件类型
-            if not handlerList:
-                del self.__handlers[type_]
-        except KeyError:
-            pass     
+        # 如果函数列表为空，则从引擎中移除该事件类型
+        if not handlerList:
+            del self.__handlers[type_]  
         
     #----------------------------------------------------------------------
     def put(self, event):
