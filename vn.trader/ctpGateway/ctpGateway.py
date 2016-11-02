@@ -11,6 +11,7 @@ vtSymbol直接使用symbol
 import os
 import json
 from copy import copy
+from datetime import datetime
 
 from vnctpmd import MdApi
 from vnctptd import TdApi
@@ -330,7 +331,10 @@ class CtpMdApi(MdApi):
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
         tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
-        tick.date = data['TradingDay']
+        
+        # 这里由于交易所夜盘时段的交易日数据有误，所以选择本地获取
+        #tick.date = data['TradingDay']
+        tick.date = datetime.now().strftime('%Y%m%d')   
         
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
@@ -658,10 +662,15 @@ class CtpTdApi(TdApi):
         exchange = self.symbolExchangeDict.get(data['InstrumentID'], EXCHANGE_UNKNOWN)
         size = self.symbolSizeDict.get(data['InstrumentID'], 1)
         if exchange == EXCHANGE_SHFE:
-            pos = posBuffer.updateShfeBuffer(data, size)
+            posBuffer.updateShfeBuffer(data, size)
         else:
-            pos = posBuffer.updateBuffer(data, size)
-        self.gateway.onPosition(pos)
+            posBuffer.updateBuffer(data, size)
+            
+        # 所有持仓数据都更新后，再将缓存中的持仓情况发送到事件引擎中
+        if last:
+            for buf in self.posBufferDict.values():
+                pos = buf.getPos()
+                self.gateway.onPosition(pos)
         
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
@@ -1440,6 +1449,11 @@ class PositionBuffer(object):
             self.pos.price = 0
             
         return copy(self.pos)    
+    
+    #----------------------------------------------------------------------
+    def getPos(self):
+        """获取当前的持仓数据"""
+        return copy(self.pos)
 
 
 #----------------------------------------------------------------------

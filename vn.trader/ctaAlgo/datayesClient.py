@@ -31,6 +31,8 @@ class DatayesClient(object):
     def loadSetting(self):
         """载入配置"""
         try:
+            path = os.path.abspath(os.path.dirname(__file__))
+            FILENAME = os.path.join(path, FILENAME)            
             f = file(FILENAME)
         except IOError:
             print u'%s无法打开配置文件' % self.name
