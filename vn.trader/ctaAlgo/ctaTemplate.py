@@ -229,6 +229,11 @@ class CtaTemplate(object):
         """保持bar数据"""
         pass
 
+    def onTimer(self):
+        """定时执行任务
+        由mainEngine驱动"""
+        pass
+
     # ----------------------------------------------------------------------
     def setParam(self, setting):
         """设置参数"""
