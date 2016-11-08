@@ -14,6 +14,10 @@
    感到功能不足的用户（即希望更高频的交易），交易策略不应该出现4中所述的情况
 6. 对于想要实现4中所述情况的用户，需要实现一个策略信号引擎和交易委托引擎分开
    的定制化统结构（没错，得自己写）
+
+ Modified by IncenseLee（李来佳）
+ 1、增加单一策略里，多个vtSymbol的配置。
+
 '''
 
 import json
@@ -404,6 +408,17 @@ class CtaEngine(object):
 
         # 注册持仓更新事件
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
+
+        # 注册定时器事件
+        self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
+
+    def processTimerEvent(self, event):
+        """定时器事件"""
+
+        # 触发每个策略的定时接口
+        for strategy in self.strategyDict.values():
+            strategy.onTimer()
+
  
     # ----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -488,29 +503,33 @@ class CtaEngine(object):
             self.strategyDict[name] = strategy
             
             # 2.保存Tick映射关系（symbol <==> Strategy[] )
-            if strategy.vtSymbol in self.tickStrategyDict:
-                l = self.tickStrategyDict[strategy.vtSymbol]
-            else:
-                l = []
-                self.tickStrategyDict[strategy.vtSymbol] = l
-            l.append(strategy)
-            
-            # 3.订阅合约
-            contract = self.mainEngine.getContract(strategy.vtSymbol)
-            if contract:
-                # 4.构造订阅请求包
-                req = VtSubscribeReq()
-                req.symbol = contract.symbol
-                req.exchange = contract.exchange
-                
-                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-                req.currency = strategy.currency
-                req.productClass = strategy.productClass
+            # modifid by Incenselee 支持多个Symbol的订阅
+            symbols = strategy.vtSymbol.split(';')
 
-                # 5.调用主引擎的订阅接口
-                self.mainEngine.subscribe(req, contract.gatewayName)
-            else:
-                self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))
+            for symbol in symbols:
+                if symbol in self.tickStrategyDict:
+                    l = self.tickStrategyDict[symbol]
+                else:
+                    l = []
+                    self.tickStrategyDict[symbol] = l
+                l.append(strategy)
+            
+                # 3.订阅合约
+                contract = self.mainEngine.getContract(symbol)
+                if contract:
+                    # 4.构造订阅请求包
+                    req = VtSubscribeReq()
+                    req.symbol = contract.symbol
+                    req.exchange = contract.exchange
+
+                    # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+                    req.currency = strategy.currency
+                    req.productClass = strategy.productClass
+
+                    # 5.调用主引擎的订阅接口
+                    self.mainEngine.subscribe(req, contract.gatewayName)
+                else:
+                    self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, symbol))
 
     #----------------------------------------------------------------------
     def initStrategy(self, name, force = False):
@@ -666,6 +685,12 @@ class CtaEngine(object):
                 # 5.保存策略数据
                 strategy.saveBar()
 
+    def clearData(self):
+        """清空运行数据"""
+        self.orderStrategyDict = {}
+        self.workingStopOrderDict = {}
+        self.posBufferDict = {}
+        self.stopOrderDict = {}
 
 ########################################################################
 class PositionBuffer(object):
