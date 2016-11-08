@@ -80,6 +80,11 @@ class AtrRsiStrategy(CtaTemplate):
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(AtrRsiStrategy, self).__init__(ctaEngine, setting)
+        
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）        
 
     #----------------------------------------------------------------------
     def onInit(self):
@@ -194,14 +199,12 @@ class AtrRsiStrategy(CtaTemplate):
                 if self.rsiValue > self.rsiBuy:
                     # 这里为了保证成交，选择超价5个整指数点下单
                     self.buy(bar.close+5, 1)
-                    return
 
-                if self.rsiValue < self.rsiSell:
+                elif self.rsiValue < self.rsiSell:
                     self.short(bar.close-5, 1)
-                    return
 
         # 持有多头仓位
-        if self.pos == 1:
+        elif self.pos > 0:
             # 计算多头持有期内的最高价，以及重置最低价
             self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
             self.intraTradeLow = bar.low
@@ -210,17 +213,15 @@ class AtrRsiStrategy(CtaTemplate):
             # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
             orderID = self.sell(longStop, 1, stop=True)
             self.orderList.append(orderID)
-            return
 
         # 持有空头仓位
-        if self.pos == -1:
+        elif self.pos < 0:
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             self.intraTradeHigh = bar.high
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
             orderID = self.cover(shortStop, 1, stop=True)
             self.orderList.append(orderID)
-            return
 
         # 发出状态更新事件
         self.putEvent()
@@ -250,21 +251,39 @@ if __name__ == '__main__':
     # 设置回测用的数据起始日期
     engine.setStartDate('20120101')
     
-    # 载入历史数据到引擎中
-    engine.loadHistoryData(MINUTE_DB_NAME, 'IF0000')
-    
     # 设置产品相关参数
     engine.setSlippage(0.2)     # 股指1跳
     engine.setRate(0.3/10000)   # 万0.3
-    engine.setSize(300)         # 股指合约大小    
+    engine.setSize(300)         # 股指合约大小        
     
-    # 在引擎中创建策略对象
-    engine.initStrategy(AtrRsiStrategy, {})
+    # 设置使用的历史数据库
+    engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
     
-    # 开始跑回测
-    engine.runBacktesting()
+    ## 在引擎中创建策略对象
+    #d = {'atrLength': 11}
+    #engine.initStrategy(AtrRsiStrategy, d)
     
-    # 显示回测结果
-    engine.showBacktestingResult()
+    ## 开始跑回测
+    ##engine.runBacktesting()
     
+    ## 显示回测结果
+    ##engine.showBacktestingResult()
     
+    # 跑优化
+    setting = OptimizationSetting()                 # 新建一个优化任务设置对象
+    setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
+    setting.addParameter('atrLength', 11, 20, 1)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
+    setting.addParameter('atrMa', 20, 30, 5)        # 增加第二个优化参数atrMa，起始20，结束30，步进1
+    
+    # 性能测试环境：I7-3770，主频3.4G, 8核心，内存16G，Windows 7 专业版
+    # 测试时还跑着一堆其他的程序，性能仅供参考
+    import time    
+    start = time.time()
+    
+    # 运行单进程优化函数，自动输出结果，耗时：359秒
+    #engine.runOptimization(AtrRsiStrategy, setting)            
+    
+    # 多进程优化，耗时：89秒
+    engine.runParallelOptimization(AtrRsiStrategy, setting)     
+    
+    print u'耗时：%s' %(time.time()-start)

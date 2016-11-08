@@ -1,11 +1,21 @@
 # encoding: UTF-8
 
 import sys
+import os
 import ctypes
 import platform
 
+import vtPath
 from vtEngine import MainEngine
 from uiMainWindow import *
+
+# 文件路径名
+path = os.path.abspath(os.path.dirname(__file__))    
+ICON_FILENAME = 'vnpy.ico'
+ICON_FILENAME = os.path.join(path, ICON_FILENAME)  
+
+SETTING_FILENAME = 'VT_setting.json'
+SETTING_FILENAME = os.path.join(path, SETTING_FILENAME)  
 
 #----------------------------------------------------------------------
 def main():
@@ -17,15 +27,15 @@ def main():
     # 设置Windows底部任务栏图标
     if 'Windows' in platform.uname() :
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
-
+    
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('vnpy.ico'))
+    app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
     app.setFont(BASIC_FONT)
     
     # 设置Qt的皮肤
     try:
-        f = file("VT_setting.json")
+        f = file(SETTING_FILENAME)
         setting = json.load(f)    
         if setting['darkStyle']:
             import qdarkstyle

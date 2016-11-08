@@ -18,6 +18,7 @@
 
 import json
 import os
+import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -33,7 +34,8 @@ from vtFunction import todayDate
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    settingFileName = os.getcwd() + '/ctaAlgo/' + settingFileName
+    path = os.path.abspath(os.path.dirname(__file__))
+    settingFileName = os.path.join(path, settingFileName)      
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -69,6 +71,9 @@ class CtaEngine(object):
         # 持仓缓存字典
         # key为vtSymbol，value为PositionBuffer对象
         self.posBufferDict = {}
+        
+        # 引擎类型为实盘
+        self.engineType = ENGINETYPE_TRADING
         
         # 注册事件监听
         self.registerEvent()
@@ -232,7 +237,7 @@ class CtaEngine(object):
                         del self.workingStopOrderDict[so.stopOrderID]
 
     #----------------------------------------------------------------------
-    def procecssTickEvent(self, event):
+    def processTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
         # 收到tick行情后，先处理本地停止单（检查是否要立即发出）
@@ -252,7 +257,7 @@ class CtaEngine(object):
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
-                strategy.onTick(ctaTick)
+                self.callStrategyFunc(strategy, strategy.onTick, ctaTick)
     
     #----------------------------------------------------------------------
     def processOrderEvent(self, event):
@@ -261,7 +266,7 @@ class CtaEngine(object):
         
         if order.vtOrderID in self.orderStrategyDict:
             strategy = self.orderStrategyDict[order.vtOrderID]            
-            strategy.onOrder(order)
+            self.callStrategyFunc(strategy, strategy.onOrder, order)
     
     #----------------------------------------------------------------------
     def processTradeEvent(self, event):
@@ -277,7 +282,7 @@ class CtaEngine(object):
             else:
                 strategy.pos -= trade.volume
             
-            strategy.onTrade(trade)
+            self.callStrategyFunc(strategy, strategy.onTrade, trade)
             
         # 更新持仓缓存数据
         if trade.vtSymbol in self.tickStrategyDict:
@@ -305,7 +310,7 @@ class CtaEngine(object):
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
-        self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
+        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
@@ -413,7 +418,7 @@ class CtaEngine(object):
             
             if not strategy.inited:
                 strategy.inited = True
-                strategy.onInit()
+                self.callStrategyFunc(strategy, strategy.onInit)
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
@@ -427,7 +432,7 @@ class CtaEngine(object):
             
             if strategy.inited and not strategy.trading:
                 strategy.trading = True
-                strategy.onStart()
+                self.callStrategyFunc(strategy, strategy.onStart)
         else:
             self.writeCtaLog(u'策略实例不存在：%s' %name)
     
@@ -439,7 +444,7 @@ class CtaEngine(object):
             
             if strategy.trading:
                 strategy.trading = False
-                strategy.onStop()
+                self.callStrategyFunc(strategy, strategy.onStop)
                 
                 # 对该策略发出的所有限价单进行撤单
                 for vtOrderID, s in self.orderStrategyDict.items():
@@ -513,6 +518,23 @@ class CtaEngine(object):
         event = Event(EVENT_CTA_STRATEGY+name)
         self.eventEngine.put(event)
         
+    #----------------------------------------------------------------------
+    def callStrategyFunc(self, strategy, func, params=None):
+        """调用策略的函数，若触发异常则捕捉"""
+        try:
+            if params:
+                func(params)
+            else:
+                func()
+        except Exception:
+            # 停止策略，修改状态为未初始化
+            strategy.trading = False
+            strategy.inited = False
+            
+            # 发出日志
+            content = '\n'.join([u'策略%s触发异常已停止' %strategy.name,
+                                traceback.format_exc()])
+            self.writeCtaLog(content)
 
 
 ########################################################################

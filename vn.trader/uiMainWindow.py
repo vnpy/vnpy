@@ -10,6 +10,7 @@ from riskManager.uiRmWidget import RmEngineManager
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
     """主窗口"""
+    signalStatusBar = QtCore.pyqtSignal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -22,7 +23,7 @@ class MainWindow(QtGui.QMainWindow):
         self.widgetDict = {}    # 用来保存子窗口的字典
         
         self.initUi()
-        self.loadWindowSettings()
+        self.loadWindowSettings('custom')
         
     #----------------------------------------------------------------------
     def initUi(self):
@@ -53,6 +54,9 @@ class MainWindow(QtGui.QMainWindow):
     
         # 连接组件之间的信号
         widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
+        
+        # 保存默认设置
+        self.saveWindowSettings('default')
         
     #----------------------------------------------------------------------
     def initMenu(self):
@@ -85,8 +89,14 @@ class MainWindow(QtGui.QMainWindow):
         connectIbAction = QtGui.QAction(u'连接IB', self)
         connectIbAction.triggered.connect(self.connectIb) 
         
+        connectShzdAction = QtGui.QAction(u'连接直达', self)
+        connectShzdAction.triggered.connect(self.connectShzd)        
+        
         connectOandaAction = QtGui.QAction(u'连接OANDA', self)
         connectOandaAction.triggered.connect(self.connectOanda)
+        
+        connectOkcoinAction = QtGui.QAction(u'连接OKCOIN', self)
+        connectOkcoinAction.triggered.connect(self.connectOkcoin)        
         
         connectDbAction = QtGui.QAction(u'连接数据库', self)
         connectDbAction.triggered.connect(self.mainEngine.dbConnect)
@@ -110,7 +120,10 @@ class MainWindow(QtGui.QMainWindow):
         ctaAction.triggered.connect(self.openCta)
         
         rmAction = QtGui.QAction(u'风险管理', self)
-        rmAction.triggered.connect(self.openRm)        
+        rmAction.triggered.connect(self.openRm)     
+        
+        restoreAction = QtGui.QAction(u'还原', self)
+        restoreAction.triggered.connect(self.restoreWindow)
         
         # 创建菜单
         menubar = self.menuBar()
@@ -134,8 +147,12 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addSeparator()
         if 'IB' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectIbAction)    
+        if 'SHZD' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectShzdAction)          
         if 'OANDA' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectOandaAction)
+        if 'OKCOIN' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectOkcoinAction)        
         sysMenu.addSeparator()
         if 'Wind' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectWindAction)
@@ -155,6 +172,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')
+        helpMenu.addAction(restoreAction)
         helpMenu.addAction(aboutAction)  
         helpMenu.addAction(testAction)
     
@@ -169,7 +187,8 @@ class MainWindow(QtGui.QMainWindow):
         
         self.sbCount = 0
         self.sbTrigger = 10     # 10秒刷新一次
-        self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
+        self.signalStatusBar.connect(self.updateStatusBar)
+        self.eventEngine.register(EVENT_TIMER, self.signalStatusBar.emit)
         
     #----------------------------------------------------------------------
     def updateStatusBar(self, event):
@@ -233,9 +252,19 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('IB')
         
     #----------------------------------------------------------------------
+    def connectShzd(self):
+        """连接Ib"""
+        self.mainEngine.connect('SHZD')    
+        
+    #----------------------------------------------------------------------
     def connectOanda(self):
         """连接OANDA"""
         self.mainEngine.connect('OANDA')
+        
+    #----------------------------------------------------------------------
+    def connectOkcoin(self):
+        """连接OKCOIN"""
+        self.mainEngine.connect('OKCOIN')    
         
     #----------------------------------------------------------------------
     def test(self):
@@ -298,7 +327,7 @@ class MainWindow(QtGui.QMainWindow):
         if reply == QtGui.QMessageBox.Yes: 
             for widget in self.widgetDict.values():
                 widget.close()
-            self.saveWindowSettings()
+            self.saveWindowSettings('custom')
             
             self.mainEngine.exit()
             event.accept()
@@ -317,18 +346,33 @@ class MainWindow(QtGui.QMainWindow):
         return widget, dock
     
     #----------------------------------------------------------------------
-    def saveWindowSettings(self):
+    def saveWindowSettings(self, settingName):
         """保存窗口设置"""
-        settings = QtCore.QSettings('vn.py', 'vn.trader')
+        settings = QtCore.QSettings('vn.trader', settingName)
         settings.setValue('state', self.saveState())
         settings.setValue('geometry', self.saveGeometry())
         
     #----------------------------------------------------------------------
-    def loadWindowSettings(self):
+    def loadWindowSettings(self, settingName):
         """载入窗口设置"""
-        settings = QtCore.QSettings('vn.py', 'vn.trader')
-        self.restoreState(settings.value('state').toByteArray())
-        self.restoreGeometry(settings.value('geometry').toByteArray())    
+        settings = QtCore.QSettings('vn.trader', settingName)
+        # 这里由于PyQt4的版本不同，settings.value('state')调用返回的结果可能是：
+        # 1. None（初次调用，注册表里无相应记录，因此为空）
+        # 2. QByteArray（比较新的PyQt4）
+        # 3. QVariant（以下代码正确执行所需的返回结果）
+        # 所以为了兼容考虑，这里加了一个try...except，如果是1、2的情况就pass
+        # 可能导致主界面的设置无法载入（每次退出时的保存其实是成功了）
+        try:
+            self.restoreState(settings.value('state').toByteArray())
+            self.restoreGeometry(settings.value('geometry').toByteArray())    
+        except AttributeError:
+            pass
+        
+    #----------------------------------------------------------------------
+    def restoreWindow(self):
+        """还原默认窗口设置（还原停靠组件位置）"""
+        self.loadWindowSettings('default')
+        self.showMaximized()
 
 
 ########################################################################
