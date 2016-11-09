@@ -166,12 +166,14 @@ class BacktestEngineMultiTF(BacktestingEngine):
             data = self.infobar[info_symbol]
 
             # Update data only when Time Stamp is matched
-            if data['datetime'] <= self.dt:
+            if (data is not None) and (data['datetime'] <= self.dt):
+
                 try:
                     temp[info_symbol] = CtaBarData()
                     temp[info_symbol].__dict__ = data
                     self.infobar[info_symbol] = next(self.InfoCursor[info_symbol])
                 except StopIteration:
+                    self.infobar[info_symbol] = None
                     self.output("No more data in information database.")
             else:
                 temp[info_symbol] = None
