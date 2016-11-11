@@ -14,8 +14,13 @@
 
 4. vn.ib基于较新的IB官方API（9.72 beta）开发，IbPy则是采用了较老的API（9.70 stable）
 
+### 对原生接口的修改部分
+shared_ptr.h和SoftDollerTier.h中加入了对象比较函数的代码，用于实现其对应vector的自动Python封装。
+
 ### API版本
-版本：IB API for Windows beta 9.72
+版本：IB API for Windows beta 9.72.18
+
+日期：2016-09-14
 
 链接：[http://interactivebrokers.github.io/](http://interactivebrokers.github.io/)
 

@@ -717,4 +717,9 @@ class IbWrapper(IbApi):
     def securityDefinitionOptionalParameterEnd(self, reqId):
         """"""
         pass
+    
+    #----------------------------------------------------------------------
+    def softDollarTiers(self, reqId, tiers):
+        """"""
+        pass
         

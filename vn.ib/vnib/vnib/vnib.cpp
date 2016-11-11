@@ -352,6 +352,11 @@ void IbWrapper::securityDefinitionOptionalParameterEnd(int reqId)
 	this->api->securityDefinitionOptionalParameterEnd(reqId);
 };
 
+void IbWrapper::softDollarTiers(int reqId, const std::vector<SoftDollarTier> &tiers)
+{
+	PyLock lock;
+	this->api->softDollarTiers(reqId, tiers);
+};
 
 ///-------------------------------------------------------------------------------------
 ///负责调用processMsgs的线程工作函数
@@ -665,6 +670,10 @@ void VnIbApi::reqSecDefOptParams(int reqId, const std::string& underlyingSymbol,
 	this->client->reqSecDefOptParams(reqId, underlyingSymbol, futFopExchange, underlyingSecType, underlyingConId);
 };
 
+void VnIbApi::reqSoftDollarTiers(int reqId)
+{
+	this->client->reqSoftDollarTiers(reqId);
+};
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python封装
@@ -1334,6 +1343,18 @@ struct IbApiWrap : VnIbApi, wrapper < VnIbApi >
 		}
 	};
 
+
+	virtual void softDollarTiers(int reqId, const std::vector<SoftDollarTier> &tiers)
+	{
+		try
+		{
+			this->get_override("softDollarTiers")(reqId, tiers);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
 };
 
 
@@ -1419,6 +1440,7 @@ BOOST_PYTHON_MODULE(vnib)
 		.def("reqAccountUpdatessMulti", &IbApiWrap::reqAccountUpdatessMulti)
 		.def("cancelAccountUpdatesMulti", &IbApiWrap::cancelAccountUpdatesMulti)
 		.def("reqSecDefOptParams", &IbApiWrap::reqSecDefOptParams)
+		.def("reqSoftDollarTiers", &IbApiWrap::reqSoftDollarTiers)
 
 		.def("tickPrice", pure_virtual(&IbApiWrap::tickPrice))
 		.def("tickSize", pure_virtual(&IbApiWrap::tickSize))
@@ -1475,6 +1497,7 @@ BOOST_PYTHON_MODULE(vnib)
 		.def("accountUpdateMultiEnd", pure_virtual(&IbApiWrap::accountUpdateMultiEnd))
 		.def("securityDefinitionOptionalParameter", pure_virtual(&IbApiWrap::securityDefinitionOptionalParameter))
 		.def("securityDefinitionOptionalParameterEnd", pure_virtual(&IbApiWrap::securityDefinitionOptionalParameterEnd))
+		.def("softDollarTiers", pure_virtual(&IbApiWrap::softDollarTiers))
 		;
 
 	//结构体相关的封装
@@ -1756,6 +1779,12 @@ BOOST_PYTHON_MODULE(vnib)
 		.def_readwrite("extOperator", &Order::extOperator)
 		;
 
+	class_<SoftDollarTier, boost::noncopyable>("SoftDollarTier")
+		.def("name", &SoftDollarTier::name)
+		.def("val", &SoftDollarTier::val)
+		.def("displayName", &SoftDollarTier::displayName)
+		;
+
 	//vector相关的封装
 	class_<TagValueList, TagValueListSPtr>("TagValueList")
 		.def(vector_indexing_suite<TagValueList, true>());    //这个true非常重要
@@ -1777,6 +1806,9 @@ BOOST_PYTHON_MODULE(vnib)
 
 	class_<std::vector<double>>("DoubleList")
 		.def(vector_indexing_suite<std::vector<double>, true>());
+
+	class_<std::vector<SoftDollarTier>>("SoftDollarTierList")
+		.def(vector_indexing_suite<std::vector<SoftDollarTier>, true>());
 
 	//enum相关的封装
 	enum_<OrderCondition::OrderConditionType>("OrderConditionType")
