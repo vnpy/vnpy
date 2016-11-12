@@ -17,6 +17,19 @@
 ### 对原生接口的修改部分
 shared_ptr.h和SoftDollerTier.h中加入了对象比较函数的代码，用于实现其对应vector的自动Python封装。
 
+### Linux版
+作者做了一些尝试，但目前vn.ib文件夹下的CMakeLists.txt无法编译出可以使用的so文件，最终在Python中import时会报错
+
+    undefined symbol: _ZN7ECLIENT11EncodeFieldIPKcEEvRSoT
+
+目前已经踩过的坑：
+
+1. 原生API里有个调用min函数的地方会报错，要修改为std::min
+2. 上面的原生接口修改部分依旧必须修改
+3. IB API提供了所有的源文件，所以调用链接器时无需加上IB API所在的文件夹（不确定）
+
+希望社区里有朋友能试着解决这个问题吧。
+
 ### API版本
 版本：IB API for Windows beta 9.72.18
 
