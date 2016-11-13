@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(vn_ib_api)
+project(vn_ib_api CXX)
 
 # 设置使用的编译器
 set(CMAKE_BUILD_TYPE "Release")
@@ -15,28 +15,16 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 option(USE_64BITS "comiple 64bits" ON)
 if (USE_64BITS)
   add_definitions(-DUSE_64BITS)
-  #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 endif()
 
 # 设置C++ API源文件的所在目录
-if (WIN32)
-    set(IBAPI_PATH ibapi)
-elseif (UNIX)
-    message("Under unix: " ${CMAKE_SIZEOF_VOID_P})
-    if (CMAKE_SIZEOF_VOID_P MATCHES "8")
-        set(IBAPI_PATH ibapi)
-    endif()
-endif()
-include_directories(${IBAPI_PATH})
-#set(IBAPI_LIBRARY )
-#find_library(IBAPI_LIBRARY
-#  NAMES thostmduserapi
-#  PATHS ${IBAPI_PATH}) 
-#find_library(IBAPI_TD_LIBRARY
-#  NAMES thosttraderapi
-#  PATHS ${IBAPI_PATH})
+set(IBAPI_PATH ./ibapi/linux)
+include_directories(${IBAPI_PATH}/client)
 
+set(IBAPI_LIBRARY )
+find_library(IBAPI_LIBRARY
+  NAMES twsapi.so
+  PATHS ${IBAPI_PATH}/build/lib) 
 
 # 设置编译源文件
 set (vnib )
@@ -44,7 +32,7 @@ set (vnib )
 option(BUILD_IB "build ib" ON)
 if (BUILD_IB)
   add_definitions(-DBUILD_IB)
-  set(IB_PATH vnib/vnib)
+  set(IB_PATH ./vnib/vnib)
   include_directories(IB_PATH)
   set(VN_IB_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/vnib/vnib/vnib.cpp)
   add_library(vnib SHARED ${VN_IB_SOURCE})
@@ -78,8 +66,9 @@ endif()
 
 # 去掉生成的so文件名中前缀的lib
 set_target_properties(vnib PROPERTIES PREFIX "")
+set_target_properties(vnib PROPERTIES LINKER_LANGUAGE CXX)
 
 # 链接生成.so文件
-target_link_libraries(vnib  ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${IBAPI_LIBRARY})
+target_link_libraries(vnib ${IBAPI_LIBRARY} ${Boost_LIBRARIES} ${PYTHON_LIBRARY})
 
 

@@ -28,7 +28,11 @@ shared_ptr.h和SoftDollerTier.h中加入了对象比较函数的代码，用于�
 2. 上面的原生接口修改部分依旧必须修改
 3. IB API提供了所有的源文件，所以调用链接器时无需加上IB API所在的文件夹（不确定）
 
-希望社区里有朋友能试着解决这个问题吧。
+希望社区里有朋友能试着解决这个问题吧，跳坑方法：
+1. 先进入到vn.ib/ibapi/linux文件夹下，运行bash build.sh编译IB API
+2. 然后进入vn.ib文件夹下，运行bash build.sh编译vn.ib
+3. vn.ib/build/lib下的vnib.so复制到vn.ib/test文件夹下，运行test.py
+4. 会出现上面的undefined symbol错误
 
 ### API版本
 版本：IB API for Windows beta 9.72.18

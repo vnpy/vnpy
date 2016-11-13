@@ -10,5 +10,16 @@ public:
 	std::string name() const;
 	std::string val() const;
 	std::string displayName() const;
+
+	//封装添加
+   	bool operator==(const SoftDollarTier & a)
+   	{
+      	return a.name() == this->name();
+   	}
+
+   	bool operator!=(const SoftDollarTier & a)
+   	{
+      	return a.name() != this->name();
+   	}
 };
 

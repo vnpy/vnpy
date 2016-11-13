@@ -183,7 +183,7 @@ bool EReader::bufferedRead(char *buf, int size) {
 			if (!processNonBlockingSelect() && !m_pClientSocket->isSocketOK())
 				return false;
 
-		int nBytes = min(m_nMaxBufSize, size);
+		int nBytes = std::min(m_nMaxBufSize, size);
 
 		std::copy(m_buf.begin(), m_buf.begin() + nBytes, buf);
 		std::copy(m_buf.begin() + nBytes, m_buf.end(), m_buf.begin());

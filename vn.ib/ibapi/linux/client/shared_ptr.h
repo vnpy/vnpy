@@ -90,6 +90,19 @@ public:
       use_ = Use();
    }
 
+   //封装添加
+   bool operator==(const shared_ptr<X> & a)
+   {
+      return a.get() == this->get();
+   }
+
+   bool operator!=(const shared_ptr<X> & a)
+   {
+      return a.get() != this->get();
+   }
+
+
+
 private:
 
    X *ptr_;
