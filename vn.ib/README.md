@@ -34,10 +34,13 @@ shared_ptr.h和SoftDollerTier.h中加入了对象比较函数的代码，用于�
 3. vn.ib/build/lib下的vnib.so复制到vn.ib/test文件夹下，运行test.py
 4. 会出现上面的undefined symbol错误
 
+更新：编译问题已解决，需要在EClient.h和EClient.cpp中，加入EncodeField<const char*>这一对EncodeField<T>的偏特化实现（well，我并不十分确定是否该用“偏特化”这个词），具体请参考linux文件夹下的代码。
+
+但目前Linux下的编译在调用eConnect函数时会卡住，从TWS中查看会有API发起的连接处于“pending”的状态，猜测问题可能出在底层的POSIX线程锁相关的地方。
+
 ### API版本
 版本：IB API for Windows beta 9.72.18
 
 日期：2016-09-14
 
 链接：[http://interactivebrokers.github.io/](http://interactivebrokers.github.io/)
-
