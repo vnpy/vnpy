@@ -291,6 +291,11 @@ class TestApi(IbApi):
         print sys._getframe().f_code.co_name
         print locals()
     
+    #----------------------------------------------------------------------
+    def softDollarTiers(self, reqId, tiers):
+        print sys._getframe().f_code.co_name
+        print locals()
+        
         
 
 if __name__ == '__main__':
