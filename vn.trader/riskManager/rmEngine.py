@@ -20,7 +20,8 @@ from vtGateway import VtLogData
 class RmEngine(object):
     """风控引擎"""
     settingFileName = 'RM_setting.json'
-    settingFileName = os.getcwd() + '/riskManager/' + settingFileName 
+    path = os.path.abspath(os.path.dirname(__file__))
+    settingFileName = os.path.join(path, settingFileName)    
     
     name = u'风控模块'
 

@@ -3,14 +3,10 @@ ipch/
 Release/
 
 *.sdf
-*.sln
 *.suo
 *.exp
 *.pdb
-*.filters
-*.vcxproj
 *.cd
-*.vcxproj.filters
 
 # Python编译文件
 *.pyc
@@ -31,9 +27,7 @@ Release/
 # 本地持久化文件
 *.vn
 
-# word文档
-*.doc
-*.docx
+
 
 # 其他文件
 *.dump

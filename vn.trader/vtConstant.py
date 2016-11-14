@@ -68,6 +68,9 @@ EXCHANGE_NYMEX = 'NYMEX'       # IB 期货
 EXCHANGE_GLOBEX = 'GLOBEX'     # CME电子交易平台
 EXCHANGE_IDEALPRO = 'IDEALPRO' # IB外汇ECN
 
+EXCHANGE_CME = 'CME'           # CME交易所
+EXCHANGE_ICE = 'ICE'           # ICE交易所
+
 EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
 EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
 
