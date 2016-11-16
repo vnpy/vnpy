@@ -3,10 +3,14 @@ ipch/
 Release/
 
 *.sdf
+*.sln
 *.suo
 *.exp
 *.pdb
+*.filters
+*.vcxproj
 *.cd
+*.vcxproj.filters
 
 # Python编译文件
 *.pyc
@@ -27,22 +31,25 @@ Release/
 # 本地持久化文件
 *.vn
 
-
+# word文档
+*.doc
+*.docx
 
 # 其他文件
 *.dump
 *.vssettings
 *.klg
 *.lkc
+.ipynb_checkpoints
+Untitled.ipynb
+untitled
 
-<<<<<<< HEAD
 # 不想同步的
 *.local
 *.temp
 *.vt
 *.dat
-=======
 vn.ctp/build/*
 vn.lts/build/*
 .idea
->>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+CTP_connect*

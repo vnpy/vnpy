@@ -1,36 +1,5 @@
 # vn.py - 基于python的开源交易平台开发框架
 
-### 2016年vn.py项目计划回顾
-
-转眼之间已经到了2016年的四季度，感谢广大用户的支持，vn.py项目在这一年中成长得十分迅速。截止2016年10月13日，Github上的Star已经从年初的583上升到了1672，Fork也从362上升到了987。目前在Github上量化交易相关的项目里，vn.py名列全球第三，仅次于zipline和tushare。为了让社区的成员们能比较全面的了解项目近况，这里对2016年初的项目计划做个简单的回顾。
-
-**代码方面：**
-
-1. 完善飞创、易盛等相对小众接口的添加，这块将由社区驱动，作者主要负责代码检查和管理（增加了vn.xspeed、vn.sgit、vn.okcoin、vn.shzd等接口，易盛暂时还未有计划）
-
-2. 整理vn.py项目中API的具体版本号，保证封装接口的对应，这点已经有多位用户提起过，项目初期没有做详细记录所以很多API的版本号一时都较难对上（已完成）
-
-3. Linux上API的编译以及vn.trader支持（已完成）
-
-4. 基于VirtualBox的vn.py开发环境镜像，解决部分用户反映项目初期不知该如何搭建开发环境的问题，这个镜像会由官方长期维护下去（已完成）
-
-**文章方面：**
-
-1. 作者自己作为交易员的成长经历（通过知乎LIVE完成）
-
-2. vn.trader的使用教程（已完成）
-
-3. 将ta-lib（技术分析）和quantlib（金融工程和量化）整合到vn.trader中应用的教程，解决目前策略开发过程中技术指标和量化函数缺乏的问题（已完成）
-
-4. 一套关于开发基于股指交易ETF期权的CTA策略的教程（未完成，上证50指数已经基本走成一条直线，本条工作暂时看不到意义了）
-
-**社区方面：**
-
-1. 重新建设官方网站，目前使用的是托管在Github Pages上的Hexo静态博客，一来功能比较有限，二来有些用户反映Github时不时会被墙，考虑基于Flask重建一个托管在国内的官网（已完成，基于Pelican的新官网）
-
-2. 有用户提出建设互动性更强的网站作为交流平台（如论坛或者知乎Q&A类似的模式），这点在考虑中，主要制约因素是作者参与的时间，可能考虑和更多的资深用户合作是个好主意？（已完成，维恩的派论坛）
-
----
 ### 论坛
 
 新的论坛[维恩的派](http://www.vnpie.com)已经上线（感谢量衍投资对vn.py项目的支持）。
@@ -55,19 +24,17 @@
 
 6. 安装[Visual C++  Redistributable Packages for VS2013](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)，中英文随意
 
-7. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
+6. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
 
-8. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
+7. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
 
-9. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+8. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
 
-10. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
-
+9. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
 
 对于想研究API封装的用户，可以参考[vnpy.org](http://vnpy.org)上面的教程一步步操作。
 
 其他作者建议使用的软件工具：
-
 * [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
 
 * [Robomongo](https://robomongo.org/)：MongoDB的图形化客户端，方便监控和修改数据
@@ -78,59 +45,16 @@
 
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
-
-
-##### 注意:
-
-按照以上方式配置后，便可以使用vn.py的CTP, LTS, KSOTP等大多数交易接口，但在启动vtMain.py时， 你可能会遇到以下错误：
-
-```
-请先安装WindPy接口
-global name 'w' is not defined
-No module named ib.ext.Contract
-No module named websocket
-```
-
-它们分别对应Wind, IB, OKCOIN三个交易接口，如果你不使用这三个接口，可以直接忽略这些错误，不会影响使用。
-
-但如果你需要，可以通过以下方式安装其对应的库：
-
-* WIND - 到[大奖章网站](http://www.dajiangzhang.com/document)注册并下载安装**Wind资讯开放应用接口**个人版即可，使用机构版Wind终端的用户可以直接在终端里安装Python接口
-
-* IB - 参考https://github.com/blampe/IbPy， 基本上是两步：
-
-```
-git clone https://github.com/blampe/IbPy.git
-
-cd IbPy
-python setup.py install
-
-```
-* OKCOIN - ```pip install websocket-client``` or ```conda install websocket-client```
-
-
 ---
-### How To Contribute
+### 2016年vn.py项目计划
 
-vn.py使用github托管其源代码，贡献代码使用github的PR(Pull Request)的流程，十分的强大与便利:
+首先要感谢所有vn.py用户，是你们的热情让vn.py项目在2015年从最初单纯的交易API接口Python封装一步步成长为现在较为全面的交易程序开发框架。
 
-1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
+截止2016年2月15日，vn.py项目在Github上收获了583个Star和362个Fork，且已有6位贡献者提交了代码。项目的用户包括：私募基金，证券自营、资管，期货公司，高校的金融研究院系，个人投资者等，机构用户加起来至少20多家（和作者交流过的）。
 
-2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
+**总结一下项目当前取得的进展**
 
-3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
-
-4. 在**dev**修改并将修改push到你的fork上
-
-5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
-
-6. 等待review, 需要继续改进，或者被Merge!
-
----
-
-### vn.py项目结构
-
-1. 丰富的Python交易和数据API接口，基本覆盖了国内外所有常规交易品种（股票、期货、期权、外汇、外盘、比特币），具体包括：
+1. 较为丰富的Python交易和数据API接口，基本覆盖了国内所有常规交易品种（股票、期货、期权），具体包括：
 	
 	* CTP（vn.ctp）
 	
@@ -142,23 +66,9 @@ vn.py使用github托管其源代码，贡献代码使用github的PR(Pull Request
 	
 	* 金仕达期权（vn.ksotp）
 	
-	* 飞鼠（vn.sgit）
-
-	* 飞创（vn.xspeed）
-	
-	* OANDA（vn.oanda）
-
-	* OKCOIN比特币（vn.okcoin）
-
-	* 上海直达期货（vn.shzd）
-
-	* Interactive Brokers（vn.ib目前在开发中）
-	
 	* 通联数据（vn.datayes）
 
 2. 简洁易用的事件驱动引擎（vn.event），作为事件驱动型交易程序的核心
-
-3. 支持服务器端数据推送的RPC框架（vn.rpc），用于实现多进程分布式架构的交易系统
 
 3. 针对如何使用API和事件驱动引擎开发交易程序的示例（vn.demo）
 
@@ -173,6 +83,36 @@ vn.py使用github托管其源代码，贡献代码使用github的PR(Pull Request
 5. [官网](http://vnpy.org)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容目前主要是《Python量化交易平台开发教程系列》，以及vn.py项目进展的更新
 
 6. 官方交流QQ群262656087，管理较严格（定期清除长期潜水的成员）
+
+**展望一下项目2016年的计划**
+
+代码方面：
+
+1. 完善飞创、易盛等相对小众接口的添加，这块将由社区驱动，作者主要负责代码检查和管理
+
+2. 整理vn.py项目中API的具体版本号，保证封装接口的对应，这点已经有多位用户提起过，项目初期没有做详细记录所以很多API的版本号一时都较难对上
+
+3. Linux上API的编译以及vn.trader支持
+
+4. 基于VirtualBox的vn.py开发环境镜像，解决部分用户反映项目初期不知该如何搭建开发环境的问题，这个镜像会由官方长期维护下去
+
+文章方面：
+
+1.作者自己作为交易员的成长经历（这一年来收到好多人关于如何成为Quant、建议看什么书、怎么选学校等类似的问题，与其零散的回答不如介绍下自己的一些经历给大家参考可能更有帮助）
+
+2. vn.trader的使用教程（目前基本除了代码里的注释什么都没有...）
+
+3. 将ta-lib（技术分析）和quantlib（金融工程和量化）整合到vn.trader中应用的教程，解决目前策略开发过程中技术指标和量化函数缺乏的问题
+
+4. 一套关于开发基于股指交易ETF期权的CTA策略的教程（股指期货短时间内还看不到恢复的希望，咱得另谋出路）
+
+社区方面：
+
+1. 重新建设官方网站，目前使用的是托管在Github Pages上的Hexo静态博客，一来功能比较有限，二来有些用户反映Github时不时会被墙，考虑基于Flask重建一个托管在国内的官网
+
+2. 有用户提出建设互动性更强的网站作为交流平台（如论坛或者知乎Q&A类似的模式），这点在考虑中，主要制约因素是作者参与的时间，可能考虑和更多的资深用户合作是个好主意？
+
+**最后，2016年，Happy Trading!!!**
 
 ---
 ### 联系作者
