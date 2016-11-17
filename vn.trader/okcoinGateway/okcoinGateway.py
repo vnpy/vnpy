@@ -14,6 +14,7 @@ import json
 from datetime import datetime
 from copy import copy
 from threading import Condition
+from Queue import Queue
 
 import vnokcoin
 from vtGateway import *
@@ -107,8 +108,7 @@ class OkcoinGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
+        fileName = os.getcwd() + '/okcoinGateway/' + fileName
         
         try:
             f = file(fileName)
@@ -181,7 +181,7 @@ class OkcoinGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        pass
+        self.api.close()
         
     #----------------------------------------------------------------------
     def initQuery(self):
@@ -244,6 +244,12 @@ class Api(vnokcoin.OkCoinApi):
         
         self.lastOrderID = ''
         self.orderCondition = Condition()
+        
+        self.localNo = 0                # 本地委托号
+        self.localNoQueue = Queue()     # 未收到系统委托号的本地委托号队列
+        self.localNoDict = {}           # key为本地委托号，value为系统委托号
+        self.orderIdDict = {}           # key为系统委托号，value为本地委托号
+        self.cancelDict = {}            # key为本地委托号，value为撤单请求
         
         self.initCallback()
         
@@ -479,25 +485,28 @@ class Api(vnokcoin.OkCoinApi):
             return
         rawData = data['data']
         
+        # 本地和系统委托号
+        orderId = str(rawData['orderId'])
+        localNo = self.orderIdDict[orderId]
+        
         # 委托信息
-        orderID = str(rawData['orderId'])
-        if orderID not in self.orderDict:
+        if orderId not in self.orderDict:
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
             order.symbol = spotSymbolMap[rawData['symbol']]
             order.vtSymbol = order.symbol
     
-            order.orderID = str(rawData['orderId'])
+            order.orderID = localNo
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             
             order.price = float(rawData['tradeUnitPrice'])
             order.totalVolume = float(rawData['tradeAmount'])
             order.direction, priceType = priceTypeMap[rawData['tradeType']]    
             
-            self.orderDict[orderID] = order
+            self.orderDict[orderId] = order
         else:
-            order = self.orderDict[orderID]
+            order = self.orderDict[orderId]
             
         order.tradedVolume = float(rawData['completedTradeAmount'])
         order.status = statusMap[rawData['status']]
@@ -515,7 +524,7 @@ class Api(vnokcoin.OkCoinApi):
             trade.tradeID = str(rawData['id'])
             trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
             
-            trade.orderID = str(rawData['orderId'])
+            trade.orderID = localNo
             trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
             
             trade.price = float(rawData['sigTradePrice'])
@@ -533,25 +542,30 @@ class Api(vnokcoin.OkCoinApi):
         rawData = data['data']
         
         for d in rawData['orders']:
-            orderID = str(d['order_id'])
+            self.localNo += 1
+            localNo = str(self.localNo)
+            orderId = str(d['order_id'])
             
-            if orderID not in self.orderDict:
+            self.localNoDict[localNo] = orderId
+            self.orderIdDict[orderId] = localNo
+            
+            if orderId not in self.orderDict:
                 order = VtOrderData()
                 order.gatewayName = self.gatewayName
                 
                 order.symbol = spotSymbolMap[d['symbol']]
                 order.vtSymbol = order.symbol
     
-                order.orderID = str(d['order_id'])
+                order.orderID = localNo
                 order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
                 
                 order.price = d['price']
                 order.totalVolume = d['amount']
                 order.direction, priceType = priceTypeMap[d['type']]
                 
-                self.orderDict[orderID] = order
+                self.orderDict[orderId] = order
             else:
-                order = self.orderDict[orderID]
+                order = self.orderDict[orderId]
                 
             order.tradedVolume = d['deal_amount']
             order.status = statusMap[d['status']]            
@@ -614,12 +628,22 @@ class Api(vnokcoin.OkCoinApi):
     def onSpotTrade(self, data):
         """委托回报"""
         rawData = data['data']
-        self.lastOrderID = rawData['order_id']
+        orderId = rawData['order_id']
         
-        # 收到委托号后，通知发送委托的线程返回委托号
-        self.orderCondition.acquire()
-        self.orderCondition.notify()
-        self.orderCondition.release()
+        # 尽管websocket接口的委托号返回是异步的，但经过测试是
+        # 符合先发现回的规律，因此这里通过queue获取之前发送的
+        # 本地委托号，并把它和推送的系统委托号进行映射
+        localNo = self.localNoQueue.get_nowait()
+        
+        self.localNoDict[localNo] = orderId
+        self.orderIdDict[orderId] = localNo
+        
+        # 检查是否有系统委托号返回前就发出的撤单请求，若有则进
+        # 行撤单操作
+        if localNo in self.cancelDict:
+            req = self.cancelDict[localNo]
+            self.spotCancel(req)
+            del self.cancelDict[localNo]
     
     #----------------------------------------------------------------------
     def onSpotCancelOrder(self, data):
@@ -633,21 +657,25 @@ class Api(vnokcoin.OkCoinApi):
         type_ = priceTypeMapReverse[(req.direction, req.priceType)]
         self.spotTrade(symbol, type_, str(req.price), str(req.volume))
         
-        # 等待发单回调推送委托号信息
-        self.orderCondition.acquire()
-        self.orderCondition.wait()
-        self.orderCondition.release()
-        
-        vtOrderID = '.'.join([self.gatewayName, self.lastOrderID])
-        self.lastOrderID = ''
+        # 本地委托号加1，并将对应字符串保存到队列中，返回基于本地委托号的vtOrderID
+        self.localNo += 1
+        self.localNoQueue.put(str(self.localNo))
+        vtOrderID = '.'.join([self.gatewayName, str(self.localNo)])
         return vtOrderID
     
     #----------------------------------------------------------------------
     def spotCancel(self, req):
         """撤单"""
         symbol = spotSymbolMapReverse[req.symbol][:4]
-        self.spotCancelOrder(symbol, req.orderID)
+        localNo = req.orderID
         
+        if localNo in self.localNoDict:
+            orderID = self.localNoDict[localNo]
+            self.spotCancelOrder(symbol, orderID)
+        else:
+            # 如果在系统委托号返回前客户就发送了撤单请求，则保存
+            # 在cancelDict字典中，等待返回后执行撤单任务
+            self.cancelDict[localNo] = req
     
 #----------------------------------------------------------------------
 def generateDateTime(s):

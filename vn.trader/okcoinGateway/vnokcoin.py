@@ -167,6 +167,13 @@ class OkCoinApi(object):
         self.thread.start()
         
     #----------------------------------------------------------------------
+    def close(self):
+        """关闭接口"""
+        if self.thread.isAlive:
+            self.ws.close()
+            self.thread.join()
+        
+    #----------------------------------------------------------------------
     def sendMarketDataRequest(self, channel):
         """发送行情请求"""
         # 生成请求
