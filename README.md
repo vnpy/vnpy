@@ -1,5 +1,24 @@
 # vn.py - 基于python的开源交易平台开发框架
 
+### 本分支说明
+bin: 可执行入口文件
+
+conf: 配置文件
+
+res: 资源文件
+
+vnpy: 项目主目录
+
+    engine: 界面引擎
+
+    event: 底层事件引擎
+
+    ext: c/c++扩展
+
+    gate: 接口对接网关
+
+    utils: 工具函数等
+
 ### 论坛
 
 新的论坛[维恩的派](http://www.vnpie.com)已经上线（感谢量衍投资对vn.py项目的支持）。
