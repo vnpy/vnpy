@@ -1,7 +1,7 @@
 {
     "brokerID": "9999", 
-    "tdAddress": "tcp://180.168.146.187:10000", 
-    "password": "simnow申请", 
-    "mdAddress": "tcp://180.168.212.228:41213", 
-    "userID": "simnow申请"
+    "tdAddress": "tcp://140.206.81.6:37776", 
+    "password": "888888", 
+    "mdAddress": "tcp://140.206.81.6:37777", 
+    "userID": "0600035"
 }

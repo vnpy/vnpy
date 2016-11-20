@@ -1259,6 +1259,10 @@ class CtpTdApi(TdApi):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
             
+            # 设置数据同步模式为推送从今日开始所有数据
+            self.subscribePrivateTopic(0)
+            self.subscribePublicTopic(0)            
+            
             # 注册服务器地址
             self.registerFront(self.address)
             

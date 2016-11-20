@@ -46,7 +46,7 @@ exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
 exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
-exchangeMap[EXCHANGE_SSE] = 'SSE'
+exchangeMap[EXCHANGE_SGE] = 'SGE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
@@ -477,6 +477,10 @@ class SgitTdApi(TdApi):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
             
+            # 设置数据同步模式为推送从今日开始所有数据
+            self.subscribePrivateTopic(0)
+            self.subscribePublicTopic(0)            
+            
             # 注册服务器地址
             self.registerFront(self.address)
             
@@ -520,6 +524,7 @@ class SgitTdApi(TdApi):
         """发单"""
         self.reqID += 1
         self.orderRef += 1
+        orderRef = str(self.orderRef).rjust(10, '0')
         
         req = {}
         
@@ -532,7 +537,7 @@ class SgitTdApi(TdApi):
         req['Direction'] = directionMap.get(orderReq.direction, '')
         req['CombOffsetFlag'] = offsetMap.get(orderReq.offset, '')
             
-        req['OrderRef'] = str(self.orderRef)
+        req['OrderRef'] = orderRef
         req['InvestorID'] = self.userID
         req['UserID'] = self.userID
         req['BrokerID'] = self.brokerID
@@ -558,7 +563,8 @@ class SgitTdApi(TdApi):
         self.reqOrderInsert(req, self.reqID)
         
         # 返回订单号（字符串），便于某些算法进行动态管理
-        vtOrderID = '.'.join([self.gatewayName, str(self.orderRef)])
+        vtOrderID = '.'.join([self.gatewayName, orderRef])
+
         return vtOrderID
     
     #----------------------------------------------------------------------
@@ -577,6 +583,7 @@ class SgitTdApi(TdApi):
         req['ActionFlag'] = defineDict['THOST_FTDC_AF_Delete']
         req['BrokerID'] = self.brokerID
         req['InvestorID'] = self.userID
+        req['UserID'] = self.userID
         
         self.reqOrderAction(req, self.reqID)
         
@@ -1033,7 +1040,7 @@ class SgitTdApi(TdApi):
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
-        self.gateway.onError(err)
+        self.gateway.onError(err)    
         
     #----------------------------------------------------------------------
     def onRtnOrder(self, data):
@@ -1115,7 +1122,7 @@ class SgitTdApi(TdApi):
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
         err.errorMsg = error['ErrorMsg'].decode('gbk')
-        self.gateway.onError(err)
+        self.gateway.onError(err)      
         
     #----------------------------------------------------------------------
     def onRtnInstrumentStatus(self, data):
