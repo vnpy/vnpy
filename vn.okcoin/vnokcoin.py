@@ -169,7 +169,7 @@ class OkCoinApi(object):
     #----------------------------------------------------------------------
     def close(self):
         """关闭接口"""
-        if self.thread.isAlive:
+        if self.thread and self.thread.isAlive:
             self.ws.close()
             self.thread.join()
         
