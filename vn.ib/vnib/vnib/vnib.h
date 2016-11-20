@@ -243,7 +243,7 @@ public:
 
 	VnIbApi()
 	{
-		this->signal = EReaderOSSignal();
+		this->signal = EReaderOSSignal(2000);
 		this->wrapper = new IbWrapper(this);
 		this->client = new EClientSocket(this->wrapper, &this->signal);
 	};

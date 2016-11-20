@@ -6,5 +6,5 @@ CXX_FLAGS =  -fPIC -std=c++11 -O3 -DNDEBUG -fPIC
 
 CXX_DEFINES = -DBUILD_IB -DUSE_64BITS -Dtwsapi_EXPORTS
 
-CXX_INCLUDES = -I/home/vnpy/桌面/vn.ib/ibapi/linux/IB_PATH 
+CXX_INCLUDES = -I/home/vnpy/桌面/new/vn.ib/ibapi/linux/IB_PATH 
 

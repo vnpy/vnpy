@@ -1,4 +1,4 @@
-The system is: Linux - 4.4.0-22-generic - x86_64
+The system is: Linux - 4.4.0-47-generic - x86_64
 Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
 Compiler: /usr/bin/c++ 
 Build flags: 
@@ -10,33 +10,33 @@ The output was:
 
 Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
 
-The CXX compiler identification is GNU, found in "/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/3.5.1/CompilerIdCXX/a.out"
+The CXX compiler identification is GNU, found in "/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/3.5.1/CompilerIdCXX/a.out"
 
 Determining if the CXX compiler works passed with the following output:
-Change Dir: /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
+Change Dir: /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_22a96/fast"
-/usr/bin/make -f CMakeFiles/cmTC_22a96.dir/build.make CMakeFiles/cmTC_22a96.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_22a96.dir/testCXXCompiler.cxx.o
-/usr/bin/c++      -o CMakeFiles/cmTC_22a96.dir/testCXXCompiler.cxx.o -c /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
-Linking CXX executable cmTC_22a96
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_22a96.dir/link.txt --verbose=1
-/usr/bin/c++        CMakeFiles/cmTC_22a96.dir/testCXXCompiler.cxx.o  -o cmTC_22a96 -rdynamic 
-make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Run Build Command:"/usr/bin/make" "cmTC_8bd57/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8bd57.dir/build.make CMakeFiles/cmTC_8bd57.dir/build
+make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_8bd57.dir/testCXXCompiler.cxx.o
+/usr/bin/c++      -o CMakeFiles/cmTC_8bd57.dir/testCXXCompiler.cxx.o -c /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_8bd57
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8bd57.dir/link.txt --verbose=1
+/usr/bin/c++        CMakeFiles/cmTC_8bd57.dir/testCXXCompiler.cxx.o  -o cmTC_8bd57 -rdynamic 
+make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
 
 
 Detecting CXX compiler ABI info compiled with the following output:
-Change Dir: /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
+Change Dir: /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_83c0a/fast"
-/usr/bin/make -f CMakeFiles/cmTC_83c0a.dir/build.make CMakeFiles/cmTC_83c0a.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o
-/usr/bin/c++      -o CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.5/Modules/CMakeCXXCompilerABI.cpp
-Linking CXX executable cmTC_83c0a
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_83c0a.dir/link.txt --verbose=1
-/usr/bin/c++       -v CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_83c0a -rdynamic  
+Run Build Command:"/usr/bin/make" "cmTC_0dd02/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0dd02.dir/build.make CMakeFiles/cmTC_0dd02.dir/build
+make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/c++      -o CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.5/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_0dd02
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0dd02.dir/link.txt --verbose=1
+/usr/bin/c++       -v CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_0dd02 -rdynamic  
 Using built-in specs.
 COLLECT_GCC=/usr/bin/c++
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper
@@ -46,23 +46,23 @@ Thread model: posix
 gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) 
 COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/5/../../../:/lib/:/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_83c0a' '-rdynamic' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-linux-gnu/5/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/ccs9GElT.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro -o cmTC_83c0a /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/5/../../.. CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o
-make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0dd02' '-rdynamic' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-linux-gnu/5/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/ccv03fo8.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro -o cmTC_0dd02 /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/5/../../.. CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o
+make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
 
 
 Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp]
+  ignore line: [Change Dir: /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_83c0a/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_83c0a.dir/build.make CMakeFiles/cmTC_83c0a.dir/build]
-  ignore line: [make[1]: Entering directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building CXX object CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [/usr/bin/c++      -o CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.5/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [Linking CXX executable cmTC_83c0a]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_83c0a.dir/link.txt --verbose=1]
-  ignore line: [/usr/bin/c++       -v CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_83c0a -rdynamic  ]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_0dd02/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_0dd02.dir/build.make CMakeFiles/cmTC_0dd02.dir/build]
+  ignore line: [make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/c++      -o CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.5/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_0dd02]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0dd02.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/c++       -v CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_0dd02 -rdynamic  ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/c++]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper]
@@ -72,13 +72,13 @@ Parsed CXX implicit link information from above output:
   ignore line: [gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.4) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/5/:/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/5/../../../:/lib/:/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_83c0a' '-rdynamic' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-linux-gnu/5/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/ccs9GElT.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro -o cmTC_83c0a /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/5/../../.. CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0dd02' '-rdynamic' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/5/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/ccv03fo8.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro -o cmTC_0dd02 /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/5/../../.. CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o]
     arg [/usr/lib/gcc/x86_64-linux-gnu/5/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/ccs9GElT.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccv03fo8.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -96,7 +96,7 @@ Parsed CXX implicit link information from above output:
     arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
     arg [-zrelro] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_83c0a] ==> ignore
+    arg [cmTC_0dd02] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o] ==> ignore
@@ -108,7 +108,7 @@ Parsed CXX implicit link information from above output:
     arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
     arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
     arg [-L/usr/lib/gcc/x86_64-linux-gnu/5/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/5/../../..]
-    arg [CMakeFiles/cmTC_83c0a.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_0dd02.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lstdc++] ==> lib [stdc++]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -138,17 +138,17 @@ Parsed CXX implicit link information from above output:
 
 
 Detecting CXX [-std=c++14] compiler features compiled with the following output:
-Change Dir: /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
+Change Dir: /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_90ee8/fast"
-/usr/bin/make -f CMakeFiles/cmTC_90ee8.dir/build.make CMakeFiles/cmTC_90ee8.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_90ee8.dir/feature_tests.cxx.o
-/usr/bin/c++     -std=c++14 -o CMakeFiles/cmTC_90ee8.dir/feature_tests.cxx.o -c /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_90ee8
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_90ee8.dir/link.txt --verbose=1
-/usr/bin/c++        CMakeFiles/cmTC_90ee8.dir/feature_tests.cxx.o  -o cmTC_90ee8 -rdynamic 
-make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Run Build Command:"/usr/bin/make" "cmTC_b7a02/fast"
+/usr/bin/make -f CMakeFiles/cmTC_b7a02.dir/build.make CMakeFiles/cmTC_b7a02.dir/build
+make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_b7a02.dir/feature_tests.cxx.o
+/usr/bin/c++     -std=c++14 -o CMakeFiles/cmTC_b7a02.dir/feature_tests.cxx.o -c /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_b7a02
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b7a02.dir/link.txt --verbose=1
+/usr/bin/c++        CMakeFiles/cmTC_b7a02.dir/feature_tests.cxx.o  -o cmTC_b7a02 -rdynamic 
+make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
 
 
     Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
@@ -211,17 +211,17 @@ make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles
 
 
 Detecting CXX [-std=c++11] compiler features compiled with the following output:
-Change Dir: /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
+Change Dir: /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_17010/fast"
-/usr/bin/make -f CMakeFiles/cmTC_17010.dir/build.make CMakeFiles/cmTC_17010.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_17010.dir/feature_tests.cxx.o
-/usr/bin/c++     -std=c++11 -o CMakeFiles/cmTC_17010.dir/feature_tests.cxx.o -c /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_17010
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_17010.dir/link.txt --verbose=1
-/usr/bin/c++        CMakeFiles/cmTC_17010.dir/feature_tests.cxx.o  -o cmTC_17010 -rdynamic 
-make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Run Build Command:"/usr/bin/make" "cmTC_8eede/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8eede.dir/build.make CMakeFiles/cmTC_8eede.dir/build
+make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_8eede.dir/feature_tests.cxx.o
+/usr/bin/c++     -std=c++11 -o CMakeFiles/cmTC_8eede.dir/feature_tests.cxx.o -c /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_8eede
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8eede.dir/link.txt --verbose=1
+/usr/bin/c++        CMakeFiles/cmTC_8eede.dir/feature_tests.cxx.o  -o cmTC_8eede -rdynamic 
+make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
 
 
     Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
@@ -284,17 +284,17 @@ make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles
 
 
 Detecting CXX [-std=c++98] compiler features compiled with the following output:
-Change Dir: /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
+Change Dir: /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_5d007/fast"
-/usr/bin/make -f CMakeFiles/cmTC_5d007.dir/build.make CMakeFiles/cmTC_5d007.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_5d007.dir/feature_tests.cxx.o
-/usr/bin/c++     -std=c++98 -o CMakeFiles/cmTC_5d007.dir/feature_tests.cxx.o -c /home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_5d007
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5d007.dir/link.txt --verbose=1
-/usr/bin/c++        CMakeFiles/cmTC_5d007.dir/feature_tests.cxx.o  -o cmTC_5d007 -rdynamic 
-make[1]: Leaving directory '/home/vnpy/桌面/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Run Build Command:"/usr/bin/make" "cmTC_bd8e6/fast"
+/usr/bin/make -f CMakeFiles/cmTC_bd8e6.dir/build.make CMakeFiles/cmTC_bd8e6.dir/build
+make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_bd8e6.dir/feature_tests.cxx.o
+/usr/bin/c++     -std=c++98 -o CMakeFiles/cmTC_bd8e6.dir/feature_tests.cxx.o -c /home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_bd8e6
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bd8e6.dir/link.txt --verbose=1
+/usr/bin/c++        CMakeFiles/cmTC_bd8e6.dir/feature_tests.cxx.o  -o cmTC_bd8e6 -rdynamic 
+make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/CMakeTmp'
 
 
     Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers

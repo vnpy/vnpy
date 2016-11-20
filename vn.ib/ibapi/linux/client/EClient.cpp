@@ -38,6 +38,12 @@ void EClient::EncodeField(std::ostream& os, T value)
 }
 
 template<>
+void EClient::EncodeField<const char*>(std::ostream& os, const char* str)
+{
+	os << str << '\0';
+}
+
+template<>
 void EClient::EncodeField<bool>(std::ostream& os, bool boolValue)
 {
 	EncodeField<int>(os, boolValue ? 1 : 0);
