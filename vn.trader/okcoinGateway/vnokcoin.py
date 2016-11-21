@@ -167,6 +167,22 @@ class OkCoinApi(object):
         self.thread.start()
         
     #----------------------------------------------------------------------
+    def reconnect(self):
+        """重新连接"""
+        # 首先关闭之前的连接
+        self.close()
+        
+        # 再执行重连任务
+        self.ws = websocket.WebSocketApp(self.host, 
+                                         on_message=self.onMessage,
+                                         on_error=self.onError,
+                                         on_close=self.onClose,
+                                         on_open=self.onOpen)        
+    
+        self.thread = Thread(target=self.ws.run_forever)
+        self.thread.start()
+        
+    #----------------------------------------------------------------------
     def close(self):
         """关闭接口"""
         if self.thread and self.thread.isAlive:
@@ -184,7 +200,12 @@ class OkCoinApi(object):
         
         # 使用json打包并发送
         j = json.dumps(d)
-        self.ws.send(j)
+        
+        # 若触发异常则重连
+        try:
+            self.ws.send(j)
+        except websocket.WebSocketConnectionClosedException:
+            pass
         
     #----------------------------------------------------------------------
     def sendTradingRequest(self, channel, params):
@@ -202,7 +223,12 @@ class OkCoinApi(object):
         
         # 使用json打包并发送
         j = json.dumps(d)
-        self.ws.send(j)        
+        
+        # 若触发异常则重连
+        try:
+            self.ws.send(j)
+        except websocket.WebSocketConnectionClosedException:
+            pass 
     
     #######################
     ## 现货相关
