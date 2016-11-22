@@ -272,8 +272,9 @@ if __name__ == '__main__':
     # 跑优化
     setting = OptimizationSetting()                 # 新建一个优化任务设置对象
     setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
-    setting.addParameter('atrLength', 11, 20, 1)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
+    setting.addParameter('atrLength', 12, 20, 2)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
     setting.addParameter('atrMa', 20, 30, 5)        # 增加第二个优化参数atrMa，起始20，结束30，步进1
+    setting.addParameter('rsiLength', 5)            # 增加一个固定数值的参数
     
     # 性能测试环境：I7-3770，主频3.4G, 8核心，内存16G，Windows 7 专业版
     # 测试时还跑着一堆其他的程序，性能仅供参考
@@ -281,9 +282,9 @@ if __name__ == '__main__':
     start = time.time()
     
     # 运行单进程优化函数，自动输出结果，耗时：359秒
-    #engine.runOptimization(AtrRsiStrategy, setting)            
+    engine.runOptimization(AtrRsiStrategy, setting)            
     
     # 多进程优化，耗时：89秒
-    engine.runParallelOptimization(AtrRsiStrategy, setting)     
+    #engine.runParallelOptimization(AtrRsiStrategy, setting)     
     
     print u'耗时：%s' %(time.time()-start)

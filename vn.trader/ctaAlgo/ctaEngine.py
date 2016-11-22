@@ -481,6 +481,8 @@ class CtaEngine(object):
             
             for setting in l:
                 self.loadStrategy(setting)
+                
+        self.loadPosition()
     
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):
@@ -535,6 +537,35 @@ class CtaEngine(object):
             content = '\n'.join([u'策略%s触发异常已停止' %strategy.name,
                                 traceback.format_exc()])
             self.writeCtaLog(content)
+            
+    #----------------------------------------------------------------------
+    def savePosition(self):
+        """保存所有策略的持仓情况到数据库"""
+        for strategy in self.strategyDict.values():
+            flt = {'name': strategy.name,
+                   'vtSymbol': strategy.vtSymbol}
+            
+            d = {'name': strategy.name,
+                 'vtSymbol': strategy.vtSymbol,
+                 'pos': strategy.pos}
+            
+            self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
+                                     d, flt, True)
+            
+            content = '策略%s持仓保存成功' %strategy.name
+            self.writeCtaLog(content)
+    
+    #----------------------------------------------------------------------
+    def loadPosition(self):
+        """从数据库载入策略的持仓情况"""
+        for strategy in self.strategyDict.values():
+            flt = {'name': strategy.name,
+                   'vtSymbol': strategy.vtSymbol}
+            
+            cx = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+            if cx:
+                for d in cx:
+                    strategy.pos = d['pos']
 
 
 ########################################################################
