@@ -165,11 +165,14 @@ class CtpGateway(VtGateway):
     def close(self):
         """关闭"""
         if self.mdConnected and self.mdApi is not None:
-            self.mdApi.close()
+            tmp1 = self.mdApi
             self.mdApi = None
+            tmp1.close()
+
         if self.tdConnected and self.tdApi is not None:
-            self.tdApi.close()
+            tmp2 = self.tdApi
             self.tdApi = None
+            tmp2.close()
 
         log = VtLogData()
         log.gatewayName = self.gatewayName
@@ -688,7 +691,7 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
-        pas
+        pass
     
     #----------------------------------------------------------------------
     def onRspExecOrderInsert(self, data, error, n, last):
