@@ -420,21 +420,13 @@ class Api(vnokcoin.OkCoinApi):
         tick.bidPrice4, tick.bidVolume4 = rawData['bids'][3]
         tick.bidPrice5, tick.bidVolume5 = rawData['bids'][4]
         
-<<<<<<< HEAD
-        tick.askPrice1, tick.askVolume1 = rawData['asks'][0]
-        tick.askPrice2, tick.askVolume2 = rawData['asks'][1]
-        tick.askPrice3, tick.askVolume3 = rawData['asks'][2]
-        tick.askPrice4, tick.askVolume4 = rawData['asks'][3]
-        tick.askPrice5, tick.askVolume5 = rawData['asks'][4]    
-        
-        tick.date, tick.time = generateDateTime(rawData['timestamp'])
-=======
         tick.askPrice1, tick.askVolume1 = rawData['asks'][-1]
         tick.askPrice2, tick.askVolume2 = rawData['asks'][-2]
         tick.askPrice3, tick.askVolume3 = rawData['asks'][-3]
         tick.askPrice4, tick.askVolume4 = rawData['asks'][-4]
-        tick.askPrice5, tick.askVolume5 = rawData['asks'][-5]            
->>>>>>> c813ec970b241c7761a7b020bf2b70c1010b508f
+        tick.askPrice5, tick.askVolume5 = rawData['asks'][-5]     
+        
+        tick.date, tick.time = generateDateTime(rawData['timestamp'])
         
         newtick = copy(tick)
         self.gateway.onTick(newtick)
