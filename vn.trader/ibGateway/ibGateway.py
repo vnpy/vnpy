@@ -561,6 +561,7 @@ class IbWrapper(IbApi):
         trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])  
     
         trade.orderID = str(execution.orderId)
+        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderId])
         trade.direction = directionMapReverse.get(execution.side, '')
         trade.price = execution.price
         trade.volume = execution.shares
