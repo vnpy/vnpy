@@ -80,9 +80,9 @@ class CtaStrategyManager(QtGui.QGroupBox):
         self.paramMonitor = CtaValueMonitor(self)
         self.varMonitor = CtaValueMonitor(self)
         
-        maxHeight = 60
-        self.paramMonitor.setMaximumHeight(maxHeight)
-        self.varMonitor.setMaximumHeight(maxHeight)
+        height = 60
+        self.paramMonitor.setFixedHeight(height)
+        self.varMonitor.setFixedHeight(height)
         
         buttonInit = QtGui.QPushButton(u'初始化')
         buttonStart = QtGui.QPushButton(u'启动')
