@@ -78,6 +78,7 @@ EXCHANGE_GLOBEX = 'GLOBEX'     # CME电子交易平台
 EXCHANGE_IDEALPRO = 'IDEALPRO' # IB外汇ECN
 
 EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
+EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元

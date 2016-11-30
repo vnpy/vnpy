@@ -609,8 +609,6 @@ class PositionMonitor(BasicMonitor):
 
         self.initTable()
         self.registerEvent()
-
-        
         
 ########################################################################
 class AccountMonitor(BasicMonitor):
@@ -638,7 +636,6 @@ class AccountMonitor(BasicMonitor):
         self.setFont(BASIC_FONT)
         self.initTable()
         self.registerEvent()
-
 
 ########################################################################
 class TradingWidget(QtGui.QFrame):
@@ -745,7 +742,6 @@ class TradingWidget(QtGui.QFrame):
         self.comboPriceType.addItems(self.priceTypeList)
         
         self.comboExchange = QtGui.QComboBox()
-
         self.comboExchange.addItems(self.exchangeList)
         
         self.comboCurrency = QtGui.QComboBox()

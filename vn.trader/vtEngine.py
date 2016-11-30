@@ -28,7 +28,7 @@ class MainEngine(object):
         self.eventEngine.start()
         
         # 创建数据引擎
-        self.dataEngine = DataEngine(self.eventEngine)
+        self.dataEngine = DataEngine(self, self.eventEngine)
         
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
@@ -61,7 +61,7 @@ class MainEngine(object):
 
             self.addGateway(CtpGateway, 'CTP_EBF')
             self.gatewayDict['CTP_EBF'].setQryEnabled(True)
-        except Exception, e:
+        except Exception as e:
             print e
 
         """
@@ -125,8 +125,16 @@ class MainEngine(object):
             self.gatewayDict['OANDA'].setQryEnabled(True)
         except Exception, e:
             print e
+
+        try:
+            from okcoinGateway.okcoinGateway import OkcoinGateway
+            self.addGateway(OkcoinGateway, 'OKCOIN')
+            self.gatewayDict['OKCOIN'].setQryEnabled(True)
+        except Exception, e:
+            print e
         """
-    # ----------------------------------------------------------------------
+
+    #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
         """创建接口"""
         self.gatewayDict[gatewayName] = gateway(self.eventEngine, gatewayName)
@@ -208,6 +216,9 @@ class MainEngine(object):
         # 停止事件引擎
         self.eventEngine.stop()      
         
+        # 停止数据记录引擎
+        self.drEngine.stop()
+
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
 
@@ -288,6 +299,7 @@ class MainEngine(object):
     def clearData(self):
         """清空数据引擎的数据"""
         self.dataEngine.clearData()
+        self.ctaEngine.clearData()
 
     def saveData(self):
         self.ctaEngine.saveStrategyData()
@@ -298,8 +310,9 @@ class DataEngine(object):
     contractFileName = 'ContractData.vt'
 
     # ----------------------------------------------------------------------
-    def __init__(self, eventEngine):
+    def __init__(self, mainEngine, eventEngine):
         """Constructor"""
+        self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         
         # 保存合约详细信息的字典
@@ -316,6 +329,9 @@ class DataEngine(object):
         
         # 注册事件监听
         self.registerEvent()
+
+        # 已订阅合约代码
+        self.subscribedSymbols = set()
         
     # ----------------------------------------------------------------------
     def updateContract(self, event):
@@ -386,10 +402,45 @@ class DataEngine(object):
         """注册事件监听"""
         self.eventEngine.register(EVENT_CONTRACT, self.updateContract)
         self.eventEngine.register(EVENT_ORDER, self.updateOrder)
+        self.eventEngine.register(EVENT_POSITION, self.updatePosition)
         
     def clearData(self):
         """清空数据"""
 
         self.orderDict = {}
         self.workingOrderDict = {}
-    
+        self.subscribedSymbols.clear()
+
+    def updatePosition(self,event):
+        """更新持仓信息"""
+        # 在获取更新持仓信息时，自动订阅这个symbol
+        # 目的：1、
+
+        position = event.dict_['data']
+
+        symbol = position.symbol
+
+        # 已存在，不做更新
+        if symbol in self.subscribedSymbols:
+            return
+
+        self.subscribedSymbols.add(symbol)
+
+        gatewayName = position.gatewayName
+        contract = self.mainEngine.getContract(symbol)
+
+        if not contract:
+            self.mainEngine.writeLog(u'找不到合约{0}信息'.format(symbol))
+            return
+
+        # 订阅合约
+        req = VtSubscribeReq()
+        req.symbol = symbol
+        req.exchange = contract.exchange
+        req.currency = ''
+        req.productClass = ''
+
+        self.mainEngine.subscribe(req, gatewayName)
+
+        self.mainEngine.writeLog(u'自动订阅合约{0}'.format(symbol))
+

@@ -22,9 +22,11 @@ class MainWindow(QtGui.QMainWindow):
         self.eventEngine = eventEngine
         
         self.widgetDict = {}    # 用来保存子窗口的字典
-        
+
+        self.connectGatewayDict = {}
+
         self.initUi()
-        self.loadWindowSettings()
+        #self.loadWindowSettings()
 
         self.connected = False
         self.autoDisConnect = False
@@ -32,11 +34,13 @@ class MainWindow(QtGui.QMainWindow):
         self.orderSaveDate = EMPTY_STRING
         self.barSaveDate = EMPTY_STRING
 
-        self.connectGatewayDict = {}
+
     # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle('VnTrader')
+        path = os.getcwd().rsplit('\\')[-1]
+
+        self.setWindowTitle(path)
         self.initCentral()
         self.initMenu()
         self.initStatusBar()
@@ -195,10 +199,16 @@ class MainWindow(QtGui.QMainWindow):
         self.sbCount = 0
         self.sbTrigger = 10     # 10秒刷新一次
         self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
+
         
     # ----------------------------------------------------------------------
     def updateStatusBar(self, event):
-        """在状态栏更新CPU和内存信息"""
+        """1、在状态栏更新CPU和内存信息"""
+        # 2、定时断开服务器连接
+        # 3、定时重连服务器
+        # 4、定时保存每日的委托单
+        # 5、定时执行策略的保存事件
+
         self.sbCount += 1
 
        # 更新任务栏
@@ -211,68 +221,69 @@ class MainWindow(QtGui.QMainWindow):
 
             self.statusLabel.setText(info)
 
-        if len(self.connectGatewayDict) > 0:
-            s = u''.join(str(e) for e in self.connectGatewayDict.values())
-
-            if not self.connected:
-                s = s + u' [已断开]'
-
-
-            self.setWindowTitle(s)
-
-        # 定时断开
-        if self.connected and self.trade_off() and self.autoDisConnect:
-           self.disconnect()
-           self.mainEngine.writeLog(u'断开连接{0}'.format(self.connectGatewayDict.values()))
-           self.mainEngine.writeLog(u'清空数据引擎')
-           self.mainEngine.clearData()
-           self.mainEngine.writeLog(u'清空委托列表')
-           self.widgetOrderM.clearData()
-           self.mainEngine.writeLog(u'清空交易列表')
-           self.widgetTradeM.clearData()
-
-        # 定时重连
-        if not self.connected \
-                and self.autoDisConnect \
-                and not self.trade_off()\
-                and len(self.connectGatewayDict) > 0:
-
-                self.mainEngine.writeLog(u'清空数据引擎')
-                self.mainEngine.clearData()
-                self.mainEngine.writeLog(u'清空委托列表')
-                self.widgetOrderM.clearData()
-                self.mainEngine.writeLog(u'清空交易列表')
-                self.widgetTradeM.clearData()
+            if self.connectGatewayDict:
                 s = u''.join(str(e) for e in self.connectGatewayDict.values())
-                self.mainEngine.writeLog(u'重新连接{0}'.format(s))
 
-                for key in self.connectGatewayDict.keys():
-                    self.mainEngine.connect(key)
+                if not self.connected:
+                    s = s + u' [已断开]'
 
-                self.connected = True
 
-        # 交易日收盘后保存所有委托记录，
-        dt = datetime.now()
-        today = datetime.now().strftime('%y%m%d')
-        if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0 and today!=self.orderSaveDate:
-            self.orderSaveDate = today
-            self.mainEngine.writeLog(u'保存所有委托记录')
-            orderfile = os.getcwd() +'/orders/{0}.csv'.format(self.orderSaveDate)
-            if os.path.exists(orderfile):
-                return
-            else:
-                self.widgetOrderM.saveToCsv(path=orderfile)
+                self.setWindowTitle(s)
 
-        # 调用各策略保存数据
-        if ((dt.hour == 15 and dt.minute == 1) or (dt.hour == 2 and dt.minute == 31))  \
-            and len(self.connectGatewayDict) > 0 \
-            and today != self.barSaveDate:
-            self.barSaveDate = today
-            self.mainEngine.writeLog(u'调用各策略保存数据')
-            self.mainEngine.saveData()
+            # 定时断开
+            if self.connected and self.trade_off() and self.autoDisConnect:
+               self.disconnect()
+               self.mainEngine.writeLog(u'断开连接{0}'.format(self.connectGatewayDict.values()))
+               self.mainEngine.writeLog(u'清空数据引擎')
+               self.mainEngine.clearData()
+               self.mainEngine.writeLog(u'清空委托列表')
+               self.widgetOrderM.clearData()
+               self.mainEngine.writeLog(u'清空交易列表')
+               self.widgetTradeM.clearData()
 
-        if not (dt.hour == 15 or dt.hour == 2):
-            self.barSaveDate = EMPTY_STRING
+            # 定时重连
+            if not self.connected \
+                    and self.autoDisConnect \
+                    and not self.trade_off()\
+                    and len(self.connectGatewayDict) > 0:
+
+                    self.mainEngine.writeLog(u'清空数据引擎')
+                    self.mainEngine.clearData()
+                    self.mainEngine.writeLog(u'清空委托列表')
+                    self.widgetOrderM.clearData()
+                    self.mainEngine.writeLog(u'清空交易列表')
+                    self.widgetTradeM.clearData()
+                    s = u''.join(str(e) for e in self.connectGatewayDict.values())
+                    self.mainEngine.writeLog(u'重新连接{0}'.format(s))
+
+                    for key in self.connectGatewayDict.keys():
+                        self.mainEngine.connect(key)
+
+                    self.connected = True
+
+            # 交易日收盘后保存所有委托记录，
+            dt = datetime.now()
+            today = datetime.now().strftime('%y%m%d')
+            if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0 and today!=self.orderSaveDate:
+                self.orderSaveDate = today
+                self.mainEngine.writeLog(u'保存所有委托记录')
+                orderfile = os.getcwd() +'/orders/{0}.csv'.format(self.orderSaveDate)
+                if os.path.exists(orderfile):
+                    return
+                else:
+                    self.widgetOrderM.saveToCsv(path=orderfile)
+
+            # 调用各策略保存数据
+            if ((dt.hour == 15 and dt.minute == 1) or (dt.hour == 2 and dt.minute == 31))  \
+                and len(self.connectGatewayDict) > 0 \
+                and today != self.barSaveDate \
+                and self.connected:
+                self.barSaveDate = today
+                self.mainEngine.writeLog(u'调用各策略保存数据')
+                self.mainEngine.saveData()
+
+            if not (dt.hour == 15 or dt.hour == 2):
+                self.barSaveDate = EMPTY_STRING
 
     # ----------------------------------------------------------------------
     def getCpuMemory(self):
@@ -489,7 +500,6 @@ class MainWindow(QtGui.QMainWindow):
             self.restoreGeometry(settings.value('geometry').toByteArray())
         except AttributeError:
             pass
-
 
 
     def disconnect(self):
