@@ -77,6 +77,12 @@ class CtaEngine(object):
         # key为vtSymbol，value为PositionBuffer对象
         self.posBufferDict = {}
         
+        # 引擎类型为实盘
+        self.engineType = ENGINETYPE_TRADING
+
+        # tick缓存
+        self.tickDict = {}
+
         # 注册事件监听
         self.registerEvent()
 
@@ -113,12 +119,19 @@ class CtaEngine(object):
                 # 如果获取持仓缓存失败，则默认平昨
                 if not posBuffer:
                     req.offset = OFFSET_CLOSE
-                # 否则如果有多头今仓，则使用平今
-                elif posBuffer.longToday:
-                    req.offset= OFFSET_CLOSETODAY
-                # 其他情况使用平昨
-                else:
+
+                # modified by IncenseLee 2016/11/08，改为优先平昨仓
+                elif posBuffer.longYd :
                     req.offset = OFFSET_CLOSE
+                else:
+                    req.offset = OFFSET_CLOSETODAY
+
+                # 否则如果有多头今仓，则使用平今
+                #elif posBuffer.longToday:
+                #    req.offset= OFFSET_CLOSETODAY
+                # 其他情况使用平昨
+                #else:
+                #    req.offset = OFFSET_CLOSE
                 
         elif orderType == CTAORDER_SHORT:
             req.direction = DIRECTION_SHORT
@@ -136,12 +149,19 @@ class CtaEngine(object):
                 # 如果获取持仓缓存失败，则默认平昨
                 if not posBuffer:
                     req.offset = OFFSET_CLOSE
-                # 否则如果有空头今仓，则使用平今
-                elif posBuffer.shortToday:
-                    req.offset= OFFSET_CLOSETODAY
-                # 其他情况使用平昨
-                else:
+
+                #modified by IncenseLee 2016/11/08，改为优先平昨仓
+                elif posBuffer.shortYd:
                     req.offset = OFFSET_CLOSE
+                else:
+                    req.offset = OFFSET_CLOSETODAY
+
+                # 否则如果有空头今仓，则使用平今
+                #elif posBuffer.shortToday:
+                #    req.offset= OFFSET_CLOSETODAY
+                # 其他情况使用平昨
+                #else:
+                #    req.offset = OFFSET_CLOSE
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
 
@@ -191,12 +211,18 @@ class CtaEngine(object):
         self.writeCtaLog(u'从所有订单{0}中撤销{1}'.format(len(l), symbol))
 
         for order in l:
+
+            if symbol == EMPTY_STRING:
+                symbolCond = True
+            else:
+                symbolCond = order.symbol == symbol
+
             if offset == EMPTY_STRING:
                 offsetCond = True
             else:
                 offsetCond = order.offset == offset
 
-            if order.symbol == symbol and offsetCond:
+            if symbolCond and offsetCond:
                 req = VtCancelOrderReq()
                 req.symbol = order.symbol
                 req.exchange = order.exchange
@@ -304,6 +330,9 @@ class CtaEngine(object):
         # 1. 获取事件的Tick数据
         tick = event.dict_['data']
 
+        # 缓存最新tick
+        self.tickDict[tick.vtSymbol] = tick
+
         # 2.收到tick行情后，优先处理本地停止单（检查是否要立即发出）
         self.processStopOrder(tick)
         
@@ -326,7 +355,6 @@ class CtaEngine(object):
                 today = dt.strftime('%Y%m%d')
                 ctaTick.datetime = datetime.strptime(' '.join([today, tick.time]), '%Y%m%d %H:%M:%S.%f')
                 ctaTick.date = today
-
 
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
@@ -484,7 +512,7 @@ class CtaEngine(object):
         try:
             name = setting['name']
             className = setting['className']
-        except Exception, e:
+        except Exception as e:
             self.writeCtaLog(u'载入策略出错：%s' %e)
             return
         
@@ -750,9 +778,3 @@ class PositionBuffer(object):
             else:
                 self.longPosition -= trade.volume
                 self.longYd -= trade.volume
-        
-        
-    
-    
-
-

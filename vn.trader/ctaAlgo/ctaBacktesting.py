@@ -57,6 +57,9 @@ class BacktestingEngine(object):
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
 
+        # 引擎类型为回测
+        self.engineType = ENGINETYPE_BACKTESTING
+
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
@@ -401,8 +404,7 @@ class BacktestingEngine(object):
             else:
                 self.writeCtaLog(u'MysqlDB未连接，请检查')
 
-        except MySQLdb.Error, e:
-
+        except MySQLdb.Error as e:
             self.writeCtaLog(u'MysqlDB载入数据失败，请检查.Error {0}'.format(e))
 
     def __dataToTick(self, data):
@@ -494,15 +496,14 @@ class BacktestingEngine(object):
             else:
                 self.writeCtaLog(u'MysqlDB未连接，请检查')
 
-        except MySQLdb.Error, e:
-
+        except MySQLdb.Error as e:
             self.writeCtaLog(u'MysqlDB载入数据失败，请检查.Error {0}: {1}'.format(e.arg[0],e.arg[1]))
 
         # 出错后缺省返回
         return startDate-timedelta(days=3)
 
     # ----------------------------------------------------------------------
-    def runBackTestingWithArbTickFile(self, arbSymbol):
+    def runBackTestingWithArbTickFile(self,mainPath, arbSymbol):
         """运行套利回测（使用本地tickcsv数据)
         参数：套利代码 SP rb1610&rb1701
         added by IncenseLee
@@ -567,25 +568,13 @@ class BacktestingEngine(object):
             self.output(u'回测日期:{0}'.format(testday))
 
             # 白天数据
-            self.__loadArbTicks(u'SHFE',testday,leg1,leg2)
+            self.__loadArbTicks(mainPath,testday,leg1,leg2)
 
             # 夜盘数据
-            self.__loadArbTicks(u'SHFE_night', testday, leg1, leg2)
+            self.__loadArbTicks(mainPath+'_night', testday, leg1, leg2)
 
 
     def __loadArbTicks(self,mainPath,testday,leg1,leg2):
-
-        leg1File = u'z:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}.txt' \
-            .format(mainPath,testday.strftime('%Y%m'), self.symbol, testday.strftime('%m%d'), leg1)
-        if not os.path.isfile(leg1File):
-            self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
-            return
-
-        leg2File =  u'z:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}.txt' \
-            .format(mainPath,testday.strftime('%Y%m'), self.symbol, testday.strftime('%m%d'), leg2)
-        if not os.path.isfile(leg2File):
-            self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
-            return
 
         self.writeCtaLog(u'加载回测日期:{0}\{1}的价差tick'.format(mainPath, testday))
 
@@ -593,12 +582,28 @@ class BacktestingEngine(object):
 
         arbTicks = self.__loadArbTicksFromLocalCache(cachefilename)
 
+        dt = None
+
         if len(arbTicks) < 1:
+
+            leg1File = u'z:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}.txt' \
+                .format(mainPath, testday.strftime('%Y%m'), self.symbol, testday.strftime('%m%d'), leg1)
+            if not os.path.isfile(leg1File):
+                self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
+                return
+
+            leg2File = u'z:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}.txt' \
+                .format(mainPath, testday.strftime('%Y%m'), self.symbol, testday.strftime('%m%d'), leg2)
+            if not os.path.isfile(leg2File):
+                self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
+                return
+
             # 先读取leg2的数据到目录，以日期时间为key
             leg2Ticks = {}
 
             leg2CsvReadFile = file(leg2File, 'rb')
-            reader = csv.DictReader((line.replace('\0', '') for line in leg2CsvReadFile), delimiter=",")
+            #reader = csv.DictReader((line.replace('\0',' ') for line in leg2CsvReadFile), delimiter=",")
+            reader = csv.DictReader(leg2CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg2File))
             for row in reader:
                 tick = CtaTickData()
@@ -607,8 +612,26 @@ class BacktestingEngine(object):
                 tick.symbol = self.symbol
 
                 tick.date = testday.strftime('%Y%m%d')
+                tick.tradingDay = tick.date
                 tick.time = row['Time']
-                tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y%m%d %H:%M:%S.%f')
+
+                try:
+                    tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y%m%d %H:%M:%S.%f')
+                except Exception as ex:
+                    self.writeCtaError(u'日期转换错误:{0},{1}:{2}'.format(tick.date + ' ' + tick.time, Exception, ex))
+                    continue
+
+                # 修正毫秒
+                if tick.datetime.replace(microsecond = 0) == dt:
+                    # 与上一个tick的时间（去除毫秒后）相同,修改为500毫秒
+                    tick.datetime=tick.datetime.replace(microsecond = 500)
+                    tick.time = tick.datetime.strftime('%H:%M:%S.%f')
+
+                else:
+                    tick.datetime = tick.datetime.replace(microsecond=0)
+                    tick.time = tick.datetime.strftime('%H:%M:%S.%f')
+
+                dt = tick.datetime
 
                 tick.lastPrice = float(row['LastPrice'])
                 tick.volume = int(float(row['LVolume']))
@@ -622,26 +645,48 @@ class BacktestingEngine(object):
                     or (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0):
                     continue
 
-                leg2Ticks[tick.date + ' ' + tick.time] = tick
+                dtStr = tick.date + ' ' + tick.time
+                if dtStr in leg2Ticks:
+                    self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
+                else:
+                    leg2Ticks[dtStr] = tick
 
             leg1CsvReadFile = file(leg1File, 'rb')
-            reader = csv.DictReader((line.replace('\0', '') for line in leg1CsvReadFile), delimiter=",")
+            #reader = csv.DictReader((line.replace('\0',' ') for line in leg1CsvReadFile), delimiter=",")
+            reader = csv.DictReader(leg1CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg1File))
 
+            dt = None
             for row in reader:
-                dtStr = ' '.join([testday.strftime('%Y%m%d'), row['Time']])
+
+                arbTick = CtaTickData()
+
+                arbTick.date = testday.strftime('%Y%m%d')
+                arbTick.time = row['Time']
+                try:
+                    arbTick.datetime = datetime.strptime(arbTick.date + ' ' + arbTick.time, '%Y%m%d %H:%M:%S.%f')
+                except Exception as ex:
+                    self.writeCtaError(u'日期转换错误:{0},{1}:{2}'.format(arbTick.date + ' ' + arbTick.time, Exception, ex))
+                    continue
+
+                # 修正毫秒
+                if arbTick.datetime.replace(microsecond=0) == dt:
+                    # 与上一个tick的时间（去除毫秒后）相同,修改为500毫秒
+                    arbTick.datetime = arbTick.datetime.replace(microsecond=500)
+                    arbTick.time = arbTick.datetime.strftime('%H:%M:%S.%f')
+
+                else:
+                    arbTick.datetime = arbTick.datetime.replace(microsecond=0)
+                    arbTick.time = arbTick.datetime.strftime('%H:%M:%S.%f')
+
+                dt = arbTick.datetime
+                dtStr = ' '.join([arbTick.date, arbTick.time])
 
                 if dtStr in leg2Ticks:
                     leg2Tick = leg2Ticks[dtStr]
 
-                    arbTick = CtaTickData()
-
                     arbTick.vtSymbol = self.symbol
                     arbTick.symbol = self.symbol
-
-                    arbTick.date = testday.strftime('%Y%m%d')
-                    arbTick.time = row['Time']
-                    arbTick.datetime = datetime.strptime(arbTick.date + ' ' + arbTick.time, '%Y%m%d %H:%M:%S.%f')
 
                     arbTick.lastPrice = EMPTY_FLOAT
                     arbTick.volume = EMPTY_INT
@@ -666,6 +711,8 @@ class BacktestingEngine(object):
                     arbTick.bidVolume1 = min(leg1BidVolume1, leg2Tick.askVolume1)
 
                     arbTicks.append(arbTick)
+
+                    del leg2Ticks[dtStr]
 
             # 保存到历史目录
             if len(arbTicks) > 0:
@@ -790,7 +837,7 @@ class BacktestingEngine(object):
                 if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
                     self.newBar(bar)
 
-            except Exception, ex:
+            except Exception as ex:
                 self.writeCtaLog(u'{0}:{1}'.format(Exception,ex))
                 continue
 
@@ -1109,8 +1156,8 @@ class BacktestingEngine(object):
                 # 从字典中删除该限价单
                 try:
                     del self.workingLimitOrderDict[orderID]
-                except Exception,ex:
-                    self.writeCtaError(u'{0}:{1}'.format(Exception,ex))
+                except Exception as ex:
+                    self.writeCtaError(u'{0}:{1}'.format(Exception, ex))
 
                 if self.calculateMode == self.REALTIME_MODE:
                     self.realtimeCalculate()
@@ -1187,6 +1234,7 @@ class BacktestingEngine(object):
                 # 从字典中删除该限价单
                 del self.workingStopOrderDict[stopOrderID]
 
+                # 若采用实时计算净值
                 if self.calculateMode == self.REALTIME_MODE:
                     self.realtimeCalculate()
 

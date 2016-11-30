@@ -196,6 +196,11 @@ class CtaLineBar(object):
         self.lineUpperBand = []            # 上轨
         self.lineMiddleBand = []           # 中线
         self.lineLowerBand = []            # 下轨
+        self.lineBollStd =[]               # 标准差
+
+        self.lastBollUpper = EMPTY_FLOAT    # 最后一根K的Boll上轨数值（与MinDiff取整）
+        self.lastBollMiddle = EMPTY_FLOAT   # 最后一根K的Boll中轨数值（与MinDiff取整）
+        self.lastBollLower = EMPTY_FLOAT    # 最后一根K的Boll下轨数值（与MinDiff取整+1）
 
         # K线的KDJ指标计算数据
         self.inputKdjLen = EMPTY_INT    # KDJ指标的长度,缺省是9
@@ -497,12 +502,14 @@ class CtaLineBar(object):
             or (tick.datetime.hour == 2 and tick.datetime.minute == 30):
             endtick = True
 
+        # 夜盘1:30收盘
         if self.shortSymbol in NIGHT_MARKET_SQ2 and tick.datetime.hour == 1 and tick.datetime.minute == 00:
             endtick = True
 
+        # 夜盘23:00收盘
         if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
             endtick = True
-
+        # 夜盘23:30收盘
         if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
             if tick.datetime.hour == 23 and tick.datetime.minute == 30:
                 endtick = True
@@ -1109,10 +1116,25 @@ class CtaLineBar(object):
             del self.lineMiddleBand[0]
         if len(self.lineLowerBand) > self.inputBollLen*8:
             del self.lineLowerBand[0]
+        if len(self.lineBollStd) > self.inputBollLen * 8:
+            del self.lineBollStd[0]
 
-        self.lineUpperBand.append(upper[-1])
-        self.lineMiddleBand.append(middle[-1])
-        self.lineLowerBand.append(lower[-1])
+        # 1标准差
+        std = (upper[-1] - lower[-1]) / (self.inputBollStdRate*2)
+        self.lineBollStd.append(std)
+
+        u = round(upper[-1], 2)
+        self.lineUpperBand.append(u)                                # 上轨
+        self.lastBollUpper = u - u % self.minDiff                   # 上轨取整
+
+        m = round(middle[-1], 2)
+        self.lineMiddleBand.append(m)                               # 中轨
+        self.lastBollMiddle = m - m % self.minDiff                  # 中轨取整
+
+        l = round(lower[-1], 2)
+        self.lineLowerBand.append(l)                                # 下轨
+        self.lastBollLower = l - l % self.minDiff     # 下轨取整
+
 
     def __recountKdj(self):
         """KDJ指标"""
@@ -1277,3 +1299,232 @@ class CtaLineBar(object):
         if DEBUGCTALOG:
             self.strategy.writeCtaLog(u'['+self.name+u'-DEBUG]'+content)
 
+
+class CtaDayBar(object):
+    """日线"""
+
+    # 区别：
+    # -使用tick模式时，当tick到达后，最新一个lineBar[-1]是当前的正在拟合的bar，不断累积tick，传统按照OnBar来计算的话，是使用LineBar[-2]。
+    # -使用bar模式时，当一个bar到达时，lineBar[-1]是当前生成出来的Bar,不再更新
+    TICK_MODE = 'tick'
+    BAR_MODE = 'bar'
+
+    # 参数列表，保存了参数的名称
+    paramList = ['vtSymbol']
+
+    def __init__(self, strategy, onBarFunc, setting=None, ):
+
+        self.paramList.append('inputPreLen')
+        self.paramList.append('minDiff')
+        self.paramList.append('shortSymbol')
+        self.paramList.append('name')
+
+        # 输入参数
+        self.name = u'DayBar'
+
+        self.mode = self.TICK_MODE
+        self.inputPreLen = EMPTY_INT  # 1
+
+        # OnBar事件回调函数
+        self.onBarFunc = onBarFunc
+
+        self.lineBar = []
+
+        self.currTick = None
+        self.lastTick = None
+
+        self.shortSymbol = EMPTY_STRING  # 商品的短代码
+        self.minDiff = 1  # 商品的最小价格单位
+
+
+    def onTick(self, tick):
+        """行情更新"""
+
+        if self.currTick is None:
+            self.currTick = tick
+
+        self.__drawLineBar(tick)
+
+        self.lastTick = tick
+
+
+    def addBar(self, bar):
+        """予以外部初始化程序增加bar"""
+        l1 = len(self.lineBar)
+
+        if l1 == 0:
+            bar.datetme = bar.datetime.replace(minute=0, second=0)
+            bar.time = bar.datetime.strftime('%H:%M:%S')
+            self.lineBar.append(bar)
+            return
+
+        # 与最后一个BAR的时间比对，判断是否超过K线的周期
+        lastBar = self.lineBar[-1]
+
+        if bar.tradingDay != lastBar.datetime:
+            bar.datetme = bar.datetime.replace(minute=0, second=0)
+            bar.time = bar.datetime.strftime('%H:%M:%S')
+            self.lineBar.append(bar)
+            self.onBar(lastBar)
+            return
+
+        # 更新最后一个bar
+        # 此段代码，针对一部分短周期生成长周期的k线更新，如3根5分钟k线，合并成1根15分钟k线。
+        lastBar.close = bar.close
+        lastBar.high = max(lastBar.high, bar.high)
+        lastBar.low = min(lastBar.low, bar.low)
+
+
+        lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, 2)
+        lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, 2)
+
+    def __firstTick(self, tick):
+        """ K线的第一个Tick数据"""
+        self.bar = CtaBarData()                  # 创建新的K线
+
+        self.bar.vtSymbol = tick.vtSymbol
+        self.bar.symbol = tick.symbol
+        self.bar.exchange = tick.exchange
+        self.bar.openInterest = tick.openInterest
+
+        self.bar.open = tick.lastPrice            # O L H C
+        self.bar.high = tick.lastPrice
+        self.bar.low = tick.lastPrice
+        self.bar.close = tick.lastPrice
+
+        # K线的日期时间
+        self.bar.tradingDay = tick.tradingDay    # K线所在的交易日期
+        self.bar.date = tick.date                # K线的日期，（夜盘的话，与交易日期不同哦）
+
+        self.bar.datetime = tick.datetime
+        # K线的日期时间（去除分钟、秒）设为第一个Tick的时间
+        self.bar.datetime = self.bar.datetime.replace(minute=0, second=0, microsecond=0)
+        self.bar.time = self.bar.datetime.strftime('%H:%M:%S')
+
+        self.barFirstTick = True                  # 标识该Tick属于该Bar的第一个tick数据
+
+        self.lineBar.append(self.bar)           # 推入到lineBar队列
+
+    # ----------------------------------------------------------------------
+    def __drawLineBar(self, tick):
+        """生成 line Bar  """
+        l1 = len(self.lineBar)
+        # 保存第一个K线数据
+        if l1 == 0:
+            self.__firstTick(tick)
+            return
+
+        # 清除480周期前的数据，
+        if l1 > 60 * 8:
+            del self.lineBar[0]
+
+        # 与最后一个BAR的时间比对，判断是否超过5分钟
+        lastBar = self.lineBar[-1]
+
+        # 处理日内的间隔时段最后一个tick，如10:15分，11:30分，15:00 和 2:30分
+        endtick = False
+        if (tick.datetime.hour == 10 and tick.datetime.minute == 15) \
+                or (tick.datetime.hour == 11 and tick.datetime.minute == 30) \
+                or (tick.datetime.hour == 15 and tick.datetime.minute == 00) \
+                or (tick.datetime.hour == 2 and tick.datetime.minute == 30):
+            endtick = True
+
+        # 夜盘1:30收盘
+        if self.shortSymbol in NIGHT_MARKET_SQ2 and tick.datetime.hour == 1 and tick.datetime.minute == 00:
+            endtick = True
+
+        # 夜盘23:00收盘
+        if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
+            endtick = True
+        # 夜盘23:30收盘
+        if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if tick.datetime.hour == 23 and tick.datetime.minute == 30:
+                endtick = True
+
+        # 满足时间要求,tick的时间(夜盘21点；或者日盘9点，上一个tick为日盘收盘时间
+        if (tick.datetime.hour == 21 or tick.datetime.hour == 9 ) and 14 <= self.lastTick.datetime.hour <= 15:
+            # 创建并推入新的Bar
+            self.__firstTick(tick)
+            # 触发OnBar事件
+            self.onBar(lastBar)
+
+        else:
+            # 更新当前最后一个bar
+            self.barFirstTick = False
+            # 更新最高价、最低价、收盘价、成交量
+            lastBar.high = max(lastBar.high, tick.lastPrice)
+            lastBar.low = min(lastBar.low, tick.lastPrice)
+            lastBar.close = tick.lastPrice
+
+
+            # 更新Bar的颜色
+            if lastBar.close > lastBar.open:
+                lastBar.color = COLOR_RED
+            elif lastBar.close < lastBar.open:
+                lastBar.color = COLOR_BLUE
+            else:
+                lastBar.color = COLOR_EQUAL
+
+    def displayLastBar(self):
+        """显示最后一个Bar的信息"""
+        msg = u'[' + self.name + u']'
+
+        if len(self.lineBar) < 2:
+            return msg
+
+        if self.mode == self.TICK_MODE:
+            displayBar = self.lineBar[-2]
+        else:
+            displayBar = self.lineBar[-1]
+
+        msg = msg + u'{0} o:{1};h{2};l:{3};c:{4}'. \
+            format(displayBar.date + ' ' + displayBar.time, displayBar.open, displayBar.high,
+                   displayBar.low, displayBar.close)
+
+        return msg
+
+    def onBar(self, bar):
+        """OnBar事件"""
+
+        self.__recountPreHighLow()
+
+        # 回调上层调用者
+        self.onBarFunc(bar)
+    # ----------------------------------------------------------------------
+    def __recountPreHighLow(self):
+        """计算 K线的前周期最高和最低"""
+
+        if self.inputPreLen <= 0: return      # 不计算
+
+        # 1、lineBar满足长度才执行计算
+        if len(self.lineBar) < self.inputPreLen:
+            self.writeCtaLog(u'数据未充分,当前{0}r数据数量：{1}，计算High、Low需要：{2}'.
+                             format(self.name, len(self.lineBar), self.inputPreLen))
+            return
+
+        # 2.计算前inputPreLen周期内(不包含当前周期）的Bar高点和低点
+        preHigh = EMPTY_FLOAT
+        preLow = EMPTY_FLOAT
+
+        if self.mode == self.TICK_MODE:
+            idx = 2
+        else:
+            idx = 1
+
+        for i in range(len(self.lineBar)-idx, len(self.lineBar)-idx-self.inputPreLen, -1):
+
+            if self.lineBar[i].high > preHigh or preHigh == EMPTY_FLOAT:
+                preHigh = self.lineBar[i].high    # 前InputPreLen周期高点
+
+            if self.lineBar[i].low < preLow or preLow == EMPTY_FLOAT:
+                preLow = self.lineBar[i].low     # 前InputPreLen周期低点
+
+        # 保存
+        if len(self.preHigh) > self.inputPreLen * 8:
+            del self.preHigh[0]
+        self.preHigh.append(preHigh)
+
+        # 保存
+        if len(self.preLow)> self.inputPreLen * 8:
+            del self.preLow[0]
+        self.preLow.append(preLow)

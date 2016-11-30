@@ -73,7 +73,6 @@ class CtaPosition:
         """平、减仓"""
 
         if direction == DIRECTION_LONG:     # 平空仓 Cover
-
             if self.pos + vol > 0:
                 self.writeCtaLog(u'异常，超出仓位，当前仓位：{0},平仓:{1}'.format(self.pos,vol))
                 self.strategy.pos = self.pos
@@ -84,7 +83,6 @@ class CtaPosition:
             self.strategy.pos = self.pos
 
         if direction == DIRECTION_SHORT:    # 平多仓
-
             if self.pos - vol < 0 :
                 self.writeCtaLog(u'异常，超出仓位，当前仓位：{0},加仓:{1}'.format(self.pos, vol))
                 self.strategy.pos = self.pos

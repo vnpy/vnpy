@@ -8,6 +8,7 @@ CTA模块相关的GUI控制组件
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
 from time import sleep
+import os
 
 
 ########################################################################
@@ -54,6 +55,8 @@ class CtaValueMonitor(QtGui.QTableWidget):
                 cell = self.keyCellDict[k]
                 cell.setText(unicode(v))
 
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
 
 ########################################################################
 class CtaStrategyManager(QtGui.QGroupBox):
@@ -183,7 +186,9 @@ class CtaEngineManager(QtGui.QWidget):
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle(u'CTA策略')
+        path = os.getcwd().rsplit('\\')[-1]
+
+        self.setWindowTitle(u'{0} CTA策略'.format(path))
         
         # 按钮
         loadButton = QtGui.QPushButton(u'加载策略')
