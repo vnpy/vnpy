@@ -108,7 +108,8 @@ class OkcoinGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '/okcoinGateway/' + fileName
+        path = os.path.abspath(os.path.dirname(__file__))
+        fileName = os.path.join(path, fileName)
         
         try:
             f = file(fileName)
@@ -278,9 +279,9 @@ class Api(vnokcoin.OkCoinApi):
         
         # 重新连接
         if self.active:
-            print 'start reconnect'
+            self.writeLog(u'等待5秒后重新连接')
+            sleep(5)
             self.reconnect()
-            print 'reconnected'
         
     #----------------------------------------------------------------------
     def onOpen(self, ws):        
