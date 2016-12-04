@@ -68,7 +68,7 @@ class RmEngineManager(QtGui.QWidget):
         self.spinPercentLimit = RmSpinBox(self.rmEngine.percentLimit)
 
         # 最大净值止损比例,满足后强制止损
-        self.spinLossPercentLimit = RmSpinBox(self.rmEngine.lossPercentLimit)
+        self.spinLossLimit = RmSpinBox(self.rmEngine.lossLimit)
 
         buttonClearOrderFlowCount = QtGui.QPushButton(u'清空流控计数')
         buttonClearTradeCount = QtGui.QPushButton(u'清空总成交计数')
@@ -96,8 +96,8 @@ class RmEngineManager(QtGui.QWidget):
         grid.addWidget(RmLine(), 10, 0, 1, 2)
         grid.addWidget(Label(u'仓位上限(1~100)'), 11, 0)
         grid.addWidget(self.spinPercentLimit, 11, 1)
-        grid.addWidget(Label(u'强制止损比例'), 12, 0)
-        grid.addWidget(self.spinLossPercentLimit, 12, 1)
+        grid.addWidget(Label(u'强制止损净值'), 12, 0)
+        grid.addWidget(self.spinLossLimit, 12, 1)
 
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(buttonClearOrderFlowCount)
@@ -117,7 +117,7 @@ class RmEngineManager(QtGui.QWidget):
         self.spinTradeLimit.valueChanged.connect(self.rmEngine.setTradeLimit)
         self.spinWorkingOrderLimit.valueChanged.connect(self.rmEngine.setWorkingOrderLimit)
         self.spinPercentLimit.valueChanged.connect(self.rmEngine.setAccountPercentLimit)
-        self.spinLossPercentLimit.valueChanged.connect(self.rmEngine.setLossPercentLimit)
+        self.spinLossLimit.valueChanged.connect(self.rmEngine.setLossLimit)
 
         self.buttonSwitchEngineStatus.clicked.connect(self.switchEngineSatus)
         buttonClearOrderFlowCount.clicked.connect(self.rmEngine.clearOrderFlowCount)

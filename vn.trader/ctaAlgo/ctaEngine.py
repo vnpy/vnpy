@@ -97,9 +97,14 @@ class CtaEngine(object):
         req.price = price                   # 价格
         req.volume = volume                 # 数量
 
-        req.productClass = strategy.productClass
-        req.currency = strategy.currency        
-        
+        if strategy:
+            req.productClass = strategy.productClass
+            req.currency = strategy.currency
+        else:
+            req.productClass = ''
+            req.currency = ''
+
+
         # 设计为CTA引擎发出的委托只允许使用限价单
         req.priceType = PRICETYPE_LIMITPRICE     # 价格类型
         
@@ -165,11 +170,14 @@ class CtaEngine(object):
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
 
-        self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
+        if strategy:
+            self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
 
-        self.writeCtaLog(u'策略%s发送委托，%s, %s，%s，%s@%s'
+            self.writeCtaLog(u'策略%s发送委托，%s, %s，%s，%s@%s'
                          %(strategy.name, vtSymbol, req.offset, req.direction, volume, price))
-        
+        else:
+            self.writeCtaLog(u'%s发送委托，%s, %s，%s，%s@%s'
+                             % ('CtaEngine', vtSymbol, req.offset, req.direction, volume, price))
         return vtOrderID
     
     # ----------------------------------------------------------------------
@@ -413,13 +421,14 @@ class CtaEngine(object):
         pos = event.dict_['data']
         
         # 更新持仓缓存数据
-        if pos.vtSymbol in self.tickStrategyDict:
-            posBuffer = self.posBufferDict.get(pos.vtSymbol, None)
-            if not posBuffer:
-                posBuffer = PositionBuffer()
-                posBuffer.vtSymbol = pos.vtSymbol
-                self.posBufferDict[pos.vtSymbol] = posBuffer
-            posBuffer.updatePositionData(pos)
+        #if pos.vtSymbol in self.tickStrategyDict:
+
+        posBuffer = self.posBufferDict.get(pos.vtSymbol, None)
+        if not posBuffer:
+            posBuffer = PositionBuffer()
+            posBuffer.vtSymbol = pos.vtSymbol
+            self.posBufferDict[pos.vtSymbol] = posBuffer
+        posBuffer.updatePositionData(pos)
     
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -439,6 +448,60 @@ class CtaEngine(object):
 
         # 注册定时器事件
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
+
+        # 注册强制止损事件
+        self.eventEngine.register(EVENT_ACCOUNT_LOSS, self.processAccoutLossEvent)
+
+    def processAccoutLossEvent(self,event):
+        """处理止损时间"""
+        balance = event.dict_['data']
+        self.writeCtaLog(u'净值{0}低于止损线，执行强制止损'.format(balance))
+        self.mainEngine.writeLog(u'净值{0}低于止损线，执行强制止损'.format(balance))
+
+        self.cancelOrders(symbol=EMPTY_STRING)
+
+        for posBuffer in self.posBufferDict.values():
+
+            if posBuffer.shortYd > 0:
+                self.writeCtaLog(u'{0}合约持有昨空单{1}手，强平'.format(posBuffer.vtSymbol,posBuffer.shortYd))
+                tick = self.tickDict.get(posBuffer.vtSymbol, None)
+
+                if not tick:
+                    self.writeCtaLog(u'找不对{0}的最新Tick数据'.format(posBuffer.vtSymbol))
+                    continue
+
+                self.sendOrder(posBuffer.vtSymbol, orderType=CTAORDER_COVER, price=tick.upperLimit, volume=posBuffer.shortYd,strategy=None)
+
+            if posBuffer.shortToday > 0:
+                self.writeCtaLog(u'{0}合约持有今空单{1}手，强平'.format(posBuffer.vtSymbol,posBuffer.shortToday))
+                tick = self.tickDict.get(posBuffer.vtSymbol, None)
+
+                if not tick:
+                    self.writeCtaLog(u'找不对{0}的最新Tick数据'.format(posBuffer.vtSymbol))
+                    continue
+
+                self.sendOrder(posBuffer.vtSymbol, orderType=CTAORDER_COVER, price=tick.upperLimit, volume=posBuffer.shortToday,strategy=None)
+
+            if posBuffer.longYd > 0:
+                self.writeCtaLog(u'{0}合约持有昨多单{1}手，强平'.format(posBuffer.vtSymbol,posBuffer.longYd))
+                tick = self.tickDict.get(posBuffer.vtSymbol, None)
+
+                if not tick:
+                    self.writeCtaLog(u'找不对{0}的最新Tick数据'.format(posBuffer.vtSymbol))
+                    continue
+
+                self.sendOrder(posBuffer.vtSymbol, orderType=CTAORDER_SELL, price=tick.lowerLimit, volume=posBuffer.longYd,strategy=None)
+
+            if posBuffer.longToday > 0:
+                self.writeCtaLog(u'{0}合约持有今多单{1}手，强平'.format(posBuffer.vtSymbol,posBuffer.longToday))
+                tick = self.tickDict.get(posBuffer.vtSymbol, None)
+
+                if not tick:
+                    self.writeCtaLog(u'找不对{0}的最新Tick数据'.format(posBuffer.vtSymbol))
+                    continue
+
+                self.sendOrder(posBuffer.vtSymbol, orderType=CTAORDER_SELL, price=tick.lowerLimit, volume=posBuffer.longToday,strategy=None)
+
 
     def processTimerEvent(self, event):
         """定时器事件"""

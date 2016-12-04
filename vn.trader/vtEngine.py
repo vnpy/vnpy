@@ -417,8 +417,13 @@ class DataEngine(object):
         # 目的：1、
 
         position = event.dict_['data']
-
         symbol = position.symbol
+
+        if symbol is None:
+            return
+
+        if len(symbol) == 0:
+            return
 
         # 已存在，不做更新
         if symbol in self.subscribedSymbols:
