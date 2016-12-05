@@ -335,7 +335,7 @@ class IbWrapper(IbApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = errorCode
-        err.errorMsg = errorString
+        err.errorMsg = errorString.decode('GBK')
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------

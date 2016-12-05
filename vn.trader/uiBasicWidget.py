@@ -288,7 +288,7 @@ class BasicMonitor(QtGui.QTableWidget):
             if key not in self.dataDict:
                 self.insertRow(0)     
                 d = {}
-                for n, header in enumerate(self.headerList):
+                for n, header in enumerate(self.headerList):                  
                     content = safeUnicode(data.__getattribute__(header))
                     cellType = self.headerDict[header]['cellType']
                     cell = cellType(content, self.mainEngine)
@@ -323,10 +323,10 @@ class BasicMonitor(QtGui.QTableWidget):
                 if self.font:
                     cell.setFont(self.font)
 
-                if self.saveData:            
+                if self.saveData:
                     cell.data = data                
 
-                self.setItem(0, n, cell)            
+                self.setItem(0, n, cell)                        
                 
         # 调整列宽
         self.resizeColumns()
