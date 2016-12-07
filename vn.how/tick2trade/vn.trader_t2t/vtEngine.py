@@ -306,7 +306,7 @@ class MainEngine(object):
         
         order_time = self.sendOrder(req, tick.gatewayName)
         
-        print u'耗时：', (order_time - tick.tick_time)*100000/tick.frequency_time, u'微秒'
+        print u'耗时：', (order_time - tick.tick_time)*1000/tick.frequency_time, u'毫秒'
         
         
 
