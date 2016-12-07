@@ -78,16 +78,14 @@ class QdpGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
         
         self.qryEnabled = False         # 是否要启动循环查询
-
-	self.date = None		# 结算确认日期
         
     #----------------------------------------------------------------------
     def connect(self, fileName=""):
         """连接"""
         # 载入json文件
-	if fileName == "":
-	    fileName = self.gatewayName + '_connect.json'
-	    fileName = os.getcwd() + '/qdpGateway/' + fileName
+	fileName = self.gatewayName + '_connect.json'
+	path = os.path.abspath(os.path.dirname(__file__))
+	fileName = os.path.join(path, fileName)
         
         try:
             f = file(fileName)
@@ -116,12 +114,9 @@ class QdpGateway(VtGateway):
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
         self.tdApi.connect(userID, password, brokerID, tdAddress)
+	
         # 初始化并启动查询
         self.initQuery()
-
-	self.date=datetime.datetime.now().date()
-	if datetime.datetime.now().hour <= 20:
-		self.date = self.date - datetime.timedelta(days=1)
 
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -132,11 +127,6 @@ class QdpGateway(VtGateway):
     def sendOrder(self, orderReq):
         """发单"""
         return self.tdApi.sendOrder(orderReq)
-
-    #----------------------------------------------------------------------
-    def confSettle(self):
-        """确认结算单"""
-	pass
 
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
@@ -152,16 +142,6 @@ class QdpGateway(VtGateway):
     def qryPosition(self):
         """查询持仓"""
         self.tdApi.qryPosition()
-        
-    #----------------------------------------------------------------------
-    def qryMarginRate(self,vtSymbol):
-        """查询保证金率"""
-        pass
-        
-    #----------------------------------------------------------------------
-    def qryCommissionRate(self,vtSymbol):
-        """查询手续费率"""
-        pass
         
     #----------------------------------------------------------------------
     def close(self):
@@ -448,7 +428,7 @@ class QdpTdApi(TdApi):
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
         self.reqID = EMPTY_INT              # 操作请求编号
-        self.orderRef = 930000           # 订单编号
+        self.orderRef =	EMPTY_INT	    # 订单编号
         
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
@@ -520,7 +500,6 @@ class QdpTdApi(TdApi):
             req['Password'] = self.password
             req['BrokerID'] = self.brokerID
 	    self.reqQryUserInvestor(req,self.reqID)
-
 
 	    # 查询合约代码
             self.reqID += 1
