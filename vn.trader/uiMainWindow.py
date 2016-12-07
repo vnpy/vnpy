@@ -65,6 +65,9 @@ class MainWindow(QtGui.QMainWindow):
         connectCtpAction = QtGui.QAction(u'连接CTP', self)
         connectCtpAction.triggered.connect(self.connectCtp)
         
+        connectQdpAction = QtGui.QAction(u'连接QDP', self)
+        connectQdpAction.triggered.connect(self.connectQdp)
+
         connectLtsAction = QtGui.QAction(u'连接LTS', self)
         connectLtsAction.triggered.connect(self.connectLts)
         
@@ -132,6 +135,8 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu = menubar.addMenu(u'系统')
         if 'CTP' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectCtpAction)
+        if 'QDP' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectQdpAction)
         if 'LTS' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectLtsAction)
         if 'FEMAS' in self.mainEngine.gatewayDict:
@@ -209,7 +214,24 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def connectCtp(self):
         """连接CTP接口"""
-        self.mainEngine.connect('CTP')
+	filepath = os.getcwd() + '/ctpGateway/'
+	import glob
+        try:
+            self.widgetDict['accountW'].show()
+        except KeyError:
+            self.widgetDict['accountW'] = AccountWidget(self.mainEngine,glob.glob(filepath+r'CTP*.json'))
+            self.widgetDict['accountW'].show()
+        
+    #----------------------------------------------------------------------
+    def connectQdp(self):
+        """连接CTP接口"""
+	filepath = os.getcwd() + '/qdpGateway/'
+	import glob
+        try:
+            self.widgetDict['accountQ'].show()
+        except KeyError:
+            self.widgetDict['accountQ'] = AccountWidget(self.mainEngine,glob.glob(filepath+r'QDP*.json'),'QDP')
+            self.widgetDict['accountQ'].show()
         
     #----------------------------------------------------------------------
     def connectLts(self):
@@ -373,6 +395,65 @@ class MainWindow(QtGui.QMainWindow):
         """还原默认窗口设置（还原停靠组件位置）"""
         self.loadWindowSettings('default')
         self.showMaximized()
+
+########################################################################
+class AccountWidget(QtGui.QDialog):
+    """显示账户信息"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, accountList, gatewayName='CTP', parent=None):
+        """Constructor"""
+        super(AccountWidget, self).__init__(parent)
+	self.mainEngine = mainEngine
+	self.accountList = accountList
+	self.gatewayName = gatewayName
+	self.userIDs = []
+	self.radios = []
+	for fileName in accountList:
+		try:
+        	    f = file(fileName)
+        	except IOError:
+		    print(u'读取连接配置文件出错，请检查 : '+fileName)
+        	    return
+        	
+        	# 解析json文件
+        	setting = json.load(f)
+        	try:
+        	    userID = str(setting['name'])
+		    self.userIDs.append(userID)
+        	except KeyError:
+		    print(u'连接配置缺少字段，请检查 : '+fileName)
+        self.initUi()
+
+    #----------------------------------------------------------------------
+    def initUi(self):
+        """"""
+	QtGui.QWidget.__init__(self)      # 调用父类初始化方法
+        self.setWindowTitle(u'选择账户')
+	self.resize(300,200)        # 设置窗口大小
+	gridlayout = QtGui.QGridLayout()     # 创建布局组件
+	i = 0
+	for userID in self.userIDs:
+		radio = QtGui.QRadioButton(userID.decode('utf8'))   # 创建单选框
+		i+=1
+		x = i-int((i-1)/3)*3
+		y = int((i-1)/3)
+		gridlayout.addWidget(radio, x, y )   # 添加单选框
+		self.radios.append(radio)
+	if self.radios:
+		self.radios[0].setChecked(True)      # 将Radio1选中
+        self.button = QtGui.QPushButton(u'选择')   # 创建按钮
+        gridlayout.addWidget(self.button, 4, 0)#, 1, 2)
+        self.setLayout(gridlayout)       # 向窗口中添加布局组件
+        self.connect(self.button,        # 按钮事件
+          QtCore.SIGNAL('clicked()'),
+          self.OnButton)
+    def OnButton(self):          # 按钮插槽函数
+	for i in xrange(0,len(self.radios)):
+		if self.radios[i].isChecked():       # 判断单选框是否选中
+			self.mainEngine.connect(self.gatewayName,self.accountList[i])
+	self.reject()
+      
 
 
 ########################################################################

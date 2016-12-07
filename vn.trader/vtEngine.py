@@ -55,6 +55,13 @@ class MainEngine(object):
             print e
         
         try:
+            from qdpGateway.qdpGateway import QdpGateway
+            self.addGateway(QdpGateway, 'QDP')
+            self.gatewayDict['QDP'].setQryEnabled(True)
+        except Exception, e:
+            print e
+        
+        try:
             from ltsGateway.ltsGateway import LtsGateway
             self.addGateway(LtsGateway, 'LTS')
             self.gatewayDict['LTS'].setQryEnabled(True)
@@ -142,11 +149,14 @@ class MainEngine(object):
         self.gatewayDict[gatewayName] = gateway(self.eventEngine, gatewayName)
         
     #----------------------------------------------------------------------
-    def connect(self, gatewayName):
+    def connect(self, gatewayName, accountFile=""):
         """连接特定名称的接口"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.connect()
+            if accountFile:
+                gateway.connect(accountFile)
+            else:
+                gateway.connect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
         
