@@ -45,8 +45,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>D:\Anaconda2\include;D:\boost_1_60_0;D:\vn.sgit\sgitapi;$(IncludePath)</IncludePath>
-    <ReferencePath>D:\boost_1_60_0\libs;D:\Anaconda2\libs;D:\vn.sgit\sgitapi;$(ReferencePath)</ReferencePath>
+    <IncludePath>D:\Anaconda2\include;D:\boost_1_57_0;X:\GithubProject\vnpy\vn.sgit\sgitapi;$(IncludePath)</IncludePath>
+    <ReferencePath>D:\boost_1_57_0\libs;D:\Anaconda2\libs;X:\GithubProject\vnpy\vn.sgit\sgitapi;$(ReferencePath)</ReferencePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -76,7 +76,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>D:\boost_1_60_0\stage\lib;D:\Anaconda2\libs;D:\vn.sgit\sgitapi;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\boost_1_57_0\stage\lib;D:\Anaconda2\libs;X:\GithubProject\vnpy\vn.sgit\sgitapi;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

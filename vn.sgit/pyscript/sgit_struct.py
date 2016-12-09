@@ -2,7 +2,19 @@
 
 structDict = {}
 
-#//////////////////////////////////////////////////////////////////////
+#////////////////////////////////////////////////////////////////////////
+
+#@system 
+
+#@company 
+
+#@file SgitFtdcUserApiStruct.h
+
+#@brief 定义了客户端接口使用的业务数据结构
+
+#@history 
+
+
 
 #//////////////////////////////////////////////////////////////////////
 
@@ -14,5853 +26,15649 @@ structDict = {}
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+#
 
 #信息分发
-CSgitFtdcDisseminationField = {}
+
+CThostFtdcDisseminationField = {}
+
+
 #序列系列号
-CSgitFtdcDisseminationField["SequenceSeries"] = "short"
+
+CThostFtdcDisseminationField["SequenceSeries"] = "int"
+
 #序列号
-CSgitFtdcDisseminationField["SequenceNo"] = "int"
-structDict['CSgitFtdcDisseminationField'] = CSgitFtdcDisseminationField
+
+CThostFtdcDisseminationField["SequenceNo"] = "int"
+
+structDict['CThostFtdcDisseminationField'] = CThostFtdcDisseminationField
+
+
 
 
 #用户登录请求
-CSgitFtdcReqUserLoginField = {}
+
+CThostFtdcReqUserLoginField = {}
+
+
 #交易日
-CSgitFtdcReqUserLoginField["TradingDay"] = "string"
+
+CThostFtdcReqUserLoginField["TradingDay"] = "string"
+
 #经纪公司代码
-CSgitFtdcReqUserLoginField["BrokerID"] = "string"
+
+CThostFtdcReqUserLoginField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcReqUserLoginField["UserID"] = "string"
+
+CThostFtdcReqUserLoginField["UserID"] = "string"
+
 #密码
-CSgitFtdcReqUserLoginField["Password"] = "string"
+
+CThostFtdcReqUserLoginField["Password"] = "string"
+
 #用户端产品信息
-CSgitFtdcReqUserLoginField["UserProductInfo"] = "string"
+
+CThostFtdcReqUserLoginField["UserProductInfo"] = "string"
+
 #接口端产品信息
-CSgitFtdcReqUserLoginField["InterfaceProductInfo"] = "string"
+
+CThostFtdcReqUserLoginField["InterfaceProductInfo"] = "string"
+
 #协议信息
-CSgitFtdcReqUserLoginField["ProtocolInfo"] = "string"
+
+CThostFtdcReqUserLoginField["ProtocolInfo"] = "string"
+
 #Mac地址
-CSgitFtdcReqUserLoginField["MacAddress"] = "string"
+
+CThostFtdcReqUserLoginField["MacAddress"] = "string"
+
 #动态密码
-CSgitFtdcReqUserLoginField["OneTimePassword"] = "string"
+
+CThostFtdcReqUserLoginField["OneTimePassword"] = "string"
+
 #终端IP地址
-CSgitFtdcReqUserLoginField["ClientIPAddress"] = "string"
-structDict['CSgitFtdcReqUserLoginField'] = CSgitFtdcReqUserLoginField
+
+CThostFtdcReqUserLoginField["ClientIPAddress"] = "string"
+
+structDict['CThostFtdcReqUserLoginField'] = CThostFtdcReqUserLoginField
+
+
 
 
 #用户登录应答
-CSgitFtdcRspUserLoginField = {}
+
+CThostFtdcRspUserLoginField = {}
+
+
 #交易日
-CSgitFtdcRspUserLoginField["TradingDay"] = "string"
+
+CThostFtdcRspUserLoginField["TradingDay"] = "string"
+
 #登录成功时间
-CSgitFtdcRspUserLoginField["LoginTime"] = "string"
+
+CThostFtdcRspUserLoginField["LoginTime"] = "string"
+
 #经纪公司代码
-CSgitFtdcRspUserLoginField["BrokerID"] = "string"
+
+CThostFtdcRspUserLoginField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcRspUserLoginField["UserID"] = "string"
+
+CThostFtdcRspUserLoginField["UserID"] = "string"
+
 #交易系统名称
-CSgitFtdcRspUserLoginField["SystemName"] = "string"
+
+CThostFtdcRspUserLoginField["SystemName"] = "string"
+
 #前置编号
-CSgitFtdcRspUserLoginField["FrontID"] = "int"
+
+CThostFtdcRspUserLoginField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcRspUserLoginField["SessionID"] = "int"
+
+CThostFtdcRspUserLoginField["SessionID"] = "int"
+
 #最大报单引用
-CSgitFtdcRspUserLoginField["MaxOrderRef"] = "string"
+
+CThostFtdcRspUserLoginField["MaxOrderRef"] = "string"
+
 #上期所时间
-CSgitFtdcRspUserLoginField["SHFETime"] = "string"
+
+CThostFtdcRspUserLoginField["SHFETime"] = "string"
+
 #大商所时间
-CSgitFtdcRspUserLoginField["DCETime"] = "string"
+
+CThostFtdcRspUserLoginField["DCETime"] = "string"
+
 #郑商所时间
-CSgitFtdcRspUserLoginField["CZCETime"] = "string"
+
+CThostFtdcRspUserLoginField["CZCETime"] = "string"
+
 #中金所时间
-CSgitFtdcRspUserLoginField["FFEXTime"] = "string"
-structDict['CSgitFtdcRspUserLoginField'] = CSgitFtdcRspUserLoginField
+
+CThostFtdcRspUserLoginField["FFEXTime"] = "string"
+
+#能源中心时间
+
+CThostFtdcRspUserLoginField["INETime"] = "string"
+
+structDict['CThostFtdcRspUserLoginField'] = CThostFtdcRspUserLoginField
+
+
 
 
 #用户登出请求
-CSgitFtdcUserLogoutField = {}
+
+CThostFtdcUserLogoutField = {}
+
+
 #经纪公司代码
-CSgitFtdcUserLogoutField["BrokerID"] = "string"
+
+CThostFtdcUserLogoutField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcUserLogoutField["UserID"] = "string"
-structDict['CSgitFtdcUserLogoutField'] = CSgitFtdcUserLogoutField
+
+CThostFtdcUserLogoutField["UserID"] = "string"
+
+structDict['CThostFtdcUserLogoutField'] = CThostFtdcUserLogoutField
+
+
 
 
 #强制交易员退出
-CSgitFtdcForceUserLogoutField = {}
+
+CThostFtdcForceUserLogoutField = {}
+
+
 #经纪公司代码
-CSgitFtdcForceUserLogoutField["BrokerID"] = "string"
+
+CThostFtdcForceUserLogoutField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcForceUserLogoutField["UserID"] = "string"
-structDict['CSgitFtdcForceUserLogoutField'] = CSgitFtdcForceUserLogoutField
+
+CThostFtdcForceUserLogoutField["UserID"] = "string"
+
+structDict['CThostFtdcForceUserLogoutField'] = CThostFtdcForceUserLogoutField
+
+
 
 
 #客户端认证请求
-CSgitFtdcReqAuthenticateField = {}
+
+CThostFtdcReqAuthenticateField = {}
+
+
 #经纪公司代码
-CSgitFtdcReqAuthenticateField["BrokerID"] = "string"
+
+CThostFtdcReqAuthenticateField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcReqAuthenticateField["UserID"] = "string"
+
+CThostFtdcReqAuthenticateField["UserID"] = "string"
+
 #用户端产品信息
-CSgitFtdcReqAuthenticateField["UserProductInfo"] = "string"
+
+CThostFtdcReqAuthenticateField["UserProductInfo"] = "string"
+
 #认证码
-CSgitFtdcReqAuthenticateField["AuthCode"] = "string"
-structDict['CSgitFtdcReqAuthenticateField'] = CSgitFtdcReqAuthenticateField
+
+CThostFtdcReqAuthenticateField["AuthCode"] = "string"
+
+structDict['CThostFtdcReqAuthenticateField'] = CThostFtdcReqAuthenticateField
+
+
 
 
 #客户端认证响应
-CSgitFtdcRspAuthenticateField = {}
+
+CThostFtdcRspAuthenticateField = {}
+
+
 #经纪公司代码
-CSgitFtdcRspAuthenticateField["BrokerID"] = "string"
+
+CThostFtdcRspAuthenticateField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcRspAuthenticateField["UserID"] = "string"
+
+CThostFtdcRspAuthenticateField["UserID"] = "string"
+
 #用户端产品信息
-CSgitFtdcRspAuthenticateField["UserProductInfo"] = "string"
-structDict['CSgitFtdcRspAuthenticateField'] = CSgitFtdcRspAuthenticateField
+
+CThostFtdcRspAuthenticateField["UserProductInfo"] = "string"
+
+structDict['CThostFtdcRspAuthenticateField'] = CThostFtdcRspAuthenticateField
+
+
 
 
 #客户端认证信息
-CSgitFtdcAuthenticationInfoField = {}
+
+CThostFtdcAuthenticationInfoField = {}
+
+
 #经纪公司代码
-CSgitFtdcAuthenticationInfoField["BrokerID"] = "string"
+
+CThostFtdcAuthenticationInfoField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcAuthenticationInfoField["UserID"] = "string"
+
+CThostFtdcAuthenticationInfoField["UserID"] = "string"
+
 #用户端产品信息
-CSgitFtdcAuthenticationInfoField["UserProductInfo"] = "string"
+
+CThostFtdcAuthenticationInfoField["UserProductInfo"] = "string"
+
 #认证信息
-CSgitFtdcAuthenticationInfoField["AuthInfo"] = "string"
+
+CThostFtdcAuthenticationInfoField["AuthInfo"] = "string"
+
 #是否为认证结果
-CSgitFtdcAuthenticationInfoField["IsResult"] = "int"
-structDict['CSgitFtdcAuthenticationInfoField'] = CSgitFtdcAuthenticationInfoField
+
+CThostFtdcAuthenticationInfoField["IsResult"] = "int"
+
+structDict['CThostFtdcAuthenticationInfoField'] = CThostFtdcAuthenticationInfoField
+
+
 
 
 #银期转帐报文头
-CSgitFtdcTransferHeaderField = {}
+
+CThostFtdcTransferHeaderField = {}
+
+
 #版本号，常量，1.0
-CSgitFtdcTransferHeaderField["Version"] = "string"
+
+CThostFtdcTransferHeaderField["Version"] = "string"
+
 #交易代码，必填
-CSgitFtdcTransferHeaderField["TradeCode"] = "string"
+
+CThostFtdcTransferHeaderField["TradeCode"] = "string"
+
 #交易日期，必填，格式：yyyymmdd
-CSgitFtdcTransferHeaderField["TradeDate"] = "string"
+
+CThostFtdcTransferHeaderField["TradeDate"] = "string"
+
 #交易时间，必填，格式：hhmmss
-CSgitFtdcTransferHeaderField["TradeTime"] = "string"
+
+CThostFtdcTransferHeaderField["TradeTime"] = "string"
+
 #发起方流水号，N/A
-CSgitFtdcTransferHeaderField["TradeSerial"] = "string"
+
+CThostFtdcTransferHeaderField["TradeSerial"] = "string"
+
 #期货公司代码，必填
-CSgitFtdcTransferHeaderField["FutureID"] = "string"
+
+CThostFtdcTransferHeaderField["FutureID"] = "string"
+
 #银行代码，根据查询银行得到，必填
-CSgitFtdcTransferHeaderField["BankID"] = "string"
+
+CThostFtdcTransferHeaderField["BankID"] = "string"
+
 #银行分中心代码，根据查询银行得到，必填
-CSgitFtdcTransferHeaderField["BankBrchID"] = "string"
+
+CThostFtdcTransferHeaderField["BankBrchID"] = "string"
+
 #操作员，N/A
-CSgitFtdcTransferHeaderField["OperNo"] = "string"
+
+CThostFtdcTransferHeaderField["OperNo"] = "string"
+
 #交易设备类型，N/A
-CSgitFtdcTransferHeaderField["DeviceID"] = "string"
+
+CThostFtdcTransferHeaderField["DeviceID"] = "string"
+
 #记录数，N/A
-CSgitFtdcTransferHeaderField["RecordNum"] = "string"
+
+CThostFtdcTransferHeaderField["RecordNum"] = "string"
+
 #会话编号，N/A
-CSgitFtdcTransferHeaderField["SessionID"] = "int"
+
+CThostFtdcTransferHeaderField["SessionID"] = "int"
+
 #请求编号，N/A
-CSgitFtdcTransferHeaderField["RequestID"] = "int"
-structDict['CSgitFtdcTransferHeaderField'] = CSgitFtdcTransferHeaderField
+
+CThostFtdcTransferHeaderField["RequestID"] = "int"
+
+structDict['CThostFtdcTransferHeaderField'] = CThostFtdcTransferHeaderField
+
+
 
 
 #银行资金转期货请求，TradeCode=202001
-CSgitFtdcTransferBankToFutureReqField = {}
+
+CThostFtdcTransferBankToFutureReqField = {}
+
+
 #期货资金账户
-CSgitFtdcTransferBankToFutureReqField["FutureAccount"] = "string"
+
+CThostFtdcTransferBankToFutureReqField["FutureAccount"] = "string"
+
 #密码标志
-CSgitFtdcTransferBankToFutureReqField["FuturePwdFlag"] = "char"
+
+CThostFtdcTransferBankToFutureReqField["FuturePwdFlag"] = "char"
+
 #密码
-CSgitFtdcTransferBankToFutureReqField["FutureAccPwd"] = "string"
+
+CThostFtdcTransferBankToFutureReqField["FutureAccPwd"] = "string"
+
 #转账金额
-CSgitFtdcTransferBankToFutureReqField["TradeAmt"] = "float"
+
+CThostFtdcTransferBankToFutureReqField["TradeAmt"] = "float"
+
 #客户手续费
-CSgitFtdcTransferBankToFutureReqField["CustFee"] = "float"
+
+CThostFtdcTransferBankToFutureReqField["CustFee"] = "float"
+
 #币种：RMB-人民币 USD-美圆 HKD-港元
-CSgitFtdcTransferBankToFutureReqField["CurrencyCode"] = "string"
-structDict['CSgitFtdcTransferBankToFutureReqField'] = CSgitFtdcTransferBankToFutureReqField
+
+CThostFtdcTransferBankToFutureReqField["CurrencyCode"] = "string"
+
+structDict['CThostFtdcTransferBankToFutureReqField'] = CThostFtdcTransferBankToFutureReqField
+
+
 
 
 #银行资金转期货请求响应
-CSgitFtdcTransferBankToFutureRspField = {}
+
+CThostFtdcTransferBankToFutureRspField = {}
+
+
 #响应代码
-CSgitFtdcTransferBankToFutureRspField["RetCode"] = "string"
+
+CThostFtdcTransferBankToFutureRspField["RetCode"] = "string"
+
 #响应信息
-CSgitFtdcTransferBankToFutureRspField["RetInfo"] = "string"
+
+CThostFtdcTransferBankToFutureRspField["RetInfo"] = "string"
+
 #资金账户
-CSgitFtdcTransferBankToFutureRspField["FutureAccount"] = "string"
+
+CThostFtdcTransferBankToFutureRspField["FutureAccount"] = "string"
+
 #转帐金额
-CSgitFtdcTransferBankToFutureRspField["TradeAmt"] = "float"
+
+CThostFtdcTransferBankToFutureRspField["TradeAmt"] = "float"
+
 #应收客户手续费
-CSgitFtdcTransferBankToFutureRspField["CustFee"] = "float"
+
+CThostFtdcTransferBankToFutureRspField["CustFee"] = "float"
+
 #币种
-CSgitFtdcTransferBankToFutureRspField["CurrencyCode"] = "string"
-structDict['CSgitFtdcTransferBankToFutureRspField'] = CSgitFtdcTransferBankToFutureRspField
+
+CThostFtdcTransferBankToFutureRspField["CurrencyCode"] = "string"
+
+structDict['CThostFtdcTransferBankToFutureRspField'] = CThostFtdcTransferBankToFutureRspField
+
+
 
 
 #期货资金转银行请求，TradeCode=202002
-CSgitFtdcTransferFutureToBankReqField = {}
+
+CThostFtdcTransferFutureToBankReqField = {}
+
+
 #期货资金账户
-CSgitFtdcTransferFutureToBankReqField["FutureAccount"] = "string"
+
+CThostFtdcTransferFutureToBankReqField["FutureAccount"] = "string"
+
 #密码标志
-CSgitFtdcTransferFutureToBankReqField["FuturePwdFlag"] = "char"
+
+CThostFtdcTransferFutureToBankReqField["FuturePwdFlag"] = "char"
+
 #密码
-CSgitFtdcTransferFutureToBankReqField["FutureAccPwd"] = "string"
+
+CThostFtdcTransferFutureToBankReqField["FutureAccPwd"] = "string"
+
 #转账金额
-CSgitFtdcTransferFutureToBankReqField["TradeAmt"] = "float"
+
+CThostFtdcTransferFutureToBankReqField["TradeAmt"] = "float"
+
 #客户手续费
-CSgitFtdcTransferFutureToBankReqField["CustFee"] = "float"
+
+CThostFtdcTransferFutureToBankReqField["CustFee"] = "float"
+
 #币种：RMB-人民币 USD-美圆 HKD-港元
-CSgitFtdcTransferFutureToBankReqField["CurrencyCode"] = "string"
-structDict['CSgitFtdcTransferFutureToBankReqField'] = CSgitFtdcTransferFutureToBankReqField
+
+CThostFtdcTransferFutureToBankReqField["CurrencyCode"] = "string"
+
+structDict['CThostFtdcTransferFutureToBankReqField'] = CThostFtdcTransferFutureToBankReqField
+
+
 
 
 #期货资金转银行请求响应
-CSgitFtdcTransferFutureToBankRspField = {}
+
+CThostFtdcTransferFutureToBankRspField = {}
+
+
 #响应代码
-CSgitFtdcTransferFutureToBankRspField["RetCode"] = "string"
+
+CThostFtdcTransferFutureToBankRspField["RetCode"] = "string"
+
 #响应信息
-CSgitFtdcTransferFutureToBankRspField["RetInfo"] = "string"
+
+CThostFtdcTransferFutureToBankRspField["RetInfo"] = "string"
+
 #资金账户
-CSgitFtdcTransferFutureToBankRspField["FutureAccount"] = "string"
+
+CThostFtdcTransferFutureToBankRspField["FutureAccount"] = "string"
+
 #转帐金额
-CSgitFtdcTransferFutureToBankRspField["TradeAmt"] = "float"
+
+CThostFtdcTransferFutureToBankRspField["TradeAmt"] = "float"
+
 #应收客户手续费
-CSgitFtdcTransferFutureToBankRspField["CustFee"] = "float"
+
+CThostFtdcTransferFutureToBankRspField["CustFee"] = "float"
+
 #币种
-CSgitFtdcTransferFutureToBankRspField["CurrencyCode"] = "string"
-structDict['CSgitFtdcTransferFutureToBankRspField'] = CSgitFtdcTransferFutureToBankRspField
+
+CThostFtdcTransferFutureToBankRspField["CurrencyCode"] = "string"
+
+structDict['CThostFtdcTransferFutureToBankRspField'] = CThostFtdcTransferFutureToBankRspField
+
+
 
 
 #查询银行资金请求，TradeCode=204002
-CSgitFtdcTransferQryBankReqField = {}
+
+CThostFtdcTransferQryBankReqField = {}
+
+
 #期货资金账户
-CSgitFtdcTransferQryBankReqField["FutureAccount"] = "string"
+
+CThostFtdcTransferQryBankReqField["FutureAccount"] = "string"
+
 #密码标志
-CSgitFtdcTransferQryBankReqField["FuturePwdFlag"] = "char"
+
+CThostFtdcTransferQryBankReqField["FuturePwdFlag"] = "char"
+
 #密码
-CSgitFtdcTransferQryBankReqField["FutureAccPwd"] = "string"
+
+CThostFtdcTransferQryBankReqField["FutureAccPwd"] = "string"
+
 #币种：RMB-人民币 USD-美圆 HKD-港元
-CSgitFtdcTransferQryBankReqField["CurrencyCode"] = "string"
-structDict['CSgitFtdcTransferQryBankReqField'] = CSgitFtdcTransferQryBankReqField
+
+CThostFtdcTransferQryBankReqField["CurrencyCode"] = "string"
+
+structDict['CThostFtdcTransferQryBankReqField'] = CThostFtdcTransferQryBankReqField
+
+
 
 
 #查询银行资金请求响应
-CSgitFtdcTransferQryBankRspField = {}
+
+CThostFtdcTransferQryBankRspField = {}
+
+
 #响应代码
-CSgitFtdcTransferQryBankRspField["RetCode"] = "string"
+
+CThostFtdcTransferQryBankRspField["RetCode"] = "string"
+
 #响应信息
-CSgitFtdcTransferQryBankRspField["RetInfo"] = "string"
+
+CThostFtdcTransferQryBankRspField["RetInfo"] = "string"
+
 #资金账户
-CSgitFtdcTransferQryBankRspField["FutureAccount"] = "string"
+
+CThostFtdcTransferQryBankRspField["FutureAccount"] = "string"
+
 #银行余额
-CSgitFtdcTransferQryBankRspField["TradeAmt"] = "float"
+
+CThostFtdcTransferQryBankRspField["TradeAmt"] = "float"
+
 #银行可用余额
-CSgitFtdcTransferQryBankRspField["UseAmt"] = "float"
+
+CThostFtdcTransferQryBankRspField["UseAmt"] = "float"
+
 #银行可取余额
-CSgitFtdcTransferQryBankRspField["FetchAmt"] = "float"
+
+CThostFtdcTransferQryBankRspField["FetchAmt"] = "float"
+
 #币种
-CSgitFtdcTransferQryBankRspField["CurrencyCode"] = "string"
-structDict['CSgitFtdcTransferQryBankRspField'] = CSgitFtdcTransferQryBankRspField
+
+CThostFtdcTransferQryBankRspField["CurrencyCode"] = "string"
+
+structDict['CThostFtdcTransferQryBankRspField'] = CThostFtdcTransferQryBankRspField
+
+
 
 
 #查询银行交易明细请求，TradeCode=204999
-CSgitFtdcTransferQryDetailReqField = {}
+
+CThostFtdcTransferQryDetailReqField = {}
+
+
 #期货资金账户
-CSgitFtdcTransferQryDetailReqField["FutureAccount"] = "string"
-structDict['CSgitFtdcTransferQryDetailReqField'] = CSgitFtdcTransferQryDetailReqField
+
+CThostFtdcTransferQryDetailReqField["FutureAccount"] = "string"
+
+structDict['CThostFtdcTransferQryDetailReqField'] = CThostFtdcTransferQryDetailReqField
+
+
 
 
 #查询银行交易明细请求响应
-CSgitFtdcTransferQryDetailRspField = {}
+
+CThostFtdcTransferQryDetailRspField = {}
+
+
 #交易日期
-CSgitFtdcTransferQryDetailRspField["TradeDate"] = "string"
+
+CThostFtdcTransferQryDetailRspField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcTransferQryDetailRspField["TradeTime"] = "string"
+
+CThostFtdcTransferQryDetailRspField["TradeTime"] = "string"
+
 #交易代码
-CSgitFtdcTransferQryDetailRspField["TradeCode"] = "string"
+
+CThostFtdcTransferQryDetailRspField["TradeCode"] = "string"
+
 #期货流水号
-CSgitFtdcTransferQryDetailRspField["FutureSerial"] = "int"
+
+CThostFtdcTransferQryDetailRspField["FutureSerial"] = "int"
+
 #期货公司代码
-CSgitFtdcTransferQryDetailRspField["FutureID"] = "string"
+
+CThostFtdcTransferQryDetailRspField["FutureID"] = "string"
+
 #资金帐号
-CSgitFtdcTransferQryDetailRspField["FutureAccount"] = "string"
+
+CThostFtdcTransferQryDetailRspField["FutureAccount"] = "string"
+
 #银行流水号
-CSgitFtdcTransferQryDetailRspField["BankSerial"] = "int"
+
+CThostFtdcTransferQryDetailRspField["BankSerial"] = "int"
+
 #银行代码
-CSgitFtdcTransferQryDetailRspField["BankID"] = "string"
+
+CThostFtdcTransferQryDetailRspField["BankID"] = "string"
+
 #银行分中心代码
-CSgitFtdcTransferQryDetailRspField["BankBrchID"] = "string"
+
+CThostFtdcTransferQryDetailRspField["BankBrchID"] = "string"
+
 #银行账号
-CSgitFtdcTransferQryDetailRspField["BankAccount"] = "string"
+
+CThostFtdcTransferQryDetailRspField["BankAccount"] = "string"
+
 #证件号码
-CSgitFtdcTransferQryDetailRspField["CertCode"] = "string"
+
+CThostFtdcTransferQryDetailRspField["CertCode"] = "string"
+
 #货币代码
-CSgitFtdcTransferQryDetailRspField["CurrencyCode"] = "string"
+
+CThostFtdcTransferQryDetailRspField["CurrencyCode"] = "string"
+
 #发生金额
-CSgitFtdcTransferQryDetailRspField["TxAmount"] = "float"
+
+CThostFtdcTransferQryDetailRspField["TxAmount"] = "float"
+
 #有效标志
-CSgitFtdcTransferQryDetailRspField["Flag"] = "char"
-structDict['CSgitFtdcTransferQryDetailRspField'] = CSgitFtdcTransferQryDetailRspField
+
+CThostFtdcTransferQryDetailRspField["Flag"] = "char"
+
+structDict['CThostFtdcTransferQryDetailRspField'] = CThostFtdcTransferQryDetailRspField
+
+
 
 
 #响应信息
-CSgitFtdcRspInfoField = {}
+
+CThostFtdcRspInfoField = {}
+
+
 #错误代码
-CSgitFtdcRspInfoField["ErrorID"] = "int"
+
+CThostFtdcRspInfoField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspInfoField["ErrorMsg"] = "string"
-structDict['CSgitFtdcRspInfoField'] = CSgitFtdcRspInfoField
+
+CThostFtdcRspInfoField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcRspInfoField'] = CThostFtdcRspInfoField
+
+
 
 
 #交易所
-CSgitFtdcExchangeField = {}
+
+CThostFtdcExchangeField = {}
+
+
 #交易所代码
-CSgitFtdcExchangeField["ExchangeID"] = "string"
+
+CThostFtdcExchangeField["ExchangeID"] = "string"
+
 #交易所名称
-CSgitFtdcExchangeField["ExchangeName"] = "string"
+
+CThostFtdcExchangeField["ExchangeName"] = "string"
+
 #交易所属性
-CSgitFtdcExchangeField["ExchangeProperty"] = "char"
-structDict['CSgitFtdcExchangeField'] = CSgitFtdcExchangeField
+
+CThostFtdcExchangeField["ExchangeProperty"] = "char"
+
+structDict['CThostFtdcExchangeField'] = CThostFtdcExchangeField
+
+
 
 
 #产品
-CSgitFtdcProductField = {}
+
+CThostFtdcProductField = {}
+
+
 #产品代码
-CSgitFtdcProductField["ProductID"] = "string"
+
+CThostFtdcProductField["ProductID"] = "string"
+
 #产品名称
-CSgitFtdcProductField["ProductName"] = "string"
+
+CThostFtdcProductField["ProductName"] = "string"
+
 #交易所代码
-CSgitFtdcProductField["ExchangeID"] = "string"
+
+CThostFtdcProductField["ExchangeID"] = "string"
+
 #产品类型
-CSgitFtdcProductField["ProductClass"] = "char"
+
+CThostFtdcProductField["ProductClass"] = "char"
+
 #合约数量乘数
-CSgitFtdcProductField["VolumeMultiple"] = "int"
+
+CThostFtdcProductField["VolumeMultiple"] = "int"
+
 #最小变动价位
-CSgitFtdcProductField["PriceTick"] = "float"
+
+CThostFtdcProductField["PriceTick"] = "float"
+
 #市价单最大下单量
-CSgitFtdcProductField["MaxMarketOrderVolume"] = "int"
+
+CThostFtdcProductField["MaxMarketOrderVolume"] = "int"
+
 #市价单最小下单量
-CSgitFtdcProductField["MinMarketOrderVolume"] = "int"
+
+CThostFtdcProductField["MinMarketOrderVolume"] = "int"
+
 #限价单最大下单量
-CSgitFtdcProductField["MaxLimitOrderVolume"] = "int"
+
+CThostFtdcProductField["MaxLimitOrderVolume"] = "int"
+
 #限价单最小下单量
-CSgitFtdcProductField["MinLimitOrderVolume"] = "int"
+
+CThostFtdcProductField["MinLimitOrderVolume"] = "int"
+
 #持仓类型
-CSgitFtdcProductField["PositionType"] = "char"
+
+CThostFtdcProductField["PositionType"] = "char"
+
 #持仓日期类型
-CSgitFtdcProductField["PositionDateType"] = "char"
-structDict['CSgitFtdcProductField'] = CSgitFtdcProductField
+
+CThostFtdcProductField["PositionDateType"] = "char"
+
+#平仓处理类型
+
+CThostFtdcProductField["CloseDealType"] = "char"
+
+#交易币种类型
+
+CThostFtdcProductField["TradeCurrencyID"] = "string"
+
+#质押资金可用范围
+
+CThostFtdcProductField["MortgageFundUseRange"] = "char"
+
+#交易所产品代码
+
+CThostFtdcProductField["ExchangeProductID"] = "string"
+
+#合约基础商品乘数
+
+CThostFtdcProductField["UnderlyingMultiple"] = "float"
+
+structDict['CThostFtdcProductField'] = CThostFtdcProductField
+
+
 
 
 #合约
-CSgitFtdcInstrumentField = {}
+
+CThostFtdcInstrumentField = {}
+
+
 #合约代码
-CSgitFtdcInstrumentField["InstrumentID"] = "string"
+
+CThostFtdcInstrumentField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcInstrumentField["ExchangeID"] = "string"
+
+CThostFtdcInstrumentField["ExchangeID"] = "string"
+
 #合约名称
-CSgitFtdcInstrumentField["InstrumentName"] = "string"
+
+CThostFtdcInstrumentField["InstrumentName"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcInstrumentField["ExchangeInstID"] = "string"
+
+CThostFtdcInstrumentField["ExchangeInstID"] = "string"
+
 #产品代码
-CSgitFtdcInstrumentField["ProductID"] = "string"
+
+CThostFtdcInstrumentField["ProductID"] = "string"
+
 #产品类型
-CSgitFtdcInstrumentField["ProductClass"] = "char"
+
+CThostFtdcInstrumentField["ProductClass"] = "char"
+
 #交割年份
-CSgitFtdcInstrumentField["DeliveryYear"] = "int"
+
+CThostFtdcInstrumentField["DeliveryYear"] = "int"
+
 #交割月
-CSgitFtdcInstrumentField["DeliveryMonth"] = "int"
+
+CThostFtdcInstrumentField["DeliveryMonth"] = "int"
+
 #市价单最大下单量
-CSgitFtdcInstrumentField["MaxMarketOrderVolume"] = "int"
+
+CThostFtdcInstrumentField["MaxMarketOrderVolume"] = "int"
+
 #市价单最小下单量
-CSgitFtdcInstrumentField["MinMarketOrderVolume"] = "int"
+
+CThostFtdcInstrumentField["MinMarketOrderVolume"] = "int"
+
 #限价单最大下单量
-CSgitFtdcInstrumentField["MaxLimitOrderVolume"] = "int"
+
+CThostFtdcInstrumentField["MaxLimitOrderVolume"] = "int"
+
 #限价单最小下单量
-CSgitFtdcInstrumentField["MinLimitOrderVolume"] = "int"
+
+CThostFtdcInstrumentField["MinLimitOrderVolume"] = "int"
+
 #合约数量乘数
-CSgitFtdcInstrumentField["VolumeMultiple"] = "int"
+
+CThostFtdcInstrumentField["VolumeMultiple"] = "int"
+
 #最小变动价位
-CSgitFtdcInstrumentField["PriceTick"] = "float"
+
+CThostFtdcInstrumentField["PriceTick"] = "float"
+
 #创建日
-CSgitFtdcInstrumentField["CreateDate"] = "string"
+
+CThostFtdcInstrumentField["CreateDate"] = "string"
+
 #上市日
-CSgitFtdcInstrumentField["OpenDate"] = "string"
+
+CThostFtdcInstrumentField["OpenDate"] = "string"
+
 #到期日
-CSgitFtdcInstrumentField["ExpireDate"] = "string"
+
+CThostFtdcInstrumentField["ExpireDate"] = "string"
+
 #开始交割日
-CSgitFtdcInstrumentField["StartDelivDate"] = "string"
+
+CThostFtdcInstrumentField["StartDelivDate"] = "string"
+
 #结束交割日
-CSgitFtdcInstrumentField["EndDelivDate"] = "string"
+
+CThostFtdcInstrumentField["EndDelivDate"] = "string"
+
 #合约生命周期状态
-CSgitFtdcInstrumentField["InstLifePhase"] = "char"
+
+CThostFtdcInstrumentField["InstLifePhase"] = "char"
+
 #当前是否交易
-CSgitFtdcInstrumentField["IsTrading"] = "int"
+
+CThostFtdcInstrumentField["IsTrading"] = "int"
+
 #持仓类型
-CSgitFtdcInstrumentField["PositionType"] = "char"
+
+CThostFtdcInstrumentField["PositionType"] = "char"
+
 #持仓日期类型
-CSgitFtdcInstrumentField["PositionDateType"] = "char"
+
+CThostFtdcInstrumentField["PositionDateType"] = "char"
+
 #多头保证金率
-CSgitFtdcInstrumentField["LongMarginRatio"] = "float"
+
+CThostFtdcInstrumentField["LongMarginRatio"] = "float"
+
 #空头保证金率
-CSgitFtdcInstrumentField["ShortMarginRatio"] = "float"
-structDict['CSgitFtdcInstrumentField'] = CSgitFtdcInstrumentField
+
+CThostFtdcInstrumentField["ShortMarginRatio"] = "float"
+
+#是否使用大额单边保证金算法
+
+CThostFtdcInstrumentField["MaxMarginSideAlgorithm"] = "char"
+
+#基础商品代码
+
+CThostFtdcInstrumentField["UnderlyingInstrID"] = "string"
+
+#执行价
+
+CThostFtdcInstrumentField["StrikePrice"] = "float"
+
+#期权类型
+
+CThostFtdcInstrumentField["OptionsType"] = "char"
+
+#合约基础商品乘数
+
+CThostFtdcInstrumentField["UnderlyingMultiple"] = "float"
+
+#组合类型
+
+CThostFtdcInstrumentField["CombinationType"] = "char"
+
+structDict['CThostFtdcInstrumentField'] = CThostFtdcInstrumentField
+
+
 
 
 #经纪公司
-CSgitFtdcBrokerField = {}
+
+CThostFtdcBrokerField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerField["BrokerID"] = "string"
+
+CThostFtdcBrokerField["BrokerID"] = "string"
+
 #经纪公司简称
-CSgitFtdcBrokerField["BrokerAbbr"] = "string"
+
+CThostFtdcBrokerField["BrokerAbbr"] = "string"
+
 #经纪公司名称
-CSgitFtdcBrokerField["BrokerName"] = "string"
+
+CThostFtdcBrokerField["BrokerName"] = "string"
+
 #是否活跃
-CSgitFtdcBrokerField["IsActive"] = "int"
-structDict['CSgitFtdcBrokerField'] = CSgitFtdcBrokerField
+
+CThostFtdcBrokerField["IsActive"] = "int"
+
+structDict['CThostFtdcBrokerField'] = CThostFtdcBrokerField
+
+
 
 
 #交易所交易员
-CSgitFtdcTraderField = {}
+
+CThostFtdcTraderField = {}
+
+
 #交易所代码
-CSgitFtdcTraderField["ExchangeID"] = "string"
+
+CThostFtdcTraderField["ExchangeID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcTraderField["TraderID"] = "string"
+
+CThostFtdcTraderField["TraderID"] = "string"
+
 #会员代码
-CSgitFtdcTraderField["ParticipantID"] = "string"
+
+CThostFtdcTraderField["ParticipantID"] = "string"
+
 #密码
-CSgitFtdcTraderField["Password"] = "string"
+
+CThostFtdcTraderField["Password"] = "string"
+
 #安装数量
-CSgitFtdcTraderField["InstallCount"] = "int"
+
+CThostFtdcTraderField["InstallCount"] = "int"
+
 #经纪公司代码
-CSgitFtdcTraderField["BrokerID"] = "string"
-structDict['CSgitFtdcTraderField'] = CSgitFtdcTraderField
+
+CThostFtdcTraderField["BrokerID"] = "string"
+
+structDict['CThostFtdcTraderField'] = CThostFtdcTraderField
+
+
 
 
 #投资者
-CSgitFtdcInvestorField = {}
+
+CThostFtdcInvestorField = {}
+
+
 #投资者代码
-CSgitFtdcInvestorField["InvestorID"] = "string"
+
+CThostFtdcInvestorField["InvestorID"] = "string"
+
 #经纪公司代码
-CSgitFtdcInvestorField["BrokerID"] = "string"
+
+CThostFtdcInvestorField["BrokerID"] = "string"
+
 #投资者分组代码
-CSgitFtdcInvestorField["InvestorGroupID"] = "string"
+
+CThostFtdcInvestorField["InvestorGroupID"] = "string"
+
 #投资者名称
-CSgitFtdcInvestorField["InvestorName"] = "string"
+
+CThostFtdcInvestorField["InvestorName"] = "string"
+
 #证件类型
-CSgitFtdcInvestorField["IdentifiedCardType"] = "char"
+
+CThostFtdcInvestorField["IdentifiedCardType"] = "char"
+
 #证件号码
-CSgitFtdcInvestorField["IdentifiedCardNo"] = "string"
+
+CThostFtdcInvestorField["IdentifiedCardNo"] = "string"
+
 #是否活跃
-CSgitFtdcInvestorField["IsActive"] = "int"
+
+CThostFtdcInvestorField["IsActive"] = "int"
+
 #联系电话
-CSgitFtdcInvestorField["Telephone"] = "string"
+
+CThostFtdcInvestorField["Telephone"] = "string"
+
 #通讯地址
-CSgitFtdcInvestorField["Address"] = "string"
+
+CThostFtdcInvestorField["Address"] = "string"
+
 #开户日期
-CSgitFtdcInvestorField["OpenDate"] = "string"
+
+CThostFtdcInvestorField["OpenDate"] = "string"
+
 #手机
-CSgitFtdcInvestorField["Mobile"] = "string"
+
+CThostFtdcInvestorField["Mobile"] = "string"
+
 #手续费率模板代码
-CSgitFtdcInvestorField["CommModelID"] = "string"
-structDict['CSgitFtdcInvestorField'] = CSgitFtdcInvestorField
+
+CThostFtdcInvestorField["CommModelID"] = "string"
+
+#保证金率模板代码
+
+CThostFtdcInvestorField["MarginModelID"] = "string"
+
+structDict['CThostFtdcInvestorField'] = CThostFtdcInvestorField
+
+
 
 
 #交易编码
-CSgitFtdcTradingCodeField = {}
+
+CThostFtdcTradingCodeField = {}
+
+
 #投资者代码
-CSgitFtdcTradingCodeField["InvestorID"] = "string"
+
+CThostFtdcTradingCodeField["InvestorID"] = "string"
+
 #经纪公司代码
-CSgitFtdcTradingCodeField["BrokerID"] = "string"
+
+CThostFtdcTradingCodeField["BrokerID"] = "string"
+
 #交易所代码
-CSgitFtdcTradingCodeField["ExchangeID"] = "string"
+
+CThostFtdcTradingCodeField["ExchangeID"] = "string"
+
 #客户代码
-CSgitFtdcTradingCodeField["ClientID"] = "string"
+
+CThostFtdcTradingCodeField["ClientID"] = "string"
+
 #是否活跃
-CSgitFtdcTradingCodeField["IsActive"] = "int"
+
+CThostFtdcTradingCodeField["IsActive"] = "int"
+
 #交易编码类型
-CSgitFtdcTradingCodeField["ClientIDType"] = "char"
-structDict['CSgitFtdcTradingCodeField'] = CSgitFtdcTradingCodeField
+
+CThostFtdcTradingCodeField["ClientIDType"] = "char"
+
+structDict['CThostFtdcTradingCodeField'] = CThostFtdcTradingCodeField
+
+
 
 
 #会员编码和经纪公司编码对照表
-CSgitFtdcPartBrokerField = {}
+
+CThostFtdcPartBrokerField = {}
+
+
 #经纪公司代码
-CSgitFtdcPartBrokerField["BrokerID"] = "string"
+
+CThostFtdcPartBrokerField["BrokerID"] = "string"
+
 #交易所代码
-CSgitFtdcPartBrokerField["ExchangeID"] = "string"
+
+CThostFtdcPartBrokerField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcPartBrokerField["ParticipantID"] = "string"
+
+CThostFtdcPartBrokerField["ParticipantID"] = "string"
+
 #是否活跃
-CSgitFtdcPartBrokerField["IsActive"] = "int"
-structDict['CSgitFtdcPartBrokerField'] = CSgitFtdcPartBrokerField
+
+CThostFtdcPartBrokerField["IsActive"] = "int"
+
+structDict['CThostFtdcPartBrokerField'] = CThostFtdcPartBrokerField
+
+
 
 
 #管理用户
-CSgitFtdcSuperUserField = {}
+
+CThostFtdcSuperUserField = {}
+
+
 #用户代码
-CSgitFtdcSuperUserField["UserID"] = "string"
+
+CThostFtdcSuperUserField["UserID"] = "string"
+
 #用户名称
-CSgitFtdcSuperUserField["UserName"] = "string"
+
+CThostFtdcSuperUserField["UserName"] = "string"
+
 #密码
-CSgitFtdcSuperUserField["Password"] = "string"
+
+CThostFtdcSuperUserField["Password"] = "string"
+
 #是否活跃
-CSgitFtdcSuperUserField["IsActive"] = "int"
-structDict['CSgitFtdcSuperUserField'] = CSgitFtdcSuperUserField
+
+CThostFtdcSuperUserField["IsActive"] = "int"
+
+structDict['CThostFtdcSuperUserField'] = CThostFtdcSuperUserField
+
+
 
 
 #管理用户功能权限
-CSgitFtdcSuperUserFunctionField = {}
+
+CThostFtdcSuperUserFunctionField = {}
+
+
 #用户代码
-CSgitFtdcSuperUserFunctionField["UserID"] = "string"
+
+CThostFtdcSuperUserFunctionField["UserID"] = "string"
+
 #功能代码
-CSgitFtdcSuperUserFunctionField["FunctionCode"] = "char"
-structDict['CSgitFtdcSuperUserFunctionField'] = CSgitFtdcSuperUserFunctionField
+
+CThostFtdcSuperUserFunctionField["FunctionCode"] = "char"
+
+structDict['CThostFtdcSuperUserFunctionField'] = CThostFtdcSuperUserFunctionField
+
+
 
 
 #投资者组
-CSgitFtdcInvestorGroupField = {}
+
+CThostFtdcInvestorGroupField = {}
+
+
 #经纪公司代码
-CSgitFtdcInvestorGroupField["BrokerID"] = "string"
+
+CThostFtdcInvestorGroupField["BrokerID"] = "string"
+
 #投资者分组代码
-CSgitFtdcInvestorGroupField["InvestorGroupID"] = "string"
+
+CThostFtdcInvestorGroupField["InvestorGroupID"] = "string"
+
 #投资者分组名称
-CSgitFtdcInvestorGroupField["InvestorGroupName"] = "string"
-structDict['CSgitFtdcInvestorGroupField'] = CSgitFtdcInvestorGroupField
+
+CThostFtdcInvestorGroupField["InvestorGroupName"] = "string"
+
+structDict['CThostFtdcInvestorGroupField'] = CThostFtdcInvestorGroupField
+
+
 
 
 #资金账户
-CSgitFtdcTradingAccountField = {}
+
+CThostFtdcTradingAccountField = {}
+
+
 #经纪公司代码
-CSgitFtdcTradingAccountField["BrokerID"] = "string"
+
+CThostFtdcTradingAccountField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcTradingAccountField["AccountID"] = "string"
+
+CThostFtdcTradingAccountField["AccountID"] = "string"
+
 #上次质押金额
-CSgitFtdcTradingAccountField["PreMortgage"] = "float"
+
+CThostFtdcTradingAccountField["PreMortgage"] = "float"
+
 #上次信用额度
-CSgitFtdcTradingAccountField["PreCredit"] = "float"
+
+CThostFtdcTradingAccountField["PreCredit"] = "float"
+
 #上次存款额
-CSgitFtdcTradingAccountField["PreDeposit"] = "float"
+
+CThostFtdcTradingAccountField["PreDeposit"] = "float"
+
 #上次结算准备金
-CSgitFtdcTradingAccountField["PreBalance"] = "float"
+
+CThostFtdcTradingAccountField["PreBalance"] = "float"
+
 #上次占用的保证金
-CSgitFtdcTradingAccountField["PreMargin"] = "float"
+
+CThostFtdcTradingAccountField["PreMargin"] = "float"
+
 #利息基数
-CSgitFtdcTradingAccountField["InterestBase"] = "float"
+
+CThostFtdcTradingAccountField["InterestBase"] = "float"
+
 #利息收入
-CSgitFtdcTradingAccountField["Interest"] = "float"
+
+CThostFtdcTradingAccountField["Interest"] = "float"
+
 #入金金额
-CSgitFtdcTradingAccountField["Deposit"] = "float"
+
+CThostFtdcTradingAccountField["Deposit"] = "float"
+
 #出金金额
-CSgitFtdcTradingAccountField["Withdraw"] = "float"
+
+CThostFtdcTradingAccountField["Withdraw"] = "float"
+
 #冻结的保证金
-CSgitFtdcTradingAccountField["FrozenMargin"] = "float"
+
+CThostFtdcTradingAccountField["FrozenMargin"] = "float"
+
 #冻结的资金
-CSgitFtdcTradingAccountField["FrozenCash"] = "float"
+
+CThostFtdcTradingAccountField["FrozenCash"] = "float"
+
 #冻结的手续费
-CSgitFtdcTradingAccountField["FrozenCommission"] = "float"
+
+CThostFtdcTradingAccountField["FrozenCommission"] = "float"
+
 #当前保证金总额
-CSgitFtdcTradingAccountField["CurrMargin"] = "float"
+
+CThostFtdcTradingAccountField["CurrMargin"] = "float"
+
 #资金差额
-CSgitFtdcTradingAccountField["CashIn"] = "float"
+
+CThostFtdcTradingAccountField["CashIn"] = "float"
+
 #手续费
-CSgitFtdcTradingAccountField["Commission"] = "float"
+
+CThostFtdcTradingAccountField["Commission"] = "float"
+
 #平仓盈亏
-CSgitFtdcTradingAccountField["CloseProfit"] = "float"
+
+CThostFtdcTradingAccountField["CloseProfit"] = "float"
+
 #持仓盈亏
-CSgitFtdcTradingAccountField["PositionProfit"] = "float"
+
+CThostFtdcTradingAccountField["PositionProfit"] = "float"
+
 #期货结算准备金
-CSgitFtdcTradingAccountField["Balance"] = "float"
+
+CThostFtdcTradingAccountField["Balance"] = "float"
+
 #可用资金
-CSgitFtdcTradingAccountField["Available"] = "float"
+
+CThostFtdcTradingAccountField["Available"] = "float"
+
 #可取资金
-CSgitFtdcTradingAccountField["WithdrawQuota"] = "float"
+
+CThostFtdcTradingAccountField["WithdrawQuota"] = "float"
+
 #基本准备金
-CSgitFtdcTradingAccountField["Reserve"] = "float"
+
+CThostFtdcTradingAccountField["Reserve"] = "float"
+
 #交易日
-CSgitFtdcTradingAccountField["TradingDay"] = "string"
+
+CThostFtdcTradingAccountField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcTradingAccountField["SettlementID"] = "int"
+
+CThostFtdcTradingAccountField["SettlementID"] = "int"
+
 #信用额度
-CSgitFtdcTradingAccountField["Credit"] = "float"
+
+CThostFtdcTradingAccountField["Credit"] = "float"
+
 #质押金额
-CSgitFtdcTradingAccountField["Mortgage"] = "float"
+
+CThostFtdcTradingAccountField["Mortgage"] = "float"
+
 #交易所保证金
-CSgitFtdcTradingAccountField["ExchangeMargin"] = "float"
+
+CThostFtdcTradingAccountField["ExchangeMargin"] = "float"
+
 #投资者交割保证金
-CSgitFtdcTradingAccountField["DeliveryMargin"] = "float"
+
+CThostFtdcTradingAccountField["DeliveryMargin"] = "float"
+
 #交易所交割保证金
-CSgitFtdcTradingAccountField["ExchangeDeliveryMargin"] = "float"
-structDict['CSgitFtdcTradingAccountField'] = CSgitFtdcTradingAccountField
+
+CThostFtdcTradingAccountField["ExchangeDeliveryMargin"] = "float"
+
+#保底期货结算准备金
+
+CThostFtdcTradingAccountField["ReserveBalance"] = "float"
+
+#币种代码
+
+CThostFtdcTradingAccountField["CurrencyID"] = "string"
+
+#上次货币质入金额
+
+CThostFtdcTradingAccountField["PreFundMortgageIn"] = "float"
+
+#上次货币质出金额
+
+CThostFtdcTradingAccountField["PreFundMortgageOut"] = "float"
+
+#货币质入金额
+
+CThostFtdcTradingAccountField["FundMortgageIn"] = "float"
+
+#货币质出金额
+
+CThostFtdcTradingAccountField["FundMortgageOut"] = "float"
+
+#货币质押余额
+
+CThostFtdcTradingAccountField["FundMortgageAvailable"] = "float"
+
+#可质押货币金额
+
+CThostFtdcTradingAccountField["MortgageableFund"] = "float"
+
+#特殊产品占用保证金
+
+CThostFtdcTradingAccountField["SpecProductMargin"] = "float"
+
+#特殊产品冻结保证金
+
+CThostFtdcTradingAccountField["SpecProductFrozenMargin"] = "float"
+
+#特殊产品手续费
+
+CThostFtdcTradingAccountField["SpecProductCommission"] = "float"
+
+#特殊产品冻结手续费
+
+CThostFtdcTradingAccountField["SpecProductFrozenCommission"] = "float"
+
+#特殊产品持仓盈亏
+
+CThostFtdcTradingAccountField["SpecProductPositionProfit"] = "float"
+
+#特殊产品平仓盈亏
+
+CThostFtdcTradingAccountField["SpecProductCloseProfit"] = "float"
+
+#根据持仓盈亏算法计算的特殊产品持仓盈亏
+
+CThostFtdcTradingAccountField["SpecProductPositionProfitByAlg"] = "float"
+
+#特殊产品交易所保证金
+
+CThostFtdcTradingAccountField["SpecProductExchangeMargin"] = "float"
+
+structDict['CThostFtdcTradingAccountField'] = CThostFtdcTradingAccountField
+
+
 
 
 #投资者持仓
-CSgitFtdcInvestorPositionField = {}
+
+CThostFtdcInvestorPositionField = {}
+
+
 #合约代码
-CSgitFtdcInvestorPositionField["InstrumentID"] = "string"
+
+CThostFtdcInvestorPositionField["InstrumentID"] = "string"
+
 #经纪公司代码
-CSgitFtdcInvestorPositionField["BrokerID"] = "string"
+
+CThostFtdcInvestorPositionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInvestorPositionField["InvestorID"] = "string"
+
+CThostFtdcInvestorPositionField["InvestorID"] = "string"
+
 #持仓多空方向
-CSgitFtdcInvestorPositionField["PosiDirection"] = "char"
+
+CThostFtdcInvestorPositionField["PosiDirection"] = "char"
+
 #投机套保标志
-CSgitFtdcInvestorPositionField["HedgeFlag"] = "char"
+
+CThostFtdcInvestorPositionField["HedgeFlag"] = "char"
+
 #持仓日期
-CSgitFtdcInvestorPositionField["PositionDate"] = "char"
+
+CThostFtdcInvestorPositionField["PositionDate"] = "char"
+
 #上日持仓
-CSgitFtdcInvestorPositionField["YdPosition"] = "int"
+
+CThostFtdcInvestorPositionField["YdPosition"] = "int"
+
 #今日持仓
-CSgitFtdcInvestorPositionField["Position"] = "int"
+
+CThostFtdcInvestorPositionField["Position"] = "int"
+
 #多头冻结
-CSgitFtdcInvestorPositionField["LongFrozen"] = "int"
+
+CThostFtdcInvestorPositionField["LongFrozen"] = "int"
+
 #空头冻结
-CSgitFtdcInvestorPositionField["ShortFrozen"] = "int"
+
+CThostFtdcInvestorPositionField["ShortFrozen"] = "int"
+
 #开仓冻结金额
-CSgitFtdcInvestorPositionField["LongFrozenAmount"] = "float"
+
+CThostFtdcInvestorPositionField["LongFrozenAmount"] = "float"
+
 #开仓冻结金额
-CSgitFtdcInvestorPositionField["ShortFrozenAmount"] = "float"
+
+CThostFtdcInvestorPositionField["ShortFrozenAmount"] = "float"
+
 #开仓量
-CSgitFtdcInvestorPositionField["OpenVolume"] = "int"
+
+CThostFtdcInvestorPositionField["OpenVolume"] = "int"
+
 #平仓量
-CSgitFtdcInvestorPositionField["CloseVolume"] = "int"
+
+CThostFtdcInvestorPositionField["CloseVolume"] = "int"
+
 #开仓金额
-CSgitFtdcInvestorPositionField["OpenAmount"] = "float"
+
+CThostFtdcInvestorPositionField["OpenAmount"] = "float"
+
 #平仓金额
-CSgitFtdcInvestorPositionField["CloseAmount"] = "float"
+
+CThostFtdcInvestorPositionField["CloseAmount"] = "float"
+
 #持仓成本
-CSgitFtdcInvestorPositionField["PositionCost"] = "float"
+
+CThostFtdcInvestorPositionField["PositionCost"] = "float"
+
 #上次占用的保证金
-CSgitFtdcInvestorPositionField["PreMargin"] = "float"
+
+CThostFtdcInvestorPositionField["PreMargin"] = "float"
+
 #占用的保证金
-CSgitFtdcInvestorPositionField["UseMargin"] = "float"
+
+CThostFtdcInvestorPositionField["UseMargin"] = "float"
+
 #冻结的保证金
-CSgitFtdcInvestorPositionField["FrozenMargin"] = "float"
+
+CThostFtdcInvestorPositionField["FrozenMargin"] = "float"
+
 #冻结的资金
-CSgitFtdcInvestorPositionField["FrozenCash"] = "float"
+
+CThostFtdcInvestorPositionField["FrozenCash"] = "float"
+
 #冻结的手续费
-CSgitFtdcInvestorPositionField["FrozenCommission"] = "float"
+
+CThostFtdcInvestorPositionField["FrozenCommission"] = "float"
+
 #资金差额
-CSgitFtdcInvestorPositionField["CashIn"] = "float"
+
+CThostFtdcInvestorPositionField["CashIn"] = "float"
+
 #手续费
-CSgitFtdcInvestorPositionField["Commission"] = "float"
+
+CThostFtdcInvestorPositionField["Commission"] = "float"
+
 #平仓盈亏
-CSgitFtdcInvestorPositionField["CloseProfit"] = "float"
+
+CThostFtdcInvestorPositionField["CloseProfit"] = "float"
+
 #持仓盈亏
-CSgitFtdcInvestorPositionField["PositionProfit"] = "float"
+
+CThostFtdcInvestorPositionField["PositionProfit"] = "float"
+
 #上次结算价
-CSgitFtdcInvestorPositionField["PreSettlementPrice"] = "float"
+
+CThostFtdcInvestorPositionField["PreSettlementPrice"] = "float"
+
 #本次结算价
-CSgitFtdcInvestorPositionField["SettlementPrice"] = "float"
+
+CThostFtdcInvestorPositionField["SettlementPrice"] = "float"
+
 #交易日
-CSgitFtdcInvestorPositionField["TradingDay"] = "string"
+
+CThostFtdcInvestorPositionField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcInvestorPositionField["SettlementID"] = "int"
+
+CThostFtdcInvestorPositionField["SettlementID"] = "int"
+
 #开仓成本
-CSgitFtdcInvestorPositionField["OpenCost"] = "float"
+
+CThostFtdcInvestorPositionField["OpenCost"] = "float"
+
 #交易所保证金
-CSgitFtdcInvestorPositionField["ExchangeMargin"] = "float"
+
+CThostFtdcInvestorPositionField["ExchangeMargin"] = "float"
+
 #组合成交形成的持仓
-CSgitFtdcInvestorPositionField["CombPosition"] = "int"
+
+CThostFtdcInvestorPositionField["CombPosition"] = "int"
+
 #组合多头冻结
-CSgitFtdcInvestorPositionField["CombLongFrozen"] = "int"
+
+CThostFtdcInvestorPositionField["CombLongFrozen"] = "int"
+
 #组合空头冻结
-CSgitFtdcInvestorPositionField["CombShortFrozen"] = "int"
+
+CThostFtdcInvestorPositionField["CombShortFrozen"] = "int"
+
 #逐日盯市平仓盈亏
-CSgitFtdcInvestorPositionField["CloseProfitByDate"] = "float"
+
+CThostFtdcInvestorPositionField["CloseProfitByDate"] = "float"
+
 #逐笔对冲平仓盈亏
-CSgitFtdcInvestorPositionField["CloseProfitByTrade"] = "float"
+
+CThostFtdcInvestorPositionField["CloseProfitByTrade"] = "float"
+
 #今日持仓
-CSgitFtdcInvestorPositionField["TodayPosition"] = "int"
+
+CThostFtdcInvestorPositionField["TodayPosition"] = "int"
+
 #保证金率
-CSgitFtdcInvestorPositionField["MarginRateByMoney"] = "float"
+
+CThostFtdcInvestorPositionField["MarginRateByMoney"] = "float"
+
 #保证金率(按手数)
-CSgitFtdcInvestorPositionField["MarginRateByVolume"] = "float"
-structDict['CSgitFtdcInvestorPositionField'] = CSgitFtdcInvestorPositionField
+
+CThostFtdcInvestorPositionField["MarginRateByVolume"] = "float"
+
+#执行冻结//以下sgit不用
+
+CThostFtdcInvestorPositionField["StrikeFrozen"] = "int"
+
+#执行冻结金额
+
+CThostFtdcInvestorPositionField["StrikeFrozenAmount"] = "float"
+
+#放弃执行冻结
+
+CThostFtdcInvestorPositionField["AbandonFrozen"] = "int"
+
+structDict['CThostFtdcInvestorPositionField'] = CThostFtdcInvestorPositionField
+
+
 
 
 #合约保证金率
-CSgitFtdcInstrumentMarginRateField = {}
+
+CThostFtdcInstrumentMarginRateField = {}
+
+
 #合约代码
-CSgitFtdcInstrumentMarginRateField["InstrumentID"] = "string"
+
+CThostFtdcInstrumentMarginRateField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcInstrumentMarginRateField["InvestorRange"] = "char"
+
+CThostFtdcInstrumentMarginRateField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcInstrumentMarginRateField["BrokerID"] = "string"
+
+CThostFtdcInstrumentMarginRateField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInstrumentMarginRateField["InvestorID"] = "string"
+
+CThostFtdcInstrumentMarginRateField["InvestorID"] = "string"
+
 #投机套保标志
-CSgitFtdcInstrumentMarginRateField["HedgeFlag"] = "char"
+
+CThostFtdcInstrumentMarginRateField["HedgeFlag"] = "char"
+
 #多头保证金率
-CSgitFtdcInstrumentMarginRateField["LongMarginRatioByMoney"] = "float"
+
+CThostFtdcInstrumentMarginRateField["LongMarginRatioByMoney"] = "float"
+
 #多头保证金费
-CSgitFtdcInstrumentMarginRateField["LongMarginRatioByVolume"] = "float"
+
+CThostFtdcInstrumentMarginRateField["LongMarginRatioByVolume"] = "float"
+
 #空头保证金率
-CSgitFtdcInstrumentMarginRateField["ShortMarginRatioByMoney"] = "float"
+
+CThostFtdcInstrumentMarginRateField["ShortMarginRatioByMoney"] = "float"
+
 #空头保证金费
-CSgitFtdcInstrumentMarginRateField["ShortMarginRatioByVolume"] = "float"
+
+CThostFtdcInstrumentMarginRateField["ShortMarginRatioByVolume"] = "float"
+
 #是否相对交易所收取
-CSgitFtdcInstrumentMarginRateField["IsRelative"] = "int"
-structDict['CSgitFtdcInstrumentMarginRateField'] = CSgitFtdcInstrumentMarginRateField
+
+CThostFtdcInstrumentMarginRateField["IsRelative"] = "int"
+
+structDict['CThostFtdcInstrumentMarginRateField'] = CThostFtdcInstrumentMarginRateField
+
+
 
 
 #合约手续费率
-CSgitFtdcInstrumentCommissionRateField = {}
+
+CThostFtdcInstrumentCommissionRateField = {}
+
+
 #合约代码
-CSgitFtdcInstrumentCommissionRateField["InstrumentID"] = "string"
+
+CThostFtdcInstrumentCommissionRateField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcInstrumentCommissionRateField["InvestorRange"] = "char"
+
+CThostFtdcInstrumentCommissionRateField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcInstrumentCommissionRateField["BrokerID"] = "string"
+
+CThostFtdcInstrumentCommissionRateField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInstrumentCommissionRateField["InvestorID"] = "string"
+
+CThostFtdcInstrumentCommissionRateField["InvestorID"] = "string"
+
 #开仓手续费率
-CSgitFtdcInstrumentCommissionRateField["OpenRatioByMoney"] = "float"
+
+CThostFtdcInstrumentCommissionRateField["OpenRatioByMoney"] = "float"
+
 #开仓手续费
-CSgitFtdcInstrumentCommissionRateField["OpenRatioByVolume"] = "float"
+
+CThostFtdcInstrumentCommissionRateField["OpenRatioByVolume"] = "float"
+
 #平仓手续费率
-CSgitFtdcInstrumentCommissionRateField["CloseRatioByMoney"] = "float"
+
+CThostFtdcInstrumentCommissionRateField["CloseRatioByMoney"] = "float"
+
 #平仓手续费
-CSgitFtdcInstrumentCommissionRateField["CloseRatioByVolume"] = "float"
+
+CThostFtdcInstrumentCommissionRateField["CloseRatioByVolume"] = "float"
+
 #平今手续费率
-CSgitFtdcInstrumentCommissionRateField["CloseTodayRatioByMoney"] = "float"
+
+CThostFtdcInstrumentCommissionRateField["CloseTodayRatioByMoney"] = "float"
+
 #平今手续费
-CSgitFtdcInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
-structDict['CSgitFtdcInstrumentCommissionRateField'] = CSgitFtdcInstrumentCommissionRateField
+
+CThostFtdcInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
+
+structDict['CThostFtdcInstrumentCommissionRateField'] = CThostFtdcInstrumentCommissionRateField
+
+
 
 
 #深度行情
-CSgitFtdcDepthMarketDataField = {}
+
+CThostFtdcDepthMarketDataField = {}
+
+
 #交易日
-CSgitFtdcDepthMarketDataField["TradingDay"] = "string"
+
+CThostFtdcDepthMarketDataField["TradingDay"] = "string"
+
 #合约代码
-CSgitFtdcDepthMarketDataField["InstrumentID"] = "string"
+
+CThostFtdcDepthMarketDataField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcDepthMarketDataField["ExchangeID"] = "string"
+
+CThostFtdcDepthMarketDataField["ExchangeID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcDepthMarketDataField["ExchangeInstID"] = "string"
+
+CThostFtdcDepthMarketDataField["ExchangeInstID"] = "string"
+
 #最新价
-CSgitFtdcDepthMarketDataField["LastPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["LastPrice"] = "float"
+
 #上次结算价
-CSgitFtdcDepthMarketDataField["PreSettlementPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["PreSettlementPrice"] = "float"
+
 #昨收盘
-CSgitFtdcDepthMarketDataField["PreClosePrice"] = "float"
+
+CThostFtdcDepthMarketDataField["PreClosePrice"] = "float"
+
 #昨持仓量
-CSgitFtdcDepthMarketDataField["PreOpenInterest"] = "float"
+
+CThostFtdcDepthMarketDataField["PreOpenInterest"] = "float"
+
 #今开盘
-CSgitFtdcDepthMarketDataField["OpenPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["OpenPrice"] = "float"
+
 #最高价
-CSgitFtdcDepthMarketDataField["HighestPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["HighestPrice"] = "float"
+
 #最低价
-CSgitFtdcDepthMarketDataField["LowestPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["LowestPrice"] = "float"
+
 #数量
-CSgitFtdcDepthMarketDataField["Volume"] = "int"
+
+CThostFtdcDepthMarketDataField["Volume"] = "int"
+
 #成交金额
-CSgitFtdcDepthMarketDataField["Turnover"] = "float"
+
+CThostFtdcDepthMarketDataField["Turnover"] = "float"
+
 #持仓量
-CSgitFtdcDepthMarketDataField["OpenInterest"] = "float"
+
+CThostFtdcDepthMarketDataField["OpenInterest"] = "float"
+
 #今收盘
-CSgitFtdcDepthMarketDataField["ClosePrice"] = "float"
+
+CThostFtdcDepthMarketDataField["ClosePrice"] = "float"
+
 #本次结算价
-CSgitFtdcDepthMarketDataField["SettlementPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["SettlementPrice"] = "float"
+
 #涨停板价
-CSgitFtdcDepthMarketDataField["UpperLimitPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["UpperLimitPrice"] = "float"
+
 #跌停板价
-CSgitFtdcDepthMarketDataField["LowerLimitPrice"] = "float"
+
+CThostFtdcDepthMarketDataField["LowerLimitPrice"] = "float"
+
 #昨虚实度
-CSgitFtdcDepthMarketDataField["PreDelta"] = "float"
+
+CThostFtdcDepthMarketDataField["PreDelta"] = "float"
+
 #今虚实度
-CSgitFtdcDepthMarketDataField["CurrDelta"] = "float"
+
+CThostFtdcDepthMarketDataField["CurrDelta"] = "float"
+
 #最后修改时间
-CSgitFtdcDepthMarketDataField["UpdateTime"] = "string"
+
+CThostFtdcDepthMarketDataField["UpdateTime"] = "string"
+
 #最后修改毫秒
-CSgitFtdcDepthMarketDataField["UpdateMillisec"] = "int"
+
+CThostFtdcDepthMarketDataField["UpdateMillisec"] = "int"
+
 #申买价一
-CSgitFtdcDepthMarketDataField["BidPrice1"] = "float"
+
+CThostFtdcDepthMarketDataField["BidPrice1"] = "float"
+
 #申买量一
-CSgitFtdcDepthMarketDataField["BidVolume1"] = "int"
+
+CThostFtdcDepthMarketDataField["BidVolume1"] = "int"
+
 #申卖价一
-CSgitFtdcDepthMarketDataField["AskPrice1"] = "float"
+
+CThostFtdcDepthMarketDataField["AskPrice1"] = "float"
+
 #申卖量一
-CSgitFtdcDepthMarketDataField["AskVolume1"] = "int"
+
+CThostFtdcDepthMarketDataField["AskVolume1"] = "int"
+
 #申买价二
-CSgitFtdcDepthMarketDataField["BidPrice2"] = "float"
+
+CThostFtdcDepthMarketDataField["BidPrice2"] = "float"
+
 #申买量二
-CSgitFtdcDepthMarketDataField["BidVolume2"] = "int"
+
+CThostFtdcDepthMarketDataField["BidVolume2"] = "int"
+
 #申卖价二
-CSgitFtdcDepthMarketDataField["AskPrice2"] = "float"
+
+CThostFtdcDepthMarketDataField["AskPrice2"] = "float"
+
 #申卖量二
-CSgitFtdcDepthMarketDataField["AskVolume2"] = "int"
+
+CThostFtdcDepthMarketDataField["AskVolume2"] = "int"
+
 #申买价三
-CSgitFtdcDepthMarketDataField["BidPrice3"] = "float"
+
+CThostFtdcDepthMarketDataField["BidPrice3"] = "float"
+
 #申买量三
-CSgitFtdcDepthMarketDataField["BidVolume3"] = "int"
+
+CThostFtdcDepthMarketDataField["BidVolume3"] = "int"
+
 #申卖价三
-CSgitFtdcDepthMarketDataField["AskPrice3"] = "float"
+
+CThostFtdcDepthMarketDataField["AskPrice3"] = "float"
+
 #申卖量三
-CSgitFtdcDepthMarketDataField["AskVolume3"] = "int"
+
+CThostFtdcDepthMarketDataField["AskVolume3"] = "int"
+
 #申买价四
-CSgitFtdcDepthMarketDataField["BidPrice4"] = "float"
+
+CThostFtdcDepthMarketDataField["BidPrice4"] = "float"
+
 #申买量四
-CSgitFtdcDepthMarketDataField["BidVolume4"] = "int"
+
+CThostFtdcDepthMarketDataField["BidVolume4"] = "int"
+
 #申卖价四
-CSgitFtdcDepthMarketDataField["AskPrice4"] = "float"
+
+CThostFtdcDepthMarketDataField["AskPrice4"] = "float"
+
 #申卖量四
-CSgitFtdcDepthMarketDataField["AskVolume4"] = "int"
+
+CThostFtdcDepthMarketDataField["AskVolume4"] = "int"
+
 #申买价五
-CSgitFtdcDepthMarketDataField["BidPrice5"] = "float"
+
+CThostFtdcDepthMarketDataField["BidPrice5"] = "float"
+
 #申买量五
-CSgitFtdcDepthMarketDataField["BidVolume5"] = "int"
+
+CThostFtdcDepthMarketDataField["BidVolume5"] = "int"
+
 #申卖价五
-CSgitFtdcDepthMarketDataField["AskPrice5"] = "float"
+
+CThostFtdcDepthMarketDataField["AskPrice5"] = "float"
+
 #申卖量五
-CSgitFtdcDepthMarketDataField["AskVolume5"] = "int"
+
+CThostFtdcDepthMarketDataField["AskVolume5"] = "int"
+
 #当日均价
-CSgitFtdcDepthMarketDataField["AveragePrice"] = "float"
-structDict['CSgitFtdcDepthMarketDataField'] = CSgitFtdcDepthMarketDataField
+
+CThostFtdcDepthMarketDataField["AveragePrice"] = "float"
+
+#业务日期
+
+CThostFtdcDepthMarketDataField["ActionDay"] = "string"
+
+structDict['CThostFtdcDepthMarketDataField'] = CThostFtdcDepthMarketDataField
+
+
 
 
 #投资者合约交易权限
-CSgitFtdcInstrumentTradingRightField = {}
+
+CThostFtdcInstrumentTradingRightField = {}
+
+
 #合约代码
-CSgitFtdcInstrumentTradingRightField["InstrumentID"] = "string"
+
+CThostFtdcInstrumentTradingRightField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcInstrumentTradingRightField["InvestorRange"] = "char"
+
+CThostFtdcInstrumentTradingRightField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcInstrumentTradingRightField["BrokerID"] = "string"
+
+CThostFtdcInstrumentTradingRightField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInstrumentTradingRightField["InvestorID"] = "string"
+
+CThostFtdcInstrumentTradingRightField["InvestorID"] = "string"
+
 #交易权限
-CSgitFtdcInstrumentTradingRightField["TradingRight"] = "char"
-structDict['CSgitFtdcInstrumentTradingRightField'] = CSgitFtdcInstrumentTradingRightField
+
+CThostFtdcInstrumentTradingRightField["TradingRight"] = "char"
+
+structDict['CThostFtdcInstrumentTradingRightField'] = CThostFtdcInstrumentTradingRightField
+
+
 
 
 #经纪公司用户
-CSgitFtdcBrokerUserField = {}
+
+CThostFtdcBrokerUserField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerUserField["BrokerID"] = "string"
+
+CThostFtdcBrokerUserField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcBrokerUserField["UserID"] = "string"
+
+CThostFtdcBrokerUserField["UserID"] = "string"
+
 #用户名称
-CSgitFtdcBrokerUserField["UserName"] = "string"
+
+CThostFtdcBrokerUserField["UserName"] = "string"
+
 #用户类型
-CSgitFtdcBrokerUserField["UserType"] = "char"
+
+CThostFtdcBrokerUserField["UserType"] = "char"
+
 #是否活跃
-CSgitFtdcBrokerUserField["IsActive"] = "int"
+
+CThostFtdcBrokerUserField["IsActive"] = "int"
+
 #是否使用令牌
-CSgitFtdcBrokerUserField["IsUsingOTP"] = "int"
-structDict['CSgitFtdcBrokerUserField'] = CSgitFtdcBrokerUserField
+
+CThostFtdcBrokerUserField["IsUsingOTP"] = "int"
+
+structDict['CThostFtdcBrokerUserField'] = CThostFtdcBrokerUserField
+
+
 
 
 #经纪公司用户口令
-CSgitFtdcBrokerUserPasswordField = {}
+
+CThostFtdcBrokerUserPasswordField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerUserPasswordField["BrokerID"] = "string"
+
+CThostFtdcBrokerUserPasswordField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcBrokerUserPasswordField["UserID"] = "string"
+
+CThostFtdcBrokerUserPasswordField["UserID"] = "string"
+
 #密码
-CSgitFtdcBrokerUserPasswordField["Password"] = "string"
-structDict['CSgitFtdcBrokerUserPasswordField'] = CSgitFtdcBrokerUserPasswordField
+
+CThostFtdcBrokerUserPasswordField["Password"] = "string"
+
+structDict['CThostFtdcBrokerUserPasswordField'] = CThostFtdcBrokerUserPasswordField
+
+
 
 
 #经纪公司用户功能权限
-CSgitFtdcBrokerUserFunctionField = {}
+
+CThostFtdcBrokerUserFunctionField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerUserFunctionField["BrokerID"] = "string"
+
+CThostFtdcBrokerUserFunctionField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcBrokerUserFunctionField["UserID"] = "string"
+
+CThostFtdcBrokerUserFunctionField["UserID"] = "string"
+
 #经纪公司功能代码
-CSgitFtdcBrokerUserFunctionField["BrokerFunctionCode"] = "char"
-structDict['CSgitFtdcBrokerUserFunctionField'] = CSgitFtdcBrokerUserFunctionField
+
+CThostFtdcBrokerUserFunctionField["BrokerFunctionCode"] = "char"
+
+structDict['CThostFtdcBrokerUserFunctionField'] = CThostFtdcBrokerUserFunctionField
+
+
 
 
 #交易所交易员报盘机
-CSgitFtdcTraderOfferField = {}
+
+CThostFtdcTraderOfferField = {}
+
+
 #交易所代码
-CSgitFtdcTraderOfferField["ExchangeID"] = "string"
+
+CThostFtdcTraderOfferField["ExchangeID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcTraderOfferField["TraderID"] = "string"
+
+CThostFtdcTraderOfferField["TraderID"] = "string"
+
 #会员代码
-CSgitFtdcTraderOfferField["ParticipantID"] = "string"
+
+CThostFtdcTraderOfferField["ParticipantID"] = "string"
+
 #密码
-CSgitFtdcTraderOfferField["Password"] = "string"
+
+CThostFtdcTraderOfferField["Password"] = "string"
+
 #安装编号
-CSgitFtdcTraderOfferField["InstallID"] = "int"
+
+CThostFtdcTraderOfferField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcTraderOfferField["OrderLocalID"] = "string"
+
+CThostFtdcTraderOfferField["OrderLocalID"] = "string"
+
 #交易所交易员连接状态
-CSgitFtdcTraderOfferField["TraderConnectStatus"] = "char"
+
+CThostFtdcTraderOfferField["TraderConnectStatus"] = "char"
+
 #发出连接请求的日期
-CSgitFtdcTraderOfferField["ConnectRequestDate"] = "string"
+
+CThostFtdcTraderOfferField["ConnectRequestDate"] = "string"
+
 #发出连接请求的时间
-CSgitFtdcTraderOfferField["ConnectRequestTime"] = "string"
+
+CThostFtdcTraderOfferField["ConnectRequestTime"] = "string"
+
 #上次报告日期
-CSgitFtdcTraderOfferField["LastReportDate"] = "string"
+
+CThostFtdcTraderOfferField["LastReportDate"] = "string"
+
 #上次报告时间
-CSgitFtdcTraderOfferField["LastReportTime"] = "string"
+
+CThostFtdcTraderOfferField["LastReportTime"] = "string"
+
 #完成连接日期
-CSgitFtdcTraderOfferField["ConnectDate"] = "string"
+
+CThostFtdcTraderOfferField["ConnectDate"] = "string"
+
 #完成连接时间
-CSgitFtdcTraderOfferField["ConnectTime"] = "string"
+
+CThostFtdcTraderOfferField["ConnectTime"] = "string"
+
 #启动日期
-CSgitFtdcTraderOfferField["StartDate"] = "string"
+
+CThostFtdcTraderOfferField["StartDate"] = "string"
+
 #启动时间
-CSgitFtdcTraderOfferField["StartTime"] = "string"
+
+CThostFtdcTraderOfferField["StartTime"] = "string"
+
 #交易日
-CSgitFtdcTraderOfferField["TradingDay"] = "string"
+
+CThostFtdcTraderOfferField["TradingDay"] = "string"
+
 #经纪公司代码
-CSgitFtdcTraderOfferField["BrokerID"] = "string"
+
+CThostFtdcTraderOfferField["BrokerID"] = "string"
+
 #本席位最大成交编号
-CSgitFtdcTraderOfferField["MaxTradeID"] = "string"
+
+CThostFtdcTraderOfferField["MaxTradeID"] = "string"
+
 #本席位最大报单备拷
-CSgitFtdcTraderOfferField["MaxOrderMessageReference"] = "string"
-structDict['CSgitFtdcTraderOfferField'] = CSgitFtdcTraderOfferField
+
+CThostFtdcTraderOfferField["MaxOrderMessageReference"] = "string"
+
+structDict['CThostFtdcTraderOfferField'] = CThostFtdcTraderOfferField
+
+
 
 
 #投资者结算结果
-CSgitFtdcSettlementInfoField = {}
+
+CThostFtdcSettlementInfoField = {}
+
+
 #交易日
-CSgitFtdcSettlementInfoField["TradingDay"] = "string"
+
+CThostFtdcSettlementInfoField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcSettlementInfoField["SettlementID"] = "int"
+
+CThostFtdcSettlementInfoField["SettlementID"] = "int"
+
 #经纪公司代码
-CSgitFtdcSettlementInfoField["BrokerID"] = "string"
+
+CThostFtdcSettlementInfoField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSettlementInfoField["InvestorID"] = "string"
+
+CThostFtdcSettlementInfoField["InvestorID"] = "string"
+
 #序号
-CSgitFtdcSettlementInfoField["SequenceNo"] = "int"
+
+CThostFtdcSettlementInfoField["SequenceNo"] = "int"
+
 #消息正文
-CSgitFtdcSettlementInfoField["Content"] = "string"
-structDict['CSgitFtdcSettlementInfoField'] = CSgitFtdcSettlementInfoField
+
+CThostFtdcSettlementInfoField["Content"] = "string"
+
+structDict['CThostFtdcSettlementInfoField'] = CThostFtdcSettlementInfoField
+
+
 
 
 #合约保证金率调整
-CSgitFtdcInstrumentMarginRateAdjustField = {}
+
+CThostFtdcInstrumentMarginRateAdjustField = {}
+
+
 #合约代码
-CSgitFtdcInstrumentMarginRateAdjustField["InstrumentID"] = "string"
+
+CThostFtdcInstrumentMarginRateAdjustField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcInstrumentMarginRateAdjustField["InvestorRange"] = "char"
+
+CThostFtdcInstrumentMarginRateAdjustField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcInstrumentMarginRateAdjustField["BrokerID"] = "string"
+
+CThostFtdcInstrumentMarginRateAdjustField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInstrumentMarginRateAdjustField["InvestorID"] = "string"
+
+CThostFtdcInstrumentMarginRateAdjustField["InvestorID"] = "string"
+
 #投机套保标志
-CSgitFtdcInstrumentMarginRateAdjustField["HedgeFlag"] = "char"
+
+CThostFtdcInstrumentMarginRateAdjustField["HedgeFlag"] = "char"
+
 #多头保证金率
-CSgitFtdcInstrumentMarginRateAdjustField["LongMarginRatioByMoney"] = "float"
+
+CThostFtdcInstrumentMarginRateAdjustField["LongMarginRatioByMoney"] = "float"
+
 #多头保证金费
-CSgitFtdcInstrumentMarginRateAdjustField["LongMarginRatioByVolume"] = "float"
+
+CThostFtdcInstrumentMarginRateAdjustField["LongMarginRatioByVolume"] = "float"
+
 #空头保证金率
-CSgitFtdcInstrumentMarginRateAdjustField["ShortMarginRatioByMoney"] = "float"
+
+CThostFtdcInstrumentMarginRateAdjustField["ShortMarginRatioByMoney"] = "float"
+
 #空头保证金费
-CSgitFtdcInstrumentMarginRateAdjustField["ShortMarginRatioByVolume"] = "float"
+
+CThostFtdcInstrumentMarginRateAdjustField["ShortMarginRatioByVolume"] = "float"
+
 #是否相对交易所收取
-CSgitFtdcInstrumentMarginRateAdjustField["IsRelative"] = "int"
-structDict['CSgitFtdcInstrumentMarginRateAdjustField'] = CSgitFtdcInstrumentMarginRateAdjustField
+
+CThostFtdcInstrumentMarginRateAdjustField["IsRelative"] = "int"
+
+structDict['CThostFtdcInstrumentMarginRateAdjustField'] = CThostFtdcInstrumentMarginRateAdjustField
+
+
 
 
 #交易所保证金率
-CSgitFtdcExchangeMarginRateField = {}
+
+CThostFtdcExchangeMarginRateField = {}
+
+
 #经纪公司代码
-CSgitFtdcExchangeMarginRateField["BrokerID"] = "string"
+
+CThostFtdcExchangeMarginRateField["BrokerID"] = "string"
+
 #合约代码
-CSgitFtdcExchangeMarginRateField["InstrumentID"] = "string"
+
+CThostFtdcExchangeMarginRateField["InstrumentID"] = "string"
+
 #投机套保标志
-CSgitFtdcExchangeMarginRateField["HedgeFlag"] = "char"
+
+CThostFtdcExchangeMarginRateField["HedgeFlag"] = "char"
+
 #多头保证金率
-CSgitFtdcExchangeMarginRateField["LongMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateField["LongMarginRatioByMoney"] = "float"
+
 #多头保证金费
-CSgitFtdcExchangeMarginRateField["LongMarginRatioByVolume"] = "float"
+
+CThostFtdcExchangeMarginRateField["LongMarginRatioByVolume"] = "float"
+
 #空头保证金率
-CSgitFtdcExchangeMarginRateField["ShortMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateField["ShortMarginRatioByMoney"] = "float"
+
 #空头保证金费
-CSgitFtdcExchangeMarginRateField["ShortMarginRatioByVolume"] = "float"
-structDict['CSgitFtdcExchangeMarginRateField'] = CSgitFtdcExchangeMarginRateField
+
+CThostFtdcExchangeMarginRateField["ShortMarginRatioByVolume"] = "float"
+
+structDict['CThostFtdcExchangeMarginRateField'] = CThostFtdcExchangeMarginRateField
+
+
 
 
 #交易所保证金率调整
-CSgitFtdcExchangeMarginRateAdjustField = {}
+
+CThostFtdcExchangeMarginRateAdjustField = {}
+
+
 #经纪公司代码
-CSgitFtdcExchangeMarginRateAdjustField["BrokerID"] = "string"
+
+CThostFtdcExchangeMarginRateAdjustField["BrokerID"] = "string"
+
 #合约代码
-CSgitFtdcExchangeMarginRateAdjustField["InstrumentID"] = "string"
+
+CThostFtdcExchangeMarginRateAdjustField["InstrumentID"] = "string"
+
 #投机套保标志
-CSgitFtdcExchangeMarginRateAdjustField["HedgeFlag"] = "char"
+
+CThostFtdcExchangeMarginRateAdjustField["HedgeFlag"] = "char"
+
 #跟随交易所投资者多头保证金率
-CSgitFtdcExchangeMarginRateAdjustField["LongMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["LongMarginRatioByMoney"] = "float"
+
 #跟随交易所投资者多头保证金费
-CSgitFtdcExchangeMarginRateAdjustField["LongMarginRatioByVolume"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["LongMarginRatioByVolume"] = "float"
+
 #跟随交易所投资者空头保证金率
-CSgitFtdcExchangeMarginRateAdjustField["ShortMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["ShortMarginRatioByMoney"] = "float"
+
 #跟随交易所投资者空头保证金费
-CSgitFtdcExchangeMarginRateAdjustField["ShortMarginRatioByVolume"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["ShortMarginRatioByVolume"] = "float"
+
 #交易所多头保证金率
-CSgitFtdcExchangeMarginRateAdjustField["ExchLongMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["ExchLongMarginRatioByMoney"] = "float"
+
 #交易所多头保证金费
-CSgitFtdcExchangeMarginRateAdjustField["ExchLongMarginRatioByVolume"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["ExchLongMarginRatioByVolume"] = "float"
+
 #交易所空头保证金率
-CSgitFtdcExchangeMarginRateAdjustField["ExchShortMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["ExchShortMarginRatioByMoney"] = "float"
+
 #交易所空头保证金费
-CSgitFtdcExchangeMarginRateAdjustField["ExchShortMarginRatioByVolume"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["ExchShortMarginRatioByVolume"] = "float"
+
 #不跟随交易所投资者多头保证金率
-CSgitFtdcExchangeMarginRateAdjustField["NoLongMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["NoLongMarginRatioByMoney"] = "float"
+
 #不跟随交易所投资者多头保证金费
-CSgitFtdcExchangeMarginRateAdjustField["NoLongMarginRatioByVolume"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["NoLongMarginRatioByVolume"] = "float"
+
 #不跟随交易所投资者空头保证金率
-CSgitFtdcExchangeMarginRateAdjustField["NoShortMarginRatioByMoney"] = "float"
+
+CThostFtdcExchangeMarginRateAdjustField["NoShortMarginRatioByMoney"] = "float"
+
 #不跟随交易所投资者空头保证金费
-CSgitFtdcExchangeMarginRateAdjustField["NoShortMarginRatioByVolume"] = "float"
-structDict['CSgitFtdcExchangeMarginRateAdjustField'] = CSgitFtdcExchangeMarginRateAdjustField
+
+CThostFtdcExchangeMarginRateAdjustField["NoShortMarginRatioByVolume"] = "float"
+
+structDict['CThostFtdcExchangeMarginRateAdjustField'] = CThostFtdcExchangeMarginRateAdjustField
+
+
+
+
+#汇率
+
+CThostFtdcExchangeRateField = {}
+
+
+#经纪公司代码
+
+CThostFtdcExchangeRateField["BrokerID"] = "string"
+
+#源币种
+
+CThostFtdcExchangeRateField["FromCurrencyID"] = "string"
+
+#源币种单位数量
+
+CThostFtdcExchangeRateField["FromCurrencyUnit"] = "float"
+
+#目标币种
+
+CThostFtdcExchangeRateField["ToCurrencyID"] = "string"
+
+#汇率
+
+CThostFtdcExchangeRateField["ExchangeRate"] = "float"
+
+structDict['CThostFtdcExchangeRateField'] = CThostFtdcExchangeRateField
+
+
 
 
 #结算引用
-CSgitFtdcSettlementRefField = {}
+
+CThostFtdcSettlementRefField = {}
+
+
 #交易日
-CSgitFtdcSettlementRefField["TradingDay"] = "string"
+
+CThostFtdcSettlementRefField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcSettlementRefField["SettlementID"] = "int"
-structDict['CSgitFtdcSettlementRefField'] = CSgitFtdcSettlementRefField
+
+CThostFtdcSettlementRefField["SettlementID"] = "int"
+
+structDict['CThostFtdcSettlementRefField'] = CThostFtdcSettlementRefField
+
+
 
 
 #当前时间
-CSgitFtdcCurrentTimeField = {}
+
+CThostFtdcCurrentTimeField = {}
+
+
 #当前日期
-CSgitFtdcCurrentTimeField["CurrDate"] = "string"
+
+CThostFtdcCurrentTimeField["CurrDate"] = "string"
+
 #当前时间
-CSgitFtdcCurrentTimeField["CurrTime"] = "string"
+
+CThostFtdcCurrentTimeField["CurrTime"] = "string"
+
 #当前时间（毫秒）
-CSgitFtdcCurrentTimeField["CurrMillisec"] = "int"
-structDict['CSgitFtdcCurrentTimeField'] = CSgitFtdcCurrentTimeField
+
+CThostFtdcCurrentTimeField["CurrMillisec"] = "int"
+
+#业务日期
+
+CThostFtdcCurrentTimeField["ActionDay"] = "string"
+
+structDict['CThostFtdcCurrentTimeField'] = CThostFtdcCurrentTimeField
+
+
 
 
 #通讯阶段
-CSgitFtdcCommPhaseField = {}
+
+CThostFtdcCommPhaseField = {}
+
+
 #交易日
-CSgitFtdcCommPhaseField["TradingDay"] = "string"
+
+CThostFtdcCommPhaseField["TradingDay"] = "string"
+
 #通讯时段编号
-CSgitFtdcCommPhaseField["CommPhaseNo"] = "short"
-structDict['CSgitFtdcCommPhaseField'] = CSgitFtdcCommPhaseField
+
+CThostFtdcCommPhaseField["CommPhaseNo"] = "int"
+
+#系统编号
+
+CThostFtdcCommPhaseField["SystemID"] = "string"
+
+structDict['CThostFtdcCommPhaseField'] = CThostFtdcCommPhaseField
+
+
 
 
 #登录信息
-CSgitFtdcLoginInfoField = {}
+
+CThostFtdcLoginInfoField = {}
+
+
 #前置编号
-CSgitFtdcLoginInfoField["FrontID"] = "int"
+
+CThostFtdcLoginInfoField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcLoginInfoField["SessionID"] = "int"
+
+CThostFtdcLoginInfoField["SessionID"] = "int"
+
 #经纪公司代码
-CSgitFtdcLoginInfoField["BrokerID"] = "string"
+
+CThostFtdcLoginInfoField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcLoginInfoField["UserID"] = "string"
+
+CThostFtdcLoginInfoField["UserID"] = "string"
+
 #登录日期
-CSgitFtdcLoginInfoField["LoginDate"] = "string"
+
+CThostFtdcLoginInfoField["LoginDate"] = "string"
+
 #登录时间
-CSgitFtdcLoginInfoField["LoginTime"] = "string"
+
+CThostFtdcLoginInfoField["LoginTime"] = "string"
+
 #IP地址
-CSgitFtdcLoginInfoField["IPAddress"] = "string"
+
+CThostFtdcLoginInfoField["IPAddress"] = "string"
+
 #用户端产品信息
-CSgitFtdcLoginInfoField["UserProductInfo"] = "string"
+
+CThostFtdcLoginInfoField["UserProductInfo"] = "string"
+
 #接口端产品信息
-CSgitFtdcLoginInfoField["InterfaceProductInfo"] = "string"
+
+CThostFtdcLoginInfoField["InterfaceProductInfo"] = "string"
+
 #协议信息
-CSgitFtdcLoginInfoField["ProtocolInfo"] = "string"
+
+CThostFtdcLoginInfoField["ProtocolInfo"] = "string"
+
 #系统名称
-CSgitFtdcLoginInfoField["SystemName"] = "string"
+
+CThostFtdcLoginInfoField["SystemName"] = "string"
+
 #密码
-CSgitFtdcLoginInfoField["Password"] = "string"
+
+CThostFtdcLoginInfoField["Password"] = "string"
+
 #最大报单引用
-CSgitFtdcLoginInfoField["MaxOrderRef"] = "string"
+
+CThostFtdcLoginInfoField["MaxOrderRef"] = "string"
+
 #上期所时间
-CSgitFtdcLoginInfoField["SHFETime"] = "string"
+
+CThostFtdcLoginInfoField["SHFETime"] = "string"
+
 #大商所时间
-CSgitFtdcLoginInfoField["DCETime"] = "string"
+
+CThostFtdcLoginInfoField["DCETime"] = "string"
+
 #郑商所时间
-CSgitFtdcLoginInfoField["CZCETime"] = "string"
+
+CThostFtdcLoginInfoField["CZCETime"] = "string"
+
 #中金所时间
-CSgitFtdcLoginInfoField["FFEXTime"] = "string"
+
+CThostFtdcLoginInfoField["FFEXTime"] = "string"
+
 #Mac地址
-CSgitFtdcLoginInfoField["MacAddress"] = "string"
+
+CThostFtdcLoginInfoField["MacAddress"] = "string"
+
 #动态密码
-CSgitFtdcLoginInfoField["OneTimePassword"] = "string"
-structDict['CSgitFtdcLoginInfoField'] = CSgitFtdcLoginInfoField
+
+CThostFtdcLoginInfoField["OneTimePassword"] = "string"
+
+#能源中心时间
+
+CThostFtdcLoginInfoField["INETime"] = "string"
+
+structDict['CThostFtdcLoginInfoField'] = CThostFtdcLoginInfoField
+
+
 
 
 #登录信息
-CSgitFtdcLogoutAllField = {}
+
+CThostFtdcLogoutAllField = {}
+
+
 #前置编号
-CSgitFtdcLogoutAllField["FrontID"] = "int"
+
+CThostFtdcLogoutAllField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcLogoutAllField["SessionID"] = "int"
+
+CThostFtdcLogoutAllField["SessionID"] = "int"
+
 #系统名称
-CSgitFtdcLogoutAllField["SystemName"] = "string"
-structDict['CSgitFtdcLogoutAllField'] = CSgitFtdcLogoutAllField
+
+CThostFtdcLogoutAllField["SystemName"] = "string"
+
+structDict['CThostFtdcLogoutAllField'] = CThostFtdcLogoutAllField
+
+
 
 
 #前置状态
-CSgitFtdcFrontStatusField = {}
+
+CThostFtdcFrontStatusField = {}
+
+
 #前置编号
-CSgitFtdcFrontStatusField["FrontID"] = "int"
+
+CThostFtdcFrontStatusField["FrontID"] = "int"
+
 #上次报告日期
-CSgitFtdcFrontStatusField["LastReportDate"] = "string"
+
+CThostFtdcFrontStatusField["LastReportDate"] = "string"
+
 #上次报告时间
-CSgitFtdcFrontStatusField["LastReportTime"] = "string"
+
+CThostFtdcFrontStatusField["LastReportTime"] = "string"
+
 #是否活跃
-CSgitFtdcFrontStatusField["IsActive"] = "int"
-structDict['CSgitFtdcFrontStatusField'] = CSgitFtdcFrontStatusField
+
+CThostFtdcFrontStatusField["IsActive"] = "int"
+
+structDict['CThostFtdcFrontStatusField'] = CThostFtdcFrontStatusField
+
+
 
 
 #用户口令变更
-CSgitFtdcUserPasswordUpdateField = {}
+
+CThostFtdcUserPasswordUpdateField = {}
+
+
 #经纪公司代码
-CSgitFtdcUserPasswordUpdateField["BrokerID"] = "string"
+
+CThostFtdcUserPasswordUpdateField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcUserPasswordUpdateField["UserID"] = "string"
+
+CThostFtdcUserPasswordUpdateField["UserID"] = "string"
+
 #原来的口令
-CSgitFtdcUserPasswordUpdateField["OldPassword"] = "string"
+
+CThostFtdcUserPasswordUpdateField["OldPassword"] = "string"
+
 #新的口令
-CSgitFtdcUserPasswordUpdateField["NewPassword"] = "string"
-structDict['CSgitFtdcUserPasswordUpdateField'] = CSgitFtdcUserPasswordUpdateField
+
+CThostFtdcUserPasswordUpdateField["NewPassword"] = "string"
+
+structDict['CThostFtdcUserPasswordUpdateField'] = CThostFtdcUserPasswordUpdateField
+
+
 
 
 #输入报单
-CSgitFtdcInputOrderField = {}
+
+CThostFtdcInputOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcInputOrderField["BrokerID"] = "string"
+
+CThostFtdcInputOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInputOrderField["InvestorID"] = "string"
+
+CThostFtdcInputOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcInputOrderField["InstrumentID"] = "string"
+
+CThostFtdcInputOrderField["InstrumentID"] = "string"
+
 #报单引用
-CSgitFtdcInputOrderField["OrderRef"] = "string"
+
+CThostFtdcInputOrderField["OrderRef"] = "string"
+
 #用户代码
-CSgitFtdcInputOrderField["UserID"] = "string"
+
+CThostFtdcInputOrderField["UserID"] = "string"
+
 #报单价格条件
-CSgitFtdcInputOrderField["OrderPriceType"] = "char"
+
+CThostFtdcInputOrderField["OrderPriceType"] = "char"
+
 #买卖方向
-CSgitFtdcInputOrderField["Direction"] = "char"
+
+CThostFtdcInputOrderField["Direction"] = "char"
+
 #组合开平标志
-CSgitFtdcInputOrderField["CombOffsetFlag"] = "string"
+
+CThostFtdcInputOrderField["CombOffsetFlag"] = "string"
+
 #组合投机套保标志
-CSgitFtdcInputOrderField["CombHedgeFlag"] = "string"
+
+CThostFtdcInputOrderField["CombHedgeFlag"] = "string"
+
 #价格
-CSgitFtdcInputOrderField["LimitPrice"] = "float"
+
+CThostFtdcInputOrderField["LimitPrice"] = "float"
+
 #数量
-CSgitFtdcInputOrderField["VolumeTotalOriginal"] = "int"
+
+CThostFtdcInputOrderField["VolumeTotalOriginal"] = "int"
+
 #有效期类型
-CSgitFtdcInputOrderField["TimeCondition"] = "char"
+
+CThostFtdcInputOrderField["TimeCondition"] = "char"
+
 #GTD日期
-CSgitFtdcInputOrderField["GTDDate"] = "string"
+
+CThostFtdcInputOrderField["GTDDate"] = "string"
+
 #成交量类型
-CSgitFtdcInputOrderField["VolumeCondition"] = "char"
+
+CThostFtdcInputOrderField["VolumeCondition"] = "char"
+
 #最小成交量
-CSgitFtdcInputOrderField["MinVolume"] = "int"
+
+CThostFtdcInputOrderField["MinVolume"] = "int"
+
 #触发条件
-CSgitFtdcInputOrderField["ContingentCondition"] = "char"
+
+CThostFtdcInputOrderField["ContingentCondition"] = "char"
+
 #止损价
-CSgitFtdcInputOrderField["StopPrice"] = "float"
+
+CThostFtdcInputOrderField["StopPrice"] = "float"
+
 #强平原因
-CSgitFtdcInputOrderField["ForceCloseReason"] = "char"
+
+CThostFtdcInputOrderField["ForceCloseReason"] = "char"
+
 #自动挂起标志
-CSgitFtdcInputOrderField["IsAutoSuspend"] = "int"
+
+CThostFtdcInputOrderField["IsAutoSuspend"] = "int"
+
 #业务单元
-CSgitFtdcInputOrderField["BusinessUnit"] = "string"
+
+CThostFtdcInputOrderField["BusinessUnit"] = "string"
+
 #请求编号
-CSgitFtdcInputOrderField["RequestID"] = "int"
+
+CThostFtdcInputOrderField["RequestID"] = "int"
+
 #用户强评标志
-CSgitFtdcInputOrderField["UserForceClose"] = "int"
-structDict['CSgitFtdcInputOrderField'] = CSgitFtdcInputOrderField
+
+CThostFtdcInputOrderField["UserForceClose"] = "int"
+
+#互换单标志
+
+CThostFtdcInputOrderField["IsSwapOrder"] = "int"
+
+
+#onRspOrderInsert中使用,ReqOrderInsert中不用填写.
+
+CThostFtdcInputOrderField["OrderSysID"] = "string"
+
+CThostFtdcInputOrderField["ExchangeID"] = "string"
+
+
+
+structDict['CThostFtdcInputOrderField'] = CThostFtdcInputOrderField
+
+
 
 
 #报单
-CSgitFtdcOrderField = {}
+
+CThostFtdcOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcOrderField["BrokerID"] = "string"
+
+CThostFtdcOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcOrderField["InvestorID"] = "string"
+
+CThostFtdcOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcOrderField["InstrumentID"] = "string"
+
+CThostFtdcOrderField["InstrumentID"] = "string"
+
 #报单引用
-CSgitFtdcOrderField["OrderRef"] = "string"
+
+CThostFtdcOrderField["OrderRef"] = "string"
+
 #用户代码
-CSgitFtdcOrderField["UserID"] = "string"
+
+CThostFtdcOrderField["UserID"] = "string"
+
 #报单价格条件
-CSgitFtdcOrderField["OrderPriceType"] = "char"
+
+CThostFtdcOrderField["OrderPriceType"] = "char"
+
 #买卖方向
-CSgitFtdcOrderField["Direction"] = "char"
+
+CThostFtdcOrderField["Direction"] = "char"
+
 #组合开平标志
-CSgitFtdcOrderField["CombOffsetFlag"] = "string"
+
+CThostFtdcOrderField["CombOffsetFlag"] = "string"
+
 #组合投机套保标志
-CSgitFtdcOrderField["CombHedgeFlag"] = "string"
+
+CThostFtdcOrderField["CombHedgeFlag"] = "string"
+
 #价格
-CSgitFtdcOrderField["LimitPrice"] = "float"
+
+CThostFtdcOrderField["LimitPrice"] = "float"
+
 #数量
-CSgitFtdcOrderField["VolumeTotalOriginal"] = "int"
+
+CThostFtdcOrderField["VolumeTotalOriginal"] = "int"
+
 #有效期类型
-CSgitFtdcOrderField["TimeCondition"] = "char"
+
+CThostFtdcOrderField["TimeCondition"] = "char"
+
 #GTD日期
-CSgitFtdcOrderField["GTDDate"] = "string"
+
+CThostFtdcOrderField["GTDDate"] = "string"
+
 #成交量类型
-CSgitFtdcOrderField["VolumeCondition"] = "char"
+
+CThostFtdcOrderField["VolumeCondition"] = "char"
+
 #最小成交量
-CSgitFtdcOrderField["MinVolume"] = "int"
+
+CThostFtdcOrderField["MinVolume"] = "int"
+
 #触发条件
-CSgitFtdcOrderField["ContingentCondition"] = "char"
+
+CThostFtdcOrderField["ContingentCondition"] = "char"
+
 #止损价
-CSgitFtdcOrderField["StopPrice"] = "float"
+
+CThostFtdcOrderField["StopPrice"] = "float"
+
 #强平原因
-CSgitFtdcOrderField["ForceCloseReason"] = "char"
+
+CThostFtdcOrderField["ForceCloseReason"] = "char"
+
 #自动挂起标志
-CSgitFtdcOrderField["IsAutoSuspend"] = "int"
+
+CThostFtdcOrderField["IsAutoSuspend"] = "int"
+
 #业务单元
-CSgitFtdcOrderField["BusinessUnit"] = "string"
+
+CThostFtdcOrderField["BusinessUnit"] = "string"
+
 #请求编号
-CSgitFtdcOrderField["RequestID"] = "int"
+
+CThostFtdcOrderField["RequestID"] = "int"
+
 #本地报单编号
-CSgitFtdcOrderField["OrderLocalID"] = "string"
+
+CThostFtdcOrderField["OrderLocalID"] = "string"
+
 #交易所代码
-CSgitFtdcOrderField["ExchangeID"] = "string"
+
+CThostFtdcOrderField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcOrderField["ParticipantID"] = "string"
+
+CThostFtdcOrderField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcOrderField["ClientID"] = "string"
+
+CThostFtdcOrderField["ClientID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcOrderField["ExchangeInstID"] = "string"
+
+CThostFtdcOrderField["ExchangeInstID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcOrderField["TraderID"] = "string"
+
+CThostFtdcOrderField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcOrderField["InstallID"] = "int"
+
+CThostFtdcOrderField["InstallID"] = "int"
+
 #报单提交状态
-CSgitFtdcOrderField["OrderSubmitStatus"] = "char"
+
+CThostFtdcOrderField["OrderSubmitStatus"] = "char"
+
 #报单提示序号
-CSgitFtdcOrderField["NotifySequence"] = "int"
+
+CThostFtdcOrderField["NotifySequence"] = "int"
+
 #交易日
-CSgitFtdcOrderField["TradingDay"] = "string"
+
+CThostFtdcOrderField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcOrderField["SettlementID"] = "int"
+
+CThostFtdcOrderField["SettlementID"] = "int"
+
 #报单编号
-CSgitFtdcOrderField["OrderSysID"] = "string"
+
+CThostFtdcOrderField["OrderSysID"] = "string"
+
 #报单来源
-CSgitFtdcOrderField["OrderSource"] = "char"
+
+CThostFtdcOrderField["OrderSource"] = "char"
+
 #报单状态
-CSgitFtdcOrderField["OrderStatus"] = "char"
+
+CThostFtdcOrderField["OrderStatus"] = "char"
+
 #报单类型
-CSgitFtdcOrderField["OrderType"] = "char"
+
+CThostFtdcOrderField["OrderType"] = "char"
+
 #今成交数量
-CSgitFtdcOrderField["VolumeTraded"] = "int"
+
+CThostFtdcOrderField["VolumeTraded"] = "int"
+
 #剩余数量
-CSgitFtdcOrderField["VolumeTotal"] = "int"
+
+CThostFtdcOrderField["VolumeTotal"] = "int"
+
 #报单日期
-CSgitFtdcOrderField["InsertDate"] = "string"
+
+CThostFtdcOrderField["InsertDate"] = "string"
+
 #委托时间
-CSgitFtdcOrderField["InsertTime"] = "string"
+
+CThostFtdcOrderField["InsertTime"] = "string"
+
 #激活时间
-CSgitFtdcOrderField["ActiveTime"] = "string"
+
+CThostFtdcOrderField["ActiveTime"] = "string"
+
 #挂起时间
-CSgitFtdcOrderField["SuspendTime"] = "string"
+
+CThostFtdcOrderField["SuspendTime"] = "string"
+
 #最后修改时间
-CSgitFtdcOrderField["UpdateTime"] = "string"
+
+CThostFtdcOrderField["UpdateTime"] = "string"
+
 #撤销时间
-CSgitFtdcOrderField["CancelTime"] = "string"
+
+CThostFtdcOrderField["CancelTime"] = "string"
+
 #最后修改交易所交易员代码
-CSgitFtdcOrderField["ActiveTraderID"] = "string"
+
+CThostFtdcOrderField["ActiveTraderID"] = "string"
+
 #结算会员编号
-CSgitFtdcOrderField["ClearingPartID"] = "string"
+
+CThostFtdcOrderField["ClearingPartID"] = "string"
+
 #序号
-CSgitFtdcOrderField["SequenceNo"] = "int"
+
+CThostFtdcOrderField["SequenceNo"] = "int"
+
 #前置编号
-CSgitFtdcOrderField["FrontID"] = "int"
+
+CThostFtdcOrderField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcOrderField["SessionID"] = "int"
+
+CThostFtdcOrderField["SessionID"] = "int"
+
 #用户端产品信息
-CSgitFtdcOrderField["UserProductInfo"] = "string"
+
+CThostFtdcOrderField["UserProductInfo"] = "string"
+
 #状态信息
-CSgitFtdcOrderField["StatusMsg"] = "string"
+
+CThostFtdcOrderField["StatusMsg"] = "string"
+
 #用户强评标志
-CSgitFtdcOrderField["UserForceClose"] = "int"
+
+CThostFtdcOrderField["UserForceClose"] = "int"
+
 #操作用户代码
-CSgitFtdcOrderField["ActiveUserID"] = "string"
+
+CThostFtdcOrderField["ActiveUserID"] = "string"
+
 #经纪公司报单编号
-CSgitFtdcOrderField["BrokerOrderSeq"] = "int"
+
+CThostFtdcOrderField["BrokerOrderSeq"] = "int"
+
 #相关报单
-CSgitFtdcOrderField["RelativeOrderSysID"] = "string"
-structDict['CSgitFtdcOrderField'] = CSgitFtdcOrderField
+
+CThostFtdcOrderField["RelativeOrderSysID"] = "string"
+
+#郑商所成交数量//以下sigt不用
+
+CThostFtdcOrderField["ZCETotalTradedVolume"] = "int"
+
+#互换单标志
+
+CThostFtdcOrderField["IsSwapOrder"] = "int"
+
+structDict['CThostFtdcOrderField'] = CThostFtdcOrderField
+
+
 
 
 #交易所报单
-CSgitFtdcExchangeOrderField = {}
+
+CThostFtdcExchangeOrderField = {}
+
+
 #报单价格条件
-CSgitFtdcExchangeOrderField["OrderPriceType"] = "char"
+
+CThostFtdcExchangeOrderField["OrderPriceType"] = "char"
+
 #买卖方向
-CSgitFtdcExchangeOrderField["Direction"] = "char"
+
+CThostFtdcExchangeOrderField["Direction"] = "char"
+
 #组合开平标志
-CSgitFtdcExchangeOrderField["CombOffsetFlag"] = "string"
+
+CThostFtdcExchangeOrderField["CombOffsetFlag"] = "string"
+
 #组合投机套保标志
-CSgitFtdcExchangeOrderField["CombHedgeFlag"] = "string"
+
+CThostFtdcExchangeOrderField["CombHedgeFlag"] = "string"
+
 #价格
-CSgitFtdcExchangeOrderField["LimitPrice"] = "float"
+
+CThostFtdcExchangeOrderField["LimitPrice"] = "float"
+
 #数量
-CSgitFtdcExchangeOrderField["VolumeTotalOriginal"] = "int"
+
+CThostFtdcExchangeOrderField["VolumeTotalOriginal"] = "int"
+
 #有效期类型
-CSgitFtdcExchangeOrderField["TimeCondition"] = "char"
+
+CThostFtdcExchangeOrderField["TimeCondition"] = "char"
+
 #GTD日期
-CSgitFtdcExchangeOrderField["GTDDate"] = "string"
+
+CThostFtdcExchangeOrderField["GTDDate"] = "string"
+
 #成交量类型
-CSgitFtdcExchangeOrderField["VolumeCondition"] = "char"
+
+CThostFtdcExchangeOrderField["VolumeCondition"] = "char"
+
 #最小成交量
-CSgitFtdcExchangeOrderField["MinVolume"] = "int"
+
+CThostFtdcExchangeOrderField["MinVolume"] = "int"
+
 #触发条件
-CSgitFtdcExchangeOrderField["ContingentCondition"] = "char"
+
+CThostFtdcExchangeOrderField["ContingentCondition"] = "char"
+
 #止损价
-CSgitFtdcExchangeOrderField["StopPrice"] = "float"
+
+CThostFtdcExchangeOrderField["StopPrice"] = "float"
+
 #强平原因
-CSgitFtdcExchangeOrderField["ForceCloseReason"] = "char"
+
+CThostFtdcExchangeOrderField["ForceCloseReason"] = "char"
+
 #自动挂起标志
-CSgitFtdcExchangeOrderField["IsAutoSuspend"] = "int"
+
+CThostFtdcExchangeOrderField["IsAutoSuspend"] = "int"
+
 #业务单元
-CSgitFtdcExchangeOrderField["BusinessUnit"] = "string"
+
+CThostFtdcExchangeOrderField["BusinessUnit"] = "string"
+
 #请求编号
-CSgitFtdcExchangeOrderField["RequestID"] = "int"
+
+CThostFtdcExchangeOrderField["RequestID"] = "int"
+
 #本地报单编号
-CSgitFtdcExchangeOrderField["OrderLocalID"] = "string"
+
+CThostFtdcExchangeOrderField["OrderLocalID"] = "string"
+
 #交易所代码
-CSgitFtdcExchangeOrderField["ExchangeID"] = "string"
+
+CThostFtdcExchangeOrderField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcExchangeOrderField["ParticipantID"] = "string"
+
+CThostFtdcExchangeOrderField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcExchangeOrderField["ClientID"] = "string"
+
+CThostFtdcExchangeOrderField["ClientID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcExchangeOrderField["ExchangeInstID"] = "string"
+
+CThostFtdcExchangeOrderField["ExchangeInstID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcExchangeOrderField["TraderID"] = "string"
+
+CThostFtdcExchangeOrderField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcExchangeOrderField["InstallID"] = "int"
+
+CThostFtdcExchangeOrderField["InstallID"] = "int"
+
 #报单提交状态
-CSgitFtdcExchangeOrderField["OrderSubmitStatus"] = "char"
+
+CThostFtdcExchangeOrderField["OrderSubmitStatus"] = "char"
+
 #报单提示序号
-CSgitFtdcExchangeOrderField["NotifySequence"] = "int"
+
+CThostFtdcExchangeOrderField["NotifySequence"] = "int"
+
 #交易日
-CSgitFtdcExchangeOrderField["TradingDay"] = "string"
+
+CThostFtdcExchangeOrderField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcExchangeOrderField["SettlementID"] = "int"
+
+CThostFtdcExchangeOrderField["SettlementID"] = "int"
+
 #报单编号
-CSgitFtdcExchangeOrderField["OrderSysID"] = "string"
+
+CThostFtdcExchangeOrderField["OrderSysID"] = "string"
+
 #报单来源
-CSgitFtdcExchangeOrderField["OrderSource"] = "char"
+
+CThostFtdcExchangeOrderField["OrderSource"] = "char"
+
 #报单状态
-CSgitFtdcExchangeOrderField["OrderStatus"] = "char"
+
+CThostFtdcExchangeOrderField["OrderStatus"] = "char"
+
 #报单类型
-CSgitFtdcExchangeOrderField["OrderType"] = "char"
+
+CThostFtdcExchangeOrderField["OrderType"] = "char"
+
 #今成交数量
-CSgitFtdcExchangeOrderField["VolumeTraded"] = "int"
+
+CThostFtdcExchangeOrderField["VolumeTraded"] = "int"
+
 #剩余数量
-CSgitFtdcExchangeOrderField["VolumeTotal"] = "int"
+
+CThostFtdcExchangeOrderField["VolumeTotal"] = "int"
+
 #报单日期
-CSgitFtdcExchangeOrderField["InsertDate"] = "string"
+
+CThostFtdcExchangeOrderField["InsertDate"] = "string"
+
 #委托时间
-CSgitFtdcExchangeOrderField["InsertTime"] = "string"
+
+CThostFtdcExchangeOrderField["InsertTime"] = "string"
+
 #激活时间
-CSgitFtdcExchangeOrderField["ActiveTime"] = "string"
+
+CThostFtdcExchangeOrderField["ActiveTime"] = "string"
+
 #挂起时间
-CSgitFtdcExchangeOrderField["SuspendTime"] = "string"
+
+CThostFtdcExchangeOrderField["SuspendTime"] = "string"
+
 #最后修改时间
-CSgitFtdcExchangeOrderField["UpdateTime"] = "string"
+
+CThostFtdcExchangeOrderField["UpdateTime"] = "string"
+
 #撤销时间
-CSgitFtdcExchangeOrderField["CancelTime"] = "string"
+
+CThostFtdcExchangeOrderField["CancelTime"] = "string"
+
 #最后修改交易所交易员代码
-CSgitFtdcExchangeOrderField["ActiveTraderID"] = "string"
+
+CThostFtdcExchangeOrderField["ActiveTraderID"] = "string"
+
 #结算会员编号
-CSgitFtdcExchangeOrderField["ClearingPartID"] = "string"
+
+CThostFtdcExchangeOrderField["ClearingPartID"] = "string"
+
 #序号
-CSgitFtdcExchangeOrderField["SequenceNo"] = "int"
-structDict['CSgitFtdcExchangeOrderField'] = CSgitFtdcExchangeOrderField
+
+CThostFtdcExchangeOrderField["SequenceNo"] = "int"
+
+structDict['CThostFtdcExchangeOrderField'] = CThostFtdcExchangeOrderField
+
+
 
 
 #交易所报单插入失败
-CSgitFtdcExchangeOrderInsertErrorField = {}
+
+CThostFtdcExchangeOrderInsertErrorField = {}
+
+
 #交易所代码
-CSgitFtdcExchangeOrderInsertErrorField["ExchangeID"] = "string"
+
+CThostFtdcExchangeOrderInsertErrorField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcExchangeOrderInsertErrorField["ParticipantID"] = "string"
+
+CThostFtdcExchangeOrderInsertErrorField["ParticipantID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcExchangeOrderInsertErrorField["TraderID"] = "string"
+
+CThostFtdcExchangeOrderInsertErrorField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcExchangeOrderInsertErrorField["InstallID"] = "int"
+
+CThostFtdcExchangeOrderInsertErrorField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcExchangeOrderInsertErrorField["OrderLocalID"] = "string"
+
+CThostFtdcExchangeOrderInsertErrorField["OrderLocalID"] = "string"
+
 #错误代码
-CSgitFtdcExchangeOrderInsertErrorField["ErrorID"] = "int"
+
+CThostFtdcExchangeOrderInsertErrorField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcExchangeOrderInsertErrorField["ErrorMsg"] = "string"
-structDict['CSgitFtdcExchangeOrderInsertErrorField'] = CSgitFtdcExchangeOrderInsertErrorField
+
+CThostFtdcExchangeOrderInsertErrorField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcExchangeOrderInsertErrorField'] = CThostFtdcExchangeOrderInsertErrorField
+
+
 
 
 #输入报单操作
-CSgitFtdcInputOrderActionField = {}
+
+CThostFtdcInputOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcInputOrderActionField["BrokerID"] = "string"
+
+CThostFtdcInputOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInputOrderActionField["InvestorID"] = "string"
+
+CThostFtdcInputOrderActionField["InvestorID"] = "string"
+
 #报单操作引用
-CSgitFtdcInputOrderActionField["OrderActionRef"] = "int"
+
+CThostFtdcInputOrderActionField["OrderActionRef"] = "int"
+
 #报单引用
-CSgitFtdcInputOrderActionField["OrderRef"] = "string"
+
+CThostFtdcInputOrderActionField["OrderRef"] = "string"
+
 #请求编号
-CSgitFtdcInputOrderActionField["RequestID"] = "int"
+
+CThostFtdcInputOrderActionField["RequestID"] = "int"
+
 #前置编号
-CSgitFtdcInputOrderActionField["FrontID"] = "int"
+
+CThostFtdcInputOrderActionField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcInputOrderActionField["SessionID"] = "int"
+
+CThostFtdcInputOrderActionField["SessionID"] = "int"
+
 #交易所代码
-CSgitFtdcInputOrderActionField["ExchangeID"] = "string"
+
+CThostFtdcInputOrderActionField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcInputOrderActionField["OrderSysID"] = "string"
+
+CThostFtdcInputOrderActionField["OrderSysID"] = "string"
+
 #操作标志
-CSgitFtdcInputOrderActionField["ActionFlag"] = "char"
+
+CThostFtdcInputOrderActionField["ActionFlag"] = "char"
+
 #价格
-CSgitFtdcInputOrderActionField["LimitPrice"] = "float"
+
+CThostFtdcInputOrderActionField["LimitPrice"] = "float"
+
 #数量变化
-CSgitFtdcInputOrderActionField["VolumeChange"] = "int"
+
+CThostFtdcInputOrderActionField["VolumeChange"] = "int"
+
 #用户代码
-CSgitFtdcInputOrderActionField["UserID"] = "string"
+
+CThostFtdcInputOrderActionField["UserID"] = "string"
+
 #合约代码
-CSgitFtdcInputOrderActionField["InstrumentID"] = "string"
-structDict['CSgitFtdcInputOrderActionField'] = CSgitFtdcInputOrderActionField
+
+CThostFtdcInputOrderActionField["InstrumentID"] = "string"
+
+#交易编码
+
+
+structDict['CThostFtdcInputOrderActionField'] = CThostFtdcInputOrderActionField
+
+
 
 
 #报单操作
-CSgitFtdcOrderActionField = {}
+
+CThostFtdcOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcOrderActionField["BrokerID"] = "string"
+
+CThostFtdcOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcOrderActionField["InvestorID"] = "string"
+
+CThostFtdcOrderActionField["InvestorID"] = "string"
+
 #报单操作引用
-CSgitFtdcOrderActionField["OrderActionRef"] = "int"
+
+CThostFtdcOrderActionField["OrderActionRef"] = "int"
+
 #报单引用
-CSgitFtdcOrderActionField["OrderRef"] = "string"
+
+CThostFtdcOrderActionField["OrderRef"] = "string"
+
 #请求编号
-CSgitFtdcOrderActionField["RequestID"] = "int"
+
+CThostFtdcOrderActionField["RequestID"] = "int"
+
 #前置编号
-CSgitFtdcOrderActionField["FrontID"] = "int"
+
+CThostFtdcOrderActionField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcOrderActionField["SessionID"] = "int"
+
+CThostFtdcOrderActionField["SessionID"] = "int"
+
 #交易所代码
-CSgitFtdcOrderActionField["ExchangeID"] = "string"
+
+CThostFtdcOrderActionField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcOrderActionField["OrderSysID"] = "string"
+
+CThostFtdcOrderActionField["OrderSysID"] = "string"
+
 #操作标志
-CSgitFtdcOrderActionField["ActionFlag"] = "char"
+
+CThostFtdcOrderActionField["ActionFlag"] = "char"
+
 #价格
-CSgitFtdcOrderActionField["LimitPrice"] = "float"
+
+CThostFtdcOrderActionField["LimitPrice"] = "float"
+
 #数量变化
-CSgitFtdcOrderActionField["VolumeChange"] = "int"
+
+CThostFtdcOrderActionField["VolumeChange"] = "int"
+
 #操作日期
-CSgitFtdcOrderActionField["ActionDate"] = "string"
+
+CThostFtdcOrderActionField["ActionDate"] = "string"
+
 #操作时间
-CSgitFtdcOrderActionField["ActionTime"] = "string"
+
+CThostFtdcOrderActionField["ActionTime"] = "string"
+
 #交易所交易员代码
-CSgitFtdcOrderActionField["TraderID"] = "string"
+
+CThostFtdcOrderActionField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcOrderActionField["InstallID"] = "int"
+
+CThostFtdcOrderActionField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcOrderActionField["OrderLocalID"] = "string"
+
+CThostFtdcOrderActionField["OrderLocalID"] = "string"
+
 #操作本地编号
-CSgitFtdcOrderActionField["ActionLocalID"] = "string"
+
+CThostFtdcOrderActionField["ActionLocalID"] = "string"
+
 #会员代码
-CSgitFtdcOrderActionField["ParticipantID"] = "string"
+
+CThostFtdcOrderActionField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcOrderActionField["ClientID"] = "string"
+
+CThostFtdcOrderActionField["ClientID"] = "string"
+
 #业务单元
-CSgitFtdcOrderActionField["BusinessUnit"] = "string"
+
+CThostFtdcOrderActionField["BusinessUnit"] = "string"
+
 #报单操作状态
-CSgitFtdcOrderActionField["OrderActionStatus"] = "char"
+
+CThostFtdcOrderActionField["OrderActionStatus"] = "char"
+
 #用户代码
-CSgitFtdcOrderActionField["UserID"] = "string"
+
+CThostFtdcOrderActionField["UserID"] = "string"
+
 #状态信息
-CSgitFtdcOrderActionField["StatusMsg"] = "string"
+
+CThostFtdcOrderActionField["StatusMsg"] = "string"
+
 #合约代码
-CSgitFtdcOrderActionField["InstrumentID"] = "string"
-structDict['CSgitFtdcOrderActionField'] = CSgitFtdcOrderActionField
+
+CThostFtdcOrderActionField["InstrumentID"] = "string"
+
+structDict['CThostFtdcOrderActionField'] = CThostFtdcOrderActionField
+
+
 
 
 #交易所报单操作
-CSgitFtdcExchangeOrderActionField = {}
+
+CThostFtdcExchangeOrderActionField = {}
+
+
 #交易所代码
-CSgitFtdcExchangeOrderActionField["ExchangeID"] = "string"
+
+CThostFtdcExchangeOrderActionField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcExchangeOrderActionField["OrderSysID"] = "string"
+
+CThostFtdcExchangeOrderActionField["OrderSysID"] = "string"
+
 #操作标志
-CSgitFtdcExchangeOrderActionField["ActionFlag"] = "char"
+
+CThostFtdcExchangeOrderActionField["ActionFlag"] = "char"
+
 #价格
-CSgitFtdcExchangeOrderActionField["LimitPrice"] = "float"
+
+CThostFtdcExchangeOrderActionField["LimitPrice"] = "float"
+
 #数量变化
-CSgitFtdcExchangeOrderActionField["VolumeChange"] = "int"
+
+CThostFtdcExchangeOrderActionField["VolumeChange"] = "int"
+
 #操作日期
-CSgitFtdcExchangeOrderActionField["ActionDate"] = "string"
+
+CThostFtdcExchangeOrderActionField["ActionDate"] = "string"
+
 #操作时间
-CSgitFtdcExchangeOrderActionField["ActionTime"] = "string"
+
+CThostFtdcExchangeOrderActionField["ActionTime"] = "string"
+
 #交易所交易员代码
-CSgitFtdcExchangeOrderActionField["TraderID"] = "string"
+
+CThostFtdcExchangeOrderActionField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcExchangeOrderActionField["InstallID"] = "int"
+
+CThostFtdcExchangeOrderActionField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcExchangeOrderActionField["OrderLocalID"] = "string"
+
+CThostFtdcExchangeOrderActionField["OrderLocalID"] = "string"
+
 #操作本地编号
-CSgitFtdcExchangeOrderActionField["ActionLocalID"] = "string"
+
+CThostFtdcExchangeOrderActionField["ActionLocalID"] = "string"
+
 #会员代码
-CSgitFtdcExchangeOrderActionField["ParticipantID"] = "string"
+
+CThostFtdcExchangeOrderActionField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcExchangeOrderActionField["ClientID"] = "string"
+
+CThostFtdcExchangeOrderActionField["ClientID"] = "string"
+
 #业务单元
-CSgitFtdcExchangeOrderActionField["BusinessUnit"] = "string"
+
+CThostFtdcExchangeOrderActionField["BusinessUnit"] = "string"
+
 #报单操作状态
-CSgitFtdcExchangeOrderActionField["OrderActionStatus"] = "char"
+
+CThostFtdcExchangeOrderActionField["OrderActionStatus"] = "char"
+
 #用户代码
-CSgitFtdcExchangeOrderActionField["UserID"] = "string"
-structDict['CSgitFtdcExchangeOrderActionField'] = CSgitFtdcExchangeOrderActionField
+
+CThostFtdcExchangeOrderActionField["UserID"] = "string"
+
+structDict['CThostFtdcExchangeOrderActionField'] = CThostFtdcExchangeOrderActionField
+
+
 
 
 #交易所报单操作失败
-CSgitFtdcExchangeOrderActionErrorField = {}
+
+CThostFtdcExchangeOrderActionErrorField = {}
+
+
 #交易所代码
-CSgitFtdcExchangeOrderActionErrorField["ExchangeID"] = "string"
+
+CThostFtdcExchangeOrderActionErrorField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcExchangeOrderActionErrorField["OrderSysID"] = "string"
+
+CThostFtdcExchangeOrderActionErrorField["OrderSysID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcExchangeOrderActionErrorField["TraderID"] = "string"
+
+CThostFtdcExchangeOrderActionErrorField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcExchangeOrderActionErrorField["InstallID"] = "int"
+
+CThostFtdcExchangeOrderActionErrorField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcExchangeOrderActionErrorField["OrderLocalID"] = "string"
+
+CThostFtdcExchangeOrderActionErrorField["OrderLocalID"] = "string"
+
 #操作本地编号
-CSgitFtdcExchangeOrderActionErrorField["ActionLocalID"] = "string"
+
+CThostFtdcExchangeOrderActionErrorField["ActionLocalID"] = "string"
+
 #错误代码
-CSgitFtdcExchangeOrderActionErrorField["ErrorID"] = "int"
+
+CThostFtdcExchangeOrderActionErrorField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcExchangeOrderActionErrorField["ErrorMsg"] = "string"
-structDict['CSgitFtdcExchangeOrderActionErrorField'] = CSgitFtdcExchangeOrderActionErrorField
+
+CThostFtdcExchangeOrderActionErrorField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcExchangeOrderActionErrorField'] = CThostFtdcExchangeOrderActionErrorField
+
+
 
 
 #交易所成交
-CSgitFtdcExchangeTradeField = {}
+
+CThostFtdcExchangeTradeField = {}
+
+
 #交易所代码
-CSgitFtdcExchangeTradeField["ExchangeID"] = "string"
+
+CThostFtdcExchangeTradeField["ExchangeID"] = "string"
+
 #成交编号
-CSgitFtdcExchangeTradeField["TradeID"] = "string"
+
+CThostFtdcExchangeTradeField["TradeID"] = "string"
+
 #买卖方向
-CSgitFtdcExchangeTradeField["Direction"] = "char"
+
+CThostFtdcExchangeTradeField["Direction"] = "char"
+
 #报单编号
-CSgitFtdcExchangeTradeField["OrderSysID"] = "string"
+
+CThostFtdcExchangeTradeField["OrderSysID"] = "string"
+
 #会员代码
-CSgitFtdcExchangeTradeField["ParticipantID"] = "string"
+
+CThostFtdcExchangeTradeField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcExchangeTradeField["ClientID"] = "string"
+
+CThostFtdcExchangeTradeField["ClientID"] = "string"
+
 #交易角色
-CSgitFtdcExchangeTradeField["TradingRole"] = "char"
+
+CThostFtdcExchangeTradeField["TradingRole"] = "char"
+
 #合约在交易所的代码
-CSgitFtdcExchangeTradeField["ExchangeInstID"] = "string"
+
+CThostFtdcExchangeTradeField["ExchangeInstID"] = "string"
+
 #开平标志
-CSgitFtdcExchangeTradeField["OffsetFlag"] = "char"
+
+CThostFtdcExchangeTradeField["OffsetFlag"] = "char"
+
 #投机套保标志
-CSgitFtdcExchangeTradeField["HedgeFlag"] = "char"
+
+CThostFtdcExchangeTradeField["HedgeFlag"] = "char"
+
 #价格
-CSgitFtdcExchangeTradeField["Price"] = "float"
+
+CThostFtdcExchangeTradeField["Price"] = "float"
+
 #数量
-CSgitFtdcExchangeTradeField["Volume"] = "int"
+
+CThostFtdcExchangeTradeField["Volume"] = "int"
+
 #成交时期
-CSgitFtdcExchangeTradeField["TradeDate"] = "string"
+
+CThostFtdcExchangeTradeField["TradeDate"] = "string"
+
 #成交时间
-CSgitFtdcExchangeTradeField["TradeTime"] = "string"
+
+CThostFtdcExchangeTradeField["TradeTime"] = "string"
+
 #成交类型
-CSgitFtdcExchangeTradeField["TradeType"] = "char"
+
+CThostFtdcExchangeTradeField["TradeType"] = "char"
+
 #成交价来源
-CSgitFtdcExchangeTradeField["PriceSource"] = "char"
+
+CThostFtdcExchangeTradeField["PriceSource"] = "char"
+
 #交易所交易员代码
-CSgitFtdcExchangeTradeField["TraderID"] = "string"
+
+CThostFtdcExchangeTradeField["TraderID"] = "string"
+
 #本地报单编号
-CSgitFtdcExchangeTradeField["OrderLocalID"] = "string"
+
+CThostFtdcExchangeTradeField["OrderLocalID"] = "string"
+
 #结算会员编号
-CSgitFtdcExchangeTradeField["ClearingPartID"] = "string"
+
+CThostFtdcExchangeTradeField["ClearingPartID"] = "string"
+
 #业务单元
-CSgitFtdcExchangeTradeField["BusinessUnit"] = "string"
+
+CThostFtdcExchangeTradeField["BusinessUnit"] = "string"
+
 #序号
-CSgitFtdcExchangeTradeField["SequenceNo"] = "int"
+
+CThostFtdcExchangeTradeField["SequenceNo"] = "int"
+
 #成交来源
-CSgitFtdcExchangeTradeField["TradeSource"] = "char"
-structDict['CSgitFtdcExchangeTradeField'] = CSgitFtdcExchangeTradeField
+
+CThostFtdcExchangeTradeField["TradeSource"] = "char"
+
+structDict['CThostFtdcExchangeTradeField'] = CThostFtdcExchangeTradeField
+
+
 
 
 #成交
-CSgitFtdcTradeField = {}
+
+CThostFtdcTradeField = {}
+
+
 #经纪公司代码
-CSgitFtdcTradeField["BrokerID"] = "string"
+
+CThostFtdcTradeField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcTradeField["InvestorID"] = "string"
+
+CThostFtdcTradeField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcTradeField["InstrumentID"] = "string"
+
+CThostFtdcTradeField["InstrumentID"] = "string"
+
 #报单引用
-CSgitFtdcTradeField["OrderRef"] = "string"
+
+CThostFtdcTradeField["OrderRef"] = "string"
+
 #用户代码
-CSgitFtdcTradeField["UserID"] = "string"
+
+CThostFtdcTradeField["UserID"] = "string"
+
 #交易所代码
-CSgitFtdcTradeField["ExchangeID"] = "string"
+
+CThostFtdcTradeField["ExchangeID"] = "string"
+
 #成交编号
-CSgitFtdcTradeField["TradeID"] = "string"
+
+CThostFtdcTradeField["TradeID"] = "string"
+
 #买卖方向
-CSgitFtdcTradeField["Direction"] = "char"
+
+CThostFtdcTradeField["Direction"] = "char"
+
 #报单编号
-CSgitFtdcTradeField["OrderSysID"] = "string"
+
+CThostFtdcTradeField["OrderSysID"] = "string"
+
 #会员代码
-CSgitFtdcTradeField["ParticipantID"] = "string"
+
+CThostFtdcTradeField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcTradeField["ClientID"] = "string"
+
+CThostFtdcTradeField["ClientID"] = "string"
+
 #交易角色
-CSgitFtdcTradeField["TradingRole"] = "char"
+
+CThostFtdcTradeField["TradingRole"] = "char"
+
 #合约在交易所的代码
-CSgitFtdcTradeField["ExchangeInstID"] = "string"
+
+CThostFtdcTradeField["ExchangeInstID"] = "string"
+
 #开平标志
-CSgitFtdcTradeField["OffsetFlag"] = "char"
+
+CThostFtdcTradeField["OffsetFlag"] = "char"
+
 #投机套保标志
-CSgitFtdcTradeField["HedgeFlag"] = "char"
+
+CThostFtdcTradeField["HedgeFlag"] = "char"
+
 #价格
-CSgitFtdcTradeField["Price"] = "float"
+
+CThostFtdcTradeField["Price"] = "float"
+
 #数量
-CSgitFtdcTradeField["Volume"] = "int"
+
+CThostFtdcTradeField["Volume"] = "int"
+
 #成交时期
-CSgitFtdcTradeField["TradeDate"] = "string"
+
+CThostFtdcTradeField["TradeDate"] = "string"
+
 #成交时间
-CSgitFtdcTradeField["TradeTime"] = "string"
+
+CThostFtdcTradeField["TradeTime"] = "string"
+
 #成交类型
-CSgitFtdcTradeField["TradeType"] = "char"
+
+CThostFtdcTradeField["TradeType"] = "char"
+
 #成交价来源
-CSgitFtdcTradeField["PriceSource"] = "char"
+
+CThostFtdcTradeField["PriceSource"] = "char"
+
 #交易所交易员代码
-CSgitFtdcTradeField["TraderID"] = "string"
+
+CThostFtdcTradeField["TraderID"] = "string"
+
 #本地报单编号
-CSgitFtdcTradeField["OrderLocalID"] = "string"
+
+CThostFtdcTradeField["OrderLocalID"] = "string"
+
 #结算会员编号
-CSgitFtdcTradeField["ClearingPartID"] = "string"
+
+CThostFtdcTradeField["ClearingPartID"] = "string"
+
 #业务单元
-CSgitFtdcTradeField["BusinessUnit"] = "string"
+
+CThostFtdcTradeField["BusinessUnit"] = "string"
+
 #序号
-CSgitFtdcTradeField["SequenceNo"] = "int"
+
+CThostFtdcTradeField["SequenceNo"] = "int"
+
 #交易日
-CSgitFtdcTradeField["TradingDay"] = "string"
+
+CThostFtdcTradeField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcTradeField["SettlementID"] = "int"
+
+CThostFtdcTradeField["SettlementID"] = "int"
+
 #经纪公司报单编号
-CSgitFtdcTradeField["BrokerOrderSeq"] = "int"
+
+CThostFtdcTradeField["BrokerOrderSeq"] = "int"
+
 #成交来源
-CSgitFtdcTradeField["TradeSource"] = "char"
-structDict['CSgitFtdcTradeField'] = CSgitFtdcTradeField
+
+CThostFtdcTradeField["TradeSource"] = "char"
+
+structDict['CThostFtdcTradeField'] = CThostFtdcTradeField
+
+
 
 
 #用户会话
-CSgitFtdcUserSessionField = {}
+
+CThostFtdcUserSessionField = {}
+
+
 #前置编号
-CSgitFtdcUserSessionField["FrontID"] = "int"
+
+CThostFtdcUserSessionField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcUserSessionField["SessionID"] = "int"
+
+CThostFtdcUserSessionField["SessionID"] = "int"
+
 #经纪公司代码
-CSgitFtdcUserSessionField["BrokerID"] = "string"
+
+CThostFtdcUserSessionField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcUserSessionField["UserID"] = "string"
+
+CThostFtdcUserSessionField["UserID"] = "string"
+
 #登录日期
-CSgitFtdcUserSessionField["LoginDate"] = "string"
+
+CThostFtdcUserSessionField["LoginDate"] = "string"
+
 #登录时间
-CSgitFtdcUserSessionField["LoginTime"] = "string"
+
+CThostFtdcUserSessionField["LoginTime"] = "string"
+
 #IP地址
-CSgitFtdcUserSessionField["IPAddress"] = "string"
+
+CThostFtdcUserSessionField["IPAddress"] = "string"
+
 #用户端产品信息
-CSgitFtdcUserSessionField["UserProductInfo"] = "string"
+
+CThostFtdcUserSessionField["UserProductInfo"] = "string"
+
 #接口端产品信息
-CSgitFtdcUserSessionField["InterfaceProductInfo"] = "string"
+
+CThostFtdcUserSessionField["InterfaceProductInfo"] = "string"
+
 #协议信息
-CSgitFtdcUserSessionField["ProtocolInfo"] = "string"
+
+CThostFtdcUserSessionField["ProtocolInfo"] = "string"
+
 #Mac地址
-CSgitFtdcUserSessionField["MacAddress"] = "string"
-structDict['CSgitFtdcUserSessionField'] = CSgitFtdcUserSessionField
+
+CThostFtdcUserSessionField["MacAddress"] = "string"
+
+structDict['CThostFtdcUserSessionField'] = CThostFtdcUserSessionField
+
+
 
 
 #查询最大报单数量
-CSgitFtdcQueryMaxOrderVolumeField = {}
+
+CThostFtdcQueryMaxOrderVolumeField = {}
+
+
 #经纪公司代码
-CSgitFtdcQueryMaxOrderVolumeField["BrokerID"] = "string"
+
+CThostFtdcQueryMaxOrderVolumeField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQueryMaxOrderVolumeField["InvestorID"] = "string"
+
+CThostFtdcQueryMaxOrderVolumeField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQueryMaxOrderVolumeField["InstrumentID"] = "string"
+
+CThostFtdcQueryMaxOrderVolumeField["InstrumentID"] = "string"
+
 #买卖方向
-CSgitFtdcQueryMaxOrderVolumeField["Direction"] = "char"
+
+CThostFtdcQueryMaxOrderVolumeField["Direction"] = "char"
+
 #开平标志
-CSgitFtdcQueryMaxOrderVolumeField["OffsetFlag"] = "char"
+
+CThostFtdcQueryMaxOrderVolumeField["OffsetFlag"] = "char"
+
 #投机套保标志
-CSgitFtdcQueryMaxOrderVolumeField["HedgeFlag"] = "char"
+
+CThostFtdcQueryMaxOrderVolumeField["HedgeFlag"] = "char"
+
 #最大允许报单数量
-CSgitFtdcQueryMaxOrderVolumeField["MaxVolume"] = "int"
-structDict['CSgitFtdcQueryMaxOrderVolumeField'] = CSgitFtdcQueryMaxOrderVolumeField
+
+CThostFtdcQueryMaxOrderVolumeField["MaxVolume"] = "int"
+
+structDict['CThostFtdcQueryMaxOrderVolumeField'] = CThostFtdcQueryMaxOrderVolumeField
+
+
 
 
 #投资者结算结果确认信息
-CSgitFtdcSettlementInfoConfirmField = {}
+
+CThostFtdcSettlementInfoConfirmField = {}
+
+
 #经纪公司代码
-CSgitFtdcSettlementInfoConfirmField["BrokerID"] = "string"
+
+CThostFtdcSettlementInfoConfirmField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSettlementInfoConfirmField["InvestorID"] = "string"
+
+CThostFtdcSettlementInfoConfirmField["InvestorID"] = "string"
+
 #确认日期
-CSgitFtdcSettlementInfoConfirmField["ConfirmDate"] = "string"
+
+CThostFtdcSettlementInfoConfirmField["ConfirmDate"] = "string"
+
 #确认时间
-CSgitFtdcSettlementInfoConfirmField["ConfirmTime"] = "string"
-structDict['CSgitFtdcSettlementInfoConfirmField'] = CSgitFtdcSettlementInfoConfirmField
+
+CThostFtdcSettlementInfoConfirmField["ConfirmTime"] = "string"
+
+structDict['CThostFtdcSettlementInfoConfirmField'] = CThostFtdcSettlementInfoConfirmField
+
+
 
 
 #出入金同步
-CSgitFtdcSyncDepositField = {}
+
+CThostFtdcSyncDepositField = {}
+
+
 #出入金流水号
-CSgitFtdcSyncDepositField["DepositSeqNo"] = "string"
+
+CThostFtdcSyncDepositField["DepositSeqNo"] = "string"
+
 #经纪公司代码
-CSgitFtdcSyncDepositField["BrokerID"] = "string"
+
+CThostFtdcSyncDepositField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSyncDepositField["InvestorID"] = "string"
+
+CThostFtdcSyncDepositField["InvestorID"] = "string"
+
 #入金金额
-CSgitFtdcSyncDepositField["Deposit"] = "float"
+
+CThostFtdcSyncDepositField["Deposit"] = "float"
+
 #是否强制进行
-CSgitFtdcSyncDepositField["IsForce"] = "int"
-structDict['CSgitFtdcSyncDepositField'] = CSgitFtdcSyncDepositField
+
+CThostFtdcSyncDepositField["IsForce"] = "int"
+
+#币种代码
+
+CThostFtdcSyncDepositField["CurrencyID"] = "string"
+
+structDict['CThostFtdcSyncDepositField'] = CThostFtdcSyncDepositField
+
+
+
+
+#货币质押同步
+
+CThostFtdcSyncFundMortgageField = {}
+
+
+#货币质押流水号
+
+CThostFtdcSyncFundMortgageField["MortgageSeqNo"] = "string"
+
+#经纪公司代码
+
+CThostFtdcSyncFundMortgageField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcSyncFundMortgageField["InvestorID"] = "string"
+
+#源币种
+
+CThostFtdcSyncFundMortgageField["FromCurrencyID"] = "string"
+
+#质押金额
+
+CThostFtdcSyncFundMortgageField["MortgageAmount"] = "float"
+
+#目标币种
+
+CThostFtdcSyncFundMortgageField["ToCurrencyID"] = "string"
+
+structDict['CThostFtdcSyncFundMortgageField'] = CThostFtdcSyncFundMortgageField
+
+
 
 
 #经纪公司同步
-CSgitFtdcBrokerSyncField = {}
+
+CThostFtdcBrokerSyncField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerSyncField["BrokerID"] = "string"
-structDict['CSgitFtdcBrokerSyncField'] = CSgitFtdcBrokerSyncField
+
+CThostFtdcBrokerSyncField["BrokerID"] = "string"
+
+structDict['CThostFtdcBrokerSyncField'] = CThostFtdcBrokerSyncField
+
+
 
 
 #正在同步中的投资者
-CSgitFtdcSyncingInvestorField = {}
+
+CThostFtdcSyncingInvestorField = {}
+
+
 #投资者代码
-CSgitFtdcSyncingInvestorField["InvestorID"] = "string"
+
+CThostFtdcSyncingInvestorField["InvestorID"] = "string"
+
 #经纪公司代码
-CSgitFtdcSyncingInvestorField["BrokerID"] = "string"
+
+CThostFtdcSyncingInvestorField["BrokerID"] = "string"
+
 #投资者分组代码
-CSgitFtdcSyncingInvestorField["InvestorGroupID"] = "string"
+
+CThostFtdcSyncingInvestorField["InvestorGroupID"] = "string"
+
 #投资者名称
-CSgitFtdcSyncingInvestorField["InvestorName"] = "string"
+
+CThostFtdcSyncingInvestorField["InvestorName"] = "string"
+
 #证件类型
-CSgitFtdcSyncingInvestorField["IdentifiedCardType"] = "char"
+
+CThostFtdcSyncingInvestorField["IdentifiedCardType"] = "char"
+
 #证件号码
-CSgitFtdcSyncingInvestorField["IdentifiedCardNo"] = "string"
+
+CThostFtdcSyncingInvestorField["IdentifiedCardNo"] = "string"
+
 #是否活跃
-CSgitFtdcSyncingInvestorField["IsActive"] = "int"
+
+CThostFtdcSyncingInvestorField["IsActive"] = "int"
+
 #联系电话
-CSgitFtdcSyncingInvestorField["Telephone"] = "string"
+
+CThostFtdcSyncingInvestorField["Telephone"] = "string"
+
 #通讯地址
-CSgitFtdcSyncingInvestorField["Address"] = "string"
+
+CThostFtdcSyncingInvestorField["Address"] = "string"
+
 #开户日期
-CSgitFtdcSyncingInvestorField["OpenDate"] = "string"
+
+CThostFtdcSyncingInvestorField["OpenDate"] = "string"
+
 #手机
-CSgitFtdcSyncingInvestorField["Mobile"] = "string"
+
+CThostFtdcSyncingInvestorField["Mobile"] = "string"
+
 #手续费率模板代码
-CSgitFtdcSyncingInvestorField["CommModelID"] = "string"
-structDict['CSgitFtdcSyncingInvestorField'] = CSgitFtdcSyncingInvestorField
+
+CThostFtdcSyncingInvestorField["CommModelID"] = "string"
+
+#保证金率模板代码
+
+CThostFtdcSyncingInvestorField["MarginModelID"] = "string"
+
+structDict['CThostFtdcSyncingInvestorField'] = CThostFtdcSyncingInvestorField
+
+
 
 
 #正在同步中的交易代码
-CSgitFtdcSyncingTradingCodeField = {}
+
+CThostFtdcSyncingTradingCodeField = {}
+
+
 #投资者代码
-CSgitFtdcSyncingTradingCodeField["InvestorID"] = "string"
+
+CThostFtdcSyncingTradingCodeField["InvestorID"] = "string"
+
 #经纪公司代码
-CSgitFtdcSyncingTradingCodeField["BrokerID"] = "string"
+
+CThostFtdcSyncingTradingCodeField["BrokerID"] = "string"
+
 #交易所代码
-CSgitFtdcSyncingTradingCodeField["ExchangeID"] = "string"
+
+CThostFtdcSyncingTradingCodeField["ExchangeID"] = "string"
+
 #客户代码
-CSgitFtdcSyncingTradingCodeField["ClientID"] = "string"
+
+CThostFtdcSyncingTradingCodeField["ClientID"] = "string"
+
 #是否活跃
-CSgitFtdcSyncingTradingCodeField["IsActive"] = "int"
+
+CThostFtdcSyncingTradingCodeField["IsActive"] = "int"
+
 #交易编码类型
-CSgitFtdcSyncingTradingCodeField["ClientIDType"] = "char"
-structDict['CSgitFtdcSyncingTradingCodeField'] = CSgitFtdcSyncingTradingCodeField
+
+CThostFtdcSyncingTradingCodeField["ClientIDType"] = "char"
+
+structDict['CThostFtdcSyncingTradingCodeField'] = CThostFtdcSyncingTradingCodeField
+
+
 
 
 #正在同步中的投资者分组
-CSgitFtdcSyncingInvestorGroupField = {}
+
+CThostFtdcSyncingInvestorGroupField = {}
+
+
 #经纪公司代码
-CSgitFtdcSyncingInvestorGroupField["BrokerID"] = "string"
+
+CThostFtdcSyncingInvestorGroupField["BrokerID"] = "string"
+
 #投资者分组代码
-CSgitFtdcSyncingInvestorGroupField["InvestorGroupID"] = "string"
+
+CThostFtdcSyncingInvestorGroupField["InvestorGroupID"] = "string"
+
 #投资者分组名称
-CSgitFtdcSyncingInvestorGroupField["InvestorGroupName"] = "string"
-structDict['CSgitFtdcSyncingInvestorGroupField'] = CSgitFtdcSyncingInvestorGroupField
+
+CThostFtdcSyncingInvestorGroupField["InvestorGroupName"] = "string"
+
+structDict['CThostFtdcSyncingInvestorGroupField'] = CThostFtdcSyncingInvestorGroupField
+
+
 
 
 #正在同步中的交易账号
-CSgitFtdcSyncingTradingAccountField = {}
+
+CThostFtdcSyncingTradingAccountField = {}
+
+
 #经纪公司代码
-CSgitFtdcSyncingTradingAccountField["BrokerID"] = "string"
+
+CThostFtdcSyncingTradingAccountField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcSyncingTradingAccountField["AccountID"] = "string"
+
+CThostFtdcSyncingTradingAccountField["AccountID"] = "string"
+
 #上次质押金额
-CSgitFtdcSyncingTradingAccountField["PreMortgage"] = "float"
+
+CThostFtdcSyncingTradingAccountField["PreMortgage"] = "float"
+
 #上次信用额度
-CSgitFtdcSyncingTradingAccountField["PreCredit"] = "float"
+
+CThostFtdcSyncingTradingAccountField["PreCredit"] = "float"
+
 #上次存款额
-CSgitFtdcSyncingTradingAccountField["PreDeposit"] = "float"
+
+CThostFtdcSyncingTradingAccountField["PreDeposit"] = "float"
+
 #上次结算准备金
-CSgitFtdcSyncingTradingAccountField["PreBalance"] = "float"
+
+CThostFtdcSyncingTradingAccountField["PreBalance"] = "float"
+
 #上次占用的保证金
-CSgitFtdcSyncingTradingAccountField["PreMargin"] = "float"
+
+CThostFtdcSyncingTradingAccountField["PreMargin"] = "float"
+
 #利息基数
-CSgitFtdcSyncingTradingAccountField["InterestBase"] = "float"
+
+CThostFtdcSyncingTradingAccountField["InterestBase"] = "float"
+
 #利息收入
-CSgitFtdcSyncingTradingAccountField["Interest"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Interest"] = "float"
+
 #入金金额
-CSgitFtdcSyncingTradingAccountField["Deposit"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Deposit"] = "float"
+
 #出金金额
-CSgitFtdcSyncingTradingAccountField["Withdraw"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Withdraw"] = "float"
+
 #冻结的保证金
-CSgitFtdcSyncingTradingAccountField["FrozenMargin"] = "float"
+
+CThostFtdcSyncingTradingAccountField["FrozenMargin"] = "float"
+
 #冻结的资金
-CSgitFtdcSyncingTradingAccountField["FrozenCash"] = "float"
+
+CThostFtdcSyncingTradingAccountField["FrozenCash"] = "float"
+
 #冻结的手续费
-CSgitFtdcSyncingTradingAccountField["FrozenCommission"] = "float"
+
+CThostFtdcSyncingTradingAccountField["FrozenCommission"] = "float"
+
 #当前保证金总额
-CSgitFtdcSyncingTradingAccountField["CurrMargin"] = "float"
+
+CThostFtdcSyncingTradingAccountField["CurrMargin"] = "float"
+
 #资金差额
-CSgitFtdcSyncingTradingAccountField["CashIn"] = "float"
+
+CThostFtdcSyncingTradingAccountField["CashIn"] = "float"
+
 #手续费
-CSgitFtdcSyncingTradingAccountField["Commission"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Commission"] = "float"
+
 #平仓盈亏
-CSgitFtdcSyncingTradingAccountField["CloseProfit"] = "float"
+
+CThostFtdcSyncingTradingAccountField["CloseProfit"] = "float"
+
 #持仓盈亏
-CSgitFtdcSyncingTradingAccountField["PositionProfit"] = "float"
+
+CThostFtdcSyncingTradingAccountField["PositionProfit"] = "float"
+
 #期货结算准备金
-CSgitFtdcSyncingTradingAccountField["Balance"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Balance"] = "float"
+
 #可用资金
-CSgitFtdcSyncingTradingAccountField["Available"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Available"] = "float"
+
 #可取资金
-CSgitFtdcSyncingTradingAccountField["WithdrawQuota"] = "float"
+
+CThostFtdcSyncingTradingAccountField["WithdrawQuota"] = "float"
+
 #基本准备金
-CSgitFtdcSyncingTradingAccountField["Reserve"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Reserve"] = "float"
+
 #交易日
-CSgitFtdcSyncingTradingAccountField["TradingDay"] = "string"
+
+CThostFtdcSyncingTradingAccountField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcSyncingTradingAccountField["SettlementID"] = "int"
+
+CThostFtdcSyncingTradingAccountField["SettlementID"] = "int"
+
 #信用额度
-CSgitFtdcSyncingTradingAccountField["Credit"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Credit"] = "float"
+
 #质押金额
-CSgitFtdcSyncingTradingAccountField["Mortgage"] = "float"
+
+CThostFtdcSyncingTradingAccountField["Mortgage"] = "float"
+
 #交易所保证金
-CSgitFtdcSyncingTradingAccountField["ExchangeMargin"] = "float"
+
+CThostFtdcSyncingTradingAccountField["ExchangeMargin"] = "float"
+
 #投资者交割保证金
-CSgitFtdcSyncingTradingAccountField["DeliveryMargin"] = "float"
+
+CThostFtdcSyncingTradingAccountField["DeliveryMargin"] = "float"
+
 #交易所交割保证金
-CSgitFtdcSyncingTradingAccountField["ExchangeDeliveryMargin"] = "float"
-structDict['CSgitFtdcSyncingTradingAccountField'] = CSgitFtdcSyncingTradingAccountField
+
+CThostFtdcSyncingTradingAccountField["ExchangeDeliveryMargin"] = "float"
+
+#保底期货结算准备金//以下sgit不用
+
+CThostFtdcSyncingTradingAccountField["ReserveBalance"] = "float"
+
+#币种代码
+
+CThostFtdcSyncingTradingAccountField["CurrencyID"] = "string"
+
+#上次货币质入金额
+
+CThostFtdcSyncingTradingAccountField["PreFundMortgageIn"] = "float"
+
+#上次货币质出金额
+
+CThostFtdcSyncingTradingAccountField["PreFundMortgageOut"] = "float"
+
+#货币质入金额
+
+CThostFtdcSyncingTradingAccountField["FundMortgageIn"] = "float"
+
+#货币质出金额
+
+CThostFtdcSyncingTradingAccountField["FundMortgageOut"] = "float"
+
+#货币质押余额
+
+CThostFtdcSyncingTradingAccountField["FundMortgageAvailable"] = "float"
+
+#可质押货币金额
+
+CThostFtdcSyncingTradingAccountField["MortgageableFund"] = "float"
+
+#特殊产品占用保证金
+
+CThostFtdcSyncingTradingAccountField["SpecProductMargin"] = "float"
+
+#特殊产品冻结保证金
+
+CThostFtdcSyncingTradingAccountField["SpecProductFrozenMargin"] = "float"
+
+#特殊产品手续费
+
+CThostFtdcSyncingTradingAccountField["SpecProductCommission"] = "float"
+
+#特殊产品冻结手续费
+
+CThostFtdcSyncingTradingAccountField["SpecProductFrozenCommission"] = "float"
+
+#特殊产品持仓盈亏
+
+CThostFtdcSyncingTradingAccountField["SpecProductPositionProfit"] = "float"
+
+#特殊产品平仓盈亏
+
+CThostFtdcSyncingTradingAccountField["SpecProductCloseProfit"] = "float"
+
+#根据持仓盈亏算法计算的特殊产品持仓盈亏
+
+CThostFtdcSyncingTradingAccountField["SpecProductPositionProfitByAlg"] = "float"
+
+#特殊产品交易所保证金
+
+CThostFtdcSyncingTradingAccountField["SpecProductExchangeMargin"] = "float"
+
+structDict['CThostFtdcSyncingTradingAccountField'] = CThostFtdcSyncingTradingAccountField
+
+
 
 
 #正在同步中的投资者持仓
-CSgitFtdcSyncingInvestorPositionField = {}
+
+CThostFtdcSyncingInvestorPositionField = {}
+
+
 #合约代码
-CSgitFtdcSyncingInvestorPositionField["InstrumentID"] = "string"
+
+CThostFtdcSyncingInvestorPositionField["InstrumentID"] = "string"
+
 #经纪公司代码
-CSgitFtdcSyncingInvestorPositionField["BrokerID"] = "string"
+
+CThostFtdcSyncingInvestorPositionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSyncingInvestorPositionField["InvestorID"] = "string"
+
+CThostFtdcSyncingInvestorPositionField["InvestorID"] = "string"
+
 #持仓多空方向
-CSgitFtdcSyncingInvestorPositionField["PosiDirection"] = "char"
+
+CThostFtdcSyncingInvestorPositionField["PosiDirection"] = "char"
+
 #投机套保标志
-CSgitFtdcSyncingInvestorPositionField["HedgeFlag"] = "char"
+
+CThostFtdcSyncingInvestorPositionField["HedgeFlag"] = "char"
+
 #持仓日期
-CSgitFtdcSyncingInvestorPositionField["PositionDate"] = "char"
+
+CThostFtdcSyncingInvestorPositionField["PositionDate"] = "char"
+
 #上日持仓
-CSgitFtdcSyncingInvestorPositionField["YdPosition"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["YdPosition"] = "int"
+
 #今日持仓
-CSgitFtdcSyncingInvestorPositionField["Position"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["Position"] = "int"
+
 #多头冻结
-CSgitFtdcSyncingInvestorPositionField["LongFrozen"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["LongFrozen"] = "int"
+
 #空头冻结
-CSgitFtdcSyncingInvestorPositionField["ShortFrozen"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["ShortFrozen"] = "int"
+
 #开仓冻结金额
-CSgitFtdcSyncingInvestorPositionField["LongFrozenAmount"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["LongFrozenAmount"] = "float"
+
 #开仓冻结金额
-CSgitFtdcSyncingInvestorPositionField["ShortFrozenAmount"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["ShortFrozenAmount"] = "float"
+
 #开仓量
-CSgitFtdcSyncingInvestorPositionField["OpenVolume"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["OpenVolume"] = "int"
+
 #平仓量
-CSgitFtdcSyncingInvestorPositionField["CloseVolume"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["CloseVolume"] = "int"
+
 #开仓金额
-CSgitFtdcSyncingInvestorPositionField["OpenAmount"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["OpenAmount"] = "float"
+
 #平仓金额
-CSgitFtdcSyncingInvestorPositionField["CloseAmount"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["CloseAmount"] = "float"
+
 #持仓成本
-CSgitFtdcSyncingInvestorPositionField["PositionCost"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["PositionCost"] = "float"
+
 #上次占用的保证金
-CSgitFtdcSyncingInvestorPositionField["PreMargin"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["PreMargin"] = "float"
+
 #占用的保证金
-CSgitFtdcSyncingInvestorPositionField["UseMargin"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["UseMargin"] = "float"
+
 #冻结的保证金
-CSgitFtdcSyncingInvestorPositionField["FrozenMargin"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["FrozenMargin"] = "float"
+
 #冻结的资金
-CSgitFtdcSyncingInvestorPositionField["FrozenCash"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["FrozenCash"] = "float"
+
 #冻结的手续费
-CSgitFtdcSyncingInvestorPositionField["FrozenCommission"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["FrozenCommission"] = "float"
+
 #资金差额
-CSgitFtdcSyncingInvestorPositionField["CashIn"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["CashIn"] = "float"
+
 #手续费
-CSgitFtdcSyncingInvestorPositionField["Commission"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["Commission"] = "float"
+
 #平仓盈亏
-CSgitFtdcSyncingInvestorPositionField["CloseProfit"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["CloseProfit"] = "float"
+
 #持仓盈亏
-CSgitFtdcSyncingInvestorPositionField["PositionProfit"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["PositionProfit"] = "float"
+
 #上次结算价
-CSgitFtdcSyncingInvestorPositionField["PreSettlementPrice"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["PreSettlementPrice"] = "float"
+
 #本次结算价
-CSgitFtdcSyncingInvestorPositionField["SettlementPrice"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["SettlementPrice"] = "float"
+
 #交易日
-CSgitFtdcSyncingInvestorPositionField["TradingDay"] = "string"
+
+CThostFtdcSyncingInvestorPositionField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcSyncingInvestorPositionField["SettlementID"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["SettlementID"] = "int"
+
 #开仓成本
-CSgitFtdcSyncingInvestorPositionField["OpenCost"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["OpenCost"] = "float"
+
 #交易所保证金
-CSgitFtdcSyncingInvestorPositionField["ExchangeMargin"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["ExchangeMargin"] = "float"
+
 #组合成交形成的持仓
-CSgitFtdcSyncingInvestorPositionField["CombPosition"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["CombPosition"] = "int"
+
 #组合多头冻结
-CSgitFtdcSyncingInvestorPositionField["CombLongFrozen"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["CombLongFrozen"] = "int"
+
 #组合空头冻结
-CSgitFtdcSyncingInvestorPositionField["CombShortFrozen"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["CombShortFrozen"] = "int"
+
 #逐日盯市平仓盈亏
-CSgitFtdcSyncingInvestorPositionField["CloseProfitByDate"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["CloseProfitByDate"] = "float"
+
 #逐笔对冲平仓盈亏
-CSgitFtdcSyncingInvestorPositionField["CloseProfitByTrade"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["CloseProfitByTrade"] = "float"
+
 #今日持仓
-CSgitFtdcSyncingInvestorPositionField["TodayPosition"] = "int"
+
+CThostFtdcSyncingInvestorPositionField["TodayPosition"] = "int"
+
 #保证金率
-CSgitFtdcSyncingInvestorPositionField["MarginRateByMoney"] = "float"
+
+CThostFtdcSyncingInvestorPositionField["MarginRateByMoney"] = "float"
+
 #保证金率(按手数)
-CSgitFtdcSyncingInvestorPositionField["MarginRateByVolume"] = "float"
-structDict['CSgitFtdcSyncingInvestorPositionField'] = CSgitFtdcSyncingInvestorPositionField
+
+CThostFtdcSyncingInvestorPositionField["MarginRateByVolume"] = "float"
+
+#执行冻结//以下sgit不用
+
+CThostFtdcSyncingInvestorPositionField["StrikeFrozen"] = "int"
+
+#执行冻结金额
+
+CThostFtdcSyncingInvestorPositionField["StrikeFrozenAmount"] = "float"
+
+#放弃执行冻结
+
+CThostFtdcSyncingInvestorPositionField["AbandonFrozen"] = "int"
+
+structDict['CThostFtdcSyncingInvestorPositionField'] = CThostFtdcSyncingInvestorPositionField
+
+
 
 
 #正在同步中的合约保证金率
-CSgitFtdcSyncingInstrumentMarginRateField = {}
+
+CThostFtdcSyncingInstrumentMarginRateField = {}
+
+
 #合约代码
-CSgitFtdcSyncingInstrumentMarginRateField["InstrumentID"] = "string"
+
+CThostFtdcSyncingInstrumentMarginRateField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcSyncingInstrumentMarginRateField["InvestorRange"] = "char"
+
+CThostFtdcSyncingInstrumentMarginRateField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcSyncingInstrumentMarginRateField["BrokerID"] = "string"
+
+CThostFtdcSyncingInstrumentMarginRateField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSyncingInstrumentMarginRateField["InvestorID"] = "string"
+
+CThostFtdcSyncingInstrumentMarginRateField["InvestorID"] = "string"
+
 #投机套保标志
-CSgitFtdcSyncingInstrumentMarginRateField["HedgeFlag"] = "char"
+
+CThostFtdcSyncingInstrumentMarginRateField["HedgeFlag"] = "char"
+
 #多头保证金率
-CSgitFtdcSyncingInstrumentMarginRateField["LongMarginRatioByMoney"] = "float"
+
+CThostFtdcSyncingInstrumentMarginRateField["LongMarginRatioByMoney"] = "float"
+
 #多头保证金费
-CSgitFtdcSyncingInstrumentMarginRateField["LongMarginRatioByVolume"] = "float"
+
+CThostFtdcSyncingInstrumentMarginRateField["LongMarginRatioByVolume"] = "float"
+
 #空头保证金率
-CSgitFtdcSyncingInstrumentMarginRateField["ShortMarginRatioByMoney"] = "float"
+
+CThostFtdcSyncingInstrumentMarginRateField["ShortMarginRatioByMoney"] = "float"
+
 #空头保证金费
-CSgitFtdcSyncingInstrumentMarginRateField["ShortMarginRatioByVolume"] = "float"
+
+CThostFtdcSyncingInstrumentMarginRateField["ShortMarginRatioByVolume"] = "float"
+
 #是否相对交易所收取
-CSgitFtdcSyncingInstrumentMarginRateField["IsRelative"] = "int"
-structDict['CSgitFtdcSyncingInstrumentMarginRateField'] = CSgitFtdcSyncingInstrumentMarginRateField
+
+CThostFtdcSyncingInstrumentMarginRateField["IsRelative"] = "int"
+
+structDict['CThostFtdcSyncingInstrumentMarginRateField'] = CThostFtdcSyncingInstrumentMarginRateField
+
+
 
 
 #正在同步中的合约手续费率
-CSgitFtdcSyncingInstrumentCommissionRateField = {}
+
+CThostFtdcSyncingInstrumentCommissionRateField = {}
+
+
 #合约代码
-CSgitFtdcSyncingInstrumentCommissionRateField["InstrumentID"] = "string"
+
+CThostFtdcSyncingInstrumentCommissionRateField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcSyncingInstrumentCommissionRateField["InvestorRange"] = "char"
+
+CThostFtdcSyncingInstrumentCommissionRateField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcSyncingInstrumentCommissionRateField["BrokerID"] = "string"
+
+CThostFtdcSyncingInstrumentCommissionRateField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSyncingInstrumentCommissionRateField["InvestorID"] = "string"
+
+CThostFtdcSyncingInstrumentCommissionRateField["InvestorID"] = "string"
+
 #开仓手续费率
-CSgitFtdcSyncingInstrumentCommissionRateField["OpenRatioByMoney"] = "float"
+
+CThostFtdcSyncingInstrumentCommissionRateField["OpenRatioByMoney"] = "float"
+
 #开仓手续费
-CSgitFtdcSyncingInstrumentCommissionRateField["OpenRatioByVolume"] = "float"
+
+CThostFtdcSyncingInstrumentCommissionRateField["OpenRatioByVolume"] = "float"
+
 #平仓手续费率
-CSgitFtdcSyncingInstrumentCommissionRateField["CloseRatioByMoney"] = "float"
+
+CThostFtdcSyncingInstrumentCommissionRateField["CloseRatioByMoney"] = "float"
+
 #平仓手续费
-CSgitFtdcSyncingInstrumentCommissionRateField["CloseRatioByVolume"] = "float"
+
+CThostFtdcSyncingInstrumentCommissionRateField["CloseRatioByVolume"] = "float"
+
 #平今手续费率
-CSgitFtdcSyncingInstrumentCommissionRateField["CloseTodayRatioByMoney"] = "float"
+
+CThostFtdcSyncingInstrumentCommissionRateField["CloseTodayRatioByMoney"] = "float"
+
 #平今手续费
-CSgitFtdcSyncingInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
-structDict['CSgitFtdcSyncingInstrumentCommissionRateField'] = CSgitFtdcSyncingInstrumentCommissionRateField
+
+CThostFtdcSyncingInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
+
+structDict['CThostFtdcSyncingInstrumentCommissionRateField'] = CThostFtdcSyncingInstrumentCommissionRateField
+
+
 
 
 #正在同步中的合约交易权限
-CSgitFtdcSyncingInstrumentTradingRightField = {}
+
+CThostFtdcSyncingInstrumentTradingRightField = {}
+
+
 #合约代码
-CSgitFtdcSyncingInstrumentTradingRightField["InstrumentID"] = "string"
+
+CThostFtdcSyncingInstrumentTradingRightField["InstrumentID"] = "string"
+
 #投资者范围
-CSgitFtdcSyncingInstrumentTradingRightField["InvestorRange"] = "char"
+
+CThostFtdcSyncingInstrumentTradingRightField["InvestorRange"] = "char"
+
 #经纪公司代码
-CSgitFtdcSyncingInstrumentTradingRightField["BrokerID"] = "string"
+
+CThostFtdcSyncingInstrumentTradingRightField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcSyncingInstrumentTradingRightField["InvestorID"] = "string"
+
+CThostFtdcSyncingInstrumentTradingRightField["InvestorID"] = "string"
+
 #交易权限
-CSgitFtdcSyncingInstrumentTradingRightField["TradingRight"] = "char"
-structDict['CSgitFtdcSyncingInstrumentTradingRightField'] = CSgitFtdcSyncingInstrumentTradingRightField
+
+CThostFtdcSyncingInstrumentTradingRightField["TradingRight"] = "char"
+
+structDict['CThostFtdcSyncingInstrumentTradingRightField'] = CThostFtdcSyncingInstrumentTradingRightField
+
+
 
 
 #查询报单
-CSgitFtdcQryOrderField = {}
+
+CThostFtdcQryOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryOrderField["BrokerID"] = "string"
+
+CThostFtdcQryOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryOrderField["InvestorID"] = "string"
+
+CThostFtdcQryOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryOrderField["InstrumentID"] = "string"
+
+CThostFtdcQryOrderField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcQryOrderField["ExchangeID"] = "string"
+
+CThostFtdcQryOrderField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcQryOrderField["OrderSysID"] = "string"
+
+CThostFtdcQryOrderField["OrderSysID"] = "string"
+
 #开始时间
-CSgitFtdcQryOrderField["InsertTimeStart"] = "string"
+
+CThostFtdcQryOrderField["InsertTimeStart"] = "string"
+
 #结束时间
-CSgitFtdcQryOrderField["InsertTimeEnd"] = "string"
-structDict['CSgitFtdcQryOrderField'] = CSgitFtdcQryOrderField
+
+CThostFtdcQryOrderField["InsertTimeEnd"] = "string"
+
+structDict['CThostFtdcQryOrderField'] = CThostFtdcQryOrderField
+
+
 
 
 #查询成交
-CSgitFtdcQryTradeField = {}
+
+CThostFtdcQryTradeField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryTradeField["BrokerID"] = "string"
+
+CThostFtdcQryTradeField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryTradeField["InvestorID"] = "string"
+
+CThostFtdcQryTradeField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryTradeField["InstrumentID"] = "string"
+
+CThostFtdcQryTradeField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcQryTradeField["ExchangeID"] = "string"
+
+CThostFtdcQryTradeField["ExchangeID"] = "string"
+
 #成交编号
-CSgitFtdcQryTradeField["TradeID"] = "string"
+
+CThostFtdcQryTradeField["TradeID"] = "string"
+
 #开始时间
-CSgitFtdcQryTradeField["TradeTimeStart"] = "string"
+
+CThostFtdcQryTradeField["TradeTimeStart"] = "string"
+
 #结束时间
-CSgitFtdcQryTradeField["TradeTimeEnd"] = "string"
-structDict['CSgitFtdcQryTradeField'] = CSgitFtdcQryTradeField
+
+CThostFtdcQryTradeField["TradeTimeEnd"] = "string"
+
+structDict['CThostFtdcQryTradeField'] = CThostFtdcQryTradeField
+
+
 
 
 #查询投资者持仓
-CSgitFtdcQryInvestorPositionField = {}
+
+CThostFtdcQryInvestorPositionField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInvestorPositionField["BrokerID"] = "string"
+
+CThostFtdcQryInvestorPositionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInvestorPositionField["InvestorID"] = "string"
+
+CThostFtdcQryInvestorPositionField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryInvestorPositionField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryInvestorPositionField'] = CSgitFtdcQryInvestorPositionField
+
+CThostFtdcQryInvestorPositionField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryInvestorPositionField'] = CThostFtdcQryInvestorPositionField
+
+
 
 
 #查询资金账户
-CSgitFtdcQryTradingAccountField = {}
+
+CThostFtdcQryTradingAccountField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryTradingAccountField["BrokerID"] = "string"
+
+CThostFtdcQryTradingAccountField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryTradingAccountField["InvestorID"] = "string"
-structDict['CSgitFtdcQryTradingAccountField'] = CSgitFtdcQryTradingAccountField
+
+CThostFtdcQryTradingAccountField["InvestorID"] = "string"
+
+#币种代码
+
+CThostFtdcQryTradingAccountField["CurrencyID"] = "string"
+
+structDict['CThostFtdcQryTradingAccountField'] = CThostFtdcQryTradingAccountField
+
+
 
 
 #查询投资者
-CSgitFtdcQryInvestorField = {}
+
+CThostFtdcQryInvestorField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInvestorField["BrokerID"] = "string"
+
+CThostFtdcQryInvestorField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInvestorField["InvestorID"] = "string"
-structDict['CSgitFtdcQryInvestorField'] = CSgitFtdcQryInvestorField
+
+CThostFtdcQryInvestorField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryInvestorField'] = CThostFtdcQryInvestorField
+
+
 
 
 #查询交易编码
-CSgitFtdcQryTradingCodeField = {}
+
+CThostFtdcQryTradingCodeField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryTradingCodeField["BrokerID"] = "string"
+
+CThostFtdcQryTradingCodeField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryTradingCodeField["InvestorID"] = "string"
+
+CThostFtdcQryTradingCodeField["InvestorID"] = "string"
+
 #交易所代码
-CSgitFtdcQryTradingCodeField["ExchangeID"] = "string"
+
+CThostFtdcQryTradingCodeField["ExchangeID"] = "string"
+
 #客户代码
-CSgitFtdcQryTradingCodeField["ClientID"] = "string"
+
+CThostFtdcQryTradingCodeField["ClientID"] = "string"
+
 #交易编码类型
-CSgitFtdcQryTradingCodeField["ClientIDType"] = "char"
-structDict['CSgitFtdcQryTradingCodeField'] = CSgitFtdcQryTradingCodeField
+
+CThostFtdcQryTradingCodeField["ClientIDType"] = "char"
+
+structDict['CThostFtdcQryTradingCodeField'] = CThostFtdcQryTradingCodeField
 
 
-#查询交易编码
-CSgitFtdcQryInvestorGroupField = {}
+
+
+#查询投资者组
+
+CThostFtdcQryInvestorGroupField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInvestorGroupField["BrokerID"] = "string"
-structDict['CSgitFtdcQryInvestorGroupField'] = CSgitFtdcQryInvestorGroupField
+
+CThostFtdcQryInvestorGroupField["BrokerID"] = "string"
+
+structDict['CThostFtdcQryInvestorGroupField'] = CThostFtdcQryInvestorGroupField
 
 
-#查询交易编码
-CSgitFtdcQryInstrumentMarginRateField = {}
+
+
+#查询合约保证金率
+
+CThostFtdcQryInstrumentMarginRateField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInstrumentMarginRateField["BrokerID"] = "string"
+
+CThostFtdcQryInstrumentMarginRateField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInstrumentMarginRateField["InvestorID"] = "string"
+
+CThostFtdcQryInstrumentMarginRateField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryInstrumentMarginRateField["InstrumentID"] = "string"
+
+CThostFtdcQryInstrumentMarginRateField["InstrumentID"] = "string"
+
 #投机套保标志
-CSgitFtdcQryInstrumentMarginRateField["HedgeFlag"] = "char"
-structDict['CSgitFtdcQryInstrumentMarginRateField'] = CSgitFtdcQryInstrumentMarginRateField
+
+CThostFtdcQryInstrumentMarginRateField["HedgeFlag"] = "char"
+
+structDict['CThostFtdcQryInstrumentMarginRateField'] = CThostFtdcQryInstrumentMarginRateField
 
 
-#查询交易编码
-CSgitFtdcQryInstrumentCommissionRateField = {}
+
+
+#查询手续费率
+
+CThostFtdcQryInstrumentCommissionRateField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInstrumentCommissionRateField["BrokerID"] = "string"
+
+CThostFtdcQryInstrumentCommissionRateField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInstrumentCommissionRateField["InvestorID"] = "string"
+
+CThostFtdcQryInstrumentCommissionRateField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryInstrumentCommissionRateField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryInstrumentCommissionRateField'] = CSgitFtdcQryInstrumentCommissionRateField
+
+CThostFtdcQryInstrumentCommissionRateField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryInstrumentCommissionRateField'] = CThostFtdcQryInstrumentCommissionRateField
 
 
-#查询交易编码
-CSgitFtdcQryInstrumentTradingRightField = {}
+
+
+#查询合约交易权限
+
+CThostFtdcQryInstrumentTradingRightField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInstrumentTradingRightField["BrokerID"] = "string"
+
+CThostFtdcQryInstrumentTradingRightField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInstrumentTradingRightField["InvestorID"] = "string"
+
+CThostFtdcQryInstrumentTradingRightField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryInstrumentTradingRightField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryInstrumentTradingRightField'] = CSgitFtdcQryInstrumentTradingRightField
+
+CThostFtdcQryInstrumentTradingRightField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryInstrumentTradingRightField'] = CThostFtdcQryInstrumentTradingRightField
+
+
 
 
 #查询经纪公司
-CSgitFtdcQryBrokerField = {}
+
+CThostFtdcQryBrokerField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryBrokerField["BrokerID"] = "string"
-structDict['CSgitFtdcQryBrokerField'] = CSgitFtdcQryBrokerField
+
+CThostFtdcQryBrokerField["BrokerID"] = "string"
+
+structDict['CThostFtdcQryBrokerField'] = CThostFtdcQryBrokerField
+
+
 
 
 #查询交易员
-CSgitFtdcQryTraderField = {}
+
+CThostFtdcQryTraderField = {}
+
+
 #交易所代码
-CSgitFtdcQryTraderField["ExchangeID"] = "string"
+
+CThostFtdcQryTraderField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcQryTraderField["ParticipantID"] = "string"
+
+CThostFtdcQryTraderField["ParticipantID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcQryTraderField["TraderID"] = "string"
-structDict['CSgitFtdcQryTraderField'] = CSgitFtdcQryTraderField
+
+CThostFtdcQryTraderField["TraderID"] = "string"
+
+structDict['CThostFtdcQryTraderField'] = CThostFtdcQryTraderField
 
 
-#查询经纪公司会员代码
-CSgitFtdcQryPartBrokerField = {}
-#交易所代码
-CSgitFtdcQryPartBrokerField["ExchangeID"] = "string"
-#经纪公司代码
-CSgitFtdcQryPartBrokerField["BrokerID"] = "string"
-#会员代码
-CSgitFtdcQryPartBrokerField["ParticipantID"] = "string"
-structDict['CSgitFtdcQryPartBrokerField'] = CSgitFtdcQryPartBrokerField
 
 
 #查询管理用户功能权限
-CSgitFtdcQrySuperUserFunctionField = {}
+
+CThostFtdcQrySuperUserFunctionField = {}
+
+
 #用户代码
-CSgitFtdcQrySuperUserFunctionField["UserID"] = "string"
-structDict['CSgitFtdcQrySuperUserFunctionField'] = CSgitFtdcQrySuperUserFunctionField
+
+CThostFtdcQrySuperUserFunctionField["UserID"] = "string"
+
+structDict['CThostFtdcQrySuperUserFunctionField'] = CThostFtdcQrySuperUserFunctionField
+
+
 
 
 #查询用户会话
-CSgitFtdcQryUserSessionField = {}
+
+CThostFtdcQryUserSessionField = {}
+
+
 #前置编号
-CSgitFtdcQryUserSessionField["FrontID"] = "int"
+
+CThostFtdcQryUserSessionField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcQryUserSessionField["SessionID"] = "int"
+
+CThostFtdcQryUserSessionField["SessionID"] = "int"
+
 #经纪公司代码
-CSgitFtdcQryUserSessionField["BrokerID"] = "string"
+
+CThostFtdcQryUserSessionField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcQryUserSessionField["UserID"] = "string"
-structDict['CSgitFtdcQryUserSessionField'] = CSgitFtdcQryUserSessionField
+
+CThostFtdcQryUserSessionField["UserID"] = "string"
+
+structDict['CThostFtdcQryUserSessionField'] = CThostFtdcQryUserSessionField
+
+
+
+
+#查询经纪公司会员代码
+
+CThostFtdcQryPartBrokerField = {}
+
+
+#交易所代码
+
+CThostFtdcQryPartBrokerField["ExchangeID"] = "string"
+
+#经纪公司代码
+
+CThostFtdcQryPartBrokerField["BrokerID"] = "string"
+
+#会员代码
+
+CThostFtdcQryPartBrokerField["ParticipantID"] = "string"
+
+structDict['CThostFtdcQryPartBrokerField'] = CThostFtdcQryPartBrokerField
+
+
 
 
 #查询前置状态
-CSgitFtdcQryFrontStatusField = {}
+
+CThostFtdcQryFrontStatusField = {}
+
+
 #前置编号
-CSgitFtdcQryFrontStatusField["FrontID"] = "int"
-structDict['CSgitFtdcQryFrontStatusField'] = CSgitFtdcQryFrontStatusField
+
+CThostFtdcQryFrontStatusField["FrontID"] = "int"
+
+structDict['CThostFtdcQryFrontStatusField'] = CThostFtdcQryFrontStatusField
+
+
 
 
 #查询交易所报单
-CSgitFtdcQryExchangeOrderField = {}
+
+CThostFtdcQryExchangeOrderField = {}
+
+
 #会员代码
-CSgitFtdcQryExchangeOrderField["ParticipantID"] = "string"
+
+CThostFtdcQryExchangeOrderField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcQryExchangeOrderField["ClientID"] = "string"
+
+CThostFtdcQryExchangeOrderField["ClientID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcQryExchangeOrderField["ExchangeInstID"] = "string"
+
+CThostFtdcQryExchangeOrderField["ExchangeInstID"] = "string"
+
 #交易所代码
-CSgitFtdcQryExchangeOrderField["ExchangeID"] = "string"
+
+CThostFtdcQryExchangeOrderField["ExchangeID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcQryExchangeOrderField["TraderID"] = "string"
-structDict['CSgitFtdcQryExchangeOrderField'] = CSgitFtdcQryExchangeOrderField
+
+CThostFtdcQryExchangeOrderField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeOrderField'] = CThostFtdcQryExchangeOrderField
+
+
 
 
 #查询报单操作
-CSgitFtdcQryOrderActionField = {}
+
+CThostFtdcQryOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryOrderActionField["BrokerID"] = "string"
+
+CThostFtdcQryOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryOrderActionField["InvestorID"] = "string"
+
+CThostFtdcQryOrderActionField["InvestorID"] = "string"
+
 #交易所代码
-CSgitFtdcQryOrderActionField["ExchangeID"] = "string"
-structDict['CSgitFtdcQryOrderActionField'] = CSgitFtdcQryOrderActionField
+
+CThostFtdcQryOrderActionField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryOrderActionField'] = CThostFtdcQryOrderActionField
+
+
 
 
 #查询交易所报单操作
-CSgitFtdcQryExchangeOrderActionField = {}
+
+CThostFtdcQryExchangeOrderActionField = {}
+
+
 #会员代码
-CSgitFtdcQryExchangeOrderActionField["ParticipantID"] = "string"
+
+CThostFtdcQryExchangeOrderActionField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcQryExchangeOrderActionField["ClientID"] = "string"
+
+CThostFtdcQryExchangeOrderActionField["ClientID"] = "string"
+
 #交易所代码
-CSgitFtdcQryExchangeOrderActionField["ExchangeID"] = "string"
+
+CThostFtdcQryExchangeOrderActionField["ExchangeID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcQryExchangeOrderActionField["TraderID"] = "string"
-structDict['CSgitFtdcQryExchangeOrderActionField'] = CSgitFtdcQryExchangeOrderActionField
+
+CThostFtdcQryExchangeOrderActionField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeOrderActionField'] = CThostFtdcQryExchangeOrderActionField
+
+
 
 
 #查询管理用户
-CSgitFtdcQrySuperUserField = {}
+
+CThostFtdcQrySuperUserField = {}
+
+
 #用户代码
-CSgitFtdcQrySuperUserField["UserID"] = "string"
-structDict['CSgitFtdcQrySuperUserField'] = CSgitFtdcQrySuperUserField
+
+CThostFtdcQrySuperUserField["UserID"] = "string"
+
+structDict['CThostFtdcQrySuperUserField'] = CThostFtdcQrySuperUserField
+
+
 
 
 #查询交易所
-CSgitFtdcQryExchangeField = {}
+
+CThostFtdcQryExchangeField = {}
+
+
 #交易所代码
-CSgitFtdcQryExchangeField["ExchangeID"] = "string"
-structDict['CSgitFtdcQryExchangeField'] = CSgitFtdcQryExchangeField
+
+CThostFtdcQryExchangeField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryExchangeField'] = CThostFtdcQryExchangeField
+
+
 
 
 #查询产品
-CSgitFtdcQryProductField = {}
+
+CThostFtdcQryProductField = {}
+
+
 #产品代码
-CSgitFtdcQryProductField["ProductID"] = "string"
-structDict['CSgitFtdcQryProductField'] = CSgitFtdcQryProductField
+
+CThostFtdcQryProductField["ProductID"] = "string"
+
+#产品类型
+
+CThostFtdcQryProductField["ProductClass"] = "char"
+
+structDict['CThostFtdcQryProductField'] = CThostFtdcQryProductField
+
+
 
 
 #查询合约
-CSgitFtdcQryInstrumentField = {}
+
+CThostFtdcQryInstrumentField = {}
+
+
 #合约代码
-CSgitFtdcQryInstrumentField["InstrumentID"] = "string"
+
+CThostFtdcQryInstrumentField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcQryInstrumentField["ExchangeID"] = "string"
+
+CThostFtdcQryInstrumentField["ExchangeID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcQryInstrumentField["ExchangeInstID"] = "string"
+
+CThostFtdcQryInstrumentField["ExchangeInstID"] = "string"
+
 #产品代码
-CSgitFtdcQryInstrumentField["ProductID"] = "string"
-structDict['CSgitFtdcQryInstrumentField'] = CSgitFtdcQryInstrumentField
+
+CThostFtdcQryInstrumentField["ProductID"] = "string"
+
+structDict['CThostFtdcQryInstrumentField'] = CThostFtdcQryInstrumentField
+
+
 
 
 #查询行情
-CSgitFtdcQryDepthMarketDataField = {}
+
+CThostFtdcQryDepthMarketDataField = {}
+
+
 #合约代码
-CSgitFtdcQryDepthMarketDataField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryDepthMarketDataField'] = CSgitFtdcQryDepthMarketDataField
+
+CThostFtdcQryDepthMarketDataField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryDepthMarketDataField'] = CThostFtdcQryDepthMarketDataField
+
+
 
 
 #查询经纪公司用户
-CSgitFtdcQryBrokerUserField = {}
+
+CThostFtdcQryBrokerUserField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryBrokerUserField["BrokerID"] = "string"
+
+CThostFtdcQryBrokerUserField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcQryBrokerUserField["UserID"] = "string"
-structDict['CSgitFtdcQryBrokerUserField'] = CSgitFtdcQryBrokerUserField
+
+CThostFtdcQryBrokerUserField["UserID"] = "string"
+
+structDict['CThostFtdcQryBrokerUserField'] = CThostFtdcQryBrokerUserField
+
+
 
 
 #查询经纪公司用户权限
-CSgitFtdcQryBrokerUserFunctionField = {}
+
+CThostFtdcQryBrokerUserFunctionField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryBrokerUserFunctionField["BrokerID"] = "string"
+
+CThostFtdcQryBrokerUserFunctionField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcQryBrokerUserFunctionField["UserID"] = "string"
-structDict['CSgitFtdcQryBrokerUserFunctionField'] = CSgitFtdcQryBrokerUserFunctionField
+
+CThostFtdcQryBrokerUserFunctionField["UserID"] = "string"
+
+structDict['CThostFtdcQryBrokerUserFunctionField'] = CThostFtdcQryBrokerUserFunctionField
+
+
 
 
 #查询交易员报盘机
-CSgitFtdcQryTraderOfferField = {}
+
+CThostFtdcQryTraderOfferField = {}
+
+
 #交易所代码
-CSgitFtdcQryTraderOfferField["ExchangeID"] = "string"
+
+CThostFtdcQryTraderOfferField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcQryTraderOfferField["ParticipantID"] = "string"
+
+CThostFtdcQryTraderOfferField["ParticipantID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcQryTraderOfferField["TraderID"] = "string"
-structDict['CSgitFtdcQryTraderOfferField'] = CSgitFtdcQryTraderOfferField
+
+CThostFtdcQryTraderOfferField["TraderID"] = "string"
+
+structDict['CThostFtdcQryTraderOfferField'] = CThostFtdcQryTraderOfferField
+
+
 
 
 #查询出入金流水
-CSgitFtdcQrySyncDepositField = {}
+
+CThostFtdcQrySyncDepositField = {}
+
+
 #经纪公司代码
-CSgitFtdcQrySyncDepositField["BrokerID"] = "string"
+
+CThostFtdcQrySyncDepositField["BrokerID"] = "string"
+
 #出入金流水号
-CSgitFtdcQrySyncDepositField["DepositSeqNo"] = "string"
-structDict['CSgitFtdcQrySyncDepositField'] = CSgitFtdcQrySyncDepositField
+
+CThostFtdcQrySyncDepositField["DepositSeqNo"] = "string"
+
+structDict['CThostFtdcQrySyncDepositField'] = CThostFtdcQrySyncDepositField
+
+
 
 
 #查询投资者结算结果
-CSgitFtdcQrySettlementInfoField = {}
+
+CThostFtdcQrySettlementInfoField = {}
+
+
 #经纪公司代码
-CSgitFtdcQrySettlementInfoField["BrokerID"] = "string"
+
+CThostFtdcQrySettlementInfoField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQrySettlementInfoField["InvestorID"] = "string"
+
+CThostFtdcQrySettlementInfoField["InvestorID"] = "string"
+
 #交易日
-CSgitFtdcQrySettlementInfoField["TradingDay"] = "string"
-structDict['CSgitFtdcQrySettlementInfoField'] = CSgitFtdcQrySettlementInfoField
+
+CThostFtdcQrySettlementInfoField["TradingDay"] = "string"
+
+structDict['CThostFtdcQrySettlementInfoField'] = CThostFtdcQrySettlementInfoField
+
+
+
+
+#查询交易所保证金率
+
+CThostFtdcQryExchangeMarginRateField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryExchangeMarginRateField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcQryExchangeMarginRateField["InstrumentID"] = "string"
+
+#投机套保标志
+
+CThostFtdcQryExchangeMarginRateField["HedgeFlag"] = "char"
+
+structDict['CThostFtdcQryExchangeMarginRateField'] = CThostFtdcQryExchangeMarginRateField
+
+
+
+
+#查询交易所调整保证金率
+
+CThostFtdcQryExchangeMarginRateAdjustField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryExchangeMarginRateAdjustField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcQryExchangeMarginRateAdjustField["InstrumentID"] = "string"
+
+#投机套保标志
+
+CThostFtdcQryExchangeMarginRateAdjustField["HedgeFlag"] = "char"
+
+structDict['CThostFtdcQryExchangeMarginRateAdjustField'] = CThostFtdcQryExchangeMarginRateAdjustField
+
+
+
+
+#查询汇率
+
+CThostFtdcQryExchangeRateField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryExchangeRateField["BrokerID"] = "string"
+
+#源币种
+
+CThostFtdcQryExchangeRateField["FromCurrencyID"] = "string"
+
+#目标币种
+
+CThostFtdcQryExchangeRateField["ToCurrencyID"] = "string"
+
+structDict['CThostFtdcQryExchangeRateField'] = CThostFtdcQryExchangeRateField
+
+
+
+
+#查询货币质押流水
+
+CThostFtdcQrySyncFundMortgageField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQrySyncFundMortgageField["BrokerID"] = "string"
+
+#货币质押流水号
+
+CThostFtdcQrySyncFundMortgageField["MortgageSeqNo"] = "string"
+
+structDict['CThostFtdcQrySyncFundMortgageField'] = CThostFtdcQrySyncFundMortgageField
+
+
 
 
 #查询报单
-CSgitFtdcQryHisOrderField = {}
+
+CThostFtdcQryHisOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryHisOrderField["BrokerID"] = "string"
+
+CThostFtdcQryHisOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryHisOrderField["InvestorID"] = "string"
+
+CThostFtdcQryHisOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryHisOrderField["InstrumentID"] = "string"
+
+CThostFtdcQryHisOrderField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcQryHisOrderField["ExchangeID"] = "string"
+
+CThostFtdcQryHisOrderField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcQryHisOrderField["OrderSysID"] = "string"
+
+CThostFtdcQryHisOrderField["OrderSysID"] = "string"
+
 #开始时间
-CSgitFtdcQryHisOrderField["InsertTimeStart"] = "string"
+
+CThostFtdcQryHisOrderField["InsertTimeStart"] = "string"
+
 #结束时间
-CSgitFtdcQryHisOrderField["InsertTimeEnd"] = "string"
+
+CThostFtdcQryHisOrderField["InsertTimeEnd"] = "string"
+
 #交易日
-CSgitFtdcQryHisOrderField["TradingDay"] = "string"
+
+CThostFtdcQryHisOrderField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcQryHisOrderField["SettlementID"] = "int"
-structDict['CSgitFtdcQryHisOrderField'] = CSgitFtdcQryHisOrderField
+
+CThostFtdcQryHisOrderField["SettlementID"] = "int"
+
+structDict['CThostFtdcQryHisOrderField'] = CThostFtdcQryHisOrderField
+
+
+
+
+#当前期权合约最小保证金
+
+CThostFtdcOptionInstrMiniMarginField = {}
+
+
+#合约代码
+
+CThostFtdcOptionInstrMiniMarginField["InstrumentID"] = "string"
+
+#投资者范围
+
+CThostFtdcOptionInstrMiniMarginField["InvestorRange"] = "char"
+
+#经纪公司代码
+
+CThostFtdcOptionInstrMiniMarginField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcOptionInstrMiniMarginField["InvestorID"] = "string"
+
+#单位（手）期权合约最小保证金
+
+CThostFtdcOptionInstrMiniMarginField["MinMargin"] = "float"
+
+#取值方式
+
+CThostFtdcOptionInstrMiniMarginField["ValueMethod"] = "char"
+
+#是否跟随交易所收取
+
+CThostFtdcOptionInstrMiniMarginField["IsRelative"] = "int"
+
+structDict['CThostFtdcOptionInstrMiniMarginField'] = CThostFtdcOptionInstrMiniMarginField
+
+
+
+
+#当前期权合约保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField = {}
+
+
+#合约代码
+
+CThostFtdcOptionInstrMarginAdjustField["InstrumentID"] = "string"
+
+#投资者范围
+
+CThostFtdcOptionInstrMarginAdjustField["InvestorRange"] = "char"
+
+#经纪公司代码
+
+CThostFtdcOptionInstrMarginAdjustField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcOptionInstrMarginAdjustField["InvestorID"] = "string"
+
+#投机空头保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField["SShortMarginRatioByMoney"] = "float"
+
+#投机空头保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField["SShortMarginRatioByVolume"] = "float"
+
+#保值空头保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField["HShortMarginRatioByMoney"] = "float"
+
+#保值空头保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField["HShortMarginRatioByVolume"] = "float"
+
+#套利空头保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField["AShortMarginRatioByMoney"] = "float"
+
+#套利空头保证金调整系数
+
+CThostFtdcOptionInstrMarginAdjustField["AShortMarginRatioByVolume"] = "float"
+
+#是否跟随交易所收取
+
+CThostFtdcOptionInstrMarginAdjustField["IsRelative"] = "int"
+
+structDict['CThostFtdcOptionInstrMarginAdjustField'] = CThostFtdcOptionInstrMarginAdjustField
+
+
+
+
+#当前期权合约手续费的详细内容
+
+CThostFtdcOptionInstrCommRateField = {}
+
+
+#合约代码
+
+CThostFtdcOptionInstrCommRateField["InstrumentID"] = "string"
+
+#投资者范围
+
+CThostFtdcOptionInstrCommRateField["InvestorRange"] = "char"
+
+#经纪公司代码
+
+CThostFtdcOptionInstrCommRateField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcOptionInstrCommRateField["InvestorID"] = "string"
+
+#开仓手续费率
+
+CThostFtdcOptionInstrCommRateField["OpenRatioByMoney"] = "float"
+
+#开仓手续费
+
+CThostFtdcOptionInstrCommRateField["OpenRatioByVolume"] = "float"
+
+#平仓手续费率
+
+CThostFtdcOptionInstrCommRateField["CloseRatioByMoney"] = "float"
+
+#平仓手续费
+
+CThostFtdcOptionInstrCommRateField["CloseRatioByVolume"] = "float"
+
+#平今手续费率
+
+CThostFtdcOptionInstrCommRateField["CloseTodayRatioByMoney"] = "float"
+
+#平今手续费
+
+CThostFtdcOptionInstrCommRateField["CloseTodayRatioByVolume"] = "float"
+
+#执行手续费率
+
+CThostFtdcOptionInstrCommRateField["StrikeRatioByMoney"] = "float"
+
+#执行手续费
+
+CThostFtdcOptionInstrCommRateField["StrikeRatioByVolume"] = "float"
+
+structDict['CThostFtdcOptionInstrCommRateField'] = CThostFtdcOptionInstrCommRateField
+
+
+
+
+#期权交易成本
+
+CThostFtdcOptionInstrTradeCostField = {}
+
+
+#经纪公司代码
+
+CThostFtdcOptionInstrTradeCostField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcOptionInstrTradeCostField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcOptionInstrTradeCostField["InstrumentID"] = "string"
+
+#投机套保标志
+
+CThostFtdcOptionInstrTradeCostField["HedgeFlag"] = "char"
+
+#期权合约保证金不变部分
+
+CThostFtdcOptionInstrTradeCostField["FixedMargin"] = "float"
+
+#期权合约最小保证金
+
+CThostFtdcOptionInstrTradeCostField["MiniMargin"] = "float"
+
+#期权合约权利金
+
+CThostFtdcOptionInstrTradeCostField["Royalty"] = "float"
+
+#交易所期权合约保证金不变部分
+
+CThostFtdcOptionInstrTradeCostField["ExchFixedMargin"] = "float"
+
+#交易所期权合约最小保证金
+
+CThostFtdcOptionInstrTradeCostField["ExchMiniMargin"] = "float"
+
+structDict['CThostFtdcOptionInstrTradeCostField'] = CThostFtdcOptionInstrTradeCostField
+
+
+
+
+#期权交易成本查询
+
+CThostFtdcQryOptionInstrTradeCostField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryOptionInstrTradeCostField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryOptionInstrTradeCostField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryOptionInstrTradeCostField["InstrumentID"] = "string"
+
+#投机套保标志
+
+CThostFtdcQryOptionInstrTradeCostField["HedgeFlag"] = "char"
+
+#期权合约报价
+
+CThostFtdcQryOptionInstrTradeCostField["InputPrice"] = "float"
+
+#标的价格,填0则用昨结算价
+
+CThostFtdcQryOptionInstrTradeCostField["UnderlyingPrice"] = "float"
+
+structDict['CThostFtdcQryOptionInstrTradeCostField'] = CThostFtdcQryOptionInstrTradeCostField
+
+
+
+
+#期权手续费率查询
+
+CThostFtdcQryOptionInstrCommRateField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryOptionInstrCommRateField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryOptionInstrCommRateField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryOptionInstrCommRateField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryOptionInstrCommRateField'] = CThostFtdcQryOptionInstrCommRateField
+
+
+
+
+#股指现货指数
+
+CThostFtdcIndexPriceField = {}
+
+
+#经纪公司代码
+
+CThostFtdcIndexPriceField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcIndexPriceField["InstrumentID"] = "string"
+
+#指数现货收盘价
+
+CThostFtdcIndexPriceField["ClosePrice"] = "float"
+
+structDict['CThostFtdcIndexPriceField'] = CThostFtdcIndexPriceField
+
+
+
+
+#输入的执行宣告
+
+CThostFtdcInputExecOrderField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputExecOrderField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputExecOrderField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcInputExecOrderField["InstrumentID"] = "string"
+
+#执行宣告引用
+
+CThostFtdcInputExecOrderField["ExecOrderRef"] = "string"
+
+#用户代码
+
+CThostFtdcInputExecOrderField["UserID"] = "string"
+
+#数量
+
+CThostFtdcInputExecOrderField["Volume"] = "int"
+
+#请求编号
+
+CThostFtdcInputExecOrderField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcInputExecOrderField["BusinessUnit"] = "string"
+
+#开平标志
+
+CThostFtdcInputExecOrderField["OffsetFlag"] = "char"
+
+#投机套保标志
+
+CThostFtdcInputExecOrderField["HedgeFlag"] = "char"
+
+#执行类型
+
+CThostFtdcInputExecOrderField["ActionType"] = "char"
+
+#保留头寸申请的持仓方向
+
+CThostFtdcInputExecOrderField["PosiDirection"] = "char"
+
+#期权行权后是否保留期货头寸的标记
+
+CThostFtdcInputExecOrderField["ReservePositionFlag"] = "char"
+
+#期权行权后生成的头寸是否自动平仓
+
+CThostFtdcInputExecOrderField["CloseFlag"] = "char"
+
+structDict['CThostFtdcInputExecOrderField'] = CThostFtdcInputExecOrderField
+
+
+
+
+#输入执行宣告操作
+
+CThostFtdcInputExecOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputExecOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputExecOrderActionField["InvestorID"] = "string"
+
+#执行宣告操作引用
+
+CThostFtdcInputExecOrderActionField["ExecOrderActionRef"] = "int"
+
+#执行宣告引用
+
+CThostFtdcInputExecOrderActionField["ExecOrderRef"] = "string"
+
+#请求编号
+
+CThostFtdcInputExecOrderActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcInputExecOrderActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcInputExecOrderActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcInputExecOrderActionField["ExchangeID"] = "string"
+
+#执行宣告操作编号
+
+CThostFtdcInputExecOrderActionField["ExecOrderSysID"] = "string"
+
+#操作标志
+
+CThostFtdcInputExecOrderActionField["ActionFlag"] = "char"
+
+#用户代码
+
+CThostFtdcInputExecOrderActionField["UserID"] = "string"
+
+#合约代码
+
+CThostFtdcInputExecOrderActionField["InstrumentID"] = "string"
+
+structDict['CThostFtdcInputExecOrderActionField'] = CThostFtdcInputExecOrderActionField
+
+
+
+
+#执行宣告
+
+CThostFtdcExecOrderField = {}
+
+
+#经纪公司代码
+
+CThostFtdcExecOrderField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcExecOrderField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcExecOrderField["InstrumentID"] = "string"
+
+#执行宣告引用
+
+CThostFtdcExecOrderField["ExecOrderRef"] = "string"
+
+#用户代码
+
+CThostFtdcExecOrderField["UserID"] = "string"
+
+#数量
+
+CThostFtdcExecOrderField["Volume"] = "int"
+
+#请求编号
+
+CThostFtdcExecOrderField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcExecOrderField["BusinessUnit"] = "string"
+
+#开平标志
+
+CThostFtdcExecOrderField["OffsetFlag"] = "char"
+
+#投机套保标志
+
+CThostFtdcExecOrderField["HedgeFlag"] = "char"
+
+#执行类型
+
+CThostFtdcExecOrderField["ActionType"] = "char"
+
+#保留头寸申请的持仓方向
+
+CThostFtdcExecOrderField["PosiDirection"] = "char"
+
+#期权行权后是否保留期货头寸的标记
+
+CThostFtdcExecOrderField["ReservePositionFlag"] = "char"
+
+#期权行权后生成的头寸是否自动平仓
+
+CThostFtdcExecOrderField["CloseFlag"] = "char"
+
+#本地执行宣告编号
+
+CThostFtdcExecOrderField["ExecOrderLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcExecOrderField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcExecOrderField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExecOrderField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcExecOrderField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExecOrderField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExecOrderField["InstallID"] = "int"
+
+#执行宣告提交状态
+
+CThostFtdcExecOrderField["OrderSubmitStatus"] = "char"
+
+#报单提示序号
+
+CThostFtdcExecOrderField["NotifySequence"] = "int"
+
+#交易日
+
+CThostFtdcExecOrderField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcExecOrderField["SettlementID"] = "int"
+
+#执行宣告编号
+
+CThostFtdcExecOrderField["ExecOrderSysID"] = "string"
+
+#报单日期
+
+CThostFtdcExecOrderField["InsertDate"] = "string"
+
+#插入时间
+
+CThostFtdcExecOrderField["InsertTime"] = "string"
+
+#撤销时间
+
+CThostFtdcExecOrderField["CancelTime"] = "string"
+
+#执行结果
+
+CThostFtdcExecOrderField["ExecResult"] = "char"
+
+#结算会员编号
+
+CThostFtdcExecOrderField["ClearingPartID"] = "string"
+
+#序号
+
+CThostFtdcExecOrderField["SequenceNo"] = "int"
+
+#前置编号
+
+CThostFtdcExecOrderField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcExecOrderField["SessionID"] = "int"
+
+#用户端产品信息
+
+CThostFtdcExecOrderField["UserProductInfo"] = "string"
+
+#状态信息
+
+CThostFtdcExecOrderField["StatusMsg"] = "string"
+
+#操作用户代码
+
+CThostFtdcExecOrderField["ActiveUserID"] = "string"
+
+#经纪公司报单编号
+
+CThostFtdcExecOrderField["BrokerExecOrderSeq"] = "int"
+
+structDict['CThostFtdcExecOrderField'] = CThostFtdcExecOrderField
+
+
+
+
+#执行宣告操作
+
+CThostFtdcExecOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcExecOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcExecOrderActionField["InvestorID"] = "string"
+
+#执行宣告操作引用
+
+CThostFtdcExecOrderActionField["ExecOrderActionRef"] = "int"
+
+#执行宣告引用
+
+CThostFtdcExecOrderActionField["ExecOrderRef"] = "string"
+
+#请求编号
+
+CThostFtdcExecOrderActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcExecOrderActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcExecOrderActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcExecOrderActionField["ExchangeID"] = "string"
+
+#执行宣告操作编号
+
+CThostFtdcExecOrderActionField["ExecOrderSysID"] = "string"
+
+#操作标志
+
+CThostFtdcExecOrderActionField["ActionFlag"] = "char"
+
+#操作日期
+
+CThostFtdcExecOrderActionField["ActionDate"] = "string"
+
+#操作时间
+
+CThostFtdcExecOrderActionField["ActionTime"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExecOrderActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExecOrderActionField["InstallID"] = "int"
+
+#本地执行宣告编号
+
+CThostFtdcExecOrderActionField["ExecOrderLocalID"] = "string"
+
+#操作本地编号
+
+CThostFtdcExecOrderActionField["ActionLocalID"] = "string"
+
+#会员代码
+
+CThostFtdcExecOrderActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExecOrderActionField["ClientID"] = "string"
+
+#业务单元
+
+CThostFtdcExecOrderActionField["BusinessUnit"] = "string"
+
+#报单操作状态
+
+CThostFtdcExecOrderActionField["OrderActionStatus"] = "char"
+
+#用户代码
+
+CThostFtdcExecOrderActionField["UserID"] = "string"
+
+#执行类型
+
+CThostFtdcExecOrderActionField["ActionType"] = "char"
+
+#状态信息
+
+CThostFtdcExecOrderActionField["StatusMsg"] = "string"
+
+#合约代码
+
+CThostFtdcExecOrderActionField["InstrumentID"] = "string"
+
+structDict['CThostFtdcExecOrderActionField'] = CThostFtdcExecOrderActionField
+
+
+
+
+#执行宣告查询
+
+CThostFtdcQryExecOrderField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryExecOrderField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryExecOrderField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryExecOrderField["InstrumentID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExecOrderField["ExchangeID"] = "string"
+
+#执行宣告编号
+
+CThostFtdcQryExecOrderField["ExecOrderSysID"] = "string"
+
+#开始时间
+
+CThostFtdcQryExecOrderField["InsertTimeStart"] = "string"
+
+#结束时间
+
+CThostFtdcQryExecOrderField["InsertTimeEnd"] = "string"
+
+structDict['CThostFtdcQryExecOrderField'] = CThostFtdcQryExecOrderField
+
+
+
+
+#交易所执行宣告信息
+
+CThostFtdcExchangeExecOrderField = {}
+
+
+#数量
+
+CThostFtdcExchangeExecOrderField["Volume"] = "int"
+
+#请求编号
+
+CThostFtdcExchangeExecOrderField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcExchangeExecOrderField["BusinessUnit"] = "string"
+
+#开平标志
+
+CThostFtdcExchangeExecOrderField["OffsetFlag"] = "char"
+
+#投机套保标志
+
+CThostFtdcExchangeExecOrderField["HedgeFlag"] = "char"
+
+#执行类型
+
+CThostFtdcExchangeExecOrderField["ActionType"] = "char"
+
+#保留头寸申请的持仓方向
+
+CThostFtdcExchangeExecOrderField["PosiDirection"] = "char"
+
+#期权行权后是否保留期货头寸的标记
+
+CThostFtdcExchangeExecOrderField["ReservePositionFlag"] = "char"
+
+#期权行权后生成的头寸是否自动平仓
+
+CThostFtdcExchangeExecOrderField["CloseFlag"] = "char"
+
+#本地执行宣告编号
+
+CThostFtdcExchangeExecOrderField["ExecOrderLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcExchangeExecOrderField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeExecOrderField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeExecOrderField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcExchangeExecOrderField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeExecOrderField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeExecOrderField["InstallID"] = "int"
+
+#执行宣告提交状态
+
+CThostFtdcExchangeExecOrderField["OrderSubmitStatus"] = "char"
+
+#报单提示序号
+
+CThostFtdcExchangeExecOrderField["NotifySequence"] = "int"
+
+#交易日
+
+CThostFtdcExchangeExecOrderField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcExchangeExecOrderField["SettlementID"] = "int"
+
+#执行宣告编号
+
+CThostFtdcExchangeExecOrderField["ExecOrderSysID"] = "string"
+
+#报单日期
+
+CThostFtdcExchangeExecOrderField["InsertDate"] = "string"
+
+#插入时间
+
+CThostFtdcExchangeExecOrderField["InsertTime"] = "string"
+
+#撤销时间
+
+CThostFtdcExchangeExecOrderField["CancelTime"] = "string"
+
+#执行结果
+
+CThostFtdcExchangeExecOrderField["ExecResult"] = "char"
+
+#结算会员编号
+
+CThostFtdcExchangeExecOrderField["ClearingPartID"] = "string"
+
+#序号
+
+CThostFtdcExchangeExecOrderField["SequenceNo"] = "int"
+
+structDict['CThostFtdcExchangeExecOrderField'] = CThostFtdcExchangeExecOrderField
+
+
+
+
+#交易所执行宣告查询
+
+CThostFtdcQryExchangeExecOrderField = {}
+
+
+#会员代码
+
+CThostFtdcQryExchangeExecOrderField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQryExchangeExecOrderField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcQryExchangeExecOrderField["ExchangeInstID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExchangeExecOrderField["ExchangeID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQryExchangeExecOrderField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeExecOrderField'] = CThostFtdcQryExchangeExecOrderField
+
+
+
+
+#执行宣告操作查询
+
+CThostFtdcQryExecOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryExecOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryExecOrderActionField["InvestorID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExecOrderActionField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryExecOrderActionField'] = CThostFtdcQryExecOrderActionField
+
+
+
+
+#交易所执行宣告操作
+
+CThostFtdcExchangeExecOrderActionField = {}
+
+
+#交易所代码
+
+CThostFtdcExchangeExecOrderActionField["ExchangeID"] = "string"
+
+#执行宣告操作编号
+
+CThostFtdcExchangeExecOrderActionField["ExecOrderSysID"] = "string"
+
+#操作标志
+
+CThostFtdcExchangeExecOrderActionField["ActionFlag"] = "char"
+
+#操作日期
+
+CThostFtdcExchangeExecOrderActionField["ActionDate"] = "string"
+
+#操作时间
+
+CThostFtdcExchangeExecOrderActionField["ActionTime"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeExecOrderActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeExecOrderActionField["InstallID"] = "int"
+
+#本地执行宣告编号
+
+CThostFtdcExchangeExecOrderActionField["ExecOrderLocalID"] = "string"
+
+#操作本地编号
+
+CThostFtdcExchangeExecOrderActionField["ActionLocalID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeExecOrderActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeExecOrderActionField["ClientID"] = "string"
+
+#业务单元
+
+CThostFtdcExchangeExecOrderActionField["BusinessUnit"] = "string"
+
+#报单操作状态
+
+CThostFtdcExchangeExecOrderActionField["OrderActionStatus"] = "char"
+
+#用户代码
+
+CThostFtdcExchangeExecOrderActionField["UserID"] = "string"
+
+#执行类型
+
+CThostFtdcExchangeExecOrderActionField["ActionType"] = "char"
+
+structDict['CThostFtdcExchangeExecOrderActionField'] = CThostFtdcExchangeExecOrderActionField
+
+
+
+
+#交易所执行宣告操作查询
+
+CThostFtdcQryExchangeExecOrderActionField = {}
+
+
+#会员代码
+
+CThostFtdcQryExchangeExecOrderActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQryExchangeExecOrderActionField["ClientID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExchangeExecOrderActionField["ExchangeID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQryExchangeExecOrderActionField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeExecOrderActionField'] = CThostFtdcQryExchangeExecOrderActionField
+
+
+
+
+#错误执行宣告
+
+CThostFtdcErrExecOrderField = {}
+
+
+#经纪公司代码
+
+CThostFtdcErrExecOrderField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcErrExecOrderField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcErrExecOrderField["InstrumentID"] = "string"
+
+#执行宣告引用
+
+CThostFtdcErrExecOrderField["ExecOrderRef"] = "string"
+
+#用户代码
+
+CThostFtdcErrExecOrderField["UserID"] = "string"
+
+#数量
+
+CThostFtdcErrExecOrderField["Volume"] = "int"
+
+#请求编号
+
+CThostFtdcErrExecOrderField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcErrExecOrderField["BusinessUnit"] = "string"
+
+#开平标志
+
+CThostFtdcErrExecOrderField["OffsetFlag"] = "char"
+
+#投机套保标志
+
+CThostFtdcErrExecOrderField["HedgeFlag"] = "char"
+
+#执行类型
+
+CThostFtdcErrExecOrderField["ActionType"] = "char"
+
+#保留头寸申请的持仓方向
+
+CThostFtdcErrExecOrderField["PosiDirection"] = "char"
+
+#期权行权后是否保留期货头寸的标记
+
+CThostFtdcErrExecOrderField["ReservePositionFlag"] = "char"
+
+#期权行权后生成的头寸是否自动平仓
+
+CThostFtdcErrExecOrderField["CloseFlag"] = "char"
+
+#错误代码
+
+CThostFtdcErrExecOrderField["ErrorID"] = "int"
+
+#错误信息
+
+CThostFtdcErrExecOrderField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcErrExecOrderField'] = CThostFtdcErrExecOrderField
+
+
+
+
+#查询错误执行宣告
+
+CThostFtdcQryErrExecOrderField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryErrExecOrderField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryErrExecOrderField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryErrExecOrderField'] = CThostFtdcQryErrExecOrderField
+
+
+
+
+#错误执行宣告操作
+
+CThostFtdcErrExecOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcErrExecOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcErrExecOrderActionField["InvestorID"] = "string"
+
+#执行宣告操作引用
+
+CThostFtdcErrExecOrderActionField["ExecOrderActionRef"] = "int"
+
+#执行宣告引用
+
+CThostFtdcErrExecOrderActionField["ExecOrderRef"] = "string"
+
+#请求编号
+
+CThostFtdcErrExecOrderActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcErrExecOrderActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcErrExecOrderActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcErrExecOrderActionField["ExchangeID"] = "string"
+
+#执行宣告操作编号
+
+CThostFtdcErrExecOrderActionField["ExecOrderSysID"] = "string"
+
+#操作标志
+
+CThostFtdcErrExecOrderActionField["ActionFlag"] = "char"
+
+#用户代码
+
+CThostFtdcErrExecOrderActionField["UserID"] = "string"
+
+#合约代码
+
+CThostFtdcErrExecOrderActionField["InstrumentID"] = "string"
+
+#错误代码
+
+CThostFtdcErrExecOrderActionField["ErrorID"] = "int"
+
+#错误信息
+
+CThostFtdcErrExecOrderActionField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcErrExecOrderActionField'] = CThostFtdcErrExecOrderActionField
+
+
+
+
+#查询错误执行宣告操作
+
+CThostFtdcQryErrExecOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryErrExecOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryErrExecOrderActionField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryErrExecOrderActionField'] = CThostFtdcQryErrExecOrderActionField
+
+
+
+
+#投资者期权合约交易权限
+
+CThostFtdcOptionInstrTradingRightField = {}
+
+
+#合约代码
+
+CThostFtdcOptionInstrTradingRightField["InstrumentID"] = "string"
+
+#投资者范围
+
+CThostFtdcOptionInstrTradingRightField["InvestorRange"] = "char"
+
+#经纪公司代码
+
+CThostFtdcOptionInstrTradingRightField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcOptionInstrTradingRightField["InvestorID"] = "string"
+
+#买卖方向
+
+CThostFtdcOptionInstrTradingRightField["Direction"] = "char"
+
+#交易权限
+
+CThostFtdcOptionInstrTradingRightField["TradingRight"] = "char"
+
+structDict['CThostFtdcOptionInstrTradingRightField'] = CThostFtdcOptionInstrTradingRightField
+
+
+
+
+#查询期权合约交易权限
+
+CThostFtdcQryOptionInstrTradingRightField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryOptionInstrTradingRightField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryOptionInstrTradingRightField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryOptionInstrTradingRightField["InstrumentID"] = "string"
+
+#买卖方向
+
+CThostFtdcQryOptionInstrTradingRightField["Direction"] = "char"
+
+structDict['CThostFtdcQryOptionInstrTradingRightField'] = CThostFtdcQryOptionInstrTradingRightField
+
+
+
+
+#输入的询价
+
+CThostFtdcInputForQuoteField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputForQuoteField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputForQuoteField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcInputForQuoteField["InstrumentID"] = "string"
+
+#询价引用
+
+CThostFtdcInputForQuoteField["ForQuoteRef"] = "string"
+
+#用户代码
+
+CThostFtdcInputForQuoteField["UserID"] = "string"
+
+structDict['CThostFtdcInputForQuoteField'] = CThostFtdcInputForQuoteField
+
+
+
+
+#询价
+
+CThostFtdcForQuoteField = {}
+
+
+#经纪公司代码
+
+CThostFtdcForQuoteField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcForQuoteField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcForQuoteField["InstrumentID"] = "string"
+
+#询价引用
+
+CThostFtdcForQuoteField["ForQuoteRef"] = "string"
+
+#用户代码
+
+CThostFtdcForQuoteField["UserID"] = "string"
+
+#本地询价编号
+
+CThostFtdcForQuoteField["ForQuoteLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcForQuoteField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcForQuoteField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcForQuoteField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcForQuoteField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcForQuoteField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcForQuoteField["InstallID"] = "int"
+
+#报单日期
+
+CThostFtdcForQuoteField["InsertDate"] = "string"
+
+#插入时间
+
+CThostFtdcForQuoteField["InsertTime"] = "string"
+
+#询价状态
+
+CThostFtdcForQuoteField["ForQuoteStatus"] = "char"
+
+#前置编号
+
+CThostFtdcForQuoteField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcForQuoteField["SessionID"] = "int"
+
+#状态信息
+
+CThostFtdcForQuoteField["StatusMsg"] = "string"
+
+#操作用户代码
+
+CThostFtdcForQuoteField["ActiveUserID"] = "string"
+
+#经纪公司询价编号
+
+CThostFtdcForQuoteField["BrokerForQutoSeq"] = "int"
+
+structDict['CThostFtdcForQuoteField'] = CThostFtdcForQuoteField
+
+
+
+
+#询价查询
+
+CThostFtdcQryForQuoteField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryForQuoteField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryForQuoteField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryForQuoteField["InstrumentID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryForQuoteField["ExchangeID"] = "string"
+
+#开始时间
+
+CThostFtdcQryForQuoteField["InsertTimeStart"] = "string"
+
+#结束时间
+
+CThostFtdcQryForQuoteField["InsertTimeEnd"] = "string"
+
+structDict['CThostFtdcQryForQuoteField'] = CThostFtdcQryForQuoteField
+
+
+
+
+#交易所询价信息
+
+CThostFtdcExchangeForQuoteField = {}
+
+
+#本地询价编号
+
+CThostFtdcExchangeForQuoteField["ForQuoteLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcExchangeForQuoteField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeForQuoteField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeForQuoteField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcExchangeForQuoteField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeForQuoteField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeForQuoteField["InstallID"] = "int"
+
+#报单日期
+
+CThostFtdcExchangeForQuoteField["InsertDate"] = "string"
+
+#插入时间
+
+CThostFtdcExchangeForQuoteField["InsertTime"] = "string"
+
+#询价状态
+
+CThostFtdcExchangeForQuoteField["ForQuoteStatus"] = "char"
+
+structDict['CThostFtdcExchangeForQuoteField'] = CThostFtdcExchangeForQuoteField
+
+
+
+
+#交易所询价查询
+
+CThostFtdcQryExchangeForQuoteField = {}
+
+
+#会员代码
+
+CThostFtdcQryExchangeForQuoteField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQryExchangeForQuoteField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcQryExchangeForQuoteField["ExchangeInstID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExchangeForQuoteField["ExchangeID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQryExchangeForQuoteField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeForQuoteField'] = CThostFtdcQryExchangeForQuoteField
+
+
+
+
+#输入的报价
+
+CThostFtdcInputQuoteField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputQuoteField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputQuoteField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcInputQuoteField["InstrumentID"] = "string"
+
+#报价引用
+
+CThostFtdcInputQuoteField["QuoteRef"] = "string"
+
+#用户代码
+
+CThostFtdcInputQuoteField["UserID"] = "string"
+
+#卖价格
+
+CThostFtdcInputQuoteField["AskPrice"] = "float"
+
+#买价格
+
+CThostFtdcInputQuoteField["BidPrice"] = "float"
+
+#卖数量
+
+CThostFtdcInputQuoteField["AskVolume"] = "int"
+
+#买数量
+
+CThostFtdcInputQuoteField["BidVolume"] = "int"
+
+#请求编号
+
+CThostFtdcInputQuoteField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcInputQuoteField["BusinessUnit"] = "string"
+
+#卖开平标志
+
+CThostFtdcInputQuoteField["AskOffsetFlag"] = "char"
+
+#买开平标志
+
+CThostFtdcInputQuoteField["BidOffsetFlag"] = "char"
+
+#卖投机套保标志
+
+CThostFtdcInputQuoteField["AskHedgeFlag"] = "char"
+
+#买投机套保标志
+
+CThostFtdcInputQuoteField["BidHedgeFlag"] = "char"
+
+#衍生卖报单引用
+
+CThostFtdcInputQuoteField["AskOrderRef"] = "string"
+
+#衍生买报单引用
+
+CThostFtdcInputQuoteField["BidOrderRef"] = "string"
+
+#应价编号
+
+CThostFtdcInputQuoteField["ForQuoteSysID"] = "string"
+
+structDict['CThostFtdcInputQuoteField'] = CThostFtdcInputQuoteField
+
+
+
+
+#输入报价操作
+
+CThostFtdcInputQuoteActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputQuoteActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputQuoteActionField["InvestorID"] = "string"
+
+#报价操作引用
+
+CThostFtdcInputQuoteActionField["QuoteActionRef"] = "int"
+
+#报价引用
+
+CThostFtdcInputQuoteActionField["QuoteRef"] = "string"
+
+#请求编号
+
+CThostFtdcInputQuoteActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcInputQuoteActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcInputQuoteActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcInputQuoteActionField["ExchangeID"] = "string"
+
+#报价操作编号
+
+CThostFtdcInputQuoteActionField["QuoteSysID"] = "string"
+
+#操作标志
+
+CThostFtdcInputQuoteActionField["ActionFlag"] = "char"
+
+#用户代码
+
+CThostFtdcInputQuoteActionField["UserID"] = "string"
+
+#合约代码
+
+CThostFtdcInputQuoteActionField["InstrumentID"] = "string"
+
+structDict['CThostFtdcInputQuoteActionField'] = CThostFtdcInputQuoteActionField
+
+
+
+
+#报价
+
+CThostFtdcQuoteField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQuoteField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQuoteField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQuoteField["InstrumentID"] = "string"
+
+#报价引用
+
+CThostFtdcQuoteField["QuoteRef"] = "string"
+
+#用户代码
+
+CThostFtdcQuoteField["UserID"] = "string"
+
+#卖价格
+
+CThostFtdcQuoteField["AskPrice"] = "float"
+
+#买价格
+
+CThostFtdcQuoteField["BidPrice"] = "float"
+
+#卖数量
+
+CThostFtdcQuoteField["AskVolume"] = "int"
+
+#买数量
+
+CThostFtdcQuoteField["BidVolume"] = "int"
+
+#请求编号
+
+CThostFtdcQuoteField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcQuoteField["BusinessUnit"] = "string"
+
+#卖开平标志
+
+CThostFtdcQuoteField["AskOffsetFlag"] = "char"
+
+#买开平标志
+
+CThostFtdcQuoteField["BidOffsetFlag"] = "char"
+
+#卖投机套保标志
+
+CThostFtdcQuoteField["AskHedgeFlag"] = "char"
+
+#买投机套保标志
+
+CThostFtdcQuoteField["BidHedgeFlag"] = "char"
+
+#本地报价编号
+
+CThostFtdcQuoteField["QuoteLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcQuoteField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcQuoteField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQuoteField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcQuoteField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQuoteField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcQuoteField["InstallID"] = "int"
+
+#报价提示序号
+
+CThostFtdcQuoteField["NotifySequence"] = "int"
+
+#报价提交状态
+
+CThostFtdcQuoteField["OrderSubmitStatus"] = "char"
+
+#交易日
+
+CThostFtdcQuoteField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcQuoteField["SettlementID"] = "int"
+
+#报价编号
+
+CThostFtdcQuoteField["QuoteSysID"] = "string"
+
+#报单日期
+
+CThostFtdcQuoteField["InsertDate"] = "string"
+
+#插入时间
+
+CThostFtdcQuoteField["InsertTime"] = "string"
+
+#撤销时间
+
+CThostFtdcQuoteField["CancelTime"] = "string"
+
+#报价状态
+
+CThostFtdcQuoteField["QuoteStatus"] = "char"
+
+#结算会员编号
+
+CThostFtdcQuoteField["ClearingPartID"] = "string"
+
+#序号
+
+CThostFtdcQuoteField["SequenceNo"] = "int"
+
+#卖方报单编号
+
+CThostFtdcQuoteField["AskOrderSysID"] = "string"
+
+#买方报单编号
+
+CThostFtdcQuoteField["BidOrderSysID"] = "string"
+
+#前置编号
+
+CThostFtdcQuoteField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcQuoteField["SessionID"] = "int"
+
+#用户端产品信息
+
+CThostFtdcQuoteField["UserProductInfo"] = "string"
+
+#状态信息
+
+CThostFtdcQuoteField["StatusMsg"] = "string"
+
+#操作用户代码
+
+CThostFtdcQuoteField["ActiveUserID"] = "string"
+
+#经纪公司报价编号
+
+CThostFtdcQuoteField["BrokerQuoteSeq"] = "int"
+
+#衍生卖报单引用
+
+CThostFtdcQuoteField["AskOrderRef"] = "string"
+
+#衍生买报单引用
+
+CThostFtdcQuoteField["BidOrderRef"] = "string"
+
+#应价编号
+
+CThostFtdcQuoteField["ForQuoteSysID"] = "string"
+
+structDict['CThostFtdcQuoteField'] = CThostFtdcQuoteField
+
+
+
+
+#报价操作
+
+CThostFtdcQuoteActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQuoteActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQuoteActionField["InvestorID"] = "string"
+
+#报价操作引用
+
+CThostFtdcQuoteActionField["QuoteActionRef"] = "int"
+
+#报价引用
+
+CThostFtdcQuoteActionField["QuoteRef"] = "string"
+
+#请求编号
+
+CThostFtdcQuoteActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcQuoteActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcQuoteActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcQuoteActionField["ExchangeID"] = "string"
+
+#报价操作编号
+
+CThostFtdcQuoteActionField["QuoteSysID"] = "string"
+
+#操作标志
+
+CThostFtdcQuoteActionField["ActionFlag"] = "char"
+
+#操作日期
+
+CThostFtdcQuoteActionField["ActionDate"] = "string"
+
+#操作时间
+
+CThostFtdcQuoteActionField["ActionTime"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQuoteActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcQuoteActionField["InstallID"] = "int"
+
+#本地报价编号
+
+CThostFtdcQuoteActionField["QuoteLocalID"] = "string"
+
+#操作本地编号
+
+CThostFtdcQuoteActionField["ActionLocalID"] = "string"
+
+#会员代码
+
+CThostFtdcQuoteActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQuoteActionField["ClientID"] = "string"
+
+#业务单元
+
+CThostFtdcQuoteActionField["BusinessUnit"] = "string"
+
+#报单操作状态
+
+CThostFtdcQuoteActionField["OrderActionStatus"] = "char"
+
+#用户代码
+
+CThostFtdcQuoteActionField["UserID"] = "string"
+
+#状态信息
+
+CThostFtdcQuoteActionField["StatusMsg"] = "string"
+
+#合约代码
+
+CThostFtdcQuoteActionField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQuoteActionField'] = CThostFtdcQuoteActionField
+
+
+
+
+#报价查询
+
+CThostFtdcQryQuoteField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryQuoteField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryQuoteField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryQuoteField["InstrumentID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryQuoteField["ExchangeID"] = "string"
+
+#报价编号
+
+CThostFtdcQryQuoteField["QuoteSysID"] = "string"
+
+#开始时间
+
+CThostFtdcQryQuoteField["InsertTimeStart"] = "string"
+
+#结束时间
+
+CThostFtdcQryQuoteField["InsertTimeEnd"] = "string"
+
+structDict['CThostFtdcQryQuoteField'] = CThostFtdcQryQuoteField
+
+
+
+
+#交易所报价信息
+
+CThostFtdcExchangeQuoteField = {}
+
+
+#卖价格
+
+CThostFtdcExchangeQuoteField["AskPrice"] = "float"
+
+#买价格
+
+CThostFtdcExchangeQuoteField["BidPrice"] = "float"
+
+#卖数量
+
+CThostFtdcExchangeQuoteField["AskVolume"] = "int"
+
+#买数量
+
+CThostFtdcExchangeQuoteField["BidVolume"] = "int"
+
+#请求编号
+
+CThostFtdcExchangeQuoteField["RequestID"] = "int"
+
+#业务单元
+
+CThostFtdcExchangeQuoteField["BusinessUnit"] = "string"
+
+#卖开平标志
+
+CThostFtdcExchangeQuoteField["AskOffsetFlag"] = "char"
+
+#买开平标志
+
+CThostFtdcExchangeQuoteField["BidOffsetFlag"] = "char"
+
+#卖投机套保标志
+
+CThostFtdcExchangeQuoteField["AskHedgeFlag"] = "char"
+
+#买投机套保标志
+
+CThostFtdcExchangeQuoteField["BidHedgeFlag"] = "char"
+
+#本地报价编号
+
+CThostFtdcExchangeQuoteField["QuoteLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcExchangeQuoteField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeQuoteField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeQuoteField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcExchangeQuoteField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeQuoteField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeQuoteField["InstallID"] = "int"
+
+#报价提示序号
+
+CThostFtdcExchangeQuoteField["NotifySequence"] = "int"
+
+#报价提交状态
+
+CThostFtdcExchangeQuoteField["OrderSubmitStatus"] = "char"
+
+#交易日
+
+CThostFtdcExchangeQuoteField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcExchangeQuoteField["SettlementID"] = "int"
+
+#报价编号
+
+CThostFtdcExchangeQuoteField["QuoteSysID"] = "string"
+
+#报单日期
+
+CThostFtdcExchangeQuoteField["InsertDate"] = "string"
+
+#插入时间
+
+CThostFtdcExchangeQuoteField["InsertTime"] = "string"
+
+#撤销时间
+
+CThostFtdcExchangeQuoteField["CancelTime"] = "string"
+
+#报价状态
+
+CThostFtdcExchangeQuoteField["QuoteStatus"] = "char"
+
+#结算会员编号
+
+CThostFtdcExchangeQuoteField["ClearingPartID"] = "string"
+
+#序号
+
+CThostFtdcExchangeQuoteField["SequenceNo"] = "int"
+
+#卖方报单编号
+
+CThostFtdcExchangeQuoteField["AskOrderSysID"] = "string"
+
+#买方报单编号
+
+CThostFtdcExchangeQuoteField["BidOrderSysID"] = "string"
+
+#应价编号
+
+CThostFtdcExchangeQuoteField["ForQuoteSysID"] = "string"
+
+structDict['CThostFtdcExchangeQuoteField'] = CThostFtdcExchangeQuoteField
+
+
+
+
+#交易所报价查询
+
+CThostFtdcQryExchangeQuoteField = {}
+
+
+#会员代码
+
+CThostFtdcQryExchangeQuoteField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQryExchangeQuoteField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcQryExchangeQuoteField["ExchangeInstID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExchangeQuoteField["ExchangeID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQryExchangeQuoteField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeQuoteField'] = CThostFtdcQryExchangeQuoteField
+
+
+
+
+#报价操作查询
+
+CThostFtdcQryQuoteActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryQuoteActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryQuoteActionField["InvestorID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryQuoteActionField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryQuoteActionField'] = CThostFtdcQryQuoteActionField
+
+
+
+
+#交易所报价操作
+
+CThostFtdcExchangeQuoteActionField = {}
+
+
+#交易所代码
+
+CThostFtdcExchangeQuoteActionField["ExchangeID"] = "string"
+
+#报价操作编号
+
+CThostFtdcExchangeQuoteActionField["QuoteSysID"] = "string"
+
+#操作标志
+
+CThostFtdcExchangeQuoteActionField["ActionFlag"] = "char"
+
+#操作日期
+
+CThostFtdcExchangeQuoteActionField["ActionDate"] = "string"
+
+#操作时间
+
+CThostFtdcExchangeQuoteActionField["ActionTime"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeQuoteActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeQuoteActionField["InstallID"] = "int"
+
+#本地报价编号
+
+CThostFtdcExchangeQuoteActionField["QuoteLocalID"] = "string"
+
+#操作本地编号
+
+CThostFtdcExchangeQuoteActionField["ActionLocalID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeQuoteActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeQuoteActionField["ClientID"] = "string"
+
+#业务单元
+
+CThostFtdcExchangeQuoteActionField["BusinessUnit"] = "string"
+
+#报单操作状态
+
+CThostFtdcExchangeQuoteActionField["OrderActionStatus"] = "char"
+
+#用户代码
+
+CThostFtdcExchangeQuoteActionField["UserID"] = "string"
+
+structDict['CThostFtdcExchangeQuoteActionField'] = CThostFtdcExchangeQuoteActionField
+
+
+
+
+#交易所报价操作查询
+
+CThostFtdcQryExchangeQuoteActionField = {}
+
+
+#会员代码
+
+CThostFtdcQryExchangeQuoteActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQryExchangeQuoteActionField["ClientID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExchangeQuoteActionField["ExchangeID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQryExchangeQuoteActionField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeQuoteActionField'] = CThostFtdcQryExchangeQuoteActionField
+
+
+
+
+#期权合约delta值
+
+CThostFtdcOptionInstrDeltaField = {}
+
+
+#合约代码
+
+CThostFtdcOptionInstrDeltaField["InstrumentID"] = "string"
+
+#投资者范围
+
+CThostFtdcOptionInstrDeltaField["InvestorRange"] = "char"
+
+#经纪公司代码
+
+CThostFtdcOptionInstrDeltaField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcOptionInstrDeltaField["InvestorID"] = "string"
+
+#Delta值
+
+CThostFtdcOptionInstrDeltaField["Delta"] = "float"
+
+structDict['CThostFtdcOptionInstrDeltaField'] = CThostFtdcOptionInstrDeltaField
+
+
+
+
+#发给做市商的询价请求
+
+CThostFtdcForQuoteRspField = {}
+
+
+#交易日
+
+CThostFtdcForQuoteRspField["TradingDay"] = "string"
+
+#合约代码
+
+CThostFtdcForQuoteRspField["InstrumentID"] = "string"
+
+#询价编号
+
+CThostFtdcForQuoteRspField["ForQuoteSysID"] = "string"
+
+#询价时间
+
+CThostFtdcForQuoteRspField["ForQuoteTime"] = "string"
+
+#业务日期
+
+CThostFtdcForQuoteRspField["ActionDay"] = "string"
+
+#交易所代码
+
+CThostFtdcForQuoteRspField["ExchangeID"] = "string"
+
+structDict['CThostFtdcForQuoteRspField'] = CThostFtdcForQuoteRspField
+
+
+
+
+#当前期权合约执行偏移值的详细内容
+
+CThostFtdcStrikeOffsetField = {}
+
+
+#合约代码
+
+CThostFtdcStrikeOffsetField["InstrumentID"] = "string"
+
+#投资者范围
+
+CThostFtdcStrikeOffsetField["InvestorRange"] = "char"
+
+#经纪公司代码
+
+CThostFtdcStrikeOffsetField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcStrikeOffsetField["InvestorID"] = "string"
+
+#执行偏移值
+
+CThostFtdcStrikeOffsetField["Offset"] = "float"
+
+structDict['CThostFtdcStrikeOffsetField'] = CThostFtdcStrikeOffsetField
+
+
+
+
+#期权执行偏移值查询
+
+CThostFtdcQryStrikeOffsetField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryStrikeOffsetField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryStrikeOffsetField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryStrikeOffsetField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryStrikeOffsetField'] = CThostFtdcQryStrikeOffsetField
+
+
+
+
+#输入批量报单操作
+
+CThostFtdcInputBatchOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputBatchOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputBatchOrderActionField["InvestorID"] = "string"
+
+#报单操作引用
+
+CThostFtdcInputBatchOrderActionField["OrderActionRef"] = "int"
+
+#请求编号
+
+CThostFtdcInputBatchOrderActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcInputBatchOrderActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcInputBatchOrderActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcInputBatchOrderActionField["ExchangeID"] = "string"
+
+#用户代码
+
+CThostFtdcInputBatchOrderActionField["UserID"] = "string"
+
+structDict['CThostFtdcInputBatchOrderActionField'] = CThostFtdcInputBatchOrderActionField
+
+
+
+
+#批量报单操作
+
+CThostFtdcBatchOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcBatchOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcBatchOrderActionField["InvestorID"] = "string"
+
+#报单操作引用
+
+CThostFtdcBatchOrderActionField["OrderActionRef"] = "int"
+
+#请求编号
+
+CThostFtdcBatchOrderActionField["RequestID"] = "int"
+
+#前置编号
+
+CThostFtdcBatchOrderActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcBatchOrderActionField["SessionID"] = "int"
+
+#交易所代码
+
+CThostFtdcBatchOrderActionField["ExchangeID"] = "string"
+
+#操作日期
+
+CThostFtdcBatchOrderActionField["ActionDate"] = "string"
+
+#操作时间
+
+CThostFtdcBatchOrderActionField["ActionTime"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcBatchOrderActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcBatchOrderActionField["InstallID"] = "int"
+
+#操作本地编号
+
+CThostFtdcBatchOrderActionField["ActionLocalID"] = "string"
+
+#会员代码
+
+CThostFtdcBatchOrderActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcBatchOrderActionField["ClientID"] = "string"
+
+#业务单元
+
+CThostFtdcBatchOrderActionField["BusinessUnit"] = "string"
+
+#报单操作状态
+
+CThostFtdcBatchOrderActionField["OrderActionStatus"] = "char"
+
+#用户代码
+
+CThostFtdcBatchOrderActionField["UserID"] = "string"
+
+#状态信息
+
+CThostFtdcBatchOrderActionField["StatusMsg"] = "string"
+
+structDict['CThostFtdcBatchOrderActionField'] = CThostFtdcBatchOrderActionField
+
+
+
+
+#交易所批量报单操作
+
+CThostFtdcExchangeBatchOrderActionField = {}
+
+
+#交易所代码
+
+CThostFtdcExchangeBatchOrderActionField["ExchangeID"] = "string"
+
+#操作日期
+
+CThostFtdcExchangeBatchOrderActionField["ActionDate"] = "string"
+
+#操作时间
+
+CThostFtdcExchangeBatchOrderActionField["ActionTime"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeBatchOrderActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeBatchOrderActionField["InstallID"] = "int"
+
+#操作本地编号
+
+CThostFtdcExchangeBatchOrderActionField["ActionLocalID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeBatchOrderActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeBatchOrderActionField["ClientID"] = "string"
+
+#业务单元
+
+CThostFtdcExchangeBatchOrderActionField["BusinessUnit"] = "string"
+
+#报单操作状态
+
+CThostFtdcExchangeBatchOrderActionField["OrderActionStatus"] = "char"
+
+#用户代码
+
+CThostFtdcExchangeBatchOrderActionField["UserID"] = "string"
+
+structDict['CThostFtdcExchangeBatchOrderActionField'] = CThostFtdcExchangeBatchOrderActionField
+
+
+
+
+#查询批量报单操作
+
+CThostFtdcQryBatchOrderActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryBatchOrderActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryBatchOrderActionField["InvestorID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryBatchOrderActionField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryBatchOrderActionField'] = CThostFtdcQryBatchOrderActionField
+
+
+
+
+#组合合约安全系数
+
+CThostFtdcCombInstrumentGuardField = {}
+
+
+#经纪公司代码
+
+CThostFtdcCombInstrumentGuardField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcCombInstrumentGuardField["InstrumentID"] = "string"
+
+#
+
+CThostFtdcCombInstrumentGuardField["GuarantRatio"] = "float"
+
+structDict['CThostFtdcCombInstrumentGuardField'] = CThostFtdcCombInstrumentGuardField
+
+
+
+
+#组合合约安全系数查询
+
+CThostFtdcQryCombInstrumentGuardField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryCombInstrumentGuardField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcQryCombInstrumentGuardField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryCombInstrumentGuardField'] = CThostFtdcQryCombInstrumentGuardField
+
+
+
+
+#输入的申请组合
+
+CThostFtdcInputCombActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcInputCombActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInputCombActionField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcInputCombActionField["InstrumentID"] = "string"
+
+#组合引用
+
+CThostFtdcInputCombActionField["CombActionRef"] = "string"
+
+#用户代码
+
+CThostFtdcInputCombActionField["UserID"] = "string"
+
+#买卖方向
+
+CThostFtdcInputCombActionField["Direction"] = "char"
+
+#数量
+
+CThostFtdcInputCombActionField["Volume"] = "int"
+
+#组合指令方向
+
+CThostFtdcInputCombActionField["CombDirection"] = "char"
+
+#投机套保标志
+
+CThostFtdcInputCombActionField["HedgeFlag"] = "char"
+
+structDict['CThostFtdcInputCombActionField'] = CThostFtdcInputCombActionField
+
+
+
+
+#申请组合
+
+CThostFtdcCombActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcCombActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcCombActionField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcCombActionField["InstrumentID"] = "string"
+
+#组合引用
+
+CThostFtdcCombActionField["CombActionRef"] = "string"
+
+#用户代码
+
+CThostFtdcCombActionField["UserID"] = "string"
+
+#买卖方向
+
+CThostFtdcCombActionField["Direction"] = "char"
+
+#数量
+
+CThostFtdcCombActionField["Volume"] = "int"
+
+#组合指令方向
+
+CThostFtdcCombActionField["CombDirection"] = "char"
+
+#投机套保标志
+
+CThostFtdcCombActionField["HedgeFlag"] = "char"
+
+#本地申请组合编号
+
+CThostFtdcCombActionField["ActionLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcCombActionField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcCombActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcCombActionField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcCombActionField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcCombActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcCombActionField["InstallID"] = "int"
+
+#组合状态
+
+CThostFtdcCombActionField["ActionStatus"] = "char"
+
+#报单提示序号
+
+CThostFtdcCombActionField["NotifySequence"] = "int"
+
+#交易日
+
+CThostFtdcCombActionField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcCombActionField["SettlementID"] = "int"
+
+#序号
+
+CThostFtdcCombActionField["SequenceNo"] = "int"
+
+#前置编号
+
+CThostFtdcCombActionField["FrontID"] = "int"
+
+#会话编号
+
+CThostFtdcCombActionField["SessionID"] = "int"
+
+#用户端产品信息
+
+CThostFtdcCombActionField["UserProductInfo"] = "string"
+
+#状态信息
+
+CThostFtdcCombActionField["StatusMsg"] = "string"
+
+structDict['CThostFtdcCombActionField'] = CThostFtdcCombActionField
+
+
+
+
+#申请组合查询
+
+CThostFtdcQryCombActionField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryCombActionField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryCombActionField["InvestorID"] = "string"
+
+#合约代码
+
+CThostFtdcQryCombActionField["InstrumentID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryCombActionField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryCombActionField'] = CThostFtdcQryCombActionField
+
+
+
+
+#交易所申请组合信息
+
+CThostFtdcExchangeCombActionField = {}
+
+
+#买卖方向
+
+CThostFtdcExchangeCombActionField["Direction"] = "char"
+
+#数量
+
+CThostFtdcExchangeCombActionField["Volume"] = "int"
+
+#组合指令方向
+
+CThostFtdcExchangeCombActionField["CombDirection"] = "char"
+
+#投机套保标志
+
+CThostFtdcExchangeCombActionField["HedgeFlag"] = "char"
+
+#本地申请组合编号
+
+CThostFtdcExchangeCombActionField["ActionLocalID"] = "string"
+
+#交易所代码
+
+CThostFtdcExchangeCombActionField["ExchangeID"] = "string"
+
+#会员代码
+
+CThostFtdcExchangeCombActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcExchangeCombActionField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcExchangeCombActionField["ExchangeInstID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcExchangeCombActionField["TraderID"] = "string"
+
+#安装编号
+
+CThostFtdcExchangeCombActionField["InstallID"] = "int"
+
+#组合状态
+
+CThostFtdcExchangeCombActionField["ActionStatus"] = "char"
+
+#报单提示序号
+
+CThostFtdcExchangeCombActionField["NotifySequence"] = "int"
+
+#交易日
+
+CThostFtdcExchangeCombActionField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcExchangeCombActionField["SettlementID"] = "int"
+
+#序号
+
+CThostFtdcExchangeCombActionField["SequenceNo"] = "int"
+
+structDict['CThostFtdcExchangeCombActionField'] = CThostFtdcExchangeCombActionField
+
+
+
+
+#交易所申请组合查询
+
+CThostFtdcQryExchangeCombActionField = {}
+
+
+#会员代码
+
+CThostFtdcQryExchangeCombActionField["ParticipantID"] = "string"
+
+#客户代码
+
+CThostFtdcQryExchangeCombActionField["ClientID"] = "string"
+
+#合约在交易所的代码
+
+CThostFtdcQryExchangeCombActionField["ExchangeInstID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryExchangeCombActionField["ExchangeID"] = "string"
+
+#交易所交易员代码
+
+CThostFtdcQryExchangeCombActionField["TraderID"] = "string"
+
+structDict['CThostFtdcQryExchangeCombActionField'] = CThostFtdcQryExchangeCombActionField
+
+
+
+
+#产品报价汇率
+
+CThostFtdcProductExchRateField = {}
+
+
+#产品代码
+
+CThostFtdcProductExchRateField["ProductID"] = "string"
+
+#报价币种类型
+
+CThostFtdcProductExchRateField["QuoteCurrencyID"] = "string"
+
+#汇率
+
+CThostFtdcProductExchRateField["ExchangeRate"] = "float"
+
+structDict['CThostFtdcProductExchRateField'] = CThostFtdcProductExchRateField
+
+
+
+
+#产品报价汇率查询
+
+CThostFtdcQryProductExchRateField = {}
+
+
+#产品代码
+
+CThostFtdcQryProductExchRateField["ProductID"] = "string"
+
+structDict['CThostFtdcQryProductExchRateField'] = CThostFtdcQryProductExchRateField
+
+
+
+
+#查询询价价差参数
+
+CThostFtdcQryForQuoteParamField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryForQuoteParamField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcQryForQuoteParamField["InstrumentID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryForQuoteParamField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryForQuoteParamField'] = CThostFtdcQryForQuoteParamField
+
+
+
+
+#询价价差参数
+
+CThostFtdcForQuoteParamField = {}
+
+
+#经纪公司代码
+
+CThostFtdcForQuoteParamField["BrokerID"] = "string"
+
+#合约代码
+
+CThostFtdcForQuoteParamField["InstrumentID"] = "string"
+
+#交易所代码
+
+CThostFtdcForQuoteParamField["ExchangeID"] = "string"
+
+#最新价
+
+CThostFtdcForQuoteParamField["LastPrice"] = "float"
+
+#价差
+
+CThostFtdcForQuoteParamField["PriceInterval"] = "float"
+
+structDict['CThostFtdcForQuoteParamField'] = CThostFtdcForQuoteParamField
+
+
 
 
 #市场行情
-CSgitFtdcMarketDataField = {}
+
+CThostFtdcMarketDataField = {}
+
+
 #交易日
-CSgitFtdcMarketDataField["TradingDay"] = "string"
+
+CThostFtdcMarketDataField["TradingDay"] = "string"
+
 #合约代码
-CSgitFtdcMarketDataField["InstrumentID"] = "string"
+
+CThostFtdcMarketDataField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcMarketDataField["ExchangeID"] = "string"
+
+CThostFtdcMarketDataField["ExchangeID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcMarketDataField["ExchangeInstID"] = "string"
+
+CThostFtdcMarketDataField["ExchangeInstID"] = "string"
+
 #最新价
-CSgitFtdcMarketDataField["LastPrice"] = "float"
+
+CThostFtdcMarketDataField["LastPrice"] = "float"
+
 #上次结算价
-CSgitFtdcMarketDataField["PreSettlementPrice"] = "float"
+
+CThostFtdcMarketDataField["PreSettlementPrice"] = "float"
+
 #昨收盘
-CSgitFtdcMarketDataField["PreClosePrice"] = "float"
+
+CThostFtdcMarketDataField["PreClosePrice"] = "float"
+
 #昨持仓量
-CSgitFtdcMarketDataField["PreOpenInterest"] = "float"
+
+CThostFtdcMarketDataField["PreOpenInterest"] = "float"
+
 #今开盘
-CSgitFtdcMarketDataField["OpenPrice"] = "float"
+
+CThostFtdcMarketDataField["OpenPrice"] = "float"
+
 #最高价
-CSgitFtdcMarketDataField["HighestPrice"] = "float"
+
+CThostFtdcMarketDataField["HighestPrice"] = "float"
+
 #最低价
-CSgitFtdcMarketDataField["LowestPrice"] = "float"
+
+CThostFtdcMarketDataField["LowestPrice"] = "float"
+
 #数量
-CSgitFtdcMarketDataField["Volume"] = "int"
+
+CThostFtdcMarketDataField["Volume"] = "int"
+
 #成交金额
-CSgitFtdcMarketDataField["Turnover"] = "float"
+
+CThostFtdcMarketDataField["Turnover"] = "float"
+
 #持仓量
-CSgitFtdcMarketDataField["OpenInterest"] = "float"
+
+CThostFtdcMarketDataField["OpenInterest"] = "float"
+
 #今收盘
-CSgitFtdcMarketDataField["ClosePrice"] = "float"
+
+CThostFtdcMarketDataField["ClosePrice"] = "float"
+
 #本次结算价
-CSgitFtdcMarketDataField["SettlementPrice"] = "float"
+
+CThostFtdcMarketDataField["SettlementPrice"] = "float"
+
 #涨停板价
-CSgitFtdcMarketDataField["UpperLimitPrice"] = "float"
+
+CThostFtdcMarketDataField["UpperLimitPrice"] = "float"
+
 #跌停板价
-CSgitFtdcMarketDataField["LowerLimitPrice"] = "float"
+
+CThostFtdcMarketDataField["LowerLimitPrice"] = "float"
+
 #昨虚实度
-CSgitFtdcMarketDataField["PreDelta"] = "float"
+
+CThostFtdcMarketDataField["PreDelta"] = "float"
+
 #今虚实度
-CSgitFtdcMarketDataField["CurrDelta"] = "float"
+
+CThostFtdcMarketDataField["CurrDelta"] = "float"
+
 #最后修改时间
-CSgitFtdcMarketDataField["UpdateTime"] = "string"
+
+CThostFtdcMarketDataField["UpdateTime"] = "string"
+
 #最后修改毫秒
-CSgitFtdcMarketDataField["UpdateMillisec"] = "int"
-structDict['CSgitFtdcMarketDataField'] = CSgitFtdcMarketDataField
+
+CThostFtdcMarketDataField["UpdateMillisec"] = "int"
+
+#业务日期
+
+CThostFtdcMarketDataField["ActionDay"] = "string"
+
+structDict['CThostFtdcMarketDataField'] = CThostFtdcMarketDataField
+
+
 
 
 #行情基础属性
-CSgitFtdcMarketDataBaseField = {}
+
+CThostFtdcMarketDataBaseField = {}
+
+
 #交易日
-CSgitFtdcMarketDataBaseField["TradingDay"] = "string"
+
+CThostFtdcMarketDataBaseField["TradingDay"] = "string"
+
 #上次结算价
-CSgitFtdcMarketDataBaseField["PreSettlementPrice"] = "float"
+
+CThostFtdcMarketDataBaseField["PreSettlementPrice"] = "float"
+
 #昨收盘
-CSgitFtdcMarketDataBaseField["PreClosePrice"] = "float"
+
+CThostFtdcMarketDataBaseField["PreClosePrice"] = "float"
+
 #昨持仓量
-CSgitFtdcMarketDataBaseField["PreOpenInterest"] = "float"
+
+CThostFtdcMarketDataBaseField["PreOpenInterest"] = "float"
+
 #昨虚实度
-CSgitFtdcMarketDataBaseField["PreDelta"] = "float"
-structDict['CSgitFtdcMarketDataBaseField'] = CSgitFtdcMarketDataBaseField
+
+CThostFtdcMarketDataBaseField["PreDelta"] = "float"
+
+structDict['CThostFtdcMarketDataBaseField'] = CThostFtdcMarketDataBaseField
+
+
 
 
 #行情静态属性
-CSgitFtdcMarketDataStaticField = {}
+
+CThostFtdcMarketDataStaticField = {}
+
+
 #今开盘
-CSgitFtdcMarketDataStaticField["OpenPrice"] = "float"
+
+CThostFtdcMarketDataStaticField["OpenPrice"] = "float"
+
 #最高价
-CSgitFtdcMarketDataStaticField["HighestPrice"] = "float"
+
+CThostFtdcMarketDataStaticField["HighestPrice"] = "float"
+
 #最低价
-CSgitFtdcMarketDataStaticField["LowestPrice"] = "float"
+
+CThostFtdcMarketDataStaticField["LowestPrice"] = "float"
+
 #今收盘
-CSgitFtdcMarketDataStaticField["ClosePrice"] = "float"
+
+CThostFtdcMarketDataStaticField["ClosePrice"] = "float"
+
 #涨停板价
-CSgitFtdcMarketDataStaticField["UpperLimitPrice"] = "float"
+
+CThostFtdcMarketDataStaticField["UpperLimitPrice"] = "float"
+
 #跌停板价
-CSgitFtdcMarketDataStaticField["LowerLimitPrice"] = "float"
+
+CThostFtdcMarketDataStaticField["LowerLimitPrice"] = "float"
+
 #本次结算价
-CSgitFtdcMarketDataStaticField["SettlementPrice"] = "float"
+
+CThostFtdcMarketDataStaticField["SettlementPrice"] = "float"
+
 #今虚实度
-CSgitFtdcMarketDataStaticField["CurrDelta"] = "float"
-structDict['CSgitFtdcMarketDataStaticField'] = CSgitFtdcMarketDataStaticField
+
+CThostFtdcMarketDataStaticField["CurrDelta"] = "float"
+
+structDict['CThostFtdcMarketDataStaticField'] = CThostFtdcMarketDataStaticField
+
+
 
 
 #行情最新成交属性
-CSgitFtdcMarketDataLastMatchField = {}
+
+CThostFtdcMarketDataLastMatchField = {}
+
+
 #最新价
-CSgitFtdcMarketDataLastMatchField["LastPrice"] = "float"
+
+CThostFtdcMarketDataLastMatchField["LastPrice"] = "float"
+
 #数量
-CSgitFtdcMarketDataLastMatchField["Volume"] = "int"
+
+CThostFtdcMarketDataLastMatchField["Volume"] = "int"
+
 #成交金额
-CSgitFtdcMarketDataLastMatchField["Turnover"] = "float"
+
+CThostFtdcMarketDataLastMatchField["Turnover"] = "float"
+
 #持仓量
-CSgitFtdcMarketDataLastMatchField["OpenInterest"] = "float"
-structDict['CSgitFtdcMarketDataLastMatchField'] = CSgitFtdcMarketDataLastMatchField
+
+CThostFtdcMarketDataLastMatchField["OpenInterest"] = "float"
+
+structDict['CThostFtdcMarketDataLastMatchField'] = CThostFtdcMarketDataLastMatchField
+
+
 
 
 #行情最优价属性
-CSgitFtdcMarketDataBestPriceField = {}
+
+CThostFtdcMarketDataBestPriceField = {}
+
+
 #申买价一
-CSgitFtdcMarketDataBestPriceField["BidPrice1"] = "float"
+
+CThostFtdcMarketDataBestPriceField["BidPrice1"] = "float"
+
 #申买量一
-CSgitFtdcMarketDataBestPriceField["BidVolume1"] = "int"
+
+CThostFtdcMarketDataBestPriceField["BidVolume1"] = "int"
+
 #申卖价一
-CSgitFtdcMarketDataBestPriceField["AskPrice1"] = "float"
+
+CThostFtdcMarketDataBestPriceField["AskPrice1"] = "float"
+
 #申卖量一
-CSgitFtdcMarketDataBestPriceField["AskVolume1"] = "int"
-structDict['CSgitFtdcMarketDataBestPriceField'] = CSgitFtdcMarketDataBestPriceField
+
+CThostFtdcMarketDataBestPriceField["AskVolume1"] = "int"
+
+structDict['CThostFtdcMarketDataBestPriceField'] = CThostFtdcMarketDataBestPriceField
+
+
 
 
 #行情申买二、三属性
-CSgitFtdcMarketDataBid23Field = {}
+
+CThostFtdcMarketDataBid23Field = {}
+
+
 #申买价二
-CSgitFtdcMarketDataBid23Field["BidPrice2"] = "float"
+
+CThostFtdcMarketDataBid23Field["BidPrice2"] = "float"
+
 #申买量二
-CSgitFtdcMarketDataBid23Field["BidVolume2"] = "int"
+
+CThostFtdcMarketDataBid23Field["BidVolume2"] = "int"
+
 #申买价三
-CSgitFtdcMarketDataBid23Field["BidPrice3"] = "float"
+
+CThostFtdcMarketDataBid23Field["BidPrice3"] = "float"
+
 #申买量三
-CSgitFtdcMarketDataBid23Field["BidVolume3"] = "int"
-structDict['CSgitFtdcMarketDataBid23Field'] = CSgitFtdcMarketDataBid23Field
+
+CThostFtdcMarketDataBid23Field["BidVolume3"] = "int"
+
+structDict['CThostFtdcMarketDataBid23Field'] = CThostFtdcMarketDataBid23Field
+
+
 
 
 #行情申卖二、三属性
-CSgitFtdcMarketDataAsk23Field = {}
+
+CThostFtdcMarketDataAsk23Field = {}
+
+
 #申卖价二
-CSgitFtdcMarketDataAsk23Field["AskPrice2"] = "float"
+
+CThostFtdcMarketDataAsk23Field["AskPrice2"] = "float"
+
 #申卖量二
-CSgitFtdcMarketDataAsk23Field["AskVolume2"] = "int"
+
+CThostFtdcMarketDataAsk23Field["AskVolume2"] = "int"
+
 #申卖价三
-CSgitFtdcMarketDataAsk23Field["AskPrice3"] = "float"
+
+CThostFtdcMarketDataAsk23Field["AskPrice3"] = "float"
+
 #申卖量三
-CSgitFtdcMarketDataAsk23Field["AskVolume3"] = "int"
-structDict['CSgitFtdcMarketDataAsk23Field'] = CSgitFtdcMarketDataAsk23Field
+
+CThostFtdcMarketDataAsk23Field["AskVolume3"] = "int"
+
+structDict['CThostFtdcMarketDataAsk23Field'] = CThostFtdcMarketDataAsk23Field
+
+
 
 
 #行情申买四、五属性
-CSgitFtdcMarketDataBid45Field = {}
+
+CThostFtdcMarketDataBid45Field = {}
+
+
 #申买价四
-CSgitFtdcMarketDataBid45Field["BidPrice4"] = "float"
+
+CThostFtdcMarketDataBid45Field["BidPrice4"] = "float"
+
 #申买量四
-CSgitFtdcMarketDataBid45Field["BidVolume4"] = "int"
+
+CThostFtdcMarketDataBid45Field["BidVolume4"] = "int"
+
 #申买价五
-CSgitFtdcMarketDataBid45Field["BidPrice5"] = "float"
+
+CThostFtdcMarketDataBid45Field["BidPrice5"] = "float"
+
 #申买量五
-CSgitFtdcMarketDataBid45Field["BidVolume5"] = "int"
-structDict['CSgitFtdcMarketDataBid45Field'] = CSgitFtdcMarketDataBid45Field
+
+CThostFtdcMarketDataBid45Field["BidVolume5"] = "int"
+
+structDict['CThostFtdcMarketDataBid45Field'] = CThostFtdcMarketDataBid45Field
+
+
 
 
 #行情申卖四、五属性
-CSgitFtdcMarketDataAsk45Field = {}
+
+CThostFtdcMarketDataAsk45Field = {}
+
+
 #申卖价四
-CSgitFtdcMarketDataAsk45Field["AskPrice4"] = "float"
+
+CThostFtdcMarketDataAsk45Field["AskPrice4"] = "float"
+
 #申卖量四
-CSgitFtdcMarketDataAsk45Field["AskVolume4"] = "int"
+
+CThostFtdcMarketDataAsk45Field["AskVolume4"] = "int"
+
 #申卖价五
-CSgitFtdcMarketDataAsk45Field["AskPrice5"] = "float"
+
+CThostFtdcMarketDataAsk45Field["AskPrice5"] = "float"
+
 #申卖量五
-CSgitFtdcMarketDataAsk45Field["AskVolume5"] = "int"
-structDict['CSgitFtdcMarketDataAsk45Field'] = CSgitFtdcMarketDataAsk45Field
+
+CThostFtdcMarketDataAsk45Field["AskVolume5"] = "int"
+
+structDict['CThostFtdcMarketDataAsk45Field'] = CThostFtdcMarketDataAsk45Field
+
+
 
 
 #行情更新时间属性
-CSgitFtdcMarketDataUpdateTimeField = {}
+
+CThostFtdcMarketDataUpdateTimeField = {}
+
+
 #合约代码
-CSgitFtdcMarketDataUpdateTimeField["InstrumentID"] = "string"
+
+CThostFtdcMarketDataUpdateTimeField["InstrumentID"] = "string"
+
 #最后修改时间
-CSgitFtdcMarketDataUpdateTimeField["UpdateTime"] = "string"
+
+CThostFtdcMarketDataUpdateTimeField["UpdateTime"] = "string"
+
 #最后修改毫秒
-CSgitFtdcMarketDataUpdateTimeField["UpdateMillisec"] = "int"
-structDict['CSgitFtdcMarketDataUpdateTimeField'] = CSgitFtdcMarketDataUpdateTimeField
+
+CThostFtdcMarketDataUpdateTimeField["UpdateMillisec"] = "int"
+
+#业务日期
+
+CThostFtdcMarketDataUpdateTimeField["ActionDay"] = "string"
+
+structDict['CThostFtdcMarketDataUpdateTimeField'] = CThostFtdcMarketDataUpdateTimeField
+
+
 
 
 #行情交易所代码属性
-CSgitFtdcMarketDataExchangeField = {}
+
+CThostFtdcMarketDataExchangeField = {}
+
+
 #交易所代码
-CSgitFtdcMarketDataExchangeField["ExchangeID"] = "float"
-structDict['CSgitFtdcMarketDataExchangeField'] = CSgitFtdcMarketDataExchangeField
+
+CThostFtdcMarketDataExchangeField["ExchangeID"] = "string"
+
+structDict['CThostFtdcMarketDataExchangeField'] = CThostFtdcMarketDataExchangeField
+
+
 
 
 #指定的合约
-CSgitFtdcSpecificInstrumentField = {}
+
+CThostFtdcSpecificInstrumentField = {}
+
+
 #合约代码
-CSgitFtdcSpecificInstrumentField["InstrumentID"] = "string"
-structDict['CSgitFtdcSpecificInstrumentField'] = CSgitFtdcSpecificInstrumentField
+
+CThostFtdcSpecificInstrumentField["InstrumentID"] = "string"
+
+structDict['CThostFtdcSpecificInstrumentField'] = CThostFtdcSpecificInstrumentField
+
+
 
 
 #合约状态
-CSgitFtdcInstrumentStatusField = {}
+
+CThostFtdcInstrumentStatusField = {}
+
+
 #交易所代码
-CSgitFtdcInstrumentStatusField["ExchangeID"] = "string"
+
+CThostFtdcInstrumentStatusField["ExchangeID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcInstrumentStatusField["ExchangeInstID"] = "string"
+
+CThostFtdcInstrumentStatusField["ExchangeInstID"] = "string"
+
 #结算组代码
-CSgitFtdcInstrumentStatusField["SettlementGroupID"] = "string"
+
+CThostFtdcInstrumentStatusField["SettlementGroupID"] = "string"
+
 #合约代码
-CSgitFtdcInstrumentStatusField["InstrumentID"] = "string"
+
+CThostFtdcInstrumentStatusField["InstrumentID"] = "string"
+
 #合约交易状态
-CSgitFtdcInstrumentStatusField["InstrumentStatus"] = "char"
+
+CThostFtdcInstrumentStatusField["InstrumentStatus"] = "char"
+
 #交易阶段编号
-CSgitFtdcInstrumentStatusField["TradingSegmentSN"] = "int"
+
+CThostFtdcInstrumentStatusField["TradingSegmentSN"] = "int"
+
 #进入本状态时间
-CSgitFtdcInstrumentStatusField["EnterTime"] = "string"
+
+CThostFtdcInstrumentStatusField["EnterTime"] = "string"
+
 #进入本状态原因
-CSgitFtdcInstrumentStatusField["EnterReason"] = "char"
-structDict['CSgitFtdcInstrumentStatusField'] = CSgitFtdcInstrumentStatusField
+
+CThostFtdcInstrumentStatusField["EnterReason"] = "char"
+
+structDict['CThostFtdcInstrumentStatusField'] = CThostFtdcInstrumentStatusField
+
+
 
 
 #查询合约状态
-CSgitFtdcQryInstrumentStatusField = {}
+
+CThostFtdcQryInstrumentStatusField = {}
+
+
 #交易所代码
-CSgitFtdcQryInstrumentStatusField["ExchangeID"] = "string"
+
+CThostFtdcQryInstrumentStatusField["ExchangeID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcQryInstrumentStatusField["ExchangeInstID"] = "string"
-structDict['CSgitFtdcQryInstrumentStatusField'] = CSgitFtdcQryInstrumentStatusField
+
+CThostFtdcQryInstrumentStatusField["ExchangeInstID"] = "string"
+
+structDict['CThostFtdcQryInstrumentStatusField'] = CThostFtdcQryInstrumentStatusField
+
+
 
 
 #投资者账户
-CSgitFtdcInvestorAccountField = {}
+
+CThostFtdcInvestorAccountField = {}
+
+
 #经纪公司代码
-CSgitFtdcInvestorAccountField["BrokerID"] = "string"
+
+CThostFtdcInvestorAccountField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInvestorAccountField["InvestorID"] = "string"
+
+CThostFtdcInvestorAccountField["InvestorID"] = "string"
+
 #投资者帐号
-CSgitFtdcInvestorAccountField["AccountID"] = "string"
-structDict['CSgitFtdcInvestorAccountField'] = CSgitFtdcInvestorAccountField
+
+CThostFtdcInvestorAccountField["AccountID"] = "string"
+
+#币种代码
+
+CThostFtdcInvestorAccountField["CurrencyID"] = "string"
+
+structDict['CThostFtdcInvestorAccountField'] = CThostFtdcInvestorAccountField
+
+
 
 
 #浮动盈亏算法
-CSgitFtdcPositionProfitAlgorithmField = {}
+
+CThostFtdcPositionProfitAlgorithmField = {}
+
+
 #经纪公司代码
-CSgitFtdcPositionProfitAlgorithmField["BrokerID"] = "string"
+
+CThostFtdcPositionProfitAlgorithmField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcPositionProfitAlgorithmField["AccountID"] = "string"
+
+CThostFtdcPositionProfitAlgorithmField["AccountID"] = "string"
+
 #盈亏算法
-CSgitFtdcPositionProfitAlgorithmField["Algorithm"] = "char"
+
+CThostFtdcPositionProfitAlgorithmField["Algorithm"] = "char"
+
 #备注
-CSgitFtdcPositionProfitAlgorithmField["Memo"] = "string"
-structDict['CSgitFtdcPositionProfitAlgorithmField'] = CSgitFtdcPositionProfitAlgorithmField
+
+CThostFtdcPositionProfitAlgorithmField["Memo"] = "string"
+
+#币种代码
+
+CThostFtdcPositionProfitAlgorithmField["CurrencyID"] = "string"
+
+structDict['CThostFtdcPositionProfitAlgorithmField'] = CThostFtdcPositionProfitAlgorithmField
+
+
 
 
 #会员资金折扣
-CSgitFtdcDiscountField = {}
+
+CThostFtdcDiscountField = {}
+
+
 #经纪公司代码
-CSgitFtdcDiscountField["BrokerID"] = "string"
+
+CThostFtdcDiscountField["BrokerID"] = "string"
+
 #投资者范围
-CSgitFtdcDiscountField["InvestorRange"] = "char"
+
+CThostFtdcDiscountField["InvestorRange"] = "char"
+
 #投资者代码
-CSgitFtdcDiscountField["InvestorID"] = "string"
+
+CThostFtdcDiscountField["InvestorID"] = "string"
+
 #资金折扣比例
-CSgitFtdcDiscountField["Discount"] = "float"
-structDict['CSgitFtdcDiscountField'] = CSgitFtdcDiscountField
+
+CThostFtdcDiscountField["Discount"] = "float"
+
+structDict['CThostFtdcDiscountField'] = CThostFtdcDiscountField
+
+
 
 
 #查询转帐银行
-CSgitFtdcQryTransferBankField = {}
+
+CThostFtdcQryTransferBankField = {}
+
+
 #银行代码
-CSgitFtdcQryTransferBankField["BankID"] = "string"
+
+CThostFtdcQryTransferBankField["BankID"] = "string"
+
 #银行分中心代码
-CSgitFtdcQryTransferBankField["BankBrchID"] = "string"
-structDict['CSgitFtdcQryTransferBankField'] = CSgitFtdcQryTransferBankField
+
+CThostFtdcQryTransferBankField["BankBrchID"] = "string"
+
+structDict['CThostFtdcQryTransferBankField'] = CThostFtdcQryTransferBankField
+
+
 
 
 #转帐银行
-CSgitFtdcTransferBankField = {}
+
+CThostFtdcTransferBankField = {}
+
+
 #银行代码
-CSgitFtdcTransferBankField["BankID"] = "string"
+
+CThostFtdcTransferBankField["BankID"] = "string"
+
 #银行分中心代码
-CSgitFtdcTransferBankField["BankBrchID"] = "string"
+
+CThostFtdcTransferBankField["BankBrchID"] = "string"
+
 #银行名称
-CSgitFtdcTransferBankField["BankName"] = "string"
+
+CThostFtdcTransferBankField["BankName"] = "string"
+
 #是否活跃
-CSgitFtdcTransferBankField["IsActive"] = "int"
-structDict['CSgitFtdcTransferBankField'] = CSgitFtdcTransferBankField
+
+CThostFtdcTransferBankField["IsActive"] = "int"
+
+structDict['CThostFtdcTransferBankField'] = CThostFtdcTransferBankField
+
+
 
 
 #查询投资者持仓明细
-CSgitFtdcQryInvestorPositionDetailField = {}
+
+CThostFtdcQryInvestorPositionDetailField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInvestorPositionDetailField["BrokerID"] = "string"
+
+CThostFtdcQryInvestorPositionDetailField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInvestorPositionDetailField["InvestorID"] = "string"
+
+CThostFtdcQryInvestorPositionDetailField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryInvestorPositionDetailField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryInvestorPositionDetailField'] = CSgitFtdcQryInvestorPositionDetailField
+
+CThostFtdcQryInvestorPositionDetailField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryInvestorPositionDetailField'] = CThostFtdcQryInvestorPositionDetailField
+
+
 
 
 #投资者持仓明细
-CSgitFtdcInvestorPositionDetailField = {}
+
+CThostFtdcInvestorPositionDetailField = {}
+
+
 #合约代码
-CSgitFtdcInvestorPositionDetailField["InstrumentID"] = "string"
+
+CThostFtdcInvestorPositionDetailField["InstrumentID"] = "string"
+
 #经纪公司代码
-CSgitFtdcInvestorPositionDetailField["BrokerID"] = "string"
+
+CThostFtdcInvestorPositionDetailField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInvestorPositionDetailField["InvestorID"] = "string"
+
+CThostFtdcInvestorPositionDetailField["InvestorID"] = "string"
+
 #投机套保标志
-CSgitFtdcInvestorPositionDetailField["HedgeFlag"] = "char"
+
+CThostFtdcInvestorPositionDetailField["HedgeFlag"] = "char"
+
 #买卖
-CSgitFtdcInvestorPositionDetailField["Direction"] = "char"
+
+CThostFtdcInvestorPositionDetailField["Direction"] = "char"
+
 #开仓日期
-CSgitFtdcInvestorPositionDetailField["OpenDate"] = "string"
+
+CThostFtdcInvestorPositionDetailField["OpenDate"] = "string"
+
 #成交编号
-CSgitFtdcInvestorPositionDetailField["TradeID"] = "string"
+
+CThostFtdcInvestorPositionDetailField["TradeID"] = "string"
+
 #数量
-CSgitFtdcInvestorPositionDetailField["Volume"] = "int"
+
+CThostFtdcInvestorPositionDetailField["Volume"] = "int"
+
 #开仓价
-CSgitFtdcInvestorPositionDetailField["OpenPrice"] = "float"
+
+CThostFtdcInvestorPositionDetailField["OpenPrice"] = "float"
+
 #交易日
-CSgitFtdcInvestorPositionDetailField["TradingDay"] = "string"
+
+CThostFtdcInvestorPositionDetailField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcInvestorPositionDetailField["SettlementID"] = "int"
+
+CThostFtdcInvestorPositionDetailField["SettlementID"] = "int"
+
 #成交类型
-CSgitFtdcInvestorPositionDetailField["TradeType"] = "char"
+
+CThostFtdcInvestorPositionDetailField["TradeType"] = "char"
+
 #组合合约代码
-CSgitFtdcInvestorPositionDetailField["CombInstrumentID"] = "string"
+
+CThostFtdcInvestorPositionDetailField["CombInstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcInvestorPositionDetailField["ExchangeID"] = "string"
+
+CThostFtdcInvestorPositionDetailField["ExchangeID"] = "string"
+
 #逐日盯市平仓盈亏
-CSgitFtdcInvestorPositionDetailField["CloseProfitByDate"] = "float"
+
+CThostFtdcInvestorPositionDetailField["CloseProfitByDate"] = "float"
+
 #逐笔对冲平仓盈亏
-CSgitFtdcInvestorPositionDetailField["CloseProfitByTrade"] = "float"
+
+CThostFtdcInvestorPositionDetailField["CloseProfitByTrade"] = "float"
+
 #逐日盯市持仓盈亏
-CSgitFtdcInvestorPositionDetailField["PositionProfitByDate"] = "float"
+
+CThostFtdcInvestorPositionDetailField["PositionProfitByDate"] = "float"
+
 #逐笔对冲持仓盈亏
-CSgitFtdcInvestorPositionDetailField["PositionProfitByTrade"] = "float"
+
+CThostFtdcInvestorPositionDetailField["PositionProfitByTrade"] = "float"
+
 #投资者保证金
-CSgitFtdcInvestorPositionDetailField["Margin"] = "float"
+
+CThostFtdcInvestorPositionDetailField["Margin"] = "float"
+
 #交易所保证金
-CSgitFtdcInvestorPositionDetailField["ExchMargin"] = "float"
+
+CThostFtdcInvestorPositionDetailField["ExchMargin"] = "float"
+
 #保证金率
-CSgitFtdcInvestorPositionDetailField["MarginRateByMoney"] = "float"
+
+CThostFtdcInvestorPositionDetailField["MarginRateByMoney"] = "float"
+
 #保证金率(按手数)
-CSgitFtdcInvestorPositionDetailField["MarginRateByVolume"] = "float"
+
+CThostFtdcInvestorPositionDetailField["MarginRateByVolume"] = "float"
+
 #昨结算价
-CSgitFtdcInvestorPositionDetailField["LastSettlementPrice"] = "float"
+
+CThostFtdcInvestorPositionDetailField["LastSettlementPrice"] = "float"
+
 #结算价
-CSgitFtdcInvestorPositionDetailField["SettlementPrice"] = "float"
+
+CThostFtdcInvestorPositionDetailField["SettlementPrice"] = "float"
+
 #平仓量
-CSgitFtdcInvestorPositionDetailField["CloseVolume"] = "int"
+
+CThostFtdcInvestorPositionDetailField["CloseVolume"] = "int"
+
 #平仓金额
-CSgitFtdcInvestorPositionDetailField["CloseAmount"] = "float"
-structDict['CSgitFtdcInvestorPositionDetailField'] = CSgitFtdcInvestorPositionDetailField
+
+CThostFtdcInvestorPositionDetailField["CloseAmount"] = "float"
+
+structDict['CThostFtdcInvestorPositionDetailField'] = CThostFtdcInvestorPositionDetailField
+
+
 
 
 #资金账户口令域
-CSgitFtdcTradingAccountPasswordField = {}
+
+CThostFtdcTradingAccountPasswordField = {}
+
+
 #经纪公司代码
-CSgitFtdcTradingAccountPasswordField["BrokerID"] = "string"
+
+CThostFtdcTradingAccountPasswordField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcTradingAccountPasswordField["AccountID"] = "string"
+
+CThostFtdcTradingAccountPasswordField["AccountID"] = "string"
+
 #密码
-CSgitFtdcTradingAccountPasswordField["Password"] = "string"
-structDict['CSgitFtdcTradingAccountPasswordField'] = CSgitFtdcTradingAccountPasswordField
+
+CThostFtdcTradingAccountPasswordField["Password"] = "string"
+
+#币种代码
+
+CThostFtdcTradingAccountPasswordField["CurrencyID"] = "string"
+
+structDict['CThostFtdcTradingAccountPasswordField'] = CThostFtdcTradingAccountPasswordField
+
+
 
 
 #交易所行情报盘机
-CSgitFtdcMDTraderOfferField = {}
+
+CThostFtdcMDTraderOfferField = {}
+
+
 #交易所代码
-CSgitFtdcMDTraderOfferField["ExchangeID"] = "string"
+
+CThostFtdcMDTraderOfferField["ExchangeID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcMDTraderOfferField["TraderID"] = "string"
+
+CThostFtdcMDTraderOfferField["TraderID"] = "string"
+
 #会员代码
-CSgitFtdcMDTraderOfferField["ParticipantID"] = "string"
+
+CThostFtdcMDTraderOfferField["ParticipantID"] = "string"
+
 #密码
-CSgitFtdcMDTraderOfferField["Password"] = "string"
+
+CThostFtdcMDTraderOfferField["Password"] = "string"
+
 #安装编号
-CSgitFtdcMDTraderOfferField["InstallID"] = "int"
+
+CThostFtdcMDTraderOfferField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcMDTraderOfferField["OrderLocalID"] = "string"
+
+CThostFtdcMDTraderOfferField["OrderLocalID"] = "string"
+
 #交易所交易员连接状态
-CSgitFtdcMDTraderOfferField["TraderConnectStatus"] = "char"
+
+CThostFtdcMDTraderOfferField["TraderConnectStatus"] = "char"
+
 #发出连接请求的日期
-CSgitFtdcMDTraderOfferField["ConnectRequestDate"] = "string"
+
+CThostFtdcMDTraderOfferField["ConnectRequestDate"] = "string"
+
 #发出连接请求的时间
-CSgitFtdcMDTraderOfferField["ConnectRequestTime"] = "string"
+
+CThostFtdcMDTraderOfferField["ConnectRequestTime"] = "string"
+
 #上次报告日期
-CSgitFtdcMDTraderOfferField["LastReportDate"] = "string"
+
+CThostFtdcMDTraderOfferField["LastReportDate"] = "string"
+
 #上次报告时间
-CSgitFtdcMDTraderOfferField["LastReportTime"] = "string"
+
+CThostFtdcMDTraderOfferField["LastReportTime"] = "string"
+
 #完成连接日期
-CSgitFtdcMDTraderOfferField["ConnectDate"] = "string"
+
+CThostFtdcMDTraderOfferField["ConnectDate"] = "string"
+
 #完成连接时间
-CSgitFtdcMDTraderOfferField["ConnectTime"] = "string"
+
+CThostFtdcMDTraderOfferField["ConnectTime"] = "string"
+
 #启动日期
-CSgitFtdcMDTraderOfferField["StartDate"] = "string"
+
+CThostFtdcMDTraderOfferField["StartDate"] = "string"
+
 #启动时间
-CSgitFtdcMDTraderOfferField["StartTime"] = "string"
+
+CThostFtdcMDTraderOfferField["StartTime"] = "string"
+
 #交易日
-CSgitFtdcMDTraderOfferField["TradingDay"] = "string"
+
+CThostFtdcMDTraderOfferField["TradingDay"] = "string"
+
 #经纪公司代码
-CSgitFtdcMDTraderOfferField["BrokerID"] = "string"
+
+CThostFtdcMDTraderOfferField["BrokerID"] = "string"
+
 #本席位最大成交编号
-CSgitFtdcMDTraderOfferField["MaxTradeID"] = "string"
+
+CThostFtdcMDTraderOfferField["MaxTradeID"] = "string"
+
 #本席位最大报单备拷
-CSgitFtdcMDTraderOfferField["MaxOrderMessageReference"] = "string"
-structDict['CSgitFtdcMDTraderOfferField'] = CSgitFtdcMDTraderOfferField
+
+CThostFtdcMDTraderOfferField["MaxOrderMessageReference"] = "string"
+
+structDict['CThostFtdcMDTraderOfferField'] = CThostFtdcMDTraderOfferField
+
+
 
 
 #查询行情报盘机
-CSgitFtdcQryMDTraderOfferField = {}
+
+CThostFtdcQryMDTraderOfferField = {}
+
+
 #交易所代码
-CSgitFtdcQryMDTraderOfferField["ExchangeID"] = "string"
+
+CThostFtdcQryMDTraderOfferField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcQryMDTraderOfferField["ParticipantID"] = "string"
+
+CThostFtdcQryMDTraderOfferField["ParticipantID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcQryMDTraderOfferField["TraderID"] = "string"
-structDict['CSgitFtdcQryMDTraderOfferField'] = CSgitFtdcQryMDTraderOfferField
+
+CThostFtdcQryMDTraderOfferField["TraderID"] = "string"
+
+structDict['CThostFtdcQryMDTraderOfferField'] = CThostFtdcQryMDTraderOfferField
+
+
 
 
 #查询客户通知
-CSgitFtdcQryNoticeField = {}
+
+CThostFtdcQryNoticeField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryNoticeField["BrokerID"] = "string"
-structDict['CSgitFtdcQryNoticeField'] = CSgitFtdcQryNoticeField
+
+CThostFtdcQryNoticeField["BrokerID"] = "string"
+
+structDict['CThostFtdcQryNoticeField'] = CThostFtdcQryNoticeField
+
+
 
 
 #客户通知
-CSgitFtdcNoticeField = {}
+
+CThostFtdcNoticeField = {}
+
+
 #经纪公司代码
-CSgitFtdcNoticeField["BrokerID"] = "string"
+
+CThostFtdcNoticeField["BrokerID"] = "string"
+
 #消息正文
-CSgitFtdcNoticeField["Content"] = "string"
+
+CThostFtdcNoticeField["Content"] = "string"
+
 #经纪公司通知内容序列号
-CSgitFtdcNoticeField["SequenceLabel"] = "string"
-structDict['CSgitFtdcNoticeField'] = CSgitFtdcNoticeField
+
+CThostFtdcNoticeField["SequenceLabel"] = "string"
+
+structDict['CThostFtdcNoticeField'] = CThostFtdcNoticeField
+
+
 
 
 #用户权限
-CSgitFtdcUserRightField = {}
+
+CThostFtdcUserRightField = {}
+
+
 #经纪公司代码
-CSgitFtdcUserRightField["BrokerID"] = "string"
+
+CThostFtdcUserRightField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcUserRightField["UserID"] = "string"
+
+CThostFtdcUserRightField["UserID"] = "string"
+
 #客户权限类型
-CSgitFtdcUserRightField["UserRightType"] = "char"
+
+CThostFtdcUserRightField["UserRightType"] = "char"
+
 #是否禁止
-CSgitFtdcUserRightField["IsForbidden"] = "int"
-structDict['CSgitFtdcUserRightField'] = CSgitFtdcUserRightField
+
+CThostFtdcUserRightField["IsForbidden"] = "int"
+
+structDict['CThostFtdcUserRightField'] = CThostFtdcUserRightField
+
+
 
 
 #查询结算信息确认域
-CSgitFtdcQrySettlementInfoConfirmField = {}
+
+CThostFtdcQrySettlementInfoConfirmField = {}
+
+
 #经纪公司代码
-CSgitFtdcQrySettlementInfoConfirmField["BrokerID"] = "string"
+
+CThostFtdcQrySettlementInfoConfirmField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQrySettlementInfoConfirmField["InvestorID"] = "string"
-structDict['CSgitFtdcQrySettlementInfoConfirmField'] = CSgitFtdcQrySettlementInfoConfirmField
+
+CThostFtdcQrySettlementInfoConfirmField["InvestorID"] = "string"
+
+structDict['CThostFtdcQrySettlementInfoConfirmField'] = CThostFtdcQrySettlementInfoConfirmField
+
+
 
 
 #装载结算信息
-CSgitFtdcLoadSettlementInfoField = {}
+
+CThostFtdcLoadSettlementInfoField = {}
+
+
 #经纪公司代码
-CSgitFtdcLoadSettlementInfoField["BrokerID"] = "string"
-structDict['CSgitFtdcLoadSettlementInfoField'] = CSgitFtdcLoadSettlementInfoField
+
+CThostFtdcLoadSettlementInfoField["BrokerID"] = "string"
+
+structDict['CThostFtdcLoadSettlementInfoField'] = CThostFtdcLoadSettlementInfoField
+
+
 
 
 #经纪公司可提资金算法表
-CSgitFtdcBrokerWithdrawAlgorithmField = {}
+
+CThostFtdcBrokerWithdrawAlgorithmField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerWithdrawAlgorithmField["BrokerID"] = "string"
+
+CThostFtdcBrokerWithdrawAlgorithmField["BrokerID"] = "string"
+
 #可提资金算法
-CSgitFtdcBrokerWithdrawAlgorithmField["WithdrawAlgorithm"] = "char"
+
+CThostFtdcBrokerWithdrawAlgorithmField["WithdrawAlgorithm"] = "char"
+
 #资金使用率
-CSgitFtdcBrokerWithdrawAlgorithmField["UsingRatio"] = "float"
+
+CThostFtdcBrokerWithdrawAlgorithmField["UsingRatio"] = "float"
+
 #可提是否包含平仓盈利
-CSgitFtdcBrokerWithdrawAlgorithmField["IncludeCloseProfit"] = "char"
+
+CThostFtdcBrokerWithdrawAlgorithmField["IncludeCloseProfit"] = "char"
+
 #本日无仓且无成交客户是否受可提比例限制
-CSgitFtdcBrokerWithdrawAlgorithmField["AllWithoutTrade"] = "char"
+
+CThostFtdcBrokerWithdrawAlgorithmField["AllWithoutTrade"] = "char"
+
 #可用是否包含平仓盈利
-CSgitFtdcBrokerWithdrawAlgorithmField["AvailIncludeCloseProfit"] = "char"
+
+CThostFtdcBrokerWithdrawAlgorithmField["AvailIncludeCloseProfit"] = "char"
+
 #是否启用用户事件
-CSgitFtdcBrokerWithdrawAlgorithmField["IsBrokerUserEvent"] = "int"
-structDict['CSgitFtdcBrokerWithdrawAlgorithmField'] = CSgitFtdcBrokerWithdrawAlgorithmField
+
+CThostFtdcBrokerWithdrawAlgorithmField["IsBrokerUserEvent"] = "int"
+
+#币种代码//以下sgit不用
+
+CThostFtdcBrokerWithdrawAlgorithmField["CurrencyID"] = "string"
+
+#货币质押比率
+
+CThostFtdcBrokerWithdrawAlgorithmField["FundMortgageRatio"] = "float"
+
+#权益算法
+
+CThostFtdcBrokerWithdrawAlgorithmField["BalanceAlgorithm"] = "char"
+
+structDict['CThostFtdcBrokerWithdrawAlgorithmField'] = CThostFtdcBrokerWithdrawAlgorithmField
+
+
 
 
 #资金账户口令变更域
-CSgitFtdcTradingAccountPasswordUpdateV1Field = {}
+
+CThostFtdcTradingAccountPasswordUpdateV1Field = {}
+
+
 #经纪公司代码
-CSgitFtdcTradingAccountPasswordUpdateV1Field["BrokerID"] = "string"
+
+CThostFtdcTradingAccountPasswordUpdateV1Field["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcTradingAccountPasswordUpdateV1Field["InvestorID"] = "string"
+
+CThostFtdcTradingAccountPasswordUpdateV1Field["InvestorID"] = "string"
+
 #原来的口令
-CSgitFtdcTradingAccountPasswordUpdateV1Field["OldPassword"] = "string"
+
+CThostFtdcTradingAccountPasswordUpdateV1Field["OldPassword"] = "string"
+
 #新的口令
-CSgitFtdcTradingAccountPasswordUpdateV1Field["NewPassword"] = "string"
-structDict['CSgitFtdcTradingAccountPasswordUpdateV1Field'] = CSgitFtdcTradingAccountPasswordUpdateV1Field
+
+CThostFtdcTradingAccountPasswordUpdateV1Field["NewPassword"] = "string"
+
+structDict['CThostFtdcTradingAccountPasswordUpdateV1Field'] = CThostFtdcTradingAccountPasswordUpdateV1Field
+
+
 
 
 #资金账户口令变更域
-CSgitFtdcTradingAccountPasswordUpdateField = {}
+
+CThostFtdcTradingAccountPasswordUpdateField = {}
+
+
 #经纪公司代码
-CSgitFtdcTradingAccountPasswordUpdateField["BrokerID"] = "string"
+
+CThostFtdcTradingAccountPasswordUpdateField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcTradingAccountPasswordUpdateField["AccountID"] = "string"
+
+CThostFtdcTradingAccountPasswordUpdateField["AccountID"] = "string"
+
 #原来的口令
-CSgitFtdcTradingAccountPasswordUpdateField["OldPassword"] = "string"
+
+CThostFtdcTradingAccountPasswordUpdateField["OldPassword"] = "string"
+
 #新的口令
-CSgitFtdcTradingAccountPasswordUpdateField["NewPassword"] = "string"
-structDict['CSgitFtdcTradingAccountPasswordUpdateField'] = CSgitFtdcTradingAccountPasswordUpdateField
+
+CThostFtdcTradingAccountPasswordUpdateField["NewPassword"] = "string"
+
+#币种代码//以下sgit不用
+
+CThostFtdcTradingAccountPasswordUpdateField["CurrencyID"] = "string"
+
+structDict['CThostFtdcTradingAccountPasswordUpdateField'] = CThostFtdcTradingAccountPasswordUpdateField
+
+
 
 
 #查询组合合约分腿
-CSgitFtdcQryCombinationLegField = {}
+
+CThostFtdcQryCombinationLegField = {}
+
+
 #组合合约代码
-CSgitFtdcQryCombinationLegField["CombInstrumentID"] = "string"
+
+CThostFtdcQryCombinationLegField["CombInstrumentID"] = "string"
+
 #单腿编号
-CSgitFtdcQryCombinationLegField["LegID"] = "int"
+
+CThostFtdcQryCombinationLegField["LegID"] = "int"
+
 #单腿合约代码
-CSgitFtdcQryCombinationLegField["LegInstrumentID"] = "string"
-structDict['CSgitFtdcQryCombinationLegField'] = CSgitFtdcQryCombinationLegField
+
+CThostFtdcQryCombinationLegField["LegInstrumentID"] = "string"
+
+structDict['CThostFtdcQryCombinationLegField'] = CThostFtdcQryCombinationLegField
+
+
 
 
 #查询组合合约分腿
-CSgitFtdcQrySyncStatusField = {}
+
+CThostFtdcQrySyncStatusField = {}
+
+
 #交易日
-CSgitFtdcQrySyncStatusField["TradingDay"] = "string"
-structDict['CSgitFtdcQrySyncStatusField'] = CSgitFtdcQrySyncStatusField
+
+CThostFtdcQrySyncStatusField["TradingDay"] = "string"
+
+structDict['CThostFtdcQrySyncStatusField'] = CThostFtdcQrySyncStatusField
+
+
 
 
 #组合交易合约的单腿
-CSgitFtdcCombinationLegField = {}
+
+CThostFtdcCombinationLegField = {}
+
+
 #组合合约代码
-CSgitFtdcCombinationLegField["CombInstrumentID"] = "string"
+
+CThostFtdcCombinationLegField["CombInstrumentID"] = "string"
+
 #单腿编号
-CSgitFtdcCombinationLegField["LegID"] = "int"
+
+CThostFtdcCombinationLegField["LegID"] = "int"
+
 #单腿合约代码
-CSgitFtdcCombinationLegField["LegInstrumentID"] = "string"
+
+CThostFtdcCombinationLegField["LegInstrumentID"] = "string"
+
 #买卖方向
-CSgitFtdcCombinationLegField["Direction"] = "char"
+
+CThostFtdcCombinationLegField["Direction"] = "char"
+
 #单腿乘数
-CSgitFtdcCombinationLegField["LegMultiple"] = "int"
+
+CThostFtdcCombinationLegField["LegMultiple"] = "int"
+
 #派生层数
-CSgitFtdcCombinationLegField["ImplyLevel"] = "int"
-structDict['CSgitFtdcCombinationLegField'] = CSgitFtdcCombinationLegField
+
+CThostFtdcCombinationLegField["ImplyLevel"] = "int"
+
+structDict['CThostFtdcCombinationLegField'] = CThostFtdcCombinationLegField
+
+
 
 
 #数据同步状态
-CSgitFtdcSyncStatusField = {}
+
+CThostFtdcSyncStatusField = {}
+
+
 #交易日
-CSgitFtdcSyncStatusField["TradingDay"] = "string"
+
+CThostFtdcSyncStatusField["TradingDay"] = "string"
+
 #数据同步状态
-CSgitFtdcSyncStatusField["DataSyncStatus"] = "char"
-structDict['CSgitFtdcSyncStatusField'] = CSgitFtdcSyncStatusField
+
+CThostFtdcSyncStatusField["DataSyncStatus"] = "char"
+
+structDict['CThostFtdcSyncStatusField'] = CThostFtdcSyncStatusField
+
+
 
 
 #查询联系人
-CSgitFtdcQryLinkManField = {}
+
+CThostFtdcQryLinkManField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryLinkManField["BrokerID"] = "string"
+
+CThostFtdcQryLinkManField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryLinkManField["InvestorID"] = "string"
-structDict['CSgitFtdcQryLinkManField'] = CSgitFtdcQryLinkManField
+
+CThostFtdcQryLinkManField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryLinkManField'] = CThostFtdcQryLinkManField
+
+
 
 
 #联系人
-CSgitFtdcLinkManField = {}
+
+CThostFtdcLinkManField = {}
+
+
 #经纪公司代码
-CSgitFtdcLinkManField["BrokerID"] = "string"
+
+CThostFtdcLinkManField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcLinkManField["InvestorID"] = "string"
+
+CThostFtdcLinkManField["InvestorID"] = "string"
+
 #联系人类型
-CSgitFtdcLinkManField["PersonType"] = "char"
+
+CThostFtdcLinkManField["PersonType"] = "char"
+
 #证件类型
-CSgitFtdcLinkManField["IdentifiedCardType"] = "char"
+
+CThostFtdcLinkManField["IdentifiedCardType"] = "char"
+
 #证件号码
-CSgitFtdcLinkManField["IdentifiedCardNo"] = "string"
+
+CThostFtdcLinkManField["IdentifiedCardNo"] = "string"
+
 #名称
-CSgitFtdcLinkManField["PersonName"] = "string"
+
+CThostFtdcLinkManField["PersonName"] = "string"
+
 #联系电话
-CSgitFtdcLinkManField["Telephone"] = "string"
+
+CThostFtdcLinkManField["Telephone"] = "string"
+
 #通讯地址
-CSgitFtdcLinkManField["Address"] = "string"
+
+CThostFtdcLinkManField["Address"] = "string"
+
 #邮政编码
-CSgitFtdcLinkManField["ZipCode"] = "string"
+
+CThostFtdcLinkManField["ZipCode"] = "string"
+
 #优先级
-CSgitFtdcLinkManField["Priority"] = "int"
-structDict['CSgitFtdcLinkManField'] = CSgitFtdcLinkManField
+
+CThostFtdcLinkManField["Priority"] = "int"
+
+#开户邮政编码//以下sgit不用
+
+CThostFtdcLinkManField["UOAZipCode"] = "string"
+
+#全称
+
+CThostFtdcLinkManField["PersonFullName"] = "string"
+
+structDict['CThostFtdcLinkManField'] = CThostFtdcLinkManField
+
+
 
 
 #查询经纪公司用户事件
-CSgitFtdcQryBrokerUserEventField = {}
+
+CThostFtdcQryBrokerUserEventField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryBrokerUserEventField["BrokerID"] = "string"
+
+CThostFtdcQryBrokerUserEventField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcQryBrokerUserEventField["UserID"] = "string"
+
+CThostFtdcQryBrokerUserEventField["UserID"] = "string"
+
 #用户事件类型
-CSgitFtdcQryBrokerUserEventField["UserEventType"] = "char"
-structDict['CSgitFtdcQryBrokerUserEventField'] = CSgitFtdcQryBrokerUserEventField
+
+CThostFtdcQryBrokerUserEventField["UserEventType"] = "char"
+
+structDict['CThostFtdcQryBrokerUserEventField'] = CThostFtdcQryBrokerUserEventField
+
+
 
 
 #查询经纪公司用户事件
-CSgitFtdcBrokerUserEventField = {}
+
+CThostFtdcBrokerUserEventField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerUserEventField["BrokerID"] = "string"
+
+CThostFtdcBrokerUserEventField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcBrokerUserEventField["UserID"] = "string"
+
+CThostFtdcBrokerUserEventField["UserID"] = "string"
+
 #用户事件类型
-CSgitFtdcBrokerUserEventField["UserEventType"] = "char"
+
+CThostFtdcBrokerUserEventField["UserEventType"] = "char"
+
 #用户事件序号
-CSgitFtdcBrokerUserEventField["EventSequenceNo"] = "int"
+
+CThostFtdcBrokerUserEventField["EventSequenceNo"] = "int"
+
 #事件发生日期
-CSgitFtdcBrokerUserEventField["EventDate"] = "string"
+
+CThostFtdcBrokerUserEventField["EventDate"] = "string"
+
 #事件发生时间
-CSgitFtdcBrokerUserEventField["EventTime"] = "string"
+
+CThostFtdcBrokerUserEventField["EventTime"] = "string"
+
 #用户事件信息
-CSgitFtdcBrokerUserEventField["UserEventInfo"] = "string"
+
+CThostFtdcBrokerUserEventField["UserEventInfo"] = "string"
+
 #投资者代码
-CSgitFtdcBrokerUserEventField["InvestorID"] = "string"
+
+CThostFtdcBrokerUserEventField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcBrokerUserEventField["InstrumentID"] = "string"
-structDict['CSgitFtdcBrokerUserEventField'] = CSgitFtdcBrokerUserEventField
+
+CThostFtdcBrokerUserEventField["InstrumentID"] = "string"
+
+structDict['CThostFtdcBrokerUserEventField'] = CThostFtdcBrokerUserEventField
+
+
 
 
 #查询签约银行请求
-CSgitFtdcQryContractBankField = {}
+
+CThostFtdcQryContractBankField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryContractBankField["BrokerID"] = "string"
+
+CThostFtdcQryContractBankField["BrokerID"] = "string"
+
 #银行代码
-CSgitFtdcQryContractBankField["BankID"] = "string"
+
+CThostFtdcQryContractBankField["BankID"] = "string"
+
 #银行分中心代码
-CSgitFtdcQryContractBankField["BankBrchID"] = "string"
-structDict['CSgitFtdcQryContractBankField'] = CSgitFtdcQryContractBankField
+
+CThostFtdcQryContractBankField["BankBrchID"] = "string"
+
+structDict['CThostFtdcQryContractBankField'] = CThostFtdcQryContractBankField
+
+
 
 
 #查询签约银行响应
-CSgitFtdcContractBankField = {}
+
+CThostFtdcContractBankField = {}
+
+
 #经纪公司代码
-CSgitFtdcContractBankField["BrokerID"] = "string"
+
+CThostFtdcContractBankField["BrokerID"] = "string"
+
 #银行代码
-CSgitFtdcContractBankField["BankID"] = "string"
+
+CThostFtdcContractBankField["BankID"] = "string"
+
 #银行分中心代码
-CSgitFtdcContractBankField["BankBrchID"] = "string"
+
+CThostFtdcContractBankField["BankBrchID"] = "string"
+
 #银行名称
-CSgitFtdcContractBankField["BankName"] = "string"
-structDict['CSgitFtdcContractBankField'] = CSgitFtdcContractBankField
+
+CThostFtdcContractBankField["BankName"] = "string"
+
+structDict['CThostFtdcContractBankField'] = CThostFtdcContractBankField
+
+
 
 
 #投资者组合持仓明细
-CSgitFtdcInvestorPositionCombineDetailField = {}
+
+CThostFtdcInvestorPositionCombineDetailField = {}
+
+
 #交易日
-CSgitFtdcInvestorPositionCombineDetailField["TradingDay"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["TradingDay"] = "string"
+
 #开仓日期
-CSgitFtdcInvestorPositionCombineDetailField["OpenDate"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["OpenDate"] = "string"
+
 #交易所代码
-CSgitFtdcInvestorPositionCombineDetailField["ExchangeID"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["ExchangeID"] = "string"
+
 #结算编号
-CSgitFtdcInvestorPositionCombineDetailField["SettlementID"] = "int"
+
+CThostFtdcInvestorPositionCombineDetailField["SettlementID"] = "int"
+
 #经纪公司代码
-CSgitFtdcInvestorPositionCombineDetailField["BrokerID"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcInvestorPositionCombineDetailField["InvestorID"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["InvestorID"] = "string"
+
 #组合编号
-CSgitFtdcInvestorPositionCombineDetailField["ComTradeID"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["ComTradeID"] = "string"
+
 #撮合编号
-CSgitFtdcInvestorPositionCombineDetailField["TradeID"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["TradeID"] = "string"
+
 #合约代码
-CSgitFtdcInvestorPositionCombineDetailField["InstrumentID"] = "string"
+
+CThostFtdcInvestorPositionCombineDetailField["InstrumentID"] = "string"
+
 #投机套保标志
-CSgitFtdcInvestorPositionCombineDetailField["HedgeFlag"] = "char"
+
+CThostFtdcInvestorPositionCombineDetailField["HedgeFlag"] = "char"
+
 #买卖
-CSgitFtdcInvestorPositionCombineDetailField["Direction"] = "char"
+
+CThostFtdcInvestorPositionCombineDetailField["Direction"] = "char"
+
 #持仓量
-CSgitFtdcInvestorPositionCombineDetailField["TotalAmt"] = "int"
+
+CThostFtdcInvestorPositionCombineDetailField["TotalAmt"] = "int"
+
 #投资者保证金
-CSgitFtdcInvestorPositionCombineDetailField["Margin"] = "float"
+
+CThostFtdcInvestorPositionCombineDetailField["Margin"] = "float"
+
 #交易所保证金
-CSgitFtdcInvestorPositionCombineDetailField["ExchMargin"] = "float"
+
+CThostFtdcInvestorPositionCombineDetailField["ExchMargin"] = "float"
+
 #保证金率
-CSgitFtdcInvestorPositionCombineDetailField["MarginRateByMoney"] = "float"
+
+CThostFtdcInvestorPositionCombineDetailField["MarginRateByMoney"] = "float"
+
 #保证金率(按手数)
-CSgitFtdcInvestorPositionCombineDetailField["MarginRateByVolume"] = "float"
+
+CThostFtdcInvestorPositionCombineDetailField["MarginRateByVolume"] = "float"
+
 #单腿编号
-CSgitFtdcInvestorPositionCombineDetailField["LegID"] = "int"
+
+CThostFtdcInvestorPositionCombineDetailField["LegID"] = "int"
+
 #单腿乘数
-CSgitFtdcInvestorPositionCombineDetailField["LegMultiple"] = "int"
+
+CThostFtdcInvestorPositionCombineDetailField["LegMultiple"] = "int"
+
 #组合持仓合约编码
-CSgitFtdcInvestorPositionCombineDetailField["CombInstrumentID"] = "string"
-structDict['CSgitFtdcInvestorPositionCombineDetailField'] = CSgitFtdcInvestorPositionCombineDetailField
+
+CThostFtdcInvestorPositionCombineDetailField["CombInstrumentID"] = "string"
+
+#成交组号
+
+CThostFtdcInvestorPositionCombineDetailField["TradeGroupID"] = "int"
+
+structDict['CThostFtdcInvestorPositionCombineDetailField'] = CThostFtdcInvestorPositionCombineDetailField
+
+
 
 
 #预埋单
-CSgitFtdcParkedOrderField = {}
+
+CThostFtdcParkedOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcParkedOrderField["BrokerID"] = "string"
+
+CThostFtdcParkedOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcParkedOrderField["InvestorID"] = "string"
+
+CThostFtdcParkedOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcParkedOrderField["InstrumentID"] = "string"
+
+CThostFtdcParkedOrderField["InstrumentID"] = "string"
+
 #报单引用
-CSgitFtdcParkedOrderField["OrderRef"] = "string"
+
+CThostFtdcParkedOrderField["OrderRef"] = "string"
+
 #用户代码
-CSgitFtdcParkedOrderField["UserID"] = "string"
+
+CThostFtdcParkedOrderField["UserID"] = "string"
+
 #报单价格条件
-CSgitFtdcParkedOrderField["OrderPriceType"] = "char"
+
+CThostFtdcParkedOrderField["OrderPriceType"] = "char"
+
 #买卖方向
-CSgitFtdcParkedOrderField["Direction"] = "char"
+
+CThostFtdcParkedOrderField["Direction"] = "char"
+
 #组合开平标志
-CSgitFtdcParkedOrderField["CombOffsetFlag"] = "string"
+
+CThostFtdcParkedOrderField["CombOffsetFlag"] = "string"
+
 #组合投机套保标志
-CSgitFtdcParkedOrderField["CombHedgeFlag"] = "string"
+
+CThostFtdcParkedOrderField["CombHedgeFlag"] = "string"
+
 #价格
-CSgitFtdcParkedOrderField["LimitPrice"] = "float"
+
+CThostFtdcParkedOrderField["LimitPrice"] = "float"
+
 #数量
-CSgitFtdcParkedOrderField["VolumeTotalOriginal"] = "int"
+
+CThostFtdcParkedOrderField["VolumeTotalOriginal"] = "int"
+
 #有效期类型
-CSgitFtdcParkedOrderField["TimeCondition"] = "char"
+
+CThostFtdcParkedOrderField["TimeCondition"] = "char"
+
 #GTD日期
-CSgitFtdcParkedOrderField["GTDDate"] = "string"
+
+CThostFtdcParkedOrderField["GTDDate"] = "string"
+
 #成交量类型
-CSgitFtdcParkedOrderField["VolumeCondition"] = "char"
+
+CThostFtdcParkedOrderField["VolumeCondition"] = "char"
+
 #最小成交量
-CSgitFtdcParkedOrderField["MinVolume"] = "int"
+
+CThostFtdcParkedOrderField["MinVolume"] = "int"
+
 #触发条件
-CSgitFtdcParkedOrderField["ContingentCondition"] = "char"
+
+CThostFtdcParkedOrderField["ContingentCondition"] = "char"
+
 #止损价
-CSgitFtdcParkedOrderField["StopPrice"] = "float"
+
+CThostFtdcParkedOrderField["StopPrice"] = "float"
+
 #强平原因
-CSgitFtdcParkedOrderField["ForceCloseReason"] = "char"
+
+CThostFtdcParkedOrderField["ForceCloseReason"] = "char"
+
 #自动挂起标志
-CSgitFtdcParkedOrderField["IsAutoSuspend"] = "int"
+
+CThostFtdcParkedOrderField["IsAutoSuspend"] = "int"
+
 #业务单元
-CSgitFtdcParkedOrderField["BusinessUnit"] = "string"
+
+CThostFtdcParkedOrderField["BusinessUnit"] = "string"
+
 #请求编号
-CSgitFtdcParkedOrderField["RequestID"] = "int"
+
+CThostFtdcParkedOrderField["RequestID"] = "int"
+
 #用户强评标志
-CSgitFtdcParkedOrderField["UserForceClose"] = "int"
+
+CThostFtdcParkedOrderField["UserForceClose"] = "int"
+
 #交易所代码
-CSgitFtdcParkedOrderField["ExchangeID"] = "string"
+
+CThostFtdcParkedOrderField["ExchangeID"] = "string"
+
 #预埋报单编号
-CSgitFtdcParkedOrderField["ParkedOrderID"] = "string"
+
+CThostFtdcParkedOrderField["ParkedOrderID"] = "string"
+
 #用户类型
-CSgitFtdcParkedOrderField["UserType"] = "char"
+
+CThostFtdcParkedOrderField["UserType"] = "char"
+
 #预埋单状态
-CSgitFtdcParkedOrderField["Status"] = "char"
+
+CThostFtdcParkedOrderField["Status"] = "char"
+
 #错误代码
-CSgitFtdcParkedOrderField["ErrorID"] = "int"
+
+CThostFtdcParkedOrderField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcParkedOrderField["ErrorMsg"] = "string"
-structDict['CSgitFtdcParkedOrderField'] = CSgitFtdcParkedOrderField
+
+CThostFtdcParkedOrderField["ErrorMsg"] = "string"
+
+#互换单标志
+
+CThostFtdcParkedOrderField["IsSwapOrder"] = "int"
+
+structDict['CThostFtdcParkedOrderField'] = CThostFtdcParkedOrderField
+
+
 
 
 #输入预埋单操作
-CSgitFtdcParkedOrderActionField = {}
+
+CThostFtdcParkedOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcParkedOrderActionField["BrokerID"] = "string"
+
+CThostFtdcParkedOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcParkedOrderActionField["InvestorID"] = "string"
+
+CThostFtdcParkedOrderActionField["InvestorID"] = "string"
+
 #报单操作引用
-CSgitFtdcParkedOrderActionField["OrderActionRef"] = "int"
+
+CThostFtdcParkedOrderActionField["OrderActionRef"] = "int"
+
 #报单引用
-CSgitFtdcParkedOrderActionField["OrderRef"] = "string"
+
+CThostFtdcParkedOrderActionField["OrderRef"] = "string"
+
 #请求编号
-CSgitFtdcParkedOrderActionField["RequestID"] = "int"
+
+CThostFtdcParkedOrderActionField["RequestID"] = "int"
+
 #前置编号
-CSgitFtdcParkedOrderActionField["FrontID"] = "int"
+
+CThostFtdcParkedOrderActionField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcParkedOrderActionField["SessionID"] = "int"
+
+CThostFtdcParkedOrderActionField["SessionID"] = "int"
+
 #交易所代码
-CSgitFtdcParkedOrderActionField["ExchangeID"] = "string"
+
+CThostFtdcParkedOrderActionField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcParkedOrderActionField["OrderSysID"] = "string"
+
+CThostFtdcParkedOrderActionField["OrderSysID"] = "string"
+
 #操作标志
-CSgitFtdcParkedOrderActionField["ActionFlag"] = "char"
+
+CThostFtdcParkedOrderActionField["ActionFlag"] = "char"
+
 #价格
-CSgitFtdcParkedOrderActionField["LimitPrice"] = "float"
+
+CThostFtdcParkedOrderActionField["LimitPrice"] = "float"
+
 #数量变化
-CSgitFtdcParkedOrderActionField["VolumeChange"] = "int"
+
+CThostFtdcParkedOrderActionField["VolumeChange"] = "int"
+
 #用户代码
-CSgitFtdcParkedOrderActionField["UserID"] = "string"
+
+CThostFtdcParkedOrderActionField["UserID"] = "string"
+
 #合约代码
-CSgitFtdcParkedOrderActionField["InstrumentID"] = "string"
+
+CThostFtdcParkedOrderActionField["InstrumentID"] = "string"
+
 #预埋撤单单编号
-CSgitFtdcParkedOrderActionField["ParkedOrderActionID"] = "string"
+
+CThostFtdcParkedOrderActionField["ParkedOrderActionID"] = "string"
+
 #用户类型
-CSgitFtdcParkedOrderActionField["UserType"] = "char"
+
+CThostFtdcParkedOrderActionField["UserType"] = "char"
+
 #预埋撤单状态
-CSgitFtdcParkedOrderActionField["Status"] = "char"
+
+CThostFtdcParkedOrderActionField["Status"] = "char"
+
 #错误代码
-CSgitFtdcParkedOrderActionField["ErrorID"] = "int"
+
+CThostFtdcParkedOrderActionField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcParkedOrderActionField["ErrorMsg"] = "string"
-structDict['CSgitFtdcParkedOrderActionField'] = CSgitFtdcParkedOrderActionField
+
+CThostFtdcParkedOrderActionField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcParkedOrderActionField'] = CThostFtdcParkedOrderActionField
+
+
 
 
 #查询预埋单
-CSgitFtdcQryParkedOrderField = {}
+
+CThostFtdcQryParkedOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryParkedOrderField["BrokerID"] = "string"
+
+CThostFtdcQryParkedOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryParkedOrderField["InvestorID"] = "string"
+
+CThostFtdcQryParkedOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryParkedOrderField["InstrumentID"] = "string"
+
+CThostFtdcQryParkedOrderField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcQryParkedOrderField["ExchangeID"] = "string"
-structDict['CSgitFtdcQryParkedOrderField'] = CSgitFtdcQryParkedOrderField
+
+CThostFtdcQryParkedOrderField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryParkedOrderField'] = CThostFtdcQryParkedOrderField
+
+
 
 
 #查询预埋撤单
-CSgitFtdcQryParkedOrderActionField = {}
+
+CThostFtdcQryParkedOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryParkedOrderActionField["BrokerID"] = "string"
+
+CThostFtdcQryParkedOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryParkedOrderActionField["InvestorID"] = "string"
+
+CThostFtdcQryParkedOrderActionField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQryParkedOrderActionField["InstrumentID"] = "string"
+
+CThostFtdcQryParkedOrderActionField["InstrumentID"] = "string"
+
 #交易所代码
-CSgitFtdcQryParkedOrderActionField["ExchangeID"] = "string"
-structDict['CSgitFtdcQryParkedOrderActionField'] = CSgitFtdcQryParkedOrderActionField
+
+CThostFtdcQryParkedOrderActionField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryParkedOrderActionField'] = CThostFtdcQryParkedOrderActionField
+
+
 
 
 #删除预埋单
-CSgitFtdcRemoveParkedOrderField = {}
+
+CThostFtdcRemoveParkedOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcRemoveParkedOrderField["BrokerID"] = "string"
+
+CThostFtdcRemoveParkedOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcRemoveParkedOrderField["InvestorID"] = "string"
+
+CThostFtdcRemoveParkedOrderField["InvestorID"] = "string"
+
 #预埋报单编号
-CSgitFtdcRemoveParkedOrderField["ParkedOrderID"] = "string"
-structDict['CSgitFtdcRemoveParkedOrderField'] = CSgitFtdcRemoveParkedOrderField
+
+CThostFtdcRemoveParkedOrderField["ParkedOrderID"] = "string"
+
+structDict['CThostFtdcRemoveParkedOrderField'] = CThostFtdcRemoveParkedOrderField
+
+
 
 
 #删除预埋撤单
-CSgitFtdcRemoveParkedOrderActionField = {}
+
+CThostFtdcRemoveParkedOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcRemoveParkedOrderActionField["BrokerID"] = "string"
+
+CThostFtdcRemoveParkedOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcRemoveParkedOrderActionField["InvestorID"] = "string"
+
+CThostFtdcRemoveParkedOrderActionField["InvestorID"] = "string"
+
 #预埋撤单编号
-CSgitFtdcRemoveParkedOrderActionField["ParkedOrderActionID"] = "string"
-structDict['CSgitFtdcRemoveParkedOrderActionField'] = CSgitFtdcRemoveParkedOrderActionField
+
+CThostFtdcRemoveParkedOrderActionField["ParkedOrderActionID"] = "string"
+
+structDict['CThostFtdcRemoveParkedOrderActionField'] = CThostFtdcRemoveParkedOrderActionField
+
+
 
 
 #经纪公司可提资金算法表
-CSgitFtdcInvestorWithdrawAlgorithmField = {}
+
+CThostFtdcInvestorWithdrawAlgorithmField = {}
+
+
 #经纪公司代码
-CSgitFtdcInvestorWithdrawAlgorithmField["BrokerID"] = "string"
+
+CThostFtdcInvestorWithdrawAlgorithmField["BrokerID"] = "string"
+
 #投资者范围
-CSgitFtdcInvestorWithdrawAlgorithmField["InvestorRange"] = "char"
+
+CThostFtdcInvestorWithdrawAlgorithmField["InvestorRange"] = "char"
+
 #投资者代码
-CSgitFtdcInvestorWithdrawAlgorithmField["InvestorID"] = "string"
+
+CThostFtdcInvestorWithdrawAlgorithmField["InvestorID"] = "string"
+
 #可提资金比例
-CSgitFtdcInvestorWithdrawAlgorithmField["UsingRatio"] = "float"
-structDict['CSgitFtdcInvestorWithdrawAlgorithmField'] = CSgitFtdcInvestorWithdrawAlgorithmField
+
+CThostFtdcInvestorWithdrawAlgorithmField["UsingRatio"] = "float"
+
+#币种代码//以下sgit不用
+
+CThostFtdcInvestorWithdrawAlgorithmField["CurrencyID"] = "string"
+
+#货币质押比率
+
+CThostFtdcInvestorWithdrawAlgorithmField["FundMortgageRatio"] = "float"
+
+structDict['CThostFtdcInvestorWithdrawAlgorithmField'] = CThostFtdcInvestorWithdrawAlgorithmField
+
+
 
 
 #查询组合持仓明细
-CSgitFtdcQryInvestorPositionCombineDetailField = {}
+
+CThostFtdcQryInvestorPositionCombineDetailField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryInvestorPositionCombineDetailField["BrokerID"] = "string"
+
+CThostFtdcQryInvestorPositionCombineDetailField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryInvestorPositionCombineDetailField["InvestorID"] = "string"
+
+CThostFtdcQryInvestorPositionCombineDetailField["InvestorID"] = "string"
+
 #组合持仓合约编码
-CSgitFtdcQryInvestorPositionCombineDetailField["CombInstrumentID"] = "string"
-structDict['CSgitFtdcQryInvestorPositionCombineDetailField'] = CSgitFtdcQryInvestorPositionCombineDetailField
+
+CThostFtdcQryInvestorPositionCombineDetailField["CombInstrumentID"] = "string"
+
+structDict['CThostFtdcQryInvestorPositionCombineDetailField'] = CThostFtdcQryInvestorPositionCombineDetailField
+
+
 
 
 #成交均价
-CSgitFtdcMarketDataAveragePriceField = {}
+
+CThostFtdcMarketDataAveragePriceField = {}
+
+
 #当日均价
-CSgitFtdcMarketDataAveragePriceField["AveragePrice"] = "float"
-structDict['CSgitFtdcMarketDataAveragePriceField'] = CSgitFtdcMarketDataAveragePriceField
+
+CThostFtdcMarketDataAveragePriceField["AveragePrice"] = "float"
+
+structDict['CThostFtdcMarketDataAveragePriceField'] = CThostFtdcMarketDataAveragePriceField
+
+
 
 
 #校验投资者密码
-CSgitFtdcVerifyInvestorPasswordField = {}
+
+CThostFtdcVerifyInvestorPasswordField = {}
+
+
 #经纪公司代码
-CSgitFtdcVerifyInvestorPasswordField["BrokerID"] = "string"
+
+CThostFtdcVerifyInvestorPasswordField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcVerifyInvestorPasswordField["InvestorID"] = "string"
+
+CThostFtdcVerifyInvestorPasswordField["InvestorID"] = "string"
+
 #密码
-CSgitFtdcVerifyInvestorPasswordField["Password"] = "string"
-structDict['CSgitFtdcVerifyInvestorPasswordField'] = CSgitFtdcVerifyInvestorPasswordField
+
+CThostFtdcVerifyInvestorPasswordField["Password"] = "string"
+
+structDict['CThostFtdcVerifyInvestorPasswordField'] = CThostFtdcVerifyInvestorPasswordField
+
+
 
 
 #用户IP
-CSgitFtdcUserIPField = {}
+
+CThostFtdcUserIPField = {}
+
+
 #经纪公司代码
-CSgitFtdcUserIPField["BrokerID"] = "string"
+
+CThostFtdcUserIPField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcUserIPField["UserID"] = "string"
+
+CThostFtdcUserIPField["UserID"] = "string"
+
 #IP地址
-CSgitFtdcUserIPField["IPAddress"] = "string"
+
+CThostFtdcUserIPField["IPAddress"] = "string"
+
 #IP地址掩码
-CSgitFtdcUserIPField["IPMask"] = "string"
+
+CThostFtdcUserIPField["IPMask"] = "string"
+
 #Mac地址
-CSgitFtdcUserIPField["MacAddress"] = "string"
-structDict['CSgitFtdcUserIPField'] = CSgitFtdcUserIPField
+
+CThostFtdcUserIPField["MacAddress"] = "string"
+
+structDict['CThostFtdcUserIPField'] = CThostFtdcUserIPField
+
+
 
 
 #用户事件通知信息
-CSgitFtdcTradingNoticeInfoField = {}
+
+CThostFtdcTradingNoticeInfoField = {}
+
+
 #经纪公司代码
-CSgitFtdcTradingNoticeInfoField["BrokerID"] = "string"
+
+CThostFtdcTradingNoticeInfoField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcTradingNoticeInfoField["InvestorID"] = "string"
+
+CThostFtdcTradingNoticeInfoField["InvestorID"] = "string"
+
 #发送时间
-CSgitFtdcTradingNoticeInfoField["SendTime"] = "string"
+
+CThostFtdcTradingNoticeInfoField["SendTime"] = "string"
+
 #消息正文
-CSgitFtdcTradingNoticeInfoField["FieldContent"] = "string"
+
+CThostFtdcTradingNoticeInfoField["FieldContent"] = "string"
+
 #序列系列号
-CSgitFtdcTradingNoticeInfoField["SequenceSeries"] = "short"
+
+CThostFtdcTradingNoticeInfoField["SequenceSeries"] = "int"
+
 #序列号
-CSgitFtdcTradingNoticeInfoField["SequenceNo"] = "int"
-structDict['CSgitFtdcTradingNoticeInfoField'] = CSgitFtdcTradingNoticeInfoField
+
+CThostFtdcTradingNoticeInfoField["SequenceNo"] = "int"
+
+structDict['CThostFtdcTradingNoticeInfoField'] = CThostFtdcTradingNoticeInfoField
+
+
 
 
 #用户事件通知
-CSgitFtdcTradingNoticeField = {}
+
+CThostFtdcTradingNoticeField = {}
+
+
 #经纪公司代码
-CSgitFtdcTradingNoticeField["BrokerID"] = "string"
+
+CThostFtdcTradingNoticeField["BrokerID"] = "string"
+
 #投资者范围
-CSgitFtdcTradingNoticeField["InvestorRange"] = "char"
+
+CThostFtdcTradingNoticeField["InvestorRange"] = "char"
+
 #投资者代码
-CSgitFtdcTradingNoticeField["InvestorID"] = "string"
+
+CThostFtdcTradingNoticeField["InvestorID"] = "string"
+
 #序列系列号
-CSgitFtdcTradingNoticeField["SequenceSeries"] = "short"
+
+CThostFtdcTradingNoticeField["SequenceSeries"] = "int"
+
 #用户代码
-CSgitFtdcTradingNoticeField["UserID"] = "string"
+
+CThostFtdcTradingNoticeField["UserID"] = "string"
+
 #发送时间
-CSgitFtdcTradingNoticeField["SendTime"] = "string"
+
+CThostFtdcTradingNoticeField["SendTime"] = "string"
+
 #序列号
-CSgitFtdcTradingNoticeField["SequenceNo"] = "int"
+
+CThostFtdcTradingNoticeField["SequenceNo"] = "int"
+
 #消息正文
-CSgitFtdcTradingNoticeField["FieldContent"] = "string"
-structDict['CSgitFtdcTradingNoticeField'] = CSgitFtdcTradingNoticeField
+
+CThostFtdcTradingNoticeField["FieldContent"] = "string"
+
+structDict['CThostFtdcTradingNoticeField'] = CThostFtdcTradingNoticeField
+
+
 
 
 #查询交易事件通知
-CSgitFtdcQryTradingNoticeField = {}
+
+CThostFtdcQryTradingNoticeField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryTradingNoticeField["BrokerID"] = "string"
+
+CThostFtdcQryTradingNoticeField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryTradingNoticeField["InvestorID"] = "string"
-structDict['CSgitFtdcQryTradingNoticeField'] = CSgitFtdcQryTradingNoticeField
+
+CThostFtdcQryTradingNoticeField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryTradingNoticeField'] = CThostFtdcQryTradingNoticeField
+
+
 
 
 #查询错误报单
-CSgitFtdcQryErrOrderField = {}
+
+CThostFtdcQryErrOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryErrOrderField["BrokerID"] = "string"
+
+CThostFtdcQryErrOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryErrOrderField["InvestorID"] = "string"
-structDict['CSgitFtdcQryErrOrderField'] = CSgitFtdcQryErrOrderField
+
+CThostFtdcQryErrOrderField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryErrOrderField'] = CThostFtdcQryErrOrderField
+
+
 
 
 #错误报单
-CSgitFtdcErrOrderField = {}
+
+CThostFtdcErrOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcErrOrderField["BrokerID"] = "string"
+
+CThostFtdcErrOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcErrOrderField["InvestorID"] = "string"
+
+CThostFtdcErrOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcErrOrderField["InstrumentID"] = "string"
+
+CThostFtdcErrOrderField["InstrumentID"] = "string"
+
 #报单引用
-CSgitFtdcErrOrderField["OrderRef"] = "string"
+
+CThostFtdcErrOrderField["OrderRef"] = "string"
+
 #用户代码
-CSgitFtdcErrOrderField["UserID"] = "string"
+
+CThostFtdcErrOrderField["UserID"] = "string"
+
 #报单价格条件
-CSgitFtdcErrOrderField["OrderPriceType"] = "char"
+
+CThostFtdcErrOrderField["OrderPriceType"] = "char"
+
 #买卖方向
-CSgitFtdcErrOrderField["Direction"] = "char"
+
+CThostFtdcErrOrderField["Direction"] = "char"
+
 #组合开平标志
-CSgitFtdcErrOrderField["CombOffsetFlag"] = "string"
+
+CThostFtdcErrOrderField["CombOffsetFlag"] = "string"
+
 #组合投机套保标志
-CSgitFtdcErrOrderField["CombHedgeFlag"] = "string"
+
+CThostFtdcErrOrderField["CombHedgeFlag"] = "string"
+
 #价格
-CSgitFtdcErrOrderField["LimitPrice"] = "float"
+
+CThostFtdcErrOrderField["LimitPrice"] = "float"
+
 #数量
-CSgitFtdcErrOrderField["VolumeTotalOriginal"] = "int"
+
+CThostFtdcErrOrderField["VolumeTotalOriginal"] = "int"
+
 #有效期类型
-CSgitFtdcErrOrderField["TimeCondition"] = "char"
+
+CThostFtdcErrOrderField["TimeCondition"] = "char"
+
 #GTD日期
-CSgitFtdcErrOrderField["GTDDate"] = "string"
+
+CThostFtdcErrOrderField["GTDDate"] = "string"
+
 #成交量类型
-CSgitFtdcErrOrderField["VolumeCondition"] = "char"
+
+CThostFtdcErrOrderField["VolumeCondition"] = "char"
+
 #最小成交量
-CSgitFtdcErrOrderField["MinVolume"] = "int"
+
+CThostFtdcErrOrderField["MinVolume"] = "int"
+
 #触发条件
-CSgitFtdcErrOrderField["ContingentCondition"] = "char"
+
+CThostFtdcErrOrderField["ContingentCondition"] = "char"
+
 #止损价
-CSgitFtdcErrOrderField["StopPrice"] = "float"
+
+CThostFtdcErrOrderField["StopPrice"] = "float"
+
 #强平原因
-CSgitFtdcErrOrderField["ForceCloseReason"] = "char"
+
+CThostFtdcErrOrderField["ForceCloseReason"] = "char"
+
 #自动挂起标志
-CSgitFtdcErrOrderField["IsAutoSuspend"] = "int"
+
+CThostFtdcErrOrderField["IsAutoSuspend"] = "int"
+
 #业务单元
-CSgitFtdcErrOrderField["BusinessUnit"] = "string"
+
+CThostFtdcErrOrderField["BusinessUnit"] = "string"
+
 #请求编号
-CSgitFtdcErrOrderField["RequestID"] = "int"
+
+CThostFtdcErrOrderField["RequestID"] = "int"
+
 #用户强评标志
-CSgitFtdcErrOrderField["UserForceClose"] = "int"
+
+CThostFtdcErrOrderField["UserForceClose"] = "int"
+
 #错误代码
-CSgitFtdcErrOrderField["ErrorID"] = "int"
+
+CThostFtdcErrOrderField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcErrOrderField["ErrorMsg"] = "string"
-structDict['CSgitFtdcErrOrderField'] = CSgitFtdcErrOrderField
+
+CThostFtdcErrOrderField["ErrorMsg"] = "string"
+
+#互换单标志//以下sgit不用
+
+CThostFtdcErrOrderField["IsSwapOrder"] = "int"
+
+structDict['CThostFtdcErrOrderField'] = CThostFtdcErrOrderField
+
+
 
 
 #查询错误报单操作
-CSgitFtdcErrorConditionalOrderField = {}
+
+CThostFtdcErrorConditionalOrderField = {}
+
+
 #经纪公司代码
-CSgitFtdcErrorConditionalOrderField["BrokerID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcErrorConditionalOrderField["InvestorID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcErrorConditionalOrderField["InstrumentID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["InstrumentID"] = "string"
+
 #报单引用
-CSgitFtdcErrorConditionalOrderField["OrderRef"] = "string"
+
+CThostFtdcErrorConditionalOrderField["OrderRef"] = "string"
+
 #用户代码
-CSgitFtdcErrorConditionalOrderField["UserID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["UserID"] = "string"
+
 #报单价格条件
-CSgitFtdcErrorConditionalOrderField["OrderPriceType"] = "char"
+
+CThostFtdcErrorConditionalOrderField["OrderPriceType"] = "char"
+
 #买卖方向
-CSgitFtdcErrorConditionalOrderField["Direction"] = "char"
+
+CThostFtdcErrorConditionalOrderField["Direction"] = "char"
+
 #组合开平标志
-CSgitFtdcErrorConditionalOrderField["CombOffsetFlag"] = "string"
+
+CThostFtdcErrorConditionalOrderField["CombOffsetFlag"] = "string"
+
 #组合投机套保标志
-CSgitFtdcErrorConditionalOrderField["CombHedgeFlag"] = "string"
+
+CThostFtdcErrorConditionalOrderField["CombHedgeFlag"] = "string"
+
 #价格
-CSgitFtdcErrorConditionalOrderField["LimitPrice"] = "float"
+
+CThostFtdcErrorConditionalOrderField["LimitPrice"] = "float"
+
 #数量
-CSgitFtdcErrorConditionalOrderField["VolumeTotalOriginal"] = "int"
+
+CThostFtdcErrorConditionalOrderField["VolumeTotalOriginal"] = "int"
+
 #有效期类型
-CSgitFtdcErrorConditionalOrderField["TimeCondition"] = "char"
+
+CThostFtdcErrorConditionalOrderField["TimeCondition"] = "char"
+
 #GTD日期
-CSgitFtdcErrorConditionalOrderField["GTDDate"] = "string"
+
+CThostFtdcErrorConditionalOrderField["GTDDate"] = "string"
+
 #成交量类型
-CSgitFtdcErrorConditionalOrderField["VolumeCondition"] = "char"
+
+CThostFtdcErrorConditionalOrderField["VolumeCondition"] = "char"
+
 #最小成交量
-CSgitFtdcErrorConditionalOrderField["MinVolume"] = "int"
+
+CThostFtdcErrorConditionalOrderField["MinVolume"] = "int"
+
 #触发条件
-CSgitFtdcErrorConditionalOrderField["ContingentCondition"] = "char"
+
+CThostFtdcErrorConditionalOrderField["ContingentCondition"] = "char"
+
 #止损价
-CSgitFtdcErrorConditionalOrderField["StopPrice"] = "float"
+
+CThostFtdcErrorConditionalOrderField["StopPrice"] = "float"
+
 #强平原因
-CSgitFtdcErrorConditionalOrderField["ForceCloseReason"] = "char"
+
+CThostFtdcErrorConditionalOrderField["ForceCloseReason"] = "char"
+
 #自动挂起标志
-CSgitFtdcErrorConditionalOrderField["IsAutoSuspend"] = "int"
+
+CThostFtdcErrorConditionalOrderField["IsAutoSuspend"] = "int"
+
 #业务单元
-CSgitFtdcErrorConditionalOrderField["BusinessUnit"] = "string"
+
+CThostFtdcErrorConditionalOrderField["BusinessUnit"] = "string"
+
 #请求编号
-CSgitFtdcErrorConditionalOrderField["RequestID"] = "int"
+
+CThostFtdcErrorConditionalOrderField["RequestID"] = "int"
+
 #本地报单编号
-CSgitFtdcErrorConditionalOrderField["OrderLocalID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["OrderLocalID"] = "string"
+
 #交易所代码
-CSgitFtdcErrorConditionalOrderField["ExchangeID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ExchangeID"] = "string"
+
 #会员代码
-CSgitFtdcErrorConditionalOrderField["ParticipantID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcErrorConditionalOrderField["ClientID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ClientID"] = "string"
+
 #合约在交易所的代码
-CSgitFtdcErrorConditionalOrderField["ExchangeInstID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ExchangeInstID"] = "string"
+
 #交易所交易员代码
-CSgitFtdcErrorConditionalOrderField["TraderID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcErrorConditionalOrderField["InstallID"] = "int"
+
+CThostFtdcErrorConditionalOrderField["InstallID"] = "int"
+
 #报单提交状态
-CSgitFtdcErrorConditionalOrderField["OrderSubmitStatus"] = "char"
+
+CThostFtdcErrorConditionalOrderField["OrderSubmitStatus"] = "char"
+
 #报单提示序号
-CSgitFtdcErrorConditionalOrderField["NotifySequence"] = "int"
+
+CThostFtdcErrorConditionalOrderField["NotifySequence"] = "int"
+
 #交易日
-CSgitFtdcErrorConditionalOrderField["TradingDay"] = "string"
+
+CThostFtdcErrorConditionalOrderField["TradingDay"] = "string"
+
 #结算编号
-CSgitFtdcErrorConditionalOrderField["SettlementID"] = "int"
+
+CThostFtdcErrorConditionalOrderField["SettlementID"] = "int"
+
 #报单编号
-CSgitFtdcErrorConditionalOrderField["OrderSysID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["OrderSysID"] = "string"
+
 #报单来源
-CSgitFtdcErrorConditionalOrderField["OrderSource"] = "char"
+
+CThostFtdcErrorConditionalOrderField["OrderSource"] = "char"
+
 #报单状态
-CSgitFtdcErrorConditionalOrderField["OrderStatus"] = "char"
+
+CThostFtdcErrorConditionalOrderField["OrderStatus"] = "char"
+
 #报单类型
-CSgitFtdcErrorConditionalOrderField["OrderType"] = "char"
+
+CThostFtdcErrorConditionalOrderField["OrderType"] = "char"
+
 #今成交数量
-CSgitFtdcErrorConditionalOrderField["VolumeTraded"] = "int"
+
+CThostFtdcErrorConditionalOrderField["VolumeTraded"] = "int"
+
 #剩余数量
-CSgitFtdcErrorConditionalOrderField["VolumeTotal"] = "int"
+
+CThostFtdcErrorConditionalOrderField["VolumeTotal"] = "int"
+
 #报单日期
-CSgitFtdcErrorConditionalOrderField["InsertDate"] = "string"
+
+CThostFtdcErrorConditionalOrderField["InsertDate"] = "string"
+
 #委托时间
-CSgitFtdcErrorConditionalOrderField["InsertTime"] = "string"
+
+CThostFtdcErrorConditionalOrderField["InsertTime"] = "string"
+
 #激活时间
-CSgitFtdcErrorConditionalOrderField["ActiveTime"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ActiveTime"] = "string"
+
 #挂起时间
-CSgitFtdcErrorConditionalOrderField["SuspendTime"] = "string"
+
+CThostFtdcErrorConditionalOrderField["SuspendTime"] = "string"
+
 #最后修改时间
-CSgitFtdcErrorConditionalOrderField["UpdateTime"] = "string"
+
+CThostFtdcErrorConditionalOrderField["UpdateTime"] = "string"
+
 #撤销时间
-CSgitFtdcErrorConditionalOrderField["CancelTime"] = "string"
+
+CThostFtdcErrorConditionalOrderField["CancelTime"] = "string"
+
 #最后修改交易所交易员代码
-CSgitFtdcErrorConditionalOrderField["ActiveTraderID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ActiveTraderID"] = "string"
+
 #结算会员编号
-CSgitFtdcErrorConditionalOrderField["ClearingPartID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ClearingPartID"] = "string"
+
 #序号
-CSgitFtdcErrorConditionalOrderField["SequenceNo"] = "int"
+
+CThostFtdcErrorConditionalOrderField["SequenceNo"] = "int"
+
 #前置编号
-CSgitFtdcErrorConditionalOrderField["FrontID"] = "int"
+
+CThostFtdcErrorConditionalOrderField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcErrorConditionalOrderField["SessionID"] = "int"
+
+CThostFtdcErrorConditionalOrderField["SessionID"] = "int"
+
 #用户端产品信息
-CSgitFtdcErrorConditionalOrderField["UserProductInfo"] = "string"
+
+CThostFtdcErrorConditionalOrderField["UserProductInfo"] = "string"
+
 #状态信息
-CSgitFtdcErrorConditionalOrderField["StatusMsg"] = "string"
+
+CThostFtdcErrorConditionalOrderField["StatusMsg"] = "string"
+
 #用户强评标志
-CSgitFtdcErrorConditionalOrderField["UserForceClose"] = "int"
+
+CThostFtdcErrorConditionalOrderField["UserForceClose"] = "int"
+
 #操作用户代码
-CSgitFtdcErrorConditionalOrderField["ActiveUserID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["ActiveUserID"] = "string"
+
 #经纪公司报单编号
-CSgitFtdcErrorConditionalOrderField["BrokerOrderSeq"] = "int"
+
+CThostFtdcErrorConditionalOrderField["BrokerOrderSeq"] = "int"
+
 #相关报单
-CSgitFtdcErrorConditionalOrderField["RelativeOrderSysID"] = "string"
+
+CThostFtdcErrorConditionalOrderField["RelativeOrderSysID"] = "string"
+
+#郑商所成交数量
+
+CThostFtdcErrorConditionalOrderField["ZCETotalTradedVolume"] = "int"
+
 #错误代码
-CSgitFtdcErrorConditionalOrderField["ErrorID"] = "int"
+
+CThostFtdcErrorConditionalOrderField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcErrorConditionalOrderField["ErrorMsg"] = "string"
-structDict['CSgitFtdcErrorConditionalOrderField'] = CSgitFtdcErrorConditionalOrderField
+
+CThostFtdcErrorConditionalOrderField["ErrorMsg"] = "string"
+
+#互换单标志
+
+CThostFtdcErrorConditionalOrderField["IsSwapOrder"] = "int"
+
+structDict['CThostFtdcErrorConditionalOrderField'] = CThostFtdcErrorConditionalOrderField
+
+
 
 
 #查询错误报单操作
-CSgitFtdcQryErrOrderActionField = {}
+
+CThostFtdcQryErrOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryErrOrderActionField["BrokerID"] = "string"
+
+CThostFtdcQryErrOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryErrOrderActionField["InvestorID"] = "string"
-structDict['CSgitFtdcQryErrOrderActionField'] = CSgitFtdcQryErrOrderActionField
+
+CThostFtdcQryErrOrderActionField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryErrOrderActionField'] = CThostFtdcQryErrOrderActionField
+
+
 
 
 #错误报单操作
-CSgitFtdcErrOrderActionField = {}
+
+CThostFtdcErrOrderActionField = {}
+
+
 #经纪公司代码
-CSgitFtdcErrOrderActionField["BrokerID"] = "string"
+
+CThostFtdcErrOrderActionField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcErrOrderActionField["InvestorID"] = "string"
+
+CThostFtdcErrOrderActionField["InvestorID"] = "string"
+
 #报单操作引用
-CSgitFtdcErrOrderActionField["OrderActionRef"] = "int"
+
+CThostFtdcErrOrderActionField["OrderActionRef"] = "int"
+
 #报单引用
-CSgitFtdcErrOrderActionField["OrderRef"] = "string"
+
+CThostFtdcErrOrderActionField["OrderRef"] = "string"
+
 #请求编号
-CSgitFtdcErrOrderActionField["RequestID"] = "int"
+
+CThostFtdcErrOrderActionField["RequestID"] = "int"
+
 #前置编号
-CSgitFtdcErrOrderActionField["FrontID"] = "int"
+
+CThostFtdcErrOrderActionField["FrontID"] = "int"
+
 #会话编号
-CSgitFtdcErrOrderActionField["SessionID"] = "int"
+
+CThostFtdcErrOrderActionField["SessionID"] = "int"
+
 #交易所代码
-CSgitFtdcErrOrderActionField["ExchangeID"] = "string"
+
+CThostFtdcErrOrderActionField["ExchangeID"] = "string"
+
 #报单编号
-CSgitFtdcErrOrderActionField["OrderSysID"] = "string"
+
+CThostFtdcErrOrderActionField["OrderSysID"] = "string"
+
 #操作标志
-CSgitFtdcErrOrderActionField["ActionFlag"] = "char"
+
+CThostFtdcErrOrderActionField["ActionFlag"] = "char"
+
 #价格
-CSgitFtdcErrOrderActionField["LimitPrice"] = "float"
+
+CThostFtdcErrOrderActionField["LimitPrice"] = "float"
+
 #数量变化
-CSgitFtdcErrOrderActionField["VolumeChange"] = "int"
+
+CThostFtdcErrOrderActionField["VolumeChange"] = "int"
+
 #操作日期
-CSgitFtdcErrOrderActionField["ActionDate"] = "string"
+
+CThostFtdcErrOrderActionField["ActionDate"] = "string"
+
 #操作时间
-CSgitFtdcErrOrderActionField["ActionTime"] = "string"
+
+CThostFtdcErrOrderActionField["ActionTime"] = "string"
+
 #交易所交易员代码
-CSgitFtdcErrOrderActionField["TraderID"] = "string"
+
+CThostFtdcErrOrderActionField["TraderID"] = "string"
+
 #安装编号
-CSgitFtdcErrOrderActionField["InstallID"] = "int"
+
+CThostFtdcErrOrderActionField["InstallID"] = "int"
+
 #本地报单编号
-CSgitFtdcErrOrderActionField["OrderLocalID"] = "string"
+
+CThostFtdcErrOrderActionField["OrderLocalID"] = "string"
+
 #操作本地编号
-CSgitFtdcErrOrderActionField["ActionLocalID"] = "string"
+
+CThostFtdcErrOrderActionField["ActionLocalID"] = "string"
+
 #会员代码
-CSgitFtdcErrOrderActionField["ParticipantID"] = "string"
+
+CThostFtdcErrOrderActionField["ParticipantID"] = "string"
+
 #客户代码
-CSgitFtdcErrOrderActionField["ClientID"] = "string"
+
+CThostFtdcErrOrderActionField["ClientID"] = "string"
+
 #业务单元
-CSgitFtdcErrOrderActionField["BusinessUnit"] = "string"
+
+CThostFtdcErrOrderActionField["BusinessUnit"] = "string"
+
 #报单操作状态
-CSgitFtdcErrOrderActionField["OrderActionStatus"] = "char"
+
+CThostFtdcErrOrderActionField["OrderActionStatus"] = "char"
+
 #用户代码
-CSgitFtdcErrOrderActionField["UserID"] = "string"
+
+CThostFtdcErrOrderActionField["UserID"] = "string"
+
 #状态信息
-CSgitFtdcErrOrderActionField["StatusMsg"] = "string"
+
+CThostFtdcErrOrderActionField["StatusMsg"] = "string"
+
 #合约代码
-CSgitFtdcErrOrderActionField["InstrumentID"] = "string"
+
+CThostFtdcErrOrderActionField["InstrumentID"] = "string"
+
 #错误代码
-CSgitFtdcErrOrderActionField["ErrorID"] = "int"
+
+CThostFtdcErrOrderActionField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcErrOrderActionField["ErrorMsg"] = "string"
-structDict['CSgitFtdcErrOrderActionField'] = CSgitFtdcErrOrderActionField
+
+CThostFtdcErrOrderActionField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcErrOrderActionField'] = CThostFtdcErrOrderActionField
+
+
 
 
 #查询交易所状态
-CSgitFtdcQryExchangeSequenceField = {}
+
+CThostFtdcQryExchangeSequenceField = {}
+
+
 #交易所代码
-CSgitFtdcQryExchangeSequenceField["ExchangeID"] = "string"
-structDict['CSgitFtdcQryExchangeSequenceField'] = CSgitFtdcQryExchangeSequenceField
+
+CThostFtdcQryExchangeSequenceField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryExchangeSequenceField'] = CThostFtdcQryExchangeSequenceField
+
+
 
 
 #交易所状态
-CSgitFtdcExchangeSequenceField = {}
+
+CThostFtdcExchangeSequenceField = {}
+
+
 #交易所代码
-CSgitFtdcExchangeSequenceField["ExchangeID"] = "string"
+
+CThostFtdcExchangeSequenceField["ExchangeID"] = "string"
+
 #序号
-CSgitFtdcExchangeSequenceField["SequenceNo"] = "int"
+
+CThostFtdcExchangeSequenceField["SequenceNo"] = "int"
+
 #合约交易状态
-CSgitFtdcExchangeSequenceField["MarketStatus"] = "char"
-structDict['CSgitFtdcExchangeSequenceField'] = CSgitFtdcExchangeSequenceField
+
+CThostFtdcExchangeSequenceField["MarketStatus"] = "char"
+
+structDict['CThostFtdcExchangeSequenceField'] = CThostFtdcExchangeSequenceField
+
+
 
 
 #根据价格查询最大报单数量
-CSgitFtdcQueryMaxOrderVolumeWithPriceField = {}
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField = {}
+
+
 #经纪公司代码
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["BrokerID"] = "string"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["InvestorID"] = "string"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["InvestorID"] = "string"
+
 #合约代码
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["InstrumentID"] = "string"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["InstrumentID"] = "string"
+
 #买卖方向
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["Direction"] = "char"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["Direction"] = "char"
+
 #开平标志
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["OffsetFlag"] = "char"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["OffsetFlag"] = "char"
+
 #投机套保标志
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["HedgeFlag"] = "char"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["HedgeFlag"] = "char"
+
 #最大允许报单数量
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["MaxVolume"] = "int"
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["MaxVolume"] = "int"
+
 #报单价格
-CSgitFtdcQueryMaxOrderVolumeWithPriceField["Price"] = "float"
-structDict['CSgitFtdcQueryMaxOrderVolumeWithPriceField'] = CSgitFtdcQueryMaxOrderVolumeWithPriceField
+
+CThostFtdcQueryMaxOrderVolumeWithPriceField["Price"] = "float"
+
+structDict['CThostFtdcQueryMaxOrderVolumeWithPriceField'] = CThostFtdcQueryMaxOrderVolumeWithPriceField
+
+
 
 
 #查询经纪公司交易参数
-CSgitFtdcQryBrokerTradingParamsField = {}
+
+CThostFtdcQryBrokerTradingParamsField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryBrokerTradingParamsField["BrokerID"] = "string"
+
+CThostFtdcQryBrokerTradingParamsField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryBrokerTradingParamsField["InvestorID"] = "string"
-structDict['CSgitFtdcQryBrokerTradingParamsField'] = CSgitFtdcQryBrokerTradingParamsField
+
+CThostFtdcQryBrokerTradingParamsField["InvestorID"] = "string"
+
+#币种代码
+
+CThostFtdcQryBrokerTradingParamsField["CurrencyID"] = "string"
+
+structDict['CThostFtdcQryBrokerTradingParamsField'] = CThostFtdcQryBrokerTradingParamsField
+
+
 
 
 #经纪公司交易参数
-CSgitFtdcBrokerTradingParamsField = {}
+
+CThostFtdcBrokerTradingParamsField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerTradingParamsField["BrokerID"] = "string"
+
+CThostFtdcBrokerTradingParamsField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcBrokerTradingParamsField["InvestorID"] = "string"
+
+CThostFtdcBrokerTradingParamsField["InvestorID"] = "string"
+
 #保证金价格类型
-CSgitFtdcBrokerTradingParamsField["MarginPriceType"] = "char"
+
+CThostFtdcBrokerTradingParamsField["MarginPriceType"] = "char"
+
 #盈亏算法
-CSgitFtdcBrokerTradingParamsField["Algorithm"] = "char"
+
+CThostFtdcBrokerTradingParamsField["Algorithm"] = "char"
+
 #可用是否包含平仓盈利
-CSgitFtdcBrokerTradingParamsField["AvailIncludeCloseProfit"] = "char"
-structDict['CSgitFtdcBrokerTradingParamsField'] = CSgitFtdcBrokerTradingParamsField
+
+CThostFtdcBrokerTradingParamsField["AvailIncludeCloseProfit"] = "char"
+
+#币种代码//以下sgit不用
+
+CThostFtdcBrokerTradingParamsField["CurrencyID"] = "string"
+
+#期权权利金价格类型
+
+CThostFtdcBrokerTradingParamsField["OptionRoyaltyPriceType"] = "char"
+
+structDict['CThostFtdcBrokerTradingParamsField'] = CThostFtdcBrokerTradingParamsField
+
+
 
 
 #查询经纪公司交易算法
-CSgitFtdcQryBrokerTradingAlgosField = {}
+
+CThostFtdcQryBrokerTradingAlgosField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryBrokerTradingAlgosField["BrokerID"] = "string"
+
+CThostFtdcQryBrokerTradingAlgosField["BrokerID"] = "string"
+
 #交易所代码
-CSgitFtdcQryBrokerTradingAlgosField["ExchangeID"] = "string"
+
+CThostFtdcQryBrokerTradingAlgosField["ExchangeID"] = "string"
+
 #合约代码
-CSgitFtdcQryBrokerTradingAlgosField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryBrokerTradingAlgosField'] = CSgitFtdcQryBrokerTradingAlgosField
+
+CThostFtdcQryBrokerTradingAlgosField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryBrokerTradingAlgosField'] = CThostFtdcQryBrokerTradingAlgosField
+
+
 
 
 #经纪公司交易算法
-CSgitFtdcBrokerTradingAlgosField = {}
+
+CThostFtdcBrokerTradingAlgosField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerTradingAlgosField["BrokerID"] = "string"
+
+CThostFtdcBrokerTradingAlgosField["BrokerID"] = "string"
+
 #交易所代码
-CSgitFtdcBrokerTradingAlgosField["ExchangeID"] = "string"
+
+CThostFtdcBrokerTradingAlgosField["ExchangeID"] = "string"
+
 #合约代码
-CSgitFtdcBrokerTradingAlgosField["InstrumentID"] = "string"
+
+CThostFtdcBrokerTradingAlgosField["InstrumentID"] = "string"
+
 #持仓处理算法编号
-CSgitFtdcBrokerTradingAlgosField["HandlePositionAlgoID"] = "char"
+
+CThostFtdcBrokerTradingAlgosField["HandlePositionAlgoID"] = "char"
+
 #寻找保证金率算法编号
-CSgitFtdcBrokerTradingAlgosField["FindMarginRateAlgoID"] = "char"
+
+CThostFtdcBrokerTradingAlgosField["FindMarginRateAlgoID"] = "char"
+
 #资金处理算法编号
-CSgitFtdcBrokerTradingAlgosField["HandleTradingAccountAlgoID"] = "char"
-structDict['CSgitFtdcBrokerTradingAlgosField'] = CSgitFtdcBrokerTradingAlgosField
+
+CThostFtdcBrokerTradingAlgosField["HandleTradingAccountAlgoID"] = "char"
+
+structDict['CThostFtdcBrokerTradingAlgosField'] = CThostFtdcBrokerTradingAlgosField
+
+
 
 
 #查询经纪公司资金
-CSgitFtdcQueryBrokerDepositField = {}
+
+CThostFtdcQueryBrokerDepositField = {}
+
+
 #经纪公司代码
-CSgitFtdcQueryBrokerDepositField["BrokerID"] = "string"
+
+CThostFtdcQueryBrokerDepositField["BrokerID"] = "string"
+
 #交易所代码
-CSgitFtdcQueryBrokerDepositField["ExchangeID"] = "string"
-structDict['CSgitFtdcQueryBrokerDepositField'] = CSgitFtdcQueryBrokerDepositField
+
+CThostFtdcQueryBrokerDepositField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQueryBrokerDepositField'] = CThostFtdcQueryBrokerDepositField
+
+
 
 
 #经纪公司资金
-CSgitFtdcBrokerDepositField = {}
+
+CThostFtdcBrokerDepositField = {}
+
+
 #交易日期
-CSgitFtdcBrokerDepositField["TradingDay"] = "string"
+
+CThostFtdcBrokerDepositField["TradingDay"] = "string"
+
 #经纪公司代码
-CSgitFtdcBrokerDepositField["BrokerID"] = "string"
+
+CThostFtdcBrokerDepositField["BrokerID"] = "string"
+
 #会员代码
-CSgitFtdcBrokerDepositField["ParticipantID"] = "string"
+
+CThostFtdcBrokerDepositField["ParticipantID"] = "string"
+
 #交易所代码
-CSgitFtdcBrokerDepositField["ExchangeID"] = "string"
+
+CThostFtdcBrokerDepositField["ExchangeID"] = "string"
+
 #上次结算准备金
-CSgitFtdcBrokerDepositField["PreBalance"] = "float"
+
+CThostFtdcBrokerDepositField["PreBalance"] = "float"
+
 #当前保证金总额
-CSgitFtdcBrokerDepositField["CurrMargin"] = "float"
+
+CThostFtdcBrokerDepositField["CurrMargin"] = "float"
+
 #平仓盈亏
-CSgitFtdcBrokerDepositField["CloseProfit"] = "float"
+
+CThostFtdcBrokerDepositField["CloseProfit"] = "float"
+
 #期货结算准备金
-CSgitFtdcBrokerDepositField["Balance"] = "float"
+
+CThostFtdcBrokerDepositField["Balance"] = "float"
+
 #入金金额
-CSgitFtdcBrokerDepositField["Deposit"] = "float"
+
+CThostFtdcBrokerDepositField["Deposit"] = "float"
+
 #出金金额
-CSgitFtdcBrokerDepositField["Withdraw"] = "float"
+
+CThostFtdcBrokerDepositField["Withdraw"] = "float"
+
 #可提资金
-CSgitFtdcBrokerDepositField["Available"] = "float"
+
+CThostFtdcBrokerDepositField["Available"] = "float"
+
 #基本准备金
-CSgitFtdcBrokerDepositField["Reserve"] = "float"
+
+CThostFtdcBrokerDepositField["Reserve"] = "float"
+
 #冻结的保证金
-CSgitFtdcBrokerDepositField["FrozenMargin"] = "float"
-structDict['CSgitFtdcBrokerDepositField'] = CSgitFtdcBrokerDepositField
+
+CThostFtdcBrokerDepositField["FrozenMargin"] = "float"
+
+structDict['CThostFtdcBrokerDepositField'] = CThostFtdcBrokerDepositField
+
+
 
 
 #查询保证金监管系统经纪公司密钥
-CSgitFtdcQryCFMMCBrokerKeyField = {}
+
+CThostFtdcQryCFMMCBrokerKeyField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryCFMMCBrokerKeyField["BrokerID"] = "string"
-structDict['CSgitFtdcQryCFMMCBrokerKeyField'] = CSgitFtdcQryCFMMCBrokerKeyField
+
+CThostFtdcQryCFMMCBrokerKeyField["BrokerID"] = "string"
+
+structDict['CThostFtdcQryCFMMCBrokerKeyField'] = CThostFtdcQryCFMMCBrokerKeyField
+
+
 
 
 #保证金监管系统经纪公司密钥
-CSgitFtdcCFMMCBrokerKeyField = {}
+
+CThostFtdcCFMMCBrokerKeyField = {}
+
+
 #经纪公司代码
-CSgitFtdcCFMMCBrokerKeyField["BrokerID"] = "string"
+
+CThostFtdcCFMMCBrokerKeyField["BrokerID"] = "string"
+
 #经纪公司统一编码
-CSgitFtdcCFMMCBrokerKeyField["ParticipantID"] = "string"
+
+CThostFtdcCFMMCBrokerKeyField["ParticipantID"] = "string"
+
 #密钥生成日期
-CSgitFtdcCFMMCBrokerKeyField["CreateDate"] = "string"
+
+CThostFtdcCFMMCBrokerKeyField["CreateDate"] = "string"
+
 #密钥生成时间
-CSgitFtdcCFMMCBrokerKeyField["CreateTime"] = "string"
+
+CThostFtdcCFMMCBrokerKeyField["CreateTime"] = "string"
+
 #密钥编号
-CSgitFtdcCFMMCBrokerKeyField["KeyID"] = "int"
+
+CThostFtdcCFMMCBrokerKeyField["KeyID"] = "int"
+
 #动态密钥
-CSgitFtdcCFMMCBrokerKeyField["CurrentKey"] = "string"
+
+CThostFtdcCFMMCBrokerKeyField["CurrentKey"] = "string"
+
 #动态密钥类型
-CSgitFtdcCFMMCBrokerKeyField["KeyKind"] = "char"
-structDict['CSgitFtdcCFMMCBrokerKeyField'] = CSgitFtdcCFMMCBrokerKeyField
+
+CThostFtdcCFMMCBrokerKeyField["KeyKind"] = "char"
+
+structDict['CThostFtdcCFMMCBrokerKeyField'] = CThostFtdcCFMMCBrokerKeyField
+
+
 
 
 #保证金监管系统经纪公司资金账户密钥
-CSgitFtdcCFMMCTradingAccountKeyField = {}
+
+CThostFtdcCFMMCTradingAccountKeyField = {}
+
+
 #经纪公司代码
-CSgitFtdcCFMMCTradingAccountKeyField["BrokerID"] = "string"
+
+CThostFtdcCFMMCTradingAccountKeyField["BrokerID"] = "string"
+
 #经纪公司统一编码
-CSgitFtdcCFMMCTradingAccountKeyField["ParticipantID"] = "string"
+
+CThostFtdcCFMMCTradingAccountKeyField["ParticipantID"] = "string"
+
 #投资者帐号
-CSgitFtdcCFMMCTradingAccountKeyField["AccountID"] = "string"
+
+CThostFtdcCFMMCTradingAccountKeyField["AccountID"] = "string"
+
 #密钥编号
-CSgitFtdcCFMMCTradingAccountKeyField["KeyID"] = "int"
+
+CThostFtdcCFMMCTradingAccountKeyField["KeyID"] = "int"
+
 #动态密钥
-CSgitFtdcCFMMCTradingAccountKeyField["CurrentKey"] = "string"
-structDict['CSgitFtdcCFMMCTradingAccountKeyField'] = CSgitFtdcCFMMCTradingAccountKeyField
+
+CThostFtdcCFMMCTradingAccountKeyField["CurrentKey"] = "string"
+
+structDict['CThostFtdcCFMMCTradingAccountKeyField'] = CThostFtdcCFMMCTradingAccountKeyField
+
+
 
 
 #请求查询保证金监管系统经纪公司资金账户密钥
-CSgitFtdcQryCFMMCTradingAccountKeyField = {}
+
+CThostFtdcQryCFMMCTradingAccountKeyField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryCFMMCTradingAccountKeyField["BrokerID"] = "string"
+
+CThostFtdcQryCFMMCTradingAccountKeyField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryCFMMCTradingAccountKeyField["InvestorID"] = "string"
-structDict['CSgitFtdcQryCFMMCTradingAccountKeyField'] = CSgitFtdcQryCFMMCTradingAccountKeyField
+
+CThostFtdcQryCFMMCTradingAccountKeyField["InvestorID"] = "string"
+
+structDict['CThostFtdcQryCFMMCTradingAccountKeyField'] = CThostFtdcQryCFMMCTradingAccountKeyField
+
+
 
 
 #用户动态令牌参数
-CSgitFtdcBrokerUserOTPParamField = {}
+
+CThostFtdcBrokerUserOTPParamField = {}
+
+
 #经纪公司代码
-CSgitFtdcBrokerUserOTPParamField["BrokerID"] = "string"
+
+CThostFtdcBrokerUserOTPParamField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcBrokerUserOTPParamField["UserID"] = "string"
+
+CThostFtdcBrokerUserOTPParamField["UserID"] = "string"
+
 #动态令牌提供商
-CSgitFtdcBrokerUserOTPParamField["OTPVendorsID"] = "string"
+
+CThostFtdcBrokerUserOTPParamField["OTPVendorsID"] = "string"
+
 #动态令牌序列号
-CSgitFtdcBrokerUserOTPParamField["SerialNumber"] = "string"
+
+CThostFtdcBrokerUserOTPParamField["SerialNumber"] = "string"
+
 #令牌密钥
-CSgitFtdcBrokerUserOTPParamField["AuthKey"] = "string"
+
+CThostFtdcBrokerUserOTPParamField["AuthKey"] = "string"
+
 #漂移值
-CSgitFtdcBrokerUserOTPParamField["LastDrift"] = "int"
+
+CThostFtdcBrokerUserOTPParamField["LastDrift"] = "int"
+
 #成功值
-CSgitFtdcBrokerUserOTPParamField["LastSuccess"] = "int"
+
+CThostFtdcBrokerUserOTPParamField["LastSuccess"] = "int"
+
 #动态令牌类型
-CSgitFtdcBrokerUserOTPParamField["OTPType"] = "char"
-structDict['CSgitFtdcBrokerUserOTPParamField'] = CSgitFtdcBrokerUserOTPParamField
+
+CThostFtdcBrokerUserOTPParamField["OTPType"] = "char"
+
+structDict['CThostFtdcBrokerUserOTPParamField'] = CThostFtdcBrokerUserOTPParamField
+
+
 
 
 #手工同步用户动态令牌
-CSgitFtdcManualSyncBrokerUserOTPField = {}
+
+CThostFtdcManualSyncBrokerUserOTPField = {}
+
+
 #经纪公司代码
-CSgitFtdcManualSyncBrokerUserOTPField["BrokerID"] = "string"
+
+CThostFtdcManualSyncBrokerUserOTPField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcManualSyncBrokerUserOTPField["UserID"] = "string"
+
+CThostFtdcManualSyncBrokerUserOTPField["UserID"] = "string"
+
 #动态令牌类型
-CSgitFtdcManualSyncBrokerUserOTPField["OTPType"] = "char"
+
+CThostFtdcManualSyncBrokerUserOTPField["OTPType"] = "char"
+
 #第一个动态密码
-CSgitFtdcManualSyncBrokerUserOTPField["FirstOTP"] = "string"
+
+CThostFtdcManualSyncBrokerUserOTPField["FirstOTP"] = "string"
+
 #第二个动态密码
-CSgitFtdcManualSyncBrokerUserOTPField["SecondOTP"] = "string"
-structDict['CSgitFtdcManualSyncBrokerUserOTPField'] = CSgitFtdcManualSyncBrokerUserOTPField
+
+CThostFtdcManualSyncBrokerUserOTPField["SecondOTP"] = "string"
+
+structDict['CThostFtdcManualSyncBrokerUserOTPField'] = CThostFtdcManualSyncBrokerUserOTPField
+
+
 
 
 #投资者手续费率模板
-CSgitFtdcCommRateModelField = {}
+
+CThostFtdcCommRateModelField = {}
+
+
 #经纪公司代码
-CSgitFtdcCommRateModelField["BrokerID"] = "string"
+
+CThostFtdcCommRateModelField["BrokerID"] = "string"
+
 #手续费率模板代码
-CSgitFtdcCommRateModelField["CommModelID"] = "string"
+
+CThostFtdcCommRateModelField["CommModelID"] = "string"
+
 #模板名称
-CSgitFtdcCommRateModelField["CommModelName"] = "string"
-structDict['CSgitFtdcCommRateModelField'] = CSgitFtdcCommRateModelField
+
+CThostFtdcCommRateModelField["CommModelName"] = "string"
+
+structDict['CThostFtdcCommRateModelField'] = CThostFtdcCommRateModelField
+
+
 
 
 #请求查询投资者手续费率模板
-CSgitFtdcQryCommRateModelField = {}
+
+CThostFtdcQryCommRateModelField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryCommRateModelField["BrokerID"] = "string"
+
+CThostFtdcQryCommRateModelField["BrokerID"] = "string"
+
 #手续费率模板代码
-CSgitFtdcQryCommRateModelField["CommModelID"] = "string"
-structDict['CSgitFtdcQryCommRateModelField'] = CSgitFtdcQryCommRateModelField
+
+CThostFtdcQryCommRateModelField["CommModelID"] = "string"
+
+structDict['CThostFtdcQryCommRateModelField'] = CThostFtdcQryCommRateModelField
+
+
+
+
+#投资者保证金率模板
+
+CThostFtdcMarginModelField = {}
+
+
+#经纪公司代码
+
+CThostFtdcMarginModelField["BrokerID"] = "string"
+
+#保证金率模板代码
+
+CThostFtdcMarginModelField["MarginModelID"] = "string"
+
+#模板名称
+
+CThostFtdcMarginModelField["MarginModelName"] = "string"
+
+structDict['CThostFtdcMarginModelField'] = CThostFtdcMarginModelField
+
+
+
+
+#请求查询投资者保证金率模板
+
+CThostFtdcQryMarginModelField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryMarginModelField["BrokerID"] = "string"
+
+#保证金率模板代码
+
+CThostFtdcQryMarginModelField["MarginModelID"] = "string"
+
+structDict['CThostFtdcQryMarginModelField'] = CThostFtdcQryMarginModelField
+
+
 
 
 #仓单折抵信息
-CSgitFtdcEWarrantOffsetField = {}
+
+CThostFtdcEWarrantOffsetField = {}
+
+
 #交易日期
-CSgitFtdcEWarrantOffsetField["TradingDay"] = "string"
+
+CThostFtdcEWarrantOffsetField["TradingDay"] = "string"
+
 #经纪公司代码
-CSgitFtdcEWarrantOffsetField["BrokerID"] = "string"
+
+CThostFtdcEWarrantOffsetField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcEWarrantOffsetField["InvestorID"] = "string"
+
+CThostFtdcEWarrantOffsetField["InvestorID"] = "string"
+
 #交易所代码
-CSgitFtdcEWarrantOffsetField["ExchangeID"] = "string"
+
+CThostFtdcEWarrantOffsetField["ExchangeID"] = "string"
+
 #合约代码
-CSgitFtdcEWarrantOffsetField["InstrumentID"] = "string"
+
+CThostFtdcEWarrantOffsetField["InstrumentID"] = "string"
+
 #买卖方向
-CSgitFtdcEWarrantOffsetField["Direction"] = "char"
+
+CThostFtdcEWarrantOffsetField["Direction"] = "char"
+
 #投机套保标志
-CSgitFtdcEWarrantOffsetField["HedgeFlag"] = "char"
+
+CThostFtdcEWarrantOffsetField["HedgeFlag"] = "char"
+
 #数量
-CSgitFtdcEWarrantOffsetField["Volume"] = "int"
-structDict['CSgitFtdcEWarrantOffsetField'] = CSgitFtdcEWarrantOffsetField
+
+CThostFtdcEWarrantOffsetField["Volume"] = "int"
+
+structDict['CThostFtdcEWarrantOffsetField'] = CThostFtdcEWarrantOffsetField
+
+
 
 
 #查询仓单折抵信息
-CSgitFtdcQryEWarrantOffsetField = {}
+
+CThostFtdcQryEWarrantOffsetField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryEWarrantOffsetField["BrokerID"] = "string"
+
+CThostFtdcQryEWarrantOffsetField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcQryEWarrantOffsetField["InvestorID"] = "string"
+
+CThostFtdcQryEWarrantOffsetField["InvestorID"] = "string"
+
 #交易所代码
-CSgitFtdcQryEWarrantOffsetField["ExchangeID"] = "string"
+
+CThostFtdcQryEWarrantOffsetField["ExchangeID"] = "string"
+
 #合约代码
-CSgitFtdcQryEWarrantOffsetField["InstrumentID"] = "string"
-structDict['CSgitFtdcQryEWarrantOffsetField'] = CSgitFtdcQryEWarrantOffsetField
+
+CThostFtdcQryEWarrantOffsetField["InstrumentID"] = "string"
+
+structDict['CThostFtdcQryEWarrantOffsetField'] = CThostFtdcQryEWarrantOffsetField
+
+
+
+
+#查询投资者品种/跨品种保证金
+
+CThostFtdcQryInvestorProductGroupMarginField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryInvestorProductGroupMarginField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQryInvestorProductGroupMarginField["InvestorID"] = "string"
+
+#品种/跨品种标示
+
+CThostFtdcQryInvestorProductGroupMarginField["ProductGroupID"] = "string"
+
+#投机套保标志
+
+CThostFtdcQryInvestorProductGroupMarginField["HedgeFlag"] = "char"
+
+structDict['CThostFtdcQryInvestorProductGroupMarginField'] = CThostFtdcQryInvestorProductGroupMarginField
+
+
+
+
+#投资者品种/跨品种保证金
+
+CThostFtdcInvestorProductGroupMarginField = {}
+
+
+#品种/跨品种标示
+
+CThostFtdcInvestorProductGroupMarginField["ProductGroupID"] = "string"
+
+#经纪公司代码
+
+CThostFtdcInvestorProductGroupMarginField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcInvestorProductGroupMarginField["InvestorID"] = "string"
+
+#交易日
+
+CThostFtdcInvestorProductGroupMarginField["TradingDay"] = "string"
+
+#结算编号
+
+CThostFtdcInvestorProductGroupMarginField["SettlementID"] = "int"
+
+#冻结的保证金
+
+CThostFtdcInvestorProductGroupMarginField["FrozenMargin"] = "float"
+
+#多头冻结的保证金
+
+CThostFtdcInvestorProductGroupMarginField["LongFrozenMargin"] = "float"
+
+#空头冻结的保证金
+
+CThostFtdcInvestorProductGroupMarginField["ShortFrozenMargin"] = "float"
+
+#占用的保证金
+
+CThostFtdcInvestorProductGroupMarginField["UseMargin"] = "float"
+
+#多头保证金
+
+CThostFtdcInvestorProductGroupMarginField["LongUseMargin"] = "float"
+
+#空头保证金
+
+CThostFtdcInvestorProductGroupMarginField["ShortUseMargin"] = "float"
+
+#交易所保证金
+
+CThostFtdcInvestorProductGroupMarginField["ExchMargin"] = "float"
+
+#交易所多头保证金
+
+CThostFtdcInvestorProductGroupMarginField["LongExchMargin"] = "float"
+
+#交易所空头保证金
+
+CThostFtdcInvestorProductGroupMarginField["ShortExchMargin"] = "float"
+
+#平仓盈亏
+
+CThostFtdcInvestorProductGroupMarginField["CloseProfit"] = "float"
+
+#冻结的手续费
+
+CThostFtdcInvestorProductGroupMarginField["FrozenCommission"] = "float"
+
+#手续费
+
+CThostFtdcInvestorProductGroupMarginField["Commission"] = "float"
+
+#冻结的资金
+
+CThostFtdcInvestorProductGroupMarginField["FrozenCash"] = "float"
+
+#资金差额
+
+CThostFtdcInvestorProductGroupMarginField["CashIn"] = "float"
+
+#持仓盈亏
+
+CThostFtdcInvestorProductGroupMarginField["PositionProfit"] = "float"
+
+#折抵总金额
+
+CThostFtdcInvestorProductGroupMarginField["OffsetAmount"] = "float"
+
+#多头折抵总金额
+
+CThostFtdcInvestorProductGroupMarginField["LongOffsetAmount"] = "float"
+
+#空头折抵总金额
+
+CThostFtdcInvestorProductGroupMarginField["ShortOffsetAmount"] = "float"
+
+#交易所折抵总金额
+
+CThostFtdcInvestorProductGroupMarginField["ExchOffsetAmount"] = "float"
+
+#交易所多头折抵总金额
+
+CThostFtdcInvestorProductGroupMarginField["LongExchOffsetAmount"] = "float"
+
+#交易所空头折抵总金额
+
+CThostFtdcInvestorProductGroupMarginField["ShortExchOffsetAmount"] = "float"
+
+#投机套保标志
+
+CThostFtdcInvestorProductGroupMarginField["HedgeFlag"] = "char"
+
+structDict['CThostFtdcInvestorProductGroupMarginField'] = CThostFtdcInvestorProductGroupMarginField
+
+
+
+
+#查询监控中心用户令牌
+
+CThostFtdcQueryCFMMCTradingAccountTokenField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQueryCFMMCTradingAccountTokenField["BrokerID"] = "string"
+
+#投资者代码
+
+CThostFtdcQueryCFMMCTradingAccountTokenField["InvestorID"] = "string"
+
+structDict['CThostFtdcQueryCFMMCTradingAccountTokenField'] = CThostFtdcQueryCFMMCTradingAccountTokenField
+
+
+
+
+#监控中心用户令牌
+
+CThostFtdcCFMMCTradingAccountTokenField = {}
+
+
+#经纪公司代码
+
+CThostFtdcCFMMCTradingAccountTokenField["BrokerID"] = "string"
+
+#经纪公司统一编码
+
+CThostFtdcCFMMCTradingAccountTokenField["ParticipantID"] = "string"
+
+#投资者帐号
+
+CThostFtdcCFMMCTradingAccountTokenField["AccountID"] = "string"
+
+#密钥编号
+
+CThostFtdcCFMMCTradingAccountTokenField["KeyID"] = "int"
+
+#动态令牌
+
+CThostFtdcCFMMCTradingAccountTokenField["Token"] = "string"
+
+structDict['CThostFtdcCFMMCTradingAccountTokenField'] = CThostFtdcCFMMCTradingAccountTokenField
+
+
+
+
+#查询产品组
+
+CThostFtdcQryProductGroupField = {}
+
+
+#产品代码
+
+CThostFtdcQryProductGroupField["ProductID"] = "string"
+
+#交易所代码
+
+CThostFtdcQryProductGroupField["ExchangeID"] = "string"
+
+structDict['CThostFtdcQryProductGroupField'] = CThostFtdcQryProductGroupField
+
+
+
+
+#投资者品种/跨品种保证金产品组
+
+CThostFtdcProductGroupField = {}
+
+
+#产品代码
+
+CThostFtdcProductGroupField["ProductID"] = "string"
+
+#交易所代码
+
+CThostFtdcProductGroupField["ExchangeID"] = "string"
+
+#产品组代码
+
+CThostFtdcProductGroupField["ProductGroupID"] = "string"
+
+structDict['CThostFtdcProductGroupField'] = CThostFtdcProductGroupField
+
+
 
 
 #转帐开户请求
-CSgitFtdcReqOpenAccountField = {}
+
+CThostFtdcReqOpenAccountField = {}
+
+
 #业务功能码
-CSgitFtdcReqOpenAccountField["TradeCode"] = "string"
+
+CThostFtdcReqOpenAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqOpenAccountField["BankID"] = "string"
+
+CThostFtdcReqOpenAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqOpenAccountField["BankBranchID"] = "string"
+
+CThostFtdcReqOpenAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqOpenAccountField["BrokerID"] = "string"
+
+CThostFtdcReqOpenAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqOpenAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcReqOpenAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqOpenAccountField["TradeDate"] = "string"
+
+CThostFtdcReqOpenAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqOpenAccountField["TradeTime"] = "string"
+
+CThostFtdcReqOpenAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqOpenAccountField["BankSerial"] = "string"
+
+CThostFtdcReqOpenAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqOpenAccountField["TradingDay"] = "string"
+
+CThostFtdcReqOpenAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqOpenAccountField["PlateSerial"] = "int"
+
+CThostFtdcReqOpenAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqOpenAccountField["LastFragment"] = "char"
+
+CThostFtdcReqOpenAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqOpenAccountField["SessionID"] = "int"
+
+CThostFtdcReqOpenAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcReqOpenAccountField["CustomerName"] = "string"
+
+CThostFtdcReqOpenAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqOpenAccountField["IdCardType"] = "char"
+
+CThostFtdcReqOpenAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqOpenAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqOpenAccountField["IdentifiedCardNo"] = "string"
+
 #性别
-CSgitFtdcReqOpenAccountField["Gender"] = "char"
+
+CThostFtdcReqOpenAccountField["Gender"] = "char"
+
 #国家代码
-CSgitFtdcReqOpenAccountField["CountryCode"] = "string"
+
+CThostFtdcReqOpenAccountField["CountryCode"] = "string"
+
 #客户类型
-CSgitFtdcReqOpenAccountField["CustType"] = "char"
+
+CThostFtdcReqOpenAccountField["CustType"] = "char"
+
 #地址
-CSgitFtdcReqOpenAccountField["Address"] = "string"
+
+CThostFtdcReqOpenAccountField["Address"] = "string"
+
 #邮编
-CSgitFtdcReqOpenAccountField["ZipCode"] = "string"
+
+CThostFtdcReqOpenAccountField["ZipCode"] = "string"
+
 #电话号码
-CSgitFtdcReqOpenAccountField["Telephone"] = "string"
+
+CThostFtdcReqOpenAccountField["Telephone"] = "string"
+
 #手机
-CSgitFtdcReqOpenAccountField["MobilePhone"] = "string"
+
+CThostFtdcReqOpenAccountField["MobilePhone"] = "string"
+
 #传真
-CSgitFtdcReqOpenAccountField["Fax"] = "string"
+
+CThostFtdcReqOpenAccountField["Fax"] = "string"
+
 #电子邮件
-CSgitFtdcReqOpenAccountField["EMail"] = "string"
+
+CThostFtdcReqOpenAccountField["EMail"] = "string"
+
 #资金账户状态
-CSgitFtdcReqOpenAccountField["MoneyAccountStatus"] = "char"
+
+CThostFtdcReqOpenAccountField["MoneyAccountStatus"] = "char"
+
 #银行帐号
-CSgitFtdcReqOpenAccountField["BankAccount"] = "string"
+
+CThostFtdcReqOpenAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqOpenAccountField["BankPassWord"] = "string"
+
+CThostFtdcReqOpenAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqOpenAccountField["AccountID"] = "string"
+
+CThostFtdcReqOpenAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqOpenAccountField["Password"] = "string"
+
+CThostFtdcReqOpenAccountField["Password"] = "string"
+
 #安装编号
-CSgitFtdcReqOpenAccountField["InstallID"] = "int"
+
+CThostFtdcReqOpenAccountField["InstallID"] = "int"
+
 #验证客户证件号码标志
-CSgitFtdcReqOpenAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcReqOpenAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcReqOpenAccountField["CurrencyID"] = "string"
+
+CThostFtdcReqOpenAccountField["CurrencyID"] = "string"
+
 #汇钞标志
-CSgitFtdcReqOpenAccountField["CashExchangeCode"] = "char"
+
+CThostFtdcReqOpenAccountField["CashExchangeCode"] = "char"
+
 #摘要
-CSgitFtdcReqOpenAccountField["Digest"] = "string"
+
+CThostFtdcReqOpenAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcReqOpenAccountField["BankAccType"] = "char"
+
+CThostFtdcReqOpenAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcReqOpenAccountField["DeviceID"] = "string"
+
+CThostFtdcReqOpenAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcReqOpenAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcReqOpenAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcReqOpenAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqOpenAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcReqOpenAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcReqOpenAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcReqOpenAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcReqOpenAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcReqOpenAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcReqOpenAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcReqOpenAccountField["OperNo"] = "string"
+
+CThostFtdcReqOpenAccountField["OperNo"] = "string"
+
 #交易ID
-CSgitFtdcReqOpenAccountField["TID"] = "int"
-structDict['CSgitFtdcReqOpenAccountField'] = CSgitFtdcReqOpenAccountField
+
+CThostFtdcReqOpenAccountField["TID"] = "int"
+
+#用户标识
+
+CThostFtdcReqOpenAccountField["UserID"] = "string"
+
+structDict['CThostFtdcReqOpenAccountField'] = CThostFtdcReqOpenAccountField
+
+
 
 
 #转帐销户请求
-CSgitFtdcReqCancelAccountField = {}
+
+CThostFtdcReqCancelAccountField = {}
+
+
 #业务功能码
-CSgitFtdcReqCancelAccountField["TradeCode"] = "string"
+
+CThostFtdcReqCancelAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqCancelAccountField["BankID"] = "string"
+
+CThostFtdcReqCancelAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqCancelAccountField["BankBranchID"] = "string"
+
+CThostFtdcReqCancelAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqCancelAccountField["BrokerID"] = "string"
+
+CThostFtdcReqCancelAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqCancelAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcReqCancelAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqCancelAccountField["TradeDate"] = "string"
+
+CThostFtdcReqCancelAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqCancelAccountField["TradeTime"] = "string"
+
+CThostFtdcReqCancelAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqCancelAccountField["BankSerial"] = "string"
+
+CThostFtdcReqCancelAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqCancelAccountField["TradingDay"] = "string"
+
+CThostFtdcReqCancelAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqCancelAccountField["PlateSerial"] = "int"
+
+CThostFtdcReqCancelAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqCancelAccountField["LastFragment"] = "char"
+
+CThostFtdcReqCancelAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqCancelAccountField["SessionID"] = "int"
+
+CThostFtdcReqCancelAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcReqCancelAccountField["CustomerName"] = "string"
+
+CThostFtdcReqCancelAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqCancelAccountField["IdCardType"] = "char"
+
+CThostFtdcReqCancelAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqCancelAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqCancelAccountField["IdentifiedCardNo"] = "string"
+
 #性别
-CSgitFtdcReqCancelAccountField["Gender"] = "char"
+
+CThostFtdcReqCancelAccountField["Gender"] = "char"
+
 #国家代码
-CSgitFtdcReqCancelAccountField["CountryCode"] = "string"
+
+CThostFtdcReqCancelAccountField["CountryCode"] = "string"
+
 #客户类型
-CSgitFtdcReqCancelAccountField["CustType"] = "char"
+
+CThostFtdcReqCancelAccountField["CustType"] = "char"
+
 #地址
-CSgitFtdcReqCancelAccountField["Address"] = "string"
+
+CThostFtdcReqCancelAccountField["Address"] = "string"
+
 #邮编
-CSgitFtdcReqCancelAccountField["ZipCode"] = "string"
+
+CThostFtdcReqCancelAccountField["ZipCode"] = "string"
+
 #电话号码
-CSgitFtdcReqCancelAccountField["Telephone"] = "string"
+
+CThostFtdcReqCancelAccountField["Telephone"] = "string"
+
 #手机
-CSgitFtdcReqCancelAccountField["MobilePhone"] = "string"
+
+CThostFtdcReqCancelAccountField["MobilePhone"] = "string"
+
 #传真
-CSgitFtdcReqCancelAccountField["Fax"] = "string"
+
+CThostFtdcReqCancelAccountField["Fax"] = "string"
+
 #电子邮件
-CSgitFtdcReqCancelAccountField["EMail"] = "string"
+
+CThostFtdcReqCancelAccountField["EMail"] = "string"
+
 #资金账户状态
-CSgitFtdcReqCancelAccountField["MoneyAccountStatus"] = "char"
+
+CThostFtdcReqCancelAccountField["MoneyAccountStatus"] = "char"
+
 #银行帐号
-CSgitFtdcReqCancelAccountField["BankAccount"] = "string"
+
+CThostFtdcReqCancelAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqCancelAccountField["BankPassWord"] = "string"
+
+CThostFtdcReqCancelAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqCancelAccountField["AccountID"] = "string"
+
+CThostFtdcReqCancelAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqCancelAccountField["Password"] = "string"
+
+CThostFtdcReqCancelAccountField["Password"] = "string"
+
 #安装编号
-CSgitFtdcReqCancelAccountField["InstallID"] = "int"
+
+CThostFtdcReqCancelAccountField["InstallID"] = "int"
+
 #验证客户证件号码标志
-CSgitFtdcReqCancelAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcReqCancelAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcReqCancelAccountField["CurrencyID"] = "string"
+
+CThostFtdcReqCancelAccountField["CurrencyID"] = "string"
+
 #汇钞标志
-CSgitFtdcReqCancelAccountField["CashExchangeCode"] = "char"
+
+CThostFtdcReqCancelAccountField["CashExchangeCode"] = "char"
+
 #摘要
-CSgitFtdcReqCancelAccountField["Digest"] = "string"
+
+CThostFtdcReqCancelAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcReqCancelAccountField["BankAccType"] = "char"
+
+CThostFtdcReqCancelAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcReqCancelAccountField["DeviceID"] = "string"
+
+CThostFtdcReqCancelAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcReqCancelAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcReqCancelAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcReqCancelAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqCancelAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcReqCancelAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcReqCancelAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcReqCancelAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcReqCancelAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcReqCancelAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcReqCancelAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcReqCancelAccountField["OperNo"] = "string"
+
+CThostFtdcReqCancelAccountField["OperNo"] = "string"
+
 #交易ID
-CSgitFtdcReqCancelAccountField["TID"] = "int"
-structDict['CSgitFtdcReqCancelAccountField'] = CSgitFtdcReqCancelAccountField
+
+CThostFtdcReqCancelAccountField["TID"] = "int"
+
+#用户标识
+
+CThostFtdcReqCancelAccountField["UserID"] = "string"
+
+structDict['CThostFtdcReqCancelAccountField'] = CThostFtdcReqCancelAccountField
+
+
 
 
 #变更银行账户请求
-CSgitFtdcReqChangeAccountField = {}
+
+CThostFtdcReqChangeAccountField = {}
+
+
 #业务功能码
-CSgitFtdcReqChangeAccountField["TradeCode"] = "string"
+
+CThostFtdcReqChangeAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqChangeAccountField["BankID"] = "string"
+
+CThostFtdcReqChangeAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqChangeAccountField["BankBranchID"] = "string"
+
+CThostFtdcReqChangeAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqChangeAccountField["BrokerID"] = "string"
+
+CThostFtdcReqChangeAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqChangeAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcReqChangeAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqChangeAccountField["TradeDate"] = "string"
+
+CThostFtdcReqChangeAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqChangeAccountField["TradeTime"] = "string"
+
+CThostFtdcReqChangeAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqChangeAccountField["BankSerial"] = "string"
+
+CThostFtdcReqChangeAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqChangeAccountField["TradingDay"] = "string"
+
+CThostFtdcReqChangeAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqChangeAccountField["PlateSerial"] = "int"
+
+CThostFtdcReqChangeAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqChangeAccountField["LastFragment"] = "char"
+
+CThostFtdcReqChangeAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqChangeAccountField["SessionID"] = "int"
+
+CThostFtdcReqChangeAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcReqChangeAccountField["CustomerName"] = "string"
+
+CThostFtdcReqChangeAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqChangeAccountField["IdCardType"] = "char"
+
+CThostFtdcReqChangeAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqChangeAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqChangeAccountField["IdentifiedCardNo"] = "string"
+
 #性别
-CSgitFtdcReqChangeAccountField["Gender"] = "char"
+
+CThostFtdcReqChangeAccountField["Gender"] = "char"
+
 #国家代码
-CSgitFtdcReqChangeAccountField["CountryCode"] = "string"
+
+CThostFtdcReqChangeAccountField["CountryCode"] = "string"
+
 #客户类型
-CSgitFtdcReqChangeAccountField["CustType"] = "char"
+
+CThostFtdcReqChangeAccountField["CustType"] = "char"
+
 #地址
-CSgitFtdcReqChangeAccountField["Address"] = "string"
+
+CThostFtdcReqChangeAccountField["Address"] = "string"
+
 #邮编
-CSgitFtdcReqChangeAccountField["ZipCode"] = "string"
+
+CThostFtdcReqChangeAccountField["ZipCode"] = "string"
+
 #电话号码
-CSgitFtdcReqChangeAccountField["Telephone"] = "string"
+
+CThostFtdcReqChangeAccountField["Telephone"] = "string"
+
 #手机
-CSgitFtdcReqChangeAccountField["MobilePhone"] = "string"
+
+CThostFtdcReqChangeAccountField["MobilePhone"] = "string"
+
 #传真
-CSgitFtdcReqChangeAccountField["Fax"] = "string"
+
+CThostFtdcReqChangeAccountField["Fax"] = "string"
+
 #电子邮件
-CSgitFtdcReqChangeAccountField["EMail"] = "string"
+
+CThostFtdcReqChangeAccountField["EMail"] = "string"
+
 #资金账户状态
-CSgitFtdcReqChangeAccountField["MoneyAccountStatus"] = "char"
+
+CThostFtdcReqChangeAccountField["MoneyAccountStatus"] = "char"
+
 #银行帐号
-CSgitFtdcReqChangeAccountField["BankAccount"] = "string"
+
+CThostFtdcReqChangeAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqChangeAccountField["BankPassWord"] = "string"
+
+CThostFtdcReqChangeAccountField["BankPassWord"] = "string"
+
 #新银行帐号
-CSgitFtdcReqChangeAccountField["NewBankAccount"] = "string"
+
+CThostFtdcReqChangeAccountField["NewBankAccount"] = "string"
+
 #新银行密码
-CSgitFtdcReqChangeAccountField["NewBankPassWord"] = "string"
+
+CThostFtdcReqChangeAccountField["NewBankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqChangeAccountField["AccountID"] = "string"
+
+CThostFtdcReqChangeAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqChangeAccountField["Password"] = "string"
+
+CThostFtdcReqChangeAccountField["Password"] = "string"
+
 #银行帐号类型
-CSgitFtdcReqChangeAccountField["BankAccType"] = "char"
+
+CThostFtdcReqChangeAccountField["BankAccType"] = "char"
+
 #安装编号
-CSgitFtdcReqChangeAccountField["InstallID"] = "int"
+
+CThostFtdcReqChangeAccountField["InstallID"] = "int"
+
 #验证客户证件号码标志
-CSgitFtdcReqChangeAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcReqChangeAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcReqChangeAccountField["CurrencyID"] = "string"
+
+CThostFtdcReqChangeAccountField["CurrencyID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcReqChangeAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqChangeAccountField["BrokerIDByBank"] = "string"
+
 #银行密码标志
-CSgitFtdcReqChangeAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcReqChangeAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcReqChangeAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcReqChangeAccountField["SecuPwdFlag"] = "char"
+
 #交易ID
-CSgitFtdcReqChangeAccountField["TID"] = "int"
+
+CThostFtdcReqChangeAccountField["TID"] = "int"
+
 #摘要
-CSgitFtdcReqChangeAccountField["Digest"] = "string"
-structDict['CSgitFtdcReqChangeAccountField'] = CSgitFtdcReqChangeAccountField
+
+CThostFtdcReqChangeAccountField["Digest"] = "string"
+
+structDict['CThostFtdcReqChangeAccountField'] = CThostFtdcReqChangeAccountField
+
+
 
 
 #转账请求
-CSgitFtdcReqTransferField = {}
+
+CThostFtdcReqTransferField = {}
+
+
 #业务功能码
-CSgitFtdcReqTransferField["TradeCode"] = "string"
+
+CThostFtdcReqTransferField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqTransferField["BankID"] = "string"
+
+CThostFtdcReqTransferField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqTransferField["BankBranchID"] = "string"
+
+CThostFtdcReqTransferField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqTransferField["BrokerID"] = "string"
+
+CThostFtdcReqTransferField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqTransferField["BrokerBranchID"] = "string"
+
+CThostFtdcReqTransferField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqTransferField["TradeDate"] = "string"
+
+CThostFtdcReqTransferField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqTransferField["TradeTime"] = "string"
+
+CThostFtdcReqTransferField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqTransferField["BankSerial"] = "string"
+
+CThostFtdcReqTransferField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqTransferField["TradingDay"] = "string"
+
+CThostFtdcReqTransferField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqTransferField["PlateSerial"] = "int"
+
+CThostFtdcReqTransferField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqTransferField["LastFragment"] = "char"
+
+CThostFtdcReqTransferField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqTransferField["SessionID"] = "int"
+
+CThostFtdcReqTransferField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcReqTransferField["CustomerName"] = "string"
+
+CThostFtdcReqTransferField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqTransferField["IdCardType"] = "char"
+
+CThostFtdcReqTransferField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqTransferField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqTransferField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcReqTransferField["CustType"] = "char"
+
+CThostFtdcReqTransferField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcReqTransferField["BankAccount"] = "string"
+
+CThostFtdcReqTransferField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqTransferField["BankPassWord"] = "string"
+
+CThostFtdcReqTransferField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqTransferField["AccountID"] = "string"
+
+CThostFtdcReqTransferField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqTransferField["Password"] = "string"
+
+CThostFtdcReqTransferField["Password"] = "string"
+
 #安装编号
-CSgitFtdcReqTransferField["InstallID"] = "int"
+
+CThostFtdcReqTransferField["InstallID"] = "int"
+
 #期货公司流水号
-CSgitFtdcReqTransferField["FutureSerial"] = "int"
+
+CThostFtdcReqTransferField["FutureSerial"] = "int"
+
 #用户标识
-CSgitFtdcReqTransferField["UserID"] = "string"
+
+CThostFtdcReqTransferField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcReqTransferField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcReqTransferField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcReqTransferField["CurrencyID"] = "string"
+
+CThostFtdcReqTransferField["CurrencyID"] = "string"
+
 #转帐金额
-CSgitFtdcReqTransferField["TradeAmount"] = "float"
+
+CThostFtdcReqTransferField["TradeAmount"] = "float"
+
 #期货可取金额
-CSgitFtdcReqTransferField["FutureFetchAmount"] = "float"
+
+CThostFtdcReqTransferField["FutureFetchAmount"] = "float"
+
 #费用支付标志
-CSgitFtdcReqTransferField["FeePayFlag"] = "char"
+
+CThostFtdcReqTransferField["FeePayFlag"] = "char"
+
 #应收客户费用
-CSgitFtdcReqTransferField["CustFee"] = "float"
+
+CThostFtdcReqTransferField["CustFee"] = "float"
+
 #应收期货公司费用
-CSgitFtdcReqTransferField["BrokerFee"] = "float"
+
+CThostFtdcReqTransferField["BrokerFee"] = "float"
+
 #发送方给接收方的消息
-CSgitFtdcReqTransferField["Message"] = "string"
+
+CThostFtdcReqTransferField["Message"] = "string"
+
 #摘要
-CSgitFtdcReqTransferField["Digest"] = "string"
+
+CThostFtdcReqTransferField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcReqTransferField["BankAccType"] = "char"
+
+CThostFtdcReqTransferField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcReqTransferField["DeviceID"] = "string"
+
+CThostFtdcReqTransferField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcReqTransferField["BankSecuAccType"] = "char"
+
+CThostFtdcReqTransferField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcReqTransferField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqTransferField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcReqTransferField["BankSecuAcc"] = "string"
+
+CThostFtdcReqTransferField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcReqTransferField["BankPwdFlag"] = "char"
+
+CThostFtdcReqTransferField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcReqTransferField["SecuPwdFlag"] = "char"
+
+CThostFtdcReqTransferField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcReqTransferField["OperNo"] = "string"
+
+CThostFtdcReqTransferField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcReqTransferField["RequestID"] = "int"
+
+CThostFtdcReqTransferField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcReqTransferField["TID"] = "int"
+
+CThostFtdcReqTransferField["TID"] = "int"
+
 #转账交易状态
-CSgitFtdcReqTransferField["TransferStatus"] = "char"
-structDict['CSgitFtdcReqTransferField'] = CSgitFtdcReqTransferField
+
+CThostFtdcReqTransferField["TransferStatus"] = "char"
+
+structDict['CThostFtdcReqTransferField'] = CThostFtdcReqTransferField
+
+
 
 
 #银行发起银行资金转期货响应
-CSgitFtdcRspTransferField = {}
+
+CThostFtdcRspTransferField = {}
+
+
 #业务功能码
-CSgitFtdcRspTransferField["TradeCode"] = "string"
+
+CThostFtdcRspTransferField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspTransferField["BankID"] = "string"
+
+CThostFtdcRspTransferField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspTransferField["BankBranchID"] = "string"
+
+CThostFtdcRspTransferField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspTransferField["BrokerID"] = "string"
+
+CThostFtdcRspTransferField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspTransferField["BrokerBranchID"] = "string"
+
+CThostFtdcRspTransferField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspTransferField["TradeDate"] = "string"
+
+CThostFtdcRspTransferField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspTransferField["TradeTime"] = "string"
+
+CThostFtdcRspTransferField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspTransferField["BankSerial"] = "string"
+
+CThostFtdcRspTransferField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspTransferField["TradingDay"] = "string"
+
+CThostFtdcRspTransferField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspTransferField["PlateSerial"] = "int"
+
+CThostFtdcRspTransferField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspTransferField["LastFragment"] = "char"
+
+CThostFtdcRspTransferField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspTransferField["SessionID"] = "int"
+
+CThostFtdcRspTransferField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcRspTransferField["CustomerName"] = "string"
+
+CThostFtdcRspTransferField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcRspTransferField["IdCardType"] = "char"
+
+CThostFtdcRspTransferField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcRspTransferField["IdentifiedCardNo"] = "string"
+
+CThostFtdcRspTransferField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcRspTransferField["CustType"] = "char"
+
+CThostFtdcRspTransferField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcRspTransferField["BankAccount"] = "string"
+
+CThostFtdcRspTransferField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcRspTransferField["BankPassWord"] = "string"
+
+CThostFtdcRspTransferField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcRspTransferField["AccountID"] = "string"
+
+CThostFtdcRspTransferField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcRspTransferField["Password"] = "string"
+
+CThostFtdcRspTransferField["Password"] = "string"
+
 #安装编号
-CSgitFtdcRspTransferField["InstallID"] = "int"
+
+CThostFtdcRspTransferField["InstallID"] = "int"
+
 #期货公司流水号
-CSgitFtdcRspTransferField["FutureSerial"] = "int"
+
+CThostFtdcRspTransferField["FutureSerial"] = "int"
+
 #用户标识
-CSgitFtdcRspTransferField["UserID"] = "string"
+
+CThostFtdcRspTransferField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcRspTransferField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcRspTransferField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcRspTransferField["CurrencyID"] = "string"
+
+CThostFtdcRspTransferField["CurrencyID"] = "string"
+
 #转帐金额
-CSgitFtdcRspTransferField["TradeAmount"] = "float"
+
+CThostFtdcRspTransferField["TradeAmount"] = "float"
+
 #期货可取金额
-CSgitFtdcRspTransferField["FutureFetchAmount"] = "float"
+
+CThostFtdcRspTransferField["FutureFetchAmount"] = "float"
+
 #费用支付标志
-CSgitFtdcRspTransferField["FeePayFlag"] = "char"
+
+CThostFtdcRspTransferField["FeePayFlag"] = "char"
+
 #应收客户费用
-CSgitFtdcRspTransferField["CustFee"] = "float"
+
+CThostFtdcRspTransferField["CustFee"] = "float"
+
 #应收期货公司费用
-CSgitFtdcRspTransferField["BrokerFee"] = "float"
+
+CThostFtdcRspTransferField["BrokerFee"] = "float"
+
 #发送方给接收方的消息
-CSgitFtdcRspTransferField["Message"] = "string"
+
+CThostFtdcRspTransferField["Message"] = "string"
+
 #摘要
-CSgitFtdcRspTransferField["Digest"] = "string"
+
+CThostFtdcRspTransferField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcRspTransferField["BankAccType"] = "char"
+
+CThostFtdcRspTransferField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcRspTransferField["DeviceID"] = "string"
+
+CThostFtdcRspTransferField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcRspTransferField["BankSecuAccType"] = "char"
+
+CThostFtdcRspTransferField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcRspTransferField["BrokerIDByBank"] = "string"
+
+CThostFtdcRspTransferField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcRspTransferField["BankSecuAcc"] = "string"
+
+CThostFtdcRspTransferField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcRspTransferField["BankPwdFlag"] = "char"
+
+CThostFtdcRspTransferField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcRspTransferField["SecuPwdFlag"] = "char"
+
+CThostFtdcRspTransferField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcRspTransferField["OperNo"] = "string"
+
+CThostFtdcRspTransferField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcRspTransferField["RequestID"] = "int"
+
+CThostFtdcRspTransferField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcRspTransferField["TID"] = "int"
+
+CThostFtdcRspTransferField["TID"] = "int"
+
 #转账交易状态
-CSgitFtdcRspTransferField["TransferStatus"] = "char"
+
+CThostFtdcRspTransferField["TransferStatus"] = "char"
+
 #错误代码
-CSgitFtdcRspTransferField["ErrorID"] = "int"
+
+CThostFtdcRspTransferField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspTransferField["ErrorMsg"] = "string"
-structDict['CSgitFtdcRspTransferField'] = CSgitFtdcRspTransferField
+
+CThostFtdcRspTransferField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcRspTransferField'] = CThostFtdcRspTransferField
+
+
 
 
 #冲正请求
-CSgitFtdcReqRepealField = {}
+
+CThostFtdcReqRepealField = {}
+
+
 #冲正时间间隔
-CSgitFtdcReqRepealField["RepealTimeInterval"] = "int"
+
+CThostFtdcReqRepealField["RepealTimeInterval"] = "int"
+
 #已经冲正次数
-CSgitFtdcReqRepealField["RepealedTimes"] = "int"
+
+CThostFtdcReqRepealField["RepealedTimes"] = "int"
+
 #银行冲正标志
-CSgitFtdcReqRepealField["BankRepealFlag"] = "char"
+
+CThostFtdcReqRepealField["BankRepealFlag"] = "char"
+
 #期商冲正标志
-CSgitFtdcReqRepealField["BrokerRepealFlag"] = "char"
+
+CThostFtdcReqRepealField["BrokerRepealFlag"] = "char"
+
 #被冲正平台流水号
-CSgitFtdcReqRepealField["PlateRepealSerial"] = "int"
+
+CThostFtdcReqRepealField["PlateRepealSerial"] = "int"
+
 #被冲正银行流水号
-CSgitFtdcReqRepealField["BankRepealSerial"] = "string"
+
+CThostFtdcReqRepealField["BankRepealSerial"] = "string"
+
 #被冲正期货流水号
-CSgitFtdcReqRepealField["FutureRepealSerial"] = "int"
+
+CThostFtdcReqRepealField["FutureRepealSerial"] = "int"
+
 #业务功能码
-CSgitFtdcReqRepealField["TradeCode"] = "string"
+
+CThostFtdcReqRepealField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqRepealField["BankID"] = "string"
+
+CThostFtdcReqRepealField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqRepealField["BankBranchID"] = "string"
+
+CThostFtdcReqRepealField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqRepealField["BrokerID"] = "string"
+
+CThostFtdcReqRepealField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqRepealField["BrokerBranchID"] = "string"
+
+CThostFtdcReqRepealField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqRepealField["TradeDate"] = "string"
+
+CThostFtdcReqRepealField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqRepealField["TradeTime"] = "string"
+
+CThostFtdcReqRepealField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqRepealField["BankSerial"] = "string"
+
+CThostFtdcReqRepealField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqRepealField["TradingDay"] = "string"
+
+CThostFtdcReqRepealField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqRepealField["PlateSerial"] = "int"
+
+CThostFtdcReqRepealField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqRepealField["LastFragment"] = "char"
+
+CThostFtdcReqRepealField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqRepealField["SessionID"] = "int"
+
+CThostFtdcReqRepealField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcReqRepealField["CustomerName"] = "string"
+
+CThostFtdcReqRepealField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqRepealField["IdCardType"] = "char"
+
+CThostFtdcReqRepealField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqRepealField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqRepealField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcReqRepealField["CustType"] = "char"
+
+CThostFtdcReqRepealField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcReqRepealField["BankAccount"] = "string"
+
+CThostFtdcReqRepealField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqRepealField["BankPassWord"] = "string"
+
+CThostFtdcReqRepealField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqRepealField["AccountID"] = "string"
+
+CThostFtdcReqRepealField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqRepealField["Password"] = "string"
+
+CThostFtdcReqRepealField["Password"] = "string"
+
 #安装编号
-CSgitFtdcReqRepealField["InstallID"] = "int"
+
+CThostFtdcReqRepealField["InstallID"] = "int"
+
 #期货公司流水号
-CSgitFtdcReqRepealField["FutureSerial"] = "int"
+
+CThostFtdcReqRepealField["FutureSerial"] = "int"
+
 #用户标识
-CSgitFtdcReqRepealField["UserID"] = "string"
+
+CThostFtdcReqRepealField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcReqRepealField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcReqRepealField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcReqRepealField["CurrencyID"] = "string"
+
+CThostFtdcReqRepealField["CurrencyID"] = "string"
+
 #转帐金额
-CSgitFtdcReqRepealField["TradeAmount"] = "float"
+
+CThostFtdcReqRepealField["TradeAmount"] = "float"
+
 #期货可取金额
-CSgitFtdcReqRepealField["FutureFetchAmount"] = "float"
+
+CThostFtdcReqRepealField["FutureFetchAmount"] = "float"
+
 #费用支付标志
-CSgitFtdcReqRepealField["FeePayFlag"] = "char"
+
+CThostFtdcReqRepealField["FeePayFlag"] = "char"
+
 #应收客户费用
-CSgitFtdcReqRepealField["CustFee"] = "float"
+
+CThostFtdcReqRepealField["CustFee"] = "float"
+
 #应收期货公司费用
-CSgitFtdcReqRepealField["BrokerFee"] = "float"
+
+CThostFtdcReqRepealField["BrokerFee"] = "float"
+
 #发送方给接收方的消息
-CSgitFtdcReqRepealField["Message"] = "string"
+
+CThostFtdcReqRepealField["Message"] = "string"
+
 #摘要
-CSgitFtdcReqRepealField["Digest"] = "string"
+
+CThostFtdcReqRepealField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcReqRepealField["BankAccType"] = "char"
+
+CThostFtdcReqRepealField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcReqRepealField["DeviceID"] = "string"
+
+CThostFtdcReqRepealField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcReqRepealField["BankSecuAccType"] = "char"
+
+CThostFtdcReqRepealField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcReqRepealField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqRepealField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcReqRepealField["BankSecuAcc"] = "string"
+
+CThostFtdcReqRepealField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcReqRepealField["BankPwdFlag"] = "char"
+
+CThostFtdcReqRepealField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcReqRepealField["SecuPwdFlag"] = "char"
+
+CThostFtdcReqRepealField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcReqRepealField["OperNo"] = "string"
+
+CThostFtdcReqRepealField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcReqRepealField["RequestID"] = "int"
+
+CThostFtdcReqRepealField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcReqRepealField["TID"] = "int"
+
+CThostFtdcReqRepealField["TID"] = "int"
+
 #转账交易状态
-CSgitFtdcReqRepealField["TransferStatus"] = "char"
-structDict['CSgitFtdcReqRepealField'] = CSgitFtdcReqRepealField
+
+CThostFtdcReqRepealField["TransferStatus"] = "char"
+
+structDict['CThostFtdcReqRepealField'] = CThostFtdcReqRepealField
+
+
 
 
 #冲正响应
-CSgitFtdcRspRepealField = {}
+
+CThostFtdcRspRepealField = {}
+
+
 #冲正时间间隔
-CSgitFtdcRspRepealField["RepealTimeInterval"] = "int"
+
+CThostFtdcRspRepealField["RepealTimeInterval"] = "int"
+
 #已经冲正次数
-CSgitFtdcRspRepealField["RepealedTimes"] = "int"
+
+CThostFtdcRspRepealField["RepealedTimes"] = "int"
+
 #银行冲正标志
-CSgitFtdcRspRepealField["BankRepealFlag"] = "char"
+
+CThostFtdcRspRepealField["BankRepealFlag"] = "char"
+
 #期商冲正标志
-CSgitFtdcRspRepealField["BrokerRepealFlag"] = "char"
+
+CThostFtdcRspRepealField["BrokerRepealFlag"] = "char"
+
 #被冲正平台流水号
-CSgitFtdcRspRepealField["PlateRepealSerial"] = "int"
+
+CThostFtdcRspRepealField["PlateRepealSerial"] = "int"
+
 #被冲正银行流水号
-CSgitFtdcRspRepealField["BankRepealSerial"] = "string"
+
+CThostFtdcRspRepealField["BankRepealSerial"] = "string"
+
 #被冲正期货流水号
-CSgitFtdcRspRepealField["FutureRepealSerial"] = "int"
+
+CThostFtdcRspRepealField["FutureRepealSerial"] = "int"
+
 #业务功能码
-CSgitFtdcRspRepealField["TradeCode"] = "string"
+
+CThostFtdcRspRepealField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspRepealField["BankID"] = "string"
+
+CThostFtdcRspRepealField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspRepealField["BankBranchID"] = "string"
+
+CThostFtdcRspRepealField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspRepealField["BrokerID"] = "string"
+
+CThostFtdcRspRepealField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspRepealField["BrokerBranchID"] = "string"
+
+CThostFtdcRspRepealField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspRepealField["TradeDate"] = "string"
+
+CThostFtdcRspRepealField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspRepealField["TradeTime"] = "string"
+
+CThostFtdcRspRepealField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspRepealField["BankSerial"] = "string"
+
+CThostFtdcRspRepealField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspRepealField["TradingDay"] = "string"
+
+CThostFtdcRspRepealField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspRepealField["PlateSerial"] = "int"
+
+CThostFtdcRspRepealField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspRepealField["LastFragment"] = "char"
+
+CThostFtdcRspRepealField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspRepealField["SessionID"] = "int"
+
+CThostFtdcRspRepealField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcRspRepealField["CustomerName"] = "string"
+
+CThostFtdcRspRepealField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcRspRepealField["IdCardType"] = "char"
+
+CThostFtdcRspRepealField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcRspRepealField["IdentifiedCardNo"] = "string"
+
+CThostFtdcRspRepealField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcRspRepealField["CustType"] = "char"
+
+CThostFtdcRspRepealField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcRspRepealField["BankAccount"] = "string"
+
+CThostFtdcRspRepealField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcRspRepealField["BankPassWord"] = "string"
+
+CThostFtdcRspRepealField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcRspRepealField["AccountID"] = "string"
+
+CThostFtdcRspRepealField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcRspRepealField["Password"] = "string"
+
+CThostFtdcRspRepealField["Password"] = "string"
+
 #安装编号
-CSgitFtdcRspRepealField["InstallID"] = "int"
+
+CThostFtdcRspRepealField["InstallID"] = "int"
+
 #期货公司流水号
-CSgitFtdcRspRepealField["FutureSerial"] = "int"
+
+CThostFtdcRspRepealField["FutureSerial"] = "int"
+
 #用户标识
-CSgitFtdcRspRepealField["UserID"] = "string"
+
+CThostFtdcRspRepealField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcRspRepealField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcRspRepealField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcRspRepealField["CurrencyID"] = "string"
+
+CThostFtdcRspRepealField["CurrencyID"] = "string"
+
 #转帐金额
-CSgitFtdcRspRepealField["TradeAmount"] = "float"
+
+CThostFtdcRspRepealField["TradeAmount"] = "float"
+
 #期货可取金额
-CSgitFtdcRspRepealField["FutureFetchAmount"] = "float"
+
+CThostFtdcRspRepealField["FutureFetchAmount"] = "float"
+
 #费用支付标志
-CSgitFtdcRspRepealField["FeePayFlag"] = "char"
+
+CThostFtdcRspRepealField["FeePayFlag"] = "char"
+
 #应收客户费用
-CSgitFtdcRspRepealField["CustFee"] = "float"
+
+CThostFtdcRspRepealField["CustFee"] = "float"
+
 #应收期货公司费用
-CSgitFtdcRspRepealField["BrokerFee"] = "float"
+
+CThostFtdcRspRepealField["BrokerFee"] = "float"
+
 #发送方给接收方的消息
-CSgitFtdcRspRepealField["Message"] = "string"
+
+CThostFtdcRspRepealField["Message"] = "string"
+
 #摘要
-CSgitFtdcRspRepealField["Digest"] = "string"
+
+CThostFtdcRspRepealField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcRspRepealField["BankAccType"] = "char"
+
+CThostFtdcRspRepealField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcRspRepealField["DeviceID"] = "string"
+
+CThostFtdcRspRepealField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcRspRepealField["BankSecuAccType"] = "char"
+
+CThostFtdcRspRepealField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcRspRepealField["BrokerIDByBank"] = "string"
+
+CThostFtdcRspRepealField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcRspRepealField["BankSecuAcc"] = "string"
+
+CThostFtdcRspRepealField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcRspRepealField["BankPwdFlag"] = "char"
+
+CThostFtdcRspRepealField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcRspRepealField["SecuPwdFlag"] = "char"
+
+CThostFtdcRspRepealField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcRspRepealField["OperNo"] = "string"
+
+CThostFtdcRspRepealField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcRspRepealField["RequestID"] = "int"
+
+CThostFtdcRspRepealField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcRspRepealField["TID"] = "int"
+
+CThostFtdcRspRepealField["TID"] = "int"
+
 #转账交易状态
-CSgitFtdcRspRepealField["TransferStatus"] = "char"
+
+CThostFtdcRspRepealField["TransferStatus"] = "char"
+
 #错误代码
-CSgitFtdcRspRepealField["ErrorID"] = "int"
+
+CThostFtdcRspRepealField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspRepealField["ErrorMsg"] = "string"
-structDict['CSgitFtdcRspRepealField'] = CSgitFtdcRspRepealField
+
+CThostFtdcRspRepealField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcRspRepealField'] = CThostFtdcRspRepealField
+
+
 
 
 #查询账户信息请求
-CSgitFtdcReqQueryAccountField = {}
+
+CThostFtdcReqQueryAccountField = {}
+
+
 #业务功能码
-CSgitFtdcReqQueryAccountField["TradeCode"] = "string"
+
+CThostFtdcReqQueryAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqQueryAccountField["BankID"] = "string"
+
+CThostFtdcReqQueryAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqQueryAccountField["BankBranchID"] = "string"
+
+CThostFtdcReqQueryAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqQueryAccountField["BrokerID"] = "string"
+
+CThostFtdcReqQueryAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqQueryAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcReqQueryAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqQueryAccountField["TradeDate"] = "string"
+
+CThostFtdcReqQueryAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqQueryAccountField["TradeTime"] = "string"
+
+CThostFtdcReqQueryAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqQueryAccountField["BankSerial"] = "string"
+
+CThostFtdcReqQueryAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqQueryAccountField["TradingDay"] = "string"
+
+CThostFtdcReqQueryAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqQueryAccountField["PlateSerial"] = "int"
+
+CThostFtdcReqQueryAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqQueryAccountField["LastFragment"] = "char"
+
+CThostFtdcReqQueryAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqQueryAccountField["SessionID"] = "int"
+
+CThostFtdcReqQueryAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcReqQueryAccountField["CustomerName"] = "string"
+
+CThostFtdcReqQueryAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqQueryAccountField["IdCardType"] = "char"
+
+CThostFtdcReqQueryAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqQueryAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqQueryAccountField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcReqQueryAccountField["CustType"] = "char"
+
+CThostFtdcReqQueryAccountField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcReqQueryAccountField["BankAccount"] = "string"
+
+CThostFtdcReqQueryAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqQueryAccountField["BankPassWord"] = "string"
+
+CThostFtdcReqQueryAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqQueryAccountField["AccountID"] = "string"
+
+CThostFtdcReqQueryAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqQueryAccountField["Password"] = "string"
+
+CThostFtdcReqQueryAccountField["Password"] = "string"
+
 #期货公司流水号
-CSgitFtdcReqQueryAccountField["FutureSerial"] = "int"
+
+CThostFtdcReqQueryAccountField["FutureSerial"] = "int"
+
 #安装编号
-CSgitFtdcReqQueryAccountField["InstallID"] = "int"
+
+CThostFtdcReqQueryAccountField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcReqQueryAccountField["UserID"] = "string"
+
+CThostFtdcReqQueryAccountField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcReqQueryAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcReqQueryAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcReqQueryAccountField["CurrencyID"] = "string"
+
+CThostFtdcReqQueryAccountField["CurrencyID"] = "string"
+
 #摘要
-CSgitFtdcReqQueryAccountField["Digest"] = "string"
+
+CThostFtdcReqQueryAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcReqQueryAccountField["BankAccType"] = "char"
+
+CThostFtdcReqQueryAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcReqQueryAccountField["DeviceID"] = "string"
+
+CThostFtdcReqQueryAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcReqQueryAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcReqQueryAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcReqQueryAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqQueryAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcReqQueryAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcReqQueryAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcReqQueryAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcReqQueryAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcReqQueryAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcReqQueryAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcReqQueryAccountField["OperNo"] = "string"
+
+CThostFtdcReqQueryAccountField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcReqQueryAccountField["RequestID"] = "int"
+
+CThostFtdcReqQueryAccountField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcReqQueryAccountField["TID"] = "int"
-structDict['CSgitFtdcReqQueryAccountField'] = CSgitFtdcReqQueryAccountField
+
+CThostFtdcReqQueryAccountField["TID"] = "int"
+
+structDict['CThostFtdcReqQueryAccountField'] = CThostFtdcReqQueryAccountField
+
+
 
 
 #查询账户信息响应
-CSgitFtdcRspQueryAccountField = {}
+
+CThostFtdcRspQueryAccountField = {}
+
+
 #业务功能码
-CSgitFtdcRspQueryAccountField["TradeCode"] = "string"
+
+CThostFtdcRspQueryAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspQueryAccountField["BankID"] = "string"
+
+CThostFtdcRspQueryAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspQueryAccountField["BankBranchID"] = "string"
+
+CThostFtdcRspQueryAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspQueryAccountField["BrokerID"] = "string"
+
+CThostFtdcRspQueryAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspQueryAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcRspQueryAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspQueryAccountField["TradeDate"] = "string"
+
+CThostFtdcRspQueryAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspQueryAccountField["TradeTime"] = "string"
+
+CThostFtdcRspQueryAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspQueryAccountField["BankSerial"] = "string"
+
+CThostFtdcRspQueryAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspQueryAccountField["TradingDay"] = "string"
+
+CThostFtdcRspQueryAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspQueryAccountField["PlateSerial"] = "int"
+
+CThostFtdcRspQueryAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspQueryAccountField["LastFragment"] = "char"
+
+CThostFtdcRspQueryAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspQueryAccountField["SessionID"] = "int"
+
+CThostFtdcRspQueryAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcRspQueryAccountField["CustomerName"] = "string"
+
+CThostFtdcRspQueryAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcRspQueryAccountField["IdCardType"] = "char"
+
+CThostFtdcRspQueryAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcRspQueryAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcRspQueryAccountField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcRspQueryAccountField["CustType"] = "char"
+
+CThostFtdcRspQueryAccountField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcRspQueryAccountField["BankAccount"] = "string"
+
+CThostFtdcRspQueryAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcRspQueryAccountField["BankPassWord"] = "string"
+
+CThostFtdcRspQueryAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcRspQueryAccountField["AccountID"] = "string"
+
+CThostFtdcRspQueryAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcRspQueryAccountField["Password"] = "string"
+
+CThostFtdcRspQueryAccountField["Password"] = "string"
+
 #期货公司流水号
-CSgitFtdcRspQueryAccountField["FutureSerial"] = "int"
+
+CThostFtdcRspQueryAccountField["FutureSerial"] = "int"
+
 #安装编号
-CSgitFtdcRspQueryAccountField["InstallID"] = "int"
+
+CThostFtdcRspQueryAccountField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcRspQueryAccountField["UserID"] = "string"
+
+CThostFtdcRspQueryAccountField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcRspQueryAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcRspQueryAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcRspQueryAccountField["CurrencyID"] = "string"
+
+CThostFtdcRspQueryAccountField["CurrencyID"] = "string"
+
 #摘要
-CSgitFtdcRspQueryAccountField["Digest"] = "string"
+
+CThostFtdcRspQueryAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcRspQueryAccountField["BankAccType"] = "char"
+
+CThostFtdcRspQueryAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcRspQueryAccountField["DeviceID"] = "string"
+
+CThostFtdcRspQueryAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcRspQueryAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcRspQueryAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcRspQueryAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcRspQueryAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcRspQueryAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcRspQueryAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcRspQueryAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcRspQueryAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcRspQueryAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcRspQueryAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcRspQueryAccountField["OperNo"] = "string"
+
+CThostFtdcRspQueryAccountField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcRspQueryAccountField["RequestID"] = "int"
+
+CThostFtdcRspQueryAccountField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcRspQueryAccountField["TID"] = "int"
+
+CThostFtdcRspQueryAccountField["TID"] = "int"
+
 #银行可用金额
-CSgitFtdcRspQueryAccountField["BankUseAmount"] = "float"
+
+CThostFtdcRspQueryAccountField["BankUseAmount"] = "float"
+
 #银行可取金额
-CSgitFtdcRspQueryAccountField["BankFetchAmount"] = "float"
-structDict['CSgitFtdcRspQueryAccountField'] = CSgitFtdcRspQueryAccountField
+
+CThostFtdcRspQueryAccountField["BankFetchAmount"] = "float"
+
+structDict['CThostFtdcRspQueryAccountField'] = CThostFtdcRspQueryAccountField
+
+
 
 
 #期商签到签退
-CSgitFtdcFutureSignIOField = {}
+
+CThostFtdcFutureSignIOField = {}
+
+
 #业务功能码
-CSgitFtdcFutureSignIOField["TradeCode"] = "string"
+
+CThostFtdcFutureSignIOField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcFutureSignIOField["BankID"] = "string"
+
+CThostFtdcFutureSignIOField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcFutureSignIOField["BankBranchID"] = "string"
+
+CThostFtdcFutureSignIOField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcFutureSignIOField["BrokerID"] = "string"
+
+CThostFtdcFutureSignIOField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcFutureSignIOField["BrokerBranchID"] = "string"
+
+CThostFtdcFutureSignIOField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcFutureSignIOField["TradeDate"] = "string"
+
+CThostFtdcFutureSignIOField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcFutureSignIOField["TradeTime"] = "string"
+
+CThostFtdcFutureSignIOField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcFutureSignIOField["BankSerial"] = "string"
+
+CThostFtdcFutureSignIOField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcFutureSignIOField["TradingDay"] = "string"
+
+CThostFtdcFutureSignIOField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcFutureSignIOField["PlateSerial"] = "int"
+
+CThostFtdcFutureSignIOField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcFutureSignIOField["LastFragment"] = "char"
+
+CThostFtdcFutureSignIOField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcFutureSignIOField["SessionID"] = "int"
+
+CThostFtdcFutureSignIOField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcFutureSignIOField["InstallID"] = "int"
+
+CThostFtdcFutureSignIOField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcFutureSignIOField["UserID"] = "string"
+
+CThostFtdcFutureSignIOField["UserID"] = "string"
+
 #摘要
-CSgitFtdcFutureSignIOField["Digest"] = "string"
+
+CThostFtdcFutureSignIOField["Digest"] = "string"
+
 #币种代码
-CSgitFtdcFutureSignIOField["CurrencyID"] = "string"
+
+CThostFtdcFutureSignIOField["CurrencyID"] = "string"
+
 #渠道标志
-CSgitFtdcFutureSignIOField["DeviceID"] = "string"
+
+CThostFtdcFutureSignIOField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcFutureSignIOField["BrokerIDByBank"] = "string"
+
+CThostFtdcFutureSignIOField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcFutureSignIOField["OperNo"] = "string"
+
+CThostFtdcFutureSignIOField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcFutureSignIOField["RequestID"] = "int"
+
+CThostFtdcFutureSignIOField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcFutureSignIOField["TID"] = "int"
-structDict['CSgitFtdcFutureSignIOField'] = CSgitFtdcFutureSignIOField
+
+CThostFtdcFutureSignIOField["TID"] = "int"
+
+structDict['CThostFtdcFutureSignIOField'] = CThostFtdcFutureSignIOField
+
+
 
 
 #期商签到响应
-CSgitFtdcRspFutureSignInField = {}
+
+CThostFtdcRspFutureSignInField = {}
+
+
 #业务功能码
-CSgitFtdcRspFutureSignInField["TradeCode"] = "string"
+
+CThostFtdcRspFutureSignInField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspFutureSignInField["BankID"] = "string"
+
+CThostFtdcRspFutureSignInField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspFutureSignInField["BankBranchID"] = "string"
+
+CThostFtdcRspFutureSignInField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspFutureSignInField["BrokerID"] = "string"
+
+CThostFtdcRspFutureSignInField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspFutureSignInField["BrokerBranchID"] = "string"
+
+CThostFtdcRspFutureSignInField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspFutureSignInField["TradeDate"] = "string"
+
+CThostFtdcRspFutureSignInField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspFutureSignInField["TradeTime"] = "string"
+
+CThostFtdcRspFutureSignInField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspFutureSignInField["BankSerial"] = "string"
+
+CThostFtdcRspFutureSignInField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspFutureSignInField["TradingDay"] = "string"
+
+CThostFtdcRspFutureSignInField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspFutureSignInField["PlateSerial"] = "int"
+
+CThostFtdcRspFutureSignInField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspFutureSignInField["LastFragment"] = "char"
+
+CThostFtdcRspFutureSignInField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspFutureSignInField["SessionID"] = "int"
+
+CThostFtdcRspFutureSignInField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcRspFutureSignInField["InstallID"] = "int"
+
+CThostFtdcRspFutureSignInField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcRspFutureSignInField["UserID"] = "string"
+
+CThostFtdcRspFutureSignInField["UserID"] = "string"
+
 #摘要
-CSgitFtdcRspFutureSignInField["Digest"] = "string"
+
+CThostFtdcRspFutureSignInField["Digest"] = "string"
+
 #币种代码
-CSgitFtdcRspFutureSignInField["CurrencyID"] = "string"
+
+CThostFtdcRspFutureSignInField["CurrencyID"] = "string"
+
 #渠道标志
-CSgitFtdcRspFutureSignInField["DeviceID"] = "string"
+
+CThostFtdcRspFutureSignInField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcRspFutureSignInField["BrokerIDByBank"] = "string"
+
+CThostFtdcRspFutureSignInField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcRspFutureSignInField["OperNo"] = "string"
+
+CThostFtdcRspFutureSignInField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcRspFutureSignInField["RequestID"] = "int"
+
+CThostFtdcRspFutureSignInField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcRspFutureSignInField["TID"] = "int"
+
+CThostFtdcRspFutureSignInField["TID"] = "int"
+
 #错误代码
-CSgitFtdcRspFutureSignInField["ErrorID"] = "int"
+
+CThostFtdcRspFutureSignInField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspFutureSignInField["ErrorMsg"] = "string"
+
+CThostFtdcRspFutureSignInField["ErrorMsg"] = "string"
+
 #PIN密钥
-CSgitFtdcRspFutureSignInField["PinKey"] = "string"
+
+CThostFtdcRspFutureSignInField["PinKey"] = "string"
+
 #MAC密钥
-CSgitFtdcRspFutureSignInField["MacKey"] = "string"
-structDict['CSgitFtdcRspFutureSignInField'] = CSgitFtdcRspFutureSignInField
+
+CThostFtdcRspFutureSignInField["MacKey"] = "string"
+
+structDict['CThostFtdcRspFutureSignInField'] = CThostFtdcRspFutureSignInField
+
+
 
 
 #期商签退请求
-CSgitFtdcReqFutureSignOutField = {}
+
+CThostFtdcReqFutureSignOutField = {}
+
+
 #业务功能码
-CSgitFtdcReqFutureSignOutField["TradeCode"] = "string"
+
+CThostFtdcReqFutureSignOutField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqFutureSignOutField["BankID"] = "string"
+
+CThostFtdcReqFutureSignOutField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqFutureSignOutField["BankBranchID"] = "string"
+
+CThostFtdcReqFutureSignOutField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqFutureSignOutField["BrokerID"] = "string"
+
+CThostFtdcReqFutureSignOutField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqFutureSignOutField["BrokerBranchID"] = "string"
+
+CThostFtdcReqFutureSignOutField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqFutureSignOutField["TradeDate"] = "string"
+
+CThostFtdcReqFutureSignOutField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqFutureSignOutField["TradeTime"] = "string"
+
+CThostFtdcReqFutureSignOutField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqFutureSignOutField["BankSerial"] = "string"
+
+CThostFtdcReqFutureSignOutField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqFutureSignOutField["TradingDay"] = "string"
+
+CThostFtdcReqFutureSignOutField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqFutureSignOutField["PlateSerial"] = "int"
+
+CThostFtdcReqFutureSignOutField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqFutureSignOutField["LastFragment"] = "char"
+
+CThostFtdcReqFutureSignOutField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqFutureSignOutField["SessionID"] = "int"
+
+CThostFtdcReqFutureSignOutField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcReqFutureSignOutField["InstallID"] = "int"
+
+CThostFtdcReqFutureSignOutField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcReqFutureSignOutField["UserID"] = "string"
+
+CThostFtdcReqFutureSignOutField["UserID"] = "string"
+
 #摘要
-CSgitFtdcReqFutureSignOutField["Digest"] = "string"
+
+CThostFtdcReqFutureSignOutField["Digest"] = "string"
+
 #币种代码
-CSgitFtdcReqFutureSignOutField["CurrencyID"] = "string"
+
+CThostFtdcReqFutureSignOutField["CurrencyID"] = "string"
+
 #渠道标志
-CSgitFtdcReqFutureSignOutField["DeviceID"] = "string"
+
+CThostFtdcReqFutureSignOutField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcReqFutureSignOutField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqFutureSignOutField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcReqFutureSignOutField["OperNo"] = "string"
+
+CThostFtdcReqFutureSignOutField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcReqFutureSignOutField["RequestID"] = "int"
+
+CThostFtdcReqFutureSignOutField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcReqFutureSignOutField["TID"] = "int"
-structDict['CSgitFtdcReqFutureSignOutField'] = CSgitFtdcReqFutureSignOutField
+
+CThostFtdcReqFutureSignOutField["TID"] = "int"
+
+structDict['CThostFtdcReqFutureSignOutField'] = CThostFtdcReqFutureSignOutField
+
+
 
 
 #期商签退响应
-CSgitFtdcRspFutureSignOutField = {}
+
+CThostFtdcRspFutureSignOutField = {}
+
+
 #业务功能码
-CSgitFtdcRspFutureSignOutField["TradeCode"] = "string"
+
+CThostFtdcRspFutureSignOutField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspFutureSignOutField["BankID"] = "string"
+
+CThostFtdcRspFutureSignOutField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspFutureSignOutField["BankBranchID"] = "string"
+
+CThostFtdcRspFutureSignOutField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspFutureSignOutField["BrokerID"] = "string"
+
+CThostFtdcRspFutureSignOutField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspFutureSignOutField["BrokerBranchID"] = "string"
+
+CThostFtdcRspFutureSignOutField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspFutureSignOutField["TradeDate"] = "string"
+
+CThostFtdcRspFutureSignOutField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspFutureSignOutField["TradeTime"] = "string"
+
+CThostFtdcRspFutureSignOutField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspFutureSignOutField["BankSerial"] = "string"
+
+CThostFtdcRspFutureSignOutField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspFutureSignOutField["TradingDay"] = "string"
+
+CThostFtdcRspFutureSignOutField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspFutureSignOutField["PlateSerial"] = "int"
+
+CThostFtdcRspFutureSignOutField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspFutureSignOutField["LastFragment"] = "char"
+
+CThostFtdcRspFutureSignOutField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspFutureSignOutField["SessionID"] = "int"
+
+CThostFtdcRspFutureSignOutField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcRspFutureSignOutField["InstallID"] = "int"
+
+CThostFtdcRspFutureSignOutField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcRspFutureSignOutField["UserID"] = "string"
+
+CThostFtdcRspFutureSignOutField["UserID"] = "string"
+
 #摘要
-CSgitFtdcRspFutureSignOutField["Digest"] = "string"
+
+CThostFtdcRspFutureSignOutField["Digest"] = "string"
+
 #币种代码
-CSgitFtdcRspFutureSignOutField["CurrencyID"] = "string"
+
+CThostFtdcRspFutureSignOutField["CurrencyID"] = "string"
+
 #渠道标志
-CSgitFtdcRspFutureSignOutField["DeviceID"] = "string"
+
+CThostFtdcRspFutureSignOutField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcRspFutureSignOutField["BrokerIDByBank"] = "string"
+
+CThostFtdcRspFutureSignOutField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcRspFutureSignOutField["OperNo"] = "string"
+
+CThostFtdcRspFutureSignOutField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcRspFutureSignOutField["RequestID"] = "int"
+
+CThostFtdcRspFutureSignOutField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcRspFutureSignOutField["TID"] = "int"
+
+CThostFtdcRspFutureSignOutField["TID"] = "int"
+
 #错误代码
-CSgitFtdcRspFutureSignOutField["ErrorID"] = "int"
+
+CThostFtdcRspFutureSignOutField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspFutureSignOutField["ErrorMsg"] = "string"
-structDict['CSgitFtdcRspFutureSignOutField'] = CSgitFtdcRspFutureSignOutField
+
+CThostFtdcRspFutureSignOutField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcRspFutureSignOutField'] = CThostFtdcRspFutureSignOutField
+
+
 
 
 #查询指定流水号的交易结果请求
-CSgitFtdcReqQueryTradeResultBySerialField = {}
+
+CThostFtdcReqQueryTradeResultBySerialField = {}
+
+
 #业务功能码
-CSgitFtdcReqQueryTradeResultBySerialField["TradeCode"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqQueryTradeResultBySerialField["BankID"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqQueryTradeResultBySerialField["BankBranchID"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqQueryTradeResultBySerialField["BrokerID"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqQueryTradeResultBySerialField["BrokerBranchID"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqQueryTradeResultBySerialField["TradeDate"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqQueryTradeResultBySerialField["TradeTime"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqQueryTradeResultBySerialField["BankSerial"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqQueryTradeResultBySerialField["TradingDay"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqQueryTradeResultBySerialField["PlateSerial"] = "int"
+
+CThostFtdcReqQueryTradeResultBySerialField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqQueryTradeResultBySerialField["LastFragment"] = "char"
+
+CThostFtdcReqQueryTradeResultBySerialField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqQueryTradeResultBySerialField["SessionID"] = "int"
+
+CThostFtdcReqQueryTradeResultBySerialField["SessionID"] = "int"
+
 #流水号
-CSgitFtdcReqQueryTradeResultBySerialField["Reference"] = "int"
+
+CThostFtdcReqQueryTradeResultBySerialField["Reference"] = "int"
+
 #本流水号发布者的机构类型
-CSgitFtdcReqQueryTradeResultBySerialField["RefrenceIssureType"] = "char"
+
+CThostFtdcReqQueryTradeResultBySerialField["RefrenceIssureType"] = "char"
+
 #本流水号发布者机构编码
-CSgitFtdcReqQueryTradeResultBySerialField["RefrenceIssure"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["RefrenceIssure"] = "string"
+
 #客户姓名
-CSgitFtdcReqQueryTradeResultBySerialField["CustomerName"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcReqQueryTradeResultBySerialField["IdCardType"] = "char"
+
+CThostFtdcReqQueryTradeResultBySerialField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcReqQueryTradeResultBySerialField["IdentifiedCardNo"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcReqQueryTradeResultBySerialField["CustType"] = "char"
+
+CThostFtdcReqQueryTradeResultBySerialField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcReqQueryTradeResultBySerialField["BankAccount"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcReqQueryTradeResultBySerialField["BankPassWord"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcReqQueryTradeResultBySerialField["AccountID"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcReqQueryTradeResultBySerialField["Password"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["Password"] = "string"
+
 #币种代码
-CSgitFtdcReqQueryTradeResultBySerialField["CurrencyID"] = "string"
+
+CThostFtdcReqQueryTradeResultBySerialField["CurrencyID"] = "string"
+
 #转帐金额
-CSgitFtdcReqQueryTradeResultBySerialField["TradeAmount"] = "float"
+
+CThostFtdcReqQueryTradeResultBySerialField["TradeAmount"] = "float"
+
 #摘要
-CSgitFtdcReqQueryTradeResultBySerialField["Digest"] = "string"
-structDict['CSgitFtdcReqQueryTradeResultBySerialField'] = CSgitFtdcReqQueryTradeResultBySerialField
+
+CThostFtdcReqQueryTradeResultBySerialField["Digest"] = "string"
+
+structDict['CThostFtdcReqQueryTradeResultBySerialField'] = CThostFtdcReqQueryTradeResultBySerialField
+
+
 
 
 #查询指定流水号的交易结果响应
-CSgitFtdcRspQueryTradeResultBySerialField = {}
+
+CThostFtdcRspQueryTradeResultBySerialField = {}
+
+
 #业务功能码
-CSgitFtdcRspQueryTradeResultBySerialField["TradeCode"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspQueryTradeResultBySerialField["BankID"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspQueryTradeResultBySerialField["BankBranchID"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspQueryTradeResultBySerialField["BrokerID"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspQueryTradeResultBySerialField["BrokerBranchID"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspQueryTradeResultBySerialField["TradeDate"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspQueryTradeResultBySerialField["TradeTime"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspQueryTradeResultBySerialField["BankSerial"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspQueryTradeResultBySerialField["TradingDay"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspQueryTradeResultBySerialField["PlateSerial"] = "int"
+
+CThostFtdcRspQueryTradeResultBySerialField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspQueryTradeResultBySerialField["LastFragment"] = "char"
+
+CThostFtdcRspQueryTradeResultBySerialField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspQueryTradeResultBySerialField["SessionID"] = "int"
+
+CThostFtdcRspQueryTradeResultBySerialField["SessionID"] = "int"
+
 #错误代码
-CSgitFtdcRspQueryTradeResultBySerialField["ErrorID"] = "int"
+
+CThostFtdcRspQueryTradeResultBySerialField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspQueryTradeResultBySerialField["ErrorMsg"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["ErrorMsg"] = "string"
+
 #流水号
-CSgitFtdcRspQueryTradeResultBySerialField["Reference"] = "int"
+
+CThostFtdcRspQueryTradeResultBySerialField["Reference"] = "int"
+
 #本流水号发布者的机构类型
-CSgitFtdcRspQueryTradeResultBySerialField["RefrenceIssureType"] = "char"
+
+CThostFtdcRspQueryTradeResultBySerialField["RefrenceIssureType"] = "char"
+
 #本流水号发布者机构编码
-CSgitFtdcRspQueryTradeResultBySerialField["RefrenceIssure"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["RefrenceIssure"] = "string"
+
 #原始返回代码
-CSgitFtdcRspQueryTradeResultBySerialField["OriginReturnCode"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["OriginReturnCode"] = "string"
+
 #原始返回码描述
-CSgitFtdcRspQueryTradeResultBySerialField["OriginDescrInfoForReturnCode"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["OriginDescrInfoForReturnCode"] = "string"
+
 #银行帐号
-CSgitFtdcRspQueryTradeResultBySerialField["BankAccount"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcRspQueryTradeResultBySerialField["BankPassWord"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcRspQueryTradeResultBySerialField["AccountID"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcRspQueryTradeResultBySerialField["Password"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["Password"] = "string"
+
 #币种代码
-CSgitFtdcRspQueryTradeResultBySerialField["CurrencyID"] = "string"
+
+CThostFtdcRspQueryTradeResultBySerialField["CurrencyID"] = "string"
+
 #转帐金额
-CSgitFtdcRspQueryTradeResultBySerialField["TradeAmount"] = "float"
+
+CThostFtdcRspQueryTradeResultBySerialField["TradeAmount"] = "float"
+
 #摘要
-CSgitFtdcRspQueryTradeResultBySerialField["Digest"] = "string"
-structDict['CSgitFtdcRspQueryTradeResultBySerialField'] = CSgitFtdcRspQueryTradeResultBySerialField
+
+CThostFtdcRspQueryTradeResultBySerialField["Digest"] = "string"
+
+structDict['CThostFtdcRspQueryTradeResultBySerialField'] = CThostFtdcRspQueryTradeResultBySerialField
+
+
 
 
 #日终文件就绪请求
-CSgitFtdcReqDayEndFileReadyField = {}
+
+CThostFtdcReqDayEndFileReadyField = {}
+
+
 #业务功能码
-CSgitFtdcReqDayEndFileReadyField["TradeCode"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqDayEndFileReadyField["BankID"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqDayEndFileReadyField["BankBranchID"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqDayEndFileReadyField["BrokerID"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqDayEndFileReadyField["BrokerBranchID"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqDayEndFileReadyField["TradeDate"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqDayEndFileReadyField["TradeTime"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqDayEndFileReadyField["BankSerial"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqDayEndFileReadyField["TradingDay"] = "string"
+
+CThostFtdcReqDayEndFileReadyField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqDayEndFileReadyField["PlateSerial"] = "int"
+
+CThostFtdcReqDayEndFileReadyField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqDayEndFileReadyField["LastFragment"] = "char"
+
+CThostFtdcReqDayEndFileReadyField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqDayEndFileReadyField["SessionID"] = "int"
+
+CThostFtdcReqDayEndFileReadyField["SessionID"] = "int"
+
 #文件业务功能
-CSgitFtdcReqDayEndFileReadyField["FileBusinessCode"] = "char"
+
+CThostFtdcReqDayEndFileReadyField["FileBusinessCode"] = "char"
+
 #摘要
-CSgitFtdcReqDayEndFileReadyField["Digest"] = "string"
-structDict['CSgitFtdcReqDayEndFileReadyField'] = CSgitFtdcReqDayEndFileReadyField
+
+CThostFtdcReqDayEndFileReadyField["Digest"] = "string"
+
+structDict['CThostFtdcReqDayEndFileReadyField'] = CThostFtdcReqDayEndFileReadyField
+
+
 
 
 #返回结果
-CSgitFtdcReturnResultField = {}
+
+CThostFtdcReturnResultField = {}
+
+
 #返回代码
-CSgitFtdcReturnResultField["ReturnCode"] = "string"
+
+CThostFtdcReturnResultField["ReturnCode"] = "string"
+
 #返回码描述
-CSgitFtdcReturnResultField["DescrInfoForReturnCode"] = "string"
-structDict['CSgitFtdcReturnResultField'] = CSgitFtdcReturnResultField
+
+CThostFtdcReturnResultField["DescrInfoForReturnCode"] = "string"
+
+structDict['CThostFtdcReturnResultField'] = CThostFtdcReturnResultField
+
+
 
 
 #验证期货资金密码
-CSgitFtdcVerifyFuturePasswordField = {}
+
+CThostFtdcVerifyFuturePasswordField = {}
+
+
 #业务功能码
-CSgitFtdcVerifyFuturePasswordField["TradeCode"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcVerifyFuturePasswordField["BankID"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcVerifyFuturePasswordField["BankBranchID"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcVerifyFuturePasswordField["BrokerID"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcVerifyFuturePasswordField["BrokerBranchID"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcVerifyFuturePasswordField["TradeDate"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcVerifyFuturePasswordField["TradeTime"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcVerifyFuturePasswordField["BankSerial"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcVerifyFuturePasswordField["TradingDay"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcVerifyFuturePasswordField["PlateSerial"] = "int"
+
+CThostFtdcVerifyFuturePasswordField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcVerifyFuturePasswordField["LastFragment"] = "char"
+
+CThostFtdcVerifyFuturePasswordField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcVerifyFuturePasswordField["SessionID"] = "int"
+
+CThostFtdcVerifyFuturePasswordField["SessionID"] = "int"
+
 #投资者帐号
-CSgitFtdcVerifyFuturePasswordField["AccountID"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcVerifyFuturePasswordField["Password"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["Password"] = "string"
+
 #银行帐号
-CSgitFtdcVerifyFuturePasswordField["BankAccount"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcVerifyFuturePasswordField["BankPassWord"] = "string"
+
+CThostFtdcVerifyFuturePasswordField["BankPassWord"] = "string"
+
 #安装编号
-CSgitFtdcVerifyFuturePasswordField["InstallID"] = "int"
+
+CThostFtdcVerifyFuturePasswordField["InstallID"] = "int"
+
 #交易ID
-CSgitFtdcVerifyFuturePasswordField["TID"] = "int"
-structDict['CSgitFtdcVerifyFuturePasswordField'] = CSgitFtdcVerifyFuturePasswordField
+
+CThostFtdcVerifyFuturePasswordField["TID"] = "int"
+
+#币种代码
+
+CThostFtdcVerifyFuturePasswordField["CurrencyID"] = "string"
+
+structDict['CThostFtdcVerifyFuturePasswordField'] = CThostFtdcVerifyFuturePasswordField
+
+
 
 
 #验证客户信息
-CSgitFtdcVerifyCustInfoField = {}
+
+CThostFtdcVerifyCustInfoField = {}
+
+
 #客户姓名
-CSgitFtdcVerifyCustInfoField["CustomerName"] = "string"
+
+CThostFtdcVerifyCustInfoField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcVerifyCustInfoField["IdCardType"] = "char"
+
+CThostFtdcVerifyCustInfoField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcVerifyCustInfoField["IdentifiedCardNo"] = "string"
+
+CThostFtdcVerifyCustInfoField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcVerifyCustInfoField["CustType"] = "char"
-structDict['CSgitFtdcVerifyCustInfoField'] = CSgitFtdcVerifyCustInfoField
+
+CThostFtdcVerifyCustInfoField["CustType"] = "char"
+
+structDict['CThostFtdcVerifyCustInfoField'] = CThostFtdcVerifyCustInfoField
+
+
 
 
 #验证期货资金密码和客户信息
-CSgitFtdcVerifyFuturePasswordAndCustInfoField = {}
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField = {}
+
+
 #客户姓名
-CSgitFtdcVerifyFuturePasswordAndCustInfoField["CustomerName"] = "string"
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcVerifyFuturePasswordAndCustInfoField["IdCardType"] = "char"
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcVerifyFuturePasswordAndCustInfoField["IdentifiedCardNo"] = "string"
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcVerifyFuturePasswordAndCustInfoField["CustType"] = "char"
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["CustType"] = "char"
+
 #投资者帐号
-CSgitFtdcVerifyFuturePasswordAndCustInfoField["AccountID"] = "string"
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcVerifyFuturePasswordAndCustInfoField["Password"] = "string"
-structDict['CSgitFtdcVerifyFuturePasswordAndCustInfoField'] = CSgitFtdcVerifyFuturePasswordAndCustInfoField
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["Password"] = "string"
+
+#币种代码
+
+CThostFtdcVerifyFuturePasswordAndCustInfoField["CurrencyID"] = "string"
+
+structDict['CThostFtdcVerifyFuturePasswordAndCustInfoField'] = CThostFtdcVerifyFuturePasswordAndCustInfoField
+
+
 
 
 #验证期货资金密码和客户信息
-CSgitFtdcDepositResultInformField = {}
+
+CThostFtdcDepositResultInformField = {}
+
+
 #出入金流水号，该流水号为银期报盘返回的流水号
-CSgitFtdcDepositResultInformField["DepositSeqNo"] = "string"
+
+CThostFtdcDepositResultInformField["DepositSeqNo"] = "string"
+
 #经纪公司代码
-CSgitFtdcDepositResultInformField["BrokerID"] = "string"
+
+CThostFtdcDepositResultInformField["BrokerID"] = "string"
+
 #投资者代码
-CSgitFtdcDepositResultInformField["InvestorID"] = "string"
+
+CThostFtdcDepositResultInformField["InvestorID"] = "string"
+
 #入金金额
-CSgitFtdcDepositResultInformField["Deposit"] = "float"
+
+CThostFtdcDepositResultInformField["Deposit"] = "float"
+
 #请求编号
-CSgitFtdcDepositResultInformField["RequestID"] = "int"
+
+CThostFtdcDepositResultInformField["RequestID"] = "int"
+
 #返回代码
-CSgitFtdcDepositResultInformField["ReturnCode"] = "string"
+
+CThostFtdcDepositResultInformField["ReturnCode"] = "string"
+
 #返回码描述
-CSgitFtdcDepositResultInformField["DescrInfoForReturnCode"] = "string"
-structDict['CSgitFtdcDepositResultInformField'] = CSgitFtdcDepositResultInformField
+
+CThostFtdcDepositResultInformField["DescrInfoForReturnCode"] = "string"
+
+structDict['CThostFtdcDepositResultInformField'] = CThostFtdcDepositResultInformField
+
+
 
 
 #交易核心向银期报盘发出密钥同步请求
-CSgitFtdcReqSyncKeyField = {}
+
+CThostFtdcReqSyncKeyField = {}
+
+
 #业务功能码
-CSgitFtdcReqSyncKeyField["TradeCode"] = "string"
+
+CThostFtdcReqSyncKeyField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcReqSyncKeyField["BankID"] = "string"
+
+CThostFtdcReqSyncKeyField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcReqSyncKeyField["BankBranchID"] = "string"
+
+CThostFtdcReqSyncKeyField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcReqSyncKeyField["BrokerID"] = "string"
+
+CThostFtdcReqSyncKeyField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcReqSyncKeyField["BrokerBranchID"] = "string"
+
+CThostFtdcReqSyncKeyField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcReqSyncKeyField["TradeDate"] = "string"
+
+CThostFtdcReqSyncKeyField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcReqSyncKeyField["TradeTime"] = "string"
+
+CThostFtdcReqSyncKeyField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcReqSyncKeyField["BankSerial"] = "string"
+
+CThostFtdcReqSyncKeyField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcReqSyncKeyField["TradingDay"] = "string"
+
+CThostFtdcReqSyncKeyField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcReqSyncKeyField["PlateSerial"] = "int"
+
+CThostFtdcReqSyncKeyField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcReqSyncKeyField["LastFragment"] = "char"
+
+CThostFtdcReqSyncKeyField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcReqSyncKeyField["SessionID"] = "int"
+
+CThostFtdcReqSyncKeyField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcReqSyncKeyField["InstallID"] = "int"
+
+CThostFtdcReqSyncKeyField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcReqSyncKeyField["UserID"] = "string"
+
+CThostFtdcReqSyncKeyField["UserID"] = "string"
+
 #交易核心给银期报盘的消息
-CSgitFtdcReqSyncKeyField["Message"] = "string"
+
+CThostFtdcReqSyncKeyField["Message"] = "string"
+
 #渠道标志
-CSgitFtdcReqSyncKeyField["DeviceID"] = "string"
+
+CThostFtdcReqSyncKeyField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcReqSyncKeyField["BrokerIDByBank"] = "string"
+
+CThostFtdcReqSyncKeyField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcReqSyncKeyField["OperNo"] = "string"
+
+CThostFtdcReqSyncKeyField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcReqSyncKeyField["RequestID"] = "int"
+
+CThostFtdcReqSyncKeyField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcReqSyncKeyField["TID"] = "int"
-structDict['CSgitFtdcReqSyncKeyField'] = CSgitFtdcReqSyncKeyField
+
+CThostFtdcReqSyncKeyField["TID"] = "int"
+
+structDict['CThostFtdcReqSyncKeyField'] = CThostFtdcReqSyncKeyField
+
+
 
 
 #交易核心向银期报盘发出密钥同步响应
-CSgitFtdcRspSyncKeyField = {}
+
+CThostFtdcRspSyncKeyField = {}
+
+
 #业务功能码
-CSgitFtdcRspSyncKeyField["TradeCode"] = "string"
+
+CThostFtdcRspSyncKeyField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcRspSyncKeyField["BankID"] = "string"
+
+CThostFtdcRspSyncKeyField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcRspSyncKeyField["BankBranchID"] = "string"
+
+CThostFtdcRspSyncKeyField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcRspSyncKeyField["BrokerID"] = "string"
+
+CThostFtdcRspSyncKeyField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcRspSyncKeyField["BrokerBranchID"] = "string"
+
+CThostFtdcRspSyncKeyField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcRspSyncKeyField["TradeDate"] = "string"
+
+CThostFtdcRspSyncKeyField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcRspSyncKeyField["TradeTime"] = "string"
+
+CThostFtdcRspSyncKeyField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcRspSyncKeyField["BankSerial"] = "string"
+
+CThostFtdcRspSyncKeyField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcRspSyncKeyField["TradingDay"] = "string"
+
+CThostFtdcRspSyncKeyField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcRspSyncKeyField["PlateSerial"] = "int"
+
+CThostFtdcRspSyncKeyField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcRspSyncKeyField["LastFragment"] = "char"
+
+CThostFtdcRspSyncKeyField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcRspSyncKeyField["SessionID"] = "int"
+
+CThostFtdcRspSyncKeyField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcRspSyncKeyField["InstallID"] = "int"
+
+CThostFtdcRspSyncKeyField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcRspSyncKeyField["UserID"] = "string"
+
+CThostFtdcRspSyncKeyField["UserID"] = "string"
+
 #交易核心给银期报盘的消息
-CSgitFtdcRspSyncKeyField["Message"] = "string"
+
+CThostFtdcRspSyncKeyField["Message"] = "string"
+
 #渠道标志
-CSgitFtdcRspSyncKeyField["DeviceID"] = "string"
+
+CThostFtdcRspSyncKeyField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcRspSyncKeyField["BrokerIDByBank"] = "string"
+
+CThostFtdcRspSyncKeyField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcRspSyncKeyField["OperNo"] = "string"
+
+CThostFtdcRspSyncKeyField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcRspSyncKeyField["RequestID"] = "int"
+
+CThostFtdcRspSyncKeyField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcRspSyncKeyField["TID"] = "int"
+
+CThostFtdcRspSyncKeyField["TID"] = "int"
+
 #错误代码
-CSgitFtdcRspSyncKeyField["ErrorID"] = "int"
+
+CThostFtdcRspSyncKeyField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcRspSyncKeyField["ErrorMsg"] = "string"
-structDict['CSgitFtdcRspSyncKeyField'] = CSgitFtdcRspSyncKeyField
+
+CThostFtdcRspSyncKeyField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcRspSyncKeyField'] = CThostFtdcRspSyncKeyField
+
+
 
 
 #查询账户信息通知
-CSgitFtdcNotifyQueryAccountField = {}
+
+CThostFtdcNotifyQueryAccountField = {}
+
+
 #业务功能码
-CSgitFtdcNotifyQueryAccountField["TradeCode"] = "string"
+
+CThostFtdcNotifyQueryAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcNotifyQueryAccountField["BankID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcNotifyQueryAccountField["BankBranchID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcNotifyQueryAccountField["BrokerID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcNotifyQueryAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcNotifyQueryAccountField["TradeDate"] = "string"
+
+CThostFtdcNotifyQueryAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcNotifyQueryAccountField["TradeTime"] = "string"
+
+CThostFtdcNotifyQueryAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcNotifyQueryAccountField["BankSerial"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcNotifyQueryAccountField["TradingDay"] = "string"
+
+CThostFtdcNotifyQueryAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcNotifyQueryAccountField["PlateSerial"] = "int"
+
+CThostFtdcNotifyQueryAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcNotifyQueryAccountField["LastFragment"] = "char"
+
+CThostFtdcNotifyQueryAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcNotifyQueryAccountField["SessionID"] = "int"
+
+CThostFtdcNotifyQueryAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcNotifyQueryAccountField["CustomerName"] = "string"
+
+CThostFtdcNotifyQueryAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcNotifyQueryAccountField["IdCardType"] = "char"
+
+CThostFtdcNotifyQueryAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcNotifyQueryAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcNotifyQueryAccountField["IdentifiedCardNo"] = "string"
+
 #客户类型
-CSgitFtdcNotifyQueryAccountField["CustType"] = "char"
+
+CThostFtdcNotifyQueryAccountField["CustType"] = "char"
+
 #银行帐号
-CSgitFtdcNotifyQueryAccountField["BankAccount"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcNotifyQueryAccountField["BankPassWord"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcNotifyQueryAccountField["AccountID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcNotifyQueryAccountField["Password"] = "string"
+
+CThostFtdcNotifyQueryAccountField["Password"] = "string"
+
 #期货公司流水号
-CSgitFtdcNotifyQueryAccountField["FutureSerial"] = "int"
+
+CThostFtdcNotifyQueryAccountField["FutureSerial"] = "int"
+
 #安装编号
-CSgitFtdcNotifyQueryAccountField["InstallID"] = "int"
+
+CThostFtdcNotifyQueryAccountField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcNotifyQueryAccountField["UserID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["UserID"] = "string"
+
 #验证客户证件号码标志
-CSgitFtdcNotifyQueryAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcNotifyQueryAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcNotifyQueryAccountField["CurrencyID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["CurrencyID"] = "string"
+
 #摘要
-CSgitFtdcNotifyQueryAccountField["Digest"] = "string"
+
+CThostFtdcNotifyQueryAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcNotifyQueryAccountField["BankAccType"] = "char"
+
+CThostFtdcNotifyQueryAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcNotifyQueryAccountField["DeviceID"] = "string"
+
+CThostFtdcNotifyQueryAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcNotifyQueryAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcNotifyQueryAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcNotifyQueryAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcNotifyQueryAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcNotifyQueryAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcNotifyQueryAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcNotifyQueryAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcNotifyQueryAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcNotifyQueryAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcNotifyQueryAccountField["OperNo"] = "string"
+
+CThostFtdcNotifyQueryAccountField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcNotifyQueryAccountField["RequestID"] = "int"
+
+CThostFtdcNotifyQueryAccountField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcNotifyQueryAccountField["TID"] = "int"
+
+CThostFtdcNotifyQueryAccountField["TID"] = "int"
+
 #银行可用金额
-CSgitFtdcNotifyQueryAccountField["BankUseAmount"] = "float"
+
+CThostFtdcNotifyQueryAccountField["BankUseAmount"] = "float"
+
 #银行可取金额
-CSgitFtdcNotifyQueryAccountField["BankFetchAmount"] = "float"
+
+CThostFtdcNotifyQueryAccountField["BankFetchAmount"] = "float"
+
 #错误代码
-CSgitFtdcNotifyQueryAccountField["ErrorID"] = "int"
+
+CThostFtdcNotifyQueryAccountField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcNotifyQueryAccountField["ErrorMsg"] = "string"
-structDict['CSgitFtdcNotifyQueryAccountField'] = CSgitFtdcNotifyQueryAccountField
+
+CThostFtdcNotifyQueryAccountField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcNotifyQueryAccountField'] = CThostFtdcNotifyQueryAccountField
+
+
 
 
 #银期转账交易流水表
-CSgitFtdcTransferSerialField = {}
+
+CThostFtdcTransferSerialField = {}
+
+
 #平台流水号
-CSgitFtdcTransferSerialField["PlateSerial"] = "int"
+
+CThostFtdcTransferSerialField["PlateSerial"] = "int"
+
 #交易发起方日期
-CSgitFtdcTransferSerialField["TradeDate"] = "string"
+
+CThostFtdcTransferSerialField["TradeDate"] = "string"
+
 #交易日期
-CSgitFtdcTransferSerialField["TradingDay"] = "string"
+
+CThostFtdcTransferSerialField["TradingDay"] = "string"
+
 #交易时间
-CSgitFtdcTransferSerialField["TradeTime"] = "string"
+
+CThostFtdcTransferSerialField["TradeTime"] = "string"
+
 #交易代码
-CSgitFtdcTransferSerialField["TradeCode"] = "string"
+
+CThostFtdcTransferSerialField["TradeCode"] = "string"
+
 #会话编号
-CSgitFtdcTransferSerialField["SessionID"] = "int"
+
+CThostFtdcTransferSerialField["SessionID"] = "int"
+
 #银行编码
-CSgitFtdcTransferSerialField["BankID"] = "string"
+
+CThostFtdcTransferSerialField["BankID"] = "string"
+
 #银行分支机构编码
-CSgitFtdcTransferSerialField["BankBranchID"] = "string"
+
+CThostFtdcTransferSerialField["BankBranchID"] = "string"
+
 #银行帐号类型
-CSgitFtdcTransferSerialField["BankAccType"] = "char"
+
+CThostFtdcTransferSerialField["BankAccType"] = "char"
+
 #银行帐号
-CSgitFtdcTransferSerialField["BankAccount"] = "string"
+
+CThostFtdcTransferSerialField["BankAccount"] = "string"
+
 #银行流水号
-CSgitFtdcTransferSerialField["BankSerial"] = "string"
+
+CThostFtdcTransferSerialField["BankSerial"] = "string"
+
 #期货公司编码
-CSgitFtdcTransferSerialField["BrokerID"] = "string"
+
+CThostFtdcTransferSerialField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcTransferSerialField["BrokerBranchID"] = "string"
+
+CThostFtdcTransferSerialField["BrokerBranchID"] = "string"
+
 #期货公司帐号类型
-CSgitFtdcTransferSerialField["FutureAccType"] = "char"
+
+CThostFtdcTransferSerialField["FutureAccType"] = "char"
+
 #投资者帐号
-CSgitFtdcTransferSerialField["AccountID"] = "string"
+
+CThostFtdcTransferSerialField["AccountID"] = "string"
+
 #投资者代码
-CSgitFtdcTransferSerialField["InvestorID"] = "string"
+
+CThostFtdcTransferSerialField["InvestorID"] = "string"
+
 #期货公司流水号
-CSgitFtdcTransferSerialField["FutureSerial"] = "int"
+
+CThostFtdcTransferSerialField["FutureSerial"] = "int"
+
 #证件类型
-CSgitFtdcTransferSerialField["IdCardType"] = "char"
+
+CThostFtdcTransferSerialField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcTransferSerialField["IdentifiedCardNo"] = "string"
+
+CThostFtdcTransferSerialField["IdentifiedCardNo"] = "string"
+
 #币种代码
-CSgitFtdcTransferSerialField["CurrencyID"] = "string"
+
+CThostFtdcTransferSerialField["CurrencyID"] = "string"
+
 #交易金额
-CSgitFtdcTransferSerialField["TradeAmount"] = "float"
+
+CThostFtdcTransferSerialField["TradeAmount"] = "float"
+
 #应收客户费用
-CSgitFtdcTransferSerialField["CustFee"] = "float"
+
+CThostFtdcTransferSerialField["CustFee"] = "float"
+
 #应收期货公司费用
-CSgitFtdcTransferSerialField["BrokerFee"] = "float"
+
+CThostFtdcTransferSerialField["BrokerFee"] = "float"
+
 #有效标志
-CSgitFtdcTransferSerialField["AvailabilityFlag"] = "char"
+
+CThostFtdcTransferSerialField["AvailabilityFlag"] = "char"
+
 #操作员
-CSgitFtdcTransferSerialField["OperatorCode"] = "string"
+
+CThostFtdcTransferSerialField["OperatorCode"] = "string"
+
 #新银行帐号
-CSgitFtdcTransferSerialField["BankNewAccount"] = "string"
+
+CThostFtdcTransferSerialField["BankNewAccount"] = "string"
+
 #错误代码
-CSgitFtdcTransferSerialField["ErrorID"] = "int"
+
+CThostFtdcTransferSerialField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcTransferSerialField["ErrorMsg"] = "string"
-structDict['CSgitFtdcTransferSerialField'] = CSgitFtdcTransferSerialField
+
+CThostFtdcTransferSerialField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcTransferSerialField'] = CThostFtdcTransferSerialField
+
+
 
 
 #请求查询转帐流水
-CSgitFtdcQryTransferSerialField = {}
+
+CThostFtdcQryTransferSerialField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryTransferSerialField["BrokerID"] = "string"
+
+CThostFtdcQryTransferSerialField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcQryTransferSerialField["AccountID"] = "string"
+
+CThostFtdcQryTransferSerialField["AccountID"] = "string"
+
 #银行编码
-CSgitFtdcQryTransferSerialField["BankID"] = "string"
-structDict['CSgitFtdcQryTransferSerialField'] = CSgitFtdcQryTransferSerialField
+
+CThostFtdcQryTransferSerialField["BankID"] = "string"
+
+#币种代码
+
+CThostFtdcQryTransferSerialField["CurrencyID"] = "string"
+
+structDict['CThostFtdcQryTransferSerialField'] = CThostFtdcQryTransferSerialField
+
+
 
 
 #期商签到通知
-CSgitFtdcNotifyFutureSignInField = {}
+
+CThostFtdcNotifyFutureSignInField = {}
+
+
 #业务功能码
-CSgitFtdcNotifyFutureSignInField["TradeCode"] = "string"
+
+CThostFtdcNotifyFutureSignInField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcNotifyFutureSignInField["BankID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcNotifyFutureSignInField["BankBranchID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcNotifyFutureSignInField["BrokerID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcNotifyFutureSignInField["BrokerBranchID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcNotifyFutureSignInField["TradeDate"] = "string"
+
+CThostFtdcNotifyFutureSignInField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcNotifyFutureSignInField["TradeTime"] = "string"
+
+CThostFtdcNotifyFutureSignInField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcNotifyFutureSignInField["BankSerial"] = "string"
+
+CThostFtdcNotifyFutureSignInField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcNotifyFutureSignInField["TradingDay"] = "string"
+
+CThostFtdcNotifyFutureSignInField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcNotifyFutureSignInField["PlateSerial"] = "int"
+
+CThostFtdcNotifyFutureSignInField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcNotifyFutureSignInField["LastFragment"] = "char"
+
+CThostFtdcNotifyFutureSignInField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcNotifyFutureSignInField["SessionID"] = "int"
+
+CThostFtdcNotifyFutureSignInField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcNotifyFutureSignInField["InstallID"] = "int"
+
+CThostFtdcNotifyFutureSignInField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcNotifyFutureSignInField["UserID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["UserID"] = "string"
+
 #摘要
-CSgitFtdcNotifyFutureSignInField["Digest"] = "string"
+
+CThostFtdcNotifyFutureSignInField["Digest"] = "string"
+
 #币种代码
-CSgitFtdcNotifyFutureSignInField["CurrencyID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["CurrencyID"] = "string"
+
 #渠道标志
-CSgitFtdcNotifyFutureSignInField["DeviceID"] = "string"
+
+CThostFtdcNotifyFutureSignInField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcNotifyFutureSignInField["BrokerIDByBank"] = "string"
+
+CThostFtdcNotifyFutureSignInField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcNotifyFutureSignInField["OperNo"] = "string"
+
+CThostFtdcNotifyFutureSignInField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcNotifyFutureSignInField["RequestID"] = "int"
+
+CThostFtdcNotifyFutureSignInField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcNotifyFutureSignInField["TID"] = "int"
+
+CThostFtdcNotifyFutureSignInField["TID"] = "int"
+
 #错误代码
-CSgitFtdcNotifyFutureSignInField["ErrorID"] = "int"
+
+CThostFtdcNotifyFutureSignInField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcNotifyFutureSignInField["ErrorMsg"] = "string"
+
+CThostFtdcNotifyFutureSignInField["ErrorMsg"] = "string"
+
 #PIN密钥
-CSgitFtdcNotifyFutureSignInField["PinKey"] = "string"
+
+CThostFtdcNotifyFutureSignInField["PinKey"] = "string"
+
 #MAC密钥
-CSgitFtdcNotifyFutureSignInField["MacKey"] = "string"
-structDict['CSgitFtdcNotifyFutureSignInField'] = CSgitFtdcNotifyFutureSignInField
+
+CThostFtdcNotifyFutureSignInField["MacKey"] = "string"
+
+structDict['CThostFtdcNotifyFutureSignInField'] = CThostFtdcNotifyFutureSignInField
+
+
 
 
 #期商签退通知
-CSgitFtdcNotifyFutureSignOutField = {}
+
+CThostFtdcNotifyFutureSignOutField = {}
+
+
 #业务功能码
-CSgitFtdcNotifyFutureSignOutField["TradeCode"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcNotifyFutureSignOutField["BankID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcNotifyFutureSignOutField["BankBranchID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcNotifyFutureSignOutField["BrokerID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcNotifyFutureSignOutField["BrokerBranchID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcNotifyFutureSignOutField["TradeDate"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcNotifyFutureSignOutField["TradeTime"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcNotifyFutureSignOutField["BankSerial"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcNotifyFutureSignOutField["TradingDay"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcNotifyFutureSignOutField["PlateSerial"] = "int"
+
+CThostFtdcNotifyFutureSignOutField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcNotifyFutureSignOutField["LastFragment"] = "char"
+
+CThostFtdcNotifyFutureSignOutField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcNotifyFutureSignOutField["SessionID"] = "int"
+
+CThostFtdcNotifyFutureSignOutField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcNotifyFutureSignOutField["InstallID"] = "int"
+
+CThostFtdcNotifyFutureSignOutField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcNotifyFutureSignOutField["UserID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["UserID"] = "string"
+
 #摘要
-CSgitFtdcNotifyFutureSignOutField["Digest"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["Digest"] = "string"
+
 #币种代码
-CSgitFtdcNotifyFutureSignOutField["CurrencyID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["CurrencyID"] = "string"
+
 #渠道标志
-CSgitFtdcNotifyFutureSignOutField["DeviceID"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcNotifyFutureSignOutField["BrokerIDByBank"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcNotifyFutureSignOutField["OperNo"] = "string"
+
+CThostFtdcNotifyFutureSignOutField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcNotifyFutureSignOutField["RequestID"] = "int"
+
+CThostFtdcNotifyFutureSignOutField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcNotifyFutureSignOutField["TID"] = "int"
+
+CThostFtdcNotifyFutureSignOutField["TID"] = "int"
+
 #错误代码
-CSgitFtdcNotifyFutureSignOutField["ErrorID"] = "int"
+
+CThostFtdcNotifyFutureSignOutField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcNotifyFutureSignOutField["ErrorMsg"] = "string"
-structDict['CSgitFtdcNotifyFutureSignOutField'] = CSgitFtdcNotifyFutureSignOutField
+
+CThostFtdcNotifyFutureSignOutField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcNotifyFutureSignOutField'] = CThostFtdcNotifyFutureSignOutField
+
+
 
 
 #交易核心向银期报盘发出密钥同步处理结果的通知
-CSgitFtdcNotifySyncKeyField = {}
+
+CThostFtdcNotifySyncKeyField = {}
+
+
 #业务功能码
-CSgitFtdcNotifySyncKeyField["TradeCode"] = "string"
+
+CThostFtdcNotifySyncKeyField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcNotifySyncKeyField["BankID"] = "string"
+
+CThostFtdcNotifySyncKeyField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcNotifySyncKeyField["BankBranchID"] = "string"
+
+CThostFtdcNotifySyncKeyField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcNotifySyncKeyField["BrokerID"] = "string"
+
+CThostFtdcNotifySyncKeyField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcNotifySyncKeyField["BrokerBranchID"] = "string"
+
+CThostFtdcNotifySyncKeyField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcNotifySyncKeyField["TradeDate"] = "string"
+
+CThostFtdcNotifySyncKeyField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcNotifySyncKeyField["TradeTime"] = "string"
+
+CThostFtdcNotifySyncKeyField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcNotifySyncKeyField["BankSerial"] = "string"
+
+CThostFtdcNotifySyncKeyField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcNotifySyncKeyField["TradingDay"] = "string"
+
+CThostFtdcNotifySyncKeyField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcNotifySyncKeyField["PlateSerial"] = "int"
+
+CThostFtdcNotifySyncKeyField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcNotifySyncKeyField["LastFragment"] = "char"
+
+CThostFtdcNotifySyncKeyField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcNotifySyncKeyField["SessionID"] = "int"
+
+CThostFtdcNotifySyncKeyField["SessionID"] = "int"
+
 #安装编号
-CSgitFtdcNotifySyncKeyField["InstallID"] = "int"
+
+CThostFtdcNotifySyncKeyField["InstallID"] = "int"
+
 #用户标识
-CSgitFtdcNotifySyncKeyField["UserID"] = "string"
+
+CThostFtdcNotifySyncKeyField["UserID"] = "string"
+
 #交易核心给银期报盘的消息
-CSgitFtdcNotifySyncKeyField["Message"] = "string"
+
+CThostFtdcNotifySyncKeyField["Message"] = "string"
+
 #渠道标志
-CSgitFtdcNotifySyncKeyField["DeviceID"] = "string"
+
+CThostFtdcNotifySyncKeyField["DeviceID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcNotifySyncKeyField["BrokerIDByBank"] = "string"
+
+CThostFtdcNotifySyncKeyField["BrokerIDByBank"] = "string"
+
 #交易柜员
-CSgitFtdcNotifySyncKeyField["OperNo"] = "string"
+
+CThostFtdcNotifySyncKeyField["OperNo"] = "string"
+
 #请求编号
-CSgitFtdcNotifySyncKeyField["RequestID"] = "int"
+
+CThostFtdcNotifySyncKeyField["RequestID"] = "int"
+
 #交易ID
-CSgitFtdcNotifySyncKeyField["TID"] = "int"
+
+CThostFtdcNotifySyncKeyField["TID"] = "int"
+
 #错误代码
-CSgitFtdcNotifySyncKeyField["ErrorID"] = "int"
+
+CThostFtdcNotifySyncKeyField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcNotifySyncKeyField["ErrorMsg"] = "string"
-structDict['CSgitFtdcNotifySyncKeyField'] = CSgitFtdcNotifySyncKeyField
+
+CThostFtdcNotifySyncKeyField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcNotifySyncKeyField'] = CThostFtdcNotifySyncKeyField
+
+
 
 
 #请求查询银期签约关系
-CSgitFtdcQryAccountregisterField = {}
+
+CThostFtdcQryAccountregisterField = {}
+
+
 #经纪公司代码
-CSgitFtdcQryAccountregisterField["BrokerID"] = "string"
+
+CThostFtdcQryAccountregisterField["BrokerID"] = "string"
+
 #投资者帐号
-CSgitFtdcQryAccountregisterField["AccountID"] = "string"
+
+CThostFtdcQryAccountregisterField["AccountID"] = "string"
+
 #银行编码
-CSgitFtdcQryAccountregisterField["BankID"] = "string"
-structDict['CSgitFtdcQryAccountregisterField'] = CSgitFtdcQryAccountregisterField
+
+CThostFtdcQryAccountregisterField["BankID"] = "string"
+
+#银行分支机构编码//以下sgit不用
+
+CThostFtdcQryAccountregisterField["BankBranchID"] = "string"
+
+#币种代码
+
+CThostFtdcQryAccountregisterField["CurrencyID"] = "string"
+
+structDict['CThostFtdcQryAccountregisterField'] = CThostFtdcQryAccountregisterField
+
+
 
 
 #客户开销户信息表
-CSgitFtdcAccountregisterField = {}
+
+CThostFtdcAccountregisterField = {}
+
+
 #交易日期
-CSgitFtdcAccountregisterField["TradeDay"] = "string"
+
+CThostFtdcAccountregisterField["TradeDay"] = "string"
+
 #银行编码
-CSgitFtdcAccountregisterField["BankID"] = "string"
+
+CThostFtdcAccountregisterField["BankID"] = "string"
+
 #银行分支机构编码
-CSgitFtdcAccountregisterField["BankBranchID"] = "string"
+
+CThostFtdcAccountregisterField["BankBranchID"] = "string"
+
 #银行帐号
-CSgitFtdcAccountregisterField["BankAccount"] = "string"
+
+CThostFtdcAccountregisterField["BankAccount"] = "string"
+
 #期货公司编码
-CSgitFtdcAccountregisterField["BrokerID"] = "string"
+
+CThostFtdcAccountregisterField["BrokerID"] = "string"
+
 #期货公司分支机构编码
-CSgitFtdcAccountregisterField["BrokerBranchID"] = "string"
+
+CThostFtdcAccountregisterField["BrokerBranchID"] = "string"
+
 #投资者帐号
-CSgitFtdcAccountregisterField["AccountID"] = "string"
+
+CThostFtdcAccountregisterField["AccountID"] = "string"
+
 #证件类型
-CSgitFtdcAccountregisterField["IdCardType"] = "char"
+
+CThostFtdcAccountregisterField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcAccountregisterField["IdentifiedCardNo"] = "string"
+
+CThostFtdcAccountregisterField["IdentifiedCardNo"] = "string"
+
 #客户姓名
-CSgitFtdcAccountregisterField["CustomerName"] = "string"
+
+CThostFtdcAccountregisterField["CustomerName"] = "string"
+
 #币种代码
-CSgitFtdcAccountregisterField["CurrencyID"] = "string"
+
+CThostFtdcAccountregisterField["CurrencyID"] = "string"
+
 #开销户类别
-CSgitFtdcAccountregisterField["OpenOrDestroy"] = "char"
+
+CThostFtdcAccountregisterField["OpenOrDestroy"] = "char"
+
 #签约日期
-CSgitFtdcAccountregisterField["RegDate"] = "string"
+
+CThostFtdcAccountregisterField["RegDate"] = "string"
+
 #解约日期
-CSgitFtdcAccountregisterField["OutDate"] = "string"
+
+CThostFtdcAccountregisterField["OutDate"] = "string"
+
 #交易ID
-CSgitFtdcAccountregisterField["TID"] = "int"
+
+CThostFtdcAccountregisterField["TID"] = "int"
+
 #客户类型
-CSgitFtdcAccountregisterField["CustType"] = "char"
+
+CThostFtdcAccountregisterField["CustType"] = "char"
+
 #银行帐号类型
-CSgitFtdcAccountregisterField["BankAccType"] = "char"
-structDict['CSgitFtdcAccountregisterField'] = CSgitFtdcAccountregisterField
+
+CThostFtdcAccountregisterField["BankAccType"] = "char"
+
+structDict['CThostFtdcAccountregisterField'] = CThostFtdcAccountregisterField
+
+
 
 
 #银期开户信息
-CSgitFtdcOpenAccountField = {}
+
+CThostFtdcOpenAccountField = {}
+
+
 #业务功能码
-CSgitFtdcOpenAccountField["TradeCode"] = "string"
+
+CThostFtdcOpenAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcOpenAccountField["BankID"] = "string"
+
+CThostFtdcOpenAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcOpenAccountField["BankBranchID"] = "string"
+
+CThostFtdcOpenAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcOpenAccountField["BrokerID"] = "string"
+
+CThostFtdcOpenAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcOpenAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcOpenAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcOpenAccountField["TradeDate"] = "string"
+
+CThostFtdcOpenAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcOpenAccountField["TradeTime"] = "string"
+
+CThostFtdcOpenAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcOpenAccountField["BankSerial"] = "string"
+
+CThostFtdcOpenAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcOpenAccountField["TradingDay"] = "string"
+
+CThostFtdcOpenAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcOpenAccountField["PlateSerial"] = "int"
+
+CThostFtdcOpenAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcOpenAccountField["LastFragment"] = "char"
+
+CThostFtdcOpenAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcOpenAccountField["SessionID"] = "int"
+
+CThostFtdcOpenAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcOpenAccountField["CustomerName"] = "string"
+
+CThostFtdcOpenAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcOpenAccountField["IdCardType"] = "char"
+
+CThostFtdcOpenAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcOpenAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcOpenAccountField["IdentifiedCardNo"] = "string"
+
 #性别
-CSgitFtdcOpenAccountField["Gender"] = "char"
+
+CThostFtdcOpenAccountField["Gender"] = "char"
+
 #国家代码
-CSgitFtdcOpenAccountField["CountryCode"] = "string"
+
+CThostFtdcOpenAccountField["CountryCode"] = "string"
+
 #客户类型
-CSgitFtdcOpenAccountField["CustType"] = "char"
+
+CThostFtdcOpenAccountField["CustType"] = "char"
+
 #地址
-CSgitFtdcOpenAccountField["Address"] = "string"
+
+CThostFtdcOpenAccountField["Address"] = "string"
+
 #邮编
-CSgitFtdcOpenAccountField["ZipCode"] = "string"
+
+CThostFtdcOpenAccountField["ZipCode"] = "string"
+
 #电话号码
-CSgitFtdcOpenAccountField["Telephone"] = "string"
+
+CThostFtdcOpenAccountField["Telephone"] = "string"
+
 #手机
-CSgitFtdcOpenAccountField["MobilePhone"] = "string"
+
+CThostFtdcOpenAccountField["MobilePhone"] = "string"
+
 #传真
-CSgitFtdcOpenAccountField["Fax"] = "string"
+
+CThostFtdcOpenAccountField["Fax"] = "string"
+
 #电子邮件
-CSgitFtdcOpenAccountField["EMail"] = "string"
+
+CThostFtdcOpenAccountField["EMail"] = "string"
+
 #资金账户状态
-CSgitFtdcOpenAccountField["MoneyAccountStatus"] = "char"
+
+CThostFtdcOpenAccountField["MoneyAccountStatus"] = "char"
+
 #银行帐号
-CSgitFtdcOpenAccountField["BankAccount"] = "string"
+
+CThostFtdcOpenAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcOpenAccountField["BankPassWord"] = "string"
+
+CThostFtdcOpenAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcOpenAccountField["AccountID"] = "string"
+
+CThostFtdcOpenAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcOpenAccountField["Password"] = "string"
+
+CThostFtdcOpenAccountField["Password"] = "string"
+
 #安装编号
-CSgitFtdcOpenAccountField["InstallID"] = "int"
+
+CThostFtdcOpenAccountField["InstallID"] = "int"
+
 #验证客户证件号码标志
-CSgitFtdcOpenAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcOpenAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcOpenAccountField["CurrencyID"] = "string"
+
+CThostFtdcOpenAccountField["CurrencyID"] = "string"
+
 #汇钞标志
-CSgitFtdcOpenAccountField["CashExchangeCode"] = "char"
+
+CThostFtdcOpenAccountField["CashExchangeCode"] = "char"
+
 #摘要
-CSgitFtdcOpenAccountField["Digest"] = "string"
+
+CThostFtdcOpenAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcOpenAccountField["BankAccType"] = "char"
+
+CThostFtdcOpenAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcOpenAccountField["DeviceID"] = "string"
+
+CThostFtdcOpenAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcOpenAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcOpenAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcOpenAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcOpenAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcOpenAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcOpenAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcOpenAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcOpenAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcOpenAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcOpenAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcOpenAccountField["OperNo"] = "string"
+
+CThostFtdcOpenAccountField["OperNo"] = "string"
+
 #交易ID
-CSgitFtdcOpenAccountField["TID"] = "int"
+
+CThostFtdcOpenAccountField["TID"] = "int"
+
+#用户标识
+
+CThostFtdcOpenAccountField["UserID"] = "string"
+
 #错误代码
-CSgitFtdcOpenAccountField["ErrorID"] = "int"
+
+CThostFtdcOpenAccountField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcOpenAccountField["ErrorMsg"] = "string"
-structDict['CSgitFtdcOpenAccountField'] = CSgitFtdcOpenAccountField
+
+CThostFtdcOpenAccountField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcOpenAccountField'] = CThostFtdcOpenAccountField
+
+
 
 
 #银期销户信息
-CSgitFtdcCancelAccountField = {}
+
+CThostFtdcCancelAccountField = {}
+
+
 #业务功能码
-CSgitFtdcCancelAccountField["TradeCode"] = "string"
+
+CThostFtdcCancelAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcCancelAccountField["BankID"] = "string"
+
+CThostFtdcCancelAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcCancelAccountField["BankBranchID"] = "string"
+
+CThostFtdcCancelAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcCancelAccountField["BrokerID"] = "string"
+
+CThostFtdcCancelAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcCancelAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcCancelAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcCancelAccountField["TradeDate"] = "string"
+
+CThostFtdcCancelAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcCancelAccountField["TradeTime"] = "string"
+
+CThostFtdcCancelAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcCancelAccountField["BankSerial"] = "string"
+
+CThostFtdcCancelAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcCancelAccountField["TradingDay"] = "string"
+
+CThostFtdcCancelAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcCancelAccountField["PlateSerial"] = "int"
+
+CThostFtdcCancelAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcCancelAccountField["LastFragment"] = "char"
+
+CThostFtdcCancelAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcCancelAccountField["SessionID"] = "int"
+
+CThostFtdcCancelAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcCancelAccountField["CustomerName"] = "string"
+
+CThostFtdcCancelAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcCancelAccountField["IdCardType"] = "char"
+
+CThostFtdcCancelAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcCancelAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcCancelAccountField["IdentifiedCardNo"] = "string"
+
 #性别
-CSgitFtdcCancelAccountField["Gender"] = "char"
+
+CThostFtdcCancelAccountField["Gender"] = "char"
+
 #国家代码
-CSgitFtdcCancelAccountField["CountryCode"] = "string"
+
+CThostFtdcCancelAccountField["CountryCode"] = "string"
+
 #客户类型
-CSgitFtdcCancelAccountField["CustType"] = "char"
+
+CThostFtdcCancelAccountField["CustType"] = "char"
+
 #地址
-CSgitFtdcCancelAccountField["Address"] = "string"
+
+CThostFtdcCancelAccountField["Address"] = "string"
+
 #邮编
-CSgitFtdcCancelAccountField["ZipCode"] = "string"
+
+CThostFtdcCancelAccountField["ZipCode"] = "string"
+
 #电话号码
-CSgitFtdcCancelAccountField["Telephone"] = "string"
+
+CThostFtdcCancelAccountField["Telephone"] = "string"
+
 #手机
-CSgitFtdcCancelAccountField["MobilePhone"] = "string"
+
+CThostFtdcCancelAccountField["MobilePhone"] = "string"
+
 #传真
-CSgitFtdcCancelAccountField["Fax"] = "string"
+
+CThostFtdcCancelAccountField["Fax"] = "string"
+
 #电子邮件
-CSgitFtdcCancelAccountField["EMail"] = "string"
+
+CThostFtdcCancelAccountField["EMail"] = "string"
+
 #资金账户状态
-CSgitFtdcCancelAccountField["MoneyAccountStatus"] = "char"
+
+CThostFtdcCancelAccountField["MoneyAccountStatus"] = "char"
+
 #银行帐号
-CSgitFtdcCancelAccountField["BankAccount"] = "string"
+
+CThostFtdcCancelAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcCancelAccountField["BankPassWord"] = "string"
+
+CThostFtdcCancelAccountField["BankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcCancelAccountField["AccountID"] = "string"
+
+CThostFtdcCancelAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcCancelAccountField["Password"] = "string"
+
+CThostFtdcCancelAccountField["Password"] = "string"
+
 #安装编号
-CSgitFtdcCancelAccountField["InstallID"] = "int"
+
+CThostFtdcCancelAccountField["InstallID"] = "int"
+
 #验证客户证件号码标志
-CSgitFtdcCancelAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcCancelAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcCancelAccountField["CurrencyID"] = "string"
+
+CThostFtdcCancelAccountField["CurrencyID"] = "string"
+
 #汇钞标志
-CSgitFtdcCancelAccountField["CashExchangeCode"] = "char"
+
+CThostFtdcCancelAccountField["CashExchangeCode"] = "char"
+
 #摘要
-CSgitFtdcCancelAccountField["Digest"] = "string"
+
+CThostFtdcCancelAccountField["Digest"] = "string"
+
 #银行帐号类型
-CSgitFtdcCancelAccountField["BankAccType"] = "char"
+
+CThostFtdcCancelAccountField["BankAccType"] = "char"
+
 #渠道标志
-CSgitFtdcCancelAccountField["DeviceID"] = "string"
+
+CThostFtdcCancelAccountField["DeviceID"] = "string"
+
 #期货单位帐号类型
-CSgitFtdcCancelAccountField["BankSecuAccType"] = "char"
+
+CThostFtdcCancelAccountField["BankSecuAccType"] = "char"
+
 #期货公司银行编码
-CSgitFtdcCancelAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcCancelAccountField["BrokerIDByBank"] = "string"
+
 #期货单位帐号
-CSgitFtdcCancelAccountField["BankSecuAcc"] = "string"
+
+CThostFtdcCancelAccountField["BankSecuAcc"] = "string"
+
 #银行密码标志
-CSgitFtdcCancelAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcCancelAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcCancelAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcCancelAccountField["SecuPwdFlag"] = "char"
+
 #交易柜员
-CSgitFtdcCancelAccountField["OperNo"] = "string"
+
+CThostFtdcCancelAccountField["OperNo"] = "string"
+
 #交易ID
-CSgitFtdcCancelAccountField["TID"] = "int"
+
+CThostFtdcCancelAccountField["TID"] = "int"
+
+#用户标识
+
+CThostFtdcCancelAccountField["UserID"] = "string"
+
 #错误代码
-CSgitFtdcCancelAccountField["ErrorID"] = "int"
+
+CThostFtdcCancelAccountField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcCancelAccountField["ErrorMsg"] = "string"
-structDict['CSgitFtdcCancelAccountField'] = CSgitFtdcCancelAccountField
+
+CThostFtdcCancelAccountField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcCancelAccountField'] = CThostFtdcCancelAccountField
+
+
 
 
 #银期变更银行账号信息
-CSgitFtdcChangeAccountField = {}
+
+CThostFtdcChangeAccountField = {}
+
+
 #业务功能码
-CSgitFtdcChangeAccountField["TradeCode"] = "string"
+
+CThostFtdcChangeAccountField["TradeCode"] = "string"
+
 #银行代码
-CSgitFtdcChangeAccountField["BankID"] = "string"
+
+CThostFtdcChangeAccountField["BankID"] = "string"
+
 #银行分支机构代码
-CSgitFtdcChangeAccountField["BankBranchID"] = "string"
+
+CThostFtdcChangeAccountField["BankBranchID"] = "string"
+
 #期商代码
-CSgitFtdcChangeAccountField["BrokerID"] = "string"
+
+CThostFtdcChangeAccountField["BrokerID"] = "string"
+
 #期商分支机构代码
-CSgitFtdcChangeAccountField["BrokerBranchID"] = "string"
+
+CThostFtdcChangeAccountField["BrokerBranchID"] = "string"
+
 #交易日期
-CSgitFtdcChangeAccountField["TradeDate"] = "string"
+
+CThostFtdcChangeAccountField["TradeDate"] = "string"
+
 #交易时间
-CSgitFtdcChangeAccountField["TradeTime"] = "string"
+
+CThostFtdcChangeAccountField["TradeTime"] = "string"
+
 #银行流水号
-CSgitFtdcChangeAccountField["BankSerial"] = "string"
+
+CThostFtdcChangeAccountField["BankSerial"] = "string"
+
 #交易系统日期 
-CSgitFtdcChangeAccountField["TradingDay"] = "string"
+
+CThostFtdcChangeAccountField["TradingDay"] = "string"
+
 #银期平台消息流水号
-CSgitFtdcChangeAccountField["PlateSerial"] = "int"
+
+CThostFtdcChangeAccountField["PlateSerial"] = "int"
+
 #最后分片标志
-CSgitFtdcChangeAccountField["LastFragment"] = "char"
+
+CThostFtdcChangeAccountField["LastFragment"] = "char"
+
 #会话号
-CSgitFtdcChangeAccountField["SessionID"] = "int"
+
+CThostFtdcChangeAccountField["SessionID"] = "int"
+
 #客户姓名
-CSgitFtdcChangeAccountField["CustomerName"] = "string"
+
+CThostFtdcChangeAccountField["CustomerName"] = "string"
+
 #证件类型
-CSgitFtdcChangeAccountField["IdCardType"] = "char"
+
+CThostFtdcChangeAccountField["IdCardType"] = "char"
+
 #证件号码
-CSgitFtdcChangeAccountField["IdentifiedCardNo"] = "string"
+
+CThostFtdcChangeAccountField["IdentifiedCardNo"] = "string"
+
 #性别
-CSgitFtdcChangeAccountField["Gender"] = "char"
+
+CThostFtdcChangeAccountField["Gender"] = "char"
+
 #国家代码
-CSgitFtdcChangeAccountField["CountryCode"] = "string"
+
+CThostFtdcChangeAccountField["CountryCode"] = "string"
+
 #客户类型
-CSgitFtdcChangeAccountField["CustType"] = "char"
+
+CThostFtdcChangeAccountField["CustType"] = "char"
+
 #地址
-CSgitFtdcChangeAccountField["Address"] = "string"
+
+CThostFtdcChangeAccountField["Address"] = "string"
+
 #邮编
-CSgitFtdcChangeAccountField["ZipCode"] = "string"
+
+CThostFtdcChangeAccountField["ZipCode"] = "string"
+
 #电话号码
-CSgitFtdcChangeAccountField["Telephone"] = "string"
+
+CThostFtdcChangeAccountField["Telephone"] = "string"
+
 #手机
-CSgitFtdcChangeAccountField["MobilePhone"] = "string"
+
+CThostFtdcChangeAccountField["MobilePhone"] = "string"
+
 #传真
-CSgitFtdcChangeAccountField["Fax"] = "string"
+
+CThostFtdcChangeAccountField["Fax"] = "string"
+
 #电子邮件
-CSgitFtdcChangeAccountField["EMail"] = "string"
+
+CThostFtdcChangeAccountField["EMail"] = "string"
+
 #资金账户状态
-CSgitFtdcChangeAccountField["MoneyAccountStatus"] = "char"
+
+CThostFtdcChangeAccountField["MoneyAccountStatus"] = "char"
+
 #银行帐号
-CSgitFtdcChangeAccountField["BankAccount"] = "string"
+
+CThostFtdcChangeAccountField["BankAccount"] = "string"
+
 #银行密码
-CSgitFtdcChangeAccountField["BankPassWord"] = "string"
+
+CThostFtdcChangeAccountField["BankPassWord"] = "string"
+
 #新银行帐号
-CSgitFtdcChangeAccountField["NewBankAccount"] = "string"
+
+CThostFtdcChangeAccountField["NewBankAccount"] = "string"
+
 #新银行密码
-CSgitFtdcChangeAccountField["NewBankPassWord"] = "string"
+
+CThostFtdcChangeAccountField["NewBankPassWord"] = "string"
+
 #投资者帐号
-CSgitFtdcChangeAccountField["AccountID"] = "string"
+
+CThostFtdcChangeAccountField["AccountID"] = "string"
+
 #期货密码
-CSgitFtdcChangeAccountField["Password"] = "string"
+
+CThostFtdcChangeAccountField["Password"] = "string"
+
 #银行帐号类型
-CSgitFtdcChangeAccountField["BankAccType"] = "char"
+
+CThostFtdcChangeAccountField["BankAccType"] = "char"
+
 #安装编号
-CSgitFtdcChangeAccountField["InstallID"] = "int"
+
+CThostFtdcChangeAccountField["InstallID"] = "int"
+
 #验证客户证件号码标志
-CSgitFtdcChangeAccountField["VerifyCertNoFlag"] = "char"
+
+CThostFtdcChangeAccountField["VerifyCertNoFlag"] = "char"
+
 #币种代码
-CSgitFtdcChangeAccountField["CurrencyID"] = "string"
+
+CThostFtdcChangeAccountField["CurrencyID"] = "string"
+
 #期货公司银行编码
-CSgitFtdcChangeAccountField["BrokerIDByBank"] = "string"
+
+CThostFtdcChangeAccountField["BrokerIDByBank"] = "string"
+
 #银行密码标志
-CSgitFtdcChangeAccountField["BankPwdFlag"] = "char"
+
+CThostFtdcChangeAccountField["BankPwdFlag"] = "char"
+
 #期货资金密码核对标志
-CSgitFtdcChangeAccountField["SecuPwdFlag"] = "char"
+
+CThostFtdcChangeAccountField["SecuPwdFlag"] = "char"
+
 #交易ID
-CSgitFtdcChangeAccountField["TID"] = "int"
+
+CThostFtdcChangeAccountField["TID"] = "int"
+
 #摘要
-CSgitFtdcChangeAccountField["Digest"] = "string"
+
+CThostFtdcChangeAccountField["Digest"] = "string"
+
 #错误代码
-CSgitFtdcChangeAccountField["ErrorID"] = "int"
+
+CThostFtdcChangeAccountField["ErrorID"] = "int"
+
 #错误信息
-CSgitFtdcChangeAccountField["ErrorMsg"] = "string"
-structDict['CSgitFtdcChangeAccountField'] = CSgitFtdcChangeAccountField
+
+CThostFtdcChangeAccountField["ErrorMsg"] = "string"
+
+structDict['CThostFtdcChangeAccountField'] = CThostFtdcChangeAccountField
+
+
+
+
+#二级代理操作员银期权限
+
+CThostFtdcSecAgentACIDMapField = {}
+
+
+#经纪公司代码
+
+CThostFtdcSecAgentACIDMapField["BrokerID"] = "string"
+
+#用户代码
+
+CThostFtdcSecAgentACIDMapField["UserID"] = "string"
+
+#资金账户
+
+CThostFtdcSecAgentACIDMapField["AccountID"] = "string"
+
+#币种
+
+CThostFtdcSecAgentACIDMapField["CurrencyID"] = "string"
+
+#境外中介机构资金帐号
+
+CThostFtdcSecAgentACIDMapField["BrokerSecAgentID"] = "string"
+
+structDict['CThostFtdcSecAgentACIDMapField'] = CThostFtdcSecAgentACIDMapField
+
+
+
+
+#二级代理操作员银期权限查询
+
+CThostFtdcQrySecAgentACIDMapField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQrySecAgentACIDMapField["BrokerID"] = "string"
+
+#用户代码
+
+CThostFtdcQrySecAgentACIDMapField["UserID"] = "string"
+
+#资金账户
+
+CThostFtdcQrySecAgentACIDMapField["AccountID"] = "string"
+
+#币种
+
+CThostFtdcQrySecAgentACIDMapField["CurrencyID"] = "string"
+
+structDict['CThostFtdcQrySecAgentACIDMapField'] = CThostFtdcQrySecAgentACIDMapField
+
+
 
 
 #灾备中心交易权限
-CSgitFtdcUserRightsAssignField = {}
+
+CThostFtdcUserRightsAssignField = {}
+
+
 #应用单元代码
-CSgitFtdcUserRightsAssignField["BrokerID"] = "string"
+
+CThostFtdcUserRightsAssignField["BrokerID"] = "string"
+
 #用户代码
-CSgitFtdcUserRightsAssignField["UserID"] = "string"
+
+CThostFtdcUserRightsAssignField["UserID"] = "string"
+
 #交易中心代码
-CSgitFtdcUserRightsAssignField["DRIdentityID"] = "int"
-structDict['CSgitFtdcUserRightsAssignField'] = CSgitFtdcUserRightsAssignField
+
+CThostFtdcUserRightsAssignField["DRIdentityID"] = "int"
+
+structDict['CThostFtdcUserRightsAssignField'] = CThostFtdcUserRightsAssignField
+
+
 
 
 #经济公司是否有在本标示的交易权限
-CSgitFtdcBrokerUserRightAssignField = {}
+
+CThostFtdcBrokerUserRightAssignField = {}
+
+
 #应用单元代码
-CSgitFtdcBrokerUserRightAssignField["BrokerID"] = "string"
+
+CThostFtdcBrokerUserRightAssignField["BrokerID"] = "string"
+
 #交易中心代码
-CSgitFtdcBrokerUserRightAssignField["DRIdentityID"] = "int"
+
+CThostFtdcBrokerUserRightAssignField["DRIdentityID"] = "int"
+
 #能否交易
-CSgitFtdcBrokerUserRightAssignField["Tradeable"] = "int"
-structDict['CSgitFtdcBrokerUserRightAssignField'] = CSgitFtdcBrokerUserRightAssignField
+
+CThostFtdcBrokerUserRightAssignField["Tradeable"] = "int"
+
+structDict['CThostFtdcBrokerUserRightAssignField'] = CThostFtdcBrokerUserRightAssignField
+
+
 
 
 #灾备交易转换报文
-CSgitFtdcDRTransferField = {}
+
+CThostFtdcDRTransferField = {}
+
+
 #原交易中心代码
-CSgitFtdcDRTransferField["OrigDRIdentityID"] = "int"
+
+CThostFtdcDRTransferField["OrigDRIdentityID"] = "int"
+
 #目标交易中心代码
-CSgitFtdcDRTransferField["DestDRIdentityID"] = "int"
+
+CThostFtdcDRTransferField["DestDRIdentityID"] = "int"
+
 #原应用单元代码
-CSgitFtdcDRTransferField["OrigBrokerID"] = "string"
+
+CThostFtdcDRTransferField["OrigBrokerID"] = "string"
+
 #目标易用单元代码
-CSgitFtdcDRTransferField["DestBrokerID"] = "string"
-structDict['CSgitFtdcDRTransferField'] = CSgitFtdcDRTransferField
+
+CThostFtdcDRTransferField["DestBrokerID"] = "string"
+
+structDict['CThostFtdcDRTransferField'] = CThostFtdcDRTransferField
 
 
 
-CSgitMBLQuotReq = {}
-CSgitMBLQuotReq["StartContractID"] = "string"
-CSgitMBLQuotReq["EndContractID"] = "string"
-CSgitMBLQuotReq["BsFlag"] = "char"
-structDict['CSgitMBLQuotReq'] = CSgitMBLQuotReq
+
+#Fens用户信息
+
+CThostFtdcFensUserInfoField = {}
+
+
+#经纪公司代码
+
+CThostFtdcFensUserInfoField["BrokerID"] = "string"
+
+#用户代码
+
+CThostFtdcFensUserInfoField["UserID"] = "string"
+
+#登录模式
+
+CThostFtdcFensUserInfoField["LoginMode"] = "char"
+
+structDict['CThostFtdcFensUserInfoField'] = CThostFtdcFensUserInfoField
 
 
 
-CSgitMBLQuotData = {}
-CSgitMBLQuotData["ContractID"] = "string"
-CSgitMBLQuotData["BsFlag"] = "char"
-CSgitMBLQuotData["Price"] = "float"
-CSgitMBLQuotData["Qty"] = "int"
-structDict['CSgitMBLQuotData'] = CSgitMBLQuotData
+
+#当前银期所属交易中心
+
+CThostFtdcCurrTransferIdentityField = {}
+
+
+#交易中心代码
+
+CThostFtdcCurrTransferIdentityField["IdentityID"] = "int"
+
+structDict['CThostFtdcCurrTransferIdentityField'] = CThostFtdcCurrTransferIdentityField
 
 
 
-CSgitSubQuotField = {}
-CSgitSubQuotField["ContractID"] = "string"
-structDict['CSgitSubQuotField'] = CSgitSubQuotField
+
+#禁止登录用户
+
+CThostFtdcLoginForbiddenUserField = {}
+
+
+#经纪公司代码
+
+CThostFtdcLoginForbiddenUserField["BrokerID"] = "string"
+
+#用户代码
+
+CThostFtdcLoginForbiddenUserField["UserID"] = "string"
+
+#IP地址
+
+CThostFtdcLoginForbiddenUserField["IPAddress"] = "string"
+
+structDict['CThostFtdcLoginForbiddenUserField'] = CThostFtdcLoginForbiddenUserField
+
+
+
+
+#查询禁止登录用户
+
+CThostFtdcQryLoginForbiddenUserField = {}
+
+
+#经纪公司代码
+
+CThostFtdcQryLoginForbiddenUserField["BrokerID"] = "string"
+
+#用户代码
+
+CThostFtdcQryLoginForbiddenUserField["UserID"] = "string"
+
+structDict['CThostFtdcQryLoginForbiddenUserField'] = CThostFtdcQryLoginForbiddenUserField
+
+
+
+
+#UDP组播组信息
+
+CThostFtdcMulticastGroupInfoField = {}
+
+
+#组播组IP地址
+
+CThostFtdcMulticastGroupInfoField["GroupIP"] = "string"
+
+#组播组IP端口
+
+CThostFtdcMulticastGroupInfoField["GroupPort"] = "int"
+
+#源地址
+
+CThostFtdcMulticastGroupInfoField["SourceIP"] = "string"
+
+structDict['CThostFtdcMulticastGroupInfoField'] = CThostFtdcMulticastGroupInfoField
+
+
+
+
+#资金账户基本准备金
+
+CThostFtdcTradingAccountReserveField = {}
+
+
+#经纪公司代码
+
+CThostFtdcTradingAccountReserveField["BrokerID"] = "string"
+
+#投资者帐号
+
+CThostFtdcTradingAccountReserveField["AccountID"] = "string"
+
+#基本准备金
+
+CThostFtdcTradingAccountReserveField["Reserve"] = "float"
+
+#币种代码
+
+CThostFtdcTradingAccountReserveField["CurrencyID"] = "string"
+
+structDict['CThostFtdcTradingAccountReserveField'] = CThostFtdcTradingAccountReserveField
+
+
+
+
+#合约价位查询域
+
+CThostMBLQuotReq = {}
+
+
+#起始合约号
+
+CThostMBLQuotReq["StartInstrumentID"] = "string"
+
+#结束合约号
+
+CThostMBLQuotReq["EndInstrumentID"] = "string"
+
+#买卖标志
+
+CThostMBLQuotReq["Direction"] = "char"
+
+structDict['CThostMBLQuotReq'] = CThostMBLQuotReq
+
+
+
+
+#合约价位域
+
+CThostMBLQuotData = {}
+
+
+#合约号
+
+CThostMBLQuotData["InstrumentID"] = "string"
+
+#买卖标志
+
+CThostMBLQuotData["Direction"] = "char"
+
+#价格
+
+CThostMBLQuotData["Price"] = "float"
+
+#数量
+
+CThostMBLQuotData["Volume"] = "int"
+
+structDict['CThostMBLQuotData'] = CThostMBLQuotData
+
+
+
+
+#订阅合约行情行情
+
+CThostSubQuotField = {}
+
+
+#合约号
+
+CThostSubQuotField["InstrumentID"] = "string"
+
+structDict['CThostSubQuotField'] = CThostSubQuotField
+
+
+#
+
+CThostDeferDeliveryQuot = {}
+
+
+CThostDeferDeliveryQuot["InstrumentID"] = "string"
+
+CThostDeferDeliveryQuot["AskVolume"] = "int"
+
+CThostDeferDeliveryQuot["BidVolume"] = "int"
+
+CThostDeferDeliveryQuot["MidAskVolume"] = "int"
+
+CThostDeferDeliveryQuot["MidBidVolume"] = "int"
+
+structDict['CThostDeferDeliveryQuot'] = CThostDeferDeliveryQuot
+
+
+
+
+
+
+structDict['CThostDeferDeliveryQuot'] = CThostDeferDeliveryQuot
+
+
+
 
 
 

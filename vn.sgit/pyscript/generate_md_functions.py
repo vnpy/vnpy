@@ -9,7 +9,7 @@ from sgit_struct import structDict
 
 def processCallBack(line):
     orignalLine = line
-    line = line.replace('	virtual void ', '')      # 删除行首的无效内容
+    line = line.replace('\tvirtual void ', '')      # 删除行首的无效内容
     line = line.replace('{};\n', '')                # 删除行尾的无效内容
 
     content = line.split('(')
@@ -29,17 +29,12 @@ def processCallBack(line):
     for arg in cbArgsList:                          # 开始处理参数
         content = arg.split(' ')
         if len(content) > 1:
-            if 'struct' not in content:
-                cbArgsTypeList.append(content[0])           # 参数类型列表
-                cbArgsValueList.append(content[1])          # 参数数据列表
-            else:
-                print content
-                cbArgsTypeList.append(content[1])           # 参数类型列表
-                cbArgsValueList.append(content[2]+content[3])          # 参数数据列表
+            cbArgsTypeList.append(content[0])           # 参数类型列表
+            cbArgsValueList.append(content[1])          # 参数数据列表
 
     createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine)
     createProcess(cbName, cbArgsTypeList, cbArgsValueList)
-    
+
     # 生成.h文件中的process部分
     process_line = 'void process' + cbName[2:] + '(Task task);\n'
     fheaderprocess.write(process_line)
@@ -47,9 +42,7 @@ def processCallBack(line):
 
     # 生成.h文件中的on部分
     if 'OnRspError' in cbName:
-        on_line = 'virtual void on' + cbName[2:] + '(dict error) {};\n'
-    elif 'OnRspQry' in cbName:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last) {};\n'
+        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last) {};\n'
     elif 'OnRsp' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last) {};\n'
     elif 'OnRtn' in cbName:
@@ -60,21 +53,21 @@ def processCallBack(line):
         on_line = ''
     fheaderon.write(on_line)
     fheaderon.write('\n')
-    
+
     # 生成封装部分
     createWrap(cbName)
-    
+
 
 #----------------------------------------------------------------------
 def createWrap(cbName):
     """在Python封装段代码中进行处理"""
     # 生成.h文件中的on部分
     if 'OnRspError' in cbName:
-        on_line = 'virtual void on' + cbName[2:] + '(dict error)\n'    
-        override_line = '("on' + cbName[2:] + '")(error);\n' 
+        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'
+        override_line = '("on' + cbName[2:] + '")(error, id, last);\n'
     elif 'OnRsp' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
-        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n' 
+        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n'
     elif 'OnRtn' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
         override_line = '("on' + cbName[2:] + '")(data);\n'
@@ -83,7 +76,7 @@ def createWrap(cbName):
         override_line = '("on' + cbName[2:] + '")(data, error);\n'
     else:
         on_line = ''
-        
+
     if on_line is not '':
         fwrap.write(on_line)
         fwrap.write('{\n')
@@ -97,14 +90,13 @@ def createWrap(cbName):
         fwrap.write('\t}\n')
         fwrap.write('};\n')
         fwrap.write('\n')
-    
-    
+
+
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
     # 从回调函数生成任务对象，并放入队列
-    funcline = orignalLine.replace('	virtual void ', 'void ' + apiName + '::')
+    funcline = orignalLine.replace('\tvirtual void ', 'void ' + apiName + '::')
     funcline = funcline.replace('{};', '')
-    funcline = funcline.replace(' {}', '')
 
     ftask.write(funcline)
     ftask.write('{\n')
@@ -130,7 +122,7 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("\ttask.task_id = " + cbArgsValueList[i] + ";\n")
         elif type_ == 'bool':
             ftask.write("\ttask.task_last = " + cbArgsValueList[i] + ";\n")
-        elif 'CSgitFtdcRspInfoField' in type_:
+        elif 'RspInfoField' in type_:
             ftask.write("\n")
             ftask.write("\tif (pRspInfo)\n")
             ftask.write("\t{\n")
@@ -138,7 +130,7 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("\t}\n")
             ftask.write("\telse\n")
             ftask.write("\t{\n")
-            ftask.write("\t\tCSgitFtdcRspInfoField empty_error = CSgitFtdcRspInfoField();\n")
+            ftask.write("\t\tCThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();\n")
             ftask.write("\t\tmemset(&empty_error, 0, sizeof(empty_error));\n")
             ftask.write("\t\ttask.task_error = empty_error;\n")
             ftask.write("\t}\n")
@@ -153,7 +145,7 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("\t\t" + type_ + " empty_data = " + type_ + "();\n")
             ftask.write("\t\tmemset(&empty_data, 0, sizeof(empty_data));\n")
             ftask.write("\t\ttask.task_data = empty_data;\n")
-            ftask.write("\t}\n")            
+            ftask.write("\t}\n")
 
     ftask.write("\tthis->task_queue.push(task);\n")
     ftask.write("};\n")
@@ -169,7 +161,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
     onArgsList = []
 
     for i, type_ in enumerate(cbArgsTypeList):
-        if 'CSgitFtdcRspInfoField' in type_:
+        if 'RspInfoField' in type_:
             fprocess.write("\t"+ type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
             fprocess.write("\t"+ "dict error;\n")
 
@@ -207,7 +199,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
 
 def processFunction(line):
-    line = line.replace('	virtual int ', '')       # 删除行首的无效内容
+    line = line.replace('\tvirtual int ', '')       # 删除行首的无效内容
     line = line.replace(') = 0;\n', '')                # 删除行尾的无效内容
 
     content = line.split('(')
@@ -216,27 +208,23 @@ def processFunction(line):
     fcArgs = content[1]                             # 回调函数参数
     fcArgs = fcArgs.replace(')', '')
 
-    fcArgsList = fcArgs.split(',')                 # 将每个参数转化为列表
+    fcArgsList = fcArgs.split(', ')                 # 将每个参数转化为列表
 
     fcArgsTypeList = []
     fcArgsValueList = []
 
     for arg in fcArgsList:                          # 开始处理参数
         content = arg.split(' ')
-        if len(content) >= 2:
+        if len(content) > 1:
             fcArgsTypeList.append(content[0])           # 参数类型列表
             fcArgsValueList.append(content[1])          # 参数数据列表
 
-    print line
-    print fcArgs
-    print fcArgsList
-    print fcArgsTypeList
     if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
-        
+
     # 生成.h文件中的主动函数部分
     if 'Req' in fcName:
-        req_line = 'int req' + fcName[3:] + '(dict req,  int nRequestID);\n'
+        req_line = 'int req' + fcName[3:] + '(dict req, int nRequestID);\n'
         fheaderfunction.write(req_line)
         fheaderfunction.write('\n')
 
@@ -245,22 +233,18 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
     type_ = fcArgsTypeList[0]
     struct = structDict[type_]
 
-    ffunction.write('int ' + apiName + '::req' + fcName[3:] + '(dict req, int nRequestID)\n')
+    ffunction.write('int MdApi::req' + fcName[3:] + '(dict req, int nRequestID)\n')
     ffunction.write('{\n')
     ffunction.write('\t' + type_ +' myreq = ' + type_ + '();\n')
     ffunction.write('\tmemset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
         if value == 'string':
-            line = '\tgetString(req, "' + key + '", myreq.' + key + ');\n'
+            line = '\tgetStr(req, "' + key + '", myreq.' + key + ');\n'
         elif value == 'char':
             line = '\tgetChar(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'int':
             line = '\tgetInt(req, "' + key + '", &myreq.' + key + ');\n'
-        elif value == 'long':
-            line = '\tgetLong(req, "' + key + '", &myreq.' + key + ');\n'
-        elif value == 'short':
-            line = '\tgetShort(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'double':
             line = '\tgetDouble(req, "' + key + '", &myreq.' + key + ');\n'
         ffunction.write(line)
@@ -291,11 +275,9 @@ fwrap = open('sgit_md_wrap.cpp', 'w')
 define_count = 1
 
 for line in fcpp:
-    if "	virtual void On" in line:
-        print 'callback'
+    if "\tvirtual void On" in line:
         processCallBack(line)
-    elif "	virtual int" in line:
-        print 'function'
+    elif "\tvirtual int" in line:
         processFunction(line)
 
 fcpp.close()

@@ -24,64 +24,67 @@
     <ClCompile Include="vnib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\ContractCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\ContractCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\DefaultEWrapper.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\DefaultEWrapper.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EClient.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EClient.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EClientSocket.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EClientSocket.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EDecoder.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EDecoder.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EMessage.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EMessage.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EMutex.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EMutex.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EReader.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EReader.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EReaderOSSignal.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EReaderOSSignal.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\EReaderWMSignal.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\EReaderWMSignal.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\ESocket.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\ESocket.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\executioncondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\executioncondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\MarginCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\MarginCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\OperatorCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\OperatorCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\OrderCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\OrderCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\PercentChangeCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\PercentChangeCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\PriceCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\PriceCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\StdAfx.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\SoftDollarTier.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\TimeCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\StdAfx.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ibapi\client\VolumeCondition.cpp">
+    <ClCompile Include="..\..\ibapi\windows\client\TimeCondition.cpp">
+      <Filter>Source Files\ib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ibapi\windows\client\VolumeCondition.cpp">
       <Filter>Source Files\ib</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,115 +92,118 @@
     <ClInclude Include="vnib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EClientSocket.h">
+    <ClInclude Include="..\..\ibapi\windows\client\CommissionReport.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EReader.h">
+    <ClInclude Include="..\..\ibapi\windows\client\CommonDefs.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EWrapper.h">
+    <ClInclude Include="..\..\ibapi\windows\client\Contract.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\StdAfx.h">
+    <ClInclude Include="..\..\ibapi\windows\client\ContractCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\CommissionReport.h">
+    <ClInclude Include="..\..\ibapi\windows\client\DefaultEWrapper.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\CommonDefs.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EClient.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\Contract.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EClientMsgSink.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\ContractCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EClientSocket.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\DefaultEWrapper.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EDecoder.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EClient.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EMessage.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EClientMsgSink.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EMutex.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EDecoder.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EPosixClientSocketPlatform.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EMessage.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EReader.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EMutex.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EReaderOSSignal.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EPosixClientSocketPlatform.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EReaderSignal.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EReaderOSSignal.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EReaderWMSignal.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EReaderSignal.h">
+    <ClInclude Include="..\..\ibapi\windows\client\ESocket.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\EReaderWMSignal.h">
+    <ClInclude Include="..\..\ibapi\windows\client\ETransport.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\ESocket.h">
+    <ClInclude Include="..\..\ibapi\windows\client\EWrapper.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\ETransport.h">
+    <ClInclude Include="..\..\ibapi\windows\client\Execution.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\Execution.h">
+    <ClInclude Include="..\..\ibapi\windows\client\executioncondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\executioncondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\IExternalizable.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\IExternalizable.h">
+    <ClInclude Include="..\..\ibapi\windows\client\MarginCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\MarginCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\OperatorCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\OperatorCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\Order.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\Order.h">
+    <ClInclude Include="..\..\ibapi\windows\client\OrderCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\OrderCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\OrderState.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\OrderState.h">
+    <ClInclude Include="..\..\ibapi\windows\client\PercentChangeCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\PercentChangeCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\PriceCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\PriceCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\Resource.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\Resource.h">
+    <ClInclude Include="..\..\ibapi\windows\client\ScannerSubscription.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\ScannerSubscription.h">
+    <ClInclude Include="..\..\ibapi\windows\client\shared_ptr.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\shared_ptr.h">
+    <ClInclude Include="..\..\ibapi\windows\client\SoftDollarTier.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\TagValue.h">
+    <ClInclude Include="..\..\ibapi\windows\client\StdAfx.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\TimeCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\TagValue.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\TwsSocketClientErrors.h">
+    <ClInclude Include="..\..\ibapi\windows\client\TimeCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ibapi\client\VolumeCondition.h">
+    <ClInclude Include="..\..\ibapi\windows\client\TwsSocketClientErrors.h">
+      <Filter>Header Files\ib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ibapi\windows\client\VolumeCondition.h">
       <Filter>Header Files\ib</Filter>
     </ClInclude>
   </ItemGroup>

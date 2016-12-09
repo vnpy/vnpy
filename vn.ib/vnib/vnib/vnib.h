@@ -219,6 +219,8 @@ public:
 		const std::string& multiplier, std::set<std::string> expirations, std::set<double> strikes);
 
 	void securityDefinitionOptionalParameterEnd(int reqId);
+
+	void softDollarTiers(int reqId, const std::vector<SoftDollarTier> &tiers);
 };
 
 
@@ -241,7 +243,7 @@ public:
 
 	VnIbApi()
 	{
-		this->signal = EReaderOSSignal();
+		this->signal = EReaderOSSignal(2000);
 		this->wrapper = new IbWrapper(this);
 		this->client = new EClientSocket(this->wrapper, &this->signal);
 	};
@@ -317,9 +319,9 @@ public:
 
 	virtual void contractDetailsEnd(int reqId){};
 
-	virtual void execDetails(int reqId, const Contract& contract, const Execution& execution) = 0{};
+	virtual void execDetails(int reqId, const Contract& contract, const Execution& execution){};
 
-	virtual void execDetailsEnd(int reqId) = 0{};
+	virtual void execDetailsEnd(int reqId){};
 
 	virtual void updateMktDepth(TickerId id, int position, int operation, int side,
 		double price, int size){};
@@ -390,6 +392,8 @@ public:
 		tradingClass, const std::string& multiplier, std::vector<std::string> expirations, std::vector<double> strikes){};
 
 	virtual void securityDefinitionOptionalParameterEnd(int reqId){};
+
+	virtual void softDollarTiers(int reqId, const std::vector<SoftDollarTier> &tiers){};
 
 	//-------------------------------------------------------------------------------------
 	//主动函数
@@ -514,4 +518,6 @@ public:
 
 	void reqSecDefOptParams(int reqId, const std::string& underlyingSymbol, const std::string& futFopExchange, const std::string&
 		underlyingSecType, int underlyingConId);
+
+	void reqSoftDollarTiers(int reqId);
 };

@@ -23,13 +23,22 @@
 using namespace std;
 using namespace boost::python;
 using namespace boost;
+using namespace fstech;
 
 //常量
 #define ONFRONTCONNECTED 1
 #define ONFRONTDISCONNECTED 2
-#define ONRSPUSERLOGIN 3
-#define ONRSPUSERLOGOUT 4
-#define ONRTNDEPTHMARKETDATA 5
+#define ONHEARTBEATWARNING 3
+#define ONRSPUSERLOGIN 4
+#define ONRSPUSERLOGOUT 5
+#define ONRSPERROR 6
+#define ONRSPSUBMARKETDATA 7
+#define ONRSPUNSUBMARKETDATA 8
+#define ONRSPSUBFORQUOTERSP 9
+#define ONRSPUNSUBFORQUOTERSP 10
+#define ONRTNDEPTHMARKETDATA 11
+#define ONRTNFORQUOTERSP 12
+#define ONRTNDEFERDELIVERYQUOT 13
 
 
 ///-------------------------------------------------------------------------------------
@@ -134,7 +143,7 @@ void getChar(dict d, string key, char* value);
 
 
 //从字典中获取某个建值对应的字符串，并赋值到请求结构体对象的值上
-void getString(dict d, string key, char* value);
+void getStr(dict d, string key, char* value);
 
 
 ///-------------------------------------------------------------------------------------
@@ -142,10 +151,10 @@ void getString(dict d, string key, char* value);
 ///-------------------------------------------------------------------------------------
 
 //API的继承实现
-class MdApi : public CSgitFtdcMdSpi
+class MdApi : public CThostFtdcMdSpi
 {
 private:
-	CSgitFtdcMdApi* api;			//API对象
+	CThostFtdcMdApi* api;				//API对象
 	thread *task_thread;				//工作线程指针（向python中推送数据）
 	ConcurrentQueue<Task> task_queue;	//任务队列
 
@@ -164,21 +173,52 @@ public:
 	//-------------------------------------------------------------------------------------
 	//API回调函数
 	//-------------------------------------------------------------------------------------
+
 	///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 	virtual void OnFrontConnected();
 
 	///当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
-	///@param pErrMsg 错误原因
-	virtual void OnFrontDisconnected(char *pErrMsg);
+	///@param nReason 错误原因
+	///        0x1001 网络读失败
+	///        0x1002 网络写失败
+	///        0x2001 接收心跳超时
+	///        0x2002 发送心跳失败
+	///        0x2003 收到错误报文
+	virtual void OnFrontDisconnected(int nReason);
+
+	///心跳超时警告。当长时间未收到报文时，该方法被调用。
+	///@param nTimeLapse 距离上次接收报文的时间
+	virtual void OnHeartBeatWarning(int nTimeLapse);
 
 	///登录请求响应
-	virtual void OnRspUserLogin(CSgitFtdcRspUserLoginField *pRspUserLogin, CSgitFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	virtual void OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///登出请求响应
-	virtual void OnRspUserLogout(CSgitFtdcUserLogoutField *pUserLogout, CSgitFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	virtual void OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///错误应答
+	virtual void OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///订阅行情应答
+	virtual void OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///取消订阅行情应答
+	virtual void OnRspUnSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///订阅询价应答
+	virtual void OnRspSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///取消订阅询价应答
+	virtual void OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///深度行情通知
-	virtual void OnRtnDepthMarketData(CSgitFtdcDepthMarketDataField *pDepthMarketData) ;
+	virtual void OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) ;
+
+	///询价通知
+	virtual void OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp) ;
+
+	///递延交割行情
+	virtual void OnRtnDeferDeliveryQuot(CThostDeferDeliveryQuot* pQuot);
 
 	//-------------------------------------------------------------------------------------
 	//task：任务
@@ -190,11 +230,28 @@ public:
 
 	void processFrontDisconnected(Task task);
 
+	void processHeartBeatWarning(Task task);
+
 	void processRspUserLogin(Task task);
 
 	void processRspUserLogout(Task task);
 
+	void processRspError(Task task);
+
+	void processRspSubMarketData(Task task);
+
+	void processRspUnSubMarketData(Task task);
+
+	void processRspSubForQuoteRsp(Task task);
+
+	void processRspUnSubForQuoteRsp(Task task);
+
 	void processRtnDepthMarketData(Task task);
+
+	void processRtnForQuoteRsp(Task task);
+
+	void processRtnDeferDeliveryQuot(Task task);
+
 
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
@@ -206,14 +263,29 @@ public:
 
 	virtual void onFrontConnected(){};
 
-	virtual void onFrontDisconnected(string msg) {};
+	virtual void onFrontDisconnected(int reason) {};
+
+	virtual void onHeartBeatWarning(int timeLapse) {};
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last) {};
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last) {};
 
+	virtual void onRspError(dict error, int id, bool last) {};
+
+	virtual void onRspSubMarketData(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspUnSubMarketData(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspSubForQuoteRsp(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspUnSubForQuoteRsp(dict data, dict error, int id, bool last) {};
+
 	virtual void onRtnDepthMarketData(dict data) {};
 
+	virtual void onRtnForQuoteRsp(dict data) {};
+
+	virtual void onRtnDeferDeliveryQuot(dict data) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
@@ -221,9 +293,11 @@ public:
 
 	void createFtdcMdApi(string pszFlowPath);
 
+	string getApiVersion();
+
 	void release();
 
-	void init(bool isLogged);
+	void init();
 
 	int join();
 
@@ -233,13 +307,15 @@ public:
 
 	void registerFront(string pszFrontAddress);
 
-	void setMultiCastAddr(string address);
+	void registerNameServer(string pszNsAddress);
 
-	void subscribeMarketTopic(int type);
+	int subscribeMarketData(string instrumentID);
 
-	int subQuot(dict req);
+	int unSubscribeMarketData(string instrumentID);
 
-	int ready();
+	int subscribeForQuoteRsp(string instrumentID);
+
+	int unSubscribeForQuoteRsp(string instrumentID);
 
 	int reqUserLogin(dict req, int nRequestID);
 

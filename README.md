@@ -45,7 +45,7 @@
 
 1. 准备一台Windows 7 64位系统的电脑
 
-2. 安装[Anaconda](http://www.continuum.io/downloads)：下载Python 2.7 32位版本，**注意必须是32位**
+2. 安装[Anaconda](http://www.continuum.io/downloads)：下载Anaconda 4.0.0 Python 2.7 32位版本，**注意必须是32位**
 
 3. 安装[MongoDB](https://www.mongodb.org/downloads#production)：下载Windows 64-bit 2008 R2+版本
 

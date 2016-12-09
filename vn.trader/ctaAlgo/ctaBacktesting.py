@@ -764,6 +764,7 @@ class BacktestingEngine(object):
         # 多进程优化，启动一个对应CPU核心数量的进程池
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         l = []
+
         for setting in settingList:
             l.append(pool.apply_async(optimize, (strategyClass, setting,
                                                  targetName, self.mode, 
@@ -817,10 +818,14 @@ class OptimizationSetting(object):
         self.optimizeTarget = ''        # 优化目标字段
         
     #----------------------------------------------------------------------
-    def addParameter(self, name, start, end, step):
+    def addParameter(self, name, start, end=None, step=None):
         """增加优化参数"""
-        if end <= start:
-            print u'参数起始点必须小于终止点'
+        if end is None and step is None:
+            self.paramDict[name] = [start]
+            return 
+        
+        if end < start:
+            print u'参数起始点必须不大于终止点'
             return
         
         if step <= 0:
