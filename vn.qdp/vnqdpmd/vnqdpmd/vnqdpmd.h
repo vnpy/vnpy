@@ -30,17 +30,20 @@ using namespace boost;
 #define ONFRONTCONNECTED 1
 #define ONFRONTDISCONNECTED 2
 #define ONHEARTBEATWARNING 3
-#define ONRSPUSERLOGIN 4
-#define ONRSPUSERLOGOUT 5
+#define ONPACKAGESTART 4
+#define ONPACKAGEEND 5
 #define ONRSPERROR 6
-#define ONRSPSUBMARKETDATA 7
-#define ONRSPUNSUBMARKETDATA 8
-#define ONRSPSUBFORQUOTERSP 9
-#define ONRSPUNSUBFORQUOTERSP 10
-#define ONRTNDEPTHMARKETDATA 11
-#define ONRTNFORQUOTERSP 12
-
-
+#define ONRSPUSERLOGIN 7
+#define ONRSPUSERLOGOUT 8
+#define ONRTNQMDINSTRUMENTSTATU 9
+#define ONRSPSUBSCRIBETOPIC 10
+#define ONRSPQRYTOPIC 11
+#define ONRTNDEPTHMARKETDATA 12
+#define ONRSPSUBMARKETDATA 13
+#define ONRSPUNSUBMARKETDATA 14
+#define ONRSPQRYDEPTHMARKETDATA 15
+#define ONMULTIHEARTBEAT 16		//手动添加
+#define UDPMARKETDATA 17		//手动添加
 
 ///-------------------------------------------------------------------------------------
 ///API中的部分组件
@@ -76,6 +79,10 @@ struct Task
 	any task_error;		//错误结构体
 	int task_id;		//请求id
 	bool task_last;		//是否为最后返回
+
+	int additional_int;		//整数型补充数据
+	string additional_str1;	//字符串型补充数据1
+	string additional_str2;	//字符串型补充数据2
 };
 
 
@@ -185,30 +192,51 @@ public:
 	///@param nTimeLapse 距离上次接收报文的时间
 	virtual void OnHeartBeatWarning(int nTimeLapse);
 
-	///登录请求响应
-	virtual void OnRspUserLogin(CQdpFtdcRspUserLoginField *pRspUserLogin, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///报文回调开始通知。当API收到一个报文后，首先调用本方法，然后是各数据域的回调，最后是报文回调结束通知。
+	///@param nTopicID 主题代码（如私有流、公共流、行情流等）
+	///@param nSequenceNo 报文序号
+	virtual void OnPackageStart(int nTopicID, int nSequenceNo);
 
-	///登出请求响应
-	virtual void OnRspUserLogout(CQdpFtdcRspUserLogoutField *pUserLogout, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///报文回调结束通知。当API收到一个报文后，首先调用报文回调开始通知，然后是各数据域的回调，最后调用本方法。
+	///@param nTopicID 主题代码（如私有流、公共流、行情流等）
+	///@param nSequenceNo 报文序号
+	virtual void OnPackageEnd(int nTopicID, int nSequenceNo);
+
+	//新增多播心跳接口 add by zbz 20150304
+	virtual void  OnMultiHeartbeat(char *CurrTime, char *MultiCastIP) ;
+
+	//当广播收到值得时候，回调函数被调用，返回qmdata
+	virtual void UdpMarketData(CQdpFtdcDepthMarketDataField *qmdata);
 
 	///错误应答
-	virtual void OnRspError(CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	virtual void OnRspError(CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
-	///订阅行情应答
-	virtual void OnRspSubMarketData(CQdpFtdcSpecificInstrumentField *pSpecificInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///用户登录应答
+	virtual void OnRspUserLogin(CQdpFtdcRspUserLoginField *pRspUserLogin, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
-	///取消订阅行情应答
-	virtual void OnRspUnSubMarketData(CQdpFtdcSpecificInstrumentField *pSpecificInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///用户退出应答
+	virtual void OnRspUserLogout(CQdpFtdcRspUserLogoutField *pRspUserLogout, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
-	///订阅询价应答
-	virtual void OnRspSubForQuoteRsp(CQdpFtdcSpecificInstrumentField *pSpecificInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///郑州合约状态
+	virtual void OnRtnQmdInstrumentStatu(CQdpFtdcQmdInstrumentStateField *pQmdInstrumentState) ;
 
-	///取消订阅询价应答
-	virtual void OnRspUnSubForQuoteRsp(CQdpFtdcSpecificInstrumentField *pSpecificInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///订阅主题应答
+	virtual void OnRspSubscribeTopic(CQdpFtdcDisseminationField *pDissemination, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///主题查询应答
+	virtual void OnRspQryTopic(CQdpFtdcDisseminationField *pDissemination, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///深度行情通知
-	virtual void OnRtnDepthMarketData(CQdpFtdcDepthMarketDataField *pDepthMarketData);
+	virtual void OnRtnDepthMarketData(CQdpFtdcDepthMarketDataField *pDepthMarketData) ;
 
+	///订阅合约的相关信息
+	virtual void OnRspSubMarketData(CQdpFtdcSpecificInstrumentField *pSpecificInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///退订合约的相关信息
+	virtual void OnRspUnSubMarketData(CQdpFtdcSpecificInstrumentField *pSpecificInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///行情查询应答
+	virtual void OnRspQryDepthMarketData(CQdpFtdcRspMarketDataField *pRspMarketData, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	//-------------------------------------------------------------------------------------
 	//task：任务
@@ -222,22 +250,33 @@ public:
 
 	void processHeartBeatWarning(Task task);
 
+	void processPackageStart(Task task);
+
+	void processPackageEnd(Task task);
+
+	void processMultiHeartbeat(Task task);
+
+	void processUdpMarketData(Task task);
+
+	void processRspError(Task task);
+
 	void processRspUserLogin(Task task);
 
 	void processRspUserLogout(Task task);
 
-	void processRspError(Task task);
+	void processRtnQmdInstrumentStatu(Task task);
+
+	void processRspSubscribeTopic(Task task);
+
+	void processRspQryTopic(Task task);
+
+	void processRtnDepthMarketData(Task task);
 
 	void processRspSubMarketData(Task task);
 
 	void processRspUnSubMarketData(Task task);
 
-	void processRspSubForQuoteRsp(Task task);
-
-	void processRspUnSubForQuoteRsp(Task task);
-
-	void processRtnDepthMarketData(Task task);
-
+	void processRspQryDepthMarketData(Task task);
 
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
@@ -253,23 +292,33 @@ public:
 
 	virtual void onHeartBeatWarning(int i){};
 
+	virtual void onPackageStart(int topicID, int sequenceNo) {};
+
+	virtual void onPackageEnd(int topicID, int sequenceNo) {};
+
+	virtual void onMultiHeartbeat(string currTime, string multiCastIP) {};
+
+	virtual void udpMarketData(dict data) {};
+
+	virtual void onRspError(dict error, int id, bool last) {};
+
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last) {};
 
 	virtual void onRspUserLogout(dict data, dict error, int id, bool last) {};
 
-	virtual void onRspError(dict error, int id, bool last) {};
+	virtual void onRtnQmdInstrumentStatu(dict data) {};
+
+	virtual void onRspSubscribeTopic(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryTopic(dict data, dict error, int id, bool last) {};
+
+	virtual void onRtnDepthMarketData(dict data) {};
 
 	virtual void onRspSubMarketData(dict data, dict error, int id, bool last) {};
 
 	virtual void onRspUnSubMarketData(dict data, dict error, int id, bool last) {};
 
-	virtual void onRspSubForQuoteRsp(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspUnSubForQuoteRsp(dict data, dict error, int id, bool last) {};
-
-	virtual void onRtnDepthMarketData(dict data) {};
-
-	virtual void onRtnForQuoteRsp(dict data) {};
+	virtual void onRspQryDepthMarketData(dict data, dict error, int id, bool last) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
@@ -277,7 +326,13 @@ public:
 
 	void createFtdcMdApi(string pszFlowPath = "");
 
+	string getVersion(int major, int minor);
+
 	void release();
+
+	void setMultiCast(bool multicast);
+
+	void regTopicMultiAddr(string multiAddr);
 
 	void init();
 
@@ -289,11 +344,33 @@ public:
 
 	void registerFront(string pszFrontAddress);
 
-	int subscribeMarketData(string instrumentID);
+	void registerNameServer(string pszNsAddress);
 
-	int unSubscribeMarketData(string instrumentID);
+	void subscribeMarketDataTopic(int topicID, int resumeType);
+
+	int subMarketData(string instrumentID);
+
+	int unSubMarketData(string instrumentID);
+
+	void setHeartbeatTimeout(int timeout);
+
+	void shmMarketData(dict req, dict defdata);
+
+	void setUdpChannel(string udpid);
 
 	int reqUserLogin(dict req, int nRequestID);
 
 	int reqUserLogout(dict req, int nRequestID);
+
+	int reqSubscribeTopic(dict req, int nRequestID);
+
+	int reqQryTopic(dict req, int nRequestID);
+
+	int reqSubMarketData(dict req, int nRequestID);
+
+	int reqUnSubMarketData(dict req, int nRequestID);
+
+	int reqQryDepthMarketData(dict req, int nRequestID);
+
+	void activateMultiMarketData(string tradingDay);
 };

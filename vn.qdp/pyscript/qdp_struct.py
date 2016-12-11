@@ -159,7 +159,7 @@ CQdpFtdcInputOrderField["ForceCloseReason"] = "char"
 CQdpFtdcInputOrderField["IsAutoSuspend"] = "int"
 #业务单元
 CQdpFtdcInputOrderField["BusinessUnit"] = "string"
-#用户自定义域
+#用户自定义域`
 CQdpFtdcInputOrderField["UserCustom"] = "string"
 #营业部代码
 CQdpFtdcInputOrderField["BranchID"] = "string"

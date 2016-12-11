@@ -75,7 +75,10 @@ class MainWindow(QtGui.QMainWindow):
         connectFemasAction.triggered.connect(self.connectFemas)  
         
         connectXspeedAction = QtGui.QAction(u'连接飞创', self)
-        connectXspeedAction.triggered.connect(self.connectXspeed)          
+        connectXspeedAction.triggered.connect(self.connectXspeed)   
+        
+        connectQdpAction = QtGui.QAction(u'连接QDP', self)
+        connectQdpAction.triggered.connect(self.connectQdp)
         
         connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
         connectKsgoldAction.triggered.connect(self.connectKsgold)  
@@ -138,6 +141,8 @@ class MainWindow(QtGui.QMainWindow):
             sysMenu.addAction(connectFemasAction)
         if 'XSPEED' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectXspeedAction)
+        if 'QDP' in self.mainEngine.gatewayDict:
+            sysMenu.addAction(connectQdpAction)
         if 'KSOTP' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectKsotpAction)
         if 'KSGOLD' in self.mainEngine.gatewayDict:
@@ -228,8 +233,13 @@ class MainWindow(QtGui.QMainWindow):
     
     #----------------------------------------------------------------------
     def connectXspeed(self):
-        """连接飞马接口"""
-        self.mainEngine.connect('XSPEED')             
+        """连接飞创接口"""
+        self.mainEngine.connect('XSPEED')    
+        
+    #----------------------------------------------------------------------
+    def connectQdp(self):
+        """连接QDP接口"""
+        self.mainEngine.connect('QDP')     
     
     #----------------------------------------------------------------------
     def connectKsgold(self):

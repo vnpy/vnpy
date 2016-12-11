@@ -36,118 +36,48 @@ using namespace boost;
 #define ONFRONTCONNECTED 1
 #define ONFRONTDISCONNECTED 2
 #define ONHEARTBEATWARNING 3
-#define ONRSPAUTHENTICATE 4
-#define ONRSPUSERLOGIN 5
-#define ONRSPUSERLOGOUT 6
-#define ONRSPUSERPASSWORDUPDATE 7
-#define ONRSPTRADINGACCOUNTPASSWORDUPDATE 8
-#define ONRSPORDERINSERT 9
-#define ONRSPPARKEDORDERINSERT 10
-#define ONRSPPARKEDORDERACTION 11
-#define ONRSPORDERACTION 12
-#define ONRSPQUERYMAXORDERVOLUME 13
-#define ONRSPSETTLEMENTINFOCONFIRM 14
-#define ONRSPREMOVEPARKEDORDER 15
-#define ONRSPREMOVEPARKEDORDERACTION 16
-#define ONRSPEXECORDERINSERT 17
-#define ONRSPEXECORDERACTION 18
-#define ONRSPFORQUOTEINSERT 19
-#define ONRSPQUOTEINSERT 20
-#define ONRSPQUOTEACTION 21
-#define ONRSPLOCKINSERT 22
-#define ONRSPCOMBACTIONINSERT 23
-#define ONRSPQRYORDER 24
-#define ONRSPQRYTRADE 25
-#define ONRSPQRYINVESTORPOSITION 26
-#define ONRSPQRYTRADINGACCOUNT 27
-#define ONRSPQRYINVESTOR 28
-#define ONRSPQRYTRADINGCODE 29
-#define ONRSPQRYINSTRUMENTMARGINRATE 30
-#define ONRSPQRYINSTRUMENTCOMMISSIONRATE 31
-#define ONRSPQRYEXCHANGE 32
-#define ONRSPQRYPRODUCT 33
-#define ONRSPQRYINSTRUMENT 34
-#define ONRSPQRYDEPTHMARKETDATA 35
-#define ONRSPQRYSETTLEMENTINFO 36
-#define ONRSPQRYTRANSFERBANK 37
-#define ONRSPQRYINVESTORPOSITIONDETAIL 38
-#define ONRSPQRYNOTICE 39
-#define ONRSPQRYSETTLEMENTINFOCONFIRM 40
-#define ONRSPQRYINVESTORPOSITIONCOMBINEDETAIL 41
-#define ONRSPQRYCFMMCTRADINGACCOUNTKEY 42
-#define ONRSPQRYEWARRANTOFFSET 43
-#define ONRSPQRYINVESTORPRODUCTGROUPMARGIN 44
-#define ONRSPQRYEXCHANGEMARGINRATE 45
-#define ONRSPQRYEXCHANGEMARGINRATEADJUST 46
-#define ONRSPQRYEXCHANGERATE 47
-#define ONRSPQRYSECAGENTACIDMAP 48
-#define ONRSPQRYPRODUCTEXCHRATE 49
-#define ONRSPQRYPRODUCTGROUP 50
-#define ONRSPQRYOPTIONINSTRTRADECOST 51
-#define ONRSPQRYOPTIONINSTRCOMMRATE 52
-#define ONRSPQRYEXECORDER 53
-#define ONRSPQRYFORQUOTE 54
-#define ONRSPQRYQUOTE 55
-#define ONRSPQRYLOCK 56
-#define ONRSPQRYLOCKPOSITION 57
-#define ONRSPQRYINVESTORLEVEL 58
-#define ONRSPQRYEXECFREEZE 59
-#define ONRSPQRYCOMBINSTRUMENTGUARD 60
-#define ONRSPQRYCOMBACTION 61
-#define ONRSPQRYTRANSFERSERIAL 62
-#define ONRSPQRYACCOUNTREGISTER 63
-#define ONRSPERROR 64
-#define ONRTNORDER 65
-#define ONRTNTRADE 66
-#define ONERRRTNORDERINSERT 67
-#define ONERRRTNORDERACTION 68
-#define ONRTNINSTRUMENTSTATUS 69
-#define ONRTNTRADINGNOTICE 70
-#define ONRTNERRORCONDITIONALORDER 71
-#define ONRTNEXECORDER 72
-#define ONERRRTNEXECORDERINSERT 73
-#define ONERRRTNEXECORDERACTION 74
-#define ONERRRTNFORQUOTEINSERT 75
-#define ONRTNQUOTE 76
-#define ONERRRTNQUOTEINSERT 77
-#define ONERRRTNQUOTEACTION 78
-#define ONRTNFORQUOTERSP 79
-#define ONRTNCFMMCTRADINGACCOUNTTOKEN 80
-#define ONRTNLOCK 81
-#define ONERRRTNLOCKINSERT 82
-#define ONRTNCOMBACTION 83
-#define ONERRRTNCOMBACTIONINSERT 84
-#define ONRSPQRYCONTRACTBANK 85
-#define ONRSPQRYPARKEDORDER 86
-#define ONRSPQRYPARKEDORDERACTION 87
-#define ONRSPQRYTRADINGNOTICE 88
-#define ONRSPQRYBROKERTRADINGPARAMS 89
-#define ONRSPQRYBROKERTRADINGALGOS 90
-#define ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN 91
-#define ONRTNFROMBANKTOFUTUREBYBANK 92
-#define ONRTNFROMFUTURETOBANKBYBANK 93
-#define ONRTNREPEALFROMBANKTOFUTUREBYBANK 94
-#define ONRTNREPEALFROMFUTURETOBANKBYBANK 95
-#define ONRTNFROMBANKTOFUTUREBYFUTURE 96
-#define ONRTNFROMFUTURETOBANKBYFUTURE 97
-#define ONRTNREPEALFROMBANKTOFUTUREBYFUTUREMANUAL 98
-#define ONRTNREPEALFROMFUTURETOBANKBYFUTUREMANUAL 99
-#define ONRTNQUERYBANKBALANCEBYFUTURE 100
-#define ONERRRTNBANKTOFUTUREBYFUTURE 101
-#define ONERRRTNFUTURETOBANKBYFUTURE 102
-#define ONERRRTNREPEALBANKTOFUTUREBYFUTUREMANUAL 103
-#define ONERRRTNREPEALFUTURETOBANKBYFUTUREMANUAL 104
-#define ONERRRTNQUERYBANKBALANCEBYFUTURE 105
-#define ONRTNREPEALFROMBANKTOFUTUREBYFUTURE 106
-#define ONRTNREPEALFROMFUTURETOBANKBYFUTURE 107
-#define ONRSPFROMBANKTOFUTUREBYFUTURE 108
-#define ONRSPFROMFUTURETOBANKBYFUTURE 109
-#define ONRSPQUERYBANKACCOUNTMONEYBYFUTURE 110
-#define ONRTNOPENACCOUNTBYBANK 111
-#define ONRTNCANCELACCOUNTBYBANK 112
-#define ONRTNCHANGEACCOUNTBYBANK 113
-#define ONRSPQRYUSERINVESTOR 114
-
+#define ONPACKAGESTART 4
+#define ONPACKAGEEND 5
+#define ONRSPERROR 6
+#define ONRSPUSERLOGIN 7
+#define ONRSPUSERLOGOUT 8
+#define ONRSPUSERPASSWORDUPDATE 9
+#define ONRSPORDERINSERT 10
+#define ONRSPORDERACTION 11
+#define ONRSPFROMBANKTOFUTUREBYFUTURE 12
+#define ONRSPFROMFUTURETOBANKBYFUTURE 13
+#define ONRTNFLOWMESSAGECANCEL 14
+#define ONRTNTRADE 15
+#define ONRTNORDER 16
+#define ONERRRTNORDERINSERT 17
+#define ONERRRTNORDERACTION 18
+#define ONRTNINSTRUMENTSTATUS 19
+#define ONRTNINVESTORACCOUNTDEPOSIT 20
+#define ONRTNMESSAGENOTIFY 21
+#define ONERRRTNQUERYBANKBALANCEBYFUTURE 22
+#define ONERRRTNBANKTOFUTUREBYFUTURE 23
+#define ONERRRTNFUTURETOBANKBYFUTURE 24
+#define ONRTNQUERYBANKBALANCEBYFUTURE 25
+#define ONRTNFROMBANKTOFUTUREBYFUTURE 26
+#define ONRTNFROMFUTURETOBANKBYFUTURE 27
+#define ONRTNSGEDEFERRATE 28
+#define ONRSPQRYORDER 29
+#define ONRSPQRYTRADE 30
+#define ONRSPQRYUSERINVESTOR 31
+#define ONRSPQRYINVESTORACCOUNT 32
+#define ONRSPQRYINSTRUMENT 33
+#define ONRSPQRYEXCHANGE 34
+#define ONRSPQRYINVESTORPOSITION 35
+#define ONRSPSUBSCRIBETOPIC 36
+#define ONRSPQRYTOPIC 37
+#define ONRSPQRYINVESTORFEE 38
+#define ONRSPQRYINVESTORMARGIN 39
+#define ONRSPQRYEXCHANGEDIFFTIME 40
+#define ONRSPQRYCONTRACTBANK 41
+#define ONRSPQUERYBANKACCOUNTMONEYBYFUTURE 42
+#define ONRSPQRYTRANSFERSERIAL 43
+#define ONRSPQRYSGEDEFERRATE 44
+#define ONRSPQRYMARKETDATA 45
 
 
 ///-------------------------------------------------------------------------------------
@@ -184,6 +114,8 @@ struct Task
 	any task_error;		//错误结构体
 	int task_id;		//请求id
 	bool task_last;		//是否为最后返回
+
+	int additional_int;	//整数型补充字段
 };
 
 
@@ -293,57 +225,49 @@ public:
 	///@param nTimeLapse 距离上次接收报文的时间
 	virtual void OnHeartBeatWarning(int nTimeLapse);
 
-	///登录请求响应
-	virtual void OnRspUserLogin(CQdpFtdcRspUserLoginField *pRspUserLogin, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	///报文回调开始通知。当API收到一个报文后，首先调用本方法，然后是各数据域的回调，最后是报文回调结束通知。
+	///@param nTopicID 主题代码（如私有流、公共流、行情流等）
+	///@param nSequenceNo 报文序号
+	virtual void OnPackageStart(int nTopicID, int nSequenceNo);
 
-	///登出请求响应
-	virtual void OnRspUserLogout(CQdpFtdcRspUserLogoutField *pUserLogout, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+	///报文回调结束通知。当API收到一个报文后，首先调用报文回调开始通知，然后是各数据域的回调，最后调用本方法。
+	///@param nTopicID 主题代码（如私有流、公共流、行情流等）
+	///@param nSequenceNo 报文序号
+	virtual void OnPackageEnd(int nTopicID, int nSequenceNo);
 
-	///用户口令更新请求响应
-	virtual void OnRspUserPasswordUpdate(CQdpFtdcUserPasswordUpdateField *pUserPasswordUpdate, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///报单录入请求响应
-	virtual void OnRspOrderInsert(CQdpFtdcInputOrderField *pInputOrder, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///报单操作请求响应
-	virtual void OnRspOrderAction(CQdpFtdcOrderActionField *pInputOrderAction, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-
-	///请求查询报单响应
-	virtual void OnRspQryOrder(CQdpFtdcOrderField *pOrder, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///请求查询成交响应
-	virtual void OnRspQryTrade(CQdpFtdcTradeField *pTrade, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///请求查询投资者持仓响应
-	virtual void OnRspQryInvestorPosition(CQdpFtdcRspInvestorPositionField *pInvestorPosition, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///请求查询用户投资账户
-	virtual void OnRspQryUserInvestor(CQdpFtdcRspUserInvestorField *pUserInvestor, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///请求查询投资者响应
-	virtual void OnRspQryInvestorAccount(CQdpFtdcRspInvestorAccountField *pInvestor, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///请求查询交易所响应
-	virtual void OnRspQryExchange(CQdpFtdcRspExchangeField *pExchange, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///请求查询合约响应
-	virtual void OnRspQryInstrument(CQdpFtdcRspInstrumentField *pInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
-
-	///请求查询行情响应
-	virtual void OnRspQryMarketData(CQdpFtdcMarketDataField *pDepthMarketData, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///请求查询转帐流水响应
-	virtual void OnRspQryTransferSerial(CQdpFtdcTransferSerialField *pTransferSerial, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///错误应答
 	virtual void OnRspError(CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
-	///报单通知
-	virtual void OnRtnOrder(CQdpFtdcOrderField *pOrder) ;
+	///用户登录应答
+	virtual void OnRspUserLogin(CQdpFtdcRspUserLoginField *pRspUserLogin, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
-	///成交通知
+	///用户退出应答
+	virtual void OnRspUserLogout(CQdpFtdcRspUserLogoutField *pRspUserLogout, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///用户密码修改应答
+	virtual void OnRspUserPasswordUpdate(CQdpFtdcUserPasswordUpdateField *pUserPasswordUpdate, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///报单录入应答
+	virtual void OnRspOrderInsert(CQdpFtdcInputOrderField *pInputOrder, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///报单操作应答
+	virtual void OnRspOrderAction(CQdpFtdcOrderActionField *pOrderAction, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///期货发起银行资金转期货应答
+	virtual void OnRspFromBankToFutureByFuture(CQdpFtdcReqTransferField *pReqTransfer, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///期货发起期货资金转银行应答
+	virtual void OnRspFromFutureToBankByFuture(CQdpFtdcReqTransferField *pReqTransfer, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///数据流回退通知
+	virtual void OnRtnFlowMessageCancel(CQdpFtdcFlowMessageCancelField *pFlowMessageCancel) ;
+
+	///成交回报
 	virtual void OnRtnTrade(CQdpFtdcTradeField *pTrade) ;
+
+	///报单回报
+	virtual void OnRtnOrder(CQdpFtdcOrderField *pOrder) ;
 
 	///报单录入错误回报
 	virtual void OnErrRtnOrderInsert(CQdpFtdcInputOrderField *pInputOrder, CQdpFtdcRspInfoField *pRspInfo) ;
@@ -354,23 +278,14 @@ public:
 	///合约交易状态通知
 	virtual void OnRtnInstrumentStatus(CQdpFtdcInstrumentStatusField *pInstrumentStatus) ;
 
-	///请求查询签约银行响应
-	virtual void OnRspQryContractBank(CQdpFtdcContractBankField *pContractBank, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	///账户出入金回报
+	virtual void OnRtnInvestorAccountDeposit(CQdpFtdcInvestorAccountDepositResField *pInvestorAccountDepositRes) ;
 
-	///银行发起银行资金转期货通知
-	virtual void OnRtnFromBankToFutureByBank(CQdpFtdcRspTransferField *pRspTransfer) ;
+	///QDP警告消息通知
+	virtual void OnRtnMessageNotify(CQdpFtdcMessageNotifyInfoField *pMessageNotifyInfo) ;
 
-	///银行发起期货资金转银行通知
-	virtual void OnRtnFromFutureToBankByBank(CQdpFtdcRspTransferField *pRspTransfer) ;
-
-	///期货发起银行资金转期货通知
-	virtual void OnRtnFromBankToFutureByFuture(CQdpFtdcRspTransferField *pRspTransfer) ;
-
-	///期货发起期货资金转银行通知
-	virtual void OnRtnFromFutureToBankByFuture(CQdpFtdcRspTransferField *pRspTransfer) ;
-
-	///期货发起查询银行余额通知
-	virtual void OnRtnQueryBankBalanceByFuture(CQdpFtdcNotifyQueryAccountField *pNotifyQueryAccount) ;
+	///期货发起查询银行余额错误回报
+	virtual void OnErrRtnQueryBankBalanceByFuture(CQdpFtdcReqQueryAccountField *pReqQueryAccount, CQdpFtdcRspInfoField *pRspInfo) ;
 
 	///期货发起银行资金转期货错误回报
 	virtual void OnErrRtnBankToFutureByFuture(CQdpFtdcReqTransferField *pReqTransfer, CQdpFtdcRspInfoField *pRspInfo) ;
@@ -378,18 +293,68 @@ public:
 	///期货发起期货资金转银行错误回报
 	virtual void OnErrRtnFutureToBankByFuture(CQdpFtdcReqTransferField *pReqTransfer, CQdpFtdcRspInfoField *pRspInfo) ;
 
-	///期货发起查询银行余额错误回报
-	virtual void OnErrRtnQueryBankBalanceByFuture(CQdpFtdcReqQueryAccountField *pReqQueryAccount, CQdpFtdcRspInfoField *pRspInfo) ;
+	///期货发起查询银行余额通知
+	virtual void OnRtnQueryBankBalanceByFuture(CQdpFtdcNotifyQueryAccountField *pNotifyQueryAccount) ;
 
-	///期货发起银行资金转期货应答
-	virtual void OnRspFromBankToFutureByFuture(CQdpFtdcReqTransferField *pReqTransfer, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	///期货发起银行资金转期货通知
+	virtual void OnRtnFromBankToFutureByFuture(CQdpFtdcRspTransferField *pRspTransfer) ;
 
-	///期货发起期货资金转银行应答
-	virtual void OnRspFromFutureToBankByFuture(CQdpFtdcReqTransferField *pReqTransfer, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+	///期货发起期货资金转银行通知
+	virtual void OnRtnFromFutureToBankByFuture(CQdpFtdcRspTransferField *pRspTransfer) ;
+
+	///金交所递延费率通知
+	virtual void OnRtnSGEDeferRate(CQdpFtdcSGEDeferRateField *pSGEDeferRate) ;
+
+	///报单查询应答
+	virtual void OnRspQryOrder(CQdpFtdcOrderField *pOrder, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///成交单查询应答
+	virtual void OnRspQryTrade(CQdpFtdcTradeField *pTrade, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///可用投资者账户查询应答
+	virtual void OnRspQryUserInvestor(CQdpFtdcRspUserInvestorField *pRspUserInvestor, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///投资者资金账户查询应答
+	virtual void OnRspQryInvestorAccount(CQdpFtdcRspInvestorAccountField *pRspInvestorAccount, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///合约查询应答
+	virtual void OnRspQryInstrument(CQdpFtdcRspInstrumentField *pRspInstrument, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///交易所查询应答
+	virtual void OnRspQryExchange(CQdpFtdcRspExchangeField *pRspExchange, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///投资者持仓查询应答
+	virtual void OnRspQryInvestorPosition(CQdpFtdcRspInvestorPositionField *pRspInvestorPosition, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///订阅主题应答
+	virtual void OnRspSubscribeTopic(CQdpFtdcDisseminationField *pDissemination, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///主题查询应答
+	virtual void OnRspQryTopic(CQdpFtdcDisseminationField *pDissemination, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///投资者手续费率查询应答
+	virtual void OnRspQryInvestorFee(CQdpFtdcInvestorFeeField *pInvestorFee, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///投资者保证金率查询应答
+	virtual void OnRspQryInvestorMargin(CQdpFtdcInvestorMarginField *pInvestorMargin, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///交易所时间偏差查询应答
+	virtual void OnRspQryExchangeDiffTime(CQdpFtdcRspExchangeDiffTimeField *pRspExchangeDiffTime, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///查询签约银行应答
+	virtual void OnRspQryContractBank(CQdpFtdcContractBankField *pContractBank, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///期货发起查询银行余额应答
 	virtual void OnRspQueryBankAccountMoneyByFuture(CQdpFtdcReqQueryAccountField *pReqQueryAccount, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
+	///查询转账流水应答
+	virtual void OnRspQryTransferSerial(CQdpFtdcTransferSerialField *pTransferSerial, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///金交所递延费率查询应答
+	virtual void OnRspQrySGEDeferRate(CQdpFtdcSGEDeferRateField *pSGEDeferRate, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
+
+	///实时行情查询应答
+	virtual void OnRspQryMarketData(CQdpFtdcMarketDataField *pMarketData, CQdpFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	//-------------------------------------------------------------------------------------
 	//task：任务
@@ -403,51 +368,31 @@ public:
 
 	void processHeartBeatWarning(Task task);
 
+	void processPackageStart(Task task);
+
+	void processPackageEnd(Task task);
+
+	void processRspError(Task task);
+
 	void processRspUserLogin(Task task);
 
 	void processRspUserLogout(Task task);
 
-	void processRspQryUserInvestor(Task task);
-
-	void processRspQryContractBank(Task task);
-
-	void processRspQryTransferSerial(Task task);
-
-	void processRtnFromBankToFutureByBank(Task task);
-
-	void processRtnFromFutureToBankByBank(Task task);
-
 	void processRspUserPasswordUpdate(Task task);
-
-	void processRspTradingAccountPasswordUpdate(Task task);
 
 	void processRspOrderInsert(Task task);
 
 	void processRspOrderAction(Task task);
 
-	void processRspQryOrder(Task task);
+	void processRspFromBankToFutureByFuture(Task task);
 
-	void processRspQryTrade(Task task);
+	void processRspFromFutureToBankByFuture(Task task);
 
-	void processRspQryInvestorPosition(Task task);
-
-	void processRspQryInvestorAccount(Task task);
-
-	void processRspQryExchange(Task task);
-
-	void processRspQryInstrument(Task task);
-
-	void processRspQryMarketData(Task task);
-
-	void processRspQryExecFreeze(Task task);
-
-	void processRspQryCombAction(Task task);
-
-	void processRspError(Task task);
-
-	void processRtnOrder(Task task);
+	void processRtnFlowMessageCancel(Task task);
 
 	void processRtnTrade(Task task);
+
+	void processRtnOrder(Task task);
 
 	void processErrRtnOrderInsert(Task task);
 
@@ -455,23 +400,57 @@ public:
 
 	void processRtnInstrumentStatus(Task task);
 
-	void processRtnFromBankToFutureByFuture(Task task);
+	void processRtnInvestorAccountDeposit(Task task);
 
-	void processRtnFromFutureToBankByFuture(Task task);
+	void processRtnMessageNotify(Task task);
 
-	void processRtnQueryBankBalanceByFuture(Task task);
+	void processErrRtnQueryBankBalanceByFuture(Task task);
 
 	void processErrRtnBankToFutureByFuture(Task task);
 
 	void processErrRtnFutureToBankByFuture(Task task);
 
-	void processErrRtnQueryBankBalanceByFuture(Task task);
+	void processRtnQueryBankBalanceByFuture(Task task);
 
-	void processRspFromBankToFutureByFuture(Task task);
+	void processRtnFromBankToFutureByFuture(Task task);
 
-	void processRspFromFutureToBankByFuture(Task task);
+	void processRtnFromFutureToBankByFuture(Task task);
+
+	void processRtnSGEDeferRate(Task task);
+
+	void processRspQryOrder(Task task);
+
+	void processRspQryTrade(Task task);
+
+	void processRspQryUserInvestor(Task task);
+
+	void processRspQryInvestorAccount(Task task);
+
+	void processRspQryInstrument(Task task);
+
+	void processRspQryExchange(Task task);
+
+	void processRspQryInvestorPosition(Task task);
+
+	void processRspSubscribeTopic(Task task);
+
+	void processRspQryTopic(Task task);
+
+	void processRspQryInvestorFee(Task task);
+
+	void processRspQryInvestorMargin(Task task);
+
+	void processRspQryExchangeDiffTime(Task task);
+
+	void processRspQryContractBank(Task task);
 
 	void processRspQueryBankAccountMoneyByFuture(Task task);
+
+	void processRspQryTransferSerial(Task task);
+
+	void processRspQrySGEDeferRate(Task task);
+
+	void processRspQryMarketData(Task task);
 
 	//-------------------------------------------------------------------------------------
 	//data：回调函数的数据字典
@@ -487,7 +466,11 @@ public:
 
 	virtual void onHeartBeatWarning(int i){};
 
-	virtual void onRspAuthenticate(dict data, dict error, int id, bool last) {};
+	virtual void onPackageStart(int topicID, int sequenceNo){};
+
+	virtual void onPackageEnd(int topicID, int sequenceNo){};
+
+	virtual void onRspError(dict error, int id, bool last) {};
 
 	virtual void onRspUserLogin(dict data, dict error, int id, bool last) {};
 
@@ -495,37 +478,19 @@ public:
 
 	virtual void onRspUserPasswordUpdate(dict data, dict error, int id, bool last) {};
 
-	virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bool last) {};
-
 	virtual void onRspOrderInsert(dict data, dict error, int id, bool last) {};
 
 	virtual void onRspOrderAction(dict data, dict error, int id, bool last) {};
 
-	virtual void onRspQryUserInvestor(dict data, dict error, int id, bool last) {};
+	virtual void onRspFromBankToFutureByFuture(dict data, dict error, int id, bool last) {};
 
-	virtual void onRspQryOrder(dict data, dict error, int id, bool last) {};
+	virtual void onRspFromFutureToBankByFuture(dict data, dict error, int id, bool last) {};
 
-	virtual void onRspQryTrade(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspQryTransferSerial(dict data, dict error, int id, bool last){};
-
-	virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspQryInvestorAccount(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspQryInvestor(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspQryExchange(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspQryInstrument(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspQryMarketData(dict data, dict error, int id, bool last) {};
-
-	virtual void onRspError(dict error, int id, bool last) {};
-
-	virtual void onRtnOrder(dict data) {};
+	virtual void onRtnFlowMessageCancel(dict data) {};
 
 	virtual void onRtnTrade(dict data) {};
+
+	virtual void onRtnOrder(dict data) {};
 
 	virtual void onErrRtnOrderInsert(dict data, dict error) {};
 
@@ -533,37 +498,65 @@ public:
 
 	virtual void onRtnInstrumentStatus(dict data) {};
 
-	virtual void onRspQryContractBank(dict data, dict error, int id, bool last) {};
+	virtual void onRtnInvestorAccountDeposit(dict data) {};
 
-	virtual void onRtnFromBankToFutureByBank(dict data) {};
+	virtual void onRtnMessageNotify(dict data) {};
 
-	virtual void onRtnFromFutureToBankByBank(dict data) {};
-
-	virtual void onRtnFromBankToFutureByFuture(dict data) {};
-
-	virtual void onRtnFromFutureToBankByFuture(dict data) {};
-
-	virtual void onRtnQueryBankBalanceByFuture(dict data) {};
+	virtual void onErrRtnQueryBankBalanceByFuture(dict data, dict error) {};
 
 	virtual void onErrRtnBankToFutureByFuture(dict data, dict error) {};
 
 	virtual void onErrRtnFutureToBankByFuture(dict data, dict error) {};
 
-	virtual void onErrRtnQueryBankBalanceByFuture(dict data, dict error) {};
+	virtual void onRtnQueryBankBalanceByFuture(dict data) {};
 
-	virtual void onRspFromBankToFutureByFuture(dict data, dict error, int id, bool last) {};
+	virtual void onRtnFromBankToFutureByFuture(dict data) {};
 
-	virtual void onRspFromFutureToBankByFuture(dict data, dict error, int id, bool last) {};
+	virtual void onRtnFromFutureToBankByFuture(dict data) {};
+
+	virtual void onRtnSGEDeferRate(dict data) {};
+
+	virtual void onRspQryOrder(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryTrade(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryUserInvestor(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryInvestorAccount(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryInstrument(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryExchange(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryInvestorPosition(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspSubscribeTopic(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryTopic(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryInvestorFee(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryInvestorMargin(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryExchangeDiffTime(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryContractBank(dict data, dict error, int id, bool last) {};
 
 	virtual void onRspQueryBankAccountMoneyByFuture(dict data, dict error, int id, bool last) {};
 
+	virtual void onRspQryTransferSerial(dict data, dict error, int id, bool last) {};
 
+	virtual void onRspQrySGEDeferRate(dict data, dict error, int id, bool last) {};
+
+	virtual void onRspQryMarketData(dict data, dict error, int id, bool last) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
 	//-------------------------------------------------------------------------------------
 
 	void createFtdcTraderApi(string pszFlowPath = "");
+
+	string getVersion(int major, int minor);
 
 	void release();
 
@@ -577,80 +570,64 @@ public:
 
 	void registerFront(string pszFrontAddress);
 
+	void registerNameServer(string pszNsAddress);
+
 	void subscribePrivateTopic(int nType);
 
 	void subscribePublicTopic(int nType);
 
-	int reqAuthenticate(dict req, int nRequestID);
+	void setHeartbeatTimeout(int timeout);
+
+	int openRequestLog(string fileName);
+
+	int openResponseLog(string fileName);
 
 	int reqUserLogin(dict req, int nRequestID);
 
 	int reqUserLogout(dict req, int nRequestID);
 
-	int reqQryUserInvestor(dict req, int nRequestID);
-
 	int reqUserPasswordUpdate(dict req, int nRequestID);
-
-	int reqTradingAccountPasswordUpdate(dict req, int nRequestID);
 
 	int reqOrderInsert(dict req, int nRequestID);
 
-	int reqParkedOrderInsert(dict req, int nRequestID);
-
-	int reqParkedOrderAction(dict req, int nRequestID);
-
 	int reqOrderAction(dict req, int nRequestID);
-
-	int reqExecOrderInsert(dict req, int nRequestID);
-
-	int reqExecOrderAction(dict req, int nRequestID);
-
-	int reqForQuoteInsert(dict req, int nRequestID);
-
-	int reqQuoteInsert(dict req, int nRequestID);
-
-	int reqQuoteAction(dict req, int nRequestID);
-
-	int reqLockInsert(dict req, int nRequestID);
-
-	int reqCombActionInsert(dict req, int nRequestID);
-
-	int reqQryOrder(dict req, int nRequestID);
-
-	int reqQryTrade(dict req, int nRequestID);
-
-	int reqQryInvestorPosition(dict req, int nRequestID);
-
-	int reqQryInvestorAccount(dict req, int nRequestID);
-
-	int reqQryTradingCode(dict req, int nRequestID);
-
-	int reqQryInstrumentMarginRate(dict req, int nRequestID);
-
-	int reqQryInstrumentCommissionRate(dict req, int nRequestID);
-
-	int reqQryExchange(dict req, int nRequestID);
-
-	int reqQryProduct(dict req, int nRequestID);
-
-	int reqQryInstrument(dict req, int nRequestID);
-
-	int reqQryMarketData(dict req, int nRequestID);
-
-	int reqQryInvestorLevel(dict req, int nRequestID);
-
-	int reqQryExecFreeze(dict req, int nRequestID);
-
-	int reqQryCombInstrumentGuard(dict req, int nRequestID);
-
-	int reqQryCombAction(dict req, int nRequestID);
-
-	int reqQryContractBank(dict req, int nRequestID);
 
 	int reqFromBankToFutureByFuture(dict req, int nRequestID);
 
 	int reqFromFutureToBankByFuture(dict req, int nRequestID);
 
+	int reqQryOrder(dict req, int nRequestID);
+
+	int reqQryTrade(dict req, int nRequestID);
+
+	int reqQryUserInvestor(dict req, int nRequestID);
+
+	int reqQryInvestorAccount(dict req, int nRequestID);
+
+	int reqQryInstrument(dict req, int nRequestID);
+
+	int reqQryExchange(dict req, int nRequestID);
+
+	int reqQryInvestorPosition(dict req, int nRequestID);
+
+	int reqSubscribeTopic(dict req, int nRequestID);
+
+	int reqQryTopic(dict req, int nRequestID);
+
+	int reqQryInvestorFee(dict req, int nRequestID);
+
+	int reqQryInvestorMargin(dict req, int nRequestID);
+
+	int reqQryExchangeDiffTime(dict req, int nRequestID);
+
+	int reqQryContractBank(dict req, int nRequestID);
+
 	int reqQueryBankAccountMoneyByFuture(dict req, int nRequestID);
+
+	int reqQryTransferSerial(dict req, int nRequestID);
+
+	int reqQrySGEDeferRate(dict req, int nRequestID);
+
+	int reqQryMarketData(dict req, int nRequestID);
 };
 

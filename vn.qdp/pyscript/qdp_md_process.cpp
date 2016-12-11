@@ -48,9 +48,11 @@ void MdApi::processRspUserLogin(Task task)
 	data["UserID"] = task_data.UserID;
 	data["DataCenterID"] = task_data.DataCenterID;
 	data["TradingDay"] = task_data.TradingDay;
+	data["SessionID"] = task_data.SessionID;
 	data["BrokerID"] = task_data.BrokerID;
 	data["MaxOrderLocalID"] = task_data.MaxOrderLocalID;
 	data["TradingSystemName"] = task_data.TradingSystemName;
+	data["FrontID"] = task_data.FrontID;
 	data["LoginTime"] = task_data.LoginTime;
 	data["UserFlowSize"] = task_data.UserFlowSize;
 
@@ -81,7 +83,13 @@ void MdApi::processRspUserLogout(Task task)
 void MdApi::processRtnQmdInstrumentStatu(Task task)
 {
 	PyLock lock;
-	this->onRtnQmdInstrumentStatu();
+	CQdpFtdcQmdInstrumentStateField task_data = any_cast<CQdpFtdcQmdInstrumentStateField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["InstrumentStatus"] = task_data.InstrumentStatus;
+	data["ExchangeID"] = task_data.ExchangeID;
+
+	this->onRtnQmdInstrumentStatu(data);
 };
 
 void MdApi::processRspSubscribeTopic(Task task)
@@ -201,11 +209,41 @@ void MdApi::processRspUnSubMarketData(Task task)
 void MdApi::processRspQryDepthMarketData(Task task)
 {
 	PyLock lock;
+	CQdpFtdcRspMarketDataField task_data = any_cast<CQdpFtdcRspMarketDataField>(task.task_data);
+	dict data;
+	data["HighestPrice"] = task_data.HighestPrice;
+	data["BidPrice1"] = task_data.BidPrice1;
+	data["LowerLimitPrice"] = task_data.LowerLimitPrice;
+	data["PreOpenInterest"] = task_data.PreOpenInterest;
+	data["PreClosePrice"] = task_data.PreClosePrice;
+	data["AskPrice1"] = task_data.AskPrice1;
+	data["PreSettlementPrice"] = task_data.PreSettlementPrice;
+	data["AskVolume1"] = task_data.AskVolume1;
+	data["UpdateTime"] = task_data.UpdateTime;
+	data["UpdateMillisec"] = task_data.UpdateMillisec;
+	data["SettlementGroupID"] = task_data.SettlementGroupID;
+	data["BidVolume1"] = task_data.BidVolume1;
+	data["Volume"] = task_data.Volume;
+	data["UpperLimitPrice"] = task_data.UpperLimitPrice;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ClosePrice"] = task_data.ClosePrice;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["SettlementID"] = task_data.SettlementID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["PreDelta"] = task_data.PreDelta;
+	data["OpenInterest"] = task_data.OpenInterest;
+	data["CurrDelta"] = task_data.CurrDelta;
+	data["Turnover"] = task_data.Turnover;
+	data["LastPrice"] = task_data.LastPrice;
+	data["SettlementPrice"] = task_data.SettlementPrice;
+	data["OpenPrice"] = task_data.OpenPrice;
+	data["LowestPrice"] = task_data.LowestPrice;
+
 	CQdpFtdcRspInfoField task_error = any_cast<CQdpFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
-	this->onRspQryDepthMarketData(error, task.task_id, task.task_last);
+	this->onRspQryDepthMarketData(data, error, task.task_id, task.task_last);
 };
 

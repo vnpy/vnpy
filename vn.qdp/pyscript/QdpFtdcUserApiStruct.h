@@ -156,7 +156,7 @@ struct CQdpFtdcInputOrderField
 	TQdpFtdcBoolType	IsAutoSuspend;
 	///业务单元
 	TQdpFtdcBusinessUnitType	BusinessUnit;
-	///用户自定义域
+	///用户自定义域`
 	TQdpFtdcCustomType	UserCustom;
 	///营业部代码
 	TQdpFtdcBranchIDType	BranchID;

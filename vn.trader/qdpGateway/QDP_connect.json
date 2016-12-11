@@ -1,5 +1,4 @@
 {
-    "name":	"国富模拟",
     "brokerID": "guofu", 
     "tdAddress": "tcp://211.147.74.221:30005", 
     "password": "111111", 

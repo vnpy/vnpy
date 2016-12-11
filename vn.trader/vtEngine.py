@@ -88,6 +88,13 @@ class MainEngine(object):
             self.gatewayDict['XSPEED'].setQryEnabled(True)
         except Exception, e:
             print e          
+            
+        try:
+            from qdpGateway.qdpGateway import QdpGateway
+            self.addGateway(QdpGateway, 'QDP')
+            self.gatewayDict['QDP'].setQryEnabled(True)
+        except Exception, e:
+            print e
         
         try:
             from ksgoldGateway.ksgoldGateway import KsgoldGateway

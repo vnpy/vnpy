@@ -474,7 +474,6 @@ class ErrorMonitor(BasicMonitor):
         d['errorTime']  = {'chinese':u'错误时间', 'cellType':BasicCell}
         d['errorID'] = {'chinese':u'错误代码', 'cellType':BasicCell}
         d['errorMsg'] = {'chinese':u'错误信息', 'cellType':BasicCell}
-        d['additionalInfo'] = {'chinese':u'补充信息', 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         

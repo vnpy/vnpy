@@ -145,6 +145,8 @@ vn.py使用github托管其源代码，贡献代码使用github的PR(Pull Request
 	* 飞鼠（vn.sgit）
 
 	* 飞创（vn.xspeed）
+
+	* QDP（vn.qdp）
 	
 	* OANDA（vn.oanda）
 
