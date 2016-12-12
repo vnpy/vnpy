@@ -904,7 +904,6 @@ int MdApi::exit()
 	//该函数在原生API里没有，用于安全退出API用，原生的join似乎不太稳定
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
-//	this->api->Join();
 	this->api = NULL;
 	return 1;
 };

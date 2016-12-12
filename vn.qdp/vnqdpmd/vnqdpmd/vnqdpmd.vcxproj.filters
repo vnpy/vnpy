@@ -52,18 +52,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\qdpapi\qdpmdapi.dll">
+    <None Include="..\..\qdpapi\qdpmdapi.dll">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\..\..\qdpapi\qdptraderapi.dll">
+    <None Include="..\..\qdpapi\qdptraderapi.dll">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\qdpapi\qdpmdapi.lib">
+    <Library Include="..\..\qdpapi\qdpmdapi.lib">
       <Filter>Resource Files</Filter>
     </Library>
-    <Library Include="..\..\..\qdpapi\qdptraderapi.lib">
+    <Library Include="..\..\qdpapi\qdptraderapi.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>

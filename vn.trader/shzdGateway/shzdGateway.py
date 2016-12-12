@@ -57,7 +57,6 @@ orderStatusMapReverse['4'] = STATUS_ALLTRADED
 orderStatusMapReverse['5'] = STATUS_CANCELLED
 orderStatusMapReverse['6'] = STATUS_CANCELLED
 
-s = set()
 
 ########################################################################
 class ShzdGateway(VtGateway):

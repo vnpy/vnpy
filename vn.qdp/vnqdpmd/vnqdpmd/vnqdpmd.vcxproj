@@ -107,12 +107,12 @@
     <ClCompile Include="vnqdpmd.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\qdpapi\qdpmdapi.dll" />
-    <None Include="..\..\..\qdpapi\qdptraderapi.dll" />
+    <None Include="..\..\qdpapi\qdpmdapi.dll" />
+    <None Include="..\..\qdpapi\qdptraderapi.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\qdpapi\qdpmdapi.lib" />
-    <Library Include="..\..\..\qdpapi\qdptraderapi.lib" />
+    <Library Include="..\..\qdpapi\qdpmdapi.lib" />
+    <Library Include="..\..\qdpapi\qdptraderapi.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

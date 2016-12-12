@@ -83,9 +83,9 @@ class QdpGateway(VtGateway):
     def connect(self):
         """连接"""
         # 载入json文件
-	fileName = self.gatewayName + '_connect.json'
-	path = os.path.abspath(os.path.dirname(__file__))
-	fileName = os.path.join(path, fileName)
+        fileName = self.gatewayName + '_connect.json'
+        path = os.path.abspath(os.path.dirname(__file__))
+        fileName = os.path.join(path, fileName)
         
         try:
             f = file(fileName)
@@ -114,7 +114,7 @@ class QdpGateway(VtGateway):
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
         self.tdApi.connect(userID, password, brokerID, tdAddress)
-	
+        
         # 初始化并启动查询
         self.initQuery()
 
@@ -146,10 +146,7 @@ class QdpGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        if self.mdConnected:
-            self.mdApi.close()
-        if self.tdConnected:
-            self.tdApi.close()
+        pass
         
     #----------------------------------------------------------------------
     def initQuery(self):
@@ -280,173 +277,173 @@ class QdpMdApi(MdApi):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-	self.logout()
+        self.logout()
         self.exit()
 
     #----------------------------------------------------------------------
     def onFrontConnected(self):
-	"""服务器连接"""
-	self.connectionStatus = True
+        """服务器连接"""
+        self.connectionStatus = True
     
-	log = VtLogData()
-	log.gatewayName = self.gatewayName
-	log.logContent = u'行情服务器连接成功'
-	self.gateway.onLog(log)
-	self.login()
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'行情服务器连接成功'
+        self.gateway.onLog(log)
+        self.login()
     
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, i):
-	"""服务器断开"""
-	self.connectionStatus = False
-	self.loginStatus = False
-	self.gateway.mdConnected = False
+        """服务器断开"""
+        self.connectionStatus = False
+        self.loginStatus = False
+        self.gateway.mdConnected = False
     
-	log = VtLogData()
-	log.gatewayName = self.gatewayName
-	log.logContent = u'行情服务器连接断开'
-	self.gateway.onLog(log) 
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'行情服务器连接断开'
+        self.gateway.onLog(log) 
     
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, i):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onPackageStart(self, topicID, sequenceNo):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onPackageEnd(self, topicID, sequenceNo):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onMultiHeartbeat(self, currTime, multiCastIP):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def udpMarketData(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspError(self, error, id, last):
-	"""错误回报"""
-	err = VtErrorData()
-	err.gatewayName = self.gatewayName
-	err.errorID = error['ErrorID']
-	err.errorMsg = error['ErrorMsg'].decode('gbk')
-	self.gateway.onError(err)
+        """错误回报"""
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, id, last):
-	"""登陆回报"""
-	# 如果登录成功，推送日志信息
-	if error['ErrorID'] == 0:
-	    self.loginStatus = True
-	    self.gateway.mdConnected = True
+        """登陆回报"""
+        # 如果登录成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.loginStatus = True
+            self.gateway.mdConnected = True
     
-	    log = VtLogData()
-	    log.gatewayName = self.gatewayName
-	    log.logContent = u'行情服务器登录完成'
-	    self.gateway.onLog(log)
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'行情服务器登录完成'
+            self.gateway.onLog(log)
     
-	    # 重新订阅之前订阅的合约
-	    for subscribeReq in self.subscribedSymbols:
-		self.subscribe(subscribeReq)
+            # 重新订阅之前订阅的合约
+            for subscribeReq in self.subscribedSymbols:
+                self.subscribe(subscribeReq)
     
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, id, last):
-	"""登出回报"""
-	# 如果登出成功，推送日志信息
-	if error['ErrorID'] == 0:
-	    self.loginStatus = False
-	    self.gateway.mdConnected = False
+        """登出回报"""
+        # 如果登出成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.loginStatus = False
+            self.gateway.mdConnected = False
     
-	    log = VtLogData()
-	    log.gatewayName = self.gatewayName
-	    log.logContent = u'行情服务器登出完成'
-	    self.gateway.onLog(log)
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'行情服务器登出完成'
+            self.gateway.onLog(log)
     
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRtnQmdInstrumentStatu(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspSubscribeTopic(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryTopic(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnDepthMarketData(self, data):
-	"""行情推送"""
-	tick = VtTickData()
-	tick.gatewayName = self.gatewayName
+        """行情推送"""
+        tick = VtTickData()
+        tick.gatewayName = self.gatewayName
     
-	tick.symbol = data['InstrumentID']
-	tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
-	tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
+        tick.symbol = data['InstrumentID']
+        tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
+        tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
     
-	tick.lastPrice = data['LastPrice']
-	tick.volume = data['Volume']
-	tick.openInterest = data['OpenInterest']
-	tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
-	tick.date = data['TradingDay']
+        tick.lastPrice = data['LastPrice']
+        tick.volume = data['Volume']
+        tick.openInterest = data['OpenInterest']
+        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        tick.date = data['TradingDay']
     
-	tick.openPrice = data['OpenPrice']
-	tick.highPrice = data['HighestPrice']
-	tick.lowPrice = data['LowestPrice']
-	tick.preClosePrice = data['PreClosePrice']
+        tick.openPrice = data['OpenPrice']
+        tick.highPrice = data['HighestPrice']
+        tick.lowPrice = data['LowestPrice']
+        tick.preClosePrice = data['PreClosePrice']
     
-	tick.upperLimit = data['UpperLimitPrice']
-	tick.lowerLimit = data['LowerLimitPrice']
+        tick.upperLimit = data['UpperLimitPrice']
+        tick.lowerLimit = data['LowerLimitPrice']
     
-	# QDP只有一档行情
-	tick.bidPrice1 = data['BidPrice1']
-	tick.bidVolume1 = data['BidVolume1']
-	tick.askPrice1 = data['AskPrice1']
-	tick.askVolume1 = data['AskVolume1']
+        # QDP只有一档行情
+        tick.bidPrice1 = data['BidPrice1']
+        tick.bidVolume1 = data['BidVolume1']
+        tick.askPrice1 = data['AskPrice1']
+        tick.askVolume1 = data['AskVolume1']
     
-	self.gateway.onTick(tick)
+        self.gateway.onTick(tick)
     
     #----------------------------------------------------------------------
     def onRspSubMarketData(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspUnSubMarketData(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
 
 
 ########################################################################
@@ -462,7 +459,7 @@ class QdpTdApi(TdApi):
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
         self.reqID = EMPTY_INT              # 操作请求编号
-        self.orderRef =	EMPTY_INT	    # 订单编号
+        self.orderRef =        EMPTY_INT            # 订单编号
         
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
@@ -494,8 +491,8 @@ class QdpTdApi(TdApi):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
 
-	    self.subscribePrivateTopic(0)
-    	    self.subscribePublicTopic(2)
+            self.subscribePrivateTopic(0)
+            self.subscribePublicTopic(0)
             
             # 注册服务器地址
             self.registerFront(self.address)
@@ -535,11 +532,10 @@ class QdpTdApi(TdApi):
     def qryAccount(self):
         """查询账户"""
         self.reqID += 1
-	req = {}
-	req['UserID'] = self.userID
-	req['BrokerID'] = self.brokerID
-	req['InvestorID'] = self.investorID
-        self.reqQryInvestorAccount({}, self.reqID)
+        req = {}
+        req['BrokerID'] = self.brokerID
+        req['InvestorID'] = self.investorID
+        self.reqQryInvestorAccount(req, self.reqID)
         
     #----------------------------------------------------------------------
     def qryPosition(self):
@@ -573,12 +569,12 @@ class QdpTdApi(TdApi):
         req['UserID'] = self.userID
         req['InvestorID'] = self.investorID
         req['BrokerID'] = self.brokerID
-        req['HedgeFlag'] = defineDict['QDP_FTDC_CHF_Speculation']       # 投机单
-        req['ForceCloseReason'] = defineDict['QDP_FTDC_FCR_NotForceClose'] # 非强平
-        req['IsAutoSuspend'] = 0                                             # 非自动挂起
-        req['TimeCondition'] = defineDict['QDP_FTDC_TC_GFD']               # 今日有效
-        req['VolumeCondition'] = defineDict['QDP_FTDC_VC_AV']              # 任意成交量
-        req['MinVolume'] = 1                                                 # 最小成交量为1
+        req['HedgeFlag'] = defineDict['QDP_FTDC_CHF_Speculation']           # 投机单
+        req['ForceCloseReason'] = defineDict['QDP_FTDC_FCR_NotForceClose']  # 非强平
+        req['IsAutoSuspend'] = 0                                            # 非自动挂起
+        req['TimeCondition'] = defineDict['QDP_FTDC_TC_GFD']                # 今日有效
+        req['VolumeCondition'] = defineDict['QDP_FTDC_VC_AV']               # 任意成交量
+        req['MinVolume'] = 1                                                # 最小成交量为1
         
         # 判断FAK和FOK
         if orderReq.priceType == PRICETYPE_FAK:
@@ -600,7 +596,7 @@ class QdpTdApi(TdApi):
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.reqID += 1
-	self.orderRef += 1
+        self.orderRef += 1
 
         req = {}
         
@@ -621,491 +617,491 @@ class QdpTdApi(TdApi):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-	self.logout()
+        self.logout()
         self.exit()
 
     #----------------------------------------------------------------------
     def onFrontConnected(self):
-	"""服务器连接"""
-	self.connectionStatus = True
+        """服务器连接"""
+        self.connectionStatus = True
     
-	log = VtLogData()
-	log.gatewayName = self.gatewayName
-	log.logContent = u'交易服务器连接成功'
-	self.gateway.onLog(log)
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'交易服务器连接成功'
+        self.gateway.onLog(log)
     
-	self.login()
+        self.login()
     
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, i):
-	"""服务器断开"""
-	self.connectionStatus = False
-	self.loginStatus = False
-	self.gateway.tdConnected = False
+        """服务器断开"""
+        self.connectionStatus = False
+        self.loginStatus = False
+        self.gateway.tdConnected = False
     
-	log = VtLogData()
-	log.gatewayName = self.gatewayName
-	log.logContent = u'交易服务器连接断开'
-	self.gateway.onLog(log)  
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'交易服务器连接断开'
+        self.gateway.onLog(log)  
     
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, i):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onPackageStart(self, topicID, sequenceNo):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onPackageEnd(self, topicID, sequenceNo):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspError(self, error, id, last):
-	"""错误回报"""
-	err = VtErrorData()
-	err.gatewayName = self.gatewayName
-	err.errorID = error['ErrorID']
-	err.errorMsg = error['ErrorMsg'].decode('gbk')
-	self.gateway.onError(err)
+        """错误回报"""
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, id, last):
-	"""登陆回报"""
-	# 如果登录成功，推送日志信息
-	if error['ErrorID'] == 0:
-	    self.frontID = str(data['FrontID'])
-	    self.sessionID = str(data['SessionID'])
-	    self.loginStatus = True
-	    self.gateway.tdConnected = True
+        """登陆回报"""
+        # 如果登录成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.frontID = str(data['FrontID'])
+            self.sessionID = str(data['SessionID'])
+            self.loginStatus = True
+            self.gateway.tdConnected = True
     
-	    log = VtLogData()
-	    log.gatewayName = self.gatewayName
-	    log.logContent = u'交易服务器登录完成'
-	    self.gateway.onLog(log)
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易服务器登录完成'
+            self.gateway.onLog(log)
     
-	    # 获取investorID
-	    self.reqID += 1
-	    req = {}
-	    req['UserID'] = self.userID
-	    req['Password'] = self.password
-	    req['BrokerID'] = self.brokerID
-	    self.reqQryUserInvestor(req,self.reqID)
+            # 获取investorID
+            self.reqID += 1
+            req = {}
+            req['UserID'] = self.userID
+            req['Password'] = self.password
+            req['BrokerID'] = self.brokerID
+            self.reqQryUserInvestor(req,self.reqID)
     
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, id, last):
-	"""登出回报"""
-	# 如果登出成功，推送日志信息
-	if error['ErrorID'] == 0:
-	    self.loginStatus = False
-	    self.gateway.tdConnected = False
+        """登出回报"""
+        # 如果登出成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.loginStatus = False
+            self.gateway.tdConnected = False
     
-	    log = VtLogData()
-	    log.gatewayName = self.gatewayName
-	    log.logContent = u'交易服务器登出完成'
-	    self.gateway.onLog(log)
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易服务器登出完成'
+            self.gateway.onLog(log)
     
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, id, last):
-	"""发单回报（柜台）"""
-	if error['ErrorID'] == 0:
-	    return    
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        """发单回报（柜台）"""
+        if error['ErrorID'] == 0:
+            return    
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, id, last):
-	"""撤单回报（柜台）"""
-	if error['ErrorID'] == 0:
-	    return
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        """撤单回报（柜台）"""
+        if error['ErrorID'] == 0:
+            return
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspFromBankToFutureByFuture(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspFromFutureToBankByFuture(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnFlowMessageCancel(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnTrade(self, data):
-	"""成交回报"""
-	# 创建报单数据对象
-	trade = VtTradeData()
-	trade.gatewayName = self.gatewayName
+        """成交回报"""
+        # 创建报单数据对象
+        trade = VtTradeData()
+        trade.gatewayName = self.gatewayName
     
-	# 保存代码和报单号
-	trade.symbol = data['InstrumentID']
-	trade.exchange = exchangeMapReverse[data['ExchangeID']]
-	trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
+        # 保存代码和报单号
+        trade.symbol = data['InstrumentID']
+        trade.exchange = exchangeMapReverse[data['ExchangeID']]
+        trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
     
-	trade.tradeID = data['TradeID']
-	trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+        trade.tradeID = data['TradeID']
+        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
     
-	trade.orderID = data['UserOrderLocalID']
-	trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
+        trade.orderID = data['UserOrderLocalID']
+        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
     
-	# 方向
-	trade.direction = directionMapReverse.get(data['Direction'], '')
+        # 方向
+        trade.direction = directionMapReverse.get(data['Direction'], '')
     
-	# 开平
-	trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
+        # 开平
+        trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
     
-	# 价格、报单量等数值
-	trade.price = data['TradePrice']
-	trade.volume = data['TradeVolume']
-	trade.tradeTime = data['TradeTime']
+        # 价格、报单量等数值
+        trade.price = data['TradePrice']
+        trade.volume = data['TradeVolume']
+        trade.tradeTime = data['TradeTime']
     
-	# 推送
-	self.gateway.onTrade(trade)
+        # 推送
+        self.gateway.onTrade(trade)
     
     #----------------------------------------------------------------------
     def onRtnOrder(self, data):
-	"""报单回报"""
-	# 更新最大报单编号
-	newref = data['UserOrderLocalID']
-	if not newref == '':
-	    self.orderRef = max(self.orderRef, int(newref))
+        """报单回报"""
+        # 更新最大报单编号
+        newref = data['UserOrderLocalID']
+        if not newref == '':
+            self.orderRef = max(self.orderRef, int(newref))
     
-	# 创建报单数据对象
-	order = VtOrderData()
-	order.gatewayName = self.gatewayName
+        # 创建报单数据对象
+        order = VtOrderData()
+        order.gatewayName = self.gatewayName
     
-	# 保存代码和报单号
-	order.symbol = data['InstrumentID']
-	order.exchange = exchangeMapReverse[data['ExchangeID']]
-	order.vtSymbol = order.symbol #'.'.join([order.symbol, order.exchange])
+        # 保存代码和报单号
+        order.symbol = data['InstrumentID']
+        order.exchange = exchangeMapReverse[data['ExchangeID']]
+        order.vtSymbol = order.symbol #'.'.join([order.symbol, order.exchange])
     
-	order.orderID = data['UserOrderLocalID']
+        order.orderID = data['UserOrderLocalID']
     
-	# 方向
-	if data['Direction'] == '0':
-	    order.direction = DIRECTION_LONG
-	elif data['Direction'] == '1':
-	    order.direction = DIRECTION_SHORT
-	else:
-	    order.direction = DIRECTION_UNKNOWN
+        # 方向
+        if data['Direction'] == '0':
+            order.direction = DIRECTION_LONG
+        elif data['Direction'] == '1':
+            order.direction = DIRECTION_SHORT
+        else:
+            order.direction = DIRECTION_UNKNOWN
     
-	# 开平
-	if data['OffsetFlag'] == '0':
-	    order.offset = OFFSET_OPEN
-	elif data['OffsetFlag'] == '1':
-	    order.offset = OFFSET_CLOSE
-	elif data['OffsetFlag'] == '3':
-	    order.offset = OFFSET_CLOSETODAY
-	else:
-	    order.offset = OFFSET_UNKNOWN
+        # 开平
+        if data['OffsetFlag'] == '0':
+            order.offset = OFFSET_OPEN
+        elif data['OffsetFlag'] == '1':
+            order.offset = OFFSET_CLOSE
+        elif data['OffsetFlag'] == '3':
+            order.offset = OFFSET_CLOSETODAY
+        else:
+            order.offset = OFFSET_UNKNOWN
     
-	# 状态
-	if data['OrderStatus'] == '0':
-	    order.status = STATUS_ALLTRADED
-	elif data['OrderStatus'] == '1':
-	    order.status = STATUS_PARTTRADED
-	elif data['OrderStatus'] == '2':
-	    order.status = STATUS_PARTTRADED_PARTCANCELED
-	elif data['OrderStatus'] == '3':
-	    order.status = STATUS_NOTTRADED
-	elif data['OrderStatus'] == '5':
-	    order.status = STATUS_CANCELLED
-	else:
-	    order.status = STATUS_UNKNOWN
+        # 状态
+        if data['OrderStatus'] == '0':
+            order.status = STATUS_ALLTRADED
+        elif data['OrderStatus'] == '1':
+            order.status = STATUS_PARTTRADED
+        elif data['OrderStatus'] == '2':
+            order.status = STATUS_PARTTRADED_PARTCANCELED
+        elif data['OrderStatus'] == '3':
+            order.status = STATUS_NOTTRADED
+        elif data['OrderStatus'] == '5':
+            order.status = STATUS_CANCELLED
+        else:
+            order.status = STATUS_UNKNOWN
     
-	# 价格、报单量等数值
-	order.price = data['LimitPrice']
-	order.totalVolume = data['Volume']
-	order.tradedVolume = data['VolumeTraded']
-	order.orderTime = data['InsertTime']
-	order.cancelTime = data['CancelTime']
-	order.frontID = data['FrontID']
-	order.sessionID = data['SessionID']
+        # 价格、报单量等数值
+        order.price = data['LimitPrice']
+        order.totalVolume = data['Volume']
+        order.tradedVolume = data['VolumeTraded']
+        order.orderTime = data['InsertTime']
+        order.cancelTime = data['CancelTime']
+        order.frontID = data['FrontID']
+        order.sessionID = data['SessionID']
     
-	# QDP的报单号一致性维护需要基于frontID, sessionID, orderID三个字段
-	# 但在本接口设计中，已经考虑了QDP的OrderRef的自增性，避免重复
-	# 唯一可能出现OrderRef重复的情况是多处登录并在非常接近的时间内（几乎同时发单）
-	# 考虑到VtTrader的应用场景，认为以上情况不会构成问题
-	order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+        # QDP的报单号一致性维护需要基于frontID, sessionID, orderID三个字段
+        # 但在本接口设计中，已经考虑了QDP的OrderRef的自增性，避免重复
+        # 唯一可能出现OrderRef重复的情况是多处登录并在非常接近的时间内（几乎同时发单）
+        # 考虑到VtTrader的应用场景，认为以上情况不会构成问题
+        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
     
-	# 推送
-	self.gateway.onOrder(order)
+        # 推送
+        self.gateway.onOrder(order)
     
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
-	"""发单错误回报（交易所）"""
-	if error['ErrorID'] == 0:
-	    return
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        """发单错误回报（交易所）"""
+        if error['ErrorID'] == 0:
+            return
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
 
     #----------------------------------------------------------------------
     def onErrRtnOrderAction(self, data, error):
-	"""撤单错误回报（交易所）"""
-	if error['ErrorID'] == 0:
-	    return
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+        """撤单错误回报（交易所）"""
+        if error['ErrorID'] == 0:
+            return
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRtnInstrumentStatus(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnInvestorAccountDeposit(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnMessageNotify(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onErrRtnQueryBankBalanceByFuture(self, data, error):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onErrRtnBankToFutureByFuture(self, data, error):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onErrRtnFutureToBankByFuture(self, data, error):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnQueryBankBalanceByFuture(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnFromBankToFutureByFuture(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnFromFutureToBankByFuture(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRtnSGEDeferRate(self, data):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryOrder(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryTrade(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryUserInvestor(self, data, error, id, last):
-	"""查询投资账户回报"""
-	# 如果查询成功，推送日志信息
-	if error['ErrorID'] == 0:
-	    self.investorID = data['InvestorID']
+        """查询投资账户回报"""
+        # 如果查询成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.investorID = data['InvestorID']
     
-	    log = VtLogData()
-	    log.gatewayName = self.gatewayName
-	    log.logContent = u'投资者查询完成'
-	    self.gateway.onLog(log)
-	    
-	    # 查询合约代码
-	    self.reqID += 1
-	    self.reqQryInstrument({}, self.reqID)	    
-	# 否则，推送错误信息
-	else:
-	    err = VtErrorData()
-	    err.gatewayName = self.gatewayName
-	    err.errorID = error['ErrorID']
-	    err.errorMsg = error['ErrorMsg'].decode('gbk')
-	    self.gateway.onError(err)
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'投资者查询完成'
+            self.gateway.onLog(log)
+            
+            # 查询合约代码
+            self.reqID += 1
+            self.reqQryInstrument({}, self.reqID)            
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspQryInvestorAccount(self, data, error, id, last):
-	"""资金账户查询回报"""
-	account = VtAccountData()
-	account.gatewayName = self.gatewayName
+        """资金账户查询回报"""
+        account = VtAccountData()
+        account.gatewayName = self.gatewayName
     
-	# 账户代码
-	account.accountID = data['AccountID']
-	account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
+        # 账户代码
+        account.accountID = data['AccountID']
+        account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
     
-	# 数值相关
-	account.preBalance = data['PreBalance']
-	account.available = data['Available']
-	account.commission = data['Fee']
-	account.margin = data['Margin']
-	account.closeProfit = data['CloseProfit']
-	account.positionProfit = data['PositionProfit']
-	account.balance = data['DynamicRights']
+        # 数值相关
+        account.preBalance = data['PreBalance']
+        account.available = data['Available']
+        account.commission = data['Fee']
+        account.margin = data['Margin']
+        account.closeProfit = data['CloseProfit']
+        account.positionProfit = data['PositionProfit']
+        account.balance = data['DynamicRights']
     
-	# 推送
-	self.gateway.onAccount(account)
+        # 推送
+        self.gateway.onAccount(account)
     
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, id, last):
-	"""合约查询回报"""
-	contract = VtContractData()
-	contract.gatewayName = self.gatewayName
+        """合约查询回报"""
+        contract = VtContractData()
+        contract.gatewayName = self.gatewayName
     
-	contract.symbol = data['InstrumentID']
-	contract.exchange = exchangeMapReverse[data['ExchangeID']]
-	contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
-	contract.name = data['InstrumentName'].decode('GBK')
+        contract.symbol = data['InstrumentID']
+        contract.exchange = exchangeMapReverse[data['ExchangeID']]
+        contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
+        contract.name = data['InstrumentName'].decode('GBK')
     
-	# 合约数值
-	contract.size = data['VolumeMultiple']
-	contract.priceTick = data['PriceTick']
-	contract.strikePrice = data['StrikePrice']
-	contract.underlyingSymbol = data['UnderlyingInstrID']
+        # 合约数值
+        contract.size = data['VolumeMultiple']
+        contract.priceTick = data['PriceTick']
+        contract.strikePrice = data['StrikePrice']
+        contract.underlyingSymbol = data['UnderlyingInstrID']
     
-	# 合约类型
-	contract.productClass = productClassMapReverse.get(data['ProductClass'], 
-	                                                   PRODUCT_UNKNOWN)
+        # 合约类型
+        contract.productClass = productClassMapReverse.get(data['ProductClass'], 
+                                                           PRODUCT_UNKNOWN)
     
-	# 期权类型
-	if data['OptionsType'] == '1':
-	    contract.optionType = OPTION_CALL
-	elif data['OptionsType'] == '2':
-	    contract.optionType = OPTION_PUT
+        # 期权类型
+        if data['OptionsType'] == '1':
+            contract.optionType = OPTION_CALL
+        elif data['OptionsType'] == '2':
+            contract.optionType = OPTION_PUT
     
-	# 推送
-	self.gateway.onContract(contract)
+        # 推送
+        self.gateway.onContract(contract)
     
-	if last:
-	    log = VtLogData()
-	    log.gatewayName = self.gatewayName
-	    log.logContent = u'交易合约信息获取完成'
-	    self.gateway.onLog(log)
+        if last:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易合约信息获取完成'
+            self.gateway.onLog(log)
     
     #----------------------------------------------------------------------
     def onRspQryExchange(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, id, last):
-	"""持仓查询回报"""
-	pos = VtPositionData()
-	pos.gatewayName = self.gatewayName
-	
-	pos.symbol = data['InstrumentID']
-	pos.vtSymbol = pos.symbol
-	pos.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
-	pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-	
-	pos.position = data['Position']
-	pos.ydPosition = data['YdPosition']
-	pos.frozen = data['FrozenClosing']
-	if pos.position:
-	    pos.price = data['PositionCost'] / pos.position
-	
-	self.gateway.onPosition(pos)
+        """持仓查询回报"""
+        pos = VtPositionData()
+        pos.gatewayName = self.gatewayName
+        
+        pos.symbol = data['InstrumentID']
+        pos.vtSymbol = pos.symbol
+        pos.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
+        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+        
+        pos.position = data['Position']
+        pos.ydPosition = data['YdPosition']
+        pos.frozen = data['FrozenClosing']
+        if pos.position:
+            pos.price = data['PositionCost'] / pos.position
+        
+        self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
     def onRspSubscribeTopic(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryTopic(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryInvestorFee(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryInvestorMargin(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryExchangeDiffTime(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryContractBank(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQueryBankAccountMoneyByFuture(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryTransferSerial(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQrySGEDeferRate(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
     
     #----------------------------------------------------------------------
     def onRspQryMarketData(self, data, error, id, last):
-	""""""
-	pass
+        """"""
+        pass
