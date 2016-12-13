@@ -387,7 +387,7 @@ class OkCoinApi(object):
         params['current_page'] = page
         params['page_length'] = length
         
-        channel = 'ok_future%s_orderinfo'
+        channel = 'ok_future%s_orderinfo' %(self.currency)
         
         self.sendTradingRequest(channel, params)
         
