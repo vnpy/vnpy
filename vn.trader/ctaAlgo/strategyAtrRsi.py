@@ -233,8 +233,8 @@ class AtrRsiStrategy(CtaTemplate):
 
     #----------------------------------------------------------------------
     def onTrade(self, trade):
-        pass
-
+        # 发出状态更新事件
+        self.putEvent()
 
 if __name__ == '__main__':
     # 提供直接双击回测的功能
