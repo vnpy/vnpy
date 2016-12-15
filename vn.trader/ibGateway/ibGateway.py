@@ -46,6 +46,8 @@ exchangeMap[EXCHANGE_SMART] = 'SMART'
 exchangeMap[EXCHANGE_NYMEX] = 'NYMEX'
 exchangeMap[EXCHANGE_GLOBEX] = 'GLOBEX'
 exchangeMap[EXCHANGE_IDEALPRO] = 'IDEALPRO'
+exchangeMap[EXCHANGE_HKEX] = 'HKEX'
+exchangeMap[EXCHANGE_HKFE] = 'HKFE'
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
 # 报单状态映射
@@ -65,6 +67,7 @@ productClassMap[PRODUCT_EQUITY] = 'STK'
 productClassMap[PRODUCT_FUTURES] = 'FUT'
 productClassMap[PRODUCT_OPTION] = 'OPT'
 productClassMap[PRODUCT_FOREX] = 'CASH'
+productClassMap[PRODUCT_INDEX] = 'IND'
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
 
 # 期权类型映射
@@ -77,6 +80,7 @@ optionTypeMap = {v:k for k,v in optionTypeMap.items()}
 currencyMap = {}
 currencyMap[CURRENCY_USD] = 'USD'
 currencyMap[CURRENCY_CNY] = 'CNY'
+currencyMap[CURRENCY_HKD] = 'HKD'
 currencyMap = {v:k for k,v in currencyMap.items()}
 
 # Tick数据的Field和名称映射
@@ -230,6 +234,8 @@ class IbGateway(VtGateway):
         contract.expiry = orderReq.expiry
         contract.strike = orderReq.strikePrice
         contract.right = optionTypeMap.get(orderReq.optionType, '')
+        contract.lastTradeDateOrContractMonth = str(orderReq.lastTradeDateOrContractMonth)
+        contract.multiplier = str(orderReq.multiplier)
         
         # 创建委托对象
         order = Order()
