@@ -655,6 +655,7 @@ class TradingWidget(QtGui.QFrame):
                     EXCHANGE_SZSE,
                     EXCHANGE_SGE,
                     EXCHANGE_HKEX,
+                    EXCHANGE_HKFE,
                     EXCHANGE_SMART,
                     EXCHANGE_ICE,
                     EXCHANGE_CME,
@@ -664,6 +665,7 @@ class TradingWidget(QtGui.QFrame):
     
     currencyList = [CURRENCY_NONE,
                     CURRENCY_CNY,
+                    CURRENCY_HKD,
                     CURRENCY_USD]
     
     productClassList = [PRODUCT_NONE,
