@@ -412,8 +412,8 @@ class VtOrderReq(object):
         self.expiry = EMPTY_STRING              # 到期日
         self.strikePrice = EMPTY_FLOAT          # 行权价
         self.optionType = EMPTY_UNICODE         # 期权类型     
-        self.lastTradeDateOrContractMonth = EMPTY_STRING    # 合约月,IB专用
-        self.multiplier = EMPTY_STRING                      # 乘数,IB专用
+        self.lastTradeDateOrContractMonth = EMPTY_STRING   # 合约月,IB专用
+        self.multiplier = EMPTY_STRING                     # 乘数,IB专用
         
 
 ########################################################################
