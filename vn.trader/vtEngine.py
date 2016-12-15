@@ -264,9 +264,9 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             cursor = collection.find(d)
-            return cursor
+            return list(cursor)
         else:
-            return None
+            return []
         
     #----------------------------------------------------------------------
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):

@@ -326,15 +326,13 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        cursor = self.mainEngine.dbQuery(dbName, collectionName, d)
+        barData = self.mainEngine.dbQuery(dbName, collectionName, d)
         
         l = []
-        if cursor:
-            for d in cursor:
-                bar = CtaBarData()
-                bar.__dict__ = d
-                l.append(bar)
-            
+        for d in barData:
+            bar = CtaBarData()
+            bar.__dict__ = d
+            l.append(bar)
         return l
     
     #----------------------------------------------------------------------
@@ -343,15 +341,13 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        cursor = self.mainEngine.dbQuery(dbName, collectionName, d)
+        tickData = self.mainEngine.dbQuery(dbName, collectionName, d)
         
         l = []
-        if cursor:
-            for d in cursor:
-                tick = CtaTickData()
-                tick.__dict__ = d
-                l.append(tick)
-        
+        for d in tickData:
+            tick = CtaTickData()
+            tick.__dict__ = d
+            l.append(tick)
         return l    
     
     #----------------------------------------------------------------------
@@ -561,11 +557,10 @@ class CtaEngine(object):
         for strategy in self.strategyDict.values():
             flt = {'name': strategy.name,
                    'vtSymbol': strategy.vtSymbol}
+            posData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
             
-            cx = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
-            if cx:
-                for d in cx:
-                    strategy.pos = d['pos']
+            for d in posData:
+                strategy.pos = d['pos']
 
 
 ########################################################################
