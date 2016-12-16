@@ -123,7 +123,7 @@ class RpcServer(RpcObject):
         
         # 工作线程相关
         self.__active = False                             # 服务器的工作状态
-        self.__thread = threading.Thread(target=self.__run) # 服务器的工作线程
+        self.__thread = threading.Thread(target=self.run) # 服务器的工作线程
         
     #----------------------------------------------------------------------
     def start(self):
@@ -132,7 +132,8 @@ class RpcServer(RpcObject):
         self.__active = True
         
         # 启动工作线程
-        self.__thread.start()
+        if not self.__thread.isAlive():
+            self.__thread.start()
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -141,11 +142,12 @@ class RpcServer(RpcObject):
         self.__active = False
         
         # 等待工作线程退出
-        self.__thread.join()
+        if self.__thread.isAlive():
+            self.__thread.join()
     
     #----------------------------------------------------------------------
-    def __run(self):
-        """连续运行函数"""
+    def run(self):
+        """服务器运行函数"""
         while self.__active:
             # 从请求响应socket收取请求数据
             reqb = self.__socketREP.recv()
@@ -208,7 +210,7 @@ class RpcClient(RpcObject):
 
         # 工作线程相关，用于处理服务器推送的数据
         self.__active = False                                   # 客户端的工作状态
-        self.__thread = threading.Thread(target=self.__run)     # 客户端的工作线程
+        self.__thread = threading.Thread(target=self.run)       # 客户端的工作线程
         
     #----------------------------------------------------------------------
     def __getattr__(self, name):
@@ -247,7 +249,8 @@ class RpcClient(RpcObject):
         self.__active = True
         
         # 启动工作线程
-        self.__thread.start()
+        if not self.__thread.isAlive():
+            self.__thread.start()
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -256,11 +259,12 @@ class RpcClient(RpcObject):
         self.__active = False
         
         # 等待工作线程退出
-        self.__thread.join()
+        if self.__thread.isAlive():
+            self.__thread.join()
         
     #----------------------------------------------------------------------
-    def __run(self):
-        """连续运行函数"""
+    def run(self):
+        """客户端运行函数"""
         while self.__active:
             # 从订阅socket收取广播数据
             topic, datab = self.__socketSUB.recv_multipart()
