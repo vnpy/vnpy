@@ -296,6 +296,12 @@ class MainEngine(object):
         """查询所有的活跃的委托（返回列表）"""
         return self.dataEngine.getAllWorkingOrders()
     
+    #----------------------------------------------------------------------
+    def getAllGatewayNames(self):
+        """查询引擎中所有可用接口的名称"""
+        return self.gatewayDict.keys()
+        
+    
 
 ########################################################################
 class DataEngine(object):

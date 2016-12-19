@@ -685,7 +685,7 @@ class TradingWidget(QtGui.QFrame):
         self.symbol = ''
         
         # 添加交易接口
-        self.gatewayList.extend(mainEngine.gatewayDict.keys())
+        self.gatewayList.extend(mainEngine.getAllGatewayNames())
 
         self.initUi()
         self.connectSignal()
