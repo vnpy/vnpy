@@ -281,7 +281,7 @@ class RpcClient(RpcObject):
         raise NotImplementedError
     
     #----------------------------------------------------------------------
-    def subscribe(self, topic):
+    def subscribeTopic(self, topic):
         """
         订阅特定主题的广播数据
         

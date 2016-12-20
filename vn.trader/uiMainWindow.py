@@ -132,34 +132,36 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         
         # 设计为只显示存在的接口
+        l = self.mainEngine.getAllGatewayNames()
+        
         sysMenu = menubar.addMenu(u'系统')
-        if 'CTP' in self.mainEngine.gatewayDict:
+        if 'CTP' in l:
             sysMenu.addAction(connectCtpAction)
-        if 'LTS' in self.mainEngine.gatewayDict:
+        if 'LTS' in l:
             sysMenu.addAction(connectLtsAction)
-        if 'FEMAS' in self.mainEngine.gatewayDict:
+        if 'FEMAS' in l:
             sysMenu.addAction(connectFemasAction)
-        if 'XSPEED' in self.mainEngine.gatewayDict:
+        if 'XSPEED' in l:
             sysMenu.addAction(connectXspeedAction)
-        if 'QDP' in self.mainEngine.gatewayDict:
+        if 'QDP' in l:
             sysMenu.addAction(connectQdpAction)
-        if 'KSOTP' in self.mainEngine.gatewayDict:
+        if 'KSOTP' in l:
             sysMenu.addAction(connectKsotpAction)
-        if 'KSGOLD' in self.mainEngine.gatewayDict:
+        if 'KSGOLD' in l:
             sysMenu.addAction(connectKsgoldAction)
-        if 'SGIT' in self.mainEngine.gatewayDict:
+        if 'SGIT' in l:
             sysMenu.addAction(connectSgitAction)
         sysMenu.addSeparator()
-        if 'IB' in self.mainEngine.gatewayDict:
+        if 'IB' in l:
             sysMenu.addAction(connectIbAction)    
-        if 'SHZD' in self.mainEngine.gatewayDict:
+        if 'SHZD' in l:
             sysMenu.addAction(connectShzdAction)          
-        if 'OANDA' in self.mainEngine.gatewayDict:
+        if 'OANDA' in l:
             sysMenu.addAction(connectOandaAction)
-        if 'OKCOIN' in self.mainEngine.gatewayDict:
+        if 'OKCOIN' in l:
             sysMenu.addAction(connectOkcoinAction)        
         sysMenu.addSeparator()
-        if 'Wind' in self.mainEngine.gatewayDict:
+        if 'Wind' in l:
             sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
