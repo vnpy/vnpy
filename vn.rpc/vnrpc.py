@@ -149,6 +149,10 @@ class RpcServer(RpcObject):
     def run(self):
         """服务器运行函数"""
         while self.__active:
+            # 使用poll来等待事件到达，等待1秒（1000毫秒）
+            if not self.__socketREP.poll(1000):
+                continue
+            
             # 从请求响应socket收取请求数据
             reqb = self.__socketREP.recv()
             
@@ -266,6 +270,10 @@ class RpcClient(RpcObject):
     def run(self):
         """客户端运行函数"""
         while self.__active:
+            # 使用poll来等待事件到达，等待1秒（1000毫秒）
+            if not self.__socketSUB.poll(1000):
+                continue
+            
             # 从订阅socket收取广播数据
             topic, datab = self.__socketSUB.recv_multipart()
             
