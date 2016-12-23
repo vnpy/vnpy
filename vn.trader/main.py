@@ -99,7 +99,7 @@ if __name__ == '__main__':
     opt.add_argument("--vt", default=SETTING_FILENAME, help="重新指定VT_setting.json的绝对路径")
 
     # CTP_connection.sjon 文件路径
-    opt.add_argument("--CTP_connection", help="重新指定CTP_connection.json的绝对路径")
+    opt.add_argument("--CTP_connect", help="重新指定CTP_connection.json的绝对路径")
 
     opt.add_argument("--ctp", dest='ctp', action="store_true", help="是否自动建立CTP链接")
     opt.set_defaults(ctp=False)

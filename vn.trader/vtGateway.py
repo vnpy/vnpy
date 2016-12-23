@@ -146,7 +146,7 @@ class VtGateway(object):
     def getConnectionFileNameFromArgs(self):
         try:
             cmdArgs = vtGlobal.cmdArgs
-            fn = "{gatewayName}_connection".format(gatewayName=self.gatewayName)
+            fn = "{gatewayName}_connect".format(gatewayName=self.gatewayName)
             return getattr(cmdArgs, fn)
         except AttributeError:
             pass
