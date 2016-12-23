@@ -94,10 +94,18 @@ class CtpGateway(VtGateway):
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
+        # 参数中给定了 CTP_connection的句柄
+        import traceback
+        try:
+            traceback
+            fileName = self.getConnectionFi1leNameFromArgs()
+            if not fileName:
+                fileName = self.gatewayName + '_connect.json'
+                path = os.path.abspath(os.path.dirname(__file__))
+                fileName = os.path.join(path, fileName)
+        except:
+            traceback.print_exc()
+
         try:
             f = file(fileName)
         except IOError:
@@ -685,7 +693,9 @@ class CtpTdApi(TdApi):
         """资金账户查询回报"""
         account = VtAccountData()
         account.gatewayName = self.gatewayName
-    
+
+        print("CTP is OK ! balance : {balance} ".format(**data))
+
         # 账户代码
         account.accountID = data['AccountID']
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])

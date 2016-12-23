@@ -7,7 +7,10 @@ from time import sleep
 from collections import defaultdict
 
 # 第三方模块
-from PyQt4.QtCore import QTimer
+try:
+    from PyQt4.QtCore import QTimer
+except ImportError:
+    print("No modle name PyQt4")
 
 # 自己开发的模块
 from eventType import *
@@ -204,7 +207,7 @@ class EventEngine2(object):
         
         # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
         self.__generalHandlers = []        
-        
+
     #----------------------------------------------------------------------
     def __run(self):
         """引擎运行"""

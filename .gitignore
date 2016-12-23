@@ -48,3 +48,5 @@ vn.lts/build/*
 vn.trader/ctaAlgo/data/*
 vn.trader/build/*
 vn.trader/dist/*
+
+docker/

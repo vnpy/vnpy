@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+import vtGlobal
+
 import sys
 import os
 import ctypes
@@ -13,11 +15,15 @@ from shutdown import autoShutdown
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))
+
 ICON_FILENAME = 'vnpy.ico'
 ICON_FILENAME = os.path.join(path, ICON_FILENAME)
 
 SETTING_FILENAME = 'VT_setting.json'
 SETTING_FILENAME = os.path.join(path, SETTING_FILENAME)
+
+# CTP_CONNECTION = 'CTP_connection.json'
+# CTP_CONNECTION = os.path.join(path, CTP_CONNECTION)
 
 
 # ----------------------------------------------------------------------
@@ -27,13 +33,13 @@ def main():
     reload(sys)
     sys.setdefaultencoding('utf8')
 
-    # 初始化主引擎和主窗口对象
+    # 初始化主引擎
     mainEngine = MainEngine()
     # 绑定其从参数
-    mainEngine.args = args
+    vtGlobal.cmdArgs = cmdArgs
 
-    # 启用ui模式
-    if args.ui:
+    # 默认启用ui模式
+    if cmdArgs.ui:
         # 设置Windows底部任务栏图标
         if 'Windows' in platform.uname():
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')
@@ -45,7 +51,7 @@ def main():
 
         # 设置Qt的皮肤
         try:
-            f = file(args.vt)
+            f = file(cmdArgs.vt)
             setting = json.load(f)
             if setting['darkStyle']:
                 import qdarkstyle
@@ -53,17 +59,23 @@ def main():
         except:
             pass
 
+        # 初始化主窗口对象
         mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
         mainWindow.showMaximized()
     else:
         app = None
 
-    # 自动关闭进程
-    if args.shutdown:
+    # 默认自动关闭进程
+    if cmdArgs.shutdown:
         autoShutdown(mainEngine)
 
-    # 启动实例
-    if args.ui:
+    # 直接连接CTP
+    if cmdArgs.ctp:
+        print("CTP connecting... ")
+        mainEngine.connect("CTP")
+
+    # 启动实例，这部分逻辑保持在最后一步
+    if cmdArgs.ui:
         # 在主线程中启动Qt事件循环
         sys.exit(app.exec_())
     else:
@@ -80,21 +92,26 @@ if __name__ == '__main__':
     opt = ArgumentParser()
 
     # UI开关
-    opt.add_argument("--no-ui", dest="ui", action="store_false", help="NOT use UI.")
+    opt.add_argument("--no-ui", dest="ui", action="store_false", help="无UI模式")
     opt.set_defaults(ui=True)
 
     # VT_setting.json 文件路径
-    opt.add_argument("--vt", default=SETTING_FILENAME, help="VT_setting.json file.")
+    opt.add_argument("--vt", default=SETTING_FILENAME, help="重新指定VT_setting.json的绝对路径")
+
+    # CTP_connection.sjon 文件路径
+    opt.add_argument("--CTP_connection", help="重新指定CTP_connection.json的绝对路径")
+
+    opt.add_argument("--ctp", dest='ctp', action="store_true", help="是否自动建立CTP链接")
+    opt.set_defaults(ctp=False)
 
     # 不自动关闭
-    opt.add_argument("--no-shutdown", dest="shutdown", action="store_false", help="NOT auto to close.")
+    opt.add_argument("--no-shutdown", dest="shutdown", action="store_false", help="不启用自动关闭进程")
     opt.set_defaults(shutdown=True)
 
     # 生成参数实例
-    args = opt.parse_args()
+    cmdArgs = opt.parse_args()
 
-    if args.ui:
+    if cmdArgs.ui:
         from uiMainWindow import *
-
-    print(args)
-    # main()
+    # print(cmdArgs)
+    main()

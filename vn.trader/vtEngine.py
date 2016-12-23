@@ -40,8 +40,6 @@ class MainEngine(object):
         self.drEngine = DrEngine(self, self.eventEngine)
         self.rmEngine = RmEngine(self, self.eventEngine)
 
-        self.args = None
-
     #----------------------------------------------------------------------
     def initGateway(self):
         """初始化接口对象"""
