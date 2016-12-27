@@ -1,7 +1,7 @@
 # vn.qdp
 
 ### 简介
-QDP柜台API接口的Python封装，提供原生C++ API中的全部功能。
+QDP柜台API接口的Python封装，提供原生C++ API中的全部功能，感谢社区成员魏斌的贡献！
 
 QDP特点：
 * 高性能柜台，系统延时显著低于CTP
