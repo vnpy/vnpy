@@ -24,9 +24,11 @@ ENV LC_ALL zh_CN.UTF-8
 #    && echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main multiverse restricted universe" >> /etc/apt/sources.list \
 #    && echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-proposed main multiverse restricted universe" >> /etc/apt/sources.list \
 #    && echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main multiverse restricted universe" >> /etc/apt/sources.list \
-#    && echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main multiverse restricted universe" >> /etc/apt/sources.list \
-#    && apt-get clean \
-#    && apt-get update
+#    && echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main multiverse restricted universe" >> /etc/apt/sources.list
+
+# 更新源列表
+RUN apt-get clean \
+    && apt-get update
 
 # 安装编译环境
 RUN apt-get install -y build-essential libboost-all-dev python-dev cmake
