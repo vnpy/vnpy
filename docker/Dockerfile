@@ -34,7 +34,7 @@ RUN apt-get clean \
 RUN apt-get install -y build-essential libboost-all-dev python-dev cmake
 
 # 安装 conda
-RUN echo "从获取 apt 软件" \
+RUN echo "从 apt 获取软件" \
     && apt-get install -y bzip2 wget \
     && apt-get clean \
     && echo "安装 miniconda" \
@@ -43,6 +43,7 @@ RUN echo "从获取 apt 软件" \
     && wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh \
     && bash Miniconda2-latest-Linux-x86_64.sh -b -p /opt/conda \
     && rm Miniconda2-latest-Linux-x86_64.sh \
+    && echo "设置 conda 和 python 的环境" \
     && ln -s /opt/conda/bin/python /usr/local/bin/python \
     && ln -s /opt/conda/bin/conda /usr/local/bin/conda \
     && ln -s /opt/conda/bin/pip /usr/local/bin/pip \

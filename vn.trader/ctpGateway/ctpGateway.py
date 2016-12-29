@@ -240,6 +240,7 @@ class CtpMdApi(MdApi):
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'行情服务器连接成功'
+        print(log.logContent)
         self.gateway.onLog(log)
         self.login()
     
@@ -470,8 +471,9 @@ class CtpTdApi(TdApi):
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接成功'
+        print(log.logContent)
         self.gateway.onLog(log)
-    
+
         self.login()
         
     #----------------------------------------------------------------------

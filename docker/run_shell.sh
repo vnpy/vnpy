@@ -3,4 +3,4 @@
 
 cd ..
 # 将 vnpy 指定到
-docker run --name vnpy --rm -v `pwd`:/opt/vnpy -it vnpy /bin/bash
+docker run --name vnpy_bash --rm -v `pwd`:/opt/vnpy -it vnpy:latest /bin/bash
