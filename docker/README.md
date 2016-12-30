@@ -52,8 +52,10 @@ vnpy 的运行环境镜像 ```vnpy:latest``` 制作成功。
 ### 启动```vnpy```
 在```vn.trader/ctpGateway/CTP_connection.json```中配置CTP链接账号的服务器host。
 
-建立容器，并在```bash```中进行交互。尝试启动 vnpy 实例
+退出并重新启动容器，并在```bash```中进行交互。尝试启动 vnpy 实例
 ```
+➜  root@5bb14b326ac9/# exit
+➜  user@docker# bash run_shell.sh
 ➜  root@5bb14b326ac9/# cd /opt/vnpy/vn.trader
 ➜  root@5bb14b326ac9/# python main.py --no-ui --ctp # 无UI模式，自动建立CTP链接
 ...
