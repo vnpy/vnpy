@@ -332,11 +332,16 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
-        reply = QtGui.QMessageBox.question(self, u'退出',
-                                           u'确认退出?', QtGui.QMessageBox.Yes | 
-                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if self.mainEngine.time2Shutdown:
+            # 定时关闭,不需要询问
+            isClose = True
+        else:
+            reply = QtGui.QMessageBox.question(self, u'退出',
+                                               u'确认退出?', QtGui.QMessageBox.Yes |
+                                               QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            isClose = reply == QtGui.QMessageBox.Yes
 
-        if reply == QtGui.QMessageBox.Yes: 
+        if isClose:
             for widget in self.widgetDict.values():
                 widget.close()
             self.saveWindowSettings('custom')

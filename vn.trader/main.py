@@ -51,7 +51,7 @@ def main():
 
         # 设置Qt的皮肤
         try:
-            f = file(cmdArgs.vt)
+            f = file(cmdArgs.VT_setting)
             setting = json.load(f)
             if setting['darkStyle']:
                 import qdarkstyle
@@ -63,14 +63,19 @@ def main():
         mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
         mainWindow.showMaximized()
     else:
+        mainWindow = None
         app = None
 
     # 默认自动关闭进程
     if cmdArgs.shutdown:
         if cmdArgs.ui:
-            autoUIShutdown(mainEngine)
+            autoUIShutdown(mainEngine, mainWindow)
         else:
             autoShutdown(mainEngine)
+
+    if cmdArgs.mongodb:
+        # 自动连接MongoDB数据库
+        mainEngine.dbConnect()
 
     # 直接连接CTP
     if cmdArgs.ctp:
@@ -99,7 +104,7 @@ if __name__ == '__main__':
     opt.set_defaults(ui=True)
 
     # VT_setting.json 文件路径
-    opt.add_argument("--vt", default=SETTING_FILENAME, help="重新指定VT_setting.json的绝对路径")
+    opt.add_argument("--VT_setting", default=SETTING_FILENAME, help="重新指定VT_setting.json的绝对路径")
 
     # CTP_connection.sjon 文件路径
     opt.add_argument("--CTP_connect", help="重新指定CTP_connection.json的绝对路径")
@@ -110,6 +115,10 @@ if __name__ == '__main__':
     # 不自动关闭
     opt.add_argument("--no-shutdown", dest="shutdown", action="store_false", help="不启用自动关闭进程")
     opt.set_defaults(shutdown=True)
+
+    # 自动连接MongoDB数据库
+    opt.add_argument("--mongodb", dest="mongodb", action="store_true", help="自动连接MongoDB数据库")
+    opt.set_defaults(mongodb=False)
 
     # 生成参数实例
     cmdArgs = opt.parse_args()

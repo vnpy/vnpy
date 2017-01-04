@@ -5,5 +5,7 @@
 	"mongoHost": "localhost",
 	"mongoPort": 27017,
 
-	"darkStyle": true
+	"darkStyle": true,
+
+	"shutdown": ["15:31", "3:01"]
 }

@@ -4,6 +4,7 @@
 包含一些开发中常用的函数
 """
 
+import vtGlobal
 import os
 import decimal
 import json
@@ -31,9 +32,10 @@ def safeUnicode(value):
 #----------------------------------------------------------------------
 def loadMongoSetting():
     """载入MongoDB数据库的配置"""
-    fileName = 'VT_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__)) 
-    fileName = os.path.join(path, fileName)  
+    fileName = vtGlobal.cmdArgs.VT_setting
+    # fileName = 'VT_setting.json'
+    # path = os.path.abspath(os.path.dirname(__file__))
+    # fileName = os.path.join(path, fileName)
     
     try:
         f = file(fileName)
