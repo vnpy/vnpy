@@ -109,8 +109,11 @@ class EventEngine(object):
         self.put(event)    
 
     #----------------------------------------------------------------------
-    def start(self):
-        """引擎启动"""
+    def start(self, timer=True):
+        """
+        引擎启动
+        timer：是否要启动计时器
+        """
         # 将引擎设为启动
         self.__active = True
         
@@ -118,7 +121,8 @@ class EventEngine(object):
         self.__thread.start()
         
         # 启动计时器，计时器事件间隔默认设定为1秒
-        self.__timer.start(1000)
+        if timer:
+            self.__timer.start(1000)
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -245,8 +249,11 @@ class EventEngine2(object):
             sleep(self.__timerSleep)
 
     #----------------------------------------------------------------------
-    def start(self):
-        """引擎启动"""
+    def start(self, timer=True):
+        """
+        引擎启动
+        timer：是否要启动计时器
+        """
         # 将引擎设为启动
         self.__active = True
         
@@ -254,8 +261,9 @@ class EventEngine2(object):
         self.__thread.start()
         
         # 启动计时器，计时器事件间隔默认设定为1秒
-        self.__timerActive = True
-        self.__timer.start()
+        if timer:
+            self.__timerActive = True
+            self.__timer.start()
     
     #----------------------------------------------------------------------
     def stop(self):

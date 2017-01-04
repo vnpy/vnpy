@@ -23,7 +23,7 @@ class MainEngine(object):
     def __init__(self):
         """Constructor"""
         # 创建事件引擎
-        self.eventEngine = EventEngine2()
+        self.eventEngine = EventEngine()
         self.eventEngine.start()
         
         # 创建数据引擎
