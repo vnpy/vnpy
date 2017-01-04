@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 import vtPath
 from vtEngine import MainEngine
 
-from shutdown import autoShutdown
+from shutdown import autoShutdown, autoUIShutdown
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))
@@ -67,7 +67,10 @@ def main():
 
     # 默认自动关闭进程
     if cmdArgs.shutdown:
-        autoShutdown(mainEngine)
+        if cmdArgs.ui:
+            autoUIShutdown(mainEngine)
+        else:
+            autoShutdown(mainEngine)
 
     # 直接连接CTP
     if cmdArgs.ctp:
