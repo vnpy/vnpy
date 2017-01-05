@@ -81,3 +81,6 @@ CURRENCY_CNY = 'CNY'            # 人民币
 CURRENCY_HKD = 'HKD'            # 港币
 CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
 CURRENCY_NONE = ''              # 空货币
+
+# 数据库
+LOG_DB_NAME = 'VnTrader_Log_Db'
