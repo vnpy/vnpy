@@ -185,7 +185,7 @@ class OkCoinApi(object):
     #----------------------------------------------------------------------
     def close(self):
         """关闭接口"""
-        if self.thread and self.thread.isAlive:
+        if self.thread and self.thread.isAlive():
             self.ws.close()
             self.thread.join()
         
@@ -387,7 +387,7 @@ class OkCoinApi(object):
         params['current_page'] = page
         params['page_length'] = length
         
-        channel = 'ok_future%s_orderinfo'
+        channel = 'ok_future%s_orderinfo' %(self.currency)
         
         self.sendTradingRequest(channel, params)
         

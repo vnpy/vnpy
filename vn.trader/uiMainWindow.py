@@ -68,6 +68,9 @@ class MainWindow(QtGui.QMainWindow):
         connectLtsAction = QtGui.QAction(u'连接LTS', self)
         connectLtsAction.triggered.connect(self.connectLts)
         
+        connectXtpAction = QtGui.QAction(u'连接XTP', self)
+        connectXtpAction.triggered.connect(self.connectXtp)        
+        
         connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
         connectKsotpAction.triggered.connect(self.connectKsotp)
         
@@ -75,7 +78,10 @@ class MainWindow(QtGui.QMainWindow):
         connectFemasAction.triggered.connect(self.connectFemas)  
         
         connectXspeedAction = QtGui.QAction(u'连接飞创', self)
-        connectXspeedAction.triggered.connect(self.connectXspeed)          
+        connectXspeedAction.triggered.connect(self.connectXspeed)   
+        
+        connectQdpAction = QtGui.QAction(u'连接QDP', self)
+        connectQdpAction.triggered.connect(self.connectQdp)
         
         connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
         connectKsgoldAction.triggered.connect(self.connectKsgold)  
@@ -129,32 +135,38 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         
         # 设计为只显示存在的接口
+        l = self.mainEngine.getAllGatewayNames()
+        
         sysMenu = menubar.addMenu(u'系统')
-        if 'CTP' in self.mainEngine.gatewayDict:
+        if 'CTP' in l:
             sysMenu.addAction(connectCtpAction)
-        if 'LTS' in self.mainEngine.gatewayDict:
+        if 'LTS' in l:
             sysMenu.addAction(connectLtsAction)
-        if 'FEMAS' in self.mainEngine.gatewayDict:
+        if 'XTP' in l:
+            sysMenu.addAction(connectXtpAction)        
+        if 'FEMAS' in l:
             sysMenu.addAction(connectFemasAction)
-        if 'XSPEED' in self.mainEngine.gatewayDict:
+        if 'XSPEED' in l:
             sysMenu.addAction(connectXspeedAction)
-        if 'KSOTP' in self.mainEngine.gatewayDict:
+        if 'QDP' in l:
+            sysMenu.addAction(connectQdpAction)
+        if 'KSOTP' in l:
             sysMenu.addAction(connectKsotpAction)
-        if 'KSGOLD' in self.mainEngine.gatewayDict:
+        if 'KSGOLD' in l:
             sysMenu.addAction(connectKsgoldAction)
-        if 'SGIT' in self.mainEngine.gatewayDict:
+        if 'SGIT' in l:
             sysMenu.addAction(connectSgitAction)
         sysMenu.addSeparator()
-        if 'IB' in self.mainEngine.gatewayDict:
+        if 'IB' in l:
             sysMenu.addAction(connectIbAction)    
-        if 'SHZD' in self.mainEngine.gatewayDict:
+        if 'SHZD' in l:
             sysMenu.addAction(connectShzdAction)          
-        if 'OANDA' in self.mainEngine.gatewayDict:
+        if 'OANDA' in l:
             sysMenu.addAction(connectOandaAction)
-        if 'OKCOIN' in self.mainEngine.gatewayDict:
+        if 'OKCOIN' in l:
             sysMenu.addAction(connectOkcoinAction)        
         sysMenu.addSeparator()
-        if 'Wind' in self.mainEngine.gatewayDict:
+        if 'Wind' in l:
             sysMenu.addAction(connectWindAction)
         sysMenu.addSeparator()
         sysMenu.addAction(connectDbAction)
@@ -215,7 +227,12 @@ class MainWindow(QtGui.QMainWindow):
     def connectLts(self):
         """连接LTS接口"""
         self.mainEngine.connect('LTS')    
-        
+    
+    #----------------------------------------------------------------------
+    def connectXtp(self):
+        """连接Xtp接口"""
+        self.mainEngine.connect('XTP')           
+    
     #----------------------------------------------------------------------
     def connectKsotp(self):
         """连接金仕达期权接口"""
@@ -228,8 +245,13 @@ class MainWindow(QtGui.QMainWindow):
     
     #----------------------------------------------------------------------
     def connectXspeed(self):
-        """连接飞马接口"""
-        self.mainEngine.connect('XSPEED')             
+        """连接飞创接口"""
+        self.mainEngine.connect('XSPEED')    
+        
+    #----------------------------------------------------------------------
+    def connectQdp(self):
+        """连接QDP接口"""
+        self.mainEngine.connect('QDP')     
     
     #----------------------------------------------------------------------
     def connectKsgold(self):
@@ -320,11 +342,16 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
-        reply = QtGui.QMessageBox.question(self, u'退出',
-                                           u'确认退出?', QtGui.QMessageBox.Yes | 
-                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        if self.mainEngine.time2Shutdown:
+            # 定时关闭,不需要询问
+            isClose = True
+        else:
+            reply = QtGui.QMessageBox.question(self, u'退出',
+                                               u'确认退出?', QtGui.QMessageBox.Yes |
+                                               QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            isClose = reply == QtGui.QMessageBox.Yes
 
-        if reply == QtGui.QMessageBox.Yes: 
+        if isClose:
             for widget in self.widgetDict.values():
                 widget.close()
             self.saveWindowSettings('custom')

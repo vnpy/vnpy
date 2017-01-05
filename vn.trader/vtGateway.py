@@ -5,6 +5,7 @@ import time
 from eventEngine import *
 
 from vtConstant import *
+import vtGlobal
 
 
 ########################################################################
@@ -140,6 +141,16 @@ class VtGateway(object):
     def close(self):
         """关闭"""
         pass
+
+    # ----------------------------------------------------------------------
+    def getConnectionFileNameFromArgs(self):
+        try:
+            cmdArgs = vtGlobal.cmdArgs
+            fn = "{gatewayName}_connect".format(gatewayName=self.gatewayName)
+            return getattr(cmdArgs, fn)
+        except AttributeError:
+            pass
+        return None
 
 
 ########################################################################
@@ -411,7 +422,9 @@ class VtOrderReq(object):
         self.currency = EMPTY_STRING            # 合约货币
         self.expiry = EMPTY_STRING              # 到期日
         self.strikePrice = EMPTY_FLOAT          # 行权价
-        self.optionType = EMPTY_UNICODE         # 期权类型        
+        self.optionType = EMPTY_UNICODE         # 期权类型     
+        self.lastTradeDateOrContractMonth = EMPTY_STRING   # 合约月,IB专用
+        self.multiplier = EMPTY_STRING                     # 乘数,IB专用
         
 
 ########################################################################

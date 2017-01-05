@@ -46,6 +46,8 @@ exchangeMap[EXCHANGE_SMART] = 'SMART'
 exchangeMap[EXCHANGE_NYMEX] = 'NYMEX'
 exchangeMap[EXCHANGE_GLOBEX] = 'GLOBEX'
 exchangeMap[EXCHANGE_IDEALPRO] = 'IDEALPRO'
+exchangeMap[EXCHANGE_HKEX] = 'HKEX'
+exchangeMap[EXCHANGE_HKFE] = 'HKFE'
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
 # 报单状态映射
@@ -65,6 +67,7 @@ productClassMap[PRODUCT_EQUITY] = 'STK'
 productClassMap[PRODUCT_FUTURES] = 'FUT'
 productClassMap[PRODUCT_OPTION] = 'OPT'
 productClassMap[PRODUCT_FOREX] = 'CASH'
+productClassMap[PRODUCT_INDEX] = 'IND'
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
 
 # 期权类型映射
@@ -77,6 +80,7 @@ optionTypeMap = {v:k for k,v in optionTypeMap.items()}
 currencyMap = {}
 currencyMap[CURRENCY_USD] = 'USD'
 currencyMap[CURRENCY_CNY] = 'CNY'
+currencyMap[CURRENCY_HKD] = 'HKD'
 currencyMap = {v:k for k,v in currencyMap.items()}
 
 # Tick数据的Field和名称映射
@@ -170,9 +174,6 @@ class IbGateway(VtGateway):
         
         # 查询服务器时间
         self.api.reqCurrentTime()
-        
-        # 请求账户数据主推更新
-        self.api.reqAccountUpdates(True, self.accountCode)
     
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -233,6 +234,8 @@ class IbGateway(VtGateway):
         contract.expiry = orderReq.expiry
         contract.strike = orderReq.strikePrice
         contract.right = optionTypeMap.get(orderReq.optionType, '')
+        contract.lastTradeDateOrContractMonth = str(orderReq.lastTradeDateOrContractMonth)
+        contract.multiplier = str(orderReq.multiplier)
         
         # 创建委托对象
         order = Order()
@@ -335,7 +338,7 @@ class IbWrapper(IbApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = errorCode
-        err.errorMsg = errorString
+        err.errorMsg = errorString.decode('GBK')
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -352,20 +355,23 @@ class IbWrapper(IbApi):
     def tickPrice(self, tickerId, field, price, canAutoExecute):
         """行情价格相关推送"""
         if field in tickFieldMap:
+            # 对于股票、期货等行情，有新价格推送时仅更新tick缓存
+            # 只有当发生成交后，tickString更新最新成交价时才推送新的tick
+            # 即bid/ask的价格变动并不会触发新的tick推送
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
             
+            # IB的外汇行情没有成交价和时间，通过本地计算生成，同时立即推送
             if self.tickProductDict[tickerId] == PRODUCT_FOREX:
                 tick.lastPrice = (tick.bidPrice1 + tick.askPrice1) / 2
+                dt = datetime.now()
+                tick.time = dt.strftime('%H:%M:%S.%f')
+                tick.date = dt.strftime('%Y%m%d')
             
-            dt = datetime.now()
-            tick.time = dt.strftime('%H:%M:%S.%f')
-            tick.date = dt.strftime('%Y%m%d')
-            
-            # 行情数据更新
-            newtick = copy(tick)
-            self.gateway.onTick(newtick)
+                # 行情数据更新
+                newtick = copy(tick)
+                self.gateway.onTick(newtick)
         else:
             print field
         
@@ -375,15 +381,7 @@ class IbWrapper(IbApi):
         if field in tickFieldMap:
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
-            tick.__setattr__(key, size)
-            
-            dt = datetime.now()
-            tick.time = dt.strftime('%H:%M:%S.%f')
-            tick.date = dt.strftime('%Y%m%d')
-                
-            # 行情数据更新
-            newtick = copy(tick)
-            self.gateway.onTick(newtick)      
+            tick.__setattr__(key, size)   
         else:
             print field
         
@@ -399,8 +397,17 @@ class IbWrapper(IbApi):
         
     #----------------------------------------------------------------------
     def tickString(self, tickerId, tickType, value):
-        """"""
-        pass
+        """行情补充信息相关推送"""
+        # 如果是最新成交时间戳更新
+        if tickType == '45':
+            tick = self.tickDict[tickerId]
+
+            dt = datetime.fromtimestamp(value)
+            tick.time = dt.strftime('%H:%M:%S.%f')
+            tick.date = dt.strftime('%Y%m%d')
+
+            newtick = copy(tick)
+            self.gateway.onTick(newtick)              
         
     #----------------------------------------------------------------------
     def tickEFP(self, tickerId, tickType, basisPoints, formattedBasisPoints, totalDividends, holdDays, futureLastTradeDate, dividendImpact, dividendsToLastTradeDate):
@@ -561,6 +568,7 @@ class IbWrapper(IbApi):
         trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])  
     
         trade.orderID = str(execution.orderId)
+        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
         trade.direction = directionMapReverse.get(execution.side, '')
         trade.price = execution.price
         trade.volume = execution.shares
@@ -590,8 +598,12 @@ class IbWrapper(IbApi):
 
     #----------------------------------------------------------------------
     def managedAccounts(self, accountsList):
-        """"""
-        pass
+        """推送管理账户的信息"""
+        l = accountsList.split(',')
+        
+        # 请求账户数据主推更新
+        for account in l:
+            self.reqAccountUpdates(True, account)    
         
     #----------------------------------------------------------------------
     def receiveFA(self, pFaDataType, cxml):

@@ -39,7 +39,11 @@ class MainEngine(object):
         self.ctaEngine = CtaEngine(self, self.eventEngine)
         self.drEngine = DrEngine(self, self.eventEngine)
         self.rmEngine = RmEngine(self, self.eventEngine)
-        
+
+        # 定时关闭进程的标记
+        self.time2Shutdown = False
+
+
     #----------------------------------------------------------------------
     def initGateway(self):
         """初始化接口对象"""
@@ -88,6 +92,13 @@ class MainEngine(object):
             self.gatewayDict['XSPEED'].setQryEnabled(True)
         except Exception, e:
             print e          
+            
+        try:
+            from qdpGateway.qdpGateway import QdpGateway
+            self.addGateway(QdpGateway, 'QDP')
+            self.gatewayDict['QDP'].setQryEnabled(True)
+        except Exception, e:
+            print e
         
         try:
             from ksgoldGateway.ksgoldGateway import KsgoldGateway
@@ -257,9 +268,9 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             cursor = collection.find(d)
-            return cursor
+            return list(cursor)
         else:
-            return None
+            return []
         
     #----------------------------------------------------------------------
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):
@@ -288,6 +299,17 @@ class MainEngine(object):
     def getAllWorkingOrders(self):
         """查询所有的活跃的委托（返回列表）"""
         return self.dataEngine.getAllWorkingOrders()
+    
+    #----------------------------------------------------------------------
+    def getAllGatewayNames(self):
+        """查询引擎中所有可用接口的名称"""
+        return self.gatewayDict.keys()
+
+    # ----------------------------------------------------------------------
+    def setTime2Shutdown(self):
+        """到了自动关闭的时间，设为自动关闭"""
+        self.time2Shutdown = True
+
     
 
 ########################################################################
