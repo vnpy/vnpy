@@ -256,6 +256,8 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             collection.insert_one(d)
+        else:
+            self.writeLog(u'数据插入失败，MongoDB没有连接')
     
     #----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d):
@@ -266,6 +268,7 @@ class MainEngine(object):
             cursor = collection.find(d)
             return list(cursor)
         else:
+            self.writeLog(u'数据查询失败，MongoDB没有连接')   
             return []
         
     #----------------------------------------------------------------------
@@ -275,6 +278,8 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             collection.replace_one(flt, d, upsert)
+        else:
+            self.writeLog(u'数据更新失败，MongoDB没有连接')        
     
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
