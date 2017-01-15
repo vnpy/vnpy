@@ -27,7 +27,7 @@ class MainEngine(object):
         self.todayDate = datetime.now().strftime('%Y%m%d')
         
         # 创建事件引擎
-        self.eventEngine = EventEngine()
+        self.eventEngine = EventEngine2()
         self.eventEngine.start()
         
         # 创建数据引擎
@@ -275,7 +275,10 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             cursor = collection.find(d)
-            return list(cursor)
+            if cursor:
+                return list(cursor)
+            else:
+                return []
         else:
             self.writeLog(u'数据查询失败，MongoDB没有连接')   
             return []
