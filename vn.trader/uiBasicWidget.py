@@ -6,6 +6,7 @@ import os
 from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
+from PyQt4.QtCore import Qt
 
 from eventEngine import *
 from vtFunction import *
@@ -52,6 +53,22 @@ class BasicCell(QtGui.QTableWidgetItem):
         else:
             self.setText(text)
 
+
+########################################################################
+class CheckBoxCell(QtGui.QTableWidgetItem):
+    """用来显示复选框的单元格"""
+
+    def __init__(self, isChecked=False, mainEngine=None):
+        """Constructor"""
+        super(CheckBoxCell, self).__init__()
+        self.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+        self.setStauts(isChecked)
+
+    def setStauts(self, isChecked=False):
+        if not isChecked:
+            self.setCheckState(Qt.Unchecked)
+        else:
+            self.setCheckState(Qt.Checked)
 
 ########################################################################
 class NumCell(QtGui.QTableWidgetItem):
@@ -1084,9 +1101,9 @@ class ContractMonitor(BasicMonitor):
         d['productClass'] = {'chinese':u'合约类型', 'cellType':BasicCell}
         d['size'] = {'chinese':u'大小', 'cellType':BasicCell}
         d['priceTick'] = {'chinese':u'最小价格变动', 'cellType':BasicCell}
-        d['tick'] = {'chinese':u'tick', 'cellType':BasicCell}
-        d['bar'] = {'chinese':u'bar', 'cellType':BasicCell}
-        d['main'] = {'chinese':u'主力合约', 'cellType':BasicCell}
+        d['tick'] = {'chinese':u'tick', 'cellType':CheckBoxCell}
+        d['bar'] = {'chinese':u'bar', 'cellType':CheckBoxCell}
+        d['main'] = {'chinese':u'主力合约', 'cellType':CheckBoxCell}
         #d['strikePrice'] = {'chinese':u'期权行权价', 'cellType':BasicCell}
         #d['underlyingSymbol'] = {'chinese':u'期权标的物', 'cellType':BasicCell}
         #d['optionType'] = {'chinese':u'期权类型', 'cellType':BasicCell}
@@ -1118,10 +1135,10 @@ class ContractMonitor(BasicMonitor):
             contract = d[key]
 
             for n, header in enumerate(self.headerList):
-                if(not hasattr(contract,header)):
-                    break
-                content = safeUnicode(contract.__getattribute__(header))
                 cellType = self.headerDict[header]['cellType']
+                content = None
+                if (hasattr(contract, header)):
+                    content = safeUnicode(contract.__getattribute__(header))
                 cell = cellType(content)
 
                 if self.font:
