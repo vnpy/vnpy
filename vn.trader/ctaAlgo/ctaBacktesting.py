@@ -120,7 +120,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self):
         """载入历史数据"""
-        host, port = loadMongoSetting()
+        host, port, logging = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
         collection = self.dbClient[self.dbName][self.symbol]          
@@ -658,8 +658,8 @@ class BacktestingEngine(object):
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
         
         self.output(u'胜率\t\t%s%%' %formatNumber(d['winningRate']))
-        self.output(u'平均每笔盈利\t%s' %formatNumber(d['averageWinning']))
-        self.output(u'平均每笔亏损\t%s' %formatNumber(d['averageLosing']))
+        self.output(u'盈利交易平均值\t%s' %formatNumber(d['averageWinning']))
+        self.output(u'亏损交易平均值\t%s' %formatNumber(d['averageLosing']))
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
     
         # 绘图
