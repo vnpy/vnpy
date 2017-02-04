@@ -5,9 +5,10 @@ import hashlib
 
 import json
 import requests
-from time import time
+from time import time, sleep
 from Queue import Queue, Empty
 from threading import Thread
+
 
 # 常量定义
 COINTYPE_BTC = 1
@@ -24,9 +25,24 @@ LOANTYPE_USD = 4
 MARKETTYPE_CNY = 'cny'
 MARKETTYPE_USD = 'usd'
 
-# API相关定义
-HUOBI_SERVICE_API="https://api.huobi.com/apiv3"
+SYMBOL_BTCCNY = 'BTC_CNY'
+SYMBOL_LTCCNY = 'LTC_CNY'
+SYMBOL_BTCUSD = 'BTC_USD'
 
+PERIOD_1MIN = '001'
+PERIOD_5MIN = '005'
+PERIOD_15MIN = '015'
+PERIOD_30MIN = '030'
+PERIOD_60MIN = '060'
+PERIOD_DAILY = '100'
+PERIOD_WEEKLY = '200'
+PERIOD_MONTHLY = '300'
+PERIOD_ANNUALLY = '400'
+
+# API相关定义
+HUOBI_TRADE_API = 'https://api.huobi.com/apiv3'
+
+# 功能代码
 FUNCTIONCODE_GETACCOUNTINFO = 'get_account_info'
 FUNCTIONCODE_GETORDERS = 'get_orders'
 FUNCTIONCODE_ORDERINFO = 'order_info'
@@ -63,7 +79,7 @@ def signature(params):
 
 ########################################################################
 class TradeApi(object):
-    """"""
+    """交易接口"""
     DEBUG = True
 
     #----------------------------------------------------------------------
@@ -103,7 +119,7 @@ class TradeApi(object):
         # 发送请求
         payload = urllib.urlencode(params)
         
-        r = requests.post(HUOBI_SERVICE_API, params=payload)
+        r = requests.post(HUOBI_TRADE_API_API, params=payload)
         if r.status_code == 200:
             data = r.json()
             return data
@@ -501,3 +517,134 @@ class TradeApi(object):
     def onGetLoans(self, data, reqID):
         """查询杠杆列表"""
         print data        
+        
+
+########################################################################
+class DataApi(object):
+    """行情接口"""
+    TICK_SYMBOL_URL = {
+        SYMBOL_BTCCNY: 'http://api.huobi.com/staticmarket/detail_btc_json.js',
+        SYMBOL_LTCCNY: 'http://api.huobi.com/staticmarket/detail_ltc_json.js',
+        SYMBOL_BTCUSD: 'http://api.huobi.com/usdmarket/detail_btc_json.js'
+    }
+    
+    QUOTE_SYMBOL_URL = {
+        SYMBOL_BTCCNY: 'http://api.huobi.com/staticmarket/ticker_btc_json.js',
+        SYMBOL_LTCCNY: 'http://api.huobi.com/staticmarket/ticker_ltc_json.js',
+        SYMBOL_BTCUSD: 'http://api.huobi.com/usdmarket/ticker_btc_json.js'
+    }  
+    
+    DEPTH_SYMBOL_URL = {
+        SYMBOL_BTCCNY: 'http://api.huobi.com/staticmarket/depth_btc_json.js',
+        SYMBOL_LTCCNY: 'http://api.huobi.com/staticmarket/depth_ltc_json.js',
+        SYMBOL_BTCUSD: 'http://api.huobi.com/usdmarket/depth_btc_json.js'
+    }    
+    
+    KLINE_SYMBOL_URL = {
+        SYMBOL_BTCCNY: 'http://api.huobi.com/staticmarket/btc_kline_[period]_json.js',
+        SYMBOL_LTCCNY: 'http://api.huobi.com/staticmarket/btc_kline_[period]_json.js',
+        SYMBOL_BTCUSD: 'http://api.huobi.com/usdmarket/btc_kline_[period]_json.js'
+    }        
+    
+    DEBUG = True
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.active = False
+        
+        self.taskInterval = 0                       # 每轮请求延时
+        self.taskList = []                          # 订阅的任务列表
+        self.taskThread = Thread(target=self.run)   # 处理任务的线程
+    
+    #----------------------------------------------------------------------
+    def init(self, interval, debug=True):
+        """初始化"""
+        self.taskInterval = interval
+        self.DEBUG = debug
+        
+        self.active = True
+        self.taskThread.start()
+        
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止"""
+        self.active = False
+        
+        if self.taskThread.isAlive():
+            self.taskThread.join()
+        
+    #----------------------------------------------------------------------
+    def run(self):
+        """连续运行"""
+        while self.active:
+            for url, callback in self.taskList:
+                try:
+                    r = requests.get(url)
+                    if r.status_code == 200:
+                        data = r.json()
+                        if self.DEBUG:
+                            print callback.__name__
+                        callback(data)
+                except Exception, e:
+                    print e
+                    
+            sleep(self.taskInterval)
+            
+    #----------------------------------------------------------------------
+    def subscribeTick(self, symbol):
+        """订阅实时成交数据"""
+        url = self.TICK_SYMBOL_URL[symbol]
+        task = (url, self.onTick)
+        self.taskList.append(task)
+        
+    #----------------------------------------------------------------------
+    def subscribeQuote(self, symbol):
+        """订阅实时报价数据"""
+        url = self.QUOTE_SYMBOL_URL[symbol]
+        task = (url, self.onQuote)
+        self.taskList.append(task)
+        
+    #----------------------------------------------------------------------
+    def subscribeDepth(self, symbol, level=0):
+        """订阅深度数据"""
+        url = self.DEPTH_SYMBOL_URL[symbol]
+        
+        if level:
+            url = url.replace('json', str(level))
+        
+        task = (url, self.onDepth)
+        self.taskList.append(task)        
+        
+    #----------------------------------------------------------------------
+    def onTick(self, data):
+        """实时成交推送"""
+        print data
+        
+    #----------------------------------------------------------------------
+    def onQuote(self, data):
+        """实时报价推送"""
+        print data    
+    
+    #----------------------------------------------------------------------
+    def onDepth(self, data):
+        """实时深度推送"""
+        print data        
+
+    #----------------------------------------------------------------------
+    def getKline(self, symbol, period, length=0):
+        """查询K线数据"""
+        url = self.KLINE_SYMBOL_URL[symbol]
+        url = url.replace('[period]', period)
+        
+        if length:
+            url = url + '?length=' + str(length)
+            
+        try:
+            r = requests.get(url)
+            if r.status_code == 200:
+                data = r.json()
+                return data
+        except Exception, e:
+            print e
+            return None
