@@ -6,6 +6,7 @@
 
 import json
 
+from dataRecorder.uiDrEdit import DrEditWidget
 from uiBasicWidget import QtGui, QtCore
 from eventEngine import *
 
@@ -95,12 +96,17 @@ class DrEngineManager(QtGui.QWidget):
         grid.addWidget(activeLabel, 0, 2)
         grid.addWidget(self.tickTable, 1, 0)
         grid.addWidget(self.barTable, 1, 1)
-        grid.addWidget(self.activeTable, 1, 2)        
-        
+        grid.addWidget(self.activeTable, 1, 2)
+
+        btn = QtGui.QPushButton(u'编辑', self)
+
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(grid)
+        vbox.addWidget(btn)
         vbox.addWidget(self.logMonitor)
         self.setLayout(vbox)
+
+        btn.clicked.connect(self.openDr)
 
     #----------------------------------------------------------------------
     def updateLog(self, event):
@@ -144,12 +150,9 @@ class DrEngineManager(QtGui.QWidget):
                     self.activeTable.insertRow(0)
                     self.activeTable.setItem(0, 0, TableCell(activeSymbol))
                     self.activeTable.setItem(0, 1, TableCell(symbol))
-    
-    
-    
-    
 
-
-
-    
-    
+    # ----------------------------------------------------------------------
+    def openDr(self):
+        """打开行情数据记录组件"""
+        self.mDrEditWidget = DrEditWidget(self.drEngine, self.eventEngine)
+        self.mDrEditWidget.showMaximized()
