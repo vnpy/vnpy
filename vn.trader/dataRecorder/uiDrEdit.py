@@ -3,15 +3,11 @@
 '''
 行情记录模块相关的GUI控制组件
 '''
-from PyQt4.QtCore import QDir
-from PyQt4.QtGui import QFileSystemModel
 from PyQt4.QtGui import QTreeView
 
 from dataRecorder.drEngine import DrEngine
-from uiBasicWidget import QtGui, QtCore
 from eventEngine import *
-
-from eventType import EVENT_CONTRACT
+from uiBasicWidget import QtGui, QtCore
 
 
 class TreeItem(object):
@@ -50,11 +46,19 @@ class TreeItem(object):
 
 		return 0
 
+	def setData(self, column, value):
+		if column < 0 or column >= len(self.itemData):
+			return False
+
+		self.itemData[column] = value
+
+		return True
+
 
 class TreeModel(QtCore.QAbstractItemModel):
 	def __init__(self, parent=None):
 		super(TreeModel, self).__init__(parent)
-		self.rootItem = TreeItem((u"合约", u"tick", u"bar", u"主力"))
+		self.rootItem = TreeItem([u"合约", u"Tick", u"Bar", u"主力"])
 
 	def rootItem(self):
 		return self.rootItem
@@ -68,16 +72,28 @@ class TreeModel(QtCore.QAbstractItemModel):
 		else:
 			return self.rootItem.columnCount()
 
-	# def setData(self, index, value, role=None):
-	# 	item = index.internalPointer()
-	# 	if index.column != 0 and role == QtCore.Qt.CheckStateRole:
-	# 		if value:
-	# 			item.setCheckState(QtCore.Qt.checked)
-	# 		else:
-	# 			item.setCheckState(QtCore.Qt.Unchecked)
-	# 	else:
-	# 		pass
-	# 	return True
+	def setData(self, index, value, role=None):
+		if index.column() != 0 and role == QtCore.Qt.CheckStateRole:
+			item = index.internalPointer()
+			if item is None:
+				return False
+			result = item.setData(index.column(), True if value == QtCore.Qt.Checked else False)
+			if result:
+				self.dataChanged.emit(index, index)
+
+			# 如果第一条
+			if item.parentItem == self.rootItem:
+				for row in range(item.childCount()):
+					childIndex = self.index(row, index.column(), index)
+					self.setData(childIndex, value, QtCore.Qt.CheckStateRole)
+
+			if value == QtCore.Qt.Checked and index.column() == 3:
+				for row in range(item.parentItem.childCount()):
+					if row != index.row():
+						siblingIndex = self.index(row, index.column(), index.parent())
+						self.setData(siblingIndex, QtCore.Qt.Unchecked, QtCore.Qt.CheckStateRole)
+
+		return True
 
 	def data(self, index, role):
 		if not index.isValid():
@@ -88,6 +104,9 @@ class TreeModel(QtCore.QAbstractItemModel):
 		if role == QtCore.Qt.CheckStateRole and index.column() != 0:
 			return QtCore.Qt.Checked if item.data(index.column()) == True else QtCore.Qt.Unchecked
 
+		if index.column() == 3 and item.parentItem == self.rootItem:
+			return None
+
 		if role != QtCore.Qt.DisplayRole:
 			return None
 
@@ -97,8 +116,12 @@ class TreeModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return QtCore.Qt.NoItemFlags
 
-		if index.column() == 0 or index.row() == 0:
+		if index.column() == 0:
 			return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+		item = index.internalPointer()
+		if index.column() == 3 and item.parentItem == self.rootItem:
+			return QtCore.Qt.NoItemFlags
 
 		return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable
 
@@ -112,7 +135,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 		if not self.hasIndex(row, column, parent):
 			return QtCore.QModelIndex()
 
-		if not parent.isValid():
+		if parent is None or not parent.isValid():
 			parentItem = self.rootItem
 		else:
 			parentItem = parent.internalPointer()
@@ -146,6 +169,11 @@ class TreeModel(QtCore.QAbstractItemModel):
 
 		return parentItem.childCount()
 
+	def hasIndex(self, row, column, parentIndex=None, *args, **kwargs):
+		if row < 0 or column > 4:
+			return False
+		return True
+
 
 class DrEditWidget(QtGui.QWidget):
 	"""行情数据记录引擎管理组件"""
@@ -163,31 +191,10 @@ class DrEditWidget(QtGui.QWidget):
 
 		self.initUi()
 		self.updateSetting()
+		self.loadData()
 		self.registerEvent()
 
 	def initUi(self):
-		self.qTreeView = QTreeView()
-
-		model = TreeModel()
-
-		self.qTreeView.setModel(model)
-		# self.qTreeView.setRootIndex(model.index())
-
-		child = []
-		yumi = TreeItem((u"玉米", False, False, False), model.rootItem)
-		yumi.appendChild(TreeItem((u"c1705", False, False, False), yumi))
-		yumi.appendChild(TreeItem((u"c1703", False, False, False), yumi))
-		yumi.appendChild(TreeItem((u"c1707", False, False, False), yumi))
-		yumi.appendChild(TreeItem((u"c1709", False, False, False), yumi))
-		dianfen = TreeItem((u"淀粉", False, False, False), model.rootItem)
-		dianfen.appendChild(TreeItem((u"d1705", False, False, False), dianfen))
-		dianfen.appendChild(TreeItem((u"d1703", False, False, False), dianfen))
-		dianfen.appendChild(TreeItem((u"d1707", False, False, False), dianfen))
-		dianfen.appendChild(TreeItem((u"d1709", False, False, False), dianfen))
-
-		child.append(yumi)
-		child.append(dianfen)
-		model.setDataSource(child)
 
 		vbox = QtGui.QVBoxLayout()
 
@@ -195,11 +202,56 @@ class DrEditWidget(QtGui.QWidget):
 		vline.setSpacing(2)
 		btnTickAll = QtGui.QPushButton(u"全部记录tick", self)
 		btnBarAll = QtGui.QPushButton(u'全部记录bar', self)
+		btnTickAll.clicked.connect(self.selectAllTick)
+		btnBarAll.clicked.connect(self.selectAllBar)
+
 		vline.addWidget(btnTickAll)
 		vline.addWidget(btnBarAll)
+
 		vbox.addLayout(vline)
+
+		self.qTreeView = QTreeView()
+		self.model = TreeModel()
+		self.qTreeView.setModel(self.model)
+
 		vbox.addWidget(self.qTreeView)
 		self.setLayout(vbox)
+
+	def loadData(self):
+		child = []
+		yumi = TreeItem([u"玉米", False, False, False], self.model.rootItem)
+		yumi.appendChild(TreeItem([u"c1705", False, False, False], yumi))
+		yumi.appendChild(TreeItem([u"c1703", False, False, False], yumi))
+		yumi.appendChild(TreeItem([u"c1707", False, False, False], yumi))
+		yumi.appendChild(TreeItem([u"c1709", False, False, False], yumi))
+		dianfen = TreeItem([u"淀粉", False, False, False], self.model.rootItem)
+		dianfen.appendChild(TreeItem([u"d1705", False, False, False], dianfen))
+		dianfen.appendChild(TreeItem([u"d1703", False, False, False], dianfen))
+		dianfen.appendChild(TreeItem([u"d1707", False, False, False], dianfen))
+		dianfen.appendChild(TreeItem([u"d1709", False, False, False], dianfen))
+
+		child.append(yumi)
+		child.append(dianfen)
+		self.model.setDataSource(child)
+		self.qTreeView.expandAll()
+
+	def selectAllTick(self):
+		self.selectAll(True, False, True)
+
+	def selectAllBar(self):
+		self.selectAll(False, True, True)
+
+	def selectAll(self, tick=False, bar=False, select=False):
+		column = None
+		if tick:
+			column = 1
+		if bar:
+			column = 2
+
+		for row in range(self.model.rootItem.childCount()):
+			childIndex = self.model.index(row, column, None)
+			self.model.setData(childIndex, QtCore.Qt.Unchecked if select == False else QtCore.Qt.Checked,
+			                   QtCore.Qt.CheckStateRole)
 
 	def updateSetting(self):
 		pass
@@ -224,5 +276,6 @@ if __name__ == '__main__':
 	app = QtGui.QApplication(sys.argv)
 
 	view = DrEditWidget(DrEngine, EventEngine)
-	view.showMaximized()
+	view.setFixedSize(500, 500)
+	view.show()
 	sys.exit(app.exec_())
