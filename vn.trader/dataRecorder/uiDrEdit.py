@@ -206,11 +206,14 @@ class DrEditWidget(QtGui.QWidget):
 		vline.setSpacing(2)
 		btnTickAll = QtGui.QPushButton(u"全部记录tick", self)
 		btnBarAll = QtGui.QPushButton(u'全部记录bar', self)
+		btnSaveAll = QtGui.QPushButton(u'保存设置', self)
 		btnTickAll.clicked.connect(self.selectAllTick)
 		btnBarAll.clicked.connect(self.selectAllBar)
+		btnSaveAll.clicked.connect(self.saveSetting)
 
 		vline.addWidget(btnTickAll)
 		vline.addWidget(btnBarAll)
+		vline.addWidget(btnSaveAll)
 
 		vbox.addLayout(vline)
 
@@ -233,35 +236,59 @@ class DrEditWidget(QtGui.QWidget):
 		child = []
 
 		contractDict = {}
-		# contracts = self.mainEngine.getAllContracts()
-		# for contract in contracts:
-		# 	contractName = self.getContractChineseName(contract.name)
-		# 	if contractDict.has_key(contractName):
-		# 		parentItem = contractDict[contractName]
-		# 		item = TreeItem([contract.symbol, False, False, False, contract.exchange, "CTP"], parentItem)
-		# 		parentItem.appendChild(item)
-		# 	else:
-		# 		item = TreeItem([contractName, False, False, False, contract.exchange, "CTP"], self.model.rootItem)
-		# 		contractDict[contractName] = item
-		# 		child.append(item)
-		# 		subItem = TreeItem([contract.symbol, False, False, False, contract.exchange, "CTP"], item)
-		# 		item.appendChild(subItem)
+		contracts = self.mainEngine.getAllContracts()
+		for contract in contracts:
+			contractName = self.getContractChineseName(contract.name)
+			if contractDict.has_key(contractName):
+				parentItem = contractDict[contractName]
+				item = TreeItem([contract.symbol, False, False, False, contract.exchange, "CTP"], parentItem)
+				parentItem.appendChild(item)
+			else:
+				item = TreeItem([contractName, False, False, False, contract.exchange, "CTP"], self.model.rootItem)
+				contractDict[contractName] = item
+				child.append(item)
+				subItem = TreeItem([contract.symbol, False, False, False, contract.exchange, "CTP"], item)
+				item.appendChild(subItem)
 
-		yumi = TreeItem([u"玉米", False, False, False, "SH", "CTP"], self.model.rootItem)
-		yumi.appendChild(TreeItem([u"c1705", False, False, False, "SH", "CTP"], yumi))
-		yumi.appendChild(TreeItem([u"c1703", False, False, False, "SH", "CTP"], yumi))
-		yumi.appendChild(TreeItem([u"c1707", False, False, False, "SH", "CTP"], yumi))
-		yumi.appendChild(TreeItem([u"c1709", False, False, False, "SH", "CTP"], yumi))
-		dianfen = TreeItem([u"淀粉", False, False, False, "SH", "CTP"], self.model.rootItem)
-		dianfen.appendChild(TreeItem([u"d1705", False, False, False, "SH", "CTP"], dianfen))
-		dianfen.appendChild(TreeItem([u"d1703", False, False, False, "SH", "CTP"], dianfen))
-		dianfen.appendChild(TreeItem([u"d1707", False, False, False, "SH", "CTP"], dianfen))
-		dianfen.appendChild(TreeItem([u"d1709", False, False, False, "SH", "CTP"], dianfen))
-
-		child.append(yumi)
-		child.append(dianfen)
+		# yumi = TreeItem([u"玉米", False, False, False, "SH", "CTP"], self.model.rootItem)
+		# yumi.appendChild(TreeItem([u"c1705", False, False, False, "SH", "CTP"], yumi))
+		# yumi.appendChild(TreeItem([u"c1703", False, False, False, "SH", "CTP"], yumi))
+		# yumi.appendChild(TreeItem([u"c1707", False, False, False, "SH", "CTP"], yumi))
+		# yumi.appendChild(TreeItem([u"c1709", False, False, False, "SH", "CTP"], yumi))
+		# dianfen = TreeItem([u"淀粉", False, False, False, "SH", "CTP"], self.model.rootItem)
+		# dianfen.appendChild(TreeItem([u"d1705", False, False, False, "SH", "CTP"], dianfen))
+		# dianfen.appendChild(TreeItem([u"d1703", False, False, False, "SH", "CTP"], dianfen))
+		# dianfen.appendChild(TreeItem([u"d1707", False, False, False, "SH", "CTP"], dianfen))
+		# dianfen.appendChild(TreeItem([u"d1709", False, False, False, "SH", "CTP"], dianfen))
+		#
+		# child.append(yumi)
+		# child.append(dianfen)
 		self.model.setDataSource(child)
 		self.qTreeView.expandAll()
+
+	def saveSetting(self):
+		setting = {}
+		setting["tick"] = []
+		setting["bar"] = []
+		setting["active"] = {}
+		queue = Queue()
+		queue.put(self.model.rootItem)
+		while queue.qsize() > 0:
+			item = queue.get()
+			for child in item.childItems:
+				queue.put(child)
+			if item.parentItem is not None and item.parentItem != self.model.rootItem:
+				name = item.data(0)
+				interface = item.data(5)
+				if item.data(1):
+					setting["tick"].append([name, interface])
+				if item.data(2):
+					setting["bar"].append([name, interface])
+				if item.data(3):
+					setting["active"][item.parentItem.data(0)] = name
+		if self.mainEngine.drEngine.saveSetting(setting):
+			self.close()
+
 
 	def selectAllTick(self):
 		self.selectAll(True, False, True)

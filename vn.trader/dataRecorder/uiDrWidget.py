@@ -6,6 +6,9 @@
 
 import json
 
+from PyQt4.QtCore import QObject
+
+from dataRecorder.drEngine import DrEngine
 from dataRecorder.uiDrEdit import DrEditWidget
 from eventEngine import *
 from uiBasicWidget import QtGui, QtCore
@@ -99,15 +102,22 @@ class DrEngineManager(QtGui.QWidget):
         grid.addWidget(self.barTable, 1, 1)
         grid.addWidget(self.activeTable, 1, 2)
 
-        btn = QtGui.QPushButton(u'编辑', self)
+        btnEdit = QtGui.QPushButton(u'编辑', self)
+        btnRestart = QtGui.QPushButton(u'更新数据', self)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(grid)
-        vbox.addWidget(btn)
+
+        vline = QtGui.QHBoxLayout()
+        vline.addWidget(btnEdit)
+        vline.addWidget(btnRestart)
+
+        vbox.addLayout(vline)
         vbox.addWidget(self.logMonitor)
         self.setLayout(vbox)
 
-        btn.clicked.connect(self.openDr)
+        btnEdit.clicked.connect(self.openDr)
+        btnRestart.clicked.connect(self.restart)
 
     #----------------------------------------------------------------------
     def updateLog(self, event):
@@ -125,6 +135,11 @@ class DrEngineManager(QtGui.QWidget):
     #----------------------------------------------------------------------
     def updateSetting(self):
         """显示引擎行情记录配置"""
+
+        self.tickTable.clearContents()
+        self.barTable.clearContents()
+        self.activeTable.clearContents()
+
         with open(self.drEngine.settingFileName) as f:
             drSetting = json.load(f)
     
@@ -158,3 +173,8 @@ class DrEngineManager(QtGui.QWidget):
         self.mDrEditWidget = DrEditWidget(self.mainEngine, self.eventEngine)
         self.mDrEditWidget.setFixedSize(500, 500)
         self.mDrEditWidget.show()
+        QObject.connect(self.mDrEditWidget, QtCore.SIGNAL('closed()'), self, QtCore.SIGNAL('restart()'))
+
+    def restart(self):
+	    self.updateSetting()
+	    self.mainEngine.drEngine = DrEngine(self.mainEngine, self.mainEngine.eventEngine)
