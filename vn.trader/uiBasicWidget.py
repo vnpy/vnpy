@@ -1,14 +1,11 @@
 # encoding: UTF-8
 
-import json
 import csv
-import os
 from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt
 
-from eventEngine import *
 from vtFunction import *
 from vtGateway import *
 
@@ -1101,9 +1098,6 @@ class ContractMonitor(BasicMonitor):
         d['productClass'] = {'chinese':u'合约类型', 'cellType':BasicCell}
         d['size'] = {'chinese':u'大小', 'cellType':BasicCell}
         d['priceTick'] = {'chinese':u'最小价格变动', 'cellType':BasicCell}
-        d['tick'] = {'chinese':u'tick', 'cellType':CheckBoxCell}
-        d['bar'] = {'chinese':u'bar', 'cellType':CheckBoxCell}
-        d['main'] = {'chinese':u'主力合约', 'cellType':CheckBoxCell}
         #d['strikePrice'] = {'chinese':u'期权行权价', 'cellType':BasicCell}
         #d['underlyingSymbol'] = {'chinese':u'期权标的物', 'cellType':BasicCell}
         #d['optionType'] = {'chinese':u'期权类型', 'cellType':BasicCell}

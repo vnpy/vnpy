@@ -2,10 +2,10 @@
 
 import psutil
 
-from uiBasicWidget import *
 from ctaAlgo.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
+from uiBasicWidget import *
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -194,7 +194,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             self.widgetDict['drM'].showMaximized()
         except KeyError:
-            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
+	        self.widgetDict['drM'] = DrEngineManager(self.mainEngine, self.eventEngine)
             self.widgetDict['drM'].showMaximized()
             
     #----------------------------------------------------------------------

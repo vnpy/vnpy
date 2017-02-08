@@ -7,8 +7,8 @@
 import json
 
 from dataRecorder.uiDrEdit import DrEditWidget
-from uiBasicWidget import QtGui, QtCore
 from eventEngine import *
+from uiBasicWidget import QtGui, QtCore
 
 
 ########################################################################
@@ -39,11 +39,12 @@ class DrEngineManager(QtGui.QWidget):
     signal = QtCore.pyqtSignal(type(Event()))
 
     #----------------------------------------------------------------------
-    def __init__(self, drEngine, eventEngine, parent=None):
+    def __init__(self, mainEngine, eventEngine, parent=None):
         """Constructor"""
         super(DrEngineManager, self).__init__(parent)
-        
-        self.drEngine = drEngine
+
+        self.mainEngine = mainEngine
+        self.drEngine = mainEngine.drEngine
         self.eventEngine = eventEngine
         
         self.initUi()
@@ -154,5 +155,6 @@ class DrEngineManager(QtGui.QWidget):
     # ----------------------------------------------------------------------
     def openDr(self):
         """打开行情数据记录组件"""
-        self.mDrEditWidget = DrEditWidget(self.drEngine, self.eventEngine)
-        self.mDrEditWidget.showMaximized()
+        self.mDrEditWidget = DrEditWidget(self.mainEngine, self.eventEngine)
+        self.mDrEditWidget.setFixedSize(500, 500)
+        self.mDrEditWidget.show()
