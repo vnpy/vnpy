@@ -183,12 +183,13 @@ class DrEditWidget(QtGui.QWidget):
 	"""行情数据记录引擎管理组件"""
 	signal = QtCore.pyqtSignal(type(Event()))
 
-	def __init__(self, mainEngine, eventEngine, parent=None):
+	def __init__(self, drWidget, mainEngine, eventEngine, parent=None):
 		"""Constructor"""
 		super(DrEditWidget, self).__init__(parent)
-
+		self.drWidget = drWidget
 		self.mainEngine = mainEngine
 		self.eventEngine = eventEngine
+		self.hasChanged = False
 
 		# 保存合约详细信息的字典
 		self.contractDict = {}
@@ -197,6 +198,10 @@ class DrEditWidget(QtGui.QWidget):
 		self.updateSetting()
 		self.loadData()
 		self.registerEvent()
+
+	def closeEvent(self, QCloseEvent):
+		if self.hasChanged:
+			self.drWidget.restart()
 
 	def initUi(self):
 
@@ -287,8 +292,8 @@ class DrEditWidget(QtGui.QWidget):
 				if item.data(3):
 					setting["active"][item.parentItem.data(0)] = name
 		if self.mainEngine.drEngine.saveSetting(setting):
+			self.hasChanged = True
 			self.close()
-
 
 	def selectAllTick(self):
 		self.selectAll(True, False, True)
@@ -321,8 +326,7 @@ class DrEditWidget(QtGui.QWidget):
 	def registerEvent(self):
 		"""注册事件监听"""
 		self.signal.connect(self.updateContract)
-
-	# self.eventEngine.register(EVENT_CONTRACT, self.signal.emit)
+		self.eventEngine.register(EVENT_CONTRACT, self.signal.emit)
 
 
 if __name__ == '__main__':
@@ -330,7 +334,7 @@ if __name__ == '__main__':
 
 	app = QtGui.QApplication(sys.argv)
 
-	view = DrEditWidget(DrEngine, EventEngine)
+	view = DrEditWidget(None, DrEngine, EventEngine)
 	view.setFixedSize(650, 500)
 	view.show()
 	sys.exit(app.exec_())

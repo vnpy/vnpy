@@ -445,7 +445,7 @@ class MarketMonitor(BasicMonitor):
         self.setFont(BASIC_FONT)
 
         # 设置允许排序
-        self.setSorting(True)
+        self.setSorting(False)
 
         # 初始化表格
         self.initTable()
