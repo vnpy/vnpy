@@ -11,6 +11,7 @@ from PyQt4.QtGui import QTreeView
 from dataRecorder.drEngine import DrEngine
 from eventEngine import *
 from uiBasicWidget import QtGui, QtCore
+from util.UiUtil import CheckBoxDelegate
 
 reload(sys)
 sys.setdefaultencoding("utf8")
@@ -127,7 +128,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 		if index.column() == 3 and item.parentItem == self.rootItem:
 			return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
-		return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable
+		return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable
 
 	def headerData(self, section, orientation, role):
 		if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
@@ -225,6 +226,9 @@ class DrEditWidget(QtGui.QWidget):
 		self.qTreeView = QTreeView()
 		self.model = TreeModel()
 		self.qTreeView.setModel(self.model)
+		self.qTreeView.setItemDelegateForColumn(1, CheckBoxDelegate(self))
+		self.qTreeView.setItemDelegateForColumn(2, CheckBoxDelegate(self))
+		self.qTreeView.setItemDelegateForColumn(3, CheckBoxDelegate(self))
 
 		vbox.addWidget(self.qTreeView)
 		self.setLayout(vbox)
