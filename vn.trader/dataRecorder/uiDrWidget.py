@@ -6,9 +6,6 @@
 
 import json
 
-from PyQt4.QtCore import QObject
-
-from dataRecorder.drEngine import DrEngine
 from dataRecorder.uiDrEdit import DrEditWidget
 from eventEngine import *
 from uiBasicWidget import QtGui, QtCore
@@ -178,6 +175,7 @@ class DrEngineManager(QtGui.QWidget):
         self.mDrEditWidget.show()
 
     def restart(self):
-        self.drEngine.stop()
-        self.updateSetting()
-        self.mainEngine.drEngine = DrEngine(self.mainEngine, self.mainEngine.eventEngine)
+	    pass
+	    # self.drEngine.stop()
+	    # self.updateSetting()
+	    # self.mainEngine.drEngine = DrEngine(self.mainEngine, self.mainEngine.eventEngine)

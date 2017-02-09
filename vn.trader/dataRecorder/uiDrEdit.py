@@ -3,6 +3,7 @@
 '''
 行情记录模块相关的GUI控制组件
 '''
+import json
 import re
 import sys
 
@@ -11,7 +12,7 @@ from PyQt4.QtGui import QTreeView
 from dataRecorder.drEngine import DrEngine
 from eventEngine import *
 from uiBasicWidget import QtGui, QtCore
-from util.UiUtil import CheckBoxDelegate
+from util.UiUtil import CheckBoxDelegate, GateWayListItemEditorCreator
 
 reload(sys)
 sys.setdefaultencoding("utf8")
@@ -112,7 +113,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 						index.column() in [1, 2] or index.column() == 3 and item.parentItem != self.rootItem):
 			return QtCore.Qt.Checked if item.data(index.column()) == True else QtCore.Qt.Unchecked
 
-		if role != QtCore.Qt.DisplayRole or index.column() == 3 and item.parentItem == self.rootItem:
+		if role != QtCore.Qt.DisplayRole or index.column() in [3, 4] and item.parentItem == self.rootItem:
 			return None
 
 		return item.data(index.column())
@@ -121,8 +122,11 @@ class TreeModel(QtCore.QAbstractItemModel):
 		if not index.isValid():
 			return QtCore.Qt.NoItemFlags
 
-		if index.column() in [0, 4, 5]:
+		if index.column() in [0, 4]:
 			return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+		if index.column() in [5]:
+			return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
 
 		item = index.internalPointer()
 		if index.column() == 3 and item.parentItem == self.rootItem:
@@ -210,9 +214,9 @@ class DrEditWidget(QtGui.QWidget):
 
 		vline = QtGui.QHBoxLayout()
 		vline.setSpacing(2)
-		btnTickAll = QtGui.QPushButton(u"全部记录tick", self)
-		btnBarAll = QtGui.QPushButton(u'全部记录bar', self)
-		btnSaveAll = QtGui.QPushButton(u'保存设置', self)
+		btnTickAll = QtGui.QPushButton(u"全部记录Tick", self)
+		btnBarAll = QtGui.QPushButton(u'全部记录Bar', self)
+		btnSaveAll = QtGui.QPushButton(u'保存设置(重启后生效)', self)
 		btnTickAll.clicked.connect(self.selectAllTick)
 		btnBarAll.clicked.connect(self.selectAllBar)
 		btnSaveAll.clicked.connect(self.saveSetting)
@@ -230,6 +234,10 @@ class DrEditWidget(QtGui.QWidget):
 		self.qTreeView.setItemDelegateForColumn(2, CheckBoxDelegate(self))
 		self.qTreeView.setItemDelegateForColumn(3, CheckBoxDelegate(self))
 
+		factory = QtGui.QItemEditorFactory()
+		factory.registerEditor(QtCore.QVariant.Line, GateWayListItemEditorCreator())
+		QtGui.QItemEditorFactory.setDefaultFactory(factory)
+
 		vbox.addWidget(self.qTreeView)
 		self.setLayout(vbox)
 
@@ -244,19 +252,48 @@ class DrEditWidget(QtGui.QWidget):
 	def loadData(self):
 		child = []
 
+		tick = {}
+		bar = {}
+		active = []
+		with open(self.mainEngine.drEngine.settingFileName) as f:
+			drSetting = json.load(f)
+			if 'tick' in drSetting:
+				l = drSetting['tick']
+
+				for setting in l:
+					tick[setting[0]] = setting[1]
+
+			if 'bar' in drSetting:
+				l = drSetting['bar']
+
+				for setting in l:
+					bar[setting[0]] = setting[1]
+
+			if 'active' in drSetting:
+				d = drSetting['active']
+
+				for activeSymbol, symbol in d.items():
+					active.append(symbol)
+
 		contractDict = {}
 		contracts = self.mainEngine.getAllContracts()
 		for contract in contracts:
 			contractName = self.getContractChineseName(contract.name)
+			gateWayName = contract.gatewayName
+			hasTick = tick.has_key(contract.symbol)
+			hasBar = bar.has_key(contract.symbol)
+			hasActive = contract.symbol in active
 			if contractDict.has_key(contractName):
 				parentItem = contractDict[contractName]
-				item = TreeItem([contract.symbol, False, False, False, contract.exchange, "CTP"], parentItem)
+				item = TreeItem([contract.symbol, hasTick, hasBar, hasActive, contract.exchange, gateWayName],
+				                parentItem)
 				parentItem.appendChild(item)
 			else:
-				item = TreeItem([contractName, False, False, False, contract.exchange, "CTP"], self.model.rootItem)
+				item = TreeItem([contractName, False, False, False, contract.exchange, gateWayName],
+				                self.model.rootItem)
 				contractDict[contractName] = item
 				child.append(item)
-				subItem = TreeItem([contract.symbol, False, False, False, contract.exchange, "CTP"], item)
+				subItem = TreeItem([contract.symbol, hasTick, hasBar, hasActive, contract.exchange, gateWayName], item)
 				item.appendChild(subItem)
 
 		# yumi = TreeItem([u"玉米", False, False, False, "SH", "CTP"], self.model.rootItem)

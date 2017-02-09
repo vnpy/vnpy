@@ -1,5 +1,6 @@
 from PyQt4 import QtCore
-from PyQt4.QtGui import QStyle, QStyledItemDelegate, QStyleOptionButton, QApplication, QItemDelegate
+from PyQt4.QtGui import QStyle, QStyledItemDelegate, QStyleOptionButton, QApplication, QItemDelegate, QComboBox, \
+	QItemEditorCreatorBase
 
 
 class CheckBoxDelegate(QStyledItemDelegate):
@@ -94,3 +95,50 @@ class CheckBoxDelegate(QStyledItemDelegate):
 		                                option.rect.height() / 2 -
 		                                check_box_rect.height() / 2)
 		return QtCore.QRect(check_box_point, check_box_rect.size())
+
+
+class ComboDelegate(QItemDelegate):
+	def __init__(self, parent, dataList=[]):
+		QItemDelegate.__init__(self, parent)
+		self.dataList = dataList
+
+	def createEditor(self, parent, option, index):
+		combo = QComboBox(parent)
+
+		return combo
+
+	def setEditorData(self, editor, index):
+		text = index.data().toString()
+		index = editor.findText(text)
+		editor.setCurrentIndex(index)
+
+	def setModelData(self, editor, model, index):
+		model.setData(index, editor.itemText(editor.currentIndex()))
+
+	def updateEditorGeometry(self, editor, option, index):
+		print option, option.rect
+		editor.setGeometry(option.rect)
+
+
+class GateWayListEditor(QComboBox):
+	def __init__(self, widget=None, dataList=[]):
+		super(GateWayListEditor, self).__init__(widget)
+		self.dataList = dataList
+		self.populateList()
+
+	def getGateWay(self):
+		gateWay = self.itemData(self.currentIndex(), QtCore.Qt.DisplayRole)
+		return gateWay
+
+	def setGateWay(self, gateWay):
+		self.setCurrentIndex(self.findData(gateWay, QtCore.Qt.DisplayRole))
+
+	def populateList(self):
+		for i, gateWayName in enumerate(self.dataList):
+			self.insertItem(i, gateWayName)
+			self.setItemData(i, gateWayName, QtCore.Qt.DisplayRole)
+
+
+class GateWayListItemEditorCreator(QItemEditorCreatorBase):
+	def createWidget(self, parent):
+		return GateWayListEditor(parent, ["CTP", "LTS", "XTP", "FEMAS", "XSPEED", "QDP", "KSOTP", "KSGOLD", "SGIT"])
