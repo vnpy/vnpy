@@ -55,8 +55,11 @@ class DrEngine(object):
 	    """保存设置"""
 	    setting['working'] = self.working
 	    with open(self.settingFileName, 'w') as f:
-		    str = json.dumps(setting)
-		    f.write(str)
+		    try:
+			    str = json.dumps(setting)
+			    f.write(str)
+		    except:
+			    pass
 	    return True
         
     #----------------------------------------------------------------------

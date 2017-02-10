@@ -104,7 +104,7 @@ class ComboDelegate(QItemDelegate):
 
 	def createEditor(self, parent, option, index):
 		combo = QComboBox(parent)
-
+		combo.addItems(self.dataList)
 		return combo
 
 	def setEditorData(self, editor, index):
@@ -113,7 +113,7 @@ class ComboDelegate(QItemDelegate):
 		editor.setCurrentIndex(index)
 
 	def setModelData(self, editor, model, index):
-		model.setData(index, editor.itemText(editor.currentIndex()))
+		model.setData(index, str(editor.itemText(editor.currentIndex())))
 
 	def updateEditorGeometry(self, editor, option, index):
 		print option, option.rect

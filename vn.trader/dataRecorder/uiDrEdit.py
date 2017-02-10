@@ -12,7 +12,7 @@ from PyQt4.QtGui import QTreeView
 from dataRecorder.drEngine import DrEngine
 from eventEngine import *
 from uiBasicWidget import QtGui, QtCore
-from util.UiUtil import CheckBoxDelegate, GateWayListItemEditorCreator
+from util.UiUtil import CheckBoxDelegate, ComboDelegate
 
 reload(sys)
 sys.setdefaultencoding("utf8")
@@ -81,16 +81,27 @@ class TreeModel(QtCore.QAbstractItemModel):
 			return self.rootItem.columnCount()
 
 	def setData(self, index, value, role=None):
+		item = index.internalPointer()
+		if item is None:
+			return False
+
+		if index.column() == 5:
+			result = item.setData(index.column(), value)
+			if result:
+				self.dataChanged.emit(index, index)
+			# 如果第一条
+			if item.parentItem == self.rootItem:
+				for row in range(item.childCount()):
+					childIndex = self.index(row, index.column(), index)
+					self.setData(childIndex, value, QtCore.Qt.DisplayRole)
+
 		if index.column() in [1, 2, 3] and role == QtCore.Qt.CheckStateRole:
-			item = index.internalPointer()
-			if item is None:
-				return False
 			result = item.setData(index.column(), True if value == QtCore.Qt.Checked else False)
 			if result:
 				self.dataChanged.emit(index, index)
 
 			# 如果第一条
-			if item.parentItem == self.rootItem:
+			if item.parentItem == self.rootItem and index.column() in [1, 2]:
 				for row in range(item.childCount()):
 					childIndex = self.index(row, index.column(), index)
 					self.setData(childIndex, value, QtCore.Qt.CheckStateRole)
@@ -108,6 +119,9 @@ class TreeModel(QtCore.QAbstractItemModel):
 			return None
 
 		item = index.internalPointer()
+
+		if role == QtCore.Qt.TextAlignmentRole:
+			return QtCore.Qt.AlignCenter
 
 		if role == QtCore.Qt.CheckStateRole and (
 						index.column() in [1, 2] or index.column() == 3 and item.parentItem != self.rootItem):
@@ -230,13 +244,12 @@ class DrEditWidget(QtGui.QWidget):
 		self.qTreeView = QTreeView()
 		self.model = TreeModel()
 		self.qTreeView.setModel(self.model)
+		self.qTreeView.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
 		self.qTreeView.setItemDelegateForColumn(1, CheckBoxDelegate(self))
 		self.qTreeView.setItemDelegateForColumn(2, CheckBoxDelegate(self))
 		self.qTreeView.setItemDelegateForColumn(3, CheckBoxDelegate(self))
-
-		factory = QtGui.QItemEditorFactory()
-		factory.registerEditor(QtCore.QVariant.Line, GateWayListItemEditorCreator())
-		QtGui.QItemEditorFactory.setDefaultFactory(factory)
+		self.qTreeView.setItemDelegateForColumn(5, ComboDelegate(self, ["CTP", "LTS", "XTP", "FEMAS", "XSPEED", "QDP",
+		                                                                "KSOTP", "KSGOLD", "SGIT"]))
 
 		vbox.addWidget(self.qTreeView)
 		self.setLayout(vbox)
@@ -279,10 +292,14 @@ class DrEditWidget(QtGui.QWidget):
 		contracts = self.mainEngine.getAllContracts()
 		for contract in contracts:
 			contractName = self.getContractChineseName(contract.name)
-			gateWayName = contract.gatewayName
+			gateWayName = u"CTP"
 			hasTick = tick.has_key(contract.symbol)
 			hasBar = bar.has_key(contract.symbol)
 			hasActive = contract.symbol in active
+			if hasTick:
+				gateWayName = tick[contract.symbol]
+			elif hasBar:
+				gateWayName = bar[contract.symbol]
 			if contractDict.has_key(contractName):
 				parentItem = contractDict[contractName]
 				item = TreeItem([contract.symbol, hasTick, hasBar, hasActive, contract.exchange, gateWayName],
