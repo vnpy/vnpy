@@ -56,7 +56,7 @@ class DrEngine(object):
 	    setting['working'] = self.working
 	    with open(self.settingFileName, 'w') as f:
 		    try:
-			    str = json.dumps(setting)
+			    str = json.dumps(setting, indent=2)
 			    f.write(str)
 		    except:
 			    pass
