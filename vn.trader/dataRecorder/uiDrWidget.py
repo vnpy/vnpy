@@ -100,21 +100,18 @@ class DrEngineManager(QtGui.QWidget):
         grid.addWidget(self.activeTable, 1, 2)
 
         btnEdit = QtGui.QPushButton(u'编辑', self)
-        btnRestart = QtGui.QPushButton(u'更新数据', self)
 
         vbox = QtGui.QVBoxLayout()
         vbox.addLayout(grid)
 
         vline = QtGui.QHBoxLayout()
         vline.addWidget(btnEdit)
-        vline.addWidget(btnRestart)
 
         vbox.addLayout(vline)
         vbox.addWidget(self.logMonitor)
         self.setLayout(vbox)
 
         btnEdit.clicked.connect(self.openDr)
-        btnRestart.clicked.connect(self.restart)
 
     #----------------------------------------------------------------------
     def updateLog(self, event):
@@ -171,11 +168,12 @@ class DrEngineManager(QtGui.QWidget):
     def openDr(self):
         """打开行情数据记录组件"""
         self.mDrEditWidget = DrEditWidget(self,self.mainEngine, self.eventEngine)
+        self.mDrEditWidget.setWindowTitle(u"编辑订阅")
         self.mDrEditWidget.setFixedSize(800,800)
         self.mDrEditWidget.show()
 
     def restart(self):
-	    pass
-	    # self.drEngine.stop()
+        pass
+        # self.drEngine.stop()
 	    # self.updateSetting()
 	    # self.mainEngine.drEngine = DrEngine(self.mainEngine, self.mainEngine.eventEngine)

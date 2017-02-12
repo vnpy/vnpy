@@ -149,9 +149,11 @@ class TreeModel(QtCore.QAbstractItemModel):
 		return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable
 
 	def headerData(self, section, orientation, role):
-		if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-			return self.rootItem.data(section)
-
+		if orientation == QtCore.Qt.Horizontal:
+			if role == QtCore.Qt.DisplayRole:
+				return self.rootItem.data(section)
+			elif role == QtCore.Qt.TextAlignmentRole:
+				return QtCore.Qt.AlignCenter
 		return None
 
 	def index(self, row, column, parent):
