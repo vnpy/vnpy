@@ -4,6 +4,7 @@
 本模块中主要包含：
 1. 从通联数据下载历史行情的引擎
 2. 用来把MultiCharts导出的历史数据载入到MongoDB中用的函数
+3. 增加从通达信导出的历史数据载入到MongoDB中的函数
 """
 
 from datetime import datetime, timedelta
@@ -349,7 +350,43 @@ def loadMcCsv(fileName, dbName, symbol):
     
     print u'插入完毕，耗时：%s' % (time()-start)
 
+#----------------------------------------------------------------------
+def loadTdxCsv(fileName, dbName, symbol):
+    """将通达信导出的csv格式的历史分钟数据插入到Mongo数据库中"""
+    import csv
+    
+    start = time()
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
+    
+    # 锁定集合，并创建索引
+    host, port, logging = loadMongoSetting()
+    
+    client = pymongo.MongoClient(host, port)    
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
+    
+    # 读取数据和插入到数据库
+    reader = csv.reader(file(fileName, 'r'))
+    for d in reader:
+        bar = CtaBarData()
+        bar.vtSymbol = symbol
+        bar.symbol = symbol
+        bar.open = float(d[2])
+        bar.high = float(d[3])
+        bar.low = float(d[4])
+        bar.close = float(d[5])
+        bar.date = datetime.strptime(d[0], '%Y/%m/%d').strftime('%Y%m%d')
+        bar.time = d[1][:2]+':'+d[1][2:4]+':00'
+        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
+        bar.volume = d[6]
+        bar.openInterest = d[7]
 
+        flt = {'datetime': bar.datetime}
+        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
+        print bar.date, bar.time
+    
+    print u'插入完毕，耗时：%s' % (time()-start)
+    
 if __name__ == '__main__':
     ## 简单的测试脚本可以写在这里
     #from time import sleep
@@ -359,3 +396,5 @@ if __name__ == '__main__':
     
     # 这里将项目中包含的股指日内分钟线csv导入MongoDB，作者电脑耗时大约3分钟
     loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
+    #导入通达信历史分钟数据
+    #loadTdxCsv('CL8.csv', MINUTE_DB_NAME, 'c0000')
