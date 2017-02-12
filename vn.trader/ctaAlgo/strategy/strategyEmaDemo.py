@@ -17,9 +17,9 @@ from ctaTemplate import CtaTemplate
 
 
 ########################################################################
-class DoubleEmaDemo(CtaTemplate):
+class EmaDemoStrategy(CtaTemplate):
     """双指数均线策略Demo"""
-    className = 'DoubleEmaDemo'
+    className = 'EmaDemoStrategy'
     author = u'用Python的交易员'
     
     # 策略参数
@@ -59,7 +59,7 @@ class DoubleEmaDemo(CtaTemplate):
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(DoubleEmaDemo, self).__init__(ctaEngine, setting)
+        super(EmaDemoStrategy, self).__init__(ctaEngine, setting)
         
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
         # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
@@ -188,10 +188,10 @@ class DoubleEmaDemo(CtaTemplate):
     
     
 ########################################################################################
-class OrderManagementDemo(CtaTemplate):
+class OrderManagementDemoStrategy(CtaTemplate):
     """基于tick级别细粒度撤单追单测试demo"""
     
-    className = 'OrderManagementDemo'
+    className = 'OrderManagementDemoStrategy'
     author = u'用Python的交易员'
     
     # 策略参数
@@ -216,7 +216,7 @@ class OrderManagementDemo(CtaTemplate):
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(OrderManagementDemo, self).__init__(ctaEngine, setting)
+        super(OrderManagementDemoStrategy, self).__init__(ctaEngine, setting)
                 
         self.lastOrder = None
         self.orderType = ''
