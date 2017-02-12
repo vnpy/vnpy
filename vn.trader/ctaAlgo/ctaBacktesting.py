@@ -13,7 +13,7 @@ import multiprocessing
 import pymongo
 
 from ctaBase import *
-from ctaSetting import *
+from strategy import *
 
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
@@ -881,6 +881,7 @@ def optimize(strategyClass, setting, targetName,
     engine = BacktestingEngine()
     engine.setBacktestingMode(mode)
     engine.setStartDate(startDate, initDays)
+    engine.setEndDate(endDate)
     engine.setSlippage(slippage)
     engine.setRate(rate)
     engine.setSize(size)
