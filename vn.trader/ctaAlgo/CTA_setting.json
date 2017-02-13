@@ -1,7 +1,13 @@
 [
     {
         "name": "double ema",
-        "className": "DoubleEmaDemo",
-        "vtSymbol": "IF1602"
+        "className": "EmaDemoStrategy",
+        "vtSymbol": "IF1702"
+    },
+
+    {
+        "name": "atr rsi",
+        "className": "AtrRsiStrategy",
+        "vtSymbol": "IC1702"
     }
 ]

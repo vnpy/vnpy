@@ -315,6 +315,55 @@ class HistoryDataEngine(object):
 
 
 #----------------------------------------------------------------------
+def downloadEquityDailyBarts(self, symbol):
+        """
+        下载股票的日行情，symbol是股票代码
+        """
+        print u'开始下载%s日行情' %symbol
+        
+        # 查询数据库中已有数据的最后日期
+        cl = self.dbClient[DAILY_DB_NAME][symbol]
+        cx = cl.find(sort=[('datetime', pymongo.DESCENDING)])
+        if cx.count():
+            last = cx[0]
+        else:
+            last = ''
+        # 开始下载数据
+        import tushare as ts
+        
+        if last:
+            start = last['date'][:4]+'-'+last['date'][4:6]+'-'+last['date'][6:]
+            
+        data = ts.get_k_data(symbol,start)
+        
+        if not data.empty:
+            # 创建datetime索引
+            self.dbClient[DAILY_DB_NAME][symbol].ensure_index([('datetime', pymongo.ASCENDING)], 
+                                                                unique=True)                
+            
+            for index, d in data.iterrows():
+                bar = CtaBarData()
+                bar.vtSymbol = symbol
+                bar.symbol = symbol
+                try:
+                    bar.open = d.get('open')
+                    bar.high = d.get('high')
+                    bar.low = d.get('low')
+                    bar.close = d.get('close')
+                    bar.date = d.get('date').replace('-', '')
+                    bar.time = ''
+                    bar.datetime = datetime.strptime(bar.date, '%Y%m%d')
+                    bar.volume = d.get('volume')
+                except KeyError:
+                    print d
+                
+                flt = {'datetime': bar.datetime}
+                self.dbClient[DAILY_DB_NAME][symbol].update_one(flt, {'$set':bar.__dict__}, upsert=True)            
+            
+            print u'%s下载完成' %symbol
+        else:
+            print u'找不到合约%s' %symbol
+#----------------------------------------------------------------------
 def loadMcCsv(fileName, dbName, symbol):
     """将Multicharts导出的csv格式的历史数据插入到Mongo数据库中"""
     import csv
@@ -393,6 +442,7 @@ if __name__ == '__main__':
     #e = HistoryDataEngine()
     #sleep(1)
     #e.downloadEquityDailyBar('000001')
+    #e.downloadEquityDailyBarts('000001')
     
     # 这里将项目中包含的股指日内分钟线csv导入MongoDB，作者电脑耗时大约3分钟
     loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
