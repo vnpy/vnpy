@@ -40,11 +40,13 @@ def loadMongoSetting():
         setting = json.load(f)
         host = setting['mongoHost']
         port = setting['mongoPort']
+        logging = setting['mongoLogging']
     except:
         host = 'localhost'
         port = 27017
+        logging = False
         
-    return host, port
+    return host, port, logging
 
 #----------------------------------------------------------------------
 def todayDate():

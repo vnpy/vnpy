@@ -70,6 +70,9 @@ class EventEngine(object):
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
         self.__handlers = defaultdict(list)
         
+        # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
+        self.__generalHandlers = []
+        
     #----------------------------------------------------------------------
     def __run(self):
         """引擎运行"""
@@ -90,7 +93,11 @@ class EventEngine(object):
             
             # 以上语句为Python列表解析方式的写法，对应的常规循环写法为：
             #for handler in self.__handlers[event.type_]:
-                #handler(event)    
+                #handler(event) 
+        
+        # 调用通用处理函数进行处理
+        if self.__generalHandlers:
+            [handler(event) for handler in self.__generalHandlers]
                
     #----------------------------------------------------------------------
     def __onTimer(self):
@@ -102,8 +109,11 @@ class EventEngine(object):
         self.put(event)    
 
     #----------------------------------------------------------------------
-    def start(self):
-        """引擎启动"""
+    def start(self, timer=True):
+        """
+        引擎启动
+        timer：是否要启动计时器
+        """
         # 将引擎设为启动
         self.__active = True
         
@@ -111,7 +121,8 @@ class EventEngine(object):
         self.__thread.start()
         
         # 启动计时器，计时器事件间隔默认设定为1秒
-        self.__timer.start(1000)
+        if timer:
+            self.__timer.start(1000)
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -153,6 +164,19 @@ class EventEngine(object):
     def put(self, event):
         """向事件队列中存入事件"""
         self.__queue.put(event)
+        
+    #----------------------------------------------------------------------
+    def registerGeneralHandler(self, handler):
+        """注册通用事件处理函数监听"""
+        if handler not in self.__generalHandlers:
+            self.__generalHandlers.append(handler)
+            
+    #----------------------------------------------------------------------
+    def unregisterGeneralHandler(self, handler):
+        """注销通用事件处理函数监听"""
+        if handler in self.__generalHandlers:
+            self.__generalHandlers.remove(handler)
+        
 
 
 ########################################################################
@@ -182,6 +206,9 @@ class EventEngine2(object):
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
         self.__handlers = defaultdict(list)
         
+        # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
+        self.__generalHandlers = []        
+        
     #----------------------------------------------------------------------
     def __run(self):
         """引擎运行"""
@@ -202,7 +229,11 @@ class EventEngine2(object):
             
             # 以上语句为Python列表解析方式的写法，对应的常规循环写法为：
             #for handler in self.__handlers[event.type_]:
-                #handler(event)    
+                #handler(event) 
+                
+        # 调用通用处理函数进行处理
+        if self.__generalHandlers:
+            [handler(event) for handler in self.__generalHandlers]        
                
     #----------------------------------------------------------------------
     def __runTimer(self):
@@ -218,8 +249,11 @@ class EventEngine2(object):
             sleep(self.__timerSleep)
 
     #----------------------------------------------------------------------
-    def start(self):
-        """引擎启动"""
+    def start(self, timer=True):
+        """
+        引擎启动
+        timer：是否要启动计时器
+        """
         # 将引擎设为启动
         self.__active = True
         
@@ -227,8 +261,9 @@ class EventEngine2(object):
         self.__thread.start()
         
         # 启动计时器，计时器事件间隔默认设定为1秒
-        self.__timerActive = True
-        self.__timer.start()
+        if timer:
+            self.__timerActive = True
+            self.__timer.start()
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -272,6 +307,18 @@ class EventEngine2(object):
         """向事件队列中存入事件"""
         self.__queue.put(event)
 
+    #----------------------------------------------------------------------
+    def registerGeneralHandler(self, handler):
+        """注册通用事件处理函数监听"""
+        if handler not in self.__generalHandlers:
+            self.__generalHandlers.append(handler)
+            
+    #----------------------------------------------------------------------
+    def unregisterGeneralHandler(self, handler):
+        """注销通用事件处理函数监听"""
+        if handler in self.__generalHandlers:
+            self.__generalHandlers.remove(handler)
+
 
 ########################################################################
 class Event:
@@ -297,7 +344,8 @@ def test():
     app = QCoreApplication(sys.argv)
     
     ee = EventEngine2()
-    ee.register(EVENT_TIMER, simpletest)
+    #ee.register(EVENT_TIMER, simpletest)
+    ee.registerGeneralHandler(simpletest)
     ee.start()
     
     app.exec_()

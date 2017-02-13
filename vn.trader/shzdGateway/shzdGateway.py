@@ -57,7 +57,6 @@ orderStatusMapReverse['4'] = STATUS_ALLTRADED
 orderStatusMapReverse['5'] = STATUS_CANCELLED
 orderStatusMapReverse['6'] = STATUS_CANCELLED
 
-s = set()
 
 ########################################################################
 class ShzdGateway(VtGateway):
@@ -77,11 +76,7 @@ class ShzdGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        #fileName = os.getcwd() + '/shzdGateway/' + fileName
-        from vtFunction import filePath
-        path = filePath()
-        #path = os.path.abspath(os.path.dirname(__file__))
-        print 'path:', path
+        path = os.path.abspath(os.path.dirname(__file__))
         fileName = os.path.join(path, fileName)
         
         try:
