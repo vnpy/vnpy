@@ -118,8 +118,8 @@ class TradeApi(object):
         
         # 发送请求
         payload = urllib.urlencode(params)
-        
-        r = requests.post(HUOBI_TRADE_API_API, params=payload)
+
+        r = requests.post(HUOBI_TRADE_API, params=payload)
         if r.status_code == 200:
             data = r.json()
             return data
@@ -140,12 +140,12 @@ class TradeApi(object):
                 # 请求失败
                 if 'code' in data and 'message' in data:
                     error = u'错误信息：%s' %data['message']
-                    self.onError(error, reqID)
+                    self.onError(error, req, reqID)
                 # 请求成功
                 else:
                     if self.DEBUG:
-                        print callback.__name__                        
-                    callback(data, reqID)    
+                        print callback.__name__
+                    callback(data, req, reqID)
                 
             except Empty:
                 pass    
@@ -424,97 +424,97 @@ class TradeApi(object):
     ####################################################
     
     #----------------------------------------------------------------------
-    def onError(self, error, reqID):
+    def onError(self, error, req, reqID):
         """错误推送"""
         print error, reqID    
 
     #----------------------------------------------------------------------
-    def onGetAccountInfo(self, data, reqID):
+    def onGetAccountInfo(self, data, req, reqID):
         """查询账户回调"""
         print data
     
     #----------------------------------------------------------------------
-    def onGetOrders(self, data, reqID):
+    def onGetOrders(self, data, req, reqID, fuck):
         """查询委托回调"""
         print data
         
     #----------------------------------------------------------------------
-    def onOrderInfo(self, data, reqID):
+    def onOrderInfo(self, data, req, reqID):
         """委托详情回调"""
         print data
 
     #----------------------------------------------------------------------
-    def onBuy(self, data, reqID):
+    def onBuy(self, data, req, reqID):
         """买入回调"""
         print data
         
     #----------------------------------------------------------------------
-    def onSell(self, data, reqID):
+    def onSell(self, data, req, reqID):
         """卖出回调"""
         print data    
         
     #----------------------------------------------------------------------
-    def onBuyMarket(self, data, reqID):
+    def onBuyMarket(self, data, req, reqID):
         """市价买入回调"""
         print data
         
     #----------------------------------------------------------------------
-    def onSellMarket(self, data, reqID):
+    def onSellMarket(self, data, req, reqID):
         """市价卖出回调"""
         print data        
         
     #----------------------------------------------------------------------
-    def onCancelOrder(self, data, reqID):
+    def onCancelOrder(self, data, req, reqID):
         """撤单回调"""
         print data
     
     #----------------------------------------------------------------------
-    def onGetNewDealOrders(self, data, reqID):
+    def onGetNewDealOrders(self, data, req, reqID):
         """查询最新成交回调"""
         print data    
         
     #----------------------------------------------------------------------
-    def onGetOrderIdByTradeId(self, data, reqID):
+    def onGetOrderIdByTradeId(self, data, req, reqID):
         """通过成交编号查询委托编号回调"""
         print data    
         
     #----------------------------------------------------------------------
-    def onWithdrawCoin(self, data, reqID):
+    def onWithdrawCoin(self, data, req, reqID):
         """提币回调"""
         print data
         
     #----------------------------------------------------------------------
-    def onCancelWithdrawCoin(self, data, reqID):
+    def onCancelWithdrawCoin(self, data, req, reqID):
         """取消提币回调"""
         print data      
         
     #----------------------------------------------------------------------
-    def onGetWithdrawCoinResult(self, data, reqID):
+    def onGetWithdrawCoinResult(self, data, req, reqID):
         """查询提币结果回调"""
         print data           
         
     #----------------------------------------------------------------------
-    def onTransfer(self, data, reqID):
+    def onTransfer(self, data, req, reqID):
         """转账回调"""
         print data
         
     #----------------------------------------------------------------------
-    def onLoan(self, data, reqID):
+    def onLoan(self, data, req, reqID):
         """申请杠杆回调"""
         print data      
         
     #----------------------------------------------------------------------
-    def onRepayment(self, data, reqID):
+    def onRepayment(self, data, req, reqID):
         """归还杠杆回调"""
         print data    
     
     #----------------------------------------------------------------------
-    def onLoanAvailable(self, data, reqID):
+    def onLoanAvailable(self, data, req, reqID):
         """查询杠杆额度回调"""
         print data      
         
     #----------------------------------------------------------------------
-    def onGetLoans(self, data, reqID):
+    def onGetLoans(self, data, req, reqID):
         """查询杠杆列表"""
         print data        
         
@@ -558,7 +558,7 @@ class DataApi(object):
         self.taskThread = Thread(target=self.run)   # 处理任务的线程
     
     #----------------------------------------------------------------------
-    def init(self, interval):
+    def init(self, interval, debug):
         """初始化"""
         self.taskInterval = interval
         self.DEBUG = debug

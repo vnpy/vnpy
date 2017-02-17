@@ -74,6 +74,7 @@ EXCHANGE_ICE = 'ICE'           # ICE交易所
 
 EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
 EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
+EXCHANGE_HUOBI = 'HUOBI'       # 火币比特币交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
