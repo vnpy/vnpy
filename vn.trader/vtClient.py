@@ -170,7 +170,7 @@ def main():
 
     # 创建客户端
     reqAddress = 'tcp://localhost:2014'
-    subAddress = 'tcp://localhost:0602'
+    subAddress = 'tcp://localhost:6602'
     client = VtClient(reqAddress, subAddress, eventEngine)
 
     client.subscribeTopic('')

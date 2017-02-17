@@ -72,7 +72,7 @@ def printLog(content):
 def runServer():
     """运行服务器"""
     repAddress = 'tcp://*:2014'
-    pubAddress = 'tcp://*:0602'
+    pubAddress = 'tcp://*:6602'
     
     # 创建并启动服务器
     server = VtServer(repAddress, pubAddress)

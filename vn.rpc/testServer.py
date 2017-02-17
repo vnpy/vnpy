@@ -25,7 +25,7 @@ class TestServer(RpcServer):
 
 if __name__ == '__main__':
     repAddress = 'tcp://*:2014'
-    pubAddress = 'tcp://*:0602'
+    pubAddress = 'tcp://*:6602'
     
     ts = TestServer(repAddress, pubAddress)
     ts.start()
