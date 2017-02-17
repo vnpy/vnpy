@@ -10,6 +10,9 @@
 
 """
 
+import sys
+sys.path.append("..")
+sys.path.append("../..")
 
 from ctaBase import *
 from ctaTemplate import CtaTemplate

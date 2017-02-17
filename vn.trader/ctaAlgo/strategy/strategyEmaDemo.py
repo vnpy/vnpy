@@ -11,6 +11,9 @@
 也希望社区能做出一个解决了以上潜在风险的Demo出来。
 """
 
+import sys
+sys.path.append("..")
+sys.path.append("../..")
 
 from ctaBase import *
 from ctaTemplate import CtaTemplate
