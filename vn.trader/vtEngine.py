@@ -43,7 +43,11 @@ class MainEngine(object):
         self.ctaEngine = CtaEngine(self, self.eventEngine)
         self.drEngine = DrEngine(self, self.eventEngine)
         self.rmEngine = RmEngine(self, self.eventEngine)
-        
+
+        # 定时关闭进程的标记
+        self.time2Shutdown = False
+
+
     #----------------------------------------------------------------------
     def initGateway(self):
         """初始化接口对象"""
@@ -335,7 +339,12 @@ class MainEngine(object):
     def getAllGatewayNames(self):
         """查询引擎中所有可用接口的名称"""
         return self.gatewayDict.keys()
-        
+
+    # ----------------------------------------------------------------------
+    def setTime2Shutdown(self):
+        """到了自动关闭的时间，设为自动关闭"""
+        self.time2Shutdown = True
+
     
 
 ########################################################################

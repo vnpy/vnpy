@@ -5,6 +5,7 @@ import time
 from eventEngine import *
 
 from vtConstant import *
+import vtGlobal
 
 
 ########################################################################
@@ -140,6 +141,16 @@ class VtGateway(object):
     def close(self):
         """关闭"""
         pass
+
+    # ----------------------------------------------------------------------
+    def getConnectionFileNameFromArgs(self):
+        try:
+            cmdArgs = vtGlobal.cmdArgs
+            fn = "{gatewayName}_connect".format(gatewayName=self.gatewayName)
+            return getattr(cmdArgs, fn)
+        except AttributeError:
+            pass
+        return None
 
 
 ########################################################################

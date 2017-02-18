@@ -91,7 +91,14 @@ vn.py项目两岁啦，感谢社区一直以来的热情支持，没有你们就
 
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
+### 命令行带参数启动
 
+对于进阶用户，可以使用命令行带参数启动，进一步增强订制程度。
+
+```
+# 不启用UI界面
+python C:\vnpy\vn.trader\vtMain.py --no-ui
+```
 
 ##### 注意:
 

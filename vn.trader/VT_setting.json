@@ -6,5 +6,7 @@
 	"mongoPort": 27017,
 	"mongoLogging": true,
 
-	"darkStyle": true
+	"darkStyle": true,
+
+	"shutdown": ["15:31", "3:01"]
 }

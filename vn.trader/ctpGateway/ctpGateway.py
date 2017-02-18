@@ -94,10 +94,13 @@ class CtpGateway(VtGateway):
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
+        # 参数中给定了 CTP_connection的句柄
+        fileName = self.getConnectionFileNameFromArgs()
+        if not fileName:
+            fileName = self.gatewayName + '_connect.json'
+            path = os.path.abspath(os.path.dirname(__file__))
+            fileName = os.path.join(path, fileName)
+
         try:
             f = file(fileName)
         except IOError:
@@ -237,6 +240,7 @@ class CtpMdApi(MdApi):
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'行情服务器连接成功'
+        print(log.logContent)
         self.gateway.onLog(log)
         self.login()
     
@@ -467,8 +471,9 @@ class CtpTdApi(TdApi):
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接成功'
+        print(log.logContent)
         self.gateway.onLog(log)
-    
+
         self.login()
         
     #----------------------------------------------------------------------
@@ -685,7 +690,9 @@ class CtpTdApi(TdApi):
         """资金账户查询回报"""
         account = VtAccountData()
         account.gatewayName = self.gatewayName
-    
+
+        print("CTP is OK ! Balance : {Balance} ".format(**data))
+
         # 账户代码
         account.accountID = data['AccountID']
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
