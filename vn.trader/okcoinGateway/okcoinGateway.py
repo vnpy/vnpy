@@ -4,8 +4,7 @@
 vn.okcoin的gateway接入
 
 注意：
-1. 该接口尚处于测试阶段，用于实盘请谨慎
-2. 目前仅支持USD和CNY的现货交易，USD的期货合约交易暂不支持
+1. 前仅支持USD和CNY的现货交易，USD的期货合约交易暂不支持
 '''
 
 
@@ -15,6 +14,7 @@ from datetime import datetime
 from copy import copy
 from threading import Condition
 from Queue import Queue
+from threading import Thread
 
 import vnokcoin
 from vtGateway import *
@@ -242,7 +242,7 @@ class Api(vnokcoin.OkCoinApi):
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
         self.active = False             # 若为True则会在断线后自动重连
-        
+
         self.cbDict = {}
         self.tickDict = {}
         self.orderDict = {}
@@ -274,17 +274,29 @@ class Api(vnokcoin.OkCoinApi):
     #----------------------------------------------------------------------
     def onClose(self, ws):
         """接口断开"""
+        # 如果尚未连上，则忽略该次断开提示
+        if not self.gateway.connected:
+            return
+        
         self.gateway.connected = False
         self.writeLog(u'服务器连接断开')
         
         # 重新连接
         if self.active:
-            self.writeLog(u'等待5秒后重新连接')
-            sleep(5)
-            self.reconnect()
+            
+            def reconnect():
+                while not self.gateway.connected:            
+                    self.writeLog(u'等待10秒后重新连接')
+                    sleep(10)
+                    if not self.gateway.connected:
+                        self.reconnect()
+            
+            t = Thread(target=reconnect)
+            t.start()
         
     #----------------------------------------------------------------------
-    def onOpen(self, ws):        
+    def onOpen(self, ws):       
+        """连接成功"""
         self.gateway.connected = True
         self.writeLog(u'服务器连接成功')
         
