@@ -154,7 +154,14 @@ class MainEngine(object):
         except Exception, e:
             print e
 
-                #----------------------------------------------------------------------
+        try:
+            from lhangGateway.lhangGateway import LhangGateway
+            self.addGateway(LhangGateway, 'LHANG')
+            self.gatewayDict['LHANG'].setQryEnabled(True)
+        except Exception, e:
+            print e
+
+    #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
         """创建接口"""
         self.gatewayDict[gatewayName] = gateway(self.eventEngine, gatewayName)

@@ -6,13 +6,13 @@ from vnlhang import LhangApi
 
 
 if __name__ == '__main__':
-    apiKey = '259ad3a4-3e19-489e-935d-71b43ad65be8'
-    secretKey = '9A4D9094315681F62FB4C7FB6494FBD2'
+    apiKey = ''
+    secretKey = ''
     
     # 创建API对象并初始化
     api = LhangApi()
     api.DEBUG = True
-    api.init(apiKey, secretKey)
+    api.init(apiKey, secretKey, 2)
     
     # 查询行情
     api.getTicker('btc_cny')

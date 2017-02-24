@@ -185,7 +185,9 @@ class TradeApi(object):
     def exit(self):
         """退出"""
         self.active = False
-        self.reqThread.join()    
+        
+        if self.reqThread.isAlive():
+            self.reqThread.join()    
     
     #----------------------------------------------------------------------
     def getAccountInfo(self, market='cny'):
