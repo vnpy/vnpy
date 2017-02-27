@@ -901,7 +901,7 @@ if __name__ == '__main__':
     # 以下内容是一段回测脚本的演示，用户可以根据自己的需求修改
     # 建议使用ipython notebook或者spyder来做回测
     # 同样可以在命令模式下进行回测（一行一行输入运行）
-    from ctaDemo import *
+    from strategy.strategyEmaDemo import *
     
     # 创建回测引擎
     engine = BacktestingEngine()
@@ -921,7 +921,7 @@ if __name__ == '__main__':
     engine.setSize(300)         # 股指合约大小    
     
     # 在引擎中创建策略对象
-    engine.initStrategy(DoubleEmaDemo, {})
+    engine.initStrategy(EmaDemoStrategy, {})
     
     # 开始跑回测
     engine.runBacktesting()
