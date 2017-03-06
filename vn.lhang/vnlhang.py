@@ -6,6 +6,8 @@ import hashlib
 import requests
 from Queue import Queue, Empty
 from threading import Thread
+from time import sleep
+
 
 
 LHANG_API_ROOT ="https://api.lhang.com/v1/"
@@ -47,17 +49,19 @@ class LhangApi(object):
         """Constructor"""
         self.apiKey = ''
         self.secretKey = ''
-        
+
+        self.interval = 1           # 每次请求的间隔等待
         self.active = False         # API工作状态   
         self.reqID = 0              # 请求编号
         self.reqQueue = Queue()     # 请求队列
         self.reqThread = Thread(target=self.processQueue)   # 请求处理线程        
     
     #----------------------------------------------------------------------
-    def init(self, apiKey, secretKey):
+    def init(self, apiKey, secretKey, interval):
         """初始化"""
         self.apiKey = apiKey
         self.secretKey = secretKey
+        self.interval = interval
         
         self.active = True
         self.reqThread.start()
@@ -66,7 +70,9 @@ class LhangApi(object):
     def exit(self):
         """退出"""
         self.active = False
-        self.reqThread.join()
+        
+        if self.reqThread.isAlive():
+            self.reqThread.join()
     
     #----------------------------------------------------------------------
     def processRequest(self, req):
@@ -107,15 +113,18 @@ class LhangApi(object):
                 # 请求失败
                 if data is None:
                     error = u'请求失败'
-                    self.onError(error, reqID)
+                    self.onError(error, req, reqID)
                 elif 'error_code' in data:
                     error = u'请求出错，错误代码：%s' % data['error_code']
-                    self.onError(error, reqID)
+                    self.onError(error, req, reqID)
                 # 请求成功
                 else:
                     if self.DEBUG:
                         print callback.__name__                        
-                    callback(data, reqID)    
+                    callback(data, req, reqID)
+
+                # 流控等待
+                sleep(self.interval)
                 
             except Empty:
                 pass    
@@ -138,9 +147,9 @@ class LhangApi(object):
         return self.reqID
     
     #----------------------------------------------------------------------
-    def onError(self, error, reqID):
+    def onError(self, error, req, reqID):
         """错误推送"""
-        print error, reqID
+        print error, req, reqID
 
     ###############################################
     # 行情接口
@@ -192,22 +201,22 @@ class LhangApi(object):
         return self.sendRequest(function, params, callback)
 
     #----------------------------------------------------------------------
-    def onGetTicker(self, data, reqID):
+    def onGetTicker(self, data, req, reqID):
         """查询行情回调"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onGetDepth(self, data, reqID):
+    def onGetDepth(self, data, req, reqID):
         """查询深度回调"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onGetTrades(self, data, reqID):
+    def onGetTrades(self, data, req, reqID):
         """查询历史成交"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onGetKline(self, data, reqID):
+    def onGetKline(self, data, req, reqID):
         """查询Ｋ线回报"""
         print data, reqID
 
@@ -272,27 +281,27 @@ class LhangApi(object):
         return self.sendRequest(function, params, callback)
 
     # ----------------------------------------------------------------------
-    def onGetUserInfo(self, data, reqID):
+    def onGetUserInfo(self, data, req, reqID):
         """查询Ｋ线回报"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onCreateOrder(self, data, reqID):
+    def onCreateOrder(self, data, req, reqID):
         """委托回报"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onCancelOrder(self, data, reqID):
+    def onCancelOrder(self, data, req, reqID):
         """撤单回报"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onGetOrdersInfo(self, data, reqID):
+    def onGetOrdersInfo(self, data, req, reqID):
         """查询委托回报"""
         print data, reqID
 
     # ----------------------------------------------------------------------
-    def onGetOrdersInfoHistory(self, data, reqID):
+    def onGetOrdersInfoHistory(self, data, req, reqID):
         """撤单回报"""
         print data, reqID
 

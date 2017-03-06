@@ -2,12 +2,18 @@
     {
         "name": "double ema",
         "className": "EmaDemoStrategy",
-        "vtSymbol": "IF1702"
+        "vtSymbol": "IF1706"
     },
 
     {
         "name": "atr rsi",
         "className": "AtrRsiStrategy",
-        "vtSymbol": "IC1702"
+        "vtSymbol": "IC1706"
+    },
+
+    {
+        "name": "king keltner",
+        "className": "KkStrategy",
+        "vtSymbol": "IH1706"
     }
 ]
