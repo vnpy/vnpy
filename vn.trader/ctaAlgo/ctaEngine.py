@@ -357,8 +357,34 @@ class CtaEngine(object):
         log.logContent = content
         event = Event(type_=EVENT_CTA_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)   
-    
+        self.eventEngine.put(event)
+
+    def subscribeContract(self, name, strategy):
+        vtSymbols = strategy.vtSymbol.split(u",")
+        for vtSymbol in vtSymbols:
+            # 保存Tick映射关系
+            if vtSymbol in self.tickStrategyDict:
+                l = self.tickStrategyDict[vtSymbol]
+            else:
+                l = []
+                self.tickStrategyDict[vtSymbol] = l
+            l.append(strategy)
+
+            # 订阅合约
+            contract = self.mainEngine.getContract(vtSymbol)
+            if contract:
+                req = VtSubscribeReq()
+                req.symbol = contract.symbol
+                req.exchange = contract.exchange
+
+                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+                req.currency = strategy.currency
+                req.productClass = strategy.productClass
+
+                self.mainEngine.subscribe(req, contract.gatewayName)
+            else:
+                self.writeCtaLog(u'%s的交易合约%s无法找到' % (name, strategy.vtSymbol))
+
     #----------------------------------------------------------------------
     def loadStrategy(self, setting):
         """载入策略"""
@@ -382,29 +408,9 @@ class CtaEngine(object):
             # 创建策略实例
             strategy = strategyClass(self, setting)  
             self.strategyDict[name] = strategy
-            
-            # 保存Tick映射关系
-            if strategy.vtSymbol in self.tickStrategyDict:
-                l = self.tickStrategyDict[strategy.vtSymbol]
-            else:
-                l = []
-                self.tickStrategyDict[strategy.vtSymbol] = l
-            l.append(strategy)
-            
             # 订阅合约
-            contract = self.mainEngine.getContract(strategy.vtSymbol)
-            if contract:
-                req = VtSubscribeReq()
-                req.symbol = contract.symbol
-                req.exchange = contract.exchange
-                
-                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-                req.currency = strategy.currency
-                req.productClass = strategy.productClass
-                
-                self.mainEngine.subscribe(req, contract.gatewayName)
-            else:
-                self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))
+            self.subscribeContract(name, strategy)
+
 
     #----------------------------------------------------------------------
     def initStrategy(self, name):
