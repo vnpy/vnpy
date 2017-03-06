@@ -201,7 +201,7 @@ class KkStrategy(CtaTemplate):
                                   self.kkLength)[-1]
         self.kkMid = talib.MA(self.closeArray, self.kkLength)[-1]
         self.kkUp = self.kkMid + self.atrValue * self.kkDev
-        self.kkDown = self.kkMid - self.atrValue * self.kkdev
+        self.kkDown = self.kkMid - self.atrValue * self.kkDev
     
         # 判断是否要进行交易
     
