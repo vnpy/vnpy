@@ -69,8 +69,11 @@ class LhangApi(object):
     #----------------------------------------------------------------------
     def exit(self):
         """退出"""
+        if self.active:
+            self.reqThread.join()
         self.active = False
-        self.reqThread.join()
+
+
     
     #----------------------------------------------------------------------
     def processRequest(self, req):
