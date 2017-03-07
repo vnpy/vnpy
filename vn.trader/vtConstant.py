@@ -6,6 +6,18 @@ EMPTY_UNICODE = u''
 EMPTY_INT = 0
 EMPTY_FLOAT = 0.0
 
+# 风控常量
+RISK_OK = 0  # 风控正常
+RISK_ERROR_ORDER_SIZE = 1  # 单笔委托数量超限
+RISK_ERROR_TRADE_COUNT = 2  # 今日总成交合约数量超限
+RISK_ERROR_ORDER_FLOW_COUNT = 3  # 委托流数量超限
+RISK_ERROR_WORKING_ORDER = 4  # 当前活动委托数量超限
+RISK_ERROR_ORDER_SEND = 5  # 当日单品种报撤次数超限
+
+RISK_MESSAGE = {RISK_ERROR_ORDER_SIZE: u'单笔委托数量超限', RISK_ERROR_TRADE_COUNT: u'今日总成交合约数量超限',
+                RISK_ERROR_ORDER_FLOW_COUNT: u'委托流数量超限', RISK_ERROR_WORKING_ORDER: u'当前活动委托数量超限',
+                RISK_ERROR_ORDER_SEND: u'当日单品种报撤次数超限'}
+
 # 方向常量
 DIRECTION_NONE = u'无方向'
 DIRECTION_LONG = u'多'

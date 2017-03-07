@@ -68,6 +68,7 @@ class RmEngineManager(QtGui.QWidget):
         self.spinOrderSizeLimit = RmSpinBox(self.rmEngine.orderSizeLimit)
         self.spinTradeLimit = RmSpinBox(self.rmEngine.tradeLimit)
         self.spinWorkingOrderLimit = RmSpinBox(self.rmEngine.workingOrderLimit)
+        self.spinOrderCountLimit = RmSpinBox(self.rmEngine.orderCountLimit)
         
         buttonClearOrderFlowCount = QtGui.QPushButton(u'清空流控计数')
         buttonClearTradeCount = QtGui.QPushButton(u'清空总成交计数')
@@ -91,6 +92,8 @@ class RmEngineManager(QtGui.QWidget):
         grid.addWidget(RmLine(), 8, 0, 1, 2)
         grid.addWidget(Label(u'活动订单上限'), 9, 0)
         grid.addWidget(self.spinWorkingOrderLimit, 9, 1)
+        grid.addWidget(Label(u'单品种报撤次数上限'), 10, 0)
+        grid.addWidget(self.spinOrderCountLimit, 10, 1)
         
         hbox = QtGui.QHBoxLayout()
         hbox.addWidget(buttonClearOrderFlowCount)
@@ -109,7 +112,8 @@ class RmEngineManager(QtGui.QWidget):
         self.spinOrderSizeLimit.valueChanged.connect(self.rmEngine.setOrderSizeLimit)
         self.spinTradeLimit.valueChanged.connect(self.rmEngine.setTradeLimit)
         self.spinWorkingOrderLimit.valueChanged.connect(self.rmEngine.setWorkingOrderLimit)
-        
+        self.spinOrderCountLimit.valueChanged.connect(self.rmEngine.setOrderCountLimit)
+
         self.buttonSwitchEngineStatus.clicked.connect(self.switchEngineSatus)
         buttonClearOrderFlowCount.clicked.connect(self.rmEngine.clearOrderFlowCount)
         buttonClearTradeCount.clicked.connect(self.rmEngine.clearTradeCount)

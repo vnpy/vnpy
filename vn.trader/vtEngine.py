@@ -188,9 +188,10 @@ class MainEngine(object):
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
         # 如果风控检查失败则不发单
-        if not self.rmEngine.checkRisk(orderReq):
-            return ''    
-        
+        riskResult = self.rmEngine.checkRisk(orderReq)
+        if riskResult != RISK_OK:
+            return riskResult
+
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             return gateway.sendOrder(orderReq)
