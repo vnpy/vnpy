@@ -4,8 +4,7 @@
 vn.okcoin的gateway接入
 
 注意：
-1. 该接口尚处于测试阶段，用于实盘请谨慎
-2. 目前仅支持USD和CNY的现货交易，USD的期货合约交易暂不支持
+1. 前仅支持USD和CNY的现货交易，USD的期货合约交易暂不支持
 '''
 
 
@@ -15,6 +14,7 @@ from datetime import datetime
 from copy import copy
 from threading import Condition
 from Queue import Queue
+from threading import Thread
 
 import vnokcoin
 from vtGateway import *
@@ -108,7 +108,8 @@ class OkcoinGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '/okcoinGateway/' + fileName
+        path = os.path.abspath(os.path.dirname(__file__))
+        fileName = os.path.join(path, fileName)
         
         try:
             f = file(fileName)
@@ -141,7 +142,8 @@ class OkcoinGateway(VtGateway):
             host = vnokcoin.OKCOIN_CNY
         else:
             host = vnokcoin.OKCOIN_USD
-            
+        
+        self.api.active = True
         self.api.connect(host, apiKey, secretKey, trace)
         
         log = VtLogData()
@@ -181,6 +183,7 @@ class OkcoinGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
+        self.api.active = False
         self.api.close()
         
     #----------------------------------------------------------------------
@@ -238,12 +241,11 @@ class Api(vnokcoin.OkCoinApi):
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
+        self.active = False             # 若为True则会在断线后自动重连
+
         self.cbDict = {}
         self.tickDict = {}
         self.orderDict = {}
-        
-        self.lastOrderID = ''
-        self.orderCondition = Condition()
         
         self.localNo = 0                # 本地委托号
         self.localNoQueue = Queue()     # 未收到系统委托号的本地委托号队列
@@ -272,11 +274,29 @@ class Api(vnokcoin.OkCoinApi):
     #----------------------------------------------------------------------
     def onClose(self, ws):
         """接口断开"""
-        self.gateway.connected = True
+        # 如果尚未连上，则忽略该次断开提示
+        if not self.gateway.connected:
+            return
+        
+        self.gateway.connected = False
         self.writeLog(u'服务器连接断开')
         
+        # 重新连接
+        if self.active:
+            
+            def reconnect():
+                while not self.gateway.connected:            
+                    self.writeLog(u'等待10秒后重新连接')
+                    sleep(10)
+                    if not self.gateway.connected:
+                        self.reconnect()
+            
+            t = Thread(target=reconnect)
+            t.start()
+        
     #----------------------------------------------------------------------
-    def onOpen(self, ws):        
+    def onOpen(self, ws):       
+        """连接成功"""
         self.gateway.connected = True
         self.writeLog(u'服务器连接成功')
         
@@ -380,7 +400,7 @@ class Api(vnokcoin.OkCoinApi):
         tick.lowPrice = float(rawData['low'])
         tick.lastPrice = float(rawData['last'])
         tick.volume = float(rawData['vol'].replace(',', ''))
-        tick.date, tick.time = generateDateTime(rawData['timestamp'])
+        #tick.date, tick.time = generateDateTime(rawData['timestamp'])
         
         newtick = copy(tick)
         self.gateway.onTick(newtick)
@@ -413,11 +433,13 @@ class Api(vnokcoin.OkCoinApi):
         tick.bidPrice4, tick.bidVolume4 = rawData['bids'][3]
         tick.bidPrice5, tick.bidVolume5 = rawData['bids'][4]
         
-        tick.askPrice1, tick.askVolume1 = rawData['asks'][0]
-        tick.askPrice2, tick.askVolume2 = rawData['asks'][1]
-        tick.askPrice3, tick.askVolume3 = rawData['asks'][2]
-        tick.askPrice4, tick.askVolume4 = rawData['asks'][3]
-        tick.askPrice5, tick.askVolume5 = rawData['asks'][4]            
+        tick.askPrice1, tick.askVolume1 = rawData['asks'][-1]
+        tick.askPrice2, tick.askVolume2 = rawData['asks'][-2]
+        tick.askPrice3, tick.askVolume3 = rawData['asks'][-3]
+        tick.askPrice4, tick.askVolume4 = rawData['asks'][-4]
+        tick.askPrice5, tick.askVolume5 = rawData['asks'][-5]     
+        
+        tick.date, tick.time = generateDateTime(rawData['timestamp'])
         
         newtick = copy(tick)
         self.gateway.onTick(newtick)

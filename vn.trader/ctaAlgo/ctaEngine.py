@@ -23,7 +23,7 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 from ctaBase import *
-from ctaSetting import STRATEGY_CLASS
+from strategy import STRATEGY_CLASS
 from eventEngine import *
 from vtConstant import *
 from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
@@ -326,15 +326,13 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        cursor = self.mainEngine.dbQuery(dbName, collectionName, d)
+        barData = self.mainEngine.dbQuery(dbName, collectionName, d)
         
         l = []
-        if cursor:
-            for d in cursor:
-                bar = CtaBarData()
-                bar.__dict__ = d
-                l.append(bar)
-            
+        for d in barData:
+            bar = CtaBarData()
+            bar.__dict__ = d
+            l.append(bar)
         return l
     
     #----------------------------------------------------------------------
@@ -343,15 +341,13 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        cursor = self.mainEngine.dbQuery(dbName, collectionName, d)
+        tickData = self.mainEngine.dbQuery(dbName, collectionName, d)
         
         l = []
-        if cursor:
-            for d in cursor:
-                tick = CtaTickData()
-                tick.__dict__ = d
-                l.append(tick)
-        
+        for d in tickData:
+            tick = CtaTickData()
+            tick.__dict__ = d
+            l.append(tick)
         return l    
     
     #----------------------------------------------------------------------
@@ -481,6 +477,8 @@ class CtaEngine(object):
             
             for setting in l:
                 self.loadStrategy(setting)
+                
+        self.loadPosition()
     
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):
@@ -535,6 +533,34 @@ class CtaEngine(object):
             content = '\n'.join([u'策略%s触发异常已停止' %strategy.name,
                                 traceback.format_exc()])
             self.writeCtaLog(content)
+            
+    #----------------------------------------------------------------------
+    def savePosition(self):
+        """保存所有策略的持仓情况到数据库"""
+        for strategy in self.strategyDict.values():
+            flt = {'name': strategy.name,
+                   'vtSymbol': strategy.vtSymbol}
+            
+            d = {'name': strategy.name,
+                 'vtSymbol': strategy.vtSymbol,
+                 'pos': strategy.pos}
+            
+            self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
+                                     d, flt, True)
+            
+            content = '策略%s持仓保存成功' %strategy.name
+            self.writeCtaLog(content)
+    
+    #----------------------------------------------------------------------
+    def loadPosition(self):
+        """从数据库载入策略的持仓情况"""
+        for strategy in self.strategyDict.values():
+            flt = {'name': strategy.name,
+                   'vtSymbol': strategy.vtSymbol}
+            posData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+            
+            for d in posData:
+                strategy.pos = d['pos']
 
 
 ########################################################################

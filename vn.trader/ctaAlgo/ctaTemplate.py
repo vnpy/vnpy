@@ -171,3 +171,128 @@ class CtaTemplate(object):
         """查询当前运行的环境"""
         return self.ctaEngine.engineType
     
+
+
+########################################################################
+class TargetPosTemplate(CtaTemplate):
+    """
+    允许直接通过修改目标持仓来实现交易的策略模板
+    
+    开发策略时，无需再调用buy/sell/cover/short这些具体的委托指令，
+    只需在策略逻辑运行完成后调用setTargetPos设置目标持仓，底层算法
+    会自动完成相关交易，适合不擅长管理交易挂撤单细节的用户。    
+    
+    使用该模板开发策略时，请在以下回调方法中先调用母类的方法：
+    onTick
+    onBar
+    onOrder
+    
+    假设策略名为TestStrategy，请在onTick回调中加上：
+    super(TestStrategy, self).onTick(tick)
+    
+    其他方法类同。
+    """
+    
+    className = 'TargetPosTemplate'
+    author = u'量衍投资'
+    
+    # 目标持仓模板的基本变量
+    tickAdd = 1             # 委托时相对基准价格的超价
+    lastTick = None         # 最新tick数据
+    lastBar = None          # 最新bar数据
+    targetPos = EMPTY_INT   # 目标持仓
+    orderList = []          # 委托号列表
+
+    # 变量列表，保存了变量的名称
+    varList = ['inited',
+               'trading',
+               'pos',
+               'targetPos']
+
+    #----------------------------------------------------------------------
+    def __init__(self, ctaEngine, setting):
+        """Constructor"""
+        super(TargetPosTemplate, self).__init__(ctaEngine, setting)
+        
+    #----------------------------------------------------------------------
+    def onTick(self, tick):
+        """收到行情推送"""
+        self.lastTick = tick
+        
+        # 实盘模式下，需要根据tick的实时推送执行自动开平仓操作
+        self.trade()
+        
+    #----------------------------------------------------------------------
+    def onBar(self, bar):
+        """收到K线推送"""
+        self.lastBar = bar
+    
+    #----------------------------------------------------------------------
+    def onOrder(self, order):
+        """收到委托推送"""
+        if order.status == STATUS_ALLTRADED or order.stauts == STATUS_CANCELLED:
+            self.orderList.remove(order.vtOrderID)
+    
+    #----------------------------------------------------------------------
+    def setTargetPos(self, targetPos):
+        """设置目标仓位"""
+        self.targetPos = targetPos
+        
+        self.trade()
+        
+    #----------------------------------------------------------------------
+    def trade(self):
+        """执行交易"""
+        # 先撤销之前的委托
+        for vtOrderID in self.orderList:
+            self.cancelOrder(vtOrderID)
+        
+        # 如果目标仓位和实际仓位一致，则不进行任何操作
+        posChange = self.targetPos - self.pos
+        if not posChange:
+            return
+        
+        # 确定委托基准价格，有tick数据时优先使用，否则使用bar
+        longPrice = 0
+        shortPrice = 0
+        
+        if self.lastTick:
+            if posChange > 0:
+                longPrice = self.lastTick.askPrice1 + self.tickAdd
+            else:
+                shortPrice = self.lastTick.bidPrice1 - self.tickAdd
+        else:
+            if posChange > 0:
+                longPrice = self.lastBar.close + self.tickAdd
+            else:
+                shortPrice = self.lastBar.close - self.tickAdd
+        
+        # 回测模式下，采用合并平仓和反向开仓委托的方式
+        if self.getEngineType() == ENGINETYPE_BACKTESTING:
+            if posChange > 0:
+                vtOrderID = self.buy(longPrice, abs(posChange))
+            else:
+                vtOrderID = self.short(shortPrice, abs(posChange))
+            self.orderList.append(vtOrderID)
+        
+        # 实盘模式下，首先确保之前的委托都已经结束（全成、撤销）
+        # 然后先发平仓委托，等待成交后，再发送新的开仓委托
+        else:
+            # 检查之前委托都已结束
+            if self.orderList:
+                return
+            
+            # 买入
+            if posChange > 0:
+                if self.pos < 0:
+                    vtOrderID = self.cover(longPrice, abs(self.pos))
+                else:
+                    vtOrderID = self.buy(longPrice, abs(posChange))
+            # 卖出
+            else:
+                if self.pos > 0:
+                    vtOrderID = self.sell(shortPrice, abs(self.pos))
+                else:
+                    vtOrderID = self.short(shortPrice, abs(posChange))
+            self.orderList.append(vtOrderID)
+    

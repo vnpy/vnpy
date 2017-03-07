@@ -31,6 +31,7 @@ class AtrRsiStrategy(CtaTemplate):
     rsiEntry = 16           # RSI的开仓信号
     trailingPercent = 0.8   # 百分比移动止损
     initDays = 10           # 初始化数据所用的天数
+    fixedSize = 1           # 每次交易的数量
 
     # 策略变量
     bar = None                  # K线对象
@@ -198,10 +199,10 @@ class AtrRsiStrategy(CtaTemplate):
                 # 使用RSI指标的趋势行情时，会在超买超卖区钝化特征，作为开仓信号
                 if self.rsiValue > self.rsiBuy:
                     # 这里为了保证成交，选择超价5个整指数点下单
-                    self.buy(bar.close+5, 1)
+                    self.buy(bar.close+5, self.fixedSize)
 
                 elif self.rsiValue < self.rsiSell:
-                    self.short(bar.close-5, 1)
+                    self.short(bar.close-5, self.fixedSize)
 
         # 持有多头仓位
         elif self.pos > 0:
@@ -211,7 +212,7 @@ class AtrRsiStrategy(CtaTemplate):
             # 计算多头移动止损
             longStop = self.intraTradeHigh * (1-self.trailingPercent/100)
             # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
-            orderID = self.sell(longStop, 1, stop=True)
+            orderID = self.sell(longStop, abs(self.pos), stop=True)
             self.orderList.append(orderID)
 
         # 持有空头仓位
@@ -220,7 +221,7 @@ class AtrRsiStrategy(CtaTemplate):
             self.intraTradeHigh = bar.high
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
-            orderID = self.cover(shortStop, 1, stop=True)
+            orderID = self.cover(shortStop, abs(self.pos), stop=True)
             self.orderList.append(orderID)
 
         # 发出状态更新事件
@@ -233,8 +234,8 @@ class AtrRsiStrategy(CtaTemplate):
 
     #----------------------------------------------------------------------
     def onTrade(self, trade):
-        pass
-
+        # 发出状态更新事件
+        self.putEvent()
 
 if __name__ == '__main__':
     # 提供直接双击回测的功能
@@ -259,31 +260,32 @@ if __name__ == '__main__':
     # 设置使用的历史数据库
     engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
     
-    ## 在引擎中创建策略对象
-    #d = {'atrLength': 11}
-    #engine.initStrategy(AtrRsiStrategy, d)
+    # 在引擎中创建策略对象
+    d = {'atrLength': 11}
+    engine.initStrategy(AtrRsiStrategy, d)
     
-    ## 开始跑回测
-    ##engine.runBacktesting()
+    # 开始跑回测
+    engine.runBacktesting()
     
-    ## 显示回测结果
-    ##engine.showBacktestingResult()
+    # 显示回测结果
+    engine.showBacktestingResult()
     
-    # 跑优化
-    setting = OptimizationSetting()                 # 新建一个优化任务设置对象
-    setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
-    setting.addParameter('atrLength', 11, 20, 1)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
-    setting.addParameter('atrMa', 20, 30, 5)        # 增加第二个优化参数atrMa，起始20，结束30，步进1
+    ## 跑优化
+    #setting = OptimizationSetting()                 # 新建一个优化任务设置对象
+    #setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
+    #setting.addParameter('atrLength', 12, 20, 2)    # 增加第一个优化参数atrLength，起始11，结束12，步进1
+    #setting.addParameter('atrMa', 20, 30, 5)        # 增加第二个优化参数atrMa，起始20，结束30，步进1
+    #setting.addParameter('rsiLength', 5)            # 增加一个固定数值的参数
     
-    # 性能测试环境：I7-3770，主频3.4G, 8核心，内存16G，Windows 7 专业版
-    # 测试时还跑着一堆其他的程序，性能仅供参考
-    import time    
-    start = time.time()
+    ## 性能测试环境：I7-3770，主频3.4G, 8核心，内存16G，Windows 7 专业版
+    ## 测试时还跑着一堆其他的程序，性能仅供参考
+    #import time    
+    #start = time.time()
     
-    # 运行单进程优化函数，自动输出结果，耗时：359秒
+    ## 运行单进程优化函数，自动输出结果，耗时：359秒
     #engine.runOptimization(AtrRsiStrategy, setting)            
     
-    # 多进程优化，耗时：89秒
-    engine.runParallelOptimization(AtrRsiStrategy, setting)     
+    ## 多进程优化，耗时：89秒
+    ##engine.runParallelOptimization(AtrRsiStrategy, setting)     
     
-    print u'耗时：%s' %(time.time()-start)
+    #print u'耗时：%s' %(time.time()-start)
