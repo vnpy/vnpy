@@ -219,8 +219,9 @@ class TargetPosTemplate(CtaTemplate):
         """收到行情推送"""
         self.lastTick = tick
         
-        # 实盘模式下，需要根据tick的实时推送执行自动开平仓操作
-        self.trade()
+        # 实盘模式下，启动交易后，需要根据tick的实时推送执行自动开平仓操作
+        if self.trading:
+            self.trade()
         
     #----------------------------------------------------------------------
     def onBar(self, bar):
@@ -246,6 +247,7 @@ class TargetPosTemplate(CtaTemplate):
         # 先撤销之前的委托
         for vtOrderID in self.orderList:
             self.cancelOrder(vtOrderID)
+        self.orderList = []
         
         # 如果目标仓位和实际仓位一致，则不进行任何操作
         posChange = self.targetPos - self.pos
