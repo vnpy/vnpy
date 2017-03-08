@@ -6,18 +6,15 @@
 使用DR_setting.json来配置需要收集的合约，以及主力合约代码。
 '''
 
+import copy
 import json
 import os
-import copy
-from collections import OrderedDict
-from datetime import datetime, timedelta
-from Queue import Queue
-from threading import Thread
+from datetime import datetime
 
-from eventEngine import *
-from vtGateway import VtSubscribeReq, VtLogData
 from drBase import *
+from eventEngine import *
 from vtFunction import todayDate
+from vtGateway import VtSubscribeReq, VtLogData
 
 
 ########################################################################
@@ -53,6 +50,17 @@ class DrEngine(object):
         
         # 载入设置，订阅行情
         self.loadSetting()
+
+    def saveSetting(self, setting):
+	    """保存设置"""
+	    setting['working'] = self.working
+	    with open(self.settingFileName, 'w') as f:
+		    try:
+			    str = json.dumps(setting, indent=2)
+			    f.write(str)
+		    except:
+			    pass
+	    return True
         
     #----------------------------------------------------------------------
     def loadSetting(self):
@@ -61,8 +69,8 @@ class DrEngine(object):
             drSetting = json.load(f)
             
             # 如果working设为False则不启动行情记录功能
-            working = drSetting['working']
-            if not working:
+            self.working = drSetting['working']
+            if not self.working:
                 return
             
             if 'tick' in drSetting:
