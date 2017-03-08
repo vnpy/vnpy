@@ -1422,6 +1422,8 @@ class PositionBuffer(object):
         self.ydPosition = EMPTY_INT
         self.todayPositionCost = EMPTY_FLOAT
         self.ydPositionCost = EMPTY_FLOAT
+        self.todayProfit = EMPTY_INT
+        self.ydProfit = EMPTY_INT
         
         # 通过提前创建持仓数据对象并重复使用的方式来降低开销
         pos = VtPositionData()
@@ -1440,13 +1442,16 @@ class PositionBuffer(object):
         if data['YdPosition']:
             self.ydPosition = data['Position']
             self.ydPositionCost = data['PositionCost']   
+            self.ydProfit = data['PositionProfit']
         else:
             self.todayPosition = data['Position']
             self.todayPositionCost = data['PositionCost']        
+            self.todayProfit = data['PositionProfit']
             
         # 持仓的昨仓和今仓相加后为总持仓
         self.pos.position = self.todayPosition + self.ydPosition
         self.pos.ydPosition = self.ydPosition
+        self.pos.positionProfit = self.todayProfit + self.ydProfit
         
         # 如果手头还有持仓，则通过加权平均方式计算持仓均价
         if self.todayPosition or self.ydPosition:
@@ -1464,6 +1469,7 @@ class PositionBuffer(object):
         # 其他交易所并不区分今昨，因此只关心总仓位，昨仓设为0
         self.pos.position = data['Position']
         self.pos.ydPosition = 0
+        self.pos.positionProfit = data['PositionProfit']
         
         if data['Position']:
             self.pos.price = data['PositionCost'] / (data['Position'] * size)

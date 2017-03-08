@@ -292,6 +292,7 @@ class VtPositionData(VtBaseData):
         self.price = EMPTY_FLOAT                # 持仓均价
         self.vtPositionName = EMPTY_STRING      # 持仓在vt系统中的唯一代码，通常是vtSymbol.方向
         self.ydPosition = EMPTY_INT             # 昨持仓
+        self.positionProfit = EMPTY_FLOAT       # 持仓盈亏
 
 
 ########################################################################
