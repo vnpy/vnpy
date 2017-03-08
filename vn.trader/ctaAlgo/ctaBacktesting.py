@@ -434,7 +434,8 @@ class BacktestingEngine(object):
                 self.limitOrderDict[orderID] = order
                 
                 # 从字典中删除该限价单
-                del self.workingStopOrderDict[stopOrderID]        
+                if stopOrderID in self.workingStopOrderDict:
+                    del self.workingStopOrderDict[stopOrderID]        
 
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
