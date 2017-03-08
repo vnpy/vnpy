@@ -47,9 +47,9 @@ class RmEngine(object):
         self.tradeCount = EMPTY_INT         # 当日成交合约数量统计
         self.tradeLimit = EMPTY_INT         # 当日成交合约数量限制
 
-        # 单品种报撤
-        self.orderCountLimit = 450
-        self.orderCount = {}
+        # 单品种撤单统计
+        self.orderCancelLimit = EMPTY_INT   # 撤单总次数限制
+        self.orderCancelDict = {}           # 单一合约对应撤单次数的字典
 
         # 活动合约相关
         self.workingOrderLimit = EMPTY_INT  # 活动合约最大限制
@@ -75,7 +75,7 @@ class RmEngine(object):
 
             self.workingOrderLimit = d['workingOrderLimit']
 
-            self.orderCountLimit = d['orderCountLimit']
+            self.orderCancelLimit = d['orderCancelLimit']
 
     #----------------------------------------------------------------------
     def saveSetting(self):
@@ -95,7 +95,7 @@ class RmEngine(object):
 
             d['workingOrderLimit'] = self.workingOrderLimit
 
-            d['orderCountLimit'] = self.orderCountLimit
+            d['orderCancelLimit'] = self.orderCancelLimit
 
             # 写入json
             jsonD = json.dumps(d, indent=4)
@@ -107,16 +107,19 @@ class RmEngine(object):
         self.eventEngine.register(EVENT_TRADE, self.updateTrade)
         self.eventEngine.register(EVENT_TIMER, self.updateTimer)
         self.eventEngine.register(EVENT_ORDER, self.updateOrder)
-
+        
+    #----------------------------------------------------------------------
     def updateOrder(self, event):
         """更新成交数据"""
+        # 只需要统计撤单成功的委托
         order = event.dict_['data']
-        if not self.orderCount.has_key(order.symbol):
-            self.orderCount[order.symbol] = 0
-        if order.status in [STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_ALLTRADED, STATUS_UNKNOWN]:
-            self.orderCount[order.symbol] += 1
-        elif order.status == STATUS_CANCELLED:
-            self.orderCount[order.symbol] += 2
+        if order.status != STATUS_CANCELLED:
+            return
+        
+        if order.symbol not in self.orderCancelDict:
+            self.orderCancelDict[order.symbol] = 1
+        else:
+            self.orderCancelDict[order.symbol] += 1
 
     #----------------------------------------------------------------------
     def updateTrade(self, event):
@@ -156,42 +159,43 @@ class RmEngine(object):
         """检查风险"""
         # 如果没有启动风控检查，则直接返回成功
         if not self.active:
-            return RISK_OK
+            return True
 
         # 检查委托数量
         if orderReq.volume > self.orderSizeLimit:
             self.writeRiskLog(u'单笔委托数量%s，超过限制%s'
                               %(orderReq.volume, self.orderSizeLimit))
-            return RISK_ERROR_ORDER_SIZE
+            return False
 
         # 检查成交合约量
         if self.tradeCount >= self.tradeLimit:
             self.writeRiskLog(u'今日总成交合约数量%s，超过限制%s'
                               %(self.tradeCount, self.tradeLimit))
-            return RISK_ERROR_TRADE_COUNT
+            return False
 
         # 检查流控
         if self.orderFlowCount >= self.orderFlowLimit:
             self.writeRiskLog(u'委托流数量%s，超过限制每%s秒%s'
                               %(self.orderFlowCount, self.orderFlowClear, self.orderFlowLimit))
-            return RISK_ERROR_ORDER_FLOW_COUNT
+            return False
 
         # 检查总活动合约
         workingOrderCount = len(self.mainEngine.getAllWorkingOrders())
         if workingOrderCount >= self.workingOrderLimit:
             self.writeRiskLog(u'当前活动委托数量%s，超过限制%s'
                               %(workingOrderCount, self.workingOrderLimit))
-            return RISK_ERROR_WORKING_ORDER
+            return False
 
-        if self.orderCount.has_key(orderReq.symbol) and self.orderCount[orderReq.symbol] > self.orderCountLimit:
-            self.writeRiskLog(u'%s当日报撤%s，超过限制%s'
-                              % (orderReq.symbol, self.orderCount[orderReq.symbol], self.orderCountLimit))
-            return RISK_ERROR_ORDER_SEND
-
+        # 检查撤单次数
+        if orderReq.symbol in self.orderCancelDict and self.orderCancelDict[orderReq.symbol] >= self.orderCancelLimit:
+            self.writeRiskLog(u'当日%s撤单次数%s，超过限制%s'
+                              %(orderReq.symbol, self.orderCancelDict[orderReq.symbol], self.orderCancelLimit))
+            return False
+        
         # 对于通过风控的委托，增加流控计数
         self.orderFlowCount += 1
 
-        return RISK_OK
+        return True
 
     #----------------------------------------------------------------------
     def clearOrderFlowCount(self):
@@ -230,10 +234,10 @@ class RmEngine(object):
         """设置活动合约限制"""
         self.workingOrderLimit = n
 
-        #----------------------------------------------------------------------
-    def setOrderCountLimit(self, n):
-        """设置单品种报撤次数上限"""
-        self.orderCountLimit = n
+    #----------------------------------------------------------------------
+    def setOrderCancelLimit(self, n):
+        """设置单合约撤单次数上限"""
+        self.orderCancelLimit = n
 
     #----------------------------------------------------------------------
     def switchEngineStatus(self):
