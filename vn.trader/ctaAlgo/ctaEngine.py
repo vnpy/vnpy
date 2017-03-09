@@ -479,7 +479,18 @@ class CtaEngine(object):
                 self.loadStrategy(setting)
                 
         self.loadPosition()
-    
+
+    # ----------------------------------------------------------------------
+    def reloadSetting(self):
+        with open(self.settingFileName) as f:
+            l = json.load(f)
+
+            for setting in l:
+                strategy = self.strategyDict[setting.get('name')]
+                strategy.loadSetting(setting)
+                self.putStrategyEvent(setting.get('name'))
+
+
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):
         """获取策略当前的变量字典"""

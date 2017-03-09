@@ -46,7 +46,9 @@ class CtaTemplate(object):
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         self.ctaEngine = ctaEngine
+        self.loadSetting(setting)
 
+    def loadSetting(self, setting):
         # 设置策略的参数
         if setting:
             d = self.__dict__

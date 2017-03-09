@@ -175,12 +175,14 @@ class CtaEngineManager(QtGui.QWidget):
         startAllButton = QtGui.QPushButton(u'全部启动')
         stopAllButton = QtGui.QPushButton(u'全部停止')
         savePositionButton = QtGui.QPushButton(u'保存持仓')
+        reloadButton = QtGui.QPushButton(u'重载策略参数')
         
         loadButton.clicked.connect(self.load)
         initAllButton.clicked.connect(self.initAll)
         startAllButton.clicked.connect(self.startAll)
         stopAllButton.clicked.connect(self.stopAll)
         savePositionButton.clicked.connect(self.ctaEngine.savePosition)
+        reloadButton.clicked.connect(self.reload)
         
         # 滚动区域，放置所有的CtaStrategyManager
         self.scrollArea = QtGui.QScrollArea()
@@ -198,6 +200,7 @@ class CtaEngineManager(QtGui.QWidget):
         hbox2.addWidget(startAllButton)
         hbox2.addWidget(stopAllButton)
         hbox2.addWidget(savePositionButton)
+        hbox2.addWidget(reloadButton)
         hbox2.addStretch()
         
         vbox = QtGui.QVBoxLayout()
@@ -247,7 +250,12 @@ class CtaEngineManager(QtGui.QWidget):
             self.initStrategyManager()
             self.strategyLoaded = True
             self.ctaEngine.writeCtaLog(u'策略加载成功')
-        
+
+    def reload(self):
+        """加载策略"""
+        self.ctaEngine.reloadSetting()
+
+
     #----------------------------------------------------------------------
     def updateCtaLog(self, event):
         """更新CTA相关日志"""
