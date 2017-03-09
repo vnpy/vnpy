@@ -275,11 +275,16 @@ class CtaEngine(object):
         
         if trade.vtOrderID in self.orderStrategyDict:
             strategy = self.orderStrategyDict[trade.vtOrderID]
-            
+
+            if trade.vtSymbol not in strategy.spreadPos:
+                strategy.spreadPos[trade.vtSymbol] = 0
+
             # 计算策略持仓
             if trade.direction == DIRECTION_LONG:
+                strategy.spreadPos[trade.vtSymbol] += trade.volume
                 strategy.pos += trade.volume
             else:
+                strategy.spreadPos[trade.vtSymbol] -= trade.volume
                 strategy.pos -= trade.volume
             
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
@@ -549,7 +554,8 @@ class CtaEngine(object):
             
             d = {'name': strategy.name,
                  'vtSymbol': strategy.vtSymbol,
-                 'pos': strategy.pos}
+                 'pos': strategy.pos,
+                 'spreadPos': strategy.spreadPos}
             
             self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
                                      d, flt, True)
@@ -567,6 +573,7 @@ class CtaEngine(object):
             
             for d in posData:
                 strategy.pos = d['pos']
+                strategy.spreadPos = d['spreadPos']
 
 
 ########################################################################

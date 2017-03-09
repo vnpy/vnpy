@@ -25,12 +25,14 @@ class CtaTemplate(object):
     vtSymbol = EMPTY_STRING        # 交易的合约vt系统代码    
     productClass = EMPTY_STRING    # 产品类型（只有IB接口需要）
     currency = EMPTY_STRING        # 货币（只有IB接口需要）
+    isSpreading = False            # 是否差价策略
     
     # 策略的基本变量，由引擎管理
     inited = False                 # 是否进行了初始化
     trading = False                # 是否启动交易，由引擎管理
     pos = 0                        # 持仓情况
-    
+    spreadPos = {}                 # 差价合约持仓情况
+
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
