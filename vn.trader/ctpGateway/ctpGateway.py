@@ -338,6 +338,11 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
+        # 忽略成交量为0的无效tick数据
+        if not data['Volume']:
+            return
+        
+        # 创建对象
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
         
