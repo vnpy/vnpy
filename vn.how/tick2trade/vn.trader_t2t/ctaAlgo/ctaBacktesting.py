@@ -120,7 +120,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self):
         """载入历史数据"""
-        host, port = loadMongoSetting()
+        host, port, logging = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
         collection = self.dbClient[self.dbName][self.symbol]          

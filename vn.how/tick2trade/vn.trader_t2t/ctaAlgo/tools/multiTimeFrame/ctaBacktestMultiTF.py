@@ -72,7 +72,7 @@ class BacktestEngineMultiTF(BacktestingEngine):
         """载入历史数据"""
         """load historical data"""
 
-        host, port = loadMongoSetting()
+        host, port, logging = loadMongoSetting()
 
         self.dbClient = pymongo.MongoClient(host, port)
         collection = self.dbClient[self.dbName][self.symbol]

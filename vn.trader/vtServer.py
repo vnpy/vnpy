@@ -7,6 +7,7 @@ from datetime import datetime
 from time import sleep
 from threading import Thread
 
+import vtPath
 import eventType
 from vnrpc import RpcServer
 from vtEngine import MainEngine
@@ -30,7 +31,7 @@ class VtServer(RpcServer):
         self.register(self.engine.subscribe)
         self.register(self.engine.sendOrder)
         self.register(self.engine.cancelOrder)
-        self.register(self.engine.qryAccont)
+        self.register(self.engine.qryAccount)
         self.register(self.engine.qryPosition)
         self.register(self.engine.exit)
         self.register(self.engine.writeLog)

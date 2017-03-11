@@ -120,7 +120,7 @@ class ClientEngine(object):
     #----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的数据列表"""
-        self.client.dbQuery(dbName, collectionName, d)
+        return self.client.dbQuery(dbName, collectionName, d)
         
     #----------------------------------------------------------------------
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):

@@ -4,6 +4,7 @@
 本模块中主要包含：
 1. 从通联数据下载历史行情的引擎
 2. 用来把MultiCharts导出的历史数据载入到MongoDB中用的函数
+3. 增加从通达信导出的历史数据载入到MongoDB中的函数
 """
 
 from datetime import datetime, timedelta
@@ -33,7 +34,7 @@ class HistoryDataEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        host, port = loadMongoSetting()
+        host, port, logging = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
         self.datayesClient = DatayesClient()
@@ -314,6 +315,55 @@ class HistoryDataEngine(object):
 
 
 #----------------------------------------------------------------------
+def downloadEquityDailyBarts(self, symbol):
+        """
+        下载股票的日行情，symbol是股票代码
+        """
+        print u'开始下载%s日行情' %symbol
+        
+        # 查询数据库中已有数据的最后日期
+        cl = self.dbClient[DAILY_DB_NAME][symbol]
+        cx = cl.find(sort=[('datetime', pymongo.DESCENDING)])
+        if cx.count():
+            last = cx[0]
+        else:
+            last = ''
+        # 开始下载数据
+        import tushare as ts
+        
+        if last:
+            start = last['date'][:4]+'-'+last['date'][4:6]+'-'+last['date'][6:]
+            
+        data = ts.get_k_data(symbol,start)
+        
+        if not data.empty:
+            # 创建datetime索引
+            self.dbClient[DAILY_DB_NAME][symbol].ensure_index([('datetime', pymongo.ASCENDING)], 
+                                                                unique=True)                
+            
+            for index, d in data.iterrows():
+                bar = CtaBarData()
+                bar.vtSymbol = symbol
+                bar.symbol = symbol
+                try:
+                    bar.open = d.get('open')
+                    bar.high = d.get('high')
+                    bar.low = d.get('low')
+                    bar.close = d.get('close')
+                    bar.date = d.get('date').replace('-', '')
+                    bar.time = ''
+                    bar.datetime = datetime.strptime(bar.date, '%Y%m%d')
+                    bar.volume = d.get('volume')
+                except KeyError:
+                    print d
+                
+                flt = {'datetime': bar.datetime}
+                self.dbClient[DAILY_DB_NAME][symbol].update_one(flt, {'$set':bar.__dict__}, upsert=True)            
+            
+            print u'%s下载完成' %symbol
+        else:
+            print u'找不到合约%s' %symbol
+#----------------------------------------------------------------------
 def loadMcCsv(fileName, dbName, symbol):
     """将Multicharts导出的csv格式的历史数据插入到Mongo数据库中"""
     import csv
@@ -322,7 +372,7 @@ def loadMcCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
-    host, port = loadMongoSetting()
+    host, port, logging = loadMongoSetting()
     
     client = pymongo.MongoClient(host, port)    
     collection = client[dbName][symbol]
@@ -349,13 +399,52 @@ def loadMcCsv(fileName, dbName, symbol):
     
     print u'插入完毕，耗时：%s' % (time()-start)
 
+#----------------------------------------------------------------------
+def loadTdxCsv(fileName, dbName, symbol):
+    """将通达信导出的csv格式的历史分钟数据插入到Mongo数据库中"""
+    import csv
+    
+    start = time()
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
+    
+    # 锁定集合，并创建索引
+    host, port, logging = loadMongoSetting()
+    
+    client = pymongo.MongoClient(host, port)    
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
+    
+    # 读取数据和插入到数据库
+    reader = csv.reader(file(fileName, 'r'))
+    for d in reader:
+        bar = CtaBarData()
+        bar.vtSymbol = symbol
+        bar.symbol = symbol
+        bar.open = float(d[2])
+        bar.high = float(d[3])
+        bar.low = float(d[4])
+        bar.close = float(d[5])
+        bar.date = datetime.strptime(d[0], '%Y/%m/%d').strftime('%Y%m%d')
+        bar.time = d[1][:2]+':'+d[1][2:4]+':00'
+        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
+        bar.volume = d[6]
+        bar.openInterest = d[7]
 
+        flt = {'datetime': bar.datetime}
+        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
+        print bar.date, bar.time
+    
+    print u'插入完毕，耗时：%s' % (time()-start)
+    
 if __name__ == '__main__':
     ## 简单的测试脚本可以写在这里
     #from time import sleep
     #e = HistoryDataEngine()
     #sleep(1)
     #e.downloadEquityDailyBar('000001')
+    #e.downloadEquityDailyBarts('000001')
     
     # 这里将项目中包含的股指日内分钟线csv导入MongoDB，作者电脑耗时大约3分钟
     loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
+    #导入通达信历史分钟数据
+    #loadTdxCsv('CL8.csv', MINUTE_DB_NAME, 'c0000')

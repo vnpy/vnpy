@@ -291,9 +291,8 @@ class VtPositionData(VtBaseData):
         self.frozen = EMPTY_INT                 # 冻结数量
         self.price = EMPTY_FLOAT                # 持仓均价
         self.vtPositionName = EMPTY_STRING      # 持仓在vt系统中的唯一代码，通常是vtSymbol.方向
-        
-        # 20151020添加
         self.ydPosition = EMPTY_INT             # 昨持仓
+        self.positionProfit = EMPTY_FLOAT       # 持仓盈亏
 
 
 ########################################################################

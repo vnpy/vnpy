@@ -89,6 +89,8 @@ class CtpGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
         
         self.qryEnabled = False         # 是否要启动循环查询
+
+        self.requireAuthentication = False
         
     #----------------------------------------------------------------------
     def connect(self):
@@ -115,6 +117,14 @@ class CtpGateway(VtGateway):
             brokerID = str(setting['brokerID'])
             tdAddress = str(setting['tdAddress'])
             mdAddress = str(setting['mdAddress'])
+            if 'authCode' in setting: #如果json文件提供了验证码
+                authCode = str(setting['authCode'])
+                userProductInfo = str(setting['userProductInfo'])
+                self.tdApi.requireAuthentication = True
+            else:
+                authCode = None
+                userProductInfo = None
+
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -124,7 +134,7 @@ class CtpGateway(VtGateway):
         
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.tdApi.connect(userID, password, brokerID, tdAddress)
+        self.tdApi.connect(userID, password, brokerID, tdAddress,authCode, userProductInfo)
         
         # 初始化并启动查询
         self.initQuery()
@@ -328,6 +338,11 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
+        # 忽略成交量为0的无效tick数据
+        if not data['Volume']:
+            return
+        
+        # 创建对象
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
         
@@ -446,6 +461,7 @@ class CtpTdApi(TdApi):
         
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
+        self.authStatus = False
         
         self.userID = EMPTY_STRING          # 账号
         self.password = EMPTY_STRING        # 密码
@@ -458,6 +474,8 @@ class CtpTdApi(TdApi):
         self.posBufferDict = {}             # 缓存持仓数据的字典
         self.symbolExchangeDict = {}        # 保存合约代码和交易所的印射关系
         self.symbolSizeDict = {}            # 保存合约代码和合约大小的印射关系
+
+        self.requireAuthentication = False
         
     #----------------------------------------------------------------------
     def onFrontConnected(self):
@@ -468,8 +486,10 @@ class CtpTdApi(TdApi):
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接成功'
         self.gateway.onLog(log)
-    
-        self.login()
+        if self.requireAuthentication:
+            self.authenticate()
+        else:
+            self.login()
         
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, n):
@@ -490,8 +510,13 @@ class CtpTdApi(TdApi):
         
     #----------------------------------------------------------------------
     def onRspAuthenticate(self, data, error, n, last):
-        """"""
-        pass
+        """验证客户端回报"""
+        if error['ErrorID'] == 0:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'交易服务器验证成功'
+            self.gateway.onLog(log)
+            self.login()
         
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
@@ -1244,12 +1269,14 @@ class CtpTdApi(TdApi):
         pass
         
     #----------------------------------------------------------------------
-    def connect(self, userID, password, brokerID, address):
+    def connect(self, userID, password, brokerID, address, authCode, userProductInfo):
         """初始化连接"""
         self.userID = userID                # 账号
         self.password = password            # 密码
         self.brokerID = brokerID            # 经纪商代码
         self.address = address              # 服务器地址
+        self.authCode = authCode            #验证码
+        self.userProductInfo = userProductInfo  #产品信息
         
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
@@ -1271,8 +1298,12 @@ class CtpTdApi(TdApi):
             
         # 若已经连接但尚未登录，则进行登录
         else:
-            if not self.loginStatus:
-                self.login()    
+            if self.requireAuthentication:
+                if self.authStatus:
+                    self.authenticate()
+            else:
+                if self.loginStatus:
+                    self.login()
     
     #----------------------------------------------------------------------
     def login(self):
@@ -1285,7 +1316,17 @@ class CtpTdApi(TdApi):
             req['BrokerID'] = self.brokerID
             self.reqID += 1
             self.reqUserLogin(req, self.reqID)   
-        
+
+    def authenticate(self):
+        if self.userID and self.brokerID and self.authCode and self.userProductInfo:
+            req = {}
+            req['UserID'] = self.userID
+            req['BrokerID'] = self.brokerID
+            req['AuthCode'] = self.authCode
+            req['UserProductInfo'] = self.userProductInfo
+            self.reqID +=1
+            self.reqAuthenticate(req, self.reqID)
+
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户"""
@@ -1386,6 +1427,8 @@ class PositionBuffer(object):
         self.ydPosition = EMPTY_INT
         self.todayPositionCost = EMPTY_FLOAT
         self.ydPositionCost = EMPTY_FLOAT
+        self.todayProfit = EMPTY_INT
+        self.ydProfit = EMPTY_INT
         
         # 通过提前创建持仓数据对象并重复使用的方式来降低开销
         pos = VtPositionData()
@@ -1404,13 +1447,16 @@ class PositionBuffer(object):
         if data['YdPosition']:
             self.ydPosition = data['Position']
             self.ydPositionCost = data['PositionCost']   
+            self.ydProfit = data['PositionProfit']
         else:
             self.todayPosition = data['Position']
             self.todayPositionCost = data['PositionCost']        
+            self.todayProfit = data['PositionProfit']
             
         # 持仓的昨仓和今仓相加后为总持仓
         self.pos.position = self.todayPosition + self.ydPosition
         self.pos.ydPosition = self.ydPosition
+        self.pos.positionProfit = self.todayProfit + self.ydProfit
         
         # 如果手头还有持仓，则通过加权平均方式计算持仓均价
         if self.todayPosition or self.ydPosition:
@@ -1428,6 +1474,7 @@ class PositionBuffer(object):
         # 其他交易所并不区分今昨，因此只关心总仓位，昨仓设为0
         self.pos.position = data['Position']
         self.pos.ydPosition = 0
+        self.pos.positionProfit = data['PositionProfit']
         
         if data['Position']:
             self.pos.price = data['PositionCost'] / (data['Position'] * size)
