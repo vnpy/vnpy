@@ -13,7 +13,7 @@ import multiprocessing
 import pymongo
 
 from ctaBase import *
-from ctaSetting import *
+from strategy import *
 
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
@@ -120,7 +120,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self):
         """载入历史数据"""
-        host, port = loadMongoSetting()
+        host, port, logging = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
         collection = self.dbClient[self.dbName][self.symbol]          
@@ -434,7 +434,8 @@ class BacktestingEngine(object):
                 self.limitOrderDict[orderID] = order
                 
                 # 从字典中删除该限价单
-                del self.workingStopOrderDict[stopOrderID]        
+                if stopOrderID in self.workingStopOrderDict:
+                    del self.workingStopOrderDict[stopOrderID]        
 
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -658,8 +659,8 @@ class BacktestingEngine(object):
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
         
         self.output(u'胜率\t\t%s%%' %formatNumber(d['winningRate']))
-        self.output(u'平均每笔盈利\t%s' %formatNumber(d['averageWinning']))
-        self.output(u'平均每笔亏损\t%s' %formatNumber(d['averageLosing']))
+        self.output(u'盈利交易平均值\t%s' %formatNumber(d['averageWinning']))
+        self.output(u'亏损交易平均值\t%s' %formatNumber(d['averageLosing']))
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
     
         # 绘图
@@ -881,6 +882,7 @@ def optimize(strategyClass, setting, targetName,
     engine = BacktestingEngine()
     engine.setBacktestingMode(mode)
     engine.setStartDate(startDate, initDays)
+    engine.setEndDate(endDate)
     engine.setSlippage(slippage)
     engine.setRate(rate)
     engine.setSize(size)
@@ -900,7 +902,7 @@ if __name__ == '__main__':
     # 以下内容是一段回测脚本的演示，用户可以根据自己的需求修改
     # 建议使用ipython notebook或者spyder来做回测
     # 同样可以在命令模式下进行回测（一行一行输入运行）
-    from ctaDemo import *
+    from strategy.strategyEmaDemo import *
     
     # 创建回测引擎
     engine = BacktestingEngine()
@@ -920,7 +922,7 @@ if __name__ == '__main__':
     engine.setSize(300)         # 股指合约大小    
     
     # 在引擎中创建策略对象
-    engine.initStrategy(DoubleEmaDemo, {})
+    engine.initStrategy(EmaDemoStrategy, {})
     
     # 开始跑回测
     engine.runBacktesting()

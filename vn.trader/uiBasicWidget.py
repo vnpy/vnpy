@@ -587,6 +587,7 @@ class PositionMonitor(BasicMonitor):
         d['ydPosition'] = {'chinese':u'昨持仓', 'cellType':BasicCell}
         d['frozen'] = {'chinese':u'冻结量', 'cellType':BasicCell}
         d['price'] = {'chinese':u'价格', 'cellType':BasicCell}
+        d['positionProfit'] = {'chinese':u'持仓盈亏', 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         

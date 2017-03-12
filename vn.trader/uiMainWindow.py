@@ -79,7 +79,10 @@ class MainWindow(QtGui.QMainWindow):
         self.addConnectAction(sysMenu, 'IB')
         self.addConnectAction(sysMenu, 'SHZD', u'直达')
         self.addConnectAction(sysMenu, 'OANDA')
-        self.addConnectAction(sysMenu, 'OKCOIN')     
+        sysMenu.addSeparator()
+        self.addConnectAction(sysMenu, 'OKCOIN')
+        self.addConnectAction(sysMenu, 'HUOBI', u'火币')
+        self.addConnectAction(sysMenu, 'LHANG', u'链行')
         sysMenu.addSeparator()
         self.addConnectAction(sysMenu, 'Wind')
         
