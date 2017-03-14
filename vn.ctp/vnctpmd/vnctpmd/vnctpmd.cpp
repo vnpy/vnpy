@@ -692,6 +692,34 @@ int MdApi::unSubscribeMarketData(string instrumentID)
 	return i;
 };
 
+int MdApi::subscribeMarketDataList(boost::python::list instrumentIDs)
+{
+	vector<string> ids;
+	char** buffer = new char *[len(instrumentIDs)];
+	for (int i=0; i<len(instrumentIDs); i++) {
+		string s = boost::python::extract<string>(instrumentIDs[i]);
+		ids.push_back(s);
+		buffer[i] = (char*)s.c_str();
+	}
+	int i = this->api->SubscribeMarketData(buffer, len(instrumentIDs));
+	delete[] buffer;
+	return i;
+};
+
+int MdApi::unSubscribeMarketDataList(boost::python::list instrumentIDs)
+{
+	vector<string> ids;
+	char** buffer = new char *[len(instrumentIDs)];
+	for (int i=0; i<len(instrumentIDs); i++) {
+		string s = boost::python::extract<string>(instrumentIDs[i]);
+		ids.push_back(s);
+		buffer[i] = (char*)s.c_str();
+	}
+	int i = this->api->UnSubscribeMarketData(buffer, len(instrumentIDs));
+	delete[] buffer;
+	return i;
+};
+
 int MdApi::subscribeForQuoteRsp(string instrumentID)
 {
 	char* buffer = (char*)instrumentID.c_str();
@@ -905,6 +933,8 @@ BOOST_PYTHON_MODULE(vnctpmd)
 		.def("registerFront", &MdApiWrap::registerFront)
 		.def("subscribeMarketData", &MdApiWrap::subscribeMarketData)
 		.def("unSubscribeMarketData", &MdApiWrap::unSubscribeMarketData)
+		.def("subscribeMarketDataList", &MdApiWrap::subscribeMarketDataList)
+		.def("unSubscribeMarketDataList", &MdApiWrap::unSubscribeMarketDataList)
 		.def("subscribeForQuoteRsp", &MdApiWrap::subscribeForQuoteRsp)
 		.def("unSubscribeForQuoteRsp", &MdApiWrap::unSubscribeForQuoteRsp)
 		.def("reqUserLogin", &MdApiWrap::reqUserLogin)

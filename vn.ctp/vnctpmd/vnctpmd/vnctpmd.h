@@ -6,11 +6,13 @@
 #endif
 #include <string>
 #include <queue>
+#include <vector>
 
 //Boost
 #define BOOST_PYTHON_STATIC_LIB
 #include <boost/python/module.hpp>	//python封装
 #include <boost/python/def.hpp>		//python封装
+#include <boost/python/list.hpp>	//python封装
 #include <boost/python/dict.hpp>	//python封装
 #include <boost/python/object.hpp>	//python封装
 #include <boost/python.hpp>			//python封装
@@ -295,6 +297,10 @@ public:
 	int subscribeMarketData(string instrumentID);
 
 	int unSubscribeMarketData(string instrumentID);
+
+	int subscribeMarketDataList(boost::python::list instrumentIDs);
+
+	int unSubscribeMarketDataList(boost::python::list instrumentIDs);
 
 	int subscribeForQuoteRsp(string instrumentID);
 
