@@ -183,6 +183,7 @@ class CtaEngine(object):
         so.strategy = strategy
         so.stopOrderID = stopOrderID
         so.status = STOPORDER_WAITING
+        so.orderType = orderType
         
         if orderType == CTAORDER_BUY:
             so.direction = DIRECTION_LONG
