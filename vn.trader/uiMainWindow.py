@@ -179,7 +179,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             self.widgetDict['contractM'].show()
         except KeyError:
-            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
+            self.widgetDict['contractM'] = ContractManager(self.mainEngine)
             self.widgetDict['contractM'].show()
             
     #----------------------------------------------------------------------
