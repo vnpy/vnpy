@@ -10,6 +10,13 @@
 
 """
 
+import os, sys
+curpath = os.path.dirname(__file__)
+parpath = os.path.dirname(curpath)
+parparpath = os.path.dirname(parpath)
+sys.path.append(parpath)
+sys.path.append(parparpath)
+
 
 from ctaBase import *
 from ctaTemplate import CtaTemplate
