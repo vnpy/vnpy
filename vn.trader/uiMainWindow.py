@@ -110,8 +110,8 @@ class MainWindow(QtGui.QMainWindow):
         functionMenu.addAction(self.createAction(u'风控管理', self.openRm))
         
         # 算法相关
-        algoMenu = menubar.addMenu(u'算法')
-        algoMenu.addAction(self.createAction(u'CTA策略', self.openCta))
+        strategyMenu = menubar.addMenu(u'策略')
+        strategyMenu.addAction(self.createAction(u'CTA策略', self.openCta))
         
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')

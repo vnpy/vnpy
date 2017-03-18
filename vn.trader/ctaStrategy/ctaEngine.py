@@ -72,6 +72,9 @@ class CtaEngine(object):
         # key为vtSymbol，value为PositionBuffer对象
         self.posBufferDict = {}
         
+        # 成交号集合，用来过滤已经收到过的成交推送
+        self.tradeSet = set()
+        
         # 引擎类型为实盘
         self.engineType = ENGINETYPE_TRADING
         
@@ -273,6 +276,12 @@ class CtaEngine(object):
         """处理成交推送"""
         trade = event.dict_['data']
         
+        # 过滤已经收到过的成交回报
+        if trade.vtTradeID in self.tradeSet:
+            return
+        self.tradeSet.add(trade.vtTradeID)
+        
+        # 将成交推送到策略对象中
         if trade.vtOrderID in self.orderStrategyDict:
             strategy = self.orderStrategyDict[trade.vtOrderID]
             
