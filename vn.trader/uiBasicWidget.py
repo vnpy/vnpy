@@ -1090,6 +1090,9 @@ class ContractMonitor(BasicMonitor):
         #d['optionType'] = {'chinese':u'期权类型', 'cellType':BasicCell}     
         self.setHeaderDict(d)
         
+        # 过滤显示用的字符串
+        self.filterContent = EMPTY_STRING
+        
         self.initUi()
         
     #----------------------------------------------------------------------
@@ -1113,6 +1116,10 @@ class ContractMonitor(BasicMonitor):
         row = 0
         
         for key in l2:
+            # 如果设置了过滤信息且合约代码中不含过滤信息，则不显示
+            if self.filterContent and self.filterContent not in key:
+                continue
+            
             contract = d[key]
             
             for n, header in enumerate(self.headerList):
@@ -1123,9 +1130,9 @@ class ContractMonitor(BasicMonitor):
                 if self.font:
                     cell.setFont(self.font)  # 如果设置了特殊字体，则进行单元格设置
                     
-                self.setItem(row, n, cell)
+                self.setItem(row, n, cell)          
             
-            row = row + 1
+            row = row + 1        
     
     #----------------------------------------------------------------------
     def refresh(self):
@@ -1148,5 +1155,53 @@ class ContractMonitor(BasicMonitor):
         """显示"""
         super(ContractMonitor, self).show()
         self.refresh()
+        
+    #----------------------------------------------------------------------
+    def setFilterContent(self, content):
+        """设置过滤字符串"""
+        self.filterContent = content
+    
+
+########################################################################
+class ContractManager(QtGui.QWidget):
+    """合约管理组件"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, parent=None):
+        """Constructor"""
+        super(ContractManager, self).__init__(parent=parent)
+        
+        self.mainEngine = mainEngine
+        
+        self.initUi()
+    
+    #----------------------------------------------------------------------
+    def initUi(self):
+        """初始化界面"""
+        self.setWindowTitle(u'合约查询')
+        
+        self.lineFilter = QtGui.QLineEdit()
+        self.buttonFilter = QtGui.QPushButton(u'查询')
+        self.buttonFilter.clicked.connect(self.filterContract)        
+        self.monitor = ContractMonitor(self.mainEngine)
+        self.monitor.refresh()
+        
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.lineFilter)
+        hbox.addWidget(self.buttonFilter)
+        hbox.addStretch()
+        
+        vbox = QtGui.QVBoxLayout()
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.monitor)
+        
+        self.setLayout(vbox)
+        
+    #----------------------------------------------------------------------
+    def filterContract(self):
+        """显示过滤后的合约"""
+        content = str(self.lineFilter.text())
+        self.monitor.setFilterContent(content)
+        self.monitor.refresh()
     
     
