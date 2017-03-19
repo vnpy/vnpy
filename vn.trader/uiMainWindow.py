@@ -38,14 +38,14 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
-        widgetMarketM, dockMarketM = self.createDock(MarketMonitor, language.MARKET_DATA, QtCore.Qt.RightDockWidgetArea)
-        widgetLogM, dockLogM = self.createDock(LogMonitor, language.LOG, QtCore.Qt.BottomDockWidgetArea)
-        widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, language.ERROR, QtCore.Qt.BottomDockWidgetArea)
-        widgetTradeM, dockTradeM = self.createDock(TradeMonitor, language.TRADE, QtCore.Qt.BottomDockWidgetArea)
-        widgetOrderM, dockOrderM = self.createDock(OrderMonitor, language.ORDER, QtCore.Qt.RightDockWidgetArea)
-        widgetPositionM, dockPositionM = self.createDock(PositionMonitor, language.POSITION, QtCore.Qt.BottomDockWidgetArea)
-        widgetAccountM, dockAccountM = self.createDock(AccountMonitor, language.ACCOUNT, QtCore.Qt.BottomDockWidgetArea)
-        widgetTradingW, dockTradingW = self.createDock(TradingWidget, language.TRADING, QtCore.Qt.LeftDockWidgetArea)
+        widgetMarketM, dockMarketM = self.createDock(MarketMonitor, vtText.MARKET_DATA, QtCore.Qt.RightDockWidgetArea)
+        widgetLogM, dockLogM = self.createDock(LogMonitor, vtText.LOG, QtCore.Qt.BottomDockWidgetArea)
+        widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, vtText.ERROR, QtCore.Qt.BottomDockWidgetArea)
+        widgetTradeM, dockTradeM = self.createDock(TradeMonitor, vtText.TRADE, QtCore.Qt.BottomDockWidgetArea)
+        widgetOrderM, dockOrderM = self.createDock(OrderMonitor, vtText.ORDER, QtCore.Qt.RightDockWidgetArea)
+        widgetPositionM, dockPositionM = self.createDock(PositionMonitor, vtText.POSITION, QtCore.Qt.BottomDockWidgetArea)
+        widgetAccountM, dockAccountM = self.createDock(AccountMonitor, vtText.ACCOUNT, QtCore.Qt.BottomDockWidgetArea)
+        widgetTradingW, dockTradingW = self.createDock(TradingWidget, vtText.TRADING, QtCore.Qt.LeftDockWidgetArea)
     
         self.tabifyDockWidget(dockTradeM, dockErrorM)
         self.tabifyDockWidget(dockTradeM, dockLogM)
@@ -67,7 +67,7 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         
         # 设计为只显示存在的接口
-        sysMenu = menubar.addMenu(language.SYSTEM)
+        sysMenu = menubar.addMenu(vtText.SYSTEM)
 
         for gatewayModule in GATEWAY_DICT.values():
             if gatewayModule.gatewayType == GATEWAYTYPE_FUTURES:
@@ -99,25 +99,25 @@ class MainWindow(QtGui.QMainWindow):
                                       gatewayModule.gatewayDisplayName)          
         
         sysMenu.addSeparator()
-        sysMenu.addAction(self.createAction(language.CONNECT_DATABASE, self.mainEngine.dbConnect))
+        sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect))
         sysMenu.addSeparator()
-        sysMenu.addAction(self.createAction(language.EXIT, self.close))
+        sysMenu.addAction(self.createAction(vtText.EXIT, self.close))
         
         # 功能应用
-        functionMenu = menubar.addMenu(language.APPLICATION)
-        functionMenu.addAction(self.createAction(language.CONTRACT_SEARCH, self.openContract))
-        functionMenu.addAction(self.createAction(language.DATA_RECORDER, self.openDr))
-        functionMenu.addAction(self.createAction(language.RISK_MANAGER, self.openRm))
+        functionMenu = menubar.addMenu(vtText.APPLICATION)
+        functionMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract))
+        functionMenu.addAction(self.createAction(vtText.DATA_RECORDER, self.openDr))
+        functionMenu.addAction(self.createAction(vtText.RISK_MANAGER, self.openRm))
         
         # 算法相关
-        strategyMenu = menubar.addMenu(language.STRATEGY)
-        strategyMenu.addAction(self.createAction(language.CTA_STRATEGY, self.openCta))
+        strategyMenu = menubar.addMenu(vtText.STRATEGY)
+        strategyMenu.addAction(self.createAction(vtText.CTA_STRATEGY, self.openCta))
         
         # 帮助
-        helpMenu = menubar.addMenu(language.HELP)
-        helpMenu.addAction(self.createAction(language.RESTORE, self.restoreWindow))
-        helpMenu.addAction(self.createAction(language.ABOUT, self.openAbout))
-        helpMenu.addAction(self.createAction(language.TEST, self.test))
+        helpMenu = menubar.addMenu(vtText.HELP)
+        helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow))
+        helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout))
+        helpMenu.addAction(self.createAction(vtText.TEST, self.test))
     
     #----------------------------------------------------------------------
     def initStatusBar(self):
@@ -147,7 +147,7 @@ class MainWindow(QtGui.QMainWindow):
         """获取CPU和内存状态信息"""
         cpuPercent = psutil.cpu_percent()
         memoryPercent = psutil.virtual_memory().percent
-        return language.CPU_MEMORY_INFO.format(cpu=cpuPercent, memory=memoryPercent)
+        return vtText.CPU_MEMORY_INFO.format(cpu=cpuPercent, memory=memoryPercent)
         
     #----------------------------------------------------------------------
     def addConnectAction(self, menu, gatewayName, displayName=''):
@@ -161,7 +161,7 @@ class MainWindow(QtGui.QMainWindow):
         if not displayName:
             displayName = gatewayName
         displayName = gatewayName
-        actionName = language.CONNECT + displayName
+        actionName = vtText.CONNECT + displayName
         
         menu.addAction(self.createAction(actionName, connect))
         
@@ -226,8 +226,8 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
-        reply = QtGui.QMessageBox.question(self, language.EXIT,
-                                           language.CONFIRM_EXIT, QtGui.QMessageBox.Yes | 
+        reply = QtGui.QMessageBox.question(self, vtText.EXIT,
+                                           vtText.CONFIRM_EXIT, QtGui.QMessageBox.Yes | 
                                            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes: 
@@ -295,7 +295,7 @@ class AboutWidget(QtGui.QDialog):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(language.ABOUT + 'VnTrader')
+        self.setWindowTitle(vtText.ABOUT + 'VnTrader')
 
         text = u"""
             Developed by Traders, for Traders.

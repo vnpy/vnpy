@@ -2,12 +2,13 @@
 
 import json
 import os
+import traceback
 
 # 默认设置
-from Chinese import text, constant
+from Chinese import text
 
 # 获取目录上级路径
-path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 SETTING_FILENAME = 'VT_setting.json'
 SETTING_FILENAME = os.path.join(path, SETTING_FILENAME)
 
@@ -16,7 +17,7 @@ try:
     f = file(SETTING_FILENAME)
     setting = json.load(f)
     if setting['language'] == 'English':
-        from English import text, constant
+        from English import text
     f.close()
 except:
-    pass
+    traceback.print_exc()
