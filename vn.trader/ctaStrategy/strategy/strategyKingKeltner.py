@@ -26,8 +26,9 @@ class KkStrategy(CtaTemplate):
     author = u'用Python的交易员'
 
     # 策略参数
-    kkLength = 32           # 计算通道中值的窗口数
-    kkDev = 2.2             # 计算通道宽度的偏差
+    kkLength = 11           # 计算通道中值的窗口数
+    kkDev = 1.6             # 计算通道宽度的偏差
+    trailingPrcnt = 0.8     # 移动止损
     initDays = 10           # 初始化数据所用的天数
     fixedSize = 1           # 每次交易的数量
 
@@ -46,9 +47,11 @@ class KkStrategy(CtaTemplate):
     kkMid = 0                           # KK通道中轨
     kkUp = 0                            # KK通道上轨
     kkDown = 0                          # KK通道下轨
+    intraTradeHigh = 0                  # 持仓期内的最高点
+    intraTradeLow = 0                   # 持仓期内的最低点
 
-    buyOrderID = None              # OCO委托买入开仓的委托号
-    shortOrderID = None            # OCO委托卖出开仓的委托号
+    buyOrderID = None                   # OCO委托买入开仓的委托号
+    shortOrderID = None                 # OCO委托卖出开仓的委托号
     orderList = []                      # 保存委托代码的列表
 
     # 参数列表，保存了参数的名称
@@ -207,16 +210,26 @@ class KkStrategy(CtaTemplate):
     
         # 当前无仓位，发送OCO开仓委托
         if self.pos == 0:
+            self.intraTradeHigh = bar.high
+            self.intraTradeLow = bar.low            
             self.sendOcoOrder(self.kkUp, self.kkDown, self.fixedSize)
     
         # 持有多头仓位
-        elif self.pos > 0 and bar.close < self.kkUp:
-            orderID = self.sell(bar.close*0.97, abs(self.pos))
+        elif self.pos > 0:
+            self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
+            self.intraTradeLow = bar.low
+            
+            orderID = self.sell(self.intraTradeHigh*(1-self.trailingPrcnt/100), 
+                                abs(self.pos), True)
             self.orderList.append(orderID)
     
         # 持有空头仓位
-        elif self.pos < 0 and bar.close > self.kkDown:
-            orderID = self.buy(bar.close*1.03, abs(self.pos))
+        elif self.pos < 0:
+            self.intraTradeHigh = bar.high
+            self.intraTradeLow = min(self.intraTradeLow, bar.low)
+            
+            orderID = self.buy(self.intraTradeLow*(1+self.trailingPrcnt/100),
+                               abs(self.pos), True)
             self.orderList.append(orderID)
     
         # 发出状态更新事件
@@ -279,7 +292,7 @@ if __name__ == '__main__':
     engine.setBacktestingMode(engine.BAR_MODE)
 
     # 设置回测用的数据起始日期
-    engine.setStartDate('20120101')
+    engine.setStartDate('20130101')
     
     # 设置产品相关参数
     engine.setSlippage(0.2)     # 股指1跳
