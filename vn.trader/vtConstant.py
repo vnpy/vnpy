@@ -86,3 +86,10 @@ CURRENCY_NONE = ''              # 空货币
 
 # 数据库
 LOG_DB_NAME = 'VnTrader_Log_Db'
+
+# 接口类型
+GATEWAYTYPE_EQUITY = 'equity'                   # 股票、ETF、债券
+GATEWAYTYPE_FUTURES = 'futures'                 # 期货、期权、贵金属
+GATEWAYTYPE_INTERNATIONAL = 'international'     # 外盘
+GATEWAYTYPE_BTC = 'btc'                         # 比特币
+GATEWAYTYPE_DATA = 'data'                       # 数据（非交易）

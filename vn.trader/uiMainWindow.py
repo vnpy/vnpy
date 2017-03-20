@@ -2,10 +2,12 @@
 
 import psutil
 
+from gateway import GATEWAY_DICT
 from uiBasicWidget import *
-from ctaAlgo.uiCtaWidget import CtaEngineManager
+from ctaStrategy.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
+
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -66,39 +68,50 @@ class MainWindow(QtGui.QMainWindow):
         
         # 设计为只显示存在的接口
         sysMenu = menubar.addMenu(u'系统')
-        self.addConnectAction(sysMenu, 'CTP')
-        self.addConnectAction(sysMenu, 'LTS')
-        self.addConnectAction(sysMenu, 'XTP')
-        self.addConnectAction(sysMenu, 'FEMAS', u'飞马')
-        self.addConnectAction(sysMenu, 'XSPEED', u'飞创')
-        self.addConnectAction(sysMenu, 'QDP')
-        self.addConnectAction(sysMenu, 'KSOTP', u'金仕达期权')
-        self.addConnectAction(sysMenu, 'KSGOLD', u'金仕达黄金')
-        self.addConnectAction(sysMenu, 'SGIT', u'飞鼠')
+
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_FUTURES:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)
+        
         sysMenu.addSeparator()
-        self.addConnectAction(sysMenu, 'IB')
-        self.addConnectAction(sysMenu, 'SHZD', u'直达')
-        self.addConnectAction(sysMenu, 'OANDA')
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_EQUITY:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)  
+
         sysMenu.addSeparator()
-        self.addConnectAction(sysMenu, 'OKCOIN')
-        self.addConnectAction(sysMenu, 'HUOBI', u'火币')
-        self.addConnectAction(sysMenu, 'LHANG', u'链行')
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_INTERNATIONAL:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
+        
         sysMenu.addSeparator()
-        self.addConnectAction(sysMenu, 'Wind')
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_BTC:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
+
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_DATA:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
         
         sysMenu.addSeparator()
         sysMenu.addAction(self.createAction(u'连接数据库', self.mainEngine.dbConnect))
         sysMenu.addSeparator()
         sysMenu.addAction(self.createAction(u'退出', self.close))
         
+        # 功能应用
         functionMenu = menubar.addMenu(u'功能')
         functionMenu.addAction(self.createAction(u'查询合约', self.openContract))
         functionMenu.addAction(self.createAction(u'行情记录', self.openDr))
         functionMenu.addAction(self.createAction(u'风控管理', self.openRm))
         
         # 算法相关
-        algoMenu = menubar.addMenu(u'算法')
-        algoMenu.addAction(self.createAction(u'CTA策略', self.openCta))
+        strategyMenu = menubar.addMenu(u'策略')
+        strategyMenu.addAction(self.createAction(u'CTA策略', self.openCta))
         
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')
@@ -179,7 +192,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             self.widgetDict['contractM'].show()
         except KeyError:
-            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
+            self.widgetDict['contractM'] = ContractManager(self.mainEngine)
             self.widgetDict['contractM'].show()
             
     #----------------------------------------------------------------------
