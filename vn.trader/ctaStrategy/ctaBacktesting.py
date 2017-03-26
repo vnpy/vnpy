@@ -56,7 +56,8 @@ class BacktestingEngine(object):
 
         self.slippage = 0           # 回测时假设的滑点
         self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
-        self.size = 1               # 合约大小，默认为1        
+        self.size = 1               # 合约大小，默认为1    
+        self.priceTick = 0          # 价格最小变动 
         
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
@@ -225,7 +226,7 @@ class BacktestingEngine(object):
         
         order = VtOrderData()
         order.vtSymbol = vtSymbol
-        order.price = price
+        order.price = self.roundToPrickTick(price)
         order.totalVolume = volume
         order.status = STATUS_NOTTRADED     # 刚提交尚未成交
         order.orderID = orderID
@@ -269,7 +270,7 @@ class BacktestingEngine(object):
         
         so = StopOrder()
         so.vtSymbol = vtSymbol
-        so.price = price
+        so.price = self.roundToPrickTick(price)
         so.volume = volume
         so.strategy = strategy
         so.stopOrderID = stopOrderID
@@ -699,6 +700,11 @@ class BacktestingEngine(object):
     def setRate(self, rate):
         """设置佣金比例"""
         self.rate = rate
+        
+    #----------------------------------------------------------------------
+    def setPriceTick(self, priceTick):
+        """设置价格最小变动"""
+        self.priceTick = priceTick
 
     #----------------------------------------------------------------------
     def runOptimization(self, strategyClass, optimizationSetting):
@@ -782,6 +788,16 @@ class BacktestingEngine(object):
         self.output(u'优化结果：')
         for result in resultList:
             self.output(u'%s: %s' %(result[0], result[1]))    
+            
+    #----------------------------------------------------------------------
+    def roundToPrickTick(self, price):
+        """取整价格到合约最小价格变动"""
+        if not self.priceTick:
+            return price
+        
+        newPrice = round(price/self.priceTick, 0) * self.priceTick
+        return newPrice
+    
         
 
 ########################################################################
@@ -805,6 +821,7 @@ class TradingResult(object):
         self.slippage = slippage*2*size*abs(volume)                         # 滑点成本
         self.pnl = ((self.exitPrice - self.entryPrice) * volume * size 
                     - self.commission - self.slippage)                      # 净盈亏
+
 
 
 ########################################################################

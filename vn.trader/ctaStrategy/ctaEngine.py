@@ -16,6 +16,8 @@
    的定制化统结构（没错，得自己写）
 '''
 
+from __future__ import division
+
 import json
 import os
 import traceback
@@ -89,7 +91,7 @@ class CtaEngine(object):
         req = VtOrderReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
-        req.price = price
+        req.price = self.roundToPrickTick(contract.priceTick, price)
         req.volume = volume
         
         req.productClass = strategy.productClass
@@ -570,6 +572,15 @@ class CtaEngine(object):
             
             for d in posData:
                 strategy.pos = d['pos']
+                
+    #----------------------------------------------------------------------
+    def roundToPrickTick(self, priceTick, price):
+        """取整价格到合约最小价格变动"""
+        if not priceTick:
+            return price
+        
+        newPrice = round(price/priceTick, 0) * priceTick
+        return newPrice    
 
 
 ########################################################################
