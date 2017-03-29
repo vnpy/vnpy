@@ -4,7 +4,7 @@ import json
 import os
 
 # 默认设置
-from Chinese import text, constant
+from chinese import text, constant
 
 # 获取目录上级路径
 path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -16,7 +16,7 @@ try:
     f = file(SETTING_FILENAME)
     setting = json.load(f)
     if setting['language'] == 'English':
-        from English import text, constant
+        from english import text, constant
     f.close()
 except:
     pass
