@@ -4,6 +4,8 @@
 CTA模块相关的GUI控制组件
 '''
 
+import sys
+sys.path.append('..')
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
@@ -19,7 +21,7 @@ class CtaValueMonitor(QtGui.QTableWidget):
     def __init__(self, parent=None):
         """Constructor"""
         super(CtaValueMonitor, self).__init__(parent)
-        
+
         self.keyCellDict = {}
         self.data = None
         self.inited = False
@@ -39,9 +41,12 @@ class CtaValueMonitor(QtGui.QTableWidget):
     def updateData(self, data):
         """更新数据"""
         if not self.inited:
+            # 设置标题
+
             self.setColumnCount(len(data))
             self.setHorizontalHeaderLabels(data.keys())
-            
+
+            # 新增数据
             col = 0
             for k, v in data.items():
                 cell = QtGui.QTableWidgetItem(unicode(v))
@@ -51,10 +56,14 @@ class CtaValueMonitor(QtGui.QTableWidget):
             
             self.inited = True
         else:
+            # 更新数据
             for k, v in data.items():
                 cell = self.keyCellDict[k]
                 cell.setText(unicode(v))
 
+        #cell.setBackgroundColor()
+
+        # 调整表格宽度为自适应
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 

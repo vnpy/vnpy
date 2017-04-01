@@ -18,29 +18,22 @@ class CtaPosition:
         self.strategy = strategy
 
         self.pos = 0        # 持仓状态 0:空仓 >=1 多仓 <=-1 空仓
-
         self.maxPos = 1        # 最大持仓量
-
         self.step = 1       # 增仓数量
 
         self.posList = []
-
-
         self.avgPrice = EMPTY_FLOAT
 
     def avaliablePos2Add(self):
         """剩余可加的仓位数量"""
-
         return self.maxPos - abs(self.pos)
 
     def openPos(self, direction, vol, price = EMPTY_FLOAT):
         """开、加仓"""
-
         if self.pos == 0:
             self.posList = []
 
         if direction == DIRECTION_LONG:     # 加多仓
-
             if self.pos + vol > self.maxPos:
                 self.writeCtaLog(u'异常，超出仓位，当前仓位：{0},加仓:{1},最大仓位:{2}'.format(self.pos,vol,self.maxPos))
                 return False
@@ -49,9 +42,7 @@ class CtaPosition:
             self.pos = self.pos + vol
             self.strategy.pos = self.pos
 
-
         if direction == DIRECTION_SHORT:    # 加空仓
-
             if self.pos - vol < 0 - self.maxPos:
                 self.writeCtaLog(u'异常，超出仓位，当前仓位：{0},加仓:{1},最大仓位:{2}'.format(self.pos, vol, self.maxPos))
                 return False

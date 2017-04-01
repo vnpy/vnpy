@@ -15,6 +15,12 @@ import copy,csv
 
 DEBUGCTALOG = True
 
+PERIOD_SECOND = 'second'  # 秒级别周期
+PERIOD_MINUTE = 'minute'  # 分钟级别周期
+PERIOD_HOUR = 'hour'  # 小时级别周期
+PERIOD_DAY = 'day'  # 日级别周期
+
+
 class CtaLineBar(object):
     """CTA K线"""
     """ 使用方法:
@@ -55,6 +61,7 @@ class CtaLineBar(object):
 
         # 参数列表
         self.paramList.append('barTimeInterval')
+        self.paramList.append('period')
         self.paramList.append('inputPreLen')
         self.paramList.append('inputEma1Len')
         self.paramList.append('inputEma2Len')
@@ -72,6 +79,7 @@ class CtaLineBar(object):
         self.paramList.append('inputBollLen')
         self.paramList.append('inputBollStdRate')
         self.paramList.append('inputKdjLen')
+        self.paramList.append('inputCciLen')
         self.paramList.append('inputMacdFastPeriodLen')
         self.paramList.append('inputMacdSlowPeriodLen')
         self.paramList.append('inputMacdSignalPeriodLen')
@@ -83,9 +91,8 @@ class CtaLineBar(object):
 
         # 输入参数
         self.name = u'LineBar'
-
-        self.mode = self.TICK_MODE
-
+        self.mode = self.TICK_MODE          # 缺省为tick模式
+        self.period = PERIOD_SECOND    # 缺省为分钟级别周期
         self.barTimeInterval = 300
 
         self.barMinuteInterval = self.barTimeInterval / 60
@@ -117,6 +124,7 @@ class CtaLineBar(object):
 
         # 当前的Tick
         self.curTick = None
+        self.lastTick = None
         self.curTradingDay = EMPTY_STRING
 
         # K 线服务的策略
@@ -131,7 +139,6 @@ class CtaLineBar(object):
 
         self.preHigh = []               # K线的前inputPreLen的的最高
         self.preLow = []                # K线的前inputPreLen的的最低
-
 
         self.lineMa1 = []              # K线的MA1均线，周期是InputMaLen1，不包含当前bar
         self.lineMa2 = []              # K线的MA2均线，周期是InputMaLen2，不包含当前bar
@@ -210,6 +217,9 @@ class CtaLineBar(object):
         self.lineKdjTop = []            # 记录KDJ最高峰，只保留 inputKdjLen个
         self.lineKdjButtom = []         # 记录KDJ的最低谷，只保留 inputKdjLen个
         self.lastKdjTopButtom = {}      # 最近的一个波峰/波谷
+        self.lastK = EMPTY_FLOAT        # bar内计算时，最后一个未关闭的bar的实时K值
+        self.lastD = EMPTY_FLOAT        # bar内计算时，最后一个未关闭的bar的实时值
+        self.lastJ = EMPTY_FLOAT        # bar内计算时，最后一个未关闭的bar的实时J值
 
         # K线的MACD计算数据
         self.inputMacdFastPeriodLen = EMPTY_INT
@@ -219,6 +229,10 @@ class CtaLineBar(object):
         self.lineDif = []           # DIF = EMA12 - EMA26，即为talib-MACD返回值macd
         self.lineDea = []           # DEA = （前一日DEA X 8/10 + 今日DIF X 2/10），即为talib-MACD返回值
         self.lineMacd = []          # (dif-dea)*2，但是talib中MACD的计算是bar = (dif-dea)*1,国内一般是乘以2
+
+        # K 线的CCI计算数据
+        self.inputCciLen = EMPTY_INT
+        self.lineCci = []
 
         if setting:
             self.setParam(setting)
@@ -247,11 +261,18 @@ class CtaLineBar(object):
         if tick.datetime.hour == 8 or tick.datetime.hour == 20:
             self.writeCtaLog(u'竞价排名tick时间:{0}'.format(tick.datetime))
             return
+        if self.lastTick is None:
+            self.lastTick = tick
 
         self.curTick = tick
 
         # 3.生成x K线，若形成新Bar，则触发OnBar事件
         self.__drawLineBar(tick)
+
+        self.lastTick = tick
+
+        # 4.执行 bar内计算
+        self.__recountKdj(countInBar=True)
 
     def addBar(self,bar):
         """予以外部初始化程序增加bar"""
@@ -268,7 +289,19 @@ class CtaLineBar(object):
 
         self.curTradingDay = bar.tradingDay
 
-        if abs((bar.datetime - lastBar.datetime).seconds) >= self.barTimeInterval:
+        if (self.period == PERIOD_SECOND and (bar.datetime-lastBar.datetime).seconds >= self.barTimeInterval) \
+            or (self.period == PERIOD_MINUTE and bar.datetime.minute % self.barTimeInterval == 0
+                   and bar.datetime.minute != lastBar.datetime.minute) \
+            or (self.period == PERIOD_HOUR and self.barTimeInterval == 1 and bar.datetime
+                 and bar.datetime.hour != lastBar.datetime.hour) \
+            or (self.period == PERIOD_HOUR and self.barTimeInterval == 2 and bar.datetime
+                    and bar.datetime.hour != lastBar.datetime.hour
+                    and bar.datetime.hour in {1, 9, 11, 13, 21, 23}) \
+            or (self.period == PERIOD_HOUR and self.barTimeInterval == 4 and bar.datetime
+                 and bar.datetime.hour != lastBar.datetime.hour
+                 and bar.datetime.hour in {1, 9, 13, 21}) \
+            or (self.period == PERIOD_DAY and bar.datetime.date != lastBar.datetime.date ):
+
             self.lineBar.append(bar)
             self.onBar(bar)
             return
@@ -301,6 +334,7 @@ class CtaLineBar(object):
         self.__recountKdj()
         self.__recountBoll()
         self.__recountMacd()
+        self.__recountCci()
 
         # 回调上层调用者
         self.onBarFunc(bar)
@@ -360,6 +394,9 @@ class CtaLineBar(object):
                                                         round(self.lineD[-1], 2),
                                                         round(self.lineJ[-1], 2))
 
+        if self.inputCciLen > 0 and len(self.lineCci) > 0:
+            msg = msg + u',Cci({0}):{1}'.format(self.inputCciLen, self.lineCci[-1])
+
         if self.inputBollLen > 0 and len(self.lineUpperBand)>0:
             msg = msg + u',Boll({0}):u:{1},m:{2},l:{3}'.\
                 format(self.inputBollLen, round(self.lineUpperBand[-1], 2),
@@ -376,7 +413,7 @@ class CtaLineBar(object):
 
         self.bar = CtaBarData()                  # 创建新的K线
         # 计算K线的整点分钟周期，这里周期最小是1分钟。如果你是采用非整点分钟，例如1.5分钟，请把这段注解掉
-        if self.barMinuteInterval:
+        if self.barMinuteInterval and self.period == PERIOD_SECOND:
             self.barMinuteInterval = int(self.barTimeInterval / 60)
             if self.barMinuteInterval < 1:
                 self.barMinuteInterval = 1
@@ -414,8 +451,6 @@ class CtaLineBar(object):
             # bar的交易日与记录的当前交易日一致, 交易量为tick的volume，减去上一根bar的日总交易量
             self.bar.volume = tick.volume - self.lineBar[-1].dayVolume
 
-
-
         self.barFirstTick = True                  # 标识该Tick属于该Bar的第一个tick数据
 
         self.lineBar.append(self.bar)           # 推入到lineBar队列
@@ -438,62 +473,6 @@ class CtaLineBar(object):
         # 与最后一个BAR的时间比对，判断是否超过5分钟
         lastBar = self.lineBar[-1]
 
-        # 专门处理隔夜跳空。隔夜跳空会造成开盘后EMA和ADX的计算错误。
-        if len(self.lineAtr2) < 1:
-            priceInBar = 5 * self.minDiff
-        else:
-            priceInBar = self.lineAtr2[-1]
-
-        jumpBars = int(abs(tick.lastPrice - lastBar.close)/priceInBar)
-
-        # 开盘时间
-        if (tick.datetime.hour == 9 or tick.datetime.hour == 21) \
-                and tick.datetime.minute == 0 and tick.datetime.second == 0 \
-                and lastBar.datetime.hour != tick.datetime.hour \
-                and jumpBars > 0 and self.activeDayJump:
-
-            priceInYesterday = lastBar.close
-
-            self.writeCtaLog(u'line Bar jumpbars:{0}'.format(jumpBars))
-
-            if tick.lastPrice > priceInYesterday:           # 价格往上跳
-
-                # 生成砖块递增K线,减小ATR变动
-                for i in range(0, jumpBars, 1):
-                    upbar = copy.deepcopy(lastBar)
-                    upbar.open = priceInYesterday + float(i * priceInBar)
-                    upbar.low = upbar.open
-                    upbar.close = priceInYesterday + float((i+1) * priceInBar)
-                    upbar.high = upbar.close
-                    upbar.volume = 0
-
-                    self.lineBar.append(upbar)
-                    self.onBar(upbar)
-
-            else:                                            # 价格往下跳
-                # 生成递减K线,减小ATR变动
-                for i in range(0, jumpBars, 1):
-
-                    downbar = copy.deepcopy(lastBar)
-                    downbar.open = priceInYesterday - float(i * priceInBar)
-                    downbar.high = downbar.open
-                    downbar.close = priceInYesterday - float((i+1) * priceInBar)
-                    downbar.low = downbar.close
-                    downbar.volume = 0
-
-                    self.lineBar.append(downbar)
-                    self.onBar(downbar)
-
-            # 生成平移K线，减小Pdi，Mdi、ADX变动
-            for i in range(0, jumpBars*2, 1):
-                equalbar=copy.deepcopy(self.lineBar[-1])
-                equalbar.volume = 0
-                self.lineBar.append(equalbar)
-                self.onBar(equalbar)
-
-            # 重新指定为最后一个Bar
-            lastBar = self.lineBar[-1]
-
         # 处理日内的间隔时段最后一个tick，如10:15分，11:30分，15:00 和 2:30分
         endtick = False
         if (tick.datetime.hour == 10 and tick.datetime.minute == 15) \
@@ -514,8 +493,31 @@ class CtaLineBar(object):
             if tick.datetime.hour == 23 and tick.datetime.minute == 30:
                 endtick = True
 
-        # 满足时间要求,tick的时间，距离最后一个bar的开始时间，已经超出bar的时间周期（barTimeInterval），并且不是最后一个结束tick
-        if (tick.datetime-lastBar.datetime).seconds >= self.barTimeInterval and not endtick:
+        # 满足时间要求
+        # 1,秒周期，tick的时间，距离最后一个bar的开始时间，已经超出bar的时间周期（barTimeInterval）
+        # 2，分钟、小时周期，取整=0
+        # 3、日周期，开盘时间
+        # 4、不是最后一个结束tick
+        if ((self.period == PERIOD_SECOND and (tick.datetime-lastBar.datetime).seconds >= self.barTimeInterval) \
+            or
+                (self.period == PERIOD_MINUTE and tick.datetime.minute % self.barTimeInterval == 0
+                 and tick.datetime.minute != self.lastTick.datetime.minute)
+            or
+                (self.period == PERIOD_HOUR and self.barTimeInterval == 1 and tick.datetime
+                 and tick.datetime.hour != self.lastTick.datetime.hour)
+            or
+                (self.period == PERIOD_HOUR and self.barTimeInterval == 2 and tick.datetime
+                    and tick.datetime.hour != self.lastTick.datetime.hour
+                    and tick.datetime.hour in {1, 9, 11, 13, 21, 23})
+            or
+                (self.period == PERIOD_HOUR and self.barTimeInterval == 4 and tick.datetime
+                 and tick.datetime.hour != self.lastTick.datetime.hour
+                 and tick.datetime.hour in {1, 9, 13, 21})
+            or (self.period == PERIOD_DAY and tick.datetime
+                and (tick.datetime.hour == 21 or tick.datetime.hour == 9)
+                and 14 <= self.lastTick.datetime.hour <= 15)
+            ) and not endtick:
+
             # 创建并推入新的Bar
             self.__firstTick(tick)
             # 触发OnBar事件
@@ -1136,7 +1138,7 @@ class CtaLineBar(object):
         self.lastBollLower = l - l % self.minDiff     # 下轨取整
 
 
-    def __recountKdj(self):
+    def __recountKdj(self, countInBar = False):
         """KDJ指标"""
         """
         KDJ指标的中文名称又叫随机指标，是一个超买超卖指标,最早起源于期货市场，由乔治·莱恩（George Lane）首创。
@@ -1158,18 +1160,24 @@ class CtaLineBar(object):
         if self.inputKdjLen <= EMPTY_INT: return
 
         if len(self.lineBar) < self.inputKdjLen+1:
-            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算KDJ需要：{1}'.format(len(self.lineBar), self.inputKdjLen+1))
+            if not countInBar:
+                self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算KDJ需要：{1}'.format(len(self.lineBar), self.inputKdjLen+1))
             return
 
-        if self.mode == self.TICK_MODE:
+        # 数据是Tick模式，非bar内计算
+        if self.mode == self.TICK_MODE and not countInBar:
             listClose =[x.close for x in self.lineBar[-self.inputKdjLen-1:-1]]
+            listHigh = [x.high for x in self.lineBar[-self.inputKdjLen - 1:-1]]
+            listLow = [x.low for x in self.lineBar[-self.inputKdjLen - 1:-1]]
             idx = 2
         else:
             listClose =[x.close for x in self.lineBar[-self.inputKdjLen:]]
+            listHigh = [x.high for x in self.lineBar[-self.inputKdjLen :]]
+            listLow = [x.low for x in self.lineBar[-self.inputKdjLen :]]
             idx = 1
 
-        hhv = max(listClose)
-        llv = min(listClose)
+        hhv = max(listHigh)
+        llv = min(listLow)
 
         if len(self.lineK) > 0:
             lastK =  self.lineK[-1]
@@ -1184,7 +1192,7 @@ class CtaLineBar(object):
         if hhv == llv:
             rsv = 50
         else:
-            rsv= (self.lineBar[-1].close - llv)/(hhv - llv) * 100
+            rsv = (self.lineBar[-1].close - llv)/(hhv - llv) * 100
 
         k = 2*lastK/3 + rsv/3
         if k < 0: k = 0
@@ -1195,6 +1203,12 @@ class CtaLineBar(object):
         if d > 100: d = 100
 
         j = 3*k - 2*d
+
+        if countInBar:
+            self.lastD = d
+            self.lastK = k
+            self.lastJ = j
+            return
 
         if len(self.lineK) > self.inputKdjLen * 8:
             del self.lineK[0]
@@ -1238,7 +1252,6 @@ class CtaLineBar(object):
                 self.lineKdjButtom.append(b)
                 self.lastKdjTopButtom = self.lineKdjButtom[-1]
 
-
     def __recountMacd(self):
         """
         Macd计算方法：
@@ -1258,7 +1271,7 @@ class CtaLineBar(object):
 
         maxLen = max(self.inputMacdFastPeriodLen,self.inputMacdSlowPeriodLen)+self.inputMacdSignalPeriodLen+1
 
-        maxLen = maxLen * 3             # 注：数据长度需要足够，才能准确。测试过，3倍长度才可以与国内的文华等软件一致
+        #maxLen = maxLen * 3             # 注：数据长度需要足够，才能准确。测试过，3倍长度才可以与国内的文华等软件一致
 
         if len(self.lineBar) < maxLen:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算MACD需要：{1}'.format(len(self.lineBar), maxLen))
@@ -1288,6 +1301,56 @@ class CtaLineBar(object):
         if len(self.lineMacd) > maxLen:
             del self.lineMacd[0]
         self.lineMacd.append(macd[-1]*2)            # 国内一般是2倍
+
+    def __recountCci(self):
+        """CCI计算
+        顺势指标又叫CCI指标，CCI指标是美国股市技术分析 家唐纳德·蓝伯特(Donald Lambert)于20世纪80年代提出的，专门测量股价、外汇或者贵金属交易
+        是否已超出常态分布范围。属于超买超卖类指标中较特殊的一种。波动于正无穷大和负无穷大之间。但是，又不需要以0为中轴线，这一点也和波动于正无穷大
+        和负无穷大的指标不同。
+        它最早是用于期货市场的判断，后运用于股票市场的研判，并被广泛使用。与大多数单一利用股票的收盘价、开盘价、最高价或最低价而发明出的各种技术分析
+        指标不同，CCI指标是根据统计学原理，引进价格与固定期间的股价平均区间的偏离程度的概念，强调股价平均绝对偏差在股市技术分析中的重要性，是一种比
+        较独特的技术指标。
+        它与其他超买超卖型指标又有自己比较独特之处。象KDJ、W%R等大多数超买超卖型指标都有“0-100”上下界限，因此，它们对待一般常态行情的研判比较适用
+        ，而对于那些短期内暴涨暴跌的股票的价格走势时，就可能会发生指标钝化的现象。而CCI指标却是波动于正无穷大到负无穷大之间，因此不会出现指标钝化现
+        象，这样就有利于投资者更好地研判行情，特别是那些短期内暴涨暴跌的非常态行情。
+        http://baike.baidu.com/view/53690.htm?fromtitle=CCI%E6%8C%87%E6%A0%87&fromid=4316895&type=syn
+
+
+        """
+        if self.inputCciLen <= 0:
+            return
+
+        # 1、lineBar满足长度才执行计算
+        if len(self.lineBar) < self.inputCciLen+2:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算CCI需要：{1}'.
+                             format(len(self.lineBar), self.inputCciLen + 2))
+            return
+
+        # 计算第1根RSI曲线
+
+        # 3、inputCc1Len(包含当前周期）
+        if self.mode == self.TICK_MODE:
+            listClose = [x.close for x in self.lineBar[-self.inputCciLen - 2:-1]]
+            listHigh = [x.high for x in self.lineBar[-self.inputCciLen - 2:-1]]
+            listLow  = [x.low for x in self.lineBar[-self.inputCciLen - 2:-1]]
+            idx = 2
+        else:
+            listClose = [x.close for x in self.lineBar[-self.inputCciLen-1:]]
+            listHigh = [x.high for x in self.lineBar[-self.inputCciLen - 1:]]
+            listLow = [x.low for x in self.lineBar[-self.inputCciLen - 1:]]
+            idx = 1
+
+        barCci = ta.CCI(high=numpy.array(listHigh, dtype=float), low=numpy.array(listLow, dtype=float),
+                        close=numpy.array(listClose, dtype=float), timeperiod=self.inputCciLen)[-1]
+
+        barCci = round(float(barCci), 3)
+
+        l = len(self.lineCci)
+        if l > self.inputCciLen*8:
+            del self.lineCci[0]
+
+        self.lineCci.append(barCci)
+
 
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):

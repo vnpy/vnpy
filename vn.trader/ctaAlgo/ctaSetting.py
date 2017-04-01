@@ -13,6 +13,8 @@
 from strategy22_ArbitrageGrid import Strategy22
 from strategy24_M15RB import Strategy24
 from strategy25_NonStdArbitrageGrid import Strategy25
+from strategy26_ArbitrageM1 import Strategy26
+from strategy27_MultiPeriod import Strategy27
 
 STRATEGY_CLASS = {}
 #STRATEGY_CLASS['DataRecorder'] = DataRecorder
@@ -20,3 +22,5 @@ STRATEGY_CLASS = {}
 STRATEGY_CLASS['Strategy22'] = Strategy22
 STRATEGY_CLASS['Strategy24'] = Strategy24
 STRATEGY_CLASS['Strategy25'] = Strategy25
+STRATEGY_CLASS['Strategy26'] = Strategy26
+STRATEGY_CLASS['Strategy27'] = Strategy27

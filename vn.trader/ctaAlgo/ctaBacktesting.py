@@ -19,6 +19,7 @@ import csv
 from ctaBase import *
 from ctaSetting import *
 
+from eventEngine import *
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
 from vtFunction import loadMongoSetting
@@ -36,7 +37,7 @@ class BacktestingEngine(object):
     2.修改装载数据为批量式后加载模式。
     3.增加csv 读取bar的回测模式
     4.增加csv 读取tick合并价差的回测模式
-
+    5.增加EventEngine，并对newBar增加发送OnBar事件，供外部的回测主体显示Bar线。
     """
     
     TICK_MODE = 'tick'              # 数据模式，逐Tick回测
@@ -46,8 +47,11 @@ class BacktestingEngine(object):
     FINAL_MODE = 'Final'            # 最后才统计交易，不适合按照百分比等开仓数量计算
 
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, eventEngine = None):
         """Constructor"""
+
+        self.eventEngine = eventEngine
+
         # 本地停止单编号计数
         self.stopOrderCount = 0
         # stopOrderID = STOPORDERPREFIX + str(stopOrderCount)
@@ -698,8 +702,8 @@ class BacktestingEngine(object):
                     leg1BidVolume1 = int(float(row['BidVolume']))
 
                     # 排除涨停/跌停的数据
-                    if (leg1AskPrice1== float('1.79769E308') and leg1AskVolume1 == 0) \
-                            or (leg1BidPrice1 == float('1.79769E308') and leg1BidVolume1 == 0):
+                    if ((leg1AskPrice1 == float('1.79769E308') or leg1AskPrice1 == 0) and leg1AskVolume1 == 0) \
+                            or ((leg1BidPrice1 == float('1.79769E308') or leg1BidPrice1 == 0) and leg1BidVolume1 == 0):
                         continue
 
                     # 叫卖价差=leg1.askPrice1 - leg2.bidPrice1，volume为两者最小
@@ -951,7 +955,15 @@ class BacktestingEngine(object):
             
         self.output(u'数据回放结束')
 
-    #----------------------------------------------------------------------
+    def __sendOnBarEvent(self, bar):
+        """发送Bar的事件"""
+        if self.eventEngine is not None:
+            eventType = EVENT_ON_BAR + '_' + self.symbol
+            event = Event(type_= eventType)
+            event.dict_['data'] = bar
+            self.eventEngine.put(event)
+
+    # ----------------------------------------------------------------------
     def newBar(self, bar):
         """新的K线"""
         self.bar = bar
@@ -959,7 +971,8 @@ class BacktestingEngine(object):
         self.crossLimitOrder()      # 先撮合限价单
         self.crossStopOrder()       # 再撮合停止单
         self.strategy.onBar(bar)    # 推送K线到策略中
-    
+        self.__sendOnBarEvent(bar)  # 推送K线到事件
+
     #----------------------------------------------------------------------
     def newTick(self, tick):
         """新的Tick"""
@@ -1110,8 +1123,8 @@ class BacktestingEngine(object):
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
             # 判断是否会成交
-            buyCross = order.direction==DIRECTION_LONG and order.price>=buyCrossPrice
-            sellCross = order.direction==DIRECTION_SHORT and order.price<=sellCrossPrice
+            buyCross = order.direction==DIRECTION_LONG and order.price >= buyCrossPrice
+            sellCross = order.direction==DIRECTION_SHORT and order.price <= sellCrossPrice
             
             # 如果发生了成交
             if buyCross or sellCross:
@@ -1159,6 +1172,7 @@ class BacktestingEngine(object):
                 except Exception as ex:
                     self.writeCtaError(u'{0}:{1}'.format(Exception, ex))
 
+                # 实时计算模式
                 if self.calculateMode == self.REALTIME_MODE:
                     self.realtimeCalculate()
                 
@@ -1178,8 +1192,8 @@ class BacktestingEngine(object):
         # 遍历停止单字典中的所有停止单
         for stopOrderID, so in self.workingStopOrderDict.items():
             # 判断是否会成交
-            buyCross = so.direction==DIRECTION_LONG and so.price<=buyCrossPrice
-            sellCross = so.direction==DIRECTION_SHORT and so.price>=sellCrossPrice
+            buyCross = so.direction==DIRECTION_LONG and so.price <= buyCrossPrice
+            sellCross = so.direction==DIRECTION_SHORT and so.price >= sellCrossPrice
             
             # 如果发生了成交
             if buyCross or sellCross:
@@ -1283,6 +1297,7 @@ class BacktestingEngine(object):
         longid = EMPTY_STRING
         shortid = EMPTY_STRING
 
+        # 对交易记录逐一处理
         for tradeid in self.tradeDict.keys():
             trade = self.tradeDict[tradeid]
             # 多头交易
@@ -1423,8 +1438,8 @@ class BacktestingEngine(object):
                     shortid = tradeid
                 # 当前空头交易为平多
                 else:
-                    gId = tradeid     # 交易组（多个平仓数为一组）                                                                                                                                    s
-                    gr = None   # 组合的交易结果
+                    gId = tradeid       # 交易组（多个平仓数为一组）                                                                                                                                    s
+                    gr = None           # 组合的交易结果
 
                     sellVolume = trade.volume
 
@@ -1577,6 +1592,7 @@ class BacktestingEngine(object):
                 self.writeCtaLog(msg)
             return
 
+        # 对交易结果汇总统计
         for time, result in resultDict.items():
 
             if result.pnl > 0:
@@ -1662,7 +1678,7 @@ class BacktestingEngine(object):
                                                groupId=gId, fixcommission=self.fixCommission)
 
                         if tv == 0:
-                            if gt==1:
+                            if gt == 1:
                                 resultDict[entryTrade.dt] = result
                             else:
                                 gr = copy.deepcopy(result)
@@ -1831,7 +1847,6 @@ class BacktestingEngine(object):
 
         for row in self.exportTradeList:
             writer.writerow(row)
-
 
     def getResult(self):
         # 返回回测结果

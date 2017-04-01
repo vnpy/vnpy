@@ -129,8 +129,8 @@ class CtaTickData(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""       
-        self.vtSymbol = EMPTY_STRING            # vt系统代码
-        self.symbol = EMPTY_STRING              # 合约代码
+        self.vtSymbol = EMPTY_STRING            # vt系统代码 CF705
+        self.symbol = EMPTY_STRING              # 合约代码   CF1705
         self.exchange = EMPTY_STRING            # 交易所代码
 
         # 成交数据
