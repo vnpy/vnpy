@@ -120,9 +120,12 @@ class BacktestingEngine(object):
         self.maxPnl = 0                     # 最高盈利
         self.minPnl = 0                     # 最大亏损
         self.maxVolume = 1                  # 最大仓位数
-        self.wins = 0                       # 盈利次数
+        self.winningResult = 0              # 盈利次数
+        self.losingResult = 0              # 亏损次数
 
         self.totalResult = 0         # 总成交数量
+        self.totalWinning = 0        # 总盈利
+        self.totalLosing = 0        # 总亏损
         self.totalTurnover = 0       # 总成交金额（合约面值）
         self.totalCommission = 0     # 总手续费
         self.totalSlippage = 0       # 总滑点
@@ -824,13 +827,22 @@ class BacktestingEngine(object):
             try:
 
                 bar = CtaBarData()
-                bar.open = float(row['Open'])
-                bar.high = float(row['High'])
-                bar.low = float(row['Low'])
-                bar.close = float(row['Close'])
-                bar.volume = float(row['TotalVolume'])
+                # 从tb导出的csv文件
+                #bar.open = float(row['Open'])
+                #bar.high = float(row['High'])
+                #bar.low = float(row['Low'])
+                #bar.close = float(row['Close'])
+                #bar.volume = float(row['TotalVolume'])#
+                #barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
 
-                barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
+                # 从ricequant导出的csv文件
+                bar.open = float(row['open'])
+                bar.high = float(row['high'])
+                bar.low = float(row['low'])
+                bar.close = float(row['close'])
+                bar.volume = float(row['volume'])
+                barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
+                bar.tradingDay = row['trading_date']
 
                 # 使用Bar的开始时间作为datetime
                 bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
@@ -844,7 +856,6 @@ class BacktestingEngine(object):
             except Exception as ex:
                 self.writeCtaLog(u'{0}:{1}'.format(Exception,ex))
                 continue
-
 
     #----------------------------------------------------------------------
     def runBacktestingWithMysql(self):
@@ -1596,7 +1607,11 @@ class BacktestingEngine(object):
         for time, result in resultDict.items():
 
             if result.pnl > 0:
-                self.wins += 1
+                self.winningResult += 1
+                self.totalWinning += result.pnl
+            else:
+                self.losingResult += 1
+                self.totalLosing += result.pnl
             self.capital += result.pnl
             self.maxCapital = max(self.capital, self.maxCapital)
             #self.maxVolume = max(self.maxVolume, result.volume)
@@ -1813,7 +1828,12 @@ class BacktestingEngine(object):
                 compounding = int(self.capital/self.initCapital)
 
             if result.pnl > 0:
-                self.wins += 1
+                self.winningResult += 1
+                self.totalWinning += result.pnl
+            else:
+                self.losingResult += 1
+                self.totalLosing += result.pnl
+
             self.capital += result.pnl*compounding
             self.maxCapital = max(self.capital, self.maxCapital)
             self.maxVolume = max(self.maxVolume, result.volume*compounding)
@@ -1822,7 +1842,7 @@ class BacktestingEngine(object):
 
             self.pnlList.append(result.pnl*compounding)
             self.timeList.append(time)
-            self.capitalList.append(self.capital)
+            self.capitalList.append(self.capningital)
             self.drawdownList.append(drawdown)
             self.drawdownRateList.append(drawdownRate)
 
@@ -1871,7 +1891,23 @@ class BacktestingEngine(object):
         d['capitalList'] = self.capitalList
         d['drawdownList'] = self.drawdownList
         d['drawdownRateList'] = self.drawdownRateList
-        d['winRate'] = round(100*self.wins/len(self.pnlList),4)
+        d['winningRate'] = round(100 * self.winningResult / len(self.pnlList), 4)
+
+        averageWinning = 0  # 这里把数据都初始化为0
+        averageLosing = 0
+        profitLossRatio = 0
+
+        if self.winningResult:
+            averageWinning = self.totalWinning / self.winningResult  # 平均每笔盈利
+        if self.losingResult:
+            averageLosing = self.totalLosing / self.losingResult  # 平均每笔亏损
+        if averageLosing:
+            profitLossRatio = -averageWinning / averageLosing  # 盈亏比
+
+        d['averageWinning'] = averageWinning
+        d['averageLosing'] = averageLosing
+        d['profitLossRatio'] = profitLossRatio
+
         return d
 
     #----------------------------------------------------------------------
@@ -1903,11 +1939,16 @@ class BacktestingEngine(object):
         self.output(u'每笔最大亏损：\t%s' % formatNumber(d['minPnl']))
         self.output(u'净值最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))
         self.output(u'净值最大回撤率: \t%s' % formatNumber(min(d['drawdownRateList'])))
-        self.output(u'胜率：\t%s' % formatNumber(d['winRate']))
+        self.output(u'胜率：\t%s' % formatNumber(d['winningRate']))
+
+        self.output(u'盈利交易平均值\t%s' % formatNumber(d['averageWinning']))
+        self.output(u'亏损交易平均值\t%s' % formatNumber(d['averageLosing']))
+        self.output(u'盈亏比：\t%s' % formatNumber(d['profitLossRatio']))
 
         self.output(u'最大持仓：\t%s' % formatNumber(d['maxVolume']))
 
         self.output(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
+
         self.output(u'平均每笔滑点成本：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
         self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
             
