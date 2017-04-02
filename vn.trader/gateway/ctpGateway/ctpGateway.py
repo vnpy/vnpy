@@ -486,6 +486,7 @@ class CtpTdApi(TdApi):
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接成功'
         self.gateway.onLog(log)
+        
         if self.requireAuthentication:
             self.authenticate()
         else:
@@ -512,10 +513,13 @@ class CtpTdApi(TdApi):
     def onRspAuthenticate(self, data, error, n, last):
         """验证客户端回报"""
         if error['ErrorID'] == 0:
+            self.authStatus = True
+            
             log = VtLogData()
             log.gatewayName = self.gatewayName
-            log.logContent = u'交易服务器验证成功'
+            log.logContent = u'交易服务器验证成功'            
             self.gateway.onLog(log)
+            
             self.login()
         
     #----------------------------------------------------------------------
@@ -1298,12 +1302,10 @@ class CtpTdApi(TdApi):
             
         # 若已经连接但尚未登录，则进行登录
         else:
-            if self.requireAuthentication:
-                if self.authStatus:
-                    self.authenticate()
-            else:
-                if self.loginStatus:
-                    self.login()
+            if self.requireAuthentication and not self.authStatus:
+                self.authenticate()
+            elif not self.loginStatus:
+                self.login()
     
     #----------------------------------------------------------------------
     def login(self):
@@ -1316,8 +1318,10 @@ class CtpTdApi(TdApi):
             req['BrokerID'] = self.brokerID
             self.reqID += 1
             self.reqUserLogin(req, self.reqID)   
-
+            
+    #----------------------------------------------------------------------
     def authenticate(self):
+        """申请验证"""
         if self.userID and self.brokerID and self.authCode and self.userProductInfo:
             req = {}
             req['UserID'] = self.userID
