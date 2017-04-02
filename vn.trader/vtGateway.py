@@ -28,7 +28,7 @@ class VtGateway(object):
         event1 = Event(type_=EVENT_TICK)
         event1.dict_['data'] = tick
         self.eventEngine.put(event1)
-        
+
         # 特定合约代码的事件
         event2 = Event(type_=EVENT_TICK+tick.vtSymbol)
         event2.dict_['data'] = tick

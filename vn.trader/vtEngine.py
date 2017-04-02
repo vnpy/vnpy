@@ -37,9 +37,9 @@ class MainEngine(object):
         self.initGateway()
 
         # 扩展模块
-        self.ctaEngine = CtaEngine(self, self.eventEngine)
-        self.drEngine = DrEngine(self, self.eventEngine)
-        self.rmEngine = RmEngine(self, self.eventEngine)
+        self.ctaEngine = CtaEngine(self, self.eventEngine)  # cta策略运行模块
+        self.drEngine = DrEngine(self, self.eventEngine)    # 数据记录模块
+        self.rmEngine = RmEngine(self, self.eventEngine)    # 风险管理模块
         
     #----------------------------------------------------------------------
     def initGateway(self):
@@ -71,7 +71,8 @@ class MainEngine(object):
             self.gatewayDict['LTS'].setQryEnabled(True)
         except Exception, e:
             print e
-        
+        """
+        """
         try:
             from ksotpGateway.ksotpGateway import KsotpGateway
             self.addGateway(KsotpGateway, 'KSOTP')
