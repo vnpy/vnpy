@@ -67,6 +67,7 @@ class CtaLineBar(object):
         self.paramList.append('inputEma2Len')
         self.paramList.append('inputMa1Len')
         self.paramList.append('inputMa2Len')
+        self.paramList.append('inputMa3Len')
         self.paramList.append('inputDmiLen')
         self.paramList.append('inputDmiMax')
         self.paramList.append('inputAtr1Len')
@@ -99,8 +100,9 @@ class CtaLineBar(object):
 
         self.inputPreLen = EMPTY_INT    #1
 
-        self.inputMa1Len = EMPTY_INT   # 60
-        self.inputMa2Len = EMPTY_INT   # 240
+        self.inputMa1Len = EMPTY_INT   # 10
+        self.inputMa2Len = EMPTY_INT   # 20
+        self.inputMa3Len = EMPTY_INT   # 120
 
         self.inputEma1Len = EMPTY_INT   # 13
         self.inputEma2Len = EMPTY_INT   # 21
@@ -142,6 +144,7 @@ class CtaLineBar(object):
 
         self.lineMa1 = []              # K线的MA1均线，周期是InputMaLen1，不包含当前bar
         self.lineMa2 = []              # K线的MA2均线，周期是InputMaLen2，不包含当前bar
+        self.lineMa3 = []  # K线的MA2均线，周期是InputMaLen2，不包含当前bar
 
         self.lineEma1 = []              # K线的EMA1均线，周期是InputEmaLen1，不包含当前bar
         self.lineEma1MtmRate = []       # K线的EMA1均线 的momentum(3) 动能
@@ -360,6 +363,9 @@ class CtaLineBar(object):
 
         if self.inputMa2Len > 0 and len(self.lineMa2) > 0:
             msg = msg + u',MA({0}):{1}'.format(self.inputMa2Len, self.lineMa2[-1])
+
+        if self.inputMa3Len > 0 and len(self.lineMa3) > 0:
+            msg = msg + u',MA({0}):{1}'.format(self.inputMa3Len, self.lineMa3[-1])
 
         if self.inputEma1Len > 0 and len(self.lineEma1) > 0:
             msg = msg + u',EMA({0}):{1}'.format(self.inputEma1Len, self.lineEma1[-1])
@@ -598,15 +604,17 @@ class CtaLineBar(object):
         """计算K线的MA1 和MA2"""
         l = len(self.lineBar)
 
+        if not (self.inputMa1Len > 0 or self.inputMa2Len > 0 or self.inputMa3Len > 0):  # 不计算
+            return
+
         # 1、lineBar满足长度才执行计算
-        if len(self.lineBar) < max(7, self.inputMa1Len, self.inputMa2Len)+2:
+        if len(self.lineBar) < max(7, self.inputMa1Len, self.inputMa2Len, self.inputMa3Len)+2:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算MA需要：{1}'.
-                             format(len(self.lineBar), max(7, self.inputMa1Len, self.inputMa2Len)+2))
+                             format(len(self.lineBar), max(7, self.inputMa1Len, self.inputMa2Len, self.inputMa3Len)+2))
             return
 
         # 计算第一条MA均线
         if self.inputMa1Len > 0:
-
             if self.inputMa1Len > l:
                 ma1Len = l
             else:
@@ -619,7 +627,6 @@ class CtaLineBar(object):
                 listClose=[x.close for x in self.lineBar[-ma1Len:]]
 
             barMa1 = ta.MA(numpy.array(listClose, dtype=float), ma1Len)[-1]
-
             barMa1 = round(float(barMa1), 3)
 
             if len(self.lineMa1) > self.inputMa1Len*8:
@@ -628,7 +635,6 @@ class CtaLineBar(object):
 
         # 计算第二条MA均线
         if self.inputMa2Len > 0:
-
             if self.inputMa2Len > l:
                 ma2Len = l
             else:
@@ -641,16 +647,39 @@ class CtaLineBar(object):
                 listClose=[x.close for x in self.lineBar[-ma2Len:]]
 
             barMa2 = ta.MA(numpy.array(listClose, dtype=float), ma2Len)[-1]
-
             barMa2 = round(float(barMa2), 3)
 
             if len(self.lineMa2) > self.inputMa2Len*8:
                 del self.lineMa2[0]
             self.lineMa2.append(barMa2)
 
+        # 计算第三条MA均线
+        if self.inputMa3Len > 0:
+            if self.inputMa3Len > l:
+                ma3Len = l
+            else:
+                ma3Len = self.inputMa3Len
+
+            # 3、获取前InputN周期(不包含当前周期）的K线
+            if self.mode == self.TICK_MODE:
+                listClose = [x.close for x in self.lineBar[-ma3Len - 1:-1]]
+            else:
+                listClose = [x.close for x in self.lineBar[-ma3Len:]]
+
+            barMa3 = ta.MA(numpy.array(listClose, dtype=float), ma3Len)[-1]
+            barMa3 = round(float(barMa3), 3)
+
+            if len(self.lineMa3) > self.inputMa3Len * 8:
+                del self.lineMa3[0]
+            self.lineMa3.append(barMa3)
+
     #----------------------------------------------------------------------
     def __recountEma(self):
         """计算K线的EMA1 和EMA2"""
+
+        if not (self.inputEma1Len > 0 or self.inputEma2Len >0):           # 不计算
+            return
+
         l = len(self.lineBar)
 
         # 1、lineBar满足长度才执行计算
