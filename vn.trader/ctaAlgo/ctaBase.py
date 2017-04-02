@@ -95,7 +95,7 @@ class CtaBarData(object):
         self.close = EMPTY_FLOAT
 
         self.tradingDay = EMPTY_STRING      # 交易日期
-        self.date = EMPTY_STRING            # bar开始的时间，日期（通过tick生成的bar时间，为开始时间，其他为结束时间）
+        self.date = EMPTY_STRING            # bar开始的日期（通过tick生成的bar时间，为开始时间，其他为结束时间）
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
         
