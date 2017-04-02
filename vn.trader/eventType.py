@@ -21,9 +21,13 @@ EVENT_TRADE = 'eTrade.'                 # 成交回报事件
 EVENT_ORDER = 'eOrder.'                 # 报单回报事件
 EVENT_POSITION = 'ePosition.'           # 持仓回报事件
 EVENT_ACCOUNT = 'eAccount.'             # 账户回报事件
-EVENT_ACCOUNT_LOSS = 'eAccountLoss'     # 账户亏损事件
 EVENT_CONTRACT = 'eContract.'           # 合约基础信息回报事件
 EVENT_ERROR = 'eError.'                 # 错误回报事件
+
+# add by incenselee
+EVENT_ACCOUNT_LOSS = 'eAccountLoss'     # 账户亏损事件
+EVENT_FULL_MONITOR = 'eFullMonitor'     # 全周期监控
+EVENT_ON_BAR = 'eOnBar'                 # OnBar事件
 
 # CTA模块相关
 EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
