@@ -1,21 +1,21 @@
-// vnctpmd.cpp : ¶¨Òå DLL Ó¦ÓÃ³ÌĞòµÄµ¼³öº¯Êı¡£
+// vnctpmd.cpp : å®šä¹‰ DLL åº”ç”¨ç¨‹åºçš„å¯¼å‡ºå‡½æ•°ã€‚
 //
 
 #include "vnctpmd.h"
 
 ///-------------------------------------------------------------------------------------
-///´ÓPython¶ÔÏóµ½C++ÀàĞÍ×ª»»ÓÃµÄº¯Êı
+///ä»Pythonå¯¹è±¡åˆ°C++ç±»å‹è½¬æ¢ç”¨çš„å‡½æ•°
 ///-------------------------------------------------------------------------------------
 
 void getInt(dict d, string key, int *value)
 {
-	if (d.has_key(key))		//¼ì²é×ÖµäÖĞÊÇ·ñ´æÔÚ¸Ã¼üÖµ
+	if (d.has_key(key))		//æ£€æŸ¥å­—å…¸ä¸­æ˜¯å¦å­˜åœ¨è¯¥é”®å€¼
 	{
-		object o = d[key];	//»ñÈ¡¸Ã¼üÖµ
-		extract<int> x(o);	//´´½¨ÌáÈ¡Æ÷
-		if (x.check())		//Èç¹û¿ÉÒÔÌáÈ¡
+		object o = d[key];	//è·å–è¯¥é”®å€¼
+		extract<int> x(o);	//åˆ›å»ºæå–å™¨
+		if (x.check())		//å¦‚æœå¯ä»¥æå–
 		{
-			*value = x();	//¶ÔÄ¿±êÕûÊıÖ¸Õë¸³Öµ
+			*value = x();	//å¯¹ç›®æ ‡æ•´æ•°æŒ‡é’ˆèµ‹å€¼
 		}
 	}
 };
@@ -43,8 +43,8 @@ void getStr(dict d, string key, char *value)
 		{
 			string s = x();
 			const char *buffer = s.c_str();
-			//¶Ô×Ö·û´®Ö¸Õë¸³Öµ±ØĞëÊ¹ÓÃstrcpy_s, vs2013Ê¹ÓÃstrcpy±àÒëÍ¨²»¹ı
-			//+1Ó¦¸ÃÊÇÒòÎªC++×Ö·û´®µÄ½áÎ²·ûºÅ£¿²»ÊÇÌØ±ğÈ·¶¨£¬²»¼ÓÕâ¸ö1»á³ö´í
+			//å¯¹å­—ç¬¦ä¸²æŒ‡é’ˆèµ‹å€¼å¿…é¡»ä½¿ç”¨strcpy_s, vs2013ä½¿ç”¨strcpyç¼–è¯‘é€šä¸è¿‡
+			//+1åº”è¯¥æ˜¯å› ä¸ºC++å­—ç¬¦ä¸²çš„ç»“å°¾ç¬¦å·ï¼Ÿä¸æ˜¯ç‰¹åˆ«ç¡®å®šï¼Œä¸åŠ è¿™ä¸ª1ä¼šå‡ºé”™
 #ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
@@ -71,7 +71,7 @@ void getChar(dict d, string key, char *value)
 
 
 ///-------------------------------------------------------------------------------------
-///C++µÄ»Øµ÷º¯Êı½«Êı¾İ±£´æµ½¶ÓÁĞÖĞ
+///C++çš„å›è°ƒå‡½æ•°å°†æ•°æ®ä¿å­˜åˆ°é˜Ÿåˆ—ä¸­
 ///-------------------------------------------------------------------------------------
 
 void MdApi::OnFrontConnected()
@@ -342,7 +342,7 @@ void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 
 
 ///-------------------------------------------------------------------------------------
-///¹¤×÷Ïß³Ì´Ó¶ÓÁĞÖĞÈ¡³öÊı¾İ£¬×ª»¯Îªpython¶ÔÏóºó£¬½øĞĞÍÆËÍ
+///å·¥ä½œçº¿ç¨‹ä»é˜Ÿåˆ—ä¸­å–å‡ºæ•°æ®ï¼Œè½¬åŒ–ä¸ºpythonå¯¹è±¡åï¼Œè¿›è¡Œæ¨é€
 ///-------------------------------------------------------------------------------------
 
 void MdApi::processTask()
@@ -451,24 +451,24 @@ void MdApi::processRspUserLogin(Task task)
 	PyLock lock;
 	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
-	data["CZCETime"] = task_data.CZCETime;
-	data["SHFETime"] = task_data.SHFETime;
-	data["MaxOrderRef"] = task_data.MaxOrderRef;
-	data["INETime"] = task_data.INETime;
-	data["UserID"] = task_data.UserID;
-	data["TradingDay"] = task_data.TradingDay;
+	data["SHFETime"] = boost::locale::conv::to_utf<char>(task_data.SHFETime, std::string("GB2312"));
 	data["SessionID"] = task_data.SessionID;
-	data["SystemName"] = task_data.SystemName;
+	data["LoginTime"] = boost::locale::conv::to_utf<char>(task_data.LoginTime, std::string("GB2312"));
+	data["CZCETime"] = boost::locale::conv::to_utf<char>(task_data.CZCETime, std::string("GB2312"));
+	data["SystemName"] = boost::locale::conv::to_utf<char>(task_data.SystemName, std::string("GB2312"));
+	data["INETime"] = boost::locale::conv::to_utf<char>(task_data.INETime, std::string("GB2312"));
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+	data["MaxOrderRef"] = boost::locale::conv::to_utf<char>(task_data.MaxOrderRef, std::string("GB2312"));
+	data["DCETime"] = boost::locale::conv::to_utf<char>(task_data.DCETime, std::string("GB2312"));
+	data["FFEXTime"] = boost::locale::conv::to_utf<char>(task_data.FFEXTime, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["FrontID"] = task_data.FrontID;
-	data["FFEXTime"] = task_data.FFEXTime;
-	data["BrokerID"] = task_data.BrokerID;
-	data["DCETime"] = task_data.DCETime;
-	data["LoginTime"] = task_data.LoginTime;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspUserLogin(data, error, task.task_id, task.task_last);
 };
@@ -478,13 +478,13 @@ void MdApi::processRspUserLogout(Task task)
 	PyLock lock;
 	CThostFtdcUserLogoutField task_data = any_cast<CThostFtdcUserLogoutField>(task.task_data);
 	dict data;
-	data["UserID"] = task_data.UserID;
-	data["BrokerID"] = task_data.BrokerID;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspUserLogout(data, error, task.task_id, task.task_last);
 };
@@ -494,8 +494,8 @@ void MdApi::processRspError(Task task)
 	PyLock lock;
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspError(error, task.task_id, task.task_last);
 };
@@ -505,12 +505,12 @@ void MdApi::processRspSubMarketData(Task task)
 	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
-	data["InstrumentID"] = task_data.InstrumentID;
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspSubMarketData(data, error, task.task_id, task.task_last);
 };
@@ -520,12 +520,12 @@ void MdApi::processRspUnSubMarketData(Task task)
 	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
-	data["InstrumentID"] = task_data.InstrumentID;
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspUnSubMarketData(data, error, task.task_id, task.task_last);
 };
@@ -535,12 +535,12 @@ void MdApi::processRspSubForQuoteRsp(Task task)
 	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
-	data["InstrumentID"] = task_data.InstrumentID;
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspSubForQuoteRsp(data, error, task.task_id, task.task_last);
 };
@@ -550,12 +550,12 @@ void MdApi::processRspUnSubForQuoteRsp(Task task)
 	PyLock lock;
 	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
 	dict data;
-	data["InstrumentID"] = task_data.InstrumentID;
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspUnSubForQuoteRsp(data, error, task.task_id, task.task_last);
 };
@@ -565,50 +565,50 @@ void MdApi::processRtnDepthMarketData(Task task)
 	PyLock lock;
 	CThostFtdcDepthMarketDataField task_data = any_cast<CThostFtdcDepthMarketDataField>(task.task_data);
 	dict data;
-	data["HighestPrice"] = task_data.HighestPrice;
-	data["BidPrice5"] = task_data.BidPrice5;
-	data["BidPrice4"] = task_data.BidPrice4;
-	data["BidPrice1"] = task_data.BidPrice1;
-	data["BidPrice3"] = task_data.BidPrice3;
-	data["BidPrice2"] = task_data.BidPrice2;
-	data["LowerLimitPrice"] = task_data.LowerLimitPrice;
-	data["OpenPrice"] = task_data.OpenPrice;
-	data["AskPrice5"] = task_data.AskPrice5;
-	data["AskPrice4"] = task_data.AskPrice4;
-	data["AskPrice3"] = task_data.AskPrice3;
-	data["PreClosePrice"] = task_data.PreClosePrice;
-	data["AskPrice1"] = task_data.AskPrice1;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
 	data["PreSettlementPrice"] = task_data.PreSettlementPrice;
-	data["AskVolume1"] = task_data.AskVolume1;
-	data["UpdateTime"] = task_data.UpdateTime;
-	data["UpdateMillisec"] = task_data.UpdateMillisec;
-	data["AveragePrice"] = task_data.AveragePrice;
-	data["BidVolume5"] = task_data.BidVolume5;
-	data["BidVolume4"] = task_data.BidVolume4;
-	data["BidVolume3"] = task_data.BidVolume3;
-	data["BidVolume2"] = task_data.BidVolume2;
 	data["PreOpenInterest"] = task_data.PreOpenInterest;
-	data["AskPrice2"] = task_data.AskPrice2;
-	data["Volume"] = task_data.Volume;
-	data["AskVolume3"] = task_data.AskVolume3;
-	data["AskVolume2"] = task_data.AskVolume2;
-	data["AskVolume5"] = task_data.AskVolume5;
-	data["AskVolume4"] = task_data.AskVolume4;
-	data["UpperLimitPrice"] = task_data.UpperLimitPrice;
-	data["BidVolume1"] = task_data.BidVolume1;
-	data["InstrumentID"] = task_data.InstrumentID;
-	data["ClosePrice"] = task_data.ClosePrice;
-	data["ExchangeID"] = task_data.ExchangeID;
-	data["TradingDay"] = task_data.TradingDay;
+	data["OpenPrice"] = task_data.OpenPrice;
 	data["PreDelta"] = task_data.PreDelta;
-	data["OpenInterest"] = task_data.OpenInterest;
-	data["CurrDelta"] = task_data.CurrDelta;
-	data["Turnover"] = task_data.Turnover;
-	data["LastPrice"] = task_data.LastPrice;
+	data["BidVolume4"] = task_data.BidVolume4;
+	data["AveragePrice"] = task_data.AveragePrice;
+	data["BidVolume3"] = task_data.BidVolume3;
+	data["BidPrice3"] = task_data.BidPrice3;
+	data["AskVolume2"] = task_data.AskVolume2;
+	data["ActionDay"] = boost::locale::conv::to_utf<char>(task_data.ActionDay, std::string("GB2312"));
 	data["SettlementPrice"] = task_data.SettlementPrice;
-	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["LowerLimitPrice"] = task_data.LowerLimitPrice;
+	data["AskPrice3"] = task_data.AskPrice3;
+	data["BidPrice5"] = task_data.BidPrice5;
+	data["AskPrice1"] = task_data.AskPrice1;
+	data["BidVolume5"] = task_data.BidVolume5;
+	data["BidVolume1"] = task_data.BidVolume1;
+	data["PreClosePrice"] = task_data.PreClosePrice;
+	data["CurrDelta"] = task_data.CurrDelta;
+	data["OpenInterest"] = task_data.OpenInterest;
+	data["BidVolume2"] = task_data.BidVolume2;
+	data["AskVolume3"] = task_data.AskVolume3;
+	data["AskVolume1"] = task_data.AskVolume1;
+	data["HighestPrice"] = task_data.HighestPrice;
+	data["LastPrice"] = task_data.LastPrice;
+	data["AskPrice4"] = task_data.AskPrice4;
+	data["Volume"] = task_data.Volume;
+	data["AskPrice2"] = task_data.AskPrice2;
+	data["AskPrice5"] = task_data.AskPrice5;
+	data["AskVolume4"] = task_data.AskVolume4;
+	data["BidPrice2"] = task_data.BidPrice2;
+	data["ClosePrice"] = task_data.ClosePrice;
+	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
 	data["LowestPrice"] = task_data.LowestPrice;
-	data["ActionDay"] = task_data.ActionDay;
+	data["BidPrice1"] = task_data.BidPrice1;
+	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+	data["UpperLimitPrice"] = task_data.UpperLimitPrice;
+	data["BidPrice4"] = task_data.BidPrice4;
+	data["AskVolume5"] = task_data.AskVolume5;
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+	data["UpdateMillisec"] = task_data.UpdateMillisec;
+	data["Turnover"] = task_data.Turnover;
 
 	this->onRtnDepthMarketData(data);
 };
@@ -618,20 +618,22 @@ void MdApi::processRtnForQuoteRsp(Task task)
 	PyLock lock;
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
-	data["InstrumentID"] = task_data.InstrumentID;
-	data["ActionDay"] = task_data.ActionDay;
-	data["ExchangeID"] = task_data.ExchangeID;
-	data["TradingDay"] = task_data.TradingDay;
-	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
-	data["ForQuoteTime"] = task_data.ForQuoteTime;
+	data["ForQuoteTime"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteTime, std::string("GB2312"));
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["ActionDay"] = boost::locale::conv::to_utf<char>(task_data.ActionDay, std::string("GB2312"));
+	data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	this->onRtnForQuoteRsp(data);
 };
 
 
 
+
+
 ///-------------------------------------------------------------------------------------
-///Ö÷¶¯º¯Êı
+///ä¸»åŠ¨å‡½æ•°
 ///-------------------------------------------------------------------------------------
 
 void MdApi::createFtdcMdApi(string pszFlowPath)
@@ -658,7 +660,7 @@ int MdApi::join()
 
 int MdApi::exit()
 {
-	//¸Ãº¯ÊıÔÚÔ­ÉúAPIÀïÃ»ÓĞ£¬ÓÃÓÚ°²È«ÍË³öAPIÓÃ£¬Ô­ÉúµÄjoinËÆºõ²»Ì«ÎÈ¶¨
+	//è¯¥å‡½æ•°åœ¨åŸç”ŸAPIé‡Œæ²¡æœ‰ï¼Œç”¨äºå®‰å…¨é€€å‡ºAPIç”¨ï¼ŒåŸç”Ÿçš„joinä¼¼ä¹ä¸å¤ªç¨³å®š
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
 	this->api = NULL;
@@ -739,14 +741,14 @@ int MdApi::reqUserLogout(dict req, int nRequestID)
 
 
 ///-------------------------------------------------------------------------------------
-///Boost.Python·â×°
+///Boost.Pythonå°è£…
 ///-------------------------------------------------------------------------------------
 
 struct MdApiWrap : MdApi, wrapper < MdApi >
 {
 	virtual void onFrontConnected()
 	{
-		//ÒÔÏÂµÄtry...catch...¿ÉÒÔÊµÏÖ²¶×½python»·¾³ÖĞ´íÎóµÄ¹¦ÄÜ£¬·ÀÖ¹C++Ö±½Ó³öÏÖÔ­ÒòÎ´ÖªµÄ±ÀÀ£
+		//ä»¥ä¸‹çš„try...catch...å¯ä»¥å®ç°æ•æ‰pythonç¯å¢ƒä¸­é”™è¯¯çš„åŠŸèƒ½ï¼Œé˜²æ­¢C++ç›´æ¥å‡ºç°åŸå› æœªçŸ¥çš„å´©æºƒ
 		try
 		{
 			this->get_override("onFrontConnected")();
@@ -893,7 +895,7 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 BOOST_PYTHON_MODULE(vnctpmd)
 {
-	PyEval_InitThreads();	//µ¼ÈëÊ±ÔËĞĞ£¬±£Ö¤ÏÈ´´½¨GIL
+	PyEval_InitThreads();	//å¯¼å…¥æ—¶è¿è¡Œï¼Œä¿è¯å…ˆåˆ›å»ºGIL
 
 	class_<MdApiWrap, boost::noncopyable>("MdApi")
 		.def("createFtdcMdApi", &MdApiWrap::createFtdcMdApi)
