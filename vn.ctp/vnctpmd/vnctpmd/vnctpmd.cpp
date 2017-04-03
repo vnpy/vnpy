@@ -1,21 +1,21 @@
-// vnctpmd.cpp : ¶¨Òå DLL Ó¦ÓÃ³ÌĞòµÄµ¼³öº¯Êı¡£
+// vnctpmd.cpp : å®šä¹‰ DLL åº”ç”¨ç¨‹åºçš„å¯¼å‡ºå‡½æ•°ã€‚
 //
 
 #include "vnctpmd.h"
 
 ///-------------------------------------------------------------------------------------
-///´ÓPython¶ÔÏóµ½C++ÀàĞÍ×ª»»ÓÃµÄº¯Êı
+///ä»Pythonå¯¹è±¡åˆ°C++ç±»å‹è½¬æ¢ç”¨çš„å‡½æ•°
 ///-------------------------------------------------------------------------------------
 
 void getInt(dict d, string key, int *value)
 {
-	if (d.has_key(key))		//¼ì²é×ÖµäÖĞÊÇ·ñ´æÔÚ¸Ã¼üÖµ
+	if (d.has_key(key))		//æ£€æŸ¥å­—å…¸ä¸­æ˜¯å¦å­˜åœ¨è¯¥é”®å€¼
 	{
-		object o = d[key];	//»ñÈ¡¸Ã¼üÖµ
-		extract<int> x(o);	//´´½¨ÌáÈ¡Æ÷
-		if (x.check())		//Èç¹û¿ÉÒÔÌáÈ¡
+		object o = d[key];	//è·å–è¯¥é”®å€¼
+		extract<int> x(o);	//åˆ›å»ºæå–å™¨
+		if (x.check())		//å¦‚æœå¯ä»¥æå–
 		{
-			*value = x();	//¶ÔÄ¿±êÕûÊıÖ¸Õë¸³Öµ
+			*value = x();	//å¯¹ç›®æ ‡æ•´æ•°æŒ‡é’ˆèµ‹å€¼
 		}
 	}
 };
@@ -43,8 +43,8 @@ void getStr(dict d, string key, char *value)
 		{
 			string s = x();
 			const char *buffer = s.c_str();
-			//¶Ô×Ö·û´®Ö¸Õë¸³Öµ±ØĞëÊ¹ÓÃstrcpy_s, vs2013Ê¹ÓÃstrcpy±àÒëÍ¨²»¹ı
-			//+1Ó¦¸ÃÊÇÒòÎªC++×Ö·û´®µÄ½áÎ²·ûºÅ£¿²»ÊÇÌØ±ğÈ·¶¨£¬²»¼ÓÕâ¸ö1»á³ö´í
+			//å¯¹å­—ç¬¦ä¸²æŒ‡é’ˆèµ‹å€¼å¿…é¡»ä½¿ç”¨strcpy_s, vs2013ä½¿ç”¨strcpyç¼–è¯‘é€šä¸è¿‡
+			//+1åº”è¯¥æ˜¯å› ä¸ºC++å­—ç¬¦ä¸²çš„ç»“å°¾ç¬¦å·ï¼Ÿä¸æ˜¯ç‰¹åˆ«ç¡®å®šï¼Œä¸åŠ è¿™ä¸ª1ä¼šå‡ºé”™
 #ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
@@ -71,7 +71,7 @@ void getChar(dict d, string key, char *value)
 
 
 ///-------------------------------------------------------------------------------------
-///C++µÄ»Øµ÷º¯Êı½«Êı¾İ±£´æµ½¶ÓÁĞÖĞ
+///C++çš„å›è°ƒå‡½æ•°å°†æ•°æ®ä¿å­˜åˆ°é˜Ÿåˆ—ä¸­
 ///-------------------------------------------------------------------------------------
 
 void MdApi::OnFrontConnected()
@@ -342,7 +342,7 @@ void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 
 
 ///-------------------------------------------------------------------------------------
-///¹¤×÷Ïß³Ì´Ó¶ÓÁĞÖĞÈ¡³öÊı¾İ£¬×ª»¯Îªpython¶ÔÏóºó£¬½øĞĞÍÆËÍ
+///å·¥ä½œçº¿ç¨‹ä»é˜Ÿåˆ—ä¸­å–å‡ºæ•°æ®ï¼Œè½¬åŒ–ä¸ºpythonå¯¹è±¡åï¼Œè¿›è¡Œæ¨é€
 ///-------------------------------------------------------------------------------------
 
 void MdApi::processTask()
@@ -467,7 +467,8 @@ void MdApi::processRspUserLogin(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUserLogin(data, error, task.task_id, task.task_last);
@@ -483,7 +484,8 @@ void MdApi::processRspUserLogout(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUserLogout(data, error, task.task_id, task.task_last);
@@ -494,7 +496,8 @@ void MdApi::processRspError(Task task)
 	PyLock lock;
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspError(error, task.task_id, task.task_last);
@@ -509,7 +512,8 @@ void MdApi::processRspSubMarketData(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspSubMarketData(data, error, task.task_id, task.task_last);
@@ -524,7 +528,8 @@ void MdApi::processRspUnSubMarketData(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUnSubMarketData(data, error, task.task_id, task.task_last);
@@ -539,7 +544,8 @@ void MdApi::processRspSubForQuoteRsp(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspSubForQuoteRsp(data, error, task.task_id, task.task_last);
@@ -554,7 +560,8 @@ void MdApi::processRspUnSubForQuoteRsp(Task task)
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
-	error["ErrorMsg"] = task_error.ErrorMsg;
+	std::string ErrorMsg = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorMsg"] = ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
 
 	this->onRspUnSubForQuoteRsp(data, error, task.task_id, task.task_last);
@@ -631,7 +638,7 @@ void MdApi::processRtnForQuoteRsp(Task task)
 
 
 ///-------------------------------------------------------------------------------------
-///Ö÷¶¯º¯Êı
+///ä¸»åŠ¨å‡½æ•°
 ///-------------------------------------------------------------------------------------
 
 void MdApi::createFtdcMdApi(string pszFlowPath)
@@ -658,7 +665,7 @@ int MdApi::join()
 
 int MdApi::exit()
 {
-	//¸Ãº¯ÊıÔÚÔ­ÉúAPIÀïÃ»ÓĞ£¬ÓÃÓÚ°²È«ÍË³öAPIÓÃ£¬Ô­ÉúµÄjoinËÆºõ²»Ì«ÎÈ¶¨
+	//è¯¥å‡½æ•°åœ¨åŸç”ŸAPIé‡Œæ²¡æœ‰ï¼Œç”¨äºå®‰å…¨é€€å‡ºAPIç”¨ï¼ŒåŸç”Ÿçš„joinä¼¼ä¹ä¸å¤ªç¨³å®š
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
 	this->api = NULL;
@@ -739,14 +746,14 @@ int MdApi::reqUserLogout(dict req, int nRequestID)
 
 
 ///-------------------------------------------------------------------------------------
-///Boost.Python·â×°
+///Boost.Pythonå°è£…
 ///-------------------------------------------------------------------------------------
 
 struct MdApiWrap : MdApi, wrapper < MdApi >
 {
 	virtual void onFrontConnected()
 	{
-		//ÒÔÏÂµÄtry...catch...¿ÉÒÔÊµÏÖ²¶×½python»·¾³ÖĞ´íÎóµÄ¹¦ÄÜ£¬·ÀÖ¹C++Ö±½Ó³öÏÖÔ­ÒòÎ´ÖªµÄ±ÀÀ£
+		//ä»¥ä¸‹çš„try...catch...å¯ä»¥å®ç°æ•æ‰pythonç¯å¢ƒä¸­é”™è¯¯çš„åŠŸèƒ½ï¼Œé˜²æ­¢C++ç›´æ¥å‡ºç°åŸå› æœªçŸ¥çš„å´©æºƒ
 		try
 		{
 			this->get_override("onFrontConnected")();
@@ -893,7 +900,7 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 BOOST_PYTHON_MODULE(vnctpmd)
 {
-	PyEval_InitThreads();	//µ¼ÈëÊ±ÔËĞĞ£¬±£Ö¤ÏÈ´´½¨GIL
+	PyEval_InitThreads();	//å¯¼å…¥æ—¶è¿è¡Œï¼Œä¿è¯å…ˆåˆ›å»ºGIL
 
 	class_<MdApiWrap, boost::noncopyable>("MdApi")
 		.def("createFtdcMdApi", &MdApiWrap::createFtdcMdApi)
