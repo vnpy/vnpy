@@ -28,6 +28,7 @@ from eventEngine import *
 from vtConstant import *
 from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vtFunction import todayDate
+from decorator import decorator
 
 
 ########################################################################
@@ -381,6 +382,7 @@ class CtaEngine(object):
         else:
             # 创建策略实例
             strategy = strategyClass(self, setting)  
+            decorator.handler(strategy)
             self.strategyDict[name] = strategy
             
             # 保存Tick映射关系
