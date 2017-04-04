@@ -14,3 +14,5 @@ STOP_ALL = u'全部停止'
 SAVE_POSITION_DATA = u'保存持仓'
 
 STRATEGY_LOADED = u'策略加载成功'
+
+SAVE_POSITION_QUESTION = u'是否要保存策略持仓数据到数据库？'
