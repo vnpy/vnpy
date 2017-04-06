@@ -226,7 +226,7 @@ class BacktestingEngine(object):
         
         order = VtOrderData()
         order.vtSymbol = vtSymbol
-        order.price = self.roundToPrickTick(price)
+        order.price = self.roundToPriceTick(price)
         order.totalVolume = volume
         order.status = STATUS_NOTTRADED     # 刚提交尚未成交
         order.orderID = orderID
@@ -270,7 +270,7 @@ class BacktestingEngine(object):
         
         so = StopOrder()
         so.vtSymbol = vtSymbol
-        so.price = self.roundToPrickTick(price)
+        so.price = self.roundToPriceTick(price)
         so.volume = volume
         so.strategy = strategy
         so.stopOrderID = stopOrderID
@@ -790,7 +790,7 @@ class BacktestingEngine(object):
             self.output(u'%s: %s' %(result[0], result[1]))    
             
     #----------------------------------------------------------------------
-    def roundToPrickTick(self, price):
+    def roundToPriceTick(self, price):
         """取整价格到合约最小价格变动"""
         if not self.priceTick:
             return price
