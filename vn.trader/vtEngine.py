@@ -11,7 +11,8 @@ from eventEngine import *
 from vtGateway import *
 from vtFunction import loadMongoSetting
 
-from ctaAlgo.ctaEngine import CtaEngine
+from gateway import GATEWAY_DICT
+from ctaStrategy.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
 
@@ -50,116 +51,14 @@ class MainEngine(object):
         # 用来保存接口对象的字典
         self.gatewayDict = OrderedDict()
         
-        # 创建我们想要接入的接口对象
-        try:
-            from ctpGateway.ctpGateway import CtpGateway
-            self.addGateway(CtpGateway, 'CTP')
-            self.gatewayDict['CTP'].setQryEnabled(True)
-        except Exception, e:
-            print e
-        
-        try:
-            from ltsGateway.ltsGateway import LtsGateway
-            self.addGateway(LtsGateway, 'LTS')
-            self.gatewayDict['LTS'].setQryEnabled(True)
-        except Exception, e:
-            print e
-        
-        try:
-            from xtpGateway.xtpGateway import XtpGateway
-            self.addGateway(XtpGateway, 'XTP')
-            self.gatewayDict['XTP'].setQryEnabled(True)
-        except Exception, e:
-            print e        
-        
-        try:
-            from ksotpGateway.ksotpGateway import KsotpGateway
-            self.addGateway(KsotpGateway, 'KSOTP')
-            self.gatewayDict['KSOTP'].setQryEnabled(True)
-        except Exception, e:
-            print e    
-            
-        try:
-            from femasGateway.femasGateway import FemasGateway
-            self.addGateway(FemasGateway, 'FEMAS')
-            self.gatewayDict['FEMAS'].setQryEnabled(True)
-        except Exception, e:
-            print e  
-        
-        try:
-            from xspeedGateway.xspeedGateway import XspeedGateway
-            self.addGateway(XspeedGateway, 'XSPEED')
-            self.gatewayDict['XSPEED'].setQryEnabled(True)
-        except Exception, e:
-            print e          
-            
-        try:
-            from qdpGateway.qdpGateway import QdpGateway
-            self.addGateway(QdpGateway, 'QDP')
-            self.gatewayDict['QDP'].setQryEnabled(True)
-        except Exception, e:
-            print e
-        
-        try:
-            from ksgoldGateway.ksgoldGateway import KsgoldGateway
-            self.addGateway(KsgoldGateway, 'KSGOLD')
-            self.gatewayDict['KSGOLD'].setQryEnabled(True)
-        except Exception, e:
-            print e
-            
-        try:
-            from sgitGateway.sgitGateway import SgitGateway
-            self.addGateway(SgitGateway, 'SGIT')
-            self.gatewayDict['SGIT'].setQryEnabled(True)
-        except Exception, e:
-            print e        
-            
-        try:
-            from windGateway.windGateway import WindGateway
-            self.addGateway(WindGateway, 'Wind') 
-        except Exception, e:
-            print e
-        
-        try:
-            from ibGateway.ibGateway import IbGateway
-            self.addGateway(IbGateway, 'IB')
-        except Exception, e:
-            print e
-            
-        try:
-            from shzdGateway.shzdGateway import ShzdGateway
-            self.addGateway(ShzdGateway, 'SHZD')
-            self.gatewayDict['SHZD'].setQryEnabled(True)
-        except Exception, e:
-            print e       
-            
-        try:
-            from oandaGateway.oandaGateway import OandaGateway
-            self.addGateway(OandaGateway, 'OANDA')
-            self.gatewayDict['OANDA'].setQryEnabled(True)
-        except Exception, e:
-            print e
-        
-        try:
-            from okcoinGateway.okcoinGateway import OkcoinGateway
-            self.addGateway(OkcoinGateway, 'OKCOIN')
-            self.gatewayDict['OKCOIN'].setQryEnabled(True)
-        except Exception, e:
-            print e
-
-        try:
-            from huobiGateway.huobiGateway import HuobiGateway
-            self.addGateway(HuobiGateway, 'HUOBI')
-            self.gatewayDict['HUOBI'].setQryEnabled(True)
-        except Exception, e:
-            print e
-
-        try:
-            from lhangGateway.lhangGateway import LhangGateway
-            self.addGateway(LhangGateway, 'LHANG')
-            self.gatewayDict['LHANG'].setQryEnabled(True)
-        except Exception, e:
-            print e
+        # 遍历接口字典并自动创建所有的接口对象
+        for gatewayModule in GATEWAY_DICT.values():
+            try:
+                self.addGateway(gatewayModule.gateway, gatewayModule.gatewayName)
+                if gatewayModule.gatewayQryEnabled:
+                    self.gatewayDict[gatewayModule.gatewayName].setQryEnabled(True)
+            except Exception, e:
+                print e
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -172,6 +71,9 @@ class MainEngine(object):
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             gateway.connect()
+            
+            # 接口连接后自动执行数据库连接的任务
+            self.dbConnect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
         
