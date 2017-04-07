@@ -586,6 +586,22 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
+        # 推送委托信息
+        order = VtOrderData()
+        order.gatewayName = self.gatewayName
+        order.symbol = data['InstrumentID']
+        order.exchange = exchangeMapReverse[data['ExchangeID']]
+        order.vtSymbol = order.symbol
+        order.orderID = data['OrderRef']
+        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])        
+        order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
+        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
+        order.status = STATUS_REJECTED
+        order.price = data['LimitPrice']
+        order.totalVolume = data['VolumeTotalOriginal']
+        self.gateway.onOrder(order)
+        
+        # 推送错误信息
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
@@ -1032,6 +1048,22 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
+        # 推送委托信息
+        order = VtOrderData()
+        order.gatewayName = self.gatewayName
+        order.symbol = data['InstrumentID']
+        order.exchange = exchangeMapReverse[data['ExchangeID']]
+        order.vtSymbol = order.symbol
+        order.orderID = data['OrderRef']
+        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])        
+        order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
+        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
+        order.status = STATUS_REJECTED
+        order.price = data['LimitPrice']
+        order.totalVolume = data['VolumeTotalOriginal']
+        self.gateway.onOrder(order)
+    
+        # 推送错误信息        
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']

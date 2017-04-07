@@ -27,6 +27,7 @@ STATUS_NOTTRADED = u'pending'
 STATUS_PARTTRADED = u'partial filled'
 STATUS_ALLTRADED = u'filled'
 STATUS_CANCELLED = u'cancelled'
+STATUS_REJECTED = u'rejected'
 STATUS_UNKNOWN = u'unknown'
 
 # 合约类型常量

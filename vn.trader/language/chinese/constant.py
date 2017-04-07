@@ -27,6 +27,7 @@ STATUS_NOTTRADED = u'未成交'
 STATUS_PARTTRADED = u'部分成交'
 STATUS_ALLTRADED = u'全部成交'
 STATUS_CANCELLED = u'已撤销'
+STATUS_REJECTED = u'拒单'
 STATUS_UNKNOWN = u'未知'
 
 # 合约类型常量
