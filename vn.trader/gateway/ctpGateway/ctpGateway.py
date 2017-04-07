@@ -471,7 +471,7 @@ class CtpTdApi(TdApi):
         self.frontID = EMPTY_INT            # 前置机编号
         self.sessionID = EMPTY_INT          # 会话编号
         
-        self.posBufferDict = {}             # 缓存持仓数据的字典
+        self.posDict = {}
         self.symbolExchangeDict = {}        # 保存合约代码和交易所的印射关系
         self.symbolSizeDict = {}            # 保存合约代码和合约大小的印射关系
 
@@ -701,29 +701,49 @@ class CtpTdApi(TdApi):
         
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
-        """持仓查询回报"""
-        # 获取缓存字典中的持仓缓存，若无则创建并初始化
-        positionName = '.'.join([data['InstrumentID'], data['PosiDirection']])
-        
-        if positionName in self.posBufferDict:
-            posBuffer = self.posBufferDict[positionName]
+        """持仓查询回报"""                
+        # 获取持仓缓存对象
+        posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
+        if posName in self.posDict:
+            pos = self.posDict[posName]
         else:
-            posBuffer = PositionBuffer(data, self.gatewayName)
-            self.posBufferDict[positionName] = posBuffer
-        
-        # 更新持仓缓存，并获取VT系统中持仓对象的返回值
-        exchange = self.symbolExchangeDict.get(data['InstrumentID'], EXCHANGE_UNKNOWN)
-        size = self.symbolSizeDict.get(data['InstrumentID'], 1)
-        if exchange == EXCHANGE_SHFE:
-            posBuffer.updateShfeBuffer(data, size)
-        else:
-            posBuffer.updateBuffer(data, size)
+            pos = VtPositionData()
+            self.posDict[posName] = pos
             
-        # 所有持仓数据都更新后，再将缓存中的持仓情况发送到事件引擎中
+            pos.gatewayName = self.gatewayName
+            pos.symbol = data['InstrumentID']
+            pos.vtSymbol = pos.symbol
+            pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
+        
+        # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
+        if data['YdPosition'] and not data['TodayPosition']:
+            pos.ydPosition = data['Position']
+            
+        # 计算成本
+        cost = pos.price * pos.position
+        
+        # 汇总总仓
+        pos.position += data['Position']
+        pos.positionProfit += data['PositionProfit']
+        
+        # 计算持仓均价
+        pos.price = (cost + data['PositionCost']) / pos.position
+        
+        # 读取冻结
+        if pos.direction is DIRECTION_LONG: 
+            pos.frozen += data['LongFrozen']
+        else:
+            pos.frozen += data['ShortFrozen']
+        
+        # 查询回报结束
         if last:
-            for buf in self.posBufferDict.values():
-                pos = buf.getPos()
+            # 遍历推送
+            for pos in self.posDict.values():
                 self.gateway.onPosition(pos)
+            
+            # 清空缓存
+            self.posDict.clear()
         
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
@@ -1448,81 +1468,6 @@ class CtpTdApi(TdApi):
         """关闭"""
         self.exit()
 
-
-########################################################################
-class PositionBuffer(object):
-    """用来缓存持仓的数据，处理上期所的数据返回分今昨的问题"""
-
-    #----------------------------------------------------------------------
-    def __init__(self, data, gatewayName):
-        """Constructor"""
-        self.symbol = data['InstrumentID']
-        self.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
-        
-        self.todayPosition = EMPTY_INT
-        self.ydPosition = EMPTY_INT
-        self.todayPositionCost = EMPTY_FLOAT
-        self.ydPositionCost = EMPTY_FLOAT
-        self.todayProfit = EMPTY_INT
-        self.ydProfit = EMPTY_INT
-        
-        # 通过提前创建持仓数据对象并重复使用的方式来降低开销
-        pos = VtPositionData()
-        pos.symbol = self.symbol
-        pos.vtSymbol = self.symbol
-        pos.gatewayName = gatewayName
-        pos.direction = self.direction
-        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
-        self.pos = pos
-        
-    #----------------------------------------------------------------------
-    def updateShfeBuffer(self, data, size):
-        """更新上期所缓存，返回更新后的持仓数据"""
-        # 昨仓和今仓的数据更新是分在两条记录里的，因此需要判断检查该条记录对应仓位
-        # 因为今仓字段TodayPosition可能变为0（被全部平仓），因此分辨今昨仓需要用YdPosition字段
-        if data['YdPosition']:
-            self.ydPosition = data['Position']
-            self.ydPositionCost = data['PositionCost']   
-            self.ydProfit = data['PositionProfit']
-        else:
-            self.todayPosition = data['Position']
-            self.todayPositionCost = data['PositionCost']        
-            self.todayProfit = data['PositionProfit']
-            
-        # 持仓的昨仓和今仓相加后为总持仓
-        self.pos.position = self.todayPosition + self.ydPosition
-        self.pos.ydPosition = self.ydPosition
-        self.pos.positionProfit = self.todayProfit + self.ydProfit
-        
-        # 如果手头还有持仓，则通过加权平均方式计算持仓均价
-        if self.todayPosition or self.ydPosition:
-            self.pos.price = ((self.todayPositionCost + self.ydPositionCost)/
-                              ((self.todayPosition + self.ydPosition) * size))
-        # 否则价格为0
-        else:
-            self.pos.price = 0
-            
-        return copy(self.pos)
-    
-    #----------------------------------------------------------------------
-    def updateBuffer(self, data, size):
-        """更新其他交易所的缓存，返回更新后的持仓数据"""
-        # 其他交易所并不区分今昨，因此只关心总仓位，昨仓设为0
-        self.pos.position = data['Position']
-        self.pos.ydPosition = 0
-        self.pos.positionProfit = data['PositionProfit']
-        
-        if data['Position']:
-            self.pos.price = data['PositionCost'] / (data['Position'] * size)
-        else:
-            self.pos.price = 0
-            
-        return copy(self.pos)    
-    
-    #----------------------------------------------------------------------
-    def getPos(self):
-        """获取当前的持仓数据"""
-        return copy(self.pos)
 
 
 #----------------------------------------------------------------------
