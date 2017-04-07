@@ -228,7 +228,7 @@ class KkStrategy(CtaTemplate):
             self.intraTradeHigh = bar.high
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             
-            orderID = self.buy(self.intraTradeLow*(1+self.trailingPrcnt/100),
+            orderID = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100),
                                abs(self.pos), True)
             self.orderList.append(orderID)
     
