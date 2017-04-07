@@ -17,6 +17,7 @@ from vnctpmd import MdApi
 from vnctptd import TdApi
 from ctpDataType import *
 from vtGateway import *
+from language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -105,7 +106,7 @@ class CtpGateway(VtGateway):
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
-            log.logContent = u'读取连接配置出错，请检查'
+            log.logContent = text.LOADING_ERROR
             self.onLog(log)
             return
         
@@ -117,7 +118,9 @@ class CtpGateway(VtGateway):
             brokerID = str(setting['brokerID'])
             tdAddress = str(setting['tdAddress'])
             mdAddress = str(setting['mdAddress'])
-            if 'authCode' in setting: #如果json文件提供了验证码
+            
+            # 如果json文件提供了验证码
+            if 'authCode' in setting: 
                 authCode = str(setting['authCode'])
                 userProductInfo = str(setting['userProductInfo'])
                 self.tdApi.requireAuthentication = True
@@ -128,7 +131,7 @@ class CtpGateway(VtGateway):
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
-            log.logContent = u'连接配置缺少字段，请检查'
+            log.logContent = text.CONFIG_KEY_MISSING
             self.onLog(log)
             return            
         
@@ -244,10 +247,8 @@ class CtpMdApi(MdApi):
         """服务器连接"""
         self.connectionStatus = True
         
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'行情服务器连接成功'
-        self.gateway.onLog(log)
+        self.writeLog(text.DATA_SERVER_CONNECTED)
+        
         self.login()
     
     #----------------------------------------------------------------------  
@@ -257,10 +258,7 @@ class CtpMdApi(MdApi):
         self.loginStatus = False
         self.gateway.mdConnected = False
         
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'行情服务器连接断开'
-        self.gateway.onLog(log)        
+        self.writeLog(text.DATA_SERVER_DISCONNECTED)
         
     #---------------------------------------------------------------------- 
     def onHeartBeatWarning(self, n):
@@ -285,10 +283,7 @@ class CtpMdApi(MdApi):
             self.loginStatus = True
             self.gateway.mdConnected = True
             
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'行情服务器登录完成'
-            self.gateway.onLog(log)
+            self.writeLog(text.DATA_SERVER_LOGIN)
             
             # 重新订阅之前订阅的合约
             for subscribeReq in self.subscribedSymbols:
@@ -310,10 +305,7 @@ class CtpMdApi(MdApi):
             self.loginStatus = False
             self.gateway.mdConnected = False
             
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'行情服务器登出完成'
-            self.gateway.onLog(log)
+            self.writeLog(text.DATA_SERVER_LOGOUT)
                 
         # 否则，推送错误信息
         else:
@@ -442,6 +434,14 @@ class CtpMdApi(MdApi):
     def close(self):
         """关闭"""
         self.exit()
+        
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """发出日志"""
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = content
+        self.gateway.onLog(log)        
 
 
 ########################################################################
@@ -482,10 +482,7 @@ class CtpTdApi(TdApi):
         """服务器连接"""
         self.connectionStatus = True
     
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'交易服务器连接成功'
-        self.gateway.onLog(log)
+        self.writeLog(text.TRADING_SERVER_CONNECTED)
         
         if self.requireAuthentication:
             self.authenticate()
@@ -499,10 +496,7 @@ class CtpTdApi(TdApi):
         self.loginStatus = False
         self.gateway.tdConnected = False
     
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'交易服务器连接断开'
-        self.gateway.onLog(log)   
+        self.writeLog(text.TRADING_SERVER_DISCONNECTED)
         
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
@@ -515,10 +509,7 @@ class CtpTdApi(TdApi):
         if error['ErrorID'] == 0:
             self.authStatus = True
             
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'交易服务器验证成功'            
-            self.gateway.onLog(log)
+            self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
             
             self.login()
         
@@ -532,10 +523,7 @@ class CtpTdApi(TdApi):
             self.loginStatus = True
             self.gateway.tdConnected = True
             
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'交易服务器登录完成'
-            self.gateway.onLog(log)
+            self.writeLog(text.TRADING_SERVER_LOGIN)
             
             # 确认结算信息
             req = {}
@@ -560,10 +548,7 @@ class CtpTdApi(TdApi):
             self.loginStatus = False
             self.gateway.tdConnected = False
             
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'交易服务器登出完成'
-            self.gateway.onLog(log)
+            self.writeLog(text.TRADING_SERVER_LOGOUT)
                 
         # 否则，推送错误信息
         else:
@@ -635,11 +620,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'结算信息确认完成'
-        self.gateway.onLog(log)
-    
+        self.writeLog(text.SETTLEMENT_INFO_CONFIRMED)
+        
         # 查询合约代码
         self.reqID += 1
         self.reqQryInstrument({}, self.reqID)
@@ -835,10 +817,7 @@ class CtpTdApi(TdApi):
         self.gateway.onContract(contract)
 
         if last:
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'交易合约信息获取完成'
-            self.gateway.onLog(log)
+            self.writeLog(text.CONTRACT_DATA_RECEIVED)
         
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
@@ -1468,6 +1447,13 @@ class CtpTdApi(TdApi):
         """关闭"""
         self.exit()
 
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """发出日志"""
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = content
+        self.gateway.onLog(log)        
 
 
 #----------------------------------------------------------------------
