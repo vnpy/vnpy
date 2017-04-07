@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 """
-R-Breaker交易策略
+DualThrust交易策略
 """
 
 from datetime import time

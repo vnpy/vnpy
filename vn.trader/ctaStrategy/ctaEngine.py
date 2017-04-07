@@ -91,7 +91,7 @@ class CtaEngine(object):
         req = VtOrderReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
-        req.price = self.roundToPrickTick(contract.priceTick, price)
+        req.price = self.roundToPriceTick(contract.priceTick, price)
         req.volume = volume
         
         req.productClass = strategy.productClass
@@ -574,7 +574,7 @@ class CtaEngine(object):
                 strategy.pos = d['pos']
                 
     #----------------------------------------------------------------------
-    def roundToPrickTick(self, priceTick, price):
+    def roundToPriceTick(self, priceTick, price):
         """取整价格到合约最小价格变动"""
         if not priceTick:
             return price
