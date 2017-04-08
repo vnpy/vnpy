@@ -476,7 +476,8 @@ class BacktestingEngine(object):
         
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
-        
+        posList = [0]                   # 新增持仓情况
+        tradeTimeList = []          # 新增, 交易时间戳
         for trade in self.tradeDict.values():
             # 多头交易
             if trade.direction == DIRECTION_LONG:
@@ -495,7 +496,8 @@ class BacktestingEngine(object):
                                                exitTrade.price, exitTrade.dt,
                                                -closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
-                        
+                        posList.extend([-1,0])
+                        tradeTimeList.extend([result.entryDt, result.exitDt])
                         # 计算未清算部分
                         entryTrade.volume -= closedVolume
                         exitTrade.volume -= closedVolume
@@ -536,7 +538,8 @@ class BacktestingEngine(object):
                                                exitTrade.price, exitTrade.dt,
                                                closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
-                        
+                        posList.extend([1,0])
+                        tradeTimeList.extend([result.entryDt, result.exitDt])
                         # 计算未清算部分
                         entryTrade.volume -= closedVolume
                         exitTrade.volume -= closedVolume
@@ -638,6 +641,8 @@ class BacktestingEngine(object):
         d['averageWinning'] = averageWinning
         d['averageLosing'] = averageLosing
         d['profitLossRatio'] = profitLossRatio
+        d['posList'] = posList
+        d['tradeTimeList'] = tradeTimeList
         
         return d
         
@@ -666,19 +671,34 @@ class BacktestingEngine(object):
     
         # 绘图
         import matplotlib.pyplot as plt
-        
-        pCapital = plt.subplot(3, 1, 1)
+        import seaborn as sns
+        import numpy as np
+        sns.set_style('whitegrid')  # 设置白色风格
+        pCapital = plt.subplot(4, 1, 1)
         pCapital.set_ylabel("capital")
-        pCapital.plot(d['capitalList'])
+        pCapital.plot(d['capitalList'], color='r', lw=0.8)
         
-        pDD = plt.subplot(3, 1, 2)
+        pDD = plt.subplot(4, 1, 2)
         pDD.set_ylabel("DD")
-        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'])         
+        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
         
-        pPnl = plt.subplot(3, 1, 3)
+        pPnl = plt.subplot(4, 1, 3)
         pPnl.set_ylabel("pnl")
-        pPnl.hist(d['pnlList'], bins=50)
-        
+        pPnl.hist(d['pnlList'], bins=50, color='c')
+
+        pPos = plt.subplot(4, 1, 4)
+        pPos.set_ylabel("Position")
+        if d['posList'][-1] == 0:
+            del d['posList'][-1]
+        tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
+        xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
+        tradeTimeIndex = map(lambda i: tradeTimeIndex[i], xindex)
+        pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
+        pPos.set_ylim(-1.2, 1.2)
+        # pPos.set_title(u'持仓变化')
+        plt.sca(pPos)
+        plt.tight_layout()
+        plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
         plt.show()
     
     #----------------------------------------------------------------------
