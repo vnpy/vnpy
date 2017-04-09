@@ -13,8 +13,6 @@ import multiprocessing
 import pymongo
 
 from ctaBase import *
-from strategy import *
-
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
 from vtFunction import loadMongoSetting
@@ -56,7 +54,8 @@ class BacktestingEngine(object):
 
         self.slippage = 0           # 回测时假设的滑点
         self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
-        self.size = 1               # 合约大小，默认为1        
+        self.size = 1               # 合约大小，默认为1    
+        self.priceTick = 0          # 价格最小变动 
         
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
@@ -225,7 +224,7 @@ class BacktestingEngine(object):
         
         order = VtOrderData()
         order.vtSymbol = vtSymbol
-        order.price = price
+        order.price = self.roundToPriceTick(price)
         order.totalVolume = volume
         order.status = STATUS_NOTTRADED     # 刚提交尚未成交
         order.orderID = orderID
@@ -269,7 +268,7 @@ class BacktestingEngine(object):
         
         so = StopOrder()
         so.vtSymbol = vtSymbol
-        so.price = price
+        so.price = self.roundToPriceTick(price)
         so.volume = volume
         so.strategy = strategy
         so.stopOrderID = stopOrderID
@@ -321,8 +320,13 @@ class BacktestingEngine(object):
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
             # 判断是否会成交
-            buyCross = order.direction==DIRECTION_LONG and order.price>=buyCrossPrice
-            sellCross = order.direction==DIRECTION_SHORT and order.price<=sellCrossPrice
+            buyCross = (order.direction==DIRECTION_LONG and 
+                        order.price>=buyCrossPrice and
+                        buyCrossPrice > 0)      # 国内的tick行情在涨停时askPrice1为0，此时买无法成交
+            
+            sellCross = (order.direction==DIRECTION_SHORT and 
+                         order.price<=sellCrossPrice and
+                         sellCrossPrice > 0)    # 国内的tick行情在跌停时bidPrice1为0，此时卖无法成交
             
             # 如果发生了成交
             if buyCross or sellCross:
@@ -476,6 +480,9 @@ class BacktestingEngine(object):
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
         
+        tradeTimeList = []          # 每笔成交时间戳
+        posList = [0]               # 每笔成交后的持仓情况        
+
         for trade in self.tradeDict.values():
             # 多头交易
             if trade.direction == DIRECTION_LONG:
@@ -494,6 +501,9 @@ class BacktestingEngine(object):
                                                exitTrade.price, exitTrade.dt,
                                                -closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
+                        
+                        posList.extend([-1,0])
+                        tradeTimeList.extend([result.entryDt, result.exitDt])
                         
                         # 计算未清算部分
                         entryTrade.volume -= closedVolume
@@ -536,6 +546,9 @@ class BacktestingEngine(object):
                                                closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
                         
+                        posList.extend([1,0])
+                        tradeTimeList.extend([result.entryDt, result.exitDt])
+
                         # 计算未清算部分
                         entryTrade.volume -= closedVolume
                         exitTrade.volume -= closedVolume
@@ -637,6 +650,8 @@ class BacktestingEngine(object):
         d['averageWinning'] = averageWinning
         d['averageLosing'] = averageLosing
         d['profitLossRatio'] = profitLossRatio
+        d['posList'] = posList
+        d['tradeTimeList'] = tradeTimeList
         
         return d
         
@@ -664,19 +679,39 @@ class BacktestingEngine(object):
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
     
         # 绘图
-        import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt        
+        import numpy as np
         
-        pCapital = plt.subplot(3, 1, 1)
+        try:
+            import seaborn as sns       # 如果安装了seaborn则设置为白色风格
+            sns.set_style('whitegrid')  
+        except ImportError:
+            pass
+
+        pCapital = plt.subplot(4, 1, 1)
         pCapital.set_ylabel("capital")
-        pCapital.plot(d['capitalList'])
+        pCapital.plot(d['capitalList'], color='r', lw=0.8)
         
-        pDD = plt.subplot(3, 1, 2)
+        pDD = plt.subplot(4, 1, 2)
         pDD.set_ylabel("DD")
-        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'])         
+        pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
         
-        pPnl = plt.subplot(3, 1, 3)
+        pPnl = plt.subplot(4, 1, 3)
         pPnl.set_ylabel("pnl")
-        pPnl.hist(d['pnlList'], bins=50)
+        pPnl.hist(d['pnlList'], bins=50, color='c')
+
+        pPos = plt.subplot(4, 1, 4)
+        pPos.set_ylabel("Position")
+        if d['posList'][-1] == 0:
+            del d['posList'][-1]
+        tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
+        xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
+        tradeTimeIndex = map(lambda i: tradeTimeIndex[i], xindex)
+        pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
+        pPos.set_ylim(-1.2, 1.2)
+        plt.sca(pPos)
+        plt.tight_layout()
+        plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
         
         plt.show()
     
@@ -699,6 +734,11 @@ class BacktestingEngine(object):
     def setRate(self, rate):
         """设置佣金比例"""
         self.rate = rate
+        
+    #----------------------------------------------------------------------
+    def setPriceTick(self, priceTick):
+        """设置价格最小变动"""
+        self.priceTick = priceTick
 
     #----------------------------------------------------------------------
     def runOptimization(self, strategyClass, optimizationSetting):
@@ -782,6 +822,16 @@ class BacktestingEngine(object):
         self.output(u'优化结果：')
         for result in resultList:
             self.output(u'%s: %s' %(result[0], result[1]))    
+            
+    #----------------------------------------------------------------------
+    def roundToPriceTick(self, price):
+        """取整价格到合约最小价格变动"""
+        if not self.priceTick:
+            return price
+        
+        newPrice = round(price/self.priceTick, 0) * self.priceTick
+        return newPrice
+    
         
 
 ########################################################################
@@ -805,6 +855,7 @@ class TradingResult(object):
         self.slippage = slippage*2*size*abs(volume)                         # 滑点成本
         self.pnl = ((self.exitPrice - self.entryPrice) * volume * size 
                     - self.commission - self.slippage)                      # 净盈亏
+
 
 
 ########################################################################

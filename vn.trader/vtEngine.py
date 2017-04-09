@@ -71,6 +71,9 @@ class MainEngine(object):
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             gateway.connect()
+            
+            # 接口连接后自动执行数据库连接的任务
+            self.dbConnect()
         else:
             self.writeLog(u'接口不存在：%s' %gatewayName)
         

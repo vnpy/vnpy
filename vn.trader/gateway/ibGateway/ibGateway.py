@@ -17,10 +17,9 @@ import calendar
 from datetime import datetime, timedelta
 from copy import copy
 
-from PyQt4 import QtGui, QtCore
-
 from vnib import *
 from vtGateway import *
+from language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -151,7 +150,7 @@ class IbGateway(VtGateway):
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
-            log.logContent = u'读取连接配置出错，请检查'
+            log.logContent = text.LOADING_ERROR
             self.onLog(log)
             return
         
@@ -165,7 +164,7 @@ class IbGateway(VtGateway):
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
-            log.logContent = u'连接配置缺少字段，请检查'
+            log.logContent = text.CONFIG_KEY_MISSING
             self.onLog(log)
             return            
         
@@ -266,7 +265,7 @@ class IbGateway(VtGateway):
         """查询账户资金"""
         log = VtLogData()
         log.gatewayName = self.gatewayName        
-        log.logContent = u'IB接口账户信息提供主推更新，无需查询'
+        log.logContent = text.NONEED_TO_QRYACCOUNT
         self.onLog(log) 
     
     #----------------------------------------------------------------------
@@ -274,7 +273,7 @@ class IbGateway(VtGateway):
         """查询持仓"""
         log = VtLogData()
         log.gatewayName = self.gatewayName        
-        log.logContent = u'IB接口持仓信息提供主推更新，无需查询'
+        log.logContent = text.NONEED_TO_QRYPOSITION
         self.onLog(log) 
     
     #----------------------------------------------------------------------
@@ -320,7 +319,7 @@ class IbWrapper(IbApi):
         
         log = VtLogData()
         log.gatewayName = self.gatewayName
-        log.logContent = (u'IB接口连接成功，当前服务器时间 %s' %t)
+        log.logContent = text.API_CONNECTED.format(time=t)
         self.gateway.onLog(log) 
         
         for symbol, req in self.subscribeReqDict.items():
@@ -476,7 +475,7 @@ class IbWrapper(IbApi):
     
         log = VtLogData()
         log.gatewayName = self.gatewayName
-        log.logContent = (u'IB接口连接断开')
+        log.logContent = text.API_DISCONNECTED
         self.gateway.onLog(log) 
         
     #----------------------------------------------------------------------

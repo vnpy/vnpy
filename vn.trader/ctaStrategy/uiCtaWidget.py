@@ -7,6 +7,7 @@ CTA模块相关的GUI控制组件
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
 from eventEngine import *
+from language import text
 
 
 ########################################################################
@@ -80,13 +81,13 @@ class CtaStrategyManager(QtGui.QGroupBox):
         self.paramMonitor = CtaValueMonitor(self)
         self.varMonitor = CtaValueMonitor(self)
         
-        height = 60
+        height = 65
         self.paramMonitor.setFixedHeight(height)
         self.varMonitor.setFixedHeight(height)
         
-        buttonInit = QtGui.QPushButton(u'初始化')
-        buttonStart = QtGui.QPushButton(u'启动')
-        buttonStop = QtGui.QPushButton(u'停止')
+        buttonInit = QtGui.QPushButton(text.INIT)
+        buttonStart = QtGui.QPushButton(text.START)
+        buttonStop = QtGui.QPushButton(text.STOP)
         buttonInit.clicked.connect(self.init)
         buttonStart.clicked.connect(self.start)
         buttonStop.clicked.connect(self.stop)
@@ -162,19 +163,19 @@ class CtaEngineManager(QtGui.QWidget):
         self.registerEvent()
         
         # 记录日志
-        self.ctaEngine.writeCtaLog(u'CTA引擎启动成功')        
+        self.ctaEngine.writeCtaLog(text.CTA_ENGINE_STARTED)        
         
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle(u'CTA策略')
+        self.setWindowTitle(text.CTA_STRATEGY)
         
         # 按钮
-        loadButton = QtGui.QPushButton(u'加载策略')
-        initAllButton = QtGui.QPushButton(u'全部初始化')
-        startAllButton = QtGui.QPushButton(u'全部启动')
-        stopAllButton = QtGui.QPushButton(u'全部停止')
-        savePositionButton = QtGui.QPushButton(u'保存持仓')
+        loadButton = QtGui.QPushButton(text.LOAD_STRATEGY)
+        initAllButton = QtGui.QPushButton(text.INIT_ALL)
+        startAllButton = QtGui.QPushButton(text.START_ALL)
+        stopAllButton = QtGui.QPushButton(text.STOP_ALL)
+        savePositionButton = QtGui.QPushButton(text.SAVE_POSITION_DATA)
         
         loadButton.clicked.connect(self.load)
         initAllButton.clicked.connect(self.initAll)
@@ -246,7 +247,7 @@ class CtaEngineManager(QtGui.QWidget):
             self.ctaEngine.loadSetting()
             self.initStrategyManager()
             self.strategyLoaded = True
-            self.ctaEngine.writeCtaLog(u'策略加载成功')
+            self.ctaEngine.writeCtaLog(text.STRATEGY_LOADED)
         
     #----------------------------------------------------------------------
     def updateCtaLog(self, event):
@@ -260,6 +261,18 @@ class CtaEngineManager(QtGui.QWidget):
         """注册事件监听"""
         self.signal.connect(self.updateCtaLog)
         self.eventEngine.register(EVENT_CTA_LOG, self.signal.emit)
+        
+    #----------------------------------------------------------------------
+    def closeEvent(self, event):
+        """关闭窗口时的事件"""
+        reply = QtGui.QMessageBox.question(self, text.SAVE_POSITION_DATA,
+                                           text.SAVE_POSITION_QUESTION, QtGui.QMessageBox.Yes | 
+                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+    
+        if reply == QtGui.QMessageBox.Yes: 
+            self.ctaEngine.savePosition()
+            
+        event.accept()
         
         
     

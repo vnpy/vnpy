@@ -7,6 +7,7 @@
 
 from uiBasicWidget import QtGui, QtCore
 from eventEngine import *
+from language import text
 
 
 ########################################################################
@@ -58,10 +59,10 @@ class RmEngineManager(QtGui.QWidget):
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle(u'风险管理')
+        self.setWindowTitle(text.RISK_MANAGER)
         
         # 设置界面
-        self.buttonSwitchEngineStatus = QtGui.QPushButton(u'风控模块未启动')
+        self.buttonSwitchEngineStatus = QtGui.QPushButton(text.RISK_MANAGER_STOP)
         
         self.spinOrderFlowLimit = RmSpinBox(self.rmEngine.orderFlowLimit)
         self.spinOrderFlowClear = RmSpinBox(self.rmEngine.orderFlowClear)
@@ -70,30 +71,30 @@ class RmEngineManager(QtGui.QWidget):
         self.spinWorkingOrderLimit = RmSpinBox(self.rmEngine.workingOrderLimit)
         self.spinOrderCancelLimit = RmSpinBox(self.rmEngine.orderCancelLimit)
         
-        buttonClearOrderFlowCount = QtGui.QPushButton(u'清空流控计数')
-        buttonClearTradeCount = QtGui.QPushButton(u'清空总成交计数')
-        buttonSaveSetting = QtGui.QPushButton(u'保存设置')
+        buttonClearOrderFlowCount = QtGui.QPushButton(text.CLEAR_ORDER_FLOW_COUNT)
+        buttonClearTradeCount = QtGui.QPushButton(text.CLEAR_TOTAL_FILL_COUNT)
+        buttonSaveSetting = QtGui.QPushButton(text.SAVE_SETTING)
         
         Label = QtGui.QLabel
         grid = QtGui.QGridLayout()
-        grid.addWidget(Label(u'工作状态'), 0, 0)
+        grid.addWidget(Label(text.WORKING_STATUS), 0, 0)
         grid.addWidget(self.buttonSwitchEngineStatus, 0, 1)
         grid.addWidget(RmLine(), 1, 0, 1, 2)
-        grid.addWidget(Label(u'流控上限'), 2, 0)
+        grid.addWidget(Label(text.ORDER_FLOW_LIMIT), 2, 0)
         grid.addWidget(self.spinOrderFlowLimit, 2, 1)
-        grid.addWidget(Label(u'流控清空（秒）'), 3, 0)
+        grid.addWidget(Label(text.ORDER_FLOW_CLEAR), 3, 0)
         grid.addWidget(self.spinOrderFlowClear, 3, 1)
         grid.addWidget(RmLine(), 4, 0, 1, 2)
-        grid.addWidget(Label(u'单笔委托上限'), 5, 0)
+        grid.addWidget(Label(text.ORDER_SIZE_LIMIT), 5, 0)
         grid.addWidget(self.spinOrderSizeLimit, 5, 1)
         grid.addWidget(RmLine(), 6, 0, 1, 2)
-        grid.addWidget(Label(u'总成交上限'), 7, 0)
+        grid.addWidget(Label(text.TOTAL_TRADE_LIMIT), 7, 0)
         grid.addWidget(self.spinTradeLimit, 7, 1)
         grid.addWidget(RmLine(), 8, 0, 1, 2)
-        grid.addWidget(Label(u'活动订单上限'), 9, 0)
+        grid.addWidget(Label(text.WORKING_ORDER_LIMIT), 9, 0)
         grid.addWidget(self.spinWorkingOrderLimit, 9, 1)
         grid.addWidget(RmLine(), 10, 0, 1, 2)
-        grid.addWidget(Label(u'单合约撤单上限'), 11, 0)
+        grid.addWidget(Label(text.CONTRACT_CANCEL_LIMIT), 11, 0)
         grid.addWidget(self.spinOrderCancelLimit, 11, 1)
         
         hbox = QtGui.QHBoxLayout()
@@ -133,8 +134,8 @@ class RmEngineManager(QtGui.QWidget):
     def updateEngineStatus(self):
         """更新引擎状态"""
         if self.rmEngine.active:
-            self.buttonSwitchEngineStatus.setText(u'风控模块运行中')
+            self.buttonSwitchEngineStatus.setText(text.RISK_MANAGER_RUNNING)
         else:
-            self.buttonSwitchEngineStatus.setText(u'风控模块未启动')
+            self.buttonSwitchEngineStatus.setText(text.RISK_MANAGER_STOP)
  
     
