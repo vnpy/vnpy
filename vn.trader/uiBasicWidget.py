@@ -599,6 +599,23 @@ class PositionMonitor(BasicMonitor):
         self.initTable()
         self.registerEvent()
         
+    def updateData(self, data):
+        """将数据更新到表格中"""        
+        key = data.__getattribute__(self.dataKey)
+
+        if data.position :
+            #如果有持仓，那么更新数据
+            super(PositionMonitor, self).updateData(data)
+        else:
+            #如果持仓量为0，那么删除这个记录对应的行
+            if key in self.dataDict:
+                d = self.dataDict[key]
+                for header in self.headerList:
+                    content = safeUnicode(data.__getattribute__(header))
+                    cell = d[header]
+                    self.removeRow(cell.row())
+                    break
+                self.dataDict.pop(key)
         
 ########################################################################
 class AccountMonitor(BasicMonitor):

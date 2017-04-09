@@ -705,6 +705,14 @@ class CtpTdApi(TdApi):
                 pos = buf.getPos()
                 self.gateway.onPosition(pos)
         
+        if last:
+            #本次查询结束，
+            for key in self.posBufferDict:
+                #设置posBuffer记录的数量为0
+                posBuffer = self.posBufferDict[key]
+                posBuffer.todayPosition = EMPTY_INT
+                posBuffer.ydPosition = EMPTY_INT
+                
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
