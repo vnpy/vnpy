@@ -13,8 +13,6 @@ import multiprocessing
 import pymongo
 
 from ctaBase import *
-from strategy import *
-
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
 from vtFunction import loadMongoSetting
@@ -481,8 +479,10 @@ class BacktestingEngine(object):
         
         longTrade = []              # 未平仓的多头交易
         shortTrade = []             # 未平仓的空头交易
-        posList = [0]                   # 新增持仓情况
-        tradeTimeList = []          # 新增, 交易时间戳
+        
+        tradeTimeList = []          # 每笔成交时间戳
+        posList = [0]               # 每笔成交后的持仓情况        
+
         for trade in self.tradeDict.values():
             # 多头交易
             if trade.direction == DIRECTION_LONG:
@@ -501,8 +501,10 @@ class BacktestingEngine(object):
                                                exitTrade.price, exitTrade.dt,
                                                -closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
+                        
                         posList.extend([-1,0])
                         tradeTimeList.extend([result.entryDt, result.exitDt])
+                        
                         # 计算未清算部分
                         entryTrade.volume -= closedVolume
                         exitTrade.volume -= closedVolume
@@ -543,8 +545,10 @@ class BacktestingEngine(object):
                                                exitTrade.price, exitTrade.dt,
                                                closedVolume, self.rate, self.slippage, self.size)
                         resultList.append(result)
+                        
                         posList.extend([1,0])
                         tradeTimeList.extend([result.entryDt, result.exitDt])
+
                         # 计算未清算部分
                         entryTrade.volume -= closedVolume
                         exitTrade.volume -= closedVolume
@@ -675,10 +679,15 @@ class BacktestingEngine(object):
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
     
         # 绘图
-        import matplotlib.pyplot as plt
-        import seaborn as sns
+        import matplotlib.pyplot as plt        
         import numpy as np
-        sns.set_style('whitegrid')  # 设置白色风格
+        
+        try:
+            import seaborn as sns       # 如果安装了seaborn则设置为白色风格
+            sns.set_style('whitegrid')  
+        except ImportError:
+            pass
+
         pCapital = plt.subplot(4, 1, 1)
         pCapital.set_ylabel("capital")
         pCapital.plot(d['capitalList'], color='r', lw=0.8)
@@ -700,10 +709,10 @@ class BacktestingEngine(object):
         tradeTimeIndex = map(lambda i: tradeTimeIndex[i], xindex)
         pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
         pPos.set_ylim(-1.2, 1.2)
-        # pPos.set_title(u'持仓变化')
         plt.sca(pPos)
         plt.tight_layout()
         plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
+        
         plt.show()
     
     #----------------------------------------------------------------------
