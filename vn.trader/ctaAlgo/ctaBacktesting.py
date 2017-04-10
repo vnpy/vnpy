@@ -185,7 +185,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryDataFromMongo(self):
         """载入历史数据"""
-        host, port = loadMongoSetting()
+        host, port, log = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
         collection = self.dbClient[self.dbName][self.symbol]
@@ -242,7 +242,6 @@ class BacktestingEngine(object):
             mysql_passwd = str(setting['passwd'])
             mysql_db = str(setting['db'])
 
-
         except IOError:
             self.writeCtaLog(u'回测引擎读取Mysql_connect.json,连接配置缺少字段，请检查')
             return
@@ -252,7 +251,7 @@ class BacktestingEngine(object):
                                                      passwd=mysql_passwd, db=mysql_db, port=mysql_port)
             self.__mysqlConnected = True
             self.writeCtaLog(u'回测引擎连接MysqlDB成功')
-        except ConnectionFailure:
+        except Exception:
             self.writeCtaLog(u'回测引擎连接MysqlDB失败')
 
      #----------------------------------------------------------------------
@@ -305,11 +304,15 @@ class BacktestingEngine(object):
             return False
 
         else:
-            # 从cache文件加载
-            cache = open(cacheFile,mode='r')
-            self.historyData = cPickle.load(cache)
-            cache.close()
-            return True
+            try:
+                # 从cache文件加载
+                cache = open(cacheFile,mode='r')
+                self.historyData = cPickle.load(cache)
+                cache.close()
+                return True
+            except Exception as e:
+                self.writeCtaLog(u'读取文件{0}失败'.format(cacheFile))
+                return False
 
     def __saveDataHistoryToLocalCache(self, symbol, startDate, endDate):
         """保存本地缓存
@@ -419,6 +422,7 @@ class BacktestingEngine(object):
         数据库查询返回的data结构，转换为tick对象
         added by IncenseLee
         """
+        tick = CtaTickData()
         tick = CtaTickData()
         symbol = data['InstrumentID']
         tick.symbol = symbol
@@ -937,7 +941,8 @@ class BacktestingEngine(object):
         self.capital = self.initCapital      # 更新设置期初资金
 
         # 载入历史数据
-        self.loadHistoryData()
+        #self.loadHistoryData()
+        self.loadHistoryDataFromMongo()
 
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
