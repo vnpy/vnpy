@@ -245,7 +245,7 @@ class MainEngine(object):
         """连接MongoDB数据库"""
         if not self.dbClient:
             # 读取MongoDB的设置
-            host, port = loadMongoSetting()
+            host, port, log = loadMongoSetting()
                 
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
