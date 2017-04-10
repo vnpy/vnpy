@@ -710,7 +710,8 @@ class CtpTdApi(TdApi):
         pos.positionProfit += data['PositionProfit']
         
         # 计算持仓均价
-        pos.price = (cost + data['PositionCost']) / pos.position
+        if pos.position:
+            pos.price = (cost + data['PositionCost']) / pos.position
         
         # 读取冻结
         if pos.direction is DIRECTION_LONG: 

@@ -124,3 +124,10 @@ CONNECT = u'Connect '
 
 CPU_MEMORY_INFO = u'CPU Usage：{cpu}%   Memory Usage：{memory}%'
 CONFIRM_EXIT = u'Confirm Exit？'
+
+GATEWAY_NOT_EXIST = u"Can't find the gateway：{gateway}"
+DATABASE_CONNECTING_COMPLETED = u'MongoDB is connected.'
+DATABASE_CONNECTING_FAILED = u'Failed to connect to MongoDB.'
+DATA_INSERT_FAILED = u'Data insert failed，please connect MongoDB first.'
+DATA_QUERY_FAILED = u'Data query failed, please connect MongoDB first.'
+DATA_UPDATE_FAILED = u'Data update failed, please connect MongoDB first.'
