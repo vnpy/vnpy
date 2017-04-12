@@ -124,3 +124,10 @@ CONNECT = u'连接'
 
 CPU_MEMORY_INFO = u'CPU使用率：{cpu}%   内存使用率：{memory}%'
 CONFIRM_EXIT = u'确认退出？'
+
+GATEWAY_NOT_EXIST = u'接口不存在：{gateway}'
+DATABASE_CONNECTING_COMPLETED = u'MongoDB连接成功'
+DATABASE_CONNECTING_FAILED = u'MongoDB连接失败'
+DATA_INSERT_FAILED = u'数据插入失败，MongoDB没有连接'
+DATA_QUERY_FAILED = u'数据查询失败，MongoDB没有连接'
+DATA_UPDATE_FAILED = u'数据更新失败，MongoDB没有连接'
