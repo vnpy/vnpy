@@ -1,4 +1,4 @@
-﻿# C++源代码
+# C++源代码
 ipch/
 Release/
 
@@ -50,3 +50,4 @@ vn.lts/build/*
 vn.trader/ctaAlgo/data/*
 vn.trader/build/*
 vn.trader/dist/*
+*.bak
