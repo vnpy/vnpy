@@ -311,7 +311,7 @@ class CtaEngine(object):
                 if so.vtSymbol == vtSymbol:
                     # 3. 触发标识判断
                     longTriggered = so.direction == DIRECTION_LONG and tick.lastPrice >= so.price        # 多头停止单被触发
-                    shortTriggered = so.direction == DIRECTION_SHORT and tick.lasatPrice <= so.price     # 空头停止单被触发
+                    shortTriggered = so.direction == DIRECTION_SHORT and tick.lastPrice <= so.price     # 空头停止单被触发
 
                     # 4.触发处理
                     if longTriggered or shortTriggered:
