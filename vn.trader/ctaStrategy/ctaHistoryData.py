@@ -436,6 +436,52 @@ def loadTdxCsv(fileName, dbName, symbol):
     
     print u'插入完毕，耗时：%s' % (time()-start)
     
+#----------------------------------------------------------------------
+def loadTBCsv(fileName, dbName, symbol):
+    """将TradeBlazer导出的csv格式的历史数据插入到Mongo数据库中
+        数据样本：
+        //时间,开盘价,最高价,最低价,收盘价,成交量,持仓量
+        2017/04/05 09:00,3200,3240,3173,3187,312690,2453850
+    """
+    import csv
+    
+    start = time()
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
+    
+    # 锁定集合，并创建索引
+    host, port, logging = loadMongoSetting()
+    
+    client = pymongo.MongoClient(host, port)    
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)
+    
+    # 读取数据和插入到数据库
+    reader = csv.reader(file(fileName, 'r'))
+    for d in reader:
+        if len(d[0]) > 10:
+            bar = CtaBarData()
+            bar.vtSymbol = symbol
+            bar.symbol = symbol
+            
+            bar.datetime = datetime.strptime(d[0], '%Y/%m/%d %H:%M')
+            bar.date = bar.datetime.date().strftime('%Y%m%d')
+            bar.time = bar.datetime.time().strftime('%H:%M:%S')
+            
+            bar.open = float(d[1])
+            bar.high = float(d[2])
+            bar.low = float(d[3])
+            bar.close = float(d[4])
+            
+            bar.volume = float(d[5])
+            bar.openInterest = float(d[6])
+
+            flt = {'datetime': bar.datetime}
+            collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)
+            print '%s \t %s' % (bar.date, bar.time)
+    
+    print u'插入完毕，耗时：%s' % (time()-start)
+    
+    
 if __name__ == '__main__':
     ## 简单的测试脚本可以写在这里
     #from time import sleep
