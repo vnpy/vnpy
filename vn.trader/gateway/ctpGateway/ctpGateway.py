@@ -48,6 +48,7 @@ exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_SSE] = 'SSE'
+exchangeMap[EXCHANGE_INE] = 'INE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
@@ -683,7 +684,10 @@ class CtpTdApi(TdApi):
         
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
-        """持仓查询回报"""                
+        """持仓查询回报"""
+        if not data['InstrumentID']:
+            return
+        
         # 获取持仓缓存对象
         posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
         if posName in self.posDict:

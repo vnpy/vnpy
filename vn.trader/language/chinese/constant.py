@@ -60,6 +60,7 @@ EXCHANGE_SHFE = 'SHFE'     # 上期所
 EXCHANGE_CZCE = 'CZCE'     # 郑商所
 EXCHANGE_DCE = 'DCE'       # 大商所
 EXCHANGE_SGE = 'SGE'       # 上金所
+EXCHANGE_INE = 'INE'       # 国际能源交易中心
 EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
 EXCHANGE_NONE = ''          # 空交易所
 EXCHANGE_HKEX = 'HKEX'      # 港交所
