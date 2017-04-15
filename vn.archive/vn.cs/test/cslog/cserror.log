@@ -13,3 +13,5 @@
 20150401 13:48:50.439 1: [h04557720/t3530] the Connection has been disconnected.
 20150401 13:49:13.822 1: [h045f7720/t317c] the Connection has been disconnected.
 20150401 14:34:59.175 1: [h045a7720/t2f80] the Connection has been disconnected.
+2017-04-11 22:51:57.843:  --The license infomation is error.   This machine ID is:[16ec65f21e6068d6e3d4de7a6ce6979b]   and you can find this ID code in 'cserror.log' file!
+2017-04-11 22:51:57.844:  --'CITICs_HsT2Hlp.dll' Moudle is not licensed. The date of license to:[2017-06-11]  , The all functions is not limited on the trail period!
