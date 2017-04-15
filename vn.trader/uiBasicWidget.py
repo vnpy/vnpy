@@ -178,7 +178,7 @@ class BasicMonitor(QtGui.QTableWidget):
     基础监控
     
     headerDict中的值对应的字典格式如下
-    {'chinese': u'中文名', 'cellType': BasicCell}
+    {'Chinese': u'中文名', 'cellType': BasicCell}
     
     """
     signal = QtCore.pyqtSignal(type(Event()))
@@ -248,7 +248,7 @@ class BasicMonitor(QtGui.QTableWidget):
         self.setColumnCount(col)
         
         # 设置列表头
-        labels = [d['chinese'] for d in self.headerDict.values()]
+        labels = [d['Chinese'] for d in self.headerDict.values()]
         self.setHorizontalHeaderLabels(labels)
         
         # 关闭左边的垂直表头
@@ -405,21 +405,21 @@ class MarketMonitor(BasicMonitor):
         
         # 设置表头有序字典
         d = OrderedDict()
-        d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
-        d['lastPrice'] = {'chinese':vtText.LAST_PRICE, 'cellType':BasicCell}
-        d['preClosePrice'] = {'chinese':vtText.PRE_CLOSE_PRICE, 'cellType':BasicCell}
-        d['volume'] = {'chinese':vtText.VOLUME, 'cellType':BasicCell}
-        d['openInterest'] = {'chinese':vtText.OPEN_INTEREST, 'cellType':BasicCell}
-        d['openPrice'] = {'chinese':vtText.OPEN_PRICE, 'cellType':BasicCell}
-        d['highPrice'] = {'chinese':vtText.HIGH_PRICE, 'cellType':BasicCell}
-        d['lowPrice'] = {'chinese':vtText.LOW_PRICE, 'cellType':BasicCell}
-        d['bidPrice1'] = {'chinese':vtText.BID_PRICE_1, 'cellType':BidCell}
-        d['bidVolume1'] = {'chinese':vtText.BID_VOLUME_1, 'cellType':BidCell}
-        d['askPrice1'] = {'chinese':vtText.ASK_PRICE_1, 'cellType':AskCell}
-        d['askVolume1'] = {'chinese':vtText.ASK_VOLUME_1, 'cellType':AskCell}
-        d['time'] = {'chinese':vtText.TIME, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['symbol'] = {'Chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
+        d['lastPrice'] = {'Chinese':vtText.LAST_PRICE, 'cellType':BasicCell}
+        d['preClosePrice'] = {'Chinese':vtText.PRE_CLOSE_PRICE, 'cellType':BasicCell}
+        d['volume'] = {'Chinese':vtText.VOLUME, 'cellType':BasicCell}
+        d['openInterest'] = {'Chinese':vtText.OPEN_INTEREST, 'cellType':BasicCell}
+        d['openPrice'] = {'Chinese':vtText.OPEN_PRICE, 'cellType':BasicCell}
+        d['highPrice'] = {'Chinese':vtText.HIGH_PRICE, 'cellType':BasicCell}
+        d['lowPrice'] = {'Chinese':vtText.LOW_PRICE, 'cellType':BasicCell}
+        d['bidPrice1'] = {'Chinese':vtText.BID_PRICE_1, 'cellType':BidCell}
+        d['bidVolume1'] = {'Chinese':vtText.BID_VOLUME_1, 'cellType':BidCell}
+        d['askPrice1'] = {'Chinese':vtText.ASK_PRICE_1, 'cellType':AskCell}
+        d['askVolume1'] = {'Chinese':vtText.ASK_VOLUME_1, 'cellType':AskCell}
+        d['time'] = {'Chinese':vtText.TIME, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         # 设置数据键
@@ -451,9 +451,9 @@ class LogMonitor(BasicMonitor):
         super(LogMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()        
-        d['logTime'] = {'chinese':vtText.TIME, 'cellType':BasicCell}
-        d['logContent'] = {'chinese':vtText.CONTENT, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['logTime'] = {'Chinese':vtText.TIME, 'cellType':BasicCell}
+        d['logContent'] = {'Chinese':vtText.CONTENT, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_LOG)
@@ -472,10 +472,10 @@ class ErrorMonitor(BasicMonitor):
         super(ErrorMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()       
-        d['errorTime']  = {'chinese':vtText.TIME, 'cellType':BasicCell}
-        d['errorID'] = {'chinese':vtText.ERROR_CODE, 'cellType':BasicCell}
-        d['errorMsg'] = {'chinese':vtText.ERROR_MESSAGE, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['errorTime']  = {'Chinese':vtText.TIME, 'cellType':BasicCell}
+        d['errorID'] = {'Chinese':vtText.ERROR_CODE, 'cellType':BasicCell}
+        d['errorMsg'] = {'Chinese':vtText.ERROR_MESSAGE, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_ERROR)
@@ -494,16 +494,16 @@ class TradeMonitor(BasicMonitor):
         super(TradeMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['tradeID'] = {'chinese':vtText.TRADE_ID, 'cellType':NumCell}
-        d['orderID'] = {'chinese':vtText.ORDER_ID, 'cellType':NumCell}
-        d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
-        d['direction'] = {'chinese':vtText.DIRECTION, 'cellType':DirectionCell}
-        d['offset'] = {'chinese':vtText.OFFSET, 'cellType':BasicCell}
-        d['price'] = {'chinese':vtText.PRICE, 'cellType':BasicCell}
-        d['volume'] = {'chinese':vtText.VOLUME, 'cellType':BasicCell}
-        d['tradeTime'] = {'chinese':vtText.TRADE_TIME, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['tradeID'] = {'Chinese':vtText.TRADE_ID, 'cellType':NumCell}
+        d['orderID'] = {'Chinese':vtText.ORDER_ID, 'cellType':NumCell}
+        d['symbol'] = {'Chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
+        d['direction'] = {'Chinese':vtText.DIRECTION, 'cellType':DirectionCell}
+        d['offset'] = {'Chinese':vtText.OFFSET, 'cellType':BasicCell}
+        d['price'] = {'Chinese':vtText.PRICE, 'cellType':BasicCell}
+        d['volume'] = {'Chinese':vtText.VOLUME, 'cellType':BasicCell}
+        d['tradeTime'] = {'Chinese':vtText.TRADE_TIME, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_TRADE)
@@ -526,20 +526,20 @@ class OrderMonitor(BasicMonitor):
         self.mainEngine = mainEngine
         
         d = OrderedDict()
-        d['orderID'] = {'chinese':vtText.ORDER_ID, 'cellType':NumCell}
-        d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
-        d['direction'] = {'chinese':vtText.DIRECTION, 'cellType':DirectionCell}
-        d['offset'] = {'chinese':vtText.OFFSET, 'cellType':BasicCell}
-        d['price'] = {'chinese':vtText.PRICE, 'cellType':BasicCell}
-        d['totalVolume'] = {'chinese':vtText.ORDER_VOLUME, 'cellType':BasicCell}
-        d['tradedVolume'] = {'chinese':vtText.TRADED_VOLUME, 'cellType':BasicCell}
-        d['status'] = {'chinese':vtText.ORDER_STATUS, 'cellType':BasicCell}
-        d['orderTime'] = {'chinese':vtText.ORDER_TIME, 'cellType':BasicCell}
-        d['cancelTime'] = {'chinese':vtText.CANCEL_TIME, 'cellType':BasicCell}
-        #d['frontID'] = {'chinese':vtText.FRONT_ID, 'cellType':BasicCell}         # 考虑到在vn.trader中，ctpGateway的报单号应该是始终递增的，因此这里可以忽略
-        #d['sessionID'] = {'chinese':vtText.SESSION_ID, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['orderID'] = {'Chinese':vtText.ORDER_ID, 'cellType':NumCell}
+        d['symbol'] = {'Chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
+        d['direction'] = {'Chinese':vtText.DIRECTION, 'cellType':DirectionCell}
+        d['offset'] = {'Chinese':vtText.OFFSET, 'cellType':BasicCell}
+        d['price'] = {'Chinese':vtText.PRICE, 'cellType':BasicCell}
+        d['totalVolume'] = {'Chinese':vtText.ORDER_VOLUME, 'cellType':BasicCell}
+        d['tradedVolume'] = {'Chinese':vtText.TRADED_VOLUME, 'cellType':BasicCell}
+        d['status'] = {'Chinese':vtText.ORDER_STATUS, 'cellType':BasicCell}
+        d['orderTime'] = {'Chinese':vtText.ORDER_TIME, 'cellType':BasicCell}
+        d['cancelTime'] = {'Chinese':vtText.CANCEL_TIME, 'cellType':BasicCell}
+        #d['frontID'] = {'Chinese':vtText.FRONT_ID, 'cellType':BasicCell}         # 考虑到在vn.trader中，ctpGateway的报单号应该是始终递增的，因此这里可以忽略
+        #d['sessionID'] = {'Chinese':vtText.SESSION_ID, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtOrderID')
@@ -581,15 +581,15 @@ class PositionMonitor(BasicMonitor):
         super(PositionMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
-        d['direction'] = {'chinese':vtText.DIRECTION, 'cellType':DirectionCell}
-        d['position'] = {'chinese':vtText.POSITION, 'cellType':BasicCell}
-        d['ydPosition'] = {'chinese':vtText.YD_POSITION, 'cellType':BasicCell}
-        d['frozen'] = {'chinese':vtText.FROZEN, 'cellType':BasicCell}
-        d['price'] = {'chinese':vtText.PRICE, 'cellType':BasicCell}
-        d['positionProfit'] = {'chinese':vtText.POSITION_PROFIT, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['symbol'] = {'Chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':vtText.CONTRACT_NAME, 'cellType':NameCell}
+        d['direction'] = {'Chinese':vtText.DIRECTION, 'cellType':DirectionCell}
+        d['position'] = {'Chinese':vtText.POSITION, 'cellType':BasicCell}
+        d['ydPosition'] = {'Chinese':vtText.YD_POSITION, 'cellType':BasicCell}
+        d['frozen'] = {'Chinese':vtText.FROZEN, 'cellType':BasicCell}
+        d['price'] = {'Chinese':vtText.PRICE, 'cellType':BasicCell}
+        d['positionProfit'] = {'Chinese':vtText.POSITION_PROFIT, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtPositionName')
@@ -611,15 +611,15 @@ class AccountMonitor(BasicMonitor):
         super(AccountMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['accountID'] = {'chinese':vtText.ACCOUNT_ID, 'cellType':BasicCell}
-        d['preBalance'] = {'chinese':vtText.PRE_BALANCE, 'cellType':BasicCell}
-        d['balance'] = {'chinese':vtText.BALANCE, 'cellType':BasicCell}
-        d['available'] = {'chinese':vtText.AVAILABLE, 'cellType':BasicCell}
-        d['commission'] = {'chinese':vtText.COMMISSION, 'cellType':BasicCell}
-        d['margin'] = {'chinese':vtText.MARGIN, 'cellType':BasicCell}
-        d['closeProfit'] = {'chinese':vtText.CLOSE_PROFIT, 'cellType':BasicCell}
-        d['positionProfit'] = {'chinese':vtText.POSITION_PROFIT, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
+        d['accountID'] = {'Chinese':vtText.ACCOUNT_ID, 'cellType':BasicCell}
+        d['preBalance'] = {'Chinese':vtText.PRE_BALANCE, 'cellType':BasicCell}
+        d['balance'] = {'Chinese':vtText.BALANCE, 'cellType':BasicCell}
+        d['available'] = {'Chinese':vtText.AVAILABLE, 'cellType':BasicCell}
+        d['commission'] = {'Chinese':vtText.COMMISSION, 'cellType':BasicCell}
+        d['margin'] = {'Chinese':vtText.MARGIN, 'cellType':BasicCell}
+        d['closeProfit'] = {'Chinese':vtText.CLOSE_PROFIT, 'cellType':BasicCell}
+        d['positionProfit'] = {'Chinese':vtText.POSITION_PROFIT, 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtAccountID')
@@ -1079,16 +1079,16 @@ class ContractMonitor(BasicMonitor):
         self.mainEngine = mainEngine
         
         d = OrderedDict()
-        d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
-        d['exchange'] = {'chinese':vtText.EXCHANGE, 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':vtText.VT_SYMBOL, 'cellType':BasicCell}
-        d['name'] = {'chinese':vtText.CONTRACT_NAME, 'cellType':BasicCell}
-        d['productClass'] = {'chinese':vtText.PRODUCT_CLASS, 'cellType':BasicCell}
-        d['size'] = {'chinese':vtText.CONTRACT_SIZE, 'cellType':BasicCell}
-        d['priceTick'] = {'chinese':vtText.PRICE_TICK, 'cellType':BasicCell}
-        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
-        d['underlyingSymbol'] = {'chinese':vtText.UNDERLYING_SYMBOL, 'cellType':BasicCell}
-        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}     
+        d['symbol'] = {'Chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
+        d['exchange'] = {'Chinese':vtText.EXCHANGE, 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':vtText.VT_SYMBOL, 'cellType':BasicCell}
+        d['name'] = {'Chinese':vtText.CONTRACT_NAME, 'cellType':BasicCell}
+        d['productClass'] = {'Chinese':vtText.PRODUCT_CLASS, 'cellType':BasicCell}
+        d['size'] = {'Chinese':vtText.CONTRACT_SIZE, 'cellType':BasicCell}
+        d['priceTick'] = {'Chinese':vtText.PRICE_TICK, 'cellType':BasicCell}
+        d['strikePrice'] = {'Chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
+        d['underlyingSymbol'] = {'Chinese':vtText.UNDERLYING_SYMBOL, 'cellType':BasicCell}
+        d['optionType'] = {'Chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         # 过滤显示用的字符串

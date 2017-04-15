@@ -177,7 +177,7 @@ class BasicMonitor(QtGui.QTableWidget):
     基础监控
     
     headerDict中的值对应的字典格式如下
-    {'chinese': u'中文名', 'cellType': BasicCell}
+    {'Chinese': u'中文名', 'cellType': BasicCell}
     
     """
     signal = QtCore.pyqtSignal(type(Event()))
@@ -247,7 +247,7 @@ class BasicMonitor(QtGui.QTableWidget):
         self.setColumnCount(col)
         
         # 设置列表头
-        labels = [d['chinese'] for d in self.headerDict.values()]
+        labels = [d['Chinese'] for d in self.headerDict.values()]
         self.setHorizontalHeaderLabels(labels)
         
         # 关闭左边的垂直表头
@@ -404,21 +404,21 @@ class MarketMonitor(BasicMonitor):
         
         # 设置表头有序字典
         d = OrderedDict()
-        d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
-        d['lastPrice'] = {'chinese':u'最新价', 'cellType':BasicCell}
-        d['preClosePrice'] = {'chinese':u'昨收盘价', 'cellType':BasicCell}
-        d['volume'] = {'chinese':u'成交量', 'cellType':BasicCell}
-        d['openInterest'] = {'chinese':u'持仓量', 'cellType':BasicCell}
-        d['openPrice'] = {'chinese':u'开盘价', 'cellType':BasicCell}
-        d['highPrice'] = {'chinese':u'最高价', 'cellType':BasicCell}
-        d['lowPrice'] = {'chinese':u'最低价', 'cellType':BasicCell}
-        d['bidPrice1'] = {'chinese':u'买一价', 'cellType':BidCell}
-        d['bidVolume1'] = {'chinese':u'买一量', 'cellType':BidCell}
-        d['askPrice1'] = {'chinese':u'卖一价', 'cellType':AskCell}
-        d['askVolume1'] = {'chinese':u'卖一量', 'cellType':AskCell}
-        d['time'] = {'chinese':u'时间', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['symbol'] = {'Chinese':u'合约代码', 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':u'名称', 'cellType':NameCell}
+        d['lastPrice'] = {'Chinese':u'最新价', 'cellType':BasicCell}
+        d['preClosePrice'] = {'Chinese':u'昨收盘价', 'cellType':BasicCell}
+        d['volume'] = {'Chinese':u'成交量', 'cellType':BasicCell}
+        d['openInterest'] = {'Chinese':u'持仓量', 'cellType':BasicCell}
+        d['openPrice'] = {'Chinese':u'开盘价', 'cellType':BasicCell}
+        d['highPrice'] = {'Chinese':u'最高价', 'cellType':BasicCell}
+        d['lowPrice'] = {'Chinese':u'最低价', 'cellType':BasicCell}
+        d['bidPrice1'] = {'Chinese':u'买一价', 'cellType':BidCell}
+        d['bidVolume1'] = {'Chinese':u'买一量', 'cellType':BidCell}
+        d['askPrice1'] = {'Chinese':u'卖一价', 'cellType':AskCell}
+        d['askVolume1'] = {'Chinese':u'卖一量', 'cellType':AskCell}
+        d['time'] = {'Chinese':u'时间', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         # 设置数据键
@@ -450,9 +450,9 @@ class LogMonitor(BasicMonitor):
         super(LogMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()        
-        d['logTime'] = {'chinese':u'时间', 'cellType':BasicCell}
-        d['logContent'] = {'chinese':u'内容', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['logTime'] = {'Chinese':u'时间', 'cellType':BasicCell}
+        d['logContent'] = {'Chinese':u'内容', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_LOG)
@@ -471,11 +471,11 @@ class ErrorMonitor(BasicMonitor):
         super(ErrorMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()       
-        d['errorTime']  = {'chinese':u'错误时间', 'cellType':BasicCell}
-        d['errorID'] = {'chinese':u'错误代码', 'cellType':BasicCell}
-        d['errorMsg'] = {'chinese':u'错误信息', 'cellType':BasicCell}
-        d['additionalInfo'] = {'chinese':u'补充信息', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['errorTime']  = {'Chinese':u'错误时间', 'cellType':BasicCell}
+        d['errorID'] = {'Chinese':u'错误代码', 'cellType':BasicCell}
+        d['errorMsg'] = {'Chinese':u'错误信息', 'cellType':BasicCell}
+        d['additionalInfo'] = {'Chinese':u'补充信息', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_ERROR)
@@ -494,16 +494,16 @@ class TradeMonitor(BasicMonitor):
         super(TradeMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['tradeID'] = {'chinese':u'成交编号', 'cellType':NumCell}
-        d['orderID'] = {'chinese':u'委托编号', 'cellType':NumCell}
-        d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
-        d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
-        d['offset'] = {'chinese':u'开平', 'cellType':BasicCell}
-        d['price'] = {'chinese':u'价格', 'cellType':BasicCell}
-        d['volume'] = {'chinese':u'数量', 'cellType':BasicCell}
-        d['tradeTime'] = {'chinese':u'成交时间', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['tradeID'] = {'Chinese':u'成交编号', 'cellType':NumCell}
+        d['orderID'] = {'Chinese':u'委托编号', 'cellType':NumCell}
+        d['symbol'] = {'Chinese':u'合约代码', 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':u'名称', 'cellType':NameCell}
+        d['direction'] = {'Chinese':u'方向', 'cellType':DirectionCell}
+        d['offset'] = {'Chinese':u'开平', 'cellType':BasicCell}
+        d['price'] = {'Chinese':u'价格', 'cellType':BasicCell}
+        d['volume'] = {'Chinese':u'数量', 'cellType':BasicCell}
+        d['tradeTime'] = {'Chinese':u'成交时间', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_TRADE)
@@ -526,20 +526,20 @@ class OrderMonitor(BasicMonitor):
         self.mainEngine = mainEngine
         
         d = OrderedDict()
-        d['orderID'] = {'chinese':u'委托编号', 'cellType':NumCell}
-        d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
-        d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
-        d['offset'] = {'chinese':u'开平', 'cellType':BasicCell}
-        d['price'] = {'chinese':u'价格', 'cellType':BasicCell}
-        d['totalVolume'] = {'chinese':u'委托数量', 'cellType':BasicCell}
-        d['tradedVolume'] = {'chinese':u'成交数量', 'cellType':BasicCell}
-        d['status'] = {'chinese':u'状态', 'cellType':BasicCell}
-        d['orderTime'] = {'chinese':u'委托时间', 'cellType':BasicCell}
-        d['cancelTime'] = {'chinese':u'撤销时间', 'cellType':BasicCell}
-        d['frontID'] = {'chinese':u'前置编号', 'cellType':BasicCell}
-        d['sessionID'] = {'chinese':u'会话编号', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['orderID'] = {'Chinese':u'委托编号', 'cellType':NumCell}
+        d['symbol'] = {'Chinese':u'合约代码', 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':u'名称', 'cellType':NameCell}
+        d['direction'] = {'Chinese':u'方向', 'cellType':DirectionCell}
+        d['offset'] = {'Chinese':u'开平', 'cellType':BasicCell}
+        d['price'] = {'Chinese':u'价格', 'cellType':BasicCell}
+        d['totalVolume'] = {'Chinese':u'委托数量', 'cellType':BasicCell}
+        d['tradedVolume'] = {'Chinese':u'成交数量', 'cellType':BasicCell}
+        d['status'] = {'Chinese':u'状态', 'cellType':BasicCell}
+        d['orderTime'] = {'Chinese':u'委托时间', 'cellType':BasicCell}
+        d['cancelTime'] = {'Chinese':u'撤销时间', 'cellType':BasicCell}
+        d['frontID'] = {'Chinese':u'前置编号', 'cellType':BasicCell}
+        d['sessionID'] = {'Chinese':u'会话编号', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtOrderID')
@@ -581,14 +581,14 @@ class PositionMonitor(BasicMonitor):
         super(PositionMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':u'名称', 'cellType':NameCell}
-        d['direction'] = {'chinese':u'方向', 'cellType':DirectionCell}
-        d['position'] = {'chinese':u'持仓量', 'cellType':BasicCell}
-        d['ydPosition'] = {'chinese':u'昨持仓', 'cellType':BasicCell}
-        d['frozen'] = {'chinese':u'冻结量', 'cellType':BasicCell}
-        d['price'] = {'chinese':u'价格', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['symbol'] = {'Chinese':u'合约代码', 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':u'名称', 'cellType':NameCell}
+        d['direction'] = {'Chinese':u'方向', 'cellType':DirectionCell}
+        d['position'] = {'Chinese':u'持仓量', 'cellType':BasicCell}
+        d['ydPosition'] = {'Chinese':u'昨持仓', 'cellType':BasicCell}
+        d['frozen'] = {'Chinese':u'冻结量', 'cellType':BasicCell}
+        d['price'] = {'Chinese':u'价格', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtPositionName')
@@ -610,15 +610,15 @@ class AccountMonitor(BasicMonitor):
         super(AccountMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
-        d['accountID'] = {'chinese':u'账户', 'cellType':BasicCell}
-        d['preBalance'] = {'chinese':u'昨结', 'cellType':BasicCell}
-        d['balance'] = {'chinese':u'净值', 'cellType':BasicCell}
-        d['available'] = {'chinese':u'可用', 'cellType':BasicCell}
-        d['commission'] = {'chinese':u'手续费', 'cellType':BasicCell}
-        d['margin'] = {'chinese':u'保证金', 'cellType':BasicCell}
-        d['closeProfit'] = {'chinese':u'平仓盈亏', 'cellType':BasicCell}
-        d['positionProfit'] = {'chinese':u'持仓盈亏', 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':u'接口', 'cellType':BasicCell}
+        d['accountID'] = {'Chinese':u'账户', 'cellType':BasicCell}
+        d['preBalance'] = {'Chinese':u'昨结', 'cellType':BasicCell}
+        d['balance'] = {'Chinese':u'净值', 'cellType':BasicCell}
+        d['available'] = {'Chinese':u'可用', 'cellType':BasicCell}
+        d['commission'] = {'Chinese':u'手续费', 'cellType':BasicCell}
+        d['margin'] = {'Chinese':u'保证金', 'cellType':BasicCell}
+        d['closeProfit'] = {'Chinese':u'平仓盈亏', 'cellType':BasicCell}
+        d['positionProfit'] = {'Chinese':u'持仓盈亏', 'cellType':BasicCell}
+        d['gatewayName'] = {'Chinese':u'接口', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtAccountID')
@@ -1069,16 +1069,16 @@ class ContractMonitor(BasicMonitor):
         self.mainEngine = mainEngine
         
         d = OrderedDict()
-        d['symbol'] = {'chinese':u'合约代码', 'cellType':BasicCell}
-        d['exchange'] = {'chinese':u'交易所', 'cellType':BasicCell}
-        d['vtSymbol'] = {'chinese':u'vt系统代码', 'cellType':BasicCell}
-        d['name'] = {'chinese':u'名称', 'cellType':BasicCell}
-        d['productClass'] = {'chinese':u'合约类型', 'cellType':BasicCell}
-        d['size'] = {'chinese':u'大小', 'cellType':BasicCell}
-        d['priceTick'] = {'chinese':u'最小价格变动', 'cellType':BasicCell}
-        #d['strikePrice'] = {'chinese':u'期权行权价', 'cellType':BasicCell}
-        #d['underlyingSymbol'] = {'chinese':u'期权标的物', 'cellType':BasicCell}
-        #d['optionType'] = {'chinese':u'期权类型', 'cellType':BasicCell}     
+        d['symbol'] = {'Chinese':u'合约代码', 'cellType':BasicCell}
+        d['exchange'] = {'Chinese':u'交易所', 'cellType':BasicCell}
+        d['vtSymbol'] = {'Chinese':u'vt系统代码', 'cellType':BasicCell}
+        d['name'] = {'Chinese':u'名称', 'cellType':BasicCell}
+        d['productClass'] = {'Chinese':u'合约类型', 'cellType':BasicCell}
+        d['size'] = {'Chinese':u'大小', 'cellType':BasicCell}
+        d['priceTick'] = {'Chinese':u'最小价格变动', 'cellType':BasicCell}
+        #d['strikePrice'] = {'Chinese':u'期权行权价', 'cellType':BasicCell}
+        #d['underlyingSymbol'] = {'Chinese':u'期权标的物', 'cellType':BasicCell}
+        #d['optionType'] = {'Chinese':u'期权类型', 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.initUi()
