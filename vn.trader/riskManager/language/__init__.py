@@ -17,7 +17,7 @@ try:
     f = file(SETTING_FILENAME)
     setting = json.load(f)
     if setting['language'] == 'English':
-        from english import text
+        from English import text
     f.close()
 except:
     traceback.print_exc()
