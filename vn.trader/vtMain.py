@@ -40,6 +40,7 @@ def main():
         if setting['darkStyle']:
             import qdarkstyle
             app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
+        f.close()
     except:
         pass
     

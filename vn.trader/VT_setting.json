@@ -6,5 +6,6 @@
 	"mongoPort": 27017,
 	"mongoLogging": true,
 
-	"darkStyle": true
+	"darkStyle": true,
+	"language": "english"
 }

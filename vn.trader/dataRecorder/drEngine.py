@@ -18,6 +18,7 @@ from eventEngine import *
 from vtGateway import VtSubscribeReq, VtLogData
 from drBase import *
 from vtFunction import todayDate
+from language import text
 
 
 ########################################################################
@@ -149,8 +150,11 @@ class DrEngine(object):
                 self.insertData(TICK_DB_NAME, activeSymbol, drTick)
             
             # 发出日志
-            self.writeDrLog(u'记录Tick数据%s，时间:%s, last:%s, bid:%s, ask:%s' 
-                            %(drTick.vtSymbol, drTick.time, drTick.lastPrice, drTick.bidPrice1, drTick.askPrice1))
+            self.writeDrLog(text.TICK_LOGGING_MESSAGE.format(symbol=drTick.vtSymbol,
+                                                             time=drTick.time, 
+                                                             last=drTick.lastPrice, 
+                                                             bid=drTick.bidPrice1, 
+                                                             ask=drTick.askPrice1))
             
         # 更新分钟线数据
         if vtSymbol in self.barDict:
@@ -166,9 +170,12 @@ class DrEngine(object):
                         activeSymbol = self.activeSymbolDict[vtSymbol]
                         self.insertData(MINUTE_DB_NAME, activeSymbol, newBar)                    
                     
-                    self.writeDrLog(u'记录分钟线数据%s，时间:%s, O:%s, H:%s, L:%s, C:%s' 
-                                    %(bar.vtSymbol, bar.time, bar.open, bar.high, 
-                                      bar.low, bar.close))
+                    self.writeDrLog(text.BAR_LOGGING_MESSAGE.format(symbol=bar.vtSymbol, 
+                                                                    time=bar.time, 
+                                                                    open=bar.open, 
+                                                                    high=bar.high, 
+                                                                    low=bar.low, 
+                                                                    close=bar.close))
                          
                 bar.vtSymbol = drTick.vtSymbol
                 bar.symbol = drTick.symbol
@@ -209,6 +216,7 @@ class DrEngine(object):
                 self.mainEngine.dbInsert(dbName, collectionName, d)
             except Empty:
                 pass
+            
     #----------------------------------------------------------------------
     def start(self):
         """启动"""
