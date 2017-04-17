@@ -13,6 +13,9 @@
 import talib
 import numpy as np
 
+import sys
+sys.path.append('..')
+
 from ctaBase import *
 from ctaTemplate import CtaTemplate
 
