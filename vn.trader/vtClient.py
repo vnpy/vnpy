@@ -11,7 +11,7 @@ from uiMainWindow import *
 from eventEngine import *
 from vnrpc import RpcClient
 
-from ctaAlgo.ctaEngine import CtaEngine
+from ctaStrategy.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
 

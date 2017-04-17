@@ -8,6 +8,7 @@ import json
 
 from uiBasicWidget import QtGui, QtCore
 from eventEngine import *
+from language import text
 
 
 ########################################################################
@@ -52,35 +53,35 @@ class DrEngineManager(QtGui.QWidget):
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle(u'行情数据记录工具')
+        self.setWindowTitle(text.DATA_RECORDER)
         
         # 记录合约配置监控
-        tickLabel = QtGui.QLabel(u'Tick记录')
+        tickLabel = QtGui.QLabel(text.TICK_RECORD)
         self.tickTable = QtGui.QTableWidget()
         self.tickTable.setColumnCount(2)
         self.tickTable.verticalHeader().setVisible(False)
         self.tickTable.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
         self.tickTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
         self.tickTable.setAlternatingRowColors(True)
-        self.tickTable.setHorizontalHeaderLabels([u'合约代码', u'接口'])
+        self.tickTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
         
-        barLabel = QtGui.QLabel(u'Bar记录')
+        barLabel = QtGui.QLabel(text.BAR_RECORD)
         self.barTable = QtGui.QTableWidget()
         self.barTable.setColumnCount(2)
         self.barTable.verticalHeader().setVisible(False)
         self.barTable.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
         self.barTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
         self.barTable.setAlternatingRowColors(True)        
-        self.barTable.setHorizontalHeaderLabels([u'合约代码', u'接口'])
+        self.barTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
 
-        activeLabel = QtGui.QLabel(u'主力合约')
+        activeLabel = QtGui.QLabel(text.DOMINANT_CONTRACT)
         self.activeTable = QtGui.QTableWidget()
         self.activeTable.setColumnCount(2)
         self.activeTable.verticalHeader().setVisible(False)
         self.activeTable.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
         self.activeTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
         self.activeTable.setAlternatingRowColors(True)        
-        self.activeTable.setHorizontalHeaderLabels([u'主力代码', u'合约代码'])
+        self.activeTable.setHorizontalHeaderLabels([text.DOMINANT_SYMBOL, text.CONTRACT_SYMBOL])
 
         # 日志监控
         self.logMonitor = QtGui.QTextEdit()
