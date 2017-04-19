@@ -1,52 +1,52 @@
 # vn.ctp
 
-### ¼ò½é
-CTP¹ñÌ¨API½Ó¿ÚµÄPython·â×°£¬»ùÓÚpyscriptÄ¿Â¼ÏÂµÄ½Å±¾×Ô¶¯·ÖÎöÍ·ÎÄ¼şÉú³É·â×°´úÂëÄ£¿é£¬Ìá¹©Ô­ÉúC++ APIÖĞµÄÈ«²¿¹¦ÄÜ¡£
+### ç®€ä»‹
+CTPæŸœå°APIæ¥å£çš„Pythonå°è£…ï¼ŒåŸºäºpyscriptç›®å½•ä¸‹çš„è„šæœ¬è‡ªåŠ¨åˆ†æå¤´æ–‡ä»¶ç”Ÿæˆå°è£…ä»£ç æ¨¡å—ï¼Œæä¾›åŸç”ŸC++ APIä¸­çš„å…¨éƒ¨åŠŸèƒ½ã€‚
 
 
-### Ä¿Â¼ËµÃ÷
-* vnctpmd: ĞĞÇéAPI
-* vnctptd: ½»Ò×API
-* pyscript: ×Ô¶¯·â×°½Å±¾
-* ctpapi£ºC++ APIÎÄ¼ş
+### ç›®å½•è¯´æ˜
+* vnctpmd: è¡Œæƒ…API
+* vnctptd: äº¤æ˜“API
+* pyscript: è‡ªåŠ¨å°è£…è„šæœ¬
+* ctpapiï¼šC++ APIæ–‡ä»¶
 
-### Ê¹ÓÃCMake±àÒë
+### ä½¿ç”¨CMakeç¼–è¯‘
 
 **Windows 7**
 
-»·¾³ÅäÖÃ:
+ç¯å¢ƒé…ç½®:
 
-* AnacondaºÍBoostµÄ°²×°·½Ê½Çë²Î¿¼www.vnpy.orgÉÏµÄ½Ì³Ì£¬±ØĞëÊ¹ÓÃ32Î»
+* Anacondaå’ŒBoostçš„å®‰è£…æ–¹å¼è¯·å‚è€ƒwww.vnpy.orgä¸Šçš„æ•™ç¨‹ï¼Œå¿…é¡»ä½¿ç”¨32ä½
 
-* cmake:°²×°×îĞÂ°æ±¾µÄcmake,ÓÃÓÚÅäÖÃ±àÒë»·¾³
+* cmake:å®‰è£…æœ€æ–°ç‰ˆæœ¬çš„cmake,ç”¨äºé…ç½®ç¼–è¯‘ç¯å¢ƒ
 
-* ÉèÖÃ»·¾³±äÁ¿£ºBOOST_ROOT = C:\boost_1_57_0
+* è®¾ç½®ç¯å¢ƒå˜é‡ï¼šBOOST_ROOT = C:\boost_1_57_0
 
-* ±àÒë¹¤¾ß£ºVisual Studio 2013
+* ç¼–è¯‘å·¥å…·ï¼šVisual Studio 2013
 
 
-±àÒë¹ı³Ì:
+ç¼–è¯‘è¿‡ç¨‹:
 
-* ÔÚvn.ctpÄ¿Â¼ÏÂĞÂ½¨ÎÄ¼ş¼Ğ£¬²¢ÃüÃûÎªbuild, ±£´æ±àÒëµÄÁÙÊ±ÎÄ¼ş¼°¿âÎÄ¼ş
+* åœ¨vn.ctpç›®å½•ä¸‹æ–°å»ºæ–‡ä»¶å¤¹ï¼Œå¹¶å‘½åä¸ºbuild, ä¿å­˜ç¼–è¯‘çš„ä¸´æ—¶æ–‡ä»¶åŠåº“æ–‡ä»¶
 
-* ´ò¿ªÃüÁîĞĞ¹¤¾ßÊäÈë£ºcmake-gui .. Ôò´ò¿ªcmakeÅäÖÃ½çÃæ
+* æ‰“å¼€å‘½ä»¤è¡Œå·¥å…·è¾“å…¥ï¼šcmake-gui .. åˆ™æ‰“å¼€cmakeé…ç½®ç•Œé¢
 
-* µã»÷configure¡£
+* ç‚¹å‡»configureã€‚
 
-* µã»÷generate¡£Èç¹ûÃ»ÓĞ´íÎóÔòÅäÖÃ³É¹¦
+* ç‚¹å‡»generateã€‚å¦‚æœæ²¡æœ‰é”™è¯¯åˆ™é…ç½®æˆåŠŸ
 
-* ½øÈëbuildÄ¿Â¼£¬Ë«»÷vn_ctp_api.sln´ò¿ª½â¾ö·½°¸
+* è¿›å…¥buildç›®å½•ï¼ŒåŒå‡»vn_ctp_api.slnæ‰“å¼€è§£å†³æ–¹æ¡ˆ
 
-* µã»÷±àÒë°´Å¥,½¨Òé±àÒërelease¿â
+* ç‚¹å‡»ç¼–è¯‘æŒ‰é’®,å»ºè®®ç¼–è¯‘releaseåº“
 
 
 **Linux (Debian jessie, Ubuntu 16.04)**
 
-»·¾³ÅäÖÃ£º
+ç¯å¢ƒé…ç½®ï¼š
 
-* ²Î¿¼[ÕâÀï](http://www.continuum.io/downloads)µÄ½Ì³ÌÏÂÔØ²¢°²×°AnacondaµÄLinux 64Î»°æ±¾
+* å‚è€ƒ[è¿™é‡Œ](http://www.continuum.io/downloads)çš„æ•™ç¨‹ä¸‹è½½å¹¶å®‰è£…Anacondaçš„Linux 64ä½ç‰ˆæœ¬
 
-* Ê¹ÓÃapt-get°²×°±àÒëÏà¹ØµÄ¹¤¾ß£¬×¢ÒâÄ³Ğ©ÀÏµÄUbuntu±ØĞëÖ¸¶¨Ê¹ÓÃboost 1.58.0°æ±¾£º
+* ä½¿ç”¨apt-getå®‰è£…ç¼–è¯‘ç›¸å…³çš„å·¥å…·ï¼Œæ³¨æ„æŸäº›è€çš„Ubuntuå¿…é¡»æŒ‡å®šä½¿ç”¨boost 1.58.0ç‰ˆæœ¬ï¼š
 
     - apt-get install build-essential
 
@@ -56,24 +56,24 @@ CTP¹ñÌ¨API½Ó¿ÚµÄPython·â×°£¬»ùÓÚpyscriptÄ¿Â¼ÏÂµÄ½Å±¾×Ô¶¯·ÖÎöÍ·ÎÄ¼şÉú³É·â×°´úÂëÄ£
 
     - apt-get install cmake
 
-* Èç¹û´Ó¹ÙÍøÏÂÔØĞÂµÄctp api tar°ü£¬±ÈÈçv6.3.5_20150803_tradeapi_linux64.tar£¬ĞèÒªÖØÃüÃûctp api soÎÄ¼şÃû£¨·ñÔò¿ÉÒÔºöÂÔ¸Ã²½Öè£©£º
+* å¦‚æœä»å®˜ç½‘ä¸‹è½½æ–°çš„ctp api taråŒ…ï¼Œæ¯”å¦‚v6.3.5_20150803_tradeapi_linux64.tarï¼Œéœ€è¦é‡å‘½åctp api soæ–‡ä»¶åï¼ˆå¦åˆ™å¯ä»¥å¿½ç•¥è¯¥æ­¥éª¤ï¼‰ï¼š
 
     - thostmduserapi.so --> libthostmduserapi.so
 
     - thosttraderapi.so --> libthosttraderapi.so
 
 
-±àÒë¹ı³Ì£º
+ç¼–è¯‘è¿‡ç¨‹ï¼š
 
-* µ±Ç°Ä¿Â¼ÔËĞĞbuild.sh£¬Íê³É±àÒë
+* å½“å‰ç›®å½•è¿è¡Œbuild.shï¼Œå®Œæˆç¼–è¯‘
 
-### API°æ±¾
-ÈÕÆÚ£º2015-08-04
+### APIç‰ˆæœ¬
+æ—¥æœŸï¼š2015-08-04
 
-Ãû³Æ£ºfsopt_traderapi
+åç§°ï¼šfsopt_traderapi
 
-ÃèÊö£º¸ö¹ÉÆÚÈ¨API  
+æè¿°ï¼šä¸ªè‚¡æœŸæƒAPI  
 
-Á´½Ó£º[http://www.sfit.com.cn/5_2_DocumentDown.htm](http://www.sfit.com.cn/5_2_DocumentDown.htm)
+é“¾æ¥ï¼š[http://www.sfit.com.cn/5_2_DocumentDown.htm](http://www.sfit.com.cn/5_2_DocumentDown.htm)
 
-ËµÃ÷£ºctpapiÎÄ¼ş¼ĞÏÂµÄÊÇWindowsµÄ32Î»°æ±¾£¬ÆäÏÂÎÄ¼ş¼Ğx64_linuxÖĞµÄÊÇLinuxµÄ64Î»°æ±¾
+è¯´æ˜ï¼šctpapiæ–‡ä»¶å¤¹ä¸‹çš„æ˜¯Windowsçš„32ä½ç‰ˆæœ¬ï¼Œå…¶ä¸‹æ–‡ä»¶å¤¹x64_linuxä¸­çš„æ˜¯Linuxçš„64ä½ç‰ˆæœ¬

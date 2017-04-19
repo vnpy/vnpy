@@ -152,6 +152,9 @@ class ClientEngine(object):
         """查询所有的接口名称"""
         return self.client.getAllGatewayNames()
 
+    # ----------------------------------------------------------------------
+    def getGateway4sysMenu(self):
+        return self.client.getGateway4sysMenu()
 
 #----------------------------------------------------------------------
 def main():
@@ -163,7 +166,7 @@ def main():
     # 设置Windows底部任务栏图标
     if 'Windows' in platform.uname() :
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')    
-    
+
     # 创建事件引擎
     eventEngine = EventEngine()
     eventEngine.start(timer=False)
