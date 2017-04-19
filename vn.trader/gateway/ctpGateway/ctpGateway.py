@@ -13,6 +13,7 @@ import json
 from copy import copy
 from datetime import datetime
 
+import vtGlobal
 from vnctpmd import MdApi
 from vnctptd import TdApi
 from ctpDataType import *
@@ -98,9 +99,11 @@ class CtpGateway(VtGateway):
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
+        fileName = vtGlobal.VT_setting.get(self.gatewayName + '_connect')
+        if fileName is None:
+            fileName = self.gatewayName + '_connect.json'
+            path = os.path.abspath(os.path.dirname(__file__))
+            fileName = os.path.join(path, fileName)
         
         try:
             f = file(fileName)
