@@ -46,7 +46,6 @@ vn.lts/build/*
 .idea
 tmp/
 
-
 vn.trader/ctaAlgo/data/*
 vn.trader/build/*
 vn.trader/dist/*
