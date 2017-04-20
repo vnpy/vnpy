@@ -61,6 +61,10 @@ class MainEngine(object):
 
             self.addGateway(CtpGateway, 'CTP_EBF')
             self.gatewayDict['CTP_EBF'].setQryEnabled(True)
+
+            self.addGateway(CtpGateway, 'CTP_JR')
+            self.gatewayDict['CTP_JR'].setQryEnabled(True)
+
         except Exception as e:
             print e
 
@@ -223,8 +227,19 @@ class MainEngine(object):
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
 
-    def disconnect(self):
+    def disconnect(self,gateway_name = EMPTY_STRING):
         """断开底层gateway的连接"""
+
+        # 只断开指定的gateway
+        if gateway_name != EMPTY_STRING:
+            if gateway_name in self.gatewayDict:
+                gateway = self.gatewayDict[gateway_name]
+                gateway.close()
+                return
+            else:
+                self.writeLog(u'gateway接口不存在：%s' % gateway_name)
+
+        # 断开所有的gateway
         for gateway in self.gatewayDict.values():
             gateway.close()
 

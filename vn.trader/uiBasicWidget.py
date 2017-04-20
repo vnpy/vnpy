@@ -731,7 +731,7 @@ class TradingWidget(QtGui.QFrame):
 
         self.spinPrice = QtGui.QDoubleSpinBox()
         self.spinPrice.setDecimals(4)
-        self.spinPrice.setMinimum(-1000)    # 原来是0，为支持套利，改为-1000
+        self.spinPrice.setMinimum(-10000)    # 原来是0，为支持套利，改为-10000
         self.spinPrice.setMaximum(100000)
 
         self.spinVolume = QtGui.QSpinBox()

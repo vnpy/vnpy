@@ -6,6 +6,8 @@ from uiBasicWidget import *
 from ctaAlgo.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
+from uiFullMonitorWidget import MonitorWidget
+from uiKChartWidget import CandleForm
 
 import os
 
@@ -80,6 +82,9 @@ class MainWindow(QtGui.QMainWindow):
         connectCtpTestAction = QtGui.QAction(u'光大CTP', self)
         connectCtpTestAction.triggered.connect(self.connectCtpEBF)
 
+        connectCtpJRAction = QtGui.QAction(u'金瑞CTP', self)
+        connectCtpJRAction.triggered.connect(self.connectCtpJR)
+
         connectCtpAction = QtGui.QAction(u'连接CTP', self)
         connectCtpAction.triggered.connect(self.connectCtp)
         
@@ -117,7 +122,7 @@ class MainWindow(QtGui.QMainWindow):
         autoDisconnetAction.triggered.connect(self.setAutoDisconnect)
         
         testAction = QtGui.QAction(u'测试', self)
-        testAction.triggered.connect(self.test)
+        testAction.triggered.connect(self.openMonitor)
         
         exitAction = QtGui.QAction(u'退出', self)
         exitAction.triggered.connect(self.close)
@@ -133,6 +138,12 @@ class MainWindow(QtGui.QMainWindow):
         
         ctaAction = QtGui.QAction(u'CTA策略', self)
         ctaAction.triggered.connect(self.openCta)
+
+        monitorAction = QtGui.QAction(u'周期监控', self)
+        monitorAction.triggered.connect(self.openMonitor)
+
+        kChart = QtGui.QAction(u'K线图', self)
+        kChart.triggered.connect(self.openKChart)
         
         rmAction = QtGui.QAction(u'风险管理', self)
         rmAction.triggered.connect(self.openRm)        
@@ -145,6 +156,8 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpProdAction)
         sysMenu.addAction(connectCtpPostAction)
         sysMenu.addAction(connectCtpTestAction)
+        sysMenu.addAction(connectCtpJRAction)
+
         if 'CTP' in self.mainEngine.gatewayDict:
             sysMenu.addAction(connectCtpAction)
         #if 'LTS' in self.mainEngine.gatewayDict:
@@ -181,7 +194,9 @@ class MainWindow(QtGui.QMainWindow):
         # 算法相关
         algoMenu = menubar.addMenu(u'算法')
         algoMenu.addAction(ctaAction)
-        
+        algoMenu.addAction(monitorAction)
+        algoMenu.addAction(kChart)
+
         # 帮助
         helpMenu = menubar.addMenu(u'帮助')
         helpMenu.addAction(aboutAction)  
@@ -226,7 +241,6 @@ class MainWindow(QtGui.QMainWindow):
 
                 if not self.connected:
                     s = s + u' [已断开]'
-
 
                 self.setWindowTitle(s)
 
@@ -312,6 +326,13 @@ class MainWindow(QtGui.QMainWindow):
         self.mainEngine.connect('CTP_EBF')
         self.connectGatewayDict['CTP_EBF'] = u'光大CTP'
         self.connected = True
+
+    def connectCtpJR(self):
+        """连接金瑞期货CTP接口"""
+        self.mainEngine.connect('CTP_JR')
+        self.connectGatewayDict['CTP_JR'] = u'金瑞CTP'
+        self.connected = True
+
 
     def connectCtpTest(self):
         """连接SNOW测试环境CTP接口"""
@@ -431,7 +452,22 @@ class MainWindow(QtGui.QMainWindow):
         except KeyError:
             self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
             self.widgetDict['ctaM'].showMaximized()
-            
+
+    def openMonitor(self):
+        try:
+            self.widgetDict['Monitor'].showMaximized()
+        except KeyError:
+            self.widgetDict['Monitor'] = MonitorWidget(self.mainEngine.ctaEngine, self.eventEngine)
+            self.widgetDict['Monitor'].showMaximized()
+
+    def openKChart(self):
+        try:
+            self.widgetDict['kChart'].showMaximized()
+        except KeyError:
+            self.widgetDict['kChart'] = CandleForm(self.mainEngine.ctaEngine, self.eventEngine, symbol='p1705', period='minute',interval=5)
+            self.widgetDict['kChart'].showMaximized()
+
+
     #----------------------------------------------------------------------
     def openDr(self):
         """打开行情数据记录组件"""
