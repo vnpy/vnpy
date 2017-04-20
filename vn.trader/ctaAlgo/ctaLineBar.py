@@ -121,7 +121,7 @@ class CtaLineBar(object):
 
         self.shortSymbol = EMPTY_STRING # 商品的短代码
         self.minDiff = 1                # 商品的最小价格单位
-
+        self.round_n = 3                # round() 小数点的截断数量
         self.activeDayJump = False      # 隔夜跳空
 
         # 当前的Tick
@@ -239,7 +239,8 @@ class CtaLineBar(object):
 
         if setting:
             self.setParam(setting)
-
+            if self.minDiff < 1:
+                self.round_n = 5
     def setParam(self, setting):
         """设置参数"""
         d = self.__dict__
@@ -317,14 +318,14 @@ class CtaLineBar(object):
         lastBar.volume = lastBar.volume + bar.volume
         lastBar.dayVolume = bar.dayVolume
 
-        lastBar.mid4 = round((2*lastBar.close + lastBar.high + lastBar.low)/4, 2)
-        lastBar.mid5 = round((2*lastBar.close + lastBar.open + lastBar.high + lastBar.low)/5, 2)
+        lastBar.mid4 = round((2*lastBar.close + lastBar.high + lastBar.low)/4, self.round_n)
+        lastBar.mid5 = round((2*lastBar.close + lastBar.open + lastBar.high + lastBar.low)/5, self.round_n)
 
     def onBar(self, bar):
         """OnBar事件"""
         # 计算相关数据
-        bar.mid4 = round((2*bar.close + bar.high + bar.low)/4, 2)
-        bar.mid5 = round((2*bar.close + bar.open + bar.high + bar.low)/5, 2)
+        bar.mid4 = round((2*bar.close + bar.high + bar.low)/4, self.round_n)
+        bar.mid5 = round((2*bar.close + bar.open + bar.high + bar.low)/5, self.round_n)
 
         self.__recountPreHighLow()
         self.__recountMa()
@@ -396,22 +397,24 @@ class CtaLineBar(object):
 
         if self.inputKdjLen > 0 and len(self.lineK) > 0:
             msg = msg + u',KDJ({0}):{1},{2},{3}'.format(self.inputKdjLen,
-                                                        round(self.lineK[-1], 2),
-                                                        round(self.lineD[-1], 2),
-                                                        round(self.lineJ[-1], 2))
+                                                        round(self.lineK[-1], self.round_n),
+                                                        round(self.lineD[-1], self.round_n),
+                                                        round(self.lineJ[-1], self.round_n))
 
         if self.inputCciLen > 0 and len(self.lineCci) > 0:
             msg = msg + u',Cci({0}):{1}'.format(self.inputCciLen, self.lineCci[-1])
 
         if self.inputBollLen > 0 and len(self.lineUpperBand)>0:
             msg = msg + u',Boll({0}):u:{1},m:{2},l:{3}'.\
-                format(self.inputBollLen, round(self.lineUpperBand[-1], 2),
-                       round(self.lineMiddleBand[-1], 2), round(self.lineLowerBand[-1]), 2)
+                format(self.inputBollLen, round(self.lineUpperBand[-1], self.round_n),
+                       round(self.lineMiddleBand[-1], self.round_n), round(self.lineLowerBand[-1]), self.round_n)
 
         if self.inputMacdFastPeriodLen >0 and len(self.lineDif)>0:
             msg = msg + u',MACD({0},{1},{2}):Dif:{3},Dea{4},Macd:{5}'.\
                 format(self.inputMacdFastPeriodLen, self.inputMacdSlowPeriodLen, self.inputMacdSignalPeriodLen,
-                       round(self.lineDif[-1], 2), round(self.lineDea[-1], 2), round(self.lineMacd[-1], 2))
+                       round(self.lineDif[-1], self.round_n),
+                       round(self.lineDea[-1], self.round_n),
+                       round(self.lineMacd[-1], self.round_n))
         return msg
 
     def __firstTick(self, tick):
@@ -627,7 +630,7 @@ class CtaLineBar(object):
                 listClose=[x.close for x in self.lineBar[-ma1Len:]]
 
             barMa1 = ta.MA(numpy.array(listClose, dtype=float), ma1Len)[-1]
-            barMa1 = round(float(barMa1), 3)
+            barMa1 = round(float(barMa1), self.round_n)
 
             if len(self.lineMa1) > self.inputMa1Len*8:
                 del self.lineMa1[0]
@@ -647,7 +650,7 @@ class CtaLineBar(object):
                 listClose=[x.close for x in self.lineBar[-ma2Len:]]
 
             barMa2 = ta.MA(numpy.array(listClose, dtype=float), ma2Len)[-1]
-            barMa2 = round(float(barMa2), 3)
+            barMa2 = round(float(barMa2), self.round_n)
 
             if len(self.lineMa2) > self.inputMa2Len*8:
                 del self.lineMa2[0]
@@ -667,7 +670,7 @@ class CtaLineBar(object):
                 listClose = [x.close for x in self.lineBar[-ma3Len:]]
 
             barMa3 = ta.MA(numpy.array(listClose, dtype=float), ma3Len)[-1]
-            barMa3 = round(float(barMa3), 3)
+            barMa3 = round(float(barMa3), self.round_n)
 
             if len(self.lineMa3) > self.inputMa3Len * 8:
                 del self.lineMa3[0]
@@ -704,7 +707,7 @@ class CtaLineBar(object):
 
             barEma1 = ta.EMA(numpy.array(listClose, dtype=float), ema1Len)[-1]
 
-            barEma1 = round(float(barEma1), 3)
+            barEma1 = round(float(barEma1), self.round_n)
 
             if len(self.lineEma1) > self.inputEma1Len*8:
                 del self.lineEma1[0]
@@ -726,7 +729,7 @@ class CtaLineBar(object):
 
             barEma2 = ta.EMA(numpy.array(listClose, dtype=float), ema2Len)[-1]
 
-            barEma2 = round(float(barEma2), 3)
+            barEma2 = round(float(barEma2), self.round_n)
 
             if len(self.lineEma2) > self.inputEma1Len*8:
                 del self.lineEma2[0]
@@ -940,9 +943,9 @@ class CtaLineBar(object):
         # 计算 ATR
         if self.inputAtr1Len > 0:
             if len(self.lineAtr1) < 1:
-                self.barAtr1 = round(barTr1 / self.inputAtr1Len, 3)
+                self.barAtr1 = round(barTr1 / self.inputAtr1Len, self.round_n)
             else:
-                self.barAtr1 = round((self.lineAtr1[-1]*(self.inputAtr1Len -1) + barTr1) / self.inputAtr1Len, 3)
+                self.barAtr1 = round((self.lineAtr1[-1]*(self.inputAtr1Len -1) + barTr1) / self.inputAtr1Len, self.round_n)
 
             if len(self.lineAtr1) > self. inputAtr1Len+1 :
                 del self.lineAtr1[0]
@@ -950,9 +953,9 @@ class CtaLineBar(object):
 
         if self.inputAtr2Len > 0:
             if len(self.lineAtr2) < 1:
-                self.barAtr2 = round(barTr2 / self.inputAtr2Len, 3)
+                self.barAtr2 = round(barTr2 / self.inputAtr2Len, self.round_n)
             else:
-                self.barAtr2 = round((self.lineAtr2[-1]*(self.inputAtr2Len -1) + barTr2) / self.inputAtr2Len, 3)
+                self.barAtr2 = round((self.lineAtr2[-1]*(self.inputAtr2Len -1) + barTr2) / self.inputAtr2Len, self.round_n)
 
             if len(self.lineAtr2) > self. inputAtr2Len+1:
                 del self.lineAtr2[0]
@@ -960,9 +963,9 @@ class CtaLineBar(object):
 
         if self.inputAtr3Len > 0:
             if len(self.lineAtr3) < 1:
-                self.barAtr3 = round(barTr3 / self.inputAtr3Len, 3)
+                self.barAtr3 = round(barTr3 / self.inputAtr3Len, self.round_n)
             else:
-                self.barAtr3 = round((self.lineAtr3[-1]*(self.inputAtr3Len -1) + barTr3) / self.inputAtr3Len, 3)
+                self.barAtr3 = round((self.lineAtr3[-1]*(self.inputAtr3Len -1) + barTr3) / self.inputAtr3Len, self.round_n)
 
             if len(self.lineAtr3) > self. inputAtr3Len+1:
                 del self.lineAtr3[0]
@@ -1017,7 +1020,7 @@ class CtaLineBar(object):
             idx = 1
 
         barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi1Len)[-1]
-        barRsi = round(float(barRsi), 3)
+        barRsi = round(float(barRsi), self.round_n)
 
         l = len(self.lineRsi1)
         if l > self.inputRsi1Len*8:
@@ -1066,7 +1069,7 @@ class CtaLineBar(object):
                 listClose=[x.close for x in self.lineBar[-self.inputRsi2Len - 1:]]
 
             barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi2Len)[-1]
-            barRsi = round(float(barRsi), 3)
+            barRsi = round(float(barRsi), self.round_n)
 
             l = len(self.lineRsi2)
             if l > self.inputRsi2Len*8:
@@ -1109,7 +1112,7 @@ class CtaLineBar(object):
         else:
             cmi = abs(self.lineBar[0-idx].close-self.lineBar[-1-idx].close)*100/(hhv-llv)
 
-        cmi = round(cmi, 2)
+        cmi = round(cmi, self.round_n)
 
         if len(self.lineCmi) > self.inputCmiLen:
             del self.lineCmi[0]
@@ -1154,15 +1157,15 @@ class CtaLineBar(object):
         std = (upper[-1] - lower[-1]) / (self.inputBollStdRate*2)
         self.lineBollStd.append(std)
 
-        u = round(upper[-1], 2)
+        u = round(upper[-1], self.round_n)
         self.lineUpperBand.append(u)                                # 上轨
         self.lastBollUpper = u - u % self.minDiff                   # 上轨取整
 
-        m = round(middle[-1], 2)
+        m = round(middle[-1], self.round_n)
         self.lineMiddleBand.append(m)                               # 中轨
         self.lastBollMiddle = m - m % self.minDiff                  # 中轨取整
 
-        l = round(lower[-1], 2)
+        l = round(lower[-1], self.round_n)
         self.lineLowerBand.append(l)                                # 下轨
         self.lastBollLower = l - l % self.minDiff     # 下轨取整
 
@@ -1467,8 +1470,8 @@ class CtaDayBar(object):
         lastBar.low = min(lastBar.low, bar.low)
 
 
-        lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, 2)
-        lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, 2)
+        lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
+        lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, self.round_n)
 
     def __firstTick(self, tick):
         """ K线的第一个Tick数据"""
