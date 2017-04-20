@@ -31,16 +31,11 @@ def safeUnicode(value):
 #----------------------------------------------------------------------
 def loadMongoSetting():
     """载入MongoDB数据库的配置"""
-    fileName = 'VT_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__)) 
-    fileName = os.path.join(path, fileName)  
     
     try:
-        f = file(fileName)
-        setting = json.load(f)
-        host = setting['mongoHost']
-        port = setting['mongoPort']
-        logging = setting['mongoLogging']
+        host = os.environ.get("mongoHost")  
+        port = int(os.environ.get("mongoPort"))
+        logging = bool(os.environ.get("mongoLogging"))
     except:
         host = 'localhost'
         port = 27017

@@ -15,16 +15,10 @@ import vtText
 
 #----------------------------------------------------------------------
 def loadFont():
-    """载入字体设置"""
-    fileName = 'VT_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__)) 
-    fileName = os.path.join(path, fileName)  
-    
+    """载入字体设置"""   
     try:
-        f = file(fileName)
-        setting = json.load(f)
-        family = setting['fontFamily']
-        size = setting['fontSize']
+        family = os.environ.get("fontFamily") 
+        size = int(os.environ.get("fontSize") )
         font = QtGui.QFont(family, size)
     except:
         font = QtGui.QFont(u'微软雅黑', 12)
