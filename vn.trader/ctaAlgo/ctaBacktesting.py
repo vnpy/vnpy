@@ -155,7 +155,6 @@ class BacktestingEngine(object):
 
         return self.capital, self.avaliable, self.percent, self.percentLimit
 
-        
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
         """设置回测的启动日期"""
@@ -1388,12 +1387,14 @@ class BacktestingEngine(object):
         """
         self.strategy = strategyClass(self, setting)
         self.strategy.name = self.strategy.className
+        self.strategy.onInit()
+        self.strategy.onStart()
         
     #----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
         """发单"""
 
-        self.writeCtaLog(u'{0},{1},{2}@{3}'.format(vtSymbol,orderType,price,volume))
+        self.writeCtaLog(u'{0},{1},{2}@{3}'.format(vtSymbol, orderType, price, volume))
         self.limitOrderCount += 1
         orderID = str(self.limitOrderCount)
         
@@ -1457,8 +1458,6 @@ class BacktestingEngine(object):
                 order.status = STATUS_CANCELLED
                 order.cancelTime = str(self.dt)
                 del self.workingLimitOrderDict[vtOrderID]
-
-
 
     #----------------------------------------------------------------------
     def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
