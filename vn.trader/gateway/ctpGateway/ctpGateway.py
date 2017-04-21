@@ -715,7 +715,8 @@ class CtpTdApi(TdApi):
         
         # 计算持仓均价
         if pos.position:
-            pos.price = (cost + data['PositionCost']) / pos.position
+            size = self.symbolSizeDict[pos.symbol]
+            pos.price = (cost + data['PositionCost']) / (pos.position * size)
         
         # 读取冻结
         if pos.direction is DIRECTION_LONG: 

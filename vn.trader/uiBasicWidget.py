@@ -13,6 +13,10 @@ from vtGateway import *
 import vtText
 
 
+COLOR_RED = QtGui.QColor('red')
+COLOR_GREEN = QtGui.QColor('green')
+
+
 #----------------------------------------------------------------------
 def loadFont():
     """载入字体设置"""
@@ -170,6 +174,36 @@ class AskCell(QtGui.QTableWidgetItem):
     def setContent(self, text):
         """设置内容"""
         self.setText(text)
+
+
+########################################################################
+class PnlCell(QtGui.QTableWidgetItem):
+    """显示盈亏的单元格"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, text=None, mainEngine=None):
+        """Constructor"""
+        super(PnlCell, self).__init__()
+        self.data = None
+        self.color = ''
+        if text:
+            self.setContent(text)
+    
+    #----------------------------------------------------------------------
+    def setContent(self, text):
+        """设置内容"""
+        self.setText(text)
+
+        try:
+            value = float(text)
+            if value >= 0 and self.color != 'red':
+                self.color = 'red'
+                self.setForeground(COLOR_RED)
+            elif value < 0 and self.color != 'green':
+                self.color = 'green'
+                self.setForeground(COLOR_GREEN)
+        except ValueError:
+            pass
 
 
 ########################################################################
@@ -588,7 +622,7 @@ class PositionMonitor(BasicMonitor):
         d['ydPosition'] = {'chinese':vtText.YD_POSITION, 'cellType':BasicCell}
         d['frozen'] = {'chinese':vtText.FROZEN, 'cellType':BasicCell}
         d['price'] = {'chinese':vtText.PRICE, 'cellType':BasicCell}
-        d['positionProfit'] = {'chinese':vtText.POSITION_PROFIT, 'cellType':BasicCell}
+        d['positionProfit'] = {'chinese':vtText.POSITION_PROFIT, 'cellType':PnlCell}
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
