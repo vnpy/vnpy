@@ -121,7 +121,7 @@ class CtaLineBar(object):
 
         self.shortSymbol = EMPTY_STRING # 商品的短代码
         self.minDiff = 1                # 商品的最小价格单位
-        self.round_n = 3                # round() 小数点的截断数量
+        self.round_n = 4                # round() 小数点的截断数量
         self.activeDayJump = False      # 隔夜跳空
 
         # 当前的Tick
@@ -240,7 +240,8 @@ class CtaLineBar(object):
         if setting:
             self.setParam(setting)
             if self.minDiff < 1:
-                self.round_n = 5
+                self.round_n = 7
+
     def setParam(self, setting):
         """设置参数"""
         d = self.__dict__
