@@ -125,7 +125,7 @@ class BacktestingEngine(object):
         self.output(u'开始载入数据')
         
         # 载入回测数据
-        self.dbCursor = pd.read_csv('RM705-2017-03-20.csv', parse_dates=[1, 2],na_values=0, na_filter=True).dropna(axis=1)
+        self.dbCursor = pd.read_csv('RM705-2017-03-20.csv', parse_dates=[1],na_values=0, na_filter=True).dropna(axis=1)
         print self.dbCursor
         self.output(u'载入完成')
         
@@ -949,7 +949,7 @@ if __name__ == '__main__':
     engine.setSize(10)         # 股指合约大小
     
     # 在引擎中创建策略对象
-    engine.initStrategy(TdCat, {})
+    engine.initStrategy(TdCatStrategy, {})
     
     # 开始跑回测
     engine.runBacktesting()

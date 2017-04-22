@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-from language.english import constant
+from language.chinese import constant
 
 # 将常量定义添加到vtConstant.py的局部字典中
 d = locals()

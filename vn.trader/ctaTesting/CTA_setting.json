@@ -15,5 +15,11 @@
         "name": "king keltner",
         "className": "KkStrategy",
         "vtSymbol": "IH1706"
+    },
+
+    {
+        "name": "tdCat",
+        "className": "TdCat",
+        "vtSymbol": "RM705"
     }
 ]
