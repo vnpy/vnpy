@@ -20,6 +20,7 @@ class TdCatStrategy(CtaTemplate):
     drawDown = 10   # 回撤阈值
     stopWin = 10    # 止盈
     stopLoss = 10   # 止损
+    tradeVolume = 10    # 交易手数
 
     # 策略变量
     bar = None
@@ -32,7 +33,8 @@ class TdCatStrategy(CtaTemplate):
                  'vtSymbol',
                  'drawDown',
                  'stopWin',
-                 'stopLoss']
+                 'stopLoss',
+                 'tradeVolume']
 
     # 变量列表，保存了变量的名称
     varList = ['inited',
@@ -52,19 +54,19 @@ class TdCatStrategy(CtaTemplate):
     # ----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'TdCat策略初始化')
+        self.writeCtaLog(u'策略初始化')
         self.putEvent()
 
     # ----------------------------------------------------------------------
     def onStart(self):
         """启动策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'TdCat策略启动')
+        self.writeCtaLog(u'策略启动')
         self.putEvent()
 
     # ----------------------------------------------------------------------
     def onStop(self):
         """停止策略（必须由用户继承实现）"""
-        self.writeCtaLog(u'TdCat策略停止')
+        self.writeCtaLog(u'策略停止')
         self.putEvent()
 
     # ----------------------------------------------------------------------
@@ -75,43 +77,28 @@ class TdCatStrategy(CtaTemplate):
         if not self.opening and self.pos == 0:
             if tick.highPrice - tick.openPrice >= self.drawDown and tick.lastPrice <= tick.openPrice:
                 self.opening = True
-                self.short(tick.lastPrice, 1)
-                print "short!"
-                print 'time',tick.time
+                self.short(tick.lastPrice, self.tradeVolume)
+                self.writeCtaLog(u'开空仓')
             elif tick.openPrice - tick.lowPrice >= self.drawDown and tick.lastPrice >= tick.openPrice:
                 self.opening = True
-                self.buy(tick.lastPrice, 1)
-                print "buy!"
-                print 'time',tick.time
+                self.buy(tick.lastPrice, self.tradeVolume)
+                self.writeCtaLog(u'开多仓')
 
         #存在多头仓位
         if not self.closeing and self.pos > 0:
             #止盈止损
             if tick.lastPrice - tick.openPrice >= self.stopWin or tick.openPrice - tick.lastPrice >= self.stopLoss:
                 self.closeing = True
-                self.sell(tick.lastPrice, 1)
-                print "sell!"
-                print 'time',tick.time
+                self.sell(tick.lastPrice, self.tradeVolume)
+                self.writeCtaLog(u'平多仓')
 
         # 存在空头仓位
         if not self.closeing and self.pos < 0:
             # 止盈止损
             if tick.lastPrice - tick.openPrice >= self.stopLoss or tick.openPrice - tick.lastPrice >= self.stopWin:
                 self.closeing = True
-                self.cover(tick.lastPrice, 1)
-                print "cover!"
-                print 'time', tick.time
-
-
-
-        # 不成交，即撤单，并追单
-        if self.lastOrder != None and self.lastOrder.status == u'未成交':
-            self.cancelOrder(self.lastOrder.vtOrderID)
-            self.lastOrder = None
-        elif self.lastOrder != None and self.lastOrder.status == u'已撤销':
-            # 追单并设置为不能成交
-            self.sendOrder(self.orderType, tick.lastprice, 1)
-            self.lastOrder = None
+                self.cover(tick.lastPrice, self.tradeVolume)
+                self.writeCtaLog(u'平空仓')
 
         # 收盘清仓
         nowTime = datetime.strptime(tick.time.split('.')[0], '%H:%M:%S').time()
@@ -119,11 +106,11 @@ class TdCatStrategy(CtaTemplate):
                     nowTime <= datetime.strptime('15:00:00', '%H:%M:%S').time()):
             if not self.closeing and self.pos > 0:
                 self.closeing = True
-                self.sell(tick.lastPrice, 1)
+                self.sell(tick.lastPrice, self.tradeVolume)
                 print 'sell'
             elif not self.closeing and self.pos < 0:
                 self.closeing = True
-                self.cover(tick.lastPrice, 1)
+                self.cover(tick.lastPrice, self.tradeVolume)
                 print 'cover'
             self.opening = True #不再开仓
         self.putEvent()
