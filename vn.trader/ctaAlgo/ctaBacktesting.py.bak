@@ -401,7 +401,6 @@ class BacktestingEngine(object):
                 self.strategy.onOrder(order)
                 
                 self.limitOrderDict[orderID] = order
-                self.crossLimitOrder()
                 
                 # 从字典中删除该限价单
                 del self.workingStopOrderDict[stopOrderID]        
