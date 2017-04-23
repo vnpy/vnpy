@@ -20,7 +20,6 @@ from datetime import datetime
 
 import logging
 
-
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
 priceTypeMap = {}
@@ -53,6 +52,7 @@ exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_SSE] = 'SSE'
+exchangeMap[EXCHANGE_INE] = 'INE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
@@ -62,6 +62,14 @@ posiDirectionMap[DIRECTION_NET] = defineDict["THOST_FTDC_PD_Net"]
 posiDirectionMap[DIRECTION_LONG] = defineDict["THOST_FTDC_PD_Long"]
 posiDirectionMap[DIRECTION_SHORT] = defineDict["THOST_FTDC_PD_Short"]
 posiDirectionMapReverse = {v:k for k,v in posiDirectionMap.items()}
+
+# 产品类型映射
+productClassMap = {}
+productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
+productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
+productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
+productClassMapReverse = {v:k for k,v in productClassMap.items()}
+
 
 
 ########################################################################
@@ -345,6 +353,10 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
+        # 忽略成交量为0的无效tick数据
+        if not data['Volume']:
+            return
+
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
         
@@ -687,7 +699,7 @@ class CtpTdApi(TdApi):
     def onRspRemoveParkedOrder(self, data, error, n, last):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
@@ -731,6 +743,10 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
+
+        if not data['InstrumentID']:
+            return
+
         # 获取缓存字典中的持仓缓存，若无则创建并初始化
         positionName = '.'.join([data['InstrumentID'], data['PosiDirection']])
         

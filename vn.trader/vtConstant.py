@@ -71,6 +71,7 @@ EXCHANGE_SGE = 'SGE'       # 上金所
 EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
 EXCHANGE_NONE = ''          # 空交易所
 EXCHANGE_HKEX = 'HKEX'      # 港交所
+EXCHANGE_INE = 'INE'       # 国际能源交易中心
 
 EXCHANGE_SMART = 'SMART'       # IB智能路由（股票、期权）
 EXCHANGE_NYMEX = 'NYMEX'       # IB 期货
