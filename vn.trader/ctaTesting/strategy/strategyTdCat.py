@@ -17,7 +17,9 @@ class TdCatStrategy(CtaTemplate):
     author = 'Eleven'
 
     # 策略参数
-    initDays = 10  # 初始化数据所用的天数
+    drawDown = 10   # 回撤阈值
+    stopWin = 10    # 止盈
+    stopLoss = 10   # 止损
 
     # 策略变量
     bar = None
@@ -27,7 +29,10 @@ class TdCatStrategy(CtaTemplate):
     paramList = ['name',
                  'className',
                  'author',
-                 'vtSymbol']
+                 'vtSymbol',
+                 'drawDown',
+                 'stopWin',
+                 'stopLoss']
 
     # 变量列表，保存了变量的名称
     varList = ['inited',
@@ -48,11 +53,6 @@ class TdCatStrategy(CtaTemplate):
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
         self.writeCtaLog(u'TdCat策略初始化')
-
-        initData = self.loadBar(self.initDays)
-        for bar in initData:
-            self.onBar(bar)
-
         self.putEvent()
 
     # ----------------------------------------------------------------------
@@ -71,15 +71,14 @@ class TdCatStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         # print 'lastprice:',tick.lastPrice
-        # 建立不成交买单测试单
 
         if not self.opening and self.pos == 0:
-            if tick.highPrice - tick.openPrice >= 5 and tick.lastPrice <= tick.openPrice:
+            if tick.highPrice - tick.openPrice >= self.drawDown and tick.lastPrice <= tick.openPrice:
                 self.opening = True
                 self.short(tick.lastPrice, 1)
                 print "short!"
                 print 'time',tick.time
-            elif tick.openPrice - tick.lowPrice >= 5 and tick.lastPrice >= tick.openPrice:
+            elif tick.openPrice - tick.lowPrice >= self.drawDown and tick.lastPrice >= tick.openPrice:
                 self.opening = True
                 self.buy(tick.lastPrice, 1)
                 print "buy!"
@@ -88,7 +87,7 @@ class TdCatStrategy(CtaTemplate):
         #存在多头仓位
         if not self.closeing and self.pos > 0:
             #止盈止损
-            if tick.lastPrice - tick.openPrice >= 5 or tick.lastPrice - tick.openPrice <= -5:
+            if tick.lastPrice - tick.openPrice >= self.stopWin or tick.openPrice - tick.lastPrice >= self.stopLoss:
                 self.closeing = True
                 self.sell(tick.lastPrice, 1)
                 print "sell!"
@@ -97,7 +96,7 @@ class TdCatStrategy(CtaTemplate):
         # 存在空头仓位
         if not self.closeing and self.pos < 0:
             # 止盈止损
-            if tick.lastPrice - tick.openPrice >= 5 or tick.lastPrice - tick.openPrice <= -5:
+            if tick.lastPrice - tick.openPrice >= self.stopLoss or tick.openPrice - tick.lastPrice >= self.stopWin:
                 self.closeing = True
                 self.cover(tick.lastPrice, 1)
                 print "cover!"
@@ -127,6 +126,7 @@ class TdCatStrategy(CtaTemplate):
                 self.cover(tick.lastPrice, 1)
                 print 'cover'
             self.opening = True #不再开仓
+        self.putEvent()
 
     # ----------------------------------------------------------------------
     def onBar(self, bar):
@@ -138,16 +138,17 @@ class TdCatStrategy(CtaTemplate):
         """收到委托变化推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         self.lastOrder = order
-        if order.offset == u'开仓' and order.status == u'全部成交':
+        if order.offset == u'开仓' and order.status == u'已撤销':
             self.opening = False
-            self.lastOrder = None
-        elif order.status == u'全部成交':
+        elif order.status == u'已撤销':
             self.closeing = False
-            self.lastOrder = None
-        print order.status
 
     # ----------------------------------------------------------------------
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
-        # 对于无需做细粒度委托控制的策略，可以忽略onOrder
-        pass
+        # 开仓单全部成交
+        if trade.offset == u'开仓' and trade.status == u'全部成交':
+            self.opening = False
+        # 平仓单全部成交
+        elif trade.status == u'全部成交':
+            self.closeing = False

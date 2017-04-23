@@ -6,18 +6,6 @@
     },
 
     {
-        "name": "atr rsi",
-        "className": "AtrRsiStrategy",
-        "vtSymbol": "IC1706"
-    },
-
-    {
-        "name": "king keltner",
-        "className": "KkStrategy",
-        "vtSymbol": "IH1706"
-    },
-
-    {
         "name": "tdCat",
         "className": "TdCatStrategy",
         "vtSymbol": "RM705"
