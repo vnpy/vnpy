@@ -48,6 +48,7 @@ class TdCatStrategy(CtaTemplate):
 
         self.lastOrder = None
         self.orderType = ''
+        self.stopCount = 0
         self.opening = False
         self.closeing = False
 
@@ -73,8 +74,8 @@ class TdCatStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         # print 'lastprice:',tick.lastPrice
-
-        if not self.opening and self.pos == 0:
+        self.writeCtaLog('%s: %s' % (tick.symbol, tick.lastPrice))
+        if not self.opening and self.pos == 0 and self.stopCount < 1:
             if tick.highPrice - tick.openPrice >= self.drawDown and tick.lastPrice <= tick.openPrice:
                 self.opening = True
                 self.short(tick.lastPrice, self.tradeVolume)
@@ -89,6 +90,7 @@ class TdCatStrategy(CtaTemplate):
             #止盈止损
             if tick.lastPrice - tick.openPrice >= self.stopWin or tick.openPrice - tick.lastPrice >= self.stopLoss:
                 self.closeing = True
+                self.stopCount += 1
                 self.sell(tick.lastPrice, self.tradeVolume)
                 self.writeCtaLog(u'平多仓')
 
@@ -97,6 +99,7 @@ class TdCatStrategy(CtaTemplate):
             # 止盈止损
             if tick.lastPrice - tick.openPrice >= self.stopLoss or tick.openPrice - tick.lastPrice >= self.stopWin:
                 self.closeing = True
+                self.stopCount += 1
                 self.cover(tick.lastPrice, self.tradeVolume)
                 self.writeCtaLog(u'平空仓')
 
@@ -134,8 +137,8 @@ class TdCatStrategy(CtaTemplate):
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
         # 开仓单全部成交
-        if trade.offset == u'开仓' and trade.status == u'全部成交':
+        if trade.offset == u'开仓':
             self.opening = False
         # 平仓单全部成交
-        elif trade.status == u'全部成交':
+        else:
             self.closeing = False
