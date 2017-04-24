@@ -6,7 +6,7 @@
 
 import os
 import importlib
-
+import traceback
 
 # 用来保存策略类的字典
 STRATEGY_CLASS = {}
@@ -23,10 +23,15 @@ for root, subdirs, files in os.walk(path):
             moduleName = 'ctaStrategy.strategy.' + name.replace('.py', '')
             
             # 使用importlib动态载入模块
-            module = importlib.import_module(moduleName)
-            
-            # 遍历模块下的对象，只有名称中包含'Strategy'的才是策略类
-            for k in dir(module):
-                if 'Strategy' in k:
-                    v = module.__getattribute__(k)
-                    STRATEGY_CLASS[k] = v
+            try:
+                module = importlib.import_module(moduleName)
+                
+                # 遍历模块下的对象，只有名称中包含'Strategy'的才是策略类
+                for k in dir(module):
+                    if 'Strategy' in k:
+                        v = module.__getattribute__(k)
+                        STRATEGY_CLASS[k] = v
+            except:
+                print '-' * 20
+                print ('Failed to import strategy file %s:' %moduleName)
+                traceback.print_exc()
