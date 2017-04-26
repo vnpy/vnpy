@@ -13,6 +13,7 @@ import multiprocessing
 import pandas as pd
 import pymongo
 
+from getData import *
 from ctaBase import *
 from ctaConstant import *
 from vtGateway import VtOrderData, VtTradeData
@@ -112,9 +113,9 @@ class BacktestingEngine(object):
         self.mode = mode
     
     #----------------------------------------------------------------------
-    def setDatabase(self, dbName, symbol):
+    def setDatabase(self, market, symbol):
         """设置历史数据所用的数据库"""
-        self.dbName = dbName
+        self.market = market
         self.symbol = symbol
 
     #TODO
@@ -125,7 +126,11 @@ class BacktestingEngine(object):
         self.output(u'开始载入数据')
         
         # 载入回测数据
-        self.dbCursor = pd.read_csv('RM705-2017-03-20.csv', parse_dates=[1],na_values=0, na_filter=True).dropna(axis=1)
+        if self.market == 'futures':
+            # self.dbCursor = pd.read_csv('RM705-2017-03-20.csv', parse_dates=[1],na_values=0, na_filter=True).dropna(axis=1)
+            bar = futures()
+            bar.get_K_data(self.symbol, period='1d')
+            self.dbCursor = bar.data
         print self.dbCursor
         self.output(u'载入完成')
         
@@ -930,18 +935,19 @@ if __name__ == '__main__':
     # 建议使用ipython notebook或者spyder来做回测
     # 同样可以在命令模式下进行回测（一行一行输入运行）
     from strategy.strategyTdCat import *
+    from strategy.strategyEmaDemo import *
     
     # 创建回测引擎
     engine = BacktestingEngine()
     
     # 设置引擎的回测模式为K线
-    engine.setBacktestingMode(engine.TICK_MODE)
+    engine.setBacktestingMode(engine.BAR_MODE)
 
     # 设置回测用的数据起始日期
     engine.setStartDate('20110101')
     
     # 载入历史数据到引擎中
-    engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
+    engine.setDatabase('futures', 'RM1705')
     
     # 设置产品相关参数
     engine.setSlippage(1)     # 股指1跳
@@ -949,7 +955,7 @@ if __name__ == '__main__':
     engine.setSize(10)         # 股指合约大小
     
     # 在引擎中创建策略对象
-    engine.initStrategy(TdCatStrategy, {})
+    engine.initStrategy(EmaDemoStrategy, {})
     
     # 开始跑回测
     engine.runBacktesting()
