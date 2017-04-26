@@ -70,6 +70,8 @@ def printLog(content):
 #----------------------------------------------------------------------
 def runServer():
     """运行服务器"""
+    VT_setting = vtGlobal.VT_setting
+
     repAddress = 'tcp://*:2014'
     pubAddress = 'tcp://*:0602'
 
@@ -80,17 +82,34 @@ def runServer():
     printLog('-'*50)
     printLog(u'vn.trader服务器已启动')
 
-    # 进入主循环
-    while True:
-        printLog(u'请输入exit来关闭服务器')
-        if raw_input() != 'exit':
-            continue
+    if VT_setting.get('automongodb'):
+        # 自动建立MongoDB数据库
+        printLog(u'MongoDB connect... ')
+        server.engine.dbConnect()
 
-        printLog(u'确认关闭服务器？yes|no')
-        if raw_input() == 'yes':
-            break
+    if VT_setting.get('autoctp'):
+        # 自动建立CTP链接
+        printLog(u"CTP connect... ")
+        server.engine.connect("CTP")
+
+    if VT_setting.get('autoshutdown'):
+        # 自动关闭 线程阻塞
+        wait2shutdown = autoshutdown()
+        printLog(u"time to shutdown %s" % wait2shutdown.closeTime)
+        wait2shutdown.join()
+    else:
+        # 进入主循环
+        while True:
+            printLog(u'input "exit" to exit')
+            if raw_input() != 'exit':
+                continue
+
+            printLog(u'confirm？yes|no')
+            if raw_input() == 'yes':
+                break
 
     server.stopServer()
+
 
 if __name__ == '__main__':
     opt = ArgumentParser(
