@@ -43,7 +43,8 @@ class VtServer(RpcServer):
         self.register(self.engine.getOrder)
         self.register(self.engine.getAllWorkingOrders)
         self.register(self.engine.getAllGatewayNames)
-        
+        self.register(self.engine.getGateway4sysMenu)
+
         # 注册事件引擎发送的事件处理监听
         self.engine.eventEngine.registerGeneralHandler(self.eventHandler)
         
@@ -87,7 +88,6 @@ def runServer():
         # 自动建立MongoDB数据库
         printLog(u'MongoDB connect... ')
         server.engine.dbConnect()
-        printLog(u'MongoDB OK... ')
 
     if VT_setting.get('autoctp'):
         # 自动建立CTP链接

@@ -152,6 +152,9 @@ class ClientEngine(object):
         """查询所有的接口名称"""
         return self.client.getAllGatewayNames()
 
+    # ----------------------------------------------------------------------
+    def getGateway4sysMenu(self):
+        return self.client.getGateway4sysMenu()
 
 #----------------------------------------------------------------------
 def main():

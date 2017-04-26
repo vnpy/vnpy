@@ -5,12 +5,13 @@
 	"mongoHost": "localhost",
 	"mongoPort": 27017,
 	"mongoLogging": true,
-	"automongodb": true,
+	"automongodb": false,
 
 	"darkStyle": true,
 	"language": "chinese",
-	"CTP_connect": null,
-	"autoctp": true,
+
+	"CTP_connect": "./gateway/ctpGateway/CTP_connect.json",
+	"autoctp": false,
 
 	"autoshutdown": true
 
