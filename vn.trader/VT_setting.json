@@ -5,7 +5,13 @@
 	"mongoHost": "localhost",
 	"mongoPort": 27017,
 	"mongoLogging": true,
+	"automongodb": true,
 
 	"darkStyle": true,
-	"language": "chinese"
+	"language": "chinese",
+	"CTP_connect": null,
+	"autoctp": true,
+
+	"autoshutdown": true
+
 }
