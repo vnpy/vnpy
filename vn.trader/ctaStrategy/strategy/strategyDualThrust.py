@@ -6,8 +6,8 @@ DualThrust交易策略
 
 from datetime import time
 
-from ctaBase import *
-from ctaTemplate import CtaTemplate
+from ..ctaBase import *
+from ..ctaTemplate import CtaTemplate
 
 
 ########################################################################
