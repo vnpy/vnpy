@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 
 from datetime import datetime
 
+from vtFunction import autoshutdown
 from vnrpc import RpcServer
 from vtEngine import MainEngine
 
@@ -86,6 +87,7 @@ def runServer():
         # 自动建立MongoDB数据库
         printLog(u'MongoDB connect... ')
         server.engine.dbConnect()
+        printLog(u'MongoDB OK... ')
 
     if VT_setting.get('autoctp'):
         # 自动建立CTP链接
