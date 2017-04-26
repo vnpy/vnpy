@@ -74,7 +74,7 @@ class TdCatStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         # print 'lastprice:',tick.lastPrice
-        self.writeCtaLog('%s: %s' % (tick.symbol, tick.lastPrice))
+        # self.writeCtaLog('%s: %s' % (tick.symbol, tick.lastPrice))
         if not self.opening and self.pos == 0 and self.stopCount < 1:
             if tick.highPrice - tick.openPrice >= self.drawDown and tick.lastPrice <= tick.openPrice:
                 self.opening = True
