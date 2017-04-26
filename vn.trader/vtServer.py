@@ -1,14 +1,12 @@
 # encoding: utf-8
 
-import sys
+import vtGlobal
+import json
 import os
+from argparse import ArgumentParser
 
 from datetime import datetime
-from time import sleep
-from threading import Thread
 
-import vtPath
-import eventType
 from vnrpc import RpcServer
 from vtEngine import MainEngine
 
@@ -74,14 +72,14 @@ def runServer():
     """运行服务器"""
     repAddress = 'tcp://*:2014'
     pubAddress = 'tcp://*:0602'
-    
+
     # 创建并启动服务器
     server = VtServer(repAddress, pubAddress)
     server.start()
-    
+
     printLog('-'*50)
     printLog(u'vn.trader服务器已启动')
-    
+
     # 进入主循环
     while True:
         printLog(u'请输入exit来关闭服务器')
@@ -91,8 +89,29 @@ def runServer():
         printLog(u'确认关闭服务器？yes|no')
         if raw_input() == 'yes':
             break
-    
+
     server.stopServer()
-    
+
 if __name__ == '__main__':
+    opt = ArgumentParser(
+        prog="vnpy",
+        description="Args of vnpy.",
+    )
+
+    # VT_setting.json 文件路径
+    opt.add_argument("--VT_setting", default=None, help="重新指定VT_setting.json的绝对路径")
+
+    # 生成参数实例
+    cmdArgs = opt.parse_args()
+
+    if cmdArgs.VT_setting is None:
+        fileName = 'VT_setting.json'
+        path = os.path.abspath(os.path.dirname(__file__))
+        fileName = os.path.join(path, fileName)
+    else:
+        fileName = cmdArgs.VT_setting
+
+    with open(fileName) as f:
+        vtGlobal.VT_setting = json.load(f)
+
     runServer()
