@@ -37,7 +37,8 @@ RUN    echo "开始配置系vnpy环境" \
     && apt-get clean \
     && echo "安装 ta-lib 内核" \
     && cd /opt \
-    && wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
+#    && wget -t 0 http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
+    && wget -t 0 http://kent.dl.sourceforge.net/project/ta-lib/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz \
     && tar -zxvf ta-lib-0.4.0-src.tar.gz \
     && rm ta-lib-0.4.0-src.tar.gz \
     && cd ta-lib \
@@ -46,8 +47,8 @@ RUN    echo "开始配置系vnpy环境" \
     && echo "安装 miniconda" \
     && mkdir /tmp/conda/ \
     && cd /tmp/conda/ \
-    && echo "下载 Miniconda by Python2" && wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda2-latest-Linux-x86_64.sh \
-#    && echo "下载 Miniconda by Python3" && wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && echo "下载 Miniconda by Python2" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda2-latest-Linux-x86_64.sh \
+#    && echo "下载 Miniconda by Python3" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && bash Miniconda*.sh -b -p /opt/conda \
     && rm Miniconda*.sh \
     && echo "设置 conda 和 python 的环境路径" \
@@ -63,7 +64,6 @@ RUN    echo "开始配置系vnpy环境" \
     && conda clean -ay \
     && echo "安装结束"
 
-
-
-
 WORKDIR /srv/vnpy/vn.trader
+
+ENTRYPOINT python /srv/vnpy/vn.trader/vtServer.py
