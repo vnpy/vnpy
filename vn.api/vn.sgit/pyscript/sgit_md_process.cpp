@@ -7,17 +7,24 @@ void MdApi::processFrontConnected(Task task)
 void MdApi::processFrontDisconnected(Task task)
 {
 	PyLock lock;
-	this->onFrontDisconnected();
+	this->onFrontDisconnected(task.task_id);
+};
+
+void MdApi::processHeartBeatWarning(Task task)
+{
+	PyLock lock;
+	this->onHeartBeatWarning(task.task_id);
 };
 
 void MdApi::processRspUserLogin(Task task)
 {
 	PyLock lock;
-	CSgitFtdcRspUserLoginField task_data = any_cast<CSgitFtdcRspUserLoginField>(task.task_data);
+	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
 	data["CZCETime"] = task_data.CZCETime;
 	data["SHFETime"] = task_data.SHFETime;
 	data["MaxOrderRef"] = task_data.MaxOrderRef;
+	data["INETime"] = task_data.INETime;
 	data["UserID"] = task_data.UserID;
 	data["TradingDay"] = task_data.TradingDay;
 	data["SessionID"] = task_data.SessionID;
@@ -28,7 +35,7 @@ void MdApi::processRspUserLogin(Task task)
 	data["DCETime"] = task_data.DCETime;
 	data["LoginTime"] = task_data.LoginTime;
 
-	CSgitFtdcRspInfoField task_error = any_cast<CSgitFtdcRspInfoField>(task.task_error);
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
@@ -39,12 +46,12 @@ void MdApi::processRspUserLogin(Task task)
 void MdApi::processRspUserLogout(Task task)
 {
 	PyLock lock;
-	CSgitFtdcUserLogoutField task_data = any_cast<CSgitFtdcUserLogoutField>(task.task_data);
+	CThostFtdcUserLogoutField task_data = any_cast<CThostFtdcUserLogoutField>(task.task_data);
 	dict data;
 	data["UserID"] = task_data.UserID;
 	data["BrokerID"] = task_data.BrokerID;
 
-	CSgitFtdcRspInfoField task_error = any_cast<CSgitFtdcRspInfoField>(task.task_error);
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
 	error["ErrorMsg"] = task_error.ErrorMsg;
 	error["ErrorID"] = task_error.ErrorID;
@@ -52,10 +59,81 @@ void MdApi::processRspUserLogout(Task task)
 	this->onRspUserLogout(data, error, task.task_id, task.task_last);
 };
 
+void MdApi::processRspError(Task task)
+{
+	PyLock lock;
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspError(error, task.task_id, task.task_last);
+};
+
+void MdApi::processRspSubMarketData(Task task)
+{
+	PyLock lock;
+	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspSubMarketData(data, error, task.task_id, task.task_last);
+};
+
+void MdApi::processRspUnSubMarketData(Task task)
+{
+	PyLock lock;
+	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspUnSubMarketData(data, error, task.task_id, task.task_last);
+};
+
+void MdApi::processRspSubForQuoteRsp(Task task)
+{
+	PyLock lock;
+	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspSubForQuoteRsp(data, error, task.task_id, task.task_last);
+};
+
+void MdApi::processRspUnSubForQuoteRsp(Task task)
+{
+	PyLock lock;
+	CThostFtdcSpecificInstrumentField task_data = any_cast<CThostFtdcSpecificInstrumentField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = task_error.ErrorMsg;
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspUnSubForQuoteRsp(data, error, task.task_id, task.task_last);
+};
+
 void MdApi::processRtnDepthMarketData(Task task)
 {
 	PyLock lock;
-	CSgitFtdcDepthMarketDataField task_data = any_cast<CSgitFtdcDepthMarketDataField>(task.task_data);
+	CThostFtdcDepthMarketDataField task_data = any_cast<CThostFtdcDepthMarketDataField>(task.task_data);
 	dict data;
 	data["HighestPrice"] = task_data.HighestPrice;
 	data["BidPrice5"] = task_data.BidPrice5;
@@ -100,7 +178,37 @@ void MdApi::processRtnDepthMarketData(Task task)
 	data["SettlementPrice"] = task_data.SettlementPrice;
 	data["ExchangeInstID"] = task_data.ExchangeInstID;
 	data["LowestPrice"] = task_data.LowestPrice;
+	data["ActionDay"] = task_data.ActionDay;
 
 	this->onRtnDepthMarketData(data);
+};
+
+void MdApi::processRtnForQuoteRsp(Task task)
+{
+	PyLock lock;
+	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ActionDay"] = task_data.ActionDay;
+	data["ExchangeID"] = task_data.ExchangeID;
+	data["TradingDay"] = task_data.TradingDay;
+	data["ForQuoteSysID"] = task_data.ForQuoteSysID;
+	data["ForQuoteTime"] = task_data.ForQuoteTime;
+
+	this->onRtnForQuoteRsp(data);
+};
+
+void MdApi::processRtnDeferDeliveryQuot(Task task)
+{
+	PyLock lock;
+	CThostDeferDeliveryQuot task_data = any_cast<CThostDeferDeliveryQuot>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["AskVolume"] = task_data.AskVolume;
+	data["MidBidVolume"] = task_data.MidBidVolume;
+	data["BidVolume"] = task_data.BidVolume;
+	data["MidAskVolume"] = task_data.MidAskVolume;
+
+	this->onRtnDeferDeliveryQuot(data);
 };
 

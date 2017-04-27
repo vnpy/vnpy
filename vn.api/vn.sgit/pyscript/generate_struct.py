@@ -3,7 +3,6 @@
 __author__ = 'CHENXY'
 
 from sgit_data_type import *
-import re
 
 def main():
     """主函数"""
@@ -16,6 +15,10 @@ def main():
     fpy.write('\n')
 
     for no, line in enumerate(fcpp):
+        #print line
+        if '//' in line and '///' not in line:
+            continue
+
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]
@@ -25,38 +28,17 @@ def main():
             py_line = '#' + line[4:]
 
         # 结构体申明
-        elif 'struct' in line:
+        elif 'struct ' in line:
             content = line.split(' ')
-            name = content[-1].replace('\n','')
+            name = content[1].replace('\n','')
             py_line = '%s = {}\n' % name
 
         # 结构体变量
-        elif '	' in line and '///' not in line and '{' not in line:
-            #content = line.split('\t')
-            
-            if ' ;' in line:
-                line = line.replace(' ;', ';')
-
-            if ' ' in line:
-                line = re.sub(' +', '\t', line)
-
-            if '\t\t' in line:
-                line = re.sub('\t+', '\t', line)
-
-            if '//' in line:
-                n = line.index('//')
-                line = line[:n]
-
-            print no, ':', line
-
+        elif '\t' in line and '///' not in line:
             content = line.split('\t')
-            print content
-
             typedef = content[1]
             type_ = typedefDict[typedef]
             variable = content[2].replace(';\n', "")
-            if ';' in variable:
-                variable = variable.replace(';', '')
             py_line = '%s["%s"] = "%s"\n' % (name, variable, type_)
 
         # 结构体结束

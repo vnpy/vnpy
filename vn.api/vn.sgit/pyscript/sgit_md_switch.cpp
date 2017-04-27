@@ -10,6 +10,12 @@ case ONFRONTDISCONNECTED:
 	break;
 }
 
+case ONHEARTBEATWARNING:
+{
+	this->processHeartBeatWarning(task);
+	break;
+}
+
 case ONRSPUSERLOGIN:
 {
 	this->processRspUserLogin(task);
@@ -22,9 +28,51 @@ case ONRSPUSERLOGOUT:
 	break;
 }
 
+case ONRSPERROR:
+{
+	this->processRspError(task);
+	break;
+}
+
+case ONRSPSUBMARKETDATA:
+{
+	this->processRspSubMarketData(task);
+	break;
+}
+
+case ONRSPUNSUBMARKETDATA:
+{
+	this->processRspUnSubMarketData(task);
+	break;
+}
+
+case ONRSPSUBFORQUOTERSP:
+{
+	this->processRspSubForQuoteRsp(task);
+	break;
+}
+
+case ONRSPUNSUBFORQUOTERSP:
+{
+	this->processRspUnSubForQuoteRsp(task);
+	break;
+}
+
 case ONRTNDEPTHMARKETDATA:
 {
 	this->processRtnDepthMarketData(task);
+	break;
+}
+
+case ONRTNFORQUOTERSP:
+{
+	this->processRtnForQuoteRsp(task);
+	break;
+}
+
+case ONRTNDEFERDELIVERYQUOT:
+{
+	this->processRtnDeferDeliveryQuot(task);
 	break;
 }
 

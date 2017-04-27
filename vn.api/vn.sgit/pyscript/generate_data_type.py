@@ -5,8 +5,10 @@ __author__ = 'CHENXY'
 # C++和python类型的映射字典
 type_dict = {
     'int': 'int',
-    'char': 'string',
-    'double': 'float'
+    'char': 'char',
+    'double': 'float',
+    'short': 'int',
+    'string': 'string'
 }
 
 
@@ -40,25 +42,16 @@ def process_typedef(line):
     """处理类型申明"""
     content = line.split(' ')
     type_ = type_dict[content[1]]
-    
-    if content[1] != 'unsigned':
-        keyword = content[-1]
-    else:
-        keyword = content[-1]
-        keyword = keyword.replace(';\n', '')
-        print content, keyword
 
+    if type_ == 'char' and '[' in line:
+        type_ = 'string'
+
+    keyword = content[2]
     if '[' in keyword:
         i = keyword.index('[')
         keyword = keyword[:i]
     else:
         keyword = keyword.replace(';\n', '')  # 删除行末分号
-
-    if 'char' in line:
-        if '[' in line:
-            type_ = 'string'
-        else:
-            type_ = 'char'
 
     py_line = 'typedefDict["%s"] = "%s"\n' % (keyword, type_)
 
@@ -81,31 +74,56 @@ def process_define(line):
 
 def main():
     """主函数"""
-    try:
-        fcpp = open('SgitFtdcUserApiDataType.h','r')
-        fpy = open('sgit_data_type.py', 'w')
+    # try:
+    #     fcpp = open('SgitFtdcUserApiDataType.h','r')
+    #     fpy = open('sgit_data_type.py', 'w')
 
-        fpy.write('# encoding: UTF-8\n')
-        fpy.write('\n')
-        fpy.write('defineDict = {}\n')
-        fpy.write('typedefDict = {}\n')
-        fpy.write('\n')
+    #     fpy.write('# encoding: UTF-8\n')
+    #     fpy.write('\n')
+    #     fpy.write('defineDict = {}\n')
+    #     fpy.write('typedefDict = {}\n')
+    #     fpy.write('\n')
 
-        for n, line in enumerate(fcpp):
-            py_line = process_line(line)
-            if py_line:
-                fpy.write(py_line.decode('gbk').encode('utf-8'))
-                print n 
+    #     for line in fcpp:
+    #         py_line = process_line(line)
+    #         if py_line:
+    #             if "#" in line and "//" in line:
+    #                 print line
+    #                 n = py_line.index("//")
+    #                 py_line = py_line[:n] + '\n'
+    #             fpy.write(py_line.decode('gbk').encode('utf-8'))
 
-        fcpp.close()
-        fpy.close()
+    #     fcpp.close()
+    #     fpy.close()
 
-        print u'data_type.py生成过程完成'
-    except Exception, e:
-        print u'data_type.py生成过程出错'
-        print e
+    #     print u'data_type.py生成过程完成'
+    # except Exception, e:
+    #     print u'data_type.py生成过程出错: %s' %str(e)
+    #     print py_line
 
+    fcpp = open('SgitFtdcUserApiDataType.h','r')
+    fpy = open('sgit_data_type.py', 'w')
+
+    fpy.write('# encoding: UTF-8\n')
+    fpy.write('\n')
+    fpy.write('defineDict = {}\n')
+    fpy.write('typedefDict = {}\n')
+    fpy.write('\n')
+
+    for line in fcpp:
+        if '#' in line and '//' in line:
+            n = line.index('//')
+            line = line[:n] + '\n'
+        py_line = process_line(line)
+        if py_line:
+            # if "//" in py_line:
+            #     print py_line
+            #     n = py_line.index("//")
+            #     py_line = py_line[:n] + '\n'
+            fpy.write(py_line.decode('gbk').encode('utf-8'))
+
+    fcpp.close()
+    fpy.close()
 
 if __name__ == '__main__':
     main()
-

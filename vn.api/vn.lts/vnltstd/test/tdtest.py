@@ -330,7 +330,7 @@ def main():
     api.subscribePublicTopic(1)
     
     # 注册前置机地址，测试通过
-    api.registerFront("tcp://211.144.195.163:34505")
+    api.registerFront("tcp://211.144.195.163:54505")
     
     # 初始化api，连接前置机，测试通过
     api.init()
@@ -367,30 +367,30 @@ def main():
     #sleep(0.5)  
 
     ###############################################
-    # 发单测试, 测试通过
-    reqid = reqid + 1
-    req = {}
-    req['InvestorID'] = api.userID
-    req['UserID'] = api.userID
-    req['BrokerID'] = api.brokerID
-    req['InstrumentID'] = '510050'
-    req['ExchangeID'] = 'SSE'
-    req['OrderPriceType'] = defineDict['SECURITY_FTDC_OPT_LimitPrice']
-    req['LimitPrice'] = '0.1850'
-    req['VolumeTotalOriginal'] = 1
-    req['Direction'] = defineDict['SECURITY_FTDC_D_Buy']
-    req['CombOffsetFlag'] = defineDict['SECURITY_FTDC_OF_Open']
-    req['OrderRef'] = '10'    
-    req['CombHedgeFlag'] = defineDict['SECURITY_FTDC_HF_Speculation']
-    req['ContingentCondition'] = defineDict['SECURITY_FTDC_CC_Immediately']
-    req['ForceCloseReason'] = defineDict['SECURITY_FTDC_FCC_NotForceClose']
-    req['IsAutoSuspend'] = 0
-    req['UserForceClose'] = 0
-    req['TimeCondition'] = defineDict['SECURITY_FTDC_TC_GFD']
-    req['VolumeCondition'] = defineDict['SECURITY_FTDC_VC_AV']
-    req['MinVolume'] = 1
-    i = api.reqOrderInsert(req, reqid)
-    sleep(1.0)
+    # # 发单测试, 测试通过
+    # reqid = reqid + 1
+    # req = {}
+    # req['InvestorID'] = api.userID
+    # req['UserID'] = api.userID
+    # req['BrokerID'] = api.brokerID
+    # req['InstrumentID'] = '510050'
+    # req['ExchangeID'] = 'SSE'
+    # req['OrderPriceType'] = defineDict['SECURITY_FTDC_OPT_LimitPrice']
+    # req['LimitPrice'] = '0.1850'
+    # req['VolumeTotalOriginal'] = 1
+    # req['Direction'] = defineDict['SECURITY_FTDC_D_Buy']
+    # req['CombOffsetFlag'] = defineDict['SECURITY_FTDC_OF_Open']
+    # req['OrderRef'] = '10'    
+    # req['CombHedgeFlag'] = defineDict['SECURITY_FTDC_HF_Speculation']
+    # req['ContingentCondition'] = defineDict['SECURITY_FTDC_CC_Immediately']
+    # req['ForceCloseReason'] = defineDict['SECURITY_FTDC_FCC_NotForceClose']
+    # req['IsAutoSuspend'] = 0
+    # req['UserForceClose'] = 0
+    # req['TimeCondition'] = defineDict['SECURITY_FTDC_TC_GFD']
+    # req['VolumeCondition'] = defineDict['SECURITY_FTDC_VC_AV']
+    # req['MinVolume'] = 1
+    # i = api.reqOrderInsert(req, reqid)
+    # sleep(1.0)
     
     # 撤单测试，测试通过
     #reqid = reqid + 1
