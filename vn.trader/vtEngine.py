@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-import shelve
+# import shelve
 from collections import OrderedDict
 from datetime import datetime
 
@@ -311,19 +311,21 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def saveContracts(self):
         """保存所有合约对象到硬盘"""
-        f = shelve.open(self.contractFileName)
-        f['data'] = self.contractDict
-        f.close()
+        pass
+        # f = shelve.open(self.contractFileName)
+        # f['data'] = self.contractDict
+        # f.close()
     
     #----------------------------------------------------------------------
     def loadContracts(self):
         """从硬盘读取合约对象"""
-        f = shelve.open(self.contractFileName)
-        if 'data' in f:
-            d = f['data']
-            for key, value in d.items():
-                self.contractDict[key] = value
-        f.close()
+        pass
+        # f = shelve.open(self.contractFileName)
+        # if 'data' in f:
+        #     d = f['data']
+        #     for key, value in d.items():
+        #         self.contractDict[key] = value
+        # f.close()
         
     #----------------------------------------------------------------------
     def updateOrder(self, event):
