@@ -9,8 +9,11 @@ from __future__ import division
 
 # 把vn.trader根目录添加到python环境变量中
 import sys
-sys.path.append('..')
-
+import os
+# 这里用__file__算出该文件的上级
+parent_dic = os.path.dirname(os.path.abspath(__file__))+"\\.."
+# 插入到第一个，这样上级目录下的language下的constant就能调用得到
+sys.path.insert(0, parent_dic)
 
 # 常量定义
 # CTA引擎中涉及到的交易方向类型
