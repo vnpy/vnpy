@@ -339,7 +339,7 @@ def test():
     from PyQt4.QtCore import QCoreApplication
     
     def simpletest(event):
-        print u'处理每秒触发的计时器事件：%s' % str(datetime.now())
+        print(u'处理每秒触发的计时器事件：%s' % str(datetime.now()))
     
     app = QCoreApplication(sys.argv)
     

@@ -1,8 +1,13 @@
 # encoding: utf-8
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+try:
+    # python2 需要设置编码
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+except:
+    # python3 不需要
+    pass
 import vtGlobal
 import json
 import os

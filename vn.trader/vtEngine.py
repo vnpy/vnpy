@@ -3,6 +3,7 @@
 # import shelve
 from collections import OrderedDict
 from datetime import datetime
+import traceback
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -58,8 +59,8 @@ class MainEngine(object):
                 self.addGateway(gatewayModule.gateway, gatewayModule.gatewayName)
                 if gatewayModule.gatewayQryEnabled:
                     self.gatewayDict[gatewayModule.gatewayName].setQryEnabled(True)
-            except Exception, e:
-                print e
+            except:
+                traceback.print_exc()
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):

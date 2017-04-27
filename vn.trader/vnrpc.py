@@ -8,9 +8,13 @@ import zmq
 from msgpack import packb, unpackb
 from json import dumps, loads
 
-import cPickle
-pDumps = cPickle.dumps
-pLoads = cPickle.loads
+try:
+    import cPickle as pickle
+except:
+    # 对 python3 的支持
+    import pickle
+pDumps = pickle.dumps
+pLoads = pickle.loads
 
 
 # 实现Ctrl-c中断recv
