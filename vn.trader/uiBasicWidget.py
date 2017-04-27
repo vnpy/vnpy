@@ -75,11 +75,10 @@ class NumCell(QtGui.QTableWidgetItem):
         """设置内容"""
         # 考虑到NumCell主要用来显示OrderID和TradeID之类的整数字段，
         # 这里的数据转化方式使用int类型。但是由于部分交易接口的委托
-        # 号和成交号可能不是纯数字的形式，因此补充了一个try...except
-        try:
-            num = int(text)
-            self.setData(QtCore.Qt.DisplayRole, num)
-        except ValueError:
+        # 号和成交号可能不是纯数字的形式
+        if type(text) is int or text.isdigit():
+            self.setData(QtCore.Qt.DisplayRole, int(text))
+        else:
             self.setText(text)
             
 
