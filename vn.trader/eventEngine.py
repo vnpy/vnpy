@@ -1,7 +1,11 @@
 # encoding: UTF-8
 
 # 系统模块
-from Queue import Queue, Empty
+try:
+    from Queue import Queue, Empty
+except:
+    from queue import Queue, Empty
+
 from threading import Thread
 from time import sleep
 from collections import defaultdict

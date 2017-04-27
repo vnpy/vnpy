@@ -74,7 +74,7 @@ class VtServer(RpcServer):
 #----------------------------------------------------------------------
 def printLog(content):
     """打印日志"""
-    print(datetime.now().strftime("%H:%M:%S"), '\t', content)
+    print("%s\t%s" % (datetime.now().strftime("%H:%M:%S"), content))
 
 
 #----------------------------------------------------------------------
