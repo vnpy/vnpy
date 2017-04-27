@@ -37,7 +37,6 @@ RUN    echo "开始配置系vnpy环境" \
     && apt-get clean \
     && echo "安装 ta-lib 内核" \
     && cd /opt \
-#    && wget -t 0 http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
     && wget -t 0 http://kent.dl.sourceforge.net/project/ta-lib/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz \
     && tar -zxvf ta-lib-0.4.0-src.tar.gz \
     && rm ta-lib-0.4.0-src.tar.gz \
@@ -64,6 +63,7 @@ RUN    echo "开始配置系vnpy环境" \
     && conda clean -ay \
     && echo "安装结束"
 
-WORKDIR /srv/vnpy/vn.trader
+WORKDIR /srv/vnpy
 
-ENTRYPOINT python /srv/vnpy/vn.trader/vtServer.py
+# 暂时不设置入口点，否则不能使用 -it 交互模式
+# ENTRYPOINT python /srv/vnpy/vn.trader/vtServer.py
