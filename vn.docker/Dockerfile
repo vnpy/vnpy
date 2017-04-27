@@ -46,8 +46,8 @@ RUN    echo "开始配置系vnpy环境" \
     && echo "安装 miniconda" \
     && mkdir /tmp/conda/ \
     && cd /tmp/conda/ \
-    && echo "下载 Miniconda by Python2" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda2-latest-Linux-x86_64.sh \
-#    && echo "下载 Miniconda by Python3" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+#    && echo "下载 Miniconda by Python2" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda2-latest-Linux-x86_64.sh \
+    && echo "下载 Miniconda by Python3" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && bash Miniconda*.sh -b -p /opt/conda \
     && rm Miniconda*.sh \
     && echo "设置 conda 和 python 的环境路径" \
@@ -57,7 +57,7 @@ RUN    echo "开始配置系vnpy环境" \
     && echo "设置 conda 国内源, 从 conda 安装 python 库" \
     && conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/ \
     && conda config --set show_channel_urls yes \
-    && conda install -y bsddb pymongo pyzmq numpy msgpack-python \
+    && conda install -y pymongo pyzmq numpy msgpack-python \
     && echo "更改 pip 源" \
     && mkdir ~/.pip \
     && echo "[global]" >> ~/.pip/pip.conf \
