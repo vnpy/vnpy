@@ -465,7 +465,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出内容"""
-        print str(datetime.now()) + "\t" + content 
+        print(str(datetime.now()) + "\t" + content)
     
     #----------------------------------------------------------------------
     def calculateBacktestingResult(self):
@@ -877,11 +877,11 @@ class OptimizationSetting(object):
             return 
         
         if end < start:
-            print u'参数起始点必须不大于终止点'
+            print(u'参数起始点必须不大于终止点')
             return
         
         if step <= 0:
-            print u'参数布进必须大于0'
+            print(u'参数布进必须大于0')
             return
         
         l = []

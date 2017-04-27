@@ -30,10 +30,10 @@ RUN    echo "开始配置系vnpy环境" \
     && echo "deb-src http://mirrors.163.com/ubuntu/ xenial-updates main multiverse restricted universe" >> /etc/apt/sources.list \
     && apt-get clean \
     && apt-get update \
-    && echo "安装编译环境" \
-    && apt-get install -y build-essential libboost-all-dev python-dev cmake \
     && echo "从 apt 获取软件" \
     && apt-get install -y bzip2 wget \
+    && echo "安装编译环境" \
+    && apt-get install -y build-essential libboost-all-dev python-dev cmake \
     && apt-get clean \
     && echo "安装 ta-lib 内核" \
     && cd /opt \
@@ -57,7 +57,11 @@ RUN    echo "开始配置系vnpy环境" \
     && echo "设置 conda 国内源, 从 conda 安装 python 库" \
     && conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/ \
     && conda config --set show_channel_urls yes \
-    && conda install -y pymongo bsddb pyzmq numpy msgpack-python \
+    && conda install -y bsddb pymongo pyzmq numpy msgpack-python \
+    && echo "更改 pip 源" \
+    && mkdir ~/.pip \
+    && echo "[global]" >> ~/.pip/pip.conf \
+    && echo "index-url = http://pypi.douban.com/simple" >> ~/.pip/pip.conf \
     && echo "使用 pip 安装 python 库" \
     && pip install TA-Lib \
     && conda clean -ay \

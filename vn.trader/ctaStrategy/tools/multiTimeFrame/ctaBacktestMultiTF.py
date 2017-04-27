@@ -157,7 +157,7 @@ class BacktestEngineMultiTF(BacktestingEngine):
                 try:
                     self.infobar[info_symbol] = next(self.InfoCursor[info_symbol])
                 except StopIteration:
-                    print "Data of information symbols is empty! Input must be a list, not str."
+                    print("Data of information symbols is empty! Input must be a list, not str.")
                     raise
 
         temp = {}

@@ -1472,7 +1472,7 @@ def test():
     
     def print_log(event):
         log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
+        print(':'.join([log.logTime, log.logContent]))
     
     app = QtCore.QCoreApplication(sys.argv)    
 
