@@ -490,7 +490,11 @@ if __name__ == '__main__':
     #e.downloadEquityDailyBar('000001')
     #e.downloadEquityDailyBarts('000001')
     
+    import os
+    from dotenv import load_dotenv, find_dotenv
+    
+    load_dotenv(find_dotenv())
     # 这里将项目中包含的股指日内分钟线csv导入MongoDB，作者电脑耗时大约3分钟
-    loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
+    loadMcCsv( os.path.join(os.path.dirname(__file__), 'IF0000_1min.csv'), MINUTE_DB_NAME, 'IF0000')
     #导入通达信历史分钟数据
     #loadTdxCsv('CL8.csv', MINUTE_DB_NAME, 'c0000')
