@@ -1,88 +1,72 @@
 # encoding: UTF-8
 
 '''
-vn.sgit的gateway接入
+vn.femas的gateway接入
 
-飞鼠接口的委托数据更新是分散在多个推送里的：
-1. 下单后，通过onRtnOrder通知是否成功，没有ErrorID说明委托到了交易所
-2. 后续的成交状态，通过onRtnTrade通知，用户自行累加
-3. 撤单的确认，通过onRspOrderAction通知
-
-为了获取实时的委托状态，需要用户自行把这三个数据合并起来，
-因此在TdApi中维护了一个委托数据的缓存字典，对vn.trader系统中推送的是本地委托号，
-在Gateway中和委托系统号对应起来
-
-飞鼠的撤单需要使用：交易所代码+交易所的系统委托号，撤单时从缓存中
-获取委托的系统编号
+考虑到飞马只对接期货（目前只有中金所）, vtSymbol直接使用symbol
 '''
 
 
 import os
 import json
 
-from vnsgitmd import MdApi
-from vnsgittd import TdApi
-from sgitDataType import *
+from vnfemasmd import MdApi
+from vnfemastd import TdApi
+from femasDataType import *
 from vtGateway import *
 
-# 以下为一些VT类型和SGIT类型的映射字典
+# 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
 priceTypeMap = {}
-priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["Sgit_FTDC_OPT_LimitPrice"]
-priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["Sgit_FTDC_OPT_AnyPrice"]
+priceTypeMap[PRICETYPE_LIMITPRICE] = defineDict["USTP_FTDC_OPT_LimitPrice"]
+priceTypeMap[PRICETYPE_MARKETPRICE] = defineDict["USTP_FTDC_OPT_AnyPrice"]
 priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
 
 # 方向类型映射
 directionMap = {}
-directionMap[DIRECTION_LONG] = defineDict['Sgit_FTDC_D_Buy']
-directionMap[DIRECTION_SHORT] = defineDict['Sgit_FTDC_D_Sell']
+directionMap[DIRECTION_LONG] = defineDict['USTP_FTDC_D_Buy']
+directionMap[DIRECTION_SHORT] = defineDict['USTP_FTDC_D_Sell']
 directionMapReverse = {v: k for k, v in directionMap.items()}
 
 # 开平类型映射
 offsetMap = {}
-offsetMap[OFFSET_OPEN] = defineDict['Sgit_FTDC_OF_Open']
-offsetMap[OFFSET_CLOSE] = defineDict['Sgit_FTDC_OF_Close']
-offsetMap[OFFSET_CLOSETODAY] = defineDict['Sgit_FTDC_OF_CloseToday']
-offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['Sgit_FTDC_OF_CloseYesterday']
+offsetMap[OFFSET_OPEN] = defineDict['USTP_FTDC_OF_Open']
+offsetMap[OFFSET_CLOSE] = defineDict['USTP_FTDC_OF_Close']
+offsetMap[OFFSET_CLOSETODAY] = defineDict['USTP_FTDC_OF_CloseToday']
+offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['USTP_FTDC_OF_CloseYesterday']
 offsetMapReverse = {v:k for k,v in offsetMap.items()}
 
 # 交易所类型映射
 exchangeMap = {}
-exchangeMap[EXCHANGE_CFFEX] = defineDict['Sgit_FTDC_EIDT_CFFEX']
-exchangeMap[EXCHANGE_SHFE] = defineDict['Sgit_FTDC_EIDT_SHFE']
-exchangeMap[EXCHANGE_CZCE] = defineDict['Sgit_FTDC_EIDT_CZCE']
-exchangeMap[EXCHANGE_DCE] = defineDict['Sgit_FTDC_EIDT_DCE']
-exchangeMap[EXCHANGE_SGE] = defineDict['Sgit_FTDC_EIDT_GOLD']
+#exchangeMap[EXCHANGE_CFFEX] = defineDict['USTP_FTDC_EIDT_CFFEX']
+#exchangeMap[EXCHANGE_SHFE] = defineDict['USTP_FTDC_EIDT_SHFE']
+#exchangeMap[EXCHANGE_CZCE] = defineDict['USTP_FTDC_EIDT_CZCE']
+#exchangeMap[EXCHANGE_DCE] = defineDict['USTP_FTDC_EIDT_DCE']
+exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
+exchangeMap[EXCHANGE_SHFE] = 'SHFE'
+exchangeMap[EXCHANGE_CZCE] = 'CZCE'
+exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
 # 持仓类型映射
 posiDirectionMap = {}
-posiDirectionMap[DIRECTION_NET] = defineDict["Sgit_FTDC_PD_Net"]
-posiDirectionMap[DIRECTION_LONG] = defineDict["Sgit_FTDC_PD_Long"]
-posiDirectionMap[DIRECTION_SHORT] = defineDict["Sgit_FTDC_PD_Short"]
+posiDirectionMap[DIRECTION_LONG] = defineDict["USTP_FTDC_D_Buy"]
+posiDirectionMap[DIRECTION_SHORT] = defineDict["USTP_FTDC_D_Sell"]
 posiDirectionMapReverse = {v:k for k,v in posiDirectionMap.items()}
-
-# 委托状态类型映射
-orderStatusMap = {}
-orderStatusMap[STATUS_ALLTRADED] = defineDict["Sgit_FTDC_OST_AllTraded"]
-orderStatusMap[STATUS_PARTTRADED] = defineDict["Sgit_FTDC_OST_PartTradedQueueing"]
-orderStatusMap[STATUS_NOTTRADED] = defineDict["Sgit_FTDC_OST_NoTradeQueueing"]
-orderStatusMap[STATUS_CANCELLED] = defineDict["Sgit_FTDC_OST_Canceled"]
-orderStatusMapReverse = {v:k for k,v in orderStatusMap.items()}
 
 
 ########################################################################
-class SgitGateway(VtGateway):
-    """SGIT接口"""
+class FemasGateway(VtGateway):
+    """飞马接口"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine, gatewayName='SGIT'):
+    def __init__(self, eventEngine, gatewayName='FEMAS'):
         """Constructor"""
-        super(SgitGateway, self).__init__(eventEngine, gatewayName)
+        super(FemasGateway, self).__init__(eventEngine, gatewayName)
         
-        self.mdApi = SgitMdApi(self)     # 行情API
-        self.tdApi = SgitTdApi(self)     # 交易API
+        self.mdApi = FemasMdApi(self)     # 行情API
+        self.tdApi = FemasTdApi(self)     # 交易API
         
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
@@ -94,8 +78,9 @@ class SgitGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        fileName = os.getcwd() + '/sgitGateway/' + fileName
-        
+        path = os.path.abspath(os.path.dirname(__file__))
+        fileName = os.path.join(path, fileName)
+
         try:
             f = file(fileName)
         except IOError:
@@ -165,8 +150,7 @@ class SgitGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            # 飞鼠柜台的资金是主动推送的，因此无需查询
-            self.qryFunctionList = [self.qryPosition]
+            self.qryFunctionList = [self.qryAccount, self.qryPosition]
             
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 2         # 查询触发点
@@ -205,13 +189,13 @@ class SgitGateway(VtGateway):
 
 
 ########################################################################
-class SgitMdApi(MdApi):
-    """SGIT行情API实现"""
+class FemasMdApi(MdApi):
+    """飞马行情API实现"""
 
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
-        super(SgitMdApi, self).__init__()
+        super(FemasMdApi, self).__init__()
         
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
@@ -229,6 +213,145 @@ class SgitMdApi(MdApi):
         self.address = EMPTY_STRING         # 服务器地址
         
     #----------------------------------------------------------------------
+    def onFrontConnected(self):
+        """服务器连接"""
+        self.connectionStatus = True
+        
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'行情服务器连接成功'
+        self.gateway.onLog(log)
+        self.login()
+    
+    #----------------------------------------------------------------------  
+    def onFrontDisconnected(self, n):
+        """服务器断开"""
+        self.connectionStatus = False
+        self.loginStatus = False
+        self.gateway.mdConnected = False
+        
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = u'行情服务器连接断开'
+        self.gateway.onLog(log)        
+        
+    #---------------------------------------------------------------------- 
+    def onHeartBeatWarning(self, n):
+        """心跳报警"""
+        # 因为API的心跳报警比较常被触发，且与API工作关系不大，因此选择忽略
+        pass
+    
+    #----------------------------------------------------------------------   
+    def onRspError(self, error, n, last):
+        """错误回报"""
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
+        
+    #----------------------------------------------------------------------
+    def onRspUserLogin(self, data, error, n, last):
+        """登陆回报"""
+        # 如果登录成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.loginStatus = True
+            self.gateway.mdConnected = True
+            
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'行情服务器登录完成'
+            self.gateway.onLog(log)
+            
+            # 重新订阅之前订阅的合约
+            for subscribeReq in self.subscribedSymbols:
+                self.subscribe(subscribeReq)
+                
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
+                
+    #---------------------------------------------------------------------- 
+    def onRspUserLogout(self, data, error, n, last):
+        """登出回报"""
+        # 如果登出成功，推送日志信息
+        if error['ErrorID'] == 0:
+            self.loginStatus = False
+            self.gateway.tdConnected = False
+            
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'行情服务器登出完成'
+            self.gateway.onLog(log)
+                
+        # 否则，推送错误信息
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
+        
+    #----------------------------------------------------------------------  
+    def onRspSubMarketData(self, data, error, n, last):
+        """订阅合约回报"""
+        # 通常不在乎订阅错误，选择忽略
+        pass
+        
+    #----------------------------------------------------------------------  
+    def onRspUnSubMarketData(self, data, error, n, last):
+        """退订合约回报"""
+        # 同上
+        pass  
+    
+    #----------------------------------------------------------------------  
+    def onRspSubscribeTopic(self, data, error, n, last):
+        """"""
+        # 同上
+        pass  
+    
+    #----------------------------------------------------------------------  
+    def onRspQryTopic(self, data, error, n, last):
+        """"""
+        # 同上
+        pass      
+        
+    #----------------------------------------------------------------------  
+    def onRtnDepthMarketData(self, data):
+        """行情推送"""
+        tick = VtTickData()
+        tick.gatewayName = self.gatewayName
+        
+        tick.symbol = data['InstrumentID']
+        tick.vtSymbol = tick.symbol
+        
+        tick.lastPrice = data['LastPrice']
+        tick.volume = data['Volume']
+        tick.openInterest = data['OpenInterest']
+        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        tick.date = data['TradingDay']
+        
+        tick.openPrice = data['OpenPrice']
+        tick.highPrice = data['HighestPrice']
+        tick.lowPrice = data['LowestPrice']
+        tick.preClosePrice = data['PreClosePrice']
+        
+        tick.upperLimit = data['UpperLimitPrice']
+        tick.lowerLimit = data['LowerLimitPrice']
+        
+        # CTP只有一档行情
+        tick.bidPrice1 = data['BidPrice1']
+        tick.bidVolume1 = data['BidVolume1']
+        tick.askPrice1 = data['AskPrice1']
+        tick.askVolume1 = data['AskVolume1']
+        
+        self.gateway.onTick(tick)  
+        
+    #----------------------------------------------------------------------
     def connect(self, userID, password, brokerID, address):
         """初始化连接"""
         self.userID = userID                # 账号
@@ -244,14 +367,13 @@ class SgitMdApi(MdApi):
                 os.makedirs(path)
             self.createFtdcMdApi(path)
             
-            # 订阅数据流
-            self.subscribeMarketTopic(0)             
-            
+            # 订阅主题
+            self.subscribeMarketDataTopic(100, 2)
             # 注册服务器地址
             self.registerFront(self.address)
             
             # 初始化连接，成功会调用onFrontConnected
-            self.init(False)
+            self.init()
             
         # 若已经连接但尚未登录，则进行登录
         else:
@@ -263,8 +385,9 @@ class SgitMdApi(MdApi):
         """订阅合约"""
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
-        if self.loginStatus:
-            self.subQuot({'ContractID': str(subscribeReq.symbol)})
+        if self.loginStatus:    
+            self.subMarketData(subscribeReq.symbol)
+            
         self.subscribedSymbols.add(subscribeReq)   
         
     #----------------------------------------------------------------------
@@ -284,145 +407,21 @@ class SgitMdApi(MdApi):
         """关闭"""
         self.exit()
 
-    #----------------------------------------------------------------------
-    def onFrontConnected(self):
-        """服务器连接"""
-        self.connectionStatus = True
-    
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'行情服务器连接成功'
-        self.gateway.onLog(log)
-        self.login()
-    
-    #----------------------------------------------------------------------
-    def onFrontDisconnected(self, msg):
-        """服务器断开"""
-        self.connectionStatus = False
-        self.loginStatus = False
-        self.gateway.mdConnected = False
-    
-        log = VtLogData()
-        log.gatewayName = self.gatewayName
-        log.logContent = u'行情服务器连接断开'
-        self.gateway.onLog(log)       
-    
-    #----------------------------------------------------------------------
-    def onRspUserLogin(self, data, error, i, last):
-        """登陆回报"""
-        # 如果登录成功，推送日志信息
-        if error['ErrorID'] == 0:
-            self.loginStatus = True
-            self.gateway.mdConnected = True
-            
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'行情服务器登录完成'
-            self.gateway.onLog(log)
-            
-            # 调用ready
-            self.ready()
-            
-            # 重新订阅之前订阅的合约
-            for subscribeReq in self.subscribedSymbols:
-                self.subscribe(subscribeReq)
-                
-        # 否则，推送错误信息
-        else:
-            err = VtErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
-            self.gateway.onError(err)
-    
-    #----------------------------------------------------------------------
-    def onRspUserLogout(self, data, error, i, last):
-        """登出回报"""
-        # 如果登出成功，推送日志信息
-        if error['ErrorID'] == 0:
-            self.loginStatus = False
-            self.gateway.tdConnected = False
-            
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'交易服务器登出完成'
-            self.gateway.onLog(log)
-                
-        # 否则，推送错误信息
-        else:
-            err = VtErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
-            self.gateway.onError(err)
-    
-    #----------------------------------------------------------------------
-    def onRtnDepthMarketData(self, data):
-        """行情推送"""
-        tick = VtTickData()
-        tick.gatewayName = self.gatewayName
-    
-        tick.symbol = data['InstrumentID']
-        tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
-        tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
-    
-        tick.lastPrice = data['LastPrice']
-        tick.volume = data['Volume']
-        tick.openInterest = data['OpenInterest']
-        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
-        tick.date = data['TradingDay']
-    
-        tick.openPrice = data['OpenPrice']
-        tick.highPrice = data['HighestPrice']
-        tick.lowPrice = data['LowestPrice']
-        tick.preClosePrice = data['PreClosePrice']
-    
-        tick.upperLimit = data['UpperLimitPrice']
-        tick.lowerLimit = data['LowerLimitPrice']
-    
-        # SGIT只有一档行情
-        tick.bidPrice1 = data['BidPrice1']
-        tick.bidVolume1 = data['BidVolume1']
-        tick.askPrice1 = data['AskPrice1']
-        tick.askVolume1 = data['AskVolume1']
-
-        tick.bidPrice2 = data['BidPrice2']
-        tick.bidVolume2 = data['BidVolume2']
-        tick.askPrice2 = data['AskPrice2']
-        tick.askVolume2 = data['AskVolume2']
-
-        tick.bidPrice3 = data['BidPrice3']
-        tick.bidVolume3 = data['BidVolume3']
-        tick.askPrice3 = data['AskPrice3']
-        tick.askVolume3 = data['AskVolume3']
-
-        tick.bidPrice4 = data['BidPrice4']
-        tick.bidVolume4 = data['BidVolume4']
-        tick.askPrice4 = data['AskPrice4']
-        tick.askVolume4 = data['AskVolume4']
-
-        tick.bidPrice5 = data['BidPrice5']
-        tick.bidVolume5 = data['BidVolume5']
-        tick.askPrice5 = data['AskPrice5']
-        tick.askVolume5 = data['AskVolume5']
-    
-        self.gateway.onTick(tick)
-
 
 ########################################################################
-class SgitTdApi(TdApi):
-    """SGIT交易API实现"""
+class FemasTdApi(TdApi):
+    """飞马交易API实现"""
     
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """API对象的初始化函数"""
-        super(SgitTdApi, self).__init__()
+        super(FemasTdApi, self).__init__()
         
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
         self.reqID = EMPTY_INT              # 操作请求编号
-        self.orderRef = EMPTY_INT           # 订单编号
+        self.localID = EMPTY_INT            # 本地订单编号
         
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
@@ -431,16 +430,10 @@ class SgitTdApi(TdApi):
         self.password = EMPTY_STRING        # 密码
         self.brokerID = EMPTY_STRING        # 经纪商代码
         self.address = EMPTY_STRING         # 服务器地址
-        self.investorID = EMPTY_STRING      # 投资者代码
         
         self.frontID = EMPTY_INT            # 前置机编号
         self.sessionID = EMPTY_INT          # 会话编号
         
-        self.localID = 0                    # 本地委托代码
-        self.orderDict = {}                 # 缓存委托对象的字典
-        self.localSysDict = {}              # key为本地委托代码，value为交易所系统代码
-        self.cancelReqDict = {}             # key为本地委托代码，value为撤单请求
-       
     #----------------------------------------------------------------------
     def connect(self, userID, password, brokerID, address):
         """初始化连接"""
@@ -457,15 +450,16 @@ class SgitTdApi(TdApi):
                 os.makedirs(path)
             self.createFtdcTraderApi(path)
             
-            # 订阅数据流
-            self.subscribePrivateTopic(0)            
+            # 订阅主题
+            self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)
+            #self.subscribeUserTopic(0)
             
             # 注册服务器地址
             self.registerFront(self.address)
-
+            
             # 初始化连接，成功会调用onFrontConnected
-            self.init(False)
+            self.init()
             
         # 若已经连接但尚未登录，则进行登录
         else:
@@ -488,7 +482,10 @@ class SgitTdApi(TdApi):
     def qryAccount(self):
         """查询账户"""
         self.reqID += 1
-        self.reqQryTradingAccount({}, self.reqID)
+        req = {}
+        req['BrokerID'] = self.brokerID
+        req['InvestorID'] = self.userID        
+        self.reqQryInvestorAccount(req, self.reqID)
         
     #----------------------------------------------------------------------
     def qryPosition(self):
@@ -504,64 +501,58 @@ class SgitTdApi(TdApi):
         """发单"""
         self.reqID += 1
         self.localID += 1
-        strID = str(self.localID).rjust(12, '0')
+        
+        strLocalID = generateStrLocalID(self.localID)
         
         req = {}
         
         req['InstrumentID'] = orderReq.symbol
+        req['ExchangeID'] = orderReq.exchange
         req['LimitPrice'] = orderReq.price
-        req['VolumeTotalOriginal'] = orderReq.volume
+        req['Volume'] = orderReq.volume
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
         try:
             req['OrderPriceType'] = priceTypeMap[orderReq.priceType]
             req['Direction'] = directionMap[orderReq.direction]
-            req['CombOffsetFlag'] = offsetMap[orderReq.offset]
+            req['OffsetFlag'] = offsetMap[orderReq.offset]
         except KeyError:
             return ''
             
-        req['OrderRef'] = strID
-        req['InvestorID'] = self.investorID
+        req['UserOrderLocalID'] = strLocalID
+        req['InvestorID'] = self.userID
         req['UserID'] = self.userID
         req['BrokerID'] = self.brokerID
         
-        req['CombHedgeFlag'] = defineDict['Sgit_FTDC_HF_Speculation']       # 投机单
-        req['ContingentCondition'] = defineDict['Sgit_FTDC_CC_Immediately'] # 立即发单
-        req['ForceCloseReason'] = defineDict['Sgit_FTDC_FCC_NotForceClose'] # 非强平
+        req['HedgeFlag'] = defineDict['USTP_FTDC_CHF_Speculation']           # 投机单
+        req['ForceCloseReason'] = defineDict['USTP_FTDC_FCR_NotForceClose'] # 非强平
         req['IsAutoSuspend'] = 0                                             # 非自动挂起
-        req['TimeCondition'] = defineDict['Sgit_FTDC_TC_GFD']               # 今日有效
-        req['VolumeCondition'] = defineDict['Sgit_FTDC_VC_AV']              # 任意成交量
+        req['TimeCondition'] = defineDict['USTP_FTDC_TC_GFD']               # 今日有效
+        req['VolumeCondition'] = defineDict['USTP_FTDC_VC_AV']              # 任意成交量
         req['MinVolume'] = 1                                                 # 最小成交量为1
         
         self.reqOrderInsert(req, self.reqID)
         
         # 返回订单号（字符串），便于某些算法进行动态管理
-        vtOrderID = '.'.join([self.gatewayName, strID])
+        vtOrderID = '.'.join([self.gatewayName, strLocalID])
         return vtOrderID
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        # 如果OrderSysID的数据尚未返回，则把撤单请求缓存下来后直接返回
-        # 若已经返回，则获取strID对应的OrderSysID，并撤单
-        strID = cancelOrderReq.orderID
-        
-        if strID not in self.localSysDict:
-            self.cancelReqDict[strID] = cancelOrderReq
-            return
-        
-        sysID = self.localSysDict[strID]
-        
         self.reqID += 1
+        self.localID += 1
+        strLocalID = generateStrLocalID(self.localID)
 
         req = {}
-        req['InstrumentID'] = cancelOrderReq.symbol
-        req['ExchangeID'] = exchangeMap[cancelOrderReq.exchange]
-        req['OrderSysID'] = sysID
-        req['ActionFlag'] = defineDict['Sgit_FTDC_AF_Delete']
+        req['ExchangeID'] = cancelOrderReq.exchange
+        req['UserOrderLocalID'] = cancelOrderReq.orderID
+        req['UserOrderActionLocalID'] = strLocalID  # 飞马需要传入撤单编号字段，即该次撤单操作的唯一编号
+        
+        req['ActionFlag'] = defineDict['USTP_FTDC_AF_Delete']
         req['BrokerID'] = self.brokerID
         req['InvestorID'] = self.userID
-        req['UserID'] = self.userID
+        req['UserID'] = self.userID     # 飞马需要传入UserID字段（CTP不用）
         
         self.reqOrderAction(req, self.reqID)
         
@@ -569,58 +560,76 @@ class SgitTdApi(TdApi):
     def close(self):
         """关闭"""
         self.exit()
-        
+
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
         self.connectionStatus = True
-    
+        
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接成功'
         self.gateway.onLog(log)
-        self.login()
         
+        self.login()
+    
     #----------------------------------------------------------------------
-    def onFrontDisconnected(self, msg):
+    def onFrontDisconnected(self, n):
         """服务器断开"""
         self.connectionStatus = False
         self.loginStatus = False
-        self.gateway.mdConnected = False
-    
+        self.gateway.tdConnected = False
+        
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = u'交易服务器连接断开'
-        self.gateway.onLog(log)   
-        
+        self.gateway.onLog(log)  
+    
+    #----------------------------------------------------------------------
+    def onHeartBeatWarning(self, n):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspError(self, error, n, last):
+        """错误回报"""
+        err = VtErrorData()
+        err.gatewayName = self.gatewayName
+        err.errorID = error['ErrorID']
+        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        self.gateway.onError(err)
+    
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
-        '''登陆回报'''
+        """登陆回报"""
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
+            for k, v in data.items():
+                print k, ':', v
+            if data['MaxOrderLocalID']:
+                self.localID = int(data['MaxOrderLocalID'])    # 目前最大本地报单号
+                print 'id now', self.localID
+            
             self.loginStatus = True
             self.gateway.mdConnected = True
             
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'交易服务器登录完成'
-            self.gateway.onLog(log)
+            self.gateway.onLog(log)           
             
-            # 调用ready
-            self.ready()
-            
-            # 查询投资者代码
+            # 查询合约代码
             self.reqID += 1
-            self.reqQryInvestor({}, self.reqID)                
-            
+            self.reqQryInstrument({}, self.reqID)             
+                
         # 否则，推送错误信息
         else:
             err = VtErrorData()
-            err.gatewayName = self.gatewayName
+            err.gatewayName = self.gateway
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-        
+    
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -641,100 +650,212 @@ class SgitTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-        
+    
     #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, n, last):
         """"""
         pass
-        
+    
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
-        if error['ErrorID'] != 0:
+        # 飞马在无错误信息时也可能进行推送（内容为正确），但是没有错误编号
+        if error['ErrorID']:
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-        
+    
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
-        # 获取委托对象
-        sysID = data['OrderSysID']
-        strID = data['OrderRef']
-        
-        if sysID in self.orderDict:
-            order = self.orderDict[sysID]
-        else:
-            self.localSysDict[strID] = sysID
-            
-            order = VtOrderData()
-            self.orderDict[sysID] = order
-            
-            order.gatewayName = self.gatewayName
-            order.orderID = strID
-            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
-        
-        # 推送错误信息
-        if error['ErrorID'] != 0:
+        if error['ErrorID']:
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-        else:
-            order.status = STATUS_CANCELLED
-            
-        self.gateway.onOrder(order)
+    
+    #----------------------------------------------------------------------
+    def onRtnFlowMessageCancel(self, data):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRtnTrade(self, data):
+        """成交回报"""
+        # 创建报单数据对象
+        trade = VtTradeData()
+        trade.gatewayName = self.gatewayName
         
+        # 保存代码和报单号
+        trade.symbol = data['InstrumentID']
+        trade.exchange = exchangeMapReverse[data['ExchangeID']]
+        trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
+        
+        trade.tradeID = data['TradeID']
+        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+        
+        trade.orderID = data['UserOrderLocalID']
+        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
+        
+        # 方向
+        trade.direction = directionMapReverse.get(data['Direction'], '')
+            
+        # 开平
+        trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
+            
+        # 价格、报单量等数值
+        trade.price = data['TradePrice']
+        trade.volume = data['TradeVolume']
+        trade.tradeTime = data['TradeTime']
+        
+        # 推送
+        self.gateway.onTrade(trade)
+    
+    #----------------------------------------------------------------------
+    def onRtnOrder(self, data):
+        """报单回报"""
+        # 更新最大报单编号
+        self.localID = max(self.localID, int(data['UserOrderLocalID']))    # 检查并增加本地报单编号
+        
+        # 创建报单数据对象
+        order = VtOrderData()
+        order.gatewayName = self.gatewayName
+        
+        # 保存代码和报单号
+        order.symbol = data['InstrumentID']
+        order.exchange = exchangeMapReverse[data['ExchangeID']]
+        order.vtSymbol = order.symbol #'.'.join([order.symbol, order.exchange])
+        
+        order.orderID = data['UserOrderLocalID']    # 飞马使用该单一字段维护报单，为字符串
+        
+        # 方向
+        if data['Direction'] == '0':
+            order.direction = DIRECTION_LONG
+        elif data['Direction'] == '1':
+            order.direction = DIRECTION_SHORT
+        else:
+            order.direction = DIRECTION_UNKNOWN
+            
+        # 开平
+        if data['OffsetFlag'] == '0':
+            order.offset = OFFSET_OPEN
+        elif data['OffsetFlag'] == '1':
+            order.offset = OFFSET_CLOSE
+        elif data['OffsetFlag'] == '3':
+            order.offset = OFFSET_CLOSETODAY        
+        elif data['OffsetFlag'] == '4':
+            order.offset = OFFSET_CLOSEYESTERDAY        
+        else:
+            order.offset = OFFSET_UNKNOWN
+            
+        # 状态
+        if data['OrderStatus'] == '0':
+            order.status = STATUS_ALLTRADED
+        elif data['OrderStatus'] == '1':
+            order.status = STATUS_PARTTRADED
+        elif data['OrderStatus'] == '3':
+            order.status = STATUS_NOTTRADED
+        elif data['OrderStatus'] == '5':
+            order.status = STATUS_CANCELLED
+        else:
+            order.status = STATUS_UNKNOWN
+            
+        # 价格、报单量等数值
+        order.price = data['LimitPrice']
+        order.totalVolume = data['Volume']
+        order.tradedVolume = data['VolumeTraded']
+        order.orderTime = data['InsertTime']
+        order.cancelTime = data['CancelTime']
+        
+        # CTP的报单号一致性维护需要基于frontID, sessionID, orderID三个字段
+        # 但在本接口设计中，已经考虑了CTP的OrderRef的自增性，避免重复
+        # 唯一可能出现OrderRef重复的情况是多处登录并在非常接近的时间内（几乎同时发单）
+        # 考虑到VtTrader的应用场景，认为以上情况不会构成问题
+        order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+        
+        # 推送
+        self.gateway.onOrder(order)
+    
+    #----------------------------------------------------------------------
+    def onErrRtnOrderInsert(self, data, error):
+        """发单错误回报（交易所）"""
+        if error['ErrorID']:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
+    
+    #----------------------------------------------------------------------
+    def onErrRtnOrderAction(self, data, error):
+        """撤单错误回报（交易所）"""
+        if error['ErrorID']:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
+    
+    #----------------------------------------------------------------------
+    def onRtnInstrumentStatus(self, data):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRtnInvestorAccountDeposit(self, data):
+        """"""
+        pass
+    
     #----------------------------------------------------------------------
     def onRspQryOrder(self, data, error, n, last):
         """"""
         pass
     
     #----------------------------------------------------------------------
-    def onRspQryTradingAccount(self, data, error, n, last):
+    def onRspQryTrade(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryUserInvestor(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryTradingCode(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryInvestorAccount(self, data, error, n, last):
         """资金账户查询回报"""
         account = VtAccountData()
         account.gatewayName = self.gatewayName
-    
+        
         # 账户代码
         account.accountID = data['AccountID']
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
-    
+        
         # 数值相关
         account.preBalance = data['PreBalance']
         account.available = data['Available']
-        account.commission = data['Commission']
-        account.margin = data['CurrMargin']
+        account.commission = data['Fee']
+        account.margin = data['Margin']
         account.closeProfit = data['CloseProfit']
         account.positionProfit = data['PositionProfit']
-    
+        
         # 这里的balance和快期中的账户不确定是否一样，需要测试
-        account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
-                           data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
-                           data['CloseProfit'] + data['PositionProfit'] + data['CashIn'] -
-                           data['Commission'])
-    
+        #account.balance = (data['PreBalance'] - data['Withdraw'] + data['Deposit'] +
+                           #data['CloseProfit'] + data['PositionProfit'] + data['TodayInOut'] -
+                           #data['Fee'])
+        account.balance = data['DynamicRights'] # 飞马直接提供动态权益字段
+        
         # 推送
         self.gateway.onAccount(account)
-        
-    #----------------------------------------------------------------------
-    def onRspQryInvestor(self, data, error, n, last):
-        """"""
-        self.investorID = data['InvestorID']
-        
-        if last:
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'投资者编码获取完成'
-            self.gateway.onLog(log)        
     
-            # 查询合约
-            self.reqID += 1
-            self.reqQryInstrument({}, self.reqID)              
-        
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
@@ -749,15 +870,19 @@ class SgitTdApi(TdApi):
         # 合约数值
         contract.size = data['VolumeMultiple']
         contract.priceTick = data['PriceTick']
+        contract.strikePrice = data['StrikePrice']
+        contract.underlyingSymbol = data['UnderlyingInstrID']
         
-        # 合约类型
-        if contract.exchange == EXCHANGE_SGE:
-            if '(' in contract.symbol:
-                contract.productClass = PRODUCT_DEFER
-            else:
-                contract.productClass = PRODUCT_SPOT
-        else:
+        # 期权类型
+        if data['OptionsType'] == '1':
+            contract.productClass = PRODUCT_OPTION
+            contract.optionType = OPTION_CALL
+        elif data['OptionsType'] == '2':
+            contract.productClass = PRODUCT_OPTION
+            contract.optionType = OPTION_PUT
+        elif data['OptionsType'] == '3':
             contract.productClass = PRODUCT_FUTURES
+            contract.optionType = ''
         
         # 推送
         self.gateway.onContract(contract)
@@ -767,133 +892,15 @@ class SgitTdApi(TdApi):
             log.gatewayName = self.gatewayName
             log.logContent = u'交易合约信息获取完成'
             self.gateway.onLog(log)
-        
+    
     #----------------------------------------------------------------------
-    def onRtnOrder(self, data, error):
-        """报单回报"""    
-        # 获取委托对象
-        sysID = data['OrderSysID']
-        strID = data['OrderRef']
-        
-        newID = int(strID)
-        if newID > self.localID:
-            self.localID = newID
-        
-        if sysID in self.orderDict:
-            order = self.orderDict[sysID]
-        else:
-            self.localSysDict[strID] = sysID
-            
-            order = VtOrderData()
-            self.orderDict[sysID] = order
-            
-            order.gatewayName = self.gatewayName
-            order.orderID = strID
-            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
-            
-        order.symbol = data['InstrumentID']
-        order.exchange = exchangeMapReverse[data['ExchangeID']]
-        order.vtSymbol = order.symbol
-        order.direction = directionMapReverse.get(data['Direction'], DIRECTION_UNKNOWN)
-        order.offset = offsetMapReverse.get(data['CombOffsetFlag'], OFFSET_UNKNOWN)
-        order.totalVolume = data['VolumeTotalOriginal']
-        order.price = data['LimitPrice']
-
-        # 推送错误信息
-        if error['ErrorID'] == 0:
-            # 如果没有错误信息，则认为委托有效未成交
-            if not order.status:
-                order.status = STATUS_NOTTRADED
-        else:
-            # 如果有错误信息，委托被自动撤单
-            order.status = STATUS_CANCELLED
-            
-            err = VtErrorData()
-            err.gatewayName = self.gatewayName
-            err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
-            self.gateway.onError(err)       
-            
-        # 推送
-        self.gateway.onOrder(order)
-        
-        # 检查是否有待撤单请求
-        if strID in self.cancelReqDict:
-            req = self.cancelReqDict.pop(strID)
-            self.cancelOrder(req)
-        
-    #----------------------------------------------------------------------
-    def onRtnTrade(self, data):
-        """成交回报"""
-        # 更新委托
-        sysID = data['OrderSysID']
-        strID = data['OrderRef']
-        
-        if sysID in self.orderDict:
-            order = self.orderDict[sysID]
-        else:
-            self.localSysDict[strID] = sysID
-    
-            order = VtOrderData()
-            self.orderDict[sysID] = order
-    
-            order.gatewayName = self.gatewayName
-            order.orderID = strID
-            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
-    
-        order.tradedVolume += data['Volume']
-    
-        if order.tradedVolume == order.totalVolume:
-            order.status = STATUS_ALLTRADED
-        else:
-            order.status = STATUS_PARTTRADED        
-
-        # 更新成交
-        trade = VtTradeData()
-        trade.gatewayName = self.gatewayName
-        
-        trade.symbol = data['InstrumentID']
-        trade.exchange = exchangeMapReverse[data['ExchangeID']]
-        trade.vtSymbol = trade.symbol 
-        
-        trade.tradeID = data['TradeID']
-        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
-        
-        trade.orderID = order.orderID
-        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
-        
-        # 方向
-        trade.direction = directionMapReverse.get(data['Direction'], '')
-            
-        # 开平
-        trade.offset = offsetMapReverse.get(data['OffsetFlag'], '')
-            
-        # 价格、报单量等数值
-        trade.price = data['Price']
-        trade.volume = data['Volume']
-        trade.tradeTime = data['TradeTime']
-
-        # 推送
-        self.gateway.onTrade(trade)
-        self.gateway.onOrder(order)
-        
-    #----------------------------------------------------------------------
-    def onRtnInstrumentStatus(self, data):
+    def onRspQryExchange(self, data, error, n, last):
         """"""
         pass
-        
-    #----------------------------------------------------------------------
-    def onRspQryInvestorPositionDetail(self, data, error, n, last):
-        """"""
-        pass
-        
+    
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        # 过滤空数据的情况
-        if not data['InstrumentID']:
-            return 
-        
         pos = VtPositionData()
         pos.gatewayName = self.gatewayName
         
@@ -902,14 +909,11 @@ class SgitTdApi(TdApi):
         pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
         
         # 方向和持仓冻结数量
-        pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
-        if pos.direction == DIRECTION_NET or pos.direction == DIRECTION_LONG:
-            pos.frozen = data['LongFrozen']
-        elif pos.direction == DIRECTION_SHORT:   
-            pos.frozen = data['ShortFrozen']
+        pos.direction = posiDirectionMapReverse.get(data['Direction'], '')
+        pos.frozen = data['FrozenPosition']
         
         # 持仓量
-        pos.position = data['TodayPosition']
+        pos.position = data['Position']
         pos.ydPosition = data['YdPosition']        
         
         # 持仓均价
@@ -921,15 +925,59 @@ class SgitTdApi(TdApi):
         
         # 推送
         self.gateway.onPosition(pos)
-
-
-
+    
+    #----------------------------------------------------------------------
+    def onRspSubscribeTopic(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryComplianceParam(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryTopic(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryInvestorFee(self, data, error, n, last):
+        """"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onRspQryInvestorMargin(self, data, error, n, last):
+        """"""
+        pass
+    
 
 #----------------------------------------------------------------------
-def print_dict(d):
-    """"""
-    l = d.keys()
-    l.sort()
-    for k in l:
-        print k, ':', d[k]
+def test():
+    """测试"""
+    from PyQt4 import QtCore
+    import sys
     
+    def print_log(event):
+        log = event.dict_['data']
+        print ':'.join([log.logTime, log.logContent])
+    
+    app = QtCore.QCoreApplication(sys.argv)    
+
+    eventEngine = EventEngine()
+    eventEngine.register(EVENT_LOG, print_log)
+    eventEngine.start()
+    
+    gateway = FemasGateway(eventEngine)
+    gateway.connect()
+    
+    sys.exit(app.exec_())
+
+#----------------------------------------------------------------------
+def generateStrLocalID(localID):
+    """把整数的本地委托号转化为字符串"""
+    return str(localID).rjust(12, '0')
+
+
+if __name__ == '__main__':
+    test()

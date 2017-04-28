@@ -4,14 +4,13 @@ defineDict = {}
 typedefDict = {}
 
 #//////////////////////////////////////////////////////////////////////
-#@system 新一代交易所系统
-#@company 上海期货信息技术有限公司
-#@file ThostFtdcUserApiDataType.h
+#@system 
+#@company 
+#@file SgitFtdcUserApiDataType.h
 #@brief 定义了客户端接口使用的业务数据类型
 #@history 
-#20060106	赵鸿昊		创建该文件
+#20150810
 #//////////////////////////////////////////////////////////////////////
-
 
 
 #//////////////////////////////////////////////////////////////////////
@@ -73,11 +72,6 @@ typedefDict["TThostFtdcClientIDType"] = "string"
 #TFtdcInstrumentIDType是一个合约代码类型
 #//////////////////////////////////////////////////////////////////////
 typedefDict["TThostFtdcInstrumentIDType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcInstrumentCodeType是一个合约标识码类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcInstrumentCodeType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
 #TFtdcMarketIDType是一个市场代码类型
@@ -595,11 +589,7 @@ defineDict["THOST_FTDC_PC_Spot"] = '4'
 defineDict["THOST_FTDC_PC_EFP"] = '5'
 #现货期权
 defineDict["THOST_FTDC_PC_SpotOption"] = '6'
-#个股期权
-defineDict["THOST_FTDC_PC_ETFOption"] = '7'
-#证券
-defineDict["THOST_FTDC_PC_Stock"] = '8'
-
+defineDict["THOST_FTDC_PC_Defer"] = '7'
 typedefDict["TThostFtdcProductClassType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
@@ -683,8 +673,8 @@ defineDict["THOST_FTDC_HF_Speculation"] = '1'
 defineDict["THOST_FTDC_HF_Arbitrage"] = '2'
 #套保
 defineDict["THOST_FTDC_HF_Hedge"] = '3'
-#备兑
-defineDict["THOST_FTDC_HF_Covered"] = '4'
+defineDict["THOST_FTDC_HF_DEFER"] = '4'
+defineDict["THOST_FTDC_HF_MID"] = '5'
 
 typedefDict["TThostFtdcHedgeFlagType"] = "char"
 
@@ -747,8 +737,6 @@ defineDict["THOST_FTDC_OPT_BidPrice1PlusTwoTicks"] = 'E'
 defineDict["THOST_FTDC_OPT_BidPrice1PlusThreeTicks"] = 'F'
 #五档价
 defineDict["THOST_FTDC_OPT_FiveLevelPrice"] = 'G'
-#本方最优价
-defineDict["THOST_FTDC_OPT_BestPriceThisSide"] = 'H'
 
 typedefDict["TThostFtdcOrderPriceTypeType"] = "char"
 
@@ -1298,11 +1286,16 @@ typedefDict["TThostFtdcMortgageTypeType"] = "char"
 #//////////////////////////////////////////////////////////////////////
 #TFtdcInvestorSettlementParamIDType是一个投资者结算参数代码类型
 #//////////////////////////////////////////////////////////////////////
+#基础保证金
+defineDict["THOST_FTDC_ISPI_BaseMargin"] = '1'
+#最低权益标准
+defineDict["THOST_FTDC_ISPI_LowestInterest"] = '2'
 #质押比例
 defineDict["THOST_FTDC_ISPI_MortgageRatio"] = '4'
 #保证金算法
 defineDict["THOST_FTDC_ISPI_MarginWay"] = '5'
-#结算单结存是否包含质押
+#ctp :结算单结存是否包含质押
+#sgit:结算单(盯市)权益等于结存
 defineDict["THOST_FTDC_ISPI_BillDeposit"] = '9'
 
 typedefDict["TThostFtdcInvestorSettlementParamIDType"] = "char"
@@ -1316,6 +1309,10 @@ defineDict["THOST_FTDC_ESPI_MortgageRatio"] = '1'
 defineDict["THOST_FTDC_ESPI_OtherFundItem"] = '2'
 #分项资金入交易所出入金
 defineDict["THOST_FTDC_ESPI_OtherFundImport"] = '3'
+#上期所交割手续费收取方式
+defineDict["THOST_FTDC_ESPI_SHFEDelivFee"] = '4'
+#大商所交割手续费收取方式
+defineDict["THOST_FTDC_ESPI_DCEDelivFee"] = '5'
 #中金所开户最低可用金额
 defineDict["THOST_FTDC_ESPI_CFFEXMinPrepa"] = '6'
 #郑商所结算方式
@@ -1486,7 +1483,8 @@ defineDict["THOST_FTDC_FI_Trade"] = 'T'
 defineDict["THOST_FTDC_FI_InvestorPosition"] = 'P'
 #投资者分项资金数据
 defineDict["THOST_FTDC_FI_SubEntryFund"] = 'O'
-#组合持仓数据
+#ctp :组合持仓数据
+#sgit:郑商所组合持仓数据
 defineDict["THOST_FTDC_FI_CZCECombinationPos"] = 'C'
 #上报保证金监控中心数据
 defineDict["THOST_FTDC_FI_CSRCData"] = 'R'
@@ -2198,11 +2196,6 @@ defineDict["THOST_FTDC_UT_SuperUser"] = '2'
 typedefDict["TThostFtdcUserTypeType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcBranchIDType是一个营业部编号类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcBranchIDType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
 #TFtdcRateTypeType是一个费率类型类型
 #//////////////////////////////////////////////////////////////////////
 #保证金率
@@ -2795,31 +2788,6 @@ typedefDict["TThostFtdcCFMMCKeyKindType"] = "char"
 #TFtdcAMLReportNameType是一个报文名称类型
 #//////////////////////////////////////////////////////////////////////
 typedefDict["TThostFtdcAMLReportNameType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcDBFComdTypeType是一个DBF命令类型类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcDBFComdTypeType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcDBFComTimeType是一个DBF时间类型类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcDBFComTimeType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcDBFComNoType是一个DBF流水号类型类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcDBFComNoType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcDBFFdNameType是一个DBF字段类型类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcDBFFdNameType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcDBFFdContentType是一个DBF字段内容类型类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcDBFFdContentType"] = "string"
 
 #//////////////////////////////////////////////////////////////////////
 #TFtdcIndividualNameType是一个个人姓名类型
@@ -4236,10 +4204,12 @@ defineDict["THOST_FTDC_EIDT_DCE"] = 'D'
 defineDict["THOST_FTDC_EIDT_CFFEX"] = 'J'
 #上海国际能源交易中心股份有限公司
 defineDict["THOST_FTDC_EIDT_INE"] = 'N'
-#上海证券交易所
-defineDict["THOST_FTDC_EIDT_SSE"] = 'A'
-#深圳证券交易所
-defineDict["THOST_FTDC_EIDT_SZSE"] = 'E'
+#黄金
+defineDict["THOST_FTDC_EIDT_GOLD"] = 'G'
+#PAT
+defineDict["THOST_FTDC_EIDT_PAT"] = 'P'
+#
+defineDict["THOST_FTDC_EIDT_LTS"] = 'L'
 
 typedefDict["TThostFtdcExchangeIDTypeType"] = "char"
 
@@ -6324,133 +6294,8 @@ defineDict["THOST_FTDC_CMDR_UnComb"] = '1'
 typedefDict["TThostFtdcCombDirectionType"] = "char"
 
 #//////////////////////////////////////////////////////////////////////
-#TFtdcLockTypeType是一个锁定方向类型
+#TFtdcFBTBankIDType是一个银行标识类型
 #//////////////////////////////////////////////////////////////////////
-#锁定
-defineDict["THOST_FTDC_LCKT_Lock"] = '1'
-#解锁
-defineDict["THOST_FTDC_LCKT_Unlock"] = '2'
+typedefDict["TThostFtdcFBTBankIDType"] = "string"
 
-typedefDict["TThostFtdcLockTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcBizTypeType是一个业务类型类型
-#//////////////////////////////////////////////////////////////////////
-#期货
-defineDict["THOST_FTDC_BZTP_Future"] = '1'
-#证券
-defineDict["THOST_FTDC_BZTP_Stock"] = '2'
-
-typedefDict["TThostFtdcBizTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcDesignateTypeType是一个指定类型类型
-#//////////////////////////////////////////////////////////////////////
-#指定登记
-defineDict["THOST_FTDC_DSTP_Register"] = '1'
-#指定撤销
-defineDict["THOST_FTDC_DSTP_Cancel"] = '2'
-
-typedefDict["TThostFtdcDesignateTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcFreezeReasonTypeType是一个冻结原因类型
-#//////////////////////////////////////////////////////////////////////
-#初始化
-defineDict["THOST_FTDC_FRTP_Init"] = '1'
-#锁定
-defineDict["THOST_FTDC_FRTP_Lock"] = '2'
-#执行
-defineDict["THOST_FTDC_FRTP_Exec"] = '3'
-#仓位校验
-defineDict["THOST_FTDC_FRTP_Check"] = '4'
-#E+1日执行冻结
-defineDict["THOST_FTDC_FRTP_ExecFreeze"] = '5'
-
-typedefDict["TThostFtdcFreezeReasonTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcFreezeTypeType是一个冻结类型类型
-#//////////////////////////////////////////////////////////////////////
-#冻结
-defineDict["THOST_FTDC_FZTP_Freeze"] = '1'
-#解冻
-defineDict["THOST_FTDC_FZTP_Unfreeze"] = '2'
-#强制执行
-defineDict["THOST_FTDC_FZTP_Force"] = '3'
-
-typedefDict["TThostFtdcFreezeTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcTradeSystemTypeType是一个交易系统类型类型
-#//////////////////////////////////////////////////////////////////////
-#未知系统
-defineDict["THOST_FTDC_TSTP_Unknow"] = '0'
-#期货系统
-defineDict["THOST_FTDC_TSTP_Future"] = '1'
-#个股系统
-defineDict["THOST_FTDC_TSTP_IShare"] = '2'
-
-typedefDict["TThostFtdcTradeSystemTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcStockDisposalTypeType是一个证券处置方向类型
-#//////////////////////////////////////////////////////////////////////
-#划入经纪公司账户
-defineDict["THOST_FTDC_STPT_ToBroker"] = '1'
-#划入投资者账户
-defineDict["THOST_FTDC_STPT_ToInvestor"] = '2'
-
-typedefDict["TThostFtdcStockDisposalTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcStockDisposalSysIDType是一个证券处置编号类型
-#//////////////////////////////////////////////////////////////////////
-typedefDict["TThostFtdcStockDisposalSysIDType"] = "string"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcStockDisposalStatusType是一个证券处置状态类型
-#//////////////////////////////////////////////////////////////////////
-#已经提交
-defineDict["THOST_FTDC_SDPS_Submitted"] = 'a'
-#已经接受
-defineDict["THOST_FTDC_SDPS_Accepted"] = 'b'
-#已经被拒绝
-defineDict["THOST_FTDC_SDPS_Rejected"] = 'c'
-#已经被撤销
-defineDict["THOST_FTDC_SDPS_Cancelled"] = 'd'
-
-typedefDict["TThostFtdcStockDisposalStatusType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcInstructionRightTypeType是一个指令权限类型类型
-#//////////////////////////////////////////////////////////////////////
-#限价单
-defineDict["THOST_FTDC_ISTR_Limit"] = '1'
-#限价全额成交否则取消
-defineDict["THOST_FTDC_ISTR_Limit_FOK"] = '2'
-#市价订单剩余转限价
-defineDict["THOST_FTDC_ISTR_Market_RemainLimit"] = '3'
-#市价订单剩余撤销
-defineDict["THOST_FTDC_ISTR_Market_FAK"] = '4'
-#市价全额成交否则取消
-defineDict["THOST_FTDC_ISTR_Market_FOK"] = '5'
-#证券锁定
-defineDict["THOST_FTDC_ISTR_Lock"] = '6'
-#证券解锁
-defineDict["THOST_FTDC_ISTR_Unlock"] = '7'
-
-typedefDict["TThostFtdcInstructionRightTypeType"] = "char"
-
-#//////////////////////////////////////////////////////////////////////
-#TFtdcLevelTypeType是一个投资者分级类型类型
-#//////////////////////////////////////////////////////////////////////
-#一级投资者
-defineDict["THOST_FTDC_IVLV_FirstLevel"] = '1'
-#二级投资者
-defineDict["THOST_FTDC_IVLV_SecondLevel"] = '2'
-#三级投资者
-defineDict["THOST_FTDC_IVLV_ThirdLevel"] = '3'
-
-typedefDict["TThostFtdcLevelTypeType"] = "char"
-
+#
