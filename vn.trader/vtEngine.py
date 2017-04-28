@@ -2,6 +2,7 @@
 
 import shelve
 from collections import OrderedDict
+from datetime import datetime
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -9,8 +10,10 @@ from pymongo.errors import ConnectionFailure
 from eventEngine import *
 from vtGateway import *
 from vtFunction import loadMongoSetting
+from language import text
 
-from ctaAlgo.ctaEngine import CtaEngine
+from gateway import GATEWAY_DICT
+from ctaStrategy.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
 from riskManager.rmEngine import RmEngine
 
@@ -23,6 +26,9 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
+        # 记录今日日期
+        self.todayDate = datetime.now().strftime('%Y%m%d')
+
         # 创建事件引擎
         self.eventEngine = EventEngine2()
         self.eventEngine.start()
@@ -46,98 +52,22 @@ class MainEngine(object):
         """初始化接口对象"""
         # 用来保存接口对象的字典
         self.gatewayDict = OrderedDict()
-        
-        # 创建我们想要接入的接口对象
-        try:
-            from ctpGateway.ctpGateway import CtpGateway
-            self.addGateway(CtpGateway, 'CTP')
-            self.gatewayDict['CTP'].setQryEnabled(True)
 
-            self.addGateway(CtpGateway, 'CTP_Prod')
-            self.gatewayDict['CTP_Prod'].setQryEnabled(True)
+        # 初始化的接口模块，以及其指定的名称
+        init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR']}
 
-            self.addGateway(CtpGateway, 'CTP_Post')
-            self.gatewayDict['CTP_Post'].setQryEnabled(True)
+        # 遍历接口字典并自动创建所有的接口对象
+        for gatewayModule in GATEWAY_DICT.values():
+            try:
+                if gatewayModule.gatewayName not in init_gateway_names:
+                    continue
 
-            self.addGateway(CtpGateway, 'CTP_EBF')
-            self.gatewayDict['CTP_EBF'].setQryEnabled(True)
-
-            self.addGateway(CtpGateway, 'CTP_JR')
-            self.gatewayDict['CTP_JR'].setQryEnabled(True)
-
-        except Exception as e:
-            print e
-
-        """
-        try:
-            from ltsGateway.ltsGateway import LtsGateway
-            self.addGateway(LtsGateway, 'LTS')
-            self.gatewayDict['LTS'].setQryEnabled(True)
-        except Exception, e:
-            print e
-        """
-        """
-        try:
-            from ksotpGateway.ksotpGateway import KsotpGateway
-            self.addGateway(KsotpGateway, 'KSOTP')
-            self.gatewayDict['KSOTP'].setQryEnabled(True)
-        except Exception, e:
-            print e    
-            
-        try:
-            from femasGateway.femasGateway import FemasGateway
-            self.addGateway(FemasGateway, 'FEMAS')
-            self.gatewayDict['FEMAS'].setQryEnabled(True)
-        except Exception, e:
-            print e  
-        
-        try:
-            from xspeedGateway.xspeedGateway import XspeedGateway
-            self.addGateway(XspeedGateway, 'XSPEED')
-            self.gatewayDict['XSPEED'].setQryEnabled(True)
-        except Exception, e:
-            print e          
-        
-        try:
-            from ksgoldGateway.ksgoldGateway import KsgoldGateway
-            self.addGateway(KsgoldGateway, 'KSGOLD')
-            self.gatewayDict['KSGOLD'].setQryEnabled(True)
-        except Exception, e:
-            print e
-            
-        try:
-            from sgitGateway.sgitGateway import SgitGateway
-            self.addGateway(SgitGateway, 'SGIT')
-            self.gatewayDict['SGIT'].setQryEnabled(True)
-        except Exception, e:
-            print e        
-            
-        try:
-            from windGateway.windGateway import WindGateway
-            self.addGateway(WindGateway, 'Wind') 
-        except Exception, e:
-            print e
-        
-        try:
-            from ibGateway.ibGateway import IbGateway
-            self.addGateway(IbGateway, 'IB')
-        except Exception, e:
-            print e
-            
-        try:
-            from oandaGateway.oandaGateway import OandaGateway
-            self.addGateway(OandaGateway, 'OANDA')
-            self.gatewayDict['OANDA'].setQryEnabled(True)
-        except Exception, e:
-            print e
-
-        try:
-            from okcoinGateway.okcoinGateway import OkcoinGateway
-            self.addGateway(OkcoinGateway, 'OKCOIN')
-            self.gatewayDict['OKCOIN'].setQryEnabled(True)
-        except Exception, e:
-            print e
-        """
+                for gw_name in init_gateway_names[gatewayModule.gatewayName]:
+                    self.addGateway(gatewayModule.gateway,gw_name)
+                    if gatewayModule.gatewayQryEnabled:
+                        self.gatewayDict[gw_name].setQryEnabled(True)
+            except Exception, e:
+                print e
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -150,8 +80,11 @@ class MainEngine(object):
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             gateway.connect()
+
+            # 接口连接后自动执行数据库连接的任务
+            self.dbConnect()
         else:
-            self.writeLog(u'接口不存在：%s' %gatewayName)
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
 
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
@@ -160,7 +93,7 @@ class MainEngine(object):
             gateway = self.gatewayDict[gatewayName]
             gateway.subscribe(subscribeReq)
         else:
-            self.writeLog(u'接口不存在：%s' %gatewayName)        
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
         
     # ----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
@@ -174,7 +107,7 @@ class MainEngine(object):
             gateway = self.gatewayDict[gatewayName]
             return gateway.sendOrder(orderReq)
         else:
-            self.writeLog(u'接口不存在：%s' %gatewayName)        
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
     
     # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq, gatewayName):
@@ -183,16 +116,17 @@ class MainEngine(object):
             gateway = self.gatewayDict[gatewayName]
             gateway.cancelOrder(cancelOrderReq)
         else:
-            self.writeLog(u'接口不存在：%s' %gatewayName)        
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+
         
     #----------------------------------------------------------------------
     def qryAccont(self, gatewayName):
         """查询特定接口的账户"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.getAccount()
+            gateway.qryAccount()
         else:
-            self.writeLog(u'接口不存在：%s' %gatewayName)        
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
 
     def getAccountInfo(self):
         """读取风控的账号与仓位数据
@@ -207,9 +141,9 @@ class MainEngine(object):
         """查询特定接口的持仓"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-            gateway.getPosition()
+            gateway.qryPosition()
         else:
-            self.writeLog(u'接口不存在：%s' %gatewayName)        
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
         
     # ----------------------------------------------------------------------
     def exit(self):
@@ -260,18 +194,23 @@ class MainEngine(object):
         """连接MongoDB数据库"""
         if not self.dbClient:
             # 读取MongoDB的设置
-            host, port, log = loadMongoSetting()
+            host, port, logging = loadMongoSetting()
                 
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
-                self.dbClient = MongoClient(host, port, serverSelectionTimeoutMS=500)
+                self.dbClient = MongoClient(host, port, connectTimeoutMS=500)
                 
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
 
-                self.writeLog(u'MongoDB连接成功')
+                self.writeLog(text.DATABASE_CONNECTING_COMPLETED)
+
+                # 如果启动日志记录，则注册日志事件监听函数
+                if logging:
+                    self.eventEngine.register(EVENT_LOG, self.dbLogging)
+
             except ConnectionFailure:
-                self.writeLog(u'MongoDB连接失败')
+                self.writeLog(text.DATABASE_CONNECTING_FAILED)
     
     # ----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
@@ -279,7 +218,9 @@ class MainEngine(object):
         if self.dbClient:
             db = self.dbClient[dbName]
             collection = db[collectionName]
-            collection.insert(d)
+            collection.insert_one(d)
+        else:
+            self.writeLog(text.DATA_INSERT_FAILED)
     
     # ----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d):
@@ -288,9 +229,34 @@ class MainEngine(object):
             db = self.dbClient[dbName]
             collection = db[collectionName]
             cursor = collection.find(d)
-            return cursor
+            if cursor:
+                return list(cursor)
+            else:
+                    return []
         else:
-            return None
+            self.writeLog(text.DATA_QUERY_FAILED)
+            return []
+
+    #----------------------------------------------------------------------
+    def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):
+        """向MongoDB中更新数据，d是具体数据，flt是过滤条件，upsert代表若无是否要插入"""
+        if self.dbClient:
+            db = self.dbClient[dbName]
+            collection = db[collectionName]
+            collection.replace_one(flt, d, upsert)
+        else:
+            self.writeLog(text.DATA_UPDATE_FAILED)
+
+    #----------------------------------------------------------------------
+    def dbLogging(self, event):
+        """向MongoDB中插入日志"""
+        log = event.dict_['data']
+        d = {
+            'content': log.logContent,
+            'time': log.logTime,
+            'gateway': log.gatewayName
+        }
+        self.dbInsert(LOG_DB_NAME, self.todayDate, d)
     
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
@@ -311,6 +277,11 @@ class MainEngine(object):
     def getAllWorkingOrders(self):
         """查询所有的活跃的委托（返回列表）"""
         return self.dataEngine.getAllWorkingOrders()
+
+    # ----------------------------------------------------------------------
+    def getAllGatewayNames(self):
+        """查询引擎中所有可用接口的名称"""
+        return self.gatewayDict.keys()
 
     def clearData(self):
         """清空数据引擎的数据"""

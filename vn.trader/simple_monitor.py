@@ -2,10 +2,6 @@
 
 from collections import OrderedDict
 
-from PyQt4 import QtGui, QtCore
-
-from eventEngine import *
-from vtFunction import *
 from vtGateway import *
 import logging
 

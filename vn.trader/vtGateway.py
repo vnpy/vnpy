@@ -306,9 +306,8 @@ class VtPositionData(VtBaseData):
         self.frozen = EMPTY_INT                 # 冻结数量
         self.price = EMPTY_FLOAT                # 持仓均价
         self.vtPositionName = EMPTY_STRING      # 持仓在vt系统中的唯一代码，通常是vtSymbol.方向
-        
-        # 20151020添加
         self.ydPosition = EMPTY_INT             # 昨持仓
+        self.positionProfit = EMPTY_FLOAT       # 持仓盈亏
 
 
 ########################################################################
@@ -428,6 +427,8 @@ class VtOrderReq(object):
         self.expiry = EMPTY_STRING              # 到期日
         self.strikePrice = EMPTY_FLOAT          # 行权价
         self.optionType = EMPTY_UNICODE         # 期权类型        
+        self.lastTradeDateOrContractMonth = EMPTY_STRING   # 合约月,IB专用
+        self.multiplier = EMPTY_STRING                     # 乘数,IB专用
 
 
 ########################################################################

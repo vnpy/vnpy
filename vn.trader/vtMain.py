@@ -1,16 +1,22 @@
 # encoding: UTF-8
 
 import sys
+import os
 import ctypes
 import platform
 
+import vtPath
 from vtEngine import MainEngine
 from uiMainWindow import *
 
-#from simple_monitor import *
+# 文件路径名
+path = os.path.abspath(os.path.dirname(__file__))
+ICON_FILENAME = 'vnpy.ico'
+ICON_FILENAME = os.path.join(path, ICON_FILENAME)
+SETTING_FILENAME = 'VT_setting.json'
+SETTING_FILENAME = os.path.join(path, SETTING_FILENAME)
 
 from setup_logger import setup_logger
-
 setup_logger(filename='logs/vnpy_{0}.log'.format(datetime.now().strftime('%m%d_%H%M')), debug=False)
 
 # ----------------------------------------------------------------------
@@ -26,16 +32,17 @@ def main():
 
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('vnpy.ico'))
+    app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
     app.setFont(BASIC_FONT)
     
     # 设置Qt的皮肤
     try:
-        f = file("VT_setting.json")
+        f = file(SETTING_FILENAME)
         setting = json.load(f)    
         if setting['darkStyle']:
             import qdarkstyle
             app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
+        f.close()
     except:
         pass
     

@@ -3,17 +3,18 @@ import time
 import sys
 import os
 import ctypes
-try:
-    import bsddb
-except:
-    import bsddb3 as bsddb
-    sys.modules['bsddb'] = bsddb
+#try:
+#    import bsddb
+#except:
+#    import bsddb3 as bsddb
+#    sys.modules['bsddb'] = bsddb
 import json
-from ctaAlgo.ctaSetting import STRATEGY_CLASS
+from ctaStrategy.strategy import STRATEGY_CLASS
 
 from eventType import *
 from vtEngine import MainEngine
-from PyQt4.QtCore import QCoreApplication
+from threading import Thread
+
 from simple_monitor import *
 from setup_logger import setup_logger
 
@@ -26,8 +27,8 @@ class NoUiMain(object):
         self.connected = False
         # gateway 的连接名称，在vtEngine.initGateway()里面定义
         self.gateway_name = 'CTP_JR'
-        # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义
-        self.strategies = [u'S28_RB1001', u'S28_TFT', u'S28_HCRB']
+        # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB']
+        self.strategies = [u'S28_HCRB']
 
         self.g_count = 0
 
@@ -71,7 +72,7 @@ class NoUiMain(object):
             return
 
         # 定时重连
-        if self.connected:
+        if not self.connected:
             self.mainEngine.writeLog(u'清空数据引擎')
             self.mainEngine.clearData()
             self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
@@ -82,7 +83,7 @@ class NoUiMain(object):
         """启动"""
 
         # 若需要连接数据库，则启动
-        self.mainEngine.dbConnect()
+        #self.mainEngine.dbConnect()
 
         # 加载cta的配置
         self.mainEngine.ctaEngine.loadSetting()
@@ -108,9 +109,18 @@ class NoUiMain(object):
         self.positionM = PositionMonitor(self.mainEngine.eventEngine)
         self.accountM = AccountMonitor(self.mainEngine.eventEngine)
 
-if __name__ == '__main__':
-    # 主程序
-    app = QCoreApplication(sys.argv)
+def run_noui():
+
+    log_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                 'logs',
+                                                 u'noUiMain_{0}.log'.format(datetime.now().strftime('%m%d_%H%M'))))
+
+    setup_logger(filename=log_file_name, debug=False)
     noUi = NoUiMain()
     noUi.Start()
-    app.exec_()
+
+
+if __name__ == '__main__':
+    # 主程序
+    thread = Thread(target=run_noui, args=())
+    thread.start()

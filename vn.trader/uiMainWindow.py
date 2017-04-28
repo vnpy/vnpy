@@ -3,7 +3,7 @@
 import psutil
 
 from uiBasicWidget import *
-from ctaAlgo.uiCtaWidget import CtaEngineManager
+from ctaStrategy.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
 from uiFullMonitorWidget import MonitorWidget

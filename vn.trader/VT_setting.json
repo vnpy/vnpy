@@ -4,6 +4,7 @@
 
 	"mongoHost": "localhost",
 	"mongoPort": 27017,
+	"darkStyle": true,
+	"language": "chinese"
 
-	"darkStyle": true
 }

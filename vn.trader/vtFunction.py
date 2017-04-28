@@ -1,9 +1,10 @@
 # encoding: UTF-8
 
 """
-包含一些开放中常用的函数
+包含一些开发中常用的函数
 """
 
+import os
 import decimal
 import json
 from datetime import datetime
@@ -30,8 +31,12 @@ def safeUnicode(value):
 #----------------------------------------------------------------------
 def loadMongoSetting():
     """载入MongoDB数据库的配置"""
+    fileName = 'VT_setting.json'
+    path = os.path.abspath(os.path.dirname(__file__))
+    fileName = os.path.join(path, fileName)
+
     try:
-        f = file("VT_setting.json")
+        f = file(fileName)
         setting = json.load(f)
         host = setting['mongoHost']
         port = setting['mongoPort']
