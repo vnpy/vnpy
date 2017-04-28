@@ -25,6 +25,9 @@ Release/
 # API的.con文件
 *.con
 
+*.log
+*.csv
+
 # visual studio
 *.opensdf
 
@@ -48,15 +51,17 @@ Release/
 *.vt
 *.dat
 =======
-vn.ctp/build/*
-vn.lts/build/*
-vn.trader/catAlgo/ctaGridTrade.py
-vn.trader/catAlgo/ctaLineBar.py
-vn.trader/catAlgo/ctaPeriod.py
-vn.trader/catAlgo/ctaPolicy.py
-vn.trader/catAlgo/ctaPosition.py
-vn.trader/catAlgo/ctaRangeBar.py
-vn.trader/catAlgo/ctaRenkoBar.py
+vn.api/vn.ctp/build/*
+vn.api/vn.lts/build/*
+vn.trader/logs/*
+vn.trader/orders/*
+vn.trader/learning/*
+vn.trader/obj/*
+vn.trader/temp/*
+vn.trader/catStrategy/ctaLineBar.py
+vn.trader/catStrategy/ctaPeriod.py
+vn.trader/catStrategy/ctaRangeBar.py
+vn.trader/catStrategy/ctaRenkoBar.py
 vn.trader/ctpGateway/CTP_EBF_connection.json
 vn.trader/ctpGateway/CTP_Post_connection.json
 vn.trader/ctpGateway/CTP_Prod_connection.json
