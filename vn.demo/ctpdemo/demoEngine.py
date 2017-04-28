@@ -18,6 +18,29 @@ from PyQt4 import QtCore
 from demoApi import *
 from eventEngine import EventEngine
 
+def get_ip_address(ifname = "eth0"):
+    import platform
+    import socket
+    LOOPBACK_ADDRESS = "127.0.0.1"
+    if platform.system().upper().startswith("WINDOWS"):
+        # 如果存在虚拟的以太网服务（eg:Windows phone Emulator)，在正常断网情况下，依旧会返回虚拟以太网的IP.因此不会出现提示。
+        ipList = socket.gethostbyname_ex(socket.gethostname())
+        ip = ipList[2]
+        if len(ip) > 0:
+            if "eth0" == ifname: # 以太网地址
+                if LOOPBACK_ADDRESS != ip[0] :
+                    return ip[0]
+            elif "lo" == ifname: # 环回地址
+                return LOOPBACK_ADDRESS
+
+        return ""
+    elif platform.system().upper().startswith("LINUX"):
+        import fcntl
+        import struct
+        s = socket.socket(socket.AF_INET,   socket.SOCK_DGRAM)
+        p = struct.pack('256s', ifname[:15])
+        fi = fcntl.ioctl(s.fileno(), 0x8915, p)
+        return socket.inet_ntoa( fi[20:24] )
 
 ########################################################################
 class MainEngine:
@@ -45,9 +68,16 @@ class MainEngine:
     #----------------------------------------------------------------------
     def login(self, userid, password, brokerid, mdAddress, tdAddress):
         """登陆"""
+        ip = get_ip_address("eth0")
+        if "" == ip:
+            event = Event(type_=EVENT_LOG)
+            event.dict_['log'] = u"连接网络失败，请先联网"
+            self.ee.put(event)
+            return
+
         self.md.login(mdAddress, userid, password, brokerid)
         self.td.login(tdAddress, userid, password, brokerid)
-    
+
     #----------------------------------------------------------------------
     def subscribe(self, instrumentid, exchangeid):
         """订阅合约"""
