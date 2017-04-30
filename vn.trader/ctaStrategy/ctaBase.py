@@ -45,7 +45,7 @@ NIGHT_MARKET_ZZ = {'TA': 0, 'JR': 0, 'OI': 0, 'RO': 0, 'PM': 0, 'WT': 0, 'WS': 0
                    'ME': 0, 'MA': 0, 'RS': 0, 'RM': 0, 'TC': 0, 'RI': 0, 'ER': 0}
 NIGHT_MARKET_DL = {'V': 0, 'L': 0, 'BB': 0, 'I': 0, 'FB': 0, 'C': 0, 'PP': 0, 'A': 0, 'B': 0, 'M': 0, 'Y': 0, 'P': 0,
                    'JM': 0, 'J': 0}
-MARKET_ZJ = {'IC': 0, 'IF': 0, 'IH':0, 'T': 0, 'TF': 0}
+MARKET_ZJ = {'IC': 0, 'IF': 0, 'IH': 0, 'T': 0, 'TF': 0}
 
 # 数据库名称
 SETTING_DB_NAME = 'VnTrader_Setting_Db'
