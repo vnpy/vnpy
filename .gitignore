@@ -58,13 +58,13 @@ vn.trader/orders/*
 vn.trader/learning/*
 vn.trader/obj/*
 vn.trader/temp/*
-vn.trader/catStrategy/ctaLineBar.py
+vn.trader/catStrategy/cache/*
 vn.trader/catStrategy/ctaPeriod.py
 vn.trader/catStrategy/ctaRangeBar.py
 vn.trader/catStrategy/ctaRenkoBar.py
-vn.trader/ctpGateway/CTP_EBF_connection.json
-vn.trader/ctpGateway/CTP_Post_connection.json
-vn.trader/ctpGateway/CTP_Prod_connection.json
+vn.trader/gateway/ctpGateway/CTP_EBF_connection.json
+vn.trader/gateway/ctpGateway/CTP_Post_connection.json
+vn.trader/gateway/ctpGateway/CTP_Prod_connection.json
 
 
 .idea
