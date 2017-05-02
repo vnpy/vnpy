@@ -62,31 +62,38 @@ class MainEngine(object):
                 print e
 
     #----------------------------------------------------------------------
-    def addGateway(self, gateway, gatewayName=None):
+    def addGateway(self, gatewayClass, gatewayName=None):
         """创建接口"""
-        self.gatewayDict[gatewayName] = gateway(self.eventEngine, gatewayName)
+        self.gatewayDict[gatewayName] = gatewayClass(self.eventEngine, gatewayName)
+        
+    #----------------------------------------------------------------------
+    def getGateway(self, gatewayName):
+        """获取接口"""
+        if gatewayName in self.gatewayDict:
+            return self.gatewayDict[gatewayName]
+        else:
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+            return None
         
     #----------------------------------------------------------------------
     def connect(self, gatewayName):
         """连接特定名称的接口"""
-        if gatewayName in self.gatewayDict:
-            gateway = self.gatewayDict[gatewayName]
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
             gateway.connect()
             
             # 接口连接后自动执行数据库连接的任务
-            self.dbConnect()
-        else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
-        
+            self.dbConnect()        
+            
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
-        if gatewayName in self.gatewayDict:
-            gateway = self.gatewayDict[gatewayName]
-            gateway.subscribe(subscribeReq)
-        else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))        
+        gateway = self.getGateway(gatewayName)
         
+        if gateway:
+            gateway.subscribe(subscribeReq)
+            
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
@@ -94,40 +101,37 @@ class MainEngine(object):
         if not self.rmEngine.checkRisk(orderReq):
             return ''
 
-        if gatewayName in self.gatewayDict:
-            gateway = self.gatewayDict[gatewayName]
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
             return gateway.sendOrder(orderReq)
         else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))        
-    
+            return ''
+        
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq, gatewayName):
         """对特定接口撤单"""
-        if gatewayName in self.gatewayDict:
-            gateway = self.gatewayDict[gatewayName]
-            gateway.cancelOrder(cancelOrderReq)
-        else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
-            
+        gateway = self.getGateway(gatewayName)
         
+        if gateway:
+            gateway.cancelOrder(cancelOrderReq)   
+            
     #----------------------------------------------------------------------
     def qryAccount(self, gatewayName):
         """查询特定接口的账户"""
-        if gatewayName in self.gatewayDict:
-            gateway = self.gatewayDict[gatewayName]
-            gateway.qryAccount()
-        else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))        
+        gateway = self.getGateway(gatewayName)
+        
+        if gateway:
+            gateway.qryAccount()      
         
     #----------------------------------------------------------------------
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
-        if gatewayName in self.gatewayDict:
-            gateway = self.gatewayDict[gatewayName]
-            gateway.qryPosition()
-        else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))        
+        gateway = self.getGateway(gatewayName)
         
+        if gateway:
+            gateway.qryPosition()
+            
     #----------------------------------------------------------------------
     def exit(self):
         """退出程序前调用，保证正常退出"""        
