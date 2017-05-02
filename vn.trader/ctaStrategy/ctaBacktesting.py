@@ -2247,7 +2247,7 @@ class BacktestingEngine(object):
                         self.writeCtaLog(u'{9}@{6} [{7}:开空{0},short:{1}]-[{8}:平空{2},cover:{3},vol:{4}],净盈亏:{5}'
                                     .format(entryTrade.tradeTime, entryTrade.price,
                                             trade.tradeTime, trade.price, tradeUnit, result.pnl,
-                                            i, shortid, tradeid,gId))
+                                            i, shortid, tradeid, gId))
                         i = i+1
 
                     if type(gr) != type(None):
@@ -2466,7 +2466,7 @@ class BacktestingEngine(object):
 
         d = self.getResult()
 
-        if len(d)== 0:
+        if len(d) == 0:
             self.output(u'无交易结果')
             return
 

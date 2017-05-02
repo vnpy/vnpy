@@ -203,11 +203,11 @@ class CtaLineBar(object):
         # K线的布林特计算数据
         self.inputBollLen = EMPTY_INT  # K线周期
         self.inputBollStdRate = 1.5      # 两倍标准差
-
+        self.lineBollClose = []         #  用于运算的close价格列表
         self.lineUpperBand = []            # 上轨
         self.lineMiddleBand = []           # 中线
         self.lineLowerBand = []            # 下轨
-        self.lineBollStd =[]               # 标准差
+        self.lineBollStd = []               # 标准差
 
         self.lastBollUpper = EMPTY_FLOAT    # 最后一根K的Boll上轨数值（与MinDiff取整）
         self.lastBollMiddle = EMPTY_FLOAT   # 最后一根K的Boll中轨数值（与MinDiff取整）

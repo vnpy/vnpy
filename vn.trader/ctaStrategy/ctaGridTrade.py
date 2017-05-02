@@ -80,15 +80,19 @@ class CtaGrid(object):
 class CtaGridTrade(object):
     """网格交易类
     包括两个方向的网格队列，
+    v1, 基本版
+    v2，增加更新最小价格跳动，增加动态上下网格间距
     """
 
-    def __init__(self, strategy, maxlots=5, height=2, win=2, vol=1):
+    def __init__(self, strategy, maxlots=5, height=2, win=2, vol=1, minDiff = 1):
         """初始化
         maxlots,最大网格数
         height，网格高度（绝对值，包含minDiff）
         win，盈利数（包含minDiff）
         vol，网格开仓数
+        minDiff, 最小价格跳动
         """
+        self.minDiff = minDiff
 
         self.strategy = strategy
 
@@ -107,9 +111,11 @@ class CtaGridTrade(object):
         self.avg_up_open_price = EMPTY_FLOAT        # 上网格开仓均价
         self.avg_dn_open_price = EMPTY_FLOAT        # 下网格开仓均价
 
-    def getVolume(self, gridIndex=EMPTY_INT):
-        """获取网格索引对应的开仓数量比例"""
+        self.max_up_open_price = EMPTY_FLOAT  # 上网格开仓均价
+        self.min_dn_open_price = EMPTY_FLOAT  # 下网格开仓均价
 
+    def getVolumeRate(self, gridIndex=EMPTY_INT):
+        """获取网格索引对应的开仓数量比例"""
         if gridIndex >= len(self.volumeList) or gridIndex < 0:
             return 1
         rate = self.volumeList[gridIndex]
@@ -138,7 +144,7 @@ class CtaGridTrade(object):
                     grid = CtaGrid(direction=DIRECTION_SHORT,
                                    openprice=upline+self.gridHeight*i,
                                    closeprice=upline+self.gridHeight*i-self.gridWin,
-                                   volume=self.volume*self.getVolume(i))
+                                   volume=self.volume*self.getVolumeRate(i))
                     self.upGrids.append(grid)
 
                 self.writeCtaLog(u'上网格{0}~{1}初始化完成'.format(upline,upline+self.gridHeight*self.maxLots))
@@ -160,7 +166,7 @@ class CtaGridTrade(object):
                     grid = CtaGrid(direction=DIRECTION_LONG,
                                    openprice=dnline - self.gridHeight * i,
                                    closeprice=dnline - self.gridHeight * i + self.gridWin,
-                                   volume=self.volume*self.getVolume(i))
+                                   volume=self.volume*self.getVolumeRate(i))
                     self.dnGrids.append(grid)
 
                 self.writeCtaLog(u'下网格{0}~{1}初始化完成'.format(dnline,dnline-self.gridHeight*self.maxLots))
@@ -369,12 +375,19 @@ class CtaGridTrade(object):
                     self.writeCtaLog(u'清除上网格[open={0}]'.format(x.openPrice))
                     self.upGrids.remove(x)
 
-    def rebuildGrids(self, direction, upline=EMPTY_FLOAT, dnline=EMPTY_FLOAT, midline=EMPTY_FLOAT):
+    def rebuildGrids(self, direction, upline=EMPTY_FLOAT, dnline=EMPTY_FLOAT, midline=EMPTY_FLOAT, upRate=1, dnRate = 1):
         """重新拉网
         清除未挂单的网格，
         在上轨/下轨位置重新挂单
+        upRate , 上轨网格高度比率
+        dnRate， 下轨网格高度比率
         """
         self.writeCtaLog(u'重新拉网:upline:{0},dnline:{1}'.format(upline, dnline))
+
+        # 检查上下网格的高度比率，不能低于0.5
+        if upRate < 0.5 or dnRate < 0.5:
+            upRate = max(0.5, upRate)
+            dnRate = max(0.5, dnRate)
 
         if direction == DIRECTION_LONG:
             minPriceInOrder = midline
@@ -399,13 +412,15 @@ class CtaGridTrade(object):
             self.writeCtaLog(u'需要重建的网格数量:{0},起点:{1}'.format(lots, dnline))
 
             if lots > 0:
-
                 for i in range(0, lots, 1):
                     # 做多，开仓价为下阻力线-网格高度*i，平仓价为开仓价+止盈高度，开仓数量为缺省
+                    open_price = int((dnline - self.gridHeight * (i - 1 + dnRate)* dnRate) / self.minDiff ) * self.minDiff
+                    close_price = int((open_price + self.gridWin* dnRate)/self.minDiff) * self.minDiff
+
                     grid = CtaGrid(direction=DIRECTION_LONG,
-                                   openprice=dnline - self.gridHeight * i,
-                                   closeprice=dnline - self.gridHeight * i + self.gridWin,
-                                   volume=self.volume*self.getVolume(remainLots+i))
+                                   openprice=open_price,
+                                   closeprice=close_price,
+                                   volume=self.volume*self.getVolumeRate(remainLots + i))
 
                     self.dnGrids.append(grid)
                 self.writeCtaLog(u'重新拉下网格:[{0}~{1}]'.format(dnline, dnline-self.gridHeight * lots))
@@ -434,21 +449,30 @@ class CtaGridTrade(object):
             if lots > 0:
                 # 做空，开仓价为上阻力线+网格高度*i，平仓价为开仓价-止盈高度，开仓数量为缺省
                 for i in range(0, lots, 1):
+                    open_price = int((upline + self.gridHeight *( i -1 + upRate) * upRate) / self.minDiff) * self.minDiff
+                    close_price = int((open_price - self.gridWin * upRate) / self.minDiff) * self.minDiff
+
                     grid = CtaGrid(direction=DIRECTION_SHORT,
-                                   openprice=upline+self.gridHeight*i,
-                                   closeprice=upline+self.gridHeight*i-self.gridWin,
-                                   volume=self.volume*self.getVolume(remainLots+i))
+                                   openprice=open_price,
+                                   closeprice=close_price,
+                                   volume=self.volume*self.getVolumeRate(remainLots + i))
                     self.upGrids.append(grid)
 
                 self.writeCtaLog(u'重新拉上网格:[{0}~{1}]'.format(upline, upline+self.gridHeight * lots))
 
     def recount_avg_open_price(self):
         """计算网格的平均开仓价"""
-        up_open_list = [ x for x in self.upGrids if x.openStatus]
+        up_open_list = [x for x in self.upGrids if x.openStatus]
+
+        self.max_up_open_price = -99999
+        self.avg_up_open_price = -99999
+        self.min_dn_open_price = 99999
+        self.avg_dn_open_price = 99999
 
         total_price = EMPTY_FLOAT
         total_volume = EMPTY_INT
         for x in up_open_list:
+            self.max_up_open_price = max(self.max_up_open_price, x.openPrice)
             total_price += x.openPrice*x.volume
             total_volume += x.volume
 
@@ -460,6 +484,7 @@ class CtaGridTrade(object):
 
         dn_open_list = [x for x in self.dnGrids if x.openStatus]
         for x in dn_open_list:
+            self.min_dn_open_price = min(self.min_dn_open_price,x.openPrice)
             total_price += x.openPrice*x.volume
             total_volume += x.volume
 
@@ -468,6 +493,10 @@ class CtaGridTrade(object):
 
     def save(self, direction):
         """保存网格至本地Json文件"""
+
+        # 更新开仓均价
+        self.recount_avg_open_price()
+
         path = os.path.abspath(os.path.dirname(__file__))
 
         # 保存上网格列表
