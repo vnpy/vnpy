@@ -35,7 +35,7 @@ class DatayesClient(object):
             FILENAME = os.path.join(path, FILENAME)            
             f = file(FILENAME)
         except IOError:
-            print u'%s无法打开配置文件' % self.name
+            print(u'%s无法打开配置文件' % self.name)
             return
         
         setting = json.load(f)
@@ -44,28 +44,28 @@ class DatayesClient(object):
             self.version = str(setting['version'])
             self.token = str(setting['token'])
         except KeyError:
-            print u'%s配置文件字段缺失' % self.name
+            print(u'%s配置文件字段缺失' % self.name)
             return
         
         self.header['Connection'] = 'keep_alive'
         self.header['Authorization'] = 'Bearer ' + self.token
         self.settingLoaded = True
         
-        print u'%s配置载入完成' % self.name
+        print(u'%s配置载入完成' % self.name)
         
     
     #----------------------------------------------------------------------
     def downloadData(self, path, params):
         """下载数据"""
         if not self.settingLoaded:
-            print u'%s配置未载入' % self.name
+            print(u'%s配置未载入' % self.name)
             return None
         else:
             url = '/'.join([self.domain, self.version, path])
             r = requests.get(url=url, headers=self.header, params=params)
             
             if r.status_code != HTTP_OK:
-                print u'%shttp请求失败，状态代码%s' %(self.name, r.status_code)
+                print(u'%shttp请求失败，状态代码%s' %(self.name, r.status_code))
                 return None
             else:
                 result = r.json()
@@ -73,9 +73,9 @@ class DatayesClient(object):
                     return result['data']
                 else:
                     if 'retMsg' in result:
-                        print u'%s查询失败，返回信息%s' %(self.name, result['retMsg'])
+                        print(u'%s查询失败，返回信息%s' %(self.name, result['retMsg']))
                     elif 'message' in result:
-                        print u'%s查询失败，返回信息%s' %(self.name, result['message'])
+                        print(u'%s查询失败，返回信息%s' %(self.name, result['message']))
                     return None
                     
                     

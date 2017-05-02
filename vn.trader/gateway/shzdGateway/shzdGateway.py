@@ -722,9 +722,9 @@ class ShzdGatewayApi(ShzdApi):
 #----------------------------------------------------------------------
 def printDict(d):
     """打印字典"""
-    print '-' * 50
+    print('-' * 50)
     l = d.keys()
     l.sort()
     for k in l:
-        print k, ':', d[k]
+        print(k, ':', d[k])
     

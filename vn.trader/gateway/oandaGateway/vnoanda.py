@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import traceback
 import json
 import requests
 from Queue import Queue, Empty
@@ -208,8 +209,8 @@ class OandaApi(object):
         
         try:
             r = self.session.send(pre, stream=stream)
-        except Exception, e:
-            error = e
+        except :
+            error = traceback.format_exc()
 
         return r, error
     
@@ -228,10 +229,10 @@ class OandaApi(object):
                     try:
                         data = r.json()
                         if self.DEBUG:
-                            print callback.__name__                        
+                            print(callback.__name__)
                         callback(data, reqID)    
-                    except Exception, e:                  
-                        self.onError(str(e), reqID)                      
+                    except :
+                        self.onError(traceback.format_exc(), reqID)
                 else:                
                     self.onError(error, reqID)
             except Empty:
@@ -260,7 +261,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onError(self, error, reqID):
         """错误信息回调"""
-        print error, reqID
+        print(error, reqID)
             
     #----------------------------------------------------------------------
     def getInstruments(self, params):
@@ -526,12 +527,12 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onPrice(self, data):
         """行情推送"""
-        print data
+        print(data)
         
     #----------------------------------------------------------------------
     def onEvent(self, data):
         """事件推送（成交等）"""
-        print data
+        print(data)
         
     #----------------------------------------------------------------------
     def processStreamPrices(self):
@@ -546,8 +547,8 @@ class OandaApi(object):
             try:
                 data = r.json()
                 symbols = [d['instrument'] for d in data['instruments']]   
-            except Exception, e:
-                self.onError(e, -1)
+            except :
+                self.onError(traceback.format_exc(), -1)
                 return
         else:
             self.onError(error, -1)
@@ -570,11 +571,11 @@ class OandaApi(object):
                         msg = json.loads(line)
                         
                         if self.DEBUG:
-                            print self.onPrice.__name__
+                            print(self.onPrice.__name__)
                             
                         self.onPrice(msg)
-                    except Exception, e:
-                        self.onError(e, -1)
+                    except :
+                        self.onError(traceback.format_exc(), -1)
                 
                 if not self.active:
                     break
@@ -597,11 +598,11 @@ class OandaApi(object):
                         msg = json.loads(line)
                         
                         if self.DEBUG:
-                            print self.onEvent.__name__
+                            print(self.onEvent.__name__)
                             
                         self.onEvent(msg)
-                    except Exception, e:
-                        self.onError(e, -1)
+                    except :
+                        self.onError(traceback.format_exc(), -1)
                 
                 if not self.active:
                     break

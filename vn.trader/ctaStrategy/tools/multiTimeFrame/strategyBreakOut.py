@@ -113,7 +113,7 @@ class BreakOut(CtaTemplate):
                 try:
                     self.initInfobar[info_symbol] = next(initInfoCursorDict[info_symbol])
                 except StopIteration:
-                    print "Data of information symbols is empty! Input is a list, not str."
+                    print("Data of information symbols is empty! Input is a list, not str.")
                     raise
 
         # 若有某一品种的 TimeStamp 和执行报价的 TimeStamp 匹配, 则将"initInfobar"中的数据推送,
@@ -314,4 +314,4 @@ if __name__ == '__main__':
     # 显示回测结果
     engine.showBacktestingResult()
 
-    print 'Time consumed：%s' % (time.time() - start)
+    print('Time consumed：%s' % (time.time() - start))

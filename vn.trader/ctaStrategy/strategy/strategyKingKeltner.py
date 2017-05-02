@@ -12,8 +12,8 @@
 
 from __future__ import division
 
-from ctaBase import *
-from ctaTemplate import CtaTemplate
+from ..ctaBase import *
+from ..ctaTemplate import CtaTemplate
 
 import talib
 import numpy as np

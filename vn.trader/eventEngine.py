@@ -1,13 +1,14 @@
 # encoding: UTF-8
 
 # 系统模块
-from Queue import Queue, Empty
+try:
+    from Queue import Queue, Empty
+except:
+    from queue import Queue, Empty
+
 from threading import Thread
 from time import sleep
 from collections import defaultdict
-
-# 第三方模块
-from PyQt4.QtCore import QTimer
 
 # 自己开发的模块
 from eventType import *
@@ -63,6 +64,9 @@ class EventEngine(object):
         self.__thread = Thread(target = self.__run)
         
         # 计时器，用于触发计时器事件
+        # 第三方模块
+        from PyQt4.QtCore import QTimer
+
         self.__timer = QTimer()
         self.__timer.timeout.connect(self.__onTimer)
         
@@ -339,7 +343,7 @@ def test():
     from PyQt4.QtCore import QCoreApplication
     
     def simpletest(event):
-        print u'处理每秒触发的计时器事件：%s' % str(datetime.now())
+        print(u'处理每秒触发的计时器事件：%s' % str(datetime.now()))
     
     app = QCoreApplication(sys.argv)
     
