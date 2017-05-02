@@ -2,7 +2,7 @@
 
 import psutil
 
-# from gateway import GATEWAY_DICT
+from gateway import GATEWAY_DICT
 from uiBasicWidget import *
 from ctaStrategy.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
@@ -69,54 +69,34 @@ class MainWindow(QtGui.QMainWindow):
         # 设计为只显示存在的接口
         sysMenu = menubar.addMenu(vtText.SYSTEM)
 
-        # 鉴于前后端分离，此处不应当直接检查本地的gateway接口可用情况，而是应当向服务端查询
-        GATEWAY_TYPES = [
-            GATEWAYTYPE_FUTURES,
-            GATEWAYTYPE_EQUITY,
-            GATEWAYTYPE_INTERNATIONAL,
-            GATEWAYTYPE_BTC,
-            GATEWAYTYPE_DATA,
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_FUTURES:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)
+        
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_EQUITY:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)  
 
-        ]
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_INTERNATIONAL:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
+        
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_BTC:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
 
-        # 获取可链接的交易接口
-        gateways = self.mainEngine.getGateway4sysMenu()
-
-        # 模拟一个GateWay 实例
-        for g in gateways:
-            sysMenu.addSeparator()
-            if g['gatewayType'] in GATEWAY_TYPES:
-                self.addConnectAction(sysMenu, g['gatewayName'],
-                                      g['gatewayDisplayName'])
-
-        # for gatewayModule in GATEWAY_DICT.values():
-        #     if gatewayModule.gatewayType == GATEWAYTYPE_FUTURES:
-        #         self.addConnectAction(sysMenu, gatewayModule.gatewayName,
-        #                               gatewayModule.gatewayDisplayName)
-        #
-        # sysMenu.addSeparator()
-        # for gatewayModule in GATEWAY_DICT.values():
-        #     if gatewayModule.gatewayType == GATEWAYTYPE_EQUITY:
-        #         self.addConnectAction(sysMenu, gatewayModule.gatewayName,
-        #                               gatewayModule.gatewayDisplayName)
-        #
-        # sysMenu.addSeparator()
-        # for gatewayModule in GATEWAY_DICT.values():
-        #     if gatewayModule.gatewayType == GATEWAYTYPE_INTERNATIONAL:
-        #         self.addConnectAction(sysMenu, gatewayModule.gatewayName,
-        #                               gatewayModule.gatewayDisplayName)
-        #
-        # sysMenu.addSeparator()
-        # for gatewayModule in GATEWAY_DICT.values():
-        #     if gatewayModule.gatewayType == GATEWAYTYPE_BTC:
-        #         self.addConnectAction(sysMenu, gatewayModule.gatewayName,
-        #                               gatewayModule.gatewayDisplayName)
-        #
-        # sysMenu.addSeparator()
-        # for gatewayModule in GATEWAY_DICT.values():
-        #     if gatewayModule.gatewayType == GATEWAYTYPE_DATA:
-        #         self.addConnectAction(sysMenu, gatewayModule.gatewayName,
-        #                               gatewayModule.gatewayDisplayName)
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_DATA:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
         
         sysMenu.addSeparator()
         sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect))

@@ -1,9 +1,8 @@
 # encoding: UTF-8
 
-# import shelve
+import shelve
 from collections import OrderedDict
 from datetime import datetime
-import traceback
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -59,8 +58,8 @@ class MainEngine(object):
                 self.addGateway(gatewayModule.gateway, gatewayModule.gatewayName)
                 if gatewayModule.gatewayQryEnabled:
                     self.gatewayDict[gatewayModule.gatewayName].setQryEnabled(True)
-            except:
-                traceback.print_exc()
+            except Exception, e:
+                print e
 
     #----------------------------------------------------------------------
     def addGateway(self, gateway, gatewayName=None):
@@ -247,22 +246,8 @@ class MainEngine(object):
     def getAllGatewayNames(self):
         """查询引擎中所有可用接口的名称"""
         return self.gatewayDict.keys()
-
-    # ----------------------------------------------------------------------
-    def getGateway4sysMenu(self):
-        """
-
-        :return:
-        """
-
-        toDict = lambda g: {
-            'gatewayType': g.gatewayType,
-            'gatewayName': g.gatewayName,
-            'gatewayDisplayName': g.gatewayDisplayName,
-        }
-        return [
-            toDict(g) for g in GATEWAY_DICT.values() if hasattr(g, 'gatewayType')
-            ]
+        
+    
 
 ########################################################################
 class DataEngine(object):
@@ -312,21 +297,19 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def saveContracts(self):
         """保存所有合约对象到硬盘"""
-        pass
-        # f = shelve.open(self.contractFileName)
-        # f['data'] = self.contractDict
-        # f.close()
+        f = shelve.open(self.contractFileName)
+        f['data'] = self.contractDict
+        f.close()
     
     #----------------------------------------------------------------------
     def loadContracts(self):
         """从硬盘读取合约对象"""
-        pass
-        # f = shelve.open(self.contractFileName)
-        # if 'data' in f:
-        #     d = f['data']
-        #     for key, value in d.items():
-        #         self.contractDict[key] = value
-        # f.close()
+        f = shelve.open(self.contractFileName)
+        if 'data' in f:
+            d = f['data']
+            for key, value in d.items():
+                self.contractDict[key] = value
+        f.close()
         
     #----------------------------------------------------------------------
     def updateOrder(self, event):

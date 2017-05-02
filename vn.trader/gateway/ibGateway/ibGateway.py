@@ -372,7 +372,7 @@ class IbWrapper(IbApi):
                 newtick = copy(tick)
                 self.gateway.onTick(newtick)
         else:
-            print(field)
+            print field
         
     #----------------------------------------------------------------------
     def tickSize(self, tickerId, field, size):
@@ -382,7 +382,7 @@ class IbWrapper(IbApi):
             key = tickFieldMap[field]
             tick.__setattr__(key, size)   
         else:
-            print(field)
+            print field
         
     #----------------------------------------------------------------------
     def tickOptionComputation(self, tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice):

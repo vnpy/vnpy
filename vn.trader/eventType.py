@@ -51,12 +51,12 @@ def test():
             
     for key, value in check_dict.items():
         if len(value)>1:
-            print(u'存在重复的常量定义:' + str(key))
+            print u'存在重复的常量定义:' + str(key) 
             for name in value:
-                print(name)
-            print('')
+                print name
+            print ''
         
-    print(u'测试完毕')
+    print u'测试完毕'
     
 
 # 直接运行脚本可以进行测试

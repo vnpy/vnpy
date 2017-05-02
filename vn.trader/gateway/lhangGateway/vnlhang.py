@@ -120,7 +120,7 @@ class LhangApi(object):
                 # 请求成功
                 else:
                     if self.DEBUG:
-                        print(callback.__name__)
+                        print callback.__name__                        
                     callback(data, req, reqID)
 
                 # 流控等待
@@ -149,7 +149,7 @@ class LhangApi(object):
     #----------------------------------------------------------------------
     def onError(self, error, req, reqID):
         """错误推送"""
-        print(error, req, reqID)
+        print error, req, reqID
 
     ###############################################
     # 行情接口
@@ -203,22 +203,22 @@ class LhangApi(object):
     #----------------------------------------------------------------------
     def onGetTicker(self, data, req, reqID):
         """查询行情回调"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onGetDepth(self, data, req, reqID):
         """查询深度回调"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onGetTrades(self, data, req, reqID):
         """查询历史成交"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onGetKline(self, data, req, reqID):
         """查询Ｋ线回报"""
-        print(data, reqID)
+        print data, reqID
 
     ###############################################
     # 交易接口
@@ -283,25 +283,25 @@ class LhangApi(object):
     # ----------------------------------------------------------------------
     def onGetUserInfo(self, data, req, reqID):
         """查询Ｋ线回报"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onCreateOrder(self, data, req, reqID):
         """委托回报"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onCancelOrder(self, data, req, reqID):
         """撤单回报"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onGetOrdersInfo(self, data, req, reqID):
         """查询委托回报"""
-        print(data, reqID)
+        print data, reqID
 
     # ----------------------------------------------------------------------
     def onGetOrdersInfoHistory(self, data, req, reqID):
         """撤单回报"""
-        print(data, reqID)
+        print data, reqID
 

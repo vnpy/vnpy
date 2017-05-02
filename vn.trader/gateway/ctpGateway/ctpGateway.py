@@ -7,7 +7,7 @@ vn.ctp的gateway接入
 vtSymbol直接使用symbol
 '''
 
-import vtGlobal
+
 import os
 import json
 from copy import copy
@@ -98,11 +98,9 @@ class CtpGateway(VtGateway):
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = vtGlobal.VT_setting.get(self.gatewayName + '_connect')
-        if fileName is None:
-            fileName = self.gatewayName + '_connect.json'
-            path = os.path.abspath(os.path.dirname(__file__))
-            fileName = os.path.join(path, fileName)
+        fileName = self.gatewayName + '_connect.json'
+        path = os.path.abspath(os.path.dirname(__file__))
+        fileName = os.path.join(path, fileName)
         
         try:
             f = file(fileName)
@@ -1472,7 +1470,7 @@ def test():
     
     def print_log(event):
         log = event.dict_['data']
-        print(':'.join([log.logTime, log.logContent]))
+        print ':'.join([log.logTime, log.logContent])
     
     app = QtCore.QCoreApplication(sys.argv)    
 

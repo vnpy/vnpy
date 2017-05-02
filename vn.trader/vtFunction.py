@@ -4,12 +4,9 @@
 包含一些开发中常用的函数
 """
 
-import vtGlobal
 import os
 import decimal
 import json
-import time
-import datetime as dt
 from datetime import datetime
 
 MAX_NUMBER = 10000000000000
@@ -34,14 +31,13 @@ def safeUnicode(value):
 #----------------------------------------------------------------------
 def loadMongoSetting():
     """载入MongoDB数据库的配置"""
-    # fileName = 'VT_setting.json'
-    # path = os.path.abspath(os.path.dirname(__file__))
-    # fileName = os.path.join(path, fileName)
-    setting = vtGlobal.VT_setting.copy()
-
+    fileName = 'VT_setting.json'
+    path = os.path.abspath(os.path.dirname(__file__)) 
+    fileName = os.path.join(path, fileName)  
+    
     try:
-        # f = file(fileName)
-        # setting = json.load(f)
+        f = file(fileName)
+        setting = json.load(f)
         host = setting['mongoHost']
         port = setting['mongoPort']
         logging = setting['mongoLogging']
@@ -58,48 +54,3 @@ def todayDate():
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)    
 
  
-def autoshutdown(clocks=None):
-    """
-    根据当前启动时间，设置自动关闭时间
-    2:31 之前启动服务器，那么在2:31 会自动关闭；
-    2:31 ~ 8:39 之间启动，会在8:39关闭，以此类推；
-    20:39 之后关闭，会在次日 2:31 自动关闭
-
-
-    >>> autoshutdown().closeTime == todayDate().replace(hour=15, minute=39)
-    True
-
-    :return:
-    """
-
-    clocks = clocks or [
-        dt.time(2, 31),  # 夜盘后关闭
-        dt.time(8, 39),  # 日盘前关闭
-        dt.time(15, 39),  # 日盘后关闭
-        dt.time(20, 39),  # 夜盘前关闭
-    ]
-    from threading import Thread
-
-    now = datetime.now()
-    today = todayDate()
-    tomorrow = today + dt.timedelta(days=1)
-
-    for t in clocks:
-        if now.time() < t:
-            # 关闭时间在当日
-            closeTime = datetime.combine(today, t)
-            break
-    else:
-        # 关闭时间在次日
-        closeTime = datetime.combine(tomorrow, clocks[0])
-
-    def shutdown(closeTime):
-        # 子线程阻塞直到到达关闭时间
-        while datetime.now() < closeTime:
-            time.sleep(1)
-
-    t = Thread(target=shutdown, args=(closeTime,))
-    t.closeTime = closeTime
-    t.start()
-    return t
-

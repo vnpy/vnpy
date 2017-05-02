@@ -9,7 +9,7 @@ from copy import copy
 try:
     from WindPy import w
 except ImportError:
-    print(u'请先安装WindPy接口')
+    print u'请先安装WindPy接口'
 
 from vtGateway import *
 

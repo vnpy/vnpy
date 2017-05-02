@@ -373,12 +373,12 @@ class HuobiTradeApi(vnhuobi.TradeApi):
     #----------------------------------------------------------------------
     def onBuyMarket(self, data, req, reqID):
         """市价买入回调"""
-        print(data)
+        print data
         
     #----------------------------------------------------------------------
     def onSellMarket(self, data, req, reqID):
         """市价卖出回调"""
-        print(data)        
+        print data        
         
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, req, reqID):
@@ -396,52 +396,52 @@ class HuobiTradeApi(vnhuobi.TradeApi):
     #----------------------------------------------------------------------
     def onGetNewDealOrders(self, data, req, reqID):
         """查询最新成交回调"""
-        print(data)    
+        print data    
         
     #----------------------------------------------------------------------
     def onGetOrderIdByTradeId(self, data, req, reqID):
         """通过成交编号查询委托编号回调"""
-        print(data)    
+        print data    
         
     #----------------------------------------------------------------------
     def onWithdrawCoin(self, data, req, reqID):
         """提币回调"""
-        print(data)
+        print data
         
     #----------------------------------------------------------------------
     def onCancelWithdrawCoin(self, data, req, reqID):
         """取消提币回调"""
-        print(data)      
+        print data      
         
     #----------------------------------------------------------------------
     def onGetWithdrawCoinResult(self, data, req, reqID):
         """查询提币结果回调"""
-        print(data)           
+        print data           
         
     #----------------------------------------------------------------------
     def onTransfer(self, data, req, reqID):
         """转账回调"""
-        print(data)
+        print data
         
     #----------------------------------------------------------------------
     def onLoan(self, data, req, reqID):
         """申请杠杆回调"""
-        print(data)      
+        print data      
         
     #----------------------------------------------------------------------
     def onRepayment(self, data, req, reqID):
         """归还杠杆回调"""
-        print(data)    
+        print data    
     
     #----------------------------------------------------------------------
     def onLoanAvailable(self, data, req, reqID):
         """查询杠杆额度回调"""
-        print(data)      
+        print data      
         
     #----------------------------------------------------------------------
     def onGetLoans(self, data, req, reqID):
         """查询杠杆列表"""
-        print(data)        
+        print data        
     
     #----------------------------------------------------------------------
     def connect(self, accessKey, secretKey, market, debug=False):
@@ -553,7 +553,7 @@ class HuobiDataApi(vnhuobi.DataApi):
     #----------------------------------------------------------------------
     def onTick(self, data):
         """实时成交推送"""
-        print(data)
+        print data
         
     #----------------------------------------------------------------------
     def onQuote(self, data):
