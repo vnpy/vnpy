@@ -1,16 +1,12 @@
 # encoding: UTF-8
-import time
+
 import sys
 import os
 import ctypes
-#try:
-#    import bsddb
-#except:
-#    import bsddb3 as bsddb
-#    sys.modules['bsddb'] = bsddb
-import json
-from ctaStrategy.strategy import STRATEGY_CLASS
+from datetime import datetime, timedelta, date
+from time import sleep
 
+from ctaStrategy.strategy import STRATEGY_CLASS
 from eventType import *
 from vtEngine import MainEngine
 from threading import Thread
@@ -60,6 +56,7 @@ class NoUiMain(object):
         if self.g_count <= 10:
             return
         self.g_count = 0
+        print u'noUiMain.py checkpoint:{0}'.format(datetime.now())
 
         # 定时断开
         if self.trade_off():
@@ -121,14 +118,14 @@ def run_noui():
 
 
 if __name__ == '__main__':
-    from PyQt4 import QtGui
+    #from PyQt4 import QtGui
     # 主程序
-    #thread = Thread(target=run_noui, args=())
-    #thread.start()
+    thread = Thread(target=run_noui, args=())
+    thread.start()
 
     # 创建Qt应用对象，用于事件循环
-    app = QtGui.QApplication(sys.argv)
-    run_noui()
+    #app = QtGui.QApplication(sys.argv)
+    #run_noui()
     # 连续运行，用于输出行情
-    app.exec_()
+    #app.exec_()
 
