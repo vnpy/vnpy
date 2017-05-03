@@ -1,7 +1,8 @@
 # encoding: UTF-8
 
-import sys
+
 import os
+import sys
 import ctypes
 from datetime import datetime, timedelta, date
 from time import sleep
@@ -114,7 +115,7 @@ class NoUiMain(object):
 
 def run_noui():
 
-    log_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__),
+    log_file_name = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                  'logs',
                                                  u'noUiMain_{0}.log'.format(datetime.now().strftime('%m%d_%H%M'))))
 
