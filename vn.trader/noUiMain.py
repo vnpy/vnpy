@@ -26,9 +26,9 @@ class NoUiMain(object):
         # gateway 是否连接
         self.connected = False
         # gateway 的连接名称，在vtEngine.initGateway()里面定义
-        self.gateway_name = 'CTP_JR'
-        # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB']
-        self.strategies = [u'S28_HCRB']
+        self.gateway_name = 'CTP'
+        # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB',u'atr_rsi']
+        self.strategies = [u'atr_rsi']
 
         self.g_count = 0
 
@@ -121,6 +121,14 @@ def run_noui():
 
 
 if __name__ == '__main__':
+    from PyQt4 import QtGui
     # 主程序
-    thread = Thread(target=run_noui, args=())
-    thread.start()
+    #thread = Thread(target=run_noui, args=())
+    #thread.start()
+
+    # 创建Qt应用对象，用于事件循环
+    app = QtGui.QApplication(sys.argv)
+    run_noui()
+    # 连续运行，用于输出行情
+    app.exec_()
+
