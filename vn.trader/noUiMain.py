@@ -6,9 +6,9 @@ import ctypes
 from datetime import datetime, timedelta, date
 from time import sleep
 
-from ctaStrategy.strategy import STRATEGY_CLASS
 from eventType import *
 from vtEngine import MainEngine
+from ctaStrategy.strategy import STRATEGY_CLASS
 from threading import Thread
 
 from simple_monitor import *
@@ -22,13 +22,14 @@ class NoUiMain(object):
         # gateway 是否连接
         self.connected = False
         # gateway 的连接名称，在vtEngine.initGateway()里面定义
-        self.gateway_name = 'CTP'
+        self.gateway_name = 'CTP_JR'
         # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB',u'atr_rsi']
-        self.strategies = [u'atr_rsi']
+        self.strategies = [u'S28_HCRB']
 
         self.g_count = 0
 
         # 实例化主引擎
+        print u'实例化主引擎'
         self.mainEngine = MainEngine()
 
     def trade_off(self):
@@ -83,15 +84,20 @@ class NoUiMain(object):
         #self.mainEngine.dbConnect()
 
         # 加载cta的配置
+        print u'加载cta的配置'
         self.mainEngine.ctaEngine.loadSetting()
 
+        print u'初始化策略'
         # 初始化策略，如果多个，则需要逐一初始化多个
         for s in self.strategies:
+            print 'init trategy {0}'.format(s)
             self.mainEngine.ctaEngine.initStrategy(s)
             # 逐一启动策略
+            print 'start strategy {0}'.format(s)
             self.mainEngine.ctaEngine.startStrategy(s)
 
         # 指定的连接配置
+        print u'连接gateway:{0}'.format(self.gateway_name)
         self.mainEngine.connect(self.gateway_name)
         self.connected = True
 

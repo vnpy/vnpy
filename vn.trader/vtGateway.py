@@ -1,9 +1,7 @@
 # encoding: UTF-8
 
 import time
-
 from datetime import datetime
-
 from eventEngine import *
 
 from vtConstant import *
