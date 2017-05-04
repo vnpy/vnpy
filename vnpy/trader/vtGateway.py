@@ -2,7 +2,8 @@
 
 import time
 
-from eventEngine import *
+from vnpy.event.eventEngine import *
+from vnpy.trader.eventType import *
 
 from vtConstant import *
 

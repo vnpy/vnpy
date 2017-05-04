@@ -7,7 +7,8 @@ from datetime import datetime
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from eventEngine import *
+from vnpy.event.eventEngine import *
+from vnpy.trader.eventType import *
 from vtGateway import *
 from vtFunction import loadMongoSetting
 from language import text

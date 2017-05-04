@@ -7,7 +7,7 @@
 import json
 
 from uiBasicWidget import QtGui, QtCore
-from eventEngine import *
+from vnpy.event.eventEngine import *
 from language import text
 
 

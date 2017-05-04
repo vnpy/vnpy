@@ -6,7 +6,7 @@ CTA模块相关的GUI控制组件
 
 
 from uiBasicWidget import QtGui, QtCore, BasicCell
-from eventEngine import *
+from vnpy.event.eventEngine import *
 from language import text
 
 
