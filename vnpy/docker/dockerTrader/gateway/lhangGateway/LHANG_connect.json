@@ -1,0 +1,6 @@
+{
+    "apiKey": "请在链行官网申请",
+    "secretKey": "请在链行官网申请",
+    "interval": 1,
+    "debug": false
+}
