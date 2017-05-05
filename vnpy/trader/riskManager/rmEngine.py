@@ -12,7 +12,7 @@ import os
 import platform
 
 from vnpy.event.eventEngine import *
-from vnpy.trader.eventType import *
+from vnpy.trader.vtEvent import *
 from vtConstant import *
 from vtGateway import VtLogData
 

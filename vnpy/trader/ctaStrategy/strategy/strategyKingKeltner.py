@@ -12,11 +12,11 @@
 
 from __future__ import division
 
-from ctaBase import *
-from ctaTemplate import CtaTemplate
-
 import talib
 import numpy as np
+
+from vnpy.trader.vtConstant import EMPTY_STRING
+from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
 
 
 ########################################################################

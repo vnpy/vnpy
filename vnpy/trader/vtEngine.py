@@ -7,10 +7,10 @@ from datetime import datetime
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
+import vtGlobal
 from vnpy.event.eventEngine import *
-from vnpy.trader.eventType import *
+from vnpy.trader.vtEvent import *
 from vtGateway import *
-from vtFunction import loadMongoSetting
 from language import text
 
 from gateway import GATEWAY_DICT
@@ -163,11 +163,9 @@ class MainEngine(object):
         """连接MongoDB数据库"""
         if not self.dbClient:
             # 读取MongoDB的设置
-            host, port, logging = loadMongoSetting()
-                
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
-                self.dbClient = MongoClient(host, port, connectTimeoutMS=500)
+                self.dbClient = MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT, connectTimeoutMS=500)
                 
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
@@ -175,7 +173,7 @@ class MainEngine(object):
                 self.writeLog(text.DATABASE_CONNECTING_COMPLETED)
                 
                 # 如果启动日志记录，则注册日志事件监听函数
-                if logging:
+                if vtGlobal.MONGO_LOGGING:
                     self.eventEngine.register(EVENT_LOG, self.dbLogging)
                     
             except ConnectionFailure:

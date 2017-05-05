@@ -12,9 +12,9 @@ import pymongo
 from time import time
 from multiprocessing.pool import ThreadPool
 
+import vtGlobal
 from ctaBase import *
 from vtConstant import *
-from vtFunction import loadMongoSetting
 from datayesClient import DatayesClient
 
 
@@ -34,9 +34,7 @@ class HistoryDataEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        host, port, logging = loadMongoSetting()
-        
-        self.dbClient = pymongo.MongoClient(host, port)
+        self.dbClient = pymongo.MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT)
         self.datayesClient = DatayesClient()
         
     #----------------------------------------------------------------------
@@ -363,6 +361,8 @@ def downloadEquityDailyBarts(self, symbol):
             print u'%s下载完成' %symbol
         else:
             print u'找不到合约%s' %symbol
+
+
 #----------------------------------------------------------------------
 def loadMcCsv(fileName, dbName, symbol):
     """将Multicharts导出的csv格式的历史数据插入到Mongo数据库中"""
@@ -372,9 +372,7 @@ def loadMcCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
-    host, port, logging = loadMongoSetting()
-    
-    client = pymongo.MongoClient(host, port)    
+    client = pymongo.MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT)    
     collection = client[dbName][symbol]
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
     
@@ -408,9 +406,7 @@ def loadTdxCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
-    host, port, logging = loadMongoSetting()
-    
-    client = pymongo.MongoClient(host, port)    
+    client = pymongo.MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT)    
     collection = client[dbName][symbol]
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
     
@@ -449,9 +445,7 @@ def loadTBCsv(fileName, dbName, symbol):
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
-    host, port, logging = loadMongoSetting()
-    
-    client = pymongo.MongoClient(host, port)    
+    client = pymongo.MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT)    
     collection = client[dbName][symbol]
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)
     

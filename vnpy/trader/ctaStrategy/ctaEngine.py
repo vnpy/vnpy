@@ -27,7 +27,7 @@ from datetime import datetime, timedelta
 from ctaBase import *
 from strategy import STRATEGY_CLASS
 from vnpy.event.eventEngine import *
-from vnpy.trader.eventType import *
+from vnpy.trader.vtEvent import *
 from vtConstant import *
 from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vtFunction import todayDate

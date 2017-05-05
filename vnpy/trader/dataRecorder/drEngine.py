@@ -15,7 +15,7 @@ from Queue import Queue
 from threading import Thread
 
 from vnpy.event.eventEngine import *
-from vnpy.trader.eventType import *
+from vnpy.trader.vtEvent import *
 from vtGateway import VtSubscribeReq, VtLogData
 from drBase import *
 from vtFunction import todayDate

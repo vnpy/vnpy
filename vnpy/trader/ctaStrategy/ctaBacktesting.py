@@ -12,10 +12,10 @@ from itertools import product
 import multiprocessing
 import pymongo
 
+import vtGlobal
 from ctaBase import *
 from vtConstant import *
 from vtGateway import VtOrderData, VtTradeData
-from vtFunction import loadMongoSetting
 
 
 ########################################################################
@@ -119,9 +119,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadHistoryData(self):
         """载入历史数据"""
-        host, port, logging = loadMongoSetting()
-        
-        self.dbClient = pymongo.MongoClient(host, port)
+        self.dbClient = pymongo.MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT)
         collection = self.dbClient[self.dbName][self.symbol]          
 
         self.output(u'开始载入数据')

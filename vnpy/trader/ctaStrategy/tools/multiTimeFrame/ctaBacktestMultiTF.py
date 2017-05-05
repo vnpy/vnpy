@@ -8,7 +8,7 @@ same as CTA engine. Real trading code can be directly used for backtesting.
 '''
 
 from __future__ import division
-from vtFunction import loadMongoSetting
+import vtGlobal
 
 from ctaBacktesting import *
 
@@ -70,11 +70,7 @@ class BacktestEngineMultiTF(BacktestingEngine):
     # ----------------------------------------------------------------------
     def loadHistoryData(self):
         """载入历史数据"""
-        """load historical data"""
-
-        host, port, logging = loadMongoSetting()
-
-        self.dbClient = pymongo.MongoClient(host, port)
+        self.dbClient = pymongo.MongoClient(vtGlobal.MONGO_HOST, vtGlobal.MONGO_PORT)
         collection = self.dbClient[self.dbName][self.symbol]
 
         # Load historical data of information symbols, construct a dictionary of Database

@@ -29,26 +29,6 @@ def safeUnicode(value):
     return unicode(value)
 
 #----------------------------------------------------------------------
-def loadMongoSetting():
-    """载入MongoDB数据库的配置"""
-    fileName = 'VT_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__)) 
-    fileName = os.path.join(path, fileName)  
-    
-    try:
-        f = file(fileName)
-        setting = json.load(f)
-        host = setting['mongoHost']
-        port = setting['mongoPort']
-        logging = setting['mongoLogging']
-    except:
-        host = 'localhost'
-        port = 27017
-        logging = False
-        
-    return host, port, logging
-
-#----------------------------------------------------------------------
 def todayDate():
     """获取当前本机电脑时间的日期"""
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)    
