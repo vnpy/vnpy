@@ -461,7 +461,9 @@ class CtaEngine(object):
 
         # 注册持仓更新事件
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
-        self.eventEngine.register(EVENT_POSITION, self.checkUnsubscribedSymbols)
+
+        # 账号更新事件（借用账号更新事件，来检查是否有未订阅的合约信息）
+        self.eventEngine.register(EVENT_ACCOUNT, self.checkUnsubscribedSymbols)
 
         # 注册定时器事件
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
