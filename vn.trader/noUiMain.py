@@ -17,20 +17,29 @@ from setup_logger import setup_logger
 
 setup_logger(debug=True)
 # ----------------------------------------------------------------------
+"""
+Linux 下：
+启动：python noUiMain.py >>logs/mylog.log &
+停止：ps -ef | grep python ，找到对应的进程PID， kill -9 PID
+查看：tail -f logs/noUiMain_月日_小时分钟.log -f
+Windows下：
+启动：命令行窗口 python noUiMain.py
+停止：关闭窗口
+"""
 class NoUiMain(object):
 
     def __init__(self):
         # gateway 是否连接
         self.connected = False
-        # gateway 的连接名称，在vtEngine.initGateway()里面定义
-        self.gateway_name = 'CTP_JR'
+        # gateway 的连接名称，在vtEngine.initGateway()里面定义，对应的配置文件是 "连接名称_connect.json"，
+        self.gateway_name = 'CTP_EBF'
         # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB',u'atr_rsi']
         self.strategies = [u'S28_HCRB']
 
         self.g_count = 0
 
         # 实例化主引擎
-        print u'实例化主引擎'
+        print u'instance mainengine'
         self.mainEngine = MainEngine()
 
     def trade_off(self):
@@ -85,10 +94,10 @@ class NoUiMain(object):
         #self.mainEngine.dbConnect()
 
         # 加载cta的配置
-        print u'加载cta的配置'
+        print u'load cta setting'
         self.mainEngine.ctaEngine.loadSetting()
 
-        print u'初始化策略'
+        print u'initialize all strategies'
         # 初始化策略，如果多个，则需要逐一初始化多个
         for s in self.strategies:
             print 'init trategy {0}'.format(s)
@@ -98,7 +107,7 @@ class NoUiMain(object):
             self.mainEngine.ctaEngine.startStrategy(s)
 
         # 指定的连接配置
-        print u'连接gateway:{0}'.format(self.gateway_name)
+        print u'connect gateway:{0}'.format(self.gateway_name)
         self.mainEngine.connect(self.gateway_name)
         self.connected = True
 
@@ -115,8 +124,14 @@ class NoUiMain(object):
 
 def run_noui():
 
-    log_file_name = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+    try:
+
+        log_file_name = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                  'logs',
+                                                 u'noUiMain_{0}.log'.format(datetime.now().strftime('%m%d_%H%M'))))
+    except Exception as ex:
+        print u'Use local dict:{0}'.format(os.getcwd())
+        log_file_name = os.path.abspath(os.path.join(os.getcwd(),'logs',
                                                  u'noUiMain_{0}.log'.format(datetime.now().strftime('%m%d_%H%M'))))
 
     setup_logger(filename=log_file_name, debug=False)
