@@ -315,6 +315,9 @@ class CtpMdApi(MdApi):
             self.writeLog(text.DATA_SERVER_LOGIN)
             
             # 重新订阅之前订阅的合约
+            if len(self.subscribedSymbols) > 0:
+                print u'Resubscribe'
+
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
                 
@@ -443,7 +446,12 @@ class CtpMdApi(MdApi):
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
         if self.loginStatus:
+            print u'subscribe {0}'.format(str(subscribeReq.symbol))
             self.subscribeMarketData(str(subscribeReq.symbol))
+            self.writeLog(u'订阅合约:{0}'.format(str(subscribeReq.symbol)))
+        else:
+            print u'not login, add {0} into subscribe list'.format(str(subscribeReq.symbol))
+            self.writeLog(u'未连接，增加合约{0}至待订阅列表'.format(str(subscribeReq.symbol)))
         self.subscribedSymbols.add(subscribeReq)   
         
     #----------------------------------------------------------------------
@@ -558,7 +566,13 @@ class CtpTdApi(TdApi):
             req['BrokerID'] = self.brokerID
             req['InvestorID'] = self.userID
             self.reqID += 1
-            self.reqSettlementInfoConfirm(req, self.reqID)              
+            self.reqSettlementInfoConfirm(req, self.reqID)
+
+            # 提交合约更新请求
+            try:
+                self.resentReqQryInstrument()
+            except:
+                pass
                 
         # 否则，推送错误信息
         else:
@@ -567,7 +581,12 @@ class CtpTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
-    
+
+    def resentReqQryInstrument(self):
+        # 查询合约代码
+        self.reqID += 1
+        self.reqQryInstrument({}, self.reqID)
+
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -657,10 +676,7 @@ class CtpTdApi(TdApi):
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
         self.writeLog(text.SETTLEMENT_INFO_CONFIRMED)
-        
-        # 查询合约代码
-        self.reqID += 1
-        self.reqQryInstrument({}, self.reqID)
+
         
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrder(self, data, error, n, last):
