@@ -8,8 +8,8 @@ import platform
 import vtPath
 from uiMainWindow import *
 
-from eventEngine import *
-from vnpy.rpc.vnrpc import RpcClient
+from vnpy.event import EventEngine
+from vnpy.rpc import RpcClient
 
 from ctaStrategy.ctaEngine import CtaEngine
 from dataRecorder.drEngine import DrEngine
