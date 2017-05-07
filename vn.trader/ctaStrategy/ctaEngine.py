@@ -415,11 +415,11 @@ class CtaEngine(object):
             # 3.提取对应的策略
             strategy = self.orderStrategyDict[trade.vtOrderID]
             
-            # 计算策略持仓
-            if trade.direction == DIRECTION_LONG:
-                strategy.pos += trade.volume
-            else:
-                strategy.pos -= trade.volume
+            # 计算策略持仓 ( canceled by IncenseLee )
+            #if trade.direction == DIRECTION_LONG:
+            #    strategy.pos += trade.volume
+            #else:
+            #    strategy.pos -= trade.volume
 
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
             
