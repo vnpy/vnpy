@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
 
-from vnpy.event.eventEngine import *
+from vnpy.event import *
 from vnpy.trader.vtEvent import *
 from vtFunction import *
 from vtGateway import *

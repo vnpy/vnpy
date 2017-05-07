@@ -8,7 +8,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 import vtGlobal
-from vnpy.event.eventEngine import *
+from vnpy.event import *
 from vnpy.trader.vtEvent import *
 from vtGateway import *
 from language import text

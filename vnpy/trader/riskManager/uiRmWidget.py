@@ -6,7 +6,7 @@
 
 
 from uiBasicWidget import QtGui, QtCore
-from vnpy.event.eventEngine import *
+from vnpy.event import *
 from language import text
 
 
