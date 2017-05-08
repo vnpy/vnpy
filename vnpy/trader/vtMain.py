@@ -4,7 +4,8 @@ import sys
 import os
 import platform
 
-from PyQt4 import QtGui, QtCore
+#from PyQt4 import QtGui, QtCore
+from qtpy import QtWidgets, QtGui
 
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEngine import MainEngine
@@ -29,7 +30,7 @@ def main():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
     
     # 初始化Qt应用对象
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
     app.setFont(BASIC_FONT)
     

@@ -5,7 +5,8 @@ import csv
 import os
 from collections import OrderedDict
 
-from PyQt4 import QtGui, QtCore
+#from PyQt4 import QtGui, QtCore
+from qtpy import QtWidgets, QtGui, QtCore
 
 from vnpy.event import *
 from vnpy.trader.vtEvent import *
@@ -39,7 +40,7 @@ BASIC_FONT = loadFont()
 
 
 ########################################################################
-class BasicCell(QtGui.QTableWidgetItem):
+class BasicCell(QtWidgets.QTableWidgetItem):
     """基础的单元格"""
 
     #----------------------------------------------------------------------
@@ -60,7 +61,7 @@ class BasicCell(QtGui.QTableWidgetItem):
 
 
 ########################################################################
-class NumCell(QtGui.QTableWidgetItem):
+class NumCell(QtWidgets.QTableWidgetItem):
     """用来显示数字的单元格"""
 
     #----------------------------------------------------------------------
@@ -85,7 +86,7 @@ class NumCell(QtGui.QTableWidgetItem):
             
 
 ########################################################################
-class DirectionCell(QtGui.QTableWidgetItem):
+class DirectionCell(QtWidgets.QTableWidgetItem):
     """用来显示买卖方向的单元格"""
 
     #----------------------------------------------------------------------
@@ -100,14 +101,14 @@ class DirectionCell(QtGui.QTableWidgetItem):
     def setContent(self, text):
         """设置内容"""
         if text == DIRECTION_LONG or text == DIRECTION_NET:
-            self.setForeground(QtGui.QColor('red'))
+            self.setForeground(QtWidgets.QColor('red'))
         elif text == DIRECTION_SHORT:
-            self.setForeground(QtGui.QColor('green'))
+            self.setForeground(QtWidgets.QColor('green'))
         self.setText(text)
 
 
 ########################################################################
-class NameCell(QtGui.QTableWidgetItem):
+class NameCell(QtWidgets.QTableWidgetItem):
     """用来显示合约中文的单元格"""
 
     #----------------------------------------------------------------------
@@ -134,7 +135,7 @@ class NameCell(QtGui.QTableWidgetItem):
 
 
 ########################################################################
-class BidCell(QtGui.QTableWidgetItem):
+class BidCell(QtWidgets.QTableWidgetItem):
     """买价单元格"""
 
     #----------------------------------------------------------------------
@@ -143,8 +144,8 @@ class BidCell(QtGui.QTableWidgetItem):
         super(BidCell, self).__init__()
         self.data = None
 
-        self.setForeground(QtGui.QColor('black'))
-        self.setBackground(QtGui.QColor(255,174,201))
+        self.setForeground(QtWidgets.QColor('black'))
+        self.setBackground(QtWidgets.QColor(255,174,201))
         
         if text:
             self.setContent(text)
@@ -156,7 +157,7 @@ class BidCell(QtGui.QTableWidgetItem):
 
 
 ########################################################################
-class AskCell(QtGui.QTableWidgetItem):
+class AskCell(QtWidgets.QTableWidgetItem):
     """买价单元格"""
 
     #----------------------------------------------------------------------
@@ -165,8 +166,8 @@ class AskCell(QtGui.QTableWidgetItem):
         super(AskCell, self).__init__()
         self.data = None
 
-        self.setForeground(QtGui.QColor('black'))
-        self.setBackground(QtGui.QColor(160,255,160))
+        self.setForeground(QtWidgets.QColor('black'))
+        self.setBackground(QtWidgets.QColor(160,255,160))
         
         if text:
             self.setContent(text)
@@ -178,7 +179,7 @@ class AskCell(QtGui.QTableWidgetItem):
 
 
 ########################################################################
-class PnlCell(QtGui.QTableWidgetItem):
+class PnlCell(QtWidgets.QTableWidgetItem):
     """显示盈亏的单元格"""
 
     #----------------------------------------------------------------------
@@ -208,7 +209,7 @@ class PnlCell(QtGui.QTableWidgetItem):
 
 
 ########################################################################
-class BasicMonitor(QtGui.QTableWidget):
+class BasicMonitor(QtWidgets.QTableWidget):
     """
     基础监控
     
@@ -216,7 +217,7 @@ class BasicMonitor(QtGui.QTableWidget):
     {'chinese': u'中文名', 'cellType': BasicCell}
     
     """
-    signal = QtCore.pyqtSignal(type(Event()))
+    signal = QtCore.Signal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine=None, eventEngine=None, parent=None):
@@ -374,7 +375,7 @@ class BasicMonitor(QtGui.QTableWidget):
     #----------------------------------------------------------------------
     def resizeColumns(self):
         """调整各列的大小"""
-        self.horizontalHeader().resizeSections(QtGui.QHeaderView.ResizeToContents)    
+        self.horizontalHeader().resizeSections(QtWidgets.QHeaderView.ResizeToContents)    
         
     #----------------------------------------------------------------------
     def setSorting(self, sorting):
@@ -388,7 +389,7 @@ class BasicMonitor(QtGui.QTableWidget):
         self.menu.close()
         
         # 获取想要保存的文件名
-        path = QtGui.QFileDialog.getSaveFileName(self, vtText.SAVE_DATA, '', 'CSV(*.csv)')
+        path = QtWidgets.QFileDialog.getSaveFileName(self, vtText.SAVE_DATA, '', 'CSV(*.csv)')
 
         try:
             if not path.isEmpty():
@@ -416,9 +417,9 @@ class BasicMonitor(QtGui.QTableWidget):
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化右键菜单"""
-        self.menu = QtGui.QMenu(self)    
+        self.menu = QtWidgets.QMenu(self)    
         
-        saveAction = QtGui.QAction(vtText.SAVE_DATA, self)
+        saveAction = QtWidgets.QAction(vtText.SAVE_DATA, self)
         saveAction.triggered.connect(self.saveToCsv)
         
         self.menu.addAction(saveAction)
@@ -426,7 +427,7 @@ class BasicMonitor(QtGui.QTableWidget):
     #----------------------------------------------------------------------
     def contextMenuEvent(self, event):
         """右键点击事件"""
-        self.menu.popup(QtGui.QCursor.pos())    
+        self.menu.popup(QtWidgets.QCursor.pos())    
 
 
 ########################################################################
@@ -665,9 +666,9 @@ class AccountMonitor(BasicMonitor):
 
 
 ########################################################################
-class TradingWidget(QtGui.QFrame):
+class TradingWidget(QtWidgets.QFrame):
     """简单交易组件"""
-    signal = QtCore.pyqtSignal(type(Event()))
+    signal = QtCore.Signal(type(Event()))
     
     directionList = [DIRECTION_LONG,
                      DIRECTION_SHORT]
@@ -736,53 +737,53 @@ class TradingWidget(QtGui.QFrame):
         self.setLineWidth(1)           
 
         # 左边部分
-        labelSymbol = QtGui.QLabel(vtText.CONTRACT_SYMBOL)
-        labelName =  QtGui.QLabel(vtText.CONTRACT_NAME)
-        labelDirection = QtGui.QLabel(vtText.DIRECTION)
-        labelOffset = QtGui.QLabel(vtText.OFFSET)
-        labelPrice = QtGui.QLabel(vtText.PRICE)
-        self.checkFixed = QtGui.QCheckBox(u'')  # 价格固定选择框
-        labelVolume = QtGui.QLabel(vtText.VOLUME)
-        labelPriceType = QtGui.QLabel(vtText.PRICE_TYPE)
-        labelExchange = QtGui.QLabel(vtText.EXCHANGE) 
-        labelCurrency = QtGui.QLabel(vtText.CURRENCY)
-        labelProductClass = QtGui.QLabel(vtText.PRODUCT_CLASS)
-        labelGateway = QtGui.QLabel(vtText.GATEWAY)
+        labelSymbol = QtWidgets.QLabel(vtText.CONTRACT_SYMBOL)
+        labelName =  QtWidgets.QLabel(vtText.CONTRACT_NAME)
+        labelDirection = QtWidgets.QLabel(vtText.DIRECTION)
+        labelOffset = QtWidgets.QLabel(vtText.OFFSET)
+        labelPrice = QtWidgets.QLabel(vtText.PRICE)
+        self.checkFixed = QtWidgets.QCheckBox(u'')  # 价格固定选择框
+        labelVolume = QtWidgets.QLabel(vtText.VOLUME)
+        labelPriceType = QtWidgets.QLabel(vtText.PRICE_TYPE)
+        labelExchange = QtWidgets.QLabel(vtText.EXCHANGE) 
+        labelCurrency = QtWidgets.QLabel(vtText.CURRENCY)
+        labelProductClass = QtWidgets.QLabel(vtText.PRODUCT_CLASS)
+        labelGateway = QtWidgets.QLabel(vtText.GATEWAY)
 
-        self.lineSymbol = QtGui.QLineEdit()
-        self.lineName = QtGui.QLineEdit()
+        self.lineSymbol = QtWidgets.QLineEdit()
+        self.lineName = QtWidgets.QLineEdit()
 
-        self.comboDirection = QtGui.QComboBox()
+        self.comboDirection = QtWidgets.QComboBox()
         self.comboDirection.addItems(self.directionList)
 
-        self.comboOffset = QtGui.QComboBox()
+        self.comboOffset = QtWidgets.QComboBox()
         self.comboOffset.addItems(self.offsetList)
 
-        self.spinPrice = QtGui.QDoubleSpinBox()
+        self.spinPrice = QtWidgets.QDoubleSpinBox()
         self.spinPrice.setDecimals(4)
         self.spinPrice.setMinimum(0)
         self.spinPrice.setMaximum(100000)
 
-        self.spinVolume = QtGui.QSpinBox()
+        self.spinVolume = QtWidgets.QSpinBox()
         self.spinVolume.setMinimum(0)
         self.spinVolume.setMaximum(1000000)
 
-        self.comboPriceType = QtGui.QComboBox()
+        self.comboPriceType = QtWidgets.QComboBox()
         self.comboPriceType.addItems(self.priceTypeList)
         
-        self.comboExchange = QtGui.QComboBox()
+        self.comboExchange = QtWidgets.QComboBox()
         self.comboExchange.addItems(self.exchangeList)      
         
-        self.comboCurrency = QtGui.QComboBox()
+        self.comboCurrency = QtWidgets.QComboBox()
         self.comboCurrency.addItems(self.currencyList)
         
-        self.comboProductClass = QtGui.QComboBox()
+        self.comboProductClass = QtWidgets.QComboBox()
         self.comboProductClass.addItems(self.productClassList)     
         
-        self.comboGateway = QtGui.QComboBox()
+        self.comboGateway = QtWidgets.QComboBox()
         self.comboGateway.addItems(self.gatewayList)          
 
-        gridleft = QtGui.QGridLayout()
+        gridleft = QtWidgets.QGridLayout()
         gridleft.addWidget(labelSymbol, 0, 0)
         gridleft.addWidget(labelName, 1, 0)
         gridleft.addWidget(labelDirection, 2, 0)
@@ -809,48 +810,48 @@ class TradingWidget(QtGui.QFrame):
         gridleft.addWidget(self.comboGateway, 10, 1, 1, -1)
 
         # 右边部分
-        labelBid1 = QtGui.QLabel(vtText.BID_1)
-        labelBid2 = QtGui.QLabel(vtText.BID_2)
-        labelBid3 = QtGui.QLabel(vtText.BID_3)
-        labelBid4 = QtGui.QLabel(vtText.BID_4)
-        labelBid5 = QtGui.QLabel(vtText.BID_5)
+        labelBid1 = QtWidgets.QLabel(vtText.BID_1)
+        labelBid2 = QtWidgets.QLabel(vtText.BID_2)
+        labelBid3 = QtWidgets.QLabel(vtText.BID_3)
+        labelBid4 = QtWidgets.QLabel(vtText.BID_4)
+        labelBid5 = QtWidgets.QLabel(vtText.BID_5)
 
-        labelAsk1 = QtGui.QLabel(vtText.ASK_1)
-        labelAsk2 = QtGui.QLabel(vtText.ASK_2)
-        labelAsk3 = QtGui.QLabel(vtText.ASK_3)
-        labelAsk4 = QtGui.QLabel(vtText.ASK_4)
-        labelAsk5 = QtGui.QLabel(vtText.ASK_5)
+        labelAsk1 = QtWidgets.QLabel(vtText.ASK_1)
+        labelAsk2 = QtWidgets.QLabel(vtText.ASK_2)
+        labelAsk3 = QtWidgets.QLabel(vtText.ASK_3)
+        labelAsk4 = QtWidgets.QLabel(vtText.ASK_4)
+        labelAsk5 = QtWidgets.QLabel(vtText.ASK_5)
 
-        self.labelBidPrice1 = QtGui.QLabel()
-        self.labelBidPrice2 = QtGui.QLabel()
-        self.labelBidPrice3 = QtGui.QLabel()
-        self.labelBidPrice4 = QtGui.QLabel()
-        self.labelBidPrice5 = QtGui.QLabel()
-        self.labelBidVolume1 = QtGui.QLabel()
-        self.labelBidVolume2 = QtGui.QLabel()
-        self.labelBidVolume3 = QtGui.QLabel()
-        self.labelBidVolume4 = QtGui.QLabel()
-        self.labelBidVolume5 = QtGui.QLabel()	
+        self.labelBidPrice1 = QtWidgets.QLabel()
+        self.labelBidPrice2 = QtWidgets.QLabel()
+        self.labelBidPrice3 = QtWidgets.QLabel()
+        self.labelBidPrice4 = QtWidgets.QLabel()
+        self.labelBidPrice5 = QtWidgets.QLabel()
+        self.labelBidVolume1 = QtWidgets.QLabel()
+        self.labelBidVolume2 = QtWidgets.QLabel()
+        self.labelBidVolume3 = QtWidgets.QLabel()
+        self.labelBidVolume4 = QtWidgets.QLabel()
+        self.labelBidVolume5 = QtWidgets.QLabel()	
 
-        self.labelAskPrice1 = QtGui.QLabel()
-        self.labelAskPrice2 = QtGui.QLabel()
-        self.labelAskPrice3 = QtGui.QLabel()
-        self.labelAskPrice4 = QtGui.QLabel()
-        self.labelAskPrice5 = QtGui.QLabel()
-        self.labelAskVolume1 = QtGui.QLabel()
-        self.labelAskVolume2 = QtGui.QLabel()
-        self.labelAskVolume3 = QtGui.QLabel()
-        self.labelAskVolume4 = QtGui.QLabel()
-        self.labelAskVolume5 = QtGui.QLabel()	
+        self.labelAskPrice1 = QtWidgets.QLabel()
+        self.labelAskPrice2 = QtWidgets.QLabel()
+        self.labelAskPrice3 = QtWidgets.QLabel()
+        self.labelAskPrice4 = QtWidgets.QLabel()
+        self.labelAskPrice5 = QtWidgets.QLabel()
+        self.labelAskVolume1 = QtWidgets.QLabel()
+        self.labelAskVolume2 = QtWidgets.QLabel()
+        self.labelAskVolume3 = QtWidgets.QLabel()
+        self.labelAskVolume4 = QtWidgets.QLabel()
+        self.labelAskVolume5 = QtWidgets.QLabel()	
 
-        labelLast = QtGui.QLabel(vtText.LAST)
-        self.labelLastPrice = QtGui.QLabel()
-        self.labelReturn = QtGui.QLabel()
+        labelLast = QtWidgets.QLabel(vtText.LAST)
+        self.labelLastPrice = QtWidgets.QLabel()
+        self.labelReturn = QtWidgets.QLabel()
 
         self.labelLastPrice.setMinimumWidth(60)
         self.labelReturn.setMinimumWidth(60)
 
-        gridRight = QtGui.QGridLayout()
+        gridRight = QtWidgets.QGridLayout()
         gridRight.addWidget(labelAsk5, 0, 0)
         gridRight.addWidget(labelAsk4, 1, 0)
         gridRight.addWidget(labelAsk3, 2, 0)
@@ -888,19 +889,19 @@ class TradingWidget(QtGui.QFrame):
         gridRight.addWidget(self.labelBidVolume5, 10, 2)
 
         # 发单按钮
-        buttonSendOrder = QtGui.QPushButton(vtText.SEND_ORDER)
-        buttonCancelAll = QtGui.QPushButton(vtText.CANCEL_ALL)
+        buttonSendOrder = QtWidgets.QPushButton(vtText.SEND_ORDER)
+        buttonCancelAll = QtWidgets.QPushButton(vtText.CANCEL_ALL)
         
         size = buttonSendOrder.sizeHint()
         buttonSendOrder.setMinimumHeight(size.height()*2)   # 把按钮高度设为默认两倍
         buttonCancelAll.setMinimumHeight(size.height()*2)
 
         # 整合布局
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addLayout(gridleft)
         hbox.addLayout(gridRight)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox)
         vbox.addWidget(buttonSendOrder)
         vbox.addWidget(buttonCancelAll)
@@ -1180,7 +1181,7 @@ class ContractMonitor(BasicMonitor):
     #----------------------------------------------------------------------
     def addMenuAction(self):
         """增加右键菜单内容"""
-        refreshAction = QtGui.QAction(vtText.REFRESH, self)
+        refreshAction = QtWidgets.QAction(vtText.REFRESH, self)
         refreshAction.triggered.connect(self.refresh)
         
         self.menu.addAction(refreshAction)
@@ -1198,7 +1199,7 @@ class ContractMonitor(BasicMonitor):
     
 
 ########################################################################
-class ContractManager(QtGui.QWidget):
+class ContractManager(QtWidgets.QWidget):
     """合约管理组件"""
 
     #----------------------------------------------------------------------
@@ -1215,18 +1216,18 @@ class ContractManager(QtGui.QWidget):
         """初始化界面"""
         self.setWindowTitle(vtText.CONTRACT_SEARCH)
         
-        self.lineFilter = QtGui.QLineEdit()
-        self.buttonFilter = QtGui.QPushButton(vtText.SEARCH)
+        self.lineFilter = QtWidgets.QLineEdit()
+        self.buttonFilter = QtWidgets.QPushButton(vtText.SEARCH)
         self.buttonFilter.clicked.connect(self.filterContract)        
         self.monitor = ContractMonitor(self.mainEngine)
         self.monitor.refresh()
         
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.lineFilter)
         hbox.addWidget(self.buttonFilter)
         hbox.addStretch()
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox)
         vbox.addWidget(self.monitor)
         

@@ -5,13 +5,13 @@
 '''
 
 
-from uiBasicWidget import QtGui, QtCore
+from uiBasicWidget import QtGui, QtWidgets, QtCore
 from vnpy.event import *
 from language import text
 
 
 ########################################################################
-class RmSpinBox(QtGui.QSpinBox):
+class RmSpinBox(QtWidgets.QSpinBox):
     """调整参数用的数值框"""
 
     #----------------------------------------------------------------------
@@ -28,7 +28,7 @@ class RmSpinBox(QtGui.QSpinBox):
 
 
 ########################################################################
-class RmLine(QtGui.QFrame):
+class RmLine(QtWidgets.QFrame):
     """水平分割线"""
 
     #----------------------------------------------------------------------
@@ -42,7 +42,7 @@ class RmLine(QtGui.QFrame):
   
 
 ########################################################################
-class RmEngineManager(QtGui.QWidget):
+class RmEngineManager(QtWidgets.QWidget):
     """风控引擎的管理组件"""
 
     #----------------------------------------------------------------------
