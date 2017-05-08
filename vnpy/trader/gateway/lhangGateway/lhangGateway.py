@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 from time import sleep
 
-import vnlhang
+from vnpy.api.lhang import LhangApi
 from vtGateway import *
 
 
@@ -150,7 +150,7 @@ class LhangGateway(VtGateway):
     
 
 ########################################################################
-class LhangApi(vnlhang.LhangApi):
+class LhangApi(LhangApi):
     """"""
 
     #----------------------------------------------------------------------

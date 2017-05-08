@@ -10,9 +10,7 @@ vn.femas的gateway接入
 import os
 import json
 
-from vnfemasmd import MdApi
-from vnfemastd import TdApi
-from femasDataType import *
+from vnpy.api.femas import MdApi, TdApi, defineDict
 from vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典

@@ -15,7 +15,7 @@ import json
 from copy import copy
 from datetime import datetime
 
-from vnshzd import ShzdApi
+from vnpy.api.shzd import ShzdApi
 from vtGateway import *
 
 

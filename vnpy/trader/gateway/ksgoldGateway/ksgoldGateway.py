@@ -11,8 +11,7 @@ import os
 import json
 import time
 
-from vnksgoldtd import TdApi
-from ksgoldDataType import *
+from vnpy.api.ksgold import TdApi, defineDict
 from vtGateway import *
 
 # 以下类型映射参考的是原生API里的Constant.h

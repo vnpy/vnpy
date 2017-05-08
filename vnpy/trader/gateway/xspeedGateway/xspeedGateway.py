@@ -9,9 +9,7 @@ import json
 import time
 from copy import copy
 
-from vnxspeedmd import MdApi
-from vnxspeedtd import TdApi
-from xspeedDataType import *
+from vnpy.api.xspeed import MdApi, TdApi, defineDict
 from vtGateway import *
 
 # 以下为一些VT类型和XSPEED类型的映射字典

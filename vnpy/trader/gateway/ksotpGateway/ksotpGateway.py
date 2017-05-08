@@ -8,9 +8,7 @@ vn.ksotp的gateway接入
 import os
 import json
 
-from vnksotpmd import MdApi
-from vnksotptd import TdApi
-from ksotpDataType import *
+from vnpy.api.ksotp import MdApi, TdApi, defineDict
 from vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典

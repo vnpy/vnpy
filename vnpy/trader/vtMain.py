@@ -4,9 +4,11 @@ import sys
 import os
 import platform
 
-import vtGlobal
-from vtEngine import MainEngine
-from uiMainWindow import *
+from PyQt4 import QtGui, QtCore
+
+from vnpy.trader.vtGlobal import globalSetting
+from vnpy.trader.vtEngine import MainEngine
+from vnpy.trader.uiMainWindow import MainWindow, BASIC_FONT
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))    
@@ -32,7 +34,7 @@ def main():
     app.setFont(BASIC_FONT)
     
     # 设置Qt的皮肤
-    if vtGlobal.DARK_STYLE:
+    if globalSetting['darkStyle']:
         import qdarkstyle
         app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
     

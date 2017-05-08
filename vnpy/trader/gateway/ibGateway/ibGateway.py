@@ -17,7 +17,7 @@ import calendar
 from datetime import datetime, timedelta
 from copy import copy
 
-from vnib import *
+from vnpy.api.ib import *
 from vtGateway import *
 from language import text
 

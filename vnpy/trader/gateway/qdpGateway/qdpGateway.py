@@ -13,9 +13,7 @@ import json
 import datetime
 from copy import copy
 
-from vnqdpmd import MdApi
-from vnqdptd import TdApi
-from qdpDataType import *
+from vnpy.api.qdp import MdApi, TdApi, defineDict
 from vtGateway import *
 
 

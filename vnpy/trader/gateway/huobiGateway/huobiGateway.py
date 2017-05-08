@@ -13,7 +13,7 @@ from threading import Condition
 from Queue import Queue
 from threading import Thread
 
-import vnhuobi
+from vnpy.api.huobi import vnhuobi
 from vtGateway import *
 
 

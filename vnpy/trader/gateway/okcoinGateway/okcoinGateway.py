@@ -16,7 +16,7 @@ from threading import Condition
 from Queue import Queue
 from threading import Thread
 
-import vnokcoin
+from vnpy.api.okcoin import vnokcoin
 from vtGateway import *
 
 # 价格类型映射

@@ -24,7 +24,7 @@ import os
 import json
 import datetime
 
-from vnoanda import OandaApi
+from vnpy.api.oanda import OandaApi
 from vtGateway import *
 
 # 价格类型映射

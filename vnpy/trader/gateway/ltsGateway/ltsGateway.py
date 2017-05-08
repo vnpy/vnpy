@@ -7,10 +7,7 @@ vn.lts的gateway接入
 import os
 import json
 
-from vnltsmd import MdApi
-from vnltstd import TdApi
-from vnltsqry import QryApi
-from ltsDataType import *
+from vnpy.api.lts import MdApi, QryApi, TdApi, defineDict
 from vtGateway import *
 
 

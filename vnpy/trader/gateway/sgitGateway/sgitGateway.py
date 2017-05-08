@@ -13,9 +13,7 @@ import json
 from copy import copy
 from datetime import datetime
 
-from vnsgitmd import MdApi
-from vnsgittd import TdApi
-from sgitDataType import *
+from vnpy.api.sgit import MdApi, TdApi, defineDict
 from vtGateway import *
 
 
