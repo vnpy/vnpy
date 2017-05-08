@@ -67,7 +67,7 @@ class UtilSinaClient(object):
         # 从sina加载最新的M1数据
         try:
 
-            url = url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t1nf_T1706=/InnerFuturesNewService.getMinLine?symbol={0}'.format(symbol)
+            url = url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t1nf_{0}=/InnerFuturesNewService.getMinLine?symbol={0}'.format(symbol)
             self.strategy.writeCtaLog(u'从sina下载{0}Tick数据 {1}'.format(symbol, url))
 
             response_data= self.session.get(url).content
