@@ -5,7 +5,7 @@
 '''
 
 from ctaBase import *
-from vtConstant import *
+from vnpy.trader.vtConstant import *
 
 
 ########################################################################

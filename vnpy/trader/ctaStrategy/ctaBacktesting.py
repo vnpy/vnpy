@@ -14,8 +14,8 @@ import pymongo
 
 from vnpy.trader.vtGlobal import globalSetting
 from ctaBase import *
-from vtConstant import *
-from vtGateway import VtOrderData, VtTradeData
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 
 
 ########################################################################

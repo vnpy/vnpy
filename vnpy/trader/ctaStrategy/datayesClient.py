@@ -2,7 +2,7 @@
 
 '''一个简单的通联数据客户端，主要使用requests开发，比通联官网的python例子更为简洁。'''
 
-
+import os
 import requests
 import json
 
