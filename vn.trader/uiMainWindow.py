@@ -2,10 +2,12 @@
 
 import psutil
 
+from gateway import GATEWAY_DICT
 from uiBasicWidget import *
-from ctaAlgo.uiCtaWidget import CtaEngineManager
+from ctaStrategy.uiCtaWidget import CtaEngineManager
 from dataRecorder.uiDrWidget import DrEngineManager
 from riskManager.uiRmWidget import RmEngineManager
+
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -36,14 +38,14 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
-        widgetMarketM, dockMarketM = self.createDock(MarketMonitor, u'行情', QtCore.Qt.RightDockWidgetArea)
-        widgetLogM, dockLogM = self.createDock(LogMonitor, u'日志', QtCore.Qt.BottomDockWidgetArea)
-        widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, u'错误', QtCore.Qt.BottomDockWidgetArea)
-        widgetTradeM, dockTradeM = self.createDock(TradeMonitor, u'成交', QtCore.Qt.BottomDockWidgetArea)
-        widgetOrderM, dockOrderM = self.createDock(OrderMonitor, u'委托', QtCore.Qt.RightDockWidgetArea)
-        widgetPositionM, dockPositionM = self.createDock(PositionMonitor, u'持仓', QtCore.Qt.BottomDockWidgetArea)
-        widgetAccountM, dockAccountM = self.createDock(AccountMonitor, u'资金', QtCore.Qt.BottomDockWidgetArea)
-        widgetTradingW, dockTradingW = self.createDock(TradingWidget, u'交易', QtCore.Qt.LeftDockWidgetArea)
+        widgetMarketM, dockMarketM = self.createDock(MarketMonitor, vtText.MARKET_DATA, QtCore.Qt.RightDockWidgetArea)
+        widgetLogM, dockLogM = self.createDock(LogMonitor, vtText.LOG, QtCore.Qt.BottomDockWidgetArea)
+        widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, vtText.ERROR, QtCore.Qt.BottomDockWidgetArea)
+        widgetTradeM, dockTradeM = self.createDock(TradeMonitor, vtText.TRADE, QtCore.Qt.BottomDockWidgetArea)
+        widgetOrderM, dockOrderM = self.createDock(OrderMonitor, vtText.ORDER, QtCore.Qt.RightDockWidgetArea)
+        widgetPositionM, dockPositionM = self.createDock(PositionMonitor, vtText.POSITION, QtCore.Qt.BottomDockWidgetArea)
+        widgetAccountM, dockAccountM = self.createDock(AccountMonitor, vtText.ACCOUNT, QtCore.Qt.BottomDockWidgetArea)
+        widgetTradingW, dockTradingW = self.createDock(TradingWidget, vtText.TRADING, QtCore.Qt.LeftDockWidgetArea)
     
         self.tabifyDockWidget(dockTradeM, dockErrorM)
         self.tabifyDockWidget(dockTradeM, dockLogM)
@@ -65,46 +67,57 @@ class MainWindow(QtGui.QMainWindow):
         menubar = self.menuBar()
         
         # 设计为只显示存在的接口
-        sysMenu = menubar.addMenu(u'系统')
-        self.addConnectAction(sysMenu, 'CTP')
-        self.addConnectAction(sysMenu, 'LTS')
-        self.addConnectAction(sysMenu, 'XTP')
-        self.addConnectAction(sysMenu, 'FEMAS', u'飞马')
-        self.addConnectAction(sysMenu, 'XSPEED', u'飞创')
-        self.addConnectAction(sysMenu, 'QDP')
-        self.addConnectAction(sysMenu, 'KSOTP', u'金仕达期权')
-        self.addConnectAction(sysMenu, 'KSGOLD', u'金仕达黄金')
-        self.addConnectAction(sysMenu, 'SGIT', u'飞鼠')
-        sysMenu.addSeparator()
-        self.addConnectAction(sysMenu, 'IB')
-        self.addConnectAction(sysMenu, 'SHZD', u'直达')
-        self.addConnectAction(sysMenu, 'OANDA')
-        sysMenu.addSeparator()
-        self.addConnectAction(sysMenu, 'OKCOIN')
-        self.addConnectAction(sysMenu, 'HUOBI', u'火币')
-        self.addConnectAction(sysMenu, 'LHANG', u'链行')
-        sysMenu.addSeparator()
-        self.addConnectAction(sysMenu, 'Wind')
+        sysMenu = menubar.addMenu(vtText.SYSTEM)
+
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_FUTURES:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)
         
         sysMenu.addSeparator()
-        sysMenu.addAction(self.createAction(u'连接数据库', self.mainEngine.dbConnect))
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_EQUITY:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)  
+
         sysMenu.addSeparator()
-        sysMenu.addAction(self.createAction(u'退出', self.close))
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_INTERNATIONAL:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
         
-        functionMenu = menubar.addMenu(u'功能')
-        functionMenu.addAction(self.createAction(u'查询合约', self.openContract))
-        functionMenu.addAction(self.createAction(u'行情记录', self.openDr))
-        functionMenu.addAction(self.createAction(u'风控管理', self.openRm))
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_BTC:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
+
+        sysMenu.addSeparator()
+        for gatewayModule in GATEWAY_DICT.values():
+            if gatewayModule.gatewayType == GATEWAYTYPE_DATA:
+                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
+                                      gatewayModule.gatewayDisplayName)          
+        
+        sysMenu.addSeparator()
+        sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect))
+        sysMenu.addSeparator()
+        sysMenu.addAction(self.createAction(vtText.EXIT, self.close))
+        
+        # 功能应用
+        functionMenu = menubar.addMenu(vtText.APPLICATION)
+        functionMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract))
+        functionMenu.addAction(self.createAction(vtText.DATA_RECORDER, self.openDr))
+        functionMenu.addAction(self.createAction(vtText.RISK_MANAGER, self.openRm))
         
         # 算法相关
-        algoMenu = menubar.addMenu(u'算法')
-        algoMenu.addAction(self.createAction(u'CTA策略', self.openCta))
+        strategyMenu = menubar.addMenu(vtText.STRATEGY)
+        strategyMenu.addAction(self.createAction(vtText.CTA_STRATEGY, self.openCta))
         
         # 帮助
-        helpMenu = menubar.addMenu(u'帮助')
-        helpMenu.addAction(self.createAction(u'还原', self.restoreWindow))
-        helpMenu.addAction(self.createAction(u'关于', self.openAbout))
-        helpMenu.addAction(self.createAction(u'测试', self.test))
+        helpMenu = menubar.addMenu(vtText.HELP)
+        helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow))
+        helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout))
+        helpMenu.addAction(self.createAction(vtText.TEST, self.test))
     
     #----------------------------------------------------------------------
     def initStatusBar(self):
@@ -134,7 +147,7 @@ class MainWindow(QtGui.QMainWindow):
         """获取CPU和内存状态信息"""
         cpuPercent = psutil.cpu_percent()
         memoryPercent = psutil.virtual_memory().percent
-        return u'CPU使用率：%d%%   内存使用率：%d%%' % (cpuPercent, memoryPercent)        
+        return vtText.CPU_MEMORY_INFO.format(cpu=cpuPercent, memory=memoryPercent)
         
     #----------------------------------------------------------------------
     def addConnectAction(self, menu, gatewayName, displayName=''):
@@ -147,7 +160,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if not displayName:
             displayName = gatewayName
-        actionName = u'连接' + displayName
+        displayName = gatewayName
+        actionName = vtText.CONNECT + displayName
         
         menu.addAction(self.createAction(actionName, connect))
         
@@ -179,7 +193,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             self.widgetDict['contractM'].show()
         except KeyError:
-            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
+            self.widgetDict['contractM'] = ContractManager(self.mainEngine)
             self.widgetDict['contractM'].show()
             
     #----------------------------------------------------------------------
@@ -212,8 +226,8 @@ class MainWindow(QtGui.QMainWindow):
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
-        reply = QtGui.QMessageBox.question(self, u'退出',
-                                           u'确认退出?', QtGui.QMessageBox.Yes | 
+        reply = QtGui.QMessageBox.question(self, vtText.EXIT,
+                                           vtText.CONFIRM_EXIT, QtGui.QMessageBox.Yes | 
                                            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
 
         if reply == QtGui.QMessageBox.Yes: 
@@ -281,7 +295,7 @@ class AboutWidget(QtGui.QDialog):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(u'关于VnTrader')
+        self.setWindowTitle(vtText.ABOUT + 'VnTrader')
 
         text = u"""
             Developed by Traders, for Traders.
