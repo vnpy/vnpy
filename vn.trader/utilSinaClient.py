@@ -6,8 +6,8 @@ from __future__ import print_function
 import requests
 from time import sleep
 import execjs
-from datetime import datetime,timedelta
-from ctaBase import CtaBarData,CtaTickData
+from datetime import datetime, timedelta
+from ctaStrategy.ctaBase import CtaBarData, CtaTickData
 
 class UtilSinaClient(object):
 
@@ -64,10 +64,10 @@ class UtilSinaClient(object):
 
     def getTicks2(self, symbol, callback):
 
-        # 从sina加载最新的M1数据
+        # 从sina加载最新的M1数据(针对中金所）
         try:
 
-            url = url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t1nf_{0}=/InnerFuturesNewService.getMinLine?symbol={0}'.format(symbol)
+            #url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t1nf_{0}=/InnerFuturesNewService.getMinLine?symbol={0}'.format(symbol)
             self.strategy.writeCtaLog(u'从sina下载{0}Tick数据 {1}'.format(symbol, url))
 
             response_data= self.session.get(url).content
@@ -106,6 +106,50 @@ class UtilSinaClient(object):
             self.strategy.writeCtaLog(u'加载sina历史Tick数据失败：' + str(e))
             return False
 
+    def getTicks3(self, symbol, callback):
+
+        # 从sina加载最新的5日内M1数据(针对中金所）
+        try:
+            url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t5nf_{0}=/InnerFuturesNewService.getFourDaysLine?symbol={0}'.format(symbol)
+
+            self.strategy.writeCtaLog(u'从sina下载{0}Tick数据 {1}'.format(symbol, url))
+
+            response_data= self.session.get(url).content
+            response_data = response_data.decode('gbk').split('=')[-1]
+            response_data = response_data.replace('(', '')
+            response_data = response_data.replace(');', '')
+            responses= execjs.eval(response_data)
+            datevalue = datetime.now().strftime('%Y-%m-%d')
+
+            for j, day_item in enumerate(responses):
+                for i, item in enumerate(day_item):
+
+                    tick = CtaTickData()
+                    tick.vtSymbol = symbol
+                    tick.symbol = symbol
+
+                    if len(item) >= 6:
+                        datevalue = item[6]
+
+                    tick.date = datevalue
+                    tick.time = item[0] + u':00'
+                    tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
+
+                    tick.lastPrice = float(item[1])
+                    tick.volume = int(item[3])
+
+                    if type(item[4]) == type(None):
+                        tick.openInterest = 0
+                    else:
+                        tick.openInterest = int(item[4])
+
+                    callback(tick)
+
+            return True
+
+        except Exception as e:
+            self.strategy.writeCtaLog(u'加载sina历史Tick数据失败：' + str(e))
+            return False
 
     def getMinBars(self, symbol, minute, callback):
         """# 从sina加载最新的M5,M15,M30,M60数据"""
@@ -256,4 +300,5 @@ if __name__ == '__main__':
 
     #rt = sina.getTicks(symbol='RB1705', callback=t.addTick)
 
-    rt = sina.getTicks2(symbol='TF1706', callback=t.addTick)
+    #rt = sina.getTicks2(symbol='TF1706', callback=t.addTick)
+    rt = sina.getTicks3(symbol='TF1709', callback=t.addTick)

@@ -33,6 +33,7 @@ from vtConstant import *
 from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vtFunction import todayDate
 import logging
+import re
 
 
 ########################################################################
@@ -646,6 +647,16 @@ class CtaEngine(object):
         for symbol in self.pendingSubcribeSymbols.keys():
             contract = self.mainEngine.getContract(symbol)
             if contract:
+                # 获取合约的缩写号
+                s = self.getShortSymbol(symbol)
+                if s == symbol:    # 合约缩写提取失败
+                    continue
+
+                dt = datetime.now()
+                # 若为中金所的合约，白天才提交订阅请求
+                if s in MARKET_ZJ and not(8 < dt.hour < 16):
+                    continue
+
                 self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))
                 strategy = self.pendingSubcribeSymbols[symbol]
                 self.subscribe(strategy=strategy, symbol=symbol)
@@ -868,6 +879,18 @@ class CtaEngine(object):
         self.workingStopOrderDict = {}
         self.posBufferDict = {}
         self.stopOrderDict = {}
+
+    def getShortSymbol(self, symbol):
+        """取得合约的短号"""
+        p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+        shortSymbol = p.match(symbol)
+
+        if shortSymbol is None :
+            self.writeCtaLog(u'{0}不能正则分解'.format(symbol))
+            return symbol
+
+        return shortSymbol.group(1)
+
 
 ########################################################################
 class PositionBuffer(object):

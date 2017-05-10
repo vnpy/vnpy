@@ -1133,16 +1133,16 @@ class BacktestingEngine(object):
 
         self.writeCtaLog(u'加载回测日期:{0}的价差tick'.format(testday))
         p = re.compile(r"([A-Z]+)[0-9]+",re.I)
-
         leg1_shortSymbol = p.match(leg1Symbol)
         leg2_shortSymbol = p.match(leg2Symbol)
 
         if leg1_shortSymbol is None or leg2_shortSymbol is None:
-            self.writeCtaLog(u'{0},{1}不能正则分解'.format(leg1Symbol,leg2Symbol))
+            self.writeCtaLog(u'{0},{1}不能正则分解'.format(leg1Symbol, leg2Symbol))
             return
 
         leg1_shortSymbol = leg1_shortSymbol.group(1)
         leg2_shortSymbol = leg2_shortSymbol.group(1)
+
 
         # E:\Ticks\SQ\2014\201401\20140102\ag01_20140102.csv
         leg1File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \

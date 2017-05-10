@@ -159,7 +159,6 @@ class CtaGridTrade(object):
             if len(self.dnGrids) >0:
                 self.writeCtaLog(u'下网格从文件加载完成')
             else:
-
                 for i in range(0, self.maxLots, 1):
 
                     # 做多，开仓价为下阻力线-网格高度*i，平仓价为开仓价+止盈高度，开仓数量为缺省
@@ -408,13 +407,13 @@ class CtaGridTrade(object):
             remainLots = len(self.dnGrids)
             lots = self.maxLots - remainLots
 
-            dnline = min(dnline, minPriceInOrder-self.gridHeight)
+            dnline = min(dnline, minPriceInOrder-self.gridHeight*dnRate)
             self.writeCtaLog(u'需要重建的网格数量:{0},起点:{1}'.format(lots, dnline))
 
             if lots > 0:
                 for i in range(0, lots, 1):
                     # 做多，开仓价为下阻力线-网格高度*i，平仓价为开仓价+止盈高度，开仓数量为缺省
-                    open_price = int((dnline - self.gridHeight * (i - 1 + dnRate)* dnRate) / self.minDiff ) * self.minDiff
+                    open_price = int((dnline - self.gridHeight * i * dnRate) / self.minDiff ) * self.minDiff
                     close_price = int((open_price + self.gridWin* dnRate)/self.minDiff) * self.minDiff
 
                     grid = CtaGrid(direction=DIRECTION_LONG,
@@ -443,13 +442,13 @@ class CtaGridTrade(object):
             # 需要重建的剩余网格数量
             remainLots = len(self.upGrids)
             lots = self.maxLots - remainLots
-            upline = max(upline, maxPriceInOrder+self.gridHeight)
+            upline = max(upline, maxPriceInOrder+self.gridHeight*upRate)
             self.writeCtaLog(u'需要重建的网格数量:{0},起点:{1}'.format(lots, upline))
 
             if lots > 0:
                 # 做空，开仓价为上阻力线+网格高度*i，平仓价为开仓价-止盈高度，开仓数量为缺省
                 for i in range(0, lots, 1):
-                    open_price = int((upline + self.gridHeight *( i -1 + upRate) * upRate) / self.minDiff) * self.minDiff
+                    open_price = int((upline + self.gridHeight * i * upRate) / self.minDiff) * self.minDiff
                     close_price = int((open_price - self.gridWin * upRate) / self.minDiff) * self.minDiff
 
                     grid = CtaGrid(direction=DIRECTION_SHORT,

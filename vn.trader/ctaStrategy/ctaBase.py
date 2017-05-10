@@ -7,11 +7,6 @@
 from __future__ import division
 
 
-# 把vn.trader根目录添加到python环境变量中
-import sys
-sys.path.append('..')
-
-
 # 常量定义
 # CTA引擎中涉及到的交易方向类型
 CTAORDER_BUY = u'买开'
@@ -58,6 +53,13 @@ MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 # 引擎类型，用于区分当前策略的运行环境
 ENGINETYPE_BACKTESTING = 'backtesting'  # 回测
 ENGINETYPE_TRADING = 'trading'          # 实盘
+
+import sys
+import os
+
+trader_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if trader_path not in sys.path:
+    sys.path.append(trader_path)
 
 # CTA引擎中涉及的数据类定义
 from vtConstant import *

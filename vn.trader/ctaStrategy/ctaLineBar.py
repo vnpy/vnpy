@@ -1412,10 +1412,16 @@ class CtaLineBar(object):
 
     def __recountKF(self):
         """计算卡尔曼过滤器均线"""
-        min_len = 200
+        min_len = 20
         if not self.inputKF or self.kf is None:
             return
+
         if len(self.lineBar) < min_len:
+            # 数量不足时，不做滤波处理，直接吻合（若改为EMA更好）
+            if self.mode == self.TICK_MODE and len(self.lineBar)>1:
+                self.lineStateMean.append(self.lineBar[-2].close)
+            else:
+                self.lineStateMean.append(self.lineBar[-1].close)
             return
 
         if len(self.lineStateMean) ==0 or len(self.lineStateCovar) ==0:
@@ -1448,7 +1454,7 @@ class CtaLineBar(object):
         if len(self.lineStateCovar) > min_len:
             del self.lineStateCovar[0]
 
-        self.lineStateMean.append(m )
+        self.lineStateMean.append(m)
         self.lineStateCovar.append(c)
 
     # ----------------------------------------------------------------------
