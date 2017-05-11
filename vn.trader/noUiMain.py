@@ -32,13 +32,15 @@ class NoUiMain(object):
         # gateway 是否连接
         self.connected = False
         # gateway 的连接名称，在vtEngine.initGateway()里面定义，对应的配置文件是 "连接名称_connect.json"，
-        self.gateway_name = 'CTP_EBF'
+        self.gateway_name = 'CTP'
         # 启动的策略实例，须在catAlgo/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB',u'atr_rsi']
         self.strategies = [u'S28_HCRB']
 
         self.g_count = 0
 
-        # 实例化主引擎
+        self.last_dt = datetime.now()
+
+        # 实例化 主引擎
         print u'instance mainengine'
         self.mainEngine = MainEngine()
 
@@ -64,28 +66,44 @@ class NoUiMain(object):
 
         # 十秒才执行一次检查
         self.g_count += 1
-        if self.g_count <= 10:
+        if self.g_count <= 20:
             return
         self.g_count = 0
-        print u'noUiMain.py checkpoint:{0}'.format(datetime.now())
+        dt = datetime.now()
+        if dt.hour != self.last_dt.hour:
+            self.last_dt = dt
+            self.mainEngine.writeLog( u'noUiMain.py checkpoint:{0}'.format(dt))
 
         # 定时断开
         if self.trade_off():
+            """非交易时间"""
             if self.connected:
-                self.disconnect()
                 self.mainEngine.writeLog(u'断开连接{0}'.format(self.gateway_name))
+                self.disconnect()
                 self.mainEngine.writeLog(u'清空数据引擎')
                 self.mainEngine.clearData()
                 self.connected = False
             return
 
-        # 定时重连
+        # 交易时间内，定时重连和检查
         if not self.connected:
+            self.mainEngine.writeLog(u'启动连接{0}'.format(self.gateway_name))
             self.mainEngine.writeLog(u'清空数据引擎')
             self.mainEngine.clearData()
             self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
             self.mainEngine.connect(self.gateway_name)
             self.connected = True
+            return
+        else:
+            if not self.mainEngine.checkGatewayStatus(self.gateway_name):
+                self.mainEngine.writeLog(u'检查连接{0}异常，重新启动连接'.format(self.gateway_name))
+                self.mainEngine.writeLog(u'断开连接{0}'.format(self.gateway_name))
+                self.disconnect()
+                self.mainEngine.writeLog(u'清空数据引擎')
+                self.mainEngine.clearData()
+                self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
+                self.mainEngine.connect(self.gateway_name)
+                self.connected = True
 
     def Start(self):
         """启动"""

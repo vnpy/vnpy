@@ -145,7 +145,11 @@ class VtGateway(object):
     def qryPosition(self):
         """查询持仓"""
         pass
-    
+
+    def checkStatus(self):
+        """查询状态"""
+        return True
+
     # ----------------------------------------------------------------------
     def close(self):
         """关闭"""

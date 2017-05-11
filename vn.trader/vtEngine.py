@@ -86,6 +86,16 @@ class MainEngine(object):
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
 
+    def checkGatewayStatus(self,gatewayName):
+        """check gateway connect status"""
+        if gatewayName in self.gatewayDict:
+            gateway = self.gatewayDict[gatewayName]
+            return gateway.checkStatus()
+
+        else:
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+            return False
+
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""

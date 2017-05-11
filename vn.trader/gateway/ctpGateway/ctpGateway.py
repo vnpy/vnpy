@@ -117,7 +117,6 @@ class CtpGateway(VtGateway):
             f = file(fileName)
         except IOError:
             self.writeLog(text.LOADING_ERROR)
-
             return
 
         # 解析json文件
@@ -173,16 +172,28 @@ class CtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
-        if self.tdApi is not None:
-            self.tdApi.qryAccount()
-        
+        if self.tdApi is None:
+            self.tdConnected = False
+            return
+        self.tdApi.qryAccount()
+
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
         if self.tdApi is None:
+            self.mdConnected = False
             return
         self.tdApi.qryPosition()
-        
+
+    def checkStatus(self):
+        """查询md/td的状态"""
+        if self.tdApi is None or self.mdApi is None:
+            return False
+
+        if not self.tdConnected or not self.mdConnected:
+            return False
+
+        return True
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
@@ -190,11 +201,13 @@ class CtpGateway(VtGateway):
             tmp1 = self.mdApi
             self.mdApi = None
             tmp1.close()
+            self.mdConnected = False
 
         if self.tdConnected and self.tdApi is not None:
             tmp2 = self.tdApi
             self.tdApi = None
             tmp2.close()
+            self.tdConnected = False
 
         self.writeLog(u'主动断开连接')
         
@@ -560,7 +573,8 @@ class CtpTdApi(TdApi):
             self.gateway.tdConnected = True
             
             self.writeLog(text.TRADING_SERVER_LOGIN)
-            
+
+
             # 确认结算信息
             req = {}
             req['BrokerID'] = self.brokerID
