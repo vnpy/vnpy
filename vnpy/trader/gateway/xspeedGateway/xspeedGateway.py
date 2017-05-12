@@ -30,8 +30,9 @@ offsetMap = {}
 offsetMap[OFFSET_OPEN] = defineDict['DFITC_SPD_OPEN']
 offsetMap[OFFSET_CLOSE] = defineDict['DFITC_SPD_CLOSE']
 offsetMap[OFFSET_CLOSETODAY] = defineDict['DFITC_SPD_CLOSETODAY']
-offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['DFITC_SPD_CLOSE']
+#offsetMap[OFFSET_CLOSEYESTERDAY] = defineDict['DFITC_SPD_CLOSE']
 offsetMapReverse = {v:k for k,v in offsetMap.items()}
+
 
 # 交易所类型映射
 exchangeMap = {}
@@ -41,6 +42,12 @@ exchangeMap[EXCHANGE_CZCE] = defineDict['DFITC_EXCHANGE_CZCE']
 exchangeMap[EXCHANGE_DCE] = defineDict['DFITC_EXCHANGE_DCE']
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
+
+# 合约类型映射
+productMap = {}
+productMap[PRODUCT_FUTURES] = defineDict["DFITC_COMM_TYPE"]
+productMap[PRODUCT_OPTION] = defineDict["DFITC_OPT_TYPE"]
+productMapReverse = {v:k for k, v in productMap.items()}
 
 # 委托状态类型映射
 orderStatusMap = {}
@@ -128,9 +135,14 @@ class XspeedGateway(VtGateway):
         self.tdApi.qryAccount()
         
     #----------------------------------------------------------------------
-    def qryPosition(self):
+    def qryFuturesPosition(self):
         """查询持仓"""
-        self.tdApi.qryPosition()
+        self.tdApi.qryFuturesPosition()
+        
+    #----------------------------------------------------------------------
+    def qryOptionPosition(self):
+        """查询期权持仓"""
+        self.tdApi.qryOptionPosition()        
         
     #----------------------------------------------------------------------
     def close(self):
@@ -145,10 +157,10 @@ class XspeedGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            self.qryFunctionList = [self.qryAccount, self.qryPosition]
+            self.qryFunctionList = [self.qryAccount, self.qryFuturesPosition, self.qryOptionPosition]
             
             self.qryCount = 0           # 查询触发倒计时
-            self.qryTrigger = 2         # 查询触发点
+            self.qryTrigger = 1         # 查询触发点
             self.qryNextFunction = 0    # 上次运行的查询函数索引
             
             self.startQuery()
@@ -422,8 +434,14 @@ class XspeedTdApi(TdApi):
         self.sessionID = EMPTY_INT          # 会话编号
         
         self.posDict = {}                   # 缓存持仓数据的字典
+        self.optionPosReqID = 0             # 期权持仓查询ID
+        self.futuresPosReqID = 0            # 期货持仓查询ID
+        self.optionPosCompleted = False
+        self.futuresPosCompleted = False
+        
         self.orderDict = {}                 # 缓存委托数据的字典
         self.spdOrderDict = {}              # 飞创柜台委托号字典
+        self.contractDict = {}              # 缓存合约数据的字典
     
     #----------------------------------------------------------------------
     def connect(self, accountID, password, address):
@@ -466,13 +484,90 @@ class XspeedTdApi(TdApi):
         self.reqQryCustomerCapital(req)
         
     #----------------------------------------------------------------------
-    def qryPosition(self):
-        """查询持仓"""
+    def qryFuturesPosition(self):
+        """查询期货持仓"""
+        # 清空缓存
+        self.posDict.clear()
+        
         self.reqID += 1
         req = {}
         req['lRequestID'] = self.reqID
         req['accountID'] = self.accountID
+        req['instrumentType'] = defineDict["DFITC_COMM_TYPE"]
         self.reqQryPosition(req)
+        self.futuresPosReqID = self.reqID
+        
+    #----------------------------------------------------------------------
+    def qryOptionPosition(self):
+        """查询期权持仓"""
+        self.posDict.clear()
+        
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['accountID'] = self.accountID
+        req['instrumentType'] = defineDict["DFITC_OPT_TYPE"]
+        self.reqQryPosition(req)        
+        self.optionPosReqID = self.reqID
+    
+    #----------------------------------------------------------------------
+    def qryContracts(self):
+        """查询合约"""
+        # 查询期货合约代码
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['instrumentType'] = defineDict["DFITC_COMM_TYPE"]
+        self.reqQryExchangeInstrument(req)      
+    
+        sleep(1)
+    
+        # 查询期权合约代码
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['instrumentType'] = defineDict["DFITC_OPT_TYPE"]
+        self.reqQryExchangeInstrument(req)       
+        
+    #----------------------------------------------------------------------
+    def qryTrade(self):
+        """查询成交"""
+        # 查询成交
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['accountID'] = self.accountID
+        req['instrumentType'] = defineDict["DFITC_COMM_TYPE"]
+        self.reqQryMatchInfo(req) 
+    
+        sleep(1)
+    
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['accountID'] = self.accountID
+        req['instrumentType'] = defineDict["DFITC_OPT_TYPE"]
+        self.reqQryMatchInfo(req)     
+        
+    #----------------------------------------------------------------------
+    def qryOrder(self):
+        """查询委托"""
+        # 查询委托
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['accountID'] = self.accountID
+        req['instrumentType'] = defineDict["DFITC_COMM_TYPE"]
+        self.reqQryOrderInfo(req)
+    
+        sleep(1)
+    
+        self.reqID += 1
+        req = {}
+        req['lRequestID'] = self.reqID
+        req['accountID'] = self.accountID
+        req['instrumentType'] = defineDict["DFITC_OPT_TYPE"]
+        self.reqQryOrderInfo(req)                   
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -498,6 +593,11 @@ class XspeedTdApi(TdApi):
         req['speculator'] = defineDict['DFITC_SPD_SPECULATOR']       # 投机单
         req['minMatchAmount'] = 1                                    # 最小成交量为1
         req['lRequestID'] = self.reqID
+        
+        # 合约类型获取
+        contract = self.contractDict.get(orderReq.symbol, None)
+        if contract:
+            req['instrumentType'] = productMap.get(contract.productClass, '')
         
         self.reqInsertOrder(req)
         
@@ -568,11 +668,7 @@ class XspeedTdApi(TdApi):
             log.logContent = u'交易服务器登录完成'
             self.gateway.onLog(log)
             
-            # 查询合约代码
-            self.reqID += 1
-            req = {}
-            req['lRequestID'] = self.reqID
-            self.reqQryExchangeInstrument(req)          
+            self.qryContracts()
 
         # 否则，推送错误信息
         else:
@@ -607,6 +703,16 @@ class XspeedTdApi(TdApi):
     def onRspInsertOrder(self, data, error) :
         """发单错误（柜台）"""
         if error['nErrorID']:
+            order = VtOrderData()
+            order.gatewayName = self.gatewayName
+            order.symbol = error['instrumentID']
+            order.vtSymbol = order.symbol
+            order.orderID = str(error['localOrderID'])
+            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+            order.sessionID = error['sessionID']
+            order.status = STATUS_REJECTED      
+            self.gateway.onOrder(order)
+
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
@@ -751,43 +857,41 @@ class XspeedTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryOrderInfo(self, data, error, last) :
         """查询委托回报"""
-        if not data['localOrderID']:
-            return 
-        
-        # 更新最大报单编号
-        newLocalID = data['localOrderID']
-        self.localID = max(self.localID, int(newLocalID))
-        self.spdOrderDict[newLocalID] = data['spdOrderID']
-        
-        # 获取报单数据对象
-        if newLocalID in self.orderDict:
-            order = self.orderDict[newLocalID]
-        else:
-            order = VtOrderData()
-            self.orderDict[newLocalID] = order
-            order.gatewayName = self.gatewayName
-        
-            # 保存后续不会变化的数据
-            order.symbol = data['instrumentID']
-            order.exchange = exchangeMapReverse[data['exchangeID']]
-            order.vtSymbol = order.symbol
+        if data['instrumentID']:        
+            # 更新最大报单编号
+            newLocalID = data['localOrderID']
+            self.localID = max(self.localID, int(newLocalID))
+            self.spdOrderDict[newLocalID] = data['spdOrderID']
             
-            order.orderID = str(newLocalID)
-            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+            # 获取报单数据对象
+            if newLocalID in self.orderDict:
+                order = self.orderDict[newLocalID]
+            else:
+                order = VtOrderData()
+                self.orderDict[newLocalID] = order
+                order.gatewayName = self.gatewayName
             
-            order.direction = directionMapReverse.get(data['buySellType'], DIRECTION_UNKNOWN)
-            order.offset = offsetMapReverse.get(data['openClose'], OFFSET_UNKNOWN)
-
-            order.price = data['insertPrice']
-            order.totalVolume = data['orderAmount']
-            #order.sessionID = data['sessionID']         
-
-        order.status = orderStatusMapReverse.get(data['orderStatus'], STATUS_UNKNOWN)
-        order.tradedVolume = data['matchedAmount']
-        order.orderTime = data['commTime']
+                # 保存后续不会变化的数据
+                order.symbol = data['instrumentID']
+                order.exchange = exchangeMapReverse[data['exchangeID']]
+                order.vtSymbol = order.symbol
+                
+                order.orderID = str(newLocalID)
+                order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+                
+                order.direction = directionMapReverse.get(data['buySellType'], DIRECTION_UNKNOWN)
+                order.offset = offsetMapReverse.get(data['openClose'], OFFSET_UNKNOWN)
+    
+                order.price = data['insertPrice']
+                order.totalVolume = data['orderAmount']
+                #order.sessionID = data['sessionID']         
+    
+            order.status = orderStatusMapReverse.get(data['orderStatus'], STATUS_UNKNOWN)
+            order.tradedVolume = data['matchedAmount']
+            order.orderTime = data['commTime']
         
-        # 推送
-        self.gateway.onOrder(copy(order))
+            # 推送
+            self.gateway.onOrder(copy(order))
         
         if last:
             log = VtLogData()
@@ -798,34 +902,35 @@ class XspeedTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryMatchInfo(self, data, error, last) :
         """"""
-        # 创建报单数据对象
-        trade = VtTradeData()
-        trade.gatewayName = self.gatewayName
-        
-        # 保存代码和报单号
-        trade.symbol = data['instrumentID']
-        trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
-        trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
-        
-        trade.tradeID = data['matchedID']
-        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
-        
-        trade.orderID = str(data['localOrderID'])
-        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
-        
-        # 方向
-        trade.direction = directionMapReverse.get(data['buySellType'], DIRECTION_UNKNOWN)
+        if data['instrumentID']:        
+            # 创建报单数据对象
+            trade = VtTradeData()
+            trade.gatewayName = self.gatewayName
             
-        # 开平
-        trade.offset = offsetMapReverse.get(data['openClose'], OFFSET_UNKNOWN)
+            # 保存代码和报单号
+            trade.symbol = data['instrumentID']
+            trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+            trade.vtSymbol = trade.symbol #'.'.join([trade.symbol, trade.exchange])
             
-        # 价格、报单量等数值
-        trade.price = data['matchedPrice']
-        trade.volume = data['matchedAmount']
-        trade.tradeTime = data['matchedTime']
-        
-        # 推送
-        self.gateway.onTrade(trade)
+            trade.tradeID = data['matchedID']
+            trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+            
+            trade.orderID = str(data['localOrderID'])
+            trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
+            
+            # 方向
+            trade.direction = directionMapReverse.get(data['buySellType'], DIRECTION_UNKNOWN)
+                
+            # 开平
+            trade.offset = offsetMapReverse.get(data['openClose'], OFFSET_UNKNOWN)
+                
+            # 价格、报单量等数值
+            trade.price = data['matchedPrice']
+            trade.volume = data['matchedAmount']
+            trade.tradeTime = data['matchedTime']
+            
+            # 推送
+            self.gateway.onTrade(trade)
         
         if last:
             log = VtLogData()
@@ -836,44 +941,50 @@ class XspeedTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryPosition(self, data, error, last) :
         """持仓查询回报"""
-        # 获取缓存字典中的持仓对象，若无则创建并初始化
-        positionName = '.'.join([data['instrumentID'], str(data['buySellType'])])
-
-        if positionName in self.posDict:
-            pos = self.posDict[positionName]
-        else:
-            pos = VtPositionData()
-            self.posDict[positionName] = pos
-
-            pos.gatewayName = self.gatewayName
-
-            # 保存代码
-            pos.symbol = data['instrumentID']
-            pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
-
-            # 方向
-            pos.direction = directionMapReverse.get(data['buySellType'], '')
-
-            # VT系统持仓名
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])            
-
-        # 持仓量
-        if data['positionAmount']:
-            pos.position = data['positionAmount']
-
-        if data['lastAmount']:
-            pos.ydPosition = data['lastAmount']        
-
-        # 持仓均价
-        pos.price = data['positionAvgPrice']
-        
-        # 推送
-        newpos = copy(pos)
-        self.gateway.onPosition(newpos)
+        # 忽略空数据
+        if data['instrumentID']:
+            # 获取缓存字典中的持仓对象，若无则创建并初始化
+            positionName = '.'.join([data['instrumentID'], str(data['buySellType'])])
+    
+            if positionName in self.posDict:
+                pos = self.posDict[positionName]
+            else:
+                pos = VtPositionData()
+                self.posDict[positionName] = pos
+    
+                pos.gatewayName = self.gatewayName
+    
+                # 保存代码
+                pos.symbol = data['instrumentID']
+                pos.vtSymbol = pos.symbol       # 这里因为data中没有ExchangeID这个字段
+    
+                # 方向
+                pos.direction = directionMapReverse.get(data['buySellType'], '')
+    
+                # VT系统持仓名
+                pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])            
+    
+            # 持仓量
+            if data['positionAmount']:
+                pos.position = data['positionAmount']
+    
+            if data['lastAmount']:
+                pos.ydPosition = data['lastAmount']        
+    
+            # 持仓均价
+            pos.price = data['positionAvgPrice']
+            
+        # 查询完成后推送
+        if last:
+            for pos in self.posDict.values():
+                self.gateway.onPosition(pos)
         
     #----------------------------------------------------------------------
     def onRspCustomerCapital(self, data, error, last) :
         """资金账户查询回报"""
+        if not data['accountID']:
+            return
+        
         account = VtAccountData()
         account.gatewayName = self.gatewayName
     
@@ -888,7 +999,8 @@ class XspeedTdApi(TdApi):
         account.margin = data['margin']
         account.closeProfit = data['closeProfitLoss']
         account.positionProfit = data['positionProfitLoss']
-        account.balance = data['todayEquity']
+        account.balance = data['todayEquity'] 
+        account.marketValue = account.balance + data['optMarketValue']
         
         # 推送
         self.gateway.onAccount(account)
@@ -902,21 +1014,21 @@ class XspeedTdApi(TdApi):
         contract.symbol = data['instrumentID']
         contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
         contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
-        contract.name = data['VarietyName'].decode('GBK') + contract.symbol
+        if data['VarietyName'] == contract.symbol:
+            contract.name = data['VarietyName']
+        else:
+            contract.name = data['VarietyName'].decode('GBK') + contract.symbol
         
         # 合约数值
-        contract.size = data['contractMultiplier']
+        contract.size = int(data['contractMultiplier'])
         contract.priceTick = data['minPriceFluctuation']
         contract.strikePrice = data['strikePrice']
         contract.underlyingSymbol = data['underlying']
+        contract.expiryDate = data['instrumentMaturity'].replace('.', '')
         
         # 合约类型
-        if data['instrumentType'] == 0:
-            contract.productClass = PRODUCT_FUTURES
-        elif data['instrumentType'] == 1:
-            contract.productClass = PRODUCT_OPTION
-        else:
-            contract.productClass = PRODUCT_UNKNOWN
+        contract.productClass = productMapReverse.get(data['instrumentType'], 
+                                                      PRODUCT_UNKNOWN)
         
         # 期权类型
         if data['optionType'] == 1:
@@ -926,26 +1038,17 @@ class XspeedTdApi(TdApi):
         
         # 推送
         self.gateway.onContract(contract)
+        self.contractDict[contract.symbol] = contract
         
-        if last:
+        if last and contract.productClass == PRODUCT_OPTION:
             log = VtLogData()
             log.gatewayName = self.gatewayName
             log.logContent = u'交易合约信息获取完成'
             self.gateway.onLog(log)
             
-            # 查询委托
-            self.reqID += 1
-            req = {}
-            req['lRequestID'] = self.reqID
-            req['accountID'] = self.accountID
-            self.reqQryOrderInfo(req)
-        
-            # 查询成交
-            self.reqID += 1
-            req = {}
-            req['lRequestID'] = self.reqID
-            req['accountID'] = self.accountID
-            self.reqQryMatchInfo(req)              
+            self.qryTrade()
+            sleep(1)
+            self.qryOrder()
         
     #----------------------------------------------------------------------
     def onRspArbitrageInstrument(self, data, error, last) :
