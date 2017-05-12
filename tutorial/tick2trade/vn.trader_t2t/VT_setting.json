@@ -1,0 +1,9 @@
+{
+	"fontFamily": "微软雅黑",
+	"fontSize": 12,
+
+	"mongoHost": "localhost",
+	"mongoPort": 27017,
+
+	"darkStyle": true
+}
