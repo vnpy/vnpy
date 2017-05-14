@@ -1,13 +1,13 @@
 [
     {
-        "name": "double ema",
-        "className": "EmaDemoStrategy",
-        "vtSymbol": "IF1706"
+        "name": "tdCat",
+        "className": "TdCatStrategy",
+        "vtSymbol": "rb1710"
     },
 
     {
-        "name": "tdCat",
-        "className": "TdCatStrategy",
+        "name": "Shock",
+        "className": "ShockStrategy",
         "vtSymbol": "rb1710"
     }
 ]
