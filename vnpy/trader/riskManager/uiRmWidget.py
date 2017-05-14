@@ -24,8 +24,6 @@ class RmSpinBox(QtWidgets.QSpinBox):
         
         self.setValue(value)
     
-    
-
 
 ########################################################################
 class RmLine(QtWidgets.QFrame):
@@ -38,8 +36,6 @@ class RmLine(QtWidgets.QFrame):
         self.setFrameShape(self.HLine)
         self.setFrameShadow(self.Sunken)
     
-    
-  
 
 ########################################################################
 class RmEngineManager(QtWidgets.QWidget):
@@ -62,7 +58,7 @@ class RmEngineManager(QtWidgets.QWidget):
         self.setWindowTitle(text.RISK_MANAGER)
         
         # 设置界面
-        self.buttonSwitchEngineStatus = QtGui.QPushButton(text.RISK_MANAGER_STOP)
+        self.buttonSwitchEngineStatus = QtWidgets.QPushButton(text.RISK_MANAGER_STOP)
         
         self.spinOrderFlowLimit = RmSpinBox(self.rmEngine.orderFlowLimit)
         self.spinOrderFlowClear = RmSpinBox(self.rmEngine.orderFlowClear)
@@ -71,12 +67,12 @@ class RmEngineManager(QtWidgets.QWidget):
         self.spinWorkingOrderLimit = RmSpinBox(self.rmEngine.workingOrderLimit)
         self.spinOrderCancelLimit = RmSpinBox(self.rmEngine.orderCancelLimit)
         
-        buttonClearOrderFlowCount = QtGui.QPushButton(text.CLEAR_ORDER_FLOW_COUNT)
-        buttonClearTradeCount = QtGui.QPushButton(text.CLEAR_TOTAL_FILL_COUNT)
-        buttonSaveSetting = QtGui.QPushButton(text.SAVE_SETTING)
+        buttonClearOrderFlowCount = QtWidgets.QPushButton(text.CLEAR_ORDER_FLOW_COUNT)
+        buttonClearTradeCount = QtWidgets.QPushButton(text.CLEAR_TOTAL_FILL_COUNT)
+        buttonSaveSetting = QtWidgets.QPushButton(text.SAVE_SETTING)
         
-        Label = QtGui.QLabel
-        grid = QtGui.QGridLayout()
+        Label = QtWidgets.QLabel
+        grid = QtWidgets.QGridLayout()
         grid.addWidget(Label(text.WORKING_STATUS), 0, 0)
         grid.addWidget(self.buttonSwitchEngineStatus, 0, 1)
         grid.addWidget(RmLine(), 1, 0, 1, 2)
@@ -97,13 +93,13 @@ class RmEngineManager(QtWidgets.QWidget):
         grid.addWidget(Label(text.CONTRACT_CANCEL_LIMIT), 11, 0)
         grid.addWidget(self.spinOrderCancelLimit, 11, 1)
         
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(buttonClearOrderFlowCount)
         hbox.addWidget(buttonClearTradeCount)
         hbox.addStretch()
         hbox.addWidget(buttonSaveSetting)
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(grid)
         vbox.addLayout(hbox)
         self.setLayout(vbox)

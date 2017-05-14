@@ -23,7 +23,7 @@ for root, subdirs, files in os.walk(path):
         # 接口目录名中必须含有Gateway
         if 'Gateway' in foldername:
             # 模块名称需要上前缀
-            moduleName = 'gateway.' + foldername
+            moduleName = 'vnpy.trader.gateway.' + foldername
             
             try:
                 # 使用importlib动态载入模块，并保存到字典中

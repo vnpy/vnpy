@@ -73,7 +73,7 @@ class ClientEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
-        self.client.sendOrder(orderReq, gatewayName)    
+        return self.client.sendOrder(orderReq, gatewayName)    
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq, gatewayName):

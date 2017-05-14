@@ -101,9 +101,9 @@ class DirectionCell(QtWidgets.QTableWidgetItem):
     def setContent(self, text):
         """设置内容"""
         if text == DIRECTION_LONG or text == DIRECTION_NET:
-            self.setForeground(QtWidgets.QColor('red'))
+            self.setForeground(QtGui.QColor('red'))
         elif text == DIRECTION_SHORT:
-            self.setForeground(QtWidgets.QColor('green'))
+            self.setForeground(QtGui.QColor('green'))
         self.setText(text)
 
 
@@ -144,8 +144,8 @@ class BidCell(QtWidgets.QTableWidgetItem):
         super(BidCell, self).__init__()
         self.data = None
 
-        self.setForeground(QtWidgets.QColor('black'))
-        self.setBackground(QtWidgets.QColor(255,174,201))
+        self.setForeground(QtGui.QColor('black'))
+        self.setBackground(QtGui.QColor(255,174,201))
         
         if text:
             self.setContent(text)
@@ -166,8 +166,8 @@ class AskCell(QtWidgets.QTableWidgetItem):
         super(AskCell, self).__init__()
         self.data = None
 
-        self.setForeground(QtWidgets.QColor('black'))
-        self.setBackground(QtWidgets.QColor(160,255,160))
+        self.setForeground(QtGui.QColor('black'))
+        self.setBackground(QtGui.QColor(160,255,160))
         
         if text:
             self.setContent(text)
@@ -392,7 +392,8 @@ class BasicMonitor(QtWidgets.QTableWidget):
         path = QtWidgets.QFileDialog.getSaveFileName(self, vtText.SAVE_DATA, '', 'CSV(*.csv)')
 
         try:
-            if not path.isEmpty():
+            #if not path.isEmpty():
+            if path:
                 with open(unicode(path), 'wb') as f:
                     writer = csv.writer(f)
                     
@@ -427,7 +428,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
     #----------------------------------------------------------------------
     def contextMenuEvent(self, event):
         """右键点击事件"""
-        self.menu.popup(QtWidgets.QCursor.pos())    
+        self.menu.popup(QtGui.QCursor.pos())    
 
 
 ########################################################################

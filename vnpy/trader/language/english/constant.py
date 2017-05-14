@@ -13,6 +13,7 @@ DIRECTION_SHORT = u'short'
 DIRECTION_UNKNOWN = u'unknown'
 DIRECTION_NET = u'net'
 DIRECTION_SELL = u'sell'      # IB接口
+DIRECTION_COVEREDSHORT = u'covered short'    # 证券期权
 
 # 开平常量
 OFFSET_NONE = u'none'

@@ -160,7 +160,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         if not displayName:
             displayName = gatewayName
-        displayName = gatewayName
+        
         actionName = vtText.CONNECT + displayName
         
         menu.addAction(self.createAction(actionName, connect))
