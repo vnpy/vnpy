@@ -89,11 +89,13 @@ class ShockStrategy(CtaTemplate):
                 self.cover(tick.askPrice1, self.tradeVolume)
                 self.noTrading = False
                 self.openCount = self.maxOpenCount      #不再开仓
+                print "loss,cover:", tick.lastPrice
             # 存在多单，卖出止盈
             elif self.pos > 0 and self.noTrading:
                 self.sell(tick.bidPrice1, self.tradeVolume)
                 self.openCount = self.maxOpenCount  # 不再开仓
                 self.noTrading = False
+                print "win,sell:", tick.lastPrice
             # 无持仓，无操作
             else:
                 pass
@@ -102,12 +104,14 @@ class ShockStrategy(CtaTemplate):
             # 存在多单，卖出止盈
             if self.pos > 0 and self.noTrading:
                 self.sell(tick.bidPrice1, self.tradeVolume)
+                print "win,sell:",tick.lastPrice
                 self.noTrading = False
             # 无持仓，开空单
             elif self.pos == 0 and self.noTrading and self.openCount < self.maxOpenCount:
                 self.short(tick.bidPrice1, self.tradeVolume)
                 self.openCount += 1
                 self.noTrading = False
+                print "open,short:", tick.lastPrice
             # 存在空单，无操作
             else:
                 pass
@@ -117,11 +121,13 @@ class ShockStrategy(CtaTemplate):
             if self.pos < 0 and self.noTrading:
                 self.cover(tick.askPrice1, self.tradeVolume)
                 self.noTrading = False
+                print "win,cover:", tick.lastPrice
             # 无持仓，开多单
             elif self.pos == 0 and self.noTrading and self.openCount < self.maxOpenCount:
                 self.buy(tick.askPrice1, self.tradeVolume)
                 self.openCount += 1
                 self.noTrading = False
+                print "open,buy:", tick.lastPrice
             # 存在多单，无操作
             else:
                 pass
@@ -131,11 +137,13 @@ class ShockStrategy(CtaTemplate):
                 self.cover(tick.askPrice1, self.tradeVolume)
                 self.openCount = self.maxOpenCount  # 不再开仓
                 self.noTrading = False
+                print "win,cover:", tick.lastPrice
             # 存在多单，卖出止损
             elif self.pos > 0 and self.noTrading and self.openCount < self.maxOpenCount:
                 self.sell(tick.bidPrice1, self.tradeVolume)
                 self.openCount = self.maxOpenCount  # 不再开仓
                 self.noTrading = False
+                print "loss,sell:", tick.lastPrice
             # 存在多单，无操作
             else:
                 pass
