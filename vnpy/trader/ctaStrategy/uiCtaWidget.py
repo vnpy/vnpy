@@ -6,8 +6,9 @@ CTA模块相关的GUI控制组件
 
 
 from vnpy.event import Event
-from uiBasicWidget import QtGui, QtCore, QtWidgets, BasicCell
-from language import text
+from vnpy.trader.uiBasicWidget import QtGui, QtCore, QtWidgets, BasicCell
+
+from vnpy.trader.ctaStrategy.language import text
 
 
 ########################################################################

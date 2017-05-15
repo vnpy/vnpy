@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-import vtConstant
+from vnpy.trader import vtConstant
 from lhangGateway import LhangGateway as gateway
 
 gatewayName = 'LHANG'

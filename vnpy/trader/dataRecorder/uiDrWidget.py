@@ -6,9 +6,9 @@
 
 import json
 
-from uiBasicWidget import QtWidgets, QtGui, QtCore
-from vnpy.event import *
-from language import text
+from vnpy.event import Event
+from vnpy.trader.uiBasicWidget import QtWidgets, QtGui, QtCore
+from vnpy.trader.dataRecorder.language import text
 
 
 ########################################################################

@@ -8,7 +8,7 @@ from time import sleep
 from threading import Thread
 
 from vnpy.rpc import RpcServer
-from vtEngine import MainEngine
+from vnpy.trader.vtEngine import MainEngine
 
 
 ########################################################################

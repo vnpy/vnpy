@@ -20,7 +20,7 @@ MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 
 
 # CTA引擎中涉及的数据类定义
-from vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
+from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
 
 
 ########################################################################

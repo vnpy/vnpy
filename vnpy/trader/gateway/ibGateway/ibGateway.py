@@ -18,8 +18,8 @@ from datetime import datetime, timedelta
 from copy import copy
 
 from vnpy.api.ib import *
-from vtGateway import *
-from language import text
+from vnpy.trader.vtGateway import *
+from vnpy.trader.gateway.ibGateway.language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典

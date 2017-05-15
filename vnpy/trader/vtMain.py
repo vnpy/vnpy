@@ -4,7 +4,6 @@ import sys
 import os
 import platform
 
-#from PyQt4 import QtGui, QtCore
 from qtpy import QtWidgets, QtGui
 
 from vnpy.trader.vtGlobal import globalSetting

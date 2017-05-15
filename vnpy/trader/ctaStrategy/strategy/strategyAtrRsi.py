@@ -239,7 +239,7 @@ class AtrRsiStrategy(CtaTemplate):
 if __name__ == '__main__':
     # 提供直接双击回测的功能
     # 导入PyQt4的包是为了保证matplotlib使用PyQt4而不是PySide，防止初始化出错
-    from ctaBacktesting import *
+    from vnpy.trader.ctaStrategy.ctaBacktesting import *
     from PyQt4 import QtCore, QtGui
     
     # 创建回测引擎

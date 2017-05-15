@@ -8,7 +8,7 @@ import os
 import json
 
 from vnpy.api.lts import MdApi, QryApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 
 # 以下为一些VT类型和LTS类型的映射字典

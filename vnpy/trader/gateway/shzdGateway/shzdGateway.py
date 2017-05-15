@@ -16,7 +16,7 @@ from copy import copy
 from datetime import datetime
 
 from vnpy.api.shzd import ShzdApi
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 
 # 以下为一些VT类型和SHZD类型的映射字典

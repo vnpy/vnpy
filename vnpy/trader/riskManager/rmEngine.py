@@ -11,10 +11,10 @@ import json
 import os
 import platform
 
-from vnpy.event import *
+from vnpy.event import Event
 from vnpy.trader.vtEvent import *
-from vtConstant import *
-from vtGateway import VtLogData
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtGateway import VtLogData
 
 
 ########################################################################

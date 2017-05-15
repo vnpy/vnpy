@@ -11,7 +11,7 @@ try:
 except ImportError:
     print u'请先安装WindPy接口'
 
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 交易所类型映射
 exchangeMap = {}

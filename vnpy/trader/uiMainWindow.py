@@ -2,11 +2,11 @@
 
 import psutil
 
-from gateway import GATEWAY_DICT
-from uiBasicWidget import *
-from ctaStrategy.uiCtaWidget import CtaEngineManager
-from dataRecorder.uiDrWidget import DrEngineManager
-from riskManager.uiRmWidget import RmEngineManager
+from vnpy.trader.gateway import GATEWAY_DICT
+from vnpy.trader.uiBasicWidget import *
+from vnpy.trader.ctaStrategy.uiCtaWidget import CtaEngineManager
+from vnpy.trader.dataRecorder.uiDrWidget import DrEngineManager
+from vnpy.trader.riskManager.uiRmWidget import RmEngineManager
 
 
 ########################################################################

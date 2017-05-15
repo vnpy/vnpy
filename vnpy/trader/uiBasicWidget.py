@@ -5,14 +5,13 @@ import csv
 import os
 from collections import OrderedDict
 
-#from PyQt4 import QtGui, QtCore
 from qtpy import QtWidgets, QtGui, QtCore
 
 from vnpy.event import *
 from vnpy.trader.vtEvent import *
-from vtFunction import *
-from vtGateway import *
-import vtText
+from vnpy.trader.vtFunction import *
+from vnpy.trader.vtGateway import *
+from vnpy.trader import vtText as vtText
 
 
 COLOR_RED = QtGui.QColor('red')

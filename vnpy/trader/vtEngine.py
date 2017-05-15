@@ -7,16 +7,16 @@ from datetime import datetime
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from vnpy.trader.vtGlobal import globalSetting
 from vnpy.event import *
+from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEvent import *
-from vtGateway import *
-from language import text
+from vnpy.trader.vtGateway import *
+from vnpy.trader.language import text
 
-from gateway import GATEWAY_DICT
-from ctaStrategy.ctaEngine import CtaEngine
-from dataRecorder.drEngine import DrEngine
-from riskManager.rmEngine import RmEngine
+from vnpy.trader.gateway import GATEWAY_DICT
+from vnpy.trader.ctaStrategy.ctaEngine import CtaEngine
+from vnpy.trader.dataRecorder.drEngine import DrEngine
+from vnpy.trader.riskManager.rmEngine import RmEngine
 
 
 ########################################################################
@@ -86,7 +86,7 @@ class MainEngine(object):
             
             # 接口连接后自动执行数据库连接的任务
             #self.dbConnect()        
-            
+   
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
@@ -94,7 +94,7 @@ class MainEngine(object):
         
         if gateway:
             gateway.subscribe(subscribeReq)
-            
+  
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
@@ -116,7 +116,7 @@ class MainEngine(object):
         
         if gateway:
             gateway.cancelOrder(cancelOrderReq)   
-            
+  
     #----------------------------------------------------------------------
     def qryAccount(self, gatewayName):
         """查询特定接口的账户"""

@@ -24,13 +24,14 @@ import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
-from ctaBase import *
-from strategy import STRATEGY_CLASS
-from vnpy.event import *
+from vnpy.event import Event
 from vnpy.trader.vtEvent import *
-from vtConstant import *
-from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
-from vtFunction import todayDate
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
+from vnpy.trader.vtFunction import todayDate
+
+from vnpy.trader.ctaStrategy.ctaBase import *
+from vnpy.trader.ctaStrategy.strategy import STRATEGY_CLASS
 
 
 ########################################################################

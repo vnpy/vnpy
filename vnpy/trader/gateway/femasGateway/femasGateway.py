@@ -11,7 +11,7 @@ import os
 import json
 
 from vnpy.api.femas import MdApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -948,34 +948,3 @@ class FemasTdApi(TdApi):
     def onRspQryInvestorMargin(self, data, error, n, last):
         """"""
         pass
-    
-
-#----------------------------------------------------------------------
-def test():
-    """测试"""
-    from PyQt4 import QtCore
-    import sys
-    
-    def print_log(event):
-        log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
-    
-    app = QtCore.QCoreApplication(sys.argv)    
-
-    eventEngine = EventEngine()
-    eventEngine.register(EVENT_LOG, print_log)
-    eventEngine.start()
-    
-    gateway = FemasGateway(eventEngine)
-    gateway.connect()
-    
-    sys.exit(app.exec_())
-
-#----------------------------------------------------------------------
-def generateStrLocalID(localID):
-    """把整数的本地委托号转化为字符串"""
-    return str(localID).rjust(12, '0')
-
-
-if __name__ == '__main__':
-    test()

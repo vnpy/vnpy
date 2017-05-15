@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-import vtConstant
+from vnpy.trader import vtConstant
 from xspeedGateway import XspeedGateway as gateway
 
 gatewayName = 'XSPEED'

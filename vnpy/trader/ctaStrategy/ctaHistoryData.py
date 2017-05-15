@@ -8,14 +8,16 @@
 """
 
 from datetime import datetime, timedelta
-import pymongo
 from time import time
 from multiprocessing.pool import ThreadPool
 
+import pymongo
+
 from vnpy.trader.vtGlobal import globalSetting
-from ctaBase import *
-from vtConstant import *
-from datayesClient import DatayesClient
+from vnpy.trader.vtConstant import *
+
+from vnpy.trader.ctaStrategy.ctaBase import *
+from vnpy.trader.ctaStrategy.datayesClient import DatayesClient
 
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 

@@ -5,9 +5,10 @@
 '''
 
 
-from uiBasicWidget import QtGui, QtWidgets, QtCore
-from vnpy.event import *
-from language import text
+from vnpy.event import Event
+
+from vnpy.trader.uiBasicWidget import QtGui, QtWidgets, QtCore
+from vnpy.trader.riskManager.language import text
 
 
 ########################################################################

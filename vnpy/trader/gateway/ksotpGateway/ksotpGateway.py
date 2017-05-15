@@ -9,7 +9,7 @@ import os
 import json
 
 from vnpy.api.ksotp import MdApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -1810,32 +1810,3 @@ class KsotpTdApi(TdApi):
         """"""
         pass
             
-    
-        
-    
-
-
-#----------------------------------------------------------------------
-def test():
-    """测试"""
-    from PyQt4 import QtCore
-    import sys
-    
-    def print_log(event):
-        log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
-    
-    app = QtCore.QCoreApplication(sys.argv)    
-
-    eventEngine = EventEngine()
-    eventEngine.register(EVENT_LOG, print_log)
-    eventEngine.start()
-    
-    gateway = KsotpGateway(eventEngine)
-    gateway.connect()
-    
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    test()

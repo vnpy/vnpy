@@ -6,12 +6,6 @@
 
 from __future__ import division
 
-
-# 把vn.trader根目录添加到python环境变量中
-import sys
-sys.path.append('..')
-
-
 # 常量定义
 # CTA引擎中涉及到的交易方向类型
 CTAORDER_BUY = u'买开'

@@ -10,7 +10,7 @@ import time
 from copy import copy
 
 from vnpy.api.xspeed import MdApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 以下为一些VT类型和XSPEED类型的映射字典
 # 价格类型映射

@@ -14,7 +14,7 @@ from copy import copy
 from datetime import datetime
 
 from vnpy.api.sgit import MdApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 
 # 以下为一些VT类型和SGIT类型的映射字典
@@ -1411,29 +1411,3 @@ class PositionBuffer(object):
     def getPos(self):
         """获取当前的持仓数据"""
         return copy(self.pos)
-
-
-#----------------------------------------------------------------------
-def test():
-    """测试"""
-    from PyQt4 import QtCore
-    import sys
-    
-    def print_log(event):
-        log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
-    
-    app = QtCore.QCoreApplication(sys.argv)    
-
-    eventEngine = EventEngine()
-    eventEngine.register(EVENT_LOG, print_log)
-    eventEngine.start()
-    
-    gateway = SgitGateway(eventEngine)
-    gateway.connect()
-    
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    test()

@@ -11,9 +11,9 @@ from uiMainWindow import *
 from vnpy.event import EventEngine
 from vnpy.rpc import RpcClient
 
-from ctaStrategy.ctaEngine import CtaEngine
-from dataRecorder.drEngine import DrEngine
-from riskManager.rmEngine import RmEngine
+from vnpy.trader.ctaStrategy.ctaEngine import CtaEngine
+from vnpy.trader.dataRecorder.drEngine import DrEngine
+from vnpy.trader.riskManager.rmEngine import RmEngine
 
 
 

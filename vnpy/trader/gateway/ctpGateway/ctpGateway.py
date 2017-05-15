@@ -15,7 +15,7 @@ from datetime import datetime
 
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
-from language import text
+from vnpy.trader.gateway.ctpGateway.language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -1458,29 +1458,3 @@ class CtpTdApi(TdApi):
         log.gatewayName = self.gatewayName
         log.logContent = content
         self.gateway.onLog(log)        
-
-
-#----------------------------------------------------------------------
-def test():
-    """测试"""
-    from PyQt4 import QtCore
-    import sys
-    
-    def print_log(event):
-        log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
-    
-    app = QtCore.QCoreApplication(sys.argv)    
-
-    eventEngine = EventEngine()
-    eventEngine.register(EVENT_LOG, print_log)
-    eventEngine.start()
-    
-    gateway = CtpGateway(eventEngine)
-    gateway.connect()
-    
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    test()
