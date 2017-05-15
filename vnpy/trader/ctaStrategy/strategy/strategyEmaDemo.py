@@ -11,7 +11,9 @@
 也希望社区能做出一个解决了以上潜在风险的Demo出来。
 """
 
+from __future__ import division
 
+from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
 from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
 
@@ -101,7 +103,7 @@ class EmaDemoStrategy(CtaTemplate):
             if self.bar:
                 self.onBar(self.bar)
             
-            bar = CtaBarData()              
+            bar = VtBarData()              
             bar.vtSymbol = tick.vtSymbol
             bar.symbol = tick.symbol
             bar.exchange = tick.exchange

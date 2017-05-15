@@ -6,8 +6,11 @@
 
 import json
 
+from qtpy import QtWidgets, QtGui, QtCore
+
 from vnpy.event import Event
-from vnpy.trader.uiBasicWidget import QtWidgets, QtGui, QtCore
+from vnpy.trader.vtEvent import *
+
 from vnpy.trader.dataRecorder.language import text
 
 
@@ -56,40 +59,40 @@ class DrEngineManager(QtWidgets.QWidget):
         self.setWindowTitle(text.DATA_RECORDER)
         
         # 记录合约配置监控
-        tickLabel = QtGui.QLabel(text.TICK_RECORD)
-        self.tickTable = QtGui.QTableWidget()
+        tickLabel = QtWidgets.QLabel(text.TICK_RECORD)
+        self.tickTable = QtWidgets.QTableWidget()
         self.tickTable.setColumnCount(2)
         self.tickTable.verticalHeader().setVisible(False)
-        self.tickTable.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
-        self.tickTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.tickTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.tickTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.tickTable.setAlternatingRowColors(True)
         self.tickTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
         
-        barLabel = QtGui.QLabel(text.BAR_RECORD)
-        self.barTable = QtGui.QTableWidget()
+        barLabel = QtWidgets.QLabel(text.BAR_RECORD)
+        self.barTable = QtWidgets.QTableWidget()
         self.barTable.setColumnCount(2)
         self.barTable.verticalHeader().setVisible(False)
-        self.barTable.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
-        self.barTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.barTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.barTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.barTable.setAlternatingRowColors(True)        
         self.barTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
 
-        activeLabel = QtGui.QLabel(text.DOMINANT_CONTRACT)
-        self.activeTable = QtGui.QTableWidget()
+        activeLabel = QtWidgets.QLabel(text.DOMINANT_CONTRACT)
+        self.activeTable = QtWidgets.QTableWidget()
         self.activeTable.setColumnCount(2)
         self.activeTable.verticalHeader().setVisible(False)
-        self.activeTable.setEditTriggers(QtGui.QTableWidget.NoEditTriggers)
-        self.activeTable.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        self.activeTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.activeTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.activeTable.setAlternatingRowColors(True)        
         self.activeTable.setHorizontalHeaderLabels([text.DOMINANT_SYMBOL, text.CONTRACT_SYMBOL])
 
         # 日志监控
-        self.logMonitor = QtGui.QTextEdit()
+        self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         self.logMonitor.setMinimumHeight(600)
         
         # 设置布局
-        grid = QtGui.QGridLayout()
+        grid = QtWidgets.QGridLayout()
         
         grid.addWidget(tickLabel, 0, 0)
         grid.addWidget(barLabel, 0, 1)
@@ -98,7 +101,7 @@ class DrEngineManager(QtWidgets.QWidget):
         grid.addWidget(self.barTable, 1, 1)
         grid.addWidget(self.activeTable, 1, 2)        
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(grid)
         vbox.addWidget(self.logMonitor)
         self.setLayout(vbox)

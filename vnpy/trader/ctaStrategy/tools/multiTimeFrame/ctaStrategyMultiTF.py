@@ -3,6 +3,7 @@
 This file tweaks ctaTemplate Module to suit multi-TimeFrame strategies.
 """
 
+
 from strategyAtrRsi import *
 from ctaBase import *
 from ctaTemplate import CtaTemplate

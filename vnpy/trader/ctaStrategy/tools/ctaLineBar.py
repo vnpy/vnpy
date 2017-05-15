@@ -4,7 +4,7 @@
 # WeChat/QQ: 28888502
 
 from vtConstant import *
-from ctaBase import *
+from vnpy.trader.vtObject import VtBarData
 
 from datetime import datetime
 
@@ -240,7 +240,7 @@ class CtaLineBar(object):
 
     def __firstTick(self,tick):
         """ K线的第一个Tick数据"""
-        self.bar = CtaBarData()                  # 创建新的K线
+        self.bar = VtBarData()                  # 创建新的K线
 
         self.bar.vtSymbol = tick.vtSymbol
         self.bar.symbol = tick.symbol

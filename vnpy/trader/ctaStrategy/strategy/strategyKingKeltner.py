@@ -15,6 +15,7 @@ from __future__ import division
 import talib
 import numpy as np
 
+from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
 from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
 
@@ -110,7 +111,7 @@ class KkStrategy(CtaTemplate):
             if self.bar:
                 self.onBar(self.bar)
 
-            bar = CtaBarData()              
+            bar = VtBarData()              
             bar.vtSymbol = tick.vtSymbol
             bar.symbol = tick.symbol
             bar.exchange = tick.exchange
@@ -154,7 +155,7 @@ class KkStrategy(CtaTemplate):
         else:
             # 如果没有缓存则新建
             if not self.fiveBar:
-                fiveBar = CtaBarData()
+                fiveBar = VtBarData()
                 
                 fiveBar.vtSymbol = bar.vtSymbol
                 fiveBar.symbol = bar.symbol

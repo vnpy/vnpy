@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
+from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vnpy.trader.vtFunction import todayDate
 
@@ -252,19 +253,14 @@ class CtaEngine(object):
         
         # 推送tick到对应的策略实例进行处理
         if tick.vtSymbol in self.tickStrategyDict:
-            # 将vtTickData数据转化为ctaTickData
-            ctaTick = CtaTickData()
-            d = ctaTick.__dict__
-            for key in d.keys():
-                if key != 'datetime':
-                    d[key] = tick.__getattribute__(key)
             # 添加datetime字段
-            ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            if not tick.datetime:
+                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
             
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
-                self.callStrategyFunc(strategy, strategy.onTick, ctaTick)
+                self.callStrategyFunc(strategy, strategy.onTick, tick)
     
     #----------------------------------------------------------------------
     def processOrderEvent(self, event):
@@ -330,7 +326,7 @@ class CtaEngine(object):
  
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
-        """插入数据到数据库（这里的data可以是CtaTickData或者CtaBarData）"""
+        """插入数据到数据库（这里的data可以是VtTickData或者VtBarData）"""
         self.mainEngine.dbInsert(dbName, collectionName, data.__dict__)
     
     #----------------------------------------------------------------------
@@ -343,7 +339,7 @@ class CtaEngine(object):
         
         l = []
         for d in barData:
-            bar = CtaBarData()
+            bar = VtBarData()
             bar.__dict__ = d
             l.append(bar)
         return l
@@ -358,7 +354,7 @@ class CtaEngine(object):
         
         l = []
         for d in tickData:
-            tick = CtaTickData()
+            tick = VtTickData()
             tick.__dict__ = d
             l.append(tick)
         return l    

@@ -35,8 +35,6 @@ ENGINETYPE_TRADING = 'trading'          # 实盘
 
 # CTA引擎中涉及的数据类定义
 from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
-from vnpy.trader.vtObject import VtBarData as CtaBarData
-from vnpy.trader.vtObject import VtTickData as CtaTickData
 
 
 ########################################################################

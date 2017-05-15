@@ -13,6 +13,7 @@ import multiprocessing
 import pymongo
 
 from vnpy.trader.vtGlobal import globalSetting
+from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 
@@ -127,10 +128,10 @@ class BacktestingEngine(object):
       
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
-            dataClass = CtaBarData
+            dataClass = VtBarData
             func = self.newBar
         else:
-            dataClass = CtaTickData
+            dataClass = VtTickData
             func = self.newTick
 
         # 载入初始化需要用的数据
@@ -163,10 +164,10 @@ class BacktestingEngine(object):
         
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
-            dataClass = CtaBarData
+            dataClass = VtBarData
             func = self.newBar
         else:
-            dataClass = CtaTickData
+            dataClass = VtTickData
             func = self.newTick
 
         self.output(u'开始回测')

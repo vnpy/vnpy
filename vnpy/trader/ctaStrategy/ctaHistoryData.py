@@ -15,8 +15,8 @@ import pymongo
 
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtConstant import *
+from vnpy.trader.vtObject import VtBarData
 
-from vnpy.trader.ctaStrategy.ctaBase import *
 from vnpy.trader.ctaStrategy.datayesClient import DatayesClient
 
 
@@ -137,7 +137,7 @@ class HistoryDataEngine(object):
                                                                       unique=True)                
 
             for d in data:
-                bar = CtaBarData()
+                bar = VtBarData()
                 bar.vtSymbol = symbol
                 bar.symbol = symbol
                 try:
@@ -205,7 +205,7 @@ class HistoryDataEngine(object):
                                                                       unique=True)                
 
             for d in data:
-                bar = CtaBarData()
+                bar = VtBarData()
                 bar.vtSymbol = symbol
                 bar.symbol = symbol
                 try:
@@ -289,7 +289,7 @@ class HistoryDataEngine(object):
                                                                 unique=True)                
 
             for d in data:
-                bar = CtaBarData()
+                bar = VtBarData()
                 bar.vtSymbol = symbol
                 bar.symbol = symbol
                 try:
@@ -340,7 +340,7 @@ def downloadEquityDailyBarts(self, symbol):
                                                                 unique=True)                
             
             for index, d in data.iterrows():
-                bar = CtaBarData()
+                bar = VtBarData()
                 bar.vtSymbol = symbol
                 bar.symbol = symbol
                 try:
@@ -378,7 +378,7 @@ def loadMcCsv(fileName, dbName, symbol):
     # 读取数据和插入到数据库
     reader = csv.DictReader(file(fileName, 'r'))
     for d in reader:
-        bar = CtaBarData()
+        bar = VtBarData()
         bar.vtSymbol = symbol
         bar.symbol = symbol
         bar.open = float(d['Open'])
@@ -412,7 +412,7 @@ def loadTdxCsv(fileName, dbName, symbol):
     # 读取数据和插入到数据库
     reader = csv.reader(file(fileName, 'r'))
     for d in reader:
-        bar = CtaBarData()
+        bar = VtBarData()
         bar.vtSymbol = symbol
         bar.symbol = symbol
         bar.open = float(d[2])

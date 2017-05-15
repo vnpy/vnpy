@@ -13,6 +13,7 @@
 import talib
 import numpy as np
 
+from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
 from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
 
@@ -124,7 +125,7 @@ class AtrRsiStrategy(CtaTemplate):
             if self.bar:
                 self.onBar(self.bar)
 
-            bar = CtaBarData()              
+            bar = VtBarData()              
             bar.vtSymbol = tick.vtSymbol
             bar.symbol = tick.symbol
             bar.exchange = tick.exchange

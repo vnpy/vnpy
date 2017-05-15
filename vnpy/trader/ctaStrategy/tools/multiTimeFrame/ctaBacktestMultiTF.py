@@ -9,6 +9,7 @@ same as CTA engine. Real trading code can be directly used for backtesting.
 
 from __future__ import division
 
+from vnpy.trader.vtObject import VtTickData, VtBarData
 from ctaBacktesting import *
 
 class BacktestEngineMultiTF(BacktestingEngine):
@@ -84,10 +85,10 @@ class BacktestEngineMultiTF(BacktestingEngine):
         # 首先根据回测模式，确认要使用的数据类
         # Choose data type based on backtest mode
         if self.mode == self.BAR_MODE:
-            self.dataClass = CtaBarData
+            self.dataClass = VtBarData
             self.func      = self.newBar
         else:
-            self.dataClass = CtaTickData
+            self.dataClass = VtTickData
             self.func = self.newTick
 
         # Load initializing data
@@ -164,7 +165,7 @@ class BacktestEngineMultiTF(BacktestingEngine):
             if (data is not None) and (data['datetime'] <= self.dt):
 
                 try:
-                    temp[info_symbol] = CtaBarData()
+                    temp[info_symbol] = VtBarData()
                     temp[info_symbol].__dict__ = data
                     self.infobar[info_symbol] = next(self.InfoCursor[info_symbol])
                 except StopIteration:

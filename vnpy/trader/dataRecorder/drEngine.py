@@ -17,7 +17,7 @@ from threading import Thread
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import todayDate
-from vnpy.trader.vtGateway import VtSubscribeReq, VtLogData
+from vnpy.trader.vtObject import VtSubscribeReq, VtLogData, VtBarData, VtTickData
 
 from vnpy.trader.dataRecorder.drBase import *
 from vnpy.trader.dataRecorder.language import text
@@ -90,8 +90,8 @@ class DrEngine(object):
                     
                     self.mainEngine.subscribe(req, setting[1])
                     
-                    drTick = DrTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
-                    self.tickDict[vtSymbol] = drTick
+                    tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
+                    self.tickDict[vtSymbol] = tick
                     
             if 'bar' in drSetting:
                 l = drSetting['bar']
@@ -113,7 +113,7 @@ class DrEngine(object):
                     
                     self.mainEngine.subscribe(req, setting[1])  
                     
-                    bar = DrBarData() 
+                    bar = VtBarData() 
                     self.barDict[vtSymbol] = bar
                     
             if 'active' in drSetting:
@@ -136,34 +136,30 @@ class DrEngine(object):
         vtSymbol = tick.vtSymbol
 
         # 转化Tick格式
-        drTick = DrTickData()
-        d = drTick.__dict__
-        for key in d.keys():
-            if key != 'datetime':
-                d[key] = tick.__getattribute__(key)
-        drTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
+        if not tick.datetime:
+            tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
         
         # 更新Tick数据
         if vtSymbol in self.tickDict:
-            self.insertData(TICK_DB_NAME, vtSymbol, drTick)
+            self.insertData(TICK_DB_NAME, vtSymbol, tick)
             
             if vtSymbol in self.activeSymbolDict:
                 activeSymbol = self.activeSymbolDict[vtSymbol]
-                self.insertData(TICK_DB_NAME, activeSymbol, drTick)
+                self.insertData(TICK_DB_NAME, activeSymbol, tick)
             
             # 发出日志
-            self.writeDrLog(text.TICK_LOGGING_MESSAGE.format(symbol=drTick.vtSymbol,
-                                                             time=drTick.time, 
-                                                             last=drTick.lastPrice, 
-                                                             bid=drTick.bidPrice1, 
-                                                             ask=drTick.askPrice1))
+            self.writeDrLog(text.TICK_LOGGING_MESSAGE.format(symbol=tick.vtSymbol,
+                                                             time=tick.time, 
+                                                             last=tick.lastPrice, 
+                                                             bid=tick.bidPrice1, 
+                                                             ask=tick.askPrice1))
             
         # 更新分钟线数据
         if vtSymbol in self.barDict:
             bar = self.barDict[vtSymbol]
             
             # 如果第一个TICK或者新的一分钟
-            if not bar.datetime or bar.datetime.minute != drTick.datetime.minute:    
+            if not bar.datetime or bar.datetime.minute != tick.datetime.minute:    
                 if bar.vtSymbol:
                     newBar = copy.copy(bar)
                     self.insertData(MINUTE_DB_NAME, vtSymbol, newBar)
@@ -179,25 +175,25 @@ class DrEngine(object):
                                                                     low=bar.low, 
                                                                     close=bar.close))
                          
-                bar.vtSymbol = drTick.vtSymbol
-                bar.symbol = drTick.symbol
-                bar.exchange = drTick.exchange
+                bar.vtSymbol = tick.vtSymbol
+                bar.symbol = tick.symbol
+                bar.exchange = tick.exchange
                 
-                bar.open = drTick.lastPrice
-                bar.high = drTick.lastPrice
-                bar.low = drTick.lastPrice
-                bar.close = drTick.lastPrice
+                bar.open = tick.lastPrice
+                bar.high = tick.lastPrice
+                bar.low = tick.lastPrice
+                bar.close = tick.lastPrice
                 
-                bar.date = drTick.date
-                bar.time = drTick.time
-                bar.datetime = drTick.datetime
-                bar.volume = drTick.volume
-                bar.openInterest = drTick.openInterest        
+                bar.date = tick.date
+                bar.time = tick.time
+                bar.datetime = tick.datetime
+                bar.volume = tick.volume
+                bar.openInterest = tick.openInterest        
             # 否则继续累加新的K线
             else:                               
-                bar.high = max(bar.high, drTick.lastPrice)
-                bar.low = min(bar.low, drTick.lastPrice)
-                bar.close = drTick.lastPrice            
+                bar.high = max(bar.high, tick.lastPrice)
+                bar.low = min(bar.low, tick.lastPrice)
+                bar.close = tick.lastPrice            
 
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -206,7 +202,7 @@ class DrEngine(object):
  
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
-        """插入数据到数据库（这里的data可以是CtaTickData或者CtaBarData）"""
+        """插入数据到数据库（这里的data可以是VtTickData或者VtBarData）"""
         self.queue.put((dbName, collectionName, data.__dict__))
         
     #----------------------------------------------------------------------
