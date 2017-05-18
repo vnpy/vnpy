@@ -22,6 +22,7 @@ from eventEngine import *
 import MySQLdb
 import json
 import os
+import sys
 import cPickle
 import csv
 import logging
@@ -105,7 +106,9 @@ class BacktestingEngine(object):
 
         self.tradeCount = 0                 # 成交编号
         self.tradeDict = OrderedDict()      # 成交字典
-        
+        self.longPosition = []              # 多单持仓
+        self.shortPosition = []             # 空单持仓
+
         self.logList = []                   # 日志记录
         
         # 当前最新数据，用于模拟成交用
@@ -960,14 +963,17 @@ class BacktestingEngine(object):
         leg2_shortSymbol = leg2_shortSymbol.group(1)
 
         # E:\Ticks\ZJ\2015\201505\TF
-        leg1File = u'{0}\\{1}\\{2}\\{3}\\{4}\\{5}.txt' \
-            .format(leg1MainPath, testday.strftime('%Y'),testday.strftime('%Y%m'), leg1_shortSymbol, testday.strftime('%m%d'), leg1Symbol)
+        leg1File = os.path.abspath(os.path.join(leg1MainPath, testday.strftime('%Y'),testday.strftime('%Y%m'),leg1_shortSymbol,testday.strftime('%m%d'),'{0}.txt'.format(leg1Symbol)))
+        #leg1File = u'{0}\\{1}\\{2}\\{3}\\{4}\\{5}.txt' \
+        #    .format(leg1MainPath, testday.strftime('%Y'),testday.strftime('%Y%m'), leg1_shortSymbol, testday.strftime('%m%d'), leg1Symbol)
         if not os.path.isfile(leg1File):
             self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
             return
 
-        leg2File = u'{0}\\{1}\\{2}\\{3}\\{4}\\{5}.txt' \
-            .format(leg2MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), leg2_shortSymbol, testday.strftime('%m%d'), leg2Symbol)
+        leg2File=os.path.abspath(os.path.join(leg2MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), leg2_shortSymbol,
+                                     testday.strftime('%m%d'), '{0}.txt'.format(leg2Symbol)))
+        #leg2File = u'{0}\\{1}\\{2}\\{3}\\{4}\\{5}.txt' \
+        #    .format(leg2MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), leg2_shortSymbol, testday.strftime('%m%d'), leg2Symbol)
         if not os.path.isfile(leg2File):
             self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
             return
@@ -1608,9 +1614,9 @@ class BacktestingEngine(object):
                 except Exception as ex:
                     self.writeCtaError(u'{0}:{1}'.format(Exception, ex))
 
-                # 实时计算模式
-                if self.calculateMode == self.REALTIME_MODE:
-                    self.realtimeCalculate()
+        # 实时计算模式
+        if self.calculateMode == self.REALTIME_MODE:
+            self.realtimeCalculate2()
                 
     #----------------------------------------------------------------------
     def crossStopOrder(self):
@@ -1687,9 +1693,9 @@ class BacktestingEngine(object):
                 if stopOrderID in self.workingStopOrderDict:
                     del self.workingStopOrderDict[stopOrderID]
 
-                # 若采用实时计算净值
-                if self.calculateMode == self.REALTIME_MODE:
-                    self.realtimeCalculate()
+        # 若采用实时计算净值
+        if self.calculateMode == self.REALTIME_MODE:
+            self.realtimeCalculate2()
 
 
     #----------------------------------------------------------------------
@@ -1728,6 +1734,9 @@ class BacktestingEngine(object):
 
     def realtimeCalculate(self):
         """实时计算交易结果"""
+
+        if len(self.tradeDict) < 1:
+            return
 
         resultDict = OrderedDict()  # 交易结果记录
 
@@ -2108,6 +2117,416 @@ class BacktestingEngine(object):
                 msg += u'持空仓{0},'.format(occupyShortVolume)
 
             msg += u'资金占用:{0},仓位:{1}'.format(occupyMoney, self.percent)
+            self.output(msg)
+            self.writeCtaLog(msg)
+            return
+
+        # 对交易结果汇总统计
+        for time, result in resultDict.items():
+
+            if result.pnl > 0:
+                self.winningResult += 1
+                self.totalWinning += result.pnl
+            else:
+                self.losingResult += 1
+                self.totalLosing += result.pnl
+            self.capital += result.pnl
+            self.maxCapital = max(self.capital, self.maxCapital)
+            #self.maxVolume = max(self.maxVolume, result.volume)
+            drawdown = self.capital - self.maxCapital
+            drawdownRate = round(float(drawdown*100/self.maxCapital),4)
+
+            self.pnlList.append(result.pnl)
+            self.timeList.append(time)
+            self.capitalList.append(self.capital)
+            self.drawdownList.append(drawdown)
+            self.drawdownRateList.append(drawdownRate)
+
+            self.totalResult += 1
+            self.totalTurnover += result.turnover
+            self.totalCommission += result.commission
+            self.totalSlippage += result.slippage
+
+            self.output(u'[{5}],{6} Vol:{0},盈亏:{1},回撤:{2}/{3},权益:{4}'.
+                        format(abs(result.volume), result.pnl, drawdown,
+                               drawdownRate, self.capital, result.groupId, time))
+
+        # 重新计算一次avaliable
+        self.avaliable = self.capital - occupyMoney
+        self.percent = round(float(occupyMoney * 100 / self.capital), 2)
+
+    def realtimeCalculate2(self):
+        """实时计算交易结果2
+        支持多空仓位并存"""
+
+        if len(self.tradeDict) <1:
+            return
+
+        tradeids = self.tradeDict.keys()
+
+        resultDict = OrderedDict()  # 交易结果记录
+
+        longTrade = []              # 未平仓的多头交易
+        shortTrade = []             # 未平仓的空头交易
+        longid = EMPTY_STRING
+        shortid = EMPTY_STRING
+
+        no_match_shortTrade = False
+        no_match_longTrade = False
+
+        # 对交易记录逐一处理
+        for tradeid in tradeids:
+            try:
+                trade = self.tradeDict[tradeid]
+            except:
+                self.output(u'没有{0}的成交单'.format(tradeid))
+                continue
+
+            # buy trade
+            if trade.direction == DIRECTION_LONG and trade.offset == OFFSET_OPEN:
+                self.output(u'{0}多开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
+                self.writeCtaLog(u'{0}多开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
+                self.longPosition.append(trade)
+                del self.tradeDict[tradeid]
+
+            # cover trade，
+            elif trade.direction == DIRECTION_LONG and trade.offset == OFFSET_CLOSE:
+
+                gId = trade.tradeID    # 交易组（多个平仓数为一组）
+                gr = None       # 组合的交易结果
+
+                coverVolume = trade.volume
+
+                while coverVolume > 0:
+                    if len(self.shortPosition) == 0:
+                        self.writeCtaError(u'异常!没有开空仓的数据')
+                        break
+                    pop_indexs = [i for i, val in enumerate(self.shortPosition) if val.vtSymbol == trade.vtSymbol]
+                    if len(pop_indexs) < 1:
+                        self.writeCtaError(u'异常，没有对应symbol:{0}的空单持仓'.format(trade.vtSymbol))
+                        break
+
+                    pop_index = pop_indexs[0]
+                    # 从未平仓的空头交易
+                    entryTrade = self.shortPosition.pop(pop_index)
+
+                    # 开空volume，不大于平仓volume
+                    if coverVolume >= entryTrade.volume:
+                        self.writeCtaLog(u'coverVolume:{0} >= entryTrade.volume:{1}'.format(coverVolume, entryTrade.volume))
+                        coverVolume = coverVolume - entryTrade.volume
+
+                        self.output(u'{0}空平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
+                        self.writeCtaLog(u'{0}空平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
+
+                        result = TradingResult(entryPrice=entryTrade.price,
+                                               entryDt=entryTrade.dt,
+                                               exitPrice=trade.price,
+                                               exitDt=trade.dt,
+                                               volume=-entryTrade.volume,
+                                               rate=self.rate,
+                                               slippage=self.slippage,
+                                               size=self.size,
+                                               groupId=gId,
+                                               fixcommission=self.fixCommission)
+
+                        t = {}
+                        t['vtSymbol'] = entryTrade.vtSymbol
+                        t['OpenTime'] = entryTrade.tradeTime
+                        t['OpenPrice'] = entryTrade.price
+                        t['Direction'] = u'Short'
+                        t['CloseTime'] = trade.tradeTime
+                        t['ClosePrice'] = trade.price
+                        t['Volume'] = entryTrade.volume
+                        t['Profit'] = result.pnl
+                        self.exportTradeList.append(t)
+
+                        msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9}'\
+                            .format(gId, entryTrade.vtSymbol, entryTrade.tradeTime, shortid, entryTrade.price,
+                                                 trade.tradeTime, tradeid, trade.price,
+                                                 entryTrade.volume, result.pnl)
+                        self.output(msg)
+
+                        self.writeCtaLog(msg)
+
+                        if type(gr) == type(None):
+                            if coverVolume > 0:
+                                # 属于组合
+                                gr = copy.deepcopy(result)
+
+                            else:
+                                # 不属于组合
+                                resultDict[entryTrade.dt] = result
+
+                                # 删除平空交易单，
+                                del self.tradeDict[trade.tradeID]
+
+                        else:
+                            # 更新组合的数据
+                            gr.turnover = gr.turnover + result.turnover
+                            gr.commission = gr.commission + result.commission
+                            gr.slippage = gr.slippage + result.slippage
+                            gr.pnl = gr.pnl + result.pnl
+
+                            # 所有仓位平完
+                            if coverVolume == 0:
+                                gr.volume = trade.volume
+                                resultDict[entryTrade.dt] = gr
+                                # 删除平空交易单，
+                                del self.tradeDict[trade.tradeID]
+
+                    # 开空volume,大于平仓volume，需要更新减少tradeDict的数量。
+                    else:
+                        self.writeCtaLog(u'Short volume:{0} > Cover volume:{1}，需要更新减少tradeDict的数量。'.format(entryTrade.volume,coverVolume))
+                        shortVolume = entryTrade.volume - coverVolume
+
+                        result = TradingResult(entryPrice=entryTrade.price,
+                                               entryDt=entryTrade.dt,
+                                               exitPrice=trade.price,
+                                               exitDt=trade.dt,
+                                               volume=-coverVolume,
+                                               rate=self.rate,
+                                               slippage=self.slippage,
+                                               size=self.size,
+                                               groupId=gId,
+                                               fixcommission=self.fixCommission)
+
+                        t = {}
+                        t['vtSymbol'] = entryTrade.vtSymbol
+                        t['OpenTime'] = entryTrade.tradeTime
+                        t['OpenPrice'] = entryTrade.price
+                        t['Direction'] = u'Short'
+                        t['CloseTime'] = trade.tradeTime
+                        t['ClosePrice'] = trade.price
+                        t['Volume'] = coverVolume
+                        t['Profit'] = result.pnl
+                        self.exportTradeList.append(t)
+
+                        msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9}'\
+                            .format(gId, entryTrade.vtSymbol, entryTrade.tradeTime, shortid, entryTrade.price,
+                                                 trade.tradeTime, tradeid, trade.price,
+                                                 coverVolume, result.pnl)
+                        self.output(msg)
+                        self.writeCtaLog(msg)
+
+                        # 更新（减少）开仓单的volume,重新推进开仓单列表中
+                        entryTrade.volume = shortVolume
+                        self.shortPosition.append(entryTrade)
+
+                        coverVolume = 0
+
+                        if type(gr) == type(None):
+                            resultDict[entryTrade.dt] = result
+
+                        else:
+                            # 更新组合的数据
+                            gr.turnover = gr.turnover + result.turnover
+                            gr.commission = gr.commission + result.commission
+                            gr.slippage = gr.slippage + result.slippage
+                            gr.pnl = gr.pnl + result.pnl
+                            gr.volume = trade.volume
+                            resultDict[entryTrade.dt] = gr
+
+                        # 删除平空交易单，
+                        del self.tradeDict[trade.tradeID]
+
+                if type(gr) != type(None):
+                    self.writeCtaLog(u'组合净盈亏:{0}'.format(gr.pnl))
+
+                self.writeCtaLog(u'-------------')
+
+            # Short Trade
+            elif trade.direction == DIRECTION_SHORT and trade.offset == OFFSET_OPEN:
+
+                self.output(u'{0}空开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
+                self.writeCtaLog(u'{0}空开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
+                self.shortPosition.append(trade)
+                del self.tradeDict[trade.tradeID]
+                continue
+
+            # sell trade
+            elif trade.direction == DIRECTION_SHORT and trade.offset == OFFSET_CLOSE:
+                gId = trade.tradeID # 交易组（多个平仓数为一组）                                                                                                                                    s
+                gr = None           # 组合的交易结果
+
+                sellVolume = trade.volume
+
+                while sellVolume > 0:
+                    if len(self.longPosition) == 0:
+                        self.writeCtaError(u'异常，没有开多单')
+                        break
+
+                    pop_indexs = [i for i, val in enumerate(self.longPosition) if val.vtSymbol == trade.vtSymbol]
+                    if len(pop_indexs) < 1:
+                        self.writeCtaError(u'没有对应的symbol{0}开多仓数据,'.format(trade.vtSymbol))
+                        break
+
+                    pop_index = pop_indexs[0]
+
+                    entryTrade = self.longPosition.pop(pop_index)
+
+                     # 开多volume，不大于平仓volume
+                    if sellVolume >= entryTrade.volume:
+                        self.writeCtaLog(u'{0}Sell Volume:{1} >= Entry Volume:{2}'.format(entryTrade.vtSymbol, sellVolume, entryTrade.volume))
+                        sellVolume = sellVolume - entryTrade.volume
+                        self.output(u'{0}多平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
+                        self.writeCtaLog(u'{0}多平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
+
+                        result = TradingResult(entryPrice=entryTrade.price,
+                                               entryDt=entryTrade.dt,
+                                               exitPrice=trade.price,
+                                               exitDt=trade.dt,
+                                               volume=entryTrade.volume,
+                                               rate=self.rate,
+                                               slippage=self.slippage,
+                                               size=self.size,
+                                               groupId=gId,
+                                               fixcommission=self.fixCommission)
+
+                        t = {}
+                        t['vtSymbol'] = entryTrade.vtSymbol
+                        t['OpenTime'] = entryTrade.tradeTime
+                        t['OpenPrice'] = entryTrade.price
+                        t['Direction'] = u'Long'
+                        t['CloseTime'] = trade.tradeTime
+                        t['ClosePrice'] = trade.price
+                        t['Volume'] = entryTrade.volume
+                        t['Profit'] = result.pnl
+                        self.exportTradeList.append(t)
+
+                        msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'\
+                            .format(gId, entryTrade.vtSymbol,
+                                        entryTrade.tradeTime, longid, entryTrade.price,
+                                        trade.tradeTime, tradeid, trade.price,
+                                        entryTrade.volume, result.pnl)
+                        self.output(msg)
+                        self.writeCtaLog(msg)
+
+                        if type(gr) == type(None):
+                            if sellVolume > 0:
+                                # 属于组合
+                                gr = copy.deepcopy(result)
+
+                            else:
+                                # 不属于组合
+                                resultDict[entryTrade.dt] = result
+
+                                # 删除平多交易单，
+                                del self.tradeDict[trade.tradeID]
+
+                        else:
+                            # 更新组合的数据
+                            gr.turnover = gr.turnover + result.turnover
+                            gr.commission = gr.commission + result.commission
+                            gr.slippage = gr.slippage + result.slippage
+                            gr.pnl = gr.pnl + result.pnl
+
+                            if sellVolume == 0:
+                                gr.volume = trade.volume
+                                resultDict[entryTrade.dt] = gr
+                                # 删除平多交易单，
+                                del self.tradeDict[trade.tradeID]
+
+                    # 开多volume,大于平仓volume，需要更新减少tradeDict的数量。
+                    else:
+                        longVolume = entryTrade.volume -sellVolume
+                        self.writeCtaLog(u'Long Volume:{0} > sell Volume:{1}'.format(entryTrade.volume,sellVolume))
+
+                        result = TradingResult(entryPrice=entryTrade.price,
+                                               entryDt=entryTrade.dt,
+                                               exitPrice=trade.price,
+                                               exitDt=trade.dt,
+                                               volume=sellVolume,
+                                               rate=self.rate,
+                                               slippage=self.slippage,
+                                               size=self.size,
+                                               groupId=gId,
+                                               fixcommission=self.fixCommission)
+
+                        t = {}
+                        t['vtSymbol'] = entryTrade.vtSymbol
+                        t['OpenTime'] = entryTrade.tradeTime
+                        t['OpenPrice'] = entryTrade.price
+                        t['Direction'] = u'Long'
+                        t['CloseTime'] = trade.tradeTime
+                        t['ClosePrice'] = trade.price
+                        t['Volume'] = sellVolume
+                        t['Profit'] = result.pnl
+                        self.exportTradeList.append(t)
+
+                        self.writeCtaLog(u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'
+                                         .format(gId, entryTrade.vtSymbol,entryTrade.tradeTime, longid, entryTrade.price,
+                                                 trade.tradeTime, tradeid, trade.price,
+                                                 sellVolume, result.pnl))
+
+                        # 减少开多volume,重新推进多单持仓列表中
+                        entryTrade.volume = longVolume
+                        self.longPosition.append(entryTrade)
+
+                        sellVolume = 0
+
+                        if type(gr) == type(None):
+                            resultDict[entryTrade.dt] = result
+
+                        else:
+                            # 更新组合的数据
+                            gr.turnover = gr.turnover + result.turnover
+                            gr.commission = gr.commission + result.commission
+                            gr.slippage = gr.slippage + result.slippage
+                            gr.pnl = gr.pnl + result.pnl
+                            gr.volume = trade.volume
+                            resultDict[entryTrade.dt] = gr
+
+                        # 删除平多交易单，
+                        del self.tradeDict[trade.tradeID]
+
+                if type(gr) != type(None):
+                    self.writeCtaLog(u'组合净盈亏:{0}'.format(gr.pnl))
+
+                self.writeCtaLog(u'-------------')
+
+        # 计算仓位比例
+        occupyMoney = EMPTY_FLOAT
+        occupyLongVolume = EMPTY_INT
+        occupyShortVolume = EMPTY_INT
+        longPos = {}
+        shortPos = {}
+        if len(self.longPosition) > 0:
+            for t in self.longPosition:
+                occupyMoney += t.price * abs(t.volume) * self.size * self.margin_rate
+                occupyLongVolume += abs(t.volume)
+                if t.vtSymbol in longPos:
+                    longPos[t.vtSymbol] += abs(t.volume)
+                else:
+                    longPos[t.vtSymbol] = abs(t.volume)
+
+        if len(self.shortPosition) > 0:
+            for t in self.shortPosition:
+                occupyMoney += t.price * abs(t.volume) * self.size * self.margin_rate
+                occupyShortVolume += (t.volume)
+                if t.vtSymbol in shortPos:
+                    shortPos[t.vtSymbol] += abs(t.volume)
+                else:
+                    shortPos[t.vtSymbol] = abs(t.volume)
+
+        self.output(u'L:{0}|{1},S:{2}|{3}'.format(occupyLongVolume, str(longPos), occupyShortVolume, str(shortPos)))
+        self.writeCtaLog(u'L:{0}|{1},S:{2}|{3}'.format(occupyLongVolume, str(longPos), occupyShortVolume, str(shortPos)))
+        # 最大持仓
+        self.maxVolume = max(self.maxVolume, occupyLongVolume + occupyShortVolume)
+
+        self.avaliable = self.capital - occupyMoney
+        self.percent = round(float(occupyMoney * 100 / self.capital), 2)
+
+        # 检查是否有平交易
+        if not resultDict:
+
+            msg = u''
+            if len(self.longPosition) > 0:
+                msg += u'持多仓{0},'.format( str(longPos))
+
+            if len(self.shortPosition) > 0:
+                msg += u'持空仓{0},'.format(str(shortPos))
+
+            msg += u'资金占用:{0},仓位:{1}%%'.format(occupyMoney, self.percent)
             self.output(msg)
             self.writeCtaLog(msg)
             return
