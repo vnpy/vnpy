@@ -6,6 +6,8 @@ Wind Python API的gateway接入
 
 from copy import copy
 
+w = None
+
 try:
     from WindPy import w
 except ImportError:
