@@ -2955,7 +2955,12 @@ class BacktestingEngine(object):
         """
         plt.tight_layout()
         #plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
-        
+
+        fig_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
+                                                     'Fig_{0}.png'.format(
+                                                         datetime.now().strftime('%Y%m%d_%H%M'))))
+        fig = plt.gcf()
+        fig.savefig(fig_file_name)
         plt.show()
     
     #----------------------------------------------------------------------
