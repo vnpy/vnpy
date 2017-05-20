@@ -65,6 +65,7 @@ class RealStrategy(CtaTemplate):
         # 获取昨日最高价和最低价
         self.perHigh = None
         self.perLow = None
+        self.status = 0
         self.openCount = 0  # 今日开仓次数，需要保存
         self.opening = False
         self.stopOpen = False
@@ -91,8 +92,34 @@ class RealStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
 
-        # self.contrarian(tick)
-        self.homeopathic(tick)
+        if self.status == 0:
+            self.contrarian(tick)
+        elif self.status == 1:
+            self.homeopathic(tick)
+
+        # 状态切换
+        if self.status == 0:
+            if self.winCount >= 2:
+                self.status = 1
+                self.winCount = 0
+                self.writeCtaLog(u'[切换到顺势策略]成功')
+                print u'[切换到顺势策略]成功'
+            elif self.lossCount >= 1:
+                self.stopOpen = True
+        elif self.status == 1:
+            if self.winCount >= 1:
+                self.stopOpen = True
+            elif self.lossCount >= 6:
+                self.stopOpen = True
+
+
+        # 收盘清仓
+        nowTime = datetime.strptime(tick.time.split('.')[0], '%H:%M:%S').time()
+        # print nowTime
+        if (nowTime > datetime.strptime('14:59:30', '%H:%M:%S').time()) and (
+                    nowTime <= datetime.strptime('15:00:00', '%H:%M:%S').time()):
+            self.clearPosition(tick)
+
         # 处理订单回报
         if self.lastOrder != None and self.lastOrder.status == u'全部成交':
             self.noTrading = True
@@ -180,7 +207,7 @@ class RealStrategy(CtaTemplate):
                 self.doLoss = False
                 self.writeCtaLog(u'[止损]成功')
                 print u'[止损]成功'
-            else:
+            elif self.closeing:
                 self.closeing = False
                 self.writeCtaLog(u'[清仓]成功')
                 print u'[清仓]成功'
@@ -264,7 +291,7 @@ class RealStrategy(CtaTemplate):
                 self.doLoss = False
                 self.writeCtaLog(u'[止损]成功')
                 print u'[止损]成功'
-            else:
+            elif self.closeing:
                 self.closeing = False
                 self.writeCtaLog(u'[清仓]成功')
                 print u'[清仓]成功'
@@ -288,11 +315,13 @@ class RealStrategy(CtaTemplate):
 
     def clearPosition(self, tick):
         if self.pos > 0 and not self.closeing:
+            self.closeing = True
             self.stopOpen = True
             self.sell(tick.bidPrice1, self.tradeVolume)
             self.writeCtaLog(u'[清多仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.bidPrice1))
             print u'[清多仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.bidPrice1)
         elif self.pos < 0 and not self.closeing:
+            self.closeing = True
             self.stopOpen = True
             self.cover(tick.askPrice1, self.tradeVolume)
             self.writeCtaLog(u'[清空仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.askPrice1))
