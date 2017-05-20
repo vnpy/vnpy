@@ -28,7 +28,7 @@ class RealStrategy(CtaTemplate):
     maxOpenCount = 4  # 最大开仓次数
     tradeVolume = 1 # 交易数量
     size = 10   # 合约大小
-    tickPrice = 1 # 最小变动价格
+    tickPrice = 5 # 最小变动价格
 
     # 策略变量
     openCount = 0
@@ -67,6 +67,7 @@ class RealStrategy(CtaTemplate):
         self.perLow = None
         self.openCount = 0  # 今日开仓次数，需要保存
         self.opening = False
+        self.stopOpen = False
         self.closeing = False
         self.winCount = 0
         self.doWin = False
@@ -90,8 +91,8 @@ class RealStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
 
-        self.shock(tick)
-
+        # self.contrarian(tick)
+        self.homeopathic(tick)
         # 处理订单回报
         if self.lastOrder != None and self.lastOrder.status == u'全部成交':
             self.noTrading = True
@@ -117,7 +118,7 @@ class RealStrategy(CtaTemplate):
         pass
 
     # ----------------------------------------------------------------------
-    def shock(self, tick):
+    def contrarian(self, tick):
         '''逆势开仓，止盈止损'''
 
         highThreshold = tick.openPrice + self.tickPrice * 3
@@ -129,60 +130,175 @@ class RealStrategy(CtaTemplate):
                 self.opening = False
                 self.openCount += 1
                 self.writeCtaLog(u'[开空仓]成功')
+                print u'[开空仓]成功'
             # 止损
             if tick.lastPrice >= tick.openPrice * (1 + self.stopThreshold):
                 self.cover(tick.askPrice1, self.tradeVolume)
                 self.closeing = True
                 self.doLoss = True
                 self.writeCtaLog(u'[空仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[空仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.askPrice1)
             # 止盈
             elif tick.lastPrice <= lowThreshold:
                 self.cover(tick.askPrice1, self.tradeVolume)
                 self.closeing = True
                 self.doWin = True
                 self.writeCtaLog(u'[空仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[空仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.askPrice1)
         # 存在多单
         elif self.pos > 0 and not self.closeing:
             if self.opening:
                 self.opening = False
                 self.openCount += 1
                 self.writeCtaLog(u'[开多仓]成功')
+                print u'[开多仓]成功'
             # 止损
             if tick.lastPrice <= tick.openPrice * (1 - self.stopThreshold):
                 self.sell(tick.bidPrice1, self.tradeVolume)
                 self.closeing = True
                 self.doLoss = True
                 self.writeCtaLog(u'[多仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.bidPrice1))
+                print u'[多仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.bidPrice1)
             # 止盈
-            elif tick.lastPrice <= lowThreshold:
+            elif tick.lastPrice >= highThreshold:
                 self.sell(tick.bidPrice1, self.tradeVolume)
                 self.closeing = True
                 self.doWin = True
                 self.writeCtaLog(u'[多仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.bidPrice1))
+                print u'[多仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.bidPrice1)
         # 不存在持仓
         elif self.pos == 0:
             if self.closeing and self.doWin:
                 self.closeing = False
                 self.winCount += 1
+                self.doWin = False
                 self.writeCtaLog(u'[止盈]成功')
+                print u'[止盈]成功'
             elif self.closeing and self.doLoss:
                 self.closeing = False
                 self.lossCount += 1
+                self.doLoss = False
                 self.writeCtaLog(u'[止损]成功')
+                print u'[止损]成功'
+            else:
+                self.closeing = False
+                self.writeCtaLog(u'[清仓]成功')
+                print u'[清仓]成功'
 
             # 涨停跌停不开仓
-            if tick.highPrice >= tick.upperLimit or tick.lowPrice <= tick.lowerLimit:
+            if tick.highPrice >= tick.upperLimit or tick.lowPrice <= tick.lowerLimit \
+                    or self.lossCount >= 1 or self.winCount >= 2 or self.stopOpen:
                 return
             # 做多
             elif tick.lastPrice <= lowThreshold and not self.opening:
                 self.buy(tick.askPrice1, self.tradeVolume)
                 self.opening = True
                 self.writeCtaLog(u'[开多仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[开多仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1)
             # 做空
             elif tick.lastPrice >= highThreshold and not self.opening:
                 self.short(tick.bidPrice1, self.tradeVolume)
                 self.opening = True
                 self.writeCtaLog(u'[开空仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[开空仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1)
+
+    def homeopathic(self, tick):
+        '''顺势开仓，止损不止盈'''
+
+        highThreshold = tick.openPrice + self.tickPrice * 2
+        lowThreshold = tick.openPrice - self.tickPrice * 2
+
+        # 存在空单
+        if self.pos < 0 and not self.closeing:
+            if self.opening:
+                self.opening = False
+                self.openCount += 1
+                self.writeCtaLog(u'[开空仓]成功')
+                print u'[开空仓]成功'
+            # 止损
+            if tick.lastPrice >= highThreshold:
+                self.cover(tick.askPrice1, self.tradeVolume)
+                self.closeing = True
+                self.doLoss = True
+                self.writeCtaLog(u'[空仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[空仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.askPrice1)
+            # 止盈
+            elif tick.lastPrice <= tick.lowerLimit:
+                self.cover(tick.askPrice1, self.tradeVolume)
+                self.closeing = True
+                self.doWin = True
+                self.writeCtaLog(u'[空仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[空仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.askPrice1)
+        # 存在多单
+        elif self.pos > 0 and not self.closeing:
+            if self.opening:
+                self.opening = False
+                self.openCount += 1
+                self.writeCtaLog(u'[开多仓]成功')
+                print u'[开多仓]成功'
+            # 止损
+            if tick.lastPrice <= lowThreshold:
+                self.sell(tick.bidPrice1, self.tradeVolume)
+                self.closeing = True
+                self.doLoss = True
+                self.writeCtaLog(u'[多仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.bidPrice1))
+                print u'[多仓止损]合约代码：%s，止损价格：%s' % (tick.symbol, tick.bidPrice1)
+            # 止盈
+            elif tick.lastPrice >= tick.upperLimit:
+                self.sell(tick.bidPrice1, self.tradeVolume)
+                self.closeing = True
+                self.doWin = True
+                self.writeCtaLog(u'[多仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.bidPrice1))
+                print u'[多仓止盈]合约代码：%s，止盈价格：%s' % (tick.symbol, tick.bidPrice1)
+        # 不存在持仓
+        elif self.pos == 0:
+            if self.closeing and self.doWin:
+                self.closeing = False
+                self.winCount += 1
+                self.doWin = False
+                self.writeCtaLog(u'[止盈]成功')
+                print u'[止盈]成功'
+            elif self.closeing and self.doLoss:
+                self.closeing = False
+                self.lossCount += 1
+                self.doLoss = False
+                self.writeCtaLog(u'[止损]成功')
+                print u'[止损]成功'
+            else:
+                self.closeing = False
+                self.writeCtaLog(u'[清仓]成功')
+                print u'[清仓]成功'
+
+            # 涨停跌停不开仓
+            if tick.highPrice >= tick.upperLimit or tick.lowPrice <= tick.lowerLimit \
+                    or self.lossCount >= 6 or self.winCount >= 1 or self.stopOpen:
+                return
+            # 做多
+            elif tick.lastPrice >= highThreshold and not self.opening:
+                self.buy(tick.askPrice1, self.tradeVolume)
+                self.opening = True
+                self.writeCtaLog(u'[开多仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[开多仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1)
+            # 做空
+            elif tick.lastPrice <= lowThreshold and not self.opening:
+                self.short(tick.bidPrice1, self.tradeVolume)
+                self.opening = True
+                self.writeCtaLog(u'[开空仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1))
+                print u'[开空仓]合约代码：%s，开仓价格：%s' % (tick.symbol, tick.askPrice1)
+
+    def clearPosition(self, tick):
+        if self.pos > 0 and not self.closeing:
+            self.stopOpen = True
+            self.sell(tick.bidPrice1, self.tradeVolume)
+            self.writeCtaLog(u'[清多仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.bidPrice1))
+            print u'[清多仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.bidPrice1)
+        elif self.pos < 0 and not self.closeing:
+            self.stopOpen = True
+            self.cover(tick.askPrice1, self.tradeVolume)
+            self.writeCtaLog(u'[清空仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.askPrice1))
+            print u'[清空仓]合约代码：%s，清仓价格：%s' % (tick.symbol, tick.askPrice1)
+        else:
+            pass
 
 ########################################################################################
 class OrderManagementDemoStrategy(CtaTemplate):
