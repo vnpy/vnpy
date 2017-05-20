@@ -56,8 +56,18 @@ class RealStrategy(CtaTemplate):
         # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
         # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
         # 策略时方便（更多是个编程习惯的选择）
-        self.noTrading = True   # 不存在未成交订单
-        self.lastOrder = None
+        self.perHigh = None     # 昨日最高价
+        self.perLow = None      # 昨日最低价
+        self.status = 0         # 策略状态
+        self.openCount = 0      # 今日开仓次数
+        self.opening = False    # 正在开仓
+        self.stopOpen = False   # 停止开仓
+        self.closeing = False   # 正在平仓
+        self.winCount = 0       # 止盈次数
+        self.doWin = False      # 正在止盈
+        self.lossCount = 0      # 止损次数
+        self.doLoss = False     # 正在止损
+        self.lastOrder = None   # 最新订单回报
     # ----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
