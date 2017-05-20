@@ -107,7 +107,7 @@ class CtaPosition:
             self.writeCtaLog(u'多仓:{0}->{1}'.format(self.longPos, self.longPos - vol))
             self.writeCtaLog(u'净:{0}->{1}'.format(self.pos, self.pos-vol))
 
-            self.shortPos -= vol
+            self.longPos -= vol
             self.pos -= vol
             self.strategy.pos = self.pos
 
