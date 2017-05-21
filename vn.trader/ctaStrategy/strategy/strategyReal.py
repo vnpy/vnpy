@@ -113,6 +113,8 @@ class RealStrategy(CtaTemplate):
     # ----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
+        if not self.trading:
+            return
 
         if tick.openPrice > self.perHigh or tick.openPrice < self.perLow:
             self.status = 1
