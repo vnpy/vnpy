@@ -6,8 +6,8 @@
     },
 
     {
-        "name": "Shock",
-        "className": "ShockStrategy",
-        "vtSymbol": "rb1710"
+        "name": "Real",
+        "className": "RealStrategy",
+        "vtSymbol": "ru1709"
     }
 ]
