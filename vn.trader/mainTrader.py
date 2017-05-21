@@ -27,16 +27,19 @@ def main():
 
         # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
-
+    print 'step1'
     # 初始化主引擎和主窗口对象
     mainEngine = MainEngine()
+    print 'step2'
     # 连接CTP接口
     mainEngine.connect('CTP')
+    print 'step3'
     # 加载所有策略
     mainEngine.ctaEngine.loadSetting()
     mainEngine.ctaEngine.writeCtaLog(u'Strategy loaded.')
     # 初始化所有策略
     for name in mainEngine.ctaEngine.strategyDict.keys():
+        print name
         mainEngine.ctaEngine.initStrategy(name)
     # 启动所有策略
     for name in mainEngine.ctaEngine.strategyDict.keys():
