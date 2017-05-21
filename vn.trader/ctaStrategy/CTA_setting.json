@@ -1,11 +1,5 @@
 [
     {
-        "name": "tdCat",
-        "className": "TdCatStrategy",
-        "vtSymbol": "rb1710"
-    },
-
-    {
         "name": "Real",
         "className": "RealStrategy",
         "vtSymbol": "ru1709"
