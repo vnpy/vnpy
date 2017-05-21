@@ -12,6 +12,7 @@
 
 from datetime import datetime
 import pandas as pd
+from pHist import hist
 from ctaBase import *
 from ctaTemplate import CtaTemplate
 
@@ -47,6 +48,8 @@ class RealStrategy(CtaTemplate):
     varList = ['inited',
                'trading',
                'pos',
+               'perHigh',
+               'perLow',
                'status',
                'winCount',
                'lossCount',
@@ -80,8 +83,10 @@ class RealStrategy(CtaTemplate):
         """初始化策略（必须由用户继承实现）"""
         self.writeCtaLog(u'策略初始化')
         # 获取昨日最高价和最低价
-        self.perHigh = None
-        self.perLow = None
+        a = hist()
+        a.get_K_data(self.vtSymbol, period='1d')
+        self.perHigh = list(a.data['high'])[-1]
+        self.perLow = list(a.data['low'])[-1]
         self.status = 0
         self.openCount = 0  # 今日开仓次数，需要保存
         self.opening = False
