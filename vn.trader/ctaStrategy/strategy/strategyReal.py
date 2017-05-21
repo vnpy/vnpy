@@ -114,6 +114,9 @@ class RealStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
 
+        if tick.openPrice > self.perHigh or tick.openPrice < self.perLow:
+            self.status = 1
+
         # 未成交撤单
         if self.lastOrder != None and (self.lastOrder.status == u'未成交' or self.lastOrder.status == u'未知'):
             self.cancelOrder(self.lastOrder.vtOrderID)
