@@ -39,13 +39,20 @@ class RealStrategy(CtaTemplate):
                  'author',
                  'vtSymbol',
                  'amplitude',
+                 'stopThreshold',
+                 'tradeVolume',
                  'maxOpenCount']
 
     # 变量列表，保存了变量的名称
     varList = ['inited',
                'trading',
                'pos',
-               'openCount']
+               'status',
+               'winCount',
+               'lossCount',
+               'opening',
+               'closeing',
+               'stopOpen']
 
     # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
