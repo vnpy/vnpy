@@ -21,6 +21,8 @@ from __future__ import division
 import json
 import os
 import traceback
+import pandas as pd
+from mysqlApi import *
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -36,8 +38,11 @@ from vtFunction import todayDate
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
+    tradeConfig = 'TRADE_setting.json'
+    tableName = 'ctaConfig'
     path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)      
+    settingFileName = os.path.join(path, settingFileName)
+    tradeConfig =  os.path.join(path, tradeConfig)
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -490,7 +495,35 @@ class CtaEngine(object):
                 self.loadStrategy(setting)
                 
         self.loadPosition()
-    
+
+    # ----------------------------------------------------------------------
+    def reconfig(self):
+        '''初始化交易参数，读取json文件，转换成DataFrame并存入数据库中'''
+        try:
+            f = file(self.tradeConfig)
+        except IOError:
+            logContent = u'读取交易配置出错，请检查'
+            # send_msg(logContent.encode('utf-8'))
+            return
+
+        # 解析json文件
+        setting = json.load(f)
+        df = pd.DataFrame(setting).T
+        df['symbol'] = df.index
+        df.index = range(df.shape[0])
+        sql = SqlApi()
+        sql.saveToSql(df, self.tableName)
+
+    # ----------------------------------------------------------------------
+    def saveConfig(self, data):
+        '''将交易时段的临时数据保存到数据库中，传入CtpGateway中的tradeDict'''
+        dataList = []
+        for key in data.keys():
+            dataList.append(data[key].__dict__)
+        df = pd.DataFrame(dataList)
+        sql = SqlApi()
+        sql.saveToSql(df, self.tableName)
+
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):
         """获取策略当前的变量字典"""
