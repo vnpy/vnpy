@@ -102,12 +102,23 @@ class RealStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
 
-        if self.status == 0:
-            self.contrarian(tick)
-        elif self.status == 1:
-            self.homeopathic(tick)
+        # 未成交撤单
+        if self.lastOrder != None and (self.lastOrder.status == u'未成交' or self.lastOrder.status == u'未知'):
+            self.cancelOrder(self.lastOrder.vtOrderID)
+            self.lastOrder = None
+        # 完成撤单
+        elif self.lastOrder != None and self.lastOrder.status == u'已撤销':
+            if self.lastOrder.offset == u'开仓':
+                self.opening = False
+            else:
+                self.closeing = False
+                if self.doWin:
+                    self.doWin = False
+                elif self.doLoss:
+                    self.doLoss = False
+            self.lastOrder[tick.symbol] = None
 
-        # 状态切换
+        # 策略状态切换
         if self.status == 0:
             if self.winCount >= 2:
                 self.status = 1
@@ -122,6 +133,11 @@ class RealStrategy(CtaTemplate):
             elif self.lossCount >= 6:
                 self.stopOpen = True
 
+        # 执行策略
+        if self.status == 0:
+            self.contrarian(tick)
+        elif self.status == 1:
+            self.homeopathic(tick)
 
         # 收盘清仓
         nowTime = datetime.strptime(tick.time.split('.')[0], '%H:%M:%S').time()
@@ -130,28 +146,16 @@ class RealStrategy(CtaTemplate):
                     nowTime <= datetime.strptime('15:00:00', '%H:%M:%S').time()):
             self.clearPosition(tick)
 
-        # 处理订单回报
-        if self.lastOrder != None and self.lastOrder.status == u'全部成交':
-            self.noTrading = True
-            self.lastOrder = None
-        elif self.lastOrder != None and self.lastOrder.status == u'未成交':
-            self.cancelOrder(self.lastOrder.vtOrderID)
-            if self.lastOrder.offset == u'开仓':
-                self.openCount -= 1
-            self.noTrading = True
-            self.lastOrder = None
-
-
     # ----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         if order.offset == u'开仓' and order.status == u'全部成交':
             self.lastOrder = None
-            # self.qryPosition()  # 查询并更新持仓
+            # self.ctaEngine.mainEngine.gatewayDict['CTP'].qryPosition()
         elif order.status == u'全部成交':
             self.lastOrder = None
-            # self.qryPosition()  # 查询并更新持仓
+            # self.ctaEngine.mainEngine.gatewayDict['CTP'].qryPosition()
             self.closeing = False
             if self.doWin:
                 self.winCount += 1
