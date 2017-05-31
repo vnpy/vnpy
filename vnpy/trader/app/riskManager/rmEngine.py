@@ -31,6 +31,9 @@ class RmEngine(object):
         """Constructor"""
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
+        
+        # 绑定自身到主引擎的风控引擎引用上
+        mainEngine.rmEngine = self
 
         # 是否启动风控
         self.active = False

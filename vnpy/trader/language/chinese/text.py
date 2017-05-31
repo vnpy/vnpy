@@ -117,7 +117,7 @@ STRATEGY = u'策略'
 CTA_STRATEGY = u'CTA策略'
 
 HELP = u'帮助'
-RESTORE = u'还原'
+RESTORE = u'还原窗口'
 ABOUT = u'关于'
 TEST = u'测试'
 CONNECT = u'连接'

@@ -17,7 +17,7 @@ import numpy as np
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 
 ########################################################################

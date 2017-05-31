@@ -17,7 +17,7 @@ from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtBarData
 
-from vnpy.trader.ctaStrategy.datayesClient import DatayesClient
+from vnpy.trader.app.ctaStrategy.datayesClient import DatayesClient
 
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 

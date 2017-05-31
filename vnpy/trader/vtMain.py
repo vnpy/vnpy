@@ -1,50 +1,66 @@
 # encoding: UTF-8
 
+# 重载sys模块，设置默认字符串编码方式为utf8
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
+# Python内置模块
 import os
 import platform
 
+# Python三方模块
 from qtpy import QtWidgets, QtGui
 
+# vn.trader模块
+from vnpy.event import EventEngine2
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiMainWindow import MainWindow, BASIC_FONT
+from vnpy.trader.vtFunction import loadIconPath
 
-# 文件路径名
-path = os.path.abspath(os.path.dirname(__file__))    
-ICON_FILENAME = 'vnpy.ico'
-ICON_FILENAME = os.path.join(path, ICON_FILENAME)  
+# 加载底层接口
+from vnpy.trader.gateway import (ctpGateway,
+                                 ibGateway,
+                                 huobiGateway)
+
+# 加载上层应用
+from vnpy.trader.app import (riskManager, dataRecorder,
+                             ctaStrategy)
 
 
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
-    # 重载sys模块，设置默认字符串编码方式为utf8
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+    # 创建事件引擎
+    ee = EventEngine2()
     
-    # 设置Windows底部任务栏图标
-    if 'Windows' in platform.uname():
-        import ctypes
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
+    # 创建主引擎
+    me = MainEngine(ee)
+    
+    # 添加交易接口
+    me.addGateway(ctpGateway)
+    me.addGateway(ibGateway)
+    me.addGateway(huobiGateway)
+    
+    # 添加上层应用
+    me.addApp(riskManager)
+    me.addApp(dataRecorder)
+    me.addApp(ctaStrategy)
     
     # 初始化Qt应用对象
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
+    app.setWindowIcon(QtGui.QIcon(loadIconPath()))
     app.setFont(BASIC_FONT)
     
-    # 设置Qt的皮肤
-    if globalSetting['darkStyle']:
-        import qdarkstyle
-        app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
-    
     # 初始化主引擎和主窗口对象
-    mainEngine = MainEngine()
-    mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
-    mainWindow.showMaximized()
+    mw = MainWindow(me, ee)
+    mw.showMaximized()
     
     # 在主线程中启动Qt事件循环
     sys.exit(app.exec_())
+
+
     
 if __name__ == '__main__':
     main()

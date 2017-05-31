@@ -1,45 +1,58 @@
 # encoding: UTF-8
 
 """
-DualThrust交易策略
+一个ATR-RSI指标结合的交易策略，适合用在股指的1分钟和5分钟线上。
+
+注意事项：
+1. 作者不对交易盈利做任何保证，策略代码仅供参考
+2. 本策略需要用到talib，没有安装的用户请先参考www.vnpy.org上的教程安装
+3. 将IF0000_1min.csv用ctaHistoryData.py导入MongoDB后，直接运行本文件即可回测策略
+
 """
 
-from datetime import time
+import talib
+import numpy as np
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 
 ########################################################################
-class DualThrustStrategy(CtaTemplate):
-    """DualThrust交易策略"""
-    className = 'DualThrustStrategy'
+class AtrRsiStrategy(CtaTemplate):
+    """结合ATR和RSI指标的一个分钟线交易策略"""
+    className = 'AtrRsiStrategy'
     author = u'用Python的交易员'
 
     # 策略参数
-    fixedSize = 100
-    k1 = 0.4
-    k2 = 0.6
-
-    initDays = 10
+    atrLength = 22          # 计算ATR指标的窗口数   
+    atrMaLength = 10        # 计算ATR均线的窗口数
+    rsiLength = 5           # 计算RSI的窗口数
+    rsiEntry = 16           # RSI的开仓信号
+    trailingPercent = 0.8   # 百分比移动止损
+    initDays = 10           # 初始化数据所用的天数
+    fixedSize = 1           # 每次交易的数量
 
     # 策略变量
     bar = None                  # K线对象
     barMinute = EMPTY_STRING    # K线当前的分钟
-    barList = []                # K线对象的列表
 
-    dayOpen = 0
-    dayHigh = 0
-    dayLow = 0
+    bufferSize = 100                    # 需要缓存的数据的大小
+    bufferCount = 0                     # 目前已经缓存了的数据的计数
+    highArray = np.zeros(bufferSize)    # K线最高价的数组
+    lowArray = np.zeros(bufferSize)     # K线最低价的数组
+    closeArray = np.zeros(bufferSize)   # K线收盘价的数组
     
-    range = 0
-    longEntry = 0
-    shortEntry = 0
-    exitTime = time(hour=14, minute=55)
+    atrCount = 0                        # 目前已经缓存了的ATR的计数
+    atrArray = np.zeros(bufferSize)     # ATR指标的数组
+    atrValue = 0                        # 最新的ATR指标数值
+    atrMa = 0                           # ATR移动平均的数值
 
-    longEntered = False
-    shortEntered = False
+    rsiValue = 0                        # RSI指标的数值
+    rsiBuy = 0                          # RSI买开阈值
+    rsiSell = 0                         # RSI卖开阈值
+    intraTradeHigh = 0                  # 移动止损用的持仓期内最高价
+    intraTradeLow = 0                   # 移动止损用的持仓期内最低价
 
     orderList = []                      # 保存委托代码的列表
 
@@ -48,30 +61,41 @@ class DualThrustStrategy(CtaTemplate):
                  'className',
                  'author',
                  'vtSymbol',
-                 'k1',
-                 'k2']    
+                 'atrLength',
+                 'atrMaLength',
+                 'rsiLength',
+                 'rsiEntry',
+                 'trailingPercent']    
 
     # 变量列表，保存了变量的名称
     varList = ['inited',
                'trading',
                'pos',
-               'range',
-               'longEntry',
-               'shortEntry',
-               'exitTime']  
+               'atrValue',
+               'atrMa',
+               'rsiValue',
+               'rsiBuy',
+               'rsiSell']  
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(DualThrustStrategy, self).__init__(ctaEngine, setting) 
+        super(AtrRsiStrategy, self).__init__(ctaEngine, setting)
         
-        self.barList = []
+        # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
+        # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
+        # 策略类中的这些可变对象属性可以选择不写，全都放在__init__下面，写主要是为了阅读
+        # 策略时方便（更多是个编程习惯的选择）        
 
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
         self.writeCtaLog(u'%s策略初始化' %self.name)
     
+        # 初始化RSI入场阈值
+        self.rsiBuy = 50 + self.rsiEntry
+        self.rsiSell = 50 - self.rsiEntry
+
         # 载入历史数据，并采用回放计算的方式初始化策略数值
         initData = self.loadBar(self.initDays)
         for bar in initData:
@@ -132,83 +156,74 @@ class DualThrustStrategy(CtaTemplate):
             self.cancelOrder(orderID)
         self.orderList = []
 
+        # 保存K线数据
+        self.closeArray[0:self.bufferSize-1] = self.closeArray[1:self.bufferSize]
+        self.highArray[0:self.bufferSize-1] = self.highArray[1:self.bufferSize]
+        self.lowArray[0:self.bufferSize-1] = self.lowArray[1:self.bufferSize]
+        
+        self.closeArray[-1] = bar.close
+        self.highArray[-1] = bar.high
+        self.lowArray[-1] = bar.low
+        
+        self.bufferCount += 1
+        if self.bufferCount < self.bufferSize:
+            return
+
         # 计算指标数值
-        self.barList.append(bar)
-        
-        if len(self.barList) <= 2:
-            return
-        else:
-            self.barList.pop(0)
-        lastBar = self.barList[-2]
-        
-        # 新的一天
-        if lastBar.datetime.date() != bar.datetime.date():
-            # 如果已经初始化
-            if self.dayHigh:
-                self.range = self.dayHigh - self.dayLow
-                self.longEntry = bar.open + self.k1 * self.range
-                self.shortEntry = bar.open - self.k2 * self.range           
-                
-            self.dayOpen = bar.open
-            self.dayHigh = bar.high
-            self.dayLow = bar.low
+        self.atrValue = talib.ATR(self.highArray, 
+                                  self.lowArray, 
+                                  self.closeArray,
+                                  self.atrLength)[-1]
+        self.atrArray[0:self.bufferSize-1] = self.atrArray[1:self.bufferSize]
+        self.atrArray[-1] = self.atrValue
 
-            self.longEntered = False
-            self.shortEntered = False
-        else:
-            self.dayHigh = max(self.dayHigh, bar.high)
-            self.dayLow = min(self.dayLow, bar.low)
-
-        # 尚未到收盘
-        if not self.range:
+        self.atrCount += 1
+        if self.atrCount < self.bufferSize:
             return
 
-        if bar.datetime.time() < self.exitTime:
-            if self.pos == 0:
-                if bar.close > self.dayOpen:
-                    if not self.longEntered:
-                        vtOrderID = self.buy(self.longEntry, self.fixedSize, stop=True)
-                        self.orderList.append(vtOrderID)
-                else:
-                    if not self.shortEntered:
-                        vtOrderID = self.short(self.shortEntry, self.fixedSize, stop=True)
-                        self.orderList.append(vtOrderID)
-    
-            # 持有多头仓位
-            elif self.pos > 0:
-                self.longEntered = True
+        self.atrMa = talib.MA(self.atrArray, 
+                              self.atrMaLength)[-1]
+        self.rsiValue = talib.RSI(self.closeArray, 
+                                  self.rsiLength)[-1]
 
-                # 多头止损单
-                vtOrderID = self.sell(self.shortEntry, self.fixedSize, stop=True)
-                self.orderList.append(vtOrderID)
-                
-                # 空头开仓单
-                if not self.shortEntered:
-                    vtOrderID = self.short(self.shortEntry, self.fixedSize, stop=True)
-                    self.orderList.append(vtOrderID)
-                
-            # 持有空头仓位
-            elif self.pos < 0:
-                self.shortEntered = True
+        # 判断是否要进行交易
+        
+        # 当前无仓位
+        if self.pos == 0:
+            self.intraTradeHigh = bar.high
+            self.intraTradeLow = bar.low
 
-                # 空头止损单
-                vtOrderID = self.cover(self.longEntry, self.fixedSize, stop=True)
-                self.orderList.append(vtOrderID)
-                
-                # 多头开仓单
-                if not self.longEntered:
-                    vtOrderID = self.buy(self.longEntry, self.fixedSize, stop=True)
-                    self.orderList.append(vtOrderID)  
-            
-        # 收盘平仓
-        else:
-            if self.pos > 0:
-                vtOrderID = self.sell(bar.close * 0.99, abs(self.pos))
-                self.orderList.append(vtOrderID)
-            elif self.pos < 0:
-                vtOrderID = self.cover(bar.close * 1.01, abs(self.pos))
-                self.orderList.append(vtOrderID) 
- 
+            # ATR数值上穿其移动平均线，说明行情短期内波动加大
+            # 即处于趋势的概率较大，适合CTA开仓
+            if self.atrValue > self.atrMa:
+                # 使用RSI指标的趋势行情时，会在超买超卖区钝化特征，作为开仓信号
+                if self.rsiValue > self.rsiBuy:
+                    # 这里为了保证成交，选择超价5个整指数点下单
+                    self.buy(bar.close+5, self.fixedSize)
+
+                elif self.rsiValue < self.rsiSell:
+                    self.short(bar.close-5, self.fixedSize)
+
+        # 持有多头仓位
+        elif self.pos > 0:
+            # 计算多头持有期内的最高价，以及重置最低价
+            self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
+            self.intraTradeLow = bar.low
+            # 计算多头移动止损
+            longStop = self.intraTradeHigh * (1-self.trailingPercent/100)
+            # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
+            orderID = self.sell(longStop, abs(self.pos), stop=True)
+            self.orderList.append(orderID)
+
+        # 持有空头仓位
+        elif self.pos < 0:
+            self.intraTradeLow = min(self.intraTradeLow, bar.low)
+            self.intraTradeHigh = bar.high
+
+            shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
+            orderID = self.cover(shortStop, abs(self.pos), stop=True)
+            self.orderList.append(orderID)
+
         # 发出状态更新事件
         self.putEvent()
 
@@ -222,11 +237,10 @@ class DualThrustStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
-
 if __name__ == '__main__':
     # 提供直接双击回测的功能
     # 导入PyQt4的包是为了保证matplotlib使用PyQt4而不是PySide，防止初始化出错
-    from ctaBacktesting import *
+    from vnpy.trader.app.ctaStrategy.ctaBacktesting import *
     from PyQt4 import QtCore, QtGui
     
     # 创建回测引擎
@@ -248,7 +262,8 @@ if __name__ == '__main__':
     engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
     
     # 在引擎中创建策略对象
-    engine.initStrategy(DualThrustStrategy, {})
+    d = {'atrLength': 11}
+    engine.initStrategy(AtrRsiStrategy, d)
     
     # 开始跑回测
     engine.runBacktesting()

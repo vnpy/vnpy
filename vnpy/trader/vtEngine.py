@@ -13,10 +13,10 @@ from vnpy.trader.vtEvent import *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.language import text
 
-from vnpy.trader.gateway import GATEWAY_DICT
-from vnpy.trader.ctaStrategy.ctaEngine import CtaEngine
-from vnpy.trader.dataRecorder.drEngine import DrEngine
-from vnpy.trader.riskManager.rmEngine import RmEngine
+#from vnpy.trader.gateway import GATEWAY_DICT
+#from vnpy.trader.ctaStrategy.ctaEngine import CtaEngine
+#from vnpy.trader.dataRecorder.drEngine import DrEngine
+from vnpy.trader.app import riskManager
 
 
 ########################################################################
@@ -24,13 +24,13 @@ class MainEngine(object):
     """主引擎"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, eventEngine):
         """Constructor"""
         # 记录今日日期
         self.todayDate = datetime.now().strftime('%Y%m%d')
         
-        # 创建事件引擎
-        self.eventEngine = EventEngine2()
+        # 绑定事件引擎
+        self.eventEngine = eventEngine
         self.eventEngine.start()
         
         # 创建数据引擎
@@ -40,12 +40,18 @@ class MainEngine(object):
         self.dbClient = None    # MongoDB客户端对象
         
         # 调用一个个初始化函数
-        self.initGateway()
-
-        # 扩展模块
-        self.ctaEngine = CtaEngine(self, self.eventEngine)
-        self.drEngine = DrEngine(self, self.eventEngine)
-        self.rmEngine = RmEngine(self, self.eventEngine)
+        #self.initGateway()
+        
+        # 接口实例
+        self.gatewayDict = OrderedDict()
+        self.gatewayDetailList = []
+        
+        # 应用模块实例
+        self.appDict = OrderedDict()
+        self.appDetailList = []
+        
+        # 风控引擎实例（特殊独立对象）
+        self.rmEngine = None
         
     #----------------------------------------------------------------------
     def initGateway(self):
@@ -63,9 +69,41 @@ class MainEngine(object):
                 print e
 
     #----------------------------------------------------------------------
-    def addGateway(self, gatewayClass, gatewayName=None):
-        """创建接口"""
-        self.gatewayDict[gatewayName] = gatewayClass(self.eventEngine, gatewayName)
+    def addGateway(self, gatewayModule):
+        """添加底层接口"""
+        gatewayName = gatewayModule.gatewayName
+        
+        # 创建接口实例
+        self.gatewayDict[gatewayName] = gatewayModule.gatewayClass(self.eventEngine, 
+                                                                   gatewayName)
+        
+        # 设置接口轮询
+        if gatewayModule.gatewayQryEnabled:
+            self.gatewayDict[gatewayName].setQryEnabled(gatewayModule.gatewayQryEnabled)
+                
+        # 保存接口详细信息
+        d = {
+            'gatewayName': gatewayModule.gatewayName,
+            'gatewayDisplayName': gatewayModule.gatewayDisplayName,
+            'gatewayType': gatewayModule.gatewayType
+        }
+        self.gatewayDetailList.append(d)
+        
+    #----------------------------------------------------------------------
+    def addApp(self, appModule):
+        """添加上层应用"""
+        appName = appModule.appName
+        
+        # 创建应用实例
+        self.appDict[appName] = appModule.appEngine(self, self.eventEngine)
+        
+        # 保存应用信息
+        d = {
+            'appName': appModule.appName,
+            'appDisplayName': appModule.appDisplayName,
+            'appWidget': appModule.appWidget
+        }
+        self.appDetailList.append(d)
         
     #----------------------------------------------------------------------
     def getGateway(self, gatewayName):
@@ -98,8 +136,8 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
-        # 如果风控检查失败则不发单
-        if not self.rmEngine.checkRisk(orderReq):
+        # 如果创建了风控引擎，且风控检查失败则不发单
+        if self.rmEngine and not self.rmEngine.checkRisk(orderReq):
             return ''
 
         gateway = self.getGateway(gatewayName)
@@ -246,10 +284,14 @@ class MainEngine(object):
         return self.dataEngine.getAllWorkingOrders()
     
     #----------------------------------------------------------------------
-    def getAllGatewayNames(self):
-        """查询引擎中所有可用接口的名称"""
-        return self.gatewayDict.keys()
-        
+    def getAllGatewayDetails(self):
+        """查询引擎中所有底层接口的信息"""
+        return self.gatewayDetailList
+    
+    #----------------------------------------------------------------------
+    def getAllAppDetails(self):
+        """查询引擎中所有上层应用的信息"""
+        return self.appDetailList
     
 
 ########################################################################

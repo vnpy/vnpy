@@ -20,6 +20,5 @@ try:
     f = file(settingFileName)
     globalSetting = json.load(f)
 except:
-    print u'加载'
     traceback.print_exc()
     

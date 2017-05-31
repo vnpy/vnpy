@@ -6,7 +6,7 @@
 
 from vnpy.trader.vtConstant import *
 
-from vnpy.trader.ctaStrategy.ctaBase import *
+from vnpy.trader.app.ctaStrategy.ctaBase import *
 
 ########################################################################
 class CtaTemplate(object):

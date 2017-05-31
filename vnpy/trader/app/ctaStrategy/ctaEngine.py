@@ -31,8 +31,8 @@ from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vnpy.trader.vtFunction import todayDate
 
-from vnpy.trader.ctaStrategy.ctaBase import *
-from vnpy.trader.ctaStrategy.strategy import STRATEGY_CLASS
+from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
 
 
 ########################################################################

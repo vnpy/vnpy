@@ -11,7 +11,7 @@ from qtpy import QtWidgets, QtGui, QtCore
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 
-from vnpy.trader.dataRecorder.language import text
+from vnpy.trader.app.dataRecorder.language import text
 
 
 ########################################################################

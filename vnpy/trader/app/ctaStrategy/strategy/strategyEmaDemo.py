@@ -15,7 +15,7 @@ from __future__ import division
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
-from vnpy.trader.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 
 ########################################################################

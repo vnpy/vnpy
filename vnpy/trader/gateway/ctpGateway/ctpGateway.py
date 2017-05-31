@@ -16,6 +16,7 @@ from datetime import datetime
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
 from vnpy.trader.gateway.ctpGateway.language import text
+from vnpy.trader.vtConstant import GATEWAYTYPE_FUTURES
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -88,7 +89,7 @@ class CtpGateway(VtGateway):
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
         
-        self.qryEnabled = False         # 是否要启动循环查询
+        self.qryEnabled = False         # 循环查询
 
         self.requireAuthentication = False
         

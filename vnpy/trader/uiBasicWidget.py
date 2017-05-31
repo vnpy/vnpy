@@ -3,6 +3,7 @@
 import json
 import csv
 import os
+import platform
 from collections import OrderedDict
 
 from qtpy import QtWidgets, QtGui, QtCore
@@ -16,6 +17,12 @@ from vnpy.trader import vtText as vtText
 
 COLOR_RED = QtGui.QColor('red')
 COLOR_GREEN = QtGui.QColor('green')
+
+
+# 设置Windows底部任务栏图标
+if 'Windows' in platform.uname():
+    import ctypes
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
 
 
 #----------------------------------------------------------------------
@@ -723,7 +730,9 @@ class TradingWidget(QtWidgets.QFrame):
         self.symbol = ''
         
         # 添加交易接口
-        self.gatewayList.extend(mainEngine.getAllGatewayNames())
+        l = mainEngine.getAllGatewayDetails()
+        gatewayNameList = [d['gatewayName'] for d in l]
+        self.gatewayList.extend(gatewayNameList)
 
         self.initUi()
         self.connectSignal()

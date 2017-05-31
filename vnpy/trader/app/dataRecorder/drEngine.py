@@ -19,8 +19,8 @@ from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import todayDate
 from vnpy.trader.vtObject import VtSubscribeReq, VtLogData, VtBarData, VtTickData
 
-from vnpy.trader.dataRecorder.drBase import *
-from vnpy.trader.dataRecorder.language import text
+from vnpy.trader.app.dataRecorder.drBase import *
+from vnpy.trader.app.dataRecorder.language import text
 
 
 ########################################################################

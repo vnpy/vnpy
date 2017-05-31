@@ -8,7 +8,7 @@
 from vnpy.event import Event
 
 from vnpy.trader.uiBasicWidget import QtGui, QtWidgets, QtCore
-from vnpy.trader.riskManager.language import text
+from vnpy.trader.app.riskManager.language import text
 
 
 ########################################################################

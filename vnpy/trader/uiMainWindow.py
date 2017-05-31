@@ -2,27 +2,40 @@
 
 import psutil
 
-from vnpy.trader.gateway import GATEWAY_DICT
+from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.uiBasicWidget import *
-from vnpy.trader.ctaStrategy.uiCtaWidget import CtaEngineManager
-from vnpy.trader.dataRecorder.uiDrWidget import DrEngineManager
-from vnpy.trader.riskManager.uiRmWidget import RmEngineManager
+#from vnpy.trader.ctaStrategy.uiCtaWidget import CtaEngineManager
+#from vnpy.trader.dataRecorder.uiDrWidget import DrEngineManager
+#from vnpy.trader.riskManager.uiRmWidget import RmEngineManager
 
 
 ########################################################################
 class MainWindow(QtWidgets.QMainWindow):
-    """主窗口"""
+    """主窗口"""  
+
     signalStatusBar = QtCore.Signal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
         """Constructor"""
+        # 实例化主窗口对象时，设置Qt的皮肤
+        if globalSetting['darkStyle']:
+            import qdarkstyle
+            app = QtWidgets.QApplication.instance()
+            app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))          
+        
         super(MainWindow, self).__init__()
         
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         
+        l = self.mainEngine.getAllGatewayDetails()
+        self.gatewayNameList = [d['gatewayName'] for d in l]        
+        
         self.widgetDict = {}    # 用来保存子窗口的字典
+        
+        # 获取主引擎中的上层应用信息
+        self.appDetailList = self.mainEngine.getAllAppDetails()
         
         self.initUi()
         self.loadWindowSettings('custom')
@@ -67,36 +80,33 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
         
         # 设计为只显示存在的接口
+        gatewayDetails = self.mainEngine.getAllGatewayDetails()
+        
         sysMenu = menubar.addMenu(vtText.SYSTEM)
-
-        for gatewayModule in GATEWAY_DICT.values():
-            if gatewayModule.gatewayType == GATEWAYTYPE_FUTURES:
-                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
-                                      gatewayModule.gatewayDisplayName)
         
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_FUTURES:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
         sysMenu.addSeparator()
-        for gatewayModule in GATEWAY_DICT.values():
-            if gatewayModule.gatewayType == GATEWAYTYPE_EQUITY:
-                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
-                                      gatewayModule.gatewayDisplayName)  
-
-        sysMenu.addSeparator()
-        for gatewayModule in GATEWAY_DICT.values():
-            if gatewayModule.gatewayType == GATEWAYTYPE_INTERNATIONAL:
-                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
-                                      gatewayModule.gatewayDisplayName)          
         
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_EQUITY:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
         sysMenu.addSeparator()
-        for gatewayModule in GATEWAY_DICT.values():
-            if gatewayModule.gatewayType == GATEWAYTYPE_BTC:
-                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
-                                      gatewayModule.gatewayDisplayName)          
-
+        
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_INTERNATIONAL:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])       
         sysMenu.addSeparator()
-        for gatewayModule in GATEWAY_DICT.values():
-            if gatewayModule.gatewayType == GATEWAYTYPE_DATA:
-                self.addConnectAction(sysMenu, gatewayModule.gatewayName, 
-                                      gatewayModule.gatewayDisplayName)          
+                
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_BTC:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
+        sysMenu.addSeparator()
+                
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_DATA:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
         
         sysMenu.addSeparator()
         sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect))
@@ -104,19 +114,28 @@ class MainWindow(QtWidgets.QMainWindow):
         sysMenu.addAction(self.createAction(vtText.EXIT, self.close))
         
         # 功能应用
-        functionMenu = menubar.addMenu(vtText.APPLICATION)
-        functionMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract))
-        functionMenu.addAction(self.createAction(vtText.DATA_RECORDER, self.openDr))
-        functionMenu.addAction(self.createAction(vtText.RISK_MANAGER, self.openRm))
+        #functionMenu = menubar.addMenu(vtText.APPLICATION)
+        #functionMenu.addAction(self.createAction(vtText.DATA_RECORDER, self.openDr))
+        #functionMenu.addAction(self.createAction(vtText.RISK_MANAGER, self.openRm))
+        
+        appMenu = menubar.addMenu(vtText.APPLICATION)
+        
+        for appDetail in self.appDetailList:
+            function = self.createOpenAppFunction(appDetail)
+            action = self.createAction(appDetail['appDisplayName'], function)
+            appMenu.addAction(action)
         
         # 算法相关
-        strategyMenu = menubar.addMenu(vtText.STRATEGY)
-        strategyMenu.addAction(self.createAction(vtText.CTA_STRATEGY, self.openCta))
+        #strategyMenu = menubar.addMenu(vtText.STRATEGY)
+        #strategyMenu.addAction(self.createAction(vtText.CTA_STRATEGY, self.openCta))
         
         # 帮助
         helpMenu = menubar.addMenu(vtText.HELP)
+        helpMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract))
+        helpMenu.addSeparator()
         helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow))
         helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout))
+        helpMenu.addSeparator()
         helpMenu.addAction(self.createAction(vtText.TEST, self.test))
     
     #----------------------------------------------------------------------
@@ -152,12 +171,12 @@ class MainWindow(QtWidgets.QMainWindow):
     #----------------------------------------------------------------------
     def addConnectAction(self, menu, gatewayName, displayName=''):
         """增加连接功能"""
-        if gatewayName not in self.mainEngine.getAllGatewayNames():
+        if gatewayName not in self.gatewayNameList:
             return
         
         def connect():
             self.mainEngine.connect(gatewayName)
-        
+            
         if not displayName:
             displayName = gatewayName
         
@@ -171,6 +190,20 @@ class MainWindow(QtWidgets.QMainWindow):
         action = QtWidgets.QAction(actionName, self)
         action.triggered.connect(function)
         return action
+    
+    #----------------------------------------------------------------------
+    def createOpenAppFunction(self, appDetail):
+        """创建打开应用UI的函数"""
+        def openAppFunction():
+            appName = appDetail['appName']
+            try:
+                self.widgetDict[appName].show()
+            except KeyError:
+                appEngine = self.mainEngine.appDict[appName]
+                self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
+                self.widgetDict[appName].show()
+                
+        return openAppFunction
         
     #----------------------------------------------------------------------
     def test(self):
