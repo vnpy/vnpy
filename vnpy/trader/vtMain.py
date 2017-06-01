@@ -13,13 +13,9 @@ from vnpy.trader.uiQt import qApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import (ctpGateway, femasGateway, ksotpGateway, 
-                                 qdpGateway, xspeedGateway,                                 
-                                 cshshlpGateway, ltsGateway,                                 
-                                 ksgoldGateway, sgitGateway,
-                                 oandaGateway, ibGateway, shzdGateway,
-                                 huobiGateway, okcoinGateway, lhangGateway,                                 
-                                 windGateway)
+from vnpy.trader.gateway import (ctpGateway, femasGateway, xspeedGateway, 
+                                 sgitGateway, oandaGateway, ibGateway, 
+                                 shzdGateway, huobiGateway, okcoinGateway)
 
 # 加载上层应用
 from vnpy.trader.app import (riskManager, dataRecorder,
@@ -38,20 +34,13 @@ def main():
     # 添加交易接口
     me.addGateway(ctpGateway)
     me.addGateway(femasGateway)
-    me.addGateway(ksotpGateway)
-    me.addGateway(qdpGateway)
     me.addGateway(xspeedGateway)
-    me.addGateway(cshshlpGateway)
-    me.addGateway(ltsGateway)
-    me.addGateway(ksgoldGateway)
     me.addGateway(sgitGateway)
     me.addGateway(oandaGateway)
     me.addGateway(ibGateway)
     me.addGateway(shzdGateway)
     me.addGateway(huobiGateway)
     me.addGateway(okcoinGateway)
-    me.addGateway(lhangGateway)
-    me.addGateway(windGateway)
     
     # 添加上层应用
     me.addApp(riskManager)
@@ -66,6 +55,5 @@ def main():
     sys.exit(qApp.exec_())
 
 
-    
 if __name__ == '__main__':
     main()

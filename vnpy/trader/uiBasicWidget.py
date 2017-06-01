@@ -217,6 +217,9 @@ class BasicMonitor(QtWidgets.QTableWidget):
         # 监控的事件类型
         self.eventType = ''
         
+        # 列宽调整状态（只在第一次更新数据时调整一次列宽）
+        self.columnResized = False
+        
         # 字体
         self.font = None
         
@@ -345,7 +348,9 @@ class BasicMonitor(QtWidgets.QTableWidget):
                 self.setItem(0, n, cell)                        
                 
         # 调整列宽
-        self.resizeColumns()
+        if not self.columnResized:
+            self.resizeColumns()
+            self.columnResized = True
         
         # 重新打开排序
         if self.sorting:
@@ -677,6 +682,7 @@ class TradingWidget(QtWidgets.QFrame):
                     EXCHANGE_ICE,
                     EXCHANGE_CME,
                     EXCHANGE_NYMEX,
+                    EXCHANGE_LME,
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO]
     

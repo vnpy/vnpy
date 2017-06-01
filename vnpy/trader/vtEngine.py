@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+import os
 import shelve
 from collections import OrderedDict
 from datetime import datetime
@@ -277,6 +278,8 @@ class MainEngine(object):
 class DataEngine(object):
     """数据引擎"""
     contractFileName = 'ContractData.vt'
+    path = os.path.abspath(os.path.dirname(__file__)) 
+    contractFileName = os.path.join(path, 'temp', contractFileName)
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine):
