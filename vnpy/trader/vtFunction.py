@@ -9,8 +9,10 @@ import decimal
 import json
 from datetime import datetime
 
+
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
+
 
 #----------------------------------------------------------------------
 def safeUnicode(value):
@@ -28,28 +30,27 @@ def safeUnicode(value):
     
     return unicode(value)
 
+
 #----------------------------------------------------------------------
 def todayDate():
     """获取当前本机电脑时间的日期"""
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)    
 
+
+# 图标路径
+iconPathDict = {}
+
+path = os.path.abspath(os.path.dirname(__file__))
+for root, subdirs, files in os.walk(path):
+    for fileName in files:
+        if '.ico' in fileName:
+            iconPathDict[fileName] = os.path.join(root, fileName)
+
 #----------------------------------------------------------------------
-def loadIconPath():
-    """加载程序图标路径"""
-    iconName = 'vnpy.ico'
-    
-    # 首先尝试从当前目录加载图标
-    path = os.getcwd()
-    iconPath = os.path.join(path, iconName)
-    if os.path.isfile(iconPath):
-        return iconPath
-    
-    # 如果失败则从vt根目录加载图标
-    else:
-        path = os.path.abspath(os.path.dirname(__file__))    
-        iconPath = os.path.join(path, iconName)
-        return iconPath
-    
+def loadIconPath(iconName):
+    """加载程序图标路径"""   
+    global iconPathDict
+    return iconPathDict.get(iconName, '')    
     
     
     

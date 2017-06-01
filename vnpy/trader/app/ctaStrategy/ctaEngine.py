@@ -35,6 +35,8 @@ from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
 
 
+
+
 ########################################################################
 class CtaEngine(object):
     """CTA策略引擎"""

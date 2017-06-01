@@ -78,7 +78,8 @@ class MainEngine(object):
         d = {
             'appName': appModule.appName,
             'appDisplayName': appModule.appDisplayName,
-            'appWidget': appModule.appWidget
+            'appWidget': appModule.appWidget,
+            'appIco': appModule.appIco
         }
         self.appDetailList.append(d)
         

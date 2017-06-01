@@ -33,4 +33,4 @@ except:
 qApp.setFont(BASIC_FONT)
 
 # 设置Qt图标
-qApp.setWindowIcon(QtGui.QIcon(loadIconPath()))
+qApp.setWindowIcon(QtGui.QIcon(loadIconPath('vnpy.ico')))

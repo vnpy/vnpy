@@ -2,6 +2,7 @@
 
 import psutil
 
+from vnpy.trader.vtFunction import loadIconPath
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.uiBasicWidget import *
 
@@ -100,34 +101,26 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
         
         sysMenu.addSeparator()
-        sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect))
+        sysMenu.addAction(self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect, loadIconPath('database.ico')))
         sysMenu.addSeparator()
-        sysMenu.addAction(self.createAction(vtText.EXIT, self.close))
+        sysMenu.addAction(self.createAction(vtText.EXIT, self.close, loadIconPath('exit.ico')))
         
         # 功能应用
-        #functionMenu = menubar.addMenu(vtText.APPLICATION)
-        #functionMenu.addAction(self.createAction(vtText.DATA_RECORDER, self.openDr))
-        #functionMenu.addAction(self.createAction(vtText.RISK_MANAGER, self.openRm))
-        
         appMenu = menubar.addMenu(vtText.APPLICATION)
         
         for appDetail in self.appDetailList:
             function = self.createOpenAppFunction(appDetail)
-            action = self.createAction(appDetail['appDisplayName'], function)
+            action = self.createAction(appDetail['appDisplayName'], function, loadIconPath(appDetail['appIco']))
             appMenu.addAction(action)
-        
-        # 算法相关
-        #strategyMenu = menubar.addMenu(vtText.STRATEGY)
-        #strategyMenu.addAction(self.createAction(vtText.CTA_STRATEGY, self.openCta))
         
         # 帮助
         helpMenu = menubar.addMenu(vtText.HELP)
-        helpMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract))
+        helpMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract, loadIconPath('contract.ico')))
         helpMenu.addSeparator()
-        helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow))
-        helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout))
+        helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow, loadIconPath('restore.ico')))
+        helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout, loadIconPath('about.ico')))
         helpMenu.addSeparator()
-        helpMenu.addAction(self.createAction(vtText.TEST, self.test))
+        helpMenu.addAction(self.createAction(vtText.TEST, self.test, loadIconPath('test.ico')))
     
     #----------------------------------------------------------------------
     def initStatusBar(self):
@@ -172,14 +165,20 @@ class MainWindow(QtWidgets.QMainWindow):
             displayName = gatewayName
         
         actionName = vtText.CONNECT + displayName
-        
-        menu.addAction(self.createAction(actionName, connect))
+        connectAction = self.createAction(actionName, connect, 
+                                          loadIconPath('connect.ico'))
+        menu.addAction(connectAction)
         
     #----------------------------------------------------------------------
-    def createAction(self, actionName, function):
+    def createAction(self, actionName, function, iconPath=''):
         """创建操作功能"""
         action = QtWidgets.QAction(actionName, self)
         action.triggered.connect(function)
+        
+        if iconPath:
+            icon = QtGui.QIcon(iconPath)
+            action.setIcon(icon)
+            
         return action
     
     #----------------------------------------------------------------------
