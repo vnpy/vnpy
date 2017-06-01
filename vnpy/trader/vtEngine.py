@@ -7,16 +7,11 @@ from datetime import datetime
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from vnpy.event import *
+from vnpy.event import Event
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.language import text
-
-#from vnpy.trader.gateway import GATEWAY_DICT
-#from vnpy.trader.ctaStrategy.ctaEngine import CtaEngine
-#from vnpy.trader.dataRecorder.drEngine import DrEngine
-from vnpy.trader.app import riskManager
 
 
 ########################################################################
@@ -39,9 +34,6 @@ class MainEngine(object):
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
         
-        # 调用一个个初始化函数
-        #self.initGateway()
-        
         # 接口实例
         self.gatewayDict = OrderedDict()
         self.gatewayDetailList = []
@@ -52,21 +44,6 @@ class MainEngine(object):
         
         # 风控引擎实例（特殊独立对象）
         self.rmEngine = None
-        
-    #----------------------------------------------------------------------
-    def initGateway(self):
-        """初始化接口对象"""
-        # 用来保存接口对象的字典
-        self.gatewayDict = OrderedDict()
-        
-        # 遍历接口字典并自动创建所有的接口对象
-        for gatewayModule in GATEWAY_DICT.values():
-            try:
-                self.addGateway(gatewayModule.gateway, gatewayModule.gatewayName)
-                if gatewayModule.gatewayQryEnabled:
-                    self.gatewayDict[gatewayModule.gatewayName].setQryEnabled(True)
-            except Exception, e:
-                print e
 
     #----------------------------------------------------------------------
     def addGateway(self, gatewayModule):

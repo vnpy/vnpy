@@ -4,9 +4,6 @@ import psutil
 
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.uiBasicWidget import *
-#from vnpy.trader.ctaStrategy.uiCtaWidget import CtaEngineManager
-#from vnpy.trader.dataRecorder.uiDrWidget import DrEngineManager
-#from vnpy.trader.riskManager.uiRmWidget import RmEngineManager
 
 
 ########################################################################
@@ -17,13 +14,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
-        """Constructor"""
-        # 实例化主窗口对象时，设置Qt的皮肤
-        if globalSetting['darkStyle']:
-            import qdarkstyle
-            app = QtWidgets.QApplication.instance()
-            app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))          
-        
+        """Constructor"""          
         super(MainWindow, self).__init__()
         
         self.mainEngine = mainEngine

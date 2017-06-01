@@ -7,6 +7,7 @@ from datetime import datetime
 from time import sleep
 from threading import Thread
 
+from vnpy.event import EventEngine2
 from vnpy.rpc import RpcServer
 from vnpy.trader.vtEngine import MainEngine
 
@@ -21,8 +22,11 @@ class VtServer(RpcServer):
         super(VtServer, self).__init__(repAddress, pubAddress)
         self.usePickle()
         
+        # 创建事件引擎
+        self.ee = EventEngine2()
+        
         # 创建主引擎对象
-        self.engine = MainEngine()
+        self.engine = MainEngine(self.ee)
         
         # 注册主引擎的方法到服务器的RPC函数
         self.register(self.engine.connect)
@@ -41,7 +45,7 @@ class VtServer(RpcServer):
         self.register(self.engine.getAllContracts)
         self.register(self.engine.getOrder)
         self.register(self.engine.getAllWorkingOrders)
-        self.register(self.engine.getAllGatewayNames)
+        self.register(self.engine.getAllGatewayDetails)
         
         # 注册事件引擎发送的事件处理监听
         self.engine.eventEngine.registerGeneralHandler(self.eventHandler)

@@ -1,29 +1,19 @@
 # encoding: utf-8
 
+# 重载sys模块，设置默认字符串编码方式为utf8
 import sys
-import os
-import ctypes
-import platform
+reload(sys)
+sys.setdefaultencoding('utf8')  
 
-import vtPath
-from uiMainWindow import *
-
-from vnpy.event import EventEngine
+# vn.trader模块
+from vnpy.event import EventEngine2
 from vnpy.rpc import RpcClient
 
-from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
-from vnpy.trader.app.dataRecorder.drEngine import DrEngine
-from vnpy.trader.app.riskManager.rmEngine import RmEngine
+from vnpy.trader.vtGlobal import globalSetting
+from vnpy.trader.vtEngine import MainEngine
+from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiMainWindow import MainWindow
 
-
-
-# 文件路径名
-path = os.path.abspath(os.path.dirname(__file__))    
-ICON_FILENAME = 'vnpy.ico'
-ICON_FILENAME = os.path.join(path, ICON_FILENAME)  
-
-SETTING_FILENAME = 'VT_setting.json'
-SETTING_FILENAME = os.path.join(path, SETTING_FILENAME)     
 
 
 ########################################################################
@@ -46,12 +36,14 @@ class VtClient(RpcClient):
 
 
 ########################################################################
-class ClientEngine(object):
+class ClientEngine(MainEngine):
     """客户端引擎，提供和MainEngine完全相同的API接口"""
 
     #----------------------------------------------------------------------
     def __init__(self, client, eventEngine):
         """Constructor"""
+        super(MainEngine, self).__init__(eventEngine)
+        
         self.client = client
         self.eventEngine = eventEngine
         
@@ -148,24 +140,16 @@ class ClientEngine(object):
         return self.client.getAllWorkingOrders()
     
     #----------------------------------------------------------------------
-    def getAllGatewayNames(self):
+    def getAllGatewayDetails(self):
         """查询所有的接口名称"""
-        return self.client.getAllGatewayNames()
+        return self.client.getAllGatewayDetails()
 
 
 #----------------------------------------------------------------------
 def main():
     """客户端主程序入口"""
-    # 重载sys模块，设置默认字符串编码方式为utf8
-    reload(sys)
-    sys.setdefaultencoding('utf8')    
-    
-    # 设置Windows底部任务栏图标
-    if 'Windows' in platform.uname() :
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')    
-    
     # 创建事件引擎
-    eventEngine = EventEngine()
+    eventEngine = EventEngine2()
     eventEngine.start(timer=False)
 
     # 创建客户端
@@ -176,28 +160,13 @@ def main():
     client.subscribeTopic('')
     client.start()
     
-    # 初始化Qt应用对象
-    app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
-    app.setFont(BASIC_FONT)
-    
-    # 设置Qt的皮肤
-    try:
-        f = file(SETTING_FILENAME)
-        setting = json.load(f)    
-        if setting['darkStyle']:
-            import qdarkstyle
-            app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
-    except:
-        pass    
-    
     # 初始化主引擎和主窗口对象
     mainEngine = ClientEngine(client, eventEngine)
     mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
     mainWindow.showMaximized()
     
     # 在主线程中启动Qt事件循环
-    sys.exit(app.exec_())
+    sys.exit(qApp.exec_())
 
 
 if __name__ == '__main__':

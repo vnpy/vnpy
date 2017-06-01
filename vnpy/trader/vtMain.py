@@ -5,19 +5,12 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-# Python内置模块
-import os
-import platform
-
-# Python三方模块
-from qtpy import QtWidgets, QtGui
-
 # vn.trader模块
 from vnpy.event import EventEngine2
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiMainWindow import MainWindow, BASIC_FONT
-from vnpy.trader.vtFunction import loadIconPath
+from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
 from vnpy.trader.gateway import (ctpGateway,
@@ -48,17 +41,12 @@ def main():
     me.addApp(dataRecorder)
     me.addApp(ctaStrategy)
     
-    # 初始化Qt应用对象
-    app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(loadIconPath()))
-    app.setFont(BASIC_FONT)
-    
-    # 初始化主引擎和主窗口对象
+    # 创建主窗口
     mw = MainWindow(me, ee)
     mw.showMaximized()
     
     # 在主线程中启动Qt事件循环
-    sys.exit(app.exec_())
+    sys.exit(qApp.exec_())
 
 
     

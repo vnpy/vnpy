@@ -6,43 +6,16 @@ import os
 import platform
 from collections import OrderedDict
 
-from qtpy import QtWidgets, QtGui, QtCore
-
 from vnpy.event import *
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import *
 from vnpy.trader.vtGateway import *
-from vnpy.trader import vtText as vtText
+from vnpy.trader import vtText
+from vnpy.trader.uiQt import QtGui, QtWidgets, QtCore, BASIC_FONT
 
 
 COLOR_RED = QtGui.QColor('red')
 COLOR_GREEN = QtGui.QColor('green')
-
-
-# 设置Windows底部任务栏图标
-if 'Windows' in platform.uname():
-    import ctypes
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
-
-
-#----------------------------------------------------------------------
-def loadFont():
-    """载入字体设置"""
-    fileName = 'VT_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__)) 
-    fileName = os.path.join(path, fileName)  
-    
-    try:
-        f = file(fileName)
-        setting = json.load(f)
-        family = setting['fontFamily']
-        size = setting['fontSize']
-        font = QtGui.QFont(family, size)
-    except:
-        font = QtGui.QFont(u'微软雅黑', 12)
-    return font
-
-BASIC_FONT = loadFont()
 
 
 ########################################################################

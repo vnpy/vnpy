@@ -2,7 +2,8 @@
 
 import time
 
-from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_UNICODE, EMPTY_FLOAT, EMPTY_INT
+from vnpy.trader.vtConstant import (EMPTY_STRING, EMPTY_UNICODE, 
+                                    EMPTY_FLOAT, EMPTY_INT)
 
 
 ########################################################################
