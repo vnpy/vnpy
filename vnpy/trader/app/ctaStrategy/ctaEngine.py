@@ -579,6 +579,11 @@ class CtaEngine(object):
         
         newPrice = round(price/priceTick, 0) * priceTick
         return newPrice    
+    
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止"""
+        pass
 
 
 ########################################################################

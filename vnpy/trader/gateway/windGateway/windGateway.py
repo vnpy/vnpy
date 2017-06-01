@@ -133,7 +133,8 @@ class WindGateway(VtGateway):
     
     #----------------------------------------------------------------------
     def close(self):
-        self.w.stop()
+        if self.w:
+            self.w.stop()
      
     #----------------------------------------------------------------------
     def registerEvent(self):

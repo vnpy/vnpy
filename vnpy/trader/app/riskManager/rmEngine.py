@@ -252,3 +252,9 @@ class RmEngine(object):
             self.writeRiskLog(u'风险管理功能启动')
         else:
             self.writeRiskLog(u'风险管理功能停止')
+            
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止"""
+        self.saveSetting()
+        

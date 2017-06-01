@@ -156,10 +156,11 @@ class MainEngine(object):
             gateway.close()
         
         # 停止事件引擎
-        self.eventEngine.stop()      
+        self.eventEngine.stop()
         
-        # 停止数据记录引擎
-        self.drEngine.stop()
+        # 停止上层应用引擎
+        for appEngine in self.appDict.values():
+            appEngine.stop()
         
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
