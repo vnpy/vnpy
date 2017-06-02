@@ -8,6 +8,7 @@ from time import sleep
 from vnpy.api.cshshlp import CsHsHlp
 from vnpy.api.ctp import MdApi
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getTempPath
 
 
 # 接口常量
@@ -943,9 +944,7 @@ class CshshlpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')  
             self.createFtdcMdApi(path)
             
             # 注册服务器地址

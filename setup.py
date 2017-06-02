@@ -23,7 +23,7 @@ def getSubpackages(name):
 setup(
     name='vnpy',
     version=vnpy.__version__,
-    description='A framework for dveloping quantitative trading strategy',
+    description='A framework for developing quantitative trading strategy',
     long_description = long_desc,
     author=vnpy.__author__,
     author_email='vn.py@foxmail.com',
@@ -34,7 +34,7 @@ setup(
                  'Programming Language :: Python :: 2.7',
                  'License :: OSI Approved :: MIT License'],
     packages=getSubpackages('vnpy'),
-    package_data={'': ['*.json', '*.md', 
+    package_data={'': ['*.json', '*.md', '*.ico',
                        '*.dll', '*.lib', '*.so', '*.pyd',
                        '*.dat', '*.ini', '*.pfx', '*.scc', '*.crt', '*.key']},
 )

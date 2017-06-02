@@ -8,6 +8,7 @@ from vnpy.trader.vtConstant import *
 
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 
+
 ########################################################################
 class CtaTemplate(object):
     """CTA策略模板"""
@@ -171,7 +172,6 @@ class CtaTemplate(object):
         """查询当前运行的环境"""
         return self.ctaEngine.engineType
     
-
 
 ########################################################################
 class TargetPosTemplate(CtaTemplate):

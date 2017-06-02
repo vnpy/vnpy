@@ -16,7 +16,6 @@ import pymongo
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtBarData
-
 from vnpy.trader.app.ctaStrategy.datayesClient import DatayesClient
 
 
@@ -314,53 +313,53 @@ class HistoryDataEngine(object):
 
 #----------------------------------------------------------------------
 def downloadEquityDailyBarts(self, symbol):
-        """
-        下载股票的日行情，symbol是股票代码
-        """
-        print u'开始下载%s日行情' %symbol
+    """
+    下载股票的日行情，symbol是股票代码
+    """
+    print u'开始下载%s日行情' %symbol
+    
+    # 查询数据库中已有数据的最后日期
+    cl = self.dbClient[DAILY_DB_NAME][symbol]
+    cx = cl.find(sort=[('datetime', pymongo.DESCENDING)])
+    if cx.count():
+        last = cx[0]
+    else:
+        last = ''
+    # 开始下载数据
+    import tushare as ts
+    
+    if last:
+        start = last['date'][:4]+'-'+last['date'][4:6]+'-'+last['date'][6:]
         
-        # 查询数据库中已有数据的最后日期
-        cl = self.dbClient[DAILY_DB_NAME][symbol]
-        cx = cl.find(sort=[('datetime', pymongo.DESCENDING)])
-        if cx.count():
-            last = cx[0]
-        else:
-            last = ''
-        # 开始下载数据
-        import tushare as ts
+    data = ts.get_k_data(symbol,start)
+    
+    if not data.empty:
+        # 创建datetime索引
+        self.dbClient[DAILY_DB_NAME][symbol].ensure_index([('datetime', pymongo.ASCENDING)], 
+                                                            unique=True)                
         
-        if last:
-            start = last['date'][:4]+'-'+last['date'][4:6]+'-'+last['date'][6:]
+        for index, d in data.iterrows():
+            bar = VtBarData()
+            bar.vtSymbol = symbol
+            bar.symbol = symbol
+            try:
+                bar.open = d.get('open')
+                bar.high = d.get('high')
+                bar.low = d.get('low')
+                bar.close = d.get('close')
+                bar.date = d.get('date').replace('-', '')
+                bar.time = ''
+                bar.datetime = datetime.strptime(bar.date, '%Y%m%d')
+                bar.volume = d.get('volume')
+            except KeyError:
+                print d
             
-        data = ts.get_k_data(symbol,start)
+            flt = {'datetime': bar.datetime}
+            self.dbClient[DAILY_DB_NAME][symbol].update_one(flt, {'$set':bar.__dict__}, upsert=True)            
         
-        if not data.empty:
-            # 创建datetime索引
-            self.dbClient[DAILY_DB_NAME][symbol].ensure_index([('datetime', pymongo.ASCENDING)], 
-                                                                unique=True)                
-            
-            for index, d in data.iterrows():
-                bar = VtBarData()
-                bar.vtSymbol = symbol
-                bar.symbol = symbol
-                try:
-                    bar.open = d.get('open')
-                    bar.high = d.get('high')
-                    bar.low = d.get('low')
-                    bar.close = d.get('close')
-                    bar.date = d.get('date').replace('-', '')
-                    bar.time = ''
-                    bar.datetime = datetime.strptime(bar.date, '%Y%m%d')
-                    bar.volume = d.get('volume')
-                except KeyError:
-                    print d
-                
-                flt = {'datetime': bar.datetime}
-                self.dbClient[DAILY_DB_NAME][symbol].update_one(flt, {'$set':bar.__dict__}, upsert=True)            
-            
-            print u'%s下载完成' %symbol
-        else:
-            print u'找不到合约%s' %symbol
+        print u'%s下载完成' %symbol
+    else:
+        print u'找不到合约%s' %symbol
 
 #----------------------------------------------------------------------
 def loadMcCsv(fileName, dbName, symbol):
@@ -432,15 +431,3 @@ def loadTdxCsv(fileName, dbName, symbol):
     print u'插入完毕，耗时：%s' % (time()-start)
 
     
-if __name__ == '__main__':
-    ## 简单的测试脚本可以写在这里
-    #from time import sleep
-    #e = HistoryDataEngine()
-    #sleep(1)
-    #e.downloadEquityDailyBar('000001')
-    #e.downloadEquityDailyBarts('000001')
-    
-    # 这里将项目中包含的股指日内分钟线csv导入MongoDB，作者电脑耗时大约3分钟
-    loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
-    #导入通达信历史分钟数据
-    #loadTdxCsv('CL8.csv', MINUTE_DB_NAME, 'c0000')

@@ -13,6 +13,7 @@ from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.language import text
+from vnpy.trader.vtFunction import getTempPath
 
 
 ########################################################################
@@ -278,8 +279,7 @@ class MainEngine(object):
 class DataEngine(object):
     """数据引擎"""
     contractFileName = 'ContractData.vt'
-    path = os.path.abspath(os.path.dirname(__file__)) 
-    contractFileName = os.path.join(path, 'temp', contractFileName)
+    contractFilePath = getTempPath(contractFileName)
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine):
@@ -324,14 +324,14 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def saveContracts(self):
         """保存所有合约对象到硬盘"""
-        f = shelve.open(self.contractFileName)
+        f = shelve.open(self.contractFilePath)
         f['data'] = self.contractDict
         f.close()
     
     #----------------------------------------------------------------------
     def loadContracts(self):
         """从硬盘读取合约对象"""
-        f = shelve.open(self.contractFileName)
+        f = shelve.open(self.contractFilePath)
         if 'data' in f:
             d = f['data']
             for key, value in d.items():

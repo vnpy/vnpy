@@ -9,6 +9,7 @@ import os
 import json
 
 from vnpy.api.ksotp import MdApi, TdApi, defineDict
+from vnpy.trader.vtFunction import getTempPath
 from vnpy.trader.vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -353,9 +354,7 @@ class KsotpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createOTPMdApi(path)
             
             # 注册服务器地址
@@ -1139,9 +1138,7 @@ class KsotpTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createOTPTraderApi(path)
             
             # 注册服务器地址

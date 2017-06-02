@@ -137,7 +137,7 @@ class BidCell(QtWidgets.QTableWidgetItem):
 
 ########################################################################
 class AskCell(QtWidgets.QTableWidgetItem):
-    """买价单元格"""
+    """卖价单元格"""
 
     #----------------------------------------------------------------------
     def __init__(self, text=None, mainEngine=None):
