@@ -11,7 +11,7 @@ from datetime import datetime
 from time import sleep
 
 from vnpy.api.lhang import LhangApi
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 
 SYMBOL_BTCCNY = 'BTCCNY'

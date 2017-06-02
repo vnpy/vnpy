@@ -8,6 +8,7 @@ from time import sleep
 from vnpy.api.cshshlp import CsHsHlp
 from vnpy.api.ctp import MdApi
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getTempPath
 
 
 # 接口常量
@@ -411,8 +412,6 @@ class CshshlpTdApi(CsHsHlp):
             order.exchange = exchangeMapReverse.get(d['exchange_type'], EXCHANGE_UNKNOWN)
             order.vtSymbol = '.'.join([order.symbol, order.exchange])
             
-            #self.batchNo += 1
-            #batchNo = str(self.batchNo)
             batchNo = d['batch_no']
             self.batchNo = max(self.batchNo, int(batchNo))
 
@@ -424,8 +423,7 @@ class CshshlpTdApi(CsHsHlp):
             
             order.direction = directionMapReverse.get(d['entrust_bs'], DIRECTION_UNKNOWN)
             order.offset = offsetMapReverse.get(d['entrust_oc'], OFFSET_UNKNOWN)
-            #order.status = statusMapReverse.get(d['entrust_status'], STATUS_UNKNOWN)
-            order.status = statusMapReverse.get(d['entrust_status'], d['entrust_status'])
+            order.status = statusMapReverse.get(d['entrust_status'], STATUS_UNKNOWN)
             
             order.price = float(d['opt_entrust_price'])
             order.totalVolume = int(float(d['entrust_amount']))
@@ -494,11 +492,11 @@ class CshshlpTdApi(CsHsHlp):
             pos.direction = posDirectionMapReverse.get(d['opthold_type'], DIRECTION_UNKNOWN)
             pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
     
-            pos.position = int(float(d['current_amount']))
+            pos.position = int(float(d['hold_amount']))
             pos.positionProfit = float(d['income_balance'])
             pos.price = float(d['opt_cost_price'])
-            pos.frozen = int((float(d['current_amount']) - float(d['enable_amount'])))
-            
+            pos.frozen = int((float(d['hold_amount']) - float(d['enable_amount'])))
+
             self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
@@ -689,7 +687,7 @@ class CshshlpTdApi(CsHsHlp):
     def qryContract(self):
         """"""
         req = self.generateReq()
-        #req = {}
+        req['request_num'] = '10000'
         self.sendReq(FUNCTION_QRYCONTRACT, req)
     
     #----------------------------------------------------------------------
@@ -699,7 +697,7 @@ class CshshlpTdApi(CsHsHlp):
             return
         
         req = self.generateReq()
-        d['request_num'] = '1000'
+        req['request_num'] = '10000'
         self.sendReq(FUNCTION_QRYPOSITION, req)
     
     #----------------------------------------------------------------------
@@ -709,7 +707,6 @@ class CshshlpTdApi(CsHsHlp):
             return
         
         req = self.generateReq()
-        d['money_type'] = 'cny'
         self.sendReq(FUNCTION_QRYACCOUNT, req)
     
     #----------------------------------------------------------------------
@@ -947,9 +944,7 @@ class CshshlpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')  
             self.createFtdcMdApi(path)
             
             # 注册服务器地址

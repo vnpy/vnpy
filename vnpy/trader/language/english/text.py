@@ -117,7 +117,7 @@ STRATEGY = u'Strategy'
 CTA_STRATEGY = u'CTA Strategy'
 
 HELP = u'Help'
-RESTORE = u'Restore'
+RESTORE = u'Restore Window'
 ABOUT = u'About'
 TEST = u'Test'
 CONNECT = u'Connect '

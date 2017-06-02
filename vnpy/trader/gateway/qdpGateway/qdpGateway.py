@@ -14,7 +14,7 @@ import datetime
 from copy import copy
 
 from vnpy.api.qdp import MdApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 
 # 以下为一些VT类型和QDP类型的映射字典

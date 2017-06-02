@@ -17,7 +17,7 @@ from Queue import Queue
 from threading import Thread
 
 from vnpy.api.okcoin import vnokcoin
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 价格类型映射
 priceTypeMap = {}

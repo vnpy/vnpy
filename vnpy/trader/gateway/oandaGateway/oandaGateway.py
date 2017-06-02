@@ -25,7 +25,7 @@ import json
 import datetime
 
 from vnpy.api.oanda import OandaApi
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 价格类型映射
 priceTypeMap = {}

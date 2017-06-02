@@ -3,10 +3,10 @@
 import time
 
 from vnpy.event import *
-from vnpy.trader.vtEvent import *
 
-from vtConstant import *
-from vtObject import *
+from vnpy.trader.vtEvent import *
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtObject import *
 
 
 ########################################################################

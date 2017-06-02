@@ -8,7 +8,8 @@ import os
 import json
 
 from vnpy.api.lts import MdApi, QryApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtFunction import getTempPath
+from vnpy.trader.vtGateway import *
 
 
 # 以下为一些VT类型和LTS类型的映射字典
@@ -372,9 +373,7 @@ class LtsMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createFtdcMdApi(path)
             
             # 注册服务器地址
@@ -726,9 +725,7 @@ class LtsTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createFtdcTraderApi(path)
             
             # 设置数据同步模式为推送从今日开始所有数据
@@ -1186,9 +1183,7 @@ class LtsQryApi(QryApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createFtdcQueryApi(path)
             
             # 注册服务器地址

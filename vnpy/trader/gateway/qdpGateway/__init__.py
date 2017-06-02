@@ -1,8 +1,9 @@
 # encoding: UTF-8
 
-import vtConstant
-from qdpGateway import QdpGateway as gateway
+from vnpy.trader import vtConstant
+from qdpGateway import QdpGateway
 
+gatewayClass = QdpGateway
 gatewayName = 'QDP'
 gatewayDisplayName = gatewayName
 gatewayType = vtConstant.GATEWAYTYPE_FUTURES

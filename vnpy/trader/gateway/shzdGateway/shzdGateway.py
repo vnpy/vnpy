@@ -16,7 +16,7 @@ from copy import copy
 from datetime import datetime
 
 from vnpy.api.shzd import ShzdApi
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 
 # 以下为一些VT类型和SHZD类型的映射字典
@@ -41,6 +41,7 @@ exchangeMap = {}
 exchangeMap[EXCHANGE_HKEX] = 'HKEX'
 exchangeMap[EXCHANGE_CME] = 'CME'
 exchangeMap[EXCHANGE_ICE] = 'ICE'
+exchangeMap[EXCHANGE_LME] = 'LME'
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
 # 产品类型映射
@@ -283,7 +284,10 @@ class ShzdGatewayApi(ShzdApi):
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
     
         tick.volume = int(data['513'])
-        tick.openInterest = int(data['514'])
+        
+        # LME行情没有持仓量数据
+        if data['306'] != 'LME':
+            tick.openInterest = int(data['514'])
         
         dt = data['512'].split(' ')
         tick.time = dt[1]

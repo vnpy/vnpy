@@ -1,8 +1,9 @@
 # encoding: UTF-8
 
-import vtConstant
-from cshshlpGateway import CshshlpGateway as gateway
+from vnpy.trader import vtConstant
+from cshshlpGateway import CshshlpGateway
 
+gatewayClass = CshshlpGateway
 gatewayName = 'CSHSHLP'
 gatewayDisplayName = u'中信期权'
 gatewayType = vtConstant.GATEWAYTYPE_EQUITY

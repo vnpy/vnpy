@@ -9,7 +9,8 @@ import os
 import json
 
 from vnpy.api.ksotp import MdApi, TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtFunction import getTempPath
+from vnpy.trader.vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -353,9 +354,7 @@ class KsotpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createOTPMdApi(path)
             
             # 注册服务器地址
@@ -1139,9 +1138,7 @@ class KsotpTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createOTPTraderApi(path)
             
             # 注册服务器地址
@@ -1810,32 +1807,3 @@ class KsotpTdApi(TdApi):
         """"""
         pass
             
-    
-        
-    
-
-
-#----------------------------------------------------------------------
-def test():
-    """测试"""
-    from PyQt4 import QtCore
-    import sys
-    
-    def print_log(event):
-        log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
-    
-    app = QtCore.QCoreApplication(sys.argv)    
-
-    eventEngine = EventEngine()
-    eventEngine.register(EVENT_LOG, print_log)
-    eventEngine.start()
-    
-    gateway = KsotpGateway(eventEngine)
-    gateway.connect()
-    
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    test()

@@ -39,7 +39,8 @@ Release/
 *.local
 *.temp
 *.vt
-*.dat
+*.log
+
 vn.ctp/build/*
 vn.lts/build/*
 .idea

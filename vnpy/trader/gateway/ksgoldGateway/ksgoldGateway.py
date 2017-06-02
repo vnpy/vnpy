@@ -12,7 +12,7 @@ import json
 import time
 
 from vnpy.api.ksgold import TdApi, defineDict
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 以下类型映射参考的是原生API里的Constant.h
 

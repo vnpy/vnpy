@@ -6,12 +6,14 @@ Wind Python API的gateway接入
 
 from copy import copy
 
+w = None
+
 try:
     from WindPy import w
 except ImportError:
     print u'请先安装WindPy接口'
 
-from vtGateway import *
+from vnpy.trader.vtGateway import *
 
 # 交易所类型映射
 exchangeMap = {}
@@ -131,7 +133,8 @@ class WindGateway(VtGateway):
     
     #----------------------------------------------------------------------
     def close(self):
-        self.w.stop()
+        if self.w:
+            self.w.stop()
      
     #----------------------------------------------------------------------
     def registerEvent(self):

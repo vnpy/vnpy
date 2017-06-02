@@ -15,7 +15,9 @@ from datetime import datetime
 
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
-from language import text
+from vnpy.trader.vtFunction import getTempPath
+from vnpy.trader.gateway.ctpGateway.language import text
+from vnpy.trader.vtConstant import GATEWAYTYPE_FUTURES
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -88,7 +90,7 @@ class CtpGateway(VtGateway):
         self.mdConnected = False        # 行情API连接状态，登录完成后为True
         self.tdConnected = False        # 交易API连接状态
         
-        self.qryEnabled = False         # 是否要启动循环查询
+        self.qryEnabled = False         # 循环查询
 
         self.requireAuthentication = False
         
@@ -392,9 +394,7 @@ class CtpMdApi(MdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createFtdcMdApi(path)
             
             # 注册服务器地址
@@ -1320,9 +1320,7 @@ class CtpTdApi(TdApi):
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
             # 创建C++环境中的API对象，这里传入的参数是需要用来保存.con文件的文件夹路径
-            path = os.getcwd() + '/temp/' + self.gatewayName + '/'
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path = getTempPath(self.gatewayName + '_')
             self.createFtdcTraderApi(path)
             
             # 设置数据同步模式为推送从今日开始所有数据
@@ -1458,29 +1456,3 @@ class CtpTdApi(TdApi):
         log.gatewayName = self.gatewayName
         log.logContent = content
         self.gateway.onLog(log)        
-
-
-#----------------------------------------------------------------------
-def test():
-    """测试"""
-    from PyQt4 import QtCore
-    import sys
-    
-    def print_log(event):
-        log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
-    
-    app = QtCore.QCoreApplication(sys.argv)    
-
-    eventEngine = EventEngine()
-    eventEngine.register(EVENT_LOG, print_log)
-    eventEngine.start()
-    
-    gateway = CtpGateway(eventEngine)
-    gateway.connect()
-    
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    test()
