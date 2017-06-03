@@ -13,7 +13,7 @@ make VERBOSE=1 -j 1
 ln -fs `pwd`/lib/vnltsmd.so ../vnltsmd/test/vnltsmd.so
 ln -fs `pwd`/lib/vnltstd.so ../vnltstd/test/vnltstd.so
 ln -fs `pwd`/lib/vnltsqry.so ../vnltsqry/test/vnltsqry.so
-cp ../vnltsmd/test/vnltsmd.* ../../vn.trader/ltsGateway/
-cp ../vnltstd/test/vnltstd.* ../../vn.trader/ltsGateway/
-cp ../vnltsqry/test/vnltsqry.* ../../vn.trader/ltsGateway/
+cp ../vnltsmd/test/vnltsmd.* ./
+cp ../vnltstd/test/vnltstd.* ./
+cp ../vnltsqry/test/vnltsqry.* ./
 popd
