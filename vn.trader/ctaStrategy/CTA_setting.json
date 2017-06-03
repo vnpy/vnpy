@@ -1,0 +1,16 @@
+[
+
+    {
+          "name": "S29_m0901",
+          "className": "Strategy29_v1",
+          "vtSymbol": "SP m1709&m1801",
+          "symbol": "SP m1709&m1801",
+          "shortSymbol":"M",
+          "Leg1Symbol":"m1709",
+          "Leg2Symbol":"m1801",
+          "minDiff":1,
+          "inputSS":1,
+          "mode":"tick"
+      }
+
+]
