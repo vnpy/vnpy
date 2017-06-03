@@ -324,12 +324,10 @@ class CtpMdApi(MdApi):
         if error['ErrorID'] == 0:
             self.loginStatus = True
             self.gateway.mdConnected = True
-            
             self.writeLog(text.DATA_SERVER_LOGIN)
-            
             # 重新订阅之前订阅的合约
             if len(self.subscribedSymbols) > 0:
-                print u'Resubscribe'
+                print u'ctpMdApi.onRspUserLogin（）Resubscribe Symbols:{0}'.format(self.subscribedSymbols)
 
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
@@ -571,9 +569,8 @@ class CtpTdApi(TdApi):
             self.sessionID = str(data['SessionID'])
             self.loginStatus = True
             self.gateway.tdConnected = True
-            
+            self.gateway.mdConnected = True
             self.writeLog(text.TRADING_SERVER_LOGIN)
-
 
             # 确认结算信息
             req = {}
