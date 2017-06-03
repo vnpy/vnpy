@@ -6,6 +6,10 @@
 '''
 from __future__ import division
 
+import sys
+import os
+cta_engine_path = os.path.abspath(os.path.dirname(__file__))
+
 from datetime import datetime, timedelta
 from collections import OrderedDict
 from itertools import product
@@ -19,7 +23,7 @@ from vtFunction import loadMongoSetting
 
 from eventEngine import *
 
-import MySQLdb
+#import MySQLdb
 import json
 import os
 import sys
@@ -706,7 +710,8 @@ class BacktestingEngine(object):
 
                 dtStr = tick.date + ' ' + tick.time
                 if dtStr in leg2Ticks:
-                    self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
+                    pass
+                    #self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
                 else:
                     leg2Ticks[dtStr] = tick
 
@@ -823,8 +828,152 @@ class BacktestingEngine(object):
             cache.close()
             return True
 
+    # ----------------------------------------------------------------------
+
+    def runBackTestingWithArbTickFile2(self, leg1MainPath,leg2MainPath, arbSymbol):
+        """运行套利回测（使用本地tick csv数据)
+        参数：套利代码 SP rb1610&rb1701
+        added by IncenseLee
+        原始的tick，存放在相应市场下每天的目录中，目录包含市场各个合约的数据
+        E:\ticks\SQ\201606\20160601\
+                                     RB10.csv
+                                     RB01.csv
+                                     ....
+
+        目录为交易日。
+        按照回测的开始日期，到结束日期，循环每一天。
+
+        读取eg1（如RB1610），读取Leg2（如RB701），合并成价差tick，灌输到策略的onTick中。
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if len(arbSymbol) < 1:
+            self.writeCtaLog(u'套利合约为空')
+            return
+
+        if not (arbSymbol.upper().index("SP") == 0 and arbSymbol.index(" ") > 0 and arbSymbol.index("&") > 0):
+            self.writeCtaLog(u'套利合约格式不符合')
+            return
+
+        # 获得Leg1，leg2
+        legs = arbSymbol[arbSymbol.index(" "):]
+        leg1 = legs[1:legs.index("&")]
+        leg2 = legs[legs.index("&") + 1:]
+        self.writeCtaLog(u'Leg1:{0},Leg2:{1}'.format(leg1, leg2))
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+
+            # 白天数据
+            self.__loadArbTicks2(leg1MainPath, leg2MainPath, testday, leg1, leg2)
+
+    def __loadArbTicks2(self, leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol):
+        """加载taobao csv格式tick产生的价差合约"""
+
+        self.writeCtaLog(u'加载回测日期:{0}\{1}的价差tick'.format(leg1MainPath, testday))
+        p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+
+        leg1_shortSymbol = p.match(leg1Symbol)
+        leg2_shortSymbol = p.match(leg2Symbol)
+
+        if leg1_shortSymbol is None or leg2_shortSymbol is None:
+            self.writeCtaLog(u'{0},{1}不能正则分解'.format(leg1Symbol, leg2Symbol))
+            return
+
+        leg1_shortSymbol = leg1_shortSymbol.group(1)
+        leg2_shortSymbol = leg2_shortSymbol.group(1)
+
+        arbTicks = []
+
+        leg1File = os.path.abspath(
+            os.path.join(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
+                         '{0}{1}_{2}.csv'.format(leg1_shortSymbol, leg1Symbol[-2:], testday.strftime('%Y%m%d'))))
+
+        if not os.path.isfile(leg1File):
+            self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
+            return
+
+        leg2File = os.path.abspath(
+            os.path.join(leg2MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
+                         '{0}{1}_{2}.csv'.format(leg2_shortSymbol, leg2Symbol[-2:], testday.strftime('%Y%m%d'))))
+
+        if not os.path.isfile(leg2File):
+            self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
+            return
+
+        # 先读取leg2的数据到目录，以日期时间为key
+        leg2Ticks = self.__loadTicksFromFile2(filepath=leg2File,tickDate=testday,vtSymbol=leg2Symbol)
+
+        leg1Ticks = self.__loadTicksFromFile2(filepath=leg1File, tickDate=testday, vtSymbol=leg1Symbol)
+
+        for dtStr,leg1_tick in leg1Ticks.iteritems():
+
+            if dtStr in leg2Ticks:
+                arbTick = CtaTickData()
+
+                leg2_tick = leg2Ticks[dtStr]
+
+                arbTick.vtSymbol = self.symbol
+                arbTick.symbol = self.symbol
+                arbTick.date = leg1_tick.date
+                arbTick.time = leg1_tick.time
+                arbTick.datetime = leg1_tick.datetime
+                arbTick.tradingDay = leg1_tick.tradingDay
+
+                arbTick.lastPrice = EMPTY_FLOAT
+                arbTick.volume = EMPTY_INT
+
+                # 排除涨停/跌停的数据
+                if ((leg1_tick.askPrice1 == float('1.79769E308') or leg1_tick.askPrice1 == 0) and leg1_tick.askVolume1 == 0) \
+                        or ((leg1_tick.bidPrice1 == float('1.79769E308') or leg1_tick.bidPrice1 == 0) and leg1_tick.bidVolume1 == 0):
+                    continue
+
+                if ((leg2_tick.askPrice1 == float('1.79769E308') or leg2_tick.askPrice1 == 0) and leg2_tick.askVolume1 == 0) \
+                        or ((leg2_tick.bidPrice1 == float('1.79769E308') or leg2_tick.bidPrice1 == 0) and leg2_tick.bidVolume1 == 0):
+                    continue
+
+                # 叫卖价差=leg1.askPrice1 - leg2.bidPrice1，volume为两者最小
+                arbTick.askPrice1 = leg1_tick.askPrice1 - leg2_tick.bidPrice1
+                arbTick.askVolume1 = min(leg1_tick.askVolume1, leg2_tick.bidVolume1)
+
+                # 叫买价差=leg1.bidPrice1 - leg2.askPrice1，volume为两者最小
+                arbTick.bidPrice1 = leg1_tick.bidPrice1 - leg2_tick.askPrice1
+                arbTick.bidVolume1 = min(leg1_tick.bidVolume1, leg2_tick.askVolume1)
+
+                arbTicks.append(arbTick)
+
+                del leg2Ticks[dtStr]
+
+        for t in arbTicks:
+            # 推送到策略中
+            self.newTick(t)
+
     def runBackTestingWithNonStrArbTickFile(self, leg1MainPath, leg2MainPath, leg1Symbol,leg2Symbol):
-        """运行套利回测（使用本地tickcsv数据)
+        """运行套利回测（使用本地tick txt数据)
         参数：
         leg1MainPath： leg1合约所在的市场路径
         leg2MainPath： leg2合约所在的市场路径
@@ -941,7 +1090,8 @@ class BacktestingEngine(object):
 
             dtStr = tick.date + ' ' + tick.time
             if dtStr in ticks:
-                self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
+                pass
+                #self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
             else:
                 ticks[dtStr] = tick
 
@@ -1077,7 +1227,7 @@ class BacktestingEngine(object):
             return ticks
         dt = None
         csvReadFile = file(filepath, 'rb')
-        df = pd.read_csv(filepath, encoding='gbk')
+        df = pd.read_csv(filepath, encoding='gbk',parse_dates=False)
         df.columns = ['date', 'time', 'lastPrice', 'lastVolume', 'totalInterest', 'position',
                       'bidPrice1', 'bidVolume1', 'bidPrice2', 'bidVolume2', 'bidPrice3', 'bidVolume3',
                       'askPrice1', 'askVolume1', 'askPrice2', 'askVolume2', 'askPrice3', 'askVolume3','BS']
@@ -1129,7 +1279,9 @@ class BacktestingEngine(object):
 
             dtStr = tick.date + ' ' + tick.time
             if dtStr in ticks:
-                self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
+                pass
+
+                #self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
             else:
                 ticks[dtStr] = tick
 
@@ -1151,14 +1303,23 @@ class BacktestingEngine(object):
 
 
         # E:\Ticks\SQ\2014\201401\20140102\ag01_20140102.csv
-        leg1File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
-            .format(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'), leg1_shortSymbol, leg1Symbol[-2:])
+        #leg1File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
+        #    .format(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'), leg1_shortSymbol, leg1Symbol[-2:])
+
+        leg1File = os.path.abspath(
+            os.path.join(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
+                         '{0}{1}_{2}.csv'.format(leg1_shortSymbol,leg1Symbol[-2:],testday.strftime('%Y%m%d'))))
+
         if not os.path.isfile(leg1File):
             self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
             return
 
-        leg2File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
-            .format(leg2MainPath,testday.strftime('%Y'), testday.strftime('%Y%m'),  testday.strftime('%Y%m%d'), leg2_shortSymbol, leg2Symbol[-2:])
+        #leg2File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
+        #    .format(leg2MainPath,testday.strftime('%Y'), testday.strftime('%Y%m'),  testday.strftime('%Y%m%d'), leg2_shortSymbol, leg2Symbol[-2:])
+        leg2File = os.path.abspath(
+            os.path.join(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
+                         '{0}{1}_{2}.csv'.format(leg2_shortSymbol, leg2Symbol[-2:], testday.strftime('%Y%m%d'))))
+
         if not os.path.isfile(leg2File):
             self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
             return
@@ -1779,11 +1940,14 @@ class BacktestingEngine(object):
                     while coverVolume > 0:
                         if len(shortTrade)==0:
                             self.writeCtaError(u'异常，没有开空仓的数据')
-                            break
+                            raise RuntimeError(u'realtimeCalculate() Exception,没有开空仓的数据')
+
+
                         pop_indexs = [i for i, val in enumerate(shortTrade) if val.vtSymbol == trade.vtSymbol]
                         if len(pop_indexs) < 1:
                             self.writeCtaError(u'没有对应的symbol:{0}开空仓数据'.format(trade.vtSymbol))
-                            break
+                            raise RuntimeError(u'realtimeCalculate() Exception,没有对应的symbol:{0}开空仓数据'.format(trade.vtSymbol))
+
                         pop_index = pop_indexs[0]
                         # 从未平仓的空头交易
                         entryTrade = shortTrade.pop(pop_index)
@@ -1946,12 +2110,14 @@ class BacktestingEngine(object):
                     while sellVolume > 0:
                         if len(longTrade) == 0:
                             self.writeCtaError(u'异常，没有开多单')
-                            break
+                            raise RuntimeError(u'realtimeCalculate() Exception,没有开多单')
+                            return
 
                         pop_indexs = [i for i, val in enumerate(longTrade) if val.vtSymbol == trade.vtSymbol]
                         if len(pop_indexs) < 1:
                             self.writeCtaError(u'没有对应的symbol{0}开多仓数据,'.format(trade.vtSymbol))
-                            break
+                            raise RuntimeError(u'realimeCalculate() Exception,没有对应的symbol{0}开多仓数据,'.format(trade.vtSymbol))
+                            return
 
                         pop_index = pop_indexs[0]
 
@@ -2159,27 +2325,19 @@ class BacktestingEngine(object):
         """实时计算交易结果2
         支持多空仓位并存"""
 
-        if len(self.tradeDict) <1:
-            return
+        if len(self.tradeDict) < 1: return
 
         tradeids = self.tradeDict.keys()
-
         resultDict = OrderedDict()  # 交易结果记录
-
-        longTrade = []              # 未平仓的多头交易
-        shortTrade = []             # 未平仓的空头交易
         longid = EMPTY_STRING
         shortid = EMPTY_STRING
-
-        no_match_shortTrade = False
-        no_match_longTrade = False
 
         # 对交易记录逐一处理
         for tradeid in tradeids:
             try:
                 trade = self.tradeDict[tradeid]
             except:
-                self.output(u'没有{0}的成交单'.format(tradeid))
+                self.writeCtaError(u'没有{0}的成交单'.format(tradeid))
                 continue
 
             # buy trade
@@ -2191,7 +2349,6 @@ class BacktestingEngine(object):
 
             # cover trade，
             elif trade.direction == DIRECTION_LONG and trade.offset == OFFSET_CLOSE:
-
                 gId = trade.tradeID    # 交易组（多个平仓数为一组）
                 gr = None       # 组合的交易结果
 
@@ -2200,11 +2357,13 @@ class BacktestingEngine(object):
                 while coverVolume > 0:
                     if len(self.shortPosition) == 0:
                         self.writeCtaError(u'异常!没有开空仓的数据')
-                        break
+                        raise Exception(u'realtimeCalculate2() Exception,没有开空仓的数据')
+                        return
                     pop_indexs = [i for i, val in enumerate(self.shortPosition) if val.vtSymbol == trade.vtSymbol]
                     if len(pop_indexs) < 1:
                         self.writeCtaError(u'异常，没有对应symbol:{0}的空单持仓'.format(trade.vtSymbol))
-                        break
+                        raise Exception(u'realtimeCalculate2() Exception,没有对应symbol:{0}的空单持仓'.format(trade.vtSymbol))
+                        return
 
                     pop_index = pop_indexs[0]
                     # 从未平仓的空头交易
@@ -2245,7 +2404,6 @@ class BacktestingEngine(object):
                                                  trade.tradeTime, tradeid, trade.price,
                                                  entryTrade.volume, result.pnl)
                         self.output(msg)
-
                         self.writeCtaLog(msg)
 
                         if type(gr) == type(None):
@@ -2256,7 +2414,6 @@ class BacktestingEngine(object):
                             else:
                                 # 不属于组合
                                 resultDict[entryTrade.dt] = result
-
                                 # 删除平空交易单，
                                 del self.tradeDict[trade.tradeID]
 
@@ -2336,7 +2493,6 @@ class BacktestingEngine(object):
 
             # Short Trade
             elif trade.direction == DIRECTION_SHORT and trade.offset == OFFSET_OPEN:
-
                 self.output(u'{0}空开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
                 self.writeCtaLog(u'{0}空开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
                 self.shortPosition.append(trade)
@@ -2353,17 +2509,17 @@ class BacktestingEngine(object):
                 while sellVolume > 0:
                     if len(self.longPosition) == 0:
                         self.writeCtaError(u'异常，没有开多单')
-                        break
+                        raise RuntimeError(u'realtimeCalculate2() Exception,没有开多单')
+                        return
 
                     pop_indexs = [i for i, val in enumerate(self.longPosition) if val.vtSymbol == trade.vtSymbol]
                     if len(pop_indexs) < 1:
-                        self.writeCtaError(u'没有对应的symbol{0}开多仓数据,'.format(trade.vtSymbol))
-                        break
+                        self.writeCtaError(u'没有对应的symbol{0}多单数据,'.format(trade.vtSymbol))
+                        raise RuntimeError(u'realtimeCalculate2() Exception,没有对应的symbol{0}多单数据,'.format(trade.vtSymbol))
+                        return
 
                     pop_index = pop_indexs[0]
-
                     entryTrade = self.longPosition.pop(pop_index)
-
                      # 开多volume，不大于平仓volume
                     if sellVolume >= entryTrade.volume:
                         self.writeCtaLog(u'{0}Sell Volume:{1} >= Entry Volume:{2}'.format(entryTrade.vtSymbol, sellVolume, entryTrade.volume))
@@ -2429,7 +2585,8 @@ class BacktestingEngine(object):
                     # 开多volume,大于平仓volume，需要更新减少tradeDict的数量。
                     else:
                         longVolume = entryTrade.volume -sellVolume
-                        self.writeCtaLog(u'Long Volume:{0} > sell Volume:{1}'.format(entryTrade.volume,sellVolume))
+                        self.writeCtaLog(u'Entry Long Volume:{0} > Sell Volume:{1},Remain:{2}'
+                                         .format(entryTrade.volume, sellVolume, longVolume))
 
                         result = TradingResult(entryPrice=entryTrade.price,
                                                entryDt=entryTrade.dt,
@@ -2453,10 +2610,11 @@ class BacktestingEngine(object):
                         t['Profit'] = result.pnl
                         self.exportTradeList.append(t)
 
-                        self.writeCtaLog(u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'
-                                         .format(gId, entryTrade.vtSymbol,entryTrade.tradeTime, longid, entryTrade.price,
-                                                 trade.tradeTime, tradeid, trade.price,
-                                                 sellVolume, result.pnl))
+                        msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'\
+                            .format(gId, entryTrade.vtSymbol,entryTrade.tradeTime, longid, entryTrade.price,
+                                    trade.tradeTime, tradeid, trade.price, sellVolume, result.pnl)
+                        self.output(msg)
+                        self.writeCtaLog(msg)
 
                         # 减少开多volume,重新推进多单持仓列表中
                         entryTrade.volume = longVolume
@@ -2557,9 +2715,11 @@ class BacktestingEngine(object):
             self.totalCommission += result.commission
             self.totalSlippage += result.slippage
 
-            self.output(u'[{5}],{6} Vol:{0},盈亏:{1},回撤:{2}/{3},权益:{4}'.
-                        format(abs(result.volume), result.pnl, drawdown,
-                               drawdownRate, self.capital, result.groupId, time))
+            msg =u'[{0}] {1} 盈亏:{2},回撤:{3}/{4},权益:{5}'\
+                .format(result.groupId, time, result.pnl, drawdown,
+                        drawdownRate, self.capital, )
+            self.output(msg)
+            self.writeCtaLog(msg)
 
         # 重新计算一次avaliable
         self.avaliable = self.capital - occupyMoney
@@ -2961,7 +3121,8 @@ class BacktestingEngine(object):
                                                          datetime.now().strftime('%Y%m%d_%H%M'))))
         fig = plt.gcf()
         fig.savefig(fig_file_name)
-        plt.show()
+        print (u'图表保存至：{0}'.format(fig_file_name))
+        #plt.show()
     
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):

@@ -41,6 +41,8 @@ class CtaGrid(object):
         self.openDatetime = None
         self.orderDatetime = None       # 委托时间
 
+        self.lockGrids = []             # 锁单的网格，[openPrice,openPrice]
+
     def toJson(self):
         """输出JSON"""
 
@@ -58,6 +60,7 @@ class CtaGrid(object):
         j['orderRef'] = self.orderRef           # OrderId
         j['openStatus'] = self.openStatus         # 开仓状态
         j['closeStatus'] = self.closeStatus        # 平仓状态
+        j['lockGrids'] = self.lockGrids         # 对锁的网格
 
         if type(self.openDatetime) == type(None):
             j['openDatetime'] = EMPTY_STRING
@@ -325,6 +328,26 @@ class CtaGridTrade(object):
         self.writeCtaLog(u'异常，找不到网格[{0},{1},{2},{3},{4}]'.format(direction, openPrice, closePrice, orderRef, t))
         return None
 
+    def getLastOpenedGrid(self, direction):
+        """获取最后一个开仓的网格"""
+        if direction == DIRECTION_SHORT:
+            opened_short_grids = self.getGrids(direction=direction, opened=True)
+            if opened_short_grids is None or len(opened_short_grids) ==0 :
+                return None
+            if len(opened_short_grids) > 1:
+                sortedGrids = sorted(opened_short_grids, key=lambda g:g.openPrice)
+                opened_short_grids = sortedGrids[-1:]
+            return opened_short_grids[0]
+
+        if direction == DIRECTION_LONG:
+            opened_long_grids = self.getGrids(direction=direction, opened=True)
+            if opened_long_grids is None or len(opened_long_grids) ==0:
+                return None
+            if len(opened_long_grids) > 1:
+                sortedGrids = sorted(opened_long_grids, key=lambda g: g.openPrice)
+                opened_long_grids = sortedGrids[0:1]
+            return opened_long_grids[0]
+
     def closeGrid(self, direction, closePrice, closeVolume):
         """网格交易结束"""
         if direction == DIRECTION_LONG:
@@ -495,7 +518,6 @@ class CtaGridTrade(object):
 
         # 更新开仓均价
         self.recount_avg_open_price()
-
         path = os.path.abspath(os.path.dirname(__file__))
 
         # 保存上网格列表
@@ -507,7 +529,6 @@ class CtaGridTrade(object):
                 l.append(grid.toJson())
 
             with open(jsonFileName, 'w') as f:
-
                 jsonL = json.dumps(l, indent=4)
                 f.write(jsonL)
 
@@ -522,7 +543,6 @@ class CtaGridTrade(object):
                 l.append(grid.toJson())
 
             with open(jsonFileName, 'w') as f:
-
                 jsonL = json.dumps(l, indent=4)
                 f.write(jsonL)
 
@@ -552,7 +572,6 @@ class CtaGridTrade(object):
 
         # 解析json文件
         l = json.load(f)
-
         grids = []
 
         if len(l) > 0:
@@ -570,6 +589,7 @@ class CtaGridTrade(object):
                 grid.orderRef = i['orderRef']           # OrderId
                 grid.openStatus = i['openStatus']         # 开仓状态
                 grid.closeStatus = i['closeStatus']         # 平仓状态
+
                 strTime = i['openDatetime']
                 if strTime == EMPTY_STRING or type(strTime)==type(None):
                     grid.openDatetime = None
@@ -580,6 +600,10 @@ class CtaGridTrade(object):
                     grid.tradedVolume = i['tradedVolume']   # 已交易的合约数量
                 except KeyError:
                     grid.tradedVolume = EMPTY_INT
+                try:
+                    grid.lockGrids = i['lockGrids']
+                except KeyError:
+                    grid.lockGrids = []
 
                 self.writeCtaLog(grid.toStr())
 

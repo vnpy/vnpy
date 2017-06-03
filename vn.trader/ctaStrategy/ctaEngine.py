@@ -608,6 +608,14 @@ class CtaEngine(object):
             # modifid by Incenselee 支持多个Symbol的订阅
             symbols = strategy.vtSymbol.split(';')
 
+            # 判断是否有Leg1Symbol,Leg2Symbol 两个合约属性
+            if hasattr(strategy, 'Leg1Symbol'):
+                if strategy.Leg1Symbol not in symbols:
+                    symbols.append(strategy.Leg1Symbol)
+            if hasattr(strategy, 'Leg2Symbol'):
+                if strategy.Leg2Symbol not in symbols:
+                    symbols.append(strategy.Leg2Symbol)
+
             for symbol in symbols:
                 self.writeCtaLog(u'添加合约{0}与策略的匹配目录'.format(symbol))
                 if symbol in self.tickStrategyDict:
@@ -829,14 +837,16 @@ class CtaEngine(object):
     # ----------------------------------------------------------------------
     def loadPosition(self):
         """从数据库载入策略的持仓情况"""
-        for strategy in self.strategyDict.values():
-            flt = {'name': strategy.name,
-                   'vtSymbol': strategy.vtSymbol}
-            posData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+        try:
+            for strategy in self.strategyDict.values():
+                flt = {'name': strategy.name,
+                       'vtSymbol': strategy.vtSymbol}
+                posData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
 
-            for d in posData:
-                strategy.pos = d['pos']
-
+                for d in posData:
+                    strategy.pos = d['pos']
+        except:
+            self.writeCtaLog(u'loadPosition Exception')
     # ----------------------------------------------------------------------
     def roundToPriceTick(self, priceTick, price):
         """取整价格到合约最小价格变动"""

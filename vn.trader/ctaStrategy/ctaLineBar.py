@@ -317,21 +317,34 @@ class CtaLineBar(object):
 
         self.curTradingDay = bar.tradingDay
 
-        if (self.period == PERIOD_SECOND and (bar.datetime-lastBar.datetime).seconds >= self.barTimeInterval) \
-            or (self.period == PERIOD_MINUTE and bar.datetime.minute % self.barTimeInterval == 0
-                   and bar.datetime.minute != lastBar.datetime.minute) \
-            or (self.period == PERIOD_HOUR and self.barTimeInterval == 1 and bar.datetime
-                 and bar.datetime.hour != lastBar.datetime.hour) \
-            or (self.period == PERIOD_HOUR and self.barTimeInterval == 2 and bar.datetime
-                    and bar.datetime.hour != lastBar.datetime.hour
-                    and bar.datetime.hour in {1, 9, 11, 13, 21, 23}) \
-            or (self.period == PERIOD_HOUR and self.barTimeInterval == 4 and bar.datetime
-                 and bar.datetime.hour != lastBar.datetime.hour
-                 and bar.datetime.hour in {1, 9, 13, 21}) \
-            or (self.period == PERIOD_DAY and bar.datetime.date != lastBar.datetime.date ):
+        is_new_bar = False
 
+        if self.period == PERIOD_SECOND and (bar.datetime-lastBar.datetime).seconds >= self.barTimeInterval:
+            is_new_bar = True
+
+        elif self.period == PERIOD_MINUTE and (bar.datetime - lastBar.datetime).seconds >= self.barTimeInterval*60:
+            is_new_bar = True
+
+        elif self.period == PERIOD_HOUR:
+            if self.barTimeInterval == 1 and bar.datetime.hour != lastBar.datetime.hour :
+                is_new_bar = True
+
+            elif self.barTimeInterval == 2 and bar.datetime.hour != lastBar.datetime.hour \
+                    and bar.datetime.hour in {1, 9, 11, 13, 15, 21, 23}:
+                is_new_bar = True
+
+            elif self.barTimeInterval == 4 and bar.datetime.hour != lastBar.datetime.hour \
+                 and bar.datetime.hour in {1, 9, 13, 21}:
+                is_new_bar = True
+
+        elif self.period == PERIOD_DAY and bar.datetime.date != lastBar.datetime.date :
+            is_new_bar = True
+
+        if is_new_bar:
+            # 添加新的bar
             self.lineBar.append(bar)
-            self.onBar(bar)
+            # 将上一个Bar推送至OnBar事件
+            self.onBar(lastBar)
             return
 
         # 更新最后一个bar
@@ -535,6 +548,8 @@ class CtaLineBar(object):
         # 2，分钟、小时周期，取整=0
         # 3、日周期，开盘时间
         # 4、不是最后一个结束tick
+        is_new_bar = False
+
         if ((self.period == PERIOD_SECOND and (tick.datetime-lastBar.datetime).seconds >= self.barTimeInterval) \
             or
                 (self.period == PERIOD_MINUTE and tick.datetime.minute % self.barTimeInterval == 0
@@ -1153,9 +1168,9 @@ class CtaLineBar(object):
 
         l = len(self.lineBar)
 
-        if l < min(7, self.inputBollLen)+1:
+        if l < min(14, self.inputBollLen)+1:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算Boll需要：{1}'.
-                             format(len(self.lineBar), min(7, self.inputBollLen)+1))
+                             format(len(self.lineBar), min(14, self.inputBollLen)+1))
             return
 
         if l < self.inputBollLen+2:
