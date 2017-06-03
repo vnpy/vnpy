@@ -91,7 +91,6 @@ class MainEngine(object):
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             return gateway.checkStatus()
-
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
             return False

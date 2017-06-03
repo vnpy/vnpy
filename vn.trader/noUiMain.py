@@ -66,12 +66,13 @@ class NoUiMain(object):
 
         # 十秒才执行一次检查
         self.g_count += 1
-        if self.g_count <= 20:
+        if self.g_count <= 30:
             return
         self.g_count = 0
         dt = datetime.now()
         if dt.hour != self.last_dt.hour:
             self.last_dt = dt
+            print u'noUiMain.py checkpoint:{0}'.format(dt)
             self.mainEngine.writeLog( u'noUiMain.py checkpoint:{0}'.format(dt))
 
         # 定时断开
@@ -99,12 +100,13 @@ class NoUiMain(object):
                 self.mainEngine.writeLog(u'检查连接{0}异常，重新启动连接'.format(self.gateway_name))
                 self.mainEngine.writeLog(u'断开连接{0}'.format(self.gateway_name))
                 self.disconnect()
-                self.mainEngine.writeLog(u'清空数据引擎')
-                self.mainEngine.clearData()
-                self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
-                self.mainEngine.connect(self.gateway_name)
-                self.connected = True
-
+                self.connected = False
+                #self.mainEngine.writeLog(u'清空数据引擎')
+                #self.mainEngine.clearData()
+                #self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
+                #self.mainEngine.connect(self.gateway_name)
+                #self.connected = True
+#
     def Start(self):
         """启动"""
 
