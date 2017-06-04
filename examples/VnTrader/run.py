@@ -6,8 +6,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 # vn.trader模块
-from vnpy.event import EventEngine2
-from vnpy.trader.vtGlobal import globalSetting
+from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiQt import qApp
 from vnpy.trader.uiMainWindow import MainWindow

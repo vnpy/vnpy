@@ -55,7 +55,7 @@ setup(
                  'License :: OSI Approved :: MIT License'],
     packages=getSubpackages('vnpy'),
     package_data={'': ['*.json', '*.md', '*.ico',
-                       '*.h', '*.cpp', '*.bash', '*.txt'
+                       '*.h', '*.cpp', '*.bash', '*.txt',
                        '*.dll', '*.lib', '*.so', '*.pyd',
                        '*.dat', '*.ini', '*.pfx', '*.scc', '*.crt', '*.key']},
 )
