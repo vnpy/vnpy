@@ -1,5 +1,5 @@
 ::Install Python Modules
-pip install pymongo websocket-client msgpack-python qdarkstyle
+pip install -r requirements.txt
 
 ::Install Ta-Lib
 conda install -c quantopian ta-lib=0.4.9
