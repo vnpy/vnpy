@@ -25,7 +25,7 @@ from vnpy.trader.app import (riskManager, dataRecorder,
 def main():
     """主程序入口"""
     # 创建事件引擎
-    ee = EventEngine2()
+    ee = EventEngine()
     
     # 创建主引擎
     me = MainEngine(ee)
