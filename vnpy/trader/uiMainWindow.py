@@ -218,33 +218,6 @@ class MainWindow(QtWidgets.QMainWindow):
         except KeyError:
             self.widgetDict['contractM'] = ContractManager(self.mainEngine)
             self.widgetDict['contractM'].show()
-            
-    #----------------------------------------------------------------------
-    def openCta(self):
-        """打开CTA组件"""
-        try:
-            self.widgetDict['ctaM'].showMaximized()
-        except KeyError:
-            self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
-            self.widgetDict['ctaM'].showMaximized()
-            
-    #----------------------------------------------------------------------
-    def openDr(self):
-        """打开行情数据记录组件"""
-        try:
-            self.widgetDict['drM'].showMaximized()
-        except KeyError:
-            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
-            self.widgetDict['drM'].showMaximized()
-            
-    #----------------------------------------------------------------------
-    def openRm(self):
-        """打开组件"""
-        try:
-            self.widgetDict['rmM'].show()
-        except KeyError:
-            self.widgetDict['rmM'] = RmEngineManager(self.mainEngine.rmEngine, self.eventEngine)
-            self.widgetDict['rmM'].show()      
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):

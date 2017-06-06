@@ -1,13 +1,28 @@
 # encoding: UTF-8
 
+'''
+vn.py - By Traders, For Traders.
+
+The vn.py project is an open-source quantitative trading framework 
+that is developed by traders, for traders. 
+
+The project is mainly written in Python and uses C++ for low-layer 
+and performance sensitive infrastructure.
+
+Using the vn.py project, institutional investors and professional 
+traders, such as hedge funds, prop trading firms and investment banks, 
+can easily develop complex trading strategies with the Event Engine 
+Strategy Module, and automatically route their orders to the most 
+desired destinations, including equity, commodity, forex and many 
+other financial markets.
+'''
+
+
 import os
 from setuptools import setup
 
 import vnpy
 
-
-long_desc = """   
-"""
 
 def getSubpackages(name):
     """获取该模块下所有的子模块名称"""
@@ -23,18 +38,24 @@ def getSubpackages(name):
 setup(
     name='vnpy',
     version=vnpy.__version__,
-    description='A framework for developing quantitative trading strategy',
-    long_description = long_desc,
     author=vnpy.__author__,
     author_email='vn.py@foxmail.com',
     license='MIT',
     url='http://www.vnpy.org',
-    keywords='Python quantitative trading framework',
+    description='A framework for developing quantitative trading programmes',
+    long_description = __doc__,    
+    keywords='quant quantitative investment trading algotrading',
     classifiers=['Development Status :: 4 - Beta',
+                 'Environment :: Quantiative Trading',
+                 'Operating System :: Windows 7',
+                 'Operating System :: Windows 8',
+                 'Operating System :: Windows 10',
+                 'Operating System :: Windows Server 2008',
                  'Programming Language :: Python :: 2.7',
                  'License :: OSI Approved :: MIT License'],
     packages=getSubpackages('vnpy'),
     package_data={'': ['*.json', '*.md', '*.ico',
+                       '*.h', '*.cpp', '*.bash', '*.txt',
                        '*.dll', '*.lib', '*.so', '*.pyd',
                        '*.dat', '*.ini', '*.pfx', '*.scc', '*.crt', '*.key']},
 )
