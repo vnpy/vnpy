@@ -64,7 +64,6 @@ class DrEngineManager(QtWidgets.QWidget):
         self.tickTable.setColumnCount(2)
         self.tickTable.verticalHeader().setVisible(False)
         self.tickTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.tickTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.tickTable.setAlternatingRowColors(True)
         self.tickTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
         
@@ -73,7 +72,6 @@ class DrEngineManager(QtWidgets.QWidget):
         self.barTable.setColumnCount(2)
         self.barTable.verticalHeader().setVisible(False)
         self.barTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.barTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.barTable.setAlternatingRowColors(True)        
         self.barTable.setHorizontalHeaderLabels([text.CONTRACT_SYMBOL, text.GATEWAY])
 
@@ -82,7 +80,6 @@ class DrEngineManager(QtWidgets.QWidget):
         self.activeTable.setColumnCount(2)
         self.activeTable.verticalHeader().setVisible(False)
         self.activeTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.activeTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.activeTable.setAlternatingRowColors(True)        
         self.activeTable.setHorizontalHeaderLabels([text.DOMINANT_SYMBOL, text.CONTRACT_SYMBOL])
 
@@ -148,6 +145,10 @@ class DrEngineManager(QtWidgets.QWidget):
                     self.activeTable.insertRow(0)
                     self.activeTable.setItem(0, 0, TableCell(activeSymbol))
                     self.activeTable.setItem(0, 1, TableCell(symbol))
+                    
+            self.tickTable.resizeColumnsToContents()
+            self.barTable.resizeColumnsToContents()
+            self.activeTable.resizeColumnsToContents()
     
     
     
