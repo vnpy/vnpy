@@ -23,14 +23,12 @@ for root, subdirs, files in os.walk(path):
         if 'strategy' in name and '.pyc' not in name:
             # 模块名称需要上前缀
             moduleName = 'ctaStrategy.strategy.' + name.replace('.py', '')
-            
-	    print 'loading {0}'.format(moduleName)
-	    try:
-            	# 使用importlib动态载入模块
-            	module = importlib.import_module(moduleName)
-            
-	    except:
-		print 'load fail'
+            print 'loading {0}'.format(moduleName)
+            try:
+                # 使用importlib动态载入模块
+                module = importlib.import_module(moduleName)
+            except Exception as ex:
+                print 'load fail,excepion:{0}'.format(ex)
                 continue
 
             # 遍历模块下的对象，只有名称中包含'Strategy'的才是策略类
