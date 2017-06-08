@@ -125,7 +125,7 @@ class MainWindow(QtGui.QMainWindow):
         autoDisconnetAction.triggered.connect(self.setAutoDisconnect)
         
         testAction = QtGui.QAction(u'测试', self)
-        testAction.triggered.connect(self.openMonitor)
+        testAction.triggered.connect(self.test)
         
         exitAction = QtGui.QAction(u'退出', self)
         exitAction.triggered.connect(self.close)
