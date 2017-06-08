@@ -1,0 +1,11 @@
+{
+    "brokerID": "1000", 
+    "mdAddress": "tcp://203.110.179.217:31213", 
+    "userID": "请联系中信期货申请",
+    "ctpPassword": "请联系中信期货申请", 
+
+    "opEntrustWay": "5",
+    "opStation": "111111111",
+    "fundAccount": "请联系中信证券申请",
+    "password": "请联系中信证券申请"
+}

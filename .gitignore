@@ -35,19 +35,19 @@ Release/
 *.klg
 *.lkc
 
-<<<<<<< HEAD
 # 不想同步的
 *.local
 *.temp
 *.vt
-*.dat
-=======
+*.log
+
 vn.ctp/build/*
 vn.lts/build/*
 .idea
->>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+.gitignore
 
 vn.trader/ctaAlgo/data/*
 vn.trader/build/*
 vn.trader/dist/*
 *.bak
+
