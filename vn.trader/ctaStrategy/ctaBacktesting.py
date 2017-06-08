@@ -234,45 +234,6 @@ class BacktestingEngine(object):
         self.priceTick = priceTick
         self.minDiff = priceTick
 
-    #----------------------------------------------------------------------
-    def loadHistoryDataFromMongo(self):
-        """载入历史数据"""
-        host, port, log = loadMongoSetting()
-        
-        self.dbClient = pymongo.MongoClient(host, port)
-        collection = self.dbClient[self.dbName][self.symbol]
-
-        self.output(u'开始载入数据')
-      
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            dataClass = CtaBarData
-            func = self.newBar
-        else:
-            dataClass = CtaTickData
-            func = self.newTick
-
-        # 载入初始化需要用的数据
-        flt = {'datetime':{'$gte':self.dataStartDate,
-                           '$lt':self.strategyStartDate}}        
-        initCursor = collection.find(flt)
-        
-        # 将数据从查询指针中读取出，并生成列表
-        self.initData = []              # 清空initData列表
-        for d in initCursor:
-            data = dataClass()
-            data.__dict__ = d
-            self.initData.append(data)      
-        
-        # 载入回测数据
-        if not self.dataEndDate:
-            flt = {'datetime':{'$gte':self.strategyStartDate}}   # 数据过滤条件
-        else:
-            flt = {'datetime':{'$gte':self.strategyStartDate,
-                               '$lte':self.dataEndDate}}  
-        self.dbCursor = collection.find(flt)
-        
-        self.output(u'载入完成，数据量：%s' %(initCursor.count() + self.dbCursor.count()))
 
     #----------------------------------------------------------------------
     def connectMysql(self):
@@ -1358,6 +1319,143 @@ class BacktestingEngine(object):
                 else:
                     self.newTick(leg2)
                     leg2_tick = None
+
+    def runBackTestingWithNonStrArbTickFromMongoDB(self, leg1Symbol, leg2Symbol):
+        """运行套利回测（使用服务器数据，数据从taobao标普购买)
+        参数：        
+        leg1Symbol： leg1合约
+        Leg2Symbol：leg2合约
+        added by IncenseLee
+        
+        目录为交易日。
+        按照回测的开始日期，到结束日期，循环每一天。
+
+        读取eg1（如RB1610），读取Leg2（如RB1701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
+        """
+
+        # 连接数据库
+        host, port, log = loadMongoSetting()
+        self.dbClient = pymongo.MongoClient(host, port)
+
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+
+            # 加载运行每天数据
+            self.__loadNotStdArbTicksFromMongoDB( testday, leg1Symbol, leg2Symbol)
+
+            self.savingDailyData(testday, self.capital, self.maxCapital)
+
+    def __loadNotStdArbTicksFromMongoDB(self,testday, leg1Symbol, leg2Symbol):
+
+        self.writeCtaLog(u'从MongoDB加载回测日期:{0}的{1}-{2}价差tick'.format(testday,leg1Symbol, leg2Symbol))
+
+        leg1Ticks = self.__loadTicksFromMongoDB(tickDate=testday, vtSymbol=leg1Symbol)
+        if len(leg1Ticks) == 0:
+            self.writeCtaLog(u'读取{0}tick数为空'.format(leg1Symbol))
+            return
+
+        leg2Ticks = self.__loadTicksFromMongoDB(tickDate=testday, vtSymbol=leg2Symbol)
+        if len(leg2Ticks) == 0:
+            self.writeCtaLog(u'读取{0}tick数为空'.format(leg1Symbol))
+            return
+
+        leg1_tick = None
+        leg2_tick = None
+
+        while not (len(leg1Ticks) == 0 or len(leg2Ticks) == 0):
+            if leg1_tick is None and len(leg1Ticks) > 0:
+                leg1_tick = leg1Ticks.popitem(last=False)
+            if leg2_tick is None and len(leg2Ticks) > 0:
+                leg2_tick = leg2Ticks.popitem(last=False)
+
+            if leg1_tick is None and leg2_tick is not None:
+                self.newTick(leg2_tick[1])
+                leg2_tick = None
+            elif leg1_tick is not None and leg2_tick is None:
+                self.newTick(leg1_tick[1])
+                leg1_tick = None
+            elif leg1_tick is not None and leg2_tick is not None:
+                leg1 = leg1_tick[1]
+                leg2 = leg2_tick[1]
+                if leg1.datetime <= leg2.datetime:
+                    self.newTick(leg1)
+                    leg1_tick = None
+                else:
+                    self.newTick(leg2)
+                    leg2_tick = None
+
+    def __loadTicksFromMongoDB(self, tickDate, vtSymbol):
+        """从mongodb读取tick"""
+        # 先读取数据到Dict，以日期时间为key
+        ticks = OrderedDict()
+
+        p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+        shortSymbol = p.match(vtSymbol)
+        if shortSymbol is None :
+            self.writeCtaLog(u'{0}不能正则分解'.format(vtSymbol))
+            return
+
+        shortSymbol = shortSymbol.group(1)
+        shortSymbol = shortSymbol + vtSymbol[-2:]               # 例如 AU01
+
+        testday_monrning = tickDate.replace(hour=0, minute=0, second=0, microsecond=0)
+        testday_midnight = tickDate.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+
+        # 载入初始化需要用的数据
+        flt = {'datetime': {'$gte': testday_monrning,
+                            '$lt': testday_midnight}}
+        db = self.dbClient['ticks']
+        collection = db[shortSymbol]
+        initCursor = collection.find(flt).sort('datetime', pymongo.ASCENDING)
+
+        # 将数据从查询指针中读取出，并生成列表
+        count_ticks = 0
+        for d in initCursor:
+            tick = CtaTickData()
+            tick.__dict__ = d
+            # 更新symbol
+            tick.vtSymbol = vtSymbol
+            tick.symbol = vtSymbol
+
+            # 排除涨停/跌停的数据
+            if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0) \
+                    or (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0):
+                continue
+            dtStr = tick.date + ' ' + tick.time
+            if dtStr not in ticks:
+                ticks[dtStr] = tick
+
+            count_ticks += 1
+
+        return ticks
+
     #----------------------------------------------------------------------
     def runBackTestingWithBarFile(self, filename):
         """运行回测（使用本地csv数据)
@@ -1523,9 +1621,6 @@ class BacktestingEngine(object):
 
         self.capital = self.initCapital      # 更新设置期初资金
 
-        # 载入历史数据
-        #self.loadHistoryData()
-        self.loadHistoryDataFromMongo()
 
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
@@ -1547,12 +1642,63 @@ class BacktestingEngine(object):
         
         self.output(u'开始回放数据')
 
-        for d in self.dbCursor:
-            data = dataClass()
-            data.__dict__ = d
-            func(data)     
+        self.loadHistoryDataFromMongo()
+
             
         self.output(u'数据回放结束')
+
+    # ----------------------------------------------------------------------
+    def loadHistoryDataFromMongo(self):
+        """载入历史数据"""
+        host, port, log = loadMongoSetting()
+
+        self.dbClient = pymongo.MongoClient(host, port)
+        collection = self.dbClient[self.dbName][self.symbol]
+
+        self.output(u'开始载入数据')
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            dataClass = CtaBarData
+            func = self.newBar
+        else:
+            dataClass = CtaTickData
+            func = self.newTick
+
+        # 载入回测数据
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.now()
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+            testday_monrning = testday.replace(hour=0, minute=0, second=0, microsecond=0)
+            testday_midnight = testday.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+            query_time = datetime.now()
+            # 载入初始化需要用的数据
+            flt = {'datetime': {'$gte': testday_monrning,
+                                '$lt': testday_midnight}}
+
+            initCursor = collection.find(flt).sort('datetime', pymongo.ASCENDING)
+
+            process_time = datetime.now()
+            # 将数据从查询指针中读取出，并生成列表
+            count_ticks = 0
+            for d in initCursor:
+                data = dataClass()
+                data.__dict__ = d
+                func(data)
+                count_ticks += 1
+
+            self.output(u'回测日期{0}，数据量：{1}，查询耗时:{2},回测耗时:{3}'
+                        .format(testday.strftime('%Y-%m-%d'), count_ticks, str(datetime.now() - query_time),
+                                str(datetime.now() - process_time)))
 
     def __sendOnBarEvent(self, bar):
         """发送Bar的事件"""
