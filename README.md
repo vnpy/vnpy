@@ -1,40 +1,99 @@
-# vn.py - 基于python的开源交易平台开发框架
+# vn.py - By Traders, For Traders.
 
-### 论坛
 
-新的论坛[维恩的派](http://www.vnpie.com)已经上线（感谢量衍投资对vn.py项目的支持）。
+---
+### 简介
 
-如果你在使用vn.py的过程中有任何疑问想求助或者经验想分享，欢迎到维恩的派上面发帖，项目作者和其他主要贡献者也会每天阅帖，保证回复的效率。
+vn.py是一套基于Python的开源量化交易程序开发框架，起源于国内私募的自主量化交易系统。2015年初项目启动时只是单纯的交易API接口的Python封装。随着业内关注度的上升和社区不断的贡献，目前已经一步步成长为一套全面的交易程序开发框架，用户群体也日渐多样化，包括私募基金、券商自营和资管、期货资管和子公司、高校研究机构和专业个人投资者等。
 
+---
+### 环境准备
+
+1. 支持的操作系统：Windows 7/8/10/Server 2008
+2. 安装[MongoDB](https://www.mongodb.org/downloads#production)，并[将MongoDB配置为系统服务](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/#configure-a-windows-service-for-mongodb-community-edition)
+3. 安装[Anaconda](http://www.continuum.io/downloads)，**注意必须是Python 2.7 32位版本**
+4. 安装[Visual C++ Redistributable Packages for VS2013 x86版本](https://support.microsoft.com/en-us/help/3138367/update-for-visual-c-2013-and-visual-c-redistributable-package)
+
+---
+### 安装
+
+**方法1**
+
+在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行install.bat自动安装。
+
+**方法2**
+
+```
+pip install vnpy pymongo msgpack-python websocket-client qdarkstyle
+
+conda install -c quantopian ta-lib=0.4.9
+```
 
 ---
 ### Quick Start
 
-对于大部分用户来说，无需自行编译API接口，可以直接使用vn.trader进行交易和策略开发：
 
-1. 准备一台Windows 7 64位系统的电脑
+1. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
 
-2. 安装[Anaconda](http://www.continuum.io/downloads)：下载Python 2.7 32位版本，**注意必须是32位**
+2. 找到你的Anaconda安装目录，打开Anaconda2\Lib\site-packages\vnpy-1.6.2b0-py2.7.egg\vnpy\trader\gateway\ctpGateway\CTP_connect.json，修改账号、密码、服务器等为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
 
-3. 安装[MongoDB](https://www.mongodb.org/downloads#production)：下载Windows 64-bit 2008 R2+版本
+3. 在任意目录将以下内容保存为run.py，并双击运行（若无法双击，则在当前目录按住Shift点鼠标右键，打开cmd输入python run.py运行）：
 
-4. 安装pymongo：在cmd中运行pip install pymongo
+```
+# encoding: UTF-8
 
-5. 参考[这里](http://jingyan.baidu.com/article/6b97984dbeef881ca2b0bf3e.html)，将MongoDB注册为Windows服务并启动
+# 重载sys模块，设置默认字符串编码方式为utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
-6. 安装[Visual C++  Redistributable Packages for VS2013](https://www.microsoft.com/en-gb/download/details.aspx?id=40784)，中英文随意
+# vn.trader模块
+from vnpy.event import EventEngine
+from vnpy.trader.vtEngine import MainEngine
+from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiMainWindow import MainWindow
 
-6. 在本页面选择Download ZIP下载项目代码，并解压到C:\vnpy
+# 加载底层接口
+from vnpy.trader.gateway import ctpGateway
 
-7. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
+# 加载上层应用
+from vnpy.trader.app import riskManager, ctaStrategy
 
-8. 把C:\vnpy\vn.trader\ctpGateway\CTP_connect.json中的账号、密码、服务器等修改为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
 
-9. 双击运行C:\vnpy\vn.trader\vtMain.py，开始交易！
+#----------------------------------------------------------------------
+def main():
+    """主程序入口"""
+    # 创建事件引擎
+    ee = EventEngine()
 
-对于想研究API封装的用户，可以参考[vnpy.org](http://vnpy.org)上面的教程一步步操作。
+    # 创建主引擎
+    me = MainEngine(ee)
 
-其他作者建议使用的软件工具：
+    # 添加交易接口
+    me.addGateway(ctpGateway)
+
+    # 添加上层应用
+    me.addApp(riskManager)
+    me.addApp(ctaStrategy)
+
+    # 创建主窗口
+    mw = MainWindow(me, ee)
+    mw.showMaximized()
+
+    # 在主线程中启动Qt事件循环
+    sys.exit(qApp.exec_())
+
+
+if __name__ == '__main__':
+    main()
+```
+
+更多使用方法方法请参考examples下的目录。
+
+---
+
+### 开发工具推荐
+
 * [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
 
 * [Robomongo](https://robomongo.org/)：MongoDB的图形化客户端，方便监控和修改数据
@@ -45,74 +104,99 @@
 
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
+
+
 ---
-### 2016年vn.py项目计划
 
-首先要感谢所有vn.py用户，是你们的热情让vn.py项目在2015年从最初单纯的交易API接口Python封装一步步成长为现在较为全面的交易程序开发框架。
+### 项目结构
 
-截止2016年2月15日，vn.py项目在Github上收获了583个Star和362个Fork，且已有6位贡献者提交了代码。项目的用户包括：私募基金，证券自营、资管，期货公司，高校的金融研究院系，个人投资者等，机构用户加起来至少20多家（和作者交流过的）。
+1. 丰富的Python交易和数据API接口（vnpy.api），基本覆盖了国内外所有常规交易品种（股票、期货、期权、外汇、外盘、比特币），具体包括：
 
-**总结一下项目当前取得的进展**
+	- CTP（ctp）
 
-1. 较为丰富的Python交易和数据API接口，基本覆盖了国内所有常规交易品种（股票、期货、期权），具体包括：
-	
-	* CTP（vn.ctp）
-	
-	* 飞马（vn.femas）
-	
-	* LTS（vn.lts）
-	
-	* 金仕达黄金（vn.ksgold）
-	
-	* 金仕达期权（vn.ksotp）
-	
-	* 通联数据（vn.datayes）
+	- 飞马（femas）
 
-2. 简洁易用的事件驱动引擎（vn.event），作为事件驱动型交易程序的核心
+	- LTS（lts）
 
-3. 针对如何使用API和事件驱动引擎开发交易程序的示例（vn.demo）
+	- 中信证券期权（cshshlp）
 
-4. 开箱即用的实盘交易平台vn.trader（相比之下vn.demo仅建议学习用），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，功能应用举例：
-	
+	- 金仕达黄金（ksgold）
+
+	- 金仕达期权（ksotp）
+
+	- 飞鼠（sgit）
+
+	- 飞创（xspeed）
+
+	- QDP（qdp）
+
+	- 上海直达期货（shzd）
+
+	- Interactive Brokers（ib）
+
+	- OANDA（oanda）
+
+	- OKCOIN（okcoin）
+
+	- 火币（huobi）
+
+	- 链行（lhang）
+
+	- 通联数据（datayes）
+
+2. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心
+
+3. 支持服务器端数据推送的RPC框架（vnpy.rpc），用于实现多进程分布式架构的交易系统
+
+4. 开箱即用的实盘交易平台框架（vnpy.trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易程序，应用举例：
+
 	* 同时登录多个交易接口，在一套界面上监控多种市场的行情和多种资产账户的资金、持仓、委托、成交情况
-	
+
 	* 支持跨市场套利（CTP期货和LTS证券）、境内外套利（CTP期货和IB外盘）、多市场数据整合实时预测走势（CTP的股指期货数据、IB的外盘A50数据、Wind的行业指数数据）等策略应用
-	
+
 	* CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
-5. [官网](http://vnpy.org)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容目前主要是《Python量化交易平台开发教程系列》，以及vn.py项目进展的更新
+	* 实盘行情记录，支持Tick和K线数据的落地，用于策略开发回测以及实盘运行初始化
 
-6. 官方交流QQ群262656087，管理较严格（定期清除长期潜水的成员）
+5. 关于vn.py项目的应用演示（examples），对于新手而言可以从这里开始学习vn.py项目的使用方式
 
-**展望一下项目2016年的计划**
+5. 关于项目在实盘交易中的一些使用指南（tutorial）
 
-代码方面：
+6. vn.py项目的Docker镜像（docker），目前尚未完成
 
-1. 完善飞创、易盛等相对小众接口的添加，这块将由社区驱动，作者主要负责代码检查和管理
+7. [官网](http://vnpy.org)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
 
-2. 整理vn.py项目中API的具体版本号，保证封装接口的对应，这点已经有多位用户提起过，项目初期没有做详细记录所以很多API的版本号一时都较难对上
+7. 官方交流QQ群262656087，管理较严格（定期清除长期潜水的成员）
 
-3. Linux上API的编译以及vn.trader支持
 
-4. 基于VirtualBox的vn.py开发环境镜像，解决部分用户反映项目初期不知该如何搭建开发环境的问题，这个镜像会由官方长期维护下去
+---
+### 贡献代码
 
-文章方面：
+vn.py使用github托管其源代码，如果希望贡献代码请使用github的PR(Pull Request)的流程:
 
-1.作者自己作为交易员的成长经历（这一年来收到好多人关于如何成为Quant、建议看什么书、怎么选学校等类似的问题，与其零散的回答不如介绍下自己的一些经历给大家参考可能更有帮助）
+1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
 
-2. vn.trader的使用教程（目前基本除了代码里的注释什么都没有...）
+2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 
-3. 将ta-lib（技术分析）和quantlib（金融工程和量化）整合到vn.trader中应用的教程，解决目前策略开发过程中技术指标和量化函数缺乏的问题
+3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
 
-4. 一套关于开发基于股指交易ETF期权的CTA策略的教程（股指期货短时间内还看不到恢复的希望，咱得另谋出路）
+4. 在**dev**修改并将修改push到你的fork上
 
-社区方面：
+5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
 
-1. 重新建设官方网站，目前使用的是托管在Github Pages上的Hexo静态博客，一来功能比较有限，二来有些用户反映Github时不时会被墙，考虑基于Flask重建一个托管在国内的官网
+6. 等待review, 需要继续改进，或者被Merge!
 
-2. 有用户提出建设互动性更强的网站作为交流平台（如论坛或者知乎Q&A类似的模式），这点在考虑中，主要制约因素是作者参与的时间，可能考虑和更多的资深用户合作是个好主意？
+---
+### 项目捐赠
 
-**最后，2016年，Happy Trading!!!**
+过去的半年中陆续收到了许多用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。最近主要的一个支出是相关文档编写，目前来看文档完成的速度和质量都显著超出预期。
+
+先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
+
+捐赠方式：支付宝3216630132@qq.com（*晓优）
+
+计划长期维护一份捐赠清单，所以请在留言中注明是项目捐赠以及捐赠人的名字（当然想匿名的用户就随意了）。
+
 
 ---
 ### 联系作者
@@ -121,4 +205,3 @@
 ---
 ### License
 MIT
-
