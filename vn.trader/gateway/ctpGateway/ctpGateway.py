@@ -109,10 +109,16 @@ class CtpGateway(VtGateway):
         path = os.path.abspath(os.path.dirname(__file__))
         fileName = os.path.join(path, fileName)
         if self.mdApi is None:
+            self.writeLog(u'行情接口未实例化，创建实例')
             self.mdApi = CtpMdApi(self)     # 行情API
+        else:
+            self.writeLog(u'行情接口已实例化')
 
         if self.tdApi is None:
+            self.writeLog(u'交易接口未实例化，创建实例')
             self.tdApi = CtpTdApi(self)     # 交易API
+        else:
+            self.writeLog(u'交易接口已实例化')
         try:
             f = file(fileName)
         except IOError:
@@ -142,11 +148,16 @@ class CtpGateway(VtGateway):
             return
         
         # 创建行情和交易接口对象
+        self.writeLog(u'连接行情服务器')
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.tdApi.connect(userID, password, brokerID, tdAddress,authCode, userProductInfo)
-        
+        self.writeLog(u'连接交易服务器')
+        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
+        self.setQryEnabled(True)
         # 初始化并启动查询
         self.initQuery()
+
+        for req in self.subscribedSymbols:
+            self.mdApi.subscribe(req)
     
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -326,8 +337,6 @@ class CtpMdApi(MdApi):
             self.gateway.mdConnected = True
             self.writeLog(text.DATA_SERVER_LOGIN)
             # 重新订阅之前订阅的合约
-            if len(self.subscribedSymbols) > 0:
-                print u'ctpMdApi.onRspUserLogin（）Resubscribe Symbols:{0}'.format(self.subscribedSymbols)
 
             for subscribeReq in self.subscribedSymbols:
                 self.subscribe(subscribeReq)
@@ -346,7 +355,7 @@ class CtpMdApi(MdApi):
         # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = False
-            self.gateway.tdConnected = False
+            self.gateway.mdConnected = False
             
             self.writeLog(text.DATA_SERVER_LOGOUT)
                 
@@ -763,7 +772,7 @@ class CtpTdApi(TdApi):
             pos.symbol = data['InstrumentID']
             pos.vtSymbol = pos.symbol
             pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction, pos.gatewayName])
 
         # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
         if data['YdPosition'] and not data['TodayPosition']:
@@ -798,6 +807,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
+        self.gateway.mdConnected = True
+
         account = VtAccountData()
         account.gatewayName = self.gatewayName
         
@@ -855,6 +866,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
+
+        self.gateway.mdConnected = True
         contract = VtContractData()
         contract.gatewayName = self.gatewayName
 
