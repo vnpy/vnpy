@@ -528,7 +528,7 @@ class BacktestingEngine(object):
 
     # ----------------------------------------------------------------------
     def runBackTestingWithArbTickFile(self,mainPath, arbSymbol):
-        """运行套利回测（使用本地tickcsv数据)
+        """运行套利回测（使用本地tick TXT csv数据)
         参数：套利代码 SP rb1610&rb1701
         added by IncenseLee
         原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
@@ -865,7 +865,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'{0},{1}不能正则分解'.format(leg1Symbol, leg2Symbol))
             return
 
-        leg1_shortSymbol = leg1_shortSymbol.group(1)
+        leg1_shortSymbol = leg1_shortSymbolc
         leg2_shortSymbol = leg2_shortSymbol.group(1)
 
         arbTicks = []
@@ -887,9 +887,9 @@ class BacktestingEngine(object):
             return
 
         # 先读取leg2的数据到目录，以日期时间为key
-        leg2Ticks = self.__loadTicksFromFile2(filepath=leg2File,tickDate=testday,vtSymbol=leg2Symbol)
+        leg2Ticks = self.__loadTicksFromCsvFile(filepath=leg2File, tickDate=testday, vtSymbol=leg2Symbol)
 
-        leg1Ticks = self.__loadTicksFromFile2(filepath=leg1File, tickDate=testday, vtSymbol=leg1Symbol)
+        leg1Ticks = self.__loadTicksFromCsvFile(filepath=leg1File, tickDate=testday, vtSymbol=leg1Symbol)
 
         for dtStr,leg1_tick in leg1Ticks.iteritems():
 
@@ -996,7 +996,7 @@ class BacktestingEngine(object):
 
         self.savingDailyData(self.dataEndDate, self.capital, self.maxCapital)
 
-    def __loadTicksFromFile(self, filepath, tickDate, vtSymbol):
+    def __loadTicksFromTxtFile(self, filepath, tickDate, vtSymbol):
         """从文件中读取tick"""
         # 先读取数据到Dict，以日期时间为key
         ticks = OrderedDict()
@@ -1045,8 +1045,8 @@ class BacktestingEngine(object):
             tick.askVolume1 = int(float(row['AskVolume']))
 
             # 排除涨停/跌停的数据
-            if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0) \
-                    or (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0):
+            if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0 and tick.askVolume1 >0) \
+                    or (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0 and tick.bidVolume1>0):
                 continue
 
             dtStr = tick.date + ' ' + tick.time
@@ -1089,12 +1089,12 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
             return
 
-        leg1Ticks = self.__loadTicksFromFile(filepath=leg1File,tickDate= testday, vtSymbol=leg1Symbol)
+        leg1Ticks = self.__loadTicksFromTxtFile(filepath=leg1File, tickDate= testday, vtSymbol=leg1Symbol)
         if len(leg1Ticks) == 0:
             self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
             return
 
-        leg2Ticks = self.__loadTicksFromFile(filepath=leg2File, tickDate=testday, vtSymbol=leg2Symbol)
+        leg2Ticks = self.__loadTicksFromTxtFile(filepath=leg2File, tickDate=testday, vtSymbol=leg2Symbol)
         if len(leg2Ticks) == 0:
             self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
             return
@@ -1178,7 +1178,7 @@ class BacktestingEngine(object):
             self.savingDailyData(testday, self.capital, self.maxCapital)
 
 
-    def __loadTicksFromFile2(self, filepath, tickDate, vtSymbol):
+    def __loadTicksFromCsvFile(self, filepath, tickDate, vtSymbol):
         """从csv文件中UnicodeDictReader读取tick"""
         # 先读取数据到Dict，以日期时间为key
         ticks = OrderedDict()
@@ -1285,12 +1285,12 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
             return
 
-        leg1Ticks = self.__loadTicksFromFile2(filepath=leg1File, tickDate=testday, vtSymbol=leg1Symbol)
+        leg1Ticks = self.__loadTicksFromCsvFile(filepath=leg1File, tickDate=testday, vtSymbol=leg1Symbol)
         if len(leg1Ticks) == 0:
             self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
             return
 
-        leg2Ticks = self.__loadTicksFromFile2(filepath=leg2File, tickDate=testday, vtSymbol=leg2Symbol)
+        leg2Ticks = self.__loadTicksFromCsvFile(filepath=leg2File, tickDate=testday, vtSymbol=leg2Symbol)
         if len(leg2Ticks) == 0:
             self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
             return
@@ -1431,7 +1431,7 @@ class BacktestingEngine(object):
         # 载入初始化需要用的数据
         flt = {'datetime': {'$gte': testday_monrning,
                             '$lt': testday_midnight}}
-        db = self.dbClient['ticks']
+        db = self.dbClient[self.dbName]
         collection = db[shortSymbol]
         initCursor = collection.find(flt).sort('datetime', pymongo.ASCENDING)
 
@@ -1620,7 +1620,6 @@ class BacktestingEngine(object):
         """运行回测"""
 
         self.capital = self.initCapital      # 更新设置期初资金
-
 
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
