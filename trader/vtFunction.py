@@ -31,16 +31,12 @@ def safeUnicode(value):
 #----------------------------------------------------------------------
 def loadMongoSetting():
     """载入MongoDB数据库的配置"""
-    fileName = 'VT_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    fileName = os.path.join(path, fileName)
 
     try:
-        f = file(fileName)
-        setting = json.load(f)
-        host = setting['mongoHost']
-        port = setting['mongoPort']
-        logging = setting['mongoLogging']
+        from trader.vtGlobal import globalSetting
+        host = globalSetting['mongoHost']
+        port = globalSetting['mongoPort']
+        logging = globalSetting['mongoLogging']
     except:
         host = 'localhost'
         port = 27017

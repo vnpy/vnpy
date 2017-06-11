@@ -25,15 +25,16 @@ import os
 import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
+import logging
+import re
+
 
 from ctaBase import *
 from strategy import STRATEGY_CLASS
-from eventEngine import *
-from vtConstant import *
-from vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
-from vtFunction import todayDate
-import logging
-import re
+from trader.eventEngine import *
+from trader.vtConstant import *
+from trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
+from trader.vtFunction import todayDate
 
 
 ########################################################################

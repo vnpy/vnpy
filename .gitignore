@@ -51,21 +51,21 @@ Release/
 *.vt
 *.dat
 =======
-vn.api/vn.ctp/build/*
-vn.api/vn.lts/build/*
-vn.trader/logs/vnpy*
-vn.trader/logs/no*
-vn.trader/orders/*.csv
-vn.trader/learning/*
-vn.trader/obj/*
-vn.trader/temp/*
-vn.trader/catStrategy/cache/*
-vn.trader/catStrategy/ctaPeriod.py
-vn.trader/catStrategy/ctaRangeBar.py
-vn.trader/catStrategy/ctaRenkoBar.py
-vn.trader/gateway/ctpGateway/CTP_EBF_connection.json
-vn.trader/gateway/ctpGateway/CTP_Post_connection.json
-vn.trader/gateway/ctpGateway/CTP_Prod_connection.json
+api/vn.ctp/build/*
+api/vn.lts/build/*
+trader/logs/vnpy*
+trader/logs/no*
+trader/orders/*.csv
+trader/learning/*
+trader/obj/*
+trader/temp/*
+trader/catStrategy/cache/*
+trader/catStrategy/ctaPeriod.py
+trader/catStrategy/ctaRangeBar.py
+trader/catStrategy/ctaRenkoBar.py
+trader/gateway/ctpGateway/CTP_EBF_connection.json
+trader/gateway/ctpGateway/CTP_Post_connection.json
+trader/gateway/ctpGateway/CTP_Prod_connection.json
 
 
 .idea

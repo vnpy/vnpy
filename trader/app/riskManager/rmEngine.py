@@ -13,18 +13,19 @@ todo：本风控模块仅支持一个gateway的连接。如果超过多个gatewa
 import json
 import os
 import platform
-
-from eventEngine import *
-from vtConstant import *
-from vtGateway import VtLogData
 from datetime import datetime
+
+from trader.eventEngine import *
+from trader.vtConstant import *
+from trader.vtGateway import VtLogData
 
 
 ########################################################################
 class RmEngine(object):
     """风控引擎"""
     settingFileName = 'RM_setting.json'
-    settingFileName = os.getcwd() + '/riskManager/' + settingFileName 
+    path = os.path.abspath(os.path.dirname(__file__))
+    settingFileName = os.path.join(path, settingFileName)
     
     name = u'风控模块'
 

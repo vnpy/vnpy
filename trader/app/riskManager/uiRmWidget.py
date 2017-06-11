@@ -5,8 +5,8 @@
 '''
 
 
-from uiBasicWidget import QtGui, QtCore
-from eventEngine import *
+from trader.uiBasicWidget import QtGui, QtCore
+from trader.eventEngine import *
 
 
 ########################################################################

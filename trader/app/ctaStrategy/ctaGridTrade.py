@@ -1,10 +1,12 @@
 # encoding: UTF-8
 
-from ctaBase import *
-from vtConstant import *
-import json
+
 import os
 from datetime import datetime
+import json
+
+from ctaBase import *
+from trader.vtConstant import *
 
 DEBUGCTALOG = True
 

@@ -16,8 +16,6 @@ path = os.path.abspath(os.path.dirname(__file__))
 ICON_FILENAME = 'vnpy.ico'
 ICON_FILENAME = os.path.join(path, ICON_FILENAME)  
 
-SETTING_FILENAME = 'VT_setting.json'
-SETTING_FILENAME = os.path.join(path, SETTING_FILENAME)     
 
 
 ########################################################################
@@ -177,9 +175,9 @@ def main():
     
     # 设置Qt的皮肤
     try:
-        f = file(SETTING_FILENAME)
-        setting = json.load(f)    
-        if setting['darkStyle']:
+        from trader.vtGlobal import globalSetting
+
+        if globalSetting['darkStyle']:
             import qdarkstyle
             app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
     except:

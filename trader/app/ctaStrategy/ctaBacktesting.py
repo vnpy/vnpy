@@ -15,17 +15,8 @@ from collections import OrderedDict
 from itertools import product
 import multiprocessing
 import pymongo
-
-from ctaBase import *
-from vtConstant import *
-from vtGateway import VtOrderData, VtTradeData
-from vtFunction import loadMongoSetting
-
-from eventEngine import *
-
 #import MySQLdb
 import json
-import os
 import sys
 import cPickle
 import csv
@@ -33,6 +24,14 @@ import logging
 import copy
 import pandas as pd
 import re
+
+
+from ctaBase import *
+from trader.vtConstant import *
+from trader.vtGateway import VtOrderData, VtTradeData
+from trader.vtFunction import loadMongoSetting
+from trader.eventEngine import *
+
 
 ########################################################################
 class BacktestingEngine(object):

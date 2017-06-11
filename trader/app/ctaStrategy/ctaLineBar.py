@@ -3,16 +3,15 @@
 # AUTHOR:李来佳
 # WeChat/QQ: 28888502
 
-from vtConstant import *
-from ctaBase import *
 
 from datetime import datetime
-
 import talib as ta
 import numpy
 import copy,csv
-
 from pykalman import KalmanFilter
+
+from ctaBase import *
+from trader.vtConstant import *
 
 DEBUGCTALOG = True
 

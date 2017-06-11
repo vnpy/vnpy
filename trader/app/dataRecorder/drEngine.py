@@ -14,18 +14,19 @@ from datetime import datetime, timedelta
 from Queue import Queue
 from threading import Thread
 
-from eventEngine import *
-from vtGateway import VtSubscribeReq, VtLogData
-from drBase import *
-from vtFunction import todayDate
+from trader.eventEngine import *
+from trader.vtGateway import VtSubscribeReq, VtLogData
+from trader.vtFunction import todayDate
 
+from drBase import *
 
 ########################################################################
 class DrEngine(object):
     """数据记录引擎"""
     
     settingFileName = 'DR_setting.json'
-    settingFileName = os.getcwd() + '/dataRecorder/' + settingFileName
+    path = os.path.abspath(os.path.dirname(__file__))
+    settingFileName = os.path.join(path, settingFileName)
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):

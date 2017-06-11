@@ -12,18 +12,15 @@ import sys
 import json
 from copy import copy
 from datetime import datetime
+import logging
 
-trader_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.append(trader_path)
 
-from vtGateway import *
 from vnctpmd import MdApi
 from vnctptd import TdApi
+
+from trader.vtGateway import *
 from ctpDataType import *
-
 from language import text
-
-import logging
 
 
 # 以下为一些VT类型和CTP类型的映射字典

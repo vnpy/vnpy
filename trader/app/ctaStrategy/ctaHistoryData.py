@@ -7,10 +7,11 @@
 3、从淘宝购买的tick csv数据导入mongodb
 """
 
-from datetime import datetime, timedelta
+
 from time import time
 import pymongo
 from time import time
+from datetime import datetime, timedelta
 from multiprocessing.pool import ThreadPool
 from collections import OrderedDict
 import pandas as pd
@@ -18,9 +19,8 @@ import pandas as pd
 from ctaBase import *
 from datayesClient import DatayesClient
 
-sys.path.append('..')
-from vtConstant import *
-from vtFunction import loadMongoSetting
+from trader.vtConstant import *
+from trader.vtFunction import loadMongoSetting
 
 
 

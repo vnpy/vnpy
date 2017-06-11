@@ -1,10 +1,12 @@
 # encoding: UTF-8
 
-from vtConstant import *
-from ctaBase import *
-import talib as ta
+
 
 from datetime import datetime
+import talib as ta
+
+from ctaBase import *
+from trader.vtConstant import *
 
 DEBUGCTALOG = True
 

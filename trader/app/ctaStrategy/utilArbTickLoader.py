@@ -8,7 +8,6 @@ import logging
 import pandas
 import copy
 
-
 from datetime import datetime, timedelta
 from ctaBase import *
 

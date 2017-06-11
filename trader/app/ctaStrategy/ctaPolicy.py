@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 from ctaBase import *
-from vtConstant import *
+from trader.vtConstant import *
 
 
 DEBUGCTALOG = True
