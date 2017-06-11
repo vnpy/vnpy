@@ -10,16 +10,14 @@
 
 """
 
-import talib
-import numpy as np
 import os
 import sys
-cta_strategy_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-trader_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-sys.path.append(cta_strategy_path)
-from ctaBase import *
-from ctaTemplate import CtaTemplate
+import talib
+import numpy as np
+
+from trader.app.ctaStrategy.ctaBase import *
+from trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 
 ########################################################################
