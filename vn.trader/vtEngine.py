@@ -54,7 +54,7 @@ class MainEngine(object):
         self.gatewayDict = OrderedDict()
 
         # 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json
-        init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR']}
+        init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR', 'CTP_JR2']}
 
         # 遍历接口字典并自动创建所有的接口对象
         for gatewayModule in GATEWAY_DICT.values():

@@ -37,6 +37,7 @@ class NoUiMain(object):
         self.strategies = [u'S28_HCRB']
 
         self.g_count = 0
+        self.disconnect_signal = 0
 
         self.last_dt = datetime.now()
 
@@ -94,18 +95,20 @@ class NoUiMain(object):
             self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
             self.mainEngine.connect(self.gateway_name)
             self.connected = True
+            self.disconnect_signal = 0
             return
         else:
             if not self.mainEngine.checkGatewayStatus(self.gateway_name):
-                self.mainEngine.writeLog(u'检查连接{0}异常，重新启动连接'.format(self.gateway_name))
-                self.mainEngine.writeLog(u'断开连接{0}'.format(self.gateway_name))
-                self.disconnect()
-                self.connected = False
-                #self.mainEngine.writeLog(u'清空数据引擎')
-                #self.mainEngine.clearData()
-                #self.mainEngine.writeLog(u'重新连接{0}'.format(self.gateway_name))
-                #self.mainEngine.connect(self.gateway_name)
-                #self.connected = True
+                self.disconnect_signal += 1
+
+                if self.disconnect_signal >= 5:
+                    self.mainEngine.writeLog(u'检查连接{0}异常，重新启动连接'.format(self.gateway_name))
+                    self.mainEngine.writeLog(u'断开连接{0}'.format(self.gateway_name))
+                    self.disconnect()
+                    self.mainEngine.clearData()
+                    self.connected = False
+            else:
+                self.disconnect_signal = 0
 #
     def Start(self):
         """启动"""

@@ -16,9 +16,12 @@ from collections import OrderedDict
 import pandas as pd
 
 from ctaBase import *
+from datayesClient import DatayesClient
+
+sys.path.append('..')
 from vtConstant import *
 from vtFunction import loadMongoSetting
-from datayesClient import DatayesClient
+
 
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 
@@ -353,107 +356,6 @@ def loadMcCsv(fileName, dbName, symbol):
     
     print u'插入完毕，耗时：%s' % (time()-start)
 
-def load_ticks_from_file(file_name,symbol,trading_day):
-    """从csv tick文件中UnicodeDictReader读取tick
-    file_name,文件全路径
-    symbol，合约代码，RB01, RBMI 等
-    trading_day,交易日字符串
-    """
-    # 先读取数据到Dict，以日期时间为key
-    ticks = OrderedDict()
-
-    if not os.path.isfile(file_name):
-        print u'{0}文件不存在'.format(file_name)
-        return ticks
-    dt = None
-    csvReadFile = file(file_name, 'rb')
-
-    start_time = time.clock()
-    df = pd.read_csv(file_name, encoding='gbk', parse_dates=False)
-    df.columns = ['date', 'time', 'lastPrice', 'lastVolume', 'totalInterest', 'position',
-                  'bidPrice1', 'bidVolume1', 'bidPrice2', 'bidVolume2', 'bidPrice3', 'bidVolume3',
-                  'askPrice1', 'askVolume1', 'askPrice2', 'askVolume2', 'askPrice3', 'askVolume3', 'BS']
-    readed_ticks = len(df)
-
-    for i in range(0, len(df)):
-        # 日期, 时间, 成交价, 成交量, 总量, 属性(持仓增减), B1价, B1量, B2价, B2量, B3价, B3量, S1价, S1量, S2价, S2量, S3价, S3量, BS
-        # 0    1      2      3       4      5               6     7    8     9     10     11    12    13    14   15    16   17    18
-        row = df.iloc[i].to_dict()
-        tick = CtaTickData()
-
-        tick.vtSymbol = symbol
-        tick.symbol = symbol
-
-        tick.date = row['date']
-        tick.tradingDay = trading_day
-        tick.time = row['time']
-
-        try:
-            tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
-        except Exception as ex:
-            print u'日期转换错误:{0},{1}:{2}'.format(tick.date + ' ' + tick.time, Exception, ex)
-            continue
-
-        tick.date = tick.datetime.strftime('%Y%m%d')
-        # 修正毫秒
-        if tick.datetime.replace(microsecond=0) == dt:
-            # 与上一个tick的时间（去除毫秒后）相同,修改为500毫秒
-            tick.datetime = tick.datetime.replace(microsecond=500)
-            tick.time = tick.datetime.strftime('%H:%M:%S.%f')
-
-        else:
-            tick.datetime = tick.datetime.replace(microsecond=0)
-            tick.time = tick.datetime.strftime('%H:%M:%S.%f')
-
-        dt = tick.datetime
-
-        tick.lastPrice = float(row['lastPrice'])
-        tick.volume = int(float(row['lastVolume']))
-        tick.bidPrice1 = float(row['bidPrice1'])  # 叫买价（价格低）
-        tick.bidVolume1 = int(float(row['bidVolume1']))
-        tick.askPrice1 = float(row['askPrice1'])  # 叫卖价（价格高）
-        tick.askVolume1 = int(float(row['askVolume1']))
-
-        # 排除涨停/跌停的数据
-        if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0) :
-            tick.bidPrice1 = 0
-
-        if (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0):
-            tick.askPrice1 = 0
-
-        dtStr = tick.date + ' ' + tick.time
-        if dtStr not in ticks:
-            ticks[dtStr] = tick
-    if len(ticks)!= readed_ticks:
-        print u'分析tick对象数量{0}与读取数据数量{1}不一致'.format(len(ticks),readed_ticks)
-
-    print u'读取{0},共加载{1}条数据，耗时:{2}seconds}'.format(file_name, readed_ticks, str(time.clock()-start_time))
-
-    return ticks
-
-def impot_ticks_from_folder(folder_path):
-
-    for dirpath, _, file_names in os.walk(folder_path):
-        for file_name in file_names:
-            file_path = os.path.join(dirpath, file_name)
-
-            if file_name.lower().find('.csv') != -1:
-                s = file_name.replace('.csv', '').split('_')
-                if len(s)!=2:
-                    print u'{0} not match format'.format(file_path)
-                    continue
-
-                symbol = s[0]
-                trading_day = s[1]
-
-                if len(trading_day)!=8:
-                    print u'{0} trading_day not match format'.format(file_path)
-                    continue
-
-                ticks = load_ticks_from_file(file_name=file_path,symbol=symbol,trading_day=trading_day)
-
-    print ('finish.')
-
 if __name__ == '__main__':
     ## 简单的测试脚本可以写在这里
     #from time import sleep
@@ -462,7 +364,5 @@ if __name__ == '__main__':
     #e.downloadEquityDailyBar('000001')
     
     # 这里将项目中包含的股指日内分钟线csv导入MongoDB，作者电脑耗时大约3分钟
-    #loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
+    loadMcCsv('IF0000_1min.csv', MINUTE_DB_NAME, 'IF0000')
 
-    csv_ticks_folder_path = '/home/ubuntu/Ticks/SQ/2017'
-    impot_ticks_from_folder()
