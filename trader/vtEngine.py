@@ -2,22 +2,18 @@
 
 import shelve
 from collections import OrderedDict
-from datetime import datetime
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from eventEngine import *
-from vtGateway import *
-from vtFunction import loadMongoSetting
-from language import text
-
 from gateway import GATEWAY_DICT
-from ctaStrategy.ctaEngine import CtaEngine
-from dataRecorder.drEngine import DrEngine
-from riskManager.rmEngine import RmEngine
+from language import text
+from trader.app.ctaStrategy.ctaEngine import CtaEngine
+from trader.app.dataRecorder.drEngine import DrEngine
+from trader.app.riskManager.rmEngine import RmEngine
+from vtFunction import loadMongoSetting
+from vtGateway import *
 
-import logging
 
 ########################################################################
 class MainEngine(object):

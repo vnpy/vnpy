@@ -1,21 +1,15 @@
 # encoding: utf-8
 
-import sys
-import os
 import ctypes
 import platform
+import sys
 
-import vtPath
-from uiMainWindow import *
-
-from eventEngine import *
 from vnrpc import RpcClient
 
-from ctaStrategy.ctaEngine import CtaEngine
-from dataRecorder.drEngine import DrEngine
-from riskManager.rmEngine import RmEngine
-
-
+from trader.app.ctaStrategy.ctaEngine import CtaEngine
+from trader.app.dataRecorder.drEngine import DrEngine
+from trader.app.riskManager.rmEngine import RmEngine
+from uiMainWindow import *
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))    

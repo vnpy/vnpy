@@ -7,7 +7,7 @@ CTA模块相关的GUI控制组件
 import sys
 sys.path.append('..')
 
-from uiBasicWidget import QtGui, QtCore, BasicCell
+from uiBasicWidget import QtGui, QtCore
 from eventEngine import *
 from language import text
 from time import sleep

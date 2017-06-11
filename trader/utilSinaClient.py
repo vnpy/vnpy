@@ -4,10 +4,9 @@ from __future__ import print_function
 
 '''一个简单的SINA数据客户端，主要使用requests开发'''
 import requests
-from time import sleep
 import execjs
 from datetime import datetime, timedelta
-from ctaStrategy.ctaBase import CtaBarData, CtaTickData
+from trader.app.ctaStrategy.ctaBase import CtaBarData, CtaTickData
 
 class UtilSinaClient(object):
 

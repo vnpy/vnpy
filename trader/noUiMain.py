@@ -2,18 +2,10 @@
 
 
 import os
-import sys
-import ctypes
-from datetime import datetime, timedelta, date
-from time import sleep
 
-from eventType import *
-from vtEngine import MainEngine
-from ctaStrategy.strategy import STRATEGY_CLASS
-from threading import Thread
-
-from simple_monitor import *
 from setup_logger import setup_logger
+from simple_monitor import *
+from vtEngine import MainEngine
 
 setup_logger(debug=True)
 # ----------------------------------------------------------------------

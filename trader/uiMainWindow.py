@@ -1,15 +1,14 @@
 # encoding: UTF-8
 
+# from uiFullMonitorWidget import MonitorWidget
+# from uiKChartWidget import CandleForm
+
 import psutil
 
+from trader.app.ctaStrategy.uiCtaWidget import CtaEngineManager
+from trader.app.dataRecorder.uiDrWidget import DrEngineManager
+from trader.app.riskManager.uiRmWidget import RmEngineManager
 from uiBasicWidget import *
-from ctaStrategy.uiCtaWidget import CtaEngineManager
-from dataRecorder.uiDrWidget import DrEngineManager
-from riskManager.uiRmWidget import RmEngineManager
-#from uiFullMonitorWidget import MonitorWidget
-#from uiKChartWidget import CandleForm
-
-import os
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
