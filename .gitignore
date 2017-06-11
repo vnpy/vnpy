@@ -44,7 +44,7 @@ Release/
 *.klg
 *.lkc
 
-<<<<<<< HEAD
+
 # 不想同步的
 *.local
 *.temp
@@ -53,8 +53,9 @@ Release/
 =======
 vn.api/vn.ctp/build/*
 vn.api/vn.lts/build/*
-vn.trader/logs/*
-vn.trader/orders/*
+vn.trader/logs/vnpy*
+vn.trader/logs/no*
+vn.trader/orders/*.csv
 vn.trader/learning/*
 vn.trader/obj/*
 vn.trader/temp/*
@@ -68,4 +69,4 @@ vn.trader/gateway/ctpGateway/CTP_Prod_connection.json
 
 
 .idea
->>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+
