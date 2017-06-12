@@ -18,7 +18,7 @@ from vnpy.trader.gateway import (ctpGateway, femasGateway, xspeedGateway,
 
 # 加载上层应用
 from vnpy.trader.app import (riskManager, dataRecorder,
-                             ctaStrategy)
+                             ctaStrategy, spreadTrading)
 
 
 #----------------------------------------------------------------------
@@ -45,6 +45,7 @@ def main():
     me.addApp(riskManager)
     me.addApp(dataRecorder)
     me.addApp(ctaStrategy)
+    me.addApp(spreadTrading)
     
     # 创建主窗口
     mw = MainWindow(me, ee)

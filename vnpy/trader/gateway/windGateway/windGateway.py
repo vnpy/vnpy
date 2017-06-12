@@ -26,6 +26,9 @@ exchangeMap[EXCHANGE_CZCE] = 'CZC'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 
+# Wind接口相关事件
+EVENT_WIND_CONNECTREQ = 'eWindConnectReq'   # Wind接口请求连接事件
+
 
 ########################################################################
 class WindGateway(VtGateway):

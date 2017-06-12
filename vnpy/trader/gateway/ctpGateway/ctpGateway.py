@@ -91,8 +91,6 @@ class CtpGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
         
         self.qryEnabled = False         # 循环查询
-
-        self.requireAuthentication = False
         
     #----------------------------------------------------------------------
     def connect(self):
