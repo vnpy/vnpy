@@ -5,6 +5,11 @@ Fork版本主要改进如下：
 4、修改CtaTemplate，增加了未执行订单的跟踪
 5、提供非GUI界面启动的主程序。
 
+启动模式：
+可视化：python vtMain.py
+命令行：python noUiMain.py
+
+
 # vn.py - 基于python的开源交易平台开发框架
 
 ---
