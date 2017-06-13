@@ -8,7 +8,7 @@ from time import sleep
 from threading import Thread
 
 import vtPath
-import eventType
+import vtEvent
 from vnrpc import RpcServer
 from vtEngine import MainEngine
 

@@ -3,7 +3,7 @@
 '''
 动态载入所有的Gateway
 '''
-
+"""
 import os
 import importlib
 import traceback
@@ -30,6 +30,7 @@ for load_gateway in load_gateways:
         print u'Load {0} exception:{1}'.format(moduleName, ex)
         traceback.print_exc()
 
+"""
 """
 # 获取目录路径
 path = os.path.abspath(os.path.dirname(__file__))

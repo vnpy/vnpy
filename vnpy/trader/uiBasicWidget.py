@@ -7,9 +7,9 @@ from collections import OrderedDict
 
 from PyQt4 import QtGui, QtCore
 
-from eventEngine import *
-from vtFunction import *
-from vtGateway import *
+from vnpy.trader.vtEvent import *
+from vnpy.trader.vtFunction import *
+from vnpy.trader.vtGateway import *
 import vtText
 
 
@@ -18,7 +18,7 @@ def loadFont():
     """载入字体设置"""
 
     try:
-        from trader.vtGlobal import globalSetting
+        from vnpy.trader.vtGlobal import globalSetting
         family = globalSetting['fontFamily']
         size = globalSetting['fontSize']
         font = QtGui.QFont(family, size)

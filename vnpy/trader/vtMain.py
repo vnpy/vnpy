@@ -6,8 +6,13 @@ import ctypes
 import platform
 
 import vtPath
-from vtEngine import MainEngine
-from uiMainWindow import *
+from vnpy.trader.vtEngine import MainEngine
+from vnpy.trader.uiMainWindow import *
+# 加载底层接口
+from vnpy.trader.gateway import ctpGateway
+
+# 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json
+init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR', 'CTP_JR2']}
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))
@@ -35,7 +40,7 @@ def main():
     
     # 设置Qt的皮肤
     try:
-        from trader.vtGlobal import globalSetting
+        from vnpy.trader.vtGlobal import globalSetting
         if globalSetting['darkStyle']:
             import qdarkstyle
             app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
@@ -45,6 +50,10 @@ def main():
     
     # 初始化主引擎和主窗口对象
     mainEngine = MainEngine()
+
+    for gw_name in init_gateway_names['CTP']:
+        mainEngine.addGateway(ctpGateway, gw_name)
+
     mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
     mainWindow.showMaximized()
     

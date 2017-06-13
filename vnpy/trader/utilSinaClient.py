@@ -6,7 +6,7 @@ from __future__ import print_function
 import requests
 import execjs
 from datetime import datetime, timedelta
-from trader.app.ctaStrategy.ctaBase import CtaBarData, CtaTickData
+from vnpy.trader.app.ctaStrategy.ctaBase import CtaBarData, CtaTickData
 
 class UtilSinaClient(object):
 

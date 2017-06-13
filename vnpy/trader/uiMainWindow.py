@@ -5,10 +5,10 @@
 
 import psutil
 
-from trader.app.ctaStrategy.uiCtaWidget import CtaEngineManager
-from trader.app.dataRecorder.uiDrWidget import DrEngineManager
-from trader.app.riskManager.uiRmWidget import RmEngineManager
-from uiBasicWidget import *
+from vnpy.trader.app.ctaStrategy.uiCtaWidget import CtaEngineManager
+from vnpy.trader.app.dataRecorder.uiDrWidget import DrEngineManager
+from vnpy.trader.app.riskManager.uiRmWidget import RmEngineManager
+from vnpy.trader.uiBasicWidget import *
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):
@@ -141,8 +141,8 @@ class MainWindow(QtGui.QMainWindow):
         ctaAction = QtGui.QAction(u'CTA策略', self)
         ctaAction.triggered.connect(self.openCta)
 
-        #monitorAction = QtGui.QAction(u'周期监控', self)
-        #monitorAction.triggered.connect(self.openMonitor)
+        spreadAction = QtGui.QAction(u'套利交易', self)
+        spreadAction.triggered.connect(self.openSpread)
 
         #kChart = QtGui.QAction(u'K线图', self)
         #kChart.triggered.connect(self.openKChart)
@@ -197,7 +197,7 @@ class MainWindow(QtGui.QMainWindow):
         # 算法相关
         algoMenu = menubar.addMenu(u'算法')
         algoMenu.addAction(ctaAction)
-        #algoMenu.addAction(monitorAction)
+        algoMenu.addAction(spreadAction)
         #algoMenu.addAction(kChart)
 
         # 帮助
@@ -484,7 +484,7 @@ class MainWindow(QtGui.QMainWindow):
         except KeyError:
             self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
             self.widgetDict['drM'].showMaximized()
-            
+
     #----------------------------------------------------------------------
     def openRm(self):
         """打开组件"""
@@ -492,8 +492,23 @@ class MainWindow(QtGui.QMainWindow):
             self.widgetDict['rmM'].show()
         except KeyError:
             self.widgetDict['rmM'] = RmEngineManager(self.mainEngine.rmEngine, self.eventEngine)
-            self.widgetDict['rmM'].show()      
-    
+            self.widgetDict['rmM'].show()
+
+    # ----------------------------------------------------------------------
+    def openSpread(self):
+        """打开SpreadTrade组件"""
+
+        if 'spread' in self.widgetDict:
+            self.widgetDict['spread'].show()
+            return
+
+        try:
+            from vnpy.trader.app.ctaStrategy.uiSpreadTrade import SpreadTradeManager
+            self.widgetDict['spread'] = SpreadTradeManager(self.mainEngine.ctaEngine, self.eventEngine)
+            self.widgetDict['spread'].show()
+        except Exception as ex:
+            return
+
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""

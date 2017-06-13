@@ -14,14 +14,13 @@ from copy import copy
 from datetime import datetime
 import logging
 
-
 from vnctpmd import MdApi
 from vnctptd import TdApi
 
-from trader.vtGateway import *
+from vnpy.trader.vtConstant import  *
+from vnpy.trader.vtGateway import *
 from ctpDataType import *
-from language import text
-
+from vnpy.trader.gateway.ctpGateway.language import text
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射

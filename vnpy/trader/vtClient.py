@@ -4,11 +4,11 @@ import ctypes
 import platform
 import sys
 
-from vnrpc import RpcClient
+from vnpy.rpc import RpcClient
 
-from trader.app.ctaStrategy.ctaEngine import CtaEngine
-from trader.app.dataRecorder.drEngine import DrEngine
-from trader.app.riskManager.rmEngine import RmEngine
+from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
+from vnpy.trader.app.dataRecorder.drEngine import DrEngine
+from vnpy.trader.app.riskManager.rmEngine import RmEngine
 from uiMainWindow import *
 
 # 文件路径名
@@ -175,7 +175,7 @@ def main():
     
     # 设置Qt的皮肤
     try:
-        from trader.vtGlobal import globalSetting
+        from vnpy.trader.vtGlobal import globalSetting
 
         if globalSetting['darkStyle']:
             import qdarkstyle

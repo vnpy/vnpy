@@ -6,13 +6,13 @@ from collections import OrderedDict
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from gateway import GATEWAY_DICT
-from language import text
-from trader.app.ctaStrategy.ctaEngine import CtaEngine
-from trader.app.dataRecorder.drEngine import DrEngine
-from trader.app.riskManager.rmEngine import RmEngine
-from vtFunction import loadMongoSetting
-from vtGateway import *
+from vnpy.trader.vtGlobal import globalSetting
+from vnpy.trader.language import text
+from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
+from vnpy.trader.app.dataRecorder.drEngine import DrEngine
+from vnpy.trader.app.riskManager.rmEngine import RmEngine
+from vnpy.trader.vtFunction import loadMongoSetting
+from vnpy.trader.vtGateway import *
 
 
 ########################################################################
@@ -34,42 +34,45 @@ class MainEngine(object):
         
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
-        
-        # 调用一个个初始化函数
-        self.initGateway()
+
+        # 接口实例
+        self.gatewayDict = OrderedDict()
+        self.gatewayDetailList = []
+
+        # 应用模块实例
+        self.appDict = OrderedDict()
+        self.appDetailList = []
 
         # 扩展模块
         self.ctaEngine = CtaEngine(self, self.eventEngine)  # cta策略运行模块
         self.drEngine = DrEngine(self, self.eventEngine)    # 数据记录模块
         self.rmEngine = RmEngine(self, self.eventEngine)    # 风险管理模块
-        
-    #----------------------------------------------------------------------
-    def initGateway(self):
-        """初始化接口对象"""
-        # 用来保存接口对象的字典
-        self.gatewayDict = OrderedDict()
 
-        # 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json
-        init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR', 'CTP_JR2']}
+    # ----------------------------------------------------------------------
+    def addGateway(self, gatewayModule,gateway_name=EMPTY_STRING):
+        """添加底层接口"""
+        # 是否使用指定的gateway_name
+        if gateway_name==EMPTY_STRING:
+            gatewayName = gatewayModule.gatewayName
+        else:
+            gatewayName = gateway_name
 
-        # 遍历接口字典并自动创建所有的接口对象
-        for gatewayModule in GATEWAY_DICT.values():
-            try:
-                if gatewayModule.gatewayName not in init_gateway_names:
-                    continue
+        # 创建接口实例
+        self.gatewayDict[gatewayName] = gatewayModule.gatewayClass(self.eventEngine,
+                                                                   gatewayName)
 
-                for gw_name in init_gateway_names[gatewayModule.gatewayName]:
-                    self.addGateway(gatewayModule.gateway,gw_name)
-                    if gatewayModule.gatewayQryEnabled:
-                        self.gatewayDict[gw_name].setQryEnabled(True)
-            except Exception, e:
-                print e
+        # 设置接口轮询
+        if gatewayModule.gatewayQryEnabled:
+            self.gatewayDict[gatewayName].setQryEnabled(gatewayModule.gatewayQryEnabled)
 
-    #----------------------------------------------------------------------
-    def addGateway(self, gateway, gatewayName=None):
-        """创建接口"""
-        self.gatewayDict[gatewayName] = gateway(self.eventEngine, gatewayName)
-        
+        # 保存接口详细信息
+        d = {
+            'gatewayName': gatewayModule.gatewayName,
+            'gatewayDisplayName': gatewayModule.gatewayDisplayName,
+            'gatewayType': gatewayModule.gatewayType
+        }
+        self.gatewayDetailList.append(d)
+
     # ----------------------------------------------------------------------
     def connect(self, gatewayName):
         """连接特定名称的接口"""

@@ -8,7 +8,6 @@ import os
 import traceback
 import json
 
-
 globalSetting = {}      # 全局配置字典
 
 settingFileName = "VT_setting.json"

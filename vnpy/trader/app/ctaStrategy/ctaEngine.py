@@ -662,7 +662,7 @@ class CtaEngine(object):
                 #    continue
                 dt = datetime.now()
                 # 若为中金所的合约，白天才提交订阅请求
-                if s in MARKET_ZJ and not(8 < dt.hour < 16):
+                if s in MARKET_ZJ and not(9 < dt.hour < 16):
                     continue
 
                 self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))

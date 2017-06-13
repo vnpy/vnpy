@@ -33,7 +33,7 @@ def loadMongoSetting():
     """载入MongoDB数据库的配置"""
 
     try:
-        from trader.vtGlobal import globalSetting
+        from vnpy.trader.vtGlobal import globalSetting
         host = globalSetting['mongoHost']
         port = globalSetting['mongoPort']
         logging = globalSetting['mongoLogging']
