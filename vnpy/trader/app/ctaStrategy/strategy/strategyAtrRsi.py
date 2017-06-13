@@ -16,8 +16,8 @@ import sys
 import talib
 import numpy as np
 
-from trader.app.ctaStrategy.ctaBase import *
-from trader.app.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
 
 
 ########################################################################

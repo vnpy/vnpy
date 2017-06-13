@@ -14,9 +14,9 @@ from datetime import datetime, timedelta
 from Queue import Queue
 from threading import Thread
 
-from trader.eventEngine import *
-from trader.vtGateway import VtSubscribeReq, VtLogData
-from trader.vtFunction import todayDate
+from vnpy.trader.vtEvent import *
+from vnpy.trader.vtGateway import VtSubscribeReq, VtLogData
+from vnpy.trader.vtFunction import todayDate
 
 from drBase import *
 

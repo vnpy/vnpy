@@ -8,9 +8,9 @@ CTA模块相关的GUI控制组件
 import os
 from time import sleep
 
-from language import text
-from trader.uiBasicWidget import QtGui, QtCore
-from trader.eventEngine import *
+from vnpy.trader.app.ctaStrategy.language import text
+from vnpy.trader.uiBasicWidget import QtGui, QtCore
+from vnpy.trader.vtEvent import *
 
 ########################################################################
 class CtaValueMonitor(QtGui.QTableWidget):

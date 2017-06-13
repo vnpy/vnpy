@@ -6,7 +6,7 @@ from datetime import datetime
 import json
 
 from ctaBase import *
-from trader.vtConstant import *
+from vnpy.trader.vtConstant import *
 
 DEBUGCTALOG = True
 

@@ -7,7 +7,7 @@
 from datetime import datetime
 
 from ctaBase import *
-from trader.vtConstant import *
+from vnpy.trader.vtConstant import *
 
 
 ########################################################################

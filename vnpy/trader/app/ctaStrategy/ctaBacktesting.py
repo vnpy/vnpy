@@ -26,11 +26,11 @@ import pandas as pd
 import re
 
 
-from ctaBase import *
-from trader.vtConstant import *
-from trader.vtGateway import VtOrderData, VtTradeData
-from trader.vtFunction import loadMongoSetting
-from trader.eventEngine import *
+from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtGateway import VtOrderData, VtTradeData
+from vnpy.trader.vtFunction import loadMongoSetting
+from vnpy.trader.vtEvent import *
 
 
 ########################################################################

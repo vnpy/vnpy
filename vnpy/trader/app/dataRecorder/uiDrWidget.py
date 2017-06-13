@@ -6,8 +6,8 @@
 
 import json
 
-from trader.uiBasicWidget import QtGui, QtCore
-from trader.eventEngine import *
+from vnpy.trader.uiBasicWidget import QtGui, QtCore
+from vnpy.trader.vtEvent import *
 
 
 ########################################################################

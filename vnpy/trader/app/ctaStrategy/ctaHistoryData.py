@@ -19,8 +19,8 @@ import pandas as pd
 from ctaBase import *
 from datayesClient import DatayesClient
 
-from trader.vtConstant import *
-from trader.vtFunction import loadMongoSetting
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtFunction import loadMongoSetting
 
 
 

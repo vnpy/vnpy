@@ -15,9 +15,9 @@ import os
 import platform
 from datetime import datetime
 
-from trader.eventEngine import *
-from trader.vtConstant import *
-from trader.vtGateway import VtLogData
+from vnpy.trader.vtEvent import *
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtGateway import VtLogData
 
 
 ########################################################################

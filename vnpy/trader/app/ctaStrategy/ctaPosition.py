@@ -1,12 +1,9 @@
 # encoding: UTF-8
 
-
-
 from datetime import datetime
-import talib as ta
 
-from ctaBase import *
-from trader.vtConstant import *
+from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.vtConstant import *
 
 DEBUGCTALOG = True
 

@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
-from ctaBase import *
-from trader.vtConstant import *
+from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.vtConstant import *
 
 
 DEBUGCTALOG = True

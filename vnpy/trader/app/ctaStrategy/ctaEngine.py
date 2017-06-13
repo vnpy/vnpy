@@ -31,10 +31,10 @@ import re
 
 from ctaBase import *
 from strategy import STRATEGY_CLASS
-from trader.eventEngine import *
-from trader.vtConstant import *
-from trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
-from trader.vtFunction import todayDate
+from vnpy.trader.vtEvent import *
+from vnpy.trader.vtConstant import *
+from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
+from vnpy.trader.vtFunction import todayDate
 
 
 ########################################################################
@@ -658,9 +658,8 @@ class CtaEngine(object):
             if contract:
                 # 获取合约的缩写号
                 s = self.getShortSymbol(symbol)
-                if s == symbol:    # 合约缩写提取失败
-                    continue
-
+                #if s == symbol:    # 合约缩写提取失败
+                #    continue
                 dt = datetime.now()
                 # 若为中金所的合约，白天才提交订阅请求
                 if s in MARKET_ZJ and not(8 < dt.hour < 16):
@@ -847,7 +846,7 @@ class CtaEngine(object):
                 for d in posData:
                     strategy.pos = d['pos']
         except:
-            self.writeCtaLog(u'loadPosition Exception')
+            self.writeCtaLog(u'loadPosition Exception from Mongodb')
     # ----------------------------------------------------------------------
     def roundToPriceTick(self, priceTick, price):
         """取整价格到合约最小价格变动"""

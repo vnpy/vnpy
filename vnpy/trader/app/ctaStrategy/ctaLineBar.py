@@ -10,8 +10,8 @@ import numpy
 import copy,csv
 from pykalman import KalmanFilter
 
-from ctaBase import *
-from trader.vtConstant import *
+from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.vtConstant import *
 
 DEBUGCTALOG = True
 
