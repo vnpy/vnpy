@@ -204,13 +204,13 @@ class CtpGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        if self.mdConnected and self.mdApi is not None:
+        if self.mdApi is not None:
             tmp1 = self.mdApi
             self.mdApi = None
             tmp1.close()
             self.mdConnected = False
 
-        if self.tdConnected and self.tdApi is not None:
+        if self.tdApi is not None:
             tmp2 = self.tdApi
             self.tdApi = None
             tmp2.close()
