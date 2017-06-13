@@ -530,7 +530,6 @@ class CtaEngine(object):
         # 触发每个策略的定时接口
         for strategy in self.strategyDict.values():
             strategy.onTimer()
-
  
     # ----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):

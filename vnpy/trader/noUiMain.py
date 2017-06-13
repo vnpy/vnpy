@@ -1,11 +1,12 @@
 # encoding: UTF-8
 
-
 import os
 
 from setup_logger import setup_logger
-from simple_monitor import *
-from vtEngine import MainEngine
+from vnpy.trader.simple_monitor import *
+from vnpy.trader.vtEngine import MainEngine
+from vnpy.trader.gateway import ctpGateway
+from threading import Thread
 
 setup_logger(debug=True)
 # ----------------------------------------------------------------------
@@ -36,6 +37,8 @@ class NoUiMain(object):
         # 实例化 主引擎
         print u'instance mainengine'
         self.mainEngine = MainEngine()
+
+        self.mainEngine.addGateway(ctpGateway, self.gateway_name)
 
     def trade_off(self):
         """检查现在是否为非交易时间"""
@@ -140,7 +143,6 @@ class NoUiMain(object):
 def run_noui():
 
     try:
-
         log_file_name = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                  'logs',
                                                  u'noUiMain_{0}.log'.format(datetime.now().strftime('%m%d_%H%M'))))
@@ -160,9 +162,4 @@ if __name__ == '__main__':
     thread = Thread(target=run_noui, args=())
     thread.start()
 
-    # 创建Qt应用对象，用于事件循环
-    #app = QtGui.QApplication(sys.argv)
-    #run_noui()
-    # 连续运行，用于输出行情
-    #app.exec_()
 
