@@ -69,7 +69,7 @@ class EventEngine(object):
         # 这里的__handlers是一个字典，用来保存对应的事件调用关系
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
         self.__handlers = defaultdict(list)
-
+        
         # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
         self.__generalHandlers = []
         
@@ -93,8 +93,8 @@ class EventEngine(object):
             
             # 以上语句为Python列表解析方式的写法，对应的常规循环写法为：
             #for handler in self.__handlers[event.type_]:
-                #handler(event)
-
+                #handler(event) 
+        
         # 调用通用处理函数进行处理
         if self.__generalHandlers:
             [handler(event) for handler in self.__generalHandlers]
@@ -149,7 +149,7 @@ class EventEngine(object):
     #----------------------------------------------------------------------
     def unregister(self, type_, handler):
         """注销事件处理函数监听"""
-        # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求
+        # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求   
         handlerList = self.__handlers[type_]
             
         # 如果该函数存在于列表中，则移除
@@ -159,24 +159,24 @@ class EventEngine(object):
         # 如果函数列表为空，则从引擎中移除该事件类型
         if not handlerList:
             del self.__handlers[type_]
-
+            
     #----------------------------------------------------------------------
     def put(self, event):
         """向事件队列中存入事件"""
         self.__queue.put(event)
-
+        
     #----------------------------------------------------------------------
     def registerGeneralHandler(self, handler):
         """注册通用事件处理函数监听"""
         if handler not in self.__generalHandlers:
             self.__generalHandlers.append(handler)
-
+            
     #----------------------------------------------------------------------
     def unregisterGeneralHandler(self, handler):
         """注销通用事件处理函数监听"""
         if handler in self.__generalHandlers:
             self.__generalHandlers.remove(handler)
-
+        
 
 
 ########################################################################
@@ -205,9 +205,9 @@ class EventEngine2(object):
         # 这里的__handlers是一个字典，用来保存对应的事件调用关系
         # 其中每个键对应的值是一个列表，列表中保存了对该事件进行监听的函数功能
         self.__handlers = defaultdict(list)
-
+        
         # __generalHandlers是一个列表，用来保存通用回调函数（所有事件均调用）
-        self.__generalHandlers = []
+        self.__generalHandlers = []        
         
     #----------------------------------------------------------------------
     def __run(self):
@@ -229,11 +229,11 @@ class EventEngine2(object):
             
             # 以上语句为Python列表解析方式的写法，对应的常规循环写法为：
             #for handler in self.__handlers[event.type_]:
-                #handler(event)
-
+                #handler(event) 
+                
         # 调用通用处理函数进行处理
         if self.__generalHandlers:
-            [handler(event) for handler in self.__generalHandlers]
+            [handler(event) for handler in self.__generalHandlers]        
                
     #----------------------------------------------------------------------
     def __runTimer(self):
@@ -291,7 +291,7 @@ class EventEngine2(object):
     #----------------------------------------------------------------------
     def unregister(self, type_, handler):
         """注销事件处理函数监听"""
-        # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求
+        # 尝试获取该事件类型对应的处理函数列表，若无则忽略该次注销请求   
         handlerList = self.__handlers[type_]
             
         # 如果该函数存在于列表中，则移除
@@ -300,7 +300,7 @@ class EventEngine2(object):
 
         # 如果函数列表为空，则从引擎中移除该事件类型
         if not handlerList:
-            del self.__handlers[type_]
+            del self.__handlers[type_]  
         
     #----------------------------------------------------------------------
     def put(self, event):
@@ -312,7 +312,7 @@ class EventEngine2(object):
         """注册通用事件处理函数监听"""
         if handler not in self.__generalHandlers:
             self.__generalHandlers.append(handler)
-
+            
     #----------------------------------------------------------------------
     def unregisterGeneralHandler(self, handler):
         """注销通用事件处理函数监听"""
