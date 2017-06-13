@@ -85,6 +85,9 @@ class WindGateway(VtGateway):
         # 而vt中的tick是完整更新，因此需要本地维护一个所有字段的快照
         self.tickDict = {}
         
+        # 订阅请求缓存
+        self.subscribeBufferDict = {}
+        
         self.registerEvent()
         
     #----------------------------------------------------------------------
@@ -100,8 +103,14 @@ class WindGateway(VtGateway):
     def subscribe(self, subscribeReq):
         """订阅行情"""
         windSymbol = '.'.join([subscribeReq.symbol, exchangeMap[subscribeReq.exchange]])
-        data = self.w.wsq(windSymbol, self.wsqParam, func=self.wsqCallBack)
-    
+        
+        # 若已经连接则直接订阅
+        if self.connected:    
+            data = self.w.wsq(windSymbol, self.wsqParam, func=self.wsqCallBack)
+        # 否则缓存在字典中
+        else:
+            self.subscribeBufferDict[windSymbol] = subscribeReq
+            
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
@@ -160,7 +169,7 @@ class WindGateway(VtGateway):
             self.tickDict[windSymbol] = tick
 
         dt = data.Times[0]
-        tick.time = dt.strftime('%H:%M:%S')
+        tick.time = dt.strftime('%H:%M:%S.%f')
         tick.date = dt.strftime('%Y%m%d')
         
         # 采用遍历的形式读取数值
@@ -186,6 +195,11 @@ class WindGateway(VtGateway):
         
         if not result.ErrorCode:
             log.logContent = u'Wind接口连接成功'
+            
+            # 发出缓存的订阅请求
+            for req in self.subscribeBufferDict.values():
+                self.subscribe(req)
+            self.subscribeBufferDict.clear()
         else:
             log.logContent = u'Wind接口连接失败，错误代码%d' %result.ErrorCode
         self.onLog(log) 
