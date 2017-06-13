@@ -6,7 +6,6 @@ from collections import OrderedDict
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.language import text
 from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
 from vnpy.trader.app.dataRecorder.drEngine import DrEngine

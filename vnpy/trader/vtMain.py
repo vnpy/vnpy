@@ -1,15 +1,22 @@
 # encoding: UTF-8
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import os
 import ctypes
 import platform
 
-import vtPath
+# 将repostory的目录i，作为根目录，添加到系统环境中。
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
+sys.path.append(root_path)
+
+from vnpy.trader.vtPath import *
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiMainWindow import *
 # 加载底层接口
-from vnpy.trader.gateway import ctpGateway
+from gateway import ctpGateway
 
 # 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json
 init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR', 'CTP_JR2']}

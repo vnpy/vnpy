@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-
 # 方向常量
 DIRECTION_NONE = u'无方向'
 DIRECTION_LONG = u'多'
