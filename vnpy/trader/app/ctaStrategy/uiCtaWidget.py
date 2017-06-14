@@ -9,7 +9,8 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.uiBasicWidget import QtGui, QtCore, QtWidgets, BasicCell
 
-from vnpy.trader.app.ctaStrategy.language import text
+from .ctaBase import EVENT_CTA_LOG, EVENT_CTA_STRATEGY
+from .language import text
 
 
 ########################################################################

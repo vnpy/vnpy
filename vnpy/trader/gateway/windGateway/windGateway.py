@@ -196,6 +196,8 @@ class WindGateway(VtGateway):
         if not result.ErrorCode:
             log.logContent = u'Wind接口连接成功'
             
+            self.connected = True
+            
             # 发出缓存的订阅请求
             for req in self.subscribeBufferDict.values():
                 self.subscribe(req)
