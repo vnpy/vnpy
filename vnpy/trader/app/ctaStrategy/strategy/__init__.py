@@ -22,7 +22,7 @@ for root, subdirs, files in os.walk(path):
         # 只有文件名中包含strategy且非.pyc的文件，才是策略文件
         if 'strategy' in name and '.pyc' not in name:
             # 模块名称需要上前缀
-            moduleName = 'ctaStrategy.strategy.' + name.replace('.py', '')
+            moduleName = 'vnpy.trader.app.ctaStrategy.strategy.' + name.replace('.py', '')
             print 'loading {0}'.format(moduleName)
             try:
                 # 使用importlib动态载入模块
