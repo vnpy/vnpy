@@ -891,10 +891,25 @@ class CtaEngine(object):
 
     def getShortSymbol(self, symbol):
         """取得合约的短号"""
+        # 套利合约
+        if symbol.find(' ') != -1:
+            # 排除SP SPC SPD
+            s = symbol.split(' ')
+            if len(s) < 2:
+                return symbol
+            symbol = s[1]
+
+            # 只提取leg1合约
+            if symbol.find('&') != -1:
+                s = symbol.split('&')
+                if len(s) < 2:
+                    return symbol
+                symbol = s[0]
+
         p = re.compile(r"([A-Z]+)[0-9]+", re.I)
         shortSymbol = p.match(symbol)
 
-        if shortSymbol is None :
+        if shortSymbol is None:
             self.writeCtaLog(u'{0}不能正则分解'.format(symbol))
             return symbol
 
