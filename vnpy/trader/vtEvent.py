@@ -10,7 +10,7 @@
 
 建议将所有的常量定义放在该文件中，便于检查是否存在重复的现象。
 '''
-
+print 'load vtEvent.py'
 from vnpy.event import *
 
 # 系统相关

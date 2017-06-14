@@ -100,14 +100,9 @@ class MainEngine(object):
             gateway = self.gatewayDict[gatewayName]
             gateway.subscribe(subscribeReq)
         else:
-            # 如果当前只有一个连接
-            if len(self.gatewayDict) == 1:
-                k = list(self.gatewayDict.keys())[0]
-                gateway = self.gatewayDict[k]
+            for gateway in self.gatewayDict.values():
                 gateway.subscribe(subscribeReq)
-
-            else:
-                self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
         
     # ----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):

@@ -12,7 +12,6 @@ import platform
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
 sys.path.append(root_path)
 
-from vnpy.trader.vtPath import *
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiMainWindow import *
 # 加载底层接口
