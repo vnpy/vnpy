@@ -57,12 +57,8 @@ ENGINETYPE_TRADING = 'trading'          # 实盘
 import sys
 import os
 
-trader_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if trader_path not in sys.path:
-    sys.path.append(trader_path)
-
 # CTA引擎中涉及的数据类定义
-from vtConstant import *
+from vnpy.trader.vtConstant import *
 
 ########################################################################
 class StopOrder(object):
