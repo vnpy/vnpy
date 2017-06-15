@@ -3,23 +3,23 @@
 from collections import OrderedDict
 
 from vnpy.trader.uiQt import QtWidgets
-from vnpy.trader.uiBasicWidget import (BasicMonitor, BasicCell, 
+from vnpy.trader.uiBasicWidget import (BasicMonitor, BasicCell, PnlCell,
                                        AskCell, BidCell, BASIC_FONT)
 
-from .stBase import EVENT_SPREADTRADING_TICK
+from .stBase import (EVENT_SPREADTRADING_TICK, EVENT_SPREADTRADING_POS,
+                     EVENT_SPREADTRADING_LOG)
 
 
 
 ########################################################################
 class StTickMonitor(BasicMonitor):
-    """"""
+    """价差行情监控"""
     
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, parent=None):
         """Constructor"""
         super(StTickMonitor, self).__init__(mainEngine, eventEngine, parent)
         
-        # 设置表头有序字典
         d = OrderedDict()
         d['name'] = {'chinese':u'价差名称', 'cellType':BasicCell}
         d['bidPrice'] = {'chinese':u'买价', 'cellType':BidCell}
@@ -30,20 +30,58 @@ class StTickMonitor(BasicMonitor):
         d['symbol'] = {'chinese':u'代码', 'cellType':BasicCell}
         self.setHeaderDict(d)
     
-        # 设置数据键
         self.setDataKey('name')
-    
-        # 设置监控事件类型
         self.setEventType(EVENT_SPREADTRADING_TICK)
-    
-        # 设置字体
         self.setFont(BASIC_FONT)
     
-        # 初始化表格
         self.initTable()
-    
-        # 注册事件监听
         self.registerEvent()        
+
+
+########################################################################
+class StPosMonitor(BasicMonitor):
+    """价差持仓监控"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine, parent=None):
+        """Constructor"""
+        super(StPosMonitor, self).__init__(mainEngine, eventEngine, parent)
+        
+        d = OrderedDict()
+        d['name'] = {'chinese':u'价差名称', 'cellType':BasicCell}
+        d['netPos'] = {'chinese':u'净仓', 'cellType':PnlCell}
+        d['longPos'] = {'chinese':u'多仓', 'cellType':BasicCell}
+        d['shortPos'] = {'chinese':u'空仓', 'cellType':BasicCell}
+        d['symbol'] = {'chinese':u'代码', 'cellType':BasicCell}
+        self.setHeaderDict(d)
+    
+        self.setDataKey('name')
+        self.setEventType(EVENT_SPREADTRADING_POS)
+        self.setFont(BASIC_FONT)
+    
+        self.initTable()
+        self.registerEvent()        
+
+
+########################################################################
+class StLogMonitor(BasicMonitor):
+    """价差日志监控"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine, parent=None):
+        """Constructor"""
+        super(StLogMonitor, self).__init__(mainEngine, eventEngine, parent)
+        
+        d = OrderedDict()
+        d['logTime'] = {'chinese':u'时间', 'cellType':BasicCell}
+        d['logContent'] = {'chinese':u'日志', 'cellType':BasicCell}
+        self.setHeaderDict(d)
+    
+        self.setEventType(EVENT_SPREADTRADING_LOG)
+        self.setFont(BASIC_FONT)
+    
+        self.initTable()
+        self.registerEvent()  
 
 
 ########################################################################
@@ -73,15 +111,22 @@ class StManager(QtWidgets.QWidget):
         
         # 创建组件
         tickMonitor = StTickMonitor(self.mainEngine, self.eventEngine)
+        posMonitor = StPosMonitor(self.mainEngine, self.eventEngine)
+        logMonitor = StLogMonitor(self.mainEngine, self.eventEngine)
         
         # 设置布局
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(buttonLoadSetting)
-        hbox.addStretch()
+        hbox1 = QtWidgets.QHBoxLayout()
+        hbox1.addWidget(buttonLoadSetting)
+        hbox1.addStretch()
+        
+        hbox2 = QtWidgets.QHBoxLayout()
+        hbox2.addWidget(tickMonitor)
+        hbox2.addWidget(posMonitor)
         
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(hbox)
-        vbox.addWidget(tickMonitor)
+        vbox.addLayout(hbox1)
+        vbox.addLayout(hbox2)
+        vbox.addWidget(logMonitor)
         
         self.setLayout(vbox)
         

@@ -1,14 +1,18 @@
 # encoding: UTF-8
 
 import json
+import traceback
 from copy import copy
 
 from vnpy.event import Event
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtEvent import EVENT_TICK, EVENT_TRADE, EVENT_POSITION
-from vnpy.trader.vtObject import VtSubscribeReq
+from vnpy.trader.vtObject import VtSubscribeReq, VtLogData
+from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
+                                    OFFSET_OPEN, OFFSET_CLOSE)
 
-from .stBase import StLeg, StSpread, EVENT_SPREADTRADING_TICK
+from .stBase import (StLeg, StSpread, EVENT_SPREADTRADING_TICK,
+                     EVENT_SPREADTRADING_POS, EVENT_SPREADTRADING_LOG)
 
 
 ########################################################################
@@ -33,11 +37,18 @@ class StEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """加载配置"""
-        with open(self.settingFilePath) as f:
-            l = json.load(f)
-            
-            for setting in l:
-                self.createSpread(setting)
+        try:
+            with open(self.settingFilePath) as f:
+                l = json.load(f)
+                
+                for setting in l:
+                    result, msg = self.createSpread(setting)
+                    self.writeLog(msg)
+                    
+                self.writeLog(u'价差配置加载完成')
+        except:
+            content = u'价差配置加载出错，原因：' + traceback.format_exc()
+            self.writeLog(content)
     
     #----------------------------------------------------------------------
     def saveSetting(self):
@@ -53,7 +64,7 @@ class StEngine(object):
         
         # 检查价差重名
         if setting['name'] in self.spreadDict:
-            msg = u'%s价差重名' %setting['name']
+            msg = u'%s价差存在重名' %setting['name']
             return result, msg
         
         # 检查腿是否已使用
@@ -132,21 +143,89 @@ class StEngine(object):
         spread = self.vtSymbolSpreadDict[tick.vtSymbol]
         spread.calculatePrice()
         
-        # 推送价差更新
+        # 推送价差行情更新
         newSpread = copy(spread)
-        event = Event(EVENT_SPREADTRADING_TICK)
-        event.dict_['data'] = newSpread
-        self.eventEngine.put(event)
+        
+        event1 = Event(EVENT_SPREADTRADING_TICK+spread.name)
+        event1.dict_['data'] = newSpread
+        self.eventEngine.put(event1)
+        
+        event2 = Event(EVENT_SPREADTRADING_TICK)
+        event2.dict_['data'] = newSpread
+        self.eventEngine.put(event2)        
     
     #----------------------------------------------------------------------
     def processTradeEvent(self, event):
-        """"""
-        pass
+        """处理成交推送"""
+        # 检查成交是否需要处理
+        trade = event.dict_['data']
+        if trade.vtSymbol not in self.legDict:
+            return
+        
+        # 更新腿持仓
+        leg = self.legDict[trade.vtSymbol]
+        direction = trade.direction
+        offset = trade.offst
+        
+        if direction == DIRECTION_LONG:
+            if offset == OFFSET_OPEN:
+                leg.longPos += trade.volume
+            else:
+                leg.shortPos -= trade.volume
+        else:
+            if offset == OFFSET_OPEN:
+                leg.shortPos += trade.volume
+            else:
+                leg.longPos -= trade.volume
+        leg.netPos = leg.longPos - leg.shortPos
+                
+        # 更新价差持仓
+        spread = self.vtSymbolSpreadDict[trade.vtSymbol]
+        spread.calculatePos()
+        
+        # 推送价差持仓更新
+        newSpread = copy(spread)
+        
+        event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
+        event1.dict_['data'] = newSpread
+        self.eventEngine.put(event1)
+        
+        event2 = Event(EVENT_SPREADTRADING_POS)
+        event2.dict_['data'] = newSpread
+        self.eventEngine.put(event2)
     
     #----------------------------------------------------------------------
     def processPositionEvent(self, event):
-        """"""
-        pass
+        """处理持仓推送"""
+        # 检查持仓是否需要处理
+        pos = event.dict_['data']
+        if pos.vtSymbol not in self.legDict:
+            return
+        
+        # 更新腿持仓
+        leg = self.legDict[trade.vtSymbol]
+        direction = pos.direction
+        
+        if direction == DIRECTION_LONG:
+            leg.longPos = pos.position
+        else:
+            leg.shortPos = pos.position
+        leg.netPos = leg.longPos - leg.shortPos
+        
+        # 更新价差持仓
+        spread = self.vtSymbolSpreadDict[trade.vtSymbol]
+        spread.calculatePos()
+        
+        # 推送价差持仓更新
+        newSpread = copy(spread)
+        
+        event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
+        event1.dict_['data'] = newSpread
+        self.eventEngine.put(event1)
+        
+        event2 = Event(EVENT_SPREADTRADING_POS)
+        event2.dict_['data'] = newSpread
+        self.eventEngine.put(event2)        
     
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -160,13 +239,23 @@ class StEngine(object):
         """订阅行情"""
         contract = self.mainEngine.getContract(vtSymbol)
         if not contract:
-            return
+            self.writeLog(u'订阅行情失败，找不到该合约%s' %vtSymbol)
         
         req = VtSubscribeReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
         
         self.mainEngine.subscribe(req, contract.gatewayName)
+        
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """发出日志"""
+        log = VtLogData()
+        log.logContent = content
+        
+        event = Event(EVENT_SPREADTRADING_LOG)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)
         
     #----------------------------------------------------------------------
     def stop(self):

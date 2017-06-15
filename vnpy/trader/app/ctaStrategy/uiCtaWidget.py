@@ -268,13 +268,14 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭窗口时的事件"""
-        reply = QtWidgets.QMessageBox.question(self, text.SAVE_POSITION_DATA,
-                                           text.SAVE_POSITION_QUESTION, QtWidgets.QMessageBox.Yes | 
-                                           QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-    
-        if reply == QtWidgets.QMessageBox.Yes: 
-            self.ctaEngine.savePosition()
-            
+        if self.isVisible():
+            reply = QtWidgets.QMessageBox.question(self, text.SAVE_POSITION_DATA,
+                                               text.SAVE_POSITION_QUESTION, QtWidgets.QMessageBox.Yes | 
+                                               QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+        
+            if reply == QtWidgets.QMessageBox.Yes: 
+                self.ctaEngine.savePosition()
+                
         event.accept()
         
         
