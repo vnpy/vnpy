@@ -53,20 +53,22 @@ Release/
 =======
 api/vn.ctp/build/*
 api/vn.lts/build/*
-trader/logs/vnpy*
-trader/logs/no*
-trader/orders/*.csv
-trader/learning/*
-trader/obj/*
-trader/temp/*
-trader/catStrategy/cache/*
-trader/catStrategy/ctaPeriod.py
-trader/catStrategy/ctaRangeBar.py
-trader/catStrategy/ctaRenkoBar.py
-trader/gateway/ctpGateway/CTP_EBF_connection.json
-trader/gateway/ctpGateway/CTP_Post_connection.json
-trader/gateway/ctpGateway/CTP_Prod_connection.json
-
+vnpy/trader/logs/vnpy*
+vnpy/trader/logs/no*
+vnpy/trader/orders/*.csv
+vnpy/trader/learning/*
+vnpy/trader/obj/*
+vnpy/trader/temp/*
+vnpy/trader/app/catStrategy/cache/*
+vnpy/trader/app/catStrategy/ctaPeriod.py
+vnpy/trader/app/catStrategy/ctaRangeBar.py
+vnpy/trader/app/catStrategy/ctaRenkoBar.py
+vnpy/trader/app/catStrategy/strategy_store/*
+vnpy/trader/gateway/ctpGateway/CTP_EBF_connection.json
+vnpy/trader/gateway/ctpGateway/CTP_Post_connection.json
+vnpy/trader/gateway/ctpGateway/CTP_Prod_connection.json
+vnpy/trader/gateway/ctpGateway/CTP_JR_connection.json
+vnpy/trader/gateway/ctpGateway/CTP_JR2_connection.json
 
 .idea
 

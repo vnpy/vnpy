@@ -530,7 +530,6 @@ class CtaEngine(object):
         # 触发每个策略的定时接口
         for strategy in self.strategyDict.values():
             strategy.onTimer()
-
  
     # ----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -662,7 +661,7 @@ class CtaEngine(object):
                 #    continue
                 dt = datetime.now()
                 # 若为中金所的合约，白天才提交订阅请求
-                if s in MARKET_ZJ and not(8 < dt.hour < 16):
+                if s in MARKET_ZJ and not(9 < dt.hour < 16):
                     continue
 
                 self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))
@@ -892,10 +891,25 @@ class CtaEngine(object):
 
     def getShortSymbol(self, symbol):
         """取得合约的短号"""
+        # 套利合约
+        if symbol.find(' ') != -1:
+            # 排除SP SPC SPD
+            s = symbol.split(' ')
+            if len(s) < 2:
+                return symbol
+            symbol = s[1]
+
+            # 只提取leg1合约
+            if symbol.find('&') != -1:
+                s = symbol.split('&')
+                if len(s) < 2:
+                    return symbol
+                symbol = s[0]
+
         p = re.compile(r"([A-Z]+)[0-9]+", re.I)
         shortSymbol = p.match(symbol)
 
-        if shortSymbol is None :
+        if shortSymbol is None:
             self.writeCtaLog(u'{0}不能正则分解'.format(symbol))
             return symbol
 
