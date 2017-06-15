@@ -430,7 +430,7 @@ class MainWindow(QtGui.QMainWindow):
     def test(self):
         """测试按钮用的函数"""
         # 有需要使用手动触发的测试函数可以写在这里
-        self.mainEngine.saveData()
+        self.mainEngine.qryStatus()
         pass
 
     #----------------------------------------------------------------------

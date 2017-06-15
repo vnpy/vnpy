@@ -7,7 +7,6 @@ import os.path
 import uuid
 from logging import handlers
 
-
 SIMPLE_FORMAT = "[%(asctime)s] %(message)s"
 RECORD_FORMAT = "[%(asctime)s.%(msecs)d][%(filename)s:%(lineno)d][%(process)d:%(threadName)s] %(message)s"
 COLOR_FORMAT = {

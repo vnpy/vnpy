@@ -603,10 +603,24 @@ class CtaEngine(object):
             # 1.创建策略对象
             strategy = strategyClass(self, setting)  
             self.strategyDict[name] = strategy
-            
+
             # 2.保存Tick映射关系（symbol <==> Strategy[] )
             # modifid by Incenselee 支持多个Symbol的订阅
-            symbols = strategy.vtSymbol.split(';')
+            symbols = []
+            # 套利合约
+            if strategy.vtSymbol.find(' ') != -1:
+                # 排除SP SPC SPD
+                s = strategy.vtSymbol.split(' ')
+                if len(s) > 1:
+                    arb_symbols = s[1]
+
+                    # 只提取leg1合约
+                    if arb_symbols.find('&') != -1:
+                        symbols = arb_symbols.split('&')
+                else:
+                    symbols.append(s[0])
+            else:
+                symbols = strategy.vtSymbol.split(';')
 
             # 判断是否有Leg1Symbol,Leg2Symbol 两个合约属性
             if hasattr(strategy, 'Leg1Symbol'):
@@ -915,6 +929,20 @@ class CtaEngine(object):
 
         return shortSymbol.group(1)
 
+    def qryStatus(self):
+        """查询cta Engined的运行状态"""
+
+        # 查询最新tick和更新时间
+        tick_status = u''
+        for k, v in self.tickDict.items():
+            tick_status += u'[{0};{1}];'.format(k, v.time)
+
+        # 查询策略运行状态
+        strategy_status = u''
+        for k, v in self.strategyDict.items():
+            strategy_status += u'[{0}:I:{1};T:{2}]'.format(k, v.inited, v.trading)
+
+        return tick_status, strategy_status
 
 ########################################################################
 class PositionBuffer(object):

@@ -93,6 +93,23 @@ class MainEngine(object):
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
             return False
 
+    def qryStatus(self):
+        """查询Status"""
+
+        # gateway Status
+        gw_status = u''
+        for k,g in self.gatewayDict.items():
+            gw_status += u'[{0}/{1}]'.format(k,g.checkStatus())
+
+        self.writeLog(u'gw:{0}'.format(gw_status))
+        # ctaEngine Status
+        cta_status = u''
+        if self.ctaEngine:
+            s1,s2 = self.ctaEngine.qryStatus()
+            cta_status = u'{0},{1}'.format(s1,s2)
+
+        self.writeLog(u'cta:{0}'.format(cta_status))
+
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
