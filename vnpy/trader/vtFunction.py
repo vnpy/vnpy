@@ -47,6 +47,31 @@ def loadMongoSetting():
 #----------------------------------------------------------------------
 def todayDate():
     """获取当前本机电脑时间的日期"""
-    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)    
+    return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
- 
+# 图标路径
+iconPathDict = {}
+
+path = os.path.abspath(os.path.join(os.path.dirname(__file__),'ico'))
+
+for root, subdirs, files in os.walk(path):
+    for fileName in files:
+        if '.ico' in fileName:
+            iconPathDict[fileName] = os.path.join(root, fileName)
+
+# ----------------------------------------------------------------------
+def loadIconPath(iconName):
+    """加载程序图标路径"""
+    global iconPathDict
+    return iconPathDict.get(iconName, '')
+
+# ----------------------------------------------------------------------
+def getTempPath(name):
+    """获取存放临时文件的路径"""
+    tempPath = os.path.join(os.getcwd(), 'temp')
+    if not os.path.exists(tempPath):
+        os.makedirs(tempPath)
+
+    path = os.path.join(tempPath, name)
+    return path
+

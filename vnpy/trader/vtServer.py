@@ -7,11 +7,12 @@ from datetime import datetime
 from time import sleep
 from threading import Thread
 
-
 import vtEvent
-from vnrpc import RpcServer
-from vtEngine import MainEngine
+from vnpy.rpc import RpcServer
+from vnpy.trader.vtEngine import MainEngine
 
+from vnpy.trader.gateway import ctpGateway
+init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR', 'CTP_JR2']}
 
 ########################################################################
 class VtServer(RpcServer):
@@ -25,7 +26,11 @@ class VtServer(RpcServer):
         
         # 创建主引擎对象
         self.engine = MainEngine()
-        
+
+        for gw_name in init_gateway_names['CTP']:
+            print 'add {0}'.format(gw_name)
+            self.engine.addGateway(ctpGateway, gw_name)
+
         # 注册主引擎的方法到服务器的RPC函数
         self.register(self.engine.connect)
         self.register(self.engine.subscribe)
@@ -33,6 +38,8 @@ class VtServer(RpcServer):
         self.register(self.engine.cancelOrder)
         self.register(self.engine.qryAccount)
         self.register(self.engine.qryPosition)
+        self.register(self.engine.checkGatewayStatus)               # 检测gateway的连接状态
+        self.register(self.engine.qryStatus)                        # 检测ctaEngine的状态
         self.register(self.engine.exit)
         self.register(self.engine.writeLog)
         self.register(self.engine.dbConnect)
@@ -44,6 +51,7 @@ class VtServer(RpcServer):
         self.register(self.engine.getOrder)
         self.register(self.engine.getAllWorkingOrders)
         self.register(self.engine.getAllGatewayNames)
+        self.register(self.engine.saveData)
         
         # 注册事件引擎发送的事件处理监听
         self.engine.eventEngine.registerGeneralHandler(self.eventHandler)
@@ -73,7 +81,7 @@ def printLog(content):
 def runServer():
     """运行服务器"""
     repAddress = 'tcp://*:2014'
-    pubAddress = 'tcp://*:0602'
+    pubAddress = 'tcp://*:2016'
     
     # 创建并启动服务器
     server = VtServer(repAddress, pubAddress)

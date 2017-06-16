@@ -5,6 +5,13 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+import os
+# 将repostory的目录i，作为根目录，添加到系统环境中。
+ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
+sys.path.append(ROOT_PATH)
+
+print sys.path
+
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine

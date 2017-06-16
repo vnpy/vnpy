@@ -161,8 +161,7 @@ class MainWindow(QtGui.QMainWindow):
         sysMenu.addAction(connectCtpJRAction)
         sysMenu.addAction(connectCtpJR2Action)
 
-        if 'CTP' in self.mainEngine.gatewayDict:
-            sysMenu.addAction(connectCtpAction)
+        sysMenu.addAction(connectCtpAction)
         #if 'LTS' in self.mainEngine.gatewayDict:
         #    sysMenu.addAction(connectLtsAction)
         #if 'FEMAS' in self.mainEngine.gatewayDict:

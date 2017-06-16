@@ -142,6 +142,21 @@ class ClientEngine(object):
         """查询所有的接口名称"""
         return self.client.getAllGatewayNames()
 
+    def getAccountInfo(self):
+        """读取风控的账号与仓位数据
+        # Added by IncenseLee
+        仅支持一个账号。不支持多账号
+        以后支持跨市场套利才更新吧。
+        """
+        return self.rmEngine.getAccountInfo()
+
+    def clearData(self):
+        """清空数据引擎的数据"""
+        self.dataEngine.clearData()
+        self.ctaEngine.clearData()
+
+    def saveData(self):
+        self.ctaEngine.saveStrategyData()
 
 #----------------------------------------------------------------------
 def main():
@@ -160,7 +175,7 @@ def main():
 
     # 创建客户端
     reqAddress = 'tcp://localhost:2014'
-    subAddress = 'tcp://localhost:0602'
+    subAddress = 'tcp://localhost:2016'
     client = VtClient(reqAddress, subAddress, eventEngine)
 
     client.subscribeTopic('')

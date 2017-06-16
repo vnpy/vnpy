@@ -5,28 +5,16 @@ import csv
 import os
 from collections import OrderedDict
 
-from PyQt4 import QtGui, QtCore
+#from PyQt4 import QtGui, QtCore
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import *
 from vnpy.trader.vtGateway import *
 import vtText
+from vnpy.trader.uiQt import QtGui, QtCore, BASIC_FONT
 
-
-#----------------------------------------------------------------------
-def loadFont():
-    """载入字体设置"""
-
-    try:
-        from vnpy.trader.vtGlobal import globalSetting
-        family = globalSetting['fontFamily']
-        size = globalSetting['fontSize']
-        font = QtGui.QFont(family, size)
-    except:
-        font = QtGui.QFont(u'微软雅黑', 12)
-    return font
-
-BASIC_FONT = loadFont()
+QCOLOR_RED = QtGui.QColor('red')
+QCOLOR_GREEN = QtGui.QColor('green')
 
 
 ########################################################################
@@ -168,7 +156,34 @@ class AskCell(QtGui.QTableWidgetItem):
         """设置内容"""
         self.setText(text)
 
+########################################################################
+class PnlCell(QtGui.QTableWidgetItem):
+    """显示盈亏的单元格"""
 
+    # ----------------------------------------------------------------------
+    def __init__(self, text=None, mainEngine=None):
+        """Constructor"""
+        super(PnlCell, self).__init__()
+        self.data = None
+        self.color = ''
+        if text:
+            self.setContent(text)
+
+    # ----------------------------------------------------------------------
+    def setContent(self, text):
+        """设置内容"""
+        self.setText(text)
+
+        try:
+            value = float(text)
+            if value >= 0 and self.color != 'red':
+                self.color = 'red'
+                self.setForeground(QCOLOR_RED)
+            elif value < 0 and self.color != 'green':
+                self.color = 'green'
+                self.setForeground(QCOLOR_GREEN)
+        except ValueError:
+            pass
 ########################################################################
 class BasicMonitor(QtGui.QTableWidget):
     """
