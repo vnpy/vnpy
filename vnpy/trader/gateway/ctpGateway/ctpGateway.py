@@ -6,21 +6,18 @@ vn.ctp的gateway接入
 考虑到现阶段大部分CTP中的ExchangeID字段返回的都是空值
 vtSymbol直接使用symbol
 '''
-
+print 'loading ctpGateway.py'
 import os
-import sys
 import json
-from copy import copy
-from datetime import datetime
-import logging
 
+# 加载经booster编译转换的SO API库
 from vnctpmd import MdApi
 from vnctptd import TdApi
 
 from vnpy.trader.vtConstant import  *
 from vnpy.trader.vtGateway import *
-from ctpDataType import *
 from vnpy.trader.gateway.ctpGateway.language import text
+from vnpy.trader.gateway.ctpGateway.ctpDataType import *
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
