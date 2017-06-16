@@ -1,16 +1,15 @@
 # encoding: UTF-8
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 import os
 import ctypes
 import platform
 
 # 将repostory的目录i，作为根目录，添加到系统环境中。
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..' , '..'))
 sys.path.append(root_path)
+print sys.path
 
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiMainWindow import *
@@ -34,9 +33,9 @@ def main():
     # 重载sys模块，设置默认字符串编码方式为utf8
     reload(sys)
     sys.setdefaultencoding('utf8')
-    
+
     # 设置Windows底部任务栏图标
-    if 'Windows' in platform.uname() :
+    if 'Windows' in platform.uname():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
 
     # 初始化Qt应用对象
@@ -58,6 +57,7 @@ def main():
     mainEngine = MainEngine()
 
     for gw_name in init_gateway_names['CTP']:
+        print 'add {0}'.format(gw_name)
         mainEngine.addGateway(ctpGateway, gw_name)
 
     mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)

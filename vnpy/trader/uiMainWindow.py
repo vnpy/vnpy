@@ -2,13 +2,13 @@
 
 # from uiFullMonitorWidget import MonitorWidget
 # from uiKChartWidget import CandleForm
-
+print 'load uiMainWindows.py'
 import psutil
 
 from vnpy.trader.app.ctaStrategy.uiCtaWidget import CtaEngineManager
 from vnpy.trader.app.dataRecorder.uiDrWidget import DrEngineManager
 from vnpy.trader.app.riskManager.uiRmWidget import RmEngineManager
-from vnpy.trader.uiBasicWidget import *
+from uiBasicWidget import *
 
 ########################################################################
 class MainWindow(QtGui.QMainWindow):

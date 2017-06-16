@@ -3,7 +3,7 @@
 """
 通过VT_setting.json加载全局配置
 """
-
+print 'load vtGlobal.py'
 import os
 import traceback
 import json

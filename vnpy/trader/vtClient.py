@@ -1,11 +1,11 @@
 # encoding: utf-8
 
+print 'load vtClient.py'
 import ctypes
 import platform
 import sys
 
 from vnpy.rpc import RpcClient
-
 from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
 from vnpy.trader.app.dataRecorder.drEngine import DrEngine
 from vnpy.trader.app.riskManager.rmEngine import RmEngine
@@ -15,8 +15,6 @@ from uiMainWindow import *
 path = os.path.abspath(os.path.dirname(__file__))    
 ICON_FILENAME = 'vnpy.ico'
 ICON_FILENAME = os.path.join(path, ICON_FILENAME)  
-
-
 
 ########################################################################
 class VtClient(RpcClient):

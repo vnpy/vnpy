@@ -9,7 +9,6 @@ from vnpy.trader.vtObject import *
 
 import logging
 
-
 ########################################################################
 class VtGateway(object):
     """交易接口"""
