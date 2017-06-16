@@ -20,6 +20,7 @@
 
 '''
 
+print 'load ctaEngine.py'
 import json
 import os
 import traceback
@@ -28,14 +29,14 @@ from datetime import datetime, timedelta
 import logging
 import re
 
-
-from ctaBase import *
-from strategy import STRATEGY_CLASS
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vnpy.trader.vtFunction import todayDate
+from vnpy.trader.app.ctaStrategy.ctaBase import *
 
+# 加载 strategy目录下所有的策略
+from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
 
 ########################################################################
 class CtaEngine(object):

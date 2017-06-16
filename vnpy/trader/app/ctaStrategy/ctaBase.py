@@ -5,7 +5,7 @@
 '''
 
 from __future__ import division
-
+print 'load ctaBase.py'
 
 # 常量定义
 # CTA引擎中涉及到的交易方向类型
@@ -54,8 +54,6 @@ MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 ENGINETYPE_BACKTESTING = 'backtesting'  # 回测
 ENGINETYPE_TRADING = 'trading'          # 实盘
 
-import sys
-import os
 
 # CTA引擎中涉及的数据类定义
 from vnpy.trader.vtConstant import *
