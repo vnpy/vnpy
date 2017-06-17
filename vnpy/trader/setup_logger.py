@@ -17,7 +17,6 @@ COLOR_FORMAT = {
 }
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-
 class ExtFormatter(logging.Formatter):
 
     def __init__(self, colorful=False, simple=False):
@@ -133,6 +132,9 @@ def setup_logger(filename=None, debug=False):
     if filename:
         base_name, ext = os.path.splitext(filename)
         debug_filename = '%s-debug%s' % (base_name, ext)
+        warning_filename = '%s-warning%s' % (base_name, ext)
+        error_filename = '%s-error%s' % (base_name, ext)
+        critical_filename = '%s-critical%s' % (base_name, ext)
         local = {
             'local_debug': {
                 'level': 'DEBUG',
@@ -150,6 +152,30 @@ def setup_logger(filename=None, debug=False):
                 'interval': 1,
                 'when': 'D',
             },
+            'local_error': {
+                'level': 'ERROR',
+                '()': FileHandler,
+                'filename': error_filename,
+                'formatter': 'basic',
+                'interval': 1,
+                'when': 'D',
+            },
+            'local_warning': {
+                'level': 'WARNING',
+                '()': FileHandler,
+                'filename': warning_filename,
+                'formatter': 'basic',
+                'interval': 1,
+                'when': 'D',
+            },
+            'local_critical': {
+                'level': 'CRITICAL',
+                '()': FileHandler,
+                'filename': critical_filename,
+                'formatter': 'basic',
+                'interval': 1,
+                'when': 'D',
+            },
 
         }
 
@@ -157,6 +183,10 @@ def setup_logger(filename=None, debug=False):
         handlers.append('local_info')
         if debug:
             handlers.append('local_debug')
+        handlers.append('local_error')
+        handlers.append('local_warning')
+        handlers.append('local_critical')
+
     else:
         if debug:
             handlers.append('std_debug')
