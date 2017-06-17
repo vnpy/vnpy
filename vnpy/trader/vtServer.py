@@ -1,7 +1,16 @@
 # encoding: utf-8
 
-import sys
 import os
+import sys
+
+import ctypes
+from datetime import datetime, timedelta, date
+from time import sleep
+from threading import Thread
+
+# 将repostory的目录i，作为根目录，添加到系统环境中。
+ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
+sys.path.append(ROOT_PATH)
 
 from datetime import datetime
 from time import sleep
@@ -33,6 +42,7 @@ class VtServer(RpcServer):
 
         # 注册主引擎的方法到服务器的RPC函数
         self.register(self.engine.connect)
+        self.register(self.engine.disconnect)
         self.register(self.engine.subscribe)
         self.register(self.engine.sendOrder)
         self.register(self.engine.cancelOrder)
