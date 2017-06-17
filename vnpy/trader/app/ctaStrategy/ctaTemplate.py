@@ -250,7 +250,38 @@ class CtaTemplate(object):
         """记录CTA日志"""
         content = self.name + ':' + content
         self.ctaEngine.writeCtaLog(content)
-        
+
+    # ----------------------------------------------------------------------
+    def writeCtaError(self, content):
+        """记录CTA出错日志"""
+        content = self.name + ':' + content
+        self.ctaEngine.writeCtaError(content)
+
+    # ----------------------------------------------------------------------
+    def writeCtaWarning(self, content):
+        """记录CTA告警日志"""
+        content = self.name + ':' + content
+        self.ctaEngine.writeCtaWarning(content)
+
+    # ----------------------------------------------------------------------
+    def writeCtaNotification(self, content):
+        """记录CTA通知日志"""
+        content = self.name + ':' + content
+
+        if not self.backtesting:
+            self.ctaEngine.writeCtaNotification(content)
+        else:
+            self.ctaEngine.writeCtaLog(content)
+
+    # ----------------------------------------------------------------------
+    def writeCtaCritical(self, content):
+        """记录CTA系统异常日志"""
+        content = self.name + ':' + content
+        if not self.backtesting:
+            self.ctaEngine.writeCtaCritical(content)
+        else:
+            self.ctaEngine.writeCtaError(content)
+
     #----------------------------------------------------------------------
     def putEvent(self):
         """发出策略状态变化事件"""
