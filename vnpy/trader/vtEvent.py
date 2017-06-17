@@ -32,6 +32,9 @@ EVENT_ERROR = 'eError.'                 # 错误回报事件
 EVENT_ACCOUNT_LOSS = 'eAccountLoss'     # 账户亏损事件
 EVENT_FULL_MONITOR = 'eFullMonitor'     # 全周期监控
 EVENT_ON_BAR = 'eOnBar'                 # OnBar事件
+EVENT_WARNING = 'eWarning'              # 全局告警信息
+EVENT_CRITICAL = 'eCritical'            # 全局严重信息
+EVERT_NOTIFICATION = 'eNotification'    # 全局通知
 
 # CTA模块相关
 EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
