@@ -54,7 +54,12 @@ class ClientEngine(object):
     def connect(self, gatewayName):
         """连接特定名称的接口"""
         self.client.connect(gatewayName)
-        
+
+    # ----------------------------------------------------------------------
+    def disconnect(self, gatewayName):
+        """连接特定名称的接口"""
+        self.client.disconnect(gatewayName)
+
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
@@ -178,9 +183,10 @@ def main():
     subAddress = 'tcp://localhost:2016'
     client = VtClient(reqAddress, subAddress, eventEngine)
 
+    # 这里是订阅所有的publish event，也可以指定。
     client.subscribeTopic('')
     client.start()
-    
+
     # 初始化Qt应用对象
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
@@ -203,7 +209,6 @@ def main():
     
     # 在主线程中启动Qt事件循环
     sys.exit(app.exec_())
-
 
 if __name__ == '__main__':
     main()    
