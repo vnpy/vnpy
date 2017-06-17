@@ -4,10 +4,12 @@ print 'load vtEngine.py'
 
 import shelve
 from collections import OrderedDict
+import logging
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
+from vnpy.trader.vtEvent import Event as vn_event
 from vnpy.trader.language import text
 from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
 from vnpy.trader.app.dataRecorder.drEngine import DrEngine
@@ -15,6 +17,10 @@ from vnpy.trader.app.riskManager.rmEngine import RmEngine
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtGateway import *
 
+try:
+    from util_mail import *
+except:
+    pass
 
 ########################################################################
 class MainEngine(object):
@@ -119,9 +125,11 @@ class MainEngine(object):
             gateway = self.gatewayDict[gatewayName]
             gateway.subscribe(subscribeReq)
         else:
-            for gateway in self.gatewayDict.values():
-                gateway.subscribe(subscribeReq)
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+            if len(self.gatewayDict) > 0:
+                for gateway in self.gatewayDict.values():
+                    gateway.subscribe(subscribeReq)
+            else:
+                self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
         
     # ----------------------------------------------------------------------
     def sendOrder(self, orderReq, gatewayName):
@@ -146,8 +154,7 @@ class MainEngine(object):
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
 
-        
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def qryAccount(self, gatewayName):
         """查询特定接口的账户"""
         if gatewayName in self.gatewayDict:
@@ -164,7 +171,7 @@ class MainEngine(object):
         """
         return self.rmEngine.getAccountInfo()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
         if gatewayName in self.gatewayDict:
@@ -189,7 +196,7 @@ class MainEngine(object):
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
 
-    def disconnect(self,gateway_name = EMPTY_STRING):
+    def disconnect(self, gateway_name=EMPTY_STRING):
         """断开底层gateway的连接"""
 
         # 只断开指定的gateway
@@ -210,12 +217,75 @@ class MainEngine(object):
         """快速发出日志事件"""
         log = VtLogData()
         log.logContent = content
-        event = Event(type_=EVENT_LOG)
+        event = vn_event(type_ = EVENT_LOG)
         event.dict_['data'] = log
         self.eventEngine.put(event)
 
         # 写入本地log日志
         logging.info(content)
+
+    # ----------------------------------------------------------------------
+    def writeError(self, content):
+        """快速发出错误日志事件"""
+        log = VtErrorData()
+        log.errorMsg = content
+        event = vn_event(type_=EVENT_ERROR)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)
+
+        # 写入本地log日志
+        logging.error(content)
+    # ----------------------------------------------------------------------
+    def writeWarning(self, content):
+        """快速发出告警日志事件"""
+        log = VtLogData()
+        log.logContent = content
+        event = vn_event(type_=EVENT_WARNING)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)
+
+        # 写入本地log日志
+        logging.warning(content)
+
+        # 发出邮件
+        try:
+            sendmail(subject=u'Warning', msgcontent=content)
+        except:
+            pass
+
+    # ----------------------------------------------------------------------
+    def writeNotification(self, content):
+        """快速发出通知日志事件"""
+        log = VtLogData()
+        log.logContent = content
+        event = vn_event(type_=EVENT_NOTIFICATION)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)
+
+        # 发出邮件
+        try:
+            sendmail(subject=u'Notification', msgcontent=content)
+        except:
+            pass
+
+    # ----------------------------------------------------------------------
+    def writeCritical(self, content):
+        """快速发出严重错误日志事件"""
+
+        log = VtLogData()
+        log.logContent = content
+        event = vn_event(type_=EVENT_CRITICAL)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)
+
+        # 写入本地log日志
+        logging.critical(content)
+
+        # 发出邮件
+        try:
+            sendmail(subject=u'Critical', msgcontent=content)
+        except:
+            pass
 
     # ----------------------------------------------------------------------
     def dbConnect(self):
@@ -238,7 +308,7 @@ class MainEngine(object):
                     self.eventEngine.register(EVENT_LOG, self.dbLogging)
 
             except ConnectionFailure:
-                self.writeLog(text.DATABASE_CONNECTING_FAILED)
+                self.writeError(text.DATABASE_CONNECTING_FAILED)
     
     # ----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
