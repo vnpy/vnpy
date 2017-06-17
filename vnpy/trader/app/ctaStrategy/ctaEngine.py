@@ -580,7 +580,23 @@ class CtaEngine(object):
 
         # 写入本地log日志
         logging.info(content)
-    
+
+    def writeCtaError(self,content):
+        """快速发出CTA模块错误日志事件"""
+        self.mainEngine.writeError(content)
+
+    def writeCtaWarning(self, content):
+        """快速发出CTA模块告警日志事件"""
+        self.mainEngine.writeWarning(content)
+
+    def writeCtaNotification(self, content):
+        """快速发出CTA模块通知事件"""
+        self.mainEngine.writeNotification(content)
+
+    def writeCtaCritical(self,content):
+        """快速发出CTA模块异常日志事件"""
+        self.mainEngine.writeCritical(content)
+
     # ----------------------------------------------------------------------
     def loadStrategy(self, setting):
         """载入策略"""
@@ -589,12 +605,14 @@ class CtaEngine(object):
             className = setting['className']
         except Exception as e:
             self.writeCtaLog(u'载入策略出错：%s' %e)
+            self.mainEngine.writeCritical(u'载入策略出错：%s' %e)
             return
         
         # 获取策略类
         strategyClass = STRATEGY_CLASS.get(className, None)
         if not strategyClass:
-            self.writeCtaLog(u'找不到策略类：%s' %className)
+            self.writeCtaLog(u'STRATEGY_CLASS找不到策略类：%s' %className)
+            self.mainEngine.writeCritical(u'STRATEGY_CLASS找不到策略类：%s' %className)
             return
         
         # 防止策略重名
@@ -744,7 +762,7 @@ class CtaEngine(object):
                     if so.strategy is strategy:
                         self.cancelStopOrder(stopOrderID)   
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)        
+            self.writeCtaLog(u'策略实例不存在：%s' %name)
     
     # ----------------------------------------------------------------------
     def saveSetting(self):
@@ -811,6 +829,8 @@ class CtaEngine(object):
     def putStrategyEvent(self, name):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         event = Event(EVENT_CTA_STRATEGY+name)
+        d = 'putevent'
+        event.dict_['data'] = d
         self.eventEngine.put(event)
 
     # ----------------------------------------------------------------------
@@ -830,6 +850,7 @@ class CtaEngine(object):
             content = '\n'.join([u'策略%s触发异常已停止' % strategy.name,
                                  traceback.format_exc()])
             self.writeCtaLog(content)
+            self.mainEngine.writeCritical(content)
 
     # ----------------------------------------------------------------------
     def savePosition(self):
