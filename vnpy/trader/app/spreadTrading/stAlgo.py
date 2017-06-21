@@ -12,9 +12,12 @@ from vnpy.trader.vtConstant import (EMPTY_INT, EMPTY_FLOAT,
 ########################################################################
 class StAlgoTemplate(object):
     """价差算法交易模板"""
-    MODE_LONGSHORT = 'longshort'
-    MODE_LONGONLY = 'long'
-    MODE_SHORTONLY = 'short'
+    MODE_LONGSHORT = 1
+    MODE_LONGONLY = 2
+    MODE_SHORTONLY = 3
+
+    SPREAD_LONG = 1
+    SPREAD_SHORT = 2
 
     #----------------------------------------------------------------------
     def __init__(self, algoEngine, spread):
@@ -62,7 +65,7 @@ class StAlgoTemplate(object):
         raise NotImplementedError
         
     #----------------------------------------------------------------------
-    def start(self):
+    def start(self, mode=MODE_LONGSHORT):
         """"""
         raise NotImplementedError
     
@@ -84,7 +87,9 @@ class SniperAlgo(StAlgoTemplate):
         super(SniperAlgo, self).__init__(algoEngine)
         
         self.algoName = u'Sniper'
-        self.hedgeInterval = 2      # 对冲腿撤单再发前的等待时间
+        self.quoteInterval = 2      # 主动腿报价撤单再发前等待的时间
+        self.quoteCount = 0         # 报价计数
+        self.hedgeInterval = 2      # 对冲腿对冲撤单再发前的等待时间
         self.hedgeCount = 0         # 对冲计数
         
         self.activeVtSymbol = spread.activeLeg.vtSymbol                         # 主动腿代码
@@ -103,6 +108,41 @@ class SniperAlgo(StAlgoTemplate):
     def updateSpreadTick(self, spread):
         """价差行情更新"""
         self.spread = spread
+        
+        # 若算法没有启动则直接返回
+        if not self.active:
+            return
+        
+        # 若当前已有主动腿委托则直接返回
+        if (self.activeVtSymbol in self.legOrderDict and
+            self.legOrderDict[self.activeVtSymbol]):
+            return
+
+        # 允许做多
+        if self.mode == self.MODE_LONGSHORT or self.mode == self.MODE_LONGONLY:
+            # 买入
+            if (spread.netPos >= 0 and 
+                spread.netPos < self.maxPosSize and
+                spread.askPrice <= self.buyPrice):
+                self.quoteActiveLeg(self.SPREAD_LONG)
+            
+            # 卖出
+            elif (spread.netPos > 0 and
+                  spread.bidPrice >= self.sellPrice):
+                self.quoteActiveLeg(self.SPREAD_SHORT)
+        
+        # 允许做空
+        if self.mode == self.MODE_LONGSHORT or self.mode == self.MODE_SHORTONLY:
+            # 做空
+            if (spread.netPos <= 0 and
+                spread.netPos > -self.maxPosSize and
+                spread.bidPrice >= self.shortPrice):
+                self.quoteActiveLeg(self.SPREAD_SHORT)
+            
+            # 平空
+            elif (spread.netPos < 0 and
+                  spread.askPrice <= self.coverPrice):
+                self.quoteActiveLeg(self.SPREAD_LONG)
     
     #----------------------------------------------------------------------
     def updateSpreadPos(self, spread):
@@ -144,7 +184,14 @@ class SniperAlgo(StAlgoTemplate):
     #----------------------------------------------------------------------
     def updateTimer(self):
         """计时更新"""
+        self.quoteCount += 1
         self.hedgeCount += 1
+        
+        # 计时到达报价间隔后，则对尚未成交的主动腿委托全部撤单
+        # 收到撤单回报后清空委托列表，等待下次价差更新再发单
+        if self.quoteCount > self.quoteInterval:
+            self.cancelLegOrder(self.activeVtSymbol)
+            self.quoteCount = 0
         
         # 计时到达对冲间隔后，则对尚未成交的全部被动腿委托全部撤单
         # 收到撤单回报后，会自动发送新的对冲委托
@@ -153,9 +200,10 @@ class SniperAlgo(StAlgoTemplate):
             self.hedgeCount = 0
         
     #----------------------------------------------------------------------
-    def start(self):
+    def start(self, mode=MODE_LONGSHORT):
         """启动"""
-        raise NotImplementedError
+        self.mode = mode
+        self.active = True
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -200,22 +248,31 @@ class SniperAlgo(StAlgoTemplate):
         """发出主动腿"""        
         spread = self.spread
         
-        if direction == DIRECTION_LONG:
+        if direction == self.SPREAD_LONG:
             spreadVolume = min(spread.askVolume,
                                self.maxPosSize - spread.netPos,
                                self.maxOrderSize)
+            
+            # 有价差空头持仓的情况下，则本次委托最多平完空头
+            if spread.shortPos > 0:
+                spreadVolume = min(spreadVolume, spread.shortPos)
         else:
             spreadVolume = min(spread.bidVolume,
                                self.maxPosSize + spread.netPos,
                                self.maxOrderSize)
             
+            # 有价差多头持仓的情况下，则本次委托最多平完多头
+            if spread.longPos > 0:
+                spreadVolume = min(spreadVolume, spread.longPos)
+            
         if spreadVolume <= 0:
             return
         
         leg = self.legDict[self.activeVtSymbol]
-        legVolume = spreadVolume * leg.ratio
-        
+        legVolume = spreadVolume * leg.ratio        
         self.sendLegOrder(leg, legVolume)
+        
+        self.quoteCount = 0         # 重置主动腿报价撤单等待计数
 
     #----------------------------------------------------------------------
     def hedgePassiveLeg(self, vtSymbol):
@@ -233,6 +290,8 @@ class SniperAlgo(StAlgoTemplate):
         """执行所有被动腿对冲"""
         for vtSymbol in self.hedgingTaskDict.keys():
             self.hedgePassiveLeg(vtSymbol)
+        
+        self.hedgeCount = 0         # 重置被动腿对冲撤单等待计数
         
     #----------------------------------------------------------------------
     def newActiveLegTrade(self, trade):
