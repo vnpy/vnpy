@@ -6,8 +6,10 @@ from copy import copy
 
 from vnpy.event import Event
 from vnpy.trader.vtFunction import getJsonPath
-from vnpy.trader.vtEvent import EVENT_TICK, EVENT_TRADE, EVENT_POSITION
-from vnpy.trader.vtObject import VtSubscribeReq, VtLogData
+from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_TRADE, EVENT_POSITION, 
+                                 EVENT_TIMER, EVENT_ORDER)
+from vnpy.trader.vtObject import (VtSubscribeReq, VtOrderReq, 
+                                  VtCancelOrderReq, VtLogData)
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
                                     OFFSET_OPEN, OFFSET_CLOSE)
 
@@ -16,8 +18,8 @@ from .stBase import (StLeg, StSpread, EVENT_SPREADTRADING_TICK,
 
 
 ########################################################################
-class StEngine(object):
-    """"""
+class StDataEngine(object):
+    """价差数据计算引擎"""
     settingFileName = 'ST_setting.json'
     settingFilePath = getJsonPath(settingFileName, __file__)
 
@@ -143,15 +145,13 @@ class StEngine(object):
         spread = self.vtSymbolSpreadDict[tick.vtSymbol]
         spread.calculatePrice()
         
-        # 推送价差行情更新
-        newSpread = copy(spread)
-        
+        # 推送价差行情更新        
         event1 = Event(EVENT_SPREADTRADING_TICK+spread.name)
-        event1.dict_['data'] = newSpread
+        event1.dict_['data'] = spread
         self.eventEngine.put(event1)
         
         event2 = Event(EVENT_SPREADTRADING_TICK)
-        event2.dict_['data'] = newSpread
+        event2.dict_['data'] = spread
         self.eventEngine.put(event2)        
     
     #----------------------------------------------------------------------
@@ -184,18 +184,16 @@ class StEngine(object):
         spread.calculatePos()
         
         # 推送价差持仓更新
-        newSpread = copy(spread)
-        
         event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
-        event1.dict_['data'] = newSpread
+        event1.dict_['data'] = spread
         self.eventEngine.put(event1)
         
         event2 = Event(EVENT_SPREADTRADING_POS)
-        event2.dict_['data'] = newSpread
+        event2.dict_['data'] = spread
         self.eventEngine.put(event2)
     
     #----------------------------------------------------------------------
-    def processPositionEvent(self, event):
+    def processPosEvent(self, event):
         """处理持仓推送"""
         # 检查持仓是否需要处理
         pos = event.dict_['data']
@@ -217,14 +215,12 @@ class StEngine(object):
         spread.calculatePos()
         
         # 推送价差持仓更新
-        newSpread = copy(spread)
-        
         event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
-        event1.dict_['data'] = newSpread
+        event1.dict_['data'] = spread
         self.eventEngine.put(event1)
         
         event2 = Event(EVENT_SPREADTRADING_POS)
-        event2.dict_['data'] = newSpread
+        event2.dict_['data'] = spread
         self.eventEngine.put(event2)        
     
     #----------------------------------------------------------------------
@@ -232,7 +228,7 @@ class StEngine(object):
         """"""
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
-        self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
+        self.eventEngine.register(EVENT_POSITION, self.processPosEvent)
         
     #----------------------------------------------------------------------
     def subscribeMarketData(self, vtSymbol):
@@ -262,4 +258,155 @@ class StEngine(object):
         """停止"""
         pass
 
+    
+########################################################################
+class StAlgoEngine(object):
+    """价差算法交易引擎"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine):
+        """Constructor"""
+        self.mainEngine = mainEngine
+        self.eventEngine = eventEngine
+        
+        self.algoDict = {}          # spreadName:algo
+        self.vtSymbolAlgoDict = {}  # vtSymbol:algo
+        
+        self.registerEvent()
+        
+    #----------------------------------------------------------------------
+    def registerEvent(self):
+        """注册事件监听"""
+        self.eventEngine.register(EVENT_SPREADTRADING_TICK, self.processSpreadTickEvent)
+        self.eventEngine.register(EVENT_SPREADTRADING_POS, self.processSpreadPosEvent)
+        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
+        self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
+    
+    #----------------------------------------------------------------------
+    def processSpreadTickEvent(self, event):
+        """处理价差行情事件"""
+        spread = event.dict_['data']
+        
+        algo = self.algoDict.get(spread.name, None)
+        if algo:
+            algo.updateSpreadTick(spread)
+    
+    #----------------------------------------------------------------------
+    def processSpreadPosEvent(self, event):
+        """处理价差持仓事件"""
+        spread = event.dict_['data']
+        
+        algo = self.algoDict.get(spread.name, None)
+        if algo:
+            algo.updateSpreadPos(spread)
+    
+    #----------------------------------------------------------------------
+    def processTradeEvent(self, event):
+        """处理成交事件"""
+        trade = event.dict_['data']
+        
+        algo = self.algoDict.get(trade.vtSymbol, None)
+        if algo:
+            algo.updateTrade(trade)
+    
+    #----------------------------------------------------------------------
+    def processOrderEvent(self, event):
+        """处理委托事件"""
+        order = event.dict_['data']
+        
+        algo = self.algoDict.get(order.vtSymbol, None)
+        if algo:
+            algo.updateOrder(order)
+    
+    #----------------------------------------------------------------------
+    def processTimerEvent(self, event):
+        """"""
+        for algo in self.algoDict.values():
+            algo.updateTimer()
+
+    #----------------------------------------------------------------------
+    def sendOrder(self, vtSymbol, direction, offset, price, volume, payup=0):
+        """发单"""
+        contract = self.mainEngine.getContract(vtSymbol)
+        if not contract:
+            return ''
+        
+        req = VtOrderReq()
+        req.symbol = contract.symbol
+        req.exchange = contract.exchange
+        req.direction = direction
+        req.offset = offset
+        req.volume = volume
+        
+        if direction == DIRECTION_LONG:
+            req.price = price + payup * contract.priceTick
+        else:
+            req.price = price - payup * contract.priceTick
+        
+        vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)
+        return vtOrderID
+        
+    #----------------------------------------------------------------------
+    def cancelOrder(self, vtOrderID):
+        """撤单"""
+        order = self.mainEngine.getOrder(vtOrderID)        
+        if not order:
+            return
+        
+        req = VtCancelOrderReq()
+        req.symbol = order.symbol
+        req.exchange = order.exchange
+        req.frontID = order.frontID
+        req.sessionID = order.sessionID
+        req.orderID = order.orderID
+        
+        self.mainEngine.cancelOrder(req, order.gatewayName)
+        
+    #----------------------------------------------------------------------
+    def buy(self, vtSymbol, price, volume, payup=0):
+        """买入"""
+        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_OPEN, price, volume, payup)
+        return [vtOrderID]
+    
+    #----------------------------------------------------------------------
+    def sell(self, vtSymbol, price, volume, payup=0):
+        """卖出"""
+        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_CLOSE, price, volume, payup)
+        return [vtOrderID]
+    
+    #----------------------------------------------------------------------
+    def short(self, vtSymbol, price, volume, payup=0):
+        """卖空"""
+        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_OPEN, price, volume, payup)
+        return [vtOrderID]
+    
+    #----------------------------------------------------------------------
+    def cover(self, vtSymbol, price, volume, payup=0):
+        """平空"""
+        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_CLOSE, price, volume, payup)
+        return [vtOrderID]
+    
+
+########################################################################
+class StEngine(object):
+    """价差引擎"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine):
+        """Constructor"""
+        self.mainEngine = mainEngine
+        self.eventEngine = eventEngine
+        
+        self.dataEngine = StDataEngine(mainEngine, eventEngine)
+        self.algoEngine = StAlgoEngine(mainEngine, eventEngine)
+        
+    #----------------------------------------------------------------------
+    def loadSetting(self):
+        """"""
+        self.dataEngine.loadSetting()
+        
+        
+        
+    
     
