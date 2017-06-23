@@ -12,9 +12,9 @@ from vnpy.trader.vtConstant import (EMPTY_INT, EMPTY_FLOAT,
 ########################################################################
 class StAlgoTemplate(object):
     """价差算法交易模板"""
-    MODE_LONGSHORT = 1
-    MODE_LONGONLY = 2
-    MODE_SHORTONLY = 3
+    MODE_LONGSHORT = u'双向'
+    MODE_LONGONLY = u'做多'
+    MODE_SHORTONLY = u'做空'
 
     SPREAD_LONG = 1
     SPREAD_SHORT = 2
@@ -65,7 +65,7 @@ class StAlgoTemplate(object):
         raise NotImplementedError
         
     #----------------------------------------------------------------------
-    def start(self, mode=MODE_LONGSHORT):
+    def start(self):
         """"""
         raise NotImplementedError
     
@@ -74,7 +74,79 @@ class StAlgoTemplate(object):
         """"""
         raise NotImplementedError
 
+    #----------------------------------------------------------------------
+    def setBuyPrice(self, buyPrice):
+        """设置买开的价格"""
+        self.buyPrice = buyPrice
+        
+    #----------------------------------------------------------------------
+    def setSellPrice(self, sellPrice):
+        """设置卖平的价格"""
+        self.sellPrice = sellPrice
+        
+    #----------------------------------------------------------------------
+    def setShortPrice(self, shortPrice):
+        """设置卖开的价格"""
+        self.shortPrice = shortPrice
+        
+    #----------------------------------------------------------------------
+    def setCoverPrice(self, coverPrice):
+        """设置买平的价格"""
+        self.coverPrice = coverPrice
+    
+    #----------------------------------------------------------------------
+    def setMode(self, mode):
+        """设置算法交易方向"""
+        self.mode = mode
+    
+    #----------------------------------------------------------------------
+    def setMaxOrderSize(self, maxOrderSize):
+        """设置最大单笔委托数量"""
+        self.maxOrderSize = maxOrderSize
+        
+    #----------------------------------------------------------------------
+    def setMaxPosSize(self, maxPosSize):
+        """设置最大持仓数量"""
+        self.maxPosSize = maxPosSize
+    
+    #----------------------------------------------------------------------
+    def putEvent(self):
+        """发出算法更新事件"""
+        self.algoEngine.putAlgoEvent(self)
+        
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """输出算法日志"""
+        content = ':'.join([self.spreadName, content])
+        self.algoEngine.writeLog(content)
 
+    #----------------------------------------------------------------------
+    def getAlgoParams(self):
+        """获取算法参数"""
+        d = {
+            "spreadName": self.spreadName,
+            "algoName": self.algoName,
+            "buyPrice": self.buyPrice,
+            "sellPrice": self.sellPrice,
+            "shortPrice": self.shortPrice,
+            "coverPrice": self.coverPrice,
+            "maxOrderSize": self.maxOrderSize,
+            "maxPosSize": self.maxPosSize,
+            "mode": self.mode
+        }
+        return d
+    
+    #----------------------------------------------------------------------
+    def setAlgoParams(self, d):
+        """设置算法参数"""
+        self.buyPrice = d.get('buyPrice', EMPTY_FLOAT)
+        self.sellPrice = d.get('sellPrice', EMPTY_FLOAT)
+        self.shortPrice = d.get('shortPrice', EMPTY_FLOAT)
+        self.coverPrice = d.get('coverPrice', EMPTY_FLOAT)
+        self.maxOrderSize = d.get('maxOrderSize', EMPTY_INT)
+        self.maxPosSize = d.get('maxPosSize', EMPTY_INT)
+        self.mode = d.get('mode', self.MODE_LONGSHORT)
+        
 
 ########################################################################
 class SniperAlgo(StAlgoTemplate):
@@ -82,9 +154,9 @@ class SniperAlgo(StAlgoTemplate):
     FINISHED_STATUS = [STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED]
 
     #----------------------------------------------------------------------
-    def __init__(self, algoEngine):
+    def __init__(self, algoEngine, spread):
         """Constructor"""
-        super(SniperAlgo, self).__init__(algoEngine)
+        super(SniperAlgo, self).__init__(algoEngine, spread)
         
         self.algoName = u'Sniper'
         self.quoteInterval = 2      # 主动腿报价撤单再发前等待的时间
@@ -125,11 +197,13 @@ class SniperAlgo(StAlgoTemplate):
                 spread.netPos < self.maxPosSize and
                 spread.askPrice <= self.buyPrice):
                 self.quoteActiveLeg(self.SPREAD_LONG)
+                self.writeLog(u'买入开仓')
             
             # 卖出
             elif (spread.netPos > 0 and
                   spread.bidPrice >= self.sellPrice):
                 self.quoteActiveLeg(self.SPREAD_SHORT)
+                self.writeLog(u'卖出平仓')
         
         # 允许做空
         if self.mode == self.MODE_LONGSHORT or self.mode == self.MODE_SHORTONLY:
@@ -138,11 +212,13 @@ class SniperAlgo(StAlgoTemplate):
                 spread.netPos > -self.maxPosSize and
                 spread.bidPrice >= self.shortPrice):
                 self.quoteActiveLeg(self.SPREAD_SHORT)
+                self.writeLog(u'卖出开仓')
             
             # 平空
             elif (spread.netPos < 0 and
                   spread.askPrice <= self.coverPrice):
                 self.quoteActiveLeg(self.SPREAD_LONG)
+                self.writeLog(u'买入平仓')
     
     #----------------------------------------------------------------------
     def updateSpreadPos(self, spread):
@@ -180,10 +256,14 @@ class SniperAlgo(StAlgoTemplate):
             # 检查若是被动腿，且已经没有未完成委托，则执行对冲
             if not orderList and vtSymbol in self.passiveVtSymbols:
                 self.hedgePassiveLeg(vtSymbol)
+                self.writeLog(u'发出新的被动腿%s对冲单' %vtSymbol)
     
     #----------------------------------------------------------------------
     def updateTimer(self):
         """计时更新"""
+        if not self.active:
+            return
+        
         self.quoteCount += 1
         self.hedgeCount += 1
         
@@ -200,10 +280,14 @@ class SniperAlgo(StAlgoTemplate):
             self.hedgeCount = 0
         
     #----------------------------------------------------------------------
-    def start(self, mode=MODE_LONGSHORT):
+    def start(self):
         """启动"""
-        self.mode = mode
         self.active = True
+        
+        self.quoteCount = 0
+        self.hedgeCount = 0
+        
+        return self.active
     
     #----------------------------------------------------------------------
     def stop(self):
@@ -212,6 +296,8 @@ class SniperAlgo(StAlgoTemplate):
         
         self.hedgingTaskDict.clear()
         self.cancelAllOrders()
+        
+        return self.active
     
     #----------------------------------------------------------------------
     def sendLegOrder(self, leg, legVolume):
@@ -310,6 +396,9 @@ class SniperAlgo(StAlgoTemplate):
                 self.hedgingTaskDict[leg.vtSymbol] = newHedgingTask
             else:
                 self.hedgingTaskDict[leg.vtSymbol] += newHedgingTask
+        
+        # 输出日志
+        self.writeLog(u'主动腿%s成交，方向%s，数量%s' %(trade.vtSymbol, trade.direction, trade.volume))
     
     #----------------------------------------------------------------------
     def newPassiveLegTrade(self, trade):
@@ -328,6 +417,9 @@ class SniperAlgo(StAlgoTemplate):
             if not self.hedgingTaskDict[trade.vtSymbol]:
                 del self.hedgingTaskDict[trade.vtSymbol]
                 
+        # 输出日志
+        self.writeLog(u'被动腿%s成交，方向%s，数量%s' %(trade.vtSymbol, trade.direction, trade.volume))
+                
     #----------------------------------------------------------------------
     def cancelLegOrder(self, vtSymbol):
         """撤销某条腿的委托"""
@@ -339,15 +431,27 @@ class SniperAlgo(StAlgoTemplate):
         for vtOrderID in orderList:
             self.algoEngine.cancelOrder(vtOrderID)
             
+        self.writeLog(u'撤单%s的所有委托' %vtSymbol)
+            
     #----------------------------------------------------------------------
     def cancelAllOrders(self):
         """撤销全部委托"""
         for orderList in self.legOrderDict.values():
             for vtOrderID in orderList:
                 self.algoEngine.cancelOrder(vtOrderID)
+        
+        self.writeLog(u'全部撤单')
     
     #----------------------------------------------------------------------
     def cancelAllPassiveLegOrders(self):
         """撤销全部被动腿委托"""
+        cancelPassive = False
+        
         for vtSymbol in self.passiveVtSymbols:
-            self.cancelLegOrder(vtSymbol)
+            if self.legOrderDict[vtSymbol]:
+                self.cancelLegOrder(vtSymbol)
+                cancelPassive = True
+
+        # 只有确实发出撤单委托时，才输出信息        
+        if cancelPassive:
+            self.writeLog(u'被动腿全撤')

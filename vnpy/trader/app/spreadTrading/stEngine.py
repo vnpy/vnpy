@@ -2,10 +2,10 @@
 
 import json
 import traceback
-from copy import copy
+import shelve
 
 from vnpy.event import Event
-from vnpy.trader.vtFunction import getJsonPath
+from vnpy.trader.vtFunction import getJsonPath, getTempPath
 from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_TRADE, EVENT_POSITION, 
                                  EVENT_TIMER, EVENT_ORDER)
 from vnpy.trader.vtObject import (VtSubscribeReq, VtOrderReq, 
@@ -14,7 +14,9 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE)
 
 from .stBase import (StLeg, StSpread, EVENT_SPREADTRADING_TICK,
-                     EVENT_SPREADTRADING_POS, EVENT_SPREADTRADING_LOG)
+                     EVENT_SPREADTRADING_POS, EVENT_SPREADTRADING_LOG,
+                     EVENT_SPREADTRADING_ALGO, EVENT_SPREADTRADING_ALGOLOG)
+from .stAlgo import SniperAlgo
 
 
 ########################################################################
@@ -121,6 +123,9 @@ class StDataEngine(object):
         # 初始化价差
         spread.initSpread()
         
+        self.putSpreadTickEvent(spread)
+        self.putSpreadPosEvent(spread)
+        
         # 返回结果
         result = True
         msg = u'%s价差创建成功' %spread.name
@@ -145,7 +150,12 @@ class StDataEngine(object):
         spread = self.vtSymbolSpreadDict[tick.vtSymbol]
         spread.calculatePrice()
         
-        # 推送价差行情更新        
+        # 发出事件
+        self.putSpreadTickEvent(spread)
+    
+    #----------------------------------------------------------------------
+    def putSpreadTickEvent(self, spread):
+        """发出价差行情更新事件"""
         event1 = Event(EVENT_SPREADTRADING_TICK+spread.name)
         event1.dict_['data'] = spread
         self.eventEngine.put(event1)
@@ -215,13 +225,19 @@ class StDataEngine(object):
         spread.calculatePos()
         
         # 推送价差持仓更新
+        self.putSpreadPosEvent(spread)
+        
+    #----------------------------------------------------------------------
+    def putSpreadPosEvent(self, spread):
+        """发出价差持仓事件"""
         event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
         event1.dict_['data'] = spread
         self.eventEngine.put(event1)
-        
+    
         event2 = Event(EVENT_SPREADTRADING_POS)
         event2.dict_['data'] = spread
-        self.eventEngine.put(event2)        
+        self.eventEngine.put(event2)         
+        
     
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -236,6 +252,7 @@ class StDataEngine(object):
         contract = self.mainEngine.getContract(vtSymbol)
         if not contract:
             self.writeLog(u'订阅行情失败，找不到该合约%s' %vtSymbol)
+            return
         
         req = VtSubscribeReq()
         req.symbol = contract.symbol
@@ -254,18 +271,21 @@ class StDataEngine(object):
         self.eventEngine.put(event)
         
     #----------------------------------------------------------------------
-    def stop(self):
-        """停止"""
-        pass
+    def getAllSpreads(self):
+        """获取所有的价差"""
+        return self.spreadDict.values() 
 
     
 ########################################################################
 class StAlgoEngine(object):
     """价差算法交易引擎"""
+    algoFileName = 'SpreadTradingAlgo.vt'
+    algoFilePath = getTempPath(algoFileName)
 
     #----------------------------------------------------------------------
-    def __init__(self, mainEngine, eventEngine):
+    def __init__(self, dataEngine, mainEngine, eventEngine):
         """Constructor"""
+        self.dataEngine = dataEngine
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         
@@ -387,6 +407,122 @@ class StAlgoEngine(object):
         vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_CLOSE, price, volume, payup)
         return [vtOrderID]
     
+    #----------------------------------------------------------------------
+    def putAlgoEvent(self, algo):
+        """发出算法状态更新事件"""
+        event = Event(EVENT_SPREADTRADING_ALGO+algo.name)
+        self.eventEngine.put(event)
+        
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """输出日志"""
+        log = VtLogData()
+        log.logContent = content
+        
+        event = Event(EVENT_SPREADTRADING_ALGOLOG)
+        event.dict_['data'] = log
+        
+        self.eventEngine.put(event)
+        
+    #----------------------------------------------------------------------
+    def saveSetting(self):
+        """保存算法配置"""
+        setting = {}
+        for algo in self.algoDict.values():
+            setting[algo.spreadName] = algo.getAlgoParams()
+            
+        f = shelve.open(self.algoFilePath)
+        f['setting'] = setting
+        f.close()
+        
+    #----------------------------------------------------------------------
+    def loadSetting(self):
+        """加载算法配置"""
+        # 创建算法对象
+        l = self.dataEngine.getAllSpreads()
+        for spread in l:
+            self.algoDict[spread.name] = SniperAlgo(self, spread)
+        
+        # 加载配置
+        f = shelve.open(self.algoFilePath)
+        setting = f.get('setting', None)
+        f.close()
+        
+        if not setting:
+            return
+        
+        for algo in self.algoDict.values():
+            if algo.spreadName in setting:
+                d = setting[algo.spreadName]
+                algo.setAlgoParams(d)
+        
+    #----------------------------------------------------------------------
+    def stopAll(self):
+        """停止全部算法"""
+        for algo in self.algoDict.values():
+            algo.stop()
+            
+    #----------------------------------------------------------------------
+    def startAlgo(self, spreadName):
+        """启动算法"""
+        algo = self.algoDict[spreadName]
+        algoActive = algo.start()
+        return algoActive
+    
+    #----------------------------------------------------------------------
+    def stopAlgo(self, spreadName):
+        """停止算法"""
+        algo = self.algoDict[spreadName]
+        algoActive = algo.stop()
+        return algoActive
+    
+    #----------------------------------------------------------------------
+    def getAllAlgoParams(self):
+        """获取所有算法的参数"""
+        return [algo.getAlgoParams() for algo in self.algoDict.values()]
+    
+    #----------------------------------------------------------------------
+    def setAlgoBuyPrice(self, spreadName, buyPrice):
+        """设置算法买开价格"""
+        algo = self.algoDict[spreadName]
+        algo.setBuyPrice(buyPrice)
+        
+    #----------------------------------------------------------------------
+    def setAlgoSellPrice(self, spreadName, sellPrice):
+        """设置算法卖平价格"""
+        algo = self.algoDict[spreadName]
+        algo.setSellPrice(sellPrice)
+        
+    #----------------------------------------------------------------------
+    def setAlgoShortPrice(self, spreadName, shortPrice):
+        """设置算法卖开价格"""
+        algo = self.algoDict[spreadName]
+        algo.setShortPrice(shortPrice)
+        
+    #----------------------------------------------------------------------
+    def setAlgoCoverPrice(self, spreadName, coverPrice):
+        """设置算法买平价格"""
+        algo = self.algoDict[spreadName]
+        algo.setCoverPrice(coverPrice)
+    
+    #----------------------------------------------------------------------
+    def setAlgoMode(self, spreadName, mode):
+        """设置算法工作模式"""
+        algo = self.algoDict[spreadName]
+        algo.setMode(mode)
+        
+    #----------------------------------------------------------------------
+    def setAlgoMaxOrderSize(self, spreadName, maxOrderSize):
+        """设置算法单笔委托限制"""
+        algo = self.algoDict[spreadName]
+        algo.setMaxOrderSize(maxOrderSize)
+        
+    #----------------------------------------------------------------------
+    def setAlgoMaxPosSize(self, spreadName, maxPosSize):
+        """设置算法持仓限制"""
+        algo = self.algoDict[spreadName]
+        algo.setMaxPosSize(maxPosSize)
+
 
 ########################################################################
 class StEngine(object):
@@ -399,12 +535,21 @@ class StEngine(object):
         self.eventEngine = eventEngine
         
         self.dataEngine = StDataEngine(mainEngine, eventEngine)
-        self.algoEngine = StAlgoEngine(mainEngine, eventEngine)
+        self.algoEngine = StAlgoEngine(self.dataEngine, mainEngine, eventEngine)
         
     #----------------------------------------------------------------------
-    def loadSetting(self):
-        """"""
+    def init(self):
+        """初始化"""
         self.dataEngine.loadSetting()
+        self.algoEngine.loadSetting()
+        
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止"""
+        self.dataEngine.saveSetting()
+        
+        self.algoEngine.stopAll()
+        self.algoEngine.saveSetting()
         
         
         

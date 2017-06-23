@@ -13,6 +13,8 @@ from vnpy.trader.vtConstant import (EMPTY_INT, EMPTY_FLOAT,
 EVENT_SPREADTRADING_TICK = 'eSpreadTradingTick.'
 EVENT_SPREADTRADING_POS = 'eSpreadTradingPos.'
 EVENT_SPREADTRADING_LOG = 'eSpreadTradingLog'
+EVENT_SPREADTRADING_ALGO = 'eSpreadTradingAlgo.'
+EVENT_SPREADTRADING_ALGOLOG = 'eSpreadTradingAlgoLog'
 
 
 
