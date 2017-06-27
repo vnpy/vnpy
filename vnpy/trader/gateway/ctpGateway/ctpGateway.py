@@ -329,10 +329,6 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
-        # 忽略成交量为0的无效tick数据
-        if not data['Volume']:
-            return
-        
         # 创建对象
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
@@ -710,7 +706,7 @@ class CtpTdApi(TdApi):
         pos.positionProfit += data['PositionProfit']
         
         # 计算持仓均价
-        if pos.position:
+        if pos.position and pos.symbol in self.symbolSizeDict:
             size = self.symbolSizeDict[pos.symbol]
             pos.price = (cost + data['PositionCost']) / (pos.position * size)
         
