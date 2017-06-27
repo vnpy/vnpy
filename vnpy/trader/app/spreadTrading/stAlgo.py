@@ -282,21 +282,21 @@ class SniperAlgo(StAlgoTemplate):
     #----------------------------------------------------------------------
     def start(self):
         """启动"""
+        if not self.active:
+            self.quoteCount = 0
+            self.hedgeCount = 0
+            
         self.active = True
-        
-        self.quoteCount = 0
-        self.hedgeCount = 0
-        
         return self.active
     
     #----------------------------------------------------------------------
     def stop(self):
         """停止"""
-        self.active = False
-        
-        self.hedgingTaskDict.clear()
-        self.cancelAllOrders()
-        
+        if self.active:
+            self.hedgingTaskDict.clear()
+            self.cancelAllOrders()
+           
+        self.active = False        
         return self.active
     
     #----------------------------------------------------------------------

@@ -319,16 +319,25 @@ class StActiveButton(QtWidgets.QPushButton):
     def buttonClicked(self):
         """改变运行模式"""
         if self.active:
-            algoActive = self.algoEngine.stopAlgo(self.spreadName)
-            
-            if not algoActive:
-                self.setStopped()
+            self.stop
         else:
-            algoActive = self.algoEngine.startAlgo(self.spreadName)
-            
-            if algoActive:
-                self.setStarted()
+            self.start()
     
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止"""
+        algoActive = self.algoEngine.stopAlgo(self.spreadName)
+        if not algoActive:
+            self.setStopped()        
+            
+    #----------------------------------------------------------------------
+    def start(self):
+        """启动"""
+        algoActive = self.algoEngine.startAlgo(self.spreadName)
+        
+        if algoActive:
+            self.setStarted()        
+        
     #----------------------------------------------------------------------
     def setStarted(self):
         """算法启动"""
@@ -350,7 +359,7 @@ class StActiveButton(QtWidgets.QPushButton):
 
 ########################################################################
 class StAlgoManager(QtWidgets.QTableWidget):
-    """"""
+    """价差算法管理组件"""
 
     #----------------------------------------------------------------------
     def __init__(self, stEngine, parent=None):
@@ -358,6 +367,8 @@ class StAlgoManager(QtWidgets.QTableWidget):
         super(StAlgoManager, self).__init__(parent)
         
         self.algoEngine = stEngine.algoEngine
+        
+        self.buttonActiveDict = {}       # spreadName: buttonActive
         
         self.initUi()
         
@@ -413,6 +424,14 @@ class StAlgoManager(QtWidgets.QTableWidget):
             self.setCellWidget(row, 9, buttonActive)
             
             buttonActive.signalActive.connect(comboMode.algoActiveChanged)
+            
+            self.buttonActiveDict[d['spreadName']] = buttonActive
+            
+    #----------------------------------------------------------------------
+    def stopAll(self):
+        """停止所有算法"""
+        for button in self.buttonActiveDict.values():
+            button.stop()     
 
 
 ########################################################################
@@ -450,16 +469,19 @@ class StManager(QtWidgets.QWidget):
         """初始化界面"""
         self.setWindowTitle(u'价差交易')
         
-        # 创建按钮
-        buttonInit = QtWidgets.QPushButton(u'初始化')
-        buttonInit.clicked.connect(self.init)
-        
         # 创建组件
         tickMonitor = StTickMonitor(self.mainEngine, self.eventEngine)
         posMonitor = StPosMonitor(self.mainEngine, self.eventEngine)
         logMonitor = StLogMonitor(self.mainEngine, self.eventEngine)
         self.algoManager = StAlgoManager(self.stEngine)
         algoLogMonitor = StAlgoLogMonitor(self.mainEngine, self.eventEngine)
+        
+        # 创建按钮
+        buttonInit = QtWidgets.QPushButton(u'初始化')
+        buttonInit.clicked.connect(self.init)       
+        
+        buttonStopAll = QtWidgets.QPushButton(u'全部停止')
+        buttonStopAll.clicked.connect(self.algoManager.stopAll)
         
         # 创建集合
         groupTick = StGroup(tickMonitor, u'价差行情')
@@ -472,6 +494,7 @@ class StManager(QtWidgets.QWidget):
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(buttonInit)
         hbox.addStretch()
+        hbox.addWidget(buttonStopAll)
         
         grid = QtWidgets.QGridLayout()
         grid.addLayout(hbox, 0, 0, 1, 2)
