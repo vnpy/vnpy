@@ -8,7 +8,8 @@ from vnpy.event import EventEngine2
 from vnpy.trader.vtEvent import EVENT_LOG
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.gateway import ctpGateway
-from vnpy.trader.app import dataRecorder
+from vnpy.trader.app import ctaStrategy
+from vnpy.trader.app.ctaStrategy.ctaBase import EVENT_CTA_LOG
 
 #----------------------------------------------------------------------
 def printLog(content):
@@ -27,21 +28,33 @@ def processLogEvent(event):
 def runChildProcess():
     """子进程运行函数"""
     print '-'*20
-    printLog(u'启动行情记录运行子进程')
+    printLog(u'启动CTA策略运行子进程')
     
     ee = EventEngine2()
     printLog(u'事件引擎创建成功')
     
     me = MainEngine(ee)
     me.addGateway(ctpGateway)
-    me.addApp(dataRecorder)
+    me.addApp(ctaStrategy)
     printLog(u'主引擎创建成功')
     
     ee.register(EVENT_LOG, processLogEvent)
+    ee.register(EVENT_CTA_LOG, processLogEvent)
     printLog(u'注册日志事件监听')
     
     me.connect('CTP')
     printLog(u'连接CTP接口')
+    
+    cta = me.appDict[ctaStrategy.appName]
+    
+    cta.loadSetting()
+    printLog(u'CTA策略载入成功')
+    
+    cta.initAll()
+    printLog(u'CTA策略初始化成功')
+    
+    cta.startAll()
+    printLog(u'CTA策略启动成功')
     
     while True:
         sleep(1)
@@ -49,7 +62,7 @@ def runChildProcess():
 #----------------------------------------------------------------------
 def runParentProcess():
     """父进程运行函数"""
-    printLog(u'启动行情记录守护父进程')
+    printLog(u'启动CTA策略守护父进程')
     
     DAY_START = time(8, 45)         # 日盘启动和停止时间
     DAY_END = time(15, 30)

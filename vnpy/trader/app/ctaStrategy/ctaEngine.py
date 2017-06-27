@@ -463,7 +463,25 @@ class CtaEngine(object):
                     if so.strategy is strategy:
                         self.cancelStopOrder(stopOrderID)   
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)        
+            self.writeCtaLog(u'策略实例不存在：%s' %name)    
+            
+    #----------------------------------------------------------------------
+    def initAll(self):
+        """全部初始化"""
+        for name in self.strategyDict.keys():
+            self.initStrategy(name)    
+            
+    #----------------------------------------------------------------------
+    def startAll(self):
+        """全部启动"""
+        for name in self.strategyDict.keys():
+            self.startStrategy(name)
+            
+    #----------------------------------------------------------------------
+    def stopAll(self):
+        """全部停止"""
+        for name in self.strategyDict.keys():
+            self.stopStrategy(name)    
     
     #----------------------------------------------------------------------
     def saveSetting(self):

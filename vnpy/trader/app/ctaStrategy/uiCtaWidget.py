@@ -228,20 +228,17 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def initAll(self):
         """全部初始化"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.initStrategy(name)    
+        self.ctaEngine.initAll()    
             
     #----------------------------------------------------------------------
     def startAll(self):
         """全部启动"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.startStrategy(name)
+        self.ctaEngine.startAll()
             
     #----------------------------------------------------------------------
     def stopAll(self):
         """全部停止"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.stopStrategy(name)
+        self.ctaEngine.stopAll()
             
     #----------------------------------------------------------------------
     def load(self):
