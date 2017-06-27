@@ -11,7 +11,8 @@ from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_TRADE, EVENT_POSITION,
 from vnpy.trader.vtObject import (VtSubscribeReq, VtOrderReq, 
                                   VtCancelOrderReq, VtLogData)
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
-                                    OFFSET_OPEN, OFFSET_CLOSE)
+                                    OFFSET_OPEN, OFFSET_CLOSE, 
+                                    PRICETYPE_LIMITPRICE)
 
 from .stBase import (StLeg, StSpread, EVENT_SPREADTRADING_TICK,
                      EVENT_SPREADTRADING_POS, EVENT_SPREADTRADING_LOG,
@@ -358,6 +359,7 @@ class StAlgoEngine(object):
         req.direction = direction
         req.offset = offset
         req.volume = volume
+        req.priceType = PRICETYPE_LIMITPRICE
         
         if direction == DIRECTION_LONG:
             req.price = price + payup * contract.priceTick

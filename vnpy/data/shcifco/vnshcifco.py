@@ -7,7 +7,7 @@ HTTP_OK = 200
 
 
 ########################################################################
-class DataApi(object):
+class ShcifcoApi(object):
     """数据接口"""
 
     #----------------------------------------------------------------------
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     port  = '10102'
     token = 'testd2cda34b2d317779e812eb84ee4224a6_123456'
     
-    api = DataApi(ip, port, token)
+    api = ShcifcoApi(ip, port, token)
     api.getData(path, params)
     
     print api.getLastTick('cu1709')
