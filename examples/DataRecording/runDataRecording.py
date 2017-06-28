@@ -20,7 +20,10 @@ def printLog(content):
 def processLogEvent(event):
     """处理日志事件"""
     log = event.dict_['data']
-    content = '%s:%s' %(log.gatewayName, log.logContent)
+    if log.gatewayName:
+        content = '%s:%s' %(log.gatewayName, log.logContent)
+    else:
+        content = '%s:%s' %('MainEngine', log.logContent)
     printLog(content)
     
 #----------------------------------------------------------------------
@@ -88,4 +91,5 @@ def runParentProcess():
 
 
 if __name__ == '__main__':
-    runParentProcess()
+    runChildProcess()
+    #runParentProcess()

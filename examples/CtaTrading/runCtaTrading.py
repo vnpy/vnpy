@@ -21,7 +21,17 @@ def printLog(content):
 def processLogEvent(event):
     """处理日志事件"""
     log = event.dict_['data']
-    content = '%s:%s' %(log.gatewayName, log.logContent)
+    if log.gatewayName:
+        content = '%s:%s' %(log.gatewayName, log.logContent)
+    else:
+        content = '%s:%s' %('MainEngine', log.logContent)
+    printLog(content)
+    
+#----------------------------------------------------------------------
+def processCtaLogEvent(event):
+    """处理CTA模块日志事件"""
+    log = event.dict_['data']
+    content = '%s:%s' %('CTA Engine', log.logContent)
     printLog(content)
     
 #----------------------------------------------------------------------
@@ -39,11 +49,13 @@ def runChildProcess():
     printLog(u'主引擎创建成功')
     
     ee.register(EVENT_LOG, processLogEvent)
-    ee.register(EVENT_CTA_LOG, processLogEvent)
+    ee.register(EVENT_CTA_LOG, processCtaLogEvent)
     printLog(u'注册日志事件监听')
     
     me.connect('CTP')
     printLog(u'连接CTP接口')
+    
+    sleep(5)    # 等待CTP接口初始化
     
     cta = me.appDict[ctaStrategy.appName]
     
@@ -101,4 +113,7 @@ def runParentProcess():
 
 
 if __name__ == '__main__':
-    runParentProcess()
+    runChildProcess()
+    
+    # 尽管同样实现了无人值守，但强烈建议每天启动时人工检查，为自己的PNL负责
+    # runParentProcess()

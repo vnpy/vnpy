@@ -6,7 +6,8 @@
 使用DR_setting.json来配置需要收集的合约，以及主力合约代码。
 '''
 
-import json
+#import json
+import csv
 import os
 import copy
 from collections import OrderedDict
@@ -27,7 +28,7 @@ from vnpy.trader.app.dataRecorder.language import text
 class DrEngine(object):
     """数据记录引擎"""
     
-    settingFileName = 'DR_setting.json'
+    settingFileName = 'DR_setting.csv'
     path = os.path.abspath(os.path.dirname(__file__))
     settingFileName = os.path.join(path, settingFileName)    
 
@@ -57,84 +58,58 @@ class DrEngine(object):
         # 载入设置，订阅行情
         self.loadSetting()
         
+        # 启动数据插入线程
+        self.start()
+    
+        # 注册事件监听
+        self.registerEvent()  
+        
     #----------------------------------------------------------------------
     def loadSetting(self):
-        """载入设置"""
+        """加载配置"""
         with open(self.settingFileName) as f:
-            drSetting = json.load(f)
+            drSetting = csv.DictReader(f)
             
-            # 如果working设为False则不启动行情记录功能
-            working = drSetting['working']
-            if not working:
-                return
-            
-            if 'tick' in drSetting:
-                l = drSetting['tick']
+            for d in drSetting:
+                # 读取配置
+                gatewayName = d['gateway']
+                symbol = d['symbol']
+                exchange = d['symbol']
+                currency = d['currency']
+                productClass = d['product']
+                recordTick = d['tick']
+                recordBar = d['bar']
+                activeSymbol = d['active']
                 
-                for setting in l:
-                    symbol = setting[0]
+                if exchange:
+                    vtSymbol = '.'.join([symbol, exchange])
+                else:
                     vtSymbol = symbol
-
-                    req = VtSubscribeReq()
-                    req.symbol = setting[0]
-                    
-                    # 针对LTS和IB接口，订阅行情需要交易所代码
-                    if len(setting)>=3:
-                        req.exchange = setting[2]
-                        vtSymbol = '.'.join([symbol, req.exchange])
-                    
-                    # 针对IB接口，订阅行情需要货币和产品类型
-                    if len(setting)>=5:
-                        req.currency = setting[3]
-                        req.productClass = setting[4]
-                    
-                    self.mainEngine.subscribe(req, setting[1])
-                    
-                    tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
-                    self.tickDict[vtSymbol] = tick
-                    
-            if 'bar' in drSetting:
-                l = drSetting['bar']
                 
-                for setting in l:
-                    symbol = setting[0]
-                    vtSymbol = symbol
-                    
-                    req = VtSubscribeReq()
-                    req.symbol = symbol                    
-
-                    if len(setting)>=3:
-                        req.exchange = setting[2]
-                        vtSymbol = '.'.join([symbol, req.exchange])
-
-                    if len(setting)>=5:
-                        req.currency = setting[3]
-                        req.productClass = setting[4]                    
-                    
-                    self.mainEngine.subscribe(req, setting[1])  
-                    
-                    bar = VtBarData() 
-                    self.barDict[vtSymbol] = bar
-                    
-            if 'active' in drSetting:
-                d = drSetting['active']
+                # 订阅行情
+                req = VtSubscribeReq()
+                req.symbol = symbol
+                req.exchange = exchange
+                req.currency = currency
+                req.productClass = productClass
+                self.mainEngine.subscribe(req, gatewayName)
                 
-                # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
-                for activeSymbol, vtSymbol in d.items():
+                # 设置需要记录的数据
+                if recordTick:
+                    self.tickDict[vtSymbol] = VtTickData()
+                    
+                if recordBar:
+                    self.barDict[vtSymbol] = VtBarData()
+                    
+                if activeSymbol:
                     self.activeSymbolDict[vtSymbol] = activeSymbol
-            
-            # 启动数据插入线程
-            self.start()
-            
-            # 注册事件监听
-            self.registerEvent()    
 
     #----------------------------------------------------------------------
     def procecssTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
         vtSymbol = tick.vtSymbol
-
+        
         # 转化Tick格式
         if not tick.datetime:
             tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            

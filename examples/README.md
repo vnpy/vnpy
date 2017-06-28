@@ -6,6 +6,6 @@
 
 * DataRecording：全自动行情记录工具（无需用户每日定时重启）
 
-* CtaTrading：纯命令行模式的CTA策略交易（尽管同样实现了无人值守，但强烈建议每天启动时人工检查，为自己的PNL负责）
+* CtaTrading：无图形界面模式的CTA策略交易
 
 * CtaBacktesting：CTA策略的回测和优化
