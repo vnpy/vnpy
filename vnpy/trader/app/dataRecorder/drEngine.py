@@ -50,6 +50,9 @@ class DrEngine(object):
         # K线对象字典
         self.barDict = {}
         
+        # 配置字典
+        self.settingDict = OrderedDict()
+        
         # 负责执行数据库插入的单独线程相关
         self.active = False                     # 工作状态
         self.queue = Queue()                    # 队列
@@ -96,6 +99,7 @@ class DrEngine(object):
                 
                 # 设置需要记录的数据
                 if recordTick:
+                    tick = VtTickData()
                     self.tickDict[vtSymbol] = VtTickData()
                     
                 if recordBar:
@@ -103,6 +107,14 @@ class DrEngine(object):
                     
                 if activeSymbol:
                     self.activeSymbolDict[vtSymbol] = activeSymbol
+                    
+                # 保存配置到缓存中
+                self.settingDict[vtSymbol] = d
+                
+    #----------------------------------------------------------------------
+    def getSetting(self):
+        """获取配置"""
+        return self.settingDict
 
     #----------------------------------------------------------------------
     def procecssTickEvent(self, event):
