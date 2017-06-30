@@ -93,10 +93,10 @@ class StDataEngine(object):
         activeSetting = setting['activeLeg']
         
         activeLeg = StLeg()
-        activeLeg.vtSymbol = activeSetting['vtSymbol']
-        activeLeg.ratio = activeSetting['ratio']
-        activeLeg.multiplier = activeSetting['multiplier']
-        activeLeg.payup = activeSetting['payup']
+        activeLeg.vtSymbol = str(activeSetting['vtSymbol'])
+        activeLeg.ratio = float(activeSetting['ratio'])
+        activeLeg.multiplier = float(activeSetting['multiplier'])
+        activeLeg.payup = int(activeSetting['payup'])
         
         spread.addActiveLeg(activeLeg)
         self.legDict[activeLeg.vtSymbol] = activeLeg
@@ -110,10 +110,10 @@ class StDataEngine(object):
         
         for d in passiveSettingList:
             passiveLeg = StLeg()
-            passiveLeg.vtSymbol = d['vtSymbol']
-            passiveLeg.ratio = d['ratio']
-            passiveLeg.multiplier = d['multiplier']
-            passiveLeg.payup = d['payup']
+            passiveLeg.vtSymbol = str(d['vtSymbol'])
+            passiveLeg.ratio = float(d['ratio'])
+            passiveLeg.multiplier = float(d['multiplier'])
+            passiveLeg.payup = int(d['payup'])
             
             spread.addPassiveLeg(passiveLeg)
             self.legDict[passiveLeg.vtSymbol] = passiveLeg
@@ -176,7 +176,7 @@ class StDataEngine(object):
         # 更新腿持仓
         leg = self.legDict[trade.vtSymbol]
         direction = trade.direction
-        offset = trade.offst
+        offset = trade.offset
         
         if direction == DIRECTION_LONG:
             if offset == OFFSET_OPEN:
@@ -212,7 +212,7 @@ class StDataEngine(object):
             return
         
         # 更新腿持仓
-        leg = self.legDict[trade.vtSymbol]
+        leg = self.legDict[pos.vtSymbol]
         direction = pos.direction
         
         if direction == DIRECTION_LONG:
@@ -222,7 +222,7 @@ class StDataEngine(object):
         leg.netPos = leg.longPos - leg.shortPos
         
         # 更新价差持仓
-        spread = self.vtSymbolSpreadDict[trade.vtSymbol]
+        spread = self.vtSymbolSpreadDict[pos.vtSymbol]
         spread.calculatePos()
         
         # 推送价差持仓更新
@@ -327,7 +327,7 @@ class StAlgoEngine(object):
         """处理成交事件"""
         trade = event.dict_['data']
         
-        algo = self.algoDict.get(trade.vtSymbol, None)
+        algo = self.vtSymbolAlgoDict.get(trade.vtSymbol, None)
         if algo:
             algo.updateTrade(trade)
     
@@ -335,8 +335,8 @@ class StAlgoEngine(object):
     def processOrderEvent(self, event):
         """处理委托事件"""
         order = event.dict_['data']
+        algo = self.vtSymbolAlgoDict.get(order.vtSymbol, None)
         
-        algo = self.algoDict.get(order.vtSymbol, None)
         if algo:
             algo.updateOrder(order)
     
@@ -358,7 +358,7 @@ class StAlgoEngine(object):
         req.exchange = contract.exchange
         req.direction = direction
         req.offset = offset
-        req.volume = volume
+        req.volume = int(volume)
         req.priceType = PRICETYPE_LIMITPRICE
         
         if direction == DIRECTION_LONG:
@@ -443,7 +443,12 @@ class StAlgoEngine(object):
         # 创建算法对象
         l = self.dataEngine.getAllSpreads()
         for spread in l:
-            self.algoDict[spread.name] = SniperAlgo(self, spread)
+            algo = SniperAlgo(self, spread)
+            self.algoDict[spread.name] = algo
+            
+            # 保存腿代码和算法对象的映射
+            for leg in spread.allLegs:
+                self.vtSymbolAlgoDict[leg.vtSymbol] = algo
         
         # 加载配置
         f = shelve.open(self.algoFilePath)

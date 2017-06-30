@@ -17,8 +17,7 @@ from vnpy.trader.gateway import (ctpGateway, femasGateway, xspeedGateway,
                                  shzdGateway, huobiGateway, okcoinGateway)
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, dataRecorder,
-                             ctaStrategy, spreadTrading)
+from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
 
 
 #----------------------------------------------------------------------
@@ -43,7 +42,6 @@ def main():
     
     # 添加上层应用
     me.addApp(riskManager)
-    me.addApp(dataRecorder)
     me.addApp(ctaStrategy)
     me.addApp(spreadTrading)
     

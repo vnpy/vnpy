@@ -77,7 +77,7 @@ class DrEngine(object):
                 # 读取配置
                 gatewayName = d['gateway']
                 symbol = d['symbol']
-                exchange = d['symbol']
+                exchange = d['exchange']
                 currency = d['currency']
                 productClass = d['product']
                 recordTick = d['tick']

@@ -5,6 +5,12 @@ import requests
 
 HTTP_OK = 200
 
+PERIOD_1MIN = '1m'
+PERIOD_5MIN = '5m'
+PERIOD_15MIN = '15m'
+PERIOD_60MIN = '60m'
+PERIOD_1DAY = '1d'
+
 
 ########################################################################
 class ShcifcoApi(object):
@@ -38,8 +44,12 @@ class ShcifcoApi(object):
         """获取最新Tick"""
         path = 'lasttick'
         params = {'ids': symbol}
-        data = self.getData(path, params)
         
+        data = self.getData(path, params)
+        if not data:
+            return None
+        
+        data = data.split(';')[0]
         l = data.split(',')
         d = {
             'symbol': l[0],
@@ -58,8 +68,12 @@ class ShcifcoApi(object):
         """获取最新成交价"""
         path = 'lastprice'
         params = {'ids': symbol}
-        data = self.getData(path, params)
         
+        data = self.getData(path, params)
+        if not data:
+            return None
+        
+        data = data.split(';')[0]
         price = float(data)
         return price
     
@@ -67,9 +81,13 @@ class ShcifcoApi(object):
     def getLastBar(self, symbol):
         """获取最新的一分钟K线数据"""
         path = 'lastbar'
-        params = {'ids': symbol}
-        data = self.getData(path, params)
+        params = {'id': symbol}
         
+        data = self.getData(path, params)
+        if not data:
+            return None
+        
+        data = data.split(';')[0]
         l = data.split(',')
         d = {
             'symbol': l[0],
@@ -78,18 +96,19 @@ class ShcifcoApi(object):
             'high': float(l[3]),
             'low': float(l[4]),
             'close': float(l[5]),
-            'volume': int([6])
+            'volume': int(l[6]),
+            'openInterest': int(l[7])
         }
         return d
     
     #----------------------------------------------------------------------
     def getHisBar(self, symbol, num, date='', period=''):
         """获取历史K线数据"""
-        path = 'lastbar'
+        path = 'hisbar'
         
         # 默认参数
         params = {
-            'ids': symbol,
+            'id': symbol,
             'num': num
         }
         # 可选参数
@@ -99,40 +118,31 @@ class ShcifcoApi(object):
             params[period] = period
         
         data = self.getData(path, params)
+        if not data:
+            return None
         
         barList = []        
         l = data.split(';')
         
         for barStr in l:
+            # 过滤某些空数据
+            if ',' not in barStr:
+                continue
+            
             barData = barStr.split(',')
             d = {
                 'symbol': barData[0],
-                'time': barData[1],
-                'open': float(barData[2]),
-                'high': float(barData[3]),
-                'low': float(barData[4]),
-                'close': float(barData[5]),
-                'volume': int([6])
+                'date': barData[1],
+                'time': barData[2],
+                'open': float(barData[3]),
+                'high': float(barData[4]),
+                'low': float(barData[5]),
+                'close': float(barData[6]),
+                'volume': int(barData[7]),
+                'openInterest': int(barData[8])
             }
             barList.append(d)
             
         return barList
         
-    
-if __name__ == "__main__":
-    ip = '101.231.179.199'
-    port  = '10102'
-    token = 'testd2cda34b2d317779e812eb84ee4224a6_123456'
-    
-    api = ShcifcoApi(ip, port, token)
-    api.getData(path, params)
-    
-    print api.getLastTick('cu1709')
-    
-    print api.getLastPrice('cu1709')
-    
-    print api.getLastBar('cu1709')
-    
-    print api.getHisBar('cu1709', 50)
-    
     

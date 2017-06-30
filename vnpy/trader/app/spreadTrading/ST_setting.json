@@ -1,5 +1,26 @@
 [
     {
+        "name": "m.09-01",
+
+        "activeLeg": 
+            {
+                "vtSymbol": "m1709",
+                "ratio": 1,
+                "multiplier": 1.0,
+                "payup": 2
+            },
+
+        "passiveLegs": [
+            {
+                "vtSymbol": "m1801",
+                "ratio": -1,
+                "multiplier": -1.0,
+                "payup": 2
+            }
+        ]
+    },
+
+    {
         "name": "IF.07-09",
 
         "activeLeg": 

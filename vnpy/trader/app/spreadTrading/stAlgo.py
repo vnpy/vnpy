@@ -117,7 +117,8 @@ class StAlgoTemplate(object):
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """输出算法日志"""
-        content = ':'.join([self.spreadName, content])
+        prefix = '  '.join([self.spreadName, self.algoName])
+        content = ':'.join([prefix, content])
         self.algoEngine.writeLog(content)
 
     #----------------------------------------------------------------------
@@ -287,6 +288,8 @@ class SniperAlgo(StAlgoTemplate):
             self.hedgeCount = 0
             
         self.active = True
+        self.writeLog(u'算法启动')
+        
         return self.active
     
     #----------------------------------------------------------------------
@@ -296,7 +299,9 @@ class SniperAlgo(StAlgoTemplate):
             self.hedgingTaskDict.clear()
             self.cancelAllOrders()
            
-        self.active = False        
+        self.active = False   
+        self.writeLog(u'算法停止')
+        
         return self.active
     
     #----------------------------------------------------------------------
@@ -448,7 +453,7 @@ class SniperAlgo(StAlgoTemplate):
         cancelPassive = False
         
         for vtSymbol in self.passiveVtSymbols:
-            if self.legOrderDict[vtSymbol]:
+            if vtSymbol in self.legOrderDict and self.legOrderDict[vtSymbol]:
                 self.cancelLegOrder(vtSymbol)
                 cancelPassive = True
 

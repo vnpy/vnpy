@@ -319,7 +319,7 @@ class StActiveButton(QtWidgets.QPushButton):
     def buttonClicked(self):
         """改变运行模式"""
         if self.active:
-            self.stop
+            self.stop()
         else:
             self.start()
     
@@ -334,7 +334,6 @@ class StActiveButton(QtWidgets.QPushButton):
     def start(self):
         """启动"""
         algoActive = self.algoEngine.startAlgo(self.spreadName)
-        
         if algoActive:
             self.setStarted()        
         
