@@ -15,6 +15,7 @@ from copy import copy
 from threading import Condition
 from Queue import Queue
 from threading import Thread
+from time import sleep
 
 from vnpy.api.okcoin import vnokcoin
 from vnpy.trader.vtGateway import *
@@ -54,16 +55,24 @@ LTC_USD_THISWEEK = 'LTC_USD_THISWEEK'
 LTC_USD_NEXTWEEK = 'LTC_USD_NEXTWEEK'
 LTC_USD_QUARTER = 'LTC_USD_QUARTER'
 
+ETH_USD_SPOT = 'ETH_USD_SPOT'
+ETH_USD_THISWEEK = 'ETH_USD_THISWEEK'
+ETH_USD_NEXTWEEK = 'ETH_USD_NEXTWEEK'
+ETH_USD_QUARTER = 'ETH_USD_QUARTER'
+
 # CNY
 BTC_CNY_SPOT = 'BTC_CNY_SPOT'
 LTC_CNY_SPOT = 'LTC_CNY_SPOT'
+ETH_CNY_SPOT = 'ETH_CNY_SPOT'
 
 # 印射字典
 spotSymbolMap = {}
 spotSymbolMap['ltc_usd'] = LTC_USD_SPOT
 spotSymbolMap['btc_usd'] = BTC_USD_SPOT
+spotSymbolMap['ETH_usd'] = ETH_USD_SPOT
 spotSymbolMap['ltc_cny'] = LTC_CNY_SPOT
 spotSymbolMap['btc_cny'] = BTC_CNY_SPOT
+spotSymbolMap['eth_cny'] = ETH_CNY_SPOT
 spotSymbolMapReverse = {v: k for k, v in spotSymbolMap.items()}
 
 
@@ -75,16 +84,20 @@ channelSymbolMap = {}
 # USD
 channelSymbolMap['ok_sub_spotusd_btc_ticker'] = BTC_USD_SPOT
 channelSymbolMap['ok_sub_spotusd_ltc_ticker'] = LTC_USD_SPOT
+channelSymbolMap['ok_sub_spotusd_eth_ticker'] = ETH_USD_SPOT
 
 channelSymbolMap['ok_sub_spotusd_btc_depth_20'] = BTC_USD_SPOT
 channelSymbolMap['ok_sub_spotusd_ltc_depth_20'] = LTC_USD_SPOT
+channelSymbolMap['ok_sub_spotusd_eth_depth_20'] = ETH_USD_SPOT
 
 # CNY
 channelSymbolMap['ok_sub_spotcny_btc_ticker'] = BTC_CNY_SPOT
 channelSymbolMap['ok_sub_spotcny_ltc_ticker'] = LTC_CNY_SPOT
+channelSymbolMap['ok_sub_spotcny_eth_ticker'] = ETH_CNY_SPOT
 
 channelSymbolMap['ok_sub_spotcny_btc_depth_20'] = BTC_CNY_SPOT
 channelSymbolMap['ok_sub_spotcny_ltc_depth_20'] = LTC_CNY_SPOT
+channelSymbolMap['ok_sub_spotcny_eth_depth_20'] = ETH_CNY_SPOT
 
 
 
@@ -305,17 +318,20 @@ class Api(vnokcoin.OkCoinApi):
         
         self.spotOrderInfo(vnokcoin.TRADING_SYMBOL_LTC, '-1')
         self.spotOrderInfo(vnokcoin.TRADING_SYMBOL_BTC, '-1')
-        
+        self.spotOrderInfo(vnokcoin.TRADING_SYMBOL_ETH, '-1')
+
         # 连接后订阅现货的成交和账户数据
         self.subscribeSpotTrades()
         self.subscribeSpotUserInfo()   
         
         self.subscribeSpotTicker(vnokcoin.SYMBOL_BTC)
         self.subscribeSpotTicker(vnokcoin.SYMBOL_LTC)
-        
+        self.subscribeSpotTicker(vnokcoin.SYMBOL_ETH)
+
         self.subscribeSpotDepth(vnokcoin.SYMBOL_BTC, vnokcoin.DEPTH_20)
         self.subscribeSpotDepth(vnokcoin.SYMBOL_LTC, vnokcoin.DEPTH_20)
-        
+        self.subscribeSpotDepth(vnokcoin.SYMBOL_ETH, vnokcoin.DEPTH_20)
+
         # 如果连接的是USD网站则订阅期货相关回报数据
         if self.currency == vnokcoin.CURRENCY_USD:
             self.subscribeFutureTrades()
@@ -346,10 +362,12 @@ class Api(vnokcoin.OkCoinApi):
         # USD_SPOT
         self.cbDict['ok_sub_spotusd_btc_ticker'] = self.onTicker
         self.cbDict['ok_sub_spotusd_ltc_ticker'] = self.onTicker
-        
+        self.cbDict['ok_sub_spotusd_eth_ticker'] = self.onTicker
+
         self.cbDict['ok_sub_spotusd_btc_depth_20'] = self.onDepth
         self.cbDict['ok_sub_spotusd_ltc_depth_20'] = self.onDepth
-        
+        self.cbDict['ok_sub_spotusd_eth_depth_20'] = self.onDepth
+
         self.cbDict['ok_spotusd_userinfo'] = self.onSpotUserInfo
         self.cbDict['ok_spotusd_orderinfo'] = self.onSpotOrderInfo
         
@@ -362,10 +380,12 @@ class Api(vnokcoin.OkCoinApi):
         # CNY_SPOT
         self.cbDict['ok_sub_spotcny_btc_ticker'] = self.onTicker
         self.cbDict['ok_sub_spotcny_ltc_ticker'] = self.onTicker        
-        
+        self.cbDict['ok_sub_spotcny_eth_ticker'] = self.onTicker
+
         self.cbDict['ok_sub_spotcny_btc_depth_20'] = self.onDepth
         self.cbDict['ok_sub_spotcny_ltc_depth_20'] = self.onDepth
-        
+        self.cbDict['ok_sub_spotcny_eth_depth_20'] = self.onDepth
+
         self.cbDict['ok_spotcny_userinfo'] = self.onSpotUserInfo
         self.cbDict['ok_spotcny_orderinfo'] = self.onSpotOrderInfo
         
@@ -452,7 +472,7 @@ class Api(vnokcoin.OkCoinApi):
         funds = rawData['info']['funds']
         
         # 持仓信息
-        for symbol in ['btc', 'ltc', self.currency]:
+        for symbol in ['btc', 'ltc','eth', self.currency]:
             if symbol in funds['free']:
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
@@ -485,7 +505,7 @@ class Api(vnokcoin.OkCoinApi):
         info = rawData['info']
         
         # 持仓信息
-        for symbol in ['btc', 'ltc', self.currency]:
+        for symbol in ['btc', 'ltc','eth', self.currency]:
             if symbol in info['free']:
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
@@ -616,7 +636,8 @@ class Api(vnokcoin.OkCoinApi):
         
         contractList.append(self.generateSpecificContract(contract, BTC_CNY_SPOT))
         contractList.append(self.generateSpecificContract(contract, LTC_CNY_SPOT))
-        
+        contractList.append(self.generateSpecificContract(contract, ETH_CNY_SPOT))
+
         return contractList
     
     #----------------------------------------------------------------------
@@ -633,7 +654,8 @@ class Api(vnokcoin.OkCoinApi):
         
         contractList.append(self.generateSpecificContract(contract, BTC_USD_SPOT))
         contractList.append(self.generateSpecificContract(contract, LTC_USD_SPOT))
-        
+        contractList.append(self.generateSpecificContract(contract, ETH_USD_SPOT))
+
         # 期货
         contract.productClass = PRODUCT_FUTURES
         
@@ -643,6 +665,9 @@ class Api(vnokcoin.OkCoinApi):
         contractList.append(self.generateSpecificContract(contract, LTC_USD_THISWEEK))
         contractList.append(self.generateSpecificContract(contract, LTC_USD_NEXTWEEK))
         contractList.append(self.generateSpecificContract(contract, LTC_USD_QUARTER))
+        contractList.append(self.generateSpecificContract(contract, ETH_USD_THISWEEK))
+        contractList.append(self.generateSpecificContract(contract, ETH_USD_NEXTWEEK))
+        contractList.append(self.generateSpecificContract(contract, ETH_USD_QUARTER))
         
         return contractList        
     
