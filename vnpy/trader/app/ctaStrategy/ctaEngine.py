@@ -337,7 +337,7 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        barData = self.mainEngine.dbQuery(dbName, collectionName, d)
+        barData = self.mainEngine.dbQuery(dbName, collectionName, d, 'datetime')
         
         l = []
         for d in barData:
@@ -352,7 +352,7 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        tickData = self.mainEngine.dbQuery(dbName, collectionName, d)
+        tickData = self.mainEngine.dbQuery(dbName, collectionName, d, 'datetime')
         
         l = []
         for d in tickData:

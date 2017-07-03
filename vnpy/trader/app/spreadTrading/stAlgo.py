@@ -175,7 +175,8 @@ class SniperAlgo(StAlgoTemplate):
             self.legDict[leg.vtSymbol] = leg
         
         self.hedgingTaskDict = {}           # 被动腿需要对冲的数量字典  vtSymbol:volume
-        self.legOrderDict = {}              # vtSymbol: list of vtOrderID        
+        self.legOrderDict = {}              # vtSymbol: list of vtOrderID       
+        self.orderTradedDict = {}           # vtOrderID: tradedVolume
         
     #----------------------------------------------------------------------
     def updateSpreadTick(self, spread):
@@ -229,21 +230,30 @@ class SniperAlgo(StAlgoTemplate):
     #----------------------------------------------------------------------
     def updateTrade(self, trade):
         """成交更新"""
-        if not self.active:
-            return
-        
-        if trade.vtSymbol == self.activeVtSymbol:
-            self.newActiveLegTrade(trade)
-        else:
-            self.newPassiveLegTrade(trade)
+        pass
     
     #----------------------------------------------------------------------
     def updateOrder(self, order):
         """委托更新"""
         if not self.active:
             return
+
+        vtOrderID = order.vtOrderID
+        vtSymbol = order.vtSymbol
+        newTradedVolume = order.tradedVolume
+        lastTradedVolume = self.orderTradedDict.get(vtOrderID, 0)
         
-        # 只处理完成委托
+        # 检查是否有新的成交
+        if newTradedVolume > lastTradedVolume:
+            self.orderTradedDict[vtOrderID] = newTradedVolume       # 缓存委托已经成交数量
+            volume = newTradedVolume - lastTradedVolume             # 计算本次成交数量
+            
+            if vtSymbol == self.activeVtSymbol:
+                self.newActiveLegTrade(vtSymbol, order.direction, volume)
+            else:
+                self.newPassiveLegTrade(vtSymbol, order.direction, volume)            
+            
+        # 处理完成委托
         if order.status in self.FINISHED_STATUS:
             vtOrderID = order.vtOrderID
             vtSymbol = order.vtSymbol
@@ -257,7 +267,6 @@ class SniperAlgo(StAlgoTemplate):
             # 检查若是被动腿，且已经没有未完成委托，则执行对冲
             if not orderList and vtSymbol in self.passiveVtSymbols:
                 self.hedgePassiveLeg(vtSymbol)
-                self.writeLog(u'发出新的被动腿%s对冲单' %vtSymbol)
     
     #----------------------------------------------------------------------
     def updateTimer(self):
@@ -283,9 +292,35 @@ class SniperAlgo(StAlgoTemplate):
     #----------------------------------------------------------------------
     def start(self):
         """启动"""
-        if not self.active:
-            self.quoteCount = 0
-            self.hedgeCount = 0
+        # 如果已经运行则直接返回状态
+        if self.active:
+            return self.active
+        
+        # 做多检查
+        if self.mode != self.MODE_SHORTONLY:
+            if self.buyPrice >= self.sellPrice:
+                self.writeLog(u'启动失败，允许多头交易时BuyPrice必须小于SellPrice')
+                return self.active
+            
+        # 做空检查
+        if self.mode != self.MODE_LONGONLY:
+            if self.shortPrice <= self.coverPrice:
+                self.writeLog(u'启动失败，允许空头交易时ShortPrice必须大于CoverPrice')
+                return self.active
+            
+        # 多空检查
+        if self.mode == self.MODE_LONGSHORT:
+            if self.buyPrice >= self.coverPrice:
+                self.writeLog(u'启动失败，允许双向交易时BuyPrice必须小于CoverPrice')
+                return self.active
+            
+            if self.shortPrice <= self.sellPrice:
+                self.writeLog(u'启动失败，允许双向交易时ShortPrice必须大于SellPrice')
+                return self.active
+        
+        # 启动算法
+        self.quoteCount = 0
+        self.hedgeCount = 0
             
         self.active = True
         self.writeLog(u'算法启动')
@@ -339,6 +374,7 @@ class SniperAlgo(StAlgoTemplate):
         """发出主动腿"""        
         spread = self.spread
         
+        # 首先计算不带正负号的价差委托量
         if direction == self.SPREAD_LONG:
             spreadVolume = min(spread.askVolume,
                                self.maxPosSize - spread.netPos,
@@ -359,9 +395,15 @@ class SniperAlgo(StAlgoTemplate):
         if spreadVolume <= 0:
             return
         
+        # 加上价差方向
+        if direction == self.SPREAD_SHORT:
+            spreadVolume = -spreadVolume
+        
+        # 计算主动腿委托量
         leg = self.legDict[self.activeVtSymbol]
         legVolume = spreadVolume * leg.ratio        
         self.sendLegOrder(leg, legVolume)
+        self.writeLog(u'发出新的主动腿%s狙击单' %self.activeVtSymbol)
         
         self.quoteCount = 0         # 重置主动腿报价撤单等待计数
 
@@ -370,11 +412,16 @@ class SniperAlgo(StAlgoTemplate):
         """被动腿对冲"""
         if vtSymbol not in self.hedgingTaskDict:
             return
-        legVolume = self.hedgingTaskDict[vtSymbol]
         
+        orderList = self.legOrderDict.get(vtSymbol, [])
+        if orderList:
+            return
+        
+        legVolume = self.hedgingTaskDict[vtSymbol]
         leg = self.legDict[vtSymbol]
         
         self.sendLegOrder(leg, legVolume)
+        self.writeLog(u'发出新的被动腿%s对冲单' %vtSymbol)
         
     #----------------------------------------------------------------------
     def hedgeAllPassiveLegs(self):
@@ -385,13 +432,19 @@ class SniperAlgo(StAlgoTemplate):
         self.hedgeCount = 0         # 重置被动腿对冲撤单等待计数
         
     #----------------------------------------------------------------------
-    def newActiveLegTrade(self, trade):
+    def newActiveLegTrade(self, vtSymbol, direction, volume):
         """新的主动腿成交"""
-        spread = self.spread
+        # 输出日志
+        self.writeLog(u'主动腿%s成交，方向%s，数量%s' %(vtSymbol, direction, volume))        
+        
+        # 将主动腿成交带上方向
+        if direction == DIRECTION_SHORT:
+            volume = -volume
         
         # 计算主动腿成交后，对应的价差仓位
+        spread = self.spread
         activeRatio = spread.activeLeg.ratio
-        spreadVolume = round(trade.volume / activeRatio)  # 四舍五入求主动腿成交量对应的价差份数
+        spreadVolume = round(volume / activeRatio)  # 四舍五入求主动腿成交量对应的价差份数
         
         # 计算价差新仓位，对应的被动腿需要对冲部分
         for leg in self.spread.passiveLegs:
@@ -402,28 +455,28 @@ class SniperAlgo(StAlgoTemplate):
             else:
                 self.hedgingTaskDict[leg.vtSymbol] += newHedgingTask
         
-        # 输出日志
-        self.writeLog(u'主动腿%s成交，方向%s，数量%s' %(trade.vtSymbol, trade.direction, trade.volume))
+        # 发出被动腿对冲委托
+        self.hedgeAllPassiveLegs()        
     
     #----------------------------------------------------------------------
-    def newPassiveLegTrade(self, trade):
+    def newPassiveLegTrade(self, vtSymbol, direction, volume):
         """新的被动腿成交"""
-        if trade.vtSymbol in self.hedgingTaskDict:
+        if vtSymbol in self.hedgingTaskDict:
             # 计算完成的对冲数量
-            if trade.direction == DIRECTION_LONG:
-                hedgedVolume = trade.volume
+            if direction == DIRECTION_LONG:
+                hedgedVolume = volume
             else:
-                hedgedVolume = -trade.volume
+                hedgedVolume = -volume
                 
             # 计算剩余尚未完成的数量
-            self.hedgingTaskDict[trade.vtSymbol] -= hedgedVolume
+            self.hedgingTaskDict[vtSymbol] -= hedgedVolume
             
             # 如果已全部完成，则从字典中移除
-            if not self.hedgingTaskDict[trade.vtSymbol]:
-                del self.hedgingTaskDict[trade.vtSymbol]
+            if not self.hedgingTaskDict[vtSymbol]:
+                del self.hedgingTaskDict[vtSymbol]
                 
         # 输出日志
-        self.writeLog(u'被动腿%s成交，方向%s，数量%s' %(trade.vtSymbol, trade.direction, trade.volume))
+        self.writeLog(u'被动腿%s成交，方向%s，数量%s' %(vtSymbol, direction, volume))
                 
     #----------------------------------------------------------------------
     def cancelLegOrder(self, vtSymbol):
@@ -432,6 +485,8 @@ class SniperAlgo(StAlgoTemplate):
             return
         
         orderList = self.legOrderDict[vtSymbol]
+        if not orderList:
+            return
         
         for vtOrderID in orderList:
             self.algoEngine.cancelOrder(vtOrderID)

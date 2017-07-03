@@ -389,25 +389,45 @@ class StAlgoEngine(object):
     def buy(self, vtSymbol, price, volume, payup=0):
         """买入"""
         vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_OPEN, price, volume, payup)
-        return [vtOrderID]
+        l = []
+        
+        if vtOrderID:
+            l.append(vtOrderID)
+
+        return l
     
     #----------------------------------------------------------------------
     def sell(self, vtSymbol, price, volume, payup=0):
         """卖出"""
         vtOrderID = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_CLOSE, price, volume, payup)
-        return [vtOrderID]
+        l = []
+        
+        if vtOrderID:
+            l.append(vtOrderID)
+
+        return l
     
     #----------------------------------------------------------------------
     def short(self, vtSymbol, price, volume, payup=0):
         """卖空"""
         vtOrderID = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_OPEN, price, volume, payup)
-        return [vtOrderID]
+        l = []
+        
+        if vtOrderID:
+            l.append(vtOrderID)
+
+        return l
     
     #----------------------------------------------------------------------
     def cover(self, vtSymbol, price, volume, payup=0):
         """平空"""
         vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_CLOSE, price, volume, payup)
-        return [vtOrderID]
+        l = []
+        
+        if vtOrderID:
+            l.append(vtOrderID)
+
+        return l
     
     #----------------------------------------------------------------------
     def putAlgoEvent(self, algo):

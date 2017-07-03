@@ -149,6 +149,8 @@ class StSpread(object):
                 self.shortPos = min(self.shortPos, legAdjustedShortPos)
         
         # 计算净仓位
+        self.longPos = int(self.longPos)
+        self.shortPos = int(self.shortPos)
         self.netPos = self.longPos - self.shortPos
     
     #----------------------------------------------------------------------

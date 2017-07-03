@@ -144,5 +144,4 @@ class ShcifcoApi(object):
             barList.append(d)
             
         return barList
-        
-    
+

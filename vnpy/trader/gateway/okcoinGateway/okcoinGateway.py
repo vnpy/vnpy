@@ -11,6 +11,7 @@ vn.okcoin的gateway接入
 import os
 import json
 from datetime import datetime
+from time import sleep
 from copy import copy
 from threading import Condition
 from Queue import Queue

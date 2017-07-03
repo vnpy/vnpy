@@ -33,7 +33,7 @@ class StTickMonitor(BasicMonitor):
         d['askPrice'] = {'chinese':u'卖价', 'cellType':AskCell}
         d['askVolume'] = {'chinese':u'卖量', 'cellType':AskCell}
         d['time'] = {'chinese':u'时间', 'cellType':BasicCell}
-        d['symbol'] = {'chinese':u'代码', 'cellType':BasicCell}
+        d['symbol'] = {'chinese':u'价差公式', 'cellType':BasicCell}
         self.setHeaderDict(d)
     
         self.setDataKey('name')

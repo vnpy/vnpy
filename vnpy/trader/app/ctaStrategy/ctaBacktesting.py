@@ -139,7 +139,7 @@ class BacktestingEngine(object):
         # 载入初始化需要用的数据
         flt = {'datetime':{'$gte':self.dataStartDate,
                            '$lt':self.strategyStartDate}}        
-        initCursor = collection.find(flt)
+        initCursor = collection.find(flt).sort('datetime')
         
         # 将数据从查询指针中读取出，并生成列表
         self.initData = []              # 清空initData列表
@@ -154,7 +154,7 @@ class BacktestingEngine(object):
         else:
             flt = {'datetime':{'$gte':self.strategyStartDate,
                                '$lte':self.dataEndDate}}  
-        self.dbCursor = collection.find(flt)
+        self.dbCursor = collection.find(flt).sort('datetime')
         
         self.output(u'载入完成，数据量：%s' %(initCursor.count() + self.dbCursor.count()))
         
