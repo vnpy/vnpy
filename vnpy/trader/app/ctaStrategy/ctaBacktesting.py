@@ -139,7 +139,7 @@ class BacktestingEngine(object):
         # 载入初始化需要用的数据
         flt = {'datetime':{'$gte':self.dataStartDate,
                            '$lt':self.strategyStartDate}}        
-        initCursor = collection.find(flt)
+        initCursor = collection.find(flt).sort('datetime')
         
         # 将数据从查询指针中读取出，并生成列表
         self.initData = []              # 清空initData列表
@@ -154,7 +154,7 @@ class BacktestingEngine(object):
         else:
             flt = {'datetime':{'$gte':self.strategyStartDate,
                                '$lte':self.dataEndDate}}  
-        self.dbCursor = collection.find(flt)
+        self.dbCursor = collection.find(flt).sort('datetime')
         
         self.output(u'载入完成，数据量：%s' %(initCursor.count() + self.dbCursor.count()))
         
@@ -812,7 +812,7 @@ class BacktestingEngine(object):
             l.append(pool.apply_async(optimize, (strategyClass, setting,
                                                  targetName, self.mode, 
                                                  self.startDate, self.initDays, self.endDate,
-                                                 self.slippage, self.rate, self.size,
+                                                 self.slippage, self.rate, self.size, self.priceTick,
                                                  self.dbName, self.symbol)))
         pool.close()
         pool.join()
@@ -929,7 +929,7 @@ def formatNumber(n):
 #----------------------------------------------------------------------
 def optimize(strategyClass, setting, targetName,
              mode, startDate, initDays, endDate,
-             slippage, rate, size,
+             slippage, rate, size, priceTick,
              dbName, symbol):
     """多进程优化时跑在每个进程中运行的函数"""
     engine = BacktestingEngine()
@@ -939,6 +939,7 @@ def optimize(strategyClass, setting, targetName,
     engine.setSlippage(slippage)
     engine.setRate(rate)
     engine.setSize(size)
+    engine.setPriceTick(priceTick)
     engine.setDatabase(dbName, symbol)
     
     engine.initStrategy(strategyClass, setting)

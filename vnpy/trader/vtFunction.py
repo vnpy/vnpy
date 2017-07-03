@@ -64,5 +64,20 @@ def getTempPath(name):
     path = os.path.join(tempPath, name)
     return path
     
+#----------------------------------------------------------------------
+def getJsonPath(name, moduleFile):
+    """
+    获取JSON配置文件的路径：
+    1. 优先从当前工作目录查找JSON文件
+    2. 若无法找到则前往模块所在目录查找
+    """
+    currentFolder = os.getcwd()
+    currentJsonPath = os.path.join(currentFolder, name)
+    if os.path.isfile(currentJsonPath):
+        return currentJsonPath
+    
+    moduleFolder = os.path.abspath(os.path.dirname(moduleFile))
+    moduleJsonPath = os.path.join(moduleFolder, '.', name)
+    return moduleJsonPath
     
     
