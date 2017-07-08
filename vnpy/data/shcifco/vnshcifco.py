@@ -113,9 +113,9 @@ class ShcifcoApi(object):
         }
         # 可选参数
         if date:
-            params[date] = date
+            params['date'] = date
         if period:
-            params[period] = period
+            params['period'] = period
         
         data = self.getData(path, params)
         if not data:
