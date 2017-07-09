@@ -15,9 +15,9 @@ from datetime import datetime
 
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
-from vnpy.trader.vtFunction import getTempPath
-from vnpy.trader.gateway.ctpGateway.language import text
+from vnpy.trader.vtFunction import getJsonPath, getTempPath
 from vnpy.trader.vtConstant import GATEWAYTYPE_FUTURES
+from .language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -97,11 +97,10 @@ class CtpGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
+        filePath = getJsonPath(fileName, __file__)
         
         try:
-            f = file(fileName)
+            f = file(filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName

@@ -15,14 +15,14 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtLogData
+from vnpy.trader.vtFunction import getJsonPath
 
 
 ########################################################################
 class RmEngine(object):
     """风控引擎"""
     settingFileName = 'RM_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)
+    settingFilePath = getJsonPath(settingFileName, __file__)
 
     name = u'风控模块'
 
@@ -64,7 +64,7 @@ class RmEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """读取配置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingFilePath) as f:
             d = json.load(f)
 
             # 设置风控参数
@@ -84,7 +84,7 @@ class RmEngine(object):
     #----------------------------------------------------------------------
     def saveSetting(self):
         """保存风控参数"""
-        with open(self.settingFileName, 'w') as f:
+        with open(self.settingFilePath, 'w') as f:
             # 保存风控参数
             d = {}
 

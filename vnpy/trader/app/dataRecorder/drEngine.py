@@ -17,7 +17,7 @@ from threading import Thread
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
-from vnpy.trader.vtFunction import todayDate
+from vnpy.trader.vtFunction import todayDate, getJsonPath
 from vnpy.trader.vtObject import VtSubscribeReq, VtLogData, VtBarData, VtTickData
 
 from vnpy.trader.app.dataRecorder.drBase import *
@@ -28,9 +28,8 @@ from vnpy.trader.app.dataRecorder.language import text
 class DrEngine(object):
     """数据记录引擎"""
     
-    settingFileName = 'DR_setting.csv'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)    
+    settingFileName = 'DR_setting.json'
+    settingFilePath = getJsonPath(settingFileName, __file__)  
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -66,49 +65,122 @@ class DrEngine(object):
     
         # 注册事件监听
         self.registerEvent()  
-        
+    
     #----------------------------------------------------------------------
     def loadSetting(self):
         """加载配置"""
         with open(self.settingFileName) as f:
-            drSetting = csv.DictReader(f)
-            
-            for d in drSetting:
-                # 读取配置
-                gatewayName = d['gateway']
-                symbol = d['symbol']
-                exchange = d['exchange']
-                currency = d['currency']
-                productClass = d['product']
-                recordTick = d['tick']
-                recordBar = d['bar']
-                activeSymbol = d['active']
-                
-                if exchange:
-                    vtSymbol = '.'.join([symbol, exchange])
-                else:
+            drSetting = json.load(f)
+
+            # 如果working设为False则不启动行情记录功能
+            working = drSetting['working']
+            if not working:
+                return
+
+            if 'tick' in drSetting:
+                l = drSetting['tick']
+
+                for setting in l:
+                    symbol = setting[0]
                     vtSymbol = symbol
-                
-                # 订阅行情
-                req = VtSubscribeReq()
-                req.symbol = symbol
-                req.exchange = exchange
-                req.currency = currency
-                req.productClass = productClass
-                self.mainEngine.subscribe(req, gatewayName)
-                
-                # 设置需要记录的数据
-                if recordTick:
-                    tick = VtTickData()
-                    self.tickDict[vtSymbol] = VtTickData()
-                    
-                if recordBar:
-                    self.barDict[vtSymbol] = VtBarData()
-                    
-                if activeSymbol:
+
+                    req = VtSubscribeReq()
+                    req.symbol = setting[0]
+
+                    # 针对LTS和IB接口，订阅行情需要交易所代码
+                    if len(setting)>=3:
+                        req.exchange = setting[2]
+                        vtSymbol = '.'.join([symbol, req.exchange])
+
+                    # 针对IB接口，订阅行情需要货币和产品类型
+                    if len(setting)>=5:
+                        req.currency = setting[3]
+                        req.productClass = setting[4]
+
+                    self.mainEngine.subscribe(req, setting[1])
+
+                    tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
+                    self.tickDict[vtSymbol] = tick
+
+            if 'bar' in drSetting:
+                l = drSetting['bar']
+
+                for setting in l:
+                    symbol = setting[0]
+                    vtSymbol = symbol
+
+                    req = VtSubscribeReq()
+                    req.symbol = symbol                    
+
+                    if len(setting)>=3:
+                        req.exchange = setting[2]
+                        vtSymbol = '.'.join([symbol, req.exchange])
+
+                    if len(setting)>=5:
+                        req.currency = setting[3]
+                        req.productClass = setting[4]                    
+
+                    self.mainEngine.subscribe(req, setting[1])  
+
+                    bar = VtBarData() 
+                    self.barDict[vtSymbol] = bar
+
+            if 'active' in drSetting:
+                d = drSetting['active']
+
+                # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
+                for activeSymbol, vtSymbol in d.items():
                     self.activeSymbolDict[vtSymbol] = activeSymbol
+
+            # 启动数据插入线程
+            self.start()
+
+            # 注册事件监听
+            self.registerEvent()            
+        
+    
+    ##----------------------------------------------------------------------
+    #def loadCsvSetting(self):
+        #"""加载CSV配置"""
+        #with open(self.settingFileName) as f:
+            #drSetting = csv.DictReader(f)
+            
+            #for d in drSetting:
+                ## 读取配置
+                #gatewayName = d['gateway']
+                #symbol = d['symbol']
+                #exchange = d['exchange']
+                #currency = d['currency']
+                #productClass = d['product']
+                #recordTick = d['tick']
+                #recordBar = d['bar']
+                #activeSymbol = d['active']
+                
+                #if exchange:
+                    #vtSymbol = '.'.join([symbol, exchange])
+                #else:
+                    #vtSymbol = symbol
+                
+                ## 订阅行情
+                #req = VtSubscribeReq()
+                #req.symbol = symbol
+                #req.exchange = exchange
+                #req.currency = currency
+                #req.productClass = productClass
+                #self.mainEngine.subscribe(req, gatewayName)
+                
+                ## 设置需要记录的数据
+                #if recordTick:
+                    #tick = VtTickData()
+                    #self.tickDict[vtSymbol] = VtTickData()
                     
-                # 保存配置到缓存中
+                #if recordBar:
+                    #self.barDict[vtSymbol] = VtBarData()
+                    
+                #if activeSymbol:
+                    #self.activeSymbolDict[vtSymbol] = activeSymbol
+                    
+                ## 保存配置到缓存中
                 self.settingDict[vtSymbol] = d
                 
     #----------------------------------------------------------------------

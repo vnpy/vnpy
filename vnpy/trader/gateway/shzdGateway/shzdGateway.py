@@ -17,6 +17,7 @@ from datetime import datetime
 
 from vnpy.api.shzd import ShzdApi
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getJsonPath
 
 
 # 以下为一些VT类型和SHZD类型的映射字典
@@ -34,10 +35,6 @@ directionMapReverse = {v: k for k, v in directionMap.items()}
 
 # 交易所类型映射
 exchangeMap = {}
-#exchangeMap[EXCHANGE_CFFEX] = 'CFFEX'
-#exchangeMap[EXCHANGE_SHFE] = 'SHFE'
-#exchangeMap[EXCHANGE_CZCE] = 'CZCE'
-#exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_HKEX] = 'HKEX'
 exchangeMap[EXCHANGE_CME] = 'CME'
 exchangeMap[EXCHANGE_ICE] = 'ICE'
@@ -77,11 +74,10 @@ class ShzdGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
+        filePath = getJsonPath(fileName, __file__)
         
         try:
-            f = file(fileName)
+            f = file(filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
