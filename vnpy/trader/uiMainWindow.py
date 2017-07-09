@@ -117,6 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # 帮助
         helpMenu = menubar.addMenu(vtText.HELP)
         helpMenu.addAction(self.createAction(vtText.CONTRACT_SEARCH, self.openContract, loadIconPath('contract.ico')))
+        helpMenu.addAction(self.createAction(vtText.EDIT_SETTING, self.openSettingEditor, loadIconPath('editor.ico')))
         helpMenu.addSeparator()
         helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow, loadIconPath('restore.ico')))
         helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout, loadIconPath('about.ico')))
@@ -219,6 +220,15 @@ class MainWindow(QtWidgets.QMainWindow):
         except KeyError:
             self.widgetDict['contractM'] = ContractManager(self.mainEngine)
             self.widgetDict['contractM'].show()
+            
+    #----------------------------------------------------------------------
+    def openSettingEditor(self):
+        """打开配置编辑"""
+        try:
+            self.widgetDict['settingEditor'].show()
+        except KeyError:
+            self.widgetDict['settingEditor'] = SettingEditor(self.mainEngine)
+            self.widgetDict['settingEditor'].show()    
     
     #----------------------------------------------------------------------
     def closeEvent(self, event):

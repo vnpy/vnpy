@@ -138,16 +138,16 @@ class IbGateway(VtGateway):
         self.connected = False          # 连接状态
         
         self.api = IbWrapper(self)      # API接口
+        
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
 
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        filePath = getJsonPath(fileName, __file__)
-        
         try:
-            f = file(filePath)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName

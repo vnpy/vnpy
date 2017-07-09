@@ -218,7 +218,9 @@ class DrEngine(object):
             bar = self.barDict[vtSymbol]
             
             # 如果第一个TICK或者新的一分钟
-            if not bar.datetime or bar.datetime.minute != tick.datetime.minute:    
+            if (not bar.datetime or 
+                bar.datetime.minute != tick.datetime.minute or
+                bar.datetime.hour != tick.datetime.hour):    
                 if bar.vtSymbol:
                     newBar = copy.copy(bar)
                     self.insertData(MINUTE_DB_NAME, vtSymbol, newBar)

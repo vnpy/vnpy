@@ -63,7 +63,11 @@ def getTempPath(name):
         
     path = os.path.join(tempPath, name)
     return path
-    
+
+
+# JSON配置文件路径
+jsonPathDict = {}
+
 #----------------------------------------------------------------------
 def getJsonPath(name, moduleFile):
     """
@@ -74,10 +78,14 @@ def getJsonPath(name, moduleFile):
     currentFolder = os.getcwd()
     currentJsonPath = os.path.join(currentFolder, name)
     if os.path.isfile(currentJsonPath):
+        jsonPathDict[name] = currentJsonPath
         return currentJsonPath
     
     moduleFolder = os.path.abspath(os.path.dirname(moduleFile))
     moduleJsonPath = os.path.join(moduleFolder, '.', name)
+    jsonPathDict[name] = moduleJsonPath
     return moduleJsonPath
+
+    
     
     
