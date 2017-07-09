@@ -254,10 +254,15 @@ class CtaEngine(object):
         
         # 推送tick到对应的策略实例进行处理
         if tick.vtSymbol in self.tickStrategyDict:
-            # 添加datetime字段
-            if not tick.datetime:
-                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
-            
+            # tick时间可能出现异常数据，使用try...except实现捕捉和过滤
+            try:
+                # 添加datetime字段
+                if not tick.datetime:
+                    tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            except ValueError:
+                self.writeCtaLog(traceback.format_exc())
+                return
+                
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
