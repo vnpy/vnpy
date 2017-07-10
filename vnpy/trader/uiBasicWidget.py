@@ -1305,10 +1305,12 @@ class SettingEditor(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def show(self):
         """显示"""
+        # 更新配置文件下拉框
         self.comboFileName.clear()
         self.comboFileName.addItems(jsonPathDict.keys())
         
-        super(SettingEditor, self).showMaximized()
+        # 显示界面
+        super(SettingEditor, self).show()
         
         
         

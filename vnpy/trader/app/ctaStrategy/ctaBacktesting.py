@@ -228,7 +228,6 @@ class BacktestingEngine(object):
         order.vtSymbol = vtSymbol
         order.price = self.roundToPriceTick(price)
         order.totalVolume = volume
-        order.status = STATUS_NOTTRADED     # 刚提交尚未成交
         order.orderID = orderID
         order.vtOrderID = orderID
         order.orderTime = str(self.dt)
@@ -321,6 +320,11 @@ class BacktestingEngine(object):
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
+            # 推送委托进入队列（未成交）的状态更新
+            if not order.status:
+                order.status = STATUS_NOTTRADED
+                self.strategy.onOrder(order)
+
             # 判断是否会成交
             buyCross = (order.direction==DIRECTION_LONG and 
                         order.price>=buyCrossPrice and
