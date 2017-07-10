@@ -278,3 +278,8 @@ class KkStrategy(CtaTemplate):
         # 将委托号记录到列表中
         self.orderList.append(self.buyOrderID)
         self.orderList.append(self.shortOrderID)
+
+    #----------------------------------------------------------------------
+    def onStopOrder(self, so):
+        """停止单推送"""
+        pass

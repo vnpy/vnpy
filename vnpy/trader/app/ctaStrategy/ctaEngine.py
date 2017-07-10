@@ -210,6 +210,9 @@ class CtaEngine(object):
         self.stopOrderDict[stopOrderID] = so
         self.workingStopOrderDict[stopOrderID] = so
         
+        # 推送停止单状态
+        strategy.onStopOrder(so)
+        
         return stopOrderID
     
     #----------------------------------------------------------------------
@@ -220,6 +223,7 @@ class CtaEngine(object):
             so = self.workingStopOrderDict[stopOrderID]
             so.status = STOPORDER_CANCELLED
             del self.workingStopOrderDict[stopOrderID]
+            so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processStopOrder(self, tick):
@@ -244,6 +248,7 @@ class CtaEngine(object):
                         so.status = STOPORDER_TRIGGERED
                         self.sendOrder(so.vtSymbol, so.orderType, price, so.volume, so.strategy)
                         del self.workingStopOrderDict[so.stopOrderID]
+                        so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processTickEvent(self, event):

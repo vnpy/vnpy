@@ -272,8 +272,8 @@ class BacktestingEngine(object):
         so.price = self.roundToPriceTick(price)
         so.volume = volume
         so.strategy = strategy
-        so.stopOrderID = stopOrderID
         so.status = STOPORDER_WAITING
+        so.stopOrderID = stopOrderID
         
         if orderType == CTAORDER_BUY:
             so.direction = DIRECTION_LONG
@@ -292,6 +292,9 @@ class BacktestingEngine(object):
         self.stopOrderDict[stopOrderID] = so
         self.workingStopOrderDict[stopOrderID] = so
         
+        # 推送停止单初始更新
+        self.strategy.onStopOrder(so)        
+        
         return stopOrderID
     
     #----------------------------------------------------------------------
@@ -302,6 +305,7 @@ class BacktestingEngine(object):
             so = self.workingStopOrderDict[stopOrderID]
             so.status = STOPORDER_CANCELLED
             del self.workingStopOrderDict[stopOrderID]
+            self.strategy.onStopOrder(so)
             
     #----------------------------------------------------------------------
     def crossLimitOrder(self):
@@ -395,6 +399,11 @@ class BacktestingEngine(object):
             
             # 如果发生了成交
             if buyCross or sellCross:
+                # 更新停止单状态，并从字典中删除该停止单
+                so.status = STOPORDER_TRIGGERED
+                if stopOrderID in self.workingStopOrderDict:
+                    del self.workingStopOrderDict[stopOrderID]                        
+
                 # 推送成交数据
                 self.tradeCount += 1            # 成交编号自增1
                 tradeID = str(self.tradeCount)
@@ -414,19 +423,15 @@ class BacktestingEngine(object):
                 orderID = str(self.limitOrderCount)
                 trade.orderID = orderID
                 trade.vtOrderID = orderID
-                
                 trade.direction = so.direction
                 trade.offset = so.offset
                 trade.volume = so.volume
                 trade.tradeTime = str(self.dt)
                 trade.dt = self.dt
-                self.strategy.onTrade(trade)
                 
                 self.tradeDict[tradeID] = trade
                 
                 # 推送委托数据
-                so.status = STOPORDER_TRIGGERED
-                
                 order = VtOrderData()
                 order.vtSymbol = so.vtSymbol
                 order.symbol = so.vtSymbol
@@ -439,14 +444,14 @@ class BacktestingEngine(object):
                 order.tradedVolume = so.volume
                 order.status = STATUS_ALLTRADED
                 order.orderTime = trade.tradeTime
-                self.strategy.onOrder(order)
                 
                 self.limitOrderDict[orderID] = order
                 
-                # 从字典中删除该限价单
-                if stopOrderID in self.workingStopOrderDict:
-                    del self.workingStopOrderDict[stopOrderID]        
-
+                # 按照顺序推送数据
+                self.strategy.onStopOrder(so)
+                self.strategy.onOrder(order)
+                self.strategy.onTrade(trade)
+                
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
         """考虑到回测中不允许向数据库插入数据，防止实盘交易中的一些代码出错"""

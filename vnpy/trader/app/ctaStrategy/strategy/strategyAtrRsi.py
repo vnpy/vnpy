@@ -237,3 +237,7 @@ class AtrRsiStrategy(CtaTemplate):
         # 发出状态更新事件
         self.putEvent()
 
+    #----------------------------------------------------------------------
+    def onStopOrder(self, so):
+        """停止单推送"""
+        pass
