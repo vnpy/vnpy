@@ -91,6 +91,11 @@ class CtaTemplate(object):
         raise NotImplementedError
     
     #----------------------------------------------------------------------
+    def onStopOrder(self, so):
+        """收到停止单推送（必须由用户继承实现）"""
+        raise NotImplementedError
+    
+    #----------------------------------------------------------------------
     def buy(self, price, volume, stop=False):
         """买开"""
         return self.sendOrder(CTAORDER_BUY, price, volume, stop)

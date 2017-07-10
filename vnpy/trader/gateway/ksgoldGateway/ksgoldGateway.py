@@ -13,6 +13,7 @@ import time
 
 from vnpy.api.ksgold import TdApi, defineDict
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getJsonPath
 
 # 以下类型映射参考的是原生API里的Constant.h
 
@@ -45,16 +46,15 @@ class KsgoldGateway(VtGateway):
         self.orderInited = False        # 委托初始化查询
         self.tradeInited = False        # 成交初始化查询
         
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
+        
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName

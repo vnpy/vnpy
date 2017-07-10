@@ -7,14 +7,13 @@
 import os
 import traceback
 import json
-
+from vtFunction import getJsonPath
 
 globalSetting = {}      # 全局配置字典
 
 
 settingFileName = "VT_setting.json"
-path = os.path.abspath(os.path.dirname(__file__)) 
-settingFileName = os.path.join(path, settingFileName)
+settingFilePath = getJsonPath(settingFileName, __file__)
 
 try:
     f = file(settingFileName)

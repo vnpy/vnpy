@@ -26,6 +26,7 @@ import datetime
 
 from vnpy.api.oanda import OandaApi
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getJsonPath
 
 # 价格类型映射
 priceTypeMap = {}
@@ -53,16 +54,15 @@ class OandaGateway(VtGateway):
         
         self.qryEnabled = False         # 是否要启动循环查询
         
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
+        
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
