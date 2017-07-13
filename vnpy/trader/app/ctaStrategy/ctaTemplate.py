@@ -96,34 +96,38 @@ class CtaTemplate(object):
         raise NotImplementedError
     
     #----------------------------------------------------------------------
-    def buy(self, price, volume, stop=False):
+    def buy(self, price, volume, stop=False, vtSymbol=None):
         """买开"""
-        return self.sendOrder(CTAORDER_BUY, price, volume, stop)
+        return self.sendOrder(CTAORDER_BUY, price, volume, stop, vtSymbol)
     
     #----------------------------------------------------------------------
-    def sell(self, price, volume, stop=False):
+    def sell(self, price, volume, stop=False, vtSymbol=None):
         """卖平"""
-        return self.sendOrder(CTAORDER_SELL, price, volume, stop)       
+        return self.sendOrder(CTAORDER_SELL, price, volume, stop, vtSymbol)
 
     #----------------------------------------------------------------------
-    def short(self, price, volume, stop=False):
+    def short(self, price, volume, stop=False, vtSymbol=None):
         """卖开"""
-        return self.sendOrder(CTAORDER_SHORT, price, volume, stop)          
+        return self.sendOrder(CTAORDER_SHORT, price, volume, stop, vtSymbol)
  
     #----------------------------------------------------------------------
-    def cover(self, price, volume, stop=False):
+    def cover(self, price, volume, stop=False, vtSymbol=None):
         """买平"""
-        return self.sendOrder(CTAORDER_COVER, price, volume, stop)
+        return self.sendOrder(CTAORDER_COVER, price, volume, stop, vtSymbol)
         
     #----------------------------------------------------------------------
-    def sendOrder(self, orderType, price, volume, stop=False):
+    def sendOrder(self, orderType, price, volume, stop=False, vtSymbol=None):
         """发送委托"""
+        vtSymbol_for_send = self.vtSymbol
+        if vtSymbol is not None:
+            vtSymbol_for_send = vtSymbol
+
         if self.trading:
             # 如果stop为True，则意味着发本地停止单
             if stop:
-                vtOrderID = self.ctaEngine.sendStopOrder(self.vtSymbol, orderType, price, volume, self)
+                vtOrderID = self.ctaEngine.sendStopOrder(vtSymbol_for_send, orderType, price, volume, self)
             else:
-                vtOrderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
+                vtOrderID = self.ctaEngine.sendOrder(vtSymbol_for_send, orderType, price, volume, self)
             return vtOrderID
         else:
             # 交易停止时发单返回空字符串
@@ -142,24 +146,36 @@ class CtaTemplate(object):
             self.ctaEngine.cancelOrder(vtOrderID)
     
     #----------------------------------------------------------------------
-    def insertTick(self, tick):
+    def insertTick(self, tick, vtSymbol=None):
         """向数据库中插入tick数据"""
-        self.ctaEngine.insertData(self.tickDbName, self.vtSymbol, tick)
+        vtSymbol_for_insert = self.vtSymbol
+        if vtSymbol is not None:
+            vtSymbol_for_insert = vtSymbol
+        self.ctaEngine.insertData(self.tickDbName, vtSymbol_for_insert, tick)
     
     #----------------------------------------------------------------------
-    def insertBar(self, bar):
+    def insertBar(self, bar, vtSymbol=None):
         """向数据库中插入bar数据"""
-        self.ctaEngine.insertData(self.barDbName, self.vtSymbol, bar)
+        vtSymbol_for_insert = self.vtSymbol
+        if vtSymbol is not None:
+            vtSymbol_for_insert = vtSymbol
+        self.ctaEngine.insertData(self.barDbName, vtSymbol_for_insert, bar)
         
     #----------------------------------------------------------------------
-    def loadTick(self, days):
+    def loadTick(self, days, vtSymbol=None):
         """读取tick数据"""
-        return self.ctaEngine.loadTick(self.tickDbName, self.vtSymbol, days)
+        vtSymbol_for_load = self.vtSymbol
+        if vtSymbol is not None:
+            vtSymbol_for_load = vtSymbol
+        return self.ctaEngine.loadTick(self.tickDbName, vtSymbol_for_load, days)
     
     #----------------------------------------------------------------------
-    def loadBar(self, days):
+    def loadBar(self, days, vtSymbol=None):
         """读取bar数据"""
-        return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
+        vtSymbol_for_load = self.vtSymbol
+        if vtSymbol is not None:
+            vtSymbol_for_load = vtSymbol
+        return self.ctaEngine.loadBar(self.barDbName, vtSymbol_for_load, days)
     
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
