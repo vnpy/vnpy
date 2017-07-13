@@ -165,7 +165,7 @@ class OkCoinApi(object):
                                          on_close=self.onClose,
                                          on_open=self.onOpen)        
         
-        self.thread = Thread(target=self.ws.run_forever)
+        self.thread = Thread(target=self.ws.run_forever, name='okcoin_ws_run_forever')
         self.thread.start()
         
     #----------------------------------------------------------------------
@@ -181,7 +181,7 @@ class OkCoinApi(object):
                                          on_close=self.onClose,
                                          on_open=self.onOpen)        
     
-        self.thread = Thread(target=self.ws.run_forever)
+        self.thread = Thread(target=self.ws.run_forever, name='okcoin_ws_reconnect_runforever')
         self.thread.start()
         
     #----------------------------------------------------------------------

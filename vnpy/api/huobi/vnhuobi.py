@@ -91,7 +91,7 @@ class TradeApi(object):
         self.active = False         # API工作状态   
         self.reqID = 0              # 请求编号
         self.reqQueue = Queue()     # 请求队列
-        self.reqThread = Thread(target=self.processQueue)   # 请求处理线程        
+        self.reqThread = Thread(target=self.processQueue, name='huobi_tradeapi_processQueue')   # 请求处理线程
     
     #----------------------------------------------------------------------
     def processRequest(self, req):
@@ -557,7 +557,7 @@ class DataApi(object):
         
         self.taskInterval = 0                       # 每轮请求延时
         self.taskList = []                          # 订阅的任务列表
-        self.taskThread = Thread(target=self.run)   # 处理任务的线程
+        self.taskThread = Thread(target=self.run, name=u'huobi_dataapi_run')   # 处理任务的线程
     
     #----------------------------------------------------------------------
     def init(self, interval, debug):
