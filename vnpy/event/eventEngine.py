@@ -60,7 +60,7 @@ class EventEngine(object):
         self.__active = False
         
         # 事件处理线程
-        self.__thread = Thread(target = self.__run)
+        self.__thread = Thread(target = self.__run, name='EventEngine_run')
         
         # 计时器，用于触发计时器事件
         self.__timer = QTimer()
@@ -195,10 +195,10 @@ class EventEngine2(object):
         self.__active = False
         
         # 事件处理线程
-        self.__thread = Thread(target = self.__run)
+        self.__thread = Thread(target = self.__run, name='event_process')
         
         # 计时器，用于触发计时器事件
-        self.__timer = Thread(target = self.__runTimer)
+        self.__timer = Thread(target = self.__runTimer, name='event_timer_process')
         self.__timerActive = False                      # 计时器工作状态
         self.__timerSleep = 1                           # 计时器触发间隔（默认1秒）        
         
