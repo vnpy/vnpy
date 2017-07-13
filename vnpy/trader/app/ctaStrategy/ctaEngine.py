@@ -403,28 +403,33 @@ class CtaEngine(object):
             strategy = strategyClass(self, setting)  
             self.strategyDict[name] = strategy
             
-            # 保存Tick映射关系
-            if strategy.vtSymbol in self.tickStrategyDict:
-                l = self.tickStrategyDict[strategy.vtSymbol]
-            else:
-                l = []
-                self.tickStrategyDict[strategy.vtSymbol] = l
-            l.append(strategy)
-            
-            # 订阅合约
-            contract = self.mainEngine.getContract(strategy.vtSymbol)
-            if contract:
-                req = VtSubscribeReq()
-                req.symbol = contract.symbol
-                req.exchange = contract.exchange
-                
-                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-                req.currency = strategy.currency
-                req.productClass = strategy.productClass
-                
-                self.mainEngine.subscribe(req, contract.gatewayName)
-            else:
-                self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))
+            # 保存Tick映射关系，一个策略可以订阅多个数据源
+            if isinstance(strategy.vtSymbol, basestring):
+                str_tmp = strategy.vtSymbol
+                strategy.vtSymbol = [str_tmp]
+
+            for sg_symbol in strategy.vtSymbol:
+                if sg_symbol in self.tickStrategyDict:
+                    l = self.tickStrategyDict[sg_symbol]
+                else:
+                    l = []
+                    self.tickStrategyDict[sg_symbol] = l
+                l.append(strategy)
+
+                # 订阅合约
+                contract = self.mainEngine.getContract(sg_symbol)
+                if contract:
+                    req = VtSubscribeReq()
+                    req.symbol = contract.symbol
+                    req.exchange = contract.exchange
+
+                    # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+                    req.currency = strategy.currency
+                    req.productClass = strategy.productClass
+
+                    self.mainEngine.subscribe(req, contract.gatewayName)
+                else:
+                    self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, sg_symbol))
 
     #----------------------------------------------------------------------
     def initStrategy(self, name):
