@@ -46,7 +46,7 @@ class ShcifcoApi(object):
         params = {'ids': symbol}
         
         data = self.getData(path, params)
-        if not data:
+        if not data or data == ';':
             return None
         
         data = data.split(';')[0]
@@ -113,7 +113,7 @@ class ShcifcoApi(object):
         }
         # 可选参数
         if date:
-            params['date'] = date
+            params['tradingday'] = date
         if period:
             params['period'] = period
         
