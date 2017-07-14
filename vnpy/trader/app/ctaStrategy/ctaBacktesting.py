@@ -10,8 +10,19 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 from itertools import product
 import multiprocessing
-import pymongo
 import copy
+
+import pymongo
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 如果安装了seaborn则设置为白色风格
+try:
+    import seaborn as sns       
+    sns.set_style('whitegrid')  
+except ImportError:
+    pass
 
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtObject import VtTickData, VtBarData
@@ -51,6 +62,7 @@ class BacktestingEngine(object):
         self.initDays = 0        
         self.endDate = ''
 
+        self.capital = 1000000      # 回测时的起始本金（默认100万）
         self.slippage = 0           # 回测时假设的滑点
         self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
         self.size = 1               # 合约大小，默认为1    
@@ -138,6 +150,11 @@ class BacktestingEngine(object):
         """设置历史数据所用的数据库"""
         self.dbName = dbName
         self.symbol = symbol
+    
+    #----------------------------------------------------------------------
+    def setCapital(self, capital):
+        """设置资本金"""
+        self.capital = capital
     
     #----------------------------------------------------------------------
     def setSlippage(self, slippage):
@@ -244,7 +261,7 @@ class BacktestingEngine(object):
         self.crossStopOrder()       # 再撮合停止单
         self.strategy.onBar(bar)    # 推送K线到策略中
         
-        self.updateDailyClose(bar.datetime, bar.closePrice)
+        self.updateDailyClose(bar.datetime, bar.close)
     
     #----------------------------------------------------------------------
     def newTick(self, tick):
@@ -644,7 +661,23 @@ class BacktestingEngine(object):
                             # 如果开仓交易还有剩余，则进入下一轮循环
                             else:
                                 pass                    
-                    
+        
+        # 到最后交易日尚未平仓的交易，则以最后价格平仓
+        if self.mode == self.BAR_MODE:
+            endPrice = self.bar.close
+        else:
+            endPrice = self.tick.lastPrice
+            
+        for trade in longTrade:
+            result = TradingResult(trade.price, trade.dt, endPrice, self.dt, 
+                                   trade.volume, self.rate, self.slippage, self.size)
+            resultList.append(result)
+            
+        for trade in shortTrade:
+            result = TradingResult(trade.price, trade.dt, endPrice, self.dt, 
+                                   -trade.volume, self.rate, self.slippage, self.size)
+            resultList.append(result)            
+        
         # 检查是否有交易
         if not resultList:
             self.output(u'无交易结果')
@@ -752,15 +785,8 @@ class BacktestingEngine(object):
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
     
         # 绘图
-        import matplotlib.pyplot as plt        
-        import numpy as np
+        fig = plt.figure(figsize=(10, 16))
         
-        try:
-            import seaborn as sns       # 如果安装了seaborn则设置为白色风格
-            sns.set_style('whitegrid')  
-        except ImportError:
-            pass
-
         pCapital = plt.subplot(4, 1, 1)
         pCapital.set_ylabel("capital")
         pCapital.plot(d['capitalList'], color='r', lw=0.8)
@@ -881,7 +907,139 @@ class BacktestingEngine(object):
         else:
             self.dailyResultDict[date].closePrice = price
             
+    #----------------------------------------------------------------------
+    def calculateDailyResult(self):
+        """计算按日统计的交易结果"""
+        self.output(u'计算按日统计结果')
+        
+        # 将成交添加到每日交易结果中
+        for trade in self.tradeDict.values():
+            date = trade.dt.date()
+            dailyResult = self.dailyResultDict[date]
+            dailyResult.addTrade(trade)
+            
+        # 遍历计算每日结果
+        previousClose = 0
+        openPosition = 0
+        for dailyResult in self.dailyResultDict.values():
+            dailyResult.previousClose = previousClose
+            previousClose = dailyResult.closePrice
+            
+            dailyResult.calculatePnl(openPosition, self.size, self.rate, self.slippage )
+            openPosition = dailyResult.closePosition
+            
+        # 生成DataFrame
+        resultDict = {k:[] for k in dailyResult.__dict__.keys()}
+        for dailyResult in self.dailyResultDict.values():
+            for k, v in dailyResult.__dict__.items():
+                resultDict[k].append(v)
+                
+        resultDf = pd.DataFrame.from_dict(resultDict)
+        
+        # 计算衍生数据
+        resultDf = resultDf.set_index('date')
+        
+        return resultDf
+    
+    #----------------------------------------------------------------------
+    def showDailyResult(self, df=None):
+        """显示按日统计的交易结果"""
+        if not df:
+            df = self.calculateDailyResult()
 
+        df['balance'] = df['netPnl'].cumsum() + self.capital
+        df['return'] = (np.log(df['balance']) - np.log(df['balance'].shift(1))).fillna(0)
+        df['highlevel'] = df['balance'].rolling(min_periods=1,window=len(df),center=False).max()
+        df['drawdown'] = df['balance'] - df['highlevel']        
+        
+        # 计算统计结果
+        startDate = df.index[0]
+        endDate = df.index[-1]
+
+        totalDays = len(df)
+        profitDays = len(df[df['netPnl']>0])
+        lossDays = len(df[df['netPnl']<0])
+        
+        endBalance = df['balance'].iloc[-1]
+        maxDrawdown = df['drawdown'].min()
+        
+        totalNetPnl = df['netPnl'].sum()
+        dailyNetPnl = totalNetPnl / totalDays
+        
+        totalCommission = df['commission'].sum()
+        dailyCommission = totalCommission / totalDays
+        
+        totalSlippage = df['slippage'].sum()
+        dailySlippage = totalSlippage / totalDays
+        
+        totalTurnover = df['turnover'].sum()
+        dailyTurnover = totalTurnover / totalDays
+        
+        totalTradeCount = df['tradeCount'].sum()
+        dailyTradeCount = totalTradeCount / totalDays
+        
+        totalReturn = (endBalance/self.capital - 1) * 100
+        dailyReturn = df['return'].mean() * 100
+        returnStd = df['return'].std() * 100
+        
+        if returnStd:
+            sharpeRatio = dailyReturn / returnStd * np.sqrt(240)
+        else:
+            sharpeRatio = 0
+        
+        # 输出统计结果
+        self.output('-' * 30)
+        self.output(u'首个交易日：\t%s' % startDate)
+        self.output(u'最后交易日：\t%s' % endDate)
+        
+        self.output(u'总交易日：\t%s' % totalDays)
+        self.output(u'盈利交易日\t%s' % profitDays)
+        self.output(u'亏损交易日：\t%s' % lossDays)
+        
+        self.output(u'起始资金：\t%s' % self.capital)
+        self.output(u'结束资金：\t%s' % formatNumber(endBalance))
+    
+        self.output(u'总收益率：\t%s' % formatNumber(totalReturn))
+        self.output(u'总盈亏：\t%s' % formatNumber(totalNetPnl))
+        self.output(u'最大回撤: \t%s' % formatNumber(maxDrawdown))      
+        
+        self.output(u'总手续费：\t%s' % formatNumber(totalCommission))
+        self.output(u'总滑点：\t%s' % formatNumber(totalSlippage))
+        self.output(u'总成交金额：\t%s' % formatNumber(totalTurnover))
+        self.output(u'总成交笔数：\t%s' % formatNumber(totalTradeCount))
+        
+        self.output(u'日均盈亏：\t%s' % formatNumber(dailyNetPnl))
+        self.output(u'日均手续费：\t%s' % formatNumber(dailyCommission))
+        self.output(u'日均滑点：\t%s' % formatNumber(dailySlippage))
+        self.output(u'日均成交金额：\t%s' % formatNumber(dailyTurnover))
+        self.output(u'日均成交笔数：\t%s' % formatNumber(dailyTradeCount))
+        
+        self.output(u'日均收益率：\t%s%%' % formatNumber(dailyReturn))
+        self.output(u'收益标准差：\t%s%%' % formatNumber(returnStd))
+        self.output(u'Sharpe Ratio：\t%s' % formatNumber(sharpeRatio))
+        
+        # 绘图
+        fig = plt.figure(figsize=(10, 16))
+        
+        pBalance = plt.subplot(4, 1, 1)
+        pBalance.set_title('Balance')
+        df['balance'].plot(legend=True)
+        
+        pDrawdown = plt.subplot(4, 1, 2)
+        pDrawdown.set_title('Drawdown')
+        pDrawdown.fill_between(range(len(df)), df['drawdown'].values)
+        
+        pPnl = plt.subplot(4, 1, 3)
+        pPnl.set_title('Daily Pnl') 
+        df['netPnl'].plot(kind='bar', legend=False, grid=False, xticks=[])
+
+        pKDE = plt.subplot(4, 1, 4)
+        pKDE.set_title('Daily Pnl Distribution')
+        df['netPnl'].hist(bins=50)
+        
+        plt.show()
+        
+        
 ########################################################################
 class TradingResult(object):
     """每笔交易的结果"""
@@ -914,33 +1072,59 @@ class DailyResult(object):
         """Constructor"""
         self.date = date                # 日期
         self.closePrice = closePrice    # 当日收盘价
-        self.previousCloase = 0         # 昨日收盘价
+        self.previousClose = 0          # 昨日收盘价
         
         self.tradeList = []             # 成交列表
+        self.tradeCount = 0             # 成交数量
         
         self.openPosition = 0           # 开盘时的持仓
         self.closePosition = 0          # 收盘时的持仓
         
         self.tradingPnl = 0             # 交易盈亏
         self.positionPnl = 0            # 持仓盈亏
+        self.totalPnl = 0               # 总盈亏
+        
+        self.turnover = 0               # 成交量
+        self.commission = 0             # 手续费
+        self.slippage = 0               # 滑点
+        self.netPnl = 0                 # 净盈亏
+        
+    #----------------------------------------------------------------------
+    def addTrade(self, trade):
+        """添加交易"""
+        self.tradeList.append(trade)
 
     #----------------------------------------------------------------------
-    def calculatePnl(self):
-        """计算盈亏"""
+    def calculatePnl(self, openPosition=0, size=1, rate=0, slippage=0):
+        """
+        计算盈亏
+        size: 合约乘数
+        rate：手续费率
+        slippage：滑点点数
+        """
         # 持仓部分
-        self.positionPnl = self.openPosition * (self.closePrice - self.previousCloase)
+        self.openPosition = openPosition
+        self.positionPnl = self.openPosition * (self.closePrice - self.previousClose) * size
         self.closePosition = self.openPosition
         
         # 交易部分
+        self.tradeCount = len(self.tradeList)
+        
         for trade in self.tradeList:
             if trade.direction == DIRECTION_LONG:
                 posChange = trade.volume
             else:
                 posChange = -trade.volume
                 
-            self.tradingPnl += posChange * (self.closePrice - trade.price)
+            self.tradingPnl += posChange * (self.closePrice - trade.price) * size
             self.closePosition += posChange
-
+            self.turnover += trade.price * trade.volume * size
+            self.commission += trade.price * trade.volume * size * rate
+            self.slippage += trade.volume * size * slippage
+        
+        # 汇总
+        self.totalPnl = self.tradingPnl + self.positionPnl
+        self.netPnl = self.totalPnl - self.commission - self.slippage
 
     
 
