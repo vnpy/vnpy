@@ -118,7 +118,7 @@ class HuobiGateway(VtGateway):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
-        self.tradeApi.sendOrder(orderReq)
+        return self.tradeApi.sendOrder(orderReq)
         
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
