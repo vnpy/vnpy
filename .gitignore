@@ -10,6 +10,7 @@ Release/
 
 # Python编译文件
 *.pyc
+*.pyo
 
 # WingIDE文件
 *.wpr
