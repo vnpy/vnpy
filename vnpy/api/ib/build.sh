@@ -15,4 +15,5 @@ popd
 pushd $BUILDDIR
 cmake ..
 make VERBOSE=1 -j 1
+cp ./lib/vnib.* ../
 popd
