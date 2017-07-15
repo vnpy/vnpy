@@ -247,7 +247,7 @@ class DrEngine(object):
                 
                 bar.date = tick.date
                 bar.time = tick.time
-                bar.datetime = tick.datetime
+                bar.datetime = tick.datetime.replace(second=0, microsecond=0)
                 bar.volume = tick.volume
                 bar.openInterest = tick.openInterest        
             # 否则继续累加新的K线
