@@ -92,6 +92,10 @@ if __name__ == '__main__':
 
 ---
 
+### 用户文档
+[https://github.com/vnpy/vnpy/wiki](https://github.com/vnpy/vnpy/wiki)
+
+
 ### 开发工具推荐
 
 * [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
@@ -176,15 +180,18 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
 
-2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
+1. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 
-3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+1. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+	* 如果你的fork已经过时，需要手动sync：[https://help.github.com/articles/syncing-a-fork/](https://help.github.com/articles/syncing-a-fork/)
 
-4. 在**dev**修改并将修改push到你的fork上
+1. 从**dev**创建你自己的feature branch: ```git checkout -b $my_feature_branch dev```
 
-5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
+1. 在$my_feature_branch上修改并将修改push到你的fork上
 
-6. 等待review, 需要继续改进，或者被Merge!
+1. 创建从你的fork的$my_feature_branch分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy/compare?expand=1)点击**compare across forks**，选择需要的fork和branch创建PR
+
+1. 等待review, 需要继续改进，或者被Merge!
 
 ---
 ### 项目捐赠
