@@ -19,7 +19,10 @@ vn.py是一套基于Python的开源量化交易程序开发框架，起源于国
 
 **方法1**
 
-在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行install.bat自动安装。
+在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后:
+
+* Windows：双击运行install.bat自动安装
+* Ubuntu：在Terminal中运行bash install.sh自动安装
 
 **方法2**
 
@@ -28,6 +31,17 @@ pip install vnpy pymongo msgpack-python websocket-client qdarkstyle
 
 conda install -c quantopian ta-lib=0.4.9
 ```
+
+**关于TA-Lib安装**
+
+Ubuntu上安装到talib时若遭遇'Permission denied'错误，请在install.sh运行完成后，在Terminal中输入以下命令安装：
+
+```
+sudo /home/vnpy/anaconda2/bin/conda install -c quantopian ta-lib=0.4.9
+```
+
+其中"/home/vnpy/anaconda2/"是你的Anaconda安装路径。
+
 
 ---
 ### Quick Start
