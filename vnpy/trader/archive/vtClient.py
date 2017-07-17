@@ -42,7 +42,7 @@ class ClientEngine(MainEngine):
     #----------------------------------------------------------------------
     def __init__(self, client, eventEngine):
         """Constructor"""
-        super(MainEngine, self).__init__(eventEngine)
+        super(ClientEngine, self).__init__(eventEngine)
         
         self.client = client
         self.eventEngine = eventEngine
