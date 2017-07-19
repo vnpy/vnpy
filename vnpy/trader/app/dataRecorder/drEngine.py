@@ -130,14 +130,7 @@ class DrEngine(object):
 
                 # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
                 for activeSymbol, vtSymbol in d.items():
-                    self.activeSymbolDict[vtSymbol] = activeSymbol
-
-            # 启动数据插入线程
-            self.start()
-
-            # 注册事件监听
-            self.registerEvent()            
-        
+                    self.activeSymbolDict[vtSymbol] = activeSymbol    
     
     ##----------------------------------------------------------------------
     #def loadCsvSetting(self):
