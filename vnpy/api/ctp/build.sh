@@ -2,6 +2,8 @@
 # Written by Suzhengchun on 20160213
 
 set -e
+export BOOST_LIBRARYDIR="/usr/lib/x86_64-linux-gnu"
+
 BUILDDIR=build
 rm -rf $BUILDDIR
 if [ ! -f $BUILDDIR ]; then

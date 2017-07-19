@@ -80,7 +80,7 @@ if (WIN32)
     set(Boost_USE_STATIC_LIBS        ON)    #链接boost静态库
 endif()
 set(Boost_USE_MULTITHREADED      ON)
-find_package(Boost 1.55.0 COMPONENTS python thread date_time system chrono REQUIRED) # 如果boost库没有完全编译，需要将编译的库明确地指出，否者message(${Boost_LIBRARIES})会出错
+find_package(Boost 1.58.0 COMPONENTS python thread date_time system chrono REQUIRED) # 如果boost库没有完全编译，需要将编译的库明确地指出，否者message(${Boost_LIBRARIES})会出错
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
