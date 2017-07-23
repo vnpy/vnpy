@@ -1231,6 +1231,8 @@ class BacktestingEngine(object):
             tick.bidVolume1 = int(float(row['bidVolume1']))
             tick.askPrice1 = float(row['askPrice1'])  # 叫卖价（价格高）
             tick.askVolume1 = int(float(row['askVolume1']))
+            
+            
 
             # 排除涨停/跌停的数据
             if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0) \
@@ -3385,9 +3387,9 @@ class TradingResult(object):
 
         self.turnover = (self.entryPrice + self.exitPrice) * size * abs(volume)  # 成交金额
         if fixcommission:
-            self.commission = fixcommission * self.volume
+            self.commission = fixcommission * abs(self.volume)
         else:
-            self.commission = self.turnover * rate  # 手续费成本
+            self.commission = abs(self.turnover * rate)  # 手续费成本
         self.slippage = slippage * 2 * size * abs(volume)  # 滑点成本
         self.pnl = ((self.exitPrice - self.entryPrice) * volume * size
                     - self.commission - self.slippage)  # 净盈亏
