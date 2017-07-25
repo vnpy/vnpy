@@ -64,7 +64,7 @@ sys.setdefaultencoding('utf8')
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
@@ -77,6 +77,9 @@ from vnpy.trader.app import riskManager, ctaStrategy
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
+    # 创建Qt应用对象
+    qApp = createQApp()
+
     # 创建事件引擎
     ee = EventEngine()
 
