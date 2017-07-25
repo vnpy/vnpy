@@ -28,8 +28,10 @@ class StTickMonitor(BasicMonitor):
         
         d = OrderedDict()
         d['name'] = {'chinese':u'价差名称', 'cellType':BasicCell}
+        d['bidDiffRatio'] = {'chinese': u'买差率', 'cellType': BidCell}
         d['bidPrice'] = {'chinese':u'买价', 'cellType':BidCell}
         d['bidVolume'] = {'chinese':u'买量', 'cellType':BidCell}
+        d['askDiffRatio'] = {'chinese':u'卖差率', 'cellType':AskCell}
         d['askPrice'] = {'chinese':u'卖价', 'cellType':AskCell}
         d['askVolume'] = {'chinese':u'卖量', 'cellType':AskCell}
         d['time'] = {'chinese':u'时间', 'cellType':BasicCell}
@@ -72,7 +74,7 @@ class StPosMonitor(BasicMonitor):
 ########################################################################
 class StLogMonitor(QtWidgets.QTextEdit):
     """价差日志监控"""
-    signal = QtCore.pyqtSignal(type(Event()))
+    signal = QtCore.Signal(type(Event()))
     
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, parent=None):
@@ -300,7 +302,7 @@ class StModeComboBox(QtWidgets.QComboBox):
 ########################################################################
 class StActiveButton(QtWidgets.QPushButton):
     """"""
-    signalActive = QtCore.pyqtSignal(bool)
+    signalActive = QtCore.Signal(bool)
 
     #----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, parent=None):
@@ -386,8 +388,7 @@ class StAlgoManager(QtWidgets.QTableWidget):
                    u'状态']
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
-        self.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        
+        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
         
@@ -513,9 +514,13 @@ class StManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def init(self):
         """初始化"""
-        self.stEngine.init()
-        self.algoManager.initCells()
-    
+        try:
+            self.stEngine.init()
+            self.algoManager.initCells()
+        except:
+            import traceback
+            import sys
+            traceback.print_exception(*sys.exc_info())
     
     
     

@@ -195,30 +195,24 @@ class SniperAlgo(StAlgoTemplate):
         # 允许做多
         if self.mode == self.MODE_LONGSHORT or self.mode == self.MODE_LONGONLY:
             # 买入
-            if (spread.netPos >= 0 and 
-                spread.netPos < self.maxPosSize and
-                spread.askPrice <= self.buyPrice):
+            if 0 <= spread.netPos < self.maxPosSize and spread.askPrice <= self.buyPrice:
                 self.quoteActiveLeg(self.SPREAD_LONG)
                 self.writeLog(u'买入开仓')
             
             # 卖出
-            elif (spread.netPos > 0 and
-                  spread.bidPrice >= self.sellPrice):
+            elif 0 < spread.netPos and spread.bidPrice >= self.sellPrice:
                 self.quoteActiveLeg(self.SPREAD_SHORT)
                 self.writeLog(u'卖出平仓')
         
         # 允许做空
         if self.mode == self.MODE_LONGSHORT or self.mode == self.MODE_SHORTONLY:
             # 做空
-            if (spread.netPos <= 0 and
-                spread.netPos > -self.maxPosSize and
-                spread.bidPrice >= self.shortPrice):
+            if 0 >= spread.netPos > -self.maxPosSize and spread.bidPrice >= self.shortPrice:
                 self.quoteActiveLeg(self.SPREAD_SHORT)
                 self.writeLog(u'卖出开仓')
             
             # 平空
-            elif (spread.netPos < 0 and
-                  spread.askPrice <= self.coverPrice):
+            elif 0 < spread.netPos and spread.askPrice <= self.coverPrice:
                 self.quoteActiveLeg(self.SPREAD_LONG)
                 self.writeLog(u'买入平仓')
     

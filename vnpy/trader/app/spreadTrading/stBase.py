@@ -56,6 +56,8 @@ class StSpread(object):
         
         self.bidPrice = EMPTY_FLOAT
         self.askPrice = EMPTY_FLOAT
+        self.bidDiffRatio = EMPTY_FLOAT # 差价率
+        self.askDiffRatio = EMPTY_FLOAT # 差价率
         self.bidVolume = EMPTY_INT
         self.askVolume = EMPTY_INT
         self.time = EMPTY_STRING
@@ -120,7 +122,11 @@ class StSpread(object):
             else:
                 self.bidVolume = min(self.bidVolume, legAdjustedBidVolume)      # 对于后续的腿，价差可交易报单量取较小值
                 self.askVolume = min(self.askVolume, legAdjustedAskVolume)
-                
+
+        # 除数不能为0
+        if self.activeLeg.bidPrice: self.bidDiffRatio = self.bidPrice / self.activeLeg.bidPrice
+        if self.activeLeg.askPrice: self.askDiffRatio = self.askPrice / self.activeLeg.askPrice
+
         # 更新时间
         self.time = datetime.now().strftime('%H:%M:%S.%f')[:-3]
         
