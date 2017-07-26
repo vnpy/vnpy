@@ -1798,9 +1798,6 @@ BOOST_PYTHON_MODULE(vnib)
 	class_<std::vector<ibapi::shared_ptr<OrderCondition>>>("OrderConditionList")
 		.def(vector_indexing_suite<std::vector<ibapi::shared_ptr<OrderCondition>>, true>());
 
-	class_<std::vector<ibapi::shared_ptr<OrderCondition>>>("OrderConditionList")
-		.def(vector_indexing_suite<std::vector<ibapi::shared_ptr<OrderCondition>>, true>());
-
 	class_<std::vector<std::string>>("StringList")
 		.def(vector_indexing_suite<std::vector<std::string>, true>());
 
