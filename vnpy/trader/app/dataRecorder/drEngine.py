@@ -6,7 +6,7 @@
 使用DR_setting.json来配置需要收集的合约，以及主力合约代码。
 '''
 
-#import json
+import json
 import csv
 import os
 import copy
