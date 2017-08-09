@@ -190,7 +190,7 @@ class LhangApi(object):
     # ----------------------------------------------------------------------
     def getKline(self, symbol, size, type_, time):
         """查询K线"""
-        function = FUNCTION_TRADES
+        function = FUNCTION_KLINE
         params = {
             'symbol': symbol,
             'size': size,
@@ -226,7 +226,7 @@ class LhangApi(object):
 
     # ----------------------------------------------------------------------
     def getUserInfo(self):
-        """查询K线"""
+        """查询账户信息"""
         function = FUNCTION_USERINFO
         params = {}
         callback = self.onGetUserInfo
@@ -282,7 +282,7 @@ class LhangApi(object):
 
     # ----------------------------------------------------------------------
     def onGetUserInfo(self, data, req, reqID):
-        """查询Ｋ线回报"""
+        """查询账户信息"""
         print data, reqID
 
     # ----------------------------------------------------------------------
