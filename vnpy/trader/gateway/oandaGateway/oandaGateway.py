@@ -330,6 +330,7 @@ class Api(OandaApi):
         tick.bidPrice1 = d['bid']
         tick.askPrice1 = d['ask']
         tick.time = getTime(d['time']) + '.0'   # 补齐毫秒部分
+        tick.date = datetime.datetime.utcnow().strftime('%Y%m%d')  # OANDA的时间是UTC标准时
         
         # 做市商的TICK数据只有买卖的报价，因此最新价格选用中间价代替
         tick.lastPrice = (tick.bidPrice1 + tick.askPrice1)/2        
