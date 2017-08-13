@@ -75,13 +75,26 @@ or
 从脚本可知，已经将整个`vnpy`的项目路径映射到了容器内的`/srv/vnpy`路径。
 
 
+### 重新编译接口库
+由于是一个新的```Linux```环境，```CTP```之类的接口需要重新编译。
+```bash
+➜  root@docker/: cd /srv/vnpy/api/ctp/
+➜  root@docker/: ./build.sh
+...
+[100%] Built target vnctpmd
+...
+```
+
+编译完成后，通过`Git`可以看到新编译成的`*.so`之类的文件。需要注意的是，此时对`/srv/vnpy`路径下的改动，也会反映到宿主下的`vnpy`项目。
+
+**也就意味着，当前项目下的CTP接口已经被镜像中的编译包替换了。**
+
+
 ### 启动基于 `vnpy` 的交易等程序
 注意：需要先在`vnpy/trader/gateway/ctpGateway/CTP_connect.json`中配置正确的CTP链接账号及服务器信息。
 
 尝试启动 vnpy 实例
 ```bash
-➜  root@docker /srv/vnpy: ./run-demo.sh
-or 
 ➜  root@docker /srv/vnpy: python ./examples/VnTrader/run_simple.py
 ...
 运行成功将在 VNC 界面上打开中文 GUI 程序，可正常连接 CTP 服务器及数据库。
@@ -89,6 +102,6 @@ or
 
 
 ## Q&A
-__Q:__ aaa？
-__A:__ bbb
+__Q:__ 如何连接容器外的MongoDB？
+__A:__ 在`Linux`系统下，无需特定端口映射`-p 2014`，直接使用`--net=host`共享网络模式即可。在`Mac`或`Windows`下，需要在`VT_setting.json`中设置`mongoHost`时，指定其局域网中的`IP`，而非`localhost`。
 
