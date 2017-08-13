@@ -1,0 +1,35 @@
+FROM vnpy-base:latest
+
+# 初始化 /etc/machine-id
+RUN systemd-machine-id-setup
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+RUN echo "安装 fluxbox 桌面管理器" \
+    && apt-get install -y fluxbox
+
+
+RUN echo "安装 mongodb 服务" \
+    && mkdir -p /data/db \
+    && apt-get install -y mongodb \
+    && systemctl enable mongodb.service \
+    && sed -i 's/bind_ip = 127.0.0.1/\#bind_ip = 127.0.0.1/g' /etc/mongodb.conf
+
+# 安装 vnpy 以及相关接口库
+COPY ./vnpy/ /usr/src/vnpy/
+COPY ./setup.py /usr/src/
+#RUN cd /usr/src && pwd && ls
+RUN echo "编译安装 vnpy 以及相关接口库" \
+    && cd /usr/src/vnpy/api/ctp && ./build.sh \
+    && cp -af /usr/src/vnpy/api/ctp/build/lib/*.so /usr/src/vnpy/api/ctp \
+    && cd /usr/src && python ./setup.py build install
+
+
+# 在客户端登录时自动启动 GUI 程序 (might not be the best way to do it, but it does the trick)
+#RUN bash -c 'echo "python /srv/vnpy/examples/VnTrader/run_simple.py" >> ~/.bashrc'
+#RUN bash -c 'echo "/usr/bin/xterm" >> ~/.bashrc'
+RUN bash -c 'echo "service mongodb restart && fluxbox &" >> ~/.bashrc'
+
+
+# 暂时不设置入口点，否则不能使用 -it 交互模式
+# ENTRYPOINT python /srv/vnpy/vn.trader/vtServer.py
+
