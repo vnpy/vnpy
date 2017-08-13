@@ -6,6 +6,7 @@
 echo 'please press Command-k on Finder and connect to: vnc://127.0.0.1:5900'
 
 DIR=$(cd `dirname $0`; pwd)
+mkdir -p ${DIR}/../docker/mongodb-data
 
 #docker run --rm -p 5900 -e HOME=/ vnpy-vnc /usr/bin/x11vnc "-forever -usepw -create"
 
