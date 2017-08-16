@@ -387,7 +387,7 @@ class StAlgoManager(QtWidgets.QTableWidget):
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
         self.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        
+        #pyqt版本不一致问题注释 setResizeMode is only avaailble in QT4, 如果运行报错请尝试把上面的这行setResizeMode换成setSectionResizeMode
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
         
