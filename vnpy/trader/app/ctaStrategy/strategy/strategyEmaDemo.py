@@ -188,6 +188,11 @@ class EmaDemoStrategy(CtaTemplate):
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         pass
     
+    #----------------------------------------------------------------------
+    def onStopOrder(self, so):
+        """停止单推送"""
+        pass    
+    
     
 ########################################################################################
 class OrderManagementDemoStrategy(CtaTemplate):
@@ -294,3 +299,8 @@ class OrderManagementDemoStrategy(CtaTemplate):
         """收到成交推送（必须由用户继承实现）"""
         # 对于无需做细粒度委托控制的策略，可以忽略onOrder
         pass
+    
+    #----------------------------------------------------------------------
+    def onStopOrder(self, so):
+        """停止单推送"""
+        pass    

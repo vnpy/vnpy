@@ -29,10 +29,10 @@ from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
-from vnpy.trader.vtFunction import todayDate
+from vnpy.trader.vtFunction import todayDate, getJsonPath
 
-from vnpy.trader.app.ctaStrategy.ctaBase import *
-from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
+from .ctaBase import *
+from .strategy import STRATEGY_CLASS
 
 
 
@@ -41,8 +41,7 @@ from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)      
+    settingfilePath = getJsonPath(settingFileName, __file__)   
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -211,6 +210,9 @@ class CtaEngine(object):
         self.stopOrderDict[stopOrderID] = so
         self.workingStopOrderDict[stopOrderID] = so
         
+        # 推送停止单状态
+        strategy.onStopOrder(so)
+        
         return stopOrderID
     
     #----------------------------------------------------------------------
@@ -221,6 +223,7 @@ class CtaEngine(object):
             so = self.workingStopOrderDict[stopOrderID]
             so.status = STOPORDER_CANCELLED
             del self.workingStopOrderDict[stopOrderID]
+            so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processStopOrder(self, tick):
@@ -245,6 +248,7 @@ class CtaEngine(object):
                         so.status = STOPORDER_TRIGGERED
                         self.sendOrder(so.vtSymbol, so.orderType, price, so.volume, so.strategy)
                         del self.workingStopOrderDict[so.stopOrderID]
+                        so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processTickEvent(self, event):
@@ -255,10 +259,15 @@ class CtaEngine(object):
         
         # 推送tick到对应的策略实例进行处理
         if tick.vtSymbol in self.tickStrategyDict:
-            # 添加datetime字段
-            if not tick.datetime:
-                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
-            
+            # tick时间可能出现异常数据，使用try...except实现捕捉和过滤
+            try:
+                # 添加datetime字段
+                if not tick.datetime:
+                    tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            except ValueError:
+                self.writeCtaLog(traceback.format_exc())
+                return
+                
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
@@ -337,7 +346,7 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        barData = self.mainEngine.dbQuery(dbName, collectionName, d)
+        barData = self.mainEngine.dbQuery(dbName, collectionName, d, 'datetime')
         
         l = []
         for d in barData:
@@ -352,7 +361,7 @@ class CtaEngine(object):
         startDate = self.today - timedelta(days)
         
         d = {'datetime':{'$gte':startDate}}
-        tickData = self.mainEngine.dbQuery(dbName, collectionName, d)
+        tickData = self.mainEngine.dbQuery(dbName, collectionName, d, 'datetime')
         
         l = []
         for d in tickData:
@@ -463,12 +472,30 @@ class CtaEngine(object):
                     if so.strategy is strategy:
                         self.cancelStopOrder(stopOrderID)   
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)        
+            self.writeCtaLog(u'策略实例不存在：%s' %name)    
+            
+    #----------------------------------------------------------------------
+    def initAll(self):
+        """全部初始化"""
+        for name in self.strategyDict.keys():
+            self.initStrategy(name)    
+            
+    #----------------------------------------------------------------------
+    def startAll(self):
+        """全部启动"""
+        for name in self.strategyDict.keys():
+            self.startStrategy(name)
+            
+    #----------------------------------------------------------------------
+    def stopAll(self):
+        """全部停止"""
+        for name in self.strategyDict.keys():
+            self.stopStrategy(name)    
     
     #----------------------------------------------------------------------
     def saveSetting(self):
         """保存策略配置"""
-        with open(self.settingFileName, 'w') as f:
+        with open(self.settingfilePath, 'w') as f:
             l = []
             
             for strategy in self.strategyDict.values():
@@ -483,7 +510,7 @@ class CtaEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """读取策略配置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingfilePath) as f:
             l = json.load(f)
             
             for setting in l:

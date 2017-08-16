@@ -11,7 +11,7 @@ import os
 import json
 
 from vnpy.api.femas import MdApi, TdApi, defineDict
-from vnpy.trader.vtFunction import getTempPath
+from vnpy.trader.vtFunction import getTempPath, getJsonPath
 from vnpy.trader.vtGateway import *
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -72,16 +72,15 @@ class FemasGateway(VtGateway):
         
         self.qryEnabled = False         # 是否要启动循环查询
         
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
+        
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
