@@ -5,25 +5,34 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+# 判断操作系统
+import platform
+system = platform.system()
+
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import (ctpGateway, femasGateway, xspeedGateway, 
-                                 sgitGateway, oandaGateway, ibGateway, 
-                                 shzdGateway, huobiGateway, okcoinGateway)
+from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway, 
+                                 huobiGateway, okcoinGateway)
+
+if system == 'Windows':
+    from vnpy.trader.gateway import (femasGateway, xspeedGateway, 
+                                     sgitGateway, shzdGateway)
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, dataRecorder,
-                             ctaStrategy)
+from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
 
 
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
+    # 创建Qt应用对象
+    qApp = createQApp()
+    
     # 创建事件引擎
     ee = EventEngine()
     
@@ -32,19 +41,21 @@ def main():
     
     # 添加交易接口
     me.addGateway(ctpGateway)
-    me.addGateway(femasGateway)
-    me.addGateway(xspeedGateway)
-    me.addGateway(sgitGateway)
     me.addGateway(oandaGateway)
     me.addGateway(ibGateway)
-    me.addGateway(shzdGateway)
     me.addGateway(huobiGateway)
     me.addGateway(okcoinGateway)
     
+    if system == 'Windows':
+        me.addGateway(femasGateway)
+        me.addGateway(xspeedGateway)
+        me.addGateway(sgitGateway)  
+        me.addGateway(shzdGateway)
+        
     # 添加上层应用
     me.addApp(riskManager)
-    me.addApp(dataRecorder)
     me.addApp(ctaStrategy)
+    me.addApp(spreadTrading)
     
     # 创建主窗口
     mw = MainWindow(me, ee)

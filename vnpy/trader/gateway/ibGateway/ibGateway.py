@@ -19,7 +19,9 @@ from copy import copy
 
 from vnpy.api.ib import *
 from vnpy.trader.vtGateway import *
-from vnpy.trader.gateway.ibGateway.language import text
+from vnpy.trader.vtFunction import getJsonPath
+from .language import text
+
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -136,17 +138,16 @@ class IbGateway(VtGateway):
         self.connected = False          # 连接状态
         
         self.api = IbWrapper(self)      # API接口
+        
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
 
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName

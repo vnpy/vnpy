@@ -19,7 +19,10 @@ vn.py是一套基于Python的开源量化交易程序开发框架，起源于国
 
 **方法1**
 
-在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行install.bat自动安装。
+在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后:
+
+* Windows：双击运行install.bat自动安装
+* Ubuntu：在Terminal中运行bash install.sh自动安装
 
 **方法2**
 
@@ -28,6 +31,17 @@ pip install vnpy pymongo msgpack-python websocket-client qdarkstyle
 
 conda install -c quantopian ta-lib=0.4.9
 ```
+
+**关于TA-Lib安装**
+
+Ubuntu上安装到talib时若遭遇'Permission denied'错误，请在install.sh运行完成后，在Terminal中输入以下命令安装：
+
+```
+sudo /home/vnpy/anaconda2/bin/conda install -c quantopian ta-lib=0.4.9
+```
+
+其中"/home/vnpy/anaconda2/"是你的Anaconda安装路径。
+
 
 ---
 ### Quick Start
@@ -50,7 +64,7 @@ sys.setdefaultencoding('utf8')
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
@@ -63,6 +77,9 @@ from vnpy.trader.app import riskManager, ctaStrategy
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
+    # 创建Qt应用对象
+    qApp = createQApp()
+
     # 创建事件引擎
     ee = EventEngine()
 
@@ -91,6 +108,10 @@ if __name__ == '__main__':
 更多使用方法方法请参考examples下的目录。
 
 ---
+
+### 用户文档
+[https://github.com/vnpy/vnpy/wiki](https://github.com/vnpy/vnpy/wiki)
+
 
 ### 开发工具推荐
 
@@ -176,15 +197,18 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
 
-2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
+1. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 
-3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+1. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+	* 如果你的fork已经过时，需要手动sync：[https://help.github.com/articles/syncing-a-fork/](https://help.github.com/articles/syncing-a-fork/)
 
-4. 在**dev**修改并将修改push到你的fork上
+1. 从**dev**创建你自己的feature branch: ```git checkout -b $my_feature_branch dev```
 
-5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
+1. 在$my_feature_branch上修改并将修改push到你的fork上
 
-6. 等待review, 需要继续改进，或者被Merge!
+1. 创建从你的fork的$my_feature_branch分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy/compare?expand=1)点击**compare across forks**，选择需要的fork和branch创建PR
+
+1. 等待review, 需要继续改进，或者被Merge!
 
 ---
 ### 项目捐赠

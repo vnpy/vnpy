@@ -9,7 +9,8 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.uiBasicWidget import QtGui, QtCore, QtWidgets, BasicCell
 
-from vnpy.trader.app.ctaStrategy.language import text
+from .ctaBase import EVENT_CTA_LOG, EVENT_CTA_STRATEGY
+from .language import text
 
 
 ########################################################################
@@ -227,20 +228,17 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def initAll(self):
         """全部初始化"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.initStrategy(name)    
+        self.ctaEngine.initAll()    
             
     #----------------------------------------------------------------------
     def startAll(self):
         """全部启动"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.startStrategy(name)
+        self.ctaEngine.startAll()
             
     #----------------------------------------------------------------------
     def stopAll(self):
         """全部停止"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.stopStrategy(name)
+        self.ctaEngine.stopAll()
             
     #----------------------------------------------------------------------
     def load(self):
@@ -267,13 +265,14 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭窗口时的事件"""
-        reply = QtWidgets.QMessageBox.question(self, text.SAVE_POSITION_DATA,
-                                           text.SAVE_POSITION_QUESTION, QtWidgets.QMessageBox.Yes | 
-                                           QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-    
-        if reply == QtWidgets.QMessageBox.Yes: 
-            self.ctaEngine.savePosition()
-            
+        if self.isVisible():
+            reply = QtWidgets.QMessageBox.question(self, text.SAVE_POSITION_DATA,
+                                               text.SAVE_POSITION_QUESTION, QtWidgets.QMessageBox.Yes | 
+                                               QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+        
+            if reply == QtWidgets.QMessageBox.Yes: 
+                self.ctaEngine.savePosition()
+                
         event.accept()
         
         

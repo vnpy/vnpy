@@ -15,9 +15,9 @@ from datetime import datetime
 
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
-from vnpy.trader.vtFunction import getTempPath
-from vnpy.trader.gateway.ctpGateway.language import text
+from vnpy.trader.vtFunction import getJsonPath, getTempPath
 from vnpy.trader.vtConstant import GATEWAYTYPE_FUTURES
+from .language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -91,19 +91,15 @@ class CtpGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
         
         self.qryEnabled = False         # 循环查询
-
-        self.requireAuthentication = False
+        
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)        
         
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
-        # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -331,10 +327,6 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
-        # 忽略成交量为0的无效tick数据
-        if not data['Volume']:
-            return
-        
         # 创建对象
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
@@ -712,7 +704,7 @@ class CtpTdApi(TdApi):
         pos.positionProfit += data['PositionProfit']
         
         # 计算持仓均价
-        if pos.position:
+        if pos.position and pos.symbol in self.symbolSizeDict:
             size = self.symbolSizeDict[pos.symbol]
             pos.price = (cost + data['PositionCost']) / (pos.position * size)
         

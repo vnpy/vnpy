@@ -1,5 +1,11 @@
 FROM hub.c.163.com/public/ubuntu:16.04-tools
 
+# 初始化 /etc/machine-id
+RUN systemd-machine-id-setup
+
+# 使用传统的 bash 作为 shell 解释器
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
 # 时区设置
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -8,15 +14,15 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN locale-gen zh_CN.UTF-8 \
     && DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales \
     && locale-gen zh_CN.UTF-8
-
 ENV LANG zh_CN.UTF-8
 ENV LANGUAGE zh_CN:zh
 ENV LC_ALL zh_CN.UTF-8
 
 
-# 替换 apt 源为阿里云，在本地构建镜像时，取消注释，使用阿里云的 apt 源
-RUN    echo "开始配置系vnpy环境" \
-    && echo "更新源列表" \
+# 在本地构建镜像时，使用阿里云或163的 apt 源
+RUN echo "开始配置 vnpy 环境" \
+
+    && echo "更新 apt 源列表" \
     && echo "" > /etc/apt/sources.list \
     && echo "deb http://mirrors.163.com/ubuntu/ xenial main multiverse restricted universe" >> /etc/apt/sources.list \
     && echo "deb http://mirrors.163.com/ubuntu/ xenial-backports main multiverse restricted universe" >> /etc/apt/sources.list \
@@ -30,44 +36,83 @@ RUN    echo "开始配置系vnpy环境" \
     && echo "deb-src http://mirrors.163.com/ubuntu/ xenial-updates main multiverse restricted universe" >> /etc/apt/sources.list \
     && apt-get clean \
     && apt-get update \
+
     && echo "从 apt 获取软件" \
-    && apt-get install -y bzip2 wget \
+    && apt-get install -y bzip2 wget libgl1-mesa-glx qt5-default ttf-wqy-microhei \
     && echo "安装编译环境" \
-    && apt-get install -y build-essential libboost-all-dev python-dev cmake \
-    && apt-get clean \
-    && echo "安装 ta-lib 内核" \
-    && cd /opt \
-    && wget -t 0 http://kent.dl.sourceforge.net/project/ta-lib/ta-lib/0.4.0/ta-lib-0.4.0-src.tar.gz \
-    && tar -zxvf ta-lib-0.4.0-src.tar.gz \
-    && rm ta-lib-0.4.0-src.tar.gz \
-    && cd ta-lib \
-    && ./configure --prefix=/usr \
-    && make && make install \
-    && echo "安装 miniconda" \
+    && apt-get install -y build-essential libboost-all-dev python-dev cmake
+
+RUN echo "安装 VNC 服务，使用固定密码 123456 登录" \
+    && apt-get install -y x11vnc xvfb \
+    && mkdir ~/.vnc \
+    && x11vnc -storepasswd 123456 ~/.vnc/passwd \
+    && apt-get clean
+
+RUN echo "安装 anaconda" \
     && mkdir /tmp/conda/ \
     && cd /tmp/conda/ \
-#    && echo "下载 Miniconda by Python2" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda2-latest-Linux-x86_64.sh \
-    && echo "下载 Miniconda by Python3" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    # && echo "下载 Miniconda by Python3" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && echo "下载 Miniconda by Python2" && wget -t 0 https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda2-latest-Linux-x86_64.sh \
     && bash Miniconda*.sh -b -p /opt/conda \
     && rm Miniconda*.sh \
+    # && echo "下载 anaconda by Python2" && wget -t 0 https://repo.continuum.io/archive/Anaconda2-4.4.0-Linux-x86_64.sh \
+    # && bash Anaconda*.sh -b -p /opt/conda \
+    # && rm Anaconda*.sh \
     && echo "设置 conda 和 python 的环境路径" \
     && ln -s /opt/conda/bin/python /usr/local/bin/python \
     && ln -s /opt/conda/bin/conda /usr/local/bin/conda \
-    && ln -s /opt/conda/bin/pip /usr/local/bin/pip \
-    && echo "设置 conda 国内源, 从 conda 安装 python 库" \
+    && ln -s /opt/conda/bin/pip /usr/local/bin/pip
+
+RUN echo "设置 conda 国内源, 从 conda 安装 python 库" \
     && conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/ \
     && conda config --set show_channel_urls yes \
-    && conda install -y pymongo pyzmq numpy msgpack-python \
-    && echo "更改 pip 源" \
+    && conda install -y pymongo pyzmq numpy msgpack-python qtpy pyqt \
+    && conda install -c https://conda.anaconda.org/quantopian ta-lib \
+    && conda clean -ay
+
+RUN echo "从 pip 安装 python 库" \
     && mkdir ~/.pip \
     && echo "[global]" >> ~/.pip/pip.conf \
     && echo "index-url = http://pypi.douban.com/simple" >> ~/.pip/pip.conf \
     && echo "使用 pip 安装 python 库" \
-    && pip install TA-Lib \
-    && conda clean -ay \
-    && echo "安装结束"
+    && pip --trusted-host pypi.douban.com install ta-lib websocket-client qdarkstyle psutil quantopian-tools \
+    && pip --trusted-host pypi.douban.com install zipline
+
+
+RUN echo "安装 fluxbox 桌面管理器" \
+    && apt-get install -y fluxbox
+
+RUN echo "安装 mongodb 服务" \
+    && mkdir -p /data/db \
+    && apt-get install -y mongodb \
+    && systemctl enable mongodb.service \
+    && sed -i 's/bind_ip = 127.0.0.1/\#bind_ip = 127.0.0.1/g' /etc/mongodb.conf
+
+# 从本地编译安装 vnpy 以及相关接口库
+COPY ./vnpy/ /usr/src/vnpy/
+COPY ./setup.py /usr/src/
+#RUN cd /usr/src && pwd && ls
+RUN echo "编译安装 vnpy 以及相关接口库" \
+    && cd /usr/src/vnpy/api/ctp && ./build.sh \
+    && cp -af /usr/src/vnpy/api/ctp/build/lib/*.so /usr/src/vnpy/api/ctp \
+    && cd /usr/src && python ./setup.py build install \
+    && cp -af /usr/src/vnpy/trader/gateway/ctpGateway/CTP_connect.json /opt/conda/lib/python2.7/site-packages/vnpy-1.6.2b0-py2.7.egg/vnpy/trader/gateway/ctpGateway/CTP_connect.json \
+    && cp -af /usr/src/vnpy/trader/app/dataRecorder/DR_setting.json /opt/conda/lib/python2.7/site-packages/vnpy-1.6.2b0-py2.7.egg/vnpy/trader/app/dataRecorder/DR_setting.json
+
+
+# 在客户端登录时自动启动 GUI 程序 (might not be the best way to do it, but it does the trick)
+#RUN bash -c 'echo "python /srv/vnpy/examples/VnTrader/run_simple.py" >> ~/.bashrc'
+#RUN bash -c 'echo "/usr/bin/xterm" >> ~/.bashrc'
+# 设置登录时开启本地 mongodb 服务并激活图形管理界面
+RUN bash -c 'echo "service mongodb restart && fluxbox &" >> ~/.bashrc'
+
+
+RUN    echo "安装配置结束"
+
 
 WORKDIR /srv/vnpy
 
+
 # 暂时不设置入口点，否则不能使用 -it 交互模式
 # ENTRYPOINT python /srv/vnpy/vn.trader/vtServer.py
+

@@ -26,6 +26,7 @@ import datetime
 
 from vnpy.api.oanda import OandaApi
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getJsonPath
 
 # 价格类型映射
 priceTypeMap = {}
@@ -53,16 +54,15 @@ class OandaGateway(VtGateway):
         
         self.qryEnabled = False         # 是否要启动循环查询
         
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
+        
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -329,7 +329,8 @@ class Api(OandaApi):
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])    
         tick.bidPrice1 = d['bid']
         tick.askPrice1 = d['ask']
-        tick.time = getTime(d['time'])
+        tick.time = getTime(d['time']) + '.0'   # 补齐毫秒部分
+        tick.date = datetime.datetime.utcnow().strftime('%Y%m%d')  # OANDA的时间是UTC标准时
         
         # 做市商的TICK数据只有买卖的报价，因此最新价格选用中间价代替
         tick.lastPrice = (tick.bidPrice1 + tick.askPrice1)/2        

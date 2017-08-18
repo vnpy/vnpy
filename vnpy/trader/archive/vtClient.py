@@ -11,7 +11,7 @@ from vnpy.rpc import RpcClient
 
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 
@@ -148,6 +148,9 @@ class ClientEngine(MainEngine):
 #----------------------------------------------------------------------
 def main():
     """客户端主程序入口"""
+    # 创建Qt对象
+    qApp = createQApp()
+    
     # 创建事件引擎
     eventEngine = EventEngine2()
     eventEngine.start(timer=False)
