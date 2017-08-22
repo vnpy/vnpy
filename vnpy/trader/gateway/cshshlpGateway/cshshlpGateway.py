@@ -389,6 +389,7 @@ class CshshlpTdApi(CsHsHlp):
             contract.underlyingSymbol = d['stock_code']
             contract.productClass = PRODUCT_OPTION
             contract.optionType = optionTypeMapReverse[d['option_type']]
+            contract.expiryDate = d['end_date']
             
             self.gateway.onContract(contract)
         

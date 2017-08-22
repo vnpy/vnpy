@@ -260,6 +260,7 @@ class VtContractData(VtBaseData):
         self.strikePrice = EMPTY_FLOAT          # 期权行权价
         self.underlyingSymbol = EMPTY_STRING    # 标的物合约代码
         self.optionType = EMPTY_UNICODE         # 期权类型
+        self.expiryDate = EMPTY_STRING          # 到期日
 
 
 ########################################################################
