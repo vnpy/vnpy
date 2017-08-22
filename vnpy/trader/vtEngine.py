@@ -350,7 +350,7 @@ class DataEngine(object):
         self.orderDict[order.vtOrderID] = order
         
         # 如果订单的状态是全部成交或者撤销，则需要从workingOrderDict中移除
-        if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
+        if order.status in [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]:
             if order.vtOrderID in self.workingOrderDict:
                 del self.workingOrderDict[order.vtOrderID]
         # 否则则更新字典中的数据        

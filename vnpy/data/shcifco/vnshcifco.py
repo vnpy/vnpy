@@ -132,14 +132,15 @@ class ShcifcoApi(object):
             barData = barStr.split(',')
             d = {
                 'symbol': barData[0],
-                'date': barData[1],
+                # 'date': barData[1],   # trading day
                 'time': barData[2],
                 'open': float(barData[3]),
                 'high': float(barData[4]),
                 'low': float(barData[5]),
                 'close': float(barData[6]),
                 'volume': int(barData[7]),
-                'openInterest': int(barData[8])
+                'openInterest': int(barData[8]),
+                'date': barData[9]  # natural day
             }
             barList.append(d)
             
