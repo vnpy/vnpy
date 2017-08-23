@@ -341,7 +341,7 @@ class BacktestingEngine(object):
                     self.strategy.pos -= order.totalVolume
                 
                 trade.volume = order.totalVolume
-                trade.tradeTime = str(self.dt)
+                trade.tradeTime = self.dt.strftime('%H:%M:%S')
                 trade.dt = self.dt
                 self.strategy.onTrade(trade)
                 
@@ -403,7 +403,7 @@ class BacktestingEngine(object):
                 trade.direction = so.direction
                 trade.offset = so.offset
                 trade.volume = so.volume
-                trade.tradeTime = str(self.dt)
+                trade.tradeTime = self.dt.strftime('%H:%M:%S')
                 trade.dt = self.dt
                 
                 self.tradeDict[tradeID] = trade
@@ -445,7 +445,7 @@ class BacktestingEngine(object):
         order.totalVolume = volume
         order.orderID = orderID
         order.vtOrderID = orderID
-        order.orderTime = str(self.dt)
+        order.orderTime = self.dt.strftime('%H:%M:%S')
         
         # CTA委托类型映射
         if orderType == CTAORDER_BUY:
@@ -473,7 +473,7 @@ class BacktestingEngine(object):
         if vtOrderID in self.workingLimitOrderDict:
             order = self.workingLimitOrderDict[vtOrderID]
             order.status = STATUS_CANCELLED
-            order.cancelTime = str(self.dt)
+            order.cancelTime = self.dt.strftime('%H:%M:%S')
             del self.workingLimitOrderDict[vtOrderID]
         
     #----------------------------------------------------------------------
