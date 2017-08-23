@@ -118,17 +118,17 @@ class DrEngineManager(QtWidgets.QWidget):
         setting = self.drEngine.getSetting()
         
         for d in setting.values():
-            if d['tick']:
+            if 'tick' in d and d['tick']:
                 self.tickTable.insertRow(0)
                 self.tickTable.setItem(0, 0, TableCell(d['symbol']))
                 self.tickTable.setItem(0, 1, TableCell(d['gateway']))                
                 
-            if d['bar']:
+            if 'bar' in d and d['bar']:
                 self.barTable.insertRow(0)
                 self.barTable.setItem(0, 0, TableCell(d['symbol']))
                 self.barTable.setItem(0, 1, TableCell(d['gateway'])) 
 
-            if d['active']:
+            if 'active'in d and d['active']:
                 self.activeTable.insertRow(0)
                 self.activeTable.setItem(0, 0, TableCell(d['active']))
                 self.activeTable.setItem(0, 1, TableCell(d['symbol']))

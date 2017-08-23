@@ -72,7 +72,7 @@ class StPosMonitor(BasicMonitor):
 ########################################################################
 class StLogMonitor(QtWidgets.QTextEdit):
     """价差日志监控"""
-    signal = QtCore.pyqtSignal(type(Event()))
+    signal = QtCore.Signal(type(Event()))
     
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine, parent=None):
@@ -300,7 +300,7 @@ class StModeComboBox(QtWidgets.QComboBox):
 ########################################################################
 class StActiveButton(QtWidgets.QPushButton):
     """"""
-    signalActive = QtCore.pyqtSignal(bool)
+    signalActive = QtCore.Signal(bool)
 
     #----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, parent=None):

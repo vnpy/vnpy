@@ -10,6 +10,7 @@ Release/
 
 # Python编译文件
 *.pyc
+*.pyo
 
 # WingIDE文件
 *.wpr
@@ -44,6 +45,7 @@ Release/
 vn.ctp/build/*
 vn.lts/build/*
 .idea
+.vscode
 .gitignore
 
 vn.trader/ctaAlgo/data/*

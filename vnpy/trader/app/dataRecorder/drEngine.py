@@ -6,7 +6,7 @@
 使用DR_setting.json来配置需要收集的合约，以及主力合约代码。
 '''
 
-#import json
+import json
 import csv
 import os
 import copy
@@ -101,6 +101,18 @@ class DrEngine(object):
 
                     tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
                     self.tickDict[vtSymbol] = tick
+                    
+                    # 保存到配置字典中
+                    if vtSymbol not in self.settingDict:
+                        d = {
+                            'symbol': symbol,
+                            'gateway': setting[1],
+                            'tick': True
+                        }
+                        self.settingDict[vtSymbol] = d
+                    else:
+                        d = self.settingDict[vtSymbol]
+                        d['tick'] = True
 
             if 'bar' in drSetting:
                 l = drSetting['bar']
@@ -124,20 +136,37 @@ class DrEngine(object):
 
                     bar = VtBarData() 
                     self.barDict[vtSymbol] = bar
+                    
+                    # 保存到配置字典中
+                    if vtSymbol not in self.settingDict:
+                        d = {
+                            'symbol': symbol,
+                            'gateway': setting[1],
+                            'bar': True
+                        }
+                        self.settingDict[vtSymbol] = d
+                    else:
+                        d = self.settingDict[vtSymbol]
+                        d['bar'] = True                    
 
             if 'active' in drSetting:
                 d = drSetting['active']
 
                 # 注意这里的vtSymbol对于IB和LTS接口，应该后缀.交易所
                 for activeSymbol, vtSymbol in d.items():
-                    self.activeSymbolDict[vtSymbol] = activeSymbol
-
-            # 启动数据插入线程
-            self.start()
-
-            # 注册事件监听
-            self.registerEvent()            
-        
+                    self.activeSymbolDict[vtSymbol] = activeSymbol    
+                    
+                    # 保存到配置字典中
+                    if vtSymbol not in self.settingDict:
+                        d = {
+                            'symbol': symbol,
+                            'gateway': setting[1],
+                            'active': True
+                        }
+                        self.settingDict[vtSymbol] = d
+                    else:
+                        d = self.settingDict[vtSymbol]
+                        d['active'] = True                    
     
     ##----------------------------------------------------------------------
     #def loadCsvSetting(self):
@@ -181,7 +210,7 @@ class DrEngine(object):
                     #self.activeSymbolDict[vtSymbol] = activeSymbol
                     
                 ## 保存配置到缓存中
-                self.settingDict[vtSymbol] = d
+                #self.settingDict[vtSymbol] = d
                 
     #----------------------------------------------------------------------
     def getSetting(self):
@@ -247,7 +276,7 @@ class DrEngine(object):
                 
                 bar.date = tick.date
                 bar.time = tick.time
-                bar.datetime = tick.datetime
+                bar.datetime = tick.datetime.replace(second=0, microsecond=0)
                 bar.volume = tick.volume
                 bar.openInterest = tick.openInterest        
             # 否则继续累加新的K线

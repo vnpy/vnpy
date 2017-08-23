@@ -46,7 +46,7 @@ class ShcifcoApi(object):
         params = {'ids': symbol}
         
         data = self.getData(path, params)
-        if not data:
+        if not data or data == ';':
             return None
         
         data = data.split(';')[0]
@@ -113,7 +113,7 @@ class ShcifcoApi(object):
         }
         # 可选参数
         if date:
-            params['date'] = date
+            params['tradingday'] = date
         if period:
             params['period'] = period
         
@@ -132,14 +132,15 @@ class ShcifcoApi(object):
             barData = barStr.split(',')
             d = {
                 'symbol': barData[0],
-                'date': barData[1],
+                # 'date': barData[1],   # trading day
                 'time': barData[2],
                 'open': float(barData[3]),
                 'high': float(barData[4]),
                 'low': float(barData[5]),
                 'close': float(barData[6]),
                 'volume': int(barData[7]),
-                'openInterest': int(barData[8])
+                'openInterest': int(barData[8]),
+                'date': barData[9]  # natural day
             }
             barList.append(d)
             

@@ -10,14 +10,26 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 from itertools import product
 import multiprocessing
+import copy
+
 import pymongo
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 如果安装了seaborn则设置为白色风格
+try:
+    import seaborn as sns       
+    sns.set_style('whitegrid')  
+except ImportError:
+    pass
 
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 
-from vnpy.trader.app.ctaStrategy.ctaBase import *
+from .ctaBase import *
 
 
 ########################################################################
@@ -34,19 +46,15 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        # 本地停止单编号计数
-        self.stopOrderCount = 0
-        # stopOrderID = STOPORDERPREFIX + str(stopOrderCount)
+        # 本地停止单
+        self.stopOrderCount = 0     # 编号计数：stopOrderID = STOPORDERPREFIX + str(stopOrderCount)
         
-        # 本地停止单字典
-        # key为stopOrderID，value为stopOrder对象
+        # 本地停止单字典, key为stopOrderID，value为stopOrder对象
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
         
-        # 引擎类型为回测
-        self.engineType = ENGINETYPE_BACKTESTING
+        self.engineType = ENGINETYPE_BACKTESTING    # 引擎类型为回测
         
-        # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
         
@@ -54,6 +62,7 @@ class BacktestingEngine(object):
         self.initDays = 0        
         self.endDate = ''
 
+        self.capital = 1000000      # 回测时的起始本金（默认100万）
         self.slippage = 0           # 回测时假设的滑点
         self.rate = 0               # 回测时假设的佣金比例（适用于百分比佣金）
         self.size = 1               # 合约大小，默认为1    
@@ -62,10 +71,7 @@ class BacktestingEngine(object):
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
         
-        #self.historyData = []       # 历史数据的列表，回测用
         self.initData = []          # 初始化用的数据
-        #self.backtestingData = []   # 回测用的数据
-        
         self.dbName = ''            # 回测数据库名
         self.symbol = ''            # 回测集合名
         
@@ -73,9 +79,9 @@ class BacktestingEngine(object):
         self.dataEndDate = None         # 回测数据结束日期，datetime对象
         self.strategyStartDate = None   # 策略启动日期（即前面的数据用于初始化），datetime对象
         
+        self.limitOrderCount = 0                    # 限价单编号
         self.limitOrderDict = OrderedDict()         # 限价单字典
         self.workingLimitOrderDict = OrderedDict()  # 活动限价单字典，用于进行撮合用
-        self.limitOrderCount = 0                    # 限价单编号
         
         self.tradeCount = 0             # 成交编号
         self.tradeDict = OrderedDict()  # 成交字典
@@ -87,6 +93,31 @@ class BacktestingEngine(object):
         self.bar = None
         self.dt = None      # 最新的时间
         
+        # 日线回测结果计算用
+        self.dailyResultDict = OrderedDict()
+    
+    #------------------------------------------------
+    # 通用功能
+    #------------------------------------------------    
+    
+    #----------------------------------------------------------------------
+    def roundToPriceTick(self, price):
+        """取整价格到合约最小价格变动"""
+        if not self.priceTick:
+            return price
+        
+        newPrice = round(price/self.priceTick, 0) * self.priceTick
+        return newPrice
+
+    #----------------------------------------------------------------------
+    def output(self, content):
+        """输出内容"""
+        print str(datetime.now()) + "\t" + content     
+    
+    #------------------------------------------------
+    # 参数设置相关
+    #------------------------------------------------
+    
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
         """设置回测的启动日期"""
@@ -119,6 +150,35 @@ class BacktestingEngine(object):
         """设置历史数据所用的数据库"""
         self.dbName = dbName
         self.symbol = symbol
+    
+    #----------------------------------------------------------------------
+    def setCapital(self, capital):
+        """设置资本金"""
+        self.capital = capital
+    
+    #----------------------------------------------------------------------
+    def setSlippage(self, slippage):
+        """设置滑点点数"""
+        self.slippage = slippage
+        
+    #----------------------------------------------------------------------
+    def setSize(self, size):
+        """设置合约大小"""
+        self.size = size
+        
+    #----------------------------------------------------------------------
+    def setRate(self, rate):
+        """设置佣金比例"""
+        self.rate = rate
+        
+    #----------------------------------------------------------------------
+    def setPriceTick(self, priceTick):
+        """设置价格最小变动"""
+        self.priceTick = priceTick
+    
+    #------------------------------------------------
+    # 数据回放相关
+    #------------------------------------------------    
     
     #----------------------------------------------------------------------
     def loadHistoryData(self):
@@ -196,18 +256,24 @@ class BacktestingEngine(object):
         """新的K线"""
         self.bar = bar
         self.dt = bar.datetime
+        
         self.crossLimitOrder()      # 先撮合限价单
         self.crossStopOrder()       # 再撮合停止单
         self.strategy.onBar(bar)    # 推送K线到策略中
+        
+        self.updateDailyClose(bar.datetime, bar.close)
     
     #----------------------------------------------------------------------
     def newTick(self, tick):
         """新的Tick"""
         self.tick = tick
         self.dt = tick.datetime
+        
         self.crossLimitOrder()
         self.crossStopOrder()
         self.strategy.onTick(tick)
+        
+        self.updateDailyClose(tick.datetime, tick.lastPrice)
         
     #----------------------------------------------------------------------
     def initStrategy(self, strategyClass, setting=None):
@@ -217,96 +283,7 @@ class BacktestingEngine(object):
         """
         self.strategy = strategyClass(self, setting)
         self.strategy.name = self.strategy.className
-        
-    #----------------------------------------------------------------------
-    def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
-        """发单"""
-        self.limitOrderCount += 1
-        orderID = str(self.limitOrderCount)
-        
-        order = VtOrderData()
-        order.vtSymbol = vtSymbol
-        order.price = self.roundToPriceTick(price)
-        order.totalVolume = volume
-        order.orderID = orderID
-        order.vtOrderID = orderID
-        order.orderTime = str(self.dt)
-        
-        # CTA委托类型映射
-        if orderType == CTAORDER_BUY:
-            order.direction = DIRECTION_LONG
-            order.offset = OFFSET_OPEN
-        elif orderType == CTAORDER_SELL:
-            order.direction = DIRECTION_SHORT
-            order.offset = OFFSET_CLOSE
-        elif orderType == CTAORDER_SHORT:
-            order.direction = DIRECTION_SHORT
-            order.offset = OFFSET_OPEN
-        elif orderType == CTAORDER_COVER:
-            order.direction = DIRECTION_LONG
-            order.offset = OFFSET_CLOSE     
-        
-        # 保存到限价单字典中
-        self.workingLimitOrderDict[orderID] = order
-        self.limitOrderDict[orderID] = order
-        
-        return orderID
     
-    #----------------------------------------------------------------------
-    def cancelOrder(self, vtOrderID):
-        """撤单"""
-        if vtOrderID in self.workingLimitOrderDict:
-            order = self.workingLimitOrderDict[vtOrderID]
-            order.status = STATUS_CANCELLED
-            order.cancelTime = str(self.dt)
-            del self.workingLimitOrderDict[vtOrderID]
-        
-    #----------------------------------------------------------------------
-    def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
-        """发停止单（本地实现）"""
-        self.stopOrderCount += 1
-        stopOrderID = STOPORDERPREFIX + str(self.stopOrderCount)
-        
-        so = StopOrder()
-        so.vtSymbol = vtSymbol
-        so.price = self.roundToPriceTick(price)
-        so.volume = volume
-        so.strategy = strategy
-        so.status = STOPORDER_WAITING
-        so.stopOrderID = stopOrderID
-        
-        if orderType == CTAORDER_BUY:
-            so.direction = DIRECTION_LONG
-            so.offset = OFFSET_OPEN
-        elif orderType == CTAORDER_SELL:
-            so.direction = DIRECTION_SHORT
-            so.offset = OFFSET_CLOSE
-        elif orderType == CTAORDER_SHORT:
-            so.direction = DIRECTION_SHORT
-            so.offset = OFFSET_OPEN
-        elif orderType == CTAORDER_COVER:
-            so.direction = DIRECTION_LONG
-            so.offset = OFFSET_CLOSE           
-        
-        # 保存stopOrder对象到字典中
-        self.stopOrderDict[stopOrderID] = so
-        self.workingStopOrderDict[stopOrderID] = so
-        
-        # 推送停止单初始更新
-        self.strategy.onStopOrder(so)        
-        
-        return stopOrderID
-    
-    #----------------------------------------------------------------------
-    def cancelStopOrder(self, stopOrderID):
-        """撤销停止单"""
-        # 检查停止单是否存在
-        if stopOrderID in self.workingStopOrderDict:
-            so = self.workingStopOrderDict[stopOrderID]
-            so.status = STOPORDER_CANCELLED
-            del self.workingStopOrderDict[stopOrderID]
-            self.strategy.onStopOrder(so)
-            
     #----------------------------------------------------------------------
     def crossLimitOrder(self):
         """基于最新数据撮合限价单"""
@@ -364,7 +341,7 @@ class BacktestingEngine(object):
                     self.strategy.pos -= order.totalVolume
                 
                 trade.volume = order.totalVolume
-                trade.tradeTime = str(self.dt)
+                trade.tradeTime = self.dt.strftime('%H:%M:%S')
                 trade.dt = self.dt
                 self.strategy.onTrade(trade)
                 
@@ -426,7 +403,7 @@ class BacktestingEngine(object):
                 trade.direction = so.direction
                 trade.offset = so.offset
                 trade.volume = so.volume
-                trade.tradeTime = str(self.dt)
+                trade.tradeTime = self.dt.strftime('%H:%M:%S')
                 trade.dt = self.dt
                 
                 self.tradeDict[tradeID] = trade
@@ -451,7 +428,105 @@ class BacktestingEngine(object):
                 self.strategy.onStopOrder(so)
                 self.strategy.onOrder(order)
                 self.strategy.onTrade(trade)
-                
+    
+    #------------------------------------------------
+    # 策略接口相关
+    #------------------------------------------------      
+
+    #----------------------------------------------------------------------
+    def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
+        """发单"""
+        self.limitOrderCount += 1
+        orderID = str(self.limitOrderCount)
+        
+        order = VtOrderData()
+        order.vtSymbol = vtSymbol
+        order.price = self.roundToPriceTick(price)
+        order.totalVolume = volume
+        order.orderID = orderID
+        order.vtOrderID = orderID
+        order.orderTime = self.dt.strftime('%H:%M:%S')
+        
+        # CTA委托类型映射
+        if orderType == CTAORDER_BUY:
+            order.direction = DIRECTION_LONG
+            order.offset = OFFSET_OPEN
+        elif orderType == CTAORDER_SELL:
+            order.direction = DIRECTION_SHORT
+            order.offset = OFFSET_CLOSE
+        elif orderType == CTAORDER_SHORT:
+            order.direction = DIRECTION_SHORT
+            order.offset = OFFSET_OPEN
+        elif orderType == CTAORDER_COVER:
+            order.direction = DIRECTION_LONG
+            order.offset = OFFSET_CLOSE     
+        
+        # 保存到限价单字典中
+        self.workingLimitOrderDict[orderID] = order
+        self.limitOrderDict[orderID] = order
+        
+        return orderID
+    
+    #----------------------------------------------------------------------
+    def cancelOrder(self, vtOrderID):
+        """撤单"""
+        if vtOrderID in self.workingLimitOrderDict:
+            order = self.workingLimitOrderDict[vtOrderID]
+            order.status = STATUS_CANCELLED
+            order.cancelTime = self.dt.strftime('%H:%M:%S')
+            del self.workingLimitOrderDict[vtOrderID]
+        
+    #----------------------------------------------------------------------
+    def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
+        """发停止单（本地实现）"""
+        self.stopOrderCount += 1
+        stopOrderID = STOPORDERPREFIX + str(self.stopOrderCount)
+        
+        so = StopOrder()
+        so.vtSymbol = vtSymbol
+        so.price = self.roundToPriceTick(price)
+        so.volume = volume
+        so.strategy = strategy
+        so.status = STOPORDER_WAITING
+        so.stopOrderID = stopOrderID
+        
+        if orderType == CTAORDER_BUY:
+            so.direction = DIRECTION_LONG
+            so.offset = OFFSET_OPEN
+        elif orderType == CTAORDER_SELL:
+            so.direction = DIRECTION_SHORT
+            so.offset = OFFSET_CLOSE
+        elif orderType == CTAORDER_SHORT:
+            so.direction = DIRECTION_SHORT
+            so.offset = OFFSET_OPEN
+        elif orderType == CTAORDER_COVER:
+            so.direction = DIRECTION_LONG
+            so.offset = OFFSET_CLOSE           
+        
+        # 保存stopOrder对象到字典中
+        self.stopOrderDict[stopOrderID] = so
+        self.workingStopOrderDict[stopOrderID] = so
+        
+        # 推送停止单初始更新
+        self.strategy.onStopOrder(so)        
+        
+        return stopOrderID
+    
+    #----------------------------------------------------------------------
+    def cancelStopOrder(self, stopOrderID):
+        """撤销停止单"""
+        # 检查停止单是否存在
+        if stopOrderID in self.workingStopOrderDict:
+            so = self.workingStopOrderDict[stopOrderID]
+            so.status = STOPORDER_CANCELLED
+            del self.workingStopOrderDict[stopOrderID]
+            self.strategy.onStopOrder(so)
+    
+    #----------------------------------------------------------------------
+    def putStrategyEvent(self, name):
+        """发送策略更新事件，回测中忽略"""
+        pass
+     
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
         """考虑到回测中不允许向数据库插入数据，防止实盘交易中的一些代码出错"""
@@ -473,10 +548,10 @@ class BacktestingEngine(object):
         log = str(self.dt) + ' ' + content 
         self.logList.append(log)
         
-    #----------------------------------------------------------------------
-    def output(self, content):
-        """输出内容"""
-        print str(datetime.now()) + "\t" + content 
+
+    #------------------------------------------------
+    # 结果计算相关
+    #------------------------------------------------      
     
     #----------------------------------------------------------------------
     def calculateBacktestingResult(self):
@@ -495,6 +570,10 @@ class BacktestingEngine(object):
         posList = [0]               # 每笔成交后的持仓情况        
 
         for trade in self.tradeDict.values():
+            # 复制成交对象，因为下面的开平仓交易配对涉及到对成交数量的修改
+            # 若不进行复制直接操作，则计算完后所有成交的数量会变成0
+            trade = copy.copy(trade)
+            
             # 多头交易
             if trade.direction == DIRECTION_LONG:
                 # 如果尚无空头交易
@@ -582,7 +661,23 @@ class BacktestingEngine(object):
                             # 如果开仓交易还有剩余，则进入下一轮循环
                             else:
                                 pass                    
-                    
+        
+        # 到最后交易日尚未平仓的交易，则以最后价格平仓
+        if self.mode == self.BAR_MODE:
+            endPrice = self.bar.close
+        else:
+            endPrice = self.tick.lastPrice
+            
+        for trade in longTrade:
+            result = TradingResult(trade.price, trade.dt, endPrice, self.dt, 
+                                   trade.volume, self.rate, self.slippage, self.size)
+            resultList.append(result)
+            
+        for trade in shortTrade:
+            result = TradingResult(trade.price, trade.dt, endPrice, self.dt, 
+                                   -trade.volume, self.rate, self.slippage, self.size)
+            resultList.append(result)            
+        
         # 检查是否有交易
         if not resultList:
             self.output(u'无交易结果')
@@ -690,15 +785,8 @@ class BacktestingEngine(object):
         self.output(u'盈亏比：\t%s' %formatNumber(d['profitLossRatio']))
     
         # 绘图
-        import matplotlib.pyplot as plt        
-        import numpy as np
+        fig = plt.figure(figsize=(10, 16))
         
-        try:
-            import seaborn as sns       # 如果安装了seaborn则设置为白色风格
-            sns.set_style('whitegrid')  
-        except ImportError:
-            pass
-
         pCapital = plt.subplot(4, 1, 1)
         pCapital.set_ylabel("capital")
         pCapital.plot(d['capitalList'], color='r', lw=0.8)
@@ -727,30 +815,22 @@ class BacktestingEngine(object):
         plt.show()
     
     #----------------------------------------------------------------------
-    def putStrategyEvent(self, name):
-        """发送策略更新事件，回测中忽略"""
-        pass
-
-    #----------------------------------------------------------------------
-    def setSlippage(self, slippage):
-        """设置滑点点数"""
-        self.slippage = slippage
+    def clearBacktestingResult(self):
+        """清空之前回测的结果"""
+        # 清空限价单相关
+        self.limitOrderCount = 0
+        self.limitOrderDict.clear()
+        self.workingLimitOrderDict.clear()        
         
-    #----------------------------------------------------------------------
-    def setSize(self, size):
-        """设置合约大小"""
-        self.size = size
+        # 清空停止单相关
+        self.stopOrderCount = 0
+        self.stopOrderDict.clear()
+        self.workingStopOrderDict.clear()
         
-    #----------------------------------------------------------------------
-    def setRate(self, rate):
-        """设置佣金比例"""
-        self.rate = rate
+        # 清空成交相关
+        self.tradeCount = 0
+        self.tradeDict.clear()
         
-    #----------------------------------------------------------------------
-    def setPriceTick(self, priceTick):
-        """设置价格最小变动"""
-        self.priceTick = priceTick
-
     #----------------------------------------------------------------------
     def runOptimization(self, strategyClass, optimizationSetting):
         """优化参数"""
@@ -786,23 +866,6 @@ class BacktestingEngine(object):
         return result
             
     #----------------------------------------------------------------------
-    def clearBacktestingResult(self):
-        """清空之前回测的结果"""
-        # 清空限价单相关
-        self.limitOrderCount = 0
-        self.limitOrderDict.clear()
-        self.workingLimitOrderDict.clear()        
-        
-        # 清空停止单相关
-        self.stopOrderCount = 0
-        self.stopOrderDict.clear()
-        self.workingStopOrderDict.clear()
-        
-        # 清空成交相关
-        self.tradeCount = 0
-        self.tradeDict.clear()
-        
-    #----------------------------------------------------------------------
     def runParallelOptimization(self, strategyClass, optimizationSetting):
         """并行优化参数"""
         # 获取优化设置        
@@ -833,18 +896,150 @@ class BacktestingEngine(object):
         self.output(u'优化结果：')
         for result in resultList:
             self.output(u'%s: %s' %(result[0], result[1]))    
+
+    #----------------------------------------------------------------------
+    def updateDailyClose(self, dt, price):
+        """更新每日收盘价"""
+        date = dt.date()
+        
+        if date not in self.dailyResultDict:
+            self.dailyResultDict[date] = DailyResult(date, price)
+        else:
+            self.dailyResultDict[date].closePrice = price
             
     #----------------------------------------------------------------------
-    def roundToPriceTick(self, price):
-        """取整价格到合约最小价格变动"""
-        if not self.priceTick:
-            return price
+    def calculateDailyResult(self):
+        """计算按日统计的交易结果"""
+        self.output(u'计算按日统计结果')
         
-        newPrice = round(price/self.priceTick, 0) * self.priceTick
-        return newPrice
+        # 将成交添加到每日交易结果中
+        for trade in self.tradeDict.values():
+            date = trade.dt.date()
+            dailyResult = self.dailyResultDict[date]
+            dailyResult.addTrade(trade)
+            
+        # 遍历计算每日结果
+        previousClose = 0
+        openPosition = 0
+        for dailyResult in self.dailyResultDict.values():
+            dailyResult.previousClose = previousClose
+            previousClose = dailyResult.closePrice
+            
+            dailyResult.calculatePnl(openPosition, self.size, self.rate, self.slippage )
+            openPosition = dailyResult.closePosition
+            
+        # 生成DataFrame
+        resultDict = {k:[] for k in dailyResult.__dict__.keys()}
+        for dailyResult in self.dailyResultDict.values():
+            for k, v in dailyResult.__dict__.items():
+                resultDict[k].append(v)
+                
+        resultDf = pd.DataFrame.from_dict(resultDict)
+        
+        # 计算衍生数据
+        resultDf = resultDf.set_index('date')
+        
+        return resultDf
     
-        
+    #----------------------------------------------------------------------
+    def showDailyResult(self, df=None):
+        """显示按日统计的交易结果"""
+        if not df:
+            df = self.calculateDailyResult()
 
+        df['balance'] = df['netPnl'].cumsum() + self.capital
+        df['return'] = (np.log(df['balance']) - np.log(df['balance'].shift(1))).fillna(0)
+        df['highlevel'] = df['balance'].rolling(min_periods=1,window=len(df),center=False).max()
+        df['drawdown'] = df['balance'] - df['highlevel']        
+        
+        # 计算统计结果
+        startDate = df.index[0]
+        endDate = df.index[-1]
+
+        totalDays = len(df)
+        profitDays = len(df[df['netPnl']>0])
+        lossDays = len(df[df['netPnl']<0])
+        
+        endBalance = df['balance'].iloc[-1]
+        maxDrawdown = df['drawdown'].min()
+        
+        totalNetPnl = df['netPnl'].sum()
+        dailyNetPnl = totalNetPnl / totalDays
+        
+        totalCommission = df['commission'].sum()
+        dailyCommission = totalCommission / totalDays
+        
+        totalSlippage = df['slippage'].sum()
+        dailySlippage = totalSlippage / totalDays
+        
+        totalTurnover = df['turnover'].sum()
+        dailyTurnover = totalTurnover / totalDays
+        
+        totalTradeCount = df['tradeCount'].sum()
+        dailyTradeCount = totalTradeCount / totalDays
+        
+        totalReturn = (endBalance/self.capital - 1) * 100
+        dailyReturn = df['return'].mean() * 100
+        returnStd = df['return'].std() * 100
+        
+        if returnStd:
+            sharpeRatio = dailyReturn / returnStd * np.sqrt(240)
+        else:
+            sharpeRatio = 0
+        
+        # 输出统计结果
+        self.output('-' * 30)
+        self.output(u'首个交易日：\t%s' % startDate)
+        self.output(u'最后交易日：\t%s' % endDate)
+        
+        self.output(u'总交易日：\t%s' % totalDays)
+        self.output(u'盈利交易日\t%s' % profitDays)
+        self.output(u'亏损交易日：\t%s' % lossDays)
+        
+        self.output(u'起始资金：\t%s' % self.capital)
+        self.output(u'结束资金：\t%s' % formatNumber(endBalance))
+    
+        self.output(u'总收益率：\t%s' % formatNumber(totalReturn))
+        self.output(u'总盈亏：\t%s' % formatNumber(totalNetPnl))
+        self.output(u'最大回撤: \t%s' % formatNumber(maxDrawdown))      
+        
+        self.output(u'总手续费：\t%s' % formatNumber(totalCommission))
+        self.output(u'总滑点：\t%s' % formatNumber(totalSlippage))
+        self.output(u'总成交金额：\t%s' % formatNumber(totalTurnover))
+        self.output(u'总成交笔数：\t%s' % formatNumber(totalTradeCount))
+        
+        self.output(u'日均盈亏：\t%s' % formatNumber(dailyNetPnl))
+        self.output(u'日均手续费：\t%s' % formatNumber(dailyCommission))
+        self.output(u'日均滑点：\t%s' % formatNumber(dailySlippage))
+        self.output(u'日均成交金额：\t%s' % formatNumber(dailyTurnover))
+        self.output(u'日均成交笔数：\t%s' % formatNumber(dailyTradeCount))
+        
+        self.output(u'日均收益率：\t%s%%' % formatNumber(dailyReturn))
+        self.output(u'收益标准差：\t%s%%' % formatNumber(returnStd))
+        self.output(u'Sharpe Ratio：\t%s' % formatNumber(sharpeRatio))
+        
+        # 绘图
+        fig = plt.figure(figsize=(10, 16))
+        
+        pBalance = plt.subplot(4, 1, 1)
+        pBalance.set_title('Balance')
+        df['balance'].plot(legend=True)
+        
+        pDrawdown = plt.subplot(4, 1, 2)
+        pDrawdown.set_title('Drawdown')
+        pDrawdown.fill_between(range(len(df)), df['drawdown'].values)
+        
+        pPnl = plt.subplot(4, 1, 3)
+        pPnl.set_title('Daily Pnl') 
+        df['netPnl'].plot(kind='bar', legend=False, grid=False, xticks=[])
+
+        pKDE = plt.subplot(4, 1, 4)
+        pKDE.set_title('Daily Pnl Distribution')
+        df['netPnl'].hist(bins=50)
+        
+        plt.show()
+        
+        
 ########################################################################
 class TradingResult(object):
     """每笔交易的结果"""
@@ -867,6 +1062,71 @@ class TradingResult(object):
         self.pnl = ((self.exitPrice - self.entryPrice) * volume * size 
                     - self.commission - self.slippage)                      # 净盈亏
 
+
+########################################################################
+class DailyResult(object):
+    """每日交易的结果"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, date, closePrice):
+        """Constructor"""
+        self.date = date                # 日期
+        self.closePrice = closePrice    # 当日收盘价
+        self.previousClose = 0          # 昨日收盘价
+        
+        self.tradeList = []             # 成交列表
+        self.tradeCount = 0             # 成交数量
+        
+        self.openPosition = 0           # 开盘时的持仓
+        self.closePosition = 0          # 收盘时的持仓
+        
+        self.tradingPnl = 0             # 交易盈亏
+        self.positionPnl = 0            # 持仓盈亏
+        self.totalPnl = 0               # 总盈亏
+        
+        self.turnover = 0               # 成交量
+        self.commission = 0             # 手续费
+        self.slippage = 0               # 滑点
+        self.netPnl = 0                 # 净盈亏
+        
+    #----------------------------------------------------------------------
+    def addTrade(self, trade):
+        """添加交易"""
+        self.tradeList.append(trade)
+
+    #----------------------------------------------------------------------
+    def calculatePnl(self, openPosition=0, size=1, rate=0, slippage=0):
+        """
+        计算盈亏
+        size: 合约乘数
+        rate：手续费率
+        slippage：滑点点数
+        """
+        # 持仓部分
+        self.openPosition = openPosition
+        self.positionPnl = self.openPosition * (self.closePrice - self.previousClose) * size
+        self.closePosition = self.openPosition
+        
+        # 交易部分
+        self.tradeCount = len(self.tradeList)
+        
+        for trade in self.tradeList:
+            if trade.direction == DIRECTION_LONG:
+                posChange = trade.volume
+            else:
+                posChange = -trade.volume
+                
+            self.tradingPnl += posChange * (self.closePrice - trade.price) * size
+            self.closePosition += posChange
+            self.turnover += trade.price * trade.volume * size
+            self.commission += trade.price * trade.volume * size * rate
+            self.slippage += trade.volume * size * slippage
+        
+        # 汇总
+        self.totalPnl = self.tradingPnl + self.positionPnl
+        self.netPnl = self.totalPnl - self.commission - self.slippage
+
+    
 
 
 ########################################################################
