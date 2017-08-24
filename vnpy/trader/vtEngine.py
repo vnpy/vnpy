@@ -17,6 +17,10 @@ from vnpy.trader.vtGateway import *
 from vnpy.trader.language import text
 from vnpy.trader.vtFunction import getTempPath, getJsonPath
 
+# 读取日志配置文件
+loggingConFile = 'logging.conf'
+loggingConFile = getJsonPath(loggingConFile, __file__)
+logging.config.fileConfig(loggingConFile)
 
 ########################################################################
 class MainEngine(object):
@@ -25,11 +29,8 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def __init__(self, eventEngine):
         """Constructor"""
-        # 记录今日日期
-        loggingConFile = 'logging.conf'
-        loggingConFile = getJsonPath(loggingConFile, __file__)
-        logging.config.fileConfig(loggingConFile)
         self.log = logging.getLogger('root')
+        # 记录今日日期
 
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
