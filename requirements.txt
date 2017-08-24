@@ -2,3 +2,4 @@ pymongo
 websocket-client
 msgpack-python
 qdarkstyle
+log4mongo>=1.6.1

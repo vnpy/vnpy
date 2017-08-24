@@ -4,6 +4,8 @@ import os
 import shelve
 from collections import OrderedDict
 from datetime import datetime
+import logging.config
+import logging
 
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
@@ -13,7 +15,7 @@ from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.language import text
-from vnpy.trader.vtFunction import getTempPath
+from vnpy.trader.vtFunction import getTempPath, getJsonPath
 
 
 ########################################################################
@@ -24,8 +26,13 @@ class MainEngine(object):
     def __init__(self, eventEngine):
         """Constructor"""
         # 记录今日日期
+        loggingConFile = 'logging.conf'
+        loggingConFile = getJsonPath(loggingConFile, __file__)
+        logging.config.fileConfig(loggingConFile)
+        self.log = logging.getLogger('root')
+
         self.todayDate = datetime.now().strftime('%Y%m%d')
-        
+
         # 绑定事件引擎
         self.eventEngine = eventEngine
         self.eventEngine.start()

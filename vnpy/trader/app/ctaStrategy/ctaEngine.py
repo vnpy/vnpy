@@ -18,6 +18,7 @@
 
 from __future__ import division
 
+import logging
 import json
 import os
 import traceback
@@ -46,6 +47,7 @@ class CtaEngine(object):
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
         """Constructor"""
+        self.log = logging.getLogger('cta')
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         

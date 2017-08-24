@@ -52,4 +52,5 @@ vn.trader/ctaAlgo/data/*
 vn.trader/build/*
 vn.trader/dist/*
 *.bak
+tmp/
 
