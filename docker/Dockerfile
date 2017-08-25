@@ -82,32 +82,23 @@ RUN echo "从 pip 安装 python 库" \
 RUN echo "安装 fluxbox 桌面管理器" \
     && apt-get install -y fluxbox
 
-RUN echo "安装 mongodb 服务" \
-    && mkdir -p /data/db \
-    && apt-get install -y mongodb \
-    && systemctl enable mongodb.service \
-    && sed -i 's/bind_ip = 127.0.0.1/\#bind_ip = 127.0.0.1/g' /etc/mongodb.conf
-
-# 从本地编译安装 vnpy 以及相关接口库
-COPY ./vnpy/ /usr/src/vnpy/
-COPY ./setup.py /usr/src/
-#RUN cd /usr/src && pwd && ls
-RUN echo "编译安装 vnpy 以及相关接口库" \
-    && cd /usr/src/vnpy/api/ctp && ./build.sh \
-    && cp -af /usr/src/vnpy/api/ctp/build/lib/*.so /usr/src/vnpy/api/ctp \
-    && cd /usr/src && python ./setup.py build install \
-    && cp -af /usr/src/vnpy/trader/gateway/ctpGateway/CTP_connect.json /opt/conda/lib/python2.7/site-packages/vnpy-1.6.2b0-py2.7.egg/vnpy/trader/gateway/ctpGateway/CTP_connect.json \
-    && cp -af /usr/src/vnpy/trader/app/dataRecorder/DR_setting.json /opt/conda/lib/python2.7/site-packages/vnpy-1.6.2b0-py2.7.egg/vnpy/trader/app/dataRecorder/DR_setting.json
-
+#RUN echo "安装 mongodb 服务" \
+#    && mkdir -p /data/db \
+#    && apt-get install -y mongodb \
+#    && systemctl enable mongodb.service \
+#    && sed -i 's/bind_ip = 127.0.0.1/\#bind_ip = 127.0.0.1/g' /etc/mongodb.conf
 
 # 在客户端登录时自动启动 GUI 程序 (might not be the best way to do it, but it does the trick)
 #RUN bash -c 'echo "python /srv/vnpy/examples/VnTrader/run_simple.py" >> ~/.bashrc'
 #RUN bash -c 'echo "/usr/bin/xterm" >> ~/.bashrc'
 # 设置登录时开启本地 mongodb 服务并激活图形管理界面
-RUN bash -c 'echo "service mongodb restart && fluxbox &" >> ~/.bashrc'
+#RUN bash -c 'echo "service mongodb restart" >> ~/.bashrc'
+RUN bash -c 'echo "fluxbox &" >> ~/.bashrc'
+RUN bash -c 'echo "pip install -e /srv/vnpy" >> ~/.bashrc'
+# 编译安装相关接口库
+#RUN bash -c 'echo "cd /srv/vnpy/vnpy/api/ctp && bash ./build.sh && cp -af ./build/lib/*.so . && cd /srv/vnpy" >> ~/.bashrc'
 
-
-RUN    echo "安装配置结束"
+RUN echo "安装配置结束"
 
 
 WORKDIR /srv/vnpy
