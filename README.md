@@ -9,17 +9,26 @@ vn.py是一套基于Python的开源量化交易程序开发框架，起源于国
 ---
 ### 环境准备
 
+**Windows**
+
 1. 支持的操作系统：Windows 7/8/10/Server 2008
 2. 安装[MongoDB](https://www.mongodb.org/downloads#production)，并[将MongoDB配置为系统服务](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/#configure-a-windows-service-for-mongodb-community-edition)
 3. 安装[Anaconda](http://www.continuum.io/downloads)，**注意必须是Python 2.7 32位版本**
 4. 安装[Visual C++ Redistributable Packages for VS2013 x86版本](https://support.microsoft.com/en-us/help/3138367/update-for-visual-c-2013-and-visual-c-redistributable-package)
 
+**Ubuntu**
+
+请参考项目wiki中的[教程](https://github.com/vnpy/vnpy/wiki/Ubuntu%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85)。
+
 ---
-### 安装
+### 项目安装
 
 **方法1**
 
-在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行install.bat自动安装。
+在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后:
+
+* Windows：双击运行install.bat自动安装
+* Ubuntu：在Terminal中运行bash install.sh自动安装
 
 **方法2**
 
@@ -28,6 +37,17 @@ pip install vnpy pymongo msgpack-python websocket-client qdarkstyle
 
 conda install -c quantopian ta-lib=0.4.9
 ```
+
+**关于TA-Lib安装**
+
+Ubuntu上安装到talib时若遭遇'Permission denied'错误，请在install.sh运行完成后，在Terminal中输入以下命令安装：
+
+```
+sudo /home/vnpy/anaconda2/bin/conda install -c quantopian ta-lib=0.4.9
+```
+
+其中"/home/vnpy/anaconda2/"是你的Anaconda安装路径。
+
 
 ---
 ### Quick Start
@@ -47,22 +67,34 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+# 判断操作系统
+import platform
+system = platform.system()
+
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import ctpGateway
+from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway,
+                                 huobiGateway, okcoinGateway)
+
+if system == 'Windows':
+    from vnpy.trader.gateway import (femasGateway, xspeedGateway,
+                                     sgitGateway, shzdGateway)
 
 # 加载上层应用
-from vnpy.trader.app import riskManager, ctaStrategy
+from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
 
 
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
+    # 创建Qt应用对象
+    qApp = createQApp()
+
     # 创建事件引擎
     ee = EventEngine()
 
@@ -71,10 +103,21 @@ def main():
 
     # 添加交易接口
     me.addGateway(ctpGateway)
+    me.addGateway(oandaGateway)
+    me.addGateway(ibGateway)
+    me.addGateway(huobiGateway)
+    me.addGateway(okcoinGateway)
+
+    if system == 'Windows':
+        me.addGateway(femasGateway)
+        me.addGateway(xspeedGateway)
+        me.addGateway(sgitGateway)  
+        me.addGateway(shzdGateway)
 
     # 添加上层应用
     me.addApp(riskManager)
     me.addApp(ctaStrategy)
+    me.addApp(spreadTrading)
 
     # 创建主窗口
     mw = MainWindow(me, ee)
@@ -88,7 +131,13 @@ if __name__ == '__main__':
     main()
 ```
 
-更多使用方法方法请参考examples下的目录。
+以上run.py脚本位于examples\VnTrader目录下，更多使用方法方法请参考examples下的其他目录。
+
+---
+
+### 用户文档
+
+项目的最新文档请查看[Github Wiki](https://github.com/vnpy/vnpy/wiki)，知乎专栏和官网文档已经落后于项目开发版本，建议只作为额外的参考资料。
 
 ---
 
@@ -103,7 +152,6 @@ if __name__ == '__main__':
 * [PyQtGraph](http://www.pyqtgraph.org/)：适用于开发实时更新数据的图表，如Tick图、K线图、期权波动率曲线等（Matplotlib渲染开销太大，用于实盘绘图可能拖慢整个程序）
 
 * [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
-
 
 
 ---
@@ -158,6 +206,12 @@ if __name__ == '__main__':
 
 	* 实盘行情记录，支持Tick和K线数据的落地，用于策略开发回测以及实盘运行初始化
 
+5. 数据相关的API接口（vnpy.data），用于构建和更新历史行情数据库，目前包括：
+
+  * 上海中期历史行情服务（shcifco）
+
+  * 通联数据API下载服务（datayes）
+
 5. 关于vn.py项目的应用演示（examples），对于新手而言可以从这里开始学习vn.py项目的使用方式
 
 5. 关于项目在实盘交易中的一些使用指南（tutorial）
@@ -179,12 +233,15 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
 
 3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
+	* 如果你的fork已经过时，需要手动sync：[https://help.github.com/articles/syncing-a-fork/](https://help.github.com/articles/syncing-a-fork/)
 
-4. 在**dev**修改并将修改push到你的fork上
+4. 从**dev**创建你自己的feature branch: ```git checkout -b $my_feature_branch dev```
 
-5. 创建从你的fork的**dev**分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy)点击**Compare & pull request**
+5. 在$my_feature_branch上修改并将修改push到你的fork上
 
-6. 等待review, 需要继续改进，或者被Merge!
+6. 创建从你的fork的$my_feature_branch分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy/compare?expand=1)点击**compare across forks**，选择需要的fork和branch创建PR
+
+7. 等待review, 需要继续改进，或者被Merge!
 
 ---
 ### 项目捐赠

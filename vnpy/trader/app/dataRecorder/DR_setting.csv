@@ -1,0 +1,7 @@
+gateway,symbol,exchange,currency,product,tick,bar,active
+CTP,IF1709,,,,y,y,IF0000
+CTP,IC1709,,,,y,,
+CTP,m1709,,,,y,,
+SGIT,IH1709,,,,y,y,IH0000
+LTS,600036,SZSE,,,y,,
+IB,EUR.USD,IDEALPRO,USD,Õ‚ª„,y,y,

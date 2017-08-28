@@ -8,7 +8,7 @@ from time import sleep
 from vnpy.api.cshshlp import CsHsHlp
 from vnpy.api.ctp import MdApi
 from vnpy.trader.vtGateway import *
-from vnpy.trader.vtFunction import getTempPath
+from vnpy.trader.vtFunction import getTempPath, getJsonPath
 
 
 # 接口常量
@@ -92,16 +92,15 @@ class CshshlpGateway(VtGateway):
         
         self.qryEnabled = False         # 是否要启动循环查询
         
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
+        
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -390,6 +389,7 @@ class CshshlpTdApi(CsHsHlp):
             contract.underlyingSymbol = d['stock_code']
             contract.productClass = PRODUCT_OPTION
             contract.optionType = optionTypeMapReverse[d['option_type']]
+            contract.expiryDate = d['end_date']
             
             self.gateway.onContract(contract)
         

@@ -5,7 +5,7 @@ import shelve
 from collections import OrderedDict
 from datetime import datetime
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
 
 from vnpy.event import Event
@@ -209,12 +209,17 @@ class MainEngine(object):
             self.writeLog(text.DATA_INSERT_FAILED)
     
     #----------------------------------------------------------------------
-    def dbQuery(self, dbName, collectionName, d):
+    def dbQuery(self, dbName, collectionName, d, sortKey='', sortDirection=ASCENDING):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
         if self.dbClient:
             db = self.dbClient[dbName]
             collection = db[collectionName]
-            cursor = collection.find(d)
+            
+            if sortKey:
+                cursor = collection.find(d).sort(sortKey, sortDirection)    # 对查询出来的数据进行排序
+            else:
+                cursor = collection.find(d)
+
             if cursor:
                 return list(cursor)
             else:
@@ -345,7 +350,7 @@ class DataEngine(object):
         self.orderDict[order.vtOrderID] = order
         
         # 如果订单的状态是全部成交或者撤销，则需要从workingOrderDict中移除
-        if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
+        if order.status in [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]:
             if order.vtOrderID in self.workingOrderDict:
                 del self.workingOrderDict[order.vtOrderID]
         # 否则则更新字典中的数据        

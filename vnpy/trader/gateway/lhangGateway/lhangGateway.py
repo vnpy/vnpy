@@ -12,6 +12,7 @@ from time import sleep
 
 from vnpy.api.lhang import LhangApi
 from vnpy.trader.vtGateway import *
+from vnpy.trader.vtFunction import getJsonPath
 
 
 SYMBOL_BTCCNY = 'BTCCNY'
@@ -46,16 +47,15 @@ class LhangGateway(VtGateway):
         
         self.api = LhangApi(self)
         
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)             
+        
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -180,7 +180,7 @@ class LhangApi(LhangApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorMsg = str(error)
-        err.errorTime = datetime.now().strftime('%H:%M:%S')
+        err.errorTime = datetime.now().strftime('%H:%M:%S.%f')[:-3]
         self.gateway.onError(err)
 
     #----------------------------------------------------------------------
@@ -236,7 +236,7 @@ class LhangApi(LhangApi):
         tick.askPrice5, tick.askVolume5 = data['asks'][4]
 
         now = datetime.now()
-        tick.time = now.strftime('%H:%M:%S')
+        tick.time = now.strftime('%H:%M:%S.%f')[:-3]
         tick.date = now.strftime('%Y%m%d')
 
         self.gateway.onTick(tick)
@@ -356,7 +356,7 @@ class LhangApi(LhangApi):
                     trade.direction = order.direction
                     trade.offset = order.offset
                     trade.exchange = order.exchange
-                    trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+                    trade.tradeTime = datetime.now().strftime('%H:%M:%S.%f')[:-3]
 
                     self.gateway.onTrade(trade)
 
@@ -447,7 +447,7 @@ class LhangApi(LhangApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorMsg = u'链行接口仅支持限价单'
-            err.errorTime = datetime.now().strftime('%H:%M:%S')
+            err.errorTime = datetime.now().strftime('%H:%M:%S.%f')[:-3]
             self.gateway.onError(err)
             return None
 
@@ -480,7 +480,7 @@ class LhangApi(LhangApi):
         order.offset = OFFSET_UNKNOWN
         order.price = req.price
         order.volume = req.volume
-        order.orderTime = datetime.now().strftime('%H:%M:%S')
+        order.orderTime = datetime.now().strftime('%H:%M:%S.%f')[:-3]
         order.status = STATUS_UNKNOWN
 
         self.workingOrderDict[localID] = order
