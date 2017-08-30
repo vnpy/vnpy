@@ -166,6 +166,10 @@ class RmEngine(object):
             return True
 
         # 检查委托数量
+        if orderReq.volume <= 0:
+            self.writeRiskLog(u'委托数量必须大于0')
+            return False
+        
         if orderReq.volume > self.orderSizeLimit:
             self.writeRiskLog(u'单笔委托数量%s，超过限制%s'
                               %(orderReq.volume, self.orderSizeLimit))
