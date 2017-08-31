@@ -107,6 +107,7 @@ TRADE = u'Fill'
 ORDER = u'Order'
 POSITION = u'Position'
 ACCOUNT = u'Account'
+WORKING_ORDER = u'Working Order'
 
 SYSTEM = u'System'
 CONNECT_DATABASE = u'Connect Database'

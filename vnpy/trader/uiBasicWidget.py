@@ -13,6 +13,7 @@ from .vtGateway import *
 from . import vtText
 from .uiQt import QtGui, QtWidgets, QtCore, BASIC_FONT
 from .vtFunction import jsonPathDict
+from .vtConstant import *
 
 
 COLOR_RED = QtGui.QColor('red')
@@ -1230,7 +1231,30 @@ class ContractManager(QtWidgets.QWidget):
         content = str(self.lineFilter.text())
         self.monitor.setFilterContent(content)
         self.monitor.refresh()
-    
+
+
+########################################################################
+class WorkingOrderMonitor(OrderMonitor):
+    """活动委托监控"""
+    STATUS_COMPLETED = [STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED]
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine, parent=None):
+        """Constructor"""
+        super(WorkingOrderMonitor, self).__init__(mainEngine, eventEngine, parent)
+        
+    #----------------------------------------------------------------------
+    def updateData(self, data):
+        """更新数据"""
+        super(WorkingOrderMonitor, self).updateData(data)
+
+        # 如果该委托已完成，则隐藏该行
+        if data.status in self.STATUS_COMPLETED:
+            vtOrderID = data.vtOrderID
+            cellDict = self.dataDict[vtOrderID]
+            cell = cellDict['status']
+            row = self.row(cell)
+            self.hideRow(row)    
     
 
 ########################################################################
@@ -1313,11 +1337,6 @@ class SettingEditor(QtWidgets.QWidget):
         
         # 显示界面
         super(SettingEditor, self).show()
-        
-        
-        
-        
-        
-    
+
     
     
