@@ -296,7 +296,6 @@ class XtpMdApi(QuoteApi):
 
         timestamp = str(data['data_time'])
         tick.date = timestamp[:8]
-        #tick.time = '%s:%s:%s.%s' %(timestamp[8:10], timestamp[10:12], timestamp[12:14], timestamp[14:])
         tick.time = '%s:%s:%s.%s' %(timestamp[8:10], timestamp[10:12], timestamp[12:14], timestamp[14])
         
         tick.openPrice = data['open_price']
@@ -474,7 +473,6 @@ class XtpTdApi(TraderApi):
             order.price = data['price']
             order.totalVolume = data['quantity']    
             order.priceType = priceTypeMapReverse.get(data['price_type'], '')
-            order.businessType = businessMapReverse.get(data['business_type'], BUSINESS_UNKNOWN)
             
             self.orderDict[orderID] = order
         else:
@@ -483,11 +481,7 @@ class XtpTdApi(TraderApi):
         # 变化字段
         order.status = statusMapReverse.get(data['order_status'], STATUS_UNKNOWN)
         order.tradedVolume = data['qty_traded']
-        order.tradedAmount = data['trade_amount']
         
-        if order.status == STATUS_CANCELLED or order.status == STATUS_PARTCANCELLED:
-            order.cancelVolume = order.totalVolume - order.tradedVolume
-
         if data['insert_time']:
             timestamp = str(data['insert_time'])
             order.orderTime = '%s:%s:%s' %(timestamp[8:10], timestamp[10:12], timestamp[12:14])
@@ -534,9 +528,6 @@ class XtpTdApi(TraderApi):
         # 价格、报单量等数值
         trade.price = data['price']
         trade.volume = data['quantity']
-        trade.amount = data['trade_amount']
-        
-        trade.businessType = businessMapReverse.get(data['business_type'], BUSINESS_UNKNOWN)
 
         if data['trade_time']:
             timestamp = str(data['trade_time'])
@@ -549,12 +540,10 @@ class XtpTdApi(TraderApi):
         order = self.orderDict.get(orderID, None)
         if (not order or 
             order.status is STATUS_ALLTRADED or
-            order.status is STATUS_CANCELLED or
-            order.status is STATUS_PARTCANCELLED):
+            order.status is STATUS_CANCELLED):
             return
             
         order.tradedVolume += trade.volume
-        order.tradedAmount += trade.amount
         
         if order.status is STATUS_NOTTRADED:
             order.status = STATUS_PARTTRADED
@@ -680,7 +669,7 @@ class XtpTdApi(TraderApi):
         req['quantity'] = orderReq.volume
         req['price_type'] = priceTypeMap.get(orderReq.priceType, 0)
         req['market'] = marketMap.get(orderReq.exchange, 0)
-        req['business_type'] = businessMap.get(orderReq.businessType, 0)
+        req['business_type'] = 0        # 目前只支持买卖业务
 
         # 目前尚未支持衍生品交易，因此不适用
         #req['side'] = sideMap.get((orderReq.direction, OFFSET_NONE), 0)
@@ -692,25 +681,7 @@ class XtpTdApi(TraderApi):
         # 发出委托
         orderID = str(self.insertOrder(req, self.sessionID))        
         vtOrderID = '.'.join([self.gatewayName, orderID])
-        
-        # 推送委托初始化信息
-        order = VtOrderData()
-        order.symbol = orderReq.symbol
-        order.exchange = orderReq.exchange
-        order.vtSymbol = '.'.join([order.symbol, order.exchange])
-        order.orderID = orderID
-        order.vtOrderID = vtOrderID
-        order.price = orderReq.price
-        order.totalVolume = orderReq.volume
-        order.direction = orderReq.direction
-        order.offset = orderReq.offset
-        order.priceType = orderReq.priceType
-        order.businessType = orderReq.businessType
-        order.gatewayName = self.gatewayName
-        order.status = STATUS_INITED
-        
-        self.gateway.onOrder(order)
-        
+
         # 返回订单号（字符串），便于某些算法进行动态管理
         return vtOrderID
     
