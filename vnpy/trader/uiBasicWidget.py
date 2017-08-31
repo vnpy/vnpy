@@ -1111,9 +1111,11 @@ class ContractMonitor(BasicMonitor):
         d['productClass'] = {'chinese':vtText.PRODUCT_CLASS, 'cellType':BasicCell}
         d['size'] = {'chinese':vtText.CONTRACT_SIZE, 'cellType':BasicCell}
         d['priceTick'] = {'chinese':vtText.PRICE_TICK, 'cellType':BasicCell}
-        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
+        
         d['underlyingSymbol'] = {'chinese':vtText.UNDERLYING_SYMBOL, 'cellType':BasicCell}
-        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}     
+        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}  
+        d['expiryDate'] = {'chinese':vtText.EXPIRY_DATE, 'cellType':BasicCell}
+        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         # 过滤显示用的字符串

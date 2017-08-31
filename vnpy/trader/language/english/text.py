@@ -59,10 +59,12 @@ PRICE_TICK = u'Price Tick'
 STRIKE_PRICE = u'Strike Price'
 UNDERLYING_SYMBOL = u'Underlying Symbol'
 OPTION_TYPE = u'Option Type'
+EXPIRY_DATE = u'Expiry Date'
 
 REFRESH = u'Refresh'
 SEARCH = u'Search'
 CONTRACT_SEARCH = u'Contract Search'
+
 
 
 BID_1 = u'Bid1'

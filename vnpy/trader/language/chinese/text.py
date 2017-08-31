@@ -59,6 +59,7 @@ PRICE_TICK = u'最小价格变动'
 STRIKE_PRICE = u'行权价'
 UNDERLYING_SYMBOL = u'标的代码'
 OPTION_TYPE = u'期权类型'
+EXPIRY_DATE = u'到期日'
 
 REFRESH = u'刷新'
 SEARCH = u'查询'
