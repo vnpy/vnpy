@@ -304,6 +304,9 @@ class CtaEngine(object):
             
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
             
+            # 保存策略持仓到数据库
+            self.savePosition(strategy)            
+            
         # 更新持仓缓存数据
         if trade.vtSymbol in self.tickStrategyDict:
             posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
@@ -312,9 +315,6 @@ class CtaEngine(object):
                 posBuffer.vtSymbol = trade.vtSymbol
                 self.posBufferDict[trade.vtSymbol] = posBuffer
             posBuffer.updateTradeData(trade)        
-            
-        # 保存策略持仓到数据库
-        self.savePosition(strategy)
             
     #----------------------------------------------------------------------
     def processPositionEvent(self, event):
