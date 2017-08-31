@@ -226,11 +226,12 @@ class TqApi(object):
                         chart_id = self._generate_chart_id(ins_id, 0)
                         sub_info = self.chart_subscribes.get(chart_id)
                         tick_serial = self.get_tick_serial(ins_id)
-                        while len(tick_serial) > sub_info["view_width"]:
-                            tick_serial.popitem(last=False)
-                        callback_func = sub_info["callback"]
-                        if callback_func:
-                            callback_func(ins_id, 0)
+                        if tick_serial:
+                            while len(tick_serial) > sub_info["view_width"]:
+                                tick_serial.popitem(last=False)
+                            callback_func = sub_info["callback"]
+                            if callback_func:
+                                callback_func(ins_id, 0)
 
                 elif selector == "klines":
                     for ins_id, sub_section in section.items():
@@ -239,11 +240,12 @@ class TqApi(object):
                             chart_id = self._generate_chart_id(ins_id, dur_seconds)
                             sub_info = self.chart_subscribes.get(chart_id)
                             kline_serial = self.get_kline_serial(ins_id, dur_seconds)
-                            while len(kline_serial) > sub_info["view_width"]:
-                                kline_serial.popitem(last=False)
-                            callback_func = sub_info["callback"]
-                            if callback_func:
-                                callback_func(ins_id, dur_seconds)
+                            if kline_serial:
+                                while len(kline_serial) > sub_info["view_width"]:
+                                    kline_serial.popitem(last=False)
+                                callback_func = sub_info["callback"]
+                                if callback_func:
+                                    callback_func(ins_id, dur_seconds)
 
     #----------------------------------------------------------------------
     def _merge_obj(self, result, obj):
