@@ -22,6 +22,9 @@ from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway,
 if system == 'Windows':
     from vnpy.trader.gateway import (femasGateway, xspeedGateway, 
                                      sgitGateway, shzdGateway)
+    
+if system == 'Linux':
+    from vnpy.trader.gateway import xtpGateway
 
 # 加载上层应用
 from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
@@ -51,6 +54,9 @@ def main():
         me.addGateway(xspeedGateway)
         me.addGateway(sgitGateway)  
         me.addGateway(shzdGateway)
+        
+    if system == 'Linux':
+        me.addGateway(xtpGateway)
         
     # 添加上层应用
     me.addApp(riskManager)
