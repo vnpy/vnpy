@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 # 系统模块
+import logging
 from Queue import Queue, Empty
 from threading import Thread
 from time import sleep
@@ -188,6 +189,7 @@ class EventEngine2(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """初始化事件引擎"""
+        self.log = logging.getLogger('root')
         # 事件队列
         self.__queue = Queue()
         
