@@ -9,22 +9,6 @@ from vnpy.trader.vtEvent import EVENT_LOG
 from vnpy.trader.vtEngine import MainEngine, LogEngine
 from vnpy.trader.gateway import ctpGateway
 from vnpy.trader.app import dataRecorder
-
-#----------------------------------------------------------------------
-def le.info(content):
-    """输出日志"""
-    t = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print '%s\t%s' %(t, content)
-    
-#----------------------------------------------------------------------
-def processLogEvent(event):
-    """处理日志事件"""
-    log = event.dict_['data']
-    if log.gatewayName:
-        content = '%s:%s' %(log.gatewayName, log.logContent)
-    else:
-        content = '%s:%s' %('MainEngine', log.logContent)
-    le.info(content)
     
 #----------------------------------------------------------------------
 def runChildProcess():
