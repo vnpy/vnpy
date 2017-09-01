@@ -122,7 +122,7 @@ class MainEngine(object):
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
         # 如果创建了风控引擎，且风控检查失败则不发单
-        if self.rmEngine and not self.rmEngine.checkRisk(orderReq):
+        if self.rmEngine and not self.rmEngine.checkRisk(orderReq, gatewayName):
             return ''
 
         gateway = self.getGateway(gatewayName)
