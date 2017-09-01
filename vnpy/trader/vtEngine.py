@@ -287,6 +287,9 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def initLogEngine(self):
         """初始化日志引擎"""
+        if not globalSetting["logActive"]:
+            return
+        
         # 创建引擎
         self.logEngine = LogEngine()
         
@@ -310,9 +313,6 @@ class MainEngine(object):
             
         # 注册事件监听
         self.eventEngine.register(EVENT_LOG, self.logEngine.processLogEvent)
-        
-        # 记录新启动日志引擎
-        self.logEngine.info(u"------日志引擎启动------")
         
 
 ########################################################################
