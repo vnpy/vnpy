@@ -2,6 +2,7 @@
 
 import os
 import shelve
+import logging
 from collections import OrderedDict
 from datetime import datetime
 
@@ -46,6 +47,10 @@ class MainEngine(object):
         
         # 风控引擎实例（特殊独立对象）
         self.rmEngine = None
+        
+        # 日志引擎实例
+        self.logEngine = None
+        self.initLogEngine()
 
     #----------------------------------------------------------------------
     def addGateway(self, gatewayModule):
@@ -279,6 +284,36 @@ class MainEngine(object):
         """查询引擎中所有上层应用的信息"""
         return self.appDetailList
     
+    #----------------------------------------------------------------------
+    def initLogEngine(self):
+        """初始化日志引擎"""
+        # 创建引擎
+        self.logEngine = LogEngine()
+        
+        # 设置日志级别
+        levelDict = {
+            "debug": LogEngine.LEVEL_DEBUG,
+            "info": LogEngine.LEVEL_INFO,
+            "warn": LogEngine.LEVEL_WARN,
+            "error": LogEngine.LEVEL_ERROR,
+            "critical": LogEngine.LEVEL_CRITICAL,
+        }
+        level = levelDict.get(globalSetting["logLevel"], LogEngine.LEVEL_CRITICAL)
+        self.logEngine.setLogLevel(level)
+        
+        # 设置输出
+        if globalSetting['logConsole']:
+            self.logEngine.addConsoleHandler()
+            
+        if globalSetting['logFile']:
+            self.logEngine.addFileHandler()
+            
+        # 注册事件监听
+        self.eventEngine.register(EVENT_LOG, self.logEngine.processLogEvent)
+        
+        # 记录新启动日志引擎
+        self.logEngine.info(u"------日志引擎启动------")
+        
 
 ########################################################################
 class DataEngine(object):
@@ -375,6 +410,103 @@ class DataEngine(object):
         """注册事件监听"""
         self.eventEngine.register(EVENT_CONTRACT, self.updateContract)
         self.eventEngine.register(EVENT_ORDER, self.updateOrder)
+
+
+########################################################################
+class LogEngine(object):
+    """日志引擎"""
+    
+    # 日志级别
+    LEVEL_DEBUG = logging.DEBUG
+    LEVEL_INFO = logging.INFO
+    LEVEL_WARN = logging.WARN
+    LEVEL_ERROR = logging.ERROR
+    LEVEL_CRITICAL = logging.CRITICAL
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.logger = logging.getLogger()        
+        self.formatter = logging.Formatter('%(asctime)s  %(levelname)s: %(message)s')
+        self.level = self.LEVEL_CRITICAL
         
+        self.consoleHandler = None
+        self.fileHandler = None
+        
+        # 添加NullHandler防止无handler的错误输出
+        nullHandler = logging.NullHandler()
+        self.logger.addHandler(nullHandler)    
+        
+        # 日志级别函数映射
+        self.levelFunctionDict = {
+            self.LEVEL_DEBUG: self.debug,
+            self.LEVEL_INFO: self.info,
+            self.LEVEL_WARN: self.warn,
+            self.LEVEL_ERROR: self.error,
+            self.LEVEL_CRITICAL: self.critical,
+        }
+        
+    #----------------------------------------------------------------------
+    def setLogLevel(self, level):
+        """设置日志级别"""
+        self.logger.setLevel(level)
+        self.level = level
+    
+    #----------------------------------------------------------------------
+    def addConsoleHandler(self):
+        """添加终端输出"""
+        if not self.consoleHandler:
+            self.consoleHandler = logging.StreamHandler()
+            self.consoleHandler.setLevel(self.level)
+            self.consoleHandler.setFormatter(self.formatter)
+            self.logger.addHandler(self.consoleHandler)
+            
+    #----------------------------------------------------------------------
+    def addFileHandler(self):
+        """添加文件输出"""
+        if not self.fileHandler:
+            filename = 'vt_' + datetime.now().strftime('%Y%m%d') + '.log'
+            filepath = getTempPath(filename)
+            self.fileHandler = logging.FileHandler(filepath)
+            self.fileHandler.setLevel(self.level)
+            self.fileHandler.setFormatter(self.formatter)
+            self.logger.addHandler(self.fileHandler)
+    
+    #----------------------------------------------------------------------
+    def debug(self, msg):
+        """开发时用"""
+        self.logger.debug(msg)
+        
+    #----------------------------------------------------------------------
+    def info(self, msg):
+        """正常输出"""
+        self.logger.info(msg)
+        
+    #----------------------------------------------------------------------
+    def warn(self, msg):
+        """警告信息"""
+        self.logger.warn(msg)
+        
+    #----------------------------------------------------------------------
+    def error(self, msg):
+        """报错输出"""
+        self.logger.error(msg)
+        
+    #----------------------------------------------------------------------
+    def exception(self, msg):
+        """报错输出+记录异常信息"""
+        self.logger.exception(msg)
+
+    #----------------------------------------------------------------------
+    def critical(self, msg):
+        """影响程序运行的严重错误"""
+        self.logger.critical(msg)
+
+    #----------------------------------------------------------------------
+    def processLogEvent(self, event):
+        """处理日志事件"""
+        log = event.dict_['data']
+        function = self.levelFunctionDict[log.logLevel]     # 获取日志级别对应的处理函数
+        function(log.logContent)
     
     

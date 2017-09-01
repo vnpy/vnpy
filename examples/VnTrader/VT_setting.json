@@ -7,5 +7,9 @@
 	"mongoLogging": true,
 
 	"darkStyle": true,
-	"language": "chinese"
+	"language": "chinese",
+
+	"logLevel": "info",
+	"logConsole": true,
+	"logFile": true
 }

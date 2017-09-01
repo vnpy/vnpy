@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 import time
+from logging import INFO
 
 from vnpy.trader.vtConstant import (EMPTY_STRING, EMPTY_UNICODE, 
                                     EMPTY_FLOAT, EMPTY_INT)
@@ -236,6 +237,7 @@ class VtLogData(VtBaseData):
         
         self.logTime = time.strftime('%X', time.localtime())    # 日志生成时间
         self.logContent = EMPTY_UNICODE                         # 日志信息
+        self.logLevel = INFO                                    # 日志级别
 
 
 ########################################################################

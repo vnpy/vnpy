@@ -106,7 +106,7 @@ TRADE = u'成交'
 ORDER = u'委托'
 POSITION = u'持仓'
 ACCOUNT = u'账户'
-WORKING_ORDER = u'活动委托'
+WORKING_ORDER = u'可撤'
 
 SYSTEM = u'系统'
 CONNECT_DATABASE = u'连接数据库'
