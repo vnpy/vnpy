@@ -7,6 +7,8 @@
 3. 单笔委托的委托数量控制
 '''
 
+from __future__ import division
+
 import json
 import os
 import platform
@@ -15,14 +17,14 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtLogData
+from vnpy.trader.vtFunction import getJsonPath
 
 
 ########################################################################
 class RmEngine(object):
     """风控引擎"""
     settingFileName = 'RM_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)
+    settingFilePath = getJsonPath(settingFileName, __file__)
 
     name = u'风控模块'
 
@@ -57,6 +59,10 @@ class RmEngine(object):
 
         # 活动合约相关
         self.workingOrderLimit = EMPTY_INT  # 活动合约最大限制
+        
+        # 保证金相关
+        self.marginRatioDict = {}           # 保证金占账户净值比例字典
+        self.marginRatioLimit = EMPTY_FLOAT # 最大比例限制
 
         self.loadSetting()
         self.registerEvent()
@@ -64,7 +70,7 @@ class RmEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """读取配置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingFilePath) as f:
             d = json.load(f)
 
             # 设置风控参数
@@ -80,11 +86,13 @@ class RmEngine(object):
             self.workingOrderLimit = d['workingOrderLimit']
 
             self.orderCancelLimit = d['orderCancelLimit']
+            
+            self.marginRatioLimit = d['marginRatioLimit']
 
     #----------------------------------------------------------------------
     def saveSetting(self):
         """保存风控参数"""
-        with open(self.settingFileName, 'w') as f:
+        with open(self.settingFilePath, 'w') as f:
             # 保存风控参数
             d = {}
 
@@ -100,6 +108,8 @@ class RmEngine(object):
             d['workingOrderLimit'] = self.workingOrderLimit
 
             d['orderCancelLimit'] = self.orderCancelLimit
+            
+            d['marginRatioLimit'] = self.marginRatioLimit
 
             # 写入json
             jsonD = json.dumps(d, indent=4)
@@ -111,6 +121,7 @@ class RmEngine(object):
         self.eventEngine.register(EVENT_TRADE, self.updateTrade)
         self.eventEngine.register(EVENT_TIMER, self.updateTimer)
         self.eventEngine.register(EVENT_ORDER, self.updateOrder)
+        self.eventEngine.register(EVENT_ACCOUNT, self.updateAccount)
         
     #----------------------------------------------------------------------
     def updateOrder(self, event):
@@ -142,6 +153,19 @@ class RmEngine(object):
             self.orderFlowTimer = 0
 
     #----------------------------------------------------------------------
+    def updateAccount(self, event):
+        """账户资金更新"""
+        account = event.dict_['data']
+        
+        # 计算保证金占比
+        ratio = 0
+        if account.balance:
+            ratio = account.margin / account.balance
+        
+        # 更新到字典中
+        self.marginRatioDict[account.gatewayName] = ratio
+
+    #----------------------------------------------------------------------
     def writeRiskLog(self, content):
         """快速发出日志事件"""
         # 发出报警提示音
@@ -159,13 +183,17 @@ class RmEngine(object):
         self.eventEngine.put(event)
 
     #----------------------------------------------------------------------
-    def checkRisk(self, orderReq):
+    def checkRisk(self, orderReq, gatewayName):
         """检查风险"""
         # 如果没有启动风控检查，则直接返回成功
         if not self.active:
             return True
 
         # 检查委托数量
+        if orderReq.volume <= 0:
+            self.writeRiskLog(u'委托数量必须大于0')
+            return False
+        
         if orderReq.volume > self.orderSizeLimit:
             self.writeRiskLog(u'单笔委托数量%s，超过限制%s'
                               %(orderReq.volume, self.orderSizeLimit))
@@ -194,6 +222,12 @@ class RmEngine(object):
         if orderReq.symbol in self.orderCancelDict and self.orderCancelDict[orderReq.symbol] >= self.orderCancelLimit:
             self.writeRiskLog(u'当日%s撤单次数%s，超过限制%s'
                               %(orderReq.symbol, self.orderCancelDict[orderReq.symbol], self.orderCancelLimit))
+            return False
+        
+        # 检查保证金比例
+        if gatewayName in self.marginRatioDict and self.marginRatioDict[gatewayName] >= self.marginRatioLimit:
+            self.writeRiskLog(u'%s接口保证金占比%S，超过限制%s'
+                              %(gatewayName, self.marginRatioDict[gatewayName], self.marginRatioLimit))
             return False
         
         # 对于通过风控的委托，增加流控计数
@@ -242,6 +276,11 @@ class RmEngine(object):
     def setOrderCancelLimit(self, n):
         """设置单合约撤单次数上限"""
         self.orderCancelLimit = n
+
+    #----------------------------------------------------------------------
+    def setMarginRatioLimit(self, n):
+        """设置保证金比例限制"""
+        self.marginRatioLimit = n/100   # n为百分数，需要除以100
 
     #----------------------------------------------------------------------
     def switchEngineStatus(self):

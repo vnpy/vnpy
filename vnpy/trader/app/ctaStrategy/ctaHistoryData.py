@@ -13,10 +13,11 @@ from multiprocessing.pool import ThreadPool
 
 import pymongo
 
+from vnpy.data.datayes import DatayesApi
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.app.ctaStrategy.datayesClient import DatayesClient
+from .ctaBase import SETTING_DB_NAME, TICK_DB_NAME, MINUTE_DB_NAME, DAILY_DB_NAME
 
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 
@@ -33,10 +34,10 @@ class HistoryDataEngine(object):
     """CTA模块用的历史数据引擎"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, token):
         """Constructor"""
         self.dbClient = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
-        self.datayesClient = DatayesClient()
+        self.datayesClient = DatayesApi(token)
         
     #----------------------------------------------------------------------
     def lastTradeDate(self):

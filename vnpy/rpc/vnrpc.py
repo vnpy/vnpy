@@ -180,7 +180,7 @@ class RpcServer(RpcObject):
     def publish(self, topic, data):
         """
         广播推送数据
-        topic：主题内容
+        topic：主题内容（注意必须是ascii编码）
         data：具体的数据
         """
         # 序列化数据
@@ -294,6 +294,8 @@ class RpcClient(RpcObject):
         订阅特定主题的广播数据
         
         可以使用topic=''来订阅所有的主题
+        
+        注意topic必须是ascii编码
         """
         self.__socketSUB.setsockopt(zmq.SUBSCRIBE, topic)
         

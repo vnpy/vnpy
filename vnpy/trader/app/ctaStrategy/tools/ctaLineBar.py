@@ -228,7 +228,7 @@ class CtaLineBar(object):
         self.__recountEma()
         self.__recountDmi()
         self.__recountAtr()
-        self.__recoundAvgVol()
+        self.__recountAvgVol()
         self.__recountRsi()
         self.__recountCmi()
         self.__recountBoll()
@@ -695,7 +695,7 @@ class CtaLineBar(object):
             self.lineAtr3.append(self.barAtr3)
 
     #----------------------------------------------------------------------
-    def __recoundAvgVol(self):
+    def __recountAvgVol(self):
         """计算平均成交量"""
 
         # 1、lineBar满足长度才执行计算

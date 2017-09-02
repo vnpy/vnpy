@@ -15,9 +15,9 @@ from datetime import datetime
 
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
-from vnpy.trader.vtFunction import getTempPath
-from vnpy.trader.gateway.ctpGateway.language import text
+from vnpy.trader.vtFunction import getJsonPath, getTempPath
 from vnpy.trader.vtConstant import GATEWAYTYPE_FUTURES
+from .language import text
 
 
 # 以下为一些VT类型和CTP类型的映射字典
@@ -91,19 +91,15 @@ class CtpGateway(VtGateway):
         self.tdConnected = False        # 交易API连接状态
         
         self.qryEnabled = False         # 循环查询
-
-        self.requireAuthentication = False
+        
+        self.fileName = self.gatewayName + '_connect.json'
+        self.filePath = getJsonPath(self.fileName, __file__)        
         
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
-        # 载入json文件
-        fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
-        
         try:
-            f = file(fileName)
+            f = file(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -331,10 +327,6 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
-        # 忽略成交量为0的无效tick数据
-        if not data['Volume']:
-            return
-        
         # 创建对象
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
@@ -460,7 +452,8 @@ class CtpTdApi(TdApi):
         
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
-        self.authStatus = False
+        self.authStatus = False             # 验证状态
+        self.loginFailed = False            # 登录失败（账号密码错误）
         
         self.userID = EMPTY_STRING          # 账号
         self.password = EMPTY_STRING        # 密码
@@ -538,6 +531,9 @@ class CtpTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
+            
+            # 标识登录失败，防止用错误信息连续重复登录
+            self.loginFailed =  True
         
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
@@ -712,7 +708,7 @@ class CtpTdApi(TdApi):
         pos.positionProfit += data['PositionProfit']
         
         # 计算持仓均价
-        if pos.position:
+        if pos.position and pos.symbol in self.symbolSizeDict:
             size = self.symbolSizeDict[pos.symbol]
             pos.price = (cost + data['PositionCost']) / (pos.position * size)
         
@@ -1343,6 +1339,10 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def login(self):
         """连接服务器"""
+        # 如果之前有过登录失败，则不再进行尝试
+        if self.loginFailed:
+            return
+        
         # 如果填入了用户名密码等，则登录
         if self.userID and self.password and self.brokerID:
             req = {}

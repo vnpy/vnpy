@@ -7,11 +7,13 @@ import platform
 from collections import OrderedDict
 
 from vnpy.event import *
-from vnpy.trader.vtEvent import *
-from vnpy.trader.vtFunction import *
-from vnpy.trader.vtGateway import *
-from vnpy.trader import vtText
-from vnpy.trader.uiQt import QtGui, QtWidgets, QtCore, BASIC_FONT
+from .vtEvent import *
+from .vtFunction import *
+from .vtGateway import *
+from . import vtText
+from .uiQt import QtGui, QtWidgets, QtCore, BASIC_FONT
+from .vtFunction import jsonPathDict
+from .vtConstant import *
 
 
 COLOR_RED = QtGui.QColor('red')
@@ -1110,9 +1112,11 @@ class ContractMonitor(BasicMonitor):
         d['productClass'] = {'chinese':vtText.PRODUCT_CLASS, 'cellType':BasicCell}
         d['size'] = {'chinese':vtText.CONTRACT_SIZE, 'cellType':BasicCell}
         d['priceTick'] = {'chinese':vtText.PRICE_TICK, 'cellType':BasicCell}
-        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
+        
         d['underlyingSymbol'] = {'chinese':vtText.UNDERLYING_SYMBOL, 'cellType':BasicCell}
-        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}     
+        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}  
+        d['expiryDate'] = {'chinese':vtText.EXPIRY_DATE, 'cellType':BasicCell}
+        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         # 过滤显示用的字符串
@@ -1227,5 +1231,112 @@ class ContractManager(QtWidgets.QWidget):
         content = str(self.lineFilter.text())
         self.monitor.setFilterContent(content)
         self.monitor.refresh()
+
+
+########################################################################
+class WorkingOrderMonitor(OrderMonitor):
+    """活动委托监控"""
+    STATUS_COMPLETED = [STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED]
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine, parent=None):
+        """Constructor"""
+        super(WorkingOrderMonitor, self).__init__(mainEngine, eventEngine, parent)
+        
+    #----------------------------------------------------------------------
+    def updateData(self, data):
+        """更新数据"""
+        super(WorkingOrderMonitor, self).updateData(data)
+
+        # 如果该委托已完成，则隐藏该行
+        if data.status in self.STATUS_COMPLETED:
+            vtOrderID = data.vtOrderID
+            cellDict = self.dataDict[vtOrderID]
+            cell = cellDict['status']
+            row = self.row(cell)
+            self.hideRow(row)    
+    
+
+########################################################################
+class SettingEditor(QtWidgets.QWidget):
+    """配置编辑器"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, parent=None):
+        """Constructor"""
+        super(SettingEditor, self).__init__(parent)
+        
+        self.mainEngine = mainEngine
+        self.currentFileName = ''
+        
+        self.initUi()
+    
+    #----------------------------------------------------------------------
+    def initUi(self):
+        """初始化界面"""
+        self.setWindowTitle(vtText.EDIT_SETTING)
+        
+        self.comboFileName = QtWidgets.QComboBox()
+        self.comboFileName.addItems(jsonPathDict.keys())
+        
+        buttonLoad = QtWidgets.QPushButton(vtText.LOAD)
+        buttonSave = QtWidgets.QPushButton(vtText.SAVE)
+        buttonLoad.clicked.connect(self.loadSetting)
+        buttonSave.clicked.connect(self.saveSetting)
+        
+        self.editSetting = QtWidgets.QTextEdit()
+        self.labelPath = QtWidgets.QLabel()
+        
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(self.comboFileName)
+        hbox.addWidget(buttonLoad)
+        hbox.addWidget(buttonSave)
+        hbox.addStretch()
+        
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.editSetting)
+        vbox.addWidget(self.labelPath)
+        
+        self.setLayout(vbox)
+        
+    #----------------------------------------------------------------------
+    def loadSetting(self):
+        """加载配置"""
+        self.currentFileName = str(self.comboFileName.currentText())
+        filePath = jsonPathDict[self.currentFileName]
+        self.labelPath.setText(filePath)
+        
+        with open(filePath) as f:
+            self.editSetting.clear()
+            
+            for line in f:
+                line = line.replace('\n', '')   # 移除换行符号
+                line = line.decode('UTF-8')
+                self.editSetting.append(line)
+    
+    #----------------------------------------------------------------------
+    def saveSetting(self):
+        """保存配置"""
+        if not self.currentFileName:
+            return
+        
+        filePath = jsonPathDict[self.currentFileName]
+        
+        with open(filePath, 'w') as f:
+            content = self.editSetting.toPlainText()
+            content = content.encode('UTF-8')
+            f.write(content)
+        
+    #----------------------------------------------------------------------
+    def show(self):
+        """显示"""
+        # 更新配置文件下拉框
+        self.comboFileName.clear()
+        self.comboFileName.addItems(jsonPathDict.keys())
+        
+        # 显示界面
+        super(SettingEditor, self).show()
+
     
     

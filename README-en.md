@@ -37,7 +37,8 @@ Using the vn.py project, institutional investors and professional traders, such 
 	- LTS（vn.lts）
 	
 	- QDP（vn.qdp）
-	
+
+	- CSHSHLP（vn.cshshlp）	
 
 	**Chinese Precious Metal Market**
 

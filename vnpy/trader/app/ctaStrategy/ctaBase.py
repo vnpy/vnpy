@@ -4,7 +4,8 @@
 本文件中包含了CTA模块中用到的一些基础设置、类和常量等。
 '''
 
-from __future__ import division
+# CTA引擎中涉及的数据类定义
+from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
 
 # 常量定义
 # CTA引擎中涉及到的交易方向类型
@@ -33,8 +34,9 @@ MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 ENGINETYPE_BACKTESTING = 'backtesting'  # 回测
 ENGINETYPE_TRADING = 'trading'          # 实盘
 
-# CTA引擎中涉及的数据类定义
-from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
+# CTA模块事件
+EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
+EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件
 
 
 ########################################################################

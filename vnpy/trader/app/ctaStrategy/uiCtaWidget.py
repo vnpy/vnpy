@@ -9,7 +9,8 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.uiBasicWidget import QtGui, QtCore, QtWidgets, BasicCell
 
-from vnpy.trader.app.ctaStrategy.language import text
+from .ctaBase import EVENT_CTA_LOG, EVENT_CTA_STRATEGY
+from .language import text
 
 
 ########################################################################
@@ -177,13 +178,11 @@ class CtaEngineManager(QtWidgets.QWidget):
         initAllButton = QtWidgets.QPushButton(text.INIT_ALL)
         startAllButton = QtWidgets.QPushButton(text.START_ALL)
         stopAllButton = QtWidgets.QPushButton(text.STOP_ALL)
-        savePositionButton = QtWidgets.QPushButton(text.SAVE_POSITION_DATA)
         
         loadButton.clicked.connect(self.load)
         initAllButton.clicked.connect(self.initAll)
         startAllButton.clicked.connect(self.startAll)
         stopAllButton.clicked.connect(self.stopAll)
-        savePositionButton.clicked.connect(self.ctaEngine.savePosition)
         
         # 滚动区域，放置所有的CtaStrategyManager
         self.scrollArea = QtWidgets.QScrollArea()
@@ -200,7 +199,6 @@ class CtaEngineManager(QtWidgets.QWidget):
         hbox2.addWidget(initAllButton)
         hbox2.addWidget(startAllButton)
         hbox2.addWidget(stopAllButton)
-        hbox2.addWidget(savePositionButton)
         hbox2.addStretch()
         
         vbox = QtWidgets.QVBoxLayout()
@@ -227,20 +225,17 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def initAll(self):
         """全部初始化"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.initStrategy(name)    
+        self.ctaEngine.initAll()    
             
     #----------------------------------------------------------------------
     def startAll(self):
         """全部启动"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.startStrategy(name)
+        self.ctaEngine.startAll()
             
     #----------------------------------------------------------------------
     def stopAll(self):
         """全部停止"""
-        for name in self.ctaEngine.strategyDict.keys():
-            self.ctaEngine.stopStrategy(name)
+        self.ctaEngine.stopAll()
             
     #----------------------------------------------------------------------
     def load(self):
@@ -263,20 +258,7 @@ class CtaEngineManager(QtWidgets.QWidget):
         """注册事件监听"""
         self.signal.connect(self.updateCtaLog)
         self.eventEngine.register(EVENT_CTA_LOG, self.signal.emit)
-        
-    #----------------------------------------------------------------------
-    def closeEvent(self, event):
-        """关闭窗口时的事件"""
-        reply = QtWidgets.QMessageBox.question(self, text.SAVE_POSITION_DATA,
-                                           text.SAVE_POSITION_QUESTION, QtWidgets.QMessageBox.Yes | 
-                                           QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-    
-        if reply == QtWidgets.QMessageBox.Yes: 
-            self.ctaEngine.savePosition()
-            
-        event.accept()
-        
-        
+
     
     
     

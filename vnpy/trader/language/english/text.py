@@ -59,10 +59,12 @@ PRICE_TICK = u'Price Tick'
 STRIKE_PRICE = u'Strike Price'
 UNDERLYING_SYMBOL = u'Underlying Symbol'
 OPTION_TYPE = u'Option Type'
+EXPIRY_DATE = u'Expiry Date'
 
 REFRESH = u'Refresh'
 SEARCH = u'Search'
 CONTRACT_SEARCH = u'Contract Search'
+
 
 
 BID_1 = u'Bid1'
@@ -105,6 +107,7 @@ TRADE = u'Fill'
 ORDER = u'Order'
 POSITION = u'Position'
 ACCOUNT = u'Account'
+WORKING_ORDER = u'Working Order'
 
 SYSTEM = u'System'
 CONNECT_DATABASE = u'Connect Database'
@@ -121,6 +124,9 @@ RESTORE = u'Restore Window'
 ABOUT = u'About'
 TEST = u'Test'
 CONNECT = u'Connect '
+EDIT_SETTING = 'Edit Setting'
+LOAD = 'Load'
+SAVE = 'Save'
 
 CPU_MEMORY_INFO = u'CPU Usage：{cpu}%   Memory Usage：{memory}%'
 CONFIRM_EXIT = u'Confirm Exit？'
