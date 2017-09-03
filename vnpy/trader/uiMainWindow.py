@@ -193,7 +193,7 @@ class MainWindow(QtWidgets.QMainWindow):
             try:
                 self.widgetDict[appName].show()
             except KeyError:
-                appEngine = self.mainEngine.appDict[appName]
+                appEngine = self.mainEngine.getApp(appName)
                 self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
                 self.widgetDict[appName].show()
                 

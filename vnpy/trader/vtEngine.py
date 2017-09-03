@@ -81,6 +81,9 @@ class MainEngine(object):
         # 创建应用实例
         self.appDict[appName] = appModule.appEngine(self, self.eventEngine)
         
+        # 将应用引擎实例添加到主引擎的属性中
+        self.__dict__[appName] = self.appDict[appName]
+        
         # 保存应用信息
         d = {
             'appName': appModule.appName,
@@ -285,6 +288,11 @@ class MainEngine(object):
         return self.appDetailList
     
     #----------------------------------------------------------------------
+    def getApp(self, appName):
+        """获取APP引擎对象"""
+        return self.appDict[appName]
+    
+    #----------------------------------------------------------------------
     def initLogEngine(self):
         """初始化日志引擎"""
         if not globalSetting["logActive"]:
@@ -313,7 +321,7 @@ class MainEngine(object):
             
         # 注册事件监听
         self.eventEngine.register(EVENT_LOG, self.logEngine.processLogEvent)
-        
+    
 
 ########################################################################
 class DataEngine(object):

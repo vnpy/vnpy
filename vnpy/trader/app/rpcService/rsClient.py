@@ -6,8 +6,8 @@ from vnpy.rpc import RpcClient
 
 
 ########################################################################
-class AttributeProxy(object):
-    """属性代理"""
+class ObjectProxy(object):
+    """对象代理"""
 
     #----------------------------------------------------------------------
     def __init__(self, nameList, client):
@@ -23,7 +23,7 @@ class AttributeProxy(object):
         newNameList.append(name)
         
         # 创建代理对象
-        proxy = AttributeProxy(newNameList, self.client)
+        proxy = ObjectProxy(newNameList, self.client)
         
         # 缓存代理对象
         self.__dict__[name] = proxy
@@ -43,7 +43,7 @@ class AttributeProxy(object):
 
 ########################################################################
 class RsClient(RpcClient):
-    """"""
+    """RPC服务客户端"""
 
     #----------------------------------------------------------------------
     def __init__(self, reqAddress, subAddress):
@@ -54,45 +54,45 @@ class RsClient(RpcClient):
         
     #----------------------------------------------------------------------
     def callback(self, topic, data):
-        """"""
-        self.eventEngine.put(data)
+        """事件推送回调函数"""
+        self.eventEngine.put(data)      # 直接放入事件引擎中
     
     #----------------------------------------------------------------------
     def init(self, eventEngine):
-        """"""
-        self.eventEngine = eventEngine
+        """初始化"""
+        self.eventEngine = eventEngine  # 绑定事件引擎对象
         
-        self.usePickle()
-        self.subscribeTopic('')
-        self.start()
+        self.usePickle()                # 使用cPickle序列化
+        self.subscribeTopic('')         # 订阅全部主题推送
+        self.start()                    # 启动
 
 
 ########################################################################
 class MainEngineProxy(object):
-    """"""
+    """主引擎代理"""
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine):
         """Constructor"""
         self.eventEngine = eventEngine
-        self.eventEngine.start(timer=False)
+        self.eventEngine.start(timer=False)     # 客户端不启动定时器
         
         self.client = None
         
     #----------------------------------------------------------------------
     def init(self, reqAddress, subAddress):
-        """"""
+        """初始化"""
         self.client = RsClient(reqAddress, subAddress)
         self.client.init(self.eventEngine)
 
     #----------------------------------------------------------------------
     def __getattr__(self, name):
-        """"""
+        """获取未知属性"""
         # 生成属性名称层级列表
         nameList = [name]
         
         # 生成属性代理对象
-        proxy = AttributeProxy(nameList, self.client)
+        proxy = ObjectProxy(nameList, self.client)
         
         # 缓存属性代理对象，使得后续调用无需新建
         self.__dict__[name] = proxy
@@ -100,3 +100,8 @@ class MainEngineProxy(object):
         # 返回属性代理
         return proxy
     
+    #----------------------------------------------------------------------
+    def getApp(self, name):
+        """获取应用引擎对象"""
+        return self.__getattr__(name)
+        

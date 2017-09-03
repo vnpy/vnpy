@@ -1,11 +1,10 @@
 # encoding: UTF-8
 
-from rsEngine import RsEngine
-#from uiRmWidget import RmEngineManager
-from vnpy.trader.uiQt import QtWidgets
+from .rsEngine import RsEngine
+from .uiRsWidget import RsEngineManager
 
 appName = 'RpcService'
 appDisplayName = u'RPC服务'
 appEngine = RsEngine
-appWidget = QtWidgets.QWidget
+appWidget = RsEngineManager
 appIco = 'rs.ico'

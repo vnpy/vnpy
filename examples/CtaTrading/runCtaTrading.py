@@ -42,7 +42,7 @@ def runChildProcess():
     
     sleep(5)    # 等待CTP接口初始化
     
-    cta = me.appDict[ctaStrategy.appName]
+    cta = me.getApp(ctaStrategy.appName)
     
     cta.loadSetting()
     le.info(u'CTA策略载入成功')

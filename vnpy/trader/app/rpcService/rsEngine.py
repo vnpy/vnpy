@@ -71,7 +71,7 @@ class RsEngine(object):
             
             # 逐层寻找对象属性
             for name in nameTuple:
-                obj = self.mainEngine.__getattribute__(name)
+                obj = obj.__getattribute__(name)
             
             # 缓存结果
             self.functionDict[nameTuple] = obj
