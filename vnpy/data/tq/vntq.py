@@ -26,6 +26,7 @@ class TqApi(object):
         self.requests = []      # 请求缓存
         
         self.quote_callback_func = None     # tick回调函数
+        self.quote_ins_list = []
         self.chart_subscribes = {}       # k线回调函数
         
     #----------------------------------------------------------------------
@@ -36,7 +37,7 @@ class TqApi(object):
         self.start()
         
         # 启动tornado的IO线程
-        loop_thread = threading.Thread(target=lambda : tornado.ioloop.IOLoop.current().start())
+        loop_thread = threading.Thread(target=lambda: tornado.ioloop.IOLoop.current().start())
         loop_thread.setDaemon(True)
         loop_thread.start()
 
@@ -53,7 +54,8 @@ class TqApi(object):
         """
         if callback_func:
             self.quote_callback_func = callback_func
-        
+            self.quote_ins_list = ins_list
+
         req = {
             "aid": "subscribe_quote",
             "ins_list": ",".join(ins_list),
@@ -72,8 +74,8 @@ class TqApi(object):
         :param data_length: 需要获取的序列长度。每个序列最大支持请求 8964 个数据
         :param callback_func (可选): callback_func 是一个回调函数，每当序列数据变更时会触发。此函数应该接受2个参数 ins_id, duration_seconds
         :example:
-            订阅 cu1803 的1分钟线： subscribe_chart("s1", "cu1803", 60)
-            订阅 IF1709 的tick线： subscribe_chart("s2", "IF1709", 0)
+            订阅 cu1803 的1分钟线： subscribe_chart("cu1803", 60)
+            订阅 IF1709 的tick线： subscribe_chart("IF1709", 0)
         """
         chart_id = self._generate_chart_id(ins_id, duration_seconds)
         
@@ -219,14 +221,15 @@ class TqApi(object):
                 if selector == "quotes":
                     if self.quote_callback_func:
                         for ins_id in section.keys():
-                            self.quote_callback_func(ins_id)
+                            if ins_id in self.quote_ins_list:
+                                self.quote_callback_func(ins_id)
                 
                 elif selector == "ticks":
                     for ins_id in section.keys():
                         chart_id = self._generate_chart_id(ins_id, 0)
-                        sub_info = self.chart_subscribes.get(chart_id)
+                        sub_info = self.chart_subscribes.get(chart_id, None)
                         tick_serial = self.get_tick_serial(ins_id)
-                        if tick_serial:
+                        if tick_serial and sub_info:
                             while len(tick_serial) > sub_info["view_width"]:
                                 tick_serial.popitem(last=False)
                             callback_func = sub_info["callback"]
@@ -238,9 +241,9 @@ class TqApi(object):
                         for dur_nanoseconds in sub_section.keys():
                             dur_seconds = int(dur_nanoseconds) / 1000000000
                             chart_id = self._generate_chart_id(ins_id, dur_seconds)
-                            sub_info = self.chart_subscribes.get(chart_id)
+                            sub_info = self.chart_subscribes.get(chart_id, None)
                             kline_serial = self.get_kline_serial(ins_id, dur_seconds)
-                            if kline_serial:
+                            if kline_serial and sub_info:
                                 while len(kline_serial) > sub_info["view_width"]:
                                     kline_serial.popitem(last=False)
                                 callback_func = sub_info["callback"]
