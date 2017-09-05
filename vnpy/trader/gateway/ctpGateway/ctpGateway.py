@@ -802,12 +802,13 @@ class CtpTdApi(TdApi):
         contract.underlyingSymbol = data['UnderlyingInstrID']
 
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
-
+        
         # 期权类型
-        if data['OptionsType'] == '1':
-            contract.optionType = OPTION_CALL
-        elif data['OptionsType'] == '2':
-            contract.optionType = OPTION_PUT
+        if contract.productClass is PRODUCT_OPTION:
+            if data['OptionsType'] == '1':
+                contract.optionType = OPTION_CALL
+            elif data['OptionsType'] == '2':
+                contract.optionType = OPTION_PUT
 
         # 缓存代码和交易所的印射关系
         self.symbolExchangeDict[contract.symbol] = contract.exchange

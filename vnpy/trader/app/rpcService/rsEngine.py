@@ -88,6 +88,6 @@ class RsEngine(object):
     #----------------------------------------------------------------------
     def stop(self):
         """停止"""
-        pass
+        self.server.stop()
         
     
