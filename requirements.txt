@@ -2,3 +2,4 @@ pymongo
 websocket-client
 msgpack-python
 qdarkstyle
+requests
