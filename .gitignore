@@ -1,19 +1,16 @@
-﻿# C++源代码
+# C++源代码
 ipch/
 Release/
 
 *.sdf
-*.sln
 *.suo
 *.exp
 *.pdb
-*.filters
-*.vcxproj
 *.cd
-*.vcxproj.filters
 
 # Python编译文件
 *.pyc
+*.pyo
 
 # WingIDE文件
 *.wpr
@@ -31,9 +28,7 @@ Release/
 # 本地持久化文件
 *.vn
 
-# word文档
-*.doc
-*.docx
+
 
 # 其他文件
 *.dump
@@ -41,14 +36,20 @@ Release/
 *.klg
 *.lkc
 
-<<<<<<< HEAD
 # 不想同步的
 *.local
 *.temp
 *.vt
-*.dat
-=======
+*.log
+
 vn.ctp/build/*
 vn.lts/build/*
 .idea
->>>>>>> 65aac25731772259bf2d4049e7adbe92750ea01d
+.vscode
+.gitignore
+
+vn.trader/ctaAlgo/data/*
+vn.trader/build/*
+vn.trader/dist/*
+*.bak
+

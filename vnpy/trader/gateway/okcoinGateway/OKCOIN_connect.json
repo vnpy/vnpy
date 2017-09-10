@@ -1,0 +1,7 @@
+{
+    "host": "CNY", 
+    "apiKey": "OKCOIN网站申请",
+    "secretKey": "OKCOIN网站申请",
+    "trace": false,
+    "leverage": 20
+}
