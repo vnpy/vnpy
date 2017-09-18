@@ -372,7 +372,7 @@ void MdApi::OnRtnDeferDeliveryQuot(CThostDeferDeliveryQuot *pQuot)
 
 	if (pQuot)
 	{
-		task.task_data = pQuot;
+		task.task_data = *pQuot;
 	}
 	else
 	{
