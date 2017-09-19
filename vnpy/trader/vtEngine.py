@@ -5,6 +5,7 @@ import shelve
 import logging
 from collections import OrderedDict
 from datetime import datetime
+from copy import copy
 
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure
@@ -132,7 +133,9 @@ class MainEngine(object):
         gateway = self.getGateway(gatewayName)
         
         if gateway:
-            return gateway.sendOrder(orderReq)
+            vtOrderID = gateway.sendOrder(orderReq)
+            self.dataEngine.updateOrderReq(orderReq, vtOrderID)     # 更新发出的委托请求到数据引擎中
+            return vtOrderID
         else:
             return ''
         
@@ -323,6 +326,11 @@ class MainEngine(object):
         # 注册事件监听
         self.eventEngine.register(EVENT_LOG, self.logEngine.processLogEvent)
     
+    #----------------------------------------------------------------------
+    def convertOrderReq(self, req):
+        """转换委托请求"""
+        return self.dataEngine.convertOrderReq(req)
+        
 
 ########################################################################
 class DataEngine(object):
@@ -465,6 +473,16 @@ class DataEngine(object):
         """委托请求更新"""
         detail = self.getPositionDetail(req.vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
+    
+    #----------------------------------------------------------------------
+    def convertOrderReq(self, req):
+        """根据规则转换委托请求"""
+        detail = self.detailDict.get(req.vtSymbol, None)
+        if not detail:
+            return [req]
+        else:
+            return detail.convertOrderReq(req)
+        
         
 
 ########################################################################
@@ -569,6 +587,10 @@ class LogEngine(object):
 class PositionDetail(object):
     """本地维护的持仓信息"""
     WORKING_STATUS = [STATUS_UNKNOWN, STATUS_NOTTRADED, STATUS_PARTTRADED]
+    
+    MODE_NORMAL = 'normal'          # 普通模式
+    MODE_SHFE = 'shfe'              # 上期所今昨分别平仓
+    MODE_TDPENALTY = 'tdpenalty'    # 平今惩罚
 
     #----------------------------------------------------------------------
     def __init__(self, vtSymbol):
@@ -588,6 +610,8 @@ class PositionDetail(object):
         self.shortPosFrozen = EMPTY_INT
         self.shortYdFrozen = EMPTY_INT
         self.shortTdFrozen = EMPTY_INT
+        
+        self.mode = self.MODE_NORMAL
         
         self.workingOrderDict = {}
         
@@ -750,4 +774,80 @@ class PositionDetail(object):
         print 'long frozen, total:%s, td:%s, yd:%s' %(self.longPosFrozen, self.longTdFrozen, self.longYdFrozen)
         print 'short, total:%s, td:%s, yd:%s' %(self.shortPos, self.shortTd, self.shortYd)
         print 'short frozen, total:%s, td:%s, yd:%s' %(self.shortPosFrozen, self.shortTdFrozen, self.shortYdFrozen)        
-      
+    
+    #----------------------------------------------------------------------
+    def convertOrderReq(self, req):
+        """转换委托请求"""
+        # 开仓无需转换
+        if req.offset is OFFSET_OPEN:
+            return [req]
+        
+        # 普通模式无需转换
+        elif self.mode is self.MODE_NORMAL:
+            return [req]
+        
+        # 上期所模式拆分今昨，优先平今
+        elif self.mode is self.MODE_SHFE:
+            # 多头
+            if req.direction is DIRECTION_LONG:
+                posAvailable = self.shortPos - self.shortPosFrozen
+                tdAvailable = self.shortTd- self.shortTdFrozen
+                ydAvailable = self.shortYd - self.shortYdFrozen            
+            # 空头
+            else:
+                posAvailable = self.longPos - self.longPosFrozen
+                tdAvailable = self.longTd - self.longTdFrozen
+                ydAvailable = self.longYd - self.longYdFrozen
+                
+            # 平仓量超过总可用，拒绝，返回空列表
+            if req.volume > posAvailable:
+                return []
+            # 平仓量小于今可用，全部平今
+            elif req.volume <= tdAvailable:
+                req.offset = OFFSET_CLOSETODAY
+                return [req]
+            # 平仓量大于今可用，平今再平昨
+            else:
+                reqTd = copy(req)
+                reqTd.offset = OFFSET_CLOSETODAY
+                reqTd.volume = tdAvailable
+                
+                reqYd = copy(req)
+                reqYd.offset = OFFSET_CLOSEYESTERDAY
+                reqYd.volume = req.volume - tdAvailable
+                
+                return [reqTd, reqYd]        
+            
+        # 平今惩罚模式，没有今仓则平昨，否则锁仓
+        elif self.mode is self.MODE_TDPENALTY:
+            # 多头
+            if req.direction is DIRECTION_LONG:
+                td = self.shortTd
+                ydAvailable = self.shortYd - self.shortYdFrozen
+            # 空头
+            else:
+                td = self.longTd
+                ydAvailable = self.longYd - self.longYdFrozen
+                
+            # 如果有今仓，则只能锁仓
+            if td:
+                req.offset = OFFSET_OPEN
+                return [req]
+            # 如果平仓量小于昨可用，全部平昨
+            elif req.volume <= ydAvailable:
+                req.offset = OFFSET_CLOSEYESTERDAY
+                return [req]
+            # 平仓量大于昨可用，平仓再反向开仓
+            else:
+                reqClose = copy(req)
+                reqClose.offset = OFFSET_CLOSEYESTERDAY
+                reqClose.volume = ydAvailable
+                
+                reqOpen = copy(req)
+                reqOpen.offset = OFFSET_OPEN
+                reqOpen.volume = req.volume - ydAvailable
+                
+                return [reqClose, reqOpen]
+        
+        # 其他情况则直接返回空
+        return []
