@@ -466,8 +466,6 @@ class DataEngine(object):
         detail = self.getPositionDetail(req.vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
         
-        
-    
 
 ########################################################################
 class LogEngine(object):

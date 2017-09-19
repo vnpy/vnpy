@@ -74,10 +74,6 @@ class CtaEngine(object):
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
         
-        # 持仓缓存字典
-        # key为vtSymbol，value为PositionBuffer对象
-        self.posBufferDict = {}
-        
         # 成交号集合，用来过滤已经收到过的成交推送
         self.tradeSet = set()
         
@@ -111,22 +107,7 @@ class CtaEngine(object):
             
         elif orderType == CTAORDER_SELL:
             req.direction = DIRECTION_SHORT
-            
-            # 只有上期所才要考虑平今平昨
-            if contract.exchange != EXCHANGE_SHFE:
-                req.offset = OFFSET_CLOSE
-            else:
-                # 获取持仓缓存数据
-                posBuffer = self.posBufferDict.get(vtSymbol, None)
-                # 如果获取持仓缓存失败，则默认平昨
-                if not posBuffer:
-                    req.offset = OFFSET_CLOSE
-                # 否则如果有多头今仓，则使用平今
-                elif posBuffer.longToday:
-                    req.offset= OFFSET_CLOSETODAY
-                # 其他情况使用平昨
-                else:
-                    req.offset = OFFSET_CLOSE
+            req.offset = OFFSET_CLOSE
                 
         elif orderType == CTAORDER_SHORT:
             req.direction = DIRECTION_SHORT
@@ -134,22 +115,7 @@ class CtaEngine(object):
             
         elif orderType == CTAORDER_COVER:
             req.direction = DIRECTION_LONG
-            
-            # 只有上期所才要考虑平今平昨
-            if contract.exchange != EXCHANGE_SHFE:
-                req.offset = OFFSET_CLOSE
-            else:
-                # 获取持仓缓存数据
-                posBuffer = self.posBufferDict.get(vtSymbol, None)
-                # 如果获取持仓缓存失败，则默认平昨
-                if not posBuffer:
-                    req.offset = OFFSET_CLOSE
-                # 否则如果有空头今仓，则使用平今
-                elif posBuffer.shortToday:
-                    req.offset= OFFSET_CLOSETODAY
-                # 其他情况使用平昨
-                else:
-                    req.offset = OFFSET_CLOSE
+            req.offset = OFFSET_CLOSE
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
         self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
@@ -305,30 +271,7 @@ class CtaEngine(object):
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
             
             # 保存策略持仓到数据库
-            self.savePosition(strategy)            
-            
-        # 更新持仓缓存数据
-        if trade.vtSymbol in self.tickStrategyDict:
-            posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
-            if not posBuffer:
-                posBuffer = PositionBuffer()
-                posBuffer.vtSymbol = trade.vtSymbol
-                self.posBufferDict[trade.vtSymbol] = posBuffer
-            posBuffer.updateTradeData(trade)        
-            
-    #----------------------------------------------------------------------
-    def processPositionEvent(self, event):
-        """处理持仓推送"""
-        pos = event.dict_['data']
-        
-        # 更新持仓缓存数据
-        if pos.vtSymbol in self.tickStrategyDict:
-            posBuffer = self.posBufferDict.get(pos.vtSymbol, None)
-            if not posBuffer:
-                posBuffer = PositionBuffer()
-                posBuffer.vtSymbol = pos.vtSymbol
-                self.posBufferDict[pos.vtSymbol] = posBuffer
-            posBuffer.updatePositionData(pos)
+            self.savePosition(strategy)              
     
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -336,7 +279,6 @@ class CtaEngine(object):
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
-        self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
  
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -615,69 +557,4 @@ class CtaEngine(object):
     def stop(self):
         """停止"""
         pass
-
-
-########################################################################
-class PositionBuffer(object):
-    """持仓缓存信息（本地维护的持仓数据）"""
-
-    #----------------------------------------------------------------------
-    def __init__(self):
-        """Constructor"""
-        self.vtSymbol = EMPTY_STRING
-        
-        # 多头
-        self.longPosition = EMPTY_INT
-        self.longToday = EMPTY_INT
-        self.longYd = EMPTY_INT
-        
-        # 空头
-        self.shortPosition = EMPTY_INT
-        self.shortToday = EMPTY_INT
-        self.shortYd = EMPTY_INT
-        
-    #----------------------------------------------------------------------
-    def updatePositionData(self, pos):
-        """更新持仓数据"""
-        if pos.direction == DIRECTION_LONG:
-            self.longPosition = pos.position
-            self.longYd = pos.ydPosition
-            self.longToday = self.longPosition - self.longYd
-        else:
-            self.shortPosition = pos.position
-            self.shortYd = pos.ydPosition
-            self.shortToday = self.shortPosition - self.shortYd
-    
-    #----------------------------------------------------------------------
-    def updateTradeData(self, trade):
-        """更新成交数据"""
-        if trade.direction == DIRECTION_LONG:
-            # 多方开仓，则对应多头的持仓和今仓增加
-            if trade.offset == OFFSET_OPEN:
-                self.longPosition += trade.volume
-                self.longToday += trade.volume
-            # 多方平今，对应空头的持仓和今仓减少
-            elif trade.offset == OFFSET_CLOSETODAY:
-                self.shortPosition -= trade.volume
-                self.shortToday -= trade.volume
-            # 多方平昨，对应空头的持仓和昨仓减少
-            else:
-                self.shortPosition -= trade.volume
-                self.shortYd -= trade.volume
-        else:
-            # 空头和多头相同
-            if trade.offset == OFFSET_OPEN:
-                self.shortPosition += trade.volume
-                self.shortToday += trade.volume
-            elif trade.offset == OFFSET_CLOSETODAY:
-                self.longPosition -= trade.volume
-                self.longToday -= trade.volume
-            else:
-                self.longPosition -= trade.volume
-                self.longYd -= trade.volume
-        
-        
-    
-    
-
 
