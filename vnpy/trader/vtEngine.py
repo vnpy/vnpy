@@ -17,6 +17,7 @@ from vnpy.trader.language import text
 from vnpy.trader.vtFunction import getTempPath
 
 
+
 ########################################################################
 class MainEngine(object):
     """主引擎"""
@@ -328,6 +329,8 @@ class DataEngine(object):
     """数据引擎"""
     contractFileName = 'ContractData.vt'
     contractFilePath = getTempPath(contractFileName)
+    
+    FINISHED_STATUS = [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine):
@@ -343,19 +346,66 @@ class DataEngine(object):
         # 保存活动委托数据的字典（即可撤销）
         self.workingOrderDict = {}
         
+        # 持仓细节字典, vtSymbol:PositionDetail
+        self.detailDict = {}
+        
         # 读取保存在硬盘的合约数据
         self.loadContracts()
         
         # 注册事件监听
         self.registerEvent()
-        
+    
     #----------------------------------------------------------------------
-    def updateContract(self, event):
-        """更新合约数据"""
+    def registerEvent(self):
+        """注册事件监听"""
+        self.eventEngine.register(EVENT_CONTRACT, self.processContractEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
+        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+        self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
+    
+    #----------------------------------------------------------------------
+    def processContractEvent(self, event):
+        """处理合约事件"""
         contract = event.dict_['data']
         self.contractDict[contract.vtSymbol] = contract
         self.contractDict[contract.symbol] = contract       # 使用常规代码（不包括交易所）可能导致重复
+    
+    #----------------------------------------------------------------------
+    def processOrderEvent(self, event):
+        """处理委托事件"""
+        order = event.dict_['data']        
+        self.orderDict[order.vtOrderID] = order
         
+        # 如果订单的状态是全部成交或者撤销，则需要从workingOrderDict中移除
+        if order.status in self.FINISHED_STATUS:
+            if order.vtOrderID in self.workingOrderDict:
+                del self.workingOrderDict[order.vtOrderID]
+        # 否则则更新字典中的数据        
+        else:
+            self.workingOrderDict[order.vtOrderID] = order
+            
+        # 更新到持仓细节中
+        detail = self.getPositionDetail(order.vtSymbol)
+        detail.updateOrder(order)            
+            
+    #----------------------------------------------------------------------
+    def processTradeEvent(self, event):
+        """处理成交事件"""
+        trade = event.dict_['data']
+    
+        # 更新到持仓细节中
+        detail = self.getPositionDetail(trade.vtSymbol)
+        detail.updateTrade(trade)        
+
+    #----------------------------------------------------------------------
+    def processPositionEvent(self, event):
+        """处理持仓事件"""
+        pos = event.dict_['data']
+    
+        # 更新到持仓细节中
+        detail = self.getPositionDetail(pos.vtSymbol)
+        detail.updatePosition(pos)                
+    
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约对象"""
@@ -387,20 +437,6 @@ class DataEngine(object):
         f.close()
         
     #----------------------------------------------------------------------
-    def updateOrder(self, event):
-        """更新委托数据"""
-        order = event.dict_['data']        
-        self.orderDict[order.vtOrderID] = order
-        
-        # 如果订单的状态是全部成交或者撤销，则需要从workingOrderDict中移除
-        if order.status in [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]:
-            if order.vtOrderID in self.workingOrderDict:
-                del self.workingOrderDict[order.vtOrderID]
-        # 否则则更新字典中的数据        
-        else:
-            self.workingOrderDict[order.vtOrderID] = order
-        
-    #----------------------------------------------------------------------
     def getOrder(self, vtOrderID):
         """查询委托"""
         try:
@@ -414,11 +450,24 @@ class DataEngine(object):
         return self.workingOrderDict.values()
     
     #----------------------------------------------------------------------
-    def registerEvent(self):
-        """注册事件监听"""
-        self.eventEngine.register(EVENT_CONTRACT, self.updateContract)
-        self.eventEngine.register(EVENT_ORDER, self.updateOrder)
-
+    def getPositionDetail(self, vtSymbol):
+        """查询持仓细节"""
+        if vtSymbol in self.detailDict:
+            detail = self.detailDict[vtSymbol]
+        else:
+            detail = EmsPosition(vtSymbol)
+            self.detailDict[vtSymbol] = detail
+            
+        return detail
+    
+    #----------------------------------------------------------------------
+    def updateOrderReq(self, req, vtOrderID):
+        """委托请求更新"""
+        detail = self.getPositionDetail(req.vtSymbol)
+        detail.updateOrderReq(req, vtOrderID)
+        
+        
+    
 
 ########################################################################
 class LogEngine(object):
@@ -518,3 +567,189 @@ class LogEngine(object):
         function(log.logContent)
     
     
+########################################################################
+class PositionDetail(object):
+    """本地维护的持仓信息"""
+    WORKING_STATUS = [STATUS_UNKNOWN, STATUS_NOTTRADED, STATUS_PARTTRADED]
+
+    #----------------------------------------------------------------------
+    def __init__(self, vtSymbol):
+        """Constructor"""
+        self.vtSymbol = vtSymbol
+        
+        self.longPos = EMPTY_INT
+        self.longYd = EMPTY_INT
+        self.longTd = EMPTY_INT
+        self.longPosFrozen = EMPTY_INT
+        self.longYdFrozen = EMPTY_INT
+        self.longTdFrozen = EMPTY_INT
+        
+        self.shortPos = EMPTY_INT
+        self.shortYd = EMPTY_INT
+        self.shortTd = EMPTY_INT
+        self.shortPosFrozen = EMPTY_INT
+        self.shortYdFrozen = EMPTY_INT
+        self.shortTdFrozen = EMPTY_INT
+        
+        self.workingOrderDict = {}
+        
+    #----------------------------------------------------------------------
+    def updateTrade(self, trade):
+        """成交更新"""
+        # 多头
+        if trade.direction is DIRECTION_LONG:
+            # 开仓
+            if trade.offset is OFFSET_OPEN:
+                self.longTd += trade.volume
+            # 平今
+            elif trade.offset is OFFSET_CLOSETODAY:
+                self.shortTd -= trade.volume
+            # 平昨
+            elif trade.offset is OFFSET_CLOSEYESTERDAY:
+                self.shortYd -= trade.volume
+            # 平仓（非上期所，优先平今）
+            elif trade.offset is OFFSET_CLOSE:
+                self.shortTd -= trade.volume
+                
+                if self.shortTd < 0:
+                    self.shortYd += self.shortTd
+                    self.shortTd = 0
+                
+        # 空头
+        elif trade.direction is DIRECTION_SHORT:
+            # 开仓
+            if trade.offset is OFFSET_OPEN:
+                self.shortTd += trade.volume
+            # 平今
+            elif trade.offset is OFFSET_CLOSETODAY:
+                self.longTd -= trade.volume
+            # 平昨
+            elif trade.offset is OFFSET_CLOSEYESTERDAY:
+                self.longYd -= trade.volume
+            # 平仓
+            elif trade.offset is OFFSET_CLOSE:
+                self.longTd -= trade.volume
+                
+                if self.longTd < 0:
+                    self.longYd += self.longTd
+                    self.longTd = 0
+                    
+        # 汇总今昨
+        self.calculatePosition()
+    
+    #----------------------------------------------------------------------
+    def updateOrder(self, order):
+        """委托更新"""
+        # 将活动委托缓存下来
+        if order.status in self.WORKING_STATUS:
+            self.workingOrderDict[order.vtOrderID] = order
+            
+        # 移除缓存中已经完成的委托
+        else:
+            if order.vtOrderID in self.workingOrderDict:
+                del self.workingOrderDict[order.vtOrderID]
+                
+        # 计算冻结
+        self.calculateFrozen()
+    
+    #----------------------------------------------------------------------
+    def updatePosition(self, pos):
+        """持仓更新"""
+        if pos.direction is DIRECTION_LONG:
+            self.longPos = pos.position
+            self.longYd = pos.ydPosition
+            self.longTd = self.longPos - self.longYd
+        elif pos.direction is DIRECTION_SHORT:
+            self.shortPos = pos.position
+            self.shortYd = pos.ydPosition
+            self.shortTd = self.shortPos - self.shortYd
+    
+    #----------------------------------------------------------------------
+    def updateOrderReq(self, req, vtOrderID):
+        """发单更新"""
+        # 基于请求生成委托对象
+        order = VtOrderData()
+        order.vtSymbol = req.vtSymbol
+        order.symbol = req.symbol
+        order.exchange = req.exchange
+        order.offset = req.offset
+        order.direction = req.direction
+        order.totalVolume = req.volume
+        order.status = STATUS_UNKNOWN
+        
+        # 缓存到字典中
+        self.workingOrderDict[vtOrderID] = req
+        
+        # 计算冻结量
+        self.calculateFrozen()
+    
+    #----------------------------------------------------------------------
+    def calculatePosition(self):
+        """计算持仓情况"""
+        self.longPos = self.longTd + self.longYd
+        self.shortPos = self.shortTd + self.shortYd      
+        
+        self.output()
+        
+    #----------------------------------------------------------------------
+    def calculateFrozen(self):
+        """计算冻结情况"""
+        # 清空冻结数据
+        self.longPosFrozen = EMPTY_INT
+        self.longYdFrozen = EMPTY_INT
+        self.longTdFrozen = EMPTY_INT
+        self.shortPosFrozen = EMPTY_INT
+        self.shortYdFrozen = EMPTY_INT
+        self.shortTdFrozen = EMPTY_INT     
+        
+        # 遍历统计
+        for order in self.workingOrderDict.values():
+            # 计算剩余冻结量
+            frozenVolume = order.totalVolume - order.tradedVolume
+            
+            # 多头委托
+            if order.direction is DIRECTION_LONG:
+                # 平今
+                if order.offset is OFFSET_CLOSETODAY:
+                    self.shortTdFrozen += frozenVolume
+                # 平昨
+                elif order.offset is OFFSET_CLOSEYESTERDAY:
+                    self.shortYdFrozen += frozenVolume
+                # 平仓
+                elif order.offset is OFFSET_CLOSE:
+                    self.shortTdFrozen += frozenVolume
+                    
+                    if self.shortTdFrozen > self.shortTd:
+                        self.shortYdFrozen += (self.shortTdFrozen - self.shortTd)
+                        self.shortTdFrozen = self.shortTd
+            # 空头委托
+            elif order.direction is DIRECTION_SHORT:
+                # 平今
+                if order.offset is OFFSET_CLOSETODAY:
+                    self.longTdFrozen += frozenVolume
+                # 平昨
+                elif order.offset is OFFSET_CLOSEYESTERDAY:
+                    self.longYdFrozen += frozenVolume
+                # 平仓
+                elif order.offset is OFFSET_CLOSE:
+                    self.longTdFrozen += frozenVolume
+                    
+                    if self.longTdFrozen > self.longTd:
+                        self.longYdFrozen += (self.longTdFrozen - self.longTd)
+                        self.longTdFrozen = self.longTd
+                        
+            # 汇总今昨冻结
+            self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
+            self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
+        
+        self.output()
+            
+    #----------------------------------------------------------------------
+    def output(self):
+        """"""
+        print self.vtSymbol, '-'*30
+        print 'long, total:%s, td:%s, yd:%s' %(self.longPos, self.longTd, self.longYd)
+        print 'long frozen, total:%s, td:%s, yd:%s' %(self.longPosFrozen, self.longTdFrozen, self.longYdFrozen)
+        print 'short, total:%s, td:%s, yd:%s' %(self.shortPos, self.shortTd, self.shortYd)
+        print 'short frozen, total:%s, td:%s, yd:%s' %(self.shortPosFrozen, self.shortTdFrozen, self.shortYdFrozen)        
+      
