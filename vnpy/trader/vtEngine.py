@@ -463,7 +463,7 @@ class DataEngine(object):
         if vtSymbol in self.detailDict:
             detail = self.detailDict[vtSymbol]
         else:
-            detail = EmsPosition(vtSymbol)
+            detail = PositionDetail(vtSymbol)
             self.detailDict[vtSymbol] = detail
             
         return detail
