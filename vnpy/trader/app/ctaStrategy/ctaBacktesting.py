@@ -465,7 +465,7 @@ class BacktestingEngine(object):
         self.workingLimitOrderDict[orderID] = order
         self.limitOrderDict[orderID] = order
         
-        return orderID
+        return [orderID]
     
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
@@ -510,7 +510,7 @@ class BacktestingEngine(object):
         # 推送停止单初始更新
         self.strategy.onStopOrder(so)        
         
-        return stopOrderID
+        return [stopOrderID]
     
     #----------------------------------------------------------------------
     def cancelStopOrder(self, stopOrderID):

@@ -120,20 +120,20 @@ class CtaEngine(object):
             
         # 委托转换
         reqList = self.mainEngine.convertOrderReq(req)
-        orderIDList = []
+        vtOrderIDList = []
         
         if not reqList:
-            return orderIDList
+            return vtOrderIDList
         
         for convertedReq in reqList:
             vtOrderID = self.mainEngine.sendOrder(convertedReq, contract.gatewayName)    # 发单
             self.orderStrategyDict[vtOrderID] = strategy                                 # 保存vtOrderID和策略的映射关系
-            orderIDList.append(vtOrderID)
+            vtOrderIDList.append(vtOrderID)
             
         self.writeCtaLog(u'策略%s发送委托，%s，%s，%s@%s' 
                          %(strategy.name, vtSymbol, req.direction, volume, price))
         
-        return orderIDList
+        return vtOrderIDList
     
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
@@ -189,7 +189,7 @@ class CtaEngine(object):
         # 推送停止单状态
         strategy.onStopOrder(so)
         
-        return stopOrderID
+        return [stopOrderID]
     
     #----------------------------------------------------------------------
     def cancelStopOrder(self, stopOrderID):

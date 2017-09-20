@@ -121,13 +121,13 @@ class CtaTemplate(object):
         if self.trading:
             # 如果stop为True，则意味着发本地停止单
             if stop:
-                vtOrderID = self.ctaEngine.sendStopOrder(self.vtSymbol, orderType, price, volume, self)
+                vtOrderIDList = self.ctaEngine.sendStopOrder(self.vtSymbol, orderType, price, volume, self)
             else:
-                vtOrderID = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
-            return vtOrderID
+                vtOrderIDList = self.ctaEngine.sendOrder(self.vtSymbol, orderType, price, volume, self) 
+            return vtOrderIDList
         else:
             # 交易停止时发单返回空字符串
-            return ''        
+            return []
         
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
