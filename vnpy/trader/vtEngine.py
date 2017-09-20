@@ -354,8 +354,9 @@ class DataEngine(object):
         # 保存活动委托数据的字典（即可撤销）
         self.workingOrderDict = {}
         
-        # 持仓细节字典, vtSymbol:PositionDetail
-        self.detailDict = {}
+        # 持仓细节相关
+        self.detailDict = {}                                # vtSymbol:PositionDetail
+        self.tdPenaltyList = globalSetting['tdPenalty']     # 平今手续费惩罚的产品代码列表
         
         # 读取保存在硬盘的合约数据
         self.loadContracts()
@@ -465,6 +466,16 @@ class DataEngine(object):
         else:
             detail = PositionDetail(vtSymbol)
             self.detailDict[vtSymbol] = detail
+            
+            # 设置持仓细节的委托转换模式
+            contract = self.getContract(vtSymbol)
+            
+            if contract and contract.exchange is EXCHANGE_SHFE:
+                detail.mode = detail.MODE_SHFE
+                
+            for productID in self.tdPenaltyList:
+                if str(productID) in contract.symbol:
+                    detail.mode = detail.MODE_TDPENALTY
             
         return detail
     
