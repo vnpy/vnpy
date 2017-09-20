@@ -91,6 +91,7 @@ class CtaEngine(object):
         req = VtOrderReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
+        req.vtSymbol = contract.vtSymbol
         req.price = self.roundToPriceTick(contract.priceTick, price)
         req.volume = volume
         
@@ -116,14 +117,23 @@ class CtaEngine(object):
         elif orderType == CTAORDER_COVER:
             req.direction = DIRECTION_LONG
             req.offset = OFFSET_CLOSE
+            
+        # 委托转换
+        reqList = self.mainEngine.convertOrderReq(req)
+        orderIDList = []
         
-        vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)    # 发单
-        self.orderStrategyDict[vtOrderID] = strategy        # 保存vtOrderID和策略的映射关系
-
+        if not reqList:
+            return orderIDList
+        
+        for convertedReq in reqList:
+            vtOrderID = self.mainEngine.sendOrder(convertedReq, contract.gatewayName)    # 发单
+            self.orderStrategyDict[vtOrderID] = strategy                                 # 保存vtOrderID和策略的映射关系
+            orderIDList.append(vtOrderID)
+            
         self.writeCtaLog(u'策略%s发送委托，%s，%s，%s@%s' 
                          %(strategy.name, vtSymbol, req.direction, volume, price))
         
-        return vtOrderID
+        return orderIDList
     
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
