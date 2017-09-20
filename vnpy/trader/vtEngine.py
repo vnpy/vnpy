@@ -778,16 +778,16 @@ class PositionDetail(object):
     #----------------------------------------------------------------------
     def convertOrderReq(self, req):
         """转换委托请求"""
-        # 开仓无需转换
-        if req.offset is OFFSET_OPEN:
-            return [req]
-        
         # 普通模式无需转换
-        elif self.mode is self.MODE_NORMAL:
+        if self.mode is self.MODE_NORMAL:
             return [req]
         
         # 上期所模式拆分今昨，优先平今
         elif self.mode is self.MODE_SHFE:
+            # 开仓无需转换
+            if req.offset is OFFSET_OPEN:
+                return [req]
+            
             # 多头
             if req.direction is DIRECTION_LONG:
                 posAvailable = self.shortPos - self.shortPosFrozen
@@ -829,18 +829,20 @@ class PositionDetail(object):
                 td = self.longTd
                 ydAvailable = self.longYd - self.longYdFrozen
                 
-            # 如果有今仓，则只能锁仓
+            # 这里针对开仓和平仓委托均使用一套逻辑
+            
+            # 如果有今仓，则只能开仓（或锁仓）
             if td:
                 req.offset = OFFSET_OPEN
                 return [req]
             # 如果平仓量小于昨可用，全部平昨
             elif req.volume <= ydAvailable:
-                req.offset = OFFSET_CLOSEYESTERDAY
+                req.offset = OFFSET_CLOSE       # OFFSET_CLOSE在上期所等于平昨
                 return [req]
             # 平仓量大于昨可用，平仓再反向开仓
             else:
                 reqClose = copy(req)
-                reqClose.offset = OFFSET_CLOSEYESTERDAY
+                reqClose.offset = OFFSET_CLOSE
                 reqClose.volume = ydAvailable
                 
                 reqOpen = copy(req)
