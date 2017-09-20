@@ -167,47 +167,47 @@ class DualThrustStrategy(CtaTemplate):
             if self.pos == 0:
                 if bar.close > self.dayOpen:
                     if not self.longEntered:
-                        vtOrderID = self.buy(self.longEntry, self.fixedSize, stop=True)
-                        self.orderList.append(vtOrderID)
+                        l = self.buy(self.longEntry, self.fixedSize, stop=True)
+                        self.orderList.extend(l)
                 else:
                     if not self.shortEntered:
-                        vtOrderID = self.short(self.shortEntry, self.fixedSize, stop=True)
-                        self.orderList.append(vtOrderID)
+                        l = self.short(self.shortEntry, self.fixedSize, stop=True)
+                        self.orderList.extend(l)
     
             # 持有多头仓位
             elif self.pos > 0:
                 self.longEntered = True
 
                 # 多头止损单
-                vtOrderID = self.sell(self.shortEntry, self.fixedSize, stop=True)
-                self.orderList.append(vtOrderID)
+                l = self.sell(self.shortEntry, self.fixedSize, stop=True)
+                self.orderList.extend(l)
                 
                 # 空头开仓单
                 if not self.shortEntered:
-                    vtOrderID = self.short(self.shortEntry, self.fixedSize, stop=True)
-                    self.orderList.append(vtOrderID)
+                    l = self.short(self.shortEntry, self.fixedSize, stop=True)
+                    self.orderList.extend(l)
                 
             # 持有空头仓位
             elif self.pos < 0:
                 self.shortEntered = True
 
                 # 空头止损单
-                vtOrderID = self.cover(self.longEntry, self.fixedSize, stop=True)
-                self.orderList.append(vtOrderID)
+                l = self.cover(self.longEntry, self.fixedSize, stop=True)
+                self.orderList.extend(l)
                 
                 # 多头开仓单
                 if not self.longEntered:
-                    vtOrderID = self.buy(self.longEntry, self.fixedSize, stop=True)
-                    self.orderList.append(vtOrderID)  
+                    l = self.buy(self.longEntry, self.fixedSize, stop=True)
+                    self.orderList.extend(l)
             
         # 收盘平仓
         else:
             if self.pos > 0:
-                vtOrderID = self.sell(bar.close * 0.99, abs(self.pos))
-                self.orderList.append(vtOrderID)
+                l = self.sell(bar.close * 0.99, abs(self.pos))
+                self.orderList.extend(l)
             elif self.pos < 0:
-                vtOrderID = self.cover(bar.close * 1.01, abs(self.pos))
-                self.orderList.append(vtOrderID) 
+                l = self.cover(bar.close * 1.01, abs(self.pos))
+                self.orderList.extend(l)
  
         # 发出状态更新事件
         self.putEvent()

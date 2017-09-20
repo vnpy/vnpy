@@ -51,8 +51,8 @@ class KkStrategy(CtaTemplate):
     intraTradeHigh = 0                  # 持仓期内的最高点
     intraTradeLow = 0                   # 持仓期内的最低点
 
-    buyOrderID = None                   # OCO委托买入开仓的委托号
-    shortOrderID = None                 # OCO委托卖出开仓的委托号
+    buyOrderIDList = []                 # OCO委托买入开仓的委托号
+    shortOrderIDList = []               # OCO委托卖出开仓的委托号
     orderList = []                      # 保存委托代码的列表
 
     # 参数列表，保存了参数的名称
@@ -220,18 +220,18 @@ class KkStrategy(CtaTemplate):
             self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
             self.intraTradeLow = bar.low
             
-            orderID = self.sell(self.intraTradeHigh*(1-self.trailingPrcnt/100), 
+            l = self.sell(self.intraTradeHigh*(1-self.trailingPrcnt/100), 
                                 abs(self.pos), True)
-            self.orderList.append(orderID)
+            self.orderList.extend(l)
     
         # 持有空头仓位
         elif self.pos < 0:
             self.intraTradeHigh = bar.high
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             
-            orderID = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100),
+            l = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100),
                                abs(self.pos), True)
-            self.orderList.append(orderID)
+            self.orderList.extend(l)
     
         # 发出状态更新事件
         self.putEvent()        
@@ -243,21 +243,21 @@ class KkStrategy(CtaTemplate):
 
     #----------------------------------------------------------------------
     def onTrade(self, trade):
-        # 多头开仓成交后，撤消空头委托
-        if self.pos > 0:
-            self.cancelOrder(self.shortOrderID)
-            if self.buyOrderID in self.orderList:
-                self.orderList.remove(self.buyOrderID)
-            if self.shortOrderID in self.orderList:
-                self.orderList.remove(self.shortOrderID)
-        # 反之同样
-        elif self.pos < 0:
-            self.cancelOrder(self.buyOrderID)
-            if self.buyOrderID in self.orderList:
-                self.orderList.remove(self.buyOrderID)
-            if self.shortOrderID in self.orderList:
-                self.orderList.remove(self.shortOrderID)
-        
+        if self.pos != 0:
+            # 多头开仓成交后，撤消空头委托
+            if self.pos > 0:
+                for shortOrderID in self.shortOrderIDList:
+                    self.cancelOrder(shortOrderID)
+            # 反之同样
+            elif self.pos < 0:
+                for buyOrderID in self.buyOrderIDList:
+                    self.cancelOrder(buyOrderID)
+            
+            # 移除委托号
+            for orderID in (self.buyOrderIDList + self.shortOrderIDList):
+                if orderID in self.orderList:
+                    self.orderList.remove(orderID)
+                
         # 发出状态更新事件
         self.putEvent()
         
@@ -272,12 +272,12 @@ class KkStrategy(CtaTemplate):
         3. 一个方向的停止单成交后会立即撤消另一个方向的
         """
         # 发送双边的停止单委托，并记录委托号
-        self.buyOrderID = self.buy(buyPrice, volume, True)
-        self.shortOrderID = self.short(shortPrice, volume, True)
+        self.buyOrderIDList = self.buy(buyPrice, volume, True)
+        self.shortOrderIDList = self.short(shortPrice, volume, True)
         
         # 将委托号记录到列表中
-        self.orderList.append(self.buyOrderID)
-        self.orderList.append(self.shortOrderID)
+        self.orderList.extend(self.buyOrderIDList)
+        self.orderList.extend(self.shortOrderIDList)
 
     #----------------------------------------------------------------------
     def onStopOrder(self, so):

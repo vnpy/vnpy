@@ -221,9 +221,14 @@ class CtaEngine(object):
                         else:
                             price = tick.lowerLimit
                         
-                        so.status = STOPORDER_TRIGGERED
+                        # 发出市价委托
                         self.sendOrder(so.vtSymbol, so.orderType, price, so.volume, so.strategy)
+                        
+                        # 从活动停止单字典中移除该停止单
                         del self.workingStopOrderDict[so.stopOrderID]
+                        
+                        # 更新停止单状态，并通知策略
+                        so.status = STOPORDER_TRIGGERED
                         so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------

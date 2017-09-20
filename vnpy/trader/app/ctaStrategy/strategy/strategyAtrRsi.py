@@ -212,8 +212,8 @@ class AtrRsiStrategy(CtaTemplate):
             # 计算多头移动止损
             longStop = self.intraTradeHigh * (1-self.trailingPercent/100)
             # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
-            orderID = self.sell(longStop, abs(self.pos), stop=True)
-            self.orderList.append(orderID)
+            l = self.sell(longStop, abs(self.pos), stop=True)
+            self.orderList.extend(l)
 
         # 持有空头仓位
         elif self.pos < 0:
@@ -221,8 +221,8 @@ class AtrRsiStrategy(CtaTemplate):
             self.intraTradeHigh = bar.high
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
-            orderID = self.cover(shortStop, abs(self.pos), stop=True)
-            self.orderList.append(orderID)
+            l = self.cover(shortStop, abs(self.pos), stop=True)
+            self.orderList.extend(l)
 
         # 发出状态更新事件
         self.putEvent()
