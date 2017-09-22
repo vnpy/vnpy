@@ -470,13 +470,16 @@ class DataEngine(object):
             # 设置持仓细节的委托转换模式
             contract = self.getContract(vtSymbol)
             
-            if contract and contract.exchange is EXCHANGE_SHFE:
-                detail.mode = detail.MODE_SHFE
+            if contract:
+                # 上期所合约
+                if contract.exchange is EXCHANGE_SHFE:
+                    detail.mode = detail.MODE_SHFE
                 
-            for productID in self.tdPenaltyList:
-                if str(productID) in contract.symbol:
-                    detail.mode = detail.MODE_TDPENALTY
-            
+                # 检查是否有平今惩罚
+                for productID in self.tdPenaltyList:
+                    if str(productID) in contract.symbol:
+                        detail.mode = detail.MODE_TDPENALTY
+                
         return detail
     
     #----------------------------------------------------------------------
