@@ -69,7 +69,7 @@ class DrEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """加载配置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingFilePath) as f:
             drSetting = json.load(f)
 
             # 如果working设为False则不启动行情记录功能
