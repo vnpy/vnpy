@@ -55,6 +55,7 @@ class MainEngine(object):
         self.drEngine = DrEngine(self, self.eventEngine)    # 数据记录模块
         self.rmEngine = RmEngine(self, self.eventEngine)    # 风险管理模块
 
+        self.connected_gw_name = u''
     # ----------------------------------------------------------------------
     def addGateway(self, gatewayModule,gateway_name=EMPTY_STRING):
         """添加底层接口"""
@@ -80,6 +81,9 @@ class MainEngine(object):
         }
         self.gatewayDetailList.append(d)
 
+        if gateway_name != self.connected_gw_name:
+            self.connected_gw_name = gateway_name
+
     # ----------------------------------------------------------------------
     def connect(self, gatewayName):
         """连接特定名称的接口"""
@@ -87,10 +91,17 @@ class MainEngine(object):
             gateway = self.gatewayDict[gatewayName]
             gateway.connect()
 
+            if gatewayName != self.connected_gw_name:
+                self.connected_gw_name = gatewayName
+
             # 接口连接后自动执行数据库连接的任务
             self.dbConnect()
+
+            return True
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+
+            return False
 
     def checkGatewayStatus(self,gatewayName):
         """check gateway connect status"""
@@ -103,21 +114,25 @@ class MainEngine(object):
 
     def qryStatus(self):
         """查询Status"""
+        status_dict = OrderedDict()
 
         # gateway Status
-        gw_status = u''
+        gw_status_dict = OrderedDict()
         for k,g in self.gatewayDict.items():
-            gw_status += u'[{0}/{1}]'.format(k,g.checkStatus())
+            gw_status_dict[k] = g.checkStatus()
+        status_dict['gateways']=gw_status_dict
 
-        self.writeLog(u'gw:{0}'.format(gw_status))
         # ctaEngine Status
-        cta_status = u''
         if self.ctaEngine:
-            s1,s2 = self.ctaEngine.qryStatus()
-            cta_status = u'{0},{1}'.format(s1,s2)
+            tick_dict,strategy_dict = self.ctaEngine.qryStatus()
+            status_dict['ticks']=tick_dict
+            status_dict['strategies'] = strategy_dict
 
-        self.writeLog(u'cta:{0}'.format(cta_status))
+        event = vn_event(type_=EVENT_STATUS)
+        event.dict_['data']= status_dict
+        self.eventEngine.put(event)
 
+        return True
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
@@ -136,7 +151,7 @@ class MainEngine(object):
         """对特定接口发单"""
         # 如果风控检查失败则不发单
         if not self.rmEngine.checkRisk(orderReq):
-            self.writeLog(u'风控检查不通过')
+            self.writeCritical(u'风控检查不通过')
             return ''    
         
         if gatewayName in self.gatewayDict:
@@ -198,20 +213,25 @@ class MainEngine(object):
 
     def disconnect(self, gateway_name=EMPTY_STRING):
         """断开底层gateway的连接"""
+        try:
+            # 只断开指定的gateway
+            if gateway_name != EMPTY_STRING:
+                if gateway_name in self.gatewayDict:
+                    gateway = self.gatewayDict[gateway_name]
+                    gateway.close()
+                    return
+                else:
+                    self.writeLog(u'gateway接口不存在：%s' % gateway_name)
 
-        # 只断开指定的gateway
-        if gateway_name != EMPTY_STRING:
-            if gateway_name in self.gatewayDict:
-                gateway = self.gatewayDict[gateway_name]
+            # 断开所有的gateway
+            for gateway in self.gatewayDict.values():
                 gateway.close()
-                return
-            else:
-                self.writeLog(u'gateway接口不存在：%s' % gateway_name)
 
-        # 断开所有的gateway
-        for gateway in self.gatewayDict.values():
-            gateway.close()
+            return True
 
+        except Exception as ex:
+            print u'vtEngine.disconnect Exception:{0} '.format(str(ex))
+            return False
     # ----------------------------------------------------------------------
     def writeLog(self, content):
         """快速发出日志事件"""
@@ -249,7 +269,7 @@ class MainEngine(object):
 
         # 发出邮件
         try:
-            sendmail(subject=u'Warning', msgcontent=content)
+            sendmail(subject=u'{0} Warning'.format(self.connected_gw_name), msgcontent=content)
         except:
             pass
 
@@ -264,7 +284,7 @@ class MainEngine(object):
 
         # 发出邮件
         try:
-            sendmail(subject=u'Notification', msgcontent=content)
+            sendmail(subject=u'{0} Notification'.format(self.connected_gw_name), msgcontent=content)
         except:
             pass
 
@@ -283,7 +303,7 @@ class MainEngine(object):
 
         # 发出邮件
         try:
-            sendmail(subject=u'Critical', msgcontent=content)
+            sendmail(subject=u'{0} Critical'.format(self.connected_gw_name), msgcontent=content)
         except:
             pass
 
@@ -389,6 +409,27 @@ class MainEngine(object):
     def saveData(self):
         self.ctaEngine.saveStrategyData()
 
+    def initStrategy(self,name, force = False):
+        if not self.ctaEngine:
+            self.writeError(u'Cta Engine not started')
+            return
+        self.ctaEngine.initStrategy(name=name, force=force)
+        self.qryStatus()
+
+    def startStrategy(self,name):
+        if not self.ctaEngine:
+            self.writeError(u'Cta Engine not started')
+            return
+        self.ctaEngine.startStrategy(name=name)
+        self.qryStatus()
+
+    def stopStrategy(self,name):
+        if not self.ctaEngine:
+            self.writeError(u'Cta Engine not started')
+            return
+        self.ctaEngine.stopStrategy(name=name)
+        self.qryStatus()
+
 ########################################################################
 class DataEngine(object):
     """数据引擎"""
@@ -462,7 +503,7 @@ class DataEngine(object):
         self.orderDict[order.vtOrderID] = order
         
         # 如果订单的状态是全部成交或者撤销，则需要从workingOrderDict中移除
-        if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
+        if order.status in [STATUS_ALLTRADED, STATUS_REJECTED, STATUS_CANCELLED]:
             if order.vtOrderID in self.workingOrderDict:
                 del self.workingOrderDict[order.vtOrderID]
         # 否则则更新字典中的数据        
