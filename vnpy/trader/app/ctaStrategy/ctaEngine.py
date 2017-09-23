@@ -80,6 +80,9 @@ class CtaEngine(object):
         # 引擎类型为实盘
         self.engineType = ENGINETYPE_TRADING
         
+        # 注册日式事件类型
+        self.mainEngine.registerLogEvent(EVENT_CTA_LOG)
+        
         # 注册事件监听
         self.registerEvent()
  
@@ -335,6 +338,7 @@ class CtaEngine(object):
         """快速发出CTA模块日志事件"""
         log = VtLogData()
         log.logContent = content
+        log.gatewayName = 'CTA_STRATEGY'
         event = Event(type_=EVENT_CTA_LOG)
         event.dict_['data'] = log
         self.eventEngine.put(event)   

@@ -185,6 +185,7 @@ class MainEngine(object):
         """快速发出日志事件"""
         log = VtLogData()
         log.logContent = content
+        log.gatewayName = 'MAIN_ENGINE'
         event = Event(type_=EVENT_LOG)
         event.dict_['data'] = log
         self.eventEngine.put(event)        
@@ -324,7 +325,12 @@ class MainEngine(object):
             self.logEngine.addFileHandler()
             
         # 注册事件监听
-        self.eventEngine.register(EVENT_LOG, self.logEngine.processLogEvent)
+        self.registerLogEvent(EVENT_LOG)
+    
+    #----------------------------------------------------------------------
+    def registerLogEvent(self, eventType):
+        """注册日志事件监听"""
+        self.eventEngine.register(eventType, self.logEngine.processLogEvent)
     
     #----------------------------------------------------------------------
     def convertOrderReq(self, req):
@@ -593,7 +599,8 @@ class LogEngine(object):
         """处理日志事件"""
         log = event.dict_['data']
         function = self.levelFunctionDict[log.logLevel]     # 获取日志级别对应的处理函数
-        function(log.logContent)
+        msg = '\t'.join([log.gatewayName, log.logContent])
+        function(msg)
     
     
 ########################################################################
