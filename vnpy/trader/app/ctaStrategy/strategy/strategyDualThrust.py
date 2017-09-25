@@ -8,7 +8,7 @@ from datetime import time
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
 
 
 ########################################################################
@@ -25,8 +25,6 @@ class DualThrustStrategy(CtaTemplate):
     initDays = 10
 
     # 策略变量
-    bar = None                  # K线对象
-    barMinute = EMPTY_STRING    # K线当前的分钟
     barList = []                # K线对象的列表
 
     dayOpen = 0
@@ -65,6 +63,7 @@ class DualThrustStrategy(CtaTemplate):
         """Constructor"""
         super(DualThrustStrategy, self).__init__(ctaEngine, setting) 
         
+        self.bm = BarManager(self.onBar)
         self.barList = []
 
     #----------------------------------------------------------------------
@@ -94,36 +93,8 @@ class DualThrustStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
-        # 计算K线
-        tickMinute = tick.datetime.minute
-
-        if tickMinute != self.barMinute:    
-            if self.bar:
-                self.onBar(self.bar)
-
-            bar = VtBarData()              
-            bar.vtSymbol = tick.vtSymbol
-            bar.symbol = tick.symbol
-            bar.exchange = tick.exchange
-
-            bar.open = tick.lastPrice
-            bar.high = tick.lastPrice
-            bar.low = tick.lastPrice
-            bar.close = tick.lastPrice
-
-            bar.date = tick.date
-            bar.time = tick.time
-            bar.datetime = tick.datetime    # K线的时间设为第一个Tick的时间
-
-            self.bar = bar                  # 这种写法为了减少一层访问，加快速度
-            self.barMinute = tickMinute     # 更新当前的分钟
-        else:                               # 否则继续累加新的K线
-            bar = self.bar                  # 写法同样为了加快速度
-
-            bar.high = max(bar.high, tick.lastPrice)
-            bar.low = min(bar.low, tick.lastPrice)
-            bar.close = tick.lastPrice
-
+        self.bm.updateTick(tick)
+        
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""

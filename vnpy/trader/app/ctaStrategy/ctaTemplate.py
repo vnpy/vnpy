@@ -5,8 +5,9 @@
 '''
 
 from vnpy.trader.vtConstant import *
+from vnpy.trader.vtObject import VtBarData
 
-from vnpy.trader.app.ctaStrategy.ctaBase import *
+from .ctaBase import *
 
 
 ########################################################################
@@ -302,4 +303,117 @@ class TargetPosTemplate(CtaTemplate):
                 else:
                     vtOrderID = self.short(shortPrice, abs(posChange))
             self.orderList.append(vtOrderID)
+    
+    
+########################################################################
+class BarManager(object):
+    """
+    K线合成器，支持：
+    1. 基于Tick合成1分钟K线
+    2. 基于1分钟K线合成X分钟K线（X可以是2、3、5、10、15、30、60）
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self, onBar, xmin=0, onXminBar=None):
+        """Constructor"""
+        self.bar = None             # 1分钟K线对象
+        self.onBar = onBar          # 1分钟K线回调函数
+        
+        self.xminBar = None         # X分钟K线对象
+        self.xmin = xmin            # X的值
+        self.onXminBar = onXminBar  # X分钟K线的回调函数
+        
+        self.lastTick = None        # 上一TICK缓存对象
+        
+    #----------------------------------------------------------------------
+    def updateTick(self, tick):
+        """TICK更新"""
+        newMinute = False   # 默认不是新的一分钟
+        
+        # 尚未创建对象
+        if not self.bar:
+            self.bar = VtBarData()
+            newMinute = True
+        # 新的一分钟
+        elif self.bar.datetime.minute != tick.datetime.minute:
+            # 生成上一分钟K线的时间戳
+            self.bar.datetime = self.bar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
+            self.bar.date = self.bar.datetime.strftime('%Y%m%d')
+            self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
+            
+            # 推送已经结束的上一分钟K线
+            self.onBar(self.bar)
+            
+            # 创建新的K线对象
+            self.bar = VtBarData()
+            newMinute = True
+            
+        # 初始化新一分钟的K线数据
+        if newMinute:
+            self.bar.vtSymbol = tick.vtSymbol
+            self.bar.symbol = tick.symbol
+            self.bar.exchange = tick.exchange
+
+            self.bar.open = tick.lastPrice
+            self.bar.high = tick.lastPrice
+            self.bar.low = tick.lastPrice
+        # 累加更新老一分钟的K线数据
+        else:                                   
+            self.bar.high = max(self.bar.high, tick.lastPrice)
+            self.bar.low = min(self.bar.low, tick.lastPrice)
+
+        # 通用更新部分
+        self.bar.close = tick.lastPrice        
+        self.bar.datetime = tick.datetime  
+        self.bar.openInterest = tick.openInterest
+   
+        if self.lastTick:
+            self.bar.volume += (tick.volume - self.lastTick.volume) # 当前K线内的成交量
+            
+        # 缓存Tick
+        self.lastTick = tick
+            
+    #----------------------------------------------------------------------
+    def updateBar(self, bar):
+        """1分钟K线更新"""
+        newX = False      # 默认不是新的X分钟
+        
+        # 尚未创建对象
+        if not self.xminBar:
+            self.xminBar = VtBarData()
+            newX = True
+        # X分钟已经走完
+        elif not bar.datetime.minute % self.xmin:   # 可以用X整除
+            # 生成上一X分钟K线的时间戳
+            self.xminBar.datetime = self.xminBar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
+            self.xminBar.date = self.xminBar.datetime.strftime('%Y%m%d')
+            self.xminBar.time = self.xminBar.datetime.strftime('%H:%M:%S.%f')
+            
+            # 推送
+            self.onXminBar(self.xminBar)
+            
+            # 创建新的K线
+            self.xminBar = VtBarData()
+            newX = True
+            
+        # 初始化K线数据
+        if newX:
+            self.xminBar.vtSymbol = bar.vtSymbol
+            self.xminBar.symbol = bar.symbol
+            self.xminBar.exchange = bar.exchange
+        
+            self.xminBar.open = bar.open
+            self.xminBar.high = bar.high
+            self.xminBar.low = bar.low
+        # 累加老K线
+        else:
+            self.xminBar.high = max(self.xminBar.high, bar.high)
+            self.xminBar.low = min(self.xminBar.low, bar.low)
+            
+        # 通用部分
+        self.xminBar.close = bar.close
+        self.xminBar.datetime = bar.datetime
+        self.xminBar.openInterest = bar.openInterest
+        self.xminBar.volume += int(bar.volume)
+
     

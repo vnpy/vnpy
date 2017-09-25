@@ -17,7 +17,7 @@ import numpy as np
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
 
 
 ########################################################################
@@ -34,10 +34,6 @@ class KkStrategy(CtaTemplate):
     fixedSize = 1           # 每次交易的数量
 
     # 策略变量
-    bar = None                  # 1分钟K线对象
-    barMinute = EMPTY_STRING    # K线当前的分钟
-    fiveBar = None              # 1分钟K线对象
-
     bufferSize = 100                    # 需要缓存的数据的大小
     bufferCount = 0                     # 目前已经缓存了的数据的计数
     highArray = np.zeros(bufferSize)    # K线最高价的数组
@@ -77,6 +73,8 @@ class KkStrategy(CtaTemplate):
         """Constructor"""
         super(KkStrategy, self).__init__(ctaEngine, setting)
         
+        self.bm = BarManager(self.onBar, 5, self.onFiveBar)     # 创建K线合成器对象
+        
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -103,83 +101,18 @@ class KkStrategy(CtaTemplate):
 
     #----------------------------------------------------------------------
     def onTick(self, tick):
-        """收到行情TICK推送（必须由用户继承实现）"""
-        # 聚合为1分钟K线
-        tickMinute = tick.datetime.minute
-
-        if tickMinute != self.barMinute:  
-            if self.bar:
-                self.onBar(self.bar)
-
-            bar = VtBarData()              
-            bar.vtSymbol = tick.vtSymbol
-            bar.symbol = tick.symbol
-            bar.exchange = tick.exchange
-
-            bar.open = tick.lastPrice
-            bar.high = tick.lastPrice
-            bar.low = tick.lastPrice
-            bar.close = tick.lastPrice
-
-            bar.date = tick.date
-            bar.time = tick.time
-            bar.datetime = tick.datetime    # K线的时间设为第一个Tick的时间
-
-            self.bar = bar                  # 这种写法为了减少一层访问，加快速度
-            self.barMinute = tickMinute     # 更新当前的分钟
-        else:                               # 否则继续累加新的K线
-            bar = self.bar                  # 写法同样为了加快速度
-
-            bar.high = max(bar.high, tick.lastPrice)
-            bar.low = min(bar.low, tick.lastPrice)
-            bar.close = tick.lastPrice
+        """收到行情TICK推送（必须由用户继承实现）""" 
+        self.bm.updateTick(tick)
 
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        # 如果当前是一个5分钟走完（分钟线的时间戳是当前分钟的开始时间戳，因此要+1）
-        if (bar.datetime.minute + 1) % 5 == 0:
-            # 如果已经有聚合5分钟K线
-            if self.fiveBar:
-                # 将最新分钟的数据更新到目前5分钟线中
-                fiveBar = self.fiveBar
-                fiveBar.high = max(fiveBar.high, bar.high)
-                fiveBar.low = min(fiveBar.low, bar.low)
-                fiveBar.close = bar.close
-                
-                # 推送5分钟线数据
-                self.onFiveBar(fiveBar)
-                
-                # 清空5分钟线数据缓存
-                self.fiveBar = None
-        else:
-            # 如果没有缓存则新建
-            if not self.fiveBar:
-                fiveBar = VtBarData()
-                
-                fiveBar.vtSymbol = bar.vtSymbol
-                fiveBar.symbol = bar.symbol
-                fiveBar.exchange = bar.exchange
-            
-                fiveBar.open = bar.open
-                fiveBar.high = bar.high
-                fiveBar.low = bar.low
-                fiveBar.close = bar.close
-            
-                fiveBar.date = bar.date
-                fiveBar.time = bar.time
-                fiveBar.datetime = bar.datetime 
-                
-                self.fiveBar = fiveBar
-            else:
-                fiveBar = self.fiveBar
-                fiveBar.high = max(fiveBar.high, bar.high)
-                fiveBar.low = min(fiveBar.low, bar.low)
-                fiveBar.close = bar.close
+        self.bm.updateBar(bar)
     
     #----------------------------------------------------------------------
     def onFiveBar(self, bar):
         """收到5分钟K线"""
+        print bar.datetime, bar.open, bar.high, bar.low, bar.close
         # 撤销之前发出的尚未成交的委托（包括限价单和停止单）
         for orderID in self.orderList:
             self.cancelOrder(orderID)
