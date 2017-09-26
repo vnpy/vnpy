@@ -491,6 +491,11 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """委托请求更新"""
+        if req.exchange:
+            vtSymbol = '.'.join([req.symbol, req.exchange])
+        else:
+            vtSymbol = req.symbol
+            
         detail = self.getPositionDetail(req.vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
     
@@ -720,7 +725,7 @@ class PositionDetail(object):
         order.status = STATUS_UNKNOWN
         
         # 缓存到字典中
-        self.workingOrderDict[vtOrderID] = req
+        self.workingOrderDict[vtOrderID] = order
         
         # 计算冻结量
         self.calculateFrozen()
