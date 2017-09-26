@@ -496,7 +496,7 @@ class DataEngine(object):
         else:
             vtSymbol = req.symbol
             
-        detail = self.getPositionDetail(req.vtSymbol)
+        detail = self.getPositionDetail(vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
     
     #----------------------------------------------------------------------
