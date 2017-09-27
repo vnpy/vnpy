@@ -714,9 +714,14 @@ class PositionDetail(object):
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """发单更新"""
+        if req.exchange:
+            vtSymbol = '.'.join([req.symbol, req.exchange])
+        else:
+            vtSymbol = req.symbol        
+            
         # 基于请求生成委托对象
         order = VtOrderData()
-        order.vtSymbol = req.vtSymbol
+        order.vtSymbol = vtSymbol
         order.symbol = req.symbol
         order.exchange = req.exchange
         order.offset = req.offset
