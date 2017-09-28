@@ -69,7 +69,7 @@ class DrEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """加载配置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingFilePath) as f:
             drSetting = json.load(f)
 
             # 如果working设为False则不启动行情记录功能
@@ -301,7 +301,8 @@ class DrEngine(object):
         while self.active:
             try:
                 dbName, collectionName, d = self.queue.get(block=True, timeout=1)
-                self.mainEngine.dbInsert(dbName, collectionName, d)
+                flt = {'datetime': d['datetime']}
+                self.mainEngine.dbUpdate(dbName, collectionName, d, flt, True)
             except Empty:
                 pass
             

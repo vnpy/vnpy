@@ -465,15 +465,19 @@ class BacktestingEngine(object):
         self.workingLimitOrderDict[orderID] = order
         self.limitOrderDict[orderID] = order
         
-        return orderID
+        return [orderID]
     
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""
         if vtOrderID in self.workingLimitOrderDict:
             order = self.workingLimitOrderDict[vtOrderID]
+            
             order.status = STATUS_CANCELLED
             order.cancelTime = self.dt.strftime('%H:%M:%S')
+            
+            self.strategy.onOrder(order)
+            
             del self.workingLimitOrderDict[vtOrderID]
         
     #----------------------------------------------------------------------
@@ -510,7 +514,7 @@ class BacktestingEngine(object):
         # 推送停止单初始更新
         self.strategy.onStopOrder(so)        
         
-        return stopOrderID
+        return [stopOrderID]
     
     #----------------------------------------------------------------------
     def cancelStopOrder(self, stopOrderID):

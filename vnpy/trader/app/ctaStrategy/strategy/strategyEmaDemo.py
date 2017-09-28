@@ -15,7 +15,7 @@ from __future__ import division
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
 
 
 ########################################################################
@@ -30,9 +30,6 @@ class EmaDemoStrategy(CtaTemplate):
     initDays = 10   # 初始化数据所用的天数
     
     # 策略变量
-    bar = None
-    barMinute = EMPTY_STRING
-    
     fastMa = []             # 快速EMA均线数组
     fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
     fastMa1 = EMPTY_FLOAT   # 上一根的快速EMA
@@ -62,6 +59,8 @@ class EmaDemoStrategy(CtaTemplate):
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(EmaDemoStrategy, self).__init__(ctaEngine, setting)
+        
+        self.bm = BarManager(self.onBar)
         
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
         # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
@@ -96,40 +95,7 @@ class EmaDemoStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
-        # 计算K线
-        tickMinute = tick.datetime.minute
-        
-        if tickMinute != self.barMinute:    
-            if self.bar:
-                self.onBar(self.bar)
-            
-            bar = VtBarData()              
-            bar.vtSymbol = tick.vtSymbol
-            bar.symbol = tick.symbol
-            bar.exchange = tick.exchange
-            
-            bar.open = tick.lastPrice
-            bar.high = tick.lastPrice
-            bar.low = tick.lastPrice
-            bar.close = tick.lastPrice
-            
-            bar.date = tick.date
-            bar.time = tick.time
-            bar.datetime = tick.datetime    # K线的时间设为第一个Tick的时间
-            
-            # 实盘中用不到的数据可以选择不算，从而加快速度
-            #bar.volume = tick.volume
-            #bar.openInterest = tick.openInterest
-            
-            self.bar = bar                  # 这种写法为了减少一层访问，加快速度
-            self.barMinute = tickMinute     # 更新当前的分钟
-            
-        else:                               # 否则继续累加新的K线
-            bar = self.bar                  # 写法同样为了加快速度
-            
-            bar.high = max(bar.high, tick.lastPrice)
-            bar.low = min(bar.low, tick.lastPrice)
-            bar.close = tick.lastPrice
+        self.bm.updateTick(tick)
         
     #----------------------------------------------------------------------
     def onBar(self, bar):
