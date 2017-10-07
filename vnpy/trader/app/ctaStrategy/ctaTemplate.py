@@ -486,34 +486,73 @@ class ArrayManager(object):
         return self.volumeArray
     
     #----------------------------------------------------------------------
-    def sma(self, n, shift=0):
-        """均线"""
-        return talib.SMA(self.close, n)[-1-shift]
-    
+    def sma(self, n, array=False):
+        """简单均线"""
+        result = talib.SMA(self.close, n)
+        if array:
+            return result
+        return result[-1]
+        
     #----------------------------------------------------------------------
-    def std(self, n, shift=0):
+    def std(self, n, array=False):
         """标准差"""
-        return talib.STDDEV(self.close, n)[-1-shift]
+        result = talib.STDDEV(self.close, n)
+        if array:
+            return result
+        return result[-1]
     
     #----------------------------------------------------------------------
-    def boll(self, n, dev, shift=0):
+    def cci(self, n, array=False):
+        """CCI指标"""
+        result = talib.CCI(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+        
+    #----------------------------------------------------------------------
+    def atr(self, n, array=False):
+        """ATR指标"""
+        result = talib.ATR(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+        
+    #----------------------------------------------------------------------
+    def rsi(self, n, array=False):
+        """RSI指标"""
+        result = talib.RSI(self.close, n)
+        if array:
+            return result
+        return result[-1]
+    
+    #----------------------------------------------------------------------
+    def boll(self, n, dev, array=False):
         """布林通道"""
-        mid = self.sma(n, shift)
-        std = self.std(n, shift)
+        mid = self.sma(n, array)
+        std = self.std(n, array)
         
         up = mid + std * dev
         down = mid - std * dev
         
+        return up, down    
+    
+    #----------------------------------------------------------------------
+    def keltner(self, n, dev, array=False):
+        """肯特纳通道"""
+        mid = self.sma(n, array)
+        atr = self.atr(n, array)
+        
+        up = mid + atr * dev
+        down = mid - atr * dev
+        
         return up, down
     
     #----------------------------------------------------------------------
-    def cci(self, n, shift=0):
-        """CCI指标"""
-        return talib.CCI(self.high, self.low, self.close, n)[-1-shift]
+    def donchian(self, n, array=False):
+        """唐奇安通道"""
+        up = talib.MAX(self.high, n)
+        down = talib.MIN(self.low, n)
         
-    #----------------------------------------------------------------------
-    def atr(self, n, shift=0):
-        """ATR指标"""
-        return talib.ATR(self.high, self.low, self.close, n)[-1-shift]
-        
-        
+        if array:
+            return up, down
+        return up[-1], down[-1]

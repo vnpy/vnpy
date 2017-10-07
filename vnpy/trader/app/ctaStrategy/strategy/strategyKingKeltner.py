@@ -12,12 +12,11 @@
 
 from __future__ import division
 
-import talib
-import numpy as np
-
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
+from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
+                                                     BarManager, 
+                                                     ArrayManager)
 
 
 ########################################################################
@@ -34,14 +33,6 @@ class KkStrategy(CtaTemplate):
     fixedSize = 1           # 每次交易的数量
 
     # 策略变量
-    bufferSize = 100                    # 需要缓存的数据的大小
-    bufferCount = 0                     # 目前已经缓存了的数据的计数
-    highArray = np.zeros(bufferSize)    # K线最高价的数组
-    lowArray = np.zeros(bufferSize)     # K线最低价的数组
-    closeArray = np.zeros(bufferSize)   # K线收盘价的数组
-    
-    atrValue = 0                        # 最新的ATR指标数值
-    kkMid = 0                           # KK通道中轨
     kkUp = 0                            # KK通道上轨
     kkDown = 0                          # KK通道下轨
     intraTradeHigh = 0                  # 持仓期内的最高点
@@ -63,8 +54,6 @@ class KkStrategy(CtaTemplate):
     varList = ['inited',
                'trading',
                'pos',
-               'atrValue',
-               'kkMid',
                'kkUp',
                'kkDown']  
 
@@ -74,6 +63,7 @@ class KkStrategy(CtaTemplate):
         super(KkStrategy, self).__init__(ctaEngine, setting)
         
         self.bm = BarManager(self.onBar, 5, self.onFiveBar)     # 创建K线合成器对象
+        self.am = ArrayManager()
         
     #----------------------------------------------------------------------
     def onInit(self):
@@ -118,27 +108,14 @@ class KkStrategy(CtaTemplate):
         self.orderList = []
     
         # 保存K线数据
-        self.closeArray[0:self.bufferSize-1] = self.closeArray[1:self.bufferSize]
-        self.highArray[0:self.bufferSize-1] = self.highArray[1:self.bufferSize]
-        self.lowArray[0:self.bufferSize-1] = self.lowArray[1:self.bufferSize]
-    
-        self.closeArray[-1] = bar.close
-        self.highArray[-1] = bar.high
-        self.lowArray[-1] = bar.low
-    
-        self.bufferCount += 1
-        if self.bufferCount < self.bufferSize:
+        am = self.am
+        am.updateBar(bar)
+        if not am.inited:
             return
-    
+        
         # 计算指标数值
-        self.atrValue = talib.ATR(self.highArray, 
-                                  self.lowArray, 
-                                  self.closeArray,
-                                  self.kkLength)[-1]
-        self.kkMid = talib.MA(self.closeArray, self.kkLength)[-1]
-        self.kkUp = self.kkMid + self.atrValue * self.kkDev
-        self.kkDown = self.kkMid - self.atrValue * self.kkDev
-    
+        self.kkUp, self.kkDown = am.keltner(self.kkLength, self.kkDev)
+        
         # 判断是否要进行交易
     
         # 当前无仓位，发送OCO开仓委托

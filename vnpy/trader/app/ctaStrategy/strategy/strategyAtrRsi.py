@@ -10,12 +10,11 @@
 
 """
 
-import talib
-import numpy as np
-
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
+from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
+                                                     BarManager, 
+                                                     ArrayManager)
 
 
 ########################################################################
@@ -34,17 +33,8 @@ class AtrRsiStrategy(CtaTemplate):
     fixedSize = 1           # 每次交易的数量
 
     # 策略变量
-    bufferSize = 100                    # 需要缓存的数据的大小
-    bufferCount = 0                     # 目前已经缓存了的数据的计数
-    highArray = np.zeros(bufferSize)    # K线最高价的数组
-    lowArray = np.zeros(bufferSize)     # K线最低价的数组
-    closeArray = np.zeros(bufferSize)   # K线收盘价的数组
-    
-    atrCount = 0                        # 目前已经缓存了的ATR的计数
-    atrArray = np.zeros(bufferSize)     # ATR指标的数组
     atrValue = 0                        # 最新的ATR指标数值
     atrMa = 0                           # ATR移动平均的数值
-
     rsiValue = 0                        # RSI指标的数值
     rsiBuy = 0                          # RSI买开阈值
     rsiSell = 0                         # RSI卖开阈值
@@ -81,6 +71,7 @@ class AtrRsiStrategy(CtaTemplate):
         
         # 创建K线合成器对象
         self.bm = BarManager(self.onBar)
+        self.am = ArrayManager()
         
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
         # 否则会出现多个策略实例之间数据共享的情况，有可能导致潜在的策略逻辑错误风险，
@@ -129,34 +120,17 @@ class AtrRsiStrategy(CtaTemplate):
         self.orderList = []
 
         # 保存K线数据
-        self.closeArray[0:self.bufferSize-1] = self.closeArray[1:self.bufferSize]
-        self.highArray[0:self.bufferSize-1] = self.highArray[1:self.bufferSize]
-        self.lowArray[0:self.bufferSize-1] = self.lowArray[1:self.bufferSize]
-        
-        self.closeArray[-1] = bar.close
-        self.highArray[-1] = bar.high
-        self.lowArray[-1] = bar.low
-        
-        self.bufferCount += 1
-        if self.bufferCount < self.bufferSize:
+        am = self.am
+        am.updateBar(bar)
+        if not am.inited:
             return
 
         # 计算指标数值
-        self.atrValue = talib.ATR(self.highArray, 
-                                  self.lowArray, 
-                                  self.closeArray,
-                                  self.atrLength)[-1]
-        self.atrArray[0:self.bufferSize-1] = self.atrArray[1:self.bufferSize]
-        self.atrArray[-1] = self.atrValue
-
-        self.atrCount += 1
-        if self.atrCount < self.bufferSize:
-            return
-
-        self.atrMa = talib.MA(self.atrArray, 
-                              self.atrMaLength)[-1]
-        self.rsiValue = talib.RSI(self.closeArray, 
-                                  self.rsiLength)[-1]
+        atrArray = am.atr(self.atrLength, array=True)
+        self.atrValue = atrArray[-1]
+        self.atrMa = atrArray[-self.atrMaLength:].mean()
+        
+        self.rsiValue = am.rsi(self.rsiLength)
 
         # 判断是否要进行交易
         
