@@ -416,4 +416,40 @@ class BarManager(object):
         self.xminBar.openInterest = bar.openInterest
         self.xminBar.volume += int(bar.volume)
 
+    #----------------------------------------------------------------------
+    def updateBar(self, bar):
+        """1分钟K线更新"""
+        # 尚未创建对象
+        if not self.xminBar:
+            self.xminBar = VtBarData()
+            
+            self.xminBar.vtSymbol = bar.vtSymbol
+            self.xminBar.symbol = bar.symbol
+            self.xminBar.exchange = bar.exchange
+        
+            self.xminBar.open = bar.open
+            self.xminBar.high = bar.high
+            self.xminBar.low = bar.low            
+        # 累加老K线
+        else:
+            self.xminBar.high = max(self.xminBar.high, bar.high)
+            self.xminBar.low = min(self.xminBar.low, bar.low)
     
+        # 通用部分
+        self.xminBar.close = bar.close
+        self.xminBar.datetime = bar.datetime
+        self.xminBar.openInterest = bar.openInterest
+        self.xminBar.volume += int(bar.volume)                
+            
+        # X分钟已经走完
+        if not bar.datetime.minute % self.xmin:   # 可以用X整除
+            # 生成上一X分钟K线的时间戳
+            self.xminBar.datetime = self.xminBar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
+            self.xminBar.date = self.xminBar.datetime.strftime('%Y%m%d')
+            self.xminBar.time = self.xminBar.datetime.strftime('%H:%M:%S.%f')
+            
+            # 推送
+            self.onXminBar(self.xminBar)
+            
+            # 清空老K线缓存对象
+            self.xminBar = None
