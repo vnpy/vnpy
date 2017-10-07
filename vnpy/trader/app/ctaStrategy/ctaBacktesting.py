@@ -948,7 +948,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def showDailyResult(self, df=None):
         """显示按日统计的交易结果"""
-        if not df:
+        if df is None:
             df = self.calculateDailyResult()
 
         df['balance'] = df['netPnl'].cumsum() + self.capital
