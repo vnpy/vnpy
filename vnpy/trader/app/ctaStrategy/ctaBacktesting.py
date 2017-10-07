@@ -1130,8 +1130,6 @@ class DailyResult(object):
         self.totalPnl = self.tradingPnl + self.positionPnl
         self.netPnl = self.totalPnl - self.commission - self.slippage
 
-    
-
 
 ########################################################################
 class OptimizationSetting(object):
