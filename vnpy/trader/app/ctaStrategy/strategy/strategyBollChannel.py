@@ -23,7 +23,9 @@ import numpy as np
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
+from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
+                                                     BarManager, 
+                                                     ArrayManager)
 
 
 ########################################################################
@@ -42,14 +44,6 @@ class BollChannelStrategy(CtaTemplate):
     fixedSize = 1                       # 每次交易的数量
 
     # 策略变量
-    bufferSize = 100                    # 需要缓存的数据的大小
-    bufferCount = 0                     # 目前已经缓存了的数据的计数
-    highArray = np.zeros(bufferSize)    # K线最高价的数组
-    lowArray = np.zeros(bufferSize)     # K线最低价的数组
-    closeArray = np.zeros(bufferSize)   # K线收盘价的数组
-    
-    bollMid = 0                         # 布林通道中轨
-    bollStd = 0                         # 布林通道标准差
     bollUp = 0                          # 布林通道上轨
     bollDown = 0                        # 布林通道下轨
     cciValue = 0                        # CCI指标数值
@@ -79,8 +73,6 @@ class BollChannelStrategy(CtaTemplate):
     varList = ['inited',
                'trading',
                'pos',
-               'bollMid',
-               'bollStd',
                'bollUp',
                'bollDown',
                'cciValue',
@@ -96,6 +88,7 @@ class BollChannelStrategy(CtaTemplate):
         super(BollChannelStrategy, self).__init__(ctaEngine, setting)
         
         self.bm = BarManager(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
+        self.am = ArrayManager()
         
     #----------------------------------------------------------------------
     def onInit(self):
@@ -140,36 +133,21 @@ class BollChannelStrategy(CtaTemplate):
         self.orderList = []
     
         # 保存K线数据
-        self.closeArray[0:self.bufferSize-1] = self.closeArray[1:self.bufferSize]
-        self.highArray[0:self.bufferSize-1] = self.highArray[1:self.bufferSize]
-        self.lowArray[0:self.bufferSize-1] = self.lowArray[1:self.bufferSize]
-    
-        self.closeArray[-1] = bar.close
-        self.highArray[-1] = bar.high
-        self.lowArray[-1] = bar.low
-    
-        self.bufferCount += 1
-        if self.bufferCount < self.bufferSize:
-            return
-    
-        # 计算指标数值
-        self.bollMid = self.closeArray[-self.bollWindow:].mean()
-        self.bollStd = self.closeArray[-self.bollWindow:].std()
-        self.bollUp = self.bollMid + self.bollStd * self.bollDev
-        self.bollDown = self.bollMid - self.bollStd * self.bollDev
+        am = self.am
         
-        self.cciValue = talib.CCI(self.highArray, 
-                                  self.lowArray, 
-                                  self.closeArray, 
-                                  self.cciWindow)[-1]
-        self.atrValue = talib.ATR(self.highArray, 
-                                  self.lowArray, 
-                                  self.closeArray,
-                                  self.atrWindow)[-1]
+        am.updateBar(bar)
+        
+        if not am.inited:
+            return
+        
+        # 计算指标数值
+        self.bollUp, self.bollDown = am.boll(self.bollWindow, self.bollDev)
+        self.cciValue = am.cci(self.cciWindow)
+        self.atrValue = am.atr(self.atrWindow)
         
         # 判断是否要进行交易
     
-        # 当前无仓位，发送OCO开仓委托
+        # 当前无仓位，发送开仓委托
         if self.pos == 0:
             self.intraTradeHigh = bar.high
             self.intraTradeLow = bar.low            
@@ -216,3 +194,4 @@ class BollChannelStrategy(CtaTemplate):
     def onStopOrder(self, so):
         """停止单推送"""
         pass
+    
