@@ -41,7 +41,9 @@ from .strategy import STRATEGY_CLASS
 class CtaEngine(object):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    settingfilePath = getJsonPath(settingFileName, __file__)   
+    settingfilePath = getJsonPath(settingFileName, __file__)
+    
+    STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -73,6 +75,10 @@ class CtaEngine(object):
         # key为stopOrderID，value为stopOrder对象
         self.stopOrderDict = {}             # 停止单撤销后不会从本字典中删除
         self.workingStopOrderDict = {}      # 停止单撤销后会从本字典中删除
+        
+        # 保存策略名称和委托号列表的字典
+        # key为name，value为保存orderID（限价+本地停止）的集合
+        self.strategyOrderDict = {}
         
         # 成交号集合，用来过滤已经收到过的成交推送
         self.tradeSet = set()
@@ -131,6 +137,7 @@ class CtaEngine(object):
         for convertedReq in reqList:
             vtOrderID = self.mainEngine.sendOrder(convertedReq, contract.gatewayName)    # 发单
             self.orderStrategyDict[vtOrderID] = strategy                                 # 保存vtOrderID和策略的映射关系
+            self.strategyOrderDict[strategy.name].add(vtOrderID)                         # 添加到策略委托号集合中
             vtOrderIDList.append(vtOrderID)
             
         self.writeCtaLog(u'策略%s发送委托，%s，%s，%s@%s' 
@@ -189,6 +196,9 @@ class CtaEngine(object):
         self.stopOrderDict[stopOrderID] = so
         self.workingStopOrderDict[stopOrderID] = so
         
+        # 保存stopOrderID到策略委托号集合中
+        self.strategyOrderDict[strategy.name].add(stopOrderID)
+        
         # 推送停止单状态
         strategy.onStopOrder(so)
         
@@ -200,9 +210,19 @@ class CtaEngine(object):
         # 检查停止单是否存在
         if stopOrderID in self.workingStopOrderDict:
             so = self.workingStopOrderDict[stopOrderID]
+            strategy = so.strategy
+            
+            # 更改停止单状态为已撤销
             so.status = STOPORDER_CANCELLED
+            
+            # 从活动停止单字典中移除
             del self.workingStopOrderDict[stopOrderID]
-            so.strategy.onStopOrder(so)
+            
+            # 从策略委托号集合中移除
+            self.strategyOrderDict[strategy.name].remove(stopOrderID)
+            
+            # 通知策略
+            strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processStopOrder(self, tick):
@@ -229,6 +249,9 @@ class CtaEngine(object):
                         
                         # 从活动停止单字典中移除该停止单
                         del self.workingStopOrderDict[so.stopOrderID]
+                        
+                        # 从策略委托号集合中移除
+                        self.strategyOrderDict[so.strategy.name].remove(so.stopOrderID)
                         
                         # 更新停止单状态，并通知策略
                         so.status = STOPORDER_TRIGGERED
@@ -264,6 +287,11 @@ class CtaEngine(object):
         
         if order.vtOrderID in self.orderStrategyDict:
             strategy = self.orderStrategyDict[order.vtOrderID]            
+            
+            # 如果委托已经完成（拒单、撤销、全成），则从活动委托集合中移除
+            if order.status in self.STATUS_FINISHED:
+                self.strategyOrderDict[strategy.name].remove(order.vtOrderID)
+            
             self.callStrategyFunc(strategy, strategy.onOrder, order)
     
     #----------------------------------------------------------------------
@@ -366,6 +394,9 @@ class CtaEngine(object):
             # 创建策略实例
             strategy = strategyClass(self, setting)  
             self.strategyDict[name] = strategy
+            
+            # 创建委托号列表
+            self.strategyOrderDict[name] = set()
             
             # 保存Tick映射关系
             if strategy.vtSymbol in self.tickStrategyDict:
@@ -576,4 +607,16 @@ class CtaEngine(object):
     def stop(self):
         """停止"""
         pass
+    
+    #----------------------------------------------------------------------
+    def cancelAll(self, name):
+        """全部撤单"""
+        s = self.strategyOrderDict[name]
+        
+        # 遍历集合，全部撤单
+        for orderID in s:
+            if STOPORDERPREFIX in orderID:
+                self.cancelStopOrder(orderID)
+            else:
+                self.cancelOrder(orderID)
 

@@ -144,6 +144,11 @@ class CtaTemplate(object):
             self.ctaEngine.cancelStopOrder(vtOrderID)
         else:
             self.ctaEngine.cancelOrder(vtOrderID)
+            
+    #----------------------------------------------------------------------
+    def cancelAll(self):
+        """全部撤单"""
+        self.ctaEngine.cancelAll(self.name)
     
     #----------------------------------------------------------------------
     def insertTick(self, tick):

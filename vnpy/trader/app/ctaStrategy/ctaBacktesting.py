@@ -551,7 +551,17 @@ class BacktestingEngine(object):
         """记录日志"""
         log = str(self.dt) + ' ' + content 
         self.logList.append(log)
+    
+    #----------------------------------------------------------------------
+    def cancelAll(self, name):
+        """全部撤单"""
+        # 撤销限价单
+        for orderID in self.workingLimitOrderDict.keys():
+            self.cancelOrder(orderID)
         
+        # 撤销停止单
+        for stopOrderID in self.workingStopOrderDict.keys():
+            self.cancelStopOrder(stopOrderID)
 
     #------------------------------------------------
     # 结果计算相关
@@ -1042,7 +1052,7 @@ class BacktestingEngine(object):
         df['netPnl'].hist(bins=50)
         
         plt.show()
-        
+       
         
 ########################################################################
 class TradingResult(object):

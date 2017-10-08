@@ -39,8 +39,6 @@ class DualThrustStrategy(CtaTemplate):
     longEntered = False
     shortEntered = False
 
-    orderList = []                      # 保存委托代码的列表
-
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
@@ -99,9 +97,7 @@ class DualThrustStrategy(CtaTemplate):
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         # 撤销之前发出的尚未成交的委托（包括限价单和停止单）
-        for orderID in self.orderList:
-            self.cancelOrder(orderID)
-        self.orderList = []
+        self.cancelAll()
 
         # 计算指标数值
         self.barList.append(bar)
@@ -138,47 +134,39 @@ class DualThrustStrategy(CtaTemplate):
             if self.pos == 0:
                 if bar.close > self.dayOpen:
                     if not self.longEntered:
-                        l = self.buy(self.longEntry, self.fixedSize, stop=True)
-                        self.orderList.extend(l)
+                        self.buy(self.longEntry, self.fixedSize, stop=True)
                 else:
                     if not self.shortEntered:
-                        l = self.short(self.shortEntry, self.fixedSize, stop=True)
-                        self.orderList.extend(l)
+                        self.short(self.shortEntry, self.fixedSize, stop=True)
     
             # 持有多头仓位
             elif self.pos > 0:
                 self.longEntered = True
 
                 # 多头止损单
-                l = self.sell(self.shortEntry, self.fixedSize, stop=True)
-                self.orderList.extend(l)
+                self.sell(self.shortEntry, self.fixedSize, stop=True)
                 
                 # 空头开仓单
                 if not self.shortEntered:
-                    l = self.short(self.shortEntry, self.fixedSize, stop=True)
-                    self.orderList.extend(l)
+                    self.short(self.shortEntry, self.fixedSize, stop=True)
                 
             # 持有空头仓位
             elif self.pos < 0:
                 self.shortEntered = True
 
                 # 空头止损单
-                l = self.cover(self.longEntry, self.fixedSize, stop=True)
-                self.orderList.extend(l)
+                self.cover(self.longEntry, self.fixedSize, stop=True)
                 
                 # 多头开仓单
                 if not self.longEntered:
-                    l = self.buy(self.longEntry, self.fixedSize, stop=True)
-                    self.orderList.extend(l)
+                    self.buy(self.longEntry, self.fixedSize, stop=True)
             
         # 收盘平仓
         else:
             if self.pos > 0:
-                l = self.sell(bar.close * 0.99, abs(self.pos))
-                self.orderList.extend(l)
+                self.sell(bar.close * 0.99, abs(self.pos))
             elif self.pos < 0:
-                l = self.cover(bar.close * 1.01, abs(self.pos))
-                self.orderList.extend(l)
+                self.cover(bar.close * 1.01, abs(self.pos))
  
         # 发出状态更新事件
         self.putEvent()

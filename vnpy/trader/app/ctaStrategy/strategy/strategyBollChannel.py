@@ -51,8 +51,6 @@ class BollChannelStrategy(CtaTemplate):
     longStop = 0                        # 多头止损
     shortStop = 0                       # 空头止损
 
-    orderList = []                      # 保存委托代码的列表
-
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
@@ -124,10 +122,8 @@ class BollChannelStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onXminBar(self, bar):
         """收到X分钟K线"""
-        # 撤销之前发出的尚未成交的委托（包括限价单和停止单）
-        for orderID in self.orderList:
-            self.cancelOrder(orderID)
-        self.orderList = []
+        # 全撤之前发出的委托
+        self.cancelAll()
     
         # 保存K线数据
         am = self.am
@@ -150,11 +146,10 @@ class BollChannelStrategy(CtaTemplate):
             self.intraTradeLow = bar.low            
             
             if self.cciValue > 0:
-                l = self.buy(self.bollUp, self.fixedSize, True)
-                self.orderList.extend(l)
+                self.buy(self.bollUp, self.fixedSize, True)
+                
             elif self.cciValue < 0:
-                l = self.short(self.bollDown, self.fixedSize, True)
-                self.orderList.extend(l)
+                self.short(self.bollDown, self.fixedSize, True)
     
         # 持有多头仓位
         elif self.pos > 0:
@@ -162,8 +157,7 @@ class BollChannelStrategy(CtaTemplate):
             self.intraTradeLow = bar.low
             self.longStop = self.intraTradeHigh - self.atrValue * self.slMultiplier
             
-            l = self.sell(self.longStop, abs(self.pos), True)
-            self.orderList.extend(l)
+            self.sell(self.longStop, abs(self.pos), True)
     
         # 持有空头仓位
         elif self.pos < 0:
@@ -171,8 +165,7 @@ class BollChannelStrategy(CtaTemplate):
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             self.shortStop = self.intraTradeLow + self.atrValue * self.slMultiplier
             
-            l = self.cover(self.shortStop, abs(self.pos), True)
-            self.orderList.extend(l)
+            self.cover(self.shortStop, abs(self.pos), True)
     
         # 发出状态更新事件
         self.putEvent()        

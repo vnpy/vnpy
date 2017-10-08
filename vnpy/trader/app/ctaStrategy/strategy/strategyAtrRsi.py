@@ -41,8 +41,6 @@ class AtrRsiStrategy(CtaTemplate):
     intraTradeHigh = 0                  # 移动止损用的持仓期内最高价
     intraTradeLow = 0                   # 移动止损用的持仓期内最低价
 
-    orderList = []                      # 保存委托代码的列表
-
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
@@ -114,10 +112,7 @@ class AtrRsiStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        # 撤销之前发出的尚未成交的委托（包括限价单和停止单）
-        for orderID in self.orderList:
-            self.cancelOrder(orderID)
-        self.orderList = []
+        self.cancelAll()
 
         # 保存K线数据
         am = self.am
@@ -155,20 +150,20 @@ class AtrRsiStrategy(CtaTemplate):
             # 计算多头持有期内的最高价，以及重置最低价
             self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
             self.intraTradeLow = bar.low
+            
             # 计算多头移动止损
             longStop = self.intraTradeHigh * (1-self.trailingPercent/100)
-            # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
-            l = self.sell(longStop, abs(self.pos), stop=True)
-            self.orderList.extend(l)
 
+            # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
+            self.sell(longStop, abs(self.pos), stop=True)
+            
         # 持有空头仓位
         elif self.pos < 0:
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             self.intraTradeHigh = bar.high
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
-            l = self.cover(shortStop, abs(self.pos), stop=True)
-            self.orderList.extend(l)
+            self.cover(shortStop, abs(self.pos), stop=True)
 
         # 发出状态更新事件
         self.putEvent()
