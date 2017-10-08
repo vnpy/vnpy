@@ -531,6 +531,23 @@ class ArrayManager(object):
         return result[-1]
     
     #----------------------------------------------------------------------
+    def macd(self, fastPeriod, slowPeriod, signalPeriod, array=False):
+        """MACD指标"""
+        macd, signal, hist = talib.MACD(self.close, fastPeriod,
+                                        slowPeriod, signalPeriod)
+        if array:
+            return macd, signal, hist
+        return macd[-1], signal[-1], hist[-1]
+    
+    #----------------------------------------------------------------------
+    def adx(self, n, array=False):
+        """ADX指标"""
+        result = talib.ADX(self.high, self.low, self.close, n)
+        if array:
+            return result
+        return result[-1]
+    
+    #----------------------------------------------------------------------
     def boll(self, n, dev, array=False):
         """布林通道"""
         mid = self.sma(n, array)
