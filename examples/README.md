@@ -9,3 +9,11 @@
 * CtaTrading：无图形界面模式的CTA策略交易
 
 * CtaBacktesting：CTA策略的回测和优化
+
+* ServerClient：服务端（业务逻辑）和客户端（GUI界面）分离的VnTrader
+
+* ShcifcoDataService：上海中期历史行情服务（期货）
+
+* TqDataService：天勤历史行情服务（期货）
+
+* TushareDataService：TuShare历史行情服务（股票）

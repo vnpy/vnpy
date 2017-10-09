@@ -420,7 +420,7 @@ class Api(vnokcoin.OkCoinApi):
         tick.highPrice = float(rawData['high'])
         tick.lowPrice = float(rawData['low'])
         tick.lastPrice = float(rawData['last'])
-        tick.volume = float(rawData['vol'].replace(',', ''))
+        tick.volume = float(rawData['vol'])
         #tick.date, tick.time = generateDateTime(rawData['timestamp'])
         
         newtick = copy(tick)

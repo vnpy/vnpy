@@ -1,10 +1,12 @@
-#/bin/bash
+#!/usr/bin/env bash
 # 以 shell 方式启动容器，环境如同 Linux 命令行
 
 cd ..
-# 将 vnpy 指定到
+
+## Run docker container, mapping the ssh and vnc ports, then run bash terminal:
 docker run --name vnpy_bash --rm \
     -v `pwd`:/srv/vnpy \
-    -p 2014:2014 -p 602:602 \
-    -it vnpy:latest /bin/bash
+    -p 2222:22 \
+    -it vnpy:latest \
+    /bin/bash
 
