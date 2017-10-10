@@ -32,7 +32,7 @@ def cleanData(dbName, collectionName, start):
     # 遍历数据
     for data in cx:
         # 获取时间戳对象
-        time = data['datetime'].time()
+        dt = data['datetime'].time()
         
         # 默认需要清洗
         cleanRequired = True
