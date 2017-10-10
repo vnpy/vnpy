@@ -68,6 +68,10 @@ class RmEngineManager(QtWidgets.QWidget):
         self.spinWorkingOrderLimit = RmSpinBox(self.rmEngine.workingOrderLimit)
         self.spinOrderCancelLimit = RmSpinBox(self.rmEngine.orderCancelLimit)
         
+        self.spinMarginRatioLimit = RmSpinBox(self.rmEngine.marginRatioLimit * 100) # 百分比显示配置
+        self.spinMarginRatioLimit.setMaximum(100)   
+        self.spinMarginRatioLimit.setSuffix('%')
+        
         buttonClearOrderFlowCount = QtWidgets.QPushButton(text.CLEAR_ORDER_FLOW_COUNT)
         buttonClearTradeCount = QtWidgets.QPushButton(text.CLEAR_TOTAL_FILL_COUNT)
         buttonSaveSetting = QtWidgets.QPushButton(text.SAVE_SETTING)
@@ -93,6 +97,9 @@ class RmEngineManager(QtWidgets.QWidget):
         grid.addWidget(RmLine(), 10, 0, 1, 2)
         grid.addWidget(Label(text.CONTRACT_CANCEL_LIMIT), 11, 0)
         grid.addWidget(self.spinOrderCancelLimit, 11, 1)
+        grid.addWidget(RmLine(), 12, 0, 1, 2)
+        grid.addWidget(Label(text.MARGIN_RATIO_LIMIT), 13, 0)
+        grid.addWidget(self.spinMarginRatioLimit, 13, 1)        
         
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(buttonClearOrderFlowCount)
@@ -112,6 +119,7 @@ class RmEngineManager(QtWidgets.QWidget):
         self.spinTradeLimit.valueChanged.connect(self.rmEngine.setTradeLimit)
         self.spinWorkingOrderLimit.valueChanged.connect(self.rmEngine.setWorkingOrderLimit)
         self.spinOrderCancelLimit.valueChanged.connect(self.rmEngine.setOrderCancelLimit)
+        self.spinMarginRatioLimit.valueChanged.connect(self.rmEngine.setMarginRatioLimit)
 
         self.buttonSwitchEngineStatus.clicked.connect(self.switchEngineSatus)
         buttonClearOrderFlowCount.clicked.connect(self.rmEngine.clearOrderFlowCount)

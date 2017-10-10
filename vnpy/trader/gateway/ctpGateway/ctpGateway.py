@@ -452,7 +452,8 @@ class CtpTdApi(TdApi):
         
         self.connectionStatus = False       # 连接状态
         self.loginStatus = False            # 登录状态
-        self.authStatus = False
+        self.authStatus = False             # 验证状态
+        self.loginFailed = False            # 登录失败（账号密码错误）
         
         self.userID = EMPTY_STRING          # 账号
         self.password = EMPTY_STRING        # 密码
@@ -530,6 +531,9 @@ class CtpTdApi(TdApi):
             err.errorID = error['ErrorID']
             err.errorMsg = error['ErrorMsg'].decode('gbk')
             self.gateway.onError(err)
+            
+            # 标识登录失败，防止用错误信息连续重复登录
+            self.loginFailed =  True
         
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
@@ -798,12 +802,13 @@ class CtpTdApi(TdApi):
         contract.underlyingSymbol = data['UnderlyingInstrID']
 
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
-
+        
         # 期权类型
-        if data['OptionsType'] == '1':
-            contract.optionType = OPTION_CALL
-        elif data['OptionsType'] == '2':
-            contract.optionType = OPTION_PUT
+        if contract.productClass is PRODUCT_OPTION:
+            if data['OptionsType'] == '1':
+                contract.optionType = OPTION_CALL
+            elif data['OptionsType'] == '2':
+                contract.optionType = OPTION_PUT
 
         # 缓存代码和交易所的印射关系
         self.symbolExchangeDict[contract.symbol] = contract.exchange
@@ -1335,6 +1340,10 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def login(self):
         """连接服务器"""
+        # 如果之前有过登录失败，则不再进行尝试
+        if self.loginFailed:
+            return
+        
         # 如果填入了用户名密码等，则登录
         if self.userID and self.password and self.brokerID:
             req = {}

@@ -304,6 +304,9 @@ class CtaEngine(object):
             
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
             
+            # 保存策略持仓到数据库
+            self.savePosition(strategy)            
+            
         # 更新持仓缓存数据
         if trade.vtSymbol in self.tickStrategyDict:
             posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
@@ -311,7 +314,7 @@ class CtaEngine(object):
                 posBuffer = PositionBuffer()
                 posBuffer.vtSymbol = trade.vtSymbol
                 self.posBufferDict[trade.vtSymbol] = posBuffer
-            posBuffer.updateTradeData(trade)            
+            posBuffer.updateTradeData(trade)        
             
     #----------------------------------------------------------------------
     def processPositionEvent(self, event):
@@ -573,21 +576,20 @@ class CtaEngine(object):
             self.writeCtaLog(content)
             
     #----------------------------------------------------------------------
-    def savePosition(self):
-        """保存所有策略的持仓情况到数据库"""
-        for strategy in self.strategyDict.values():
-            flt = {'name': strategy.name,
-                   'vtSymbol': strategy.vtSymbol}
-            
-            d = {'name': strategy.name,
-                 'vtSymbol': strategy.vtSymbol,
-                 'pos': strategy.pos}
-            
-            self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
-                                     d, flt, True)
-            
-            content = '策略%s持仓保存成功' %strategy.name
-            self.writeCtaLog(content)
+    def savePosition(self, strategy):
+        """保存策略的持仓情况到数据库"""
+        flt = {'name': strategy.name,
+               'vtSymbol': strategy.vtSymbol}
+        
+        d = {'name': strategy.name,
+             'vtSymbol': strategy.vtSymbol,
+             'pos': strategy.pos}
+        
+        self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
+                                 d, flt, True)
+        
+        content = '策略%s持仓保存成功，当前持仓%s' %(strategy.name, strategy.pos)
+        self.writeCtaLog(content)
     
     #----------------------------------------------------------------------
     def loadPosition(self):
