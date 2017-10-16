@@ -794,7 +794,7 @@ class PositionDetail(object):
             self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
         
-        self.output()
+        #self.output()
             
     #----------------------------------------------------------------------
     def output(self):

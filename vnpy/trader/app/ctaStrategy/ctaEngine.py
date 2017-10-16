@@ -621,8 +621,9 @@ class CtaEngine(object):
         """全部撤单"""
         s = self.strategyOrderDict[name]
         
-        # 遍历集合，全部撤单
-        for orderID in s:
+        # 遍历列表，全部撤单
+        # 这里不能直接遍历集合s，因为撤单时会修改s中的内容，导致出错
+        for orderID in list(s):
             if STOPORDERPREFIX in orderID:
                 self.cancelStopOrder(orderID)
             else:
