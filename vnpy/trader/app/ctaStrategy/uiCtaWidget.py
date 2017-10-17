@@ -9,11 +9,11 @@ import os
 from time import sleep
 
 from vnpy.trader.app.ctaStrategy.language import text
-from vnpy.trader.uiBasicWidget import QtGui, QtCore
+from vnpy.trader.uiBasicWidget import QtWidgets, QtGui, QtCore, BasicCell
 from vnpy.trader.vtEvent import *
 
 ########################################################################
-class CtaValueMonitor(QtGui.QTableWidget):
+class CtaValueMonitor(QtWidgets.QTableWidget):
     """参数监控"""
 
     #----------------------------------------------------------------------
@@ -48,7 +48,7 @@ class CtaValueMonitor(QtGui.QTableWidget):
             # 新增数据
             col = 0
             for k, v in data.items():
-                cell = QtGui.QTableWidgetItem(unicode(v))
+                cell = QtWidgets.QTableWidgetItem(unicode(v))
                 self.keyCellDict[k] = cell
                 self.setItem(0, col, cell)
                 col += 1
@@ -67,9 +67,9 @@ class CtaValueMonitor(QtGui.QTableWidget):
         self.resizeRowsToContents()
 
 ########################################################################
-class CtaStrategyManager(QtGui.QGroupBox):
+class CtaStrategyManager(QtWidgets.QGroupBox):
     """策略管理组件"""
-    signal = QtCore.pyqtSignal(type(Event()))
+    signal = QtCore.Signal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, eventEngine, name, parent=None):
@@ -92,20 +92,20 @@ class CtaStrategyManager(QtGui.QGroupBox):
         self.paramMonitor = CtaValueMonitor(self)           # 参数监控
         self.varMonitor = CtaValueMonitor(self)             # 变量监控
         
-        height = 65
+        height = 80
         self.paramMonitor.setFixedHeight(height)
         self.varMonitor.setFixedHeight(height)
 
-        buttonInit = QtGui.QPushButton(text.INIT)
-        buttonStart = QtGui.QPushButton(text.START)
-        buttonStop = QtGui.QPushButton(text.STOP)
-        buttonInitForce = QtGui.QPushButton(u'强制初始化')
+        buttonInit = QtWidgets.QPushButton(text.INIT)
+        buttonStart = QtWidgets.QPushButton(text.START)
+        buttonStop = QtWidgets.QPushButton(text.STOP)
+        buttonInitForce = QtWidgets.QPushButton(text.FORCEINIT)
         buttonInit.clicked.connect(self.init)
         buttonStart.clicked.connect(self.start)
         buttonStop.clicked.connect(self.stop)
         buttonInitForce.clicked.connect(self.initForce)
         
-        hbox1 = QtGui.QHBoxLayout()     
+        hbox1 = QtWidgets.QHBoxLayout()
         hbox1.addWidget(buttonInit)
         hbox1.addWidget(buttonStart)
         hbox1.addWidget(buttonStop)
@@ -113,13 +113,13 @@ class CtaStrategyManager(QtGui.QGroupBox):
 
         hbox1.addStretch()
         
-        hbox2 = QtGui.QHBoxLayout()
+        hbox2 = QtWidgets.QHBoxLayout()
         hbox2.addWidget(self.paramMonitor)
         
-        hbox3 = QtGui.QHBoxLayout()
+        hbox3 = QtWidgets.QHBoxLayout()
         hbox3.addWidget(self.varMonitor)
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
         vbox.addLayout(hbox3)
@@ -171,9 +171,9 @@ class CtaStrategyManager(QtGui.QGroupBox):
 
 
 ########################################################################
-class CtaEngineManager(QtGui.QWidget):
+class CtaEngineManager(QtWidgets.QWidget):
     """CTA引擎管理组件"""
-    signal = QtCore.pyqtSignal(type(Event()))
+    signal = QtCore.Signal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, eventEngine, parent=None):
@@ -194,16 +194,14 @@ class CtaEngineManager(QtGui.QWidget):
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        path = os.getcwd().rsplit('\\')[-1]
-
-        self.setWindowTitle(u'{0} CTA策略'.format(path))
+        self.setWindowTitle(text.CTA_STRATEGY)
         
         # 按钮
-        loadButton = QtGui.QPushButton(text.LOAD_STRATEGY)
-        initAllButton = QtGui.QPushButton(text.INIT_ALL)
-        startAllButton = QtGui.QPushButton(text.START_ALL)
-        stopAllButton = QtGui.QPushButton(text.STOP_ALL)
-        savePositionButton = QtGui.QPushButton(text.SAVE_POSITION_DATA)
+        loadButton = QtWidgets.QPushButton(text.LOAD_STRATEGY)
+        initAllButton = QtWidgets.QPushButton(text.INIT_ALL)
+        startAllButton = QtWidgets.QPushButton(text.START_ALL)
+        stopAllButton = QtWidgets.QPushButton(text.STOP_ALL)
+        savePositionButton = QtWidgets.QPushButton(text.SAVE_POSITION_DATA)
         
         loadButton.clicked.connect(self.load)
         initAllButton.clicked.connect(self.initAll)
@@ -212,16 +210,16 @@ class CtaEngineManager(QtGui.QWidget):
         savePositionButton.clicked.connect(self.ctaEngine.savePosition)
 
         # 滚动区域，放置所有的CtaStrategyManager
-        self.scrollArea = QtGui.QScrollArea()
+        self.scrollArea = QtWidgets.QScrollArea()
         self.scrollArea.setWidgetResizable(True)
         
         # CTA组件的日志监控
-        self.ctaLogMonitor = QtGui.QTextEdit()
+        self.ctaLogMonitor = QtWidgets.QTextEdit()
         self.ctaLogMonitor.setReadOnly(True)
         self.ctaLogMonitor.setMaximumHeight(200)
         
         # 设置布局
-        hbox2 = QtGui.QHBoxLayout()
+        hbox2 = QtWidgets.QHBoxLayout()
         hbox2.addWidget(loadButton)
         hbox2.addWidget(initAllButton)
         hbox2.addWidget(startAllButton)
@@ -229,7 +227,7 @@ class CtaEngineManager(QtGui.QWidget):
         hbox2.addWidget(savePositionButton)
         hbox2.addStretch()
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox2)
         vbox.addWidget(self.scrollArea)
         vbox.addWidget(self.ctaLogMonitor)
@@ -238,8 +236,8 @@ class CtaEngineManager(QtGui.QWidget):
     #----------------------------------------------------------------------
     def initStrategyManager(self):
         """初始化策略管理组件界面"""        
-        w = QtGui.QWidget()
-        vbox = QtGui.QVBoxLayout()
+        w = QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout()
         
         for name in self.ctaEngine.strategyDict.keys():
             # 为每一个策略实例，创建对应的管理组件实例
@@ -291,19 +289,6 @@ class CtaEngineManager(QtGui.QWidget):
         """注册事件监听"""
         self.signal.connect(self.updateCtaLog)
         self.eventEngine.register(EVENT_CTA_LOG, self.signal.emit)
-        
-    #----------------------------------------------------------------------
-    def closeEvent(self, event):
-        """关闭窗口时的事件"""
-        reply = QtGui.QMessageBox.question(self, text.SAVE_POSITION_DATA,
-                                           text.SAVE_POSITION_QUESTION, QtGui.QMessageBox.Yes |
-                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-
-        if reply == QtGui.QMessageBox.Yes:
-            self.ctaEngine.savePosition()
-
-        event.accept()
-
 
 
 
