@@ -38,11 +38,13 @@ def cleanData(dbName, collectionName, start):
         cleanRequired = True
         
         # 如果在交易事件内，则为有效数据，无需清洗
-        if ((MORNING_START <= dt < MORNING_REST) or
-            (MORNING_RESTART <= dt < MORNING_END) or
-            (AFTERNOON_START <= dt < AFTERNOON_END) or
-            (dt >= NIGHT_START) or
-            (dt < NIGHT_END)):
+        if ((dt >= MORNING_START and dt <= MORNING_REST) or
+
+            (dt >= MORNING_RESTART and dt <= MORNING_END) or
+
+            (dt >= AFTERNOON_START and dt <= AFTERNOON_END) or
+
+            (dt >= NIGHT_START and dt <= NIGHT_END)):
             cleanRequired = False
         
         # 如果需要清洗
