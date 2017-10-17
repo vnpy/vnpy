@@ -654,14 +654,18 @@ class PositionDetail(object):
             # 平昨
             elif trade.offset is OFFSET_CLOSEYESTERDAY:
                 self.shortYd -= trade.volume
-            # 平仓（非上期所，优先平今）
+            # 平仓
             elif trade.offset is OFFSET_CLOSE:
-                self.shortTd -= trade.volume
-                
-                if self.shortTd < 0:
-                    self.shortYd += self.shortTd
-                    self.shortTd = 0
-                
+                # 上期所等同于平昨
+                if self.exchange is EXCHANGE_SHFE:
+                    self.shortYd -= trade.volume
+                # 非上期所，优先平今
+                else:
+                    self.shortTd -= trade.volume
+                    
+                    if self.shortTd < 0:
+                        self.shortYd += self.shortTd
+                        self.shortTd = 0    
         # 空头
         elif trade.direction is DIRECTION_SHORT:
             # 开仓
@@ -675,11 +679,16 @@ class PositionDetail(object):
                 self.longYd -= trade.volume
             # 平仓
             elif trade.offset is OFFSET_CLOSE:
-                self.longTd -= trade.volume
-                
-                if self.longTd < 0:
-                    self.longYd += self.longTd
-                    self.longTd = 0
+                # 上期所等同于平昨
+                if self.exchange is EXCHANGE_SHFE:
+                    self.longYd -= trade.volume
+                # 非上期所，优先平今
+                else:
+                    self.longTd -= trade.volume
+                    
+                    if self.longTd < 0:
+                        self.longYd += self.longTd
+                        self.longTd = 0
                     
         # 汇总今昨
         self.calculatePosition()
