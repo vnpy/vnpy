@@ -5,12 +5,12 @@
 '''
 
 
-from vnpy.trader.uiBasicWidget import QtGui, QtCore
+from vnpy.trader.uiBasicWidget import QtWidgets, QtGui, QtCore
 from vnpy.trader.vtEvent import *
 
 
 ########################################################################
-class RmSpinBox(QtGui.QSpinBox):
+class RmSpinBox(QtWidgets.QSpinBox):
     """调整参数用的数值框"""
 
     #----------------------------------------------------------------------
@@ -24,7 +24,7 @@ class RmSpinBox(QtGui.QSpinBox):
         self.setValue(value)
 
 ########################################################################
-class RmLine(QtGui.QFrame):
+class RmLine(QtWidgets.QFrame):
     """水平分割线"""
 
     #----------------------------------------------------------------------
@@ -36,7 +36,7 @@ class RmLine(QtGui.QFrame):
   
 
 ########################################################################
-class RmEngineManager(QtGui.QWidget):
+class RmEngineManager(QtWidgets.QWidget):
     """风控引擎的管理组件"""
 
     #----------------------------------------------------------------------
@@ -56,7 +56,7 @@ class RmEngineManager(QtGui.QWidget):
         self.setWindowTitle(u'风险管理')
         
         # 设置界面
-        self.buttonSwitchEngineStatus = QtGui.QPushButton(u'风控模块未启动')
+        self.buttonSwitchEngineStatus = QtWidgets.QPushButton(u'风控模块未启动')
         
         self.spinOrderFlowLimit = RmSpinBox(self.rmEngine.orderFlowLimit)
         self.spinOrderFlowClear = RmSpinBox(self.rmEngine.orderFlowClear)
@@ -70,12 +70,12 @@ class RmEngineManager(QtGui.QWidget):
         # 最大净值止损比例,满足后强制止损
         self.spinLossLimit = RmSpinBox(self.rmEngine.lossLimit)
 
-        buttonClearOrderFlowCount = QtGui.QPushButton(u'清空流控计数')
-        buttonClearTradeCount = QtGui.QPushButton(u'清空总成交计数')
-        buttonSaveSetting = QtGui.QPushButton(u'保存设置')
+        buttonClearOrderFlowCount = QtWidgets.QPushButton(u'清空流控计数')
+        buttonClearTradeCount = QtWidgets.QPushButton(u'清空总成交计数')
+        buttonSaveSetting = QtWidgets.QPushButton(u'保存设置')
         
-        Label = QtGui.QLabel
-        grid = QtGui.QGridLayout()
+        Label = QtWidgets.QLabel
+        grid = QtWidgets.QGridLayout()
         grid.addWidget(Label(u'工作状态'), 0, 0)
         grid.addWidget(self.buttonSwitchEngineStatus, 0, 1)
         grid.addWidget(RmLine(), 1, 0, 1, 2)
@@ -99,13 +99,13 @@ class RmEngineManager(QtGui.QWidget):
         grid.addWidget(Label(u'强制止损净值'), 12, 0)
         grid.addWidget(self.spinLossLimit, 12, 1)
 
-        hbox = QtGui.QHBoxLayout()
+        hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(buttonClearOrderFlowCount)
         hbox.addWidget(buttonClearTradeCount)
         hbox.addStretch()
         hbox.addWidget(buttonSaveSetting)
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(grid)
         vbox.addLayout(hbox)
         self.setLayout(vbox)
