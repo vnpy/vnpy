@@ -1,18 +1,21 @@
 # encoding: UTF-8
+import sys
 
 # from uiFullMonitorWidget import MonitorWidget
 # from uiKChartWidget import CandleForm
 print 'load uiMainWindows.py'
 import psutil
+import traceback
 
-from vnpy.trader.app.ctaStrategy.uiCtaWidget import CtaEngineManager
-from vnpy.trader.app.dataRecorder.uiDrWidget import DrEngineManager
-from vnpy.trader.app.riskManager.uiRmWidget import RmEngineManager
-from uiBasicWidget import *
+from vnpy.trader.vtFunction import loadIconPath
+from vnpy.trader.vtGlobal import globalSetting
+from vnpy.trader.uiBasicWidget import *
 
 ########################################################################
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     """主窗口"""
+
+    signalStatusBar = QtCore.Signal(type(Event()))
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -21,20 +24,25 @@ class MainWindow(QtGui.QMainWindow):
         
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
-        
+
+        l = self.mainEngine.getAllGatewayDetails()
+        self.gatewayNameList = [d['gatewayName'] for d in l]
+
         self.widgetDict = {}    # 用来保存子窗口的字典
 
         self.connectGatewayDict = {}
 
+        # 获取主引擎中的上层应用信息
+        self.appDetailList = self.mainEngine.getAllAppDetails()
+
         self.initUi()
-        #self.loadWindowSettings()
+        self.loadWindowSettings('custom')
 
         self.connected = False
         self.autoDisConnect = False
 
         self.orderSaveDate = EMPTY_STRING
         self.barSaveDate = EMPTY_STRING
-
 
     # ----------------------------------------------------------------------
     def initUi(self):
@@ -49,165 +57,126 @@ class MainWindow(QtGui.QMainWindow):
     # ----------------------------------------------------------------------
     def initCentral(self):
         """初始化中心区域"""
-        widgetMarketM, dockMarketM = self.createDock(MarketMonitor, u'行情', QtCore.Qt.RightDockWidgetArea)
-        widgetLogM, dockLogM = self.createDock(LogMonitor, u'日志', QtCore.Qt.BottomDockWidgetArea)
-        widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, u'错误', QtCore.Qt.BottomDockWidgetArea)
-        self.widgetTradeM, dockTradeM = self.createDock(TradeMonitor, u'成交', QtCore.Qt.BottomDockWidgetArea)
-        self.widgetOrderM, dockOrderM = self.createDock(OrderMonitor, u'委托', QtCore.Qt.RightDockWidgetArea)
-        widgetPositionM, dockPositionM = self.createDock(PositionMonitor, u'持仓', QtCore.Qt.BottomDockWidgetArea)
-        widgetAccountM, dockAccountM = self.createDock(AccountMonitor, u'资金', QtCore.Qt.BottomDockWidgetArea)
-        widgetTradingW, dockTradingW = self.createDock(TradingWidget, u'交易', QtCore.Qt.LeftDockWidgetArea)
-    
+        widgetMarketM, dockMarketM = self.createDock(MarketMonitor, vtText.MARKET_DATA, QtCore.Qt.RightDockWidgetArea)
+        widgetLogM, dockLogM = self.createDock(LogMonitor, vtText.LOG, QtCore.Qt.BottomDockWidgetArea)
+        widgetErrorM, dockErrorM = self.createDock(ErrorMonitor, vtText.ERROR, QtCore.Qt.BottomDockWidgetArea)
+        self.widgetTradeM, dockTradeM = self.createDock(TradeMonitor, vtText.TRADE, QtCore.Qt.BottomDockWidgetArea)
+        self.widgetOrderM, dockOrderM = self.createDock(OrderMonitor, vtText.ORDER, QtCore.Qt.RightDockWidgetArea)
+        widgetWorkingOrderM, dockWorkingOrderM = self.createDock(WorkingOrderMonitor, vtText.WORKING_ORDER,
+                                                                 QtCore.Qt.BottomDockWidgetArea)
+        widgetPositionM, dockPositionM = self.createDock(PositionMonitor, vtText.POSITION,
+                                                         QtCore.Qt.BottomDockWidgetArea)
+        widgetAccountM, dockAccountM = self.createDock(AccountMonitor, vtText.ACCOUNT, QtCore.Qt.BottomDockWidgetArea)
+        widgetTradingW, dockTradingW = self.createDock(TradingWidget, vtText.TRADING, QtCore.Qt.LeftDockWidgetArea)
+
         self.tabifyDockWidget(dockTradeM, dockErrorM)
         self.tabifyDockWidget(dockTradeM, dockLogM)
         self.tabifyDockWidget(dockPositionM, dockAccountM)
-    
+        self.tabifyDockWidget(dockPositionM, dockWorkingOrderM)
+
         dockTradeM.raise_()
         dockPositionM.raise_()
     
         # 连接组件之间的信号
         widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
         
+        # 保存默认设置
+        self.saveWindowSettings('default')
+
     #----------------------------------------------------------------------
     def initMenu(self):
         """初始化菜单"""
-        # 创建操作
-        connectCtpProdAction = QtGui.QAction(u'上海中期CTP', self)
-        connectCtpProdAction.triggered.connect(self.connectCtpProd)
 
-        connectCtpPostAction = QtGui.QAction(u'中期盘后CTP', self)
-        connectCtpPostAction.triggered.connect(self.connectCtpPost)
-
-        connectCtpTestAction = QtGui.QAction(u'光大CTP', self)
-        connectCtpTestAction.triggered.connect(self.connectCtpEBF)
-
-        connectCtpJRAction = QtGui.QAction(u'金瑞CTP', self)
-        connectCtpJRAction.triggered.connect(self.connectCtpJR)
-
-        connectCtpJR2Action = QtGui.QAction(u'金瑞CTP2', self)
-        connectCtpJR2Action.triggered.connect(self.connectCtpJR2)
-
-        connectCtpAction = QtGui.QAction(u'连接CTP', self)
-        connectCtpAction.triggered.connect(self.connectCtp)
-        
-        #connectLtsAction = QtGui.QAction(u'连接LTS', self)
-        #connectLtsAction.triggered.connect(self.connectLts)
-        
-        #connectKsotpAction = QtGui.QAction(u'连接金仕达期权', self)
-        #connectKsotpAction.triggered.connect(self.connectKsotp)
-        
-        #connectFemasAction = QtGui.QAction(u'连接飞马', self)
-        #connectFemasAction.triggered.connect(self.connectFemas)
-        
-        #connectXspeedAction = QtGui.QAction(u'连接飞创', self)
-        #connectXspeedAction.triggered.connect(self.connectXspeed)
-        
-        #connectKsgoldAction = QtGui.QAction(u'连接金仕达黄金', self)
-        #connectKsgoldAction.triggered.connect(self.connectKsgold)
-        
-        #connectSgitAction = QtGui.QAction(u'连接飞鼠', self)
-        #connectSgitAction.triggered.connect(self.connectSgit)
-        
-        #connectWindAction = QtGui.QAction(u'连接Wind', self)
-        #connectWindAction.triggered.connect(self.connectWind)
-        
-        #connectIbAction = QtGui.QAction(u'连接IB', self)
-        #connectIbAction.triggered.connect(self.connectIb)
-        
-        #connectOandaAction = QtGui.QAction(u'连接OANDA', self)
-        #connectOandaAction.triggered.connect(self.connectOanda)
-        
-        connectDbAction = QtGui.QAction(u'连接数据库', self)
-        connectDbAction.triggered.connect(self.mainEngine.dbConnect)
-
-        autoDisconnetAction = QtGui.QAction(u'自动断开重连', self)
+        autoDisconnetAction = QtWidgets.QAction(u'自动断开重连', self)
         autoDisconnetAction.triggered.connect(self.setAutoDisconnect)
-        
-        testAction = QtGui.QAction(u'测试', self)
-        testAction.triggered.connect(self.test)
-        
-        exitAction = QtGui.QAction(u'退出', self)
-        exitAction.triggered.connect(self.close)
-        
-        aboutAction = QtGui.QAction(u'关于', self)
-        aboutAction.triggered.connect(self.openAbout)
-        
-        contractAction = QtGui.QAction(u'查询合约', self)
-        contractAction.triggered.connect(self.openContract)
-        
-        drAction = QtGui.QAction(u'行情数据记录', self)
-        drAction.triggered.connect(self.openDr)
-        
-        ctaAction = QtGui.QAction(u'CTA策略', self)
-        ctaAction.triggered.connect(self.openCta)
 
-        spreadAction = QtGui.QAction(u'套利交易', self)
-        spreadAction.triggered.connect(self.openSpread)
-
-        #kChart = QtGui.QAction(u'K线图', self)
-        #kChart.triggered.connect(self.openKChart)
-        
-        rmAction = QtGui.QAction(u'风险管理', self)
-        rmAction.triggered.connect(self.openRm)        
-        
         # 创建菜单
         menubar = self.menuBar()
         
-        # 设计为只显示存在的接口
-        sysMenu = menubar.addMenu(u'系统')
-        sysMenu.addAction(connectCtpProdAction)
-        sysMenu.addAction(connectCtpPostAction)
-        sysMenu.addAction(connectCtpTestAction)
-        sysMenu.addAction(connectCtpJRAction)
-        sysMenu.addAction(connectCtpJR2Action)
+        # 系统
+        sysMenu = menubar.addMenu(vtText.SYSTEM)
+        # 系统，连接的接口清单
+        gatewayDetails = self.mainEngine.getAllGatewayDetails()
 
-        sysMenu.addAction(connectCtpAction)
-        #if 'LTS' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectLtsAction)
-        #if 'FEMAS' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectFemasAction)
-        #if 'XSPEED' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectXspeedAction)
-        #if 'KSOTP' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectKsotpAction)
-        #if 'KSGOLD' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectKsgoldAction)
-        #if 'SGIT' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectSgitAction)
+        has_gw = False
+        # 期货类接口
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_FUTURES:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
+                has_gw = True
+
+        if has_gw:
+            sysMenu.addSeparator()
+            has_gw = False
+
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_EQUITY:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
+                has_gw = True
+        if has_gw:
+            sysMenu.addSeparator()
+            has_gw = False
+
+
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_INTERNATIONAL:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
+                has_gw = True
+        if has_gw:
+            sysMenu.addSeparator()
+            has_gw = False
+
+
+        for d in gatewayDetails:
+            if d['gatewayType'] == GATEWAYTYPE_BTC:
+                self.addConnectAction(sysMenu, d['gatewayName'], d['gatewayDisplayName'])
+                has_gw = True
+        if has_gw:
+            sysMenu.addSeparator()
+            has_gw = False
+
+        # 系统=》自动重连， 接口连接后，断开时，自动重连
         sysMenu.addSeparator()
         sysMenu.addAction(autoDisconnetAction)
-        #if 'IB' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectIbAction)
-        #if 'OANDA' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectOandaAction)
-        #sysMenu.addSeparator()
-        #if 'Wind' in self.mainEngine.gatewayDict:
-        #    sysMenu.addAction(connectWindAction)
+
+        # 系统=》连接数据库
         sysMenu.addSeparator()
-        sysMenu.addAction(connectDbAction)
+        sysMenu.addAction(
+            self.createAction(vtText.CONNECT_DATABASE, self.mainEngine.dbConnect, loadIconPath('database.ico')))
+
+        # 系统=》退出菜单
         sysMenu.addSeparator()
-        sysMenu.addAction(exitAction)
-        
-        functionMenu = menubar.addMenu(u'功能')
-        functionMenu.addAction(contractAction)
-        functionMenu.addAction(drAction)
-        functionMenu.addAction(rmAction)
+        sysMenu.addAction(self.createAction(vtText.EXIT, self.close, loadIconPath('exit.ico')))
+
+        # 功能应用
+        appMenu = menubar.addMenu(vtText.APPLICATION)
+        for appDetail in self.appDetailList:
+            function = self.createOpenAppFunction(appDetail)
+            action = self.createAction(appDetail['appDisplayName'], function, loadIconPath(appDetail['appIco']))
+            appMenu.addAction(action)
         
         # 算法相关
-        algoMenu = menubar.addMenu(u'算法')
-        algoMenu.addAction(ctaAction)
-        algoMenu.addAction(spreadAction)
+        #algoMenu = menubar.addMenu(u'算法')
+        #algoMenu.addAction(ctaAction)
+        #algoMenu.addAction(spreadAction)
         #algoMenu.addAction(kChart)
 
         # 帮助
-        helpMenu = menubar.addMenu(u'帮助')
-        helpMenu.addAction(aboutAction)  
-        helpMenu.addAction(testAction)
+        helpMenu = menubar.addMenu(vtText.HELP)
+        helpMenu.addAction(
+            self.createAction(vtText.CONTRACT_SEARCH, self.openContract, loadIconPath('contract.ico')))
+        helpMenu.addAction(
+            self.createAction(vtText.EDIT_SETTING, self.openSettingEditor, loadIconPath('editor.ico')))
+        helpMenu.addSeparator()
+        helpMenu.addAction(self.createAction(vtText.RESTORE, self.restoreWindow, loadIconPath('restore.ico')))
+        helpMenu.addAction(self.createAction(vtText.ABOUT, self.openAbout, loadIconPath('about.ico')))
+        helpMenu.addSeparator()
+        helpMenu.addAction(self.createAction(vtText.TEST, self.test, loadIconPath('test.ico')))
     
     # ----------------------------------------------------------------------
     def initStatusBar(self):
         """初始化状态栏"""
-        self.statusLabel = QtGui.QLabel()
+        self.statusLabel = QtWidgets.QLabel()
         self.statusLabel.setAlignment(QtCore.Qt.AlignLeft)
         
         self.statusBar().addPermanentWidget(self.statusLabel)
@@ -215,8 +184,8 @@ class MainWindow(QtGui.QMainWindow):
         
         self.sbCount = 0
         self.sbTrigger = 10     # 10秒刷新一次
-        self.eventEngine.register(EVENT_TIMER, self.updateStatusBar)
-
+        self.signalStatusBar.connect(self.updateStatusBar)
+        self.eventEngine.register(EVENT_TIMER, self.signalStatusBar.emit)
         
     # ----------------------------------------------------------------------
     def updateStatusBar(self, event):
@@ -237,7 +206,6 @@ class MainWindow(QtGui.QMainWindow):
                 info = info + u'[自动断开重连]'
 
             self.statusLabel.setText(info)
-
             if self.connectGatewayDict:
                 s = u''.join(str(e) for e in self.connectGatewayDict.values())
 
@@ -306,124 +274,69 @@ class MainWindow(QtGui.QMainWindow):
         """获取CPU和内存状态信息"""
         cpuPercent = psutil.cpu_percent()
         memoryPercent = psutil.virtual_memory().percent
-        return u'CPU使用率：%d%%   内存使用率：%d%%' % (cpuPercent, memoryPercent)        
-        
-    # ----------------------------------------------------------------------
-    def connectCtpProd(self):
-        """连接上海中期生产环境CTP接口"""
-
-        self.mainEngine.connect('CTP_Prod')
-        self.connectGatewayDict['CTP_Prod'] = u'上海中期CTP'
-        self.connected = True
-
-    # ----------------------------------------------------------------------
-    def connectCtpPost(self):
-        """连接上海中期盘后CTP接口"""
-        self.mainEngine.connect('CTP_Post')
-        self.connectGatewayDict['CTP_Post'] = u'中期盘后CTP'
-        self.connected = True
-
-    def connectCtpEBF(self):
-        """连接光大期货CTP接口"""
-        self.mainEngine.connect('CTP_EBF')
-        self.connectGatewayDict['CTP_EBF'] = u'光大CTP'
-        self.connected = True
-
-    def connectCtpJR(self):
-        """连接金瑞期货CTP接口"""
-        self.mainEngine.connect('CTP_JR')
-        self.connectGatewayDict['CTP_JR'] = u'金瑞CTP'
-        self.connected = True
-
-    def connectCtpJR2(self):
-        """连接金瑞期货CTP接口"""
-        self.mainEngine.connect('CTP_JR2')
-        self.connectGatewayDict['CTP_JR2'] = u'金瑞CTP2'
-        self.connected = True
-
-    def connectCtpTest(self):
-        """连接SNOW测试环境CTP接口"""
-        self.mainEngine.connect('CTP_Test')
-        self.connectGatewayDict['CTP_Test'] = u'SNOW测试'
-        self.connected = True
-
-    def connectCtp(self):
-        """连接CTP接口"""
-        self.mainEngine.connect('CTP')
-        self.connectGatewayDict['CTP'] = u'CTP'
-        self.connected = True
-
-    # ----------------------------------------------------------------------
-    def connectLts(self):
-        """连接LTS接口"""
-        self.mainEngine.connect('LTS')
-        self.connectGatewayDict['LTS'] = u'LTS'
-        self.connected = True
-        
-    #----------------------------------------------------------------------
-    def connectKsotp(self):
-        """连接金仕达期权接口"""
-        self.mainEngine.connect('KSOTP')
-        self.connectGatewayDict['KSOTP'] = u'金仕达期权'
-        self.connected = True
-        
-    #----------------------------------------------------------------------
-    def connectFemas(self):
-        """连接飞马接口"""
-        self.mainEngine.connect('FEMAS')
-        self.connectGatewayDict['FEMAS'] = u'FEMAS飞马'
-        self.connected = True
-    
-    #----------------------------------------------------------------------
-    def connectXspeed(self):
-        """连接飞马接口"""
-        self.mainEngine.connect('XSPEED')
-        self.connectGatewayDict['XSPEED'] = u'XSPEED飞马接口'
-        self.connected = True
-    
-    #----------------------------------------------------------------------
-    def connectKsgold(self):
-        """连接金仕达黄金接口"""
-        self.mainEngine.connect('KSGOLD')
-        self.connectGatewayDict ['KSGOLD'] = u'金仕达黄金'
-        self.connected = True
-        
-    #----------------------------------------------------------------------
-    def connectSgit(self):
-        """连接飞鼠接口"""
-        self.mainEngine.connect('SGIT')
-        self.connectGatewayDict['SGIT'] = u'飞鼠'
-        self.connected = True
-    
-    #----------------------------------------------------------------------
-    def connectWind(self):
-        """连接Wind接口"""
-        self.mainEngine.connect('Wind')
-        self.connectGatewayDict['Wind'] = u'Wind'
-        self.connected = True
-    
-    # ----------------------------------------------------------------------
-
-    def connectIb(self):
-        """连接Ib"""
-        self.mainEngine.connect('IB')
-        self.connectGatewayDict['IB'] = u'盈透'
-        self.connected = True
-        
-    #----------------------------------------------------------------------
-    def connectOanda(self):
-        """连接OANDA"""
-        self.mainEngine.connect('OANDA')
-        self.connectGatewayDict['OANDA'] = u'OANDA'
-        self.connected = True
+        return vtText.CPU_MEMORY_INFO.format(cpu=cpuPercent, memory=memoryPercent)
 
     def setAutoDisconnect(self):
-
         if self.autoDisConnect:
             self.autoDisConnect = False
         else:
             self.autoDisConnect = True
 
+    # ----------------------------------------------------------------------
+    def addConnectAction(self, menu, gatewayName, displayName=''):
+        """增加连接功能"""
+        if gatewayName not in self.gatewayNameList:
+            return
+
+        def connect():
+            try:
+                r = self.mainEngine.connect(gatewayName)
+            except:
+                print "Unexpected error:", sys.exc_info()[0]
+                traceback.print_exc()
+
+            if r:
+                self.connectGatewayDict[gatewayName] = gatewayName
+                self.connected = True
+
+        if not displayName:
+            displayName = gatewayName
+
+        actionName = vtText.CONNECT + displayName
+        connectAction = self.createAction(actionName, connect,
+                                          loadIconPath('connect.ico'))
+        menu.addAction(connectAction)
+
+        # ----------------------------------------------------------------------
+
+    def createAction(self, actionName, function, iconPath=''):
+        """创建操作功能"""
+        action = QtWidgets.QAction(actionName, self)
+        action.triggered.connect(function)
+
+        if iconPath:
+            icon = QtGui.QIcon(iconPath)
+            action.setIcon(icon)
+
+        return action
+
+    # ----------------------------------------------------------------------
+    def createOpenAppFunction(self, appDetail):
+        """创建打开应用UI的函数"""
+        def openAppFunction():
+            appName = appDetail['appName']
+            if appName in self.widgetDict:
+                self.widgetDict[appName].show()
+            else:
+                try:
+                    appEngine = self.mainEngine.getApp(appName)
+                    self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
+                    self.widgetDict[appName].show()
+                except:
+                    print "Unexpected error:", sys.exc_info()[0]
+                    traceback.print_exc()
+
+        return openAppFunction
 
     #----------------------------------------------------------------------
     def test(self):
@@ -444,59 +357,32 @@ class MainWindow(QtGui.QMainWindow):
     # ----------------------------------------------------------------------
     def openContract(self):
         """打开合约查询"""
-        try:
-
+        if 'contractM' in self.widgetDict:
             self.widgetDict['contractM'].show()
-        except KeyError:
-            self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
-            self.widgetDict['contractM'].show()
+        else:
+            try:
+                self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
+                self.widgetDict['contractM'].show()
+            except :
+                print "Unexpected error:", sys.exc_info()[0]
+                traceback.print_exc()
 
     # ----------------------------------------------------------------------
-    def openCta(self):
-        """打开CTA组件"""
-        try:
-            self.widgetDict['ctaM'].showMaximized()
-        except KeyError:
-            self.widgetDict['ctaM'] = CtaEngineManager(self.mainEngine.ctaEngine, self.eventEngine)
-            self.widgetDict['ctaM'].showMaximized()
-
-    #def openMonitor(self):
-    #    try:
-    #        self.widgetDict['Monitor'].showMaximized()
-    #    except KeyError:
-    #        self.widgetDict['Monitor'] = MonitorWidget(self.mainEngine.ctaEngine, self.eventEngine)
-    #        self.widgetDict['Monitor'].showMaximized()
-#
-    #def openKChart(self):
-    #    try:
-    #        self.widgetDict['kChart'].showMaximized()
-    #    except KeyError:
-    #        self.widgetDict['kChart'] = CandleForm(self.mainEngine.ctaEngine, self.eventEngine, symbol='p1705', period='minute',interval=5)
-    #        self.widgetDict['kChart'].showMaximized()
-
-
-    #----------------------------------------------------------------------
-    def openDr(self):
-        """打开行情数据记录组件"""
-        try:
-            self.widgetDict['drM'].showMaximized()
-        except KeyError:
-            self.widgetDict['drM'] = DrEngineManager(self.mainEngine.drEngine, self.eventEngine)
-            self.widgetDict['drM'].showMaximized()
-
-    #----------------------------------------------------------------------
-    def openRm(self):
-        """打开组件"""
-        try:
-            self.widgetDict['rmM'].show()
-        except KeyError:
-            self.widgetDict['rmM'] = RmEngineManager(self.mainEngine.rmEngine, self.eventEngine)
-            self.widgetDict['rmM'].show()
+    def openSettingEditor(self):
+        """打开配置编辑"""
+        if 'settingEditor' in self.widgetDict:
+            self.widgetDict['settingEditor'].show()
+        else:
+            try:
+                self.widgetDict['settingEditor'] = SettingEditor(self.mainEngine)
+                self.widgetDict['settingEditor'].show()
+            except :
+                print "Unexpected error:", sys.exc_info()[0]
+                traceback.print_exc()
 
     # ----------------------------------------------------------------------
     def openSpread(self):
         """打开SpreadTrade组件"""
-
         if 'spread' in self.widgetDict:
             self.widgetDict['spread'].show()
             return
@@ -508,17 +394,31 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as ex:
             return
 
+    # ----------------------------------------------------------------------
+    def openMultiRpcMonitor(self):
+        if 'multiRpc' in self.widgetDict:
+            self.widgetDict['multiRpc'].showMaximized()
+            return
+
+        try:
+            from vnpy.trader.uiMultiRpcMonitor import MultiRpcServerManager
+
+            self.widgetDict['multiRpc'] = MultiRpcServerManager()
+            self.widgetDict['multiRpc'].showMaximized()
+        except:
+            pass
+
     #----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
-        reply = QtGui.QMessageBox.question(self, u'退出',
-                                           u'确认退出?', QtGui.QMessageBox.Yes | 
-                                           QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, vtText.EXIT,
+                                           vtText.CONFIRM_EXIT, QtWidgets.QMessageBox.Yes |
+                                           QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.Yes: 
+        if reply == QtWidgets.QMessageBox.Yes:
             for widget in self.widgetDict.values():
                 widget.close()
-            self.saveWindowSettings()
+            self.saveWindowSettings('custom')
             
             self.mainEngine.exit()
             event.accept()
@@ -529,36 +429,42 @@ class MainWindow(QtGui.QMainWindow):
     def createDock(self, widgetClass, widgetName, widgetArea):
         """创建停靠组件"""
         widget = widgetClass(self.mainEngine, self.eventEngine)
-        dock = QtGui.QDockWidget(widgetName)
+        dock = QtWidgets.QDockWidget(widgetName)
         dock.setWidget(widget)
         dock.setObjectName(widgetName)
         dock.setFeatures(dock.DockWidgetFloatable|dock.DockWidgetMovable)
         self.addDockWidget(widgetArea, dock)
         return widget, dock
-    
-    #----------------------------------------------------------------------
-    def saveWindowSettings(self):
+
+    # ----------------------------------------------------------------------
+    def saveWindowSettings(self, settingName):
         """保存窗口设置"""
-        settings = QtCore.QSettings('vn.py', 'vn.trader')
+        settings = QtCore.QSettings('vn.trader', settingName)
         settings.setValue('state', self.saveState())
         settings.setValue('geometry', self.saveGeometry())
         
     #----------------------------------------------------------------------
-    def loadWindowSettings(self):
+    def loadWindowSettings(self, settingName):
         """载入窗口设置"""
-        settings = QtCore.QSettings('vn.py', 'vn.trader')
-        # 这里由于PyQt4的版本不同，settings.value('state')调用返回的结果可能是：
-        # 1. None（初次调用，注册表里无相应记录，因此为空）
-        # 2. QByteArray（比较新的PyQt4）
-        # 3. QVariant（以下代码正确执行所需的返回结果）
-        # 所以为了兼容考虑，这里加了一个try...except，如果是1、2的情况就pass
-        # 可能导致主界面的设置无法载入（每次退出时的保存其实是成功了）
-        try:
-            self.restoreState(settings.value('state').toByteArray())
-            self.restoreGeometry(settings.value('geometry').toByteArray())
-        except AttributeError:
-            pass
+        settings = QtCore.QSettings('vn.trader', settingName)
+        state = settings.value('state')
+        geometry = settings.value('geometry')
 
+        # 尚未初始化
+        if state is None:
+            return
+        # 老版PyQt
+        elif isinstance(state, QtCore.QVariant):
+            self.restoreState(state.toByteArray())
+            self.restoreGeometry(geometry.toByteArray())
+        # 新版PyQt
+        elif isinstance(state, QtCore.QByteArray):
+            self.restoreState(state)
+            self.restoreGeometry(geometry)
+        # 异常
+        else:
+            content = u'载入窗口配置异常，请检查'
+            self.mainEngine.writeLog(content)
 
     def disconnect(self):
         """"断开底层gateway的连接"""
@@ -576,8 +482,15 @@ class MainWindow(QtGui.QMainWindow):
         off = (a<= now <= b) or (c <= now <= d) or weekend
         return off
 
+    # ----------------------------------------------------------------------
+    def restoreWindow(self):
+        """还原默认窗口设置（还原停靠组件位置）"""
+        self.loadWindowSettings('default')
+        self.showMaximized()
+
+
 ########################################################################
-class AboutWidget(QtGui.QDialog):
+class AboutWidget(QtWidgets.QDialog):
     """显示关于信息"""
 
     # ----------------------------------------------------------------------
@@ -590,10 +503,10 @@ class AboutWidget(QtGui.QDialog):
     # ----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(u'关于VnTrader')
+        self.setWindowTitle(vtText.ABOUT + 'VnTrader')
 
         text = u"""
-            Developed by traders, for traders.
+            Developed by Traders, for Traders.
 
             License：MIT
             
@@ -603,11 +516,11 @@ class AboutWidget(QtGui.QDialog):
             
             """
 
-        label = QtGui.QLabel()
+        label = QtWidgets.QLabel()
         label.setText(text)
         label.setMinimumWidth(500)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(label)
 
         self.setLayout(vbox)
