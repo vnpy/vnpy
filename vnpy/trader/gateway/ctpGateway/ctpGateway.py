@@ -378,6 +378,11 @@ class CtpMdApi(MdApi):
         # 忽略成交量为0的无效tick数据
         #if not data['Volume']:
         #    return
+        if not self.connectionStatus:
+            self.connectionStatus = True
+
+        if not self.gateway.mdConnected:
+            self.gateway.mdConnected = True
 
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
@@ -458,13 +463,14 @@ class CtpMdApi(MdApi):
         """订阅合约"""
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
-        if self.loginStatus:
-            print u'subscribe {0}'.format(str(subscribeReq.symbol))
-            self.subscribeMarketData(str(subscribeReq.symbol))
-            self.writeLog(u'订阅合约:{0}'.format(str(subscribeReq.symbol)))
-        else:
-            print u'not login, add {0} into subscribe list'.format(str(subscribeReq.symbol))
-            self.writeLog(u'未连接，增加合约{0}至待订阅列表'.format(str(subscribeReq.symbol)))
+        #if self.loginStatus:
+        print u'subscribe {0}'.format(str(subscribeReq.symbol))
+        self.subscribeMarketData(str(subscribeReq.symbol))
+        self.writeLog(u'订阅合约:{0}'.format(str(subscribeReq.symbol)))
+        #else:
+        #    print u'not login, add {0} into subscribe list'.format(str(subscribeReq.symbol))
+        #    self.writeLog(u'未连接，增加合约{0}至待订阅列表'.format(str(subscribeReq.symbol)))
+
         self.subscribedSymbols.add(subscribeReq)   
         
     #----------------------------------------------------------------------
@@ -752,6 +758,9 @@ class CtpTdApi(TdApi):
 
         if not data['InstrumentID']:
             return
+
+        if not self.gateway.tdConnected:
+            self.gateway.tdConnected = True
 
         # 获取持仓缓存对象
         posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
@@ -1541,7 +1550,7 @@ class CtpTdApi(TdApi):
 #----------------------------------------------------------------------
 def test():
     """测试"""
-    from PyQt4 import QtCore
+    from qtpy import QtCore
     import sys
     
     def print_log(event):
