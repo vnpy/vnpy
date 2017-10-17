@@ -480,7 +480,7 @@ class DataEngine(object):
                 detail.exchange = contract.exchange
                 
                 # 上期所合约
-                if contract.exchange is EXCHANGE_SHFE:
+                if contract.exchange == EXCHANGE_SHFE:
                     detail.mode = detail.MODE_SHFE
                 
                 # 检查是否有平今惩罚
@@ -719,6 +719,8 @@ class PositionDetail(object):
             self.shortPos = pos.position
             self.shortYd = pos.ydPosition
             self.shortTd = self.shortPos - self.shortYd
+            
+        self.output()
     
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
