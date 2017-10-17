@@ -160,12 +160,16 @@ class RmEngine(object):
         if self.lossLimit > 0 :
 
             # 当前资金 低于 止损线，存在持仓
+            if self.lossLimit < self.balance < self.lossLimit*1.05 and self.balance != self.available:
+                self.mainEngine.writeWarning(u'净值{}低于止损线1.05比例{}，濒临强制止损'.format(self.balance,self.lossLimit))
+
+            # 当前资金 低于 止损线，存在持仓
             if self.balance < self.lossLimit and self.balance != self.available:
 
                 # 第一次发出
                 if self.lastEventTime is None:
                     self.writeRiskLog(u'净值低于止损线，强制止损')
-                    self.mainEngine.writeLog(u'净值低于止损线，强制止损')
+                    self.mainEngine.writeCritical(u'净值低于止损线，强制止损')
                     self.lastEventTime = datetime.now()
                     event = Event(type_=EVENT_ACCOUNT_LOSS)
                     event.dict_['data'] = self.balance
@@ -216,17 +220,24 @@ class RmEngine(object):
         if orderReq.volume > self.orderSizeLimit:
             self.writeRiskLog(u'单笔委托数量%s，超过限制%s' 
                               %(orderReq.volume, self.orderSizeLimit))
+
+            self.mainEngine.writeWarning(u'单笔委托数量%s，超过限制%s'
+                              %(orderReq.volume, self.orderSizeLimit))
             return False
         
         # 检查成交合约量
         if self.tradeCount >= self.tradeLimit:
             self.writeRiskLog(u'今日总成交合约数量%s，超过限制%s' 
                               %(self.tradeCount, self.tradeLimit))
+            self.mainEngine.writeWarning(u'今日总成交合约数量%s，超过限制%s'
+                              %(self.tradeCount, self.tradeLimit))
             return False
         
         # 检查流控
         if self.orderFlowCount >= self.orderFlowLimit:
             self.writeRiskLog(u'委托流数量%s，超过限制每%s秒%s' 
+                              %(self.orderFlowCount, self.orderFlowClear, self.orderFlowLimit))
+            self.mainEngine.writeWarning(u'委托流数量%s，超过限制每%s秒%s'
                               %(self.orderFlowCount, self.orderFlowClear, self.orderFlowLimit))
             return False
         
@@ -235,14 +246,17 @@ class RmEngine(object):
         if workingOrderCount >= self.workingOrderLimit:
             self.writeRiskLog(u'当前活动委托数量%s，超过限制%s'
                               %(workingOrderCount, self.workingOrderLimit))
+            self.mainEngine.writeWarning(u'当前活动委托数量%s，超过限制%s'
+                              %(workingOrderCount, self.workingOrderLimit))
             return False
 
-        # self.writeRiskLog(u'DEBUG:Offset:{0},percent:{1},Limit:{2}'.format(orderReq.offset, self.percent, self.percentLimit))
 
         # 检查仓位 add by Incense 20160728
         if orderReq.offset == OFFSET_OPEN:
             if self.percent > self.percentLimit:
                 self.writeRiskLog(u'当前仓位:{0},超过限制:{1}，不允许开仓'.format(self.percent, self.percentLimit))
+
+                self.mainEngine.writeWarning(u'当前仓位:{0},超过限制:{1}，不允许开仓'.format(self.percent, self.percentLimit))
                 return False
 
         # 对于通过风控的委托，增加流控计数
