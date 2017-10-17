@@ -477,6 +477,8 @@ class DataEngine(object):
             contract = self.getContract(vtSymbol)
             
             if contract:
+                detail.exchange = contract.exchange
+                
                 # 上期所合约
                 if contract.exchange is EXCHANGE_SHFE:
                     detail.mode = detail.MODE_SHFE
@@ -491,10 +493,7 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """委托请求更新"""
-        if req.exchange:
-            vtSymbol = '.'.join([req.symbol, req.exchange])
-        else:
-            vtSymbol = req.symbol
+        vtSymbol = req.vtSymbol
             
         detail = self.getPositionDetail(vtSymbol)
         detail.updateOrderReq(req, vtOrderID)
@@ -637,6 +636,7 @@ class PositionDetail(object):
         self.shortTdFrozen = EMPTY_INT
         
         self.mode = self.MODE_NORMAL
+        self.exchange = EMPTY_STRING
         
         self.workingOrderDict = {}
         
@@ -714,10 +714,7 @@ class PositionDetail(object):
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """发单更新"""
-        if req.exchange:
-            vtSymbol = '.'.join([req.symbol, req.exchange])
-        else:
-            vtSymbol = req.symbol        
+        vtSymbol = req.vtSymbol        
             
         # 基于请求生成委托对象
         order = VtOrderData()
@@ -794,7 +791,7 @@ class PositionDetail(object):
             self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
         
-        #self.output()
+        self.output()
             
     #----------------------------------------------------------------------
     def output(self):
@@ -867,12 +864,18 @@ class PositionDetail(object):
                 return [req]
             # 如果平仓量小于昨可用，全部平昨
             elif req.volume <= ydAvailable:
-                req.offset = OFFSET_CLOSE       # OFFSET_CLOSE在上期所等于平昨
+                if self.exchange is EXCHANGE_SHFE:
+                    req.offset = OFFSET_CLOSEYESTERDAY
+                else:
+                    req.offset = OFFSET_CLOSE
                 return [req]
             # 平仓量大于昨可用，平仓再反向开仓
             else:
                 reqClose = copy(req)
-                reqClose.offset = OFFSET_CLOSE
+                if self.exchange is EXCHANGE_SHFE:
+                    req.offset = OFFSET_CLOSEYESTERDAY
+                else:
+                    req.offset = OFFSET_CLOSE
                 reqClose.volume = ydAvailable
                 
                 reqOpen = copy(req)
