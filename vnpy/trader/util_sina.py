@@ -372,13 +372,13 @@ if __name__ == '__main__':
 
     sina = UtilSinaClient(t)
 
-    #rt=sina.getDayBars(symbol='RB1705', callback=t.addBar)
+    rt=sina.getDayBars(symbol='RB1710', callback=t.addBar)
 
-    #rt = sina.getMinBars(symbol='RB1705',minute = 5, callback=t.addBar)
+    rt = sina.getMinBars(symbol='RB1710',minute = 60, callback=t.addBar)
 
     #rt = sina.getTicks(symbol='RB1705', callback=t.addTick)
 
     #rt = sina.getTicks2(symbol='TF1706', callback=t.addTick)
     #rt = sina.getTicks3(symbol='TF1709', callback=t.addTick)
 
-    rt = sina.getMinBars2(symbol='TF1709',minute=60, callback=t.addBar)
+    #rt = sina.getMinBars2(symbol='TF1709',minute=60, callback=t.addBar)

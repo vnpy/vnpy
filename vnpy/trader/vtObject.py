@@ -241,6 +241,19 @@ class VtLogData(VtBaseData):
         self.logTime = datetime.now().strftime('%X:%f')
         self.logContent = EMPTY_UNICODE  # 日志信息
 
+class VtSignalData(VtBaseData):
+    """信号数据类"""
+
+    # ----------------------------------------------------------------------
+    def __init__(self):
+        super(VtSignalData, self).__init__()
+        self.time = datetime.now().strftime('%X:%f')
+        self.source = EMPTY_STRING  # 来源
+        self.symbol = EMPTY_STRING  # 合约信息
+        self.direction = EMPTY_STRING   #信号方向
+        self.price = EMPTY_FLOAT    # 信号价格
+        self.level = EMPTY_INT      # 0 普通信号，1，强信号
+
 
 ########################################################################
 class VtContractData(VtBaseData):

@@ -11,9 +11,9 @@ from pymongo.errors import ConnectionFailure
 
 from vnpy.trader.vtEvent import Event as vn_event
 from vnpy.trader.language import text
-from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
-from vnpy.trader.app.dataRecorder.drEngine import DrEngine
-from vnpy.trader.app.riskManager.rmEngine import RmEngine
+#from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
+#from vnpy.trader.app.dataRecorder.drEngine import DrEngine
+#from vnpy.trader.app.riskManager.rmEngine import RmEngine
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtGateway import *
 
@@ -27,13 +27,13 @@ class MainEngine(object):
     """主引擎"""
 
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, eventEngine):
         """Constructor"""
         # 记录今日日期
         self.todayDate = datetime.now().strftime('%Y%m%d')
 
         # 创建事件引擎
-        self.eventEngine = EventEngine2()
+        self.eventEngine = eventEngine
         self.eventEngine.start()
         
         # 创建数据引擎
@@ -51,9 +51,9 @@ class MainEngine(object):
         self.appDetailList = []
 
         # 扩展模块
-        self.ctaEngine = CtaEngine(self, self.eventEngine)  # cta策略运行模块
-        self.drEngine = DrEngine(self, self.eventEngine)    # 数据记录模块
-        self.rmEngine = RmEngine(self, self.eventEngine)    # 风险管理模块
+        self.ctaEngine = None       # CtaEngine(self, self.eventEngine)  # cta策略运行模块
+        self.drEngine = None        # DrEngine(self, self.eventEngine)    # 数据记录模块
+        self.rmEngine = None        #   RmEngine(self, self.eventEngine)    # 风险管理模块
 
         self.connected_gw_name = u''
     # ----------------------------------------------------------------------
@@ -75,14 +75,34 @@ class MainEngine(object):
 
         # 保存接口详细信息
         d = {
-            'gatewayName': gatewayModule.gatewayName,
-            'gatewayDisplayName': gatewayModule.gatewayDisplayName,
+            'gatewayName': gatewayName,                         #gatewayModule.gatewayName,
+            'gatewayDisplayName': gatewayName,                  #gatewayModule.gatewayDisplayName,
             'gatewayType': gatewayModule.gatewayType
         }
         self.gatewayDetailList.append(d)
 
         if gateway_name != self.connected_gw_name:
             self.connected_gw_name = gateway_name
+
+    # ----------------------------------------------------------------------
+    def addApp(self, appModule):
+        """添加上层应用"""
+        appName = appModule.appName
+
+        # 创建应用实例
+        self.appDict[appName] = appModule.appEngine(self, self.eventEngine)
+
+        # 将应用引擎实例添加到主引擎的属性中
+        self.__dict__[appName] = self.appDict[appName]
+
+        # 保存应用信息
+        d = {
+            'appName': appModule.appName,
+            'appDisplayName': appModule.appDisplayName,
+            'appWidget': appModule.appWidget,
+            'appIco': appModule.appIco
+        }
+        self.appDetailList.append(d)
 
     # ----------------------------------------------------------------------
     def connect(self, gatewayName):
@@ -96,11 +116,9 @@ class MainEngine(object):
 
             # 接口连接后自动执行数据库连接的任务
             self.dbConnect()
-
             return True
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
-
             return False
 
     def checkGatewayStatus(self,gatewayName):
@@ -150,7 +168,7 @@ class MainEngine(object):
     def sendOrder(self, orderReq, gatewayName):
         """对特定接口发单"""
         # 如果风控检查失败则不发单
-        if not self.rmEngine.checkRisk(orderReq):
+        if self.rmEngine and not self.rmEngine.checkRisk(orderReq):
             self.writeCritical(u'风控检查不通过')
             return ''    
         
@@ -183,8 +201,12 @@ class MainEngine(object):
         # Added by IncenseLee
         仅支持一个账号。不支持多账号
         以后支持跨市场套利才更新吧。
+        return 当前账号的权益、可用资金、当前仓位比例, 投资仓位比例上限
         """
-        return self.rmEngine.getAccountInfo()
+        if self.rmEngine:
+            return self.rmEngine.getAccountInfo()
+        else:
+            return 0, 0, 0, 0
 
     # ----------------------------------------------------------------------
     def qryPosition(self, gatewayName):
@@ -206,7 +228,8 @@ class MainEngine(object):
         self.eventEngine.stop()      
         
         # 停止数据记录引擎
-        self.drEngine.stop()
+        if self.drEngine:
+            self.drEngine.stop()
 
         # 保存数据引擎里的合约数据到硬盘
         self.dataEngine.saveContracts()
@@ -400,6 +423,22 @@ class MainEngine(object):
     def getAllGatewayNames(self):
         """查询引擎中所有可用接口的名称"""
         return self.gatewayDict.keys()
+        # ----------------------------------------------------------------------
+
+    def getAllGatewayDetails(self):
+        """查询引擎中所有底层接口的信息"""
+        return self.gatewayDetailList
+
+        # ----------------------------------------------------------------------
+
+    def getAllAppDetails(self):
+        """查询引擎中所有上层应用的信息"""
+        return self.appDetailList
+
+    # ----------------------------------------------------------------------
+    def getApp(self, appName):
+        """获取APP引擎对象"""
+        return self.appDict[appName]
 
     def clearData(self):
         """清空数据引擎的数据"""

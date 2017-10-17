@@ -1,22 +1,31 @@
 # encoding: UTF-8
 
+
+# 重载sys模块，设置默认字符串编码方式为utf8
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import sys
 import os
 import ctypes
 import platform
+system = platform.system()
 
 # 将repostory的目录，作为根目录，添加到系统环境中。
 ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..' , '..'))
 sys.path.append(ROOT_PATH)
 
 from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import qApp
+from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import *
 
 # 加载底层接口
 from vnpy.trader.gateway import ctpGateway
-# 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json
-init_gateway_names = {'CTP': ['CTP', 'CTP_Prod', 'CTP_Post', 'CTP_EBF', 'CTP_JR', 'CTP_JR2']}
+# 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json    'CTP_Prod', 'CTP_JR', , 'CTP_JK', 'CTP_02'
+init_gateway_names = {'CTP': ['CTP','CTP_YH01', 'CTP_YH02', 'CTP_YHHZQQ','CTP_JR2']}
+
+from vnpy.trader.app import (ctaStrategy, riskManager, spreadTrading)
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))
@@ -24,43 +33,31 @@ ICON_FILENAME = 'vnpy.ico'
 ICON_FILENAME = os.path.join(path, ICON_FILENAME)
 
 from vnpy.trader.setup_logger import setup_logger
-setup_logger(filename='logs/vnpy_{0}.log'.format(datetime.now().strftime('%m%d_%H%M')), debug=False)
+setup_logger(filename='logs/vnpy.log', debug=False)
 
 # ----------------------------------------------------------------------
 def main():
     """主程序入口"""
-    # 重载sys模块，设置默认字符串编码方式为utf8
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+    # 创建Qt应用对象
+    qApp = createQApp()
 
-    """
-    # 设置Windows底部任务栏图标
-    if 'Windows' in platform.uname():
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
+    # 创建事件引擎
+    ee = EventEngine2()
 
-    # 初始化Qt应用对象
-    app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(ICON_FILENAME))
-    app.setFont(BASIC_FONT)
-    
-    # 设置Qt的皮肤
-    try:
-        from vnpy.trader.vtGlobal import globalSetting
-        if globalSetting['darkStyle']:
-            import qdarkstyle
-            app.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
-
-    except:
-        pass
-    """
     # 初始化主引擎和主窗口对象
-    mainEngine = MainEngine()
+    mainEngine = MainEngine(ee)
 
+    # 添加Gatway
     for gw_name in init_gateway_names['CTP']:
         print 'add {0}'.format(gw_name)
         mainEngine.addGateway(ctpGateway, gw_name)
 
-    mainWindow = MainWindow(mainEngine, mainEngine.eventEngine)
+    # 添加应用
+    mainEngine.addApp(ctaStrategy)
+    mainEngine.addApp(riskManager)
+    mainEngine.addApp(spreadTrading)
+
+    mainWindow = MainWindow(mainEngine, ee)
     mainWindow.showMaximized()
     
     # 在主线程中启动Qt事件循环

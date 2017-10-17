@@ -35,6 +35,8 @@ EVENT_ON_BAR = 'eOnBar'                 # OnBar事件
 EVENT_WARNING = 'eWarning'              # 全局告警信息
 EVENT_CRITICAL = 'eCritical'            # 全局严重信息
 EVENT_NOTIFICATION = 'eNotification'    # 全局通知
+EVENT_SIGNAL = 'eSignal'                # 信号通知
+EVENT_STATUS = 'eStatus'                # 服务状态
 
 # CTA模块相关
 EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
