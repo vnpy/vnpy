@@ -25,7 +25,7 @@ def createQApp():
     if globalSetting['darkStyle']:
         try:
             import qdarkstyle
-            qApp.setStyleSheet(qdarkstyle.load_stylesheet())
+            qApp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         except :
             print "Unexpected error:", sys.exc_info()[0]
 
