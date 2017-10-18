@@ -219,7 +219,9 @@ class CtaEngine(object):
             del self.workingStopOrderDict[stopOrderID]
             
             # 从策略委托号集合中移除
-            self.strategyOrderDict[strategy.name].remove(stopOrderID)
+            s = self.strategyOrderDict[strategy.name]
+            if stopOrderID in s:
+                s.remove(stopOrderID)
             
             # 通知策略
             strategy.onStopOrder(so)
@@ -251,7 +253,9 @@ class CtaEngine(object):
                         del self.workingStopOrderDict[so.stopOrderID]
                         
                         # 从策略委托号集合中移除
-                        self.strategyOrderDict[so.strategy.name].remove(so.stopOrderID)
+                        s = self.strategyOrderDict[so.strategy.name]
+                        if so.stopOrderID in s:
+                            s.remove(so.stopOrderID)
                         
                         # 更新停止单状态，并通知策略
                         so.status = STOPORDER_TRIGGERED
@@ -285,12 +289,16 @@ class CtaEngine(object):
         """处理委托推送"""
         order = event.dict_['data']
         
-        if order.vtOrderID in self.orderStrategyDict:
-            strategy = self.orderStrategyDict[order.vtOrderID]            
+        vtOrderID = order.vtOrderID
+        
+        if vtOrderID in self.orderStrategyDict:
+            strategy = self.orderStrategyDict[vtOrderID]            
             
             # 如果委托已经完成（拒单、撤销、全成），则从活动委托集合中移除
             if order.status in self.STATUS_FINISHED:
-                self.strategyOrderDict[strategy.name].remove(order.vtOrderID)
+                s = self.strategyOrderDict[strategy.name]
+                if vtOrderID in s:
+                    s.remove(vtOrderID)
             
             self.callStrategyFunc(strategy, strategy.onOrder, order)
     
@@ -613,8 +621,9 @@ class CtaEngine(object):
         """全部撤单"""
         s = self.strategyOrderDict[name]
         
-        # 遍历集合，全部撤单
-        for orderID in s:
+        # 遍历列表，全部撤单
+        # 这里不能直接遍历集合s，因为撤单时会修改s中的内容，导致出错
+        for orderID in list(s):
             if STOPORDERPREFIX in orderID:
                 self.cancelStopOrder(orderID)
             else:

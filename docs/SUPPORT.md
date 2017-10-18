@@ -1,18 +1,8 @@
 # 获取帮助
 
-* 操作系统: 如Windows 7或者Ubuntu 16.04
-* Anaconda版本: 如Anaconda 4.0.0 Python 2.7 32位
-* vn.py版本: 如v1.7发行版或者dev branch 20170920（下载日期）
+在开发和使用vn.py项目的过程中遇到问题时，获取帮助的渠道包括：
 
-## Issue类型
-三选一：Bug/Enhancement/Question
-
-## 预期程序行为
-
-
-## 实际程序行为
-
-
-## 重现步骤
-
-针对Bug类型Issue，请提供具体重现步骤以及报错截图
+* Github Issues：[Issues页面](https://github.com/vnpy/vnpy/issues)
+* 官方QQ群: 262656087
+* 项目论坛：[维恩的派](http://www.vnpie.com))
+* 项目邮箱: vn.py@foxmail.com

@@ -1046,6 +1046,7 @@ class TradingWidget(QtWidgets.QFrame):
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
+        req.vtSymbol = contract.vtSymbol
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
         req.direction = unicode(self.comboDirection.currentText())
