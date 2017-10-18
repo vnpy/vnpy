@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 import platform
-
+import sys
 from qtpy import QtWidgets, QtGui, QtCore
 
 from vnpy.trader.vtGlobal import globalSetting
@@ -25,9 +25,9 @@ def createQApp():
     if globalSetting['darkStyle']:
         try:
             import qdarkstyle
-            qApp.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
-        except ImportError:
-            pass
+            qApp.setStyleSheet(qdarkstyle.load_stylesheet())
+        except :
+            print "Unexpected error:", sys.exc_info()[0]
 
     # 设置Windows底部任务栏图标
     if 'Windows' in platform.uname():
