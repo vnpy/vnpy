@@ -286,10 +286,10 @@ class TargetPosTemplate(CtaTemplate):
         # 回测模式下，采用合并平仓和反向开仓委托的方式
         if self.getEngineType() == ENGINETYPE_BACKTESTING:
             if posChange > 0:
-                vtOrderID = self.buy(longPrice, abs(posChange))
+                l = self.buy(longPrice, abs(posChange))
             else:
-                vtOrderID = self.short(shortPrice, abs(posChange))
-            self.orderList.append(vtOrderID)
+                l = self.short(shortPrice, abs(posChange))
+            self.orderList.extend(l)
         
         # 实盘模式下，首先确保之前的委托都已经结束（全成、撤销）
         # 然后先发平仓委托，等待成交后，再发送新的开仓委托
@@ -301,16 +301,16 @@ class TargetPosTemplate(CtaTemplate):
             # 买入
             if posChange > 0:
                 if self.pos < 0:
-                    vtOrderID = self.cover(longPrice, abs(self.pos))
+                    l = self.cover(longPrice, abs(self.pos))
                 else:
-                    vtOrderID = self.buy(longPrice, abs(posChange))
+                    l = self.buy(longPrice, abs(posChange))
             # 卖出
             else:
                 if self.pos > 0:
-                    vtOrderID = self.sell(shortPrice, abs(self.pos))
+                    l = self.sell(shortPrice, abs(self.pos))
                 else:
-                    vtOrderID = self.short(shortPrice, abs(posChange))
-            self.orderList.append(vtOrderID)
+                    l = self.short(shortPrice, abs(posChange))
+            self.orderList.extend(l)
     
     
 ########################################################################
