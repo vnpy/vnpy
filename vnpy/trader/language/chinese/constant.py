@@ -41,6 +41,9 @@ PRODUCT_FOREX = u'外汇'
 PRODUCT_UNKNOWN = u'未知'
 PRODUCT_SPOT = u'现货'
 PRODUCT_DEFER = u'延期'
+PRODUCT_ETF = u'ETF'
+PRODUCT_WARRANT = u'权证'
+PRODUCT_BOND = u'债券'
 PRODUCT_NONE = ''
 
 # 价格类型常量

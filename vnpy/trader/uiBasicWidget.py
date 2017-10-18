@@ -13,6 +13,7 @@ from .vtGateway import *
 from . import vtText
 from .uiQt import QtGui, QtWidgets, QtCore, BASIC_FONT
 from .vtFunction import jsonPathDict
+from .vtConstant import *
 
 
 COLOR_RED = QtGui.QColor('red')
@@ -1045,6 +1046,7 @@ class TradingWidget(QtWidgets.QFrame):
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
+        req.vtSymbol = contract.vtSymbol
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
         req.direction = unicode(self.comboDirection.currentText())
@@ -1111,9 +1113,11 @@ class ContractMonitor(BasicMonitor):
         d['productClass'] = {'chinese':vtText.PRODUCT_CLASS, 'cellType':BasicCell}
         d['size'] = {'chinese':vtText.CONTRACT_SIZE, 'cellType':BasicCell}
         d['priceTick'] = {'chinese':vtText.PRICE_TICK, 'cellType':BasicCell}
-        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
+        
         d['underlyingSymbol'] = {'chinese':vtText.UNDERLYING_SYMBOL, 'cellType':BasicCell}
-        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}     
+        d['optionType'] = {'chinese':vtText.OPTION_TYPE, 'cellType':BasicCell}  
+        d['expiryDate'] = {'chinese':vtText.EXPIRY_DATE, 'cellType':BasicCell}
+        d['strikePrice'] = {'chinese':vtText.STRIKE_PRICE, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         # 过滤显示用的字符串
@@ -1228,7 +1232,30 @@ class ContractManager(QtWidgets.QWidget):
         content = str(self.lineFilter.text())
         self.monitor.setFilterContent(content)
         self.monitor.refresh()
-    
+
+
+########################################################################
+class WorkingOrderMonitor(OrderMonitor):
+    """活动委托监控"""
+    STATUS_COMPLETED = [STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED]
+
+    #----------------------------------------------------------------------
+    def __init__(self, mainEngine, eventEngine, parent=None):
+        """Constructor"""
+        super(WorkingOrderMonitor, self).__init__(mainEngine, eventEngine, parent)
+        
+    #----------------------------------------------------------------------
+    def updateData(self, data):
+        """更新数据"""
+        super(WorkingOrderMonitor, self).updateData(data)
+
+        # 如果该委托已完成，则隐藏该行
+        if data.status in self.STATUS_COMPLETED:
+            vtOrderID = data.vtOrderID
+            cellDict = self.dataDict[vtOrderID]
+            cell = cellDict['status']
+            row = self.row(cell)
+            self.hideRow(row)    
     
 
 ########################################################################
@@ -1311,11 +1338,6 @@ class SettingEditor(QtWidgets.QWidget):
         
         # 显示界面
         super(SettingEditor, self).show()
-        
-        
-        
-        
-        
-    
+
     
     

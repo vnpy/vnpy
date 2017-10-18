@@ -17,7 +17,7 @@ from vnpy.data.datayes import DatayesApi
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtBarData
-from .ctaBase import SETTING_DB_NAME, TICK_DB_NAME, MINUTE_DB_NAME
+from .ctaBase import SETTING_DB_NAME, TICK_DB_NAME, MINUTE_DB_NAME, DAILY_DB_NAME
 
 
 # 以下为vn.trader和通联数据规定的交易所代码映射 
@@ -395,6 +395,79 @@ def loadMcCsv(fileName, dbName, symbol):
         print bar.date, bar.time
     
     print u'插入完毕，耗时：%s' % (time()-start)
+
+#----------------------------------------------------------------------
+def loadTbCsv(fileName, dbName, symbol):
+    """将TradeBlazer导出的csv格式的历史分钟数据插入到Mongo数据库中"""
+    import csv
+    
+    start = time()
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
+    
+    # 锁定集合，并创建索引
+    client = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
+    
+    # 读取数据和插入到数据库
+    reader = csv.reader(file(fileName, 'r'))
+    for d in reader:
+        bar = VtBarData()
+        bar.vtSymbol = symbol
+        bar.symbol = symbol
+        bar.open = float(d[1])
+        bar.high = float(d[2])
+        bar.low = float(d[3])
+        bar.close = float(d[4])
+        bar.date = datetime.strptime(d[0].split(' ')[0], '%Y/%m/%d').strftime('%Y%m%d')
+        bar.time = d[0].split(' ')[1]+":00"
+        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
+        bar.volume = d[5]
+        bar.openInterest = d[6]
+
+        flt = {'datetime': bar.datetime}
+        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
+        print bar.date, bar.time
+    
+    print u'插入完毕，耗时：%s' % (time()-start)
+    
+ #----------------------------------------------------------------------
+def loadTbPlusCsv(fileName, dbName, symbol):
+    """将TB极速版导出的csv格式的历史分钟数据插入到Mongo数据库中"""
+    import csv    
+
+    start = time()
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol) 
+
+    # 锁定集合，并创建索引
+    client = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)      
+
+    # 读取数据和插入到数据库
+    reader = csv.reader(file(fileName, 'r'))
+    for d in reader:
+        bar = VtBarData()
+        bar.vtSymbol = symbol
+        bar.symbol = symbol
+        bar.open = float(d[2])
+        bar.high = float(d[3])
+        bar.low = float(d[4])
+        bar.close = float(d[5])
+        bar.date = str(d[0])
+        
+        tempstr=str(round(float(d[1])*10000)).split(".")[0].zfill(4)
+        bar.time = tempstr[:2]+":"+tempstr[2:4]+":00"
+        
+        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
+        bar.volume = d[6]
+        bar.openInterest = d[7]
+        flt = {'datetime': bar.datetime}
+        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
+        print bar.date, bar.time    
+
+    print u'插入完毕，耗时：%s' % (time()-start)
+
 
 #----------------------------------------------------------------------
 def loadTdxCsv(fileName, dbName, symbol):

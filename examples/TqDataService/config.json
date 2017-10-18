@@ -1,0 +1,8 @@
+{
+	"MONGO_HOST": "localhost",
+	"MONGO_PORT": 27017,
+
+	"SYMBOLS": ["IF1710", "IF1711", "IF1712", "IF1803", 
+				"IH1710", "IH1711", "IH1712", "IH1803", 
+				"IC1710", "IC1711", "IC1712", "IC1803"]
+}
