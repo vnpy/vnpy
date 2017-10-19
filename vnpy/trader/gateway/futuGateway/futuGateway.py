@@ -8,6 +8,7 @@ import json
 from collections import OrderedDict
 from threading import Thread
 from time import sleep
+import traceback
 
 import futuquant as ft
 from futuquant.open_context import (RET_ERROR, RET_OK,
@@ -120,8 +121,10 @@ class FutuGateway(VtGateway):
             gateway = self  # 缓存Gateway对象
             
             def on_recv_rsp(self, rsp_str):
-                print 'quote handler'
-                ret_code, content = super(QuoteHandler, self).on_recv_rsp(rsp_str)
+                try:
+                    ret_code, content = super(QuoteHandler, self).on_recv_rsp(rsp_str)
+                except:
+                    traceback.print_exc()
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.processQuote(content)
@@ -132,8 +135,10 @@ class FutuGateway(VtGateway):
             gateway = self
             
             def on_recv_rsp(self, rsp_str):
-                print 'book handler'
-                ret_code, content = super(OrderBookHandler, self).on_recv_rsp(rsp_str)
+                try:
+                    ret_code, content = super(OrderBookHandler, self).on_recv_rsp(rsp_str)
+                except:
+                    traceback.print_exc()
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.processOrderBook(content)
@@ -192,25 +197,26 @@ class FutuGateway(VtGateway):
                 ret_code, content = super(DealHandler, self).on_recv_rsp(rsp_str)
                 if ret_code != RET_OK:
                     return RET_ERROR, content
-                self.gateway.processTrade(content)
+                self.gateway.processDeal(content)
                 return RET_OK, content  
-            
+
+        # 只有港股实盘交易才需要解锁
+            if self.market == 'HK' and self.env == 0:
+                self.tradeCtx.unlock_trade(self.password)
+        
         # 设置回调处理对象
-        #self.tradeCtx.set_handler(OrderHandler())
-        #self.tradeCtx.set_handler(DealHandler())        
+        self.tradeCtx.set_handler(OrderHandler())
+        self.tradeCtx.set_handler(DealHandler())        
         
         # 启动交易接口
         self.tradeCtx.start()
-
-        # 只有港股实盘交易才需要解锁
-        if self.market == 'HK' and self.env == 0:
-            self.tradeCtx.unlock_trade(self.password)
         
         self.writeLog(u'交易接口连接成功')
     
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
+        return
         for data_type in ['QUOTE', 'ORDER_BOOK']:
             code, data = self.quoteCtx.subscribe(subscribeReq.symbol, data_type, True)
             
@@ -225,7 +231,8 @@ class FutuGateway(VtGateway):
         
         code, data = self.tradeCtx.place_order(orderReq.price, orderReq.volume, 
                                                orderReq.symbol, side, 
-                                               priceType, self.env)
+                                               priceType, self.env,
+                                               orderpush=True, dealpush=True)
         
         if code:
             self.writeError(code, u'委托失败：%s' %data)
@@ -313,10 +320,10 @@ class FutuGateway(VtGateway):
             pos.direction = DIRECTION_LONG
             pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
             
-            pos.position = int(data['qty'])
-            pos.price = float(data['cost_price'])
-            pos.positionProfit = float(data['pl_val'])
-            pos.frozen = int(data['qty']) - int(data['can_sell_qty'])
+            pos.position = int(row['qty'])
+            pos.price = float(row['cost_price'])
+            pos.positionProfit = float(row['pl_val'])
+            pos.frozen = int(row['qty']) - int(row['can_sell_qty'])
             
             self.onPosition(pos)
             
@@ -394,11 +401,40 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def processQuote(self, data):
         """报价推送"""
-        print 'quote-----------'
-        print type(data), data
-        for ix, row in data.iterrows():
-            symbol = row['code']
+        try:
+            for ix, row in data.iterrows():
+                symbol = row['code']
+        
+                tick = self.tickDict.get(symbol, None)
+                if not tick:
+                    tick = VtTickData()
+                    tick.symbol = symbol
+                    tick.vtSymbol = tick.symbol
+                    tick.gatewayName = self.gatewayName
+                    self.tickDict[symbol] = tick
+                    
+                tick.date = row['data_date']
+                tick.time = row['data_time']
+                tick.datetime = None
+                
+                tick.openPrice = row['open_price']
+                tick.highPrice = row['high_price']
+                tick.lowPrice = row['low_price']
+                tick.preClosePrice = row['prev_close_price']
+                
+                tick.lastPrice = row['last_price']
+                tick.volume = row['volume']
+                
+                self.onTick(tick)
+        except:
+            traceback.print_exc()
     
+    #----------------------------------------------------------------------
+    def processOrderBook(self, data):
+        """订单簿推送"""
+        try:
+            symbol = data['stock_code']
+        
             tick = self.tickDict.get(symbol, None)
             if not tick:
                 tick = VtTickData()
@@ -406,55 +442,25 @@ class FutuGateway(VtGateway):
                 tick.vtSymbol = tick.symbol
                 tick.gatewayName = self.gatewayName
                 self.tickDict[symbol] = tick
+            
+            d = tick.__dict__
+            for i in range(5):
+                bidData = data['Bid'][i]
+                askData = data['Ask'][i]
+                n = i + 1
                 
-            tick.date = row['data_date']
-            tick.time = row['data_time']
-            tick.datetime = None
-            
-            tick.openPrice = row['open_price']
-            tick.highPrice = row['high_price']
-            tick.lowPrice = row['low_price']
-            tick.preClosePrice = row['prev_close_price']
-            
-            tick.lastPrice = row['last_price']
-            tick.volume = row['volume']
-            
+                d['bidPrice%s' %n] = bidData[0]
+                d['bidVolume%s' %n] = bidData[1]
+                d['askPrice%s' %n] = askData[0]
+                d['askVolume%s' %n] = askData[1]
+                
             self.onTick(tick)
-    
-    #----------------------------------------------------------------------
-    def processOrderBook(self, data):
-        """订单簿推送"""
-        print 'book-----------'
-        print data        
-
-        symbol = data['stock_code']
-    
-        tick = self.tickDict.get(symbol, None)
-        if not tick:
-            tick = VtTickData()
-            tick.symbol = symbol
-            tick.vtSymbol = tick.symbol
-            tick.gatewayName = self.gatewayName
-            self.tickDict[symbol] = tick
-        
-        d = tick.__dict__
-        for i in range(5):
-            bidData = data['Bid'][i]
-            askData = data['Ask'][i]
-            n = i + 1
-            
-            d['bidPrice%s' %n] = bidData[0]
-            d['bidVolume%s' %n] = bidData[1]
-            d['askPrice%s' %n] = askData[0]
-            d['askVolume%s' %n] = askData[1]
-            
-        self.onTick(tick)
+        except:
+            traceback.print_exc()
     
     #----------------------------------------------------------------------
     def processOrder(self, data):
         """处理委托推送"""
-        print 'order -----------------'
-        print data
         for ix, row in data.iterrows():
             order = VtOrderData()
             order.gatewayName = self.gatewayName
@@ -462,22 +468,20 @@ class FutuGateway(VtGateway):
             order.symbol = row['code']
             order.vtSymbol = order.symbol
             
-            order.orderID = row['orderid']
+            order.orderID = str(row['orderid'])
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             
             order.price = float(row['price'])
             order.totalVolume = int(row['qty'])
             order.tradedVolume = int(row['dealt_qty'])
             order.orderTime = row['submited_time']
-            order.status = statusMapReverse.get(row['status'], STATUS_UNKNOWN)
-            order.direction = directionMapReverse[row['order_side']]
+            order.status = statusMapReverse.get(str(row['status']), STATUS_UNKNOWN)
+            order.direction = directionMapReverse[str(row['order_side'])]
             self.onOrder(order)        
     
     #----------------------------------------------------------------------
     def processDeal(self, data):
         """处理成交推送"""
-        print 'deal -------------'
-        print data
         for ix, row in data.iterrows():
             trade = VtTradeData()
             trade.gatewayName = self.gatewayName
@@ -493,7 +497,7 @@ class FutuGateway(VtGateway):
             
             trade.price = float(row['price'])
             trade.volume = float(row['qty'])
-            trade.direction = directionMapReverse[row['orderside']]
+            trade.direction = directionMapReverse[str(row['order_side'])]
             trade.tradeTime = row['time']
             
             self.onTrade(trade)        
