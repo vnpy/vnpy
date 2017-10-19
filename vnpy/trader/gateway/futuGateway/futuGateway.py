@@ -8,7 +8,7 @@ import json
 from collections import OrderedDict
 from threading import Thread
 from time import sleep
-import traceback
+from datetime import datetime
 
 import futuquant as ft
 from futuquant.open_context import (RET_ERROR, RET_OK,
@@ -20,6 +20,8 @@ from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
 from vnpy.trader.vtFunction import getJsonPath
 
+
+# 常量数据映射
 productMap = OrderedDict()
 productMap[PRODUCT_EQUITY] = 'STOCK'
 productMap[PRODUCT_INDEX] = 'IDX'
@@ -100,6 +102,9 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryData(self):
         """初始化时查询数据"""
+        # 等待2秒保证行情和交易接口启动完成
+        sleep(2.0)
+        
         # 查询合约、成交、委托、持仓、账户
         self.qryContract()
         self.qryTrade()
@@ -121,10 +126,7 @@ class FutuGateway(VtGateway):
             gateway = self  # 缓存Gateway对象
             
             def on_recv_rsp(self, rsp_str):
-                try:
-                    ret_code, content = super(QuoteHandler, self).on_recv_rsp(rsp_str)
-                except:
-                    traceback.print_exc()
+                ret_code, content = super(QuoteHandler, self).on_recv_rsp(rsp_str)
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.processQuote(content)
@@ -135,10 +137,7 @@ class FutuGateway(VtGateway):
             gateway = self
             
             def on_recv_rsp(self, rsp_str):
-                try:
-                    ret_code, content = super(OrderBookHandler, self).on_recv_rsp(rsp_str)
-                except:
-                    traceback.print_exc()
+                ret_code, content = super(OrderBookHandler, self).on_recv_rsp(rsp_str)
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.processOrderBook(content)
@@ -216,7 +215,6 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        return
         for data_type in ['QUOTE', 'ORDER_BOOK']:
             code, data = self.quoteCtx.subscribe(subscribeReq.symbol, data_type, True)
             
@@ -401,40 +399,9 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def processQuote(self, data):
         """报价推送"""
-        try:
-            for ix, row in data.iterrows():
-                symbol = row['code']
-        
-                tick = self.tickDict.get(symbol, None)
-                if not tick:
-                    tick = VtTickData()
-                    tick.symbol = symbol
-                    tick.vtSymbol = tick.symbol
-                    tick.gatewayName = self.gatewayName
-                    self.tickDict[symbol] = tick
-                    
-                tick.date = row['data_date']
-                tick.time = row['data_time']
-                tick.datetime = None
-                
-                tick.openPrice = row['open_price']
-                tick.highPrice = row['high_price']
-                tick.lowPrice = row['low_price']
-                tick.preClosePrice = row['prev_close_price']
-                
-                tick.lastPrice = row['last_price']
-                tick.volume = row['volume']
-                
-                self.onTick(tick)
-        except:
-            traceback.print_exc()
+        for ix, row in data.iterrows():
+            symbol = row['code']
     
-    #----------------------------------------------------------------------
-    def processOrderBook(self, data):
-        """订单簿推送"""
-        try:
-            symbol = data['stock_code']
-        
             tick = self.tickDict.get(symbol, None)
             if not tick:
                 tick = VtTickData()
@@ -442,21 +409,45 @@ class FutuGateway(VtGateway):
                 tick.vtSymbol = tick.symbol
                 tick.gatewayName = self.gatewayName
                 self.tickDict[symbol] = tick
+                
+            tick.date = row['data_date']
+            tick.time = row['data_time']
             
-            d = tick.__dict__
-            for i in range(5):
-                bidData = data['Bid'][i]
-                askData = data['Ask'][i]
-                n = i + 1
-                
-                d['bidPrice%s' %n] = bidData[0]
-                d['bidVolume%s' %n] = bidData[1]
-                d['askPrice%s' %n] = askData[0]
-                d['askVolume%s' %n] = askData[1]
-                
+            tick.openPrice = row['open_price']
+            tick.highPrice = row['high_price']
+            tick.lowPrice = row['low_price']
+            tick.preClosePrice = row['prev_close_price']
+            
+            tick.lastPrice = row['last_price']
+            tick.volume = row['volume']
+            
             self.onTick(tick)
-        except:
-            traceback.print_exc()
+    
+    #----------------------------------------------------------------------
+    def processOrderBook(self, data):
+        """订单簿推送"""
+        symbol = data['stock_code']
+    
+        tick = self.tickDict.get(symbol, None)
+        if not tick:
+            tick = VtTickData()
+            tick.symbol = symbol
+            tick.vtSymbol = tick.symbol
+            tick.gatewayName = self.gatewayName
+            self.tickDict[symbol] = tick
+        
+        d = tick.__dict__
+        for i in range(5):
+            bidData = data['Bid'][i]
+            askData = data['Ask'][i]
+            n = i + 1
+            
+            d['bidPrice%s' %n] = bidData[0]
+            d['bidVolume%s' %n] = bidData[1]
+            d['askPrice%s' %n] = askData[0]
+            d['askVolume%s' %n] = askData[1]
+            
+        self.onTick(tick)
     
     #----------------------------------------------------------------------
     def processOrder(self, data):
@@ -474,7 +465,10 @@ class FutuGateway(VtGateway):
             order.price = float(row['price'])
             order.totalVolume = int(row['qty'])
             order.tradedVolume = int(row['dealt_qty'])
-            order.orderTime = row['submited_time']
+            
+            t = datetime.fromtimestamp(float(row['submited_time']))
+            order.orderTime = t.strftime('%H:%M:%S')            
+
             order.status = statusMapReverse.get(str(row['status']), STATUS_UNKNOWN)
             order.direction = directionMapReverse[str(row['order_side'])]
             self.onOrder(order)        
@@ -498,8 +492,8 @@ class FutuGateway(VtGateway):
             trade.price = float(row['price'])
             trade.volume = float(row['qty'])
             trade.direction = directionMapReverse[str(row['order_side'])]
-            trade.tradeTime = row['time']
             
-            self.onTrade(trade)        
-        
-    
+            t = datetime.fromtimestamp(float(row['time']))
+            trade.tradeTime = t.strftime('%H:%M:%S')
+            
+            self.onTrade(trade)
