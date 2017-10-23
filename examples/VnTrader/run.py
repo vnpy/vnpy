@@ -21,7 +21,7 @@ from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway,
 
 if system == 'Windows':
     from vnpy.trader.gateway import (femasGateway, xspeedGateway, 
-                                     futuGateway)
+                                     futuGateway, secGateway)
     
 if system == 'Linux':
     from vnpy.trader.gateway import xtpGateway
@@ -52,6 +52,7 @@ def main():
     if system == 'Windows':
         me.addGateway(femasGateway)
         me.addGateway(xspeedGateway)
+        me.addGateway(secGateway)
         me.addGateway(futuGateway)
         
     if system == 'Linux':

@@ -70,6 +70,7 @@ class FutuGateway(VtGateway):
         self.filePath = getJsonPath(self.fileName, __file__)
         
         self.tickDict = {}
+        self.tradeSet = set()      # 保存成交编号的集合，防止重复推送
         
         self.qryEnabled = True
         self.qryThread = Thread(target=self.qryData)
@@ -477,13 +478,18 @@ class FutuGateway(VtGateway):
     def processDeal(self, data):
         """处理成交推送"""
         for ix, row in data.iterrows():
+            tradeID = row['dealid']
+            if tradeID in self.tradeSet:
+                continue
+            self.tradeSet.add(tradeID)
+            
             trade = VtTradeData()
             trade.gatewayName = self.gatewayName
             
             trade.symbol = row['code']
             trade.vtSymbol = trade.symbol
             
-            trade.tradeID = row['dealid']
+            trade.tradeID = tradeID
             trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
             
             trade.orderID = row['orderid']
