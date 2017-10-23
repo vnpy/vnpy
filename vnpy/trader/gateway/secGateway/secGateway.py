@@ -1066,7 +1066,7 @@ class SecTdApi(TdApi):
             log.logContent = u'期权交易服务器登录完成'
             self.gateway.onLog(log)
             
-            #self.qryOptionContracts()
+            self.qryOptionContracts()
 
         # 否则，推送错误信息
         else:
