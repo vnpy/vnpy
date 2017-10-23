@@ -15,11 +15,17 @@ from vnpy.trader.vtFunction import getJsonPath, getTempPath
 
 
 # 以下为一些VT类型和SEC类型的映射字典
-# 价格类型映射
-priceTypeMap = {}
-priceTypeMap[PRICETYPE_LIMITPRICE] = DATA_TYPE.DFITCSEC_SOP_LimitPrice
-priceTypeMap[PRICETYPE_MARKETPRICE] = DATA_TYPE.DFITCSEC_SOP_LastPrice
-priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
+# 期权价格类型映射
+optionPriceTypeMap = {}
+optionPriceTypeMap[PRICETYPE_LIMITPRICE] = DATA_TYPE.DFITCSEC_SOP_LimitPrice
+optionPriceTypeMap[PRICETYPE_MARKETPRICE] = DATA_TYPE.DFITCSEC_SOP_LastPrice
+optionPriceTypeMapReverse = {v: k for k, v in optionPriceTypeMap.items()} 
+
+# 股票价格类型映射 
+stockPriceTypeMap = {}
+stockPriceTypeMap[PRICETYPE_LIMITPRICE] = DATA_TYPE.DFITCSEC_OT_LimitPrice
+stockPriceTypeMap[PRICETYPE_MARKETPRICE] = DATA_TYPE.DFITCSEC_OT_SHBESTFRTradeLeftWithdraw
+stockPriceTypeMapReverse = {v: k for k, v in stockPriceTypeMap.items()} 
 
 # 方向类型映射
 directionMap = {}
@@ -220,7 +226,7 @@ class SecMdApi(MdApi):
         if self.loginStatus:
             self.reqID += 1
             
-            if len(subscribeReq.symbol) > 6:
+            if checkOptionSymbol(subscribeReq.symbol):
                 symbol = str(exchangeMap[subscribeReq.exchange] + subscribeReq.symbol)
                 self.subscribeSOPMarketData(symbol, self.reqID)
             else:
@@ -494,7 +500,6 @@ class SecMdApi(MdApi):
         pass
     
     
-
 ########################################################################
 class SecTdApi(TdApi):
     """SEC交易API实现"""
@@ -569,6 +574,7 @@ class SecTdApi(TdApi):
         self.reqSOPQryCapitalAccountInfo(req)
         
         self.reqID += 1
+        req['FundsQryFlag'] = DATA_TYPE.DFITCSEC_FQF_Extend
         self.reqStockQryCapitalAccountInfo(req)
         
     #----------------------------------------------------------------------
@@ -613,20 +619,22 @@ class SecTdApi(TdApi):
         req['exchangeID'] = exchangeMap.get(orderReq.exchange, '')
         req['entrustPrice'] = orderReq.price
         req['entrustQty'] = orderReq.volume
-        
-        # 下面如果由于传入的类型本接口不支持，则会返回空字符串
-        try:
-            req['orderType'] = priceTypeMap[orderReq.priceType]
-            req['entrustDirection'] = directionMap[orderReq.direction]
-            req['openCloseFlag'] = offsetMap[orderReq.offset]
-        except KeyError:
-            return ''
-            
         req['localOrderID'] = self.localID
         req['accountID'] = self.accountID
-        req['requestID'] = self.reqID
-        
-        self.reqSOPEntrustOrder(req)
+        req['requestID'] = self.reqID        
+        req['entrustDirection'] = directionMap.get(orderReq.direction, '')
+
+        # 期权委托
+        if checkOptionSymbol(orderReq.symbol):
+            req['orderType'] = optionPriceTypeMap.get(orderReq.priceType, '')            
+            req['openCloseFlag'] = offsetMap.get(orderReq.offset, '')
+            self.reqSOPEntrustOrder(req)
+            product = PRODUCT_OPTION
+        # 股票委托
+        else:
+            req['orderType'] = stockPriceTypeMap.get(orderReq.priceType, '')# 股票只支持限价单
+            self.reqStockEntrustOrder(req)
+            product = PRODUCT_EQUITY
         
         # 缓存委托信息
         orderID = str(self.localID)
@@ -643,6 +651,7 @@ class SecTdApi(TdApi):
         order.totalVolume = orderReq.volume
         order.direction = orderReq.direction
         order.offset = orderReq.offset
+        order.productClass = product
         
         self.orderDict[str(self.localID)] = order
         
@@ -653,13 +662,16 @@ class SecTdApi(TdApi):
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.reqID += 1
-
         req = {}
         req['localOrderID'] = int(cancelOrderReq.orderID)
         req['accountID'] = self.accountID
         req['requestID'] = self.reqID
         
-        self.reqSOPWithdrawOrder(req)
+        order = self.orderDict.get(cancelOrderReq.orderID, None)
+        if not order or order.productClass == PRODUCT_OPTION:
+            self.reqSOPWithdrawOrder(req)
+        else:
+            self.reqStockWithdrawOrder(req)
         
     #----------------------------------------------------------------------
     def close(self):
@@ -743,8 +755,20 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspStockEntrustOrder(self, data, error):
-        """"""
-        pass
+        """股票发单错误"""
+        if error:
+            order = VtOrderData()
+            order.gatewayName = self.gatewayName
+            order.orderID = str(error['localOrderID'])
+            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+            order.status = STATUS_REJECTED      
+            self.gateway.onOrder(order)
+
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['errorID']
+            err.errorMsg = error['errorMsg'].decode('gbk')
+            self.gateway.onError(err)
     
     #----------------------------------------------------------------------
     def onRspStockWithdrawOrder(self, data, error):
@@ -768,13 +792,44 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspStockQryPosition(self, data, error, flag):
-        """"""
-        pass
+        """股票持仓查询回报"""
+        if not data or not data['securityID']:
+            return
+        
+        pos = VtPositionData()
+        pos.gatewayName = self.gatewayName
+
+        # 保存代码
+        pos.symbol = data['securityID']
+        pos.exchange = exchangeMap.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
+        pos.direction = DIRECTION_LONG
+        pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+        pos.position = data['position']
+        pos.price = data['avgPositionPrice']
+        
+        self.gateway.onPosition(pos)
     
     #----------------------------------------------------------------------
     def onRspStockQryCapitalAccountInfo(self, data, error, flag):
-        """"""
-        pass
+        """股票资金账户查询回报"""
+        if not data:
+            return
+        
+        account = VtAccountData()
+        account.gatewayName = self.gatewayName
+    
+        # 账户代码
+        account.accountID = data['accountID'] + '_Stock'
+        account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
+    
+        # 数值相关
+        account.available = data['availableFunds']
+        account.balance = data['totalFunds'] 
+        account.marketValue = data['totalMarket']
+        
+        # 推送
+        self.gateway.onAccount(account)
     
     #----------------------------------------------------------------------
     def onRspStockQryAccountInfo(self, data, error):
@@ -842,24 +897,25 @@ class SecTdApi(TdApi):
         if not data:
             return
         
-        contract = VtContractData()
-        contract.gatewayName = self.gatewayName
-
-        contract.symbol = data['securityID']
-        contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
-        contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
-        
-        contract.name = data['securityName'].decode('GBK')
-        
-        # 合约数值
-        contract.size = data['tradeUnit']
-        contract.priceTick = 0.001          # 50ETF的最小价格变动
-        
-        # 合约类型
-        contract.productClass = PRODUCT_EQUITY
-        
-        # 推送
-        self.gateway.onContract(contract)
+        if data['securityID'] == '510050':
+            contract = VtContractData()
+            contract.gatewayName = self.gatewayName
+    
+            contract.symbol = data['securityID']
+            contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+            contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
+            
+            contract.name = data['securityName'].decode('GBK')
+            
+            # 合约数值
+            contract.size = data['tradeUnit']
+            contract.priceTick = 0.001          # 50ETF的最小价格变动
+            
+            # 合约类型
+            contract.productClass = PRODUCT_EQUITY
+            
+            # 推送
+            self.gateway.onContract(contract)
         
         if flag:
             log = VtLogData()
@@ -874,18 +930,128 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onStockEntrustOrderRtn(self, data):
-        """"""
-        pass
-    
+        """股票报单回报"""
+        # 更新最大报单编号
+        newLocalID = data['localOrderID']
+        self.localID = max(self.localID, newLocalID)
+        
+        # 获取报单数据对象
+        if newLocalID in self.orderDict:
+            order = self.orderDict[newLocalID]
+        else:
+            order = VtOrderData()
+            self.orderDict[newLocalID] = order
+            order.gatewayName = self.gatewayName
+        
+            # 保存后续不会变化的数据
+            order.symbol = data['securityID']
+            order.exchange = exchangeMapReverse[data['exchangeID']]
+            order.vtSymbol = '.'.join([order.symbol, order.exchange])
+            
+            order.orderID = str(newLocalID)
+            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+            
+            order.direction = directionMapReverse.get(data['entrustDirection'], DIRECTION_UNKNOWN)
+
+            # 价格、报单量等数值
+            order.price = data['entrustPrice']
+            order.totalVolume = data['entrustQty']
+            order.orderTime = data['entrustTime']
+            
+            order.productClass = PRODUCT_EQUITY
+        
+        # 确定委托状态
+        if order.totalVolume == order.tradedVolume:
+            order.status = STATUS_ALLTRADED
+        elif order.tradedVolume > 0:
+            order.status = STATUS_PARTTRADED
+        else:
+            order.status = STATUS_NOTTRADED        
+        
+        # 推送
+        self.gateway.onOrder(copy(order))
+        
     #----------------------------------------------------------------------
     def onStockTradeRtn(self, data):
-        """"""
-        pass
+        """股票成交推送"""
+        # 更新成交信息
+        trade = VtTradeData()
+        trade.gatewayName = self.gatewayName
+        
+        # 保存代码和报单号
+        trade.symbol = data['securityID']
+        trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
+        
+        trade.tradeID = data['tradeID']
+        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+        
+        trade.orderID = str(data['localOrderID'])
+        trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
+
+        trade.direction = directionMapReverse.get(data['entrustDirection'], DIRECTION_UNKNOWN)
+            
+        trade.price = data['tradePrice']
+        trade.volume = data['tradeQty']
+        trade.tradeTime = data['tradeTime']
+        
+        # 推送
+        self.gateway.onTrade(trade)
+        
+        # 获取报单数据对象
+        localID = data['localOrderID']
+        order = self.orderDict.get(localID, None)
+        if not order:
+            return
+        
+        order.tradedVolume += trade.volume
+        order.tradedVolume = min(order.totalVolume, order.tradedVolume) # 防止成交数量超过总数量
+        
+        # 确定委托状态
+        if order.totalVolume == order.tradedVolume:
+            order.status = STATUS_ALLTRADED
+        elif order.tradedVolume > 0:
+            order.status = STATUS_PARTTRADED        
+        
+        self.gateway.onOrder(copy(order)) 
     
     #----------------------------------------------------------------------
     def onStockWithdrawOrderRtn(self, data):
-        """"""
-        pass
+        """股票撤单推送"""
+        # 更新最大报单编号
+        newLocalID = data['localOrderID']
+        self.localID = max(self.localID, int(newLocalID))
+        
+        # 获取报单数据对象
+        if newLocalID in self.orderDict:
+            order = self.orderDict[newLocalID]
+        else:
+            order = VtOrderData()
+            self.orderDict[newLocalID] = order
+            order.gatewayName = self.gatewayName
+        
+            # 保存后续不会变化的数据
+            order.symbol = data['securityID']
+            order.exchange = exchangeMapReverse[data['exchangeID']]
+            order.vtSymbol = '.'.join([order.symbol, order.exchange])
+            
+            order.orderID = str(newLocalID)
+            order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
+            
+            order.direction = directionMapReverse.get(data['entrustDirection'], DIRECTION_UNKNOWN)
+
+            # 价格、报单量等数值
+            order.price = data['entrustPrice']
+            order.tradedVolume = data['tradeQty']
+            order.totalVolume = data['tradeQty'] + data['withdrawQty']
+            
+            order.productClass = PRODUCT_OPTION
+        
+        if data['withdrawQty']:
+            order.status = STATUS_CANCELLED
+        
+        # 推送
+        self.gateway.onOrder(copy(order))
     
     #----------------------------------------------------------------------
     def onRspSOPUserLogin(self, data, error):
@@ -922,11 +1088,11 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspSOPEntrustOrder(self, data, error):
-        """发单错误"""
+        """期权发单错误"""
         if error:
             order = VtOrderData()
             order.gatewayName = self.gatewayName
-            order.orderID = error['localOrderID']
+            order.orderID = str(error['localOrderID'])
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             order.status = STATUS_REJECTED      
             self.gateway.onOrder(order)
@@ -974,7 +1140,7 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspSOPQryPosition(self, data, error, flag):
-        """持仓查询回报"""
+        """期权持仓查询回报"""
         if not data:
             return
         
@@ -999,7 +1165,7 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspSOPQryCapitalAccountInfo(self, data, error):
-        """资金账户查询回报"""
+        """期权资金账户查询回报"""
         if not data:
             return
         
@@ -1007,7 +1173,7 @@ class SecTdApi(TdApi):
         account.gatewayName = self.gatewayName
     
         # 账户代码
-        account.accountID = data['accountID']
+        account.accountID = data['accountID'] + '_Option'
         account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
     
         # 数值相关
@@ -1118,7 +1284,7 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onSOPEntrustOrderRtn(self, data):
-        """报单回报"""
+        """期权报单回报"""
         # 更新最大报单编号
         newLocalID = data['localOrderID']
         self.localID = max(self.localID, newLocalID)
@@ -1146,6 +1312,8 @@ class SecTdApi(TdApi):
             order.price = data['entrustPrice']
             order.totalVolume = data['entrustQty']
             order.orderTime = data['entrustTime']
+            
+            order.productClass = PRODUCT_OPTION
         
         # 确定委托状态
         if order.totalVolume == order.tradedVolume:
@@ -1160,6 +1328,7 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onSOPTradeRtn(self, data):
+        """期权成交推送"""
         # 更新成交信息
         trade = VtTradeData()
         trade.gatewayName = self.gatewayName
@@ -1204,7 +1373,7 @@ class SecTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onSOPWithdrawOrderRtn(self, data):
-        """撤单推送"""
+        """期权撤单推送"""
         # 更新最大报单编号
         newLocalID = data['localOrderID']
         self.localID = max(self.localID, int(newLocalID))
@@ -1232,6 +1401,8 @@ class SecTdApi(TdApi):
             order.price = data['entrustPrice']
             order.tradedVolume = data['tradeQty']
             order.totalVolume = data['tradeQty'] + data['withdrawQty']
+            
+            order.productClass = PRODUCT_OPTION
         
         if data['withdrawQty']:
             order.status = STATUS_CANCELLED
@@ -1406,4 +1577,10 @@ class SecTdApi(TdApi):
 
 
 
+#----------------------------------------------------------------------
+def checkOptionSymbol(symbol):
+    """检查是否为期权代码"""
+    if len(symbol) > 6:
+        return True
+    return False
     

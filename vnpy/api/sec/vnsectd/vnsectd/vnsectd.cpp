@@ -6415,7 +6415,7 @@ int TdApi::reqStockEntrustOrder(dict req)
 	getLong(req, "localOrderID", &myreq.localOrderID);
 	getString(req, "exchangeID", myreq.exchangeID);
 	getString(req, "accountID", myreq.accountID);
-	getString(req, "accountID", myreq.accountID);
+	getDouble(req, "entrustPrice", &myreq.entrustPrice);
 	getInt(req, "entrustDirection", &myreq.entrustDirection);
 	getInt(req, "entrustQty", &myreq.entrustQty);
 	getString(req, "securityID", myreq.securityID);
