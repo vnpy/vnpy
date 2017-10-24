@@ -309,6 +309,18 @@ class BacktestingEngine(object):
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
+            # 持仓量不足
+            if order.offset == OFFSET_CLOSE:
+                if order.direction == DIRECTION_LONG:   # ACTION = COVER
+                    if self.shortPos < order.totalVolume:
+                        del self.workingLimitOrderDict[orderID]
+                        continue
+
+                if order.direction == DIRECTION_SHORT:  # ACTION = SELL
+                    if self.longPos < order.totalVolume:
+                        del self.workingLimitOrderDict[orderID]
+                        continue
+
             # 推送委托进入队列（未成交）的状态更新
             if not order.status:
                 order.status = STATUS_NOTTRADED
@@ -381,6 +393,19 @@ class BacktestingEngine(object):
         
         # 遍历停止单字典中的所有停止单
         for stopOrderID, so in self.workingStopOrderDict.items():
+            # 持仓量不足
+            if so.offset == OFFSET_CLOSE:
+
+                if so.direction == DIRECTION_LONG:   # SCTION = COVER
+                    if self.shortPos < so.volume:
+                        del self.workingLimitOrderDict[orderID]
+                        continue
+
+                if so.direction == DIRECTION_SHORT:  # ACTION = SELL
+                    if self.longPos < so.volume:
+                        del self.workingLimitOrderDict[orderID]
+                        continue
+
             # 判断是否会成交
             buyCross = so.direction==DIRECTION_LONG and so.price<=buyCrossPrice
             sellCross = so.direction==DIRECTION_SHORT and so.price>=sellCrossPrice
