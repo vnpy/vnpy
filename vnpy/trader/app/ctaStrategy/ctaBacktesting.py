@@ -395,15 +395,14 @@ class BacktestingEngine(object):
         for stopOrderID, so in self.workingStopOrderDict.items():
             # 持仓量不足
             if so.offset == OFFSET_CLOSE:
-
-                if so.direction == DIRECTION_LONG:   # SCTION = COVER
+                if so.direction == DIRECTION_LONG:   # ACTION = COVER
                     if self.shortPos < so.volume:
-                        del self.workingLimitOrderDict[orderID]
+                        del self.workingStopOrderDict[stopOrderID]
                         continue
 
                 if so.direction == DIRECTION_SHORT:  # ACTION = SELL
                     if self.longPos < so.volume:
-                        del self.workingLimitOrderDict[orderID]
+                        del self.workingStopOrderDict[stopOrderID]
                         continue
 
             # 判断是否会成交
