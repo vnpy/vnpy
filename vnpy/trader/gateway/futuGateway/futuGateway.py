@@ -201,8 +201,8 @@ class FutuGateway(VtGateway):
                 return RET_OK, content  
 
         # 只有港股实盘交易才需要解锁
-            if self.market == 'HK' and self.env == 0:
-                self.tradeCtx.unlock_trade(self.password)
+        if self.market == 'HK' and self.env == 0:
+            self.tradeCtx.unlock_trade(self.password)
         
         # 设置回调处理对象
         self.tradeCtx.set_handler(OrderHandler())
@@ -231,7 +231,7 @@ class FutuGateway(VtGateway):
         code, data = self.tradeCtx.place_order(orderReq.price, orderReq.volume, 
                                                orderReq.symbol, side, 
                                                priceType, self.env,
-                                               orderpush=True, dealpush=True)
+                                               order_deal_push=True)
         
         if code:
             self.writeError(code, u'委托失败：%s' %data)
@@ -303,7 +303,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
-        code, data = self.tradeCtx.position_list_query(self.env)
+        code, data = self.tradeCtx.position_list_query(envtype=self.env)
         
         if code:
             self.writeError(code, u'查询持仓失败：%s' %data)
@@ -329,13 +329,13 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryOrder(self):
         """查询委托"""
-        code, data = self.tradeCtx.order_list_query("", self.env)
+        code, data = self.tradeCtx.order_list_query("", envtype=self.env)
         
         if code:
             self.writeError(code, u'查询委托失败：%s' %data)
             return
         
-        self.processOrder(data)
+        self.processOrder(data, qry=True)
         self.writeLog(u'委托查询成功')
     
     #----------------------------------------------------------------------
@@ -453,7 +453,7 @@ class FutuGateway(VtGateway):
         self.onTick(tick)
     
     #----------------------------------------------------------------------
-    def processOrder(self, data):
+    def processOrder(self, data, qry=False):
         """处理委托推送"""
         for ix, row in data.iterrows():
             order = VtOrderData()
@@ -475,6 +475,11 @@ class FutuGateway(VtGateway):
             order.status = statusMapReverse.get(str(row['status']), STATUS_UNKNOWN)
             order.direction = directionMapReverse[str(row['order_side'])]
             self.onOrder(order)        
+            
+            if qry:
+                self.tradeCtx.subscribe_order_deal_push(row['orderid'], 
+                                                        order_deal_push=True, 
+                                                        envtype=self.env)
     
     #----------------------------------------------------------------------
     def processDeal(self, data):
