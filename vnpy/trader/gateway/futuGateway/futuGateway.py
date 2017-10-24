@@ -354,9 +354,9 @@ class FutuGateway(VtGateway):
     def close(self):
         """关闭"""
         if self.quoteCtx:
-            self.quoteCtx.stop()
+            self.quoteCtx.close()
         if self.tradeCtx:
-            self.tradeCtx.stop()
+            self.tradeCtx.close()
         
     #----------------------------------------------------------------------
     def initQuery(self):
