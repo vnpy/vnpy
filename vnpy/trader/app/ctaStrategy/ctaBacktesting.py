@@ -95,6 +95,12 @@ class BacktestingEngine(object):
         
         # 日线回测结果计算用
         self.dailyResultDict = OrderedDict()
+
+        # 持仓盁亏计算
+        self.longAvgCost = 0
+        self.shortAvgCost = 0
+        self.longPos = 0
+        self.shortPos = 0
     
     #------------------------------------------------
     # 通用功能
@@ -259,6 +265,7 @@ class BacktestingEngine(object):
         
         self.crossLimitOrder()      # 先撮合限价单
         self.crossStopOrder()       # 再撮合停止单
+        self.updatePostion()        # 更新持仓数据
         self.strategy.onBar(bar)    # 推送K线到策略中
         
         self.updateDailyClose(bar.datetime, bar.close)
@@ -271,6 +278,7 @@ class BacktestingEngine(object):
         
         self.crossLimitOrder()
         self.crossStopOrder()
+        self.updatePostion()        # 更新持仓数据
         self.strategy.onTick(tick)
         
         self.updateDailyClose(tick.datetime, tick.lastPrice)
@@ -301,6 +309,18 @@ class BacktestingEngine(object):
         
         # 遍历限价单字典中的所有限价单
         for orderID, order in self.workingLimitOrderDict.items():
+            # 持仓量不足
+            if order.offset == OFFSET_CLOSE:
+                if order.direction == DIRECTION_LONG:   # ACTION = COVER
+                    if self.shortPos < order.totalVolume:
+                        del self.workingLimitOrderDict[orderID]
+                        continue
+
+                if order.direction == DIRECTION_SHORT:  # ACTION = SELL
+                    if self.longPos < order.totalVolume:
+                        del self.workingLimitOrderDict[orderID]
+                        continue
+
             # 推送委托进入队列（未成交）的状态更新
             if not order.status:
                 order.status = STATUS_NOTTRADED
@@ -354,7 +374,10 @@ class BacktestingEngine(object):
                 
                 # 从字典中删除该限价单
                 del self.workingLimitOrderDict[orderID]
-                
+
+                # 更新持仓数据
+                self.updatePostion(trade=trade)
+
     #----------------------------------------------------------------------
     def crossStopOrder(self):
         """基于最新数据撮合停止单"""
@@ -370,6 +393,18 @@ class BacktestingEngine(object):
         
         # 遍历停止单字典中的所有停止单
         for stopOrderID, so in self.workingStopOrderDict.items():
+            # 持仓量不足
+            if so.offset == OFFSET_CLOSE:
+                if so.direction == DIRECTION_LONG:   # ACTION = COVER
+                    if self.shortPos < so.volume:
+                        del self.workingStopOrderDict[stopOrderID]
+                        continue
+
+                if so.direction == DIRECTION_SHORT:  # ACTION = SELL
+                    if self.longPos < so.volume:
+                        del self.workingStopOrderDict[stopOrderID]
+                        continue
+
             # 判断是否会成交
             buyCross = so.direction==DIRECTION_LONG and so.price<=buyCrossPrice
             sellCross = so.direction==DIRECTION_SHORT and so.price>=sellCrossPrice
@@ -428,7 +463,50 @@ class BacktestingEngine(object):
                 self.strategy.onStopOrder(so)
                 self.strategy.onOrder(order)
                 self.strategy.onTrade(trade)
-    
+
+                # 更新持仓数据
+                self.updatePostion(trade=trade)
+
+
+    #----------------------------------------------------------------------
+    def updatePostion(self, trade=None):
+        """持仓监控"""
+        if trade:
+            if trade.direction == DIRECTION_LONG:
+                # 做多单
+                if trade.offset == OFFSET_OPEN:
+                    longCost = self.longAvgCost * self.longPos
+                    longCost += trade.price * trade.volume
+                    # 平均成本
+                    self.longPos += trade.volume
+                    self.longAvgCost = round(longCost / float(self.longPos), 2)
+                else:
+                    self.shortPos -= trade.volume
+            else:
+                # 做空单
+                if trade.offset == OFFSET_OPEN:
+                    shortCost = self.shortAvgCost * self.shortPos
+                    shortCost += trade.price * trade.volume
+                    # 平均成本
+                    self.shortPos += trade.volume
+                    self.shortAvgCost = round(shortCost / float(self.shortPos), 2)
+                else:
+                    self.longPos -= trade.volume
+
+        # 多/空仓收益
+        if self.mode == self.BAR_MODE:
+            lastPrice = self.bar.close
+        else:
+            lastPrice = self.tick.lastPrice
+
+        longProfit = (lastPrice - self.longAvgCost) * self.longPos * self.size
+        shortProfit = (self.shortAvgCost - lastPrice) * self.shortPos * self.size
+
+        self.strategy.longPos = self.longPos
+        self.strategy.shortPos = self.shortPos
+        self.strategy.positionProfit_long = longProfit
+        self.strategy.positionProfit_short = shortProfit
+
     #------------------------------------------------
     # 策略接口相关
     #------------------------------------------------      
