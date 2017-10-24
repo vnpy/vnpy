@@ -470,8 +470,13 @@ class BacktestingEngine(object):
                     self.longPos -= trade.volume
 
         # 多/空仓收益
-        longProfit = (self.tick.lastPrice - self.longAvgCost) * self.longPos * self.size
-        shortProfit = (self.shortAvgCost - self.tick.lastPrice) * self.shortPos * self.size
+        if self.mode == self.BAR_MODE:
+            lastPrice = self.bar.close
+        else:
+            lastPrice = self.tick.lastPrice
+
+        longProfit = (lastPrice - self.longAvgCost) * self.longPos * self.size
+        shortProfit = (self.shortAvgCost - lastPrice) * self.shortPos * self.size
 
         self.strategy.longPos = self.longPos
         self.strategy.shortPos = self.shortPos
