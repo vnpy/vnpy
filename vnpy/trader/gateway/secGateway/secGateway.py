@@ -398,7 +398,7 @@ class SecMdApi(MdApi):
         tick.lastPrice = data['latestPrice']
         tick.volume = data['tradeQty'] 
         tick.time = data['updateTime']
-        tick.date = data['tradingDay']
+        tick.date = str(data['tradingDay'])
     
         tick.openPrice = data['openPrice']
         tick.highPrice = data['highestPrice']
@@ -448,7 +448,7 @@ class SecMdApi(MdApi):
         tick.volume = data['tradeQty']
         tick.openInterest = data['positionQty']
         tick.time = data['updateTime']
-        tick.date = data['tradingDay']
+        tick.date = str(data['tradingDay'])
     
         tick.openPrice = data['openPrice']
         tick.highPrice = data['highestPrice']

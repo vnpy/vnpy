@@ -65,6 +65,8 @@ productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
 productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
 productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
+productClassMapReverse[defineDict["THOST_FTDC_PC_ETFOption"]] = PRODUCT_OPTION
+productClassMapReverse[defineDict["THOST_FTDC_PC_Stock"]] = PRODUCT_EQUITY
 
 # 委托状态映射
 statusMap = {}
@@ -827,8 +829,8 @@ class CtpTdApi(TdApi):
         contract.priceTick = data['PriceTick']
         contract.strikePrice = data['StrikePrice']
         contract.underlyingSymbol = data['UnderlyingInstrID']
-
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
+        contract.expiryDate = data['ExpireDate']
         
         # 期权类型
         if contract.productClass is PRODUCT_OPTION:
