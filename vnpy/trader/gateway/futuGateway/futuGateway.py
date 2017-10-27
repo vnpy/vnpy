@@ -459,6 +459,10 @@ class FutuGateway(VtGateway):
     def processOrder(self, data, qry=False):
         """处理委托推送"""
         for ix, row in data.iterrows():
+            # 如果状态是已经删除，则直接忽略
+            if str(row['status']) == '7':
+                continue
+            
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
