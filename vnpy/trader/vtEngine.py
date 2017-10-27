@@ -283,6 +283,11 @@ class MainEngine(object):
         return self.dataEngine.getAllWorkingOrders()
     
     #----------------------------------------------------------------------
+    def getAllPositionDetails(self):
+        """查询本地持仓缓存细节"""
+        return self.dataEngine.getAllPositionDetails()
+    
+    #----------------------------------------------------------------------
     def getAllGatewayDetails(self):
         """查询引擎中所有底层接口的信息"""
         return self.gatewayDetailList
@@ -420,7 +425,7 @@ class DataEngine(object):
         # 更新到持仓细节中
         detail = self.getPositionDetail(pos.vtSymbol)
         detail.updatePosition(pos)                
-    
+        
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约对象"""
@@ -489,6 +494,11 @@ class DataEngine(object):
                         detail.mode = detail.MODE_TDPENALTY
                 
         return detail
+    
+    #----------------------------------------------------------------------
+    def getAllPositionDetails(self):
+        """查询所有本地持仓缓存细节"""
+        return self.detailDict.values()
     
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
