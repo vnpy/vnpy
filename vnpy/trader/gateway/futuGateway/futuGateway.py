@@ -324,6 +324,9 @@ class FutuGateway(VtGateway):
             pos.positionProfit = float(row['pl_val'])
             pos.frozen = int(row['qty']) - int(row['can_sell_qty'])
             
+            if pos.price < 0: pos.price = 0 
+            if pos.positionProfit > 100000000: pos.positionProfit = 0 
+            
             self.onPosition(pos)
             
     #----------------------------------------------------------------------
