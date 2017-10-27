@@ -20,7 +20,7 @@ class JsEngineManager(QtWidgets.QWidget):
         """Constructor"""
         super(JsEngineManager, self).__init__(parent)
         
-        self.jsEngine = drEngine
+        self.jsEngine = jsEngine
         self.eventEngine = eventEngine
         
         self.initUi()
