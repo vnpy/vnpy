@@ -340,7 +340,8 @@ class MainEngine(object):
     #----------------------------------------------------------------------
     def registerLogEvent(self, eventType):
         """注册日志事件监听"""
-        self.eventEngine.register(eventType, self.logEngine.processLogEvent)
+        if self.logEngine:
+            self.eventEngine.register(eventType, self.logEngine.processLogEvent)
     
     #----------------------------------------------------------------------
     def convertOrderReq(self, req):
