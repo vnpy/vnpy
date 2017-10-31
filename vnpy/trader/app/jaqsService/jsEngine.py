@@ -192,7 +192,7 @@ class JsEngine(object):
     #----------------------------------------------------------------------
     def onQueryOrder(self, clientId, req):
         """查询委托"""
-        l = self.mainEngine.getAllWorkingOrders()
+        l = self.mainEngine.getAllOrders()
         
         result = defaultdict(list)
         for order in l:

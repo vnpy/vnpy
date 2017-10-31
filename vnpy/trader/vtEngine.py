@@ -283,6 +283,11 @@ class MainEngine(object):
         return self.dataEngine.getAllWorkingOrders()
     
     #----------------------------------------------------------------------
+    def getAllOrders(self):
+        """查询所有委托"""
+        return self.dataEngine.getAllOrders()
+    
+    #----------------------------------------------------------------------
     def getAllPositionDetails(self):
         """查询本地持仓缓存细节"""
         return self.dataEngine.getAllPositionDetails()
@@ -468,6 +473,11 @@ class DataEngine(object):
     def getAllWorkingOrders(self):
         """查询所有活动委托（返回列表）"""
         return self.workingOrderDict.values()
+    
+    #----------------------------------------------------------------------
+    def getAllOrders(self):
+        """获取所有委托"""
+        return self.orderDict.values()
     
     #----------------------------------------------------------------------
     def getPositionDetail(self, vtSymbol):
