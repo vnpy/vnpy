@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+print 'load trader/language/*'
 # 默认设置
 from chinese import text, constant
 
