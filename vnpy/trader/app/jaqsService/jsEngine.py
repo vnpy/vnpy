@@ -229,22 +229,26 @@ class JsEngine(object):
         params = req['params']
         s, e = params['security'].split('.')
         
-        vor = VtOrderReq()
-        vor.symbol = s
-        vor.exchange = EXCHANGE_MAP[e]
-        vor.direction, vor.offset = ACTION_MAP[params['action']]
-        vor.price = params['price']
-        vor.volume = params['size']
-        
-        contract = self.mainEngine.getContract(contract)
-        
-        vtOrderID = self.mainEngine.sendOrder(vor, contract.gatewayName)
-        
-        error = [0, '']
+        contract = self.mainEngine.getContract(s)        
+
+        if not contract:
+            vtOrderID = ''
+            error = [-1, u'委托失败，找不到合约%s' %params['security']]
+        else:
+            vor = VtOrderReq()
+            vor.symbol = s
+            vor.exchange = EXCHANGE_MAP[e]
+            vor.direction, vor.offset = ACTION_MAP[params['action']]
+            vor.price = float(params['price'])
+            vor.volume = int(params['size'])
+            vor.priceType = PRICETYPE_LIMITPRICE
+            
+            vtOrderID = self.mainEngine.sendOrder(vor, contract.gatewayName)
+            error = [0, '']
         
         self.server.send_rsp(clientId, req, vtOrderID, error)
         
-        self.writeLog(u'发出响应：%s' %result)
+        self.writeLog(u'发出响应：%s' %vtOrderID)
     
     #----------------------------------------------------------------------
     def onCancelOrder(self, clientId, req):
