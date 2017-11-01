@@ -67,7 +67,7 @@ class JsEngine(object):
     #----------------------------------------------------------------------
     def initCallback(self):
         """初始化回调函数映射"""
-        self.cbDict['sys.heartbeat'] = self.onHeartbeat
+        self.cbDict['.sys.heartbeat'] = self.onHeartbeat
         self.cbDict['auth.login'] = self.onLogin
         self.cbDict['auth.use_strategy'] = self.onUseStrategy
         self.cbDict['oms.query_position'] = self.onQueryPosition
@@ -132,7 +132,7 @@ class JsEngine(object):
         """使用策略"""
         result = req['params']['account_id']
         error = [0, '']
-        self.server.send_rsp(client_id, req, result, error)
+        self.server.send_rsp(clientId, req, result, error)
         
         self.writeLog(u'发出响应：%s' %result)
     
@@ -185,7 +185,7 @@ class JsEngine(object):
                 
         error = [0, '']
         
-        self.server.send_rsp(client_id, req, result, error)
+        self.server.send_rsp(clientId, req, result, error)
         
         self.writeLog(u'发出响应：%s' %result)
     
