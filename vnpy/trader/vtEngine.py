@@ -16,7 +16,7 @@ from vnpy.trader.language import text
 #from vnpy.trader.app.riskManager.rmEngine import RmEngine
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtGateway import *
-
+from vnpy.trader.app import (ctaStrategy, riskManager)
 try:
     from util_mail import *
 except:
@@ -94,6 +94,12 @@ class MainEngine(object):
 
         # 将应用引擎实例添加到主引擎的属性中
         self.__dict__[appName] = self.appDict[appName]
+
+        # 兼容旧的self.ctaEngine/self.rmEngine
+        if appName == ctaStrategy.appName:
+            self.ctaEngine = self.appDict[appName]
+        elif appName == riskManager.appName:
+            self.rmEngine = self.appDict[appName]
 
         # 保存应用信息
         d = {
@@ -446,7 +452,8 @@ class MainEngine(object):
         self.ctaEngine.clearData()
 
     def saveData(self):
-        self.ctaEngine.saveStrategyData()
+        if self.ctaEngine:
+            self.ctaEngine.saveStrategyData()
 
     def initStrategy(self,name, force = False):
         if not self.ctaEngine:

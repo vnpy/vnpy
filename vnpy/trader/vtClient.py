@@ -27,11 +27,12 @@ class VtClient(RpcClient):
         
         self.eventEngine = eventEngine
         
-        self.usePickle()
+        #self.usePickle()
         
     #----------------------------------------------------------------------
     def callback(self, topic, data):
-        """回调函数"""
+        """subscribe 回调函数"""
+
         self.eventEngine.put(data)
 
 
@@ -47,7 +48,7 @@ class ClientEngine(object):
         
         # 扩展模块
         self.ctaEngine = CtaEngine(self, self.eventEngine)
-        self.drEngine = DrEngine(self, self.eventEngine)
+        #self.drEngine = DrEngine(self, self.eventEngine)
         self.rmEngine = RmEngine(self, self.eventEngine)
     
     #----------------------------------------------------------------------  
@@ -84,7 +85,15 @@ class ClientEngine(object):
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""
         self.client.qryPosition(gatewayName)
-        
+
+    def checkGatewayStatus(self,gatewayName):
+        """检查服务端特定接口的连接状态"""
+        return self.client.checkGatewayStatus(gatewayName)
+
+    def qryStatus(self):
+        """查询服务端的状态"""
+        self.client.qryStatus()
+
     #----------------------------------------------------------------------
     def exit(self):
         """退出程序前调用，保证正常退出"""  
@@ -95,7 +104,7 @@ class ClientEngine(object):
         self.client.stop()        
 
         # 停止数据记录引擎
-        self.drEngine.stop()
+        #self.drEngine.stop()
     
     #----------------------------------------------------------------------
     def writeLog(self, content):
@@ -157,12 +166,20 @@ class ClientEngine(object):
 
     def clearData(self):
         """清空数据引擎的数据"""
-        self.dataEngine.clearData()
+        #self.dataEngine.clearData()
         self.ctaEngine.clearData()
 
     def saveData(self):
         self.ctaEngine.saveStrategyData()
 
+    def initStrategy(self,name,force = False):
+        self.client.initStrategy(name, force=force)
+
+    def startStrategy(self,name):
+        self.client.startStrategy(name)
+
+    def stopStrategy(self,name):
+        self.client.stopStrategy(name)
 #----------------------------------------------------------------------
 def main():
     """客户端主程序入口"""
@@ -179,8 +196,8 @@ def main():
     eventEngine.start(timer=False)
 
     # 创建客户端
-    reqAddress = 'tcp://localhost:2014'
-    subAddress = 'tcp://localhost:2016'
+    reqAddress = 'tcp://localhost:2114'
+    subAddress = 'tcp://localhost:2116'
     client = VtClient(reqAddress, subAddress, eventEngine)
 
     # 这里是订阅所有的publish event，也可以指定。

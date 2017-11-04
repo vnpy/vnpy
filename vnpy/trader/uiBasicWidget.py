@@ -368,7 +368,9 @@ class BasicMonitor(QtWidgets.QTableWidget):
 
             # 获取想要保存的文件名
             path = QtWidgets.QFileDialog.getSaveFileName(self, vtText.SAVE_DATA, '', 'CSV(*.csv)')
-
+            if len(path)<1:
+                return
+            path = path[0]
         log = VtLogData()
         log.gatewayName = u'-'
 

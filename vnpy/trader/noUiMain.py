@@ -1,9 +1,18 @@
 # encoding: UTF-8
 
 import os
+import sys
 
+import ctypes
+from datetime import datetime, timedelta, date
+from time import sleep
+from threading import Thread
+
+# 将repostory的目录i，作为根目录，添加到系统环境中。
+ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
+sys.path.append(ROOT_PATH)
 from setup_logger import setup_logger
-from vnpy.trader.simple_monitor import *
+from vnpy.trader.util_monitor import *
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.gateway import ctpGateway
 from threading import Thread
@@ -34,9 +43,12 @@ class NoUiMain(object):
 
         self.last_dt = datetime.now()
 
+        # 创建事件引擎
+        ee = EventEngine2()
+
         # 实例化 主引擎
         print u'instance mainengine'
-        self.mainEngine = MainEngine()
+        self.mainEngine = MainEngine(ee)
 
         self.mainEngine.addGateway(ctpGateway, self.gateway_name)
 
@@ -155,7 +167,7 @@ def run_noui():
 
 
 if __name__ == '__main__':
-    #from PyQt4 import QtGui
+    #from qtpy import QtGui
     # 主程序
     thread = Thread(target=run_noui, args=())
     thread.start()

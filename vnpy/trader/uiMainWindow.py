@@ -158,8 +158,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # 算法相关
         #algoMenu = menubar.addMenu(u'算法')
         #algoMenu.addAction(ctaAction)
-        #algoMenu.addAction(spreadAction)
-        #algoMenu.addAction(kChart)
+        spreadAction = self.createAction(u'网格套利',self.openSpread)
+        appMenu.addAction(spreadAction)
+        #appMenu.addAction(kChart)
 
         # 帮助
         helpMenu = menubar.addMenu(vtText.HELP)
@@ -207,7 +208,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.statusLabel.setText(info)
             if self.connectGatewayDict:
-                s = u''.join(str(e) for e in self.connectGatewayDict.values())
+                s = u','.join(str(e) for e in self.connectGatewayDict.values())
 
                 if not self.connected:
                     s = s + u' [已断开]'
@@ -248,7 +249,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # 交易日收盘后保存所有委托记录，
             dt = datetime.now()
             today = datetime.now().strftime('%y%m%d')
-            if dt.hour == 15 and dt.minute == 1 and len(self.connectGatewayDict) > 0 and today!=self.orderSaveDate:
+            if dt.hour == 15 and dt.minute == 16 and len(self.connectGatewayDict) > 0 and today!=self.orderSaveDate:
                 self.orderSaveDate = today
                 self.mainEngine.writeLog(u'保存所有委托记录')
                 orderfile = os.getcwd() +'/orders/{0}.csv'.format(self.orderSaveDate)
@@ -388,10 +389,16 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         try:
+            if self.mainEngine.ctaEngine is None:
+                print u'not init Cta Engine'
+                return
+
             from vnpy.trader.app.ctaStrategy.uiSpreadTrade import SpreadTradeManager
             self.widgetDict['spread'] = SpreadTradeManager(self.mainEngine.ctaEngine, self.eventEngine)
             self.widgetDict['spread'].show()
         except Exception as ex:
+            print "Unexpected error:", sys.exc_info()[0]
+            traceback.print_exc()
             return
 
     # ----------------------------------------------------------------------
