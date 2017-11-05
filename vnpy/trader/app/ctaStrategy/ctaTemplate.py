@@ -448,7 +448,7 @@ class ArrayManager(object):
         if not self.inited and self.count >= self.size:
             self.inited = True
         
-        self.openArray[0:self.size-1] = self.closeArray[1:self.size]
+        self.openArray[0:self.size-1] = self.openArray[1:self.size]
         self.highArray[0:self.size-1] = self.highArray[1:self.size]
         self.lowArray[0:self.size-1] = self.lowArray[1:self.size]
         self.closeArray[0:self.size-1] = self.closeArray[1:self.size]
