@@ -7,4 +7,4 @@ appName = 'OptionMaster'
 appDisplayName = u'OptionMaster'
 appEngine = None
 appWidget = None
-appIco = 'rm.ico'
+appIco = 'om.ico'

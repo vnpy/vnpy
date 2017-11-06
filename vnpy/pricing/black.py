@@ -68,7 +68,7 @@ def calculateTheta(f, k, r, t, v, cp):
     """计算Theta值"""
     price1 = calculatePrice(f, k, r, t*STEP_UP, v, cp)
     price2 = calculatePrice(f, k, r, t*STEP_DOWN, v, cp)
-    theta = (price1 - price2) * (t * STEP_DIFF * 240)
+    theta = -(price1 - price2) / (t * STEP_DIFF * 240)
     return theta
 
 #----------------------------------------------------------------------
@@ -76,7 +76,7 @@ def calculateVega(f, k, r, t, v, cp):
     """计算Vega值"""
     price1 = calculatePrice(f, k, r, t, v*STEP_UP, cp)
     price2 = calculatePrice(f, k, r, t, v*STEP_DOWN, cp)
-    vega = (price1 - price2) / (v * STEP_DIFF * 100)
+    vega = (price1 - price2) / (v * STEP_DIFF * 100) 
     return vega
 
 #----------------------------------------------------------------------
