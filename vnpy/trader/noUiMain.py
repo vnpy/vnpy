@@ -16,6 +16,7 @@ from vnpy.trader.util_monitor import *
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.gateway import ctpGateway
 from threading import Thread
+from vnpy.trader.app import (ctaStrategy, riskManager)
 
 setup_logger(debug=True)
 # ----------------------------------------------------------------------
@@ -51,6 +52,12 @@ class NoUiMain(object):
         self.mainEngine = MainEngine(ee)
 
         self.mainEngine.addGateway(ctpGateway, self.gateway_name)
+
+        # 添加应用
+        self.mainEngine.addApp(ctaStrategy)
+        self.mainEngine.addApp(riskManager)
+
+
 
     def trade_off(self):
         """检查现在是否为非交易时间"""
