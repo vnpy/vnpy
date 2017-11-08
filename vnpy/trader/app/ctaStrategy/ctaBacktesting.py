@@ -956,11 +956,8 @@ class BacktestingEngine(object):
         return resultDf
     
     #----------------------------------------------------------------------
-    def showDailyResult(self, df=None):
-        """显示按日统计的交易结果"""
-        if df is None:
-            df = self.calculateDailyResult()
-
+    def calculateDailyStatistics(self, df):
+        """计算按日统计的结果"""
         df['balance'] = df['netPnl'].cumsum() + self.capital
         df['return'] = (np.log(df['balance']) - np.log(df['balance'].shift(1))).fillna(0)
         df['highlevel'] = df['balance'].rolling(min_periods=1,window=len(df),center=False).max()
@@ -1000,37 +997,71 @@ class BacktestingEngine(object):
             sharpeRatio = dailyReturn / returnStd * np.sqrt(240)
         else:
             sharpeRatio = 0
+            
+        # 返回结果
+        result = {
+            'startDate': startDate,
+            'endDate': endDate,
+            'totalDays': totalDays,
+            'profitDays': profitDays,
+            'lossDays': lossDays,
+            'endBalance': endBalance,
+            'maxDrawdown': maxDrawdown,
+            'totalNetPnl': totalNetPnl,
+            'dailyNetPnl': dailyNetPnl,
+            'totalCommission': totalCommission,
+            'dailyCommission': dailyCommission,
+            'totalSlippage': totalSlippage,
+            'dailySlippage': dailySlippage,
+            'totalTurnover': totalTurnover,
+            'dailyTurnover': dailyTurnover,
+            'totalTradeCount': totalTradeCount,
+            'dailyTradeCount': dailyTradeCount,
+            'totalReturn': totalReturn,
+            'dailyReturn': dailyReturn,
+            'returnStd': returnStd,
+            'sharpeRatio': sharpeRatio
+        }
         
+        return df, result
+    
+    #----------------------------------------------------------------------
+    def showDailyResult(self, df=None, result=None):
+        """显示按日统计的交易结果"""
+        if df is None:
+            df = self.calculateDailyResult()
+            df, result = self.calculateDailyStatistics(df)
+            
         # 输出统计结果
         self.output('-' * 30)
-        self.output(u'首个交易日：\t%s' % startDate)
-        self.output(u'最后交易日：\t%s' % endDate)
+        self.output(u'首个交易日：\t%s' % result['startDate'])
+        self.output(u'最后交易日：\t%s' % result['endDate'])
         
-        self.output(u'总交易日：\t%s' % totalDays)
-        self.output(u'盈利交易日\t%s' % profitDays)
-        self.output(u'亏损交易日：\t%s' % lossDays)
+        self.output(u'总交易日：\t%s' % result['totalDays'])
+        self.output(u'盈利交易日\t%s' % result['profitDays'])
+        self.output(u'亏损交易日：\t%s' % result['lossDays'])
         
         self.output(u'起始资金：\t%s' % self.capital)
-        self.output(u'结束资金：\t%s' % formatNumber(endBalance))
+        self.output(u'结束资金：\t%s' % formatNumber(result['endBalance']))
     
-        self.output(u'总收益率：\t%s' % formatNumber(totalReturn))
-        self.output(u'总盈亏：\t%s' % formatNumber(totalNetPnl))
-        self.output(u'最大回撤: \t%s' % formatNumber(maxDrawdown))      
+        self.output(u'总收益率：\t%s' % formatNumber(result['totalReturn']))
+        self.output(u'总盈亏：\t%s' % formatNumber(result['totalNetPnl']))
+        self.output(u'最大回撤: \t%s' % formatNumber(result['maxDrawdown']))      
         
-        self.output(u'总手续费：\t%s' % formatNumber(totalCommission))
-        self.output(u'总滑点：\t%s' % formatNumber(totalSlippage))
-        self.output(u'总成交金额：\t%s' % formatNumber(totalTurnover))
-        self.output(u'总成交笔数：\t%s' % formatNumber(totalTradeCount))
+        self.output(u'总手续费：\t%s' % formatNumber(result['totalCommission']))
+        self.output(u'总滑点：\t%s' % formatNumber(result['totalSlippage']))
+        self.output(u'总成交金额：\t%s' % formatNumber(result['totalTurnover']))
+        self.output(u'总成交笔数：\t%s' % formatNumber(result['totalTradeCount']))
         
-        self.output(u'日均盈亏：\t%s' % formatNumber(dailyNetPnl))
-        self.output(u'日均手续费：\t%s' % formatNumber(dailyCommission))
-        self.output(u'日均滑点：\t%s' % formatNumber(dailySlippage))
-        self.output(u'日均成交金额：\t%s' % formatNumber(dailyTurnover))
-        self.output(u'日均成交笔数：\t%s' % formatNumber(dailyTradeCount))
+        self.output(u'日均盈亏：\t%s' % formatNumber(result['dailyNetPnl']))
+        self.output(u'日均手续费：\t%s' % formatNumber(result['dailyCommission']))
+        self.output(u'日均滑点：\t%s' % formatNumber(result['dailySlippage']))
+        self.output(u'日均成交金额：\t%s' % formatNumber(result['dailyTurnover']))
+        self.output(u'日均成交笔数：\t%s' % formatNumber(result['dailyTradeCount']))
         
-        self.output(u'日均收益率：\t%s%%' % formatNumber(dailyReturn))
-        self.output(u'收益标准差：\t%s%%' % formatNumber(returnStd))
-        self.output(u'Sharpe Ratio：\t%s' % formatNumber(sharpeRatio))
+        self.output(u'日均收益率：\t%s%%' % formatNumber(result['dailyReturn']))
+        self.output(u'收益标准差：\t%s%%' % formatNumber(result['returnStd']))
+        self.output(u'Sharpe Ratio：\t%s' % formatNumber(result['sharpeRatio']))
         
         # 绘图
         fig = plt.figure(figsize=(10, 16))
@@ -1225,7 +1256,9 @@ def optimize(strategyClass, setting, targetName,
     
     engine.initStrategy(strategyClass, setting)
     engine.runBacktesting()
-    d = engine.calculateBacktestingResult()
+    
+    df = engine.calculateDailyResult()
+    df, d = engine.calculateDailyStatistics(df)
     try:
         targetValue = d[targetName]
     except KeyError:
