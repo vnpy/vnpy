@@ -211,6 +211,11 @@ class FutuGateway(VtGateway):
         # 启动交易接口
         self.tradeCtx.start()
         
+        # 订阅委托推送
+        self.tradeCtx.subscribe_order_deal_push([], 
+                                               order_deal_push=True, 
+                                               envtype=self.env)
+        
         self.writeLog(u'交易接口连接成功')
     
     #----------------------------------------------------------------------
@@ -338,7 +343,7 @@ class FutuGateway(VtGateway):
             self.writeError(code, u'查询委托失败：%s' %data)
             return
         
-        self.processOrder(data, qry=True)
+        self.processOrder(data)
         self.writeLog(u'委托查询成功')
     
     #----------------------------------------------------------------------
@@ -456,7 +461,7 @@ class FutuGateway(VtGateway):
         self.onTick(tick)
     
     #----------------------------------------------------------------------
-    def processOrder(self, data, qry=False):
+    def processOrder(self, data):
         """处理委托推送"""
         for ix, row in data.iterrows():
             # 如果状态是已经删除，则直接忽略
@@ -482,11 +487,6 @@ class FutuGateway(VtGateway):
             order.status = statusMapReverse.get(str(row['status']), STATUS_UNKNOWN)
             order.direction = directionMapReverse[str(row['order_side'])]
             self.onOrder(order)        
-            
-            if qry:
-                self.tradeCtx.subscribe_order_deal_push(row['orderid'], 
-                                                        order_deal_push=True, 
-                                                        envtype=self.env)
     
     #----------------------------------------------------------------------
     def processDeal(self, data):
