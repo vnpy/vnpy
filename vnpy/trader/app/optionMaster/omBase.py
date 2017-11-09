@@ -6,7 +6,7 @@ from collections import OrderedDict
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtTickData
 
-from .omFunction import getTimeToMaturity
+from .omDate import getTimeToMaturity
 
 
 # 常量定义
