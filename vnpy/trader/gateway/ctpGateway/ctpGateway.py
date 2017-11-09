@@ -743,7 +743,7 @@ class CtpTdApi(TdApi):
         pos.positionProfit += data['PositionProfit']
         
         # 计算持仓均价
-        if pos.position and pos.symbol in self.symbolSizeDict:    
+        if pos.position and size:    
             pos.price = (cost + data['PositionCost']) / (pos.position * size)
         
         # 读取冻结
