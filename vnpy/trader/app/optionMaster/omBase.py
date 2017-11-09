@@ -19,7 +19,7 @@ class OmInstrument(VtTickData):
     """交易合约对象"""
 
     #----------------------------------------------------------------------
-    def __init__(self, contract):
+    def __init__(self, contract, detail):
         """Constructor"""
         super(OmInstrument, self).__init__()
         
@@ -35,9 +35,9 @@ class OmInstrument(VtTickData):
         self.midPrice = EMPTY_FLOAT
         
         # 持仓数据
-        self.longPos = EMPTY_INT
-        self.shortPos = EMPTY_INT
-        self.netPos = EMPTY_INT
+        self.longPos = detail.longPos
+        self.shortPos = detail.shortPos
+        self.netPos = self.longPos - self.shortPos
         
     #----------------------------------------------------------------------
     def newTick(self, tick):
@@ -74,17 +74,7 @@ class OmInstrument(VtTickData):
                 self.longPos -= trade.volume
                 
         self.calculateNetPos()
-    
-    #----------------------------------------------------------------------
-    def newPos(self, pos):
-        """持仓更新"""
-        if pos.direction is DIRECTION_LONG:
-            self.longPos = pos.position
-        else:
-            self.shortPos = pos.position
-            
-        return self.calculateNetPos()
-        
+       
     #----------------------------------------------------------------------
     def calculateNetPos(self):
         """计算净持仓"""
@@ -134,38 +124,9 @@ class OmUnderlying(OmInstrument):
         self.calculatePosGreeks()
     
     #----------------------------------------------------------------------
-    def newPos(self, pos):
-        """持仓更新"""
-        netPosChanged = super(OmUnderlying, self).newPos(pos)
-        if netPosChanged:
-            self.calculatePosGreeks()
-    
-    #----------------------------------------------------------------------
     def calculatePosGreeks(self):
         """计算持仓希腊值"""
         self.posDelta = self.theoDelta * self.netPos    
-
-
-########################################################################
-class OmEquity(OmUnderlying):
-    """股票"""
-
-    #----------------------------------------------------------------------
-    def __init__(self, contract, chainList):
-        """Constructor"""
-        super(OmEquity, self).__init__(contract, chainList)
-
-
-########################################################################
-class OmFutures(OmUnderlying):
-    """期货"""
-
-    #----------------------------------------------------------------------
-    def __init__(self, contract, chainList):
-        """Constructor"""
-        super(OmFutures, self).__init__(contract, chainList)
-        
-        self.expiryDate = contract.expiryDate
 
 
 ########################################################################
@@ -213,7 +174,10 @@ class OmOption(OmInstrument):
         self.posDelta = EMPTY_FLOAT     # 持仓的希腊值（乘以了持仓）
         self.posGamma = EMPTY_FLOAT
         self.posTheta = EMPTY_FLOAT
-        self.posVega = EMPTY_FLOAT        
+        self.posVega = EMPTY_FLOAT 
+        
+        # 期权链
+        self.chain = None
         
     #----------------------------------------------------------------------
     def calculateImpv(self):
@@ -269,13 +233,6 @@ class OmOption(OmInstrument):
         """成交更新"""
         super(OmOption, self).newTrade(trade)
         self.calculatePosGreeks()
-    
-    #----------------------------------------------------------------------
-    def newPos(self, pos):
-        """持仓更新"""
-        netPosChanged = super(OmOption, self).newPos(pos)
-        if netPosChanged:
-            self.calculatePosGreeks()    
 
 
 ########################################################################
@@ -288,9 +245,19 @@ class OmChain(object):
         self.symbol = symbol
         
         # 原始容器
-        self.callDict = OrderedDict((option.symbol, option) for option in callList)
-        self.putDict = OrderedDict((option.symbol, option) for option in putList)
-        self.optionDict = OrderedDict((option.symbol, option) for option in (callList+putList))
+        self.callDict = OrderedDict()
+        self.putDict = OrderedDict()
+        self.optionDict = OrderedDict()
+        
+        for option in callList:
+            option.chain = self
+            self.callDict[option.symbol] = option
+            self.optionDict[option.symbol] = option
+        
+        for option in putList:
+            option.chain = self
+            self.putDict[option.symbol] = option
+            self.optionDict[option.symbol] = option
         
         # 持仓数据
         self.longPos = EMPTY_INT
@@ -316,7 +283,7 @@ class OmChain(object):
         self.posVega = 0
         
         # 遍历汇总
-        for option in self.optionList:
+        for option in self.optionDict.values():
             self.longPos += option.longPos
             self.shortPos += option.shortPos
             
@@ -337,7 +304,7 @@ class OmChain(object):
     #----------------------------------------------------------------------
     def newUnderlyingTick(self):
         """期货行情更新"""
-        for option in self.optionList:
+        for option in self.optionDict.values():
             option.newUnderlyingTick()
             
         self.calculatePosGreeks()
@@ -346,18 +313,30 @@ class OmChain(object):
     def newTrade(self, trade):
         """期权成交更新"""
         option = self.optionDict[trade.symbol]
+        
+        # 缓存旧数据
+        oldLongPos = option.longPos
+        oldShortPos = option.shortPos
+        
+        oldPosValue = option.posValue
+        oldPosDelta = option.posDelta
+        oldPosGamma = option.posGamma
+        oldPosTheta = option.posTheta
+        oldPosVega = option.posVega
+        
+        # 更新到期权s中
         option.newTrade(trade)
         
-        self.calculatePosGreeks()
-    
-    #----------------------------------------------------------------------
-    def newPos(self, pos):
-        """期权持仓更新"""
-        option = self.optionDict[pos.symbol]
-        option.newPos(pos)
+        # 计算持仓希腊值
+        self.longPos = self.longPos - oldLongPos + option.longPos
+        self.shortPos = self.shortPos - oldShortPos+ option.shortPos
+        self.netPos = self.longPos - self.shortPos
         
-        self.calculatePosGreeks()
-
+        self.posValue = self.posValue - oldPosValue + option.posValue
+        self.posDelta = self.posDelta - oldPosDelta + option.posDelta
+        self.posGamma = self.posGamma - oldPosGamma + option.posGamma
+        self.posTheta = self.posTheta - oldPosTheta + option.posTheta
+        self.posVega = self.posVega - oldPosVega + option.posVega
 
 
 ########################################################################
@@ -365,57 +344,33 @@ class OmPortfolio(object):
     """持仓组合"""
 
     #----------------------------------------------------------------------
-    def __init__(self, name):
+    def __init__(self, name, underlyingList, chainList):
         """Constructor"""
         self.name = name
         
         # 原始容器
-        self.futuresDict = OrderedDict()
-        self.equityDict = OrderedDict()
-        self.chainDict = OrderedDict()
-        
-        # 初始化生成的容器
         self.underlyingDict = OrderedDict()
-        self.underlyingList = []
-        self.chainList = []
-        self.contractDict = {}
-        self.optionChainDict = {}   # option symbol: chain object
-        self.optionDict = {}        # option symbol: option object
-        self.optionList = []
+        self.chainDict = OrderedDict()
+        self.optionDict = {}
+        
+        for underlying in underlyingList:
+            self.underlyingDict[underlying.symbol] = underlying
+            
+        for chain in chainList:
+            self.chainDict[chain.symbol] = chain
+            self.optionDict.update(chain.callDict)
+            self.optionDict.update(chain.putDict)
         
         # 持仓数据
         self.longPos = EMPTY_INT
         self.shortPos = EMPTY_INT
         self.netPos = EMPTY_INT
         
+        self.posValue = EMPTY_FLOAT
         self.posDelta = EMPTY_FLOAT
         self.posGamma = EMPTY_FLOAT
         self.posTheta = EMPTY_FLOAT
         self.posVega = EMPTY_FLOAT
-        
-    #----------------------------------------------------------------------
-    def init(self, futuresDict, equityDict, chainDict):
-        """初始化数据结构"""
-        self.futuresDict = futuresDict
-        self.equityDict = equityDict
-        self.chainDict = chainDict
-        
-        self.underlyingDict.update(self.futuresDict)
-        self.underlyingDict.update(self.equityDict)
-        self.underlyingList = self.underlyingDict.values()
-        self.chainList = chainDict.values()
-        
-        self.contractDict.update(self.futuresDict)
-        self.contractDict.update(self.equityDict)
-
-        for chain in self.chainList:
-            self.contractDict.update(chain.callDict)
-            self.contractDict.update(chain.putDict)
-            
-            for option in chain.optionList:
-                self.optionChainDict[option.symbol] = chain
-                self.optionDict[option.symbol] = option
-                self.optionList.append(option)
     
     #----------------------------------------------------------------------
     def calculatePosGreeks(self):
@@ -423,6 +378,8 @@ class OmPortfolio(object):
         self.longPos = 0
         self.shortPos = 0
         self.netPos = 0
+        
+        self.posValue = 0
         self.posDelta = 0
         self.posGamma = 0
         self.posTheta = 0
@@ -435,6 +392,7 @@ class OmPortfolio(object):
             self.longPos += chain.longPos
             self.shortPos += chain.shortPos
             
+            self.posValue += chain.posValue
             self.posDelta += chain.posDelta
             self.posGamma += chain.posGamma
             self.posTheta += chain.posTheta
@@ -445,34 +403,27 @@ class OmPortfolio(object):
     #----------------------------------------------------------------------
     def newTick(self, tick):
         """行情推送"""
-        if tick.symbol in self.optionChainDict:
-            chain = self.optionChainDict[tick.symbol]
+        symbol = tick.symbol
+        
+        if symbol in self.optionDict:
+            chain = self.optionDict[symbol].chain
             chain.newTick(tick)
-        elif tick.symbol in self.underlyingDict:
-            underlying = self.underlyingDict[tick.symbol]
+            self.calculatePosGreeks()
+        elif symbol in self.underlyingDict:
+            underlying = self.underlyingDict[symbol]
             underlying.newTick(tick)
             self.calculatePosGreeks()
     
     #----------------------------------------------------------------------
     def newTrade(self, trade):
         """成交推送"""
-        if trade.symbol in self.optionChainDict:
-            chain = self.optionChainDict[trade.symbol]
+        symbol = trade.symbol
+        
+        if symbol in self.optionDict:
+            chain = self.optionDict[symbol].chain
             chain.newTrade(trade)
-        else:
-            underlying = self.underlyingDict[trade.symbol]
+            self.calculatePosGreeks()
+        elif symbol in self.underlyingDict:
+            underlying = self.underlyingDict[symbol]
             underlying.newTrade(trade)
-        self.calculatePosGreeks()
-            
-    #----------------------------------------------------------------------
-    def newPos(self, pos):
-        """持仓推送"""
-        if pos.symbol in self.optionChainDict:
-            chain = self.optionChainDict[pos.symbol]
-            chain.newPos(pos)
-        elif pos.symbol in self.underlyingDict:
-            underlying = self.underlyingDict[pos.symbol]
-            underlying.newPos(pos)    
-        self.calculatePosGreeks()
-    
-    
+            self.calculatePosGreeks()
