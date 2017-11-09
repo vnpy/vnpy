@@ -62,6 +62,8 @@ class FutuGateway(VtGateway):
         self.quoteCtx = None
         self.tradeCtx = None
         
+        self.host = ''
+        self.ip = 0
         self.market = ''
         self.password = ''
         self.env = 1        # 默认仿真交易
@@ -95,6 +97,19 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
+        # 载入配置
+        try:
+            f = open(self.filePath)
+            setting = json.load(f)
+            self.host = setting['host']
+            self.port = setting['port']
+            self.market = setting['market']
+            self.password = setting['password']
+            self.env = setting['env']
+        except:
+            self.writeLog(u'载入配置文件出错')
+            return
+        
         self.connectQuote()
         self.connectTrade()
         
@@ -119,7 +134,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def connectQuote(self):
         """连接行情功能"""
-        self.quoteCtx = ft.OpenQuoteContext()
+        self.quoteCtx = ft.OpenQuoteContext(self.host, self.port)
         
         # 继承实现处理器类
         class QuoteHandler(StockQuoteHandlerBase):
@@ -156,24 +171,13 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def connectTrade(self):
         """连接交易功能"""
-        # 载入配置
-        try:
-            f = open(self.filePath)
-            setting = json.load(f)
-            self.market = setting['market']
-            self.password = setting['password']
-            self.env = setting['env']
-        except:
-            self.writeLog(u'载入配置文件出错')
-            return
-        
         # 连接交易接口
         if self.market == 'US':
-            self.tradeCtx = ft.OpenUSTradeContext()
+            self.tradeCtx = ft.OpenUSTradeContext(self.host, self.port)
             OrderHandlerBase = USTradeOrderHandlerBase
             DealHandlerBase = USTradeDealHandlerBase
         else:
-            self.tradeCtx = ft.OpenHKTradeContext()
+            self.tradeCtx = ft.OpenHKTradeContext(self.host, self.port)
             OrderHandlerBase = HKTradeOrderHandlerBase
             DealHandlerBase = HKTradeDealHandlerBase          
         
