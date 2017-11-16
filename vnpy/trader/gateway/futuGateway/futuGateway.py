@@ -9,6 +9,7 @@ from collections import OrderedDict
 from threading import Thread
 from time import sleep
 from datetime import datetime
+from copy import copy
 
 import futuquant as ft
 from futuquant.open_context import (RET_ERROR, RET_OK,
@@ -427,7 +428,7 @@ class FutuGateway(VtGateway):
                 
             tick.date = row['data_date'].replace('-', '')
             tick.time = row['data_time']
-            tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S')
             
             tick.openPrice = row['open_price']
             tick.highPrice = row['high_price']
@@ -437,7 +438,8 @@ class FutuGateway(VtGateway):
             tick.lastPrice = row['last_price']
             tick.volume = row['volume']
             
-            self.onTick(tick)
+            newTick = copy(tick)
+            self.onTick(newTick)
     
     #----------------------------------------------------------------------
     def processOrderBook(self, data):
@@ -462,8 +464,9 @@ class FutuGateway(VtGateway):
             d['bidVolume%s' %n] = bidData[1]
             d['askPrice%s' %n] = askData[0]
             d['askVolume%s' %n] = askData[1]
-            
-        self.onTick(tick)
+        
+        newTick = copy(tick)
+        self.onTick(newTick)
     
     #----------------------------------------------------------------------
     def processOrder(self, data):
