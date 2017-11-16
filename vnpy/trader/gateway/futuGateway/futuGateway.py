@@ -425,8 +425,9 @@ class FutuGateway(VtGateway):
                 tick.gatewayName = self.gatewayName
                 self.tickDict[symbol] = tick
                 
-            tick.date = row['data_date']
+            tick.date = row['data_date'].replace('-', '')
             tick.time = row['data_time']
+            tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
             
             tick.openPrice = row['open_price']
             tick.highPrice = row['high_price']
