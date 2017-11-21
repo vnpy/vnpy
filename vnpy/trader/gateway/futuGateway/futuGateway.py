@@ -5,6 +5,7 @@
 '''
 
 import json
+import imp
 from collections import OrderedDict
 from threading import Thread
 from time import sleep
@@ -428,7 +429,11 @@ class FutuGateway(VtGateway):
                 
             tick.date = row['data_date'].replace('-', '')
             tick.time = row['data_time']
+            
+            # 这里使用imp模块来解决strptime函数的多线程安全问题
+            imp.acquire_lock()
             tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S')
+            imp.release_lock()
             
             tick.openPrice = row['open_price']
             tick.highPrice = row['high_price']
