@@ -5,7 +5,6 @@
 '''
 
 import json
-import imp
 from collections import OrderedDict
 from threading import Thread
 from time import sleep
@@ -22,6 +21,9 @@ from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
 from vnpy.trader.vtFunction import getJsonPath
 
+
+# 调用一次datetime，保证初始化
+tmp = datetime.strptime('20171123', '%Y%m%d')
 
 # 常量数据映射
 productMap = OrderedDict()
@@ -429,12 +431,7 @@ class FutuGateway(VtGateway):
                 
             tick.date = row['data_date'].replace('-', '')
             tick.time = row['data_time']
-            
-            # 这里使用imp模块来解决strptime函数的多线程安全问题
-            imp.acquire_lock()
             tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S')
-            imp.release_lock()
-            
             tick.openPrice = row['open_price']
             tick.highPrice = row['high_price']
             tick.lowPrice = row['low_price']
