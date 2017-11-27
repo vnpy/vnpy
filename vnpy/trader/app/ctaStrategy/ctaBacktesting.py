@@ -120,6 +120,9 @@ class BacktestingEngine(object):
         self.dt = None                      # 最新的时间
         self.gatewayName = u'BackTest'
 
+        self.last_leg1_tick = None
+        self.last_leg2_tick = None
+
         # csvFile相关
         self.barTimeInterval = 60          # csv文件，属于K线类型，K线的周期（秒数）,缺省是1分钟
 
@@ -132,7 +135,7 @@ class BacktestingEngine(object):
         self.calculateMode = self.FINAL_MODE
         self.usageCompounding = False       # 是否使用简单复利 （只针对FINAL_MODE有效）
 
-        self.initCapital = 10000            # 期初资金
+        self.initCapital = 1000000            # 期初资金
         self.capital = self.initCapital     # 资金  （相当于Balance）
         self.maxCapital = self.initCapital          # 资金最高净值
 
@@ -593,6 +596,10 @@ class BacktestingEngine(object):
             # 白天数据
             self.__loadArbTicks(mainPath,testday,leg1,leg2)
 
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+
             # 夜盘数据
             self.__loadArbTicks(mainPath+'_night', testday, leg1, leg2)
 
@@ -864,7 +871,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'{0},{1}不能正则分解'.format(leg1Symbol, leg2Symbol))
             return
 
-        leg1_shortSymbol = leg1_shortSymbolc
+        leg1_shortSymbol = leg1_shortSymbol.group(1)
         leg2_shortSymbol = leg2_shortSymbol.group(1)
 
         arbTicks = []
@@ -984,7 +991,13 @@ class BacktestingEngine(object):
             testday = self.dataStartDate + timedelta(days = i)
 
             self.output(u'回测日期:{0}'.format(testday))
-
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
             # 加载运行白天数据
             self.__loadNotStdArbTicks(leg1MainPath, leg2MainPath, testday, leg1Symbol,leg2Symbol)
 
@@ -1109,13 +1122,17 @@ class BacktestingEngine(object):
 
             if leg1_tick is None and leg2_tick is not None:
                 self.newTick(leg2_tick[1])
+                self.last_leg2_tick = leg2_tick[1]
                 leg2_tick = None
             elif leg1_tick is not None and leg2_tick is None:
                 self.newTick(leg1_tick[1])
+                self.last_leg1_tick = leg1_tick[1]
                 leg1_tick = None
             elif leg1_tick is not None and leg2_tick is not None:
                 leg1 = leg1_tick[1]
                 leg2 = leg2_tick[1]
+                self.last_leg2_tick = leg2_tick[1]
+                self.last_leg1_tick = leg1_tick[1]
                 if leg1.datetime <= leg2.datetime:
                     self.newTick(leg1)
                     leg1_tick = None
@@ -1170,6 +1187,13 @@ class BacktestingEngine(object):
             testday = self.dataStartDate + timedelta(days=i)
 
             self.output(u'回测日期:{0}'.format(testday))
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
 
             # 加载运行每天数据
             self.__loadNotStdArbTicks2(leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol)
@@ -1307,13 +1331,17 @@ class BacktestingEngine(object):
 
             if leg1_tick is None and leg2_tick is not None:
                 self.newTick(leg2_tick[1])
+                self.last_leg2_tick = leg2_tick[1]
                 leg2_tick = None
             elif leg1_tick is not None and leg2_tick is None:
                 self.newTick(leg1_tick[1])
+                self.last_leg1_tick = leg1_tick[1]
                 leg1_tick = None
             elif leg1_tick is not None and leg2_tick is not None:
                 leg1 = leg1_tick[1]
                 leg2 = leg2_tick[1]
+                self.last_leg1_tick = leg1_tick[1]
+                self.last_leg2_tick = leg2_tick[1]
                 if leg1.datetime <= leg2.datetime:
                     self.newTick(leg1)
                     leg1_tick = None
@@ -1367,6 +1395,13 @@ class BacktestingEngine(object):
 
             self.output(u'回测日期:{0}'.format(testday))
 
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
             # 加载运行每天数据
             self.__loadNotStdArbTicksFromMongoDB( testday, leg1Symbol, leg2Symbol)
 
@@ -1397,13 +1432,17 @@ class BacktestingEngine(object):
 
             if leg1_tick is None and leg2_tick is not None:
                 self.newTick(leg2_tick[1])
+                self.last_leg2_tick = leg2_tick[1]
                 leg2_tick = None
             elif leg1_tick is not None and leg2_tick is None:
                 self.newTick(leg1_tick[1])
+                self.last_leg1_tick = leg1_tick[1]
                 leg1_tick = None
             elif leg1_tick is not None and leg2_tick is not None:
                 leg1 = leg1_tick[1]
                 leg2 = leg2_tick[1]
+                self.last_leg1_tick = leg1_tick[1]
+                self.last_leg2_tick = leg2_tick[1]
                 if leg1.datetime <= leg2.datetime:
                     self.newTick(leg1)
                     leg1_tick = None
@@ -1427,7 +1466,6 @@ class BacktestingEngine(object):
 
         testday_monrning = tickDate.replace(hour=0, minute=0, second=0, microsecond=0)
         testday_midnight = tickDate.replace(hour=23, minute=59, second=59, microsecond=999999)
-
 
         # 载入初始化需要用的数据
         flt = {'datetime': {'$gte': testday_monrning,
@@ -1739,12 +1777,20 @@ class BacktestingEngine(object):
 
         self.strategy.onInit()
         self.strategy.onStart()
-        
+
+    # ---------------------------------------------------------------------
+    def saveStrategyData(self):
+        """保存策略数据"""
+        if self.strategy is None:
+            return
+
+        self.strategy.saveData()
+
     #----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy, priceType=PRICETYPE_LIMITPRICE):
         """发单"""
 
-        self.writeCtaLog(u'{0},{1},{2}@{3}'.format(vtSymbol, orderType, price, volume))
+
         self.limitOrderCount += 1
         orderID = str(self.limitOrderCount)
         
@@ -1779,6 +1825,8 @@ class BacktestingEngine(object):
         # 保存到限价单字典中
         self.workingLimitOrderDict[key] = order
         self.limitOrderDict[key] = order
+
+        self.writeCtaLog(u'{},{},p:{},v:{},ref:{}'.format(vtSymbol, orderType, price, volume,key))
         return key
     
     #----------------------------------------------------------------------
@@ -2895,7 +2943,51 @@ class BacktestingEngine(object):
         dict['date'] = d.strftime('%Y/%m/%d')
         dict['capital'] = c
         dict['maxCapital'] = m
-        dict['rate'] = c / self.initCapital
+        long_list = []
+        today_margin = 0
+        long_pos_occupy_money = 0
+        short_pos_occupy_money = 0
+
+        for longpos in self.longPosition:
+            symbol = '-' if longpos.vtSymbol == EMPTY_STRING else longpos.vtSymbol
+            # 计算持仓浮盈浮亏/占用保证金
+            pos_margin = 0
+            if self.last_leg1_tick is not None and self.last_leg1_tick.vtSymbol == symbol:
+                pos_margin = (self.last_leg1_tick.lastPrice - longpos.price) * longpos.volume * self.size
+                long_pos_occupy_money += self.last_leg1_tick.lastPrice * abs(longpos.volume) * self.size * self.margin_rate
+
+            elif self.last_leg2_tick is not None and self.last_leg2_tick.vtSymbol == symbol:
+                pos_margin = (self.last_leg2_tick.lastPrice - longpos.price) * longpos.volume * self.size
+                long_pos_occupy_money += self.last_leg2_tick.lastPrice * abs(longpos.volume) * self.size * self.margin_rate
+
+            today_margin += pos_margin
+            long_list.append({'symbol':symbol,'direction':'long','price':longpos.price,'volume':longpos.volume,'margin':pos_margin})
+
+        short_list =[]
+        for shortpos in self.shortPosition:
+            symbol = '-' if shortpos.vtSymbol == EMPTY_STRING else shortpos.vtSymbol
+            # 计算持仓浮盈浮亏/占用保证金
+            pos_margin = 0
+            if self.last_leg1_tick is not None and self.last_leg1_tick.vtSymbol == symbol:
+                pos_margin = (shortpos.price - self.last_leg1_tick.lastPrice) * shortpos.volume * self.size
+                short_pos_occupy_money += self.last_leg1_tick.lastPrice * abs(shortpos.volume) * self.size * self.margin_rate
+
+            elif self.last_leg2_tick is not None and self.last_leg2_tick.vtSymbol == symbol:
+                pos_margin = (shortpos.price - self.last_leg2_tick.lastPrice) * shortpos.volume * self.size
+                short_pos_occupy_money += self.last_leg2_tick.lastPrice * abs( shortpos.volume) * self.size * self.margin_rate
+
+            today_margin += pos_margin
+            short_list.append({'symbol': symbol, 'direction': 'short', 'price': shortpos.price,
+                               'volume': shortpos.volume, 'margin': pos_margin})
+
+        dict['net'] = c + today_margin
+        dict['rate'] = (c + today_margin )/ self.initCapital
+        dict['longPos'] = json.dumps(long_list, indent=4)
+        dict['shortPos'] = json.dumps(short_list, indent=4)
+        dict['longMoney'] = long_pos_occupy_money
+        dict['shortMoney'] = short_pos_occupy_money
+        dict['occupyMoney'] = max(long_pos_occupy_money, short_pos_occupy_money)
+        dict['occupyRate'] = dict['occupyMoney'] / dict['capital']
         self.dailyList.append(dict)
 
     # ----------------------------------------------------------------------
@@ -2960,7 +3052,6 @@ class BacktestingEngine(object):
                                                size=self.size,
                                                groupId=gId,
                                                fixcommission=self.fixCommission)
-
 
                         if tv == 0:
                             if gt == 1:
@@ -3052,7 +3143,6 @@ class BacktestingEngine(object):
                         t['Volume'] = tradeUnit
                         t['Profit'] = result.pnl
                         self.exportTradeList.append(t)
-
 
                         self.writeCtaLog(u'{9}@{6} [{7}:开多{0},buy:{1}]-[{8}.平多{2},sell:{3},vol:{4}],净盈亏：{5}'
                                     .format(entryTrade.tradeTime, entryTrade.price,
@@ -3151,7 +3241,7 @@ class BacktestingEngine(object):
                                      'DailyList_{0}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))))
 
         csvWriteFile2 = file(csvOutputFile2, 'wb')
-        fieldnames = ['date','capital', 'maxCapital','rate']
+        fieldnames = ['date','capital','net', 'maxCapital','rate','longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
         writer2 = csv.DictWriter(f=csvWriteFile2, fieldnames=fieldnames, dialect='excel')
         writer2.writeheader()
 
