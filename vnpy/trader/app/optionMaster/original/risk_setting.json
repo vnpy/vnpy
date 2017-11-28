@@ -1,0 +1,7 @@
+{
+    "orderFlowClearTrigger": 1, 
+    "activeOrderLimit": 50, 
+    "totalOrderLimit": 1200, 
+    "symbolCancelLimit": 400, 
+    "orderFlowLimit": 20
+}

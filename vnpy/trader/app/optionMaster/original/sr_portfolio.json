@@ -1,0 +1,24 @@
+{
+    "name": "sr_portfolio", 
+    
+    "futures": [
+        "SR709", 
+        "SR801"
+    ], 
+    
+    "chain": [
+        {
+            "underlyingSymbol": "SR709", 
+            "chainSymbol": "SR709", 
+            "interestRate": 0.0, 
+            "underlyingType": "futures"
+        },
+        {
+            "underlyingSymbol": "SR801", 
+            "chainSymbol": "SR801", 
+            "interestRate": 0.0, 
+            "underlyingType": "futures"
+        }
+    ], 
+    "equity": []
+}

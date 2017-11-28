@@ -13,6 +13,9 @@ from .omDate import getTimeToMaturity
 CALL = 1
 PUT = -1
 
+# 事件定义
+EVENT_OM_LOG = 'eOmLog'
+
 
 ########################################################################
 class OmInstrument(VtTickData):
@@ -139,7 +142,7 @@ class OmOption(OmInstrument):
         super(OmOption, self).__init__(contract)
         
         # 期权属性
-        self.underlying = underlying    # 标的物对象
+        self.underlying = None          # 标的物对象
         self.k = contract.strikePrice   # 行权价
         self.r = r                      # 利率
         
@@ -233,6 +236,12 @@ class OmOption(OmInstrument):
         """成交更新"""
         super(OmOption, self).newTrade(trade)
         self.calculatePosGreeks()
+        
+    #----------------------------------------------------------------------
+    def setUnderlying(self, underlying):
+        """设置标的物对象"""
+        self.underlying = underlying
+        
 
 
 ########################################################################
