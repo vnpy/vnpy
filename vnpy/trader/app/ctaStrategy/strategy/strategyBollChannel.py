@@ -83,7 +83,13 @@ class BollChannelStrategy(CtaTemplate):
         super(BollChannelStrategy, self).__init__(ctaEngine, setting)
         
         self.bm = BarManager(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
+        self.bm30 = BarManager(self.onBar, 30, self.on30minBar)
         self.am = ArrayManager()
+        
+    #----------------------------------------------------------------------
+    def on30minBar(self, bar):
+        """"""
+        
         
     #----------------------------------------------------------------------
     def onInit(self):
