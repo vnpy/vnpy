@@ -65,10 +65,6 @@ class KkStrategy(CtaTemplate):
         self.bm = BarManager(self.onBar, 5, self.onFiveBar)     # 创建K线合成器对象
         self.am = ArrayManager()
         
-        self.buyOrderIDList = []
-        self.shortOrderIDList = []
-        self.orderList = []
-        
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -134,7 +130,7 @@ class KkStrategy(CtaTemplate):
             self.intraTradeLow = bar.low
             
             l = self.sell(self.intraTradeHigh*(1-self.trailingPrcnt/100), 
-                          abs(self.pos), True)
+                                abs(self.pos), True)
             self.orderList.extend(l)
     
         # 持有空头仓位
@@ -142,8 +138,8 @@ class KkStrategy(CtaTemplate):
             self.intraTradeHigh = bar.high
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             
-            l = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100), 
-                           abs(self.pos), True)
+            l = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100),
+                               abs(self.pos), True)
             self.orderList.extend(l)
     
         # 发出状态更新事件

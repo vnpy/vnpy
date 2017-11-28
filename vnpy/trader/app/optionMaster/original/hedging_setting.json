@@ -1,9 +1,0 @@
-{
-    "maxOrderSize": 10, 
-    "underlyingSymbol": "SR709", 
-    "maxSpreadTick": 3, 
-    "tickAdd": 1, 
-    "hedgingTrigger": 5, 
-    "targetDelta": 0, 
-    "deltaRange": 679.35
-}
