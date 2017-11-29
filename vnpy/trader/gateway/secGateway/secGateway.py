@@ -1208,12 +1208,6 @@ class SecTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspSOPQryContactInfo(self, data, error, flag):
         """期权合约查询回报"""
-        print '-' * 20
-        l = data.keys()
-        l.sort()
-        for k in l:
-            print k, data[k]
-            
         if not data:
             return
         
