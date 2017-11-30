@@ -1,10 +1,10 @@
 # encoding: UTF-8
 
-#from rmEngine import RmEngine
-#from uiRmWidget import RmEngineManager
+from .omEngine import OmEngine
+from .uiOmWidget import OmManager
 
 appName = 'OptionMaster'
 appDisplayName = u'OptionMaster'
-appEngine = None
-appWidget = None
+appEngine = OmEngine
+appWidget = OmManager
 appIco = 'om.ico'

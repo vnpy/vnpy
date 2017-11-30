@@ -5,14 +5,24 @@ import json
 import shelve
 import os
 import traceback
+from collections import OrderedDict
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import EVENT_TICK, EVENT_TRADE, EVENT_CONTRACT
 from vnpy.trader.vtFunction import getTempPath, getJsonPath
-from vnpy.trader.vtObject import VtLogData
+from vnpy.trader.vtObject import VtLogData, VtSubscribeReq
+from vnpy.trader.vtConstant import PRODUCT_OPTION, OPTION_CALL, OPTION_PUT
+from vnpy.pricing import black
 
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
                      EVENT_OM_LOG)
+
+
+
+# 定价模型字典
+MODEL_DICT = {}
+MODEL_DICT['black'] = black
+
 
 
 ########################################################################
@@ -28,7 +38,7 @@ class OmEngine(object):
         self.eventEngine = eventEngine
         
         self.portfolio = None
-        self.contractDict = {}      # symbol:contract
+        self.optionContractDict = {}      # symbol:contract
         
         self.registerEvent()
     
@@ -53,18 +63,22 @@ class OmEngine(object):
     def processContractEvent(self, event):
         """合约事件"""
         contract = event.dict_['data']
-        if contract.symbol:
-            self.contractDict[contract.symbol] = contract
+        if contract.symbol and contract.productClass == PRODUCT_OPTION:
+            self.optionContractDict[contract.symbol] = contract
     
     #----------------------------------------------------------------------
     def subscribeEvent(self, symbol):
         """订阅对应合约的事件"""
-        contract = self.contractDict[symbol]
+        contract = self.mainEngine.getContract(symbol)
+        if not contract:
+            self.writeLog(u'行情订阅失败，找不到合约：%s' %symbol)
+            return
+            
         vtSymbol = contract.vtSymbol
         
         # 订阅行情
         req = VtSubscribeReq()
-        req.symbol = symbol
+        req.symbol = contract.symbol
         req.exchange = contract.exchange
         self.mainEngine.subscribe(req, contract.gatewayName)
         
@@ -80,66 +94,80 @@ class OmEngine(object):
         
         f = file(fileName)
         setting = json.load(f)
+        
+        # 读取定价模型
+        model = MODEL_DICT.get(setting['model'], None)
+        if not model:
+            self.writeLog(u'找不到定价模型%s' %setting['model'])
+            return
             
-        # 创建期货和股票标的对象
-        equityDict = OrderedDict([(symbol, OmEquity(symbol)) for symbol in setting['equity']])
-        futuresDict = OrderedDict([(symbol, OmFutures(symbol)) for symbol in setting['futures']])
+        # 创建标的对象
+        underlyingDict = OrderedDict()
+        
+        for underlyingSymbol in setting['underlying']:
+            contract = self.mainEngine.getContract(underlyingSymbol)
+            if not contract:
+                self.writeLog(u'找不到标的物合约%s' %underlyingSymbol)
+                continue
+            
+            detail = self.mainEngine.getPositionDetail(contract.vtSymbol)
+            
+            underlying = OmUnderlying(contract, detail)
+            underlyingDict[underlyingSymbol] = underlying
         
         # 创建期权链对象并初始化
-        chainDict = OrderedDict()
+        chainList = []
         
         for d in setting['chain']:
-            interestRate = d['interestRate']
+            chainSymbol = d['chainSymbol']
+            r = d['r']
             
-            # 锁定标的对象，若无则创建
-            if d['underlyingType'] == 'futures':
-                if d['underlyingSymbol'] not in futuresDict:
-                    underlying = OmFutures(d['underlyingSymbol'])
-                    futuresDict[underlying.symbol] = underlying
-                else:
-                    underlying = futuresDict[d['underlyingSymbol']]
-            elif d['underlyingType'] == 'equity':
-                if d['underlyingSymbol'] not in equityDict:
-                    underlying = OmEquity(d['underlyingSymbol'])
-                    equityDict[underlying.symbol] = underlying
-                else:
-                    underlying = equityDict[d['underlyingSymbol']]                    
+            # 锁定标的对象
+            underlying = underlyingDict.get(d['underlyingSymbol'], None)
+            if not underlying:
+                self.writeLog(u'%s期权链的标的合约%s尚未创建，请检查配置文件' %(chainSymbol, underlyingSymbol))
+                continue
             
             # 创建期权对象并初始化
-            callList = []
-            putList = []
+            callDict = {}
+            putDict = {}
             
-            for symbol, contract in self.contractDict.items():
-                if contract.optionType and contract.underlyingSymbol == d['chainSymbol']:
-                    option = OmOption(symbol)
-                    option.init(contract, underlying, interestRate)
-                    self.subscribeEvent(option.symbol)              # 订阅事件
+            for symbol, contract in self.optionContractDict.items():
+                if contract.underlyingSymbol == d['chainSymbol']:
+                    detail = self.mainEngine.getPositionDetail(contract.vtSymbol)
+                    option = OmOption(contract, detail, underlying, model, r)
                     
                     if contract.optionType is OPTION_CALL:
-                        callList.append(option)
+                        callDict[option.k] = option
                     else:
-                        putList.append(option)
+                        putDict[option.k] = option
+                        
+            # 期权排序
+            strikeList = callDict.keys()
+            strikeList.sort()
+            callList = [callDict[k] for k in strikeList]
+            putList = [putDict[k] for k in strikeList]
+            
+            # 创建期权链
+            chain = OmChain(chainSymbol, callList, putList)
+            chainList.append(chain)
+            
+            # 添加标的映射关系
+            underlying.addChain(chain)
 
-            chain = OmChain(d['chainSymbol'])
-            chain.init(underlying, callList, putList)
-            chainDict[chain.symbol] = chain
-        
-        # 初始化标的对象
-        for underlying in (equityDict.values() + futuresDict.values()):
-            l = []
-            for chain in chainDict.values():
-                if chain.underlying is underlying:
-                    l.append(chain)
-            contract = self.contractDict[underlying.symbol]
-            underlying.init(contract, l)
-            self.subscribeEvent(underlying.symbol)                  # 订阅事件
-        
         # 创建持仓组合对象并初始化
-        self.portfolio = OmPortfolio(setting['name'])
-        self.portfolio.init(futuresDict, equityDict, chainDict)
+        self.portfolio = OmPortfolio(setting['name'], underlyingDict.values(), chainList)
         
         # 载入波动率配置
         self.loadImpvSetting()
+        
+        # 订阅行情和事件
+        for underlying in underlyingDict.values():
+            self.subscribeEvent(underlying.vtSymbol)
+            
+        for chain in chainList:
+            for option in chain.optionDict.values():
+                self.subscribeEvent(option.vtSymbol)
         
         # 载入成功返回
         return True

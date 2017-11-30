@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from __future__ import division
+
 from copy import copy
 from collections import OrderedDict
 
@@ -26,7 +28,10 @@ class OmInstrument(VtTickData):
         """Constructor"""
         super(OmInstrument, self).__init__()
         
+        self.tickInited = False
+        
         # 初始化合约信息
+        self.symbol = contract.symbol
         self.exchange = contract.exchange
         self.vtSymbol = contract.vtSymbol
     
@@ -38,10 +43,15 @@ class OmInstrument(VtTickData):
         self.midPrice = EMPTY_FLOAT
         
         # 持仓数据
-        self.longPos = detail.longPos
-        self.shortPos = detail.shortPos
-        self.netPos = self.longPos - self.shortPos
+        self.longPos = 0
+        self.shortPos = 0
+        self.netPos = 0
         
+        if detail:
+            self.longPos = detail.longPos
+            self.shortPos = detail.shortPos
+            self.netPos = self.longPos - self.shortPos
+            
     #----------------------------------------------------------------------
     def newTick(self, tick):
         """行情更新"""
@@ -61,6 +71,7 @@ class OmInstrument(VtTickData):
         self.askPrice1 = tick.askPrice1
         self.bidVolume1 = tick.bidVolume1
         self.askVolume1 = tick.askVolume1
+        self.midPrice = (self.bidPrice1 + self.askPrice1) / 2
 
     #----------------------------------------------------------------------
     def newTrade(self, trade):
@@ -98,16 +109,21 @@ class OmUnderlying(OmInstrument):
     """标的物"""
 
     #----------------------------------------------------------------------
-    def __init__(self, contract, chainList):
+    def __init__(self, contract, detail, chainList=None):
         """Constructor"""
-        super(OmUnderlying, self).__init__(contract)
+        super(OmUnderlying, self).__init__(contract, detail)
         
         # 以该合约为标的物的期权链字典
-        self.chainDict = OrderedDict((chain.symbol, chain) for chain in chainList)
+        self.chainDict = OrderedDict()
         
         # 希腊值
         self.theoDelta = EMPTY_FLOAT    # 理论delta值
         self.posDelta = EMPTY_FLOAT     # 持仓delta值
+        
+    #----------------------------------------------------------------------
+    def addChain(self, chain):
+        """添加以该合约为标的的期权链"""
+        self.chainDict[chain.symbol] = chain
         
     #----------------------------------------------------------------------
     def newTick(self, tick):
@@ -117,7 +133,7 @@ class OmUnderlying(OmInstrument):
         self.theoDelta = self.size * self.midPrice / 100
         
         # 遍历推送自己的行情到期权链中
-        for chain in self.chainList:
+        for chain in self.chainDict.values():
             chain.newUnderlyingTick()
 
     #----------------------------------------------------------------------
@@ -137,12 +153,12 @@ class OmOption(OmInstrument):
     """期权"""
 
     #----------------------------------------------------------------------
-    def __init__(self, contract, underlying, model, r):
+    def __init__(self, contract, detail, underlying, model, r):
         """Constructor"""
-        super(OmOption, self).__init__(contract)
+        super(OmOption, self).__init__(contract, detail)
         
         # 期权属性
-        self.underlying = None          # 标的物对象
+        self.underlying = underlying    # 标的物对象
         self.k = contract.strikePrice   # 行权价
         self.r = r                      # 利率
         
@@ -183,7 +199,7 @@ class OmOption(OmInstrument):
         self.chain = None
         
     #----------------------------------------------------------------------
-    def calculateImpv(self):
+    def calculateOptionImpv(self):
         """计算隐含波动率"""
         underlyingPrice = self.underlying.midPrice
         if not underlyingPrice:
@@ -222,12 +238,12 @@ class OmOption(OmInstrument):
     def newTick(self, tick):
         """行情更新"""
         super(OmOption, self).newTick(tick)
-        self.calculateImpv()
+        self.calculateOptionImpv()
     
     #----------------------------------------------------------------------
     def newUnderlyingTick(self):
         """标的行情更新"""
-        self.calculateImpv()
+        self.calculateOptionImpv()
         self.calculateTheoGreeks()
         self.calculatePosGreeks()
         
@@ -242,7 +258,6 @@ class OmOption(OmInstrument):
         """设置标的物对象"""
         self.underlying = underlying
         
-
 
 ########################################################################
 class OmChain(object):
@@ -394,10 +409,10 @@ class OmPortfolio(object):
         self.posTheta = 0
         self.posVega = 0
         
-        for underlying in self.underlyingList:
+        for underlying in self.underlyingDict.values():
             self.posDelta += underlying.posDelta
         
-        for chain in self.chainList:
+        for chain in self.chainDict.values():
             self.longPos += chain.longPos
             self.shortPos += chain.shortPos
             

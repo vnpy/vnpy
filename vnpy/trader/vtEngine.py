@@ -278,6 +278,11 @@ class MainEngine(object):
         return self.dataEngine.getOrder(vtOrderID)
     
     #----------------------------------------------------------------------
+    def getPositionDetail(self, vtSymbol):
+        """查询持仓细节"""
+        return self.dataEngine.getPositionDetail(vtSymbol)
+    
+    #----------------------------------------------------------------------
     def getAllWorkingOrders(self):
         """查询所有的活跃的委托（返回列表）"""
         return self.dataEngine.getAllWorkingOrders()

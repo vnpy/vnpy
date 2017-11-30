@@ -2,19 +2,18 @@
     "name": "etf_portfolio", 
     "model": "black",
     "underlying": [
-        "IH1711", 
-        "IH1712"
+        "510050"
     ],     
     "chain": [
         {
-            "underlyingSymbol": "IH1711", 
-            "chainSymbol": "m1709", 
-            "interestRate": 0.03, 
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1712", 
+            "r": 0.03
         },
         {
-            "underlyingSymbol": "IH1711", 
-            "chainSymbol": "m1801", 
-            "interestRate": 0.03, 
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1801", 
+            "r": 0.03
         }
     ]
 }

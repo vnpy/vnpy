@@ -19,7 +19,7 @@ from vnpy.trader.uiMainWindow import MainWindow
 from vnpy.trader.gateway import (secGateway)
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager)
+from vnpy.trader.app import (riskManager, optionMaster)
 
 
 #----------------------------------------------------------------------
@@ -39,6 +39,7 @@ def main():
         
     # 添加上层应用
     me.addApp(riskManager)
+    me.addApp(optionMaster)
     
     # 创建主窗口
     mw = MainWindow(me, ee)

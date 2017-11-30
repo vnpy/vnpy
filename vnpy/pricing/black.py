@@ -23,6 +23,7 @@ theta：当t变动1天时，price的变动（国内交易日每年240天）
 vega：当v涨跌1个点时，price的变动（如从16%涨到17%）
 '''
 
+from __future__ import division
 
 from scipy import stats
 from math import (log, pow, sqrt, exp)
@@ -74,9 +75,15 @@ def calculateTheta(f, k, r, t, v, cp):
 #----------------------------------------------------------------------
 def calculateVega(f, k, r, t, v, cp):
     """计算Vega值"""
+    vega = calculateVega(f, k, r, t, v, cp) / 100
+    return vega
+
+#----------------------------------------------------------------------
+def calculateOriginalVega(f, k, r, t, v, cp):
+    """计算原始vega值"""    
     price1 = calculatePrice(f, k, r, t, v*STEP_UP, cp)
     price2 = calculatePrice(f, k, r, t, v*STEP_DOWN, cp)
-    vega = (price1 - price2) / (v * STEP_DIFF * 100) 
+    vega = (price1 - price2) / (v * STEP_DIFF)
     return vega
 
 #----------------------------------------------------------------------
@@ -109,12 +116,13 @@ def calculateImpv(price, f, k, r, t, cp):
         return 0
     
     # 采用Newton Raphson方法计算隐含波动率
-    v = 0.2     # 初始波动率猜测
+    v = 0.3     # 初始波动率猜测
     
     for i in range(50):
         # 计算当前猜测波动率对应的期权价格和vega值
         p = calculatePrice(f, k, r, t, v, cp)
-        vega = calculateVega(f, k, r, t, v, cp)
+        #print 'calculating vega', f, k, r, t, v, cp
+        vega = calculateOriginalVega(f, k, r, t, v, cp)
         
         # 计算误差
         dx = (price - p) / vega

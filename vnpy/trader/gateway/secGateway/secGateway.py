@@ -50,8 +50,11 @@ exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
 #----------------------------------------------------------------------
 def print_dict(d):
     """"""
-    for k, v in d.items():
-        print '%s:%s' %(k, v)
+    print '-' * 30
+    l = d.keys()
+    l.sort()
+    for k in l:
+        print '%s:%s' %(k, d[k])
     
 
 ########################################################################
@@ -893,7 +896,7 @@ class SecTdApi(TdApi):
 
     #----------------------------------------------------------------------
     def onRspStockQryStockStaticInfo(self, data, error, flag):
-        """股票合约查询回报"""        
+        """股票合约查询回报"""      
         if not data:
             return
         
@@ -1226,8 +1229,8 @@ class SecTdApi(TdApi):
         
         contract.strikePrice = data['execPrice']
         
-        contract.underlyingSymbol = data['securityID']
-        contract.expiryDate = data['endTradingDay']
+        contract.underlyingSymbol = '-'.join([data['securityID'], str(data['endTradingDay'])[2:-2]])
+        contract.expiryDate = str(data['endTradingDay'])
         
         # 合约类型
         contract.productClass = PRODUCT_OPTION
