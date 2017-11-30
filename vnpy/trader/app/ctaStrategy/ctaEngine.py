@@ -385,8 +385,9 @@ class CtaEngine(object):
         try:
             name = setting['name']
             className = setting['className']
-        except Exception, e:
-            self.writeCtaLog(u'载入策略出错：%s' %e)
+        except Exception:
+            msg = traceback.format_exc()
+            self.writeCtaLog(u'载入策略出错：%s' %msg)
             return
         
         # 获取策略类
