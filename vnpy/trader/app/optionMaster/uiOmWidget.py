@@ -9,6 +9,7 @@ from vnpy.event import Event
 from vnpy.trader.uiQt import QtWidgets, QtCore
 
 from .omBase import EVENT_OM_LOG
+from .uiOmManualTrader import ManualTrader
 
 
 ########################################################################
@@ -51,12 +52,16 @@ class OmManager(QtWidgets.QWidget):
         self.buttonInit = QtWidgets.QPushButton(u'初始化')
         self.buttonInit.clicked.connect(self.initOmEngine)
         
+        self.buttonManualTrader = QtWidgets.QPushButton(u'手动交易')
+        self.buttonManualTrader.clicked.connect(self.openManualTrader)
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.comboSettingFile)
         hbox.addWidget(self.buttonInit)
+        hbox.addWidget(self.buttonManualTrader)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -99,7 +104,7 @@ class OmManager(QtWidgets.QWidget):
     
     #----------------------------------------------------------------------
     def openManualTrader(self):
-        """打开手动交易"""
+        """打开手动交易组件"""
         try:
             self.widgetDict['manualTrader'].showMaximized()
         except KeyError:
@@ -120,4 +125,3 @@ class OmManager(QtWidgets.QWidget):
         self.signal.connect(self.processLogEvent)
         
         self.eventEngine.register(EVENT_OM_LOG, self.signal.emit)
-        

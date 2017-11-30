@@ -43,6 +43,10 @@ DX_TARGET = 0.00001
 #----------------------------------------------------------------------
 def calculatePrice(f, k, r, t, v, cp):
     """计算期权价格"""
+    # 如果波动率为0，则直接返回期权空间价值
+    if v <= 0:
+        return max(0, cp * (f - k))
+    
     d1 = (log(f / k) + (0.5 * pow(v, 2) + r) * t) / (v * sqrt(t))
     d2 = d1 - v * sqrt(t)
     price = cp * (f * cdf(cp * d1) - k * cdf(cp * d2) * exp(-r * t))
@@ -121,8 +125,12 @@ def calculateImpv(price, f, k, r, t, cp):
     for i in range(50):
         # 计算当前猜测波动率对应的期权价格和vega值
         p = calculatePrice(f, k, r, t, v, cp)
-        #print 'calculating vega', f, k, r, t, v, cp
+        
         vega = calculateOriginalVega(f, k, r, t, v, cp)
+        
+        # 如果vega过小接近0，则直接返回
+        if not vega:
+            return v
         
         # 计算误差
         dx = (price - p) / vega

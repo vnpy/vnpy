@@ -376,6 +376,7 @@ class OmPortfolio(object):
         self.underlyingDict = OrderedDict()
         self.chainDict = OrderedDict()
         self.optionDict = {}
+        self.instrumentDict = {}
         
         for underlying in underlyingList:
             self.underlyingDict[underlying.symbol] = underlying
@@ -384,6 +385,9 @@ class OmPortfolio(object):
             self.chainDict[chain.symbol] = chain
             self.optionDict.update(chain.callDict)
             self.optionDict.update(chain.putDict)
+        
+        self.instrumentDict.update(self.underlyingDict)
+        self.instrumentDict.update(self.optionDict)
         
         # 持仓数据
         self.longPos = EMPTY_INT
