@@ -11,6 +11,7 @@ from .omBase import EVENT_OM_LOG
 from .uiOmBase import QtWidgets, QtCore
 from .uiOmManualTrader import ManualTrader
 from .uiOmGreeksMonitor import GreeksMonitor
+from .uiOmVolatilityManager import VolatilityChart
 
 
 ########################################################################
@@ -59,6 +60,9 @@ class OmManager(QtWidgets.QWidget):
         self.buttonGreeksMonitor = QtWidgets.QPushButton(u'希腊值监控')
         self.buttonGreeksMonitor.clicked.connect(self.openGreeksMonitor)
         
+        self.buttonVolatilityChart = QtWidgets.QPushButton(u'波动率图表')
+        self.buttonVolatilityChart.clicked.connect(self.openVolatilityChart)
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
@@ -67,6 +71,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.buttonInit)
         hbox.addWidget(self.buttonManualTrader)
         hbox.addWidget(self.buttonGreeksMonitor)
+        hbox.addWidget(self.buttonVolatilityChart)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -123,7 +128,16 @@ class OmManager(QtWidgets.QWidget):
             self.widgetDict['greeksMonitor'].showMaximized()
         except KeyError:
             self.widgetDict['greeksMonitor'] = GreeksMonitor(self.omEngine)
-            self.widgetDict['greeksMonitor'].showMaximized()    
+            self.widgetDict['greeksMonitor'].showMaximized()   
+            
+    #----------------------------------------------------------------------
+    def openVolatilityChart(self):
+        """打开波动率图表组件"""
+        try:
+            self.widgetDict['volatilityChart'].showMaximized()
+        except KeyError:
+            self.widgetDict['volatilityChart'] = VolatilityChart(self.omEngine)
+            self.widgetDict['volatilityChart'].showMaximized()      
 
     #----------------------------------------------------------------------
     def close(self):
@@ -131,7 +145,7 @@ class OmManager(QtWidgets.QWidget):
         for widget in self.widgetDict.values():
             widget.close()
             
-        super(OmManagerWidget, self).close()
+        super(OmManager, self).close()
         
     #----------------------------------------------------------------------
     def registerEvent(self):
