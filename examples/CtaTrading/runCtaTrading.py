@@ -40,7 +40,7 @@ def runChildProcess():
     me.connect('CTP')
     le.info(u'连接CTP接口')
     
-    sleep(5)    # 等待CTP接口初始化
+    sleep(10)    # 等待CTP接口初始化
     
     cta = me.getApp(ctaStrategy.appName)
     
