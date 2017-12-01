@@ -34,8 +34,8 @@ def test():
         if len(value)>1:
             print(u'存在重复的常量定义:{}'.format(str(key)))
             for name in value:
-                print name
-            print ''
+                print(name)
+            print('')
         
     print(u'测试完毕')
     

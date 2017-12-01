@@ -16,7 +16,7 @@ settingFilePath = getJsonPath(settingFileName, __file__)
 globalSetting = {}      # 全局配置字典
 
 try:
-    with open(settingFilePath) as f:
+    with open(settingFilePath, 'rb') as f:
         setting = f.read()
         if type(setting) is not str:
             setting = str(setting, encoding='utf8')
