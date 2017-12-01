@@ -298,8 +298,12 @@ class CtpMdApi(MdApi):
                 self.subscribe(subscribeReq)
                 
             # 获取交易日
-            self.tradingDate = data['TradingDay']
-            self.tradingDt = datetime.strptime(self.tradingDate, '%Y%m%d')
+            #self.tradingDate = data['TradingDay']
+            #self.tradingDt = datetime.strptime(self.tradingDate, '%Y%m%d')
+            
+            # 登录时通过本地时间来获取当前的日期
+            self.tradingDt = datetime.now()
+            self.tradingDate = self.tradingDt.strftime('%Y%m%d')
                 
         # 否则，推送错误信息
         else:
