@@ -882,15 +882,20 @@ class PositionDetail(object):
                 return [req]
             # 平仓量大于今可用，平今再平昨
             else:
-                reqTd = copy(req)
-                reqTd.offset = OFFSET_CLOSETODAY
-                reqTd.volume = tdAvailable
+                l = []
                 
+                if tdAvailable > 0:
+                    reqTd = copy(req)
+                    reqTd.offset = OFFSET_CLOSETODAY
+                    reqTd.volume = tdAvailable
+                    l.append(reqTd)
+                    
                 reqYd = copy(req)
                 reqYd.offset = OFFSET_CLOSEYESTERDAY
                 reqYd.volume = req.volume - tdAvailable
+                l.append(reqYd)
                 
-                return [reqTd, reqYd]        
+                return l
             
         # 平今惩罚模式，没有今仓则平昨，否则锁仓
         elif self.mode is self.MODE_TDPENALTY:
@@ -918,18 +923,24 @@ class PositionDetail(object):
                 return [req]
             # 平仓量大于昨可用，平仓再反向开仓
             else:
-                reqClose = copy(req)
-                if self.exchange is EXCHANGE_SHFE:
-                    req.offset = OFFSET_CLOSEYESTERDAY
-                else:
-                    req.offset = OFFSET_CLOSE
-                reqClose.volume = ydAvailable
+                l = []
                 
+                if ydAvailable > 0:
+                    reqClose = copy(req)
+                    if self.exchange is EXCHANGE_SHFE:
+                        req.offset = OFFSET_CLOSEYESTERDAY
+                    else:
+                        req.offset = OFFSET_CLOSE
+                    reqClose.volume = ydAvailable
+                    
+                    l.append(reqClose)
+                    
                 reqOpen = copy(req)
                 reqOpen.offset = OFFSET_OPEN
                 reqOpen.volume = req.volume - ydAvailable
+                l.append(reqOpen)
                 
-                return [reqClose, reqOpen]
+                return l
         
         # 其他情况则直接返回空
         return []
