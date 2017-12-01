@@ -164,7 +164,6 @@ class AnalysisManager(QtWidgets.QWidget):
         
         for priceChange in priceChangeArray:
             for impvChange in impvChangeArray:
-                print priceChange, impvChange
                 portfolioPnl = 0
                 portfolioDelta = 0
                 portfolioGamma = 0

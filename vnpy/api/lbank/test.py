@@ -2,7 +2,7 @@
 
 from time import time, sleep
 
-from vnlhang import LhangApi
+from vnlbank import LbankApi
 
 
 if __name__ == '__main__':
@@ -10,7 +10,7 @@ if __name__ == '__main__':
     secretKey = ''
     
     # 创建API对象并初始化
-    api = LhangApi()
+    api = LbankApi()
     api.DEBUG = True
     api.init(apiKey, secretKey, 2)
     

@@ -1,10 +1,10 @@
 # encoding: UTF-8
 
 from vnpy.trader import vtConstant
-from lhangGateway import LhangGateway
+from lbankGateway import LbankGateway
 
-gatewayClass = LhangGateway
-gatewayName = 'LHANG'
-gatewayDisplayName = u'链行'
+gatewayClass = lbankGateway
+gatewayName = 'LBANK'
+gatewayDisplayName = u'LBANK'
 gatewayType = vtConstant.GATEWAYTYPE_BTC
 gatewayQryEnabled = True

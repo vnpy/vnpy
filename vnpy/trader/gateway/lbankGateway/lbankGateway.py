@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 from time import sleep
 
-from vnpy.api.lhang import LhangApi
+from vnpy.api.lbank import LbankApi
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
 
@@ -37,15 +37,15 @@ STATUS_MAP[-1] = STATUS_CANCELLED
 
 
 ########################################################################
-class LhangGateway(VtGateway):
+class LbankGateway(VtGateway):
     """链行接口"""
 
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine, gatewayName='LHANG'):
+    def __init__(self, eventEngine, gatewayName='LBANK'):
         """Constructor"""
-        super(LhangGateway, self).__init__(eventEngine, gatewayName)
+        super(LbankGateway, self).__init__(eventEngine, gatewayName)
         
-        self.api = LhangApi(self)
+        self.api = LbankApi(self)
         
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)             
@@ -150,13 +150,13 @@ class LhangGateway(VtGateway):
     
 
 ########################################################################
-class LhangApi(LhangApi):
+class LbankApi(LbankApi):
     """"""
 
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
-        super(LhangApi, self).__init__()
+        super(LbankApi, self).__init__()
         
         self.gateway = gateway
         self.gatewayName = gateway.gatewayName

@@ -10,7 +10,7 @@ from time import sleep
 
 
 
-LHANG_API_ROOT ="https://api.lhang.com/v1/"
+API_ROOT ="https://api.lbank.info/v1/"
 
 FUNCTION_TICKER = ('ticker.do', 'get')
 FUNCTION_DEPTH = ('depth.do', 'get')
@@ -40,7 +40,7 @@ def signature(params, secretKey):
     
 
 ########################################################################
-class LhangApi(object):
+class LbankApi(object):
     """"""
     DEBUG = True
 
@@ -80,7 +80,7 @@ class LhangApi(object):
         # 读取方法和参数
         api, method = req['function']
         params = req['params']
-        url = LHANG_API_ROOT + api
+        url = API_ROOT + api
         
         # 在参数中增加必须的字段
         params['api_key'] = self.apiKey
