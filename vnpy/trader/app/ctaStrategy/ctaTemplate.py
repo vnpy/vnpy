@@ -246,7 +246,8 @@ class TargetPosTemplate(CtaTemplate):
     def onOrder(self, order):
         """收到委托推送"""
         if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
-            self.orderList.remove(order.vtOrderID)
+            if order.vtOrderID in self.orderList:
+                self.orderList.remove(order.vtOrderID)
     
     #----------------------------------------------------------------------
     def setTargetPos(self, targetPos):
