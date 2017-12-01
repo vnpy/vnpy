@@ -210,8 +210,6 @@ class OmOption(OmInstrument):
         self.bidImpv = self.calculateImpv(self.bidPrice1, underlyingPrice, self.k,
                                           self.r, self.t, self.cp)        
         self.midImpv = (self.askImpv + self.bidImpv) / 2
-        
-        self.pricingImpv = self.midImpv
     
     #----------------------------------------------------------------------
     def calculateTheoGreeks(self):

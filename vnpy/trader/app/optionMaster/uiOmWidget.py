@@ -11,7 +11,7 @@ from .omBase import EVENT_OM_LOG
 from .uiOmBase import QtWidgets, QtCore
 from .uiOmManualTrader import ManualTrader
 from .uiOmGreeksMonitor import GreeksMonitor
-from .uiOmVolatilityManager import VolatilityChart
+from .uiOmVolatilityManager import VolatilityChart, VolatilityManager
 
 
 ########################################################################
@@ -56,12 +56,19 @@ class OmManager(QtWidgets.QWidget):
         
         self.buttonManualTrader = QtWidgets.QPushButton(u'手动交易')
         self.buttonManualTrader.clicked.connect(self.openManualTrader)
+        self.buttonManualTrader.setDisabled(True)
         
         self.buttonGreeksMonitor = QtWidgets.QPushButton(u'希腊值监控')
         self.buttonGreeksMonitor.clicked.connect(self.openGreeksMonitor)
+        self.buttonGreeksMonitor.setDisabled(True)
         
         self.buttonVolatilityChart = QtWidgets.QPushButton(u'波动率图表')
         self.buttonVolatilityChart.clicked.connect(self.openVolatilityChart)
+        self.buttonVolatilityChart.setDisabled(True)
+        
+        self.buttonVolatilityManager = QtWidgets.QPushButton(u'波动率管理')
+        self.buttonVolatilityManager.clicked.connect(self.openVolatilityManager)
+        self.buttonVolatilityManager.setDisabled(True)
         
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
@@ -72,6 +79,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.buttonManualTrader)
         hbox.addWidget(self.buttonGreeksMonitor)
         hbox.addWidget(self.buttonVolatilityChart)
+        hbox.addWidget(self.buttonVolatilityManager)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -94,8 +102,20 @@ class OmManager(QtWidgets.QWidget):
         
         if result:
             self.writeLog(u'引擎初始化成功')
+            self.enableButtons()
         else:
             self.writeLog(u'请勿重复初始化引擎')
+    
+    #----------------------------------------------------------------------
+    def enableButtons(self):
+        """启用按钮"""
+        self.comboSettingFile.setDisabled(True)
+        self.buttonInit.setDisabled(True)
+        
+        self.buttonManualTrader.setEnabled(True)
+        self.buttonGreeksMonitor.setEnabled(True)
+        self.buttonVolatilityChart.setEnabled(True)
+        self.buttonVolatilityManager.setEnabled(True)
         
     #----------------------------------------------------------------------
     def writeLog(self, content, time=''):
@@ -137,7 +157,16 @@ class OmManager(QtWidgets.QWidget):
             self.widgetDict['volatilityChart'].showMaximized()
         except KeyError:
             self.widgetDict['volatilityChart'] = VolatilityChart(self.omEngine)
-            self.widgetDict['volatilityChart'].showMaximized()      
+            self.widgetDict['volatilityChart'].showMaximized()
+    
+    #----------------------------------------------------------------------
+    def openVolatilityManager(self):
+        """打开波动率管理组件"""
+        try:
+            self.widgetDict['volatilityManager'].show()
+        except KeyError:
+            self.widgetDict['volatilityManager'] = VolatilityManager(self.omEngine)
+            self.widgetDict['volatilityManager'].show()       
 
     #----------------------------------------------------------------------
     def close(self):
