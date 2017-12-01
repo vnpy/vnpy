@@ -6,10 +6,11 @@ import os
 from datetime import datetime
 
 from vnpy.event import Event
-from vnpy.trader.uiQt import QtWidgets, QtCore
 
 from .omBase import EVENT_OM_LOG
+from .uiOmBase import QtWidgets, QtCore
 from .uiOmManualTrader import ManualTrader
+from .uiOmGreeksMonitor import GreeksMonitor
 
 
 ########################################################################
@@ -55,6 +56,9 @@ class OmManager(QtWidgets.QWidget):
         self.buttonManualTrader = QtWidgets.QPushButton(u'手动交易')
         self.buttonManualTrader.clicked.connect(self.openManualTrader)
         
+        self.buttonGreeksMonitor = QtWidgets.QPushButton(u'希腊值监控')
+        self.buttonGreeksMonitor.clicked.connect(self.openGreeksMonitor)
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
@@ -62,6 +66,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.comboSettingFile)
         hbox.addWidget(self.buttonInit)
         hbox.addWidget(self.buttonManualTrader)
+        hbox.addWidget(self.buttonGreeksMonitor)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -110,6 +115,15 @@ class OmManager(QtWidgets.QWidget):
         except KeyError:
             self.widgetDict['manualTrader'] = ManualTrader(self.omEngine)
             self.widgetDict['manualTrader'].showMaximized()
+            
+    #----------------------------------------------------------------------
+    def openGreeksMonitor(self):
+        """打开希腊值监控组件"""
+        try:
+            self.widgetDict['greeksMonitor'].showMaximized()
+        except KeyError:
+            self.widgetDict['greeksMonitor'] = GreeksMonitor(self.omEngine)
+            self.widgetDict['greeksMonitor'].showMaximized()    
 
     #----------------------------------------------------------------------
     def close(self):

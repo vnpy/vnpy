@@ -79,7 +79,7 @@ def calculateTheta(f, k, r, t, v, cp):
 #----------------------------------------------------------------------
 def calculateVega(f, k, r, t, v, cp):
     """计算Vega值"""
-    vega = calculateVega(f, k, r, t, v, cp) / 100
+    vega = calculateOriginalVega(f, k, r, t, v, cp) / 100
     return vega
 
 #----------------------------------------------------------------------

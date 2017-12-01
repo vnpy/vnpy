@@ -145,7 +145,7 @@ class OmUnderlying(OmInstrument):
     #----------------------------------------------------------------------
     def calculatePosGreeks(self):
         """计算持仓希腊值"""
-        self.posDelta = self.theoDelta * self.netPos    
+        self.posDelta = self.theoDelta * self.netPos * self.size
 
 
 ########################################################################
@@ -210,6 +210,8 @@ class OmOption(OmInstrument):
         self.bidImpv = self.calculateImpv(self.bidPrice1, underlyingPrice, self.k,
                                           self.r, self.t, self.cp)        
         self.midImpv = (self.askImpv + self.bidImpv) / 2
+        
+        self.pricingImpv = self.midImpv
     
     #----------------------------------------------------------------------
     def calculateTheoGreeks(self):
@@ -228,11 +230,11 @@ class OmOption(OmInstrument):
     #----------------------------------------------------------------------
     def calculatePosGreeks(self):
         """计算持仓希腊值"""
-        self.posValue = self.theoPrice * self.netPos
-        self.posDelta = self.theoDelta * self.netPos
-        self.posGamma = self.theoGamma * self.netPos
-        self.posTheta = self.theoTheta * self.netPos
-        self.posVega = self.theoVega * self.netPos                
+        self.posValue = self.theoPrice * self.netPos * self.size
+        self.posDelta = self.theoDelta * self.netPos * self.size
+        self.posGamma = self.theoGamma * self.netPos * self.size
+        self.posTheta = self.theoTheta * self.netPos * self.size	
+        self.posVega = self.theoVega * self.netPos * self.size              
     
     #----------------------------------------------------------------------
     def newTick(self, tick):
