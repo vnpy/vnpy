@@ -368,9 +368,10 @@ class OmPortfolio(object):
     """持仓组合"""
 
     #----------------------------------------------------------------------
-    def __init__(self, name, underlyingList, chainList):
+    def __init__(self, name, model, underlyingList, chainList):
         """Constructor"""
         self.name = name
+        self.model = model
         
         # 原始容器
         self.underlyingDict = OrderedDict()

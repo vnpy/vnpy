@@ -130,7 +130,7 @@ def calculateImpv(price, f, k, r, t, cp):
         
         # 如果vega过小接近0，则直接返回
         if not vega:
-            return v
+            break
         
         # 计算误差
         dx = (price - p) / vega
@@ -143,7 +143,7 @@ def calculateImpv(price, f, k, r, t, cp):
         v += dx
         
     # 检查波动率计算结果非负
-    if v < 0:
+    if v <= 0:
         return 0
     
     # 保留4位小数

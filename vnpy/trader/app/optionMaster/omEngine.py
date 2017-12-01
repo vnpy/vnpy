@@ -156,7 +156,7 @@ class OmEngine(object):
             underlying.addChain(chain)
 
         # 创建持仓组合对象并初始化
-        self.portfolio = OmPortfolio(setting['name'], underlyingDict.values(), chainList)
+        self.portfolio = OmPortfolio(setting['name'], model, underlyingDict.values(), chainList)
         
         # 载入波动率配置
         self.loadImpvSetting()
@@ -198,7 +198,7 @@ class OmEngine(object):
         f.close()
             
     #----------------------------------------------------------------------
-    def close(self):
+    def stop(self):
         """关闭函数"""
         self.saveImpvSetting()
         

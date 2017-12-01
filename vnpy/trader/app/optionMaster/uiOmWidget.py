@@ -12,6 +12,7 @@ from .uiOmBase import QtWidgets, QtCore
 from .uiOmManualTrader import ManualTrader
 from .uiOmGreeksMonitor import GreeksMonitor
 from .uiOmVolatilityManager import VolatilityChart, VolatilityManager
+from .uiOmAnalysisManager import AnalysisManager
 
 
 ########################################################################
@@ -70,6 +71,10 @@ class OmManager(QtWidgets.QWidget):
         self.buttonVolatilityManager.clicked.connect(self.openVolatilityManager)
         self.buttonVolatilityManager.setDisabled(True)
         
+        self.buttonAnalysisManager = QtWidgets.QPushButton(u'持仓分析')
+        self.buttonAnalysisManager.clicked.connect(self.openAnalysisManager)
+        self.buttonAnalysisManager.setDisabled(True)
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
@@ -80,6 +85,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.buttonGreeksMonitor)
         hbox.addWidget(self.buttonVolatilityChart)
         hbox.addWidget(self.buttonVolatilityManager)
+        hbox.addWidget(self.buttonAnalysisManager)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -116,6 +122,7 @@ class OmManager(QtWidgets.QWidget):
         self.buttonGreeksMonitor.setEnabled(True)
         self.buttonVolatilityChart.setEnabled(True)
         self.buttonVolatilityManager.setEnabled(True)
+        self.buttonAnalysisManager.setEnabled(True)
         
     #----------------------------------------------------------------------
     def writeLog(self, content, time=''):
@@ -166,7 +173,16 @@ class OmManager(QtWidgets.QWidget):
             self.widgetDict['volatilityManager'].show()
         except KeyError:
             self.widgetDict['volatilityManager'] = VolatilityManager(self.omEngine)
-            self.widgetDict['volatilityManager'].show()       
+            self.widgetDict['volatilityManager'].show()     
+            
+    #----------------------------------------------------------------------
+    def openAnalysisManager(self):
+        """打开持仓分析组件"""
+        try:
+            self.widgetDict['analysisManager'].showMaximized()
+        except KeyError:
+            self.widgetDict['analysisManager'] = AnalysisManager(self.omEngine)
+            self.widgetDict['analysisManager'].showMaximized()     
 
     #----------------------------------------------------------------------
     def close(self):
