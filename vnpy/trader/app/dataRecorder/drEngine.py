@@ -234,8 +234,14 @@ class DrEngine(object):
         while self.active:
             try:
                 dbName, collectionName, d = self.queue.get(block=True, timeout=1)
-                flt = {'datetime': d['datetime']}
-                self.mainEngine.dbUpdate(dbName, collectionName, d, flt, True)
+                
+                # 这里采用MongoDB的update模式更新数据，在记录tick数据时会由于查询
+                # 过于频繁，导致CPU占用和硬盘读写过高后系统卡死，因此不建议使用
+                #flt = {'datetime': d['datetime']}
+                #self.mainEngine.dbUpdate(dbName, collectionName, d, flt, True)
+                
+                # 使用insert模式更新数据，可能存在时间戳重复的情况，需要用户自行清洗
+                self.mainEngine.dbInsert(dbName, collectionName, d)
             except Empty:
                 pass
             
