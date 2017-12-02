@@ -564,6 +564,12 @@ class BacktestingEngine(object):
         for stopOrderID in self.workingStopOrderDict.keys():
             self.cancelStopOrder(stopOrderID)
 
+    #----------------------------------------------------------------------
+    def saveSyncData(self, strategy):
+        """保存同步数据（无效）"""
+        pass
+        
+
     #------------------------------------------------
     # 结果计算相关
     #------------------------------------------------      

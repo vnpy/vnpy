@@ -46,6 +46,9 @@ class CtaTemplate(object):
     varList = ['inited',
                'trading',
                'pos']
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
@@ -185,6 +188,11 @@ class CtaTemplate(object):
     def getEngineType(self):
         """查询当前运行的环境"""
         return self.ctaEngine.engineType
+    
+    #----------------------------------------------------------------------
+    def saveSyncData(self):
+        """保存同步数据到数据库"""
+        self.ctaEngine.saveSyncData(self)
     
 
 ########################################################################
