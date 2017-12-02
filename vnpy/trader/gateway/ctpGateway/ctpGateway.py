@@ -142,7 +142,7 @@ class CtpGateway(VtGateway):
         
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.tdApi.connect(userID, password, brokerID, tdAddress,authCode, userProductInfo)
+        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
         
         # 初始化并启动查询
         self.initQuery()
