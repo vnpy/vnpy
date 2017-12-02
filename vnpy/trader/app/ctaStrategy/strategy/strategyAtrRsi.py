@@ -61,6 +61,11 @@ class AtrRsiStrategy(CtaTemplate):
                'rsiValue',
                'rsiBuy',
                'rsiSell']  
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos',
+                'intraTradeHigh',
+                'intraTradeLow']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
@@ -154,7 +159,7 @@ class AtrRsiStrategy(CtaTemplate):
             # 计算多头移动止损
             longStop = self.intraTradeHigh * (1-self.trailingPercent/100)
 
-            # 发出本地止损委托，并且把委托号记录下来，用于后续撤单
+            # 发出本地止损委托
             self.sell(longStop, abs(self.pos), stop=True)
             
         # 持有空头仓位
@@ -164,6 +169,9 @@ class AtrRsiStrategy(CtaTemplate):
 
             shortStop = self.intraTradeLow * (1+self.trailingPercent/100)
             self.cover(shortStop, abs(self.pos), stop=True)
+
+        # 同步数据到数据库
+        self.saveSyncData()
 
         # 发出状态更新事件
         self.putEvent()

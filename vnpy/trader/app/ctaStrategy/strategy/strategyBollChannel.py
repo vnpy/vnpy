@@ -76,6 +76,11 @@ class BollChannelStrategy(CtaTemplate):
                'intraTradeLow',
                'longStop',
                'shortStop']  
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos',
+                'intraTradeHigh',
+                'intraTradeLow']    
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
@@ -172,6 +177,9 @@ class BollChannelStrategy(CtaTemplate):
             self.shortStop = self.intraTradeLow + self.atrValue * self.slMultiplier
             
             self.cover(self.shortStop, abs(self.pos), True)
+            
+        # 同步数据到数据库
+        self.saveSyncData()        
     
         # 发出状态更新事件
         self.putEvent()        

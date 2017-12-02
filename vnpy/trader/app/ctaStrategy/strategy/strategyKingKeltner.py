@@ -55,7 +55,12 @@ class KkStrategy(CtaTemplate):
                'trading',
                'pos',
                'kkUp',
-               'kkDown']  
+               'kkDown']
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos',
+                'intraTradeHigh',
+                'intraTradeLow']    
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
@@ -145,6 +150,9 @@ class KkStrategy(CtaTemplate):
             l = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100), 
                            abs(self.pos), True)
             self.orderList.extend(l)
+    
+        # 同步数据到数据库
+        self.saveSyncData()    
     
         # 发出状态更新事件
         self.putEvent()        

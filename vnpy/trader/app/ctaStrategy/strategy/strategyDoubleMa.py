@@ -53,6 +53,9 @@ class DoubleMaStrategy(CtaTemplate):
                'fastMa1',
                'slowMa0',
                'slowMa1']  
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
