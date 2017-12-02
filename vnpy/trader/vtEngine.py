@@ -594,10 +594,11 @@ class LogEngine(object):
             self.logger.addHandler(self.consoleHandler)
             
     #----------------------------------------------------------------------
-    def addFileHandler(self):
+    def addFileHandler(self, filename=''):
         """添加文件输出"""
         if not self.fileHandler:
-            filename = 'vt_' + datetime.now().strftime('%Y%m%d') + '.log'
+            if not filename:
+                filename = 'vt_' + datetime.now().strftime('%Y%m%d') + '.log'
             filepath = getTempPath(filename)
             self.fileHandler = logging.FileHandler(filepath)
             self.fileHandler.setLevel(self.level)
