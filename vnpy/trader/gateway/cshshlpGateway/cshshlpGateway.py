@@ -605,7 +605,7 @@ class CshshlpTdApi(CsHsHlp):
             lip = interface.IPAddress[0]   # 公网IP
             
         for processor in c.Win32_Processor():
-            cpu = temp.processor.strip()   # CPU编号
+            cpu = processor.Processorid.strip()   # CPU编号
             
         for disk in c.Win32_DiskDrive():   # 硬盘编号
             hdd = disk.SerialNumber.strip()   

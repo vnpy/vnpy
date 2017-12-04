@@ -4,4 +4,4 @@ msgpack-python
 qdarkstyle
 SortedContainers
 futuquant
-snappy
+wmi
