@@ -17,7 +17,7 @@ from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
 from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway, 
-                                 huobiGateway, okcoinGateway)
+                                 tkproGateway)
 
 if system == 'Windows':
     from vnpy.trader.gateway import (femasGateway, xspeedGateway, 
@@ -44,10 +44,9 @@ def main():
     
     # 添加交易接口
     me.addGateway(ctpGateway)
+    me.addGateway(tkproGateway)
     me.addGateway(oandaGateway)
     me.addGateway(ibGateway)
-    me.addGateway(huobiGateway)
-    me.addGateway(okcoinGateway)
     
     if system == 'Windows':
         me.addGateway(femasGateway)
