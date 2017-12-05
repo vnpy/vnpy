@@ -404,14 +404,15 @@ class BarManager(object):
             self.xminBar.open = bar.open
             self.xminBar.high = bar.high
             self.xminBar.low = bar.low            
+            
+            self.xminBar.datetime = bar.datetime    # 以第一根分钟K线的开始时间戳作为X分钟线的时间戳
         # 累加老K线
         else:
             self.xminBar.high = max(self.xminBar.high, bar.high)
             self.xminBar.low = min(self.xminBar.low, bar.low)
     
         # 通用部分
-        self.xminBar.close = bar.close
-        self.xminBar.datetime = bar.datetime
+        self.xminBar.close = bar.close        
         self.xminBar.openInterest = bar.openInterest
         self.xminBar.volume += int(bar.volume)                
             
