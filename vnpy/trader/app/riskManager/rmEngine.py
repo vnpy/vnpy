@@ -226,7 +226,7 @@ class RmEngine(object):
         
         # 检查保证金比例
         if gatewayName in self.marginRatioDict and self.marginRatioDict[gatewayName] >= self.marginRatioLimit:
-            self.writeRiskLog(u'%s接口保证金占比%S，超过限制%s'
+            self.writeRiskLog(u'%s接口保证金占比%s，超过限制%s'
                               %(gatewayName, self.marginRatioDict[gatewayName], self.marginRatioLimit))
             return False
         
