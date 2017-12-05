@@ -542,6 +542,12 @@ class CtpTdApi(TdApi):
             self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
             
             self.login()
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
         
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
