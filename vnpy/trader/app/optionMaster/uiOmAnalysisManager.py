@@ -35,11 +35,11 @@ class ScenarioValueMonitor(QtWidgets.QTableWidget):
         
         # 设置表头
         self.setColumnCount(len(priceChangeArray))
-        priceChangeHeaders = [('%s%%' %(priceChange*100)) for priceChange in priceChangeArray]
+        priceChangeHeaders = [('price %s%%' %(priceChange*100)) for priceChange in priceChangeArray]
         self.setHorizontalHeaderLabels(priceChangeHeaders)
         
         self.setRowCount(len(impvChangeArray))
-        impvChangeHeaders = [('%s%%' %(impvChange*100)) for impvChange in impvChangeArray]
+        impvChangeHeaders = [('impv %s%%' %(impvChange*100)) for impvChange in impvChangeArray]
         self.setVerticalHeaderLabels(impvChangeHeaders)
 
         # 设置数据
