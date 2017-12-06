@@ -145,7 +145,7 @@ class OmUnderlying(OmInstrument):
     #----------------------------------------------------------------------
     def calculatePosGreeks(self):
         """计算持仓希腊值"""
-        self.posDelta = self.theoDelta * self.netPos * self.size
+        self.posDelta = self.theoDelta * self.netPos
 
 
 ########################################################################
@@ -218,21 +218,26 @@ class OmOption(OmInstrument):
         if not underlyingPrice or not self.pricingImpv:
             return
         
-        self.theoPrice, self.theoDelta, self.theoGamma, self.theoTheta, self.theoVega = self.calculateGreeks(underlyingPrice, 
-                                                                                                             self.k, 
-                                                                                                             self.r, 
-                                                                                                             self.t, 
-                                                                                                             self.pricingImpv, 
-                                                                                                             self.cp)
+        self.theoPrice, delta, gamma, theta, vega = self.calculateGreeks(underlyingPrice, 
+                                                                         self.k, 
+                                                                         self.r, 
+                                                                         self.t, 
+                                                                         self.pricingImpv, 
+                                                                         self.cp)
+        
+        self.theoDelta = delta * self.size
+        self.theoGamma = gamma * self.size
+        self.theoTheta = theta * self.size
+        self.theoVega = vega * self.size
         
     #----------------------------------------------------------------------
     def calculatePosGreeks(self):
         """计算持仓希腊值"""
         self.posValue = self.theoPrice * self.netPos * self.size
-        self.posDelta = self.theoDelta * self.netPos * self.size
-        self.posGamma = self.theoGamma * self.netPos * self.size
-        self.posTheta = self.theoTheta * self.netPos * self.size	
-        self.posVega = self.theoVega * self.netPos * self.size              
+        self.posDelta = self.theoDelta * self.netPos
+        self.posGamma = self.theoGamma * self.netPos
+        self.posTheta = self.theoTheta * self.netPos
+        self.posVega = self.theoVega * self.netPos
     
     #----------------------------------------------------------------------
     def newTick(self, tick):
