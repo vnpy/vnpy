@@ -211,7 +211,11 @@ class TqApi(object):
     def on_receive_msg(self, msg):
         """收到数据推送"""
         pack = json.loads(msg)
-        l = pack["data"]
+        
+        if 'data' in pack:
+            l = pack["data"]
+        else:
+            print u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack)
 
         for data in l:
             # 合并更新数据字典
