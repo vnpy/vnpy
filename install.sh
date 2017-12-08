@@ -9,6 +9,10 @@ pushd vnpy/api/lts
 bash build.sh
 popd
 
+pushd vnpy/api/xtp
+bash build.sh
+popd
+
 pushd vnpy/api/ib
 bash build.sh
 popd

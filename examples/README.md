@@ -4,6 +4,8 @@
 
 * VnTrader：最常用的vn.py图形交易界面
 
+* OptionMaster: 期权量化交易系统
+
 * DataRecording：全自动行情记录工具（无需用户每日定时重启）
 
 * CtaTrading：无图形界面模式的CTA策略交易
@@ -16,4 +18,8 @@
 
 * TqDataService：天勤历史行情服务（期货）
 
-* TushareDataService：TuShare历史行情服务（股票）
+* TushareDataService：TuShare历史行情服务（A股）
+
+* FutuDataService：富途证券历史行情服务（美股、港股）
+
+* QuantosDataService: quantOS历史行情服务（A股、期货）
