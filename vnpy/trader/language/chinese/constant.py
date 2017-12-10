@@ -85,6 +85,11 @@ EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
 EXCHANGE_HUOBI = 'HUOBI'       # 火币比特币交易所
 EXCHANGE_LHANG = 'LHANG'       # 链行比特币交易所
 
+EXCHANGE_ZB = 'ZB'		   	   # ZB 中国比特币交易所  (比特币中国)
+EXCHANGE_OKEX = 'OKEX'		   # OKEX 中国比特币交易所 (okcoin)
+EXCHANGE_ZAIF = "ZAIF"		   # ZAIF 日本比特币交易所
+EXCHANGE_COINCHECK = "COINCHECK" # COINCHECK 日本比特币交易所
+
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币
