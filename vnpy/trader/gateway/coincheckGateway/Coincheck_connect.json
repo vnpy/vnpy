@@ -1,0 +1,7 @@
+{
+	"accountID": "你的账户ID",
+    "accessKey": "你的key",
+    "secretKey": "你的secretKey",
+    "interval": 0.5,
+    "debug": false
+}
