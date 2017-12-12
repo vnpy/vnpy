@@ -5,3 +5,5 @@ qdarkstyle
 SortedContainers
 futuquant
 wmi
+future
+snappy
