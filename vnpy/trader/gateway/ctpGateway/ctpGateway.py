@@ -532,6 +532,8 @@ class CtpTdApi(TdApi):
 
         self.requireAuthentication = False
 
+        self.tradingDay = None
+
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
@@ -573,6 +575,7 @@ class CtpTdApi(TdApi):
         """登陆回报"""
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
+            self.tradingDay = str(data['TradingDay'])
             self.frontID = str(data['FrontID'])
             self.sessionID = str(data['SessionID'])
             self.loginStatus = True
@@ -825,7 +828,7 @@ class CtpTdApi(TdApi):
         account.margin = data['CurrMargin']
         account.closeProfit = data['CloseProfit']
         account.positionProfit = data['PositionProfit']
-        
+        account.tradingDay = str(data['TradingDay'])
         # 这里的balance和快期中的账户不确定是否一样，需要测试
         account.balance = (data['PreBalance'] - data['PreCredit'] - data['PreMortgage'] +
                            data['Mortgage'] - data['Withdraw'] + data['Deposit'] +
