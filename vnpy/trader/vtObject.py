@@ -211,6 +211,7 @@ class VtAccountData(VtBaseData):
         self.closeProfit = EMPTY_FLOAT  # 平仓盈亏
         self.positionProfit = EMPTY_FLOAT  # 持仓盈亏
 
+        self.tradingDay = EMPTY_STRING  # 当前交易日
 
 ########################################################################
 class VtErrorData(VtBaseData):
