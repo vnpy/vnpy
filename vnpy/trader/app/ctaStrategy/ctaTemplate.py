@@ -192,7 +192,8 @@ class CtaTemplate(object):
     #----------------------------------------------------------------------
     def saveSyncData(self):
         """保存同步数据到数据库"""
-        self.ctaEngine.saveSyncData(self)
+        if self.trading:
+            self.ctaEngine.saveSyncData(self)
     
 
 ########################################################################
