@@ -37,6 +37,8 @@ class CoincheckGateway(VtGateway):
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)       
 
+        self.total_count = 0
+        self.delayTime = 3
 
     #----------------------------------------------------------------------
     def connect(self):
@@ -76,6 +78,7 @@ class CoincheckGateway(VtGateway):
         #self.dataApi.connect(interval,  debug)
         self.dataApi.connect()
         self.writeLog(u'行情接口初始化成功')
+
         
         # 启动查询
         self.initQuery()
@@ -123,16 +126,18 @@ class CoincheckGateway(VtGateway):
     #----------------------------------------------------------------------
     def initQuery(self):
         """初始化连续查询"""
+
         if self.qryEnabled:
             self.qryFunctionList = [self.tradeApi.get_balance , self.tradeApi.list_orders]
             #self.qryFunctionList = [self.tradeApi.queryWorkingOrders, self.tradeApi.queryAccount]
-            self.startQuery()  
 
     #----------------------------------------------------------------------
     def query(self, event):
         """注册到事件处理引擎上的查询函数"""
-        for function in self.qryFunctionList:
-            function()
+        self.total_count += 1
+        if self.total_count % self.delayTime == 0:
+            for function in self.qryFunctionList:
+                function()
                 
     #----------------------------------------------------------------------
     def startQuery(self):
@@ -218,7 +223,6 @@ u'dash': u'0', u'cny_debt': u'0.0', u'xrp_lend_in_use': u'0.0', u'xem_reserved':
             account.accountID = self.accountID
             account.vtAccountID = '.'.join([ self.gatewayName , self.accountID])
             account.balance = float(data['jpy'])
-            account.balance = float(data['jpy'])
             account.available = float(data['jpy'])
 
             account.margin = 1.0
@@ -227,15 +231,16 @@ u'dash': u'0', u'cny_debt': u'0.0', u'xrp_lend_in_use': u'0.0', u'xem_reserved':
             account.commission = 0.0
             account.now_has_hands = float(data['jpy'])
 
+
             self.gateway.onAccount(account)
 
-            for symbol in ['btc']:
+            for symbol in ['btc' , 'jpy']:
                 posObj = VtPositionData()
                 posObj.gatewayName = self.gatewayName
-                posObj.symbol = symbol + "_jpy." + EXCHANGE_COINCHECK
+                posObj.symbol = symbol + "." + EXCHANGE_COINCHECK
                 posObj.exchange = EXCHANGE_COINCHECK
                 posObj.vtSymbol = posObj.symbol
-                posObj.direction = DIRECTION_LONG
+                posObj.direction = DIRECTION_NET
                 posObj.vtPositionName = '.'.join( [posObj.vtSymbol, posObj.direction])
                 posObj.ydPosition = float(data[symbol])
                 posObj.position = float(data[symbol]) + float(data[symbol + "_reserved"])
@@ -282,7 +287,8 @@ u'dash': u'0', u'cny_debt': u'0.0', u'xrp_lend_in_use': u'0.0', u'xem_reserved':
         else:
             order.offset = OFFSET_CLOSE
         order.price = req.price
-        order.volume = req.volume
+        order.tradedVolume = 0
+        order.totalVolume = req.volume
         order.orderTime = datetime.now().strftime('%H:%M:%S')
         order.status = STATUS_UNKNOWN
 
@@ -380,7 +386,7 @@ pending_market_buy_amount': None, u'rate': u'100.0', u'pair': u'btc_jpy', u'stop
                     order = self.workingOrderDict.get(localID, None)
                     if order != None:
                         bef_has_volume = self.tradedVolumeDict.get(localID , 0.0)
-                        newTradeVolume = order.volume - bef_has_volume
+                        newTradeVolume = order.totalVolume - bef_has_volume
 
                         trade = VtTradeData()
                         trade.gatewayName = self.gatewayName
@@ -443,6 +449,7 @@ pending_market_buy_amount': None, u'rate': u'100.0', u'pair': u'btc_jpy', u'stop
 
                             self.gateway.onTrade(trade)
 
+                            order.tradedVolume = has_traded_volume
                             order.status = STATUS_PARTTRADED
                             self.gateway.onOrder(order)
                 else:
@@ -475,7 +482,7 @@ pending_market_buy_amount': None, u'rate': u'100.0', u'pair': u'btc_jpy', u'stop
                         order.offset = OFFSET_OPEN
 
                         order.price = float(d["rate"])
-                        order.volume = float(d["pending_amount"])
+                        order.totalVolume = float(d["pending_amount"])
                         order.orderTime = d["created_at"]
                         order.status = STATUS_MISTAKE
 
@@ -534,6 +541,17 @@ class CoincheckSocketDataApi(vncoincheck.DataApiSocket):
 
     def connect(self ):
         super(CoincheckSocketDataApi, self).connect( COINCHECK_HOSTS)
+
+        contract = VtContractData()
+        contract.gatewayName = self.gatewayName
+        contract.symbol = SYMBOL_BTCJPY
+        contract.exchange = EXCHANGE_COINCHECK
+        contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
+        contract.name = u'日元coincheck现货BTC'
+        contract.size = 0.0001
+        contract.priceTick = 0.0001
+        contract.productClass = PRODUCT_SPOT
+        self.gateway.onContract(contract)
 
     def onOrderbooks(self, data):
         symbol = SYMBOL_BTCJPY

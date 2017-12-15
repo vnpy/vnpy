@@ -38,6 +38,7 @@ statusMap[1] = STATUS_PARTTRADED
 statusMap[2] = STATUS_ALLTRADED
 statusMap[4] = STATUS_UNKNOWN
 
+
 ########################################################################
 class okexGateway(VtGateway):
     #----------------------------------------------------------------------
@@ -100,7 +101,7 @@ class okexGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        pass
+        self.api_spot.subscribe(subscribeReq)
         
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -205,6 +206,8 @@ class Api_Spot(OKEX_Sub_Spot_Api):
 
         self.cache_some_order = {}
         self.tradeID = 0
+
+        self.registerSymbolPairArray = set([])
         
         self.initCallback()
 
@@ -281,11 +284,31 @@ class Api_Spot(OKEX_Sub_Spot_Api):
             
             t = Thread(target=reconnect)
             t.start()
+    #----------------------------------------------------------------------
+    def subscribe(self, subscribeReq):
+        symbol_pair_gateway = subscribeReq.symbol
+        arr = symbol_pair_gateway.split('.')
+        symbol_pair = arr[0]
+        
+        if symbol_pair not in self.registerSymbolPairArray:
+            self.registerSymbolPairArray.add(symbol_pair)
+            self.subscribeSingleSymbol( symbol_pair)
+
+            self.spotOrderInfo(symbol_pair , '-1')
+
+    #----------------------------------------------------------------------
+    def subscribeSingleSymbol(self, symbol):
+        if symbol in okex_all_symbol_pairs:
+            self.subscribeSpotTicker(symbol)
+            self.subscribeSpotDepth5(symbol)
+            #self.subscribeSpotDeals(symbol)
 
     #----------------------------------------------------------------------
     def spotAllOrders(self):
-        for symbol in okex_all_symbol_pairs:
-            self.spotOrderInfo(symbol , '-1')
+        print spotAllOrders
+        for symbol in registerSymbolPairArray:
+            if symbol in okex_all_symbol_pairs:
+                self.spotOrderInfo(symbol , '-1')
 
         for orderId in self.orderIdDict.keys():
             order = self.orderDict.get(orderId , None)
@@ -303,14 +326,11 @@ class Api_Spot(OKEX_Sub_Spot_Api):
         # 连接后查询账户和委托数据
         self.spotUserInfo()
         
-        for symbol_pair in okex_all_symbol_pairs:
-            self.spotOrderInfo(symbol_pair , '-1')
-
-
+        self.subscribeSingleSymbol("etc_usdt")
         for symbol in okex_all_symbol_pairs:
-            self.subscribeSpotTicker(symbol)
-            self.subscribeSpotDepth5(symbol)
-            self.subscribeSpotDeals(symbol)
+            # self.subscribeSpotTicker(symbol)
+            # self.subscribeSpotDepth5(symbol)
+            # self.subscribeSpotDeals(symbol)
 
             #Ticker数据
             self.channelSymbolMap["ok_sub_spot_%s_ticker" % symbol] = symbol
@@ -509,8 +529,8 @@ class Api_Spot(OKEX_Sub_Spot_Api):
         for symbol in info["freezed"].keys():
             pos = VtPositionData()
             pos.gatewayName = self.gatewayName
-            pos.symbol = symbol
-            pos.vtSymbol = symbol
+            pos.symbol = symbol + "." + EXCHANGE_OKEX
+            pos.vtSymbol = symbol + "." + EXCHANGE_OKEX
             pos.direction = DIRECTION_NET
             pos.frozen = float(info['freezed'][symbol])
             pos.position = pos.frozen + float(info['free'][symbol])
@@ -557,8 +577,8 @@ etc': u'0', u'act': u'0', u'eth': u'0', u'ltc': u'0', u'bcs': u'0'}, u'free': {u
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
                 
-                pos.symbol = symbol
-                pos.vtSymbol = symbol
+                pos.symbol = symbol + "." + EXCHANGE_OKEX
+                pos.vtSymbol = symbol + "." + EXCHANGE_OKEX
                 pos.vtPositionName = symbol
                 pos.direction = DIRECTION_NET
                 
@@ -593,8 +613,8 @@ etc': u'0', u'act': u'0', u'eth': u'0', u'ltc': u'0', u'bcs': u'0'}, u'free': {u
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
                 
-                pos.symbol = symbol
-                pos.vtSymbol = symbol
+                pos.symbol = symbol + "." + EXCHANGE_OKEX
+                pos.vtSymbol = symbol + "." + EXCHANGE_OKEX
                 pos.vtPositionName = symbol
                 pos.direction = DIRECTION_NET
                 
@@ -763,8 +783,10 @@ nel': u'ok_sub_spot_etc_usdt_order'}
     #----------------------------------------------------------------------
     def onSpotOrderInfo(self, data):
         """委托信息查询回调"""
+        if "error_code" in data.keys():
+            print data
+            return 
         rawData = data['data']
-        
         for d in rawData['orders']:
             self.localNo += 1
             localNo = str(self.localNo)
@@ -810,8 +832,11 @@ nel': u'ok_sub_spot_etc_usdt_order'}
     ]
     '''
     def onSpotOrder(self, data):
-
         rawData = data['data']
+        if 'error_code' in rawData.keys():
+            print data
+            return
+
         orderId = str(rawData['order_id'])
         
         # 尽管websocket接口的委托号返回是异步的，但经过测试是
@@ -874,7 +899,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
-            order.symbol = ','.join([rawData['symbol'] , EXCHANGE_OKEX])
+            order.symbol = '.'.join([rawData['symbol'] , EXCHANGE_OKEX])
             order.vtSymbol = order.symbol
     
             order.orderID = localNo

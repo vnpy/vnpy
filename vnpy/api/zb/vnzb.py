@@ -13,16 +13,23 @@ import urllib2, hashlib,struct,sha,time
 
 # OKEX网站
 zb_usd_url = "wss://api.zb.com:9999/websocket"
-zb_all_symbols = ["ltc_btc"]
+zb_all_symbol_pairs = ["ltc_btc","btc_qc","bcc_qc","ltc_qc","eth_qc","etc_qc","bts_qc","eos_qc","qtum_qc","btc_qc","hsr_qc","xpr_qc","bcd_qc","dash_qc"]
+zb_all_symbols = ["btc","ltc","qc","bch","eth","hsr","ubtc","sbtc"]
+
+zb_all_real_pair = {}
+for symbol_pair in zb_all_symbol_pairs:
+    zb_all_real_pair[ symbol_pair.replace('_',"")] = symbol_pair
 
 class ZB_Sub_Spot_Api(object):
     """基于Websocket的API对象"""
     def __init__(self):
         """Constructor"""
-        self.apiKey = ''        # 用户名
-        self.secretKey = ''     # 密码
+        self.apiKey = ''            # 用户名
+        self.secretKey = ''         # 密码
 
-        self.ws_sub_spot = None          # websocket应用对象  现货对象
+        self.ws_sub_spot = None     # websocket应用对象  现货对象
+
+        self.thread = None          # 线程变量
 
     #----------------------------------------------------------------------
     def reconnect(self):
@@ -203,14 +210,17 @@ class ZB_Sub_Spot_Api(object):
         
         channel = symbol_pair.lower() + "_order"
         
+        print channel , str(type_) , str(price) , str(amount)
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
     def spotCancelOrder(self, symbol_pair, orderid):
         """现货撤单"""
+        bef_symbol_pair = symbol_pair
         symbol_pair = symbol_pair.replace('_','') 
         params = {}
         params['id'] = str(orderid)
+        params['no'] = str(bef_symbol_pair) + "." + str(orderid)
         
         channel = symbol_pair.lower() + "_cancelorder"
 

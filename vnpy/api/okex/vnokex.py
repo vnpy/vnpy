@@ -36,6 +36,8 @@ class OKEX_Sub_Spot_Api(object):
 
       self.ws_sub_spot = None          # websocket应用对象  现货对象
 
+      self.thread = None        # 线程初始化
+
     #----------------------------------------------------------------------
     def reconnect(self):
         """重新连接"""

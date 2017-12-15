@@ -189,7 +189,6 @@ class TradeApi(object):
         self.active = True
         self.reqThread.start()
     
-
     #----------------------------------------------------------------------
     def exit(self):
         """退出"""
