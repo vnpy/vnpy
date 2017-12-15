@@ -352,7 +352,7 @@ class MainEngine(object):
     def convertOrderReq(self, req):
         """转换委托请求"""
         return self.dataEngine.convertOrderReq(req)
-        
+
 
 ########################################################################
 class DataEngine(object):
@@ -532,27 +532,11 @@ class DataEngine(object):
             return [req]
         else:
             return detail.convertOrderReq(req)
-        
-        
-########################################################################
-class Singleton(type):
-    """
-    单例，应用方式:静态变量 __metaclass__ = Singleton
-    """
-    def __init__(cls, name, bases, dict):
-        super(Singleton, cls).__init__(name, bases, dict)
-        cls._instance = None
 
-    def __call__(cls, *args, **kw):
-        if cls._instance is None:
-            cls._instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls._instance
-    
+
+########################################################################    
 class LogEngine(object):
     """日志引擎"""
-    
-    # 单例模式
-    __metaclass__ = Singleton
     
     # 日志级别
     LEVEL_DEBUG = logging.DEBUG
@@ -560,6 +544,16 @@ class LogEngine(object):
     LEVEL_WARN = logging.WARN
     LEVEL_ERROR = logging.ERROR
     LEVEL_CRITICAL = logging.CRITICAL
+    
+    # 单例对象
+    instance = None
+    
+    #----------------------------------------------------------------------
+    def __new__(cls, *args, **kwargs):
+        """创建对象，保证单例"""
+        if not cls.instance:
+            cls.instance = super(LogEngine, cls).__new__(cls, *args, **kwargs)
+        return cls.instance
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -792,8 +786,6 @@ class PositionDetail(object):
         self.longPos = self.longTd + self.longYd
         self.shortPos = self.shortTd + self.shortYd      
         
-        #self.output()
-        
     #----------------------------------------------------------------------
     def calculateFrozen(self):
         """计算冻结情况"""
@@ -844,8 +836,6 @@ class PositionDetail(object):
             # 汇总今昨冻结
             self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
-        
-        #self.output()
             
     #----------------------------------------------------------------------
     def output(self):
