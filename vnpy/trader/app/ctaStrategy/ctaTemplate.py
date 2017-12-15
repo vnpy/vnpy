@@ -269,9 +269,7 @@ class TargetPosTemplate(CtaTemplate):
     def trade(self):
         """执行交易"""
         # 先撤销之前的委托
-        for vtOrderID in self.orderList:
-            self.cancelOrder(vtOrderID)
-        self.orderList = []
+        self.cancelAll()
         
         # 如果目标仓位和实际仓位一致，则不进行任何操作
         posChange = self.targetPos - self.pos
@@ -285,8 +283,12 @@ class TargetPosTemplate(CtaTemplate):
         if self.lastTick:
             if posChange > 0:
                 longPrice = self.lastTick.askPrice1 + self.tickAdd
+                if tick.upperLimit:
+                    longPrice = min(longPrice, tick.upperLimit)         # 涨停价检查
             else:
                 shortPrice = self.lastTick.bidPrice1 - self.tickAdd
+                if tick.lowerLimit:
+                    shortPrice = max(shortPrice, tick.lowerLimit)       # 跌停价检查
         else:
             if posChange > 0:
                 longPrice = self.lastBar.close + self.tickAdd
@@ -310,14 +312,24 @@ class TargetPosTemplate(CtaTemplate):
             
             # 买入
             if posChange > 0:
+                # 若当前有空头持仓
                 if self.pos < 0:
-                    l = self.cover(longPrice, abs(self.pos))
+                    # 若买入量小于空头持仓，则直接平空买入量
+                    if posChange < abs(self.pos):
+                        l = self.cover(longPrice, posChange)
+                    # 否则先平所有的空头仓位
+                    else:
+                        l = self.cover(longPrice, abs(self.pos))
+                # 若没有空头持仓，则执行开仓操作
                 else:
                     l = self.buy(longPrice, abs(posChange))
-            # 卖出
+            # 卖出和以上相反
             else:
                 if self.pos > 0:
-                    l = self.sell(shortPrice, abs(self.pos))
+                    if abs(posChange) < self.pos:
+                        l = self.sell(shortPrice, abs(posChange))
+                    else:
+                        l = self.sell(shortPrice, abs(self.pos))
                 else:
                     l = self.short(shortPrice, abs(posChange))
             self.orderList.extend(l)
