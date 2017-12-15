@@ -21,7 +21,7 @@ from __future__ import division
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
-                                                     BarManager, 
+                                                     BarGenerator, 
                                                      ArrayManager)
 
 
@@ -87,8 +87,8 @@ class BollChannelStrategy(CtaTemplate):
         """Constructor"""
         super(BollChannelStrategy, self).__init__(ctaEngine, setting)
         
-        self.bm = BarManager(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
-        self.bm30 = BarManager(self.onBar, 30, self.on30minBar)
+        self.bg = BarGenerator(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
+        self.bg30 = BarGenerator(self.onBar, 30, self.on30minBar)
         self.am = ArrayManager()
         
     #----------------------------------------------------------------------
@@ -123,12 +123,12 @@ class BollChannelStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）""" 
-        self.bm.updateTick(tick)
+        self.bg.updateTick(tick)
 
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        self.bm.updateBar(bar)
+        self.bg.updateBar(bar)
     
     #----------------------------------------------------------------------
     def onXminBar(self, bar):

@@ -323,7 +323,7 @@ class TargetPosTemplate(CtaTemplate):
     
     
 ########################################################################
-class BarManager(object):
+class BarGenerator(object):
     """
     K线合成器，支持：
     1. 基于Tick合成1分钟K线
