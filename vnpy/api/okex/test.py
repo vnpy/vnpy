@@ -7,9 +7,9 @@ apiKey = '你的accessKey'
 secretKey = '你的secretKey'
 
 # 创建API对象
-api = OKEX_Sub_Spot_Api()
+api = OkexSpotApi()
 
-api.connect_Subpot(apiKey, secretKey, True)
+api.connect(apiKey, secretKey, True)
 
 sleep(3)
 
@@ -25,8 +25,8 @@ api.spotTrade("etc_usdt","sell", "50" , "0.01")
 #api.spotUserInfo()
 #api.spotOrderInfo("etc_btc", 44284731)
 
-# api = OKEX_Contract_Api()
-# api.connect_Contract(apiKey, secretKey, True)
+# api = OkexFuturesApi()
+# api.connect(apiKey, secretKey, True)
 
 # sleep(3)
 #api.subsribeFutureTicker("btc","this_week")

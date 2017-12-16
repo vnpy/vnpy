@@ -9,34 +9,76 @@ from threading import Thread
 import websocket    
 
 # OKEX网站
-
-OKEX_USD_SUB_SPOT = 'wss://real.okex.com:10441/websocket'       # OKEX 现货地址
+OKEX_USD_SPOT = 'wss://real.okex.com:10441/websocket'               # OKEX 现货地址
 OKEX_USD_CONTRACT = 'wss://real.okex.com:10440/websocket/okexapi'   # OKEX 期货地址
 
-okex_all_symbol_type = ["usdt","btc","ltc","eth","etc","bch"]
-okex_all_symbol_pairs = ["ltc_btc","eth_btc","etc_btc","bch_btc","btc_usdt","eth_usdt",\
-        "ltc_usdt","etc_usdt","bch_usdt","etc_eth","bt1_btc","bt2_btc","btg_btc","qtum_btc",\
-        "hsr_btc","neo_btc","gas_btc","qtum_usdt","hsr_usdt","neo_usdt","gas_usdt"]
+SPOT_CURRENCY = ["usdt",
+                 "btc",
+                 "ltc",
+                 "eth",
+                 "etc",
+                 "bch"]
 
-# for test
-# okex_all_symbol_pairs = ['etc_usdt']
+SPOT_SYMBOL = ["ltc_btc",
+               "eth_btc",
+               "etc_btc",
+               "bch_btc",
+               "btc_usdt",
+               "eth_usdt",
+               "ltc_usdt",
+               "etc_usdt",
+               "bch_usdt",
+               "etc_eth",
+               "bt1_btc",
+               "bt2_btc",
+               "btg_btc",
+               "qtum_btc",
+               "hsr_btc",
+               "neo_btc",
+               "gas_btc",
+               "qtum_usdt",
+               "hsr_usdt",
+               "neo_usdt",
+               "gas_usdt"]
 
-okex_all_k_line_periods = ["1min","3min","5min","15min","30min","1hour","2hour","4hour","6hour","12hour","day","3day","week"]
+KLINE_PERIOD = ["1min",
+                "3min",
+                "5min",
+                "15min",
+                "30min",
+                "1hour",
+                "2hour",
+                "4hour",
+                "6hour",
+                "12hour",
+                "day",
+                "3day",
+                "week"]
 
-okex_all_contract_symbol = ["btc","ltc","eth","bch"]
-okex_all_contract_type = ["this_week","next_week","quarter"]
+CONTRACT_SYMBOL = ["btc",
+                   "ltc",
+                   "eth",
+                   "etc",
+                   "bch"]
 
-class OKEX_Sub_Spot_Api(object):
-    """基于Websocket的API对象"""
+CONTRACT_TYPE = ["this_week",
+                 "next_week",
+                 "quarter"]
+
+
+########################################################################
+class OkexApi(object):    
+    """交易接口"""
+
     #----------------------------------------------------------------------
     def __init__(self):
-      """Constructor"""
-      self.apiKey = ''        # 用户名
-      self.secretKey = ''     # 密码
-
-      self.ws_sub_spot = None          # websocket应用对象  现货对象
-
-      self.thread = None        # 线程初始化
+        """Constructor"""
+        self.host = ''          # 服务器
+        self.apiKey = ''        # 用户名
+        self.secretKey = ''     # 密码
+  
+        self.ws = None          # websocket应用对象  现货对象
+        self.thread = None      # 初始化线程
 
     #----------------------------------------------------------------------
     def reconnect(self):
@@ -45,52 +87,43 @@ class OKEX_Sub_Spot_Api(object):
         self.close()
         
         # 再执行重连任务
-        self.ws_sub_spot = websocket.WebSocketApp(self.host, 
+        self.ws = websocket.WebSocketApp(self.host, 
                                          on_message=self.onMessage,
                                          on_error=self.onError,
                                          on_close=self.onClose,
                                          on_open=self.onOpen)        
     
-        self.thread = Thread(target=self.ws_sub_spot.run_forever)
+        self.thread = Thread(target=self.ws.run_forever)
         self.thread.start()
     
     #----------------------------------------------------------------------
-    def connect_Subpot(self, apiKey , secretKey , trace = False):
-        self.host = OKEX_USD_SUB_SPOT
+    def connect(self, apiKey, secretKey, trace=False):
+        self.host = OKEX_USD_SPOT
         self.apiKey = apiKey
         self.secretKey = secretKey
 
         websocket.enableTrace(trace)
 
-        self.ws_sub_spot = websocket.WebSocketApp(self.host, 
+        self.ws = websocket.WebSocketApp(self.host, 
                                              on_message=self.onMessage,
                                              on_error=self.onError,
                                              on_close=self.onClose,
                                              on_open=self.onOpen)        
             
-        self.thread = Thread(target=self.ws_sub_spot.run_forever)
+        self.thread = Thread(target=self.ws.run_forever)
         self.thread.start()
 
     #----------------------------------------------------------------------
     def readData(self, evt):
-        """解压缩推送收到的数据"""
-        # # 创建解压器
-        # decompress = zlib.decompressobj(-zlib.MAX_WBITS)
-        
-        # # 将原始数据解压成字符串
-        # inflated = decompress.decompress(evt) + decompress.flush()
-        
-        # 通过json解析字符串
-        #data = json.loads(inflated)
+        """解码推送收到的数据"""
         data = json.loads(evt)
-        
         return data
 
     #----------------------------------------------------------------------
     def close(self):
         """关闭接口"""
         if self.thread and self.thread.isAlive():
-            self.ws_sub_spot.close()
+            self.ws.close()
             self.thread.join()
 
     #----------------------------------------------------------------------
@@ -113,35 +146,7 @@ class OKEX_Sub_Spot_Api(object):
     def onOpen(self, ws):
         """接口打开"""
         print 'onOpen'
-
-    #----------------------------------------------------------------------
-    def subscribeSpotTicker(self, symbol_pair):
-      # 现货的 ticker
-        req = "{'event':'addChannel','channel':'ok_sub_spot_%s_ticker'}" % symbol_pair
-        self.ws_sub_spot.send(req)
-
-    #----------------------------------------------------------------------
-    def subscribeSpotDepth(self, symbol_pair):
-      # 现货的 市场深度
-        req = "{'event':'addChannel','channel':'ok_sub_spot_%s_depth'}" % symbol_pair
-        self.ws_sub_spot.send(req)
-
-    #----------------------------------------------------------------------
-    def subscribeSpotDepth5(self, symbol_pair):
-      # 现货的 市场深度 5
-        req = "{'event':'addChannel','channel':'ok_sub_spot_%s_depth_5'}" % symbol_pair
-        self.ws_sub_spot.send(req)
-
-    #----------------------------------------------------------------------
-    def subscribeSpotDeals(self, symbol_pair):
-        req = "{'event':'addChannel','channel':'ok_sub_spot_%s_deals'}" % symbol_pair
-        self.ws_sub_spot.send(req)
-
-    #----------------------------------------------------------------------
-    def subscribeSpotKlines(self, symbol_pair , time_period):
-        req = "{'event':'addChannel','channel':'ok_sub_spot_%s_kline_%s'}" % ( symbol_pair , time_period)
-        self.ws_sub_spot.send(req)
-
+        
     #----------------------------------------------------------------------
     def generateSign(self, params):
         """生成签名"""
@@ -170,15 +175,84 @@ class OKEX_Sub_Spot_Api(object):
         
         # 若触发异常则重连
         try:
-            self.ws_sub_spot.send(j)
+            self.ws.send(j)
         except websocket.WebSocketConnectionClosedException:
             pass 
 
     #----------------------------------------------------------------------
-    def spotTrade(self, symbol_pair, type_, price, amount):
+    def sendDataRequest(self, channel):
+        """发送数据请求"""
+        d = {}
+        d['event'] = 'addChannel'
+        d['channel'] = channel
+        j = json.dumps(d)
+        
+        # 若触发异常则重连
+        try:
+            self.ws.send(j)
+        except websocket.WebSocketConnectionClosedException:
+            pass
+
+    #----------------------------------------------------------------------
+    def login(self):
+        params = {}
+        params['api_key'] = self.apiKey
+        params['sign'] = self.generateSign(params)
+        
+        # 生成请求
+        d = {}
+        d['event'] = 'login'
+        d['parameters'] = params
+        
+        # 使用json打包并发送
+        j = json.dumps(d)
+        
+        # 若触发异常则重连
+        try:
+            self.ws.send(j)
+            return True
+        except websocket.WebSocketConnectionClosedException:
+            return False
+
+
+########################################################################
+class OkexSpotApi(OkexApi):    
+    """现货交易接口"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        super(OkexSpotApi, self).__init__()
+
+    #----------------------------------------------------------------------
+    def subscribeSpotTicker(self, symbol):
+        """订阅现货的Tick"""
+        channel = 'ok_sub_spot_%s_ticker' %symbol
+        self.sendDataRequest(channel)
+
+    #----------------------------------------------------------------------
+    def subscribeSpotDepth(self, symbol, depth=0):
+        """订阅现货的深度"""
+        channel = 'ok_sub_spot_%s_depth' %symbol
+        if depth:
+            channel = channel + '_' + str(depth)
+        self.sendDataRequest(channel)
+
+    #----------------------------------------------------------------------
+    def subscribeSpotDeals(self, symbol):
+        channel = 'ok_sub_spot_%s_deals' %symbol
+        self.sendDataRequest(channel)
+
+    #----------------------------------------------------------------------
+    def subscribeSpotKlines(self, symbol, period):
+        channel = 'ok_sub_spot_%s_kline_%s' %symbol
+        self.sendDataRequest(channel)
+
+    #----------------------------------------------------------------------
+    def spotTrade(self, symbol, type_, price, amount):
         """现货委托"""
         params = {}
-        params['symbol'] = str(symbol_pair)
+        params['symbol'] = str(symbol)
         params['type'] = str(type_)
         params['price'] = str(price)
         params['amount'] = str(amount)
@@ -188,10 +262,10 @@ class OKEX_Sub_Spot_Api(object):
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
-    def spotCancelOrder(self, symbol_pair, orderid):
+    def spotCancelOrder(self, symbol, orderid):
         """现货撤单"""
         params = {}
-        params['symbol'] = str(symbol_pair)
+        params['symbol'] = str(symbol)
         params['order_id'] = str(orderid)
         
         channel = 'ok_spot_cancel_order'
@@ -205,10 +279,10 @@ class OKEX_Sub_Spot_Api(object):
         self.sendTradingRequest(channel, {})
 
     #----------------------------------------------------------------------
-    def spotOrderInfo(self, symbol_pair, orderid):
+    def spotOrderInfo(self, symbol, orderid):
         """查询现货委托信息"""
         params = {}
-        params['symbol'] = str(symbol_pair)
+        params['symbol'] = str(symbol)
         params['order_id'] = str(orderid)
         
         channel = 'ok_spot_orderinfo'
@@ -216,224 +290,99 @@ class OKEX_Sub_Spot_Api(object):
         self.sendTradingRequest(channel, params)
 
 
-    #----------------------------------------------------------------------
-    # 这个 API 应该已经别废弃了
-    # def subscribeSpotTrades(self , symbol_pair):
-    #     """订阅现货成交信息"""
-    #     channel = 'ok_sub_spot_%s_trades' % ( symbol_pair)
-        
-    #     self.sendTradingRequest(channel, {})
 
-    #----------------------------------------------------------------------
-    # 这个 API 应该已经别废弃了
-    # def subscribeSpotUserInfo(self):
-    #     """订阅现货账户信息"""
-    #     channel = 'ok_sub_spot_userinfo' 
-        
-    #     self.sendTradingRequest(channel, {})
+########################################################################
+class OkexFuturesApi(OkexApi):
+    """期货交易接口
+    
+    交割推送信息：
+    [{
+        "channel": "btc_forecast_price",
+        "timestamp":"1490341322021",
+        "data": "998.8"
+    }]
+    data(string): 预估交割价格
+    timestamp(string): 时间戳
+    
+    无需订阅，交割前一小时自动返回
+    """
 
-    #----------------------------------------------------------------------
-    def login(self):
-        params = {}
-        params['api_key'] = self.apiKey
-        params['sign'] = self.generateSign(params)
-        
-        # 生成请求
-        d = {}
-        d['event'] = 'login'
-        d['parameters'] = params
-        
-        # 使用json打包并发送
-        j = json.dumps(d)
-        
-        # 若触发异常则重连
-        try:
-            self.ws_sub_spot.send(j)
-        except websocket.WebSocketConnectionClosedException:
-            pass 
-
-
-'''
-OKEX 合约接口
-
-[{
-    "channel": "btc_forecast_price",
-    "timestamp":"1490341322021",
-    "data": "998.8"
-}]
-data(string): 预估交割价格
-timestamp(string): 时间戳
-操作说明
-无需订阅，交割前一小时自动返回
-
-这段数据，交割前会自动返回
-'''
-class OKEX_Contract_Api(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.apiKey = ''        # 用户名
-        self.secretKey = ''     # 密码
-
-        self.ws_contract = None          # websocket应用对象  期货对象
-
-
-    #-----------------------------------------------------------------------
-    def connect_Contract(self, apiKey , secretKey , trace = False):
-        self.host = OKEX_USD_CONTRACT
-        self.apiKey = apiKey
-        self.secretKey = secretKey
-
-        websocket.enableTrace(trace)
-
-        self.ws_contract = websocket.WebSocketApp(self.host, 
-                                           on_message=self.onMessage,
-                                           on_error=self.onError,
-                                           on_close=self.onClose,
-                                           on_open=self.onOpen)        
-          
-        self.thread = Thread(target=self.ws_contract.run_forever)
-        self.thread.start()
-
-    #-----------------------------------------------------------------------
-    #----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
-        """信息推送""" 
-        print evt
-        
-    #----------------------------------------------------------------------
-    def onError(self, ws, evt):
-        """错误推送"""
-        print 'onError'
-        print evt
-        
-    #----------------------------------------------------------------------
-    def onClose(self, ws):
-        """接口断开"""
-        print 'onClose'
-        
-    #----------------------------------------------------------------------
-    def onOpen(self, ws):
-        """接口打开"""
-        print 'onOpen'
-
-    def subsribeFutureTicker(self, symbol , contract_type):
-        req = "{'event':'addChannel','channel':'ok_sub_futureusd_%s_ticker_%s'}" % (symbol , contract_type)
-        self.ws_contract.send(req)
-
-    def subscribeFutureKline(self, symbol , contract_type , time_period):
-        req = "{'event':'addChannel','channel':'ok_sub_futureusd_%s_kline_%s_%s'}" % (symbol , contract_type , time_period)
-        self.ws_contract.send(req)
-
-    def subscribeFutureDepth(self, symbol , contract_type):
-        req = "{'event':'addChannel','channel':'ok_sub_future_%s_depth_%s_usd'}" % (symbol , contract_type )
-        self.ws_contract.send(req)
-
-    def subscribeFutureDepth20(self, symbol , contract_type):
-        req = "{'event':'addChannel','channel':'ok_sub_futureusd_%s_depth_%s_20'}" % (symbol , contract_type)
-        self.ws_contract.send(req)
-
-    def subscribeFutureTrades(self, symbol , contract_type):
-        req = "{'event':'addChannel','channel':'ok_sub_futureusd_%s_trade_%s'}" % (symbol , contract_type)
-        self.ws_contract.send(req)
-
-    def subscribeFutureIndex(self, symbol ):
-        req = "{'event':'addChannel','channel':'ok_sub_futureusd_%s_index'}" % (symbol)
-        self.ws_contract.send(req)
+        super(OkexFuturesApi, self).__init__()
 
     #----------------------------------------------------------------------
-    def generateSign(self, params):
-        """生成签名"""
-        l = []
-        for key in sorted(params.keys()):
-            l.append('%s=%s' %(key, params[key]))
-        l.append('secret_key=%s' %self.secretKey)
-        sign = '&'.join(l)
-        return hashlib.md5(sign.encode('utf-8')).hexdigest().upper()
+    def subsribeFuturesTicker(self, symbol, contractType):
+        """订阅期货行情"""
+        channel ='ok_sub_futureusd_%s_ticker_%s' %(symbol, contractType)
+        self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------
-    def sendTradingRequest(self, channel, params):
-        """发送交易请求"""
-        # 在参数字典中加上api_key和签名字段
-        params['api_key'] = self.apiKey
-        params['sign'] = self.generateSign(params)
-        
-        # 生成请求
-        d = {}
-        d['event'] = 'addChannel'
-        d['channel'] = channel        
-        d['parameters'] = params
-        
-        # 使用json打包并发送
-        j = json.dumps(d)
-        
-        # 若触发异常则重连
-        try:
-            self.ws_contract.send(j)
-        except websocket.WebSocketConnectionClosedException:
-            pass 
+    def subscribeFuturesKline(self, symbol, contractType, period):
+        """订阅期货K线"""
+        channel = 'ok_sub_futureusd_%s_kline_%s_%s' %(symbol, contractType, period)
+        self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------
-    def login(self):
-        params = {}
-        params['api_key'] = self.apiKey
-        params['sign'] = self.generateSign(params)
-        
-        # 生成请求
-        d = {}
-        d['event'] = 'login'
-        d['parameters'] = params
-        
-        # 使用json打包并发送
-        j = json.dumps(d)
-        
-        # 若触发异常则重连
-        try:
-            self.ws_contract.send(j)
-        except websocket.WebSocketConnectionClosedException:
-            pass 
+    def subscribeFuturesDepth(self, symbol, contractType):
+        """订阅期货深度"""
+        channel = 'ok_sub_future_%s_depth_%s_usd' %(symbol, contractType)
+        self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------
-    def futureTrade(self, symbol_pair, contract_type ,type_, price, amount , _match_price = '0' , _lever_rate = '10'):
+    def subscribeFuturesTrades(self, symbol, contractType):
+        """订阅期货成交"""
+        channel = 'ok_sub_futureusd_%s_trade_%s' %(symbol, contractType)
+        self.sendDataRequest(channel)
+
+    #----------------------------------------------------------------------
+    def subscribeFuturesIndex(self, symbol):
+        """订阅期货指数"""
+        channel = 'ok_sub_futureusd_%s_index' %symbol
+        self.sendDataRequest(channel)
+        
+    #----------------------------------------------------------------------
+    def futuresTrade(self, symbol, contractType, type_, price, amount, matchPrice='0', leverRate='10'):
         """期货委托"""
         params = {}
-        params['symbol'] = str(symbol_pair)
-        params['contract_type'] = str(contract_type)
+        params['symbol'] = str(symbol)
+        params['contract_type'] = str(contractType)
         params['price'] = str(price)
         params['amount'] = str(amount)
-        params['type'] = type_                  # 1:开多 2:开空 3:平多 4:平空
-        params['match_price'] = _match_price    # 是否为对手价： 0:不是 1:是 当取值为1时,price无效
-        params['lever_rate'] = _lever_rate
+        params['type'] = type_                # 1:开多 2:开空 3:平多 4:平空
+        params['match_price'] = matchPrice    # 是否为对手价： 0:不是 1:是 当取值为1时,price无效
+        params['lever_rate'] = leverRate
         
         channel = 'ok_futureusd_trade'
         
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
-    def futureCancelOrder(self, symbol_pair, orderid , contract_type):
+    def futuresCancelOrder(self, symbol, orderid, contractType):
         """期货撤单"""
         params = {}
-        params['symbol'] = str(symbol_pair)
+        params['symbol'] = str(symbol)
         params['order_id'] = str(orderid)
-        params['contract_type'] = str(contract_type)
+        params['contract_type'] = str(contractType)
         
         channel = 'ok_futureusd_cancel_order'
 
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
-    def futureUserInfo(self):
+    def futuresUserInfo(self):
         """查询期货账户"""
         channel = 'ok_futureusd_userinfo'
         self.sendTradingRequest(channel, {})
 
     #----------------------------------------------------------------------
-    def futureOrderInfo(self , symbol_pair , order_id , contract_type , status , current_page , page_length = 10):
+    def futuresOrderInfo(self, symbol, orderid, contractType, status, current_page, page_length=10):
         """查询期货委托"""
         params = {}
-        params['symbol'] = str(symbol_pair)
-        params['order_id'] = str(order_id)
-        params['contract_type'] = str(contract_type)
+        params['symbol'] = str(symbol)
+        params['order_id'] = str(orderid)
+        params['contract_type'] = str(contractType)
         params['status'] = str(status)
         params['current_page'] = str(current_page)
         params['page_length'] = str(page_length)
@@ -443,21 +392,19 @@ class OKEX_Contract_Api(object):
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
-    def subscribeFutureTrades( self):
+    def subscribeFuturesTrades( self):
         channel = 'ok_sub_futureusd_trades'
         self.sendTradingRequest(channel, {})
 
     #----------------------------------------------------------------------
-    def subscribeFutureUserInfo(self):
+    def subscribeFuturesUserInfo(self):
         """订阅期货账户信息"""
         channel = 'ok_sub_futureusd_userinfo' 
-        
         self.sendTradingRequest(channel, {})
         
     #----------------------------------------------------------------------
-    def subscribeFuturePositions(self):
+    def subscribeFuturesPositions(self):
         """订阅期货持仓信息"""
         channel = 'ok_sub_futureusd_positions' 
-        
         self.sendTradingRequest(channel, {})    
     
