@@ -38,7 +38,7 @@ STATUS_MAP[-1] = STATUS_CANCELLED
 
 ########################################################################
 class LbankGateway(VtGateway):
-    """链行接口"""
+    """LBANK接口"""
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName='LBANK'):
@@ -195,7 +195,7 @@ class LbankApi(LbankApi):
             tick.gatewayName = self.gatewayName
 
             tick.symbol = symbol
-            tick.exchange = EXCHANGE_LHANG
+            tick.exchange = EXCHANGE_LBANK
             tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
             self.tickDict[symbol] = tick
         else:
@@ -217,7 +217,7 @@ class LbankApi(LbankApi):
             tick.gatewayName = self.gatewayName
 
             tick.symbol = symbol
-            tick.exchange = EXCHANGE_LHANG
+            tick.exchange = EXCHANGE_LBANK
             tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
             self.tickDict[symbol] = tick
         else:
@@ -265,7 +265,7 @@ class LbankApi(LbankApi):
         posCny = VtPositionData()
         posCny.gatewayName = self.gatewayName
         posCny.symbol = 'CNY'
-        posCny.exchange = EXCHANGE_LHANG
+        posCny.exchange = EXCHANGE_LBANK
         posCny.vtSymbol = '.'.join([posCny.symbol, posCny.exchange])
         posCny.vtPositionName = posCny.vtSymbol
         posCny.frozen = d['freeze']['cny']
@@ -275,7 +275,7 @@ class LbankApi(LbankApi):
         posBtc = VtPositionData()
         posBtc.gatewayName = self.gatewayName
         posBtc.symbol = 'BTC'
-        posBtc.exchange = EXCHANGE_LHANG
+        posBtc.exchange = EXCHANGE_LBANK
         posBtc.vtSymbol = '.'.join([posBtc.symbol, posBtc.exchange])
         posBtc.vtPositionName = posBtc.vtSymbol
         posBtc.frozen = d['freeze']['btc']
@@ -285,7 +285,7 @@ class LbankApi(LbankApi):
         posZec = VtPositionData()
         posZec.gatewayName = self.gatewayName
         posZec.symbol = 'ZEC'
-        posZec.exchange = EXCHANGE_LHANG
+        posZec.exchange = EXCHANGE_LBANK
         posZec.vtSymbol = '.'.join([posZec.symbol, posZec.exchange])
         posZec.vtPositionName = posZec.vtSymbol
         posZec.frozen = d['freeze']['zec']
@@ -379,7 +379,7 @@ class LbankApi(LbankApi):
                 order.gatewayName = self.gatewayName
 
                 order.symbol = SYMBOL_MAP[data['symbol']]
-                order.exchange = EXCHANGE_LHANG
+                order.exchange = EXCHANGE_LBANK
                 order.vtSymbol = '.'.join([order.symbol, order.exchange])
 
                 systemID = d['order_id']
@@ -419,7 +419,7 @@ class LbankApi(LbankApi):
         contract = VtContractData()
         contract.gatewayName = self.gatewayName
         contract.symbol = SYMBOL_BTCCNY
-        contract.exchange = EXCHANGE_LHANG
+        contract.exchange = EXCHANGE_LBANK
         contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
         contract.name = u'人民币现货BTC'
         contract.size = 1
@@ -430,7 +430,7 @@ class LbankApi(LbankApi):
         contract = VtContractData()
         contract.gatewayName = self.gatewayName
         contract.symbol = SYMBOL_ZECCNY
-        contract.exchange = EXCHANGE_LHANG
+        contract.exchange = EXCHANGE_LBANK
         contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
         contract.name = u'人民币现货ZEC'
         contract.size = 1
@@ -441,12 +441,11 @@ class LbankApi(LbankApi):
     #----------------------------------------------------------------------
     def sendOrder(self, req):
         """发单"""
-        """发送委托"""
         # 检查是否填入了价格，禁止市价委托
         if req.priceType != PRICETYPE_LIMITPRICE:
             err = VtErrorData()
             err.gatewayName = self.gatewayName
-            err.errorMsg = u'链行接口仅支持限价单'
+            err.errorMsg = u'LBANK接口仅支持限价单'
             err.errorTime = datetime.now().strftime('%H:%M:%S.%f')[:-3]
             self.gateway.onError(err)
             return None
@@ -470,7 +469,7 @@ class LbankApi(LbankApi):
         order.gatewayName = self.gatewayName
 
         order.symbol = req.symbol
-        order.exchange = EXCHANGE_LHANG
+        order.exchange = EXCHANGE_LBANK
         order.vtSymbol = '.'.join([order.symbol, order.exchange])
 
         order.orderID = localID
