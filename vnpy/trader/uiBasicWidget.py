@@ -1043,11 +1043,12 @@ class TradingWidget(QtWidgets.QFrame):
         if contract:
             gatewayName = contract.gatewayName
             exchange = contract.exchange    # 保证有交易所代码
+            vtSymbol = contract.vtSymbol
             
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
-            vtSymbol = contract.vtSymbol
+        req.vtSymbol = vtSymbol
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
         req.direction = unicode(self.comboDirection.currentText())
