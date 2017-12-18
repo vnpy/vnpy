@@ -1,10 +1,10 @@
 # encoding: UTF-8
 
 '''
-vn.okex的gateway接入
+vnpy.api.okex的gateway接入
 
 注意：
-1. 前仅支持USD  现货交易，以及usd的期货交易
+1. 目前仅支持USD现货交易
 '''
 
 import os
@@ -17,7 +17,7 @@ from Queue import Queue
 from threading import Thread
 from time import sleep
 
-from vnpy.api.okex import OKEX_Sub_Spot_Api , OKEX_Contract_Api , okex_all_symbol_pairs , okex_all_contract_symbol , okex_all_symbol_type
+from vnpy.api.okex import OkexSpotApi, CONTRACT_SYMBOL, SPOT_CURRENCY
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
 
@@ -40,13 +40,15 @@ statusMap[4] = STATUS_UNKNOWN
 
 
 ########################################################################
-class okexGateway(VtGateway):
+class OkexGateway(VtGateway):
+    """OKEX交易接口"""
+    
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName='OKEX'):
         """Constructor"""
-        super(okexGateway, self).__init__(eventEngine, gatewayName)
+        super(OkexGateway, self).__init__(eventEngine, gatewayName)
         
-        self.api_spot = Api_Spot(self)     
+        self.api_spot = SpotApi(self)     
         # self.api_contract = Api_contract(self)
         
         self.leverage = 0
@@ -85,9 +87,8 @@ class okexGateway(VtGateway):
         # 初始化接口
         self.leverage = leverage
         
-        
         self.api_spot.active = True
-        self.api_spot.connect_Subpot( apiKey, secretKey, trace)
+        self.api_spot.connect(apiKey, secretKey, trace)
         
         log = VtLogData()
         log.gatewayName = self.gatewayName
@@ -107,6 +108,7 @@ class okexGateway(VtGateway):
     def sendOrder(self, orderReq):
         """发单"""
         return self.api_spot.spotSendOrder(orderReq)
+
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
@@ -116,6 +118,7 @@ class okexGateway(VtGateway):
     def qryAccount(self):
         """查询账户资金"""
         self.api_spot.spotUserInfo()
+
     #----------------------------------------------------------------------
     def qryOrderInfo(self):
         self.api_spot.spotAllOrders()
@@ -136,7 +139,7 @@ class okexGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            #self.qryFunctionList = [self.qryAccount , self.qryOrderInfo]
+            #self.qryFunctionList = [self.qryAccount, self.qryOrderInfo]
             self.qryFunctionList = [ self.qryOrderInfo]
             #self.qryFunctionList = []
             
@@ -176,19 +179,17 @@ class okexGateway(VtGateway):
 
 
 ########################################################################
-class Api_Spot(OKEX_Sub_Spot_Api):
+class SpotApi(OkexSpotApi):
     """okex的API实现"""
 
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
-        super(Api_Spot, self).__init__()
+        super(SpotApi, self).__init__()
         
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
-
-        
-        self.active = False             # 若为True则会在断线后自动重连
+        self.active = False                     # 若为True则会在断线后自动重连
 
         self.cbDict = {}
         self.tickDict = {}
@@ -292,9 +293,9 @@ class Api_Spot(OKEX_Sub_Spot_Api):
         
         if symbol_pair not in self.registerSymbolPairArray:
             self.registerSymbolPairArray.add(symbol_pair)
-            self.subscribeSingleSymbol( symbol_pair)
+            self.subscribeSingleSymbol(symbol_pair)
 
-            self.spotOrderInfo(symbol_pair , '-1')
+            self.spotOrderInfo(symbol_pair, '-1')
 
     #----------------------------------------------------------------------
     def subscribeSingleSymbol(self, symbol):
@@ -308,13 +309,13 @@ class Api_Spot(OKEX_Sub_Spot_Api):
         print spotAllOrders
         for symbol in registerSymbolPairArray:
             if symbol in okex_all_symbol_pairs:
-                self.spotOrderInfo(symbol , '-1')
+                self.spotOrderInfo(symbol, '-1')
 
         for orderId in self.orderIdDict.keys():
-            order = self.orderDict.get(orderId , None)
+            order = self.orderDict.get(orderId, None)
             if order != None:
                 symbol_pair = (order.symbol.split('.'))[0]
-                self.spotOrderInfo(symbol_pair , orderId)
+                self.spotOrderInfo(symbol_pair, orderId)
 
     #----------------------------------------------------------------------
     def onOpen(self, ws):       
@@ -445,11 +446,11 @@ class Api_Spot(OKEX_Sub_Spot_Api):
             tick.volume = float(rawData['vol'].replace(',', ''))
             # tick.date, tick.time = self.generateDateTime(rawData['timestamp'])
             
-            # print "ticker", tick.date , tick.time
+            # print "ticker", tick.date, tick.time
             # newtick = copy(tick)
             # self.gateway.onTick(newtick)
         except Exception,ex:
-            print "Error in onTicker " , channel
+            print "Error in onTicker ", channel
     
     #----------------------------------------------------------------------
     def onDepth(self, data):
@@ -492,7 +493,7 @@ class Api_Spot(OKEX_Sub_Spot_Api):
         tick.askPrice5, tick.askVolume5 = rawData['asks'][-5]     
         
         tick.date, tick.time = self.generateDateTime(rawData['timestamp'])
-        # print "Depth", tick.date , tick.time
+        # print "Depth", tick.date, tick.time
         
         newtick = copy(tick)
         self.gateway.onTick(newtick)
@@ -572,7 +573,7 @@ etc': u'0', u'act': u'0', u'eth': u'0', u'ltc': u'0', u'bcs': u'0'}, u'free': {u
         
         # 持仓信息
         #for symbol in ['btc', 'ltc','eth', self.currency]:
-        for symbol in okex_all_symbol_type:
+        for symbol in :
             if symbol in funds['free']:
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
@@ -608,7 +609,7 @@ etc': u'0', u'act': u'0', u'eth': u'0', u'ltc': u'0', u'bcs': u'0'}, u'free': {u
         
         # 持仓信息
         #for symbol in ['btc', 'ltc','eth', self.currency]:
-        for symbol in okex_all_symbol_type:
+        for symbol in SPOT_CURRENCY:
             if symbol in info['free']:
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
@@ -664,19 +665,19 @@ nel': u'ok_sub_spot_etc_usdt_order'}
         # 本地和系统委托号
         orderId = str(rawData['orderId'])
 
-        # 这时候出现None , 情况是 已经发出了单子，但是系统这里还没建立 索引
+        # 这时候出现None, 情况是 已经发出了单子，但是系统这里还没建立 索引
         # 先这样返回试一下
         # 因为 发完单，订单变化是先推送的。。导致不清楚他的localID
         # 现在的处理方式是， 先缓存这里的信息，等到出现了 localID，再来处理这一段
-        localNo = self.orderIdDict.get(orderId , None)
+        localNo = self.orderIdDict.get(orderId, None)
         if localNo == None:
-            arr = self.cache_some_order.get(orderId , None)
+            arr = self.cache_some_order.get(orderId, None)
             if arr == None:
                 arr = []
-                arr.append( data)
+                arr.append(data)
                 self.cache_some_order[orderId] = arr
             else:
-                arr.append( data)
+                arr.append(data)
             return 
 
         # 委托信息
@@ -684,7 +685,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
-            order.symbol = '.'.join([rawData['symbol'] , EXCHANGE_OKEX])
+            order.symbol = '.'.join([rawData['symbol'], EXCHANGE_OKEX])
             #order.symbol = spotSymbolMap[rawData['symbol']]
             order.vtSymbol = order.symbol
     
@@ -705,7 +706,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
         self.gateway.onOrder(copy(order))
 
 
-        bef_volume = self.recordOrderId_BefVolume.get( orderId , 0.0 )
+        bef_volume = self.recordOrderId_BefVolume.get(orderId, 0.0 )
         now_volume = float(rawData['completedTradeAmount']) - bef_volume
 
         if now_volume > 0.000001:
@@ -800,7 +801,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
                 order.gatewayName = self.gatewayName
                 
                 #order.symbol = spotSymbolMap[d['symbol']]
-                order.symbol = '.'.join([d["symbol"] , EXCHANGE_OKEX])
+                order.symbol = '.'.join([d["symbol"], EXCHANGE_OKEX])
                 order.vtSymbol = order.symbol
     
                 order.orderID = localNo
@@ -843,7 +844,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
         # 符合先发现回的规律，因此这里通过queue获取之前发送的
         # 本地委托号，并把它和推送的系统委托号进行映射
 
-        # localNo = self.orderIdDict.get(orderId , None)
+        # localNo = self.orderIdDict.get(orderId, None)
         # if localNo == None:
         
         localNo = self.localNoQueue.get_nowait()
@@ -851,7 +852,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
         self.localNoDict[localNo] = orderId
         self.orderIdDict[orderId] = localNo
 
-        # print orderId , self.cache_some_order
+        # print orderId, self.cache_some_order
         if orderId in self.cache_some_order.keys():
             arr = self.cache_some_order[orderId]
             for d in arr:
@@ -899,7 +900,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
-            order.symbol = '.'.join([rawData['symbol'] , EXCHANGE_OKEX])
+            order.symbol = '.'.join([rawData['symbol'], EXCHANGE_OKEX])
             order.vtSymbol = order.symbol
     
             order.orderID = localNo
