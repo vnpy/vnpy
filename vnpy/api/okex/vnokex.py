@@ -245,7 +245,7 @@ class OkexSpotApi(OkexApi):
 
     #----------------------------------------------------------------------
     def subscribeSpotKlines(self, symbol, period):
-        channel = 'ok_sub_spot_%s_kline_%s' %symbol
+        channel = 'ok_sub_spot_%s_kline_%s' %(symbol, period)
         self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------
@@ -325,9 +325,11 @@ class OkexFuturesApi(OkexApi):
         self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------
-    def subscribeFuturesDepth(self, symbol, contractType):
+    def subscribeFuturesDepth(self, symbol, contractType, depth=0):
         """订阅期货深度"""
-        channel = 'ok_sub_future_%s_depth_%s_usd' %(symbol, contractType)
+        channel = 'ok_sub_futureusd_%s_depth_%s' %(symbol, contractType)
+        if depth:
+            channel = channel + '_' + str(depth)
         self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------

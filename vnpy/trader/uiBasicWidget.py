@@ -1026,6 +1026,7 @@ class TradingWidget(QtWidgets.QFrame):
     def sendOrder(self):
         """发单"""
         symbol = str(self.lineSymbol.text())
+        vtSymbol = symbol
         exchange = unicode(self.comboExchange.currentText())
         currency = unicode(self.comboCurrency.currentText())
         productClass = unicode(self.comboProductClass.currentText())           
@@ -1046,7 +1047,7 @@ class TradingWidget(QtWidgets.QFrame):
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
-        req.vtSymbol = contract.vtSymbol
+            vtSymbol = contract.vtSymbol
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
         req.direction = unicode(self.comboDirection.currentText())
