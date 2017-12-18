@@ -9,7 +9,7 @@
 	"darkStyle": true,
 	"language": "chinese",
 
-	"logActive": false,
+	"logActive": true,
 	"logLevel": "debug",
 	"logConsole": true,
 	"logFile": true,

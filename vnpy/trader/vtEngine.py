@@ -538,22 +538,15 @@ class DataEngine(object):
 class LogEngine(object):
     """日志引擎"""
     
+    # 单例模式
+    __metaclass__ = VtSingleton
+    
     # 日志级别
     LEVEL_DEBUG = logging.DEBUG
     LEVEL_INFO = logging.INFO
     LEVEL_WARN = logging.WARN
     LEVEL_ERROR = logging.ERROR
     LEVEL_CRITICAL = logging.CRITICAL
-    
-    # 单例对象
-    instance = None
-    
-    #----------------------------------------------------------------------
-    def __new__(cls, *args, **kwargs):
-        """创建对象，保证单例"""
-        if not cls.instance:
-            cls.instance = super(LogEngine, cls).__new__(cls, *args, **kwargs)
-        return cls.instance
 
     #----------------------------------------------------------------------
     def __init__(self):
