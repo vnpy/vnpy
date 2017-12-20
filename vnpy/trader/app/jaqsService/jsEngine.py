@@ -9,7 +9,7 @@ from vnpy.event import Event
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtObject import VtLogData, VtOrderReq, VtCancelOrderReq
 from vnpy.trader.vtConstant import *
-
+from vnpy.trader.vtEvent import EVENT_ACCOUNT
 
 
 EVENT_JS_LOG = 'eJsLog'
@@ -56,6 +56,7 @@ class JsEngine(object):
         
         self.server = None      # RPC服务器
         self.cbDict = {}        # 回调函数字典
+        self.account = None     # 账户对象
         
         # 注册日志事件类型
         self.mainEngine.registerLogEvent(EVENT_JS_LOG)
@@ -63,6 +64,11 @@ class JsEngine(object):
         # 初始化
         self.initCallback()
         self.initServer()
+        
+    #----------------------------------------------------------------------
+    def registerEvent(self):
+        """注册事件监听"""
+        self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
         
     #----------------------------------------------------------------------
     def initCallback(self):
@@ -74,6 +80,8 @@ class JsEngine(object):
         self.cbDict['oms.query_order'] = self.onQueryOrder
         self.cbDict['oms.place_order'] = self.onPlaceOrder
         self.cbDict['oms.cancel_order'] = self.onCancelOrder
+        self.cbDict['oms.query_account'] = self.onQueryAccount
+        self.cbDict['oms.query_universe'] = self.onQueryUniverse
         
     #----------------------------------------------------------------------
     def initServer(self):
@@ -265,7 +273,47 @@ class JsEngine(object):
         self.server.send_rsp(clientId, req, 'successful', error)
         
         self.writeLog(u'发出响应：%s' %result)
+
+    #----------------------------------------------------------------------
+    def onQueryAccount(self, clientId, req):
+        """查询账户"""
+        params = req['params']
         
+        account = self.account
+        
+        result = defaultdict(list)
+        result['id'].append(account.accountID)
+        result['init_balance'].append(account.preBalance)
+        result['enable_balance'].append(account.available)
+        result['margin'].append(account.margin)
+        result['float_pnl'].append(0.0)
+        result['close_pnl'].append(account.closeProfit)
+        result['holding_pnl'].append(0.0)
+        result['trading_pnl'].append(0.0)
+        result['type'].append('BA')
+        
+        error = [0, '']
+        self.server.send_rsp(clientId, req, result, error)
+        
+        self.writeLog(u'发出响应：%s' %result)
+     
+    #----------------------------------------------------------------------
+    def onQueryUniverse(self, clientId, req):
+        """查询账户"""
+        params = req['params']
+        
+        l = self.mainEngine.getAllContracts()
+        
+        result = defaultdict(list)
+        for contract in l:        
+            result['ba_id'].append(1000)
+            result['security'].append(self.converSymbol(contract.vtSymbol))
+        
+        error = [0, '']
+        self.server.send_rsp(clientId, req, result, error)
+        
+        self.writeLog(u'发出响应：%s' %result)
+          
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志事件"""
@@ -284,7 +332,10 @@ class JsEngine(object):
             return ''
         
         e = EXCHANGE_MAP_REVERSE[contract.exchange]
-        return '.'.join(contract.symbol, e)
+        return '.'.join([contract.symbol, e])
         
-        
+    #----------------------------------------------------------------------
+    def processAccountEvent(self, event):
+        """账户资金更新"""
+        self.account = event.dict_['data']
     
