@@ -64,6 +64,7 @@ class JsEngine(object):
         # 初始化
         self.initCallback()
         self.initServer()
+        self.registerEvent()
         
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -331,7 +332,7 @@ class JsEngine(object):
         if not contract:
             return ''
         
-        e = EXCHANGE_MAP_REVERSE[contract.exchange]
+        e = EXCHANGE_MAP_REVERSE.get(contract.exchange, contract.exchange)
         return '.'.join([contract.symbol, e])
         
     #----------------------------------------------------------------------
