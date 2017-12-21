@@ -1543,6 +1543,8 @@ class BacktestingEngine(object):
 
         reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
 
+        last_tradingDay = None
+
         for row in reader:
 
             try:
@@ -1567,7 +1569,10 @@ class BacktestingEngine(object):
                 bar.volume = float(row['volume'])
                 barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
                 bar.tradingDay = row['trading_date']
-
+                if last_tradingDay != bar.tradingDay:
+                    if last_tradingDay is not None:
+                        self.savingDailyData(datetime.strptime(last_tradingDay,'%Y-%m-%d'), self.capital, self.maxCapital)
+                    last_tradingDay = bar.tradingDay
                 # 使用Bar的开始时间作为datetime
                 bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
 
@@ -1618,7 +1623,6 @@ class BacktestingEngine(object):
         self.output(u'策略启动完成')
 
         self.output(u'开始回放数据')
-
 
         # 每次获取日期周期
         intervalDays = 10
@@ -1680,14 +1684,19 @@ class BacktestingEngine(object):
         
         self.output(u'开始回放数据')
 
-        self.loadHistoryDataFromMongo()
+        # 循环加载回放数据
+        self.runHistoryDataFromMongo()
 
             
         self.output(u'数据回放结束')
 
     # ----------------------------------------------------------------------
-    def loadHistoryDataFromMongo(self):
-        """载入历史数据"""
+    def runHistoryDataFromMongo(self):
+        """
+        根据测试的每一天，从MongoDB载入历史数据，并推送Tick至回测函数
+        :return: 
+        """
+
         host, port, log = loadMongoSetting()
 
         self.dbClient = pymongo.MongoClient(host, port)
@@ -1713,6 +1722,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'回测时间不足')
             return
 
+        # 循环每一天
         for i in range(0, testdays):
             testday = self.dataStartDate + timedelta(days=i)
             testday_monrning = testday  #testday.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -1728,6 +1738,7 @@ class BacktestingEngine(object):
             process_time = datetime.now()
             # 将数据从查询指针中读取出，并生成列表
             count_ticks = 0
+
             for d in initCursor:
                 data = dataClass()
                 data.__dict__ = d
@@ -1737,6 +1748,8 @@ class BacktestingEngine(object):
             self.output(u'回测日期{0}，数据量：{1}，查询耗时:{2},回测耗时:{3}'
                         .format(testday.strftime('%Y-%m-%d'), count_ticks, str(datetime.now() - query_time),
                                 str(datetime.now() - process_time)))
+            # 记录每日净值
+            self.savingDailyData(testday, self.capital, self.maxCapital)
 
     def __sendOnBarEvent(self, bar):
         """发送Bar的事件"""
@@ -1764,7 +1777,7 @@ class BacktestingEngine(object):
         self.crossLimitOrder()
         self.crossStopOrder()
         self.strategy.onTick(tick)
-        
+
     #----------------------------------------------------------------------
     def initStrategy(self, strategyClass, setting=None):
         """
@@ -2089,6 +2102,7 @@ class BacktestingEngine(object):
 
     def writeCtaNotification(self,content):
         """记录通知"""
+        print content
         self.output(u'Notify:{}'.format(content))
         self.writeCtaLog(content)
 
