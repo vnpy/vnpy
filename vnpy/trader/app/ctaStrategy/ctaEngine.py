@@ -31,7 +31,7 @@ import re
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
-from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
+from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData, VtSignalData
 from vnpy.trader.vtFunction import todayDate
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 
@@ -98,7 +98,7 @@ class CtaEngine(object):
         self.registerEvent()
 
     # ----------------------------------------------------------------------
-    def sendOrder(self, vtSymbol, orderType, price, volume, strategy):
+    def sendOrder(self, vtSymbol, orderType, price, volume, strategy,priceType=PRICETYPE_LIMITPRICE):
         """发单"""
         contract = self.mainEngine.getContract(vtSymbol)
         
@@ -115,9 +115,9 @@ class CtaEngine(object):
             req.productClass = ''
             req.currency = ''
 
-
         # 设计为CTA引擎发出的委托只允许使用限价单
-        req.priceType = PRICETYPE_LIMITPRICE     # 价格类型
+        # modified by incense, 通过参数传递
+        req.priceType = priceType     # 价格类型
         
         # CTA委托类型映射
         if orderType == CTAORDER_BUY:
@@ -597,6 +597,19 @@ class CtaEngine(object):
         """快速发出CTA模块异常日志事件"""
         self.mainEngine.writeCritical(content)
 
+    def sendCtaSignal(self,source, symbol, direction, price,level):
+        """发出交易信号"""
+        s = VtSignalData()
+        s.source = source
+        s.symbol = symbol
+        s.direction = direction
+        s.price = price
+        s.level = level
+        event = Event(type_=EVENT_SIGNAL)
+        event.dict_['data'] = s
+        self.eventEngine.put(event)
+
+
     # ----------------------------------------------------------------------
     def loadStrategy(self, setting):
         """载入策略"""
@@ -714,7 +727,7 @@ class CtaEngine(object):
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)        
+            self.writeCtaError(u'策略实例不存在：%s' %name)
 
     # ---------------------------------------------------------------------
     def startStrategy(self, name):
@@ -733,7 +746,7 @@ class CtaEngine(object):
                 # 5.启动策略
                 self.callStrategyFunc(strategy, strategy.onStart)
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)
+            self.writeCtaError(u'策略实例不存在：%s' %name)
     
     # ----------------------------------------------------------------------
     def stopStrategy(self, name):
@@ -762,7 +775,7 @@ class CtaEngine(object):
                     if so.strategy is strategy:
                         self.cancelStopOrder(stopOrderID)   
         else:
-            self.writeCtaLog(u'策略实例不存在：%s' %name)
+            self.writeCtaError(u'策略实例不存在：%s' %name)
     
     # ----------------------------------------------------------------------
     def saveSetting(self):
@@ -833,6 +846,9 @@ class CtaEngine(object):
         event.dict_['data'] = d
         self.eventEngine.put(event)
 
+        # 触发系统状态更新事件
+        self.mainEngine.qryStatus()
+
     # ----------------------------------------------------------------------
     def callStrategyFunc(self, strategy, func, params=None):
         """调用策略的函数，若触发异常则捕捉"""
@@ -899,7 +915,7 @@ class CtaEngine(object):
         """
         return self.mainEngine.getAccountInfo()
 
-     # ---------------------------------------------------------------------
+    # ---------------------------------------------------------------------
     def saveStrategyData(self):
         """保存策略的数据"""
 
@@ -915,11 +931,15 @@ class CtaEngine(object):
             # 3.判断策略是否运行
             if strategy.inited and strategy.trading:
 
-                # 5.保存策略数据
-                strategy.saveBar()
+                try:
+                    # 5.保存策略数据
+                    strategy.saveData()
+                except:
+                    traceback.print_exc()
 
     def clearData(self):
         """清空运行数据"""
+        self.tickDict = {}
         self.orderStrategyDict = {}
         self.workingStopOrderDict = {}
         self.posBufferDict = {}
@@ -955,16 +975,46 @@ class CtaEngine(object):
         """查询cta Engined的运行状态"""
 
         # 查询最新tick和更新时间
-        tick_status = u''
-        for k, v in self.tickDict.items():
-            tick_status += u'[{0};{1}];'.format(k, v.time)
+        tick_status_dict = OrderedDict()
+        for k,v in self.tickDict.items():
+            tick_status_dict[k] = str(v.date + ' ' + v.time)
 
         # 查询策略运行状态
-        strategy_status = u''
-        for k, v in self.strategyDict.items():
-            strategy_status += u'[{0}:I:{1};T:{2}]'.format(k, v.inited, v.trading)
+        strategy_status_dict = OrderedDict()
+        for strategy_name in self.strategyDict.keys():
+            varList = self.getStrategyVar(strategy_name)
+            strategy_status_dict[strategy_name] = varList
 
-        return tick_status, strategy_status
+        return tick_status_dict, strategy_status_dict
+
+    def qrySize(self,vtSymbol):
+        """
+        查询合约的大小
+        :param vtSymbol: 
+        :return: 
+        """
+        c = self.mainEngine.getContract(vtSymbol)
+        if c is None:
+            return 10
+        else:
+           return c.size
+
+    def qryMarginRate(self,vtSymbol):
+        """
+        提供给策略查询品种的保证金比率
+        :param vtSymbol: 
+        :return: 
+        """
+        c = self.mainEngine.getContract(vtSymbol)
+        if c is None:
+            return 0.1
+        else:
+            # 返回空头/多头保证金费率的最大值
+            if c.longMarginRatio > EMPTY_FLOAT and c.shortMarginRatio > EMPTY_FLOAT:
+                return max(c.longMarginRatio, c.shortMarginRatio)
+            else:
+                return 0.1
+
 
 ########################################################################
 class PositionBuffer(object):

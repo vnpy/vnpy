@@ -17,6 +17,7 @@ from vnpy.trader.language import text
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtGateway import *
 from vnpy.trader.app import (ctaStrategy, riskManager)
+import psutil
 try:
     from util_mail import *
 except:
@@ -152,6 +153,12 @@ class MainEngine(object):
             status_dict['ticks']=tick_dict
             status_dict['strategies'] = strategy_dict
 
+        # cpu/mem status
+        cpuPercent = psutil.cpu_percent()
+        memoryPercent = psutil.virtual_memory().percent
+        server_info_dict = {'cpu':cpuPercent, 'mem':memoryPercent}
+        status_dict['server'] = server_info_dict
+#
         event = vn_event(type_=EVENT_STATUS)
         event.dict_['data']= status_dict
         self.eventEngine.put(event)
@@ -409,7 +416,7 @@ class MainEngine(object):
     def getContract(self, vtSymbol):
         """查询合约"""
         return self.dataEngine.getContract(vtSymbol)
-    
+
     #----------------------------------------------------------------------
     def getAllContracts(self):
         """查询所有合约（返回列表）"""

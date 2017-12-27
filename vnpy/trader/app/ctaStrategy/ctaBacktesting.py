@@ -74,6 +74,8 @@ class BacktestingEngine(object):
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
+        self.strategy_name = EMPTY_STRING # 回测策略的实例名字
+        self.daily_report_name = EMPTY_STRING   # 策略的日净值报告文件名称
 
         self.startDate = ''
         self.initDays = 0
@@ -215,6 +217,14 @@ class BacktestingEngine(object):
         if margin_rate!= EMPTY_FLOAT:
             self.margin_rate = margin_rate
 
+    def qryMarginRate(self,symbol):
+        """
+        根据合约symbol，返回其保证金比率
+        :param symbol: 
+        :return: 
+        """
+        return self.margin_rate
+
     # ----------------------------------------------------------------------
     def setSlippage(self, slippage):
         """设置滑点点数"""
@@ -224,6 +234,10 @@ class BacktestingEngine(object):
     def setSize(self, size):
         """设置合约大小"""
         self.size = size
+
+    def qrySize(self,symbol):
+        """查询合约的size"""
+        return self.size
 
     # ----------------------------------------------------------------------
     def setRate(self, rate):
@@ -236,7 +250,21 @@ class BacktestingEngine(object):
         self.priceTick = priceTick
         self.minDiff = priceTick
 
+    def setStrategyName(self,strategy_name):
+        """
+        设置策略的运行实例名称
+        :param strategy_name: 
+        :return: 
+        """
+        self.strategy_name = strategy_name
 
+    def setDailyReportName(self, report_file):
+        """
+        设置策略的日净值记录csv保存文件名（含路径）
+        :param report_file: 保存文件名（含路径）
+        :return: 
+        """
+        self.daily_report_name = report_file
     #----------------------------------------------------------------------
     def connectMysql(self):
         """连接MysqlDB"""
@@ -2102,7 +2130,7 @@ class BacktestingEngine(object):
 
     def writeCtaNotification(self,content):
         """记录通知"""
-        print content
+        #print content
         self.output(u'Notify:{}'.format(content))
         self.writeCtaLog(content)
 
@@ -3236,8 +3264,11 @@ class BacktestingEngine(object):
         """到处回测结果表"""
         if not self.exportTradeList:
             return
+        s = EMPTY_STRING
+        s = self.strategy_name.replace('&','')
+        s = s.replace(' ', '')
         csvOutputFile = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
-                                                     'TradeList_{0}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))))
+                                                     '{}_TradeList_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'))))
 
         import csv
         csvWriteFile = file(csvOutputFile, 'wb')
@@ -3251,8 +3282,11 @@ class BacktestingEngine(object):
         if not self.dailyList:
             return
 
-        csvOutputFile2 = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
-                                     'DailyList_{0}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))))
+        if self.daily_report_name == EMPTY_STRING:
+            csvOutputFile2 = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
+                                         'DailyList_{0}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))))
+        else:
+            csvOutputFile2 = self.daily_report_name
 
         csvWriteFile2 = file(csvOutputFile2, 'wb')
         fieldnames = ['date','capital','net', 'maxCapital','rate','longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
@@ -3321,31 +3355,31 @@ class BacktestingEngine(object):
         self.exportTradeResult()
 
         # 输出
-        self.output('-' * 30)
-        self.output(u'第一笔交易：\t%s' % d['timeList'][0])
-        self.output(u'最后一笔交易：\t%s' % d['timeList'][-1])
+        self.writeCtaNotification('-' * 30)
+        self.writeCtaNotification(u'第一笔交易：\t%s' % d['timeList'][0])
+        self.writeCtaNotification(u'最后一笔交易：\t%s' % d['timeList'][-1])
 
-        self.output(u'总交易次数：\t%s' % formatNumber(d['totalResult']))
-        self.output(u'期初资金：\t%s' % formatNumber(d['initCapital']))
-        self.output(u'总盈亏：\t%s' % formatNumber(d['capital']))
-        self.output(u'资金最高净值：\t%s' % formatNumber(d['maxCapital']))
+        self.writeCtaNotification(u'总交易次数：\t%s' % formatNumber(d['totalResult']))
+        self.writeCtaNotification(u'期初资金：\t%s' % formatNumber(d['initCapital']))
+        self.writeCtaNotification(u'总盈亏：\t%s' % formatNumber(d['capital']))
+        self.writeCtaNotification(u'资金最高净值：\t%s' % formatNumber(d['maxCapital']))
 
-        self.output(u'每笔最大盈利：\t%s' % formatNumber(d['maxPnl']))
-        self.output(u'每笔最大亏损：\t%s' % formatNumber(d['minPnl']))
-        self.output(u'净值最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))
-        self.output(u'净值最大回撤率: \t%s' % formatNumber(min(d['drawdownRateList'])))
-        self.output(u'胜率：\t%s' % formatNumber(d['winningRate']))
+        self.writeCtaNotification(u'每笔最大盈利：\t%s' % formatNumber(d['maxPnl']))
+        self.writeCtaNotification(u'每笔最大亏损：\t%s' % formatNumber(d['minPnl']))
+        self.writeCtaNotification(u'净值最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))
+        self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(min(d['drawdownRateList'])))
+        self.writeCtaNotification(u'胜率：\t%s' % formatNumber(d['winningRate']))
 
-        self.output(u'盈利交易平均值\t%s' % formatNumber(d['averageWinning']))
-        self.output(u'亏损交易平均值\t%s' % formatNumber(d['averageLosing']))
-        self.output(u'盈亏比：\t%s' % formatNumber(d['profitLossRatio']))
+        self.writeCtaNotification(u'盈利交易平均值\t%s' % formatNumber(d['averageWinning']))
+        self.writeCtaNotification(u'亏损交易平均值\t%s' % formatNumber(d['averageLosing']))
+        self.writeCtaNotification(u'盈亏比：\t%s' % formatNumber(d['profitLossRatio']))
 
-        self.output(u'最大持仓：\t%s' % formatNumber(d['maxVolume']))
+        self.writeCtaNotification(u'最大持仓：\t%s' % formatNumber(d['maxVolume']))
 
-        self.output(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
+        self.writeCtaNotification(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
 
-        self.output(u'平均每笔滑点成本：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
-        self.output(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
+        self.writeCtaNotification(u'平均每笔滑点成本：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
+        self.writeCtaNotification(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
             
         # 绘图
         import matplotlib.pyplot as plt

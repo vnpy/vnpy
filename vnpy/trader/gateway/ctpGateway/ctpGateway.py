@@ -850,7 +850,14 @@ class CtpTdApi(TdApi):
     
     #----------------------------------------------------------------------
     def onRspQryInstrumentMarginRate(self, data, error, n, last):
-        """"""
+        """
+        获取保证金率
+        :param data: 
+        :param error: 
+        :param n: 
+        :param last: 
+        :return: 
+        """
         pass
     
     #----------------------------------------------------------------------
@@ -886,7 +893,9 @@ class CtpTdApi(TdApi):
         contract.priceTick = data['PriceTick']
         contract.strikePrice = data['StrikePrice']
         contract.underlyingSymbol = data['UnderlyingInstrID']
-        
+        contract.longMarginRatio = data['LongMarginRatio']
+        contract.shortMarginRatio = data['ShortMarginRatio']
+
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
         
         # 期权类型

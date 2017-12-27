@@ -274,6 +274,9 @@ class VtContractData(VtBaseData):
         self.size = EMPTY_INT  # 合约大小
         self.priceTick = EMPTY_FLOAT  # 合约最小价格TICK
 
+        self.longMarginRatio = EMPTY_FLOAT  # 多头保证金率
+        self.shortMarginRatio = EMPTY_FLOAT # 空头保证金率
+
         # 期权相关
         self.strikePrice = EMPTY_FLOAT  # 期权行权价
         self.underlyingSymbol = EMPTY_STRING  # 标的物合约代码
