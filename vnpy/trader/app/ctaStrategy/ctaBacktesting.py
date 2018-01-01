@@ -968,8 +968,9 @@ class BacktestingEngine(object):
         df['balance'] = df['netPnl'].cumsum() + self.capital
         df['return'] = (np.log(df['balance']) - np.log(df['balance'].shift(1))).fillna(0)
         df['highlevel'] = df['balance'].rolling(min_periods=1,window=len(df),center=False).max()
-        df['drawdown'] = df['balance'] - df['highlevel']        
-        
+        df['drawdown'] = df['balance'] - df['highlevel']
+        #回撤百分比
+        df['DDpercent'] = (df['balance'] - df['highlevel'])/df['highlevel']
         # 计算统计结果
         startDate = df.index[0]
         endDate = df.index[-1]
@@ -977,34 +978,37 @@ class BacktestingEngine(object):
         totalDays = len(df)
         profitDays = len(df[df['netPnl']>0])
         lossDays = len(df[df['netPnl']<0])
-        
+
         endBalance = df['balance'].iloc[-1]
         maxDrawdown = df['drawdown'].min()
-        
+        #最大回撤率
+        maxDDpercent = df['DDpercent'].min()*100
         totalNetPnl = df['netPnl'].sum()
         dailyNetPnl = totalNetPnl / totalDays
-        
+
         totalCommission = df['commission'].sum()
         dailyCommission = totalCommission / totalDays
-        
+
         totalSlippage = df['slippage'].sum()
         dailySlippage = totalSlippage / totalDays
-        
+
         totalTurnover = df['turnover'].sum()
         dailyTurnover = totalTurnover / totalDays
-        
+
         totalTradeCount = df['tradeCount'].sum()
         dailyTradeCount = totalTradeCount / totalDays
-        
+
         totalReturn = (endBalance/self.capital - 1) * 100
+        #年化收益率
+        AnnualizedReturn = (endBalance/self.capital - 1)/totalDays * 240 * 100
         dailyReturn = df['return'].mean() * 100
         returnStd = df['return'].std() * 100
-        
+
         if returnStd:
             sharpeRatio = dailyReturn / returnStd * np.sqrt(240)
         else:
             sharpeRatio = 0
-            
+
         # 返回结果
         result = {
             'startDate': startDate,
@@ -1014,6 +1018,7 @@ class BacktestingEngine(object):
             'lossDays': lossDays,
             'endBalance': endBalance,
             'maxDrawdown': maxDrawdown,
+            'maxDDpercent': maxDDpercent,
             'totalNetPnl': totalNetPnl,
             'dailyNetPnl': dailyNetPnl,
             'totalCommission': totalCommission,
@@ -1025,11 +1030,12 @@ class BacktestingEngine(object):
             'totalTradeCount': totalTradeCount,
             'dailyTradeCount': dailyTradeCount,
             'totalReturn': totalReturn,
+            'AnnualizedReturn' : AnnualizedReturn,
             'dailyReturn': dailyReturn,
             'returnStd': returnStd,
             'sharpeRatio': sharpeRatio
         }
-        
+
         return df, result
     
     #----------------------------------------------------------------------
@@ -1038,57 +1044,62 @@ class BacktestingEngine(object):
         if df is None:
             df = self.calculateDailyResult()
             df, result = self.calculateDailyStatistics(df)
-            
+
         # 输出统计结果
         self.output('-' * 30)
         self.output(u'首个交易日：\t%s' % result['startDate'])
         self.output(u'最后交易日：\t%s' % result['endDate'])
-        
+
         self.output(u'总交易日：\t%s' % result['totalDays'])
         self.output(u'盈利交易日\t%s' % result['profitDays'])
         self.output(u'亏损交易日：\t%s' % result['lossDays'])
-        
+
         self.output(u'起始资金：\t%s' % self.capital)
         self.output(u'结束资金：\t%s' % formatNumber(result['endBalance']))
-    
-        self.output(u'总收益率：\t%s' % formatNumber(result['totalReturn']))
+
+        self.output(u'总收益率：\t%s%%' % formatNumber(result['totalReturn']))
         self.output(u'总盈亏：\t%s' % formatNumber(result['totalNetPnl']))
-        self.output(u'最大回撤: \t%s' % formatNumber(result['maxDrawdown']))      
-        
+        self.output(u'最大回撤: \t%s' % formatNumber(result['maxDrawdown']))
+        self.output(u'最大回撤率: \t%s%%' % formatNumber(result['maxDDpercent']))
         self.output(u'总手续费：\t%s' % formatNumber(result['totalCommission']))
         self.output(u'总滑点：\t%s' % formatNumber(result['totalSlippage']))
         self.output(u'总成交金额：\t%s' % formatNumber(result['totalTurnover']))
         self.output(u'总成交笔数：\t%s' % formatNumber(result['totalTradeCount']))
-        
+
         self.output(u'日均盈亏：\t%s' % formatNumber(result['dailyNetPnl']))
         self.output(u'日均手续费：\t%s' % formatNumber(result['dailyCommission']))
         self.output(u'日均滑点：\t%s' % formatNumber(result['dailySlippage']))
         self.output(u'日均成交金额：\t%s' % formatNumber(result['dailyTurnover']))
         self.output(u'日均成交笔数：\t%s' % formatNumber(result['dailyTradeCount']))
-        
+
+        self.output(u'年化收益率：\t%s%%' % formatNumber(result['AnnualizedReturn']))
         self.output(u'日均收益率：\t%s%%' % formatNumber(result['dailyReturn']))
         self.output(u'收益标准差：\t%s%%' % formatNumber(result['returnStd']))
         self.output(u'Sharpe Ratio：\t%s' % formatNumber(result['sharpeRatio']))
-        
+
         # 绘图
-        fig = plt.figure(figsize=(10, 16))
-        
-        pBalance = plt.subplot(4, 1, 1)
+        fig = plt.figure(figsize=(12, 20))
+
+        pBalance = plt.subplot(5, 1, 1)
         pBalance.set_title('Balance')
         df['balance'].plot(legend=True)
-        
-        pDrawdown = plt.subplot(4, 1, 2)
+
+        pDrawdown = plt.subplot(5, 1, 2)
         pDrawdown.set_title('Drawdown')
-        pDrawdown.fill_between(range(len(df)), df['drawdown'].values)
-        
-        pPnl = plt.subplot(4, 1, 3)
-        pPnl.set_title('Daily Pnl') 
+        pDrawdown.fill_between(list(range(len(df))), df['drawdown'].values)
+
+        pDrawdown = plt.subplot(5, 1, 3)
+        pDrawdown.set_title('Drawdown Percent')
+        pDrawdown.fill_between(list(range(len(df))), df['DDpercent'].values)
+
+        pPnl = plt.subplot(5, 1, 4)
+        pPnl.set_title('Daily Pnl')
         df['netPnl'].plot(kind='bar', legend=False, grid=False, xticks=[])
 
-        pKDE = plt.subplot(4, 1, 4)
+        pKDE = plt.subplot(5, 1, 5)
         pKDE.set_title('Daily Pnl Distribution')
         df['netPnl'].hist(bins=50)
-        
+
         plt.show()
        
         
