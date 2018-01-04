@@ -697,7 +697,8 @@ class TradingWidget(QtWidgets.QFrame):
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
                         PRODUCT_OPTION,
-                        PRODUCT_FOREX]
+                        PRODUCT_FOREX,
+                        PRODUCT_SPOT]
     
     gatewayList = ['']
 
