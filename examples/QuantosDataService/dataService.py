@@ -56,7 +56,10 @@ def generateVtBar(row):
     bar.volume = row['volume']
     
     bar.date = str(row['trade_date'])
-    bar.time = str(row['time'])
+    if row['time'] == 0:
+        bar.time = '00:00:00'
+    else:
+        bar.time = str(row['time'])
     bar.datetime = datetime.strptime(' '.join([bar.date, bar.time]), '%Y%m%d %H%M%S')
     
     return bar
