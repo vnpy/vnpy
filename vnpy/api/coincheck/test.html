@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>WebSocket 客户端</title>
+    </head>
+
+    <body>
+
+        <script type="text/javascript">
+            var socket;
+
+            socket = new WebSocket("wss://ws-api.coincheck.com/");
+
+            socket.onopen = function() {
+                    alert("Socket open");
+                    socket.send(JSON.stringify({type: "subscribe", channel: "btc_jpy-orderbook"}));
+                    //socket.send("这是来自客户端的消息" + location.href + new Date());
+                };
+
+            socket.onmessage = function(e){
+                var data = e.data;
+                //处理数据
+                alert(data);
+            };
+
+
+            
+
+        </script>
+    </body>
+
+</html>

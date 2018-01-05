@@ -56,13 +56,16 @@ def generateVtBar(row):
     bar.volume = row['volume']
     
     bar.date = str(row['trade_date'])
-    bar.time = str(row['time'])
+    if row['time'] == 0:
+        bar.time = '00:00:00'
+    else:
+        bar.time = str(row['time'])
     bar.datetime = datetime.strptime(' '.join([bar.date, bar.time]), '%Y%m%d %H%M%S')
     
     return bar
 
 #----------------------------------------------------------------------
-def downMinuteBarBySymbol(api, vtSymbol, startDate):
+def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
     """下载某一合约的分钟线数据"""
     start = time()
 
@@ -70,13 +73,17 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate):
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
     
     dt = datetime.strptime(startDate, '%Y%m%d')
-    today = datetime.now()
+    
+    if endDate:
+        end = datetime.strptime(endDate, '%Y%m%d')
+    else:
+        end = datetime.now()
     delta = timedelta(1)
     
     code, exchange = vtSymbol.split('.')
     symbol = '.'.join([code, exchangeMap[exchange]]) 
     
-    while dt <= today:
+    while dt <= end:
         d = int(dt.strftime('%Y%m%d'))
         df, msg = api.bar(symbol, freq='1M', trade_date=d)
         dt += delta
@@ -91,20 +98,20 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate):
             cl.replace_one(flt, d, True)    
         
 
-    end = time()
-    cost = (end - start) * 1000
+    e = time()
+    cost = (e - start) * 1000
 
-    print u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(vtSymbol, startDate, today.strftime('%Y%m%d'), cost)
+    print u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(vtSymbol, startDate, end.strftime('%Y%m%d'), cost)
 
     
 #----------------------------------------------------------------------
-def downloadAllMinuteBar(api):
+def downloadAllMinuteBar(api, days=10):
     """下载所有配置中的合约的分钟线数据"""
     print '-' * 50
     print u'开始下载合约分钟线数据'
     print '-' * 50
     
-    startDt = datetime.today() - 10 * timedelta(1)
+    startDt = datetime.today() - days * timedelta(1)
     startDate = startDt.strftime('%Y%m%d')
     
     # 添加下载任务
@@ -114,8 +121,4 @@ def downloadAllMinuteBar(api):
     print '-' * 50
     print u'合约分钟线数据下载完成'
     print '-' * 50
-    
-
-if __name__ == '__main__':
-    downloadAllMinuteBar()
     

@@ -281,7 +281,7 @@ class XtpMdApi(QuoteApi):
         pass
         
     #----------------------------------------------------------------------
-    def onMarketData(self, data):
+    def onDepthMarketData(self, data):
         """行情推送"""
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
@@ -337,6 +337,71 @@ class XtpMdApi(QuoteApi):
         contract.productClass = productClassMapReverse.get(data['ticker_type'], PRODUCT_UNKNOWN)
         
         self.gateway.onContract(contract)
+        
+    #----------------------------------------------------------------------
+    def onSubOrderBook(self, data, error, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onUnSubOrderBook(self, data, error, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onOrderBook(self, data):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onSubTickByTick(self, data, error, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onUnSubTickByTick(self, data, error, last):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onTickByTick(self, data):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onSubscribeAllMarketData(self, error):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onUnSubscribeAllMarketData(self, error):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onSubscribeAllOrderBook(self, error):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onUnSubscribeAllOrderBook(self, error):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onSubscribeAllTickByTick(self, error):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onUnSubscribeAllTickByTick(self, error):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onQueryTickersPriceInfo(self, data, error, last):
+        """"""
+        pass
 
     #----------------------------------------------------------------------
     def connect(self, userID, password, clientID, address, port):
@@ -353,6 +418,7 @@ class XtpMdApi(QuoteApi):
                 os.makedirs(path)
             self.createQuoteApi(clientID, path)
             
+            print address, port, userID, password
             n = self.login(address, port, userID, password, 1)
             if not n:
                 self.connectionStatus = True
@@ -445,7 +511,7 @@ class XtpTdApi(TraderApi):
         self.gateway.onError(err)    
         
     #----------------------------------------------------------------------
-    def onOrderEvent(self, data, error):
+    def onOrderEvent(self, data, error, session):
         """委托数据回报"""
         orderID = str(data['order_xtp_id'])
         
@@ -503,7 +569,7 @@ class XtpTdApi(TraderApi):
             self.gateway.onError(err)           
         
     #----------------------------------------------------------------------
-    def onTradeEvent(self, data):
+    def onTradeEvent(self, data, session):
         """成交推送"""
         # 创建报单数据对象
         trade = VtTradeData()
@@ -551,7 +617,7 @@ class XtpTdApi(TraderApi):
         self.gateway.onOrder(order)
         
     #----------------------------------------------------------------------
-    def onCancelOrderError(self, data, error):
+    def onCancelOrderError(self, data, error, session):
         """撤单错误回报"""
         if error['error_id']:
             err = VtErrorData()
@@ -561,17 +627,17 @@ class XtpTdApi(TraderApi):
             self.gateway.onError(err)   
         
     #----------------------------------------------------------------------
-    def onQueryOrder(self, data, error, reqid, last):
+    def onQueryOrder(self, data, error, reqid, last, session):
         """委托查询回报"""
         pass
         
     #----------------------------------------------------------------------
-    def onQueryTrade(self, data, error, reqid, last):
+    def onQueryTrade(self, data, error, reqid, last, session):
         """成交查询回报"""
         pass       
         
     #----------------------------------------------------------------------
-    def onQueryPosition(self, data, error, reqid, last):
+    def onQueryPosition(self, data, error, reqid, last, session):
         """查询持仓回报"""
         pos = VtPositionData()
         pos.gatewayName = self.gatewayName
@@ -595,7 +661,7 @@ class XtpTdApi(TraderApi):
         self.gateway.onPosition(pos)     
         
     #----------------------------------------------------------------------
-    def onQueryAsset(self, data, error, reqid, last):
+    def onQueryAsset(self, data, error, reqid, last, session):
         """账户查询回报"""
         account = VtAccountData()
         account.gatewayName = self.gatewayName
@@ -611,7 +677,42 @@ class XtpTdApi(TraderApi):
     
         # 推送
         self.gateway.onAccount(account)
+    
+    #----------------------------------------------------------------------
+    def onQueryStructuredFund(self, data, error, reqid, last, session):
+        """"""
+        pass
         
+    #----------------------------------------------------------------------
+    def onQueryFundTransfer(self, data, error, reqid, last, session):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onFundTransfer(self, data, error, session):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onQueryETF(self, data, error, reqid, last, session):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onQueryETFBasket(self, data, error, reqid, last, session):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onQueryIPOInfoList(self, data, error, reqid, last, session):
+        """"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def onQueryIPOQuotaInfo(self, data, error, reqid, last, session):
+        """"""
+        pass
+           
     #----------------------------------------------------------------------
     def connect(self, userID, password, clientID, softwareKey, address, port):
         """初始化连接"""
