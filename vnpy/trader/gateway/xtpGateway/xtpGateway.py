@@ -261,6 +261,16 @@ class XtpMdApi(QuoteApi):
         content = (u'行情服务器连接断开，原因：%s' %reason)
         self.writeLog(content)
         
+        # 重新连接
+        n = self.login(self.address, self.port, self.userID, self.password, 1)
+        if not n:
+            self.connectionStatus = True
+            self.loginStatus = True
+            self.gateway.mdConnected = True
+            self.writeLog(u'行情服务器登录成功')
+        else:
+            self.writeLog(u'行情服务器登录失败，原因:%s' %n)        
+        
     #----------------------------------------------------------------------
     def onError(self, error):
         """错误回报"""
@@ -418,7 +428,6 @@ class XtpMdApi(QuoteApi):
                 os.makedirs(path)
             self.createQuoteApi(clientID, path)
             
-            print address, port, userID, password
             n = self.login(address, port, userID, password, 1)
             if not n:
                 self.connectionStatus = True
@@ -500,6 +509,18 @@ class XtpTdApi(TraderApi):
     
         content = (u'交易服务器连接断开，原因：%s' %reason)
         self.writeLog(content)
+        
+        # 发起重新连接
+        n = self.login(self.address, self.port, self.userID, self.password, 1)
+        
+        if n:
+            self.sessionID = n
+            self.connectionStatus = True
+            self.loginStatus = True
+            self.gateway.tdConnected = True
+            self.writeLog(u'交易服务器登录成功，会话编号：%s' %n)
+        else:
+            self.writeLog(u'交易服务器登录失败')                     
         
     #----------------------------------------------------------------------
     def onError(self, data):
