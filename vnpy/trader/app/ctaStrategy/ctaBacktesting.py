@@ -1088,9 +1088,9 @@ class BacktestingEngine(object):
         pDrawdown.set_title('Drawdown')
         pDrawdown.fill_between(list(range(len(df))), df['drawdown'].values)
 
-        pDrawdown = plt.subplot(5, 1, 3)
-        pDrawdown.set_title('Drawdown Percent')
-        pDrawdown.fill_between(list(range(len(df))), df['DDpercent'].values)
+        pDrawdownPercent = plt.subplot(5, 1, 3)
+        pDrawdownPercent.set_title('Drawdown Percent')
+        pDrawdownPercent.fill_between(list(range(len(df))), df['DDpercent'].values)
 
         pPnl = plt.subplot(5, 1, 4)
         pPnl.set_title('Daily Pnl')
