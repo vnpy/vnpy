@@ -876,15 +876,15 @@ class BacktestingEngine(object):
                 targetValue = d[targetName]
             except KeyError:
                 targetValue = 0
-            resultList.append(([str(setting)], targetValue))
+            resultList.append(([str(setting)], targetValue, d))
         
         # 显示结果
         resultList.sort(reverse=True, key=lambda result:result[1])
         self.output('-' * 30)
         self.output(u'优化结果：')
         for result in resultList:
-            self.output(u'%s: %s' %(result[0], result[1]))
-        return result
+            self.output(u'参数：%s，目标：%s' %(result[0], result[1]))    
+        return resultList
             
     #----------------------------------------------------------------------
     def runParallelOptimization(self, strategyClass, optimizationSetting):
@@ -916,7 +916,9 @@ class BacktestingEngine(object):
         self.output('-' * 30)
         self.output(u'优化结果：')
         for result in resultList:
-            self.output(u'%s: %s' %(result[0], result[1]))    
+            self.output(u'参数：%s，目标：%s' %(result[0], result[1]))    
+            
+        return resultList
 
     #----------------------------------------------------------------------
     def updateDailyClose(self, dt, price):
@@ -1270,5 +1272,5 @@ def optimize(strategyClass, setting, targetName,
         targetValue = d[targetName]
     except KeyError:
         targetValue = 0            
-    return (str(setting), targetValue)    
+    return (str(setting), targetValue, d)    
     

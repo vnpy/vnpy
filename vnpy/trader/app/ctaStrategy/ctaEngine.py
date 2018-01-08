@@ -600,7 +600,7 @@ class CtaEngine(object):
         syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
         
         if not syncData:
-            continue
+            return
         
         d = syncData[0]
         
