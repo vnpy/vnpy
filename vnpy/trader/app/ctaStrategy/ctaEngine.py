@@ -440,6 +440,7 @@ class CtaEngine(object):
             if not strategy.inited:
                 strategy.inited = True
                 self.callStrategyFunc(strategy, strategy.onInit)
+                self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
@@ -520,8 +521,6 @@ class CtaEngine(object):
             
             for setting in l:
                 self.loadStrategy(setting)
-                
-        self.loadSyncData()
     
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):
@@ -594,21 +593,20 @@ class CtaEngine(object):
         self.writeCtaLog(content)
     
     #----------------------------------------------------------------------
-    def loadSyncData(self):
+    def loadSyncData(self, strategy):
         """从数据库载入策略的持仓情况"""
-        for strategy in self.strategyDict.values():
-            flt = {'name': strategy.name,
-                   'vtSymbol': strategy.vtSymbol}
-            syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
-            
-            if not syncData:
-                continue
-            
-            d = syncData[0]
-            
-            for key in strategy.syncList:
-                if key in d:
-                    strategy.__setattr__(key, d[key])
+        flt = {'name': strategy.name,
+               'vtSymbol': strategy.vtSymbol}
+        syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+        
+        if not syncData:
+            continue
+        
+        d = syncData[0]
+        
+        for key in strategy.syncList:
+            if key in d:
+                strategy.__setattr__(key, d[key])
                 
     #----------------------------------------------------------------------
     def roundToPriceTick(self, priceTick, price):
