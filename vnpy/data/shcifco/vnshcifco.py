@@ -22,8 +22,8 @@ class ShcifcoApi(object):
         self.ip = ip
         self.port = port
         self.token = token
-        
-        self.service = 'ShcifcoApi'
+
+        self.service = 'shcifco/dataapi'
         self.domain = 'http://' + ':'.join([self.ip, self.port])
     
     #----------------------------------------------------------------------
@@ -59,7 +59,7 @@ class ShcifcoApi(object):
             'askPrice': float(l[4]),
             'askVolume': int(l[5]),
             'volume': int(l[6]),
-            'openInterest': int(l[7])
+            'openInterest': int(float(l[7]))
         }
         return d
     
@@ -97,14 +97,14 @@ class ShcifcoApi(object):
             'low': float(l[4]),
             'close': float(l[5]),
             'volume': int(l[6]),
-            'openInterest': int(l[7])
+            'openInterest': int(float(l[7]))
         }
         return d
     
     #----------------------------------------------------------------------
     def getHisBar(self, symbol, num, date='', period=''):
         """获取历史K线数据"""
-        path = 'hisbar'
+        path = 'hisminbar'
         
         # 默认参数
         params = {
@@ -139,7 +139,7 @@ class ShcifcoApi(object):
                 'low': float(barData[5]),
                 'close': float(barData[6]),
                 'volume': int(barData[7]),
-                'openInterest': int(barData[8]),
+                'openInterest': int(float(barData[8])),
                 'date': barData[9]  # natural day
             }
             barList.append(d)
