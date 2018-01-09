@@ -416,20 +416,23 @@ class CtaEngine(object):
                 self.tickStrategyDict[strategy.vtSymbol] = l
             l.append(strategy)
             
-            # 订阅合约
-            contract = self.mainEngine.getContract(strategy.vtSymbol)
-            if contract:
-                req = VtSubscribeReq()
-                req.symbol = contract.symbol
-                req.exchange = contract.exchange
-                
-                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-                req.currency = strategy.currency
-                req.productClass = strategy.productClass
-                
-                self.mainEngine.subscribe(req, contract.gatewayName)
-            else:
-                self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))
+    #----------------------------------------------------------------------
+    def subscribeMarketData(self, strategy):
+        """订阅行情"""
+        # 订阅合约
+        contract = self.mainEngine.getContract(strategy.vtSymbol)
+        if contract:
+            req = VtSubscribeReq()
+            req.symbol = contract.symbol
+            req.exchange = contract.exchange
+            
+            # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+            req.currency = strategy.currency
+            req.productClass = strategy.productClass
+            
+            self.mainEngine.subscribe(req, contract.gatewayName)
+        else:
+            self.writeCtaLog(u'%s的交易合约%s无法找到' %(strategy.name, strategy.vtSymbol))
 
     #----------------------------------------------------------------------
     def initStrategy(self, name):
@@ -441,6 +444,7 @@ class CtaEngine(object):
                 strategy.inited = True
                 self.callStrategyFunc(strategy, strategy.onInit)
                 self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
+                self.subscribeMarketData(strategy)                      # 加载同步数据后再订阅行情
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
