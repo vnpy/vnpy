@@ -48,6 +48,7 @@ exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_SSE] = 'SSE'
+exchangeMap[EXCHANGE_SZSE] = 'SZSE'
 exchangeMap[EXCHANGE_INE] = 'INE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
@@ -142,7 +143,7 @@ class CtpGateway(VtGateway):
         
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.tdApi.connect(userID, password, brokerID, tdAddress,authCode, userProductInfo)
+        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
         
         # 初始化并启动查询
         self.initQuery()
@@ -298,8 +299,12 @@ class CtpMdApi(MdApi):
                 self.subscribe(subscribeReq)
                 
             # 获取交易日
-            self.tradingDate = data['TradingDay']
-            self.tradingDt = datetime.strptime(self.tradingDate, '%Y%m%d')
+            #self.tradingDate = data['TradingDay']
+            #self.tradingDt = datetime.strptime(self.tradingDate, '%Y%m%d')
+            
+            # 登录时通过本地时间来获取当前的日期
+            self.tradingDt = datetime.now()
+            self.tradingDate = self.tradingDt.strftime('%Y%m%d')
                 
         # 否则，推送错误信息
         else:
@@ -538,6 +543,12 @@ class CtpTdApi(TdApi):
             self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
             
             self.login()
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
         
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):

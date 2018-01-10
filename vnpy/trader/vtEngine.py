@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from __future__ import division
+
 import os
 import shelve
 import logging
@@ -352,7 +354,7 @@ class MainEngine(object):
     def convertOrderReq(self, req):
         """转换委托请求"""
         return self.dataEngine.convertOrderReq(req)
-        
+
 
 ########################################################################
 class DataEngine(object):
@@ -491,7 +493,8 @@ class DataEngine(object):
         if vtSymbol in self.detailDict:
             detail = self.detailDict[vtSymbol]
         else:
-            detail = PositionDetail(vtSymbol)
+            contract = self.getContract(vtSymbol)
+            detail = PositionDetail(vtSymbol, contract)
             self.detailDict[vtSymbol] = detail
             
             # 设置持仓细节的委托转换模式
@@ -532,11 +535,14 @@ class DataEngine(object):
             return [req]
         else:
             return detail.convertOrderReq(req)
-        
-        
-########################################################################
+
+
+########################################################################    
 class LogEngine(object):
     """日志引擎"""
+    
+    # 单例模式
+    __metaclass__ = VtSingleton
     
     # 日志级别
     LEVEL_DEBUG = logging.DEBUG
@@ -544,16 +550,6 @@ class LogEngine(object):
     LEVEL_WARN = logging.WARN
     LEVEL_ERROR = logging.ERROR
     LEVEL_CRITICAL = logging.CRITICAL
-    
-    # 单例对象
-    instance = None
-    
-    #----------------------------------------------------------------------
-    def __new__(cls, *args, **kwargs):
-        """创建对象，保证单例"""
-        if not cls.instance:
-            cls.instance = super(LogEngine, cls).__new__(cls, *args, **kwargs)
-        return cls.instance
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -594,10 +590,11 @@ class LogEngine(object):
             self.logger.addHandler(self.consoleHandler)
             
     #----------------------------------------------------------------------
-    def addFileHandler(self):
+    def addFileHandler(self, filename=''):
         """添加文件输出"""
         if not self.fileHandler:
-            filename = 'vt_' + datetime.now().strftime('%Y%m%d') + '.log'
+            if not filename:
+                filename = 'vt_' + datetime.now().strftime('%Y%m%d') + '.log'
             filepath = getTempPath(filename)
             self.fileHandler = logging.FileHandler(filepath)
             self.fileHandler.setLevel(self.level)
@@ -653,9 +650,19 @@ class PositionDetail(object):
     MODE_TDPENALTY = 'tdpenalty'    # 平今惩罚
 
     #----------------------------------------------------------------------
-    def __init__(self, vtSymbol):
+    def __init__(self, vtSymbol, contract=None):
         """Constructor"""
         self.vtSymbol = vtSymbol
+        self.symbol = EMPTY_STRING
+        self.exchange = EMPTY_STRING
+        self.name = EMPTY_UNICODE    
+        self.size = 1
+        
+        if contract:
+            self.symbol = contract.symbol
+            self.exchange = contract.exchange
+            self.name = contract.name
+            self.size = contract.size
         
         self.longPos = EMPTY_INT
         self.longYd = EMPTY_INT
@@ -663,6 +670,8 @@ class PositionDetail(object):
         self.longPosFrozen = EMPTY_INT
         self.longYdFrozen = EMPTY_INT
         self.longTdFrozen = EMPTY_INT
+        self.longPnl = EMPTY_FLOAT
+        self.longPrice = EMPTY_FLOAT
         
         self.shortPos = EMPTY_INT
         self.shortYd = EMPTY_INT
@@ -670,6 +679,10 @@ class PositionDetail(object):
         self.shortPosFrozen = EMPTY_INT
         self.shortYdFrozen = EMPTY_INT
         self.shortTdFrozen = EMPTY_INT
+        self.shortPnl = EMPTY_FLOAT
+        self.shortPrice = EMPTY_FLOAT
+        
+        self.lastPrice = EMPTY_FLOAT
         
         self.mode = self.MODE_NORMAL
         self.exchange = EMPTY_STRING
@@ -726,8 +739,10 @@ class PositionDetail(object):
                         self.longYd += self.longTd
                         self.longTd = 0
                     
-        # 汇总今昨
+        # 汇总
+        self.calculatePrice(trade)
         self.calculatePosition()
+        self.calculatePnl()
     
     #----------------------------------------------------------------------
     def updateOrder(self, order):
@@ -751,10 +766,14 @@ class PositionDetail(object):
             self.longPos = pos.position
             self.longYd = pos.ydPosition
             self.longTd = self.longPos - self.longYd
+            self.longPnl = pos.positionProfit
+            self.longPrice = pos.price
         elif pos.direction is DIRECTION_SHORT:
             self.shortPos = pos.position
             self.shortYd = pos.ydPosition
             self.shortTd = self.shortPos - self.shortYd
+            self.shortPnl = pos.positionProfit
+            self.shortPrice = pos.price
             
         #self.output()
     
@@ -778,14 +797,40 @@ class PositionDetail(object):
         
         # 计算冻结量
         self.calculateFrozen()
+        
+    #----------------------------------------------------------------------
+    def updateTick(self, tick):
+        """行情更新"""
+        self.lastPrice = tick.lastPrice
+        self.calculatePnl()
+        
+    #----------------------------------------------------------------------
+    def calculatePnl(self):
+        """计算持仓盈亏"""
+        self.longPnl = self.longPos * (self.lastPrice - self.longPrice) * self.size
+        self.shortPnl = self.shortPos * (self.shortPrice - self.lastPrice) * self.size
+        
+    #----------------------------------------------------------------------
+    def calculatePrice(self, trade):
+        """计算持仓均价（基于成交数据）"""
+        # 只有开仓会影响持仓均价
+        if trade.offset == OFFSET_OPEN:
+            if trade.direction == DIRECTION_LONG:
+                cost = self.longPrice * self.longPos
+                cost += trade.volume * trade.price
+                newPos = self.longPos + trade.volume
+                self.longPrice = cost / newPos
+            else:
+                cost = self.shortPrice * self.shortPos
+                cost += trade.volume * trade.price
+                newPos = self.shortPos + trade.volume
+                self.shortPrice = cost / newPos
     
     #----------------------------------------------------------------------
     def calculatePosition(self):
         """计算持仓情况"""
         self.longPos = self.longTd + self.longYd
         self.shortPos = self.shortTd + self.shortYd      
-        
-        #self.output()
         
     #----------------------------------------------------------------------
     def calculateFrozen(self):
@@ -837,8 +882,6 @@ class PositionDetail(object):
             # 汇总今昨冻结
             self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
-        
-        #self.output()
             
     #----------------------------------------------------------------------
     def output(self):
@@ -882,15 +925,20 @@ class PositionDetail(object):
                 return [req]
             # 平仓量大于今可用，平今再平昨
             else:
-                reqTd = copy(req)
-                reqTd.offset = OFFSET_CLOSETODAY
-                reqTd.volume = tdAvailable
+                l = []
                 
+                if tdAvailable > 0:
+                    reqTd = copy(req)
+                    reqTd.offset = OFFSET_CLOSETODAY
+                    reqTd.volume = tdAvailable
+                    l.append(reqTd)
+                    
                 reqYd = copy(req)
                 reqYd.offset = OFFSET_CLOSEYESTERDAY
                 reqYd.volume = req.volume - tdAvailable
+                l.append(reqYd)
                 
-                return [reqTd, reqYd]        
+                return l
             
         # 平今惩罚模式，没有今仓则平昨，否则锁仓
         elif self.mode is self.MODE_TDPENALTY:
@@ -918,18 +966,24 @@ class PositionDetail(object):
                 return [req]
             # 平仓量大于昨可用，平仓再反向开仓
             else:
-                reqClose = copy(req)
-                if self.exchange is EXCHANGE_SHFE:
-                    req.offset = OFFSET_CLOSEYESTERDAY
-                else:
-                    req.offset = OFFSET_CLOSE
-                reqClose.volume = ydAvailable
+                l = []
                 
+                if ydAvailable > 0:
+                    reqClose = copy(req)
+                    if self.exchange is EXCHANGE_SHFE:
+                        req.offset = OFFSET_CLOSEYESTERDAY
+                    else:
+                        req.offset = OFFSET_CLOSE
+                    reqClose.volume = ydAvailable
+                    
+                    l.append(reqClose)
+                    
                 reqOpen = copy(req)
                 reqOpen.offset = OFFSET_OPEN
                 reqOpen.volume = req.volume - ydAvailable
+                l.append(reqOpen)
                 
-                return [reqClose, reqOpen]
+                return l
         
         # 其他情况则直接返回空
         return []

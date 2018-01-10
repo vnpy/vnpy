@@ -15,7 +15,7 @@ from __future__ import division
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
-                                                     BarManager, 
+                                                     BarGenerator, 
                                                      ArrayManager)
 
 
@@ -55,14 +55,19 @@ class KkStrategy(CtaTemplate):
                'trading',
                'pos',
                'kkUp',
-               'kkDown']  
+               'kkDown']
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos',
+                'intraTradeHigh',
+                'intraTradeLow']    
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(KkStrategy, self).__init__(ctaEngine, setting)
         
-        self.bm = BarManager(self.onBar, 5, self.onFiveBar)     # 创建K线合成器对象
+        self.bg = BarGenerator(self.onBar, 5, self.onFiveBar)     # 创建K线合成器对象
         self.am = ArrayManager()
         
         self.buyOrderIDList = []
@@ -96,12 +101,12 @@ class KkStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）""" 
-        self.bm.updateTick(tick)
+        self.bg.updateTick(tick)
 
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        self.bm.updateBar(bar)
+        self.bg.updateBar(bar)
     
     #----------------------------------------------------------------------
     def onFiveBar(self, bar):
@@ -145,6 +150,9 @@ class KkStrategy(CtaTemplate):
             l = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100), 
                            abs(self.pos), True)
             self.orderList.extend(l)
+    
+        # 同步数据到数据库
+        self.saveSyncData()    
     
         # 发出状态更新事件
         self.putEvent()        

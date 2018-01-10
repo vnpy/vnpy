@@ -15,7 +15,7 @@ from __future__ import division
 
 from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
-                                                     BarManager,
+                                                     BarGenerator,
                                                      ArrayManager)
 
 
@@ -53,13 +53,16 @@ class DoubleMaStrategy(CtaTemplate):
                'fastMa1',
                'slowMa0',
                'slowMa1']  
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(DoubleMaStrategy, self).__init__(ctaEngine, setting)
         
-        self.bm = BarManager(self.onBar)
+        self.bg = BarGenerator(self.onBar)
         self.am = ArrayManager()
         
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
@@ -93,7 +96,7 @@ class DoubleMaStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
-        self.bm.updateTick(tick)
+        self.bg.updateTick(tick)
         
     #----------------------------------------------------------------------
     def onBar(self, bar):

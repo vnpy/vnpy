@@ -23,6 +23,7 @@ import os
 import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from copy import copy
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
@@ -325,7 +326,7 @@ class CtaEngine(object):
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
             
             # 保存策略持仓到数据库
-            self.savePosition(strategy)              
+            self.saveSyncData(strategy)              
     
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -415,20 +416,23 @@ class CtaEngine(object):
                 self.tickStrategyDict[strategy.vtSymbol] = l
             l.append(strategy)
             
-            # 订阅合约
-            contract = self.mainEngine.getContract(strategy.vtSymbol)
-            if contract:
-                req = VtSubscribeReq()
-                req.symbol = contract.symbol
-                req.exchange = contract.exchange
-                
-                # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-                req.currency = strategy.currency
-                req.productClass = strategy.productClass
-                
-                self.mainEngine.subscribe(req, contract.gatewayName)
-            else:
-                self.writeCtaLog(u'%s的交易合约%s无法找到' %(name, strategy.vtSymbol))
+    #----------------------------------------------------------------------
+    def subscribeMarketData(self, strategy):
+        """订阅行情"""
+        # 订阅合约
+        contract = self.mainEngine.getContract(strategy.vtSymbol)
+        if contract:
+            req = VtSubscribeReq()
+            req.symbol = contract.symbol
+            req.exchange = contract.exchange
+            
+            # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+            req.currency = strategy.currency
+            req.productClass = strategy.productClass
+            
+            self.mainEngine.subscribe(req, contract.gatewayName)
+        else:
+            self.writeCtaLog(u'%s的交易合约%s无法找到' %(strategy.name, strategy.vtSymbol))
 
     #----------------------------------------------------------------------
     def initStrategy(self, name):
@@ -439,6 +443,8 @@ class CtaEngine(object):
             if not strategy.inited:
                 strategy.inited = True
                 self.callStrategyFunc(strategy, strategy.onInit)
+                self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
+                self.subscribeMarketData(strategy)                      # 加载同步数据后再订阅行情
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' %name)
         else:
@@ -519,8 +525,6 @@ class CtaEngine(object):
             
             for setting in l:
                 self.loadStrategy(setting)
-                
-        self.loadPosition()
     
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):
@@ -550,7 +554,7 @@ class CtaEngine(object):
             return paramDict
         else:
             self.writeCtaLog(u'策略实例不存在：' + name)    
-            return None   
+            return None
         
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):
@@ -577,31 +581,36 @@ class CtaEngine(object):
             self.writeCtaLog(content)
             
     #----------------------------------------------------------------------
-    def savePosition(self, strategy):
+    def saveSyncData(self, strategy):
         """保存策略的持仓情况到数据库"""
         flt = {'name': strategy.name,
                'vtSymbol': strategy.vtSymbol}
         
-        d = {'name': strategy.name,
-             'vtSymbol': strategy.vtSymbol,
-             'pos': strategy.pos}
+        d = copy(flt)
+        for key in strategy.syncList:
+            d[key] = strategy.__getattribute__(key)
         
         self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
                                  d, flt, True)
         
-        content = '策略%s持仓保存成功，当前持仓%s' %(strategy.name, strategy.pos)
+        content = u'策略%s同步数据保存成功，当前持仓%s' %(strategy.name, strategy.pos)
         self.writeCtaLog(content)
     
     #----------------------------------------------------------------------
-    def loadPosition(self):
+    def loadSyncData(self, strategy):
         """从数据库载入策略的持仓情况"""
-        for strategy in self.strategyDict.values():
-            flt = {'name': strategy.name,
-                   'vtSymbol': strategy.vtSymbol}
-            posData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
-            
-            for d in posData:
-                strategy.pos = d['pos']
+        flt = {'name': strategy.name,
+               'vtSymbol': strategy.vtSymbol}
+        syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+        
+        if not syncData:
+            return
+        
+        d = syncData[0]
+        
+        for key in strategy.syncList:
+            if key in d:
+                strategy.__setattr__(key, d[key])
                 
     #----------------------------------------------------------------------
     def roundToPriceTick(self, priceTick, price):

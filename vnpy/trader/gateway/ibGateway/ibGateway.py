@@ -69,6 +69,7 @@ productClassMap[PRODUCT_FUTURES] = 'FUT'
 productClassMap[PRODUCT_OPTION] = 'OPT'
 productClassMap[PRODUCT_FOREX] = 'CASH'
 productClassMap[PRODUCT_INDEX] = 'IND'
+productClassMap[PRODUCT_SPOT] = 'CMDTY'
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
 
 # 期权类型映射
@@ -363,7 +364,8 @@ class IbWrapper(IbApi):
             tick.__setattr__(key, price)
             
             # IB的外汇行情没有成交价和时间，通过本地计算生成，同时立即推送
-            if self.tickProductDict[tickerId] == PRODUCT_FOREX:
+            p = self.tickProductDict[tickerId]
+            if p == PRODUCT_FOREX or p == PRODUCT_SPOT:
                 tick.lastPrice = (tick.bidPrice1 + tick.askPrice1) / 2
                 dt = datetime.now()
                 tick.time = dt.strftime('%H:%M:%S.%f')

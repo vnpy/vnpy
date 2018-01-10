@@ -16,15 +16,12 @@ from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway, 
-                                 huobiGateway, okcoinGateway)
+from vnpy.trader.gateway import (ctpGateway, oandaGateway, 
+                                 ibGateway, xtpGateway)
 
 if system == 'Windows':
     from vnpy.trader.gateway import (femasGateway, xspeedGateway, 
                                      futuGateway, secGateway)
-    
-if system == 'Linux':
-    from vnpy.trader.gateway import xtpGateway
 
 # 加载上层应用
 from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
@@ -46,8 +43,7 @@ def main():
     me.addGateway(ctpGateway)
     me.addGateway(oandaGateway)
     me.addGateway(ibGateway)
-    me.addGateway(huobiGateway)
-    me.addGateway(okcoinGateway)
+    me.addGateway(xtpGateway)
     
     if system == 'Windows':
         me.addGateway(femasGateway)

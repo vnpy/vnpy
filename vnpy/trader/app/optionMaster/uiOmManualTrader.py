@@ -201,7 +201,7 @@ class ChainMonitor(QtWidgets.QTableWidget):
         
         for underlying in portfolio.underlyingDict.values():
             self.eventEngine.register(EVENT_TICK + underlying.vtSymbol, self.signalTick.emit)
-            self.eventEngine.register(EVENT_TRADE + underlying.vtSymbol, self.signalTick.emit)
+            self.eventEngine.register(EVENT_TRADE + underlying.vtSymbol, self.signalTrade.emit)
         
         for chain in portfolio.chainDict.values():
             for option in chain.optionDict.values():
