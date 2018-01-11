@@ -4,7 +4,7 @@ print 'load vtEngine.py'
 
 import shelve
 from collections import OrderedDict
-import logging
+
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -17,6 +17,8 @@ from vnpy.trader.language import text
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtGateway import *
 from vnpy.trader.app import (ctaStrategy, riskManager)
+from vnpy.trader.setup_logger import get_logger
+
 import psutil
 try:
     from util_mail import *
@@ -57,6 +59,9 @@ class MainEngine(object):
         self.rmEngine = None        #   RmEngine(self, self.eventEngine)    # 风险管理模块
 
         self.connected_gw_name = u''
+
+        self.logger = get_logger()
+
     # ----------------------------------------------------------------------
     def addGateway(self, gatewayModule,gateway_name=EMPTY_STRING):
         """添加底层接口"""
@@ -278,7 +283,10 @@ class MainEngine(object):
         self.eventEngine.put(event)
 
         # 写入本地log日志
-        logging.info(content)
+        if self.logger is not None:
+            self.logger.info(content)
+        else:
+            self.logger = get_logger()
 
     # ----------------------------------------------------------------------
     def writeError(self, content):
@@ -290,7 +298,8 @@ class MainEngine(object):
         self.eventEngine.put(event)
 
         # 写入本地log日志
-        logging.error(content)
+        if self.logger is not None:
+            self.logger.error(content)
     # ----------------------------------------------------------------------
     def writeWarning(self, content):
         """快速发出告警日志事件"""
@@ -301,7 +310,8 @@ class MainEngine(object):
         self.eventEngine.put(event)
 
         # 写入本地log日志
-        logging.warning(content)
+        if self.logger is not None:
+            self.logger.warning(content)
 
         # 发出邮件
         try:
@@ -335,7 +345,10 @@ class MainEngine(object):
         self.eventEngine.put(event)
 
         # 写入本地log日志
-        logging.critical(content)
+        if self.logger:
+            self.logger.critical(content)
+        else:
+            self.logger = get_logger()
 
         # 发出邮件
         try:

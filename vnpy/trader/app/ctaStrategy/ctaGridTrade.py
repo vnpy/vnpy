@@ -102,7 +102,8 @@ class CtaGrid(object):
             .format(self.openPrice, self.openStatus, self.closePrice,
                     self.closeStatus, self.orderRef, self.openDatetime, self.orderDatetime)
         return str
-
+    def __eq__(self,other):
+        return self.id == other.id
 class CtaGridTrade(object):
     """网格交易类
     包括两个方向的网格队列，

@@ -34,6 +34,8 @@ from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData, VtSignalData
 from vnpy.trader.vtFunction import todayDate
 from vnpy.trader.app.ctaStrategy.ctaBase import *
+from vnpy.trader.setup_logger import get_logger
+
 
 # 加载 strategy目录下所有的策略
 from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
@@ -97,6 +99,7 @@ class CtaEngine(object):
         # 注册事件监听
         self.registerEvent()
 
+        self.logger = None
     # ----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy,priceType=PRICETYPE_LIMITPRICE):
         """发单"""
@@ -579,7 +582,10 @@ class CtaEngine(object):
         self.eventEngine.put(event)
 
         # 写入本地log日志
-        logging.info(content)
+        if self.logger:
+            self.logger.info(content)
+        else:
+            self.logger = get_logger()
 
     def writeCtaError(self,content):
         """快速发出CTA模块错误日志事件"""

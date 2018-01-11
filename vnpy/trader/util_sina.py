@@ -2,28 +2,37 @@
 
 from __future__ import print_function
 
-'''一个简单的SINA数据客户端，主要使用requests开发'''
 import requests
 import execjs
 from datetime import datetime, timedelta
 from vnpy.trader.app.ctaStrategy.ctaBase import CtaBarData, CtaTickData
 
 class UtilSinaClient(object):
-
+    """
+    SINA数据客户端，主要使用requests开发
+    
+    """
     # ----------------------------------------------------------------------
     def __init__(self, strategy):
-
+        """
+        构造函数
+        :param strategy: 上层策略，主要用与使用strategy.writeCtaLog（）
+        """
         self.strategy = strategy
 
+        # 设置HTTP请求的尝试次数，建立连接session
         requests.adapters.DEFAULT_RETRIES = 5
         self.session = requests.session()
         self.session.keep_alive = False
 
     def getTicks(self, symbol, callback):
-
-        # 从sina加载最新的M1数据
+        """
+        从sina加载最新的分时数据（Min1)数据
+        :param symbol: 合约代码（全路径得合约名称,先使用ctaTemplate.getFullSymbol()
+        :param callback: 回调函数
+        :return: 
+        """
         try:
-
             url = u'http://stock2.finance.sina.com.cn/futures/api/json.php/InnerFuturesService.getInnerFutures5MLine?symbol={0}'.format(
                 symbol)
             self.strategy.writeCtaLog(u'从sina下载{0}Tick数据 {1}'.format(symbol, url))
@@ -62,11 +71,14 @@ class UtilSinaClient(object):
             return False
 
     def getTicks2(self, symbol, callback):
-
+        """
         # 从sina加载最新的M1数据(针对中金所）
+        :param symbol:  合约代码（全路径得合约名称,先使用ctaTemplate.getFullSymbol()
+        :param callback: 回调函数
+        :return: 成功/失败
+        """
         try:
-
-            #url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t1nf_{0}=/InnerFuturesNewService.getMinLine?symbol={0}'.format(symbol)
+            url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t1nf_{0}=/InnerFuturesNewService.getMinLine?symbol={0}'.format(symbol)
             self.strategy.writeCtaLog(u'从sina下载{0}Tick数据 {1}'.format(symbol, url))
 
             response_data= self.session.get(url).content
@@ -105,60 +117,33 @@ class UtilSinaClient(object):
             self.strategy.writeCtaLog(u'加载sina历史Tick数据失败：' + str(e))
             return False
 
-    def getTicks3(self, symbol, callback):
+    def getMinInternal(self, minute):
+        """
+        获取合适得分钟周期
+        :param minute: 输入分钟
+        :return: 合适的分钟周期
+        """
+        if minute < 15:
+            return 5
 
-        # 从sina加载最新的5日内M1数据(针对中金所）
-        try:
-            url = u'http://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20t5nf_{0}=/InnerFuturesNewService.getFourDaysLine?symbol={0}'.format(symbol)
+        if minute < 30:
+            return 15
 
-            self.strategy.writeCtaLog(u'从sina下载{0}Tick数据 {1}'.format(symbol, url))
-
-            response_data= self.session.get(url).content
-            response_data = response_data.decode('gbk').split('=')[-1]
-            response_data = response_data.replace('(', '')
-            response_data = response_data.replace(');', '')
-            responses= execjs.eval(response_data)
-            datevalue = datetime.now().strftime('%Y-%m-%d')
-
-            for j, day_item in enumerate(responses):
-                for i, item in enumerate(day_item):
-
-                    tick = CtaTickData()
-                    tick.vtSymbol = symbol
-                    tick.symbol = symbol
-
-                    if len(item) >= 6:
-                        datevalue = item[6]
-
-                    tick.date = datevalue
-                    tick.time = item[0] + u':00'
-                    tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
-
-                    tick.lastPrice = float(item[1])
-                    tick.volume = int(item[3])
-
-                    if type(item[4]) == type(None):
-                        tick.openInterest = 0
-                    else:
-                        tick.openInterest = int(item[4])
-
-                    callback(tick)
-
-            return True
-
-        except Exception as e:
-            self.strategy.writeCtaLog(u'加载sina历史Tick数据失败：' + str(e))
-            return False
+        return 30
 
     def getMinBars(self, symbol, minute, callback):
-        """# 从sina加载最新的M5,M15,M30,M60数据"""
-
-        if minute not in {5, 15, 30, 60}:
+        """
+        从sina加载最新的M5,M15,M30,M60数据
+        :param symbol: （全路径得合约名称,先使用ctaTemplate.getFullSymbol()
+        :param minute: 5，15，30，60
+        :param callback: 回调函数
+        :return: 成功/失败
+        """
+        if minute not in [5, 15, 30, 60]:
             return False
 
         sinaBars = []
         try:
-
             url = u'http://stock2.finance.sina.com.cn/futures/api/json.php/InnerFuturesService.getInnerFutures{0}MinKLine?symbol={1}'.format(minute,symbol)
             self.strategy.writeCtaLog(u'从sina下载{0}的{1}分钟数据 {2}'.format(symbol,minute, url))
             responses = execjs.eval(self.session.get(url).content.decode('gbk').split('\n')[-1])
@@ -224,8 +209,13 @@ class UtilSinaClient(object):
             return False
 
     def getMinBars2(self, symbol, minute, callback):
-        """# 从sina加载最新的M5,M15,M30,M60数据(针对中金所）"""
-
+        """
+        从sina加载最新的M5,M15,M30,M60数据(针对中金所）
+        :param symbol: （全路径得合约名称,先使用ctaTemplate.getFullSymbol()
+        :param minute: 5，15，30，60
+        :param callback: 回调函数
+        :return: 成功/失败
+        """
         if minute not in {5, 15, 30, 60}:
             return False
 
@@ -303,12 +293,15 @@ class UtilSinaClient(object):
             return False
 
     def getDayBars(self, symbol, callback):
-        """# 从sina加载最新的Day数据"""
-
+        """
+        从sina加载最新的Day数据
+        :param symbol: （全路径得合约名称,先使用ctaTemplate.getFullSymbol()
+        :param callback: 回调函数
+        :return: 成功/失败
+        """
         sinaBars = []
 
         try:
-
             url = u'http://stock.finance.sina.com.cn/futures/api/json.php/InnerFuturesService.getInnerFuturesDailyKLine?symbol={0}'.format(symbol)
             self.strategy.writeCtaLog(u'从sina下载{0}的日K数据 {1}'.format(symbol, url))
             responses = execjs.eval(self.session.get(url).content.decode('gbk'))

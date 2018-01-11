@@ -32,12 +32,14 @@ path = os.path.abspath(os.path.dirname(__file__))
 ICON_FILENAME = 'vnpy.ico'
 ICON_FILENAME = os.path.join(path, ICON_FILENAME)
 
-from vnpy.trader.setup_logger import setup_logger
-setup_logger(filename='logs/vnpy.log', debug=False)
+from vnpy.trader.setup_logger import setup_logger,get_logger
 
 # ----------------------------------------------------------------------
 def main():
     """主程序入口"""
+
+    logger = setup_logger(filename='logs/vnpy.log', debug=False)
+
     # 创建Qt应用对象
     qApp = createQApp()
 
@@ -46,6 +48,8 @@ def main():
 
     # 初始化主引擎和主窗口对象
     mainEngine = MainEngine(ee)
+
+    mainEngine.logger = logger
 
     # 添加Gatway
     for gw_name in init_gateway_names['CTP']:

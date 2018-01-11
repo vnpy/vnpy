@@ -60,6 +60,7 @@ class CtaPolicy(object):
 
         self.exitOnR1PeriodModes = []    # 可以与exitOnR1PeriodChanged ,指定的立场周期；进入后，激活 exitOnR2RsiRtn
 
+        self.reducePosOnEmaRtn = False
 
 
 

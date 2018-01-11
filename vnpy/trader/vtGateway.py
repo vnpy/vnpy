@@ -7,7 +7,8 @@ from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import *
 
-import logging
+from vnpy.trader.setup_logger import get_logger
+
 
 ########################################################################
 class VtGateway(object):
@@ -18,7 +19,7 @@ class VtGateway(object):
         """Constructor"""
         self.eventEngine = eventEngine
         self.gatewayName = gatewayName
-        
+        self.logger = None
     # ----------------------------------------------------------------------
     def onTick(self, tick):
         """市场行情推送"""
@@ -94,8 +95,10 @@ class VtGateway(object):
 
         logMsg = u'{0}:[{1}]:{2}'.format(error.gatewayName, error.errorID,error.errorMsg )
         # 写入本地log日志
-        logging.info(logMsg)
-        
+        if self.logger:
+            self.logger.info(logMsg)
+        else:
+            self.logger = get_logger()
     # ----------------------------------------------------------------------
     def onLog(self, log):
         """日志推送"""
@@ -105,8 +108,10 @@ class VtGateway(object):
         self.eventEngine.put(event1)
 
         # 写入本地log日志
-        logging.info(log.logContent)
-
+        if self.logger:
+            self.logger.info(log.logContent)
+        else:
+            self.logger = get_logger()
         
     # ----------------------------------------------------------------------
     def onContract(self, contract):

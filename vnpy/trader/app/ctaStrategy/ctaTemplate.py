@@ -108,72 +108,72 @@ class CtaTemplate(object):
         raise NotImplementedError
     
     # ----------------------------------------------------------------------
-    def buy(self, price, volume, stop=False ,orderTime=datetime.now()):
+    def buy(self, price, volume, stop=False ,orderTime=datetime.now(),grid=None):
         """买开"""
         orderID = self.sendOrder(CTAORDER_BUY, price, volume, stop)
         if orderID !='':
             self.entrust = 1                            # 委托状态
+            d = {'DIRECTION': DIRECTION_LONG, 'OFFSET': OFFSET_OPEN,
+                 'Volume': volume, 'TradedVolume': EMPTY_INT,
+                 'Price': price, 'OrderTime': orderTime}
+            if grid is not None:
+                d['Grid'] = grid
 
-            self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_LONG,
-                                               'OFFSET': OFFSET_OPEN,
-                                               'Volume': volume,
-                                               'Price': price,
-                                               'OrderTime': orderTime
-                                              }
+            self.uncompletedOrders[orderID] = d
             return orderID
         else:
             # 交易停止时发单返回空字符串
             return ''
     
     # ----------------------------------------------------------------------
-    def sell(self, price, volume, stop=False, orderTime=datetime.now()):
+    def sell(self, price, volume, stop=False, orderTime=datetime.now(),grid=None):
         """卖平"""
         orderID = self.sendOrder(CTAORDER_SELL, price, volume, stop)
         if orderID !='':
             self.entrust = -1                           # 置当前策略的委托单状态
             # 记录委托单
-            self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
-                                               'OFFSET': OFFSET_CLOSE,
-                                               'Volume': volume,
-                                               'Price': price,
-                                               'OrderTime': orderTime
-                                              }
+            d = {'DIRECTION': DIRECTION_SHORT,'OFFSET': OFFSET_CLOSE,
+                 'Volume': volume, 'TradedVolume': EMPTY_INT,
+                 'Price': price, 'OrderTime': orderTime}
+            if grid is not None:
+                d['Grid'] = grid
+            self.uncompletedOrders[orderID] = d
             return orderID
         else:
             # 交易停止时发单返回空字符串
             return ''
 
     # ----------------------------------------------------------------------
-    def short(self, price, volume, stop=False, orderTime=datetime.now()):
+    def short(self, price, volume, stop=False, orderTime=datetime.now(),grid = None):
         """卖开"""
         orderID = self.sendOrder(CTAORDER_SHORT, price, volume, stop)
         if orderID !='':
             self.entrust = -1                           # 委托状态
-            self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_SHORT,
-                                               'OFFSET': OFFSET_OPEN,
-                                               'Volume': volume,
-                                               'Price': price,
-                                               'OrderTime':  orderTime
-                                              }
+            d = {'DIRECTION': DIRECTION_SHORT, 'OFFSET': OFFSET_OPEN,
+                 'Volume': volume, 'TradedVolume': EMPTY_INT,
+                 'Price': price, 'OrderTime':  orderTime }
+            if grid is not None:
+                d['Grid'] = grid
+            self.uncompletedOrders[orderID] = d
             return orderID
         else:
             # 交易停止时发单返回空字符串
             return ''
  
     # ----------------------------------------------------------------------
-    def cover(self, price, volume, stop=False, orderTime=datetime.now()):
+    def cover(self, price, volume, stop=False, orderTime=datetime.now(),grid = None):
         """买平"""
         orderID = self.sendOrder(CTAORDER_COVER, price, volume, stop)
 
         if orderID !='':
             self.entrust = 1                           # 置当前策略的委托单状态
             # 记录委托单
-            self.uncompletedOrders[orderID] = {'DIRECTION': DIRECTION_LONG,
-                                               'OFFSET': OFFSET_CLOSE,
-                                               'Volume': volume,
-                                               'Price': price,
-                                               'OrderTime': orderTime
-                                              }
+            d ={'DIRECTION': DIRECTION_LONG, 'OFFSET': OFFSET_CLOSE,
+                 'Volume': volume, 'TradedVolume': EMPTY_INT,
+                 'Price': price, 'OrderTime': orderTime}
+            if grid is not None:
+                d['Grid'] = grid
+            self.uncompletedOrders[orderID] = d
             return orderID
         else:
             # 交易停止时发单返回空字符串
@@ -226,7 +226,7 @@ class CtaTemplate(object):
         """读取bar数据"""
         return self.ctaEngine.loadBar(self.barDbName, self.vtSymbol, days)
 
-    def saveBar(self):
+    def saveData(self):
         """保持bar数据"""
         pass
 
@@ -243,7 +243,6 @@ class CtaTemplate(object):
             if key in setting:
 
                 d[key] = setting[key]
-
 
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
@@ -282,6 +281,15 @@ class CtaTemplate(object):
         else:
             self.ctaEngine.writeCtaError(content)
 
+    def sendSignal(self,direction,price, level):
+        """发送信号通知"""
+        try:
+            if not self.backtesting:
+                self.ctaEngine.sendCtaSignal(source=self.name, symbol=self.vtSymbol, direction=direction, price=price, level=level)
+
+        except Exception as ex:
+            self.writeCtaError(u'sendSignal Exception:{0}'.format(str(ex)))
+
     #----------------------------------------------------------------------
     def putEvent(self):
         """发出策略状态变化事件"""
@@ -292,7 +300,17 @@ class CtaTemplate(object):
         """查询当前运行的环境"""
         return self.ctaEngine.engineType
 
+    def getFullSymbol(self, symbol):
+        """获取全路径得合约名称"""
+        short_symbol = self.ctaEngine.getShortSymbol(symbol)
+        if short_symbol == symbol:
+            return symbol
 
+        symbol_month = symbol.replace(short_symbol, '')
+        if len(symbol_month) == 3:
+            return '{0}1{1}'.format(short_symbol, symbol_month)
+        else:
+            return symbol
 
 ########################################################################
 class TargetPosTemplate(CtaTemplate):

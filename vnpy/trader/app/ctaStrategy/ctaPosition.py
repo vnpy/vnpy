@@ -11,6 +11,7 @@ class CtaPosition:
     """策略的仓位管理类
     v 0.1 简单的数值，代表多仓数量和空仓数量
     v 0.2 增加多仓和空仓的持仓，去除持仓均价
+    v 0.3 正式取消更新上层strategy的pos
     """
 
     def __init__(self, strategy):
@@ -25,8 +26,13 @@ class CtaPosition:
         #self.posList = []
         #self.avgPrice = EMPTY_FLOAT
 
-    def avaliablePos2Add(self):
+    def avaliablePos2Add(self, direction=EMPTY_STRING):
         """剩余可加的仓位数量"""
+        if direction == DIRECTION_LONG:
+            return self.maxPos - abs(self.longPos)
+        elif direction == DIRECTION_SHORT:
+            return self.maxPos - abs(self.shortPos)
+
         return self.maxPos - abs(self.longPos) - abs(self.shortPos)
 
     def openPos(self, direction, vol, price=EMPTY_FLOAT):
@@ -66,7 +72,7 @@ class CtaPosition:
             self.pos -= vol
 
             # 更新上层策略的pos。该方法不推荐使用
-            self.strategy.pos = self.pos
+            #self.strategy.pos = self.pos
 
         # v0.2 disabled
         #if price > EMPTY_FLOAT:
@@ -108,7 +114,7 @@ class CtaPosition:
 
             self.longPos -= vol
             self.pos -= vol
-            self.strategy.pos = self.pos
+           # self.strategy.pos = self.pos
 
         # disabled in v0.2
         #if abs(self.pos) > 0:
@@ -130,7 +136,7 @@ class CtaPosition:
         self.longPos = 0
         self.shortPos = 0
         # 更新上层策略的pos
-        self.strategy.pos = 0
+        #self.strategy.pos = 0
 
     # ----------------------------------------------------------------------
     def writeCtaError(self, content):
@@ -146,4 +152,3 @@ class CtaPosition:
         """记录CTA日志"""
         if DEBUGCTALOG:
             self.strategy.writeCtaLog('[DEBUG]'+content)
-

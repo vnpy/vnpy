@@ -6,7 +6,7 @@
 
 from datetime import datetime
 import talib as ta
-import numpy
+import numpy as np
 import math
 import copy,csv
 from pykalman import KalmanFilter
@@ -89,6 +89,7 @@ class CtaLineBar(object):
         self.paramList.append('inputMacdSlowPeriodLen')
         self.paramList.append('inputMacdSignalPeriodLen')
         self.paramList.append('inputKF')
+        self.paramList.append('inputSkd')
 
         self.paramList.append('minDiff')
         self.paramList.append('shortSymbol')
@@ -254,6 +255,14 @@ class CtaLineBar(object):
         self.curPeriod = None  # 当前所在周期
         self.periods = []
 
+        # 优化的多空动量线
+        self.inputSkd = False
+        self.inputSkdLen1 = 13          # 周期1
+        self.inputSkdLen2 = 8           # 周期2
+        self.lineSK = []                # 快线
+        self.lineSD = []                # 慢线
+        self.lowSkd = 30
+        self.highSkd = 70
 
         if setting:
             self.setParam(setting)
@@ -393,7 +402,8 @@ class CtaLineBar(object):
         self.__recountMacd()
         self.__recountCci()
         self.__recountKF()
-        self.__recoundPeriod(bar)
+        self.__recountPeriod(bar)
+        self.__recountSKD()
 
         # 回调上层调用者
         self.onBarFunc(bar)
@@ -473,6 +483,10 @@ class CtaLineBar(object):
 
         if self.inputKF and len(self.lineKfMa) > 0:
             msg = msg + u',Kalman:{0}'.format( self.lineKfMa[-1])
+
+        if self.inputSkd and len(self.lineSK) > 0 and len(self.lineSD) > 0:
+            msg = msg + u',SK:{}/SD:{}'.format( self.lineSK[-1],self.lineSD[-1])
+
         return msg
 
     def __firstTick(self, tick):
@@ -689,7 +703,7 @@ class CtaLineBar(object):
             else:
                 listClose=[x.close for x in self.lineBar[-ma1Len:]]
 
-            barMa1 = ta.MA(numpy.array(listClose, dtype=float), ma1Len)[-1]
+            barMa1 = ta.MA(np.array(listClose, dtype=float), ma1Len)[-1]
             barMa1 = round(float(barMa1), self.round_n)
 
             if len(self.lineMa1) > self.inputMa1Len*8:
@@ -709,7 +723,7 @@ class CtaLineBar(object):
             else:
                 listClose=[x.close for x in self.lineBar[-ma2Len:]]
 
-            barMa2 = ta.MA(numpy.array(listClose, dtype=float), ma2Len)[-1]
+            barMa2 = ta.MA(np.array(listClose, dtype=float), ma2Len)[-1]
             barMa2 = round(float(barMa2), self.round_n)
 
             if len(self.lineMa2) > self.inputMa2Len*8:
@@ -729,7 +743,7 @@ class CtaLineBar(object):
             else:
                 listClose = [x.close for x in self.lineBar[-ma3Len:]]
 
-            barMa3 = ta.MA(numpy.array(listClose, dtype=float), ma3Len)[-1]
+            barMa3 = ta.MA(np.array(listClose, dtype=float), ma3Len)[-1]
             barMa3 = round(float(barMa3), self.round_n)
 
             if len(self.lineMa3) > self.inputMa3Len * 8:
@@ -765,7 +779,7 @@ class CtaLineBar(object):
             else:
                 listClose=[x.close for x in self.lineBar[-ema1Len:]]
 
-            barEma1 = ta.EMA(numpy.array(listClose, dtype=float), ema1Len)[-1]
+            barEma1 = ta.EMA(np.array(listClose, dtype=float), ema1Len)[-1]
 
             barEma1 = round(float(barEma1), self.round_n)
 
@@ -787,7 +801,7 @@ class CtaLineBar(object):
             else:
                 listClose=[x.close for x in self.lineBar[-ema2Len:]]
 
-            barEma2 = ta.EMA(numpy.array(listClose, dtype=float), ema2Len)[-1]
+            barEma2 = ta.EMA(np.array(listClose, dtype=float), ema2Len)[-1]
 
             barEma2 = round(float(barEma2), self.round_n)
 
@@ -881,7 +895,7 @@ class CtaLineBar(object):
         if len(self.lineDx) < self.inputDmiLen+1:
             self.barAdx = dx
         else:
-            self.barAdx = ta.EMA(numpy.array(self.lineDx, dtype=float), self.inputDmiLen)[-1]
+            self.barAdx = ta.EMA(np.array(self.lineDx, dtype=float), self.inputDmiLen)[-1]
 
         # 保存Adx值
         if len(self.lineAdx) > self.inputDmiLen+1:
@@ -1050,7 +1064,7 @@ class CtaLineBar(object):
         else:
             listVol = [x.volume for x in self.lineBar[-self.inputVolLen:]]
 
-        sumVol = ta.SUM(numpy.array(listVol, dtype=float), timeperiod=self.inputVolLen)[-1]
+        sumVol = ta.SUM(np.array(listVol, dtype=float), timeperiod=self.inputVolLen)[-1]
 
         avgVol = round(sumVol/self.inputVolLen, 0)
 
@@ -1070,7 +1084,6 @@ class CtaLineBar(object):
             return
 
         # 计算第1根RSI曲线
-
         # 3、inputRsi1Len(包含当前周期）的相对强弱
         if self.mode == self.TICK_MODE:
             listClose=[x.close for x in self.lineBar[-self.inputRsi1Len - 2:-1]]
@@ -1079,7 +1092,7 @@ class CtaLineBar(object):
             listClose=[x.close for x in self.lineBar[-self.inputRsi1Len-1:]]
             idx = 1
 
-        barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi1Len)[-1]
+        barRsi = ta.RSI(np.array(listClose, dtype=float), self.inputRsi1Len)[-1]
         barRsi = round(float(barRsi), self.round_n)
 
         l = len(self.lineRsi1)
@@ -1091,12 +1104,10 @@ class CtaLineBar(object):
         if l > 3:
             # 峰
             if self.lineRsi1[-1] < self.lineRsi1[-2] and self.lineRsi1[-3] < self.lineRsi1[-2]:
-
                 t={}
                 t["Type"] = u'T'
                 t["RSI"] = self.lineRsi1[-2]
                 t["Close"] = self.lineBar[-1-idx].close
-
 
                 if len(self.lineRsiTop) > self.inputRsi1Len:
                     del self.lineRsiTop[0]
@@ -1106,7 +1117,6 @@ class CtaLineBar(object):
 
             # 谷
             elif self.lineRsi1[-1] > self.lineRsi1[-2] and self.lineRsi1[-3] > self.lineRsi1[-2]:
-
                 b={}
                 b["Type"] = u'B'
                 b["RSI"] = self.lineRsi1[-2]
@@ -1119,7 +1129,6 @@ class CtaLineBar(object):
 
         # 计算第二根RSI曲线
         if self.inputRsi2Len > 0:
-
             if len(self.lineBar) < self.inputRsi2Len+2:
                 return
 
@@ -1128,7 +1137,7 @@ class CtaLineBar(object):
             else:
                 listClose=[x.close for x in self.lineBar[-self.inputRsi2Len - 1:]]
 
-            barRsi = ta.RSI(numpy.array(listClose, dtype=float), self.inputRsi2Len)[-1]
+            barRsi = ta.RSI(np.array(listClose, dtype=float), self.inputRsi2Len)[-1]
             barRsi = round(float(barRsi), self.round_n)
 
             l = len(self.lineRsi2)
@@ -1201,7 +1210,7 @@ class CtaLineBar(object):
         else:
             listClose=[x.close for x in self.lineBar[-bollLen :]]
         #
-        upper, middle, lower = ta.BBANDS(numpy.array(listClose, dtype=float),
+        upper, middle, lower = ta.BBANDS(np.array(listClose, dtype=float),
                                          timeperiod=bollLen, nbdevup=self.inputBollStdRate,
                                          nbdevdn=self.inputBollStdRate, matype=0)
         if len(self.lineUpperBand) > self.inputBollLen*8:
@@ -1373,10 +1382,10 @@ class CtaLineBar(object):
         else:
             listClose =[x.close for x in self.lineBar[-maxLen-1:]]
 
-        dif, dea, macd = ta.MACD(numpy.array(listClose, dtype=float), fastperiod=self.inputMacdFastPeriodLen,
+        dif, dea, macd = ta.MACD(np.array(listClose, dtype=float), fastperiod=self.inputMacdFastPeriodLen,
                        slowperiod=self.inputMacdSlowPeriodLen, signalperiod=self.inputMacdSignalPeriodLen)
 
-        #dif, dea, macd = ta.MACDEXT(numpy.array(listClose, dtype=float),
+        #dif, dea, macd = ta.MACDEXT(np.array(listClose, dtype=float),
         #                            fastperiod=self.inputMacdFastPeriodLen, fastmatype=1,
         #                            slowperiod=self.inputMacdSlowPeriodLen, slowmatype=1,
         #                            signalperiod=self.inputMacdSignalPeriodLen, signalmatype=1)
@@ -1431,8 +1440,8 @@ class CtaLineBar(object):
             listLow = [x.low for x in self.lineBar[-self.inputCciLen - 1:]]
             idx = 1
 
-        barCci = ta.CCI(high=numpy.array(listHigh, dtype=float), low=numpy.array(listLow, dtype=float),
-                        close=numpy.array(listClose, dtype=float), timeperiod=self.inputCciLen)[-1]
+        barCci = ta.CCI(high=np.array(listHigh, dtype=float), low=np.array(listLow, dtype=float),
+                        close=np.array(listClose, dtype=float), timeperiod=self.inputCciLen)[-1]
 
         barCci = round(float(barCci), 3)
 
@@ -1468,7 +1477,7 @@ class CtaLineBar(object):
                 self.writeCtaLog(u'导入卡尔曼过滤器失败,需先安装 pip install pykalman')
                 self.inputKF = False
 
-            state_means, state_covariances = self.kf.filter(numpy.array(listClose, dtype=float))
+            state_means, state_covariances = self.kf.filter(np.array(listClose, dtype=float))
             m = state_means[-1].item()
             c = state_covariances[-1].item()
         else:
@@ -1481,7 +1490,7 @@ class CtaLineBar(object):
 
             state_means, state_covariances = self.kf.filter_update(filtered_state_mean=m,
                                                                    filtered_state_covariance=c,
-                                                                   observation=numpy.array(o, dtype=float))
+                                                                   observation=np.array(o, dtype=float))
             m = state_means[-1].item()
             c = state_covariances[-1].item()
 
@@ -1493,7 +1502,7 @@ class CtaLineBar(object):
         self.lineStateMean.append(m)
         self.lineStateCovar.append(c)
 
-    def __recoundPeriod(self, bar):
+    def __recountPeriod(self, bar):
         """重新计算周期"""
 
         len_rsi = len(self.lineRsi1)
@@ -1502,7 +1511,7 @@ class CtaLineBar(object):
             if len(self.lineStateMean) < 7 or len_rsi <=0:
                 return
             listMid = self.lineStateMean[-7:-1]
-            malist = ta.MA(numpy.array(listMid, dtype=float), 5)
+            malist = ta.MA(np.array(listMid, dtype=float), 5)
             lastMid = self.lineStateMean[-1]
 
         else:
@@ -1511,7 +1520,7 @@ class CtaLineBar(object):
                 return
             listMid = self.lineMiddleBand[-7:-1]
             lastMid = self.lineMiddleBand[-1]
-            malist = ta.MA(numpy.array(listMid, dtype=float), 5)
+            malist = ta.MA(np.array(listMid, dtype=float), 5)
 
         ma5 = malist[-1]
         ma5_ref1 = malist[-2]
@@ -1727,12 +1736,61 @@ class CtaLineBar(object):
                                  format(bar.datetime, self.atan, self.curPeriod.mode))
 
             return
+
+    def __recountSKD(self):
+        """
+        改良得多空线(类似KDJ，RSI）
+        :param bar: 
+        :return: 
+        """
+        if not self.inputSkd:
+            return
+
+        if len(self.lineBar) < max(self.inputSkdLen1, self.inputSkdLen2) * 4:
+            return
+
+        # 取得Len1*2 长度的Close
+        if self.mode == self.TICK_MODE:
+            close_list=[x.close for x in self.lineBar[-max(self.inputSkdLen1, self.inputSkdLen2)*4:-1]]
+            idx = 2
+        else:
+            close_list=[x.close for x in self.lineBar[-max(self.inputSkdLen1, self.inputSkdLen2)*4:]]
+            idx = 1
+
+        np_close = np.array(close_list[1:])
+        np_pre_close = np.array(close_list[:-1])
+
+        # 计算优化后的RSI指标
+        #rsi1 = 100 * ta.SMA(np.maximum(np_close - np_pre_close,0),self.inputSkdLen1) / ta.SMA(np.abs(np_close - np_pre_close),self.inputSkdLen1)
+        rsi1 = ta.RSI(np_close, self.inputSkdLen1)
+
+        rsi1 = np.where(np.isnan(rsi1),0,rsi1)
+
+        rsi1_HHV = ta.MAX(rsi1, self.inputSkdLen2)
+        rsi1_LLV = ta.MIN(rsi1, self.inputSkdLen2)
+
+        sto = (np.abs(rsi1_HHV - rsi1_LLV) > 1e-5).astype(int) * ( 100 * (rsi1 - rsi1_LLV)/(rsi1_HHV - rsi1_LLV + 1e-5))
+        sto = np.where(np.isnan(sto), 0, sto)
+        sk = ta.EMA(sto, 5)
+        sk = np.where(np.isnan(sk), 0, sk)
+        sd = ta.EMA(sk, 3)
+
+        if len(self.lineSK) > 60*8:
+            del self.lineSK[0]
+
+        self.lineSK.append(sk[-1])
+
+        if len(self.lineSD) > 60 * 8:
+            del self.lineSD[0]
+
+        self.lineSD.append(sd[-1])
+
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
         self.strategy.writeCtaLog(u'['+self.name+u']'+content)
 
-    def debugCtaLog(self,content):
+    def debugCtaLog(self, content):
         """记录CTA日志"""
         if DEBUGCTALOG:
             self.strategy.writeCtaLog(u'['+self.name+u'-DEBUG]'+content)

@@ -11,14 +11,14 @@ from threading import Thread
 # 将repostory的目录i，作为根目录，添加到系统环境中。
 ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
 sys.path.append(ROOT_PATH)
-from setup_logger import setup_logger
+from setup_logger import setup_logger,get_logger
 from vnpy.trader.util_monitor import *
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.gateway import ctpGateway
 from threading import Thread
 from vnpy.trader.app import (ctaStrategy, riskManager)
 
-setup_logger(debug=True)
+
 # ----------------------------------------------------------------------
 """
 Linux 下：

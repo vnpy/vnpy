@@ -3,8 +3,7 @@
 from collections import OrderedDict
 
 from vtGateway import *
-import logging
-
+from setup_logger import get_logger
 
 ########################################################################
 class BasicMonitor(object):
@@ -33,6 +32,8 @@ class BasicMonitor(object):
 
         # 保存数据对象到单元格
         self.saveData = False
+
+        self.logger = None
 
     # ----------------------------------------------------------------------
     def setHeaderDict(self, headerDict):
@@ -77,8 +78,10 @@ class BasicMonitor(object):
                 except:
                     v = v.decode('utf8')
             s.append('%s: %s' % (value['chinese'], v))
-        logging.info(' '.join(s))
-
+        if self.logger is not None:
+           self.logger.info(' '.join(s))
+        else:
+            self.logger = get_logger()
 
 ########################################################################
 class MarketMonitor(BasicMonitor):

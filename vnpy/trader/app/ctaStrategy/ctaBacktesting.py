@@ -20,17 +20,17 @@ import json
 import sys
 import cPickle
 import csv
-import logging
 import copy
 import pandas as pd
 import re
-
+import traceback
 
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtEvent import *
+from vnpy.trader.setup_logger import setup_logger,get_logger
 
 
 ########################################################################
@@ -74,7 +74,7 @@ class BacktestingEngine(object):
         # 回测相关
         self.strategy = None        # 回测策略
         self.mode = self.BAR_MODE   # 回测模式，默认为K线
-        self.strategy_name = EMPTY_STRING # 回测策略的实例名字
+        self.strategy_name = 'strategy_{}'.format(datetime.now().strftime('%M%S'))  # 回测策略的实例名字
         self.daily_report_name = EMPTY_STRING   # 策略的日净值报告文件名称
 
         self.startDate = ''
@@ -124,6 +124,7 @@ class BacktestingEngine(object):
 
         self.last_leg1_tick = None
         self.last_leg2_tick = None
+        self.last_bar = None
 
         # csvFile相关
         self.barTimeInterval = 60          # csv文件，属于K线类型，K线的周期（秒数）,缺省是1分钟
@@ -164,6 +165,8 @@ class BacktestingEngine(object):
         self.exportTradeList = []    # 导出交易记录列表
 
         self.fixCommission = EMPTY_FLOAT    # 固定交易费用
+
+        self.logger = None
 
     def getAccountInfo(self):
         """返回账号的实时权益，可用资金，仓位比例,投资仓位比例上限"""
@@ -1283,8 +1286,6 @@ class BacktestingEngine(object):
             tick.bidVolume1 = int(float(row['bidVolume1']))
             tick.askPrice1 = float(row['askPrice1'])  # 叫卖价（价格高）
             tick.askVolume1 = int(float(row['askVolume1']))
-            
-            
 
             # 排除涨停/跌停的数据
             if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0) \
@@ -1298,6 +1299,10 @@ class BacktestingEngine(object):
                 #self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
             else:
                 ticks[dtStr] = tick
+        # todo release memory
+        # lst = [df]
+        # del df
+        # del lst
 
         return ticks
 
@@ -1553,7 +1558,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'文件仅支持bar模式，若扩展tick模式，需要修改本方法')
             return
 
-        self.output(u'开始回测')
+        #self.output(u'开始回测')
 
         #self.strategy.inited = True
         self.strategy.onInit()
@@ -1566,17 +1571,11 @@ class BacktestingEngine(object):
         self.output(u'开始回放数据')
 
         import csv
-
         csvfile = file(filename,'rb')
-
         reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
-
         last_tradingDay = None
-
         for row in reader:
-
             try:
-
                 bar = CtaBarData()
                 bar.symbol = self.symbol
                 bar.vtSymbol = self.symbol
@@ -1597,10 +1596,6 @@ class BacktestingEngine(object):
                 bar.volume = float(row['volume'])
                 barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
                 bar.tradingDay = row['trading_date']
-                if last_tradingDay != bar.tradingDay:
-                    if last_tradingDay is not None:
-                        self.savingDailyData(datetime.strptime(last_tradingDay,'%Y-%m-%d'), self.capital, self.maxCapital)
-                    last_tradingDay = bar.tradingDay
                 # 使用Bar的开始时间作为datetime
                 bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
 
@@ -1608,10 +1603,17 @@ class BacktestingEngine(object):
                 bar.time = bar.datetime.strftime('%H:%M:%S')
 
                 if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
-                    self.newBar(bar)
+                    if last_tradingDay != bar.tradingDay:
+                        if last_tradingDay is not None:
+                            self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
+                                                 self.maxCapital)
+                        last_tradingDay = bar.tradingDay
 
+                    self.newBar(bar)
+                    self.last_bar = bar
             except Exception as ex:
                 self.writeCtaLog(u'{0}:{1}'.format(Exception, ex))
+                traceback.print_exc()
                 continue
 
     #----------------------------------------------------------------------
@@ -2116,7 +2118,15 @@ class BacktestingEngine(object):
         #self.logList.append(log)
 
         # 写入本地log日志
-        logging.info(content)
+        if self.logger:
+            self.logger.info(content)
+        else:
+            filename = os.path.abspath(os.path.join(cta_engine_path, 'TestLogs','{}'.format(self.strategy_name if len(self.strategy_name)>0 else 'strategy')))
+
+            self.logger = setup_logger(
+                filename=filename,name=self.strategy_name if len(self.strategy_name)>0 else 'strategy'
+            )
+
 
     def writeCtaError(self, content):
         """记录异常"""
@@ -2137,7 +2147,8 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出内容"""
-        print str(datetime.now()) + "\t" + content
+        #print str(datetime.now()) + "\t" + content
+        pass
 
     def realtimeCalculate(self):
         """实时计算交易结果"""
@@ -3002,6 +3013,11 @@ class BacktestingEngine(object):
                 pos_margin = (self.last_leg2_tick.lastPrice - longpos.price) * longpos.volume * self.size
                 long_pos_occupy_money += self.last_leg2_tick.lastPrice * abs(longpos.volume) * self.size * self.margin_rate
 
+            elif self.last_bar is not None:
+                pos_margin = (self.last_bar.close - longpos.price) * longpos.volume * self.size
+                long_pos_occupy_money += self.last_bar.close * abs(
+                    longpos.volume) * self.size * self.margin_rate
+
             today_margin += pos_margin
             long_list.append({'symbol':symbol,'direction':'long','price':longpos.price,'volume':longpos.volume,'margin':pos_margin})
 
@@ -3017,7 +3033,10 @@ class BacktestingEngine(object):
             elif self.last_leg2_tick is not None and self.last_leg2_tick.vtSymbol == symbol:
                 pos_margin = (shortpos.price - self.last_leg2_tick.lastPrice) * shortpos.volume * self.size
                 short_pos_occupy_money += self.last_leg2_tick.lastPrice * abs( shortpos.volume) * self.size * self.margin_rate
-
+            elif self.last_bar is not None:
+                pos_margin = (shortpos.price - self.last_bar.close) * shortpos.volume * self.size
+                short_pos_occupy_money += self.last_bar.close * abs(
+                    shortpos.volume) * self.size * self.margin_rate
             today_margin += pos_margin
             short_list.append({'symbol': symbol, 'direction': 'short', 'price': shortpos.price,
                                'volume': shortpos.volume, 'margin': pos_margin})
@@ -3382,8 +3401,10 @@ class BacktestingEngine(object):
         self.writeCtaNotification(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
             
         # 绘图
+        import matplotlib
         import matplotlib.pyplot as plt
         import numpy as np
+        matplotlib.rcParams['figure.figsize'] = (20.0, 10.0)
 
         try:
             import seaborn as sns       # 如果安装了seaborn则设置为白色风格
@@ -3394,7 +3415,9 @@ class BacktestingEngine(object):
         pCapital = plt.subplot(4, 1, 1)
         pCapital.set_ylabel("capital")
         pCapital.plot(d['capitalList'], color='r', lw=0.8)
-        
+
+        plt.title(u'{}~{},{} backtest result '.format(self.startDate, self.endDate, self.strategy_name))
+
         pDD = plt.subplot(4, 1, 2)
         pDD.set_ylabel("DD")
         pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
@@ -3419,11 +3442,13 @@ class BacktestingEngine(object):
         #plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
 
         fig_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
-                                                     'Fig_{0}.png'.format(
-                                                         datetime.now().strftime('%Y%m%d_%H%M'))))
+                                                     '{}_plot_{}.png'.format(self.strategy_name,
+                                                          datetime.now().strftime('%Y%m%d_%H%M'))))
+
+
         fig = plt.gcf()
         fig.savefig(fig_file_name)
-        print (u'图表保存至：{0}'.format(fig_file_name))
+        self.output (u'图表保存至：{0}'.format(fig_file_name))
         #plt.show()
     
     #----------------------------------------------------------------------
