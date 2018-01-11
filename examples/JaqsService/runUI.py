@@ -5,11 +5,13 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-from time import sleep
+# 判断操作系统
+import platform
+system = platform.system()
 
 # vn.trader模块
 from vnpy.event import EventEngine
-from vnpy.trader.vtEngine import MainEngine, LogEngine
+from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
@@ -18,35 +20,31 @@ from vnpy.trader.gateway import ctpGateway
 
 # 加载上层应用
 from vnpy.trader.app import jaqsService
-from vnpy.trader.app.jaqsService.jsEngine import EVENT_JS_LOG
 
 #----------------------------------------------------------------------
 def main():
     """主程序入口"""
-    le = LogEngine()
-    le.setLogLevel(le.LEVEL_INFO)
-    le.addConsoleHandler()
-    le.addFileHandler()
+    # 创建Qt应用对象
+    qApp = createQApp()
     
-    le.info(u'启动JAQS服务进程')
-    
+    # 创建事件引擎
     ee = EventEngine()
-    le.info(u'事件引擎创建成功')
     
+    # 创建主引擎
     me = MainEngine(ee)
+    
+    # 添加交易接口
     me.addGateway(ctpGateway)
+    
+    # 添加上层应用
     me.addApp(jaqsService)
-    le.info(u'主引擎创建成功')
     
-    ee.register(EVENT_LOG, le.processLogEvent)
-    ee.register(EVENT_JS_LOG, le.processLogEvent)
-    le.info(u'注册日志事件监听')    
+    # 创建主窗口
+    mw = MainWindow(me, ee)
+    mw.showMaximized()
     
-    me.connect('CTP')
-    le.info(u'连接CTP接口')    
-    
-    while True:
-        sleep(1)
+    # 在主线程中启动Qt事件循环
+    sys.exit(qApp.exec_())
 
 
 if __name__ == '__main__':
