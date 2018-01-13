@@ -78,7 +78,7 @@ def generateTree(f, k, r, t, v, cp, n):
 #----------------------------------------------------------------------
 def calculatePrice(f, k, r, t, v, cp, n=15):
     """计算期权价格"""
-    oTree, uTree = calculatePrice(f, k, r, t, v, cp)
+    oTree, uTree = generateTree(f, k, r, t, v, cp, n)
     return oTree[0, 0]
 
 #----------------------------------------------------------------------
