@@ -8,20 +8,29 @@ import traceback
 from collections import OrderedDict
 
 from vnpy.event import Event
-from vnpy.trader.vtEvent import EVENT_TICK, EVENT_TRADE, EVENT_CONTRACT
+from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_TRADE, EVENT_CONTRACT,
+                                 EVENT_ORDER)
 from vnpy.trader.vtFunction import getTempPath, getJsonPath
-from vnpy.trader.vtObject import VtLogData, VtSubscribeReq
-from vnpy.trader.vtConstant import PRODUCT_OPTION, OPTION_CALL, OPTION_PUT
-from vnpy.pricing import black
+from vnpy.trader.vtObject import (VtLogData, VtSubscribeReq, 
+                                  VtOrderReq, VtCancelOrderReq)
+from vnpy.trader.vtConstant import (PRODUCT_OPTION, OPTION_CALL, OPTION_PUT,
+                                    DIRECTION_LONG, DIRECTION_SHORT,
+                                    OFFSET_OPEN, OFFSET_CLOSE,
+                                    PRICETYPE_LIMITPRICE)
+from vnpy.pricing import black, bs, crr
 
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
-                     EVENT_OM_LOG)
+                     EVENT_OM_LOG,
+                     OM_DB_NAME)
 
 
 
 # 定价模型字典
 MODEL_DICT = {}
 MODEL_DICT['black'] = black
+MODEL_DICT['bs'] = bs
+MODEL_DICT['crr'] = crr
+
 
 
 
@@ -210,4 +219,187 @@ class OmEngine(object):
         
         event = Event(EVENT_OM_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)         
+        self.eventEngine.put(event)     
+
+
+########################################################################
+class OmStrategyEngine(object):
+    """策略引擎"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, omEngine, eventEngine):
+        """Constructor"""
+        self.omEngine = omEngine
+        self.mainEngine = omEngine.mainEngine
+        self.eventEngine = eventEngine
+        
+        self.portfolio = None
+        
+        self.strategyDict = {}          # name: strategy
+        self.symbolStrategyDict = {}    # vtSymbol：strategy list
+        self.orderStrategyDict= {}      # vtOrderID: strategy
+    
+    #----------------------------------------------------------------------
+    def registerEvent(self):
+        """注册事件监听"""
+        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
+        self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrdervent)
+    
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """快速发出日志事件"""
+        self.omEngine.writeLog(content)
+        
+    #----------------------------------------------------------------------
+    def callStrategyFunc(self, strategy, func, params=None):
+        """调用策略的函数，若触发异常则捕捉"""
+        try:
+            if params:
+                func(params)
+            else:
+                func()
+        except Exception:
+            # 停止策略，修改状态为未初始化
+            strategy.trading = False
+            strategy.inited = False
+            
+            # 发出日志
+            content = '\n'.join([u'策略%s触发异常已停止' %strategy.name,
+                                traceback.format_exc()])
+            self.writeLog(content)    
+    
+    #----------------------------------------------------------------------
+    def processTickEvent(self, event):
+        """处理行情事件"""
+        tick = event.dict_['data']
+        l = self.symbolStrategyDict.get(tick.vtSymbol, None)
+        if l:
+            for strategy in l:
+                self.callStrategyFunc(strategy, strategy.onTick, tick)
+    
+    #----------------------------------------------------------------------
+    def processTradeEvent(self, event):
+        """处理成交事件"""
+        trade = event.dict_['data']
+        strategy = self.orderStrategyDict.get(trade.vtOrderID, None)
+        if strategy:
+            self.callStrategyFunc(strategy, strategy.onTrade, trade)
+    
+    #----------------------------------------------------------------------
+    def processOrderEvent(self, event):
+        """处理委托事件"""
+        order = event.dict_['data']
+        strategy = self.orderStrategyDict.get(order.vtOrderID, None)
+        if strategy:
+            self.callStrategyFunc(strategy, strategy.onOrder, order)
+            
+    #----------------------------------------------------------------------
+    def loadSetting(self):
+        """加载配置"""
+        self.portfolio = self.omEngine.portfolio
+    
+    #----------------------------------------------------------------------
+    def initStrategy(self, name):
+        """初始化策略"""
+        strategy = self.strategyDict[name]
+        self.callStrategyFunc(strategy, strategy.onInit)
+    
+    #----------------------------------------------------------------------
+    def startStrategy(self, name):
+        """启动策略"""
+        strategy = self.strategyDict[name]
+        self.callStrategyFunc(strategy, strategy.onStart)        
+   
+    #----------------------------------------------------------------------
+    def stopStrategy(self, name):
+        """停止策略"""
+        strategy = self.strategyDict[name]
+        self.callStrategyFunc(strategy, strategy.onStop)
+    
+    #----------------------------------------------------------------------
+    def sendOrder(self, vtSymbol, direction, offset, price, volume):
+        """发单"""
+        contract = self.mainEngine.getContract(vtSymbol)
+        if not contract:
+            return ''
+        
+        req = VtOrderReq()
+        req.symbol = contract.symbol
+        req.exchange = contract.exchange
+        req.vtSymbol = vtSymbol
+        req.price = price
+        req.volume = volume
+        req.direction = direction
+        req.offset = offset
+        req.priceType = PRICETYPE_LIMITPRICE
+        
+        return self.mainEngine.sendOrder(req, contract.gatewayName)
+    
+    #----------------------------------------------------------------------
+    def cancelorder(self, vtOrderID):
+        """撤单"""
+        order = self.mainEngine.getOrder(vtOrderID)
+        if not order:
+            return
+        
+        req = VtCancelOrderReq()
+        req.symbol = order.symbol
+        req.exchange = order.exchange
+        req.orderID = order.orderID
+        req.symbol = order.symbol
+        req.vtSymbol = order.vtSymbo
+        
+        self.mainEngine.cancelOrder(req, order.gatewayName)
+    
+    #----------------------------------------------------------------------
+    def buy(self, vtSymbol, price, volume):
+        """开多"""
+        return self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_OPEN, price, volume)
+        
+    #----------------------------------------------------------------------
+    def short(self, vtSymbol, price, volume):
+        """开空"""
+        return self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_OPEN, price, volume)
+    
+    #----------------------------------------------------------------------
+    def sell(self, vtSymbol, price, volume):
+        """平多"""
+        return self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_CLOSE, price, volume)
+            
+    #----------------------------------------------------------------------
+    def cover(self, vtSymbol, price, volume):
+        """平空"""
+        return self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_CLOSE, price, volume)
+    
+    #----------------------------------------------------------------------
+    def dbQuery(self, collectionName, flt):
+        """查询数据"""
+        return self.mainEngine.dbQuery(OM_DB_NAME, collectionName, flt)
+    
+    #----------------------------------------------------------------------
+    def dbUpdate(self, collectionName, d, flt):
+        """更新数据"""
+        self.mainEngine.dbUpdate(OM_DB_NAME, collectionName, d, flt, True)
+        
+    #----------------------------------------------------------------------
+    def getOption(self, vtSymbol):
+        """获取期权信息"""
+        return self.portfolio.optionDict.get(vtSymbol, None)
+        
+    #----------------------------------------------------------------------
+    def getUnderlying(self, vtSymbol):
+        """获取标的信息"""
+        return self.portfolio.underlyingDict.get(vtSymbol, None)
+    
+    #----------------------------------------------------------------------
+    def getChain(self, symbol):
+        """获取期权链信息"""
+        return self.portfolio.chainDict.get(symbol, None)
+    
+    #----------------------------------------------------------------------
+    def getPortfolio(self):
+        """获取持仓组合信息"""
+        return self.portfolio
+        
+    

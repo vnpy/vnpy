@@ -15,6 +15,8 @@ from .omDate import getTimeToMaturity
 CALL = 1
 PUT = -1
 
+OM_DB_NAME = 'VnTrader_OptionMaster_Db'
+
 # 事件定义
 EVENT_OM_LOG = 'eOmLog'
 
