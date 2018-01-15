@@ -34,7 +34,7 @@ from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData, VtSignalData
 from vnpy.trader.vtFunction import todayDate
 from vnpy.trader.app.ctaStrategy.ctaBase import *
-from vnpy.trader.setup_logger import get_logger
+from vnpy.trader.setup_logger import get_logger,setup_logger
 
 
 # 加载 strategy目录下所有的策略
@@ -585,7 +585,8 @@ class CtaEngine(object):
         if self.logger:
             self.logger.info(content)
         else:
-            self.logger = get_logger()
+            filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..','logs', 'ctaEngine'))
+            self.logger = setup_logger(filename=filename, name='ctaEngine')
 
     def writeCtaError(self,content):
         """快速发出CTA模块错误日志事件"""
