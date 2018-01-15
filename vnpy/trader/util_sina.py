@@ -10,7 +10,7 @@ from vnpy.trader.app.ctaStrategy.ctaBase import CtaBarData, CtaTickData
 class UtilSinaClient(object):
     """
     SINA数据客户端，主要使用requests开发
-    
+    v1.1 增加start_dt参数，在这个时间点之前的bar全部忽略
     """
     # ----------------------------------------------------------------------
     def __init__(self, strategy):
@@ -25,11 +25,12 @@ class UtilSinaClient(object):
         self.session = requests.session()
         self.session.keep_alive = False
 
-    def getTicks(self, symbol, callback):
+    def getTicks(self, symbol, callback,start_dt=None):
         """
         从sina加载最新的分时数据（Min1)数据
         :param symbol: 合约代码（全路径得合约名称,先使用ctaTemplate.getFullSymbol()
         :param callback: 回调函数
+        :param start_dt: 开始时间，缺省为None
         :return: 
         """
         try:
@@ -54,6 +55,11 @@ class UtilSinaClient(object):
                     tick.time = item[4] + u':00'
                     tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
 
+                    if start_dt is not None:
+                        # 丢弃约定开始时间之前的
+                        if tick.datetime < start_dt:
+                            continue
+
                     tick.lastPrice = float(item[0])
                     tick.volume = int(item[2])
 
@@ -70,11 +76,12 @@ class UtilSinaClient(object):
             self.strategy.writeCtaLog(u'加载sina历史Tick数据失败：' + str(e))
             return False
 
-    def getTicks2(self, symbol, callback):
+    def getTicks2(self, symbol, callback,start_dt=None):
         """
         # 从sina加载最新的M1数据(针对中金所）
         :param symbol:  合约代码（全路径得合约名称,先使用ctaTemplate.getFullSymbol()
         :param callback: 回调函数
+        :param start_dt: 开始时间，缺省为None
         :return: 成功/失败
         """
         try:
@@ -100,6 +107,10 @@ class UtilSinaClient(object):
                 tick.date = datevalue
                 tick.time = item[0] + u':00'
                 tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
+
+                if start_dt is not None:
+                    if tick.datetime < start_dt:
+                        continue
 
                 tick.lastPrice = float(item[1])
                 tick.volume = int(item[3])
@@ -131,12 +142,13 @@ class UtilSinaClient(object):
 
         return 30
 
-    def getMinBars(self, symbol, minute, callback):
+    def getMinBars(self, symbol, minute, callback,start_dt=None):
         """
         从sina加载最新的M5,M15,M30,M60数据
         :param symbol: （全路径得合约名称,先使用ctaTemplate.getFullSymbol()
         :param minute: 5，15，30，60
         :param callback: 回调函数
+        :param start_dt: 开始时间，缺省为None
         :return: 成功/失败
         """
         if minute not in [5, 15, 30, 60]:
@@ -166,6 +178,9 @@ class UtilSinaClient(object):
                 else:
                     bar.datetime = sinaDt - timedelta(seconds=minute * 60)
 
+                if start_dt is not None:
+                    if bar.datetime < start_dt:
+                        continue
                 bar.date = bar.datetime.strftime('%Y%m%d')
                 bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
                 bar.time = bar.datetime.strftime('%H:%M:00')
@@ -208,12 +223,13 @@ class UtilSinaClient(object):
             self.strategy.writeCtaLog(u'加载Sina历史分钟数据失败：'+str(e))
             return False
 
-    def getMinBars2(self, symbol, minute, callback):
+    def getMinBars2(self, symbol, minute, callback,start_dt=None):
         """
         从sina加载最新的M5,M15,M30,M60数据(针对中金所）
         :param symbol: （全路径得合约名称,先使用ctaTemplate.getFullSymbol()
         :param minute: 5，15，30，60
         :param callback: 回调函数
+        :param start_dt: 开始时间，缺省为None
         :return: 成功/失败
         """
         if minute not in {5, 15, 30, 60}:
@@ -249,7 +265,9 @@ class UtilSinaClient(object):
                     bar.datetime = sinaDt - timedelta(seconds=(minute /2)* 60)
                 else:
                     bar.datetime = sinaDt - timedelta(seconds=minute * 60)
-
+                if start_dt is not None:
+                    if bar.datetime < start_dt:
+                        continue
                 bar.date = bar.datetime.strftime('%Y%m%d')
                 bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
                 bar.time = bar.datetime.strftime('%H:%M:00')
@@ -292,11 +310,12 @@ class UtilSinaClient(object):
             self.strategy.writeCtaLog(u'加载Sina历史分钟数据失败：'+str(e))
             return False
 
-    def getDayBars(self, symbol, callback):
+    def getDayBars(self, symbol, callback,start_dt=None):
         """
         从sina加载最新的Day数据
         :param symbol: （全路径得合约名称,先使用ctaTemplate.getFullSymbol()
         :param callback: 回调函数
+        :param start_dt: 开始时间，缺省为None
         :return: 成功/失败
         """
         sinaBars = []
@@ -314,6 +333,10 @@ class UtilSinaClient(object):
                 bar.symbol = symbol
                 # bar的close time
                 bar.datetime = datetime.strptime(item['date'], '%Y-%m-%d')
+                if start_dt is not None:
+                    if bar.datetime < start_dt:
+                        continue
+
                 bar.date = bar.datetime.strftime('%Y%m%d')
                 bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
                 bar.time = bar.datetime.strftime('%H:%M:00')
@@ -346,6 +369,7 @@ class UtilSinaClient(object):
             self.strategy.writeCtaLog(u'加载Sina历史日线数据失败：'+str(e))
             return False
 
+
 class TestStrategy(object):
 
     def __init__(self):
@@ -365,9 +389,9 @@ if __name__ == '__main__':
 
     sina = UtilSinaClient(t)
 
-    rt=sina.getDayBars(symbol='RB1710', callback=t.addBar)
+    rt=sina.getDayBars(symbol='RB1810', callback=t.addBar)
 
-    rt = sina.getMinBars(symbol='RB1710',minute = 60, callback=t.addBar)
+    rt = sina.getMinBars(symbol='RB1810',minute = 60, callback=t.addBar)
 
     #rt = sina.getTicks(symbol='RB1705', callback=t.addTick)
 
