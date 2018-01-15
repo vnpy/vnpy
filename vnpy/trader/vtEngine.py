@@ -4,7 +4,7 @@ print 'load vtEngine.py'
 
 import shelve
 from collections import OrderedDict
-
+import os
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -17,7 +17,7 @@ from vnpy.trader.language import text
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtGateway import *
 from vnpy.trader.app import (ctaStrategy, riskManager)
-from vnpy.trader.setup_logger import get_logger
+from vnpy.trader.setup_logger import get_logger,setup_logger
 
 import psutil
 try:
@@ -286,7 +286,9 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.info(content)
         else:
-            self.logger = get_logger()
+            filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', 'vnpy'))
+            self.logger = setup_logger( filename=filename, name='vnpy')
+
 
     # ----------------------------------------------------------------------
     def writeError(self, content):
