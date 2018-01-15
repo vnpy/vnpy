@@ -10,10 +10,12 @@ import json
 import csv
 import os
 import copy
+import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from Queue import Queue, Empty
 from threading import Thread
+from pymongo.errors import DuplicateKeyError
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
@@ -241,7 +243,10 @@ class DrEngine(object):
                 #self.mainEngine.dbUpdate(dbName, collectionName, d, flt, True)
                 
                 # 使用insert模式更新数据，可能存在时间戳重复的情况，需要用户自行清洗
-                self.mainEngine.dbInsert(dbName, collectionName, d)
+                try:
+                    self.mainEngine.dbInsert(dbName, collectionName, d)
+                except DuplicateKeyError:
+                    self.writeDrLog(u'键值重复插入失败，报错信息：' %traceback.format_exc())
             except Empty:
                 pass
             
