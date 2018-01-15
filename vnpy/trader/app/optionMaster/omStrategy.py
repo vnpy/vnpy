@@ -7,17 +7,36 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
 ########################################################################
 class OmStrategyTemplate(object):
     """策略模板"""
+    className = 'OmStrategyTemplate'
+    author = EMPTY_UNICODE
+    name = EMPTY_UNICODE           # 策略实例名称
+    vtSymbols = []                 # 交易的合约vt系统代码   
+    
+    inited = False                 # 是否进行了初始化
+    trading = False                # 是否启动交易，由引擎管理
+
+    # 参数列表，保存了参数的名称
+    paramList = ['name',
+                 'className',
+                 'author',
+                 'vtSymbols']
+
+    # 变量列表，保存了变量的名称
+    varList = ['inited',
+               'trading']
 
     #----------------------------------------------------------------------
-    def __init__(self, engine):
+    def __init__(self, engine, setting):
         """Constructor"""
         self.engine = engine
         
-        self.name = ''
+        self.vtSymbols = []
         
-        self.inited = False
-        self.trading = False
-        
+        # 设置策略的参数
+        for key in self.paramList:
+            if key in setting:
+                self.__setattr__(key, setting[key])
+                
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化"""
@@ -47,7 +66,12 @@ class OmStrategyTemplate(object):
     def onOrder(self, order):
         """委托推送"""
         raise NotImplementedError
-        
+    
+    #----------------------------------------------------------------------
+    def onTimer(self, order):
+        """定时推送"""
+        raise NotImplementedError        
+
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
         """撤单"""

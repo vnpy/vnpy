@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_TRADE, EVENT_CONTRACT,
-                                 EVENT_ORDER)
+                                 EVENT_ORDER, EVENT_TIMER)
 from vnpy.trader.vtFunction import getTempPath, getJsonPath
 from vnpy.trader.vtObject import (VtLogData, VtSubscribeReq, 
                                   VtOrderReq, VtCancelOrderReq)
@@ -22,6 +22,7 @@ from vnpy.pricing import black, bs, crr
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
                      EVENT_OM_LOG,
                      OM_DB_NAME)
+from .strategy import STRATEGY_CLASS
 
 
 
@@ -225,6 +226,8 @@ class OmEngine(object):
 ########################################################################
 class OmStrategyEngine(object):
     """策略引擎"""
+    settingFileName = 'OM_setting.json'
+    settingfilePath = getJsonPath(settingFileName, __file__)    
 
     #----------------------------------------------------------------------
     def __init__(self, omEngine, eventEngine):
@@ -238,6 +241,8 @@ class OmStrategyEngine(object):
         self.strategyDict = {}          # name: strategy
         self.symbolStrategyDict = {}    # vtSymbol：strategy list
         self.orderStrategyDict= {}      # vtOrderID: strategy
+        
+        self.registerEvent()
     
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -245,6 +250,7 @@ class OmStrategyEngine(object):
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrdervent)
+        self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
     
     #----------------------------------------------------------------------
     def writeLog(self, content):
@@ -293,11 +299,53 @@ class OmStrategyEngine(object):
         strategy = self.orderStrategyDict.get(order.vtOrderID, None)
         if strategy:
             self.callStrategyFunc(strategy, strategy.onOrder, order)
+    
+    #----------------------------------------------------------------------
+    def processTimerEvent(self, event):
+        """处理定时事件"""
+        for strategy in self.strategyDict.values():
+            self.callStrategyFunc(strategy, strategy.onTimer)
             
     #----------------------------------------------------------------------
     def loadSetting(self):
         """加载配置"""
         self.portfolio = self.omEngine.portfolio
+        
+        with open(self.settingfilePath) as f:
+            l = json.load(f)
+            
+            for setting in l:
+                self.loadStrategy(setting)        
+        
+    #----------------------------------------------------------------------
+    def loadStrategy(self, setting):
+        """加载策略"""
+        try:
+            name = setting['name']
+            className = setting['className']
+        except Exception:
+            msg = traceback.format_exc()
+            self.writeLog(u'载入策略出错：%s' %msg)
+            return
+        
+        # 获取策略类
+        strategyClass = STRATEGY_CLASS.get(className, None)
+        if not strategyClass:
+            self.writeLog(u'找不到策略类：%s' %className)
+            return
+        
+        # 防止策略重名
+        if name in self.strategyDict:
+            self.writeLog(u'策略实例重名：%s' %name)
+        else:
+            # 创建策略实例
+            strategy = strategyClass(self, setting)  
+            self.strategyDict[name] = strategy
+            
+            # 保存Tick映射关系
+            for vtSymbol in strategy.vtSymbols:
+                l = self.symbolStrategyDict.setdefault(vtSymbol, [])
+                l.append(strategy)    
     
     #----------------------------------------------------------------------
     def initStrategy(self, name):
