@@ -325,8 +325,23 @@ class VtCancelOrderReq(object):
         self.orderID = EMPTY_STRING             # 报单号
         self.frontID = EMPTY_STRING             # 前置机号
         self.sessionID = EMPTY_STRING           # 会话号
-  
 
+
+########################################################################
+class VtSingleton(type):
+    """
+    单例，应用方式:静态变量 __metaclass__ = Singleton
+    """
+    
+    _instances = {}
+
+    #----------------------------------------------------------------------
+    def __call__(cls, *args, **kwargs):
+        """调用"""
+        if cls not in cls._instances:
+            cls._instances[cls] = super(VtSingleton, cls).__call__(*args, **kwargs)
+            
+        return cls._instances[cls]
     
     
     

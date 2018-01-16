@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 SAVE_DATA = u'保存数据'
+RESIZE_COLUMNS = u'调整列宽'
 
 CONTRACT_SYMBOL = u'合约代码'
 CONTRACT_NAME = u'名称'

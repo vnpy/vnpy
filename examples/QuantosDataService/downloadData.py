@@ -19,4 +19,4 @@ if __name__ == '__main__':
         print u'数据服务器登录失败，原因：%s' %msg    
 
     # 下载数据
-    downloadAllMinuteBar(api)
+    downloadAllMinuteBar(api, 100)
