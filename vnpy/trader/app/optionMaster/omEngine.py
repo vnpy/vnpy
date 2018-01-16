@@ -20,7 +20,7 @@ from vnpy.trader.vtConstant import (PRODUCT_OPTION, OPTION_CALL, OPTION_PUT,
 from vnpy.pricing import black, bs, crr
 
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
-                     EVENT_OM_LOG, EVENT_OM_STRATEGY,
+                     EVENT_OM_LOG, EVENT_OM_STRATEGY, EVENT_OM_STRATEGYLOG,
                      OM_DB_NAME)
 from .strategy import STRATEGY_CLASS
 
@@ -257,7 +257,12 @@ class OmStrategyEngine(object):
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """快速发出日志事件"""
-        self.omEngine.writeLog(content)
+        log = VtLogData()
+        log.logContent = content
+        
+        event = Event(EVENT_OM_STRATEGYLOG)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)   
         
     #----------------------------------------------------------------------
     def callStrategyFunc(self, strategy, func, params=None):
@@ -457,6 +462,18 @@ class OmStrategyEngine(object):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         event = Event(EVENT_OM_STRATEGY+name)
         self.eventEngine.put(event)
+        
+    #----------------------------------------------------------------------
+    def setStrategyParam(self, name, key, value):
+        """设置策略变量"""
+        if name in self.strategyDict:
+            strategy = self.strategyDict[name]
+            strategy.__setattr__(key, value)
+            self.writeLog(u'策略%s参数%s已修改为%s' %(name, key, value))
+        else:
+            self.writeLog(u'策略实例不存在：' + name)    
+            return None        
+        
 
     #----------------------------------------------------------------------
     def getStrategyVar(self, name):

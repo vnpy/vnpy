@@ -9,7 +9,7 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.uiBasicWidget import QtGui, QtCore, QtWidgets, BasicCell
 
-from .omBase import EVENT_OM_LOG, EVENT_OM_STRATEGY
+from .omBase import EVENT_OM_STRATEGYLOG, EVENT_OM_STRATEGY
 
 
 ########################################################################
@@ -17,13 +17,14 @@ class ValueMonitor(QtWidgets.QTableWidget):
     """参数监控"""
 
     #----------------------------------------------------------------------
-    def __init__(self, parent=None):
+    def __init__(self, editable=False, parent=None):
         """Constructor"""
         super(ValueMonitor, self).__init__(parent)
         
         self.keyCellDict = {}
         self.data = None
         self.inited = False
+        self.editable = editable
         
         self.initUi()
         
@@ -32,7 +33,9 @@ class ValueMonitor(QtWidgets.QTableWidget):
         """初始化界面"""
         self.setRowCount(1)
         self.verticalHeader().setVisible(False)
-        self.setEditTriggers(self.NoEditTriggers)
+        
+        if not self.editable:
+            self.setEditTriggers(self.NoEditTriggers)
         
         self.setMaximumHeight(self.sizeHint().height())
         
@@ -46,6 +49,8 @@ class ValueMonitor(QtWidgets.QTableWidget):
             col = 0
             for k, v in data.items():
                 cell = QtWidgets.QTableWidgetItem(unicode(v))
+                cell.key = k
+
                 self.keyCellDict[k] = cell
                 self.setItem(0, col, cell)
                 col += 1
@@ -55,7 +60,7 @@ class ValueMonitor(QtWidgets.QTableWidget):
             for k, v in data.items():
                 cell = self.keyCellDict[k]
                 cell.setText(unicode(v))
-
+                
 
 ########################################################################
 class StrategyManager(QtWidgets.QGroupBox):
@@ -80,8 +85,8 @@ class StrategyManager(QtWidgets.QGroupBox):
         """初始化界面"""
         self.setTitle(self.name)
         
-        self.paramMonitor = ValueMonitor(self)
-        self.varMonitor = ValueMonitor(self)
+        self.paramMonitor = ValueMonitor(True, self)
+        self.varMonitor = ValueMonitor(False, self)
         
         height = 65
         self.paramMonitor.setFixedHeight(height)
@@ -112,6 +117,8 @@ class StrategyManager(QtWidgets.QGroupBox):
         vbox.addLayout(hbox3)
 
         self.setLayout(vbox)
+        
+        self.paramMonitor.itemChanged.connect(self.setParam)
         
     #----------------------------------------------------------------------
     def updateMonitor(self, event=None):
@@ -144,6 +151,22 @@ class StrategyManager(QtWidgets.QGroupBox):
     def stop(self):
         """停止策略"""
         self.engine.stopStrategy(self.name)
+    
+    #----------------------------------------------------------------------
+    def setParam(self, cell):
+        """更新参数"""
+        text = unicode(cell.text())
+        key = cell.key
+        
+        if text.isdigit():
+            if '.' in text:
+                value = float(text)
+            else:
+                value = int(text)
+        else:
+            value = text
+        
+        self.engine.setStrategyParam(self.name, key, value)
 
 
 ########################################################################
@@ -256,7 +279,7 @@ class StrategyEngineManager(QtWidgets.QWidget):
     def registerEvent(self):
         """注册事件监听"""
         self.signal.connect(self.updateLog)
-        self.eventEngine.register(EVENT_OM_LOG, self.signal.emit)
+        self.eventEngine.register(EVENT_OM_STRATEGYLOG, self.signal.emit)
 
     
     

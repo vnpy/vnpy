@@ -19,7 +19,8 @@ OM_DB_NAME = 'VnTrader_OptionMaster_Db'
 
 # 事件定义
 EVENT_OM_LOG = 'eOmLog'
-EVENT_OM_STRATEGY = 'eOmStrategy'
+EVENT_OM_STRATEGY = 'eOmStrategy.'
+EVENT_OM_STRATEGYLOG = 'eOmStrategyLog'
 
 
 ########################################################################

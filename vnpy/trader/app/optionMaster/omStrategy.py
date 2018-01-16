@@ -1,7 +1,8 @@
 # encoding: UTF-8
 
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
-                                    OFFSET_OPEN, OFFSET_CLOSE)
+                                    OFFSET_OPEN, OFFSET_CLOSE,
+                                    EMPTY_UNICODE)
 
 
 ########################################################################
@@ -68,7 +69,7 @@ class OmStrategyTemplate(object):
         raise NotImplementedError
     
     #----------------------------------------------------------------------
-    def onTimer(self, order):
+    def onTimer(self):
         """定时推送"""
         raise NotImplementedError        
 
@@ -131,6 +132,13 @@ class OmStrategyTemplate(object):
     def putEvent(self):
         """发出GUI更新通知"""
         self.engine.putStrategyEvent(self.name)
+        
+    #----------------------------------------------------------------------
+    def writeLog(self, content):
+        """记录日志"""
+        content = '%s:%s' %(self.name, content)
+        self.engine.writeLog(content)
+        
     
 
     
