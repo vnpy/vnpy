@@ -1,0 +1,7 @@
+[
+    {
+        "name": "double ema",
+        "className": "EmaDemoStrategy",
+        "vtSymbol": "IF1706"
+    }
+]

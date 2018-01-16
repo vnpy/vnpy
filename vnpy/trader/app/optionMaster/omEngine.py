@@ -20,7 +20,7 @@ from vnpy.trader.vtConstant import (PRODUCT_OPTION, OPTION_CALL, OPTION_PUT,
 from vnpy.pricing import black, bs, crr
 
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
-                     EVENT_OM_LOG,
+                     EVENT_OM_LOG, EVENT_OM_STRATEGY,
                      OM_DB_NAME)
 from .strategy import STRATEGY_CLASS
 
@@ -49,6 +49,8 @@ class OmEngine(object):
         
         self.portfolio = None
         self.optionContractDict = {}      # symbol:contract
+        
+        self.strategyEngine = OmStrategyEngine(self, eventEngine)
         
         self.registerEvent()
     
@@ -226,7 +228,7 @@ class OmEngine(object):
 ########################################################################
 class OmStrategyEngine(object):
     """策略引擎"""
-    settingFileName = 'OM_setting.json'
+    settingFileName = 'strategy_setting.json'
     settingfilePath = getJsonPath(settingFileName, __file__)    
 
     #----------------------------------------------------------------------
@@ -249,7 +251,7 @@ class OmStrategyEngine(object):
         """注册事件监听"""
         self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
-        self.eventEngine.register(EVENT_ORDER, self.processOrdervent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
     
     #----------------------------------------------------------------------
@@ -449,5 +451,57 @@ class OmStrategyEngine(object):
     def getPortfolio(self):
         """获取持仓组合信息"""
         return self.portfolio
-        
     
+    #----------------------------------------------------------------------
+    def putStrategyEvent(self, name):
+        """触发策略状态变化事件（通常用于通知GUI更新）"""
+        event = Event(EVENT_OM_STRATEGY+name)
+        self.eventEngine.put(event)
+
+    #----------------------------------------------------------------------
+    def getStrategyVar(self, name):
+        """获取策略当前的变量字典"""
+        if name in self.strategyDict:
+            strategy = self.strategyDict[name]
+            varDict = OrderedDict()
+            
+            for key in strategy.varList:
+                varDict[key] = strategy.__getattribute__(key)
+            
+            return varDict
+        else:
+            self.writeLog(u'策略实例不存在：' + name)    
+            return None
+    
+    #----------------------------------------------------------------------
+    def getStrategyParam(self, name):
+        """获取策略的参数字典"""
+        if name in self.strategyDict:
+            strategy = self.strategyDict[name]
+            paramDict = OrderedDict()
+            
+            for key in strategy.paramList:  
+                paramDict[key] = strategy.__getattribute__(key)
+            
+            return paramDict
+        else:
+            self.writeLog(u'策略实例不存在：' + name)    
+            return None    
+    
+    #----------------------------------------------------------------------
+    def initAll(self):
+        """全部初始化"""
+        for name in self.strategyDict.keys():
+            self.initStrategy(name)
+    
+    #----------------------------------------------------------------------
+    def startAll(self):
+        """全部启动"""
+        for name in self.strategyDict.keys():
+            self.startStrategy(name)        
+            
+    #----------------------------------------------------------------------
+    def stopAll(self):
+        """全部停止"""
+        for name in self.strategyDict.keys():
+            self.stopStrategy(name)       

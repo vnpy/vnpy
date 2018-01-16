@@ -127,4 +127,11 @@ class OmStrategyTemplate(object):
         """获取持仓组合信息"""
         return self.engine.getPortfolio()
     
+    #----------------------------------------------------------------------
+    def putEvent(self):
+        """发出GUI更新通知"""
+        self.engine.putStrategyEvent(self.name)
+    
+
+    
     
