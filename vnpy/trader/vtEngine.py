@@ -819,12 +819,18 @@ class PositionDetail(object):
                 cost = self.longPrice * self.longPos
                 cost += trade.volume * trade.price
                 newPos = self.longPos + trade.volume
-                self.longPrice = cost / newPos
+                if newPos:
+                    self.longPrice = cost / newPos
+                else:
+                    self.longPrice = 0
             else:
                 cost = self.shortPrice * self.shortPos
                 cost += trade.volume * trade.price
                 newPos = self.shortPos + trade.volume
-                self.shortPrice = cost / newPos
+                if newPos:
+                    self.shortPrice = cost / newPos
+                else:
+                    self.shortPrice = 0
     
     #----------------------------------------------------------------------
     def calculatePosition(self):
