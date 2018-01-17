@@ -95,6 +95,8 @@ class UtilSinaClient(object):
             responses= execjs.eval(response_data)
             datevalue = datetime.now().strftime('%Y-%m-%d')
 
+            self.strategy.writeCtaLog(u'一共提取{}条分时数据'.format(len(responses)))
+
             for i, item in enumerate(responses):
 
                 tick = CtaTickData()

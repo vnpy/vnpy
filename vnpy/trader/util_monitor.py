@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from vtGateway import *
-from setup_logger import get_logger
+from setup_logger import setup_logger
 
 ########################################################################
 class BasicMonitor(object):
@@ -80,8 +80,11 @@ class BasicMonitor(object):
             s.append('%s: %s' % (value['chinese'], v))
         if self.logger is not None:
            self.logger.info(' '.join(s))
-        else:
-            self.logger = get_logger()
+
+    def createLogger(self, monitor_name):
+        filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', monitor_name))
+        print u'create logger:{}'.format(filename)
+        self.logger = setup_logger(filename=filename, name=monitor_name)
 
 ########################################################################
 class MarketMonitor(BasicMonitor):
@@ -139,7 +142,6 @@ class LogMonitor(BasicMonitor):
         self.registerEvent()
 
 
-
 ########################################################################
 class CtaLogMonitor(BasicMonitor):
     """日志监控"""
@@ -174,8 +176,11 @@ class ErrorMonitor(BasicMonitor):
         d['gatewayName'] = {'chinese': u'接口', 'cellType': ""}
         self.setHeaderDict(d)
 
+        self.createLogger(EVENT_ERROR)
+
         self.setEventType(EVENT_ERROR)
         self.registerEvent()
+
 
 
 ########################################################################
@@ -199,6 +204,8 @@ class TradeMonitor(BasicMonitor):
         d['tradeTime'] = {'chinese': u'成交时间', 'cellType': ""}
         d['gatewayName'] = {'chinese': u'接口', 'cellType': ""}
         self.setHeaderDict(d)
+
+        self.createLogger(EVENT_TRADE)
 
         self.setEventType(EVENT_TRADE)
         self.registerEvent()
@@ -232,6 +239,8 @@ class OrderMonitor(BasicMonitor):
         d['gatewayName'] = {'chinese': u'接口', 'cellType': ""}
         self.setHeaderDict(d)
 
+        self.createLogger(EVENT_ORDER)
+
         self.setDataKey('vtOrderID')
         self.setEventType(EVENT_ORDER)
         self.setSaveData(True)
@@ -258,11 +267,10 @@ class PositionMonitor(BasicMonitor):
         d['price'] = {'chinese': u'价格', 'cellType': ""}
         d['gatewayName'] = {'chinese': u'接口', 'cellType': ""}
         self.setHeaderDict(d)
-
+        self.createLogger(EVENT_POSITION)
         self.setDataKey('vtPositionName')
         self.setEventType(EVENT_POSITION)
         self.registerEvent()
-
 
 ########################################################################
 class AccountMonitor(BasicMonitor):
@@ -284,7 +292,7 @@ class AccountMonitor(BasicMonitor):
         d['positionProfit'] = {'chinese': u'持仓盈亏', 'cellType': ""}
         d['gatewayName'] = {'chinese': u'接口', 'cellType': ""}
         self.setHeaderDict(d)
-
+        self.createLogger(EVENT_ACCOUNT)
         self.setDataKey('vtAccountID')
         self.setEventType(EVENT_ACCOUNT)
         self.registerEvent()

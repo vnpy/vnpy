@@ -60,7 +60,9 @@ class MainEngine(object):
 
         self.connected_gw_name = u''
 
-        self.logger = get_logger()
+        self.logger = None
+
+        self.createLogger()
 
     # ----------------------------------------------------------------------
     def addGateway(self, gatewayModule,gateway_name=EMPTY_STRING):
@@ -286,9 +288,12 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.info(content)
         else:
-            filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', 'vnpy'))
-            self.logger = setup_logger( filename=filename, name='vnpy')
+            self.createLogger()
 
+    def createLogger(self):
+        filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', 'vnpy'))
+        print u'create logger:{}'.format(filename)
+        self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
 
     # ----------------------------------------------------------------------
     def writeError(self, content):
@@ -302,6 +307,9 @@ class MainEngine(object):
         # 写入本地log日志
         if self.logger is not None:
             self.logger.error(content)
+        else:
+            print content
+            self.createLogger()
     # ----------------------------------------------------------------------
     def writeWarning(self, content):
         """快速发出告警日志事件"""
@@ -314,6 +322,9 @@ class MainEngine(object):
         # 写入本地log日志
         if self.logger is not None:
             self.logger.warning(content)
+        else:
+            print content
+            self.createLogger()
 
         # 发出邮件
         try:
@@ -350,7 +361,8 @@ class MainEngine(object):
         if self.logger:
             self.logger.critical(content)
         else:
-            self.logger = get_logger()
+            print content
+            self.createLogger()
 
         # 发出邮件
         try:

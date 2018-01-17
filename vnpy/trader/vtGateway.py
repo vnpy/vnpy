@@ -1,13 +1,13 @@
 # encoding: UTF-8
 
-import time
+import time,os
 from datetime import datetime
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import *
 
-from vnpy.trader.setup_logger import get_logger
+from vnpy.trader.setup_logger import setup_logger
 
 
 ########################################################################
@@ -20,6 +20,9 @@ class VtGateway(object):
         self.eventEngine = eventEngine
         self.gatewayName = gatewayName
         self.logger = None
+
+        self.createLogger()
+
     # ----------------------------------------------------------------------
     def onTick(self, tick):
         """市场行情推送"""
@@ -98,7 +101,8 @@ class VtGateway(object):
         if self.logger:
             self.logger.info(logMsg)
         else:
-            self.logger = get_logger()
+            self.createLogger()
+
     # ----------------------------------------------------------------------
     def onLog(self, log):
         """日志推送"""
@@ -111,8 +115,13 @@ class VtGateway(object):
         if self.logger:
             self.logger.info(log.logContent)
         else:
-            self.logger = get_logger()
-        
+            self.createLogger()
+
+    def createLogger(self):
+        filename = os.path.abspath(os.path.join(os.path.dirname(__file__),  'logs', 'Gateway'))
+        print u'create logger:{}'.format(filename)
+        self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
+
     # ----------------------------------------------------------------------
     def onContract(self, contract):
         """合约基础信息推送"""
