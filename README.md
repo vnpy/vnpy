@@ -82,6 +82,7 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 2. 安装[MongoDB](https://www.mongodb.org/downloads#production)，并[将MongoDB配置为系统服务](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/#configure-a-windows-service-for-mongodb-community-edition)
 3. 安装[Anaconda](http://www.continuum.io/downloads)，**注意必须是Python 2.7 32位版本**
 4. 安装[Visual C++ Redistributable Packages for VS2013 x86版本](https://support.microsoft.com/en-us/help/3138367/update-for-visual-c-2013-and-visual-c-redistributable-package)
+5. 安装[python-snappy](https://www.lfd.uci.edu/~gohlke/pythonlibs/)，使用命令**pip install python_snappy-0.5.1-cp27-cp27m-win32.whl**
 
 **Ubuntu**
 

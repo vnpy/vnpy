@@ -467,8 +467,9 @@ class FutuGateway(VtGateway):
             d['askPrice%s' %n] = askData[0]
             d['askVolume%s' %n] = askData[1]
         
-        newTick = copy(tick)
-        self.onTick(newTick)
+        if tick.datetime:
+            newTick = copy(tick)
+            self.onTick(newTick)
     
     #----------------------------------------------------------------------
     def processOrder(self, data):

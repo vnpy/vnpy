@@ -43,7 +43,7 @@ def process_enum(line):
     content = content.replace('\r', '')
     content = content.split(' ')
     type_ = 'enum'
-    keyword = content[1]
+    keyword = content[2]
     py_line = 'typedefDict["%s"] = "%s"\n' % (keyword, type_)
 
     return py_line

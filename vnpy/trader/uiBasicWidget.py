@@ -697,7 +697,8 @@ class TradingWidget(QtWidgets.QFrame):
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
                         PRODUCT_OPTION,
-                        PRODUCT_FOREX]
+                        PRODUCT_FOREX,
+                        PRODUCT_SPOT]
     
     gatewayList = ['']
 
@@ -1026,6 +1027,7 @@ class TradingWidget(QtWidgets.QFrame):
     def sendOrder(self):
         """发单"""
         symbol = str(self.lineSymbol.text())
+        vtSymbol = symbol
         exchange = unicode(self.comboExchange.currentText())
         currency = unicode(self.comboCurrency.currentText())
         productClass = unicode(self.comboProductClass.currentText())           
@@ -1042,11 +1044,12 @@ class TradingWidget(QtWidgets.QFrame):
         if contract:
             gatewayName = contract.gatewayName
             exchange = contract.exchange    # 保证有交易所代码
+            vtSymbol = contract.vtSymbol
             
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
-        req.vtSymbol = contract.vtSymbol
+        req.vtSymbol = vtSymbol
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
         req.direction = unicode(self.comboDirection.currentText())
