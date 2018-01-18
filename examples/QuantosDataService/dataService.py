@@ -27,6 +27,8 @@ config = open('config.json')
 setting = json.load(config)
 config.close()
 
+
+
 MONGO_HOST = setting['MONGO_HOST']
 MONGO_PORT = setting['MONGO_PORT']
 SYMBOLS = setting['SYMBOLS']
@@ -57,6 +59,18 @@ def generateVtBar(row):
     
     bar.date = str(row['trade_date'])
     bar.time = str(row['time']).rjust(6, '0')
+   
+    #将bar的时间改成提前一分钟
+    hour=bar.time[0:2]
+    minute=bar.time[2:4]
+    sec=bar.time[4:6]
+    if minute=="00":
+        minute="59"
+        hour=str(int(hour)-1).rjust(2,'0')
+    else:
+        minute=str(int(minute)-1).rjust(2,'0')
+    bar.time=hour+minute+sec
+   
     bar.datetime = datetime.strptime(' '.join([bar.date, bar.time]), '%Y%m%d %H%M%S')
     
     return bar
