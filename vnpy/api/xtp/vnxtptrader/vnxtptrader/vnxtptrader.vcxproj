@@ -44,8 +44,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>X:\GithubProject\vnpy\vn.xtp\xtpapi;D:\boost_1_57_0;D:\Anaconda2\include;$(IncludePath)</IncludePath>
-    <ReferencePath>X:\GithubProject\vnpy\vn.xtp\xtpapi;D:\boost_1_57_0\libs;D:\Anaconda2\libs;$(ReferencePath)</ReferencePath>
+    <IncludePath>C:\Github\vnpy\vnpy\vnpy\api\xtp\xtpapi;C:\boost_1_62_0;C:\Users\Administrator\Anaconda2\include;$(IncludePath)</IncludePath>
+    <ReferencePath>C:\Github\vnpy\vnpy\vnpy\api\xtp\xtpapi;C:\boost_1_62_0\libs;C:\Users\Administrator\Anaconda2\libs;$(VC_ReferencesPath_x86)</ReferencePath>
+    <TargetExt>.pyd</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -75,13 +76,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>D:\Anaconda2\libs;D:\boost_1_57_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Github\vnpy\vnpy\vnpy\api\xtp\xtpapi;C:\boost_1_62_0\stage\lib;C:\Users\Administrator\Anaconda2\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\xtpapi\xoms_api_fund_struct.h" />
     <ClInclude Include="..\..\xtpapi\xoms_api_struct.h" />
     <ClInclude Include="..\..\xtpapi\xquote_api_struct.h" />
     <ClInclude Include="..\..\xtpapi\xtp_api_data_type.h" />
@@ -109,12 +111,13 @@
     <ClCompile Include="vnxtptrader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\xtpapi\xtpquoteapiD.lib" />
-    <Library Include="..\..\xtpapi\xtptraderapiD.lib" />
+    <Library Include="..\..\xtpapi\xtpquoteapi.lib" />
+    <Library Include="..\..\xtpapi\xtptraderapi.lib" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\xtpapi\xtpquoteapiD.dll" />
-    <None Include="..\..\xtpapi\xtptraderapiD.dll" />
+    <None Include="..\..\xtpapi\libsodium.dll" />
+    <None Include="..\..\xtpapi\xtpquoteapi.dll" />
+    <None Include="..\..\xtpapi\xtptraderapi.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

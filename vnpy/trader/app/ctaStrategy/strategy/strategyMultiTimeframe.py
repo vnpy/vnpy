@@ -7,7 +7,7 @@
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
-                                                     BarManager, 
+                                                     BarGenerator, 
                                                      ArrayManager)
 
 
@@ -67,10 +67,10 @@ class MultiTimeframeStrategy(CtaTemplate):
         self.rsiShort = 50 - self.rsiSignal
         
         # 创建K线合成器对象
-        self.bm5 = BarManager(self.onBar, 5, self.on5MinBar)
+        self.bg5 = BarGenerator(self.onBar, 5, self.on5MinBar)
         self.am5 = ArrayManager()
         
-        self.bm15 = BarManager(self.onBar, 15, self.on15MinBar)
+        self.bg15 = BarGenerator(self.onBar, 15, self.on15MinBar)
         self.am15 = ArrayManager()
         
     #----------------------------------------------------------------------
@@ -101,16 +101,16 @@ class MultiTimeframeStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         # 只需要要在一个BM中合成1分钟K线
-        self.bm5.updateTick(tick)
+        self.bg5.updateTick(tick)
 
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         # 基于15分钟判断趋势过滤，因此先更新
-        self.bm15.updateBar(bar)
+        self.bg15.updateBar(bar)
         
         # 基于5分钟判断
-        self.bm5.updateBar(bar)
+        self.bg5.updateBar(bar)
         
     #----------------------------------------------------------------------
     def on5MinBar(self, bar):
