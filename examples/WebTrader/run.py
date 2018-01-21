@@ -253,7 +253,10 @@ def handleEvent(event):
     """处理事件"""
     eventType = event.type_
     eventData = event.dict_['data'].__dict__
-    socketio.emit(eventType, eventData, broadcast=True)
+    #socketio.emit(eventType, eventData, broadcast=True)
+    socketio.emit('test', eventData, broadcast=True)
+    
+    print eventData
 
 
 ee.register(EVENT_TICK, handleEvent)
@@ -270,3 +273,4 @@ ee.register(EVENT_ERROR, handleEvent)
 
 if __name__ == '__main__':
     app.run(debug=True)
+    #socketio.run(app)
