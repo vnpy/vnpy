@@ -8,6 +8,7 @@ sys.setdefaultencoding('utf8')
 # 创建主引擎代理对象
 from vnpy.event import EventEngine2
 from vnpy.trader.vtEvent import EVENT_LOG
+from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq
 from vnpy.trader.app.rpcService.rsClient import MainEngineProxy
 
 reqAddress = 'tcp://localhost:2014'
@@ -42,7 +43,7 @@ class Gateway(Resource):
     def __init__(self):
         """初始化"""
         self.parser = reqparse.RequestParser()
-        self.parser.add_argument('name')
+        self.parser.add_argument('gatewayName')
         super(Gateways, self).__init__()
     
     #----------------------------------------------------------------------
@@ -55,8 +56,8 @@ class Gateway(Resource):
     def post(self):
         """连接"""
         args = self.parser.parse_args()
-        name = args['name']
-        me.connect(name)
+        gatewayName = args['gatewayName']
+        me.connect(gatewayName)
 
 
 ########################################################################
@@ -66,8 +67,17 @@ class Order(Resource):
     #----------------------------------------------------------------------
     def __init__(self):
         """初始化"""
-        self.parser = reqparse.RequestParser()
-        self.parser.add_argument('name')
+        self.postParser = reqparse.RequestParser()
+        self.postParser.add_argument('vtSymbol')
+        self.postParser.add_argument('price')
+        self.postParser.add_argument('volume')
+        self.postParser.add_argument('priceType')
+        self.postParser.add_argument('direction')
+        self.postParser.add_argument('offset')
+        
+        self.deleteParser = reqparse.RequestParser()
+        self.deletaParser.add_argument('vtOrderID')        
+        
         super(Gateways, self).__init__()
     
     #----------------------------------------------------------------------
@@ -80,12 +90,44 @@ class Order(Resource):
     #----------------------------------------------------------------------
     def post(self):
         """发单"""
-        pass
+        args = self.deleteParser.parse_args()
+        vtSymbol = args['vtSymbol']        
+        price = args['price']        
+        volume = args['volume']        
+        priceType = args['priceType']        
+        direction = args['direction']        
+        offset = args['offset']      
+        
+        contract = me.getContract(vtSymbol)
+        if not contract:
+            return ''
+        
+        req = VtOrderReq()
+        req.symbol = contract.symbol
+        req.exchange = contract.exchange
+        req.price = float(price)
+        req.volume = int(symbol)
+        req.priceType = priceType
+        req.direction = direction
+        req.offset = offset
+        vtOrderID = me.sendOrder(req, contract.gatewayName)
+        return vtOrderID
     
     #----------------------------------------------------------------------
     def delete(self):
         """撤单"""
-        pass
+        args = self.deleteParser.parse_args()
+        vtOrderID = args['vtOrderID']
+        
+        order = me.getOrder(vtOrderID)
+        if not order:
+            return False
+        
+        req = VtCancelOrderReq()
+        req.orderID = order.orderID
+        req.exchange = order.exchange
+        req.symbol = order.symbol
+        me.cancelOrder(req, order.gatewayName)
 
 
 ########################################################################
@@ -160,6 +202,34 @@ class Error(Resource):
         return l
 
 
+########################################################################
+class Tick(Resource):
+    """行情"""
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('vtSymbol')
+        super(Gateways, self).__init__()    
+
+    #----------------------------------------------------------------------
+    def post(self):
+        """订阅"""
+        args = self.parser.parse_args()
+        vtSymbol = args['vtSymbol']
+        
+        contract = me.getContract(vtSymbol)
+        if not contract:
+            return False
+        
+        req = VtSubscribeReq()
+        req.symbol = contract.symbol
+        req.exchange = contract.exchange
+        req.vtSymbol = contract.vtSymbol
+        me.subscribe(req, contract.gatewayName)
+        return True
+    
+
 # 注册资源
 api.add_resource(Gateway, '/gateway')
 api.add_resource(Order, '/order')
@@ -169,6 +239,7 @@ api.add_resource(Position, '/position')
 api.add_resource(Contract, '/contract')
 api.add_resource(Log, '/log')
 api.add_resource(Error, '/error')
+api.add_resource(Tick, '/tick')
 
 
 
