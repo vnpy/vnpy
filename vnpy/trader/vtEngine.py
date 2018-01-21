@@ -295,6 +295,11 @@ class MainEngine(object):
         return self.dataEngine.getAllOrders()
     
     #----------------------------------------------------------------------
+    def getAllTrades(self):
+        """查询所有成交"""
+        return self.dataEngine.getAllTrades()    
+    
+    #----------------------------------------------------------------------
     def getAllPositionDetails(self):
         """查询本地持仓缓存细节"""
         return self.dataEngine.getAllPositionDetails()
@@ -374,6 +379,9 @@ class DataEngine(object):
         
         # 保存委托数据的字典
         self.orderDict = {}
+        
+        # 保存成交数据的字典
+        self.tradeDict = {}
         
         # 保存活动委托数据的字典（即可撤销）
         self.workingOrderDict = {}
@@ -486,6 +494,11 @@ class DataEngine(object):
     def getAllOrders(self):
         """获取所有委托"""
         return self.orderDict.values()
+    
+    #----------------------------------------------------------------------
+    def getAllTrades(self):
+        """获取所有成交"""
+        return self.tradeDict.values()    
     
     #----------------------------------------------------------------------
     def getPositionDetail(self, vtSymbol):
