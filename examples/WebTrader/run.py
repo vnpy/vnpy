@@ -7,7 +7,9 @@ sys.setdefaultencoding('utf8')
 
 # 创建主引擎代理对象
 from vnpy.event import EventEngine2
-from vnpy.trader.vtEvent import EVENT_LOG
+from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE,
+                                 EVENT_ACCOUNT, EVENT_POSITION, EVENT_LOG,
+                                 EVENT_ERROR, EVENT_CONTRACT)
 from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq
 from vnpy.trader.app.rpcService.rsClient import MainEngineProxy
 
@@ -30,9 +32,12 @@ ee.register(EVENT_LOG, printLog)
 # 创建Flask对象
 from flask import Flask
 from flask.ext.restful import Api, Resource, reqparse
+from flask.ext.socketio import SocketIO
 
 app = Flask(__name__)
 api = Api(app)
+socketio = SocketIO(app)
+
 
 # 创建资源
 ########################################################################
@@ -44,7 +49,7 @@ class Gateway(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('gatewayName')
-        super(Gateways, self).__init__()
+        super(Gateway, self).__init__()
     
     #----------------------------------------------------------------------
     def get(self):
@@ -78,7 +83,7 @@ class Order(Resource):
         self.deleteParser = reqparse.RequestParser()
         self.deletaParser.add_argument('vtOrderID')        
         
-        super(Gateways, self).__init__()
+        super(Order, self).__init__()
     
     #----------------------------------------------------------------------
     def get(self):
@@ -210,7 +215,7 @@ class Tick(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('vtSymbol')
-        super(Gateways, self).__init__()    
+        super(Tick, self).__init__()    
 
     #----------------------------------------------------------------------
     def post(self):
@@ -240,6 +245,26 @@ api.add_resource(Contract, '/contract')
 api.add_resource(Log, '/log')
 api.add_resource(Error, '/error')
 api.add_resource(Tick, '/tick')
+
+
+# SocketIO
+#----------------------------------------------------------------------
+def handleEvent(event):
+    """处理事件"""
+    eventType = event.type_
+    eventData = event.dict_['data'].__dict__
+    socketio.emit(eventType, eventData, broadcast=True)
+
+
+ee.register(EVENT_TICK, handleEvent)
+ee.register(EVENT_ORDER, handleEvent)
+ee.register(EVENT_TRADE, handleEvent)
+ee.register(EVENT_ACCOUNT, handleEvent)
+ee.register(EVENT_POSITION, handleEvent)
+ee.register(EVENT_CONTRACT, handleEvent)
+ee.register(EVENT_LOG, handleEvent)
+ee.register(EVENT_ERROR, handleEvent)
+    
 
 
 
