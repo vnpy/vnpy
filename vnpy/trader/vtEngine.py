@@ -300,6 +300,16 @@ class MainEngine(object):
         return self.dataEngine.getAllTrades()    
     
     #----------------------------------------------------------------------
+    def getAllAccounts(self):
+        """查询所有账户"""
+        return self.dataEngine.getAllAccounts()
+    
+    #----------------------------------------------------------------------
+    def getAllPositions(self):
+        """查询所有持仓"""
+        return self.dataEngine.getAllPositions()
+    
+    #----------------------------------------------------------------------
     def getAllPositionDetails(self):
         """查询本地持仓缓存细节"""
         return self.dataEngine.getAllPositionDetails()
@@ -360,6 +370,16 @@ class MainEngine(object):
         """转换委托请求"""
         return self.dataEngine.convertOrderReq(req)
 
+    #----------------------------------------------------------------------
+    def getLog(self):
+        """查询日志"""
+        return self.dataEngine.getLog()
+    
+    #----------------------------------------------------------------------
+    def getError(self):
+        """查询错误"""
+        return self.dataEngine.getError()
+    
 
 ########################################################################
 class DataEngine(object):
@@ -374,17 +394,15 @@ class DataEngine(object):
         """Constructor"""
         self.eventEngine = eventEngine
         
-        # 保存合约详细信息的字典
+        # 保存数据的字典和列表
         self.contractDict = {}
-        
-        # 保存委托数据的字典
         self.orderDict = {}
-        
-        # 保存成交数据的字典
+        self.workingOrderDict = {}  # 可撤销委托
         self.tradeDict = {}
-        
-        # 保存活动委托数据的字典（即可撤销）
-        self.workingOrderDict = {}
+        self.accountDict = {}
+        self.positionDict= {}
+        self.logList = []
+        self.errorList = []
         
         # 持仓细节相关
         self.detailDict = {}                                # vtSymbol:PositionDetail
@@ -403,6 +421,9 @@ class DataEngine(object):
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
+        self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
+        self.eventEngine.register(EVENT_LOG, self.processLogEvent)
+        self.eventEngine.register(EVENT_ERROR, self.processErrorEvent)
     
     #----------------------------------------------------------------------
     def processContractEvent(self, event):
@@ -442,11 +463,31 @@ class DataEngine(object):
     def processPositionEvent(self, event):
         """处理持仓事件"""
         pos = event.dict_['data']
+        
+        self.positionDict[pos.vtPositionName] = pos
     
         # 更新到持仓细节中
         detail = self.getPositionDetail(pos.vtSymbol)
         detail.updatePosition(pos)                
         
+    #----------------------------------------------------------------------
+    def processAccountEvent(self, event):
+        """处理账户事件"""
+        account = event.dict_['data']
+        self.accountDict[account.vtAccountID] = account
+    
+    #----------------------------------------------------------------------
+    def processLogEvent(self, event):
+        """处理日志事件"""
+        log = event.dict_['data']
+        self.logList.append(log)
+    
+    #----------------------------------------------------------------------
+    def processErrorEvent(self, event):
+        """处理错误事件"""
+        error = event.dict_['data']
+        self.errorList.append(error)
+    
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约对象"""
@@ -498,7 +539,17 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def getAllTrades(self):
         """获取所有成交"""
-        return self.tradeDict.values()    
+        return self.tradeDict.values()
+    
+    #----------------------------------------------------------------------
+    def getAllPositions(self):
+        """获取所有持仓"""
+        return self.positionDict.values()
+    
+    #----------------------------------------------------------------------
+    def getAllAccounts(self):
+        """获取所有资金"""
+        return self.accountDict.values()
     
     #----------------------------------------------------------------------
     def getPositionDetail(self, vtSymbol):
@@ -549,6 +600,16 @@ class DataEngine(object):
         else:
             return detail.convertOrderReq(req)
 
+    #----------------------------------------------------------------------
+    def getLog(self):
+        """获取日志"""
+        return self.logList
+    
+    #----------------------------------------------------------------------
+    def getError(self):
+        """获取错误"""
+        return self.errorList
+    
 
 ########################################################################    
 class LogEngine(object):
@@ -651,7 +712,7 @@ class LogEngine(object):
         function = self.levelFunctionDict[log.logLevel]     # 获取日志级别对应的处理函数
         msg = '\t'.join([log.gatewayName, log.logContent])
         function(msg)
-    
+        
     
 ########################################################################
 class PositionDetail(object):

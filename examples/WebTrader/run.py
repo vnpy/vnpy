@@ -35,7 +35,7 @@ api = Api(app)
 
 # 创建资源
 ########################################################################
-class Gateways(Resource):
+class Gateway(Resource):
     """接口"""
     
     #----------------------------------------------------------------------
@@ -60,7 +60,7 @@ class Gateways(Resource):
 
 
 ########################################################################
-class Orders(Resource):
+class Order(Resource):
     """委托"""
 
     #----------------------------------------------------------------------
@@ -89,7 +89,7 @@ class Orders(Resource):
 
 
 ########################################################################
-class Trades(Resource):
+class Trade(Resource):
     """成交"""
 
     #----------------------------------------------------------------------
@@ -101,44 +101,74 @@ class Trades(Resource):
     
 
 ########################################################################
-class Accounts(Resource):
+class Account(Resource):
     """账户"""
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
-        pass
+        data = me.getAllAccounts()
+        l = {o.__dict__ for o in data}
+        return l        
 
 
 ########################################################################
-class Positions(Resource):
+class Position(Resource):
     """持仓"""
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
-        pass
+        data = me.getAllPositions()
+        l = {o.__dict__ for o in data}
+        return l
 
 
 ########################################################################
-class Contracts(Resource):
+class Contract(Resource):
     """合约"""
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
-        pass
+        data = me.getAllContracts()
+        l = {o.__dict__ for o in data}
+        return l        
 
 
+########################################################################
+class Log(Resource):
+    """日志"""
+
+    #----------------------------------------------------------------------
+    def get(self):
+        """查询"""
+        data = me.getLog()
+        l = {o.__dict__ for o in data}
+        return l   
+
+
+########################################################################
+class Error(Resource):
+    """错误"""
+
+    #----------------------------------------------------------------------
+    def get(self):
+        """查询"""
+        data = me.getError()
+        l = {o.__dict__ for o in data}
+        return l
 
 
 # 注册资源
-api.add_resource(Gateways, '/gateways')
-api.add_resource(Orders, '/orders')
-api.add_resource(Trades, '/trades')
-api.add_resource(Accounts, '/accounts')
-api.add_resource(Positions, '/positions')
-api.add_resource(Contracts, '/contracts')
+api.add_resource(Gateway, '/gateway')
+api.add_resource(Order, '/order')
+api.add_resource(Trade, '/trades')
+api.add_resource(Account, '/account')
+api.add_resource(Position, '/position')
+api.add_resource(Contract, '/contract')
+api.add_resource(Log, '/log')
+api.add_resource(Error, '/error')
 
 
 
