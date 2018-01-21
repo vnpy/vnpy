@@ -115,7 +115,7 @@ class CtaStrategyManager(QtWidgets.QGroupBox):
         self.setLayout(vbox)
         
     #----------------------------------------------------------------------
-    def updateMonitor(self, event=None):
+    def updateMonitor(self):
         """显示策略最新状态"""
         paramDict = self.ctaEngine.getStrategyParam(self.name)
         if paramDict:
@@ -124,11 +124,17 @@ class CtaStrategyManager(QtWidgets.QGroupBox):
         varDict = self.ctaEngine.getStrategyVar(self.name)
         if varDict:
             self.varMonitor.updateData(varDict)        
-            
+    
+    #----------------------------------------------------------------------
+    def updateVar(self, event):
+        """更新策略变量"""
+        data = event.dict_['data']
+        self.varMonitor.updateData(data)
+    
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
-        self.signal.connect(self.updateMonitor)
+        self.signal.connect(self.updateVar)
         self.eventEngine.register(EVENT_CTA_STRATEGY+self.name, self.signal.emit)
     
     #----------------------------------------------------------------------
