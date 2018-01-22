@@ -219,7 +219,8 @@ class CtaEngineManager(QtWidgets.QWidget):
         w = QtWidgets.QWidget()
         vbox = QtWidgets.QVBoxLayout()
         
-        for name in self.ctaEngine.strategyDict.keys():
+        l = self.ctaEngine.getStrategyNames()
+        for name in l:
             strategyManager = CtaStrategyManager(self.ctaEngine, self.eventEngine, name)
             vbox.addWidget(strategyManager)
         

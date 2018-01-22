@@ -555,6 +555,11 @@ class CtaEngine(object):
         else:
             self.writeCtaLog(u'策略实例不存在：' + name)    
             return None
+    
+    #----------------------------------------------------------------------
+    def getStrategyNames(self):
+        """查询所有策略名称"""
+        return self.strategyDict.keys()        
         
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):

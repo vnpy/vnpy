@@ -235,6 +235,133 @@ class Tick(Resource):
         return True
     
 
+########################################################################
+class CtaStrategyInit(Resource):
+    """初始化策略"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name')
+        super(CtaStrategyInit, self).__init__()    
+
+    #----------------------------------------------------------------------
+    def post(self):
+        """订阅"""
+        args = self.parser.parse_args()
+        name = args['name']
+        
+        engine = me.getApp('CtaStrategy')
+        if not name:
+            engine.initAll()
+        else:
+            engine.initStrategy(name)
+
+
+########################################################################
+class CtaStrategyStart(Resource):
+    """启动策略"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name')
+        super(CtaStrategyStart, self).__init__()    
+
+    #----------------------------------------------------------------------
+    def post(self):
+        """订阅"""
+        args = self.parser.parse_args()
+        name = args['name']
+        
+        engine = me.getApp('CtaStrategy')
+        if not name:
+            engine.startAll()
+        else:
+            engine.startStrategy(name)
+
+
+########################################################################
+class CtaStrategyStop(Resource):
+    """停止策略"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name')
+        super(CtaStrategyStop, self).__init__()    
+
+    #----------------------------------------------------------------------
+    def post(self):
+        """订阅"""
+        args = self.parser.parse_args()
+        name = args['name']
+        
+        engine = me.getApp('CtaStrategy')
+        if not name:
+            engine.stopAll()
+        else:
+            engine.stopStrategy(name)
+
+
+########################################################################
+class CtaStrategyLoad(Resource):
+    """加载策略"""
+    
+    #----------------------------------------------------------------------
+    def post(self):
+        """订阅"""        
+        engine = me.getApp('CtaStrategy')
+        engine.loadSetting()
+        l = engine.getStrategyNames()
+        return l
+
+
+########################################################################
+class CtaStrategyParam(Resource):
+    """查询策略参数"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name')
+        super(CtaStrategyParam, self).__init__()    
+
+    #----------------------------------------------------------------------
+    def get(self):
+        """订阅"""
+        args = self.parser.parse_args()
+        name = args['name']
+        
+        engine = me.getApp('CtaStrategy')
+        return engine.getStrategyParam(name)
+
+
+########################################################################
+class CtaStrategyVar(Resource):
+    """查询策略变量"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name')
+        super(CtaStrategyVar, self).__init__()    
+
+    #----------------------------------------------------------------------
+    def get(self):
+        """订阅"""
+        args = self.parser.parse_args()
+        name = args['name']
+        
+        engine = me.getApp('CtaStrategy')
+        return engine.getStrategyVar(name)
+
+
 # 注册资源
 api.add_resource(Gateway, '/gateway')
 api.add_resource(Order, '/order')
@@ -245,6 +372,13 @@ api.add_resource(Contract, '/contract')
 api.add_resource(Log, '/log')
 api.add_resource(Error, '/error')
 api.add_resource(Tick, '/tick')
+
+api.add_resource(CtaStrategyLoad, '/ctastrategy/load')
+api.add_resource(CtaStrategyInit, '/ctastrategy/init')
+api.add_resource(CtaStrategyStart, '/ctastrategy/start')
+api.add_resource(CtaStrategyStop, '/ctastrategy/stop')
+api.add_resource(CtaStrategyParam, '/ctastrategy/param')
+api.add_resource(CtaStrategyVar, '/ctastrategy/var')
 
 
 # SocketIO
