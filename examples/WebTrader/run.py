@@ -81,7 +81,7 @@ class Order(Resource):
         self.postParser.add_argument('offset')
         
         self.deleteParser = reqparse.RequestParser()
-        self.deletaParser.add_argument('vtOrderID')        
+        self.deleteParser.add_argument('vtOrderID')        
         
         super(Order, self).__init__()
     
@@ -253,10 +253,8 @@ def handleEvent(event):
     """处理事件"""
     eventType = event.type_
     eventData = event.dict_['data'].__dict__
-    #socketio.emit(eventType, eventData, broadcast=True)
-    socketio.emit('test', eventData, broadcast=True)
-    
-    print eventData
+    socketio.emit(eventType, eventData)
+    #print eventData
 
 
 ee.register(EVENT_TICK, handleEvent)
@@ -272,5 +270,4 @@ ee.register(EVENT_ERROR, handleEvent)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    #socketio.run(app)
+    socketio.run(app)
