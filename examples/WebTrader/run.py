@@ -29,6 +29,20 @@ def printLog(event):
 ee.register(EVENT_LOG, printLog)
     
 
+# 载入Web密码
+import json
+import base64
+import datetime
+
+TODAY = str(datetime.datetime.now().date())
+
+with open("WEB_setting.json") as f:
+    setting = json.load(f)
+    USERNAME = setting['username']
+    PASSWORD = setting['password']
+    TOKEN = base64.encodestring(TODAY+PASSWORD)
+
+
 # 创建Flask对象
 from flask import Flask
 from flask.ext.restful import Api, Resource, reqparse
@@ -40,6 +54,32 @@ socketio = SocketIO(app)
 
 
 # 创建资源
+
+########################################################################
+class Token(Resource):
+    """登录验证"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('username')
+        self.parser.add_argument('password')
+        super(Gateway, self).__init__()
+    
+    #----------------------------------------------------------------------
+    def get(self):
+        """查询"""
+        args = self.parser.parse_args()
+        username = args['username']
+        password = args['password']
+        
+        if username == USERNAME and password == PASSWORD:
+            return TOKEN
+        else:
+            return ''
+
+
 ########################################################################
 class Gateway(Resource):
     """接口"""
@@ -49,11 +89,18 @@ class Gateway(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('gatewayName')
+        self.parser.add_argument('token')
+        
         super(Gateway, self).__init__()
     
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         l = me.getAllGatewayDetails()
         return l
     
@@ -61,6 +108,10 @@ class Gateway(Resource):
     def post(self):
         """连接"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+                
         gatewayName = args['gatewayName']
         me.connect(gatewayName)
 
@@ -72,6 +123,9 @@ class Order(Resource):
     #----------------------------------------------------------------------
     def __init__(self):
         """初始化"""
+        self.getParser = reqparse.RequestParser()    
+        self.getParser.add_argument('token')
+        
         self.postParser = reqparse.RequestParser()
         self.postParser.add_argument('vtSymbol')
         self.postParser.add_argument('price')
@@ -79,15 +133,22 @@ class Order(Resource):
         self.postParser.add_argument('priceType')
         self.postParser.add_argument('direction')
         self.postParser.add_argument('offset')
+        self.postParser.add_argument('token')
         
         self.deleteParser = reqparse.RequestParser()
         self.deleteParser.add_argument('vtOrderID')        
+        self.deleteParser.add_argument('token')
         
         super(Order, self).__init__()
     
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.getParser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getAllOrders()
         l = {o.__dict__ for o in data}
         return l
@@ -96,6 +157,10 @@ class Order(Resource):
     def post(self):
         """发单"""
         args = self.deleteParser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         vtSymbol = args['vtSymbol']        
         price = args['price']        
         volume = args['volume']        
@@ -122,6 +187,10 @@ class Order(Resource):
     def delete(self):
         """撤单"""
         args = self.deleteParser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         vtOrderID = args['vtOrderID']
         
         order = me.getOrder(vtOrderID)
@@ -138,10 +207,23 @@ class Order(Resource):
 ########################################################################
 class Trade(Resource):
     """成交"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        
+        super(Trade, self).__init__()    
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getAllTrades()
         l = {o.__dict__ for o in data}
         return l
@@ -150,10 +232,23 @@ class Trade(Resource):
 ########################################################################
 class Account(Resource):
     """账户"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        
+        super(Account, self).__init__()    
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getAllAccounts()
         l = {o.__dict__ for o in data}
         return l        
@@ -162,10 +257,23 @@ class Account(Resource):
 ########################################################################
 class Position(Resource):
     """持仓"""
-
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        
+        super(Position, self).__init__()    
+    
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getAllPositions()
         l = {o.__dict__ for o in data}
         return l
@@ -176,8 +284,22 @@ class Contract(Resource):
     """合约"""
 
     #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        
+        super(Contract, self).__init__()    
+    
+
+    #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getAllContracts()
         l = {o.__dict__ for o in data}
         return l        
@@ -186,10 +308,23 @@ class Contract(Resource):
 ########################################################################
 class Log(Resource):
     """日志"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        
+        super(Log, self).__init__()    
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getLog()
         l = {o.__dict__ for o in data}
         return l   
@@ -198,10 +333,23 @@ class Log(Resource):
 ########################################################################
 class Error(Resource):
     """错误"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        
+        super(Error, self).__init__()    
 
     #----------------------------------------------------------------------
     def get(self):
         """查询"""
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         data = me.getError()
         l = {o.__dict__ for o in data}
         return l
@@ -210,17 +358,23 @@ class Error(Resource):
 ########################################################################
 class Tick(Resource):
     """行情"""
+    
     #----------------------------------------------------------------------
     def __init__(self):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('vtSymbol')
+        self.parser.add_argument('token')
         super(Tick, self).__init__()    
 
     #----------------------------------------------------------------------
     def post(self):
         """订阅"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         vtSymbol = args['vtSymbol']
         
         contract = me.getContract(vtSymbol)
@@ -244,12 +398,17 @@ class CtaStrategyInit(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('name')
+        self.parser.add_argument('token')
         super(CtaStrategyInit, self).__init__()    
 
     #----------------------------------------------------------------------
     def post(self):
         """订阅"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
@@ -268,12 +427,17 @@ class CtaStrategyStart(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('name')
+        self.parser.add_argument('token')
         super(CtaStrategyStart, self).__init__()    
 
     #----------------------------------------------------------------------
     def post(self):
         """订阅"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
@@ -292,12 +456,17 @@ class CtaStrategyStop(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('name')
+        self.parser.add_argument('token')
         super(CtaStrategyStop, self).__init__()    
 
     #----------------------------------------------------------------------
     def post(self):
         """订阅"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
@@ -312,8 +481,20 @@ class CtaStrategyLoad(Resource):
     """加载策略"""
     
     #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        super(CtaStrategyLoad, self).__init__()        
+    
+    #----------------------------------------------------------------------
     def post(self):
-        """订阅"""        
+        """订阅""" 
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         engine = me.getApp('CtaStrategy')
         engine.loadSetting()
         l = engine.getStrategyNames()
@@ -329,12 +510,17 @@ class CtaStrategyParam(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('name')
+        self.parser.add_argument('token')
         super(CtaStrategyParam, self).__init__()    
 
     #----------------------------------------------------------------------
     def get(self):
         """订阅"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
@@ -350,12 +536,17 @@ class CtaStrategyVar(Resource):
         """初始化"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('name')
+        self.parser.add_argument('token')
         super(CtaStrategyVar, self).__init__()    
 
     #----------------------------------------------------------------------
     def get(self):
         """订阅"""
         args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
