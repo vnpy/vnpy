@@ -572,8 +572,8 @@ etc': u'0', u'act': u'0', u'eth': u'0', u'ltc': u'0', u'bcs': u'0'}, u'free': {u
         funds = rawData['info']['funds']
         
         # 持仓信息
-        #for symbol in ['btc', 'ltc','eth', self.currency]:
-        for symbol in :
+        for symbol in ['btc', 'ltc','eth', self.currency]:
+        #for symbol in :
             if symbol in funds['free']:
                 pos = VtPositionData()
                 pos.gatewayName = self.gatewayName
