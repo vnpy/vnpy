@@ -96,6 +96,8 @@ def on_close():
     print ('Websocket closed.')
 
 def on_connect():
+    
+    
     ### Get models
     status, response = request_processor('/trading/get_model', {'models': list})
     if status is True:
@@ -128,6 +130,7 @@ def subscribe_prices(symbol):
     status, response = post_request_processor('/subscribe', {'pairs': symbol})
     if status is True:
         socketIO.on(symbol, on_price_update)
+        print response
     else:
         print ("Error processing request: /subscribe: " + response)
 
@@ -421,5 +424,6 @@ if __name__ == '__main__':
         bearer_access_token = create_bearer_token(ACCESS_TOKEN, socketIO._engineIO_session.id)
         print (bearer_access_token)
         socketIO.on('disconnec', on_close)
-        socketIO.on('connect', on_connect)
+        socketIO.on('connect', on_connect)   
+        subscribe_prices('EUR/USD')
         socketIO.wait()

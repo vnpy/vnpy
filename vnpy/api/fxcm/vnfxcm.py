@@ -120,7 +120,7 @@ class FxcmApi(object):
         if method == self.METHOD_GET:
             resp = requests.get(url, headers=self.headers, params=params)
         elif method == self.METHOD_POST:
-            resp = requests.post(url, headers=self.headers, params=params)
+            resp = requests.post(url, headers=self.headers, data=params)
             
         if resp.status_code == 200:
             data = resp.json()
@@ -158,7 +158,7 @@ class FxcmApi(object):
         """查询表"""
         uri = '/trading/get_model'
         params = {'models': model}
-        reqid = self.sendReq(self.METHOD_GET, uri, params, self.onGetModel)
+        reqid = self.sendReq(self.METHOD_GET, uri, params, self.onGetTable)
         return reqid    
     
     #----------------------------------------------------------------------
@@ -167,7 +167,7 @@ class FxcmApi(object):
         uri = '/subscribe'
         params = {'pairs': symbol}
         reqid = self.sendReq(self.METHOD_POST, uri, params, self.onSubscribe)
-        self.sio.on(pair, self.onPriceUpdate)
+        self.sio.on(symbol, self.onPriceUpdate)
         return reqid
     
     #----------------------------------------------------------------------
@@ -179,20 +179,20 @@ class FxcmApi(object):
         return reqid    
     
     #----------------------------------------------------------------------
-    def subscribeTable(self, model):
+    def subscribeModel(self, model):
         """订阅表"""
         uri = '/trading/subscribe'
         params = {'models': model}
-        reqid = self.sendReq(self.METHOD_POST, uri, params, self.onSubscribeTable)
-        self.sio.on(model, self.onTableUpdate)
+        reqid = self.sendReq(self.METHOD_POST, uri, params, self.onSubscribeModel)
+        self.sio.on(model, self.onModelUpdate)
         return reqid
     
     #----------------------------------------------------------------------
-    def unsubscribeTable(self, model):
+    def unsubscribeModel(self, model):
         """退订表"""
         uri = '/trading/unsubscribe'
         params = {'models': model}
-        reqid = self.sendReq(self.METHOD_POST, uri, params, self.onUnsubscribeTable)
+        reqid = self.sendReq(self.METHOD_POST, uri, params, self.onUnsubscribeModel)
         return reqid     
     
     #----------------------------------------------------------------------
@@ -289,12 +289,12 @@ class FxcmApi(object):
         print data, reqid 
         
     #----------------------------------------------------------------------
-    def onSubscribeTable(self, data, reqid):
+    def onSubscribeModel(self, data, reqid):
         """订阅表回调"""
         print data, reqid    
     
     #----------------------------------------------------------------------
-    def onUnsubscribeTable(self, data, reqid):
+    def onUnsubscribeModel(self, data, reqid):
         """退订表回调"""
         print data, reqid   
         
@@ -324,7 +324,7 @@ class FxcmApi(object):
         print data
         
     #----------------------------------------------------------------------
-    def onTableUpdate(self, data):
+    def onModelUpdate(self, data):
         """表推送"""
         print data    
         
@@ -345,7 +345,13 @@ if __name__ == '__main__':
     api.connect(url, port, token)
     print api.bearer
     
-    api.getInstruments()
+    #api.getInstruments()
+    
+    api.subscribe('EUR/USD')
+    #api.subscribe(u'USD')
+    #api.subscribe(u'eurusd')
+    #api.getModel('Summary')
+    #api.subscribeModel('Summary')
     
     input()
     

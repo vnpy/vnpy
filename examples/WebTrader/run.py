@@ -65,7 +65,7 @@ class Token(Resource):
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('username')
         self.parser.add_argument('password')
-        super(Gateway, self).__init__()
+        super(Token, self).__init__()
     
     #----------------------------------------------------------------------
     def get(self):
@@ -554,6 +554,7 @@ class CtaStrategyVar(Resource):
 
 
 # 注册资源
+api.add_resource(Token, '/token')
 api.add_resource(Gateway, '/gateway')
 api.add_resource(Order, '/order')
 api.add_resource(Trade, '/trades')
