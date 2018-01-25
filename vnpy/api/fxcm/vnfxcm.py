@@ -5,7 +5,6 @@ import requests
 from socketIO_client import SocketIO
 from threading import Thread
 from queue import Queue, Empty
-from datetime import datetime
 
 
 ########################################################################
@@ -15,6 +14,14 @@ class FxcmApi(object):
     WEBSOCKET_PORT = 443
     METHOD_GET = 'get'
     METHOD_POST = 'post'
+    
+    MODEL_OFFER = 'Offer'
+    MODEL_ACCOUNT = 'Account'
+    MODEL_ORDER = 'Order'
+    MODEL_OPENPOSITION = 'OpenPosition'
+    MODEL_SUMMARY = 'Summary'
+    MODEL_PROPERTIES = 'Properties'
+    MODEL_CLOSEDPOSITION = 'ClosedPosition'
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -22,6 +29,7 @@ class FxcmApi(object):
         self.url = ''
         self.port = ''
         self.token = ''
+        self.proxy = ''
         
         self.sio = None
         self.bearer = ''
@@ -30,27 +38,34 @@ class FxcmApi(object):
         self.queue = Queue()
         self.reqid = 0
         self.active = False
-        self.thread = Thread(target=self.run)
+        self.reqThread = Thread(target=self.run)
         
     #----------------------------------------------------------------------
-    def connect(self, url, port, token):
+    def connect(self, url, port, token, proxy=''):
         """连接"""
         self.url = url
         self.port = port
         self.token = token
+        self.proxy = proxy
         
         self.initSocketIO()
         self.generateBearer()
         self.generateHeaders()
         
         self.active = True
-        self.thread.start()
+        self.reqThread.start()
+        
+        self.sioThread = Thread(target=self.sio.wait)
+        self.sioThread.start()
         
     #----------------------------------------------------------------------
     def stop(self):
         """停止"""
         self.active = False
-        self.thread.join()
+        self.reqThread.join()
+        
+        self.sio._close()
+        self.sioThread.join()
         
     #----------------------------------------------------------------------
     def initSocketIO(self):
@@ -59,7 +74,12 @@ class FxcmApi(object):
             'access_token': self.token, 
             'agent': "leiwang-rest-api"
         }
-        self.sio = SocketIO(self.url, self.port, params=params)
+        
+        proxy = {}
+        if self.proxy:
+            proxy['https'] = self.proxy        
+            
+        self.sio = SocketIO(self.url, self.port, params=params, proxies=proxy)
         
         self.sio.on('connect', self.onConnect)
         self.sio.on('disconnect', self.onDisconnect)
@@ -117,10 +137,14 @@ class FxcmApi(object):
         
         url = self.url + uri
         
+        proxy = {}
+        if self.proxy:
+            proxy['https'] = self.proxy
+        
         if method == self.METHOD_GET:
-            resp = requests.get(url, headers=self.headers, params=params)
+            resp = requests.get(url, headers=self.headers, params=params, proxies=proxy)
         elif method == self.METHOD_POST:
-            resp = requests.post(url, headers=self.headers, data=params)
+            resp = requests.post(url, headers=self.headers, data=params, proxies=proxy)
             
         if resp.status_code == 200:
             data = resp.json()
@@ -327,32 +351,5 @@ class FxcmApi(object):
     def onModelUpdate(self, data):
         """表推送"""
         print data    
-        
-    
-        
 
-
-
-
-if __name__ == '__main__':
-    url = 'https://api-demo.fxcm.com:443'
-    port = 443    
-    token = '48055b5d9afac0a300143ac067ce04cd2430a434'
-    
-    api = FxcmApi()
-    print 'api created'
-    
-    api.connect(url, port, token)
-    print api.bearer
-    
-    #api.getInstruments()
-    
-    api.subscribe('EUR/USD')
-    #api.subscribe(u'USD')
-    #api.subscribe(u'eurusd')
-    #api.getModel('Summary')
-    #api.subscribeModel('Summary')
-    
-    input()
-    
     
