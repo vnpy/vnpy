@@ -264,6 +264,7 @@ class CtpGateway(VtGateway):
         log.logContent = content
         self.onLog(log)
 
+
 ########################################################################
 class CtpMdApi(MdApi):
     """CTP行情API实现"""
@@ -791,8 +792,9 @@ class CtpTdApi(TdApi):
         pos.positionProfit += data['PositionProfit']
 
         # 计算持仓均价
-        if pos.position:
-            pos.price = (cost + data['PositionCost']) / pos.position
+        if pos.position and pos.symbol in self.symbolSizeDict:
+            size = self.symbolSizeDict[pos.symbol]
+            pos.price = (cost + data['PositionCost']) / (pos.position * size)
 
         # 读取冻结
         if pos.direction is DIRECTION_LONG:
