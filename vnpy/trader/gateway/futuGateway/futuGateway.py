@@ -440,6 +440,11 @@ class FutuGateway(VtGateway):
             tick.lastPrice = row['last_price']
             tick.volume = row['volume']
             
+            if 'price_spread' in row:
+                spread = row['price_spread']
+                tick.upperLimit = tick.lastPrice + spread * 10
+                tick.lowerLimit = tick.lastPrice - spread * 10
+            
             newTick = copy(tick)
             self.onTick(newTick)
     
