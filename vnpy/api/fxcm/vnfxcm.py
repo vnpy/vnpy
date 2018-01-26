@@ -38,7 +38,8 @@ class FxcmApi(object):
         self.queue = Queue()
         self.reqid = 0
         self.active = False
-        self.reqThread = Thread(target=self.run)
+        self.reqThread = None
+        self.sioThread = None
         
     #----------------------------------------------------------------------
     def connect(self, url, port, token, proxy=''):
@@ -48,24 +49,23 @@ class FxcmApi(object):
         self.token = token
         self.proxy = proxy
         
-        self.initSocketIO()
-        self.generateBearer()
-        self.generateHeaders()
-        
         self.active = True
+        
+        self.reqThread = Thread(target=self.runReq)
         self.reqThread.start()
         
-        self.sioThread = Thread(target=self.sio.wait)
+        self.sioThread = Thread(target=self.runSio)
         self.sioThread.start()
         
     #----------------------------------------------------------------------
     def stop(self):
         """停止"""
-        self.active = False
-        self.reqThread.join()
-        
-        self.sio._close()
-        self.sioThread.join()
+        if self.active:
+            self.active = False
+            self.reqThread.join()
+            
+            self.sio._close()
+            self.sioThread.join()
         
     #----------------------------------------------------------------------
     def initSocketIO(self):
@@ -100,14 +100,22 @@ class FxcmApi(object):
         }
         
     #----------------------------------------------------------------------
-    def run(self):
-        """连续运行"""
+    def runReq(self):
+        """处理主动请求"""
         while self.active:
             try:
                 d = self.queue.get(timeout=1)
                 self.processReq(d)
             except Empty:
                 pass
+    
+    #----------------------------------------------------------------------
+    def runSio(self):
+        """处理回调数据"""
+        self.initSocketIO()
+        self.generateBearer()
+        self.generateHeaders()        
+        self.sio.wait()
         
     #----------------------------------------------------------------------
     def sendReq(self, method, uri, params, callback):
@@ -155,21 +163,6 @@ class FxcmApi(object):
         else:
             self.onError(u'HTTP请求失败，错误代码%s' %resp.status_code)
         
-    #----------------------------------------------------------------------
-    def onConnect(self):
-        """连接回调"""
-        print 'onConnect'
-        
-    #----------------------------------------------------------------------
-    def onDisconnect(self):
-        """断开回调"""
-        print 'onClose'
-        
-    #----------------------------------------------------------------------
-    def onError(self, error, reqid):
-        """错误回调"""
-        print 'onError', error
-            
     #----------------------------------------------------------------------
     def getInstruments(self):
         """查询合约代码"""
@@ -293,6 +286,21 @@ class FxcmApi(object):
         return reqid    
     
     #----------------------------------------------------------------------
+    def onConnect(self):
+        """连接回调"""
+        print 'onConnect'
+        
+    #----------------------------------------------------------------------
+    def onDisconnect(self):
+        """断开回调"""
+        print 'onClose'
+        
+    #----------------------------------------------------------------------
+    def onError(self, error, reqid):
+        """错误回调"""
+        print 'onError', error
+    
+    #----------------------------------------------------------------------
     def onGetInstruments(self, data, reqid):
         """查询合约代码回调"""
         print data, reqid
@@ -303,7 +311,7 @@ class FxcmApi(object):
         print data, reqid        
         
     #----------------------------------------------------------------------
-    def onSubscribe(self, data, reqid):
+    def onSubscribe(self, data, reqid):	
         """订阅行情回调"""
         print data, reqid    
     

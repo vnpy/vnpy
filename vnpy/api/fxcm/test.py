@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from time import sleep
+
 from vnfxcm import FxcmApi
 
 url = 'https://api-demo.fxcm.com:443'
@@ -13,11 +15,12 @@ print 'api created'
 api.connect(url, port, token, proxy)
 print api.bearer
 
-#api.getInstruments()
+sleep(20)
+api.getInstruments()
 
-api.subscribe('EUR/USD')
-api.subscribe('USD/JPY')
-api.subscribe('GBP/USD')
+#api.subscribe('EUR/USD')
+#api.subscribe('USD/JPY')
+#api.subscribe('GBP/USD')
 #api.getModel('Summary')
 #api.subscribeModel('Summary')
 
