@@ -206,7 +206,7 @@ class OmOption(OmInstrument):
     def calculateOptionImpv(self):
         """计算隐含波动率"""
         underlyingPrice = self.underlying.midPrice
-        if not underlyingPrice:
+        if not underlyingPrice or not self.t:
             return        
         
         self.askImpv = self.calculateImpv(self.askPrice1, underlyingPrice, self.k,
