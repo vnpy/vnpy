@@ -40,7 +40,7 @@ with open("WEB_setting.json") as f:
     setting = json.load(f)
     USERNAME = setting['username']
     PASSWORD = setting['password']
-    TOKEN = base64.encodestring(TODAY+PASSWORD)
+    TOKEN = base64.encodestring(TODAY+PASSWORD).replace('\n', '')
 
 
 # 创建Flask对象
