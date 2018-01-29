@@ -159,7 +159,8 @@ class FxcmApi(object):
             if data["response"]["executed"] is True:
                 callback(data, reqid)
                 return
-            self.onError(data["response"]["error"], reqid)
+            if 'response' in data:
+                self.onError(data["response"]["error"], reqid)
         else:
             self.onError(u'HTTP请求失败，错误代码%s' %resp.status_code)
         

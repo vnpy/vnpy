@@ -71,7 +71,6 @@ class FxcmGateway(VtGateway):
         # 解析json文件
         setting = json.load(f)
         try:
-            account = str(setting['account'])
             port = int(setting['port'])
             url = str(setting['url'])
             token = str(setting['token'])
@@ -84,7 +83,7 @@ class FxcmGateway(VtGateway):
             return            
         
         # 初始化接口
-        self.api.init(account, url, port, token, proxy)
+        self.api.connect(url, port, token, proxy)
     
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -151,12 +150,12 @@ class Api(FxcmApi):
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
-        self.accout = ''
+        self.account = ''
         
         self.orderDict = {}     # 缓存委托数据
         self.tradeDict = {}
         self.accountDict = {}
-        self.positionDict = {}
+        self.positionDict = {}  # t:symbol
         
     #----------------------------------------------------------------------
     def onConnect(self):
@@ -201,38 +200,37 @@ class Api(FxcmApi):
             for d in data['offers']:
                 self.processContracts(d)
             self.writeLog(u'合约信息查询成功')
-            self.subscribeModel(self.MODEL_OFFER)
-            #self.updateSubscriptions('EUR/USD')
+            #self.subscribeModel(self.MODEL_OFFER)
             
         elif 'orders' in data:
             for d in data['orders']:
                 self.processOrders(d)
             self.writeLog(u'委托查询成功')
-            #self.subscribeModel(self.MODEL_ORDER)
+            self.subscribeModel(self.MODEL_ORDER)
             
         elif 'closed_positions' in data:
             for d in data['closed_positions']:
                 self.processTrades(d)
             self.writeLog(u'已平成交查询成功')
-            #self.subscribeModel(self.MODEL_CLOSEDPOSITION)
+            self.subscribeModel(self.MODEL_CLOSEDPOSITION)
             
         elif 'open_positions' in data:
             for d in data['open_positions']:
                 self.processTrades(d)
             self.writeLog(u'未平成交查询成功')
-            #self.subscribeModel(self.MODEL_OPENPOSITION)
+            self.subscribeModel(self.MODEL_OPENPOSITION)
             
         elif 'summary' in data:
             for d in data['summary']:
                 self.processPositions(d)
             self.writeLog(u'持仓查询成功')
-            #self.subscribeModel(self.MODEL_SUMMARY)
+            self.subscribeModel(self.MODEL_SUMMARY)
             
         elif 'accounts' in data:
             for d in data['accounts']:
                 self.processAccounts(d)
             self.writeLog(u'账户查询成功')
-            #self.subscribeModel(self.MODEL_ACCOUNT)
+            self.subscribeModel(self.MODEL_ACCOUNT)
     
     #----------------------------------------------------------------------
     def processContracts(self, d):
@@ -254,29 +252,43 @@ class Api(FxcmApi):
     #----------------------------------------------------------------------
     def processOrders(self, d):
         """处理委托"""
-        order = VtOrderData()
-        order.gatewayName = self.gatewayName
+        if 'status' not in d:
+            return
         
-        order.symbol = d['currency']
-        order.exchange = EXCHANGE_FXCM
-        order.vtSymbol = '.'.join([order.symbol, order.exchange])
-        
-        order.orderID = d['orderId']
-        order.vtOrderID = '.'.join([order.gatewayName, order.orderID])        
-        
-        if d['isBuy']:
-            order.price = d['buy']
-            order.direction = DIRECTION_LONG
+        if d['orderId'] not in self.orderDict:
+            order = VtOrderData()
+            order.gatewayName = self.gatewayName            
+
+            order.symbol = d['currency']
+            order.exchange = EXCHANGE_FXCM
+            order.vtSymbol = '.'.join([order.symbol, order.exchange])
+            
+            order.orderID = d['orderId']
+            order.vtOrderID = '.'.join([order.gatewayName, order.orderID])        
+            
+            if d['isBuy']:
+                order.price = d['buy']
+                order.direction = DIRECTION_LONG
+            else:
+                order.price = d['sell']
+                order.direction = DIRECTION_SHORT
+            
+            order.offset = OFFSET_NONE
+            
+            order.totalVolume = d['amountK']
+            order.status = statusMapReverse.get(d['status'], STATUS_UNKNOWN)
+            if order.status == STATUS_ALLTRADED:
+                order.tradedVolume = order.totalVolume
+            
+            d, t = getTime(d['time'])
+            order.orderTime = t
+            
+            self.orderDict[order.orderID] = order
         else:
-            order.price = d['sell']
-            order.direction = DIRECTION_SHORT
-        
-        order.totalVolume = d['amountK']
-        order.status = statusMapReverse.get(d['status'], STATUS_UNKNOWN)
-        if order.status == STATUS_ALLTRADED:
-            order.tradedVolume = order.totalVolume
-        
-        order.orderTime = d['time']
+            order = self.orderDict[d['orderId']]
+            order.status = statusMapReverse.get(d['status'], STATUS_UNKNOWN)
+            if order.status == STATUS_ALLTRADED:
+                order.tradedVolume = order.totalVolume
                 
         self.gateway.onOrder(order)
     
@@ -286,6 +298,10 @@ class Api(FxcmApi):
         if 'isTotal' in d:
             return
         
+        # 成交记录只需要推送一次
+        if d['tradeId'] in self.tradeDict:
+            return
+    
         trade = VtTradeData()
         trade.gatewayName = self.gatewayName
         
@@ -300,16 +316,23 @@ class Api(FxcmApi):
             trade.direction = DIRECTION_LONG
         else:
             trade.direction = DIRECTION_SHORT        
-            
+        trade.offset = OFFSET_NONE
+        
         trade.price = d['open']
         trade.volume = d['amountK']
         
         if 'time' in d:
-            trade.tradeTime = d['time']
+            s = d['time']
         else:
-            trade.tradeTime = d['openTime']
+            s = d['openTime']
+            
+        d, t = getTime(s)
+        
+        trade.tradeTime = t            
         
         self.gateway.onTrade(trade)
+        
+        self.tradeDict[trade.tradeID] = trade
     
     #----------------------------------------------------------------------
     def processAccounts(self, d):
@@ -325,10 +348,12 @@ class Api(FxcmApi):
         
         account.balance = d['equity']
         account.available = d['usableMargin']
-        account.margin = d['usdMr']
+        account.margin = d['usdMr3']
         account.positionProfit = d['grossPL']
         
         self.gateway.onAccount(account)
+        
+        self.account = account.accountID
     
     #----------------------------------------------------------------------
     def processPositions(self, d):
@@ -340,7 +365,12 @@ class Api(FxcmApi):
         position = VtPositionData()
         position.gatewayName = self.gatewayName
         
-        position.symbol = d['currency']
+        if 'currency' in d:
+            position.symbol = d['currency']
+            self.positionDict[d['t']] = d['currency']
+        else:
+            position.symbol = self.positionDict[d['t']]
+            
         position.exchange = EXCHANGE_FXCM
         position.vtSymbol = '.'.join([position.symbol, position.exchange])
         
@@ -357,7 +387,12 @@ class Api(FxcmApi):
         position = VtPositionData()
         position.gatewayName = self.gatewayName
         
-        position.symbol = d['currency']
+        if 'currency' in d:
+            position.symbol = d['currency']
+            self.positionDict[d['t']] = d['currency']
+        else:
+            position.symbol = self.positionDict[d['t']]
+            
         position.exchange = EXCHANGE_FXCM
         position.vtSymbol = '.'.join([position.symbol, position.exchange])
         
@@ -433,14 +468,16 @@ class Api(FxcmApi):
         tick.highPrice = rates[2]
         tick.lowPrice = rates[3]
         
-        tick.time = data['Updated']
+        t = datetime.fromtimestamp(data['Updated']/1000)
+        tick.date = t.strftime('%Y%m%d')
+        tick.time = t.strftime('%H:%M:%S.%f')
+        tick.datetime = t
         
         self.gateway.onTick(tick)
         
     #----------------------------------------------------------------------
     def onModelUpdate(self, data):
         """表推送"""
-        print data
         if 'orderId' in data:
             self.processOrders(data)
         elif 'tradeId' in data:
@@ -449,16 +486,7 @@ class Api(FxcmApi):
             self.processPositions(data)
         elif 'accountId' in data:
             self.processAccounts(data)
-        else:
-            print data
-        
-    #----------------------------------------------------------------------
-    def init(self, account, url, port, token, proxy):
-        """初始化"""
-        self.account = account
-        
-        self.connect(url, port, token, proxy)
-        
+
     #----------------------------------------------------------------------
     def writeLog(self, logContent):
         """发出日志"""
@@ -509,10 +537,10 @@ class Api(FxcmApi):
         
         if orderReq.priceType == PRICETYPE_MARKETPRICE:
             reqid = self.openTrade(accountID, symbol, isBuy, amount, 
-                                   0, 'AtMarket', 'DAY')
+                                   1, 'AtMarket', 'DAY')
         else:
             reqid = self.createEntryOrder(accountID, symbol, isBuy, rate,
-                                          amount, 'AtMarket', 'DAY')
+                                          amount, 'AtMarket', 'DAY', limit=1)
             
         return reqid
     
@@ -520,3 +548,19 @@ class Api(FxcmApi):
     def cancelOrder(self, cancelOrderReq):
         """撤销委托"""
         self.deleteOrder(cancelOrderReq.orderID)
+
+
+
+#----------------------------------------------------------------------
+def getTime(s):
+    """把OANDA返回的时间格式转化为简单的时间字符串"""
+    month = s[:2]
+    day = s[2:4]
+    year = s[4:8]
+    hour = s[8:10]
+    minute = s[10:12]
+    second = s[12:]
+    
+    t = ':'.join([hour, minute, second])
+    d = ''.join([year, month, day])
+    return d, t
