@@ -16,12 +16,20 @@ api.connect(url, port, token, proxy)
 print api.bearer
 
 sleep(20)
-api.getInstruments()
+#api.getInstruments()
 
 #api.subscribe('EUR/USD')
 #api.subscribe('USD/JPY')
 #api.subscribe('GBP/USD')
 #api.getModel('Summary')
 #api.subscribeModel('Summary')
+#api.getModel(api.MODEL_SUMMARY)
+
+#api.getModel(api.MODEL_OFFER)
+api.subscribeModel(api.MODEL_OFFER)
+api.updateSubscriptions('EUR/USD')
+api.subscribe('EUR/USD')
+
+#api.subscribeModel(api.MODEL_ACCOUNT)
 
 input()

@@ -8,3 +8,4 @@ wmi
 future
 flask-socketio
 flask-restful
+gevent-websocket

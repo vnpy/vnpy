@@ -175,7 +175,7 @@ class FxcmApi(object):
         """查询表"""
         uri = '/trading/get_model'
         params = {'models': model}
-        reqid = self.sendReq(self.METHOD_GET, uri, params, self.onGetTable)
+        reqid = self.sendReq(self.METHOD_GET, uri, params, self.onGetModel)
         return reqid    
     
     #----------------------------------------------------------------------
@@ -184,7 +184,7 @@ class FxcmApi(object):
         uri = '/subscribe'
         params = {'pairs': symbol}
         reqid = self.sendReq(self.METHOD_POST, uri, params, self.onSubscribe)
-        self.sio.on(symbol, self.onPriceUpdate)
+        self.sio.on(symbol, self.processPriceUpdate)
         return reqid
     
     #----------------------------------------------------------------------
@@ -201,7 +201,7 @@ class FxcmApi(object):
         uri = '/trading/subscribe'
         params = {'models': model}
         reqid = self.sendReq(self.METHOD_POST, uri, params, self.onSubscribeModel)
-        self.sio.on(model, self.onModelUpdate)
+        self.sio.on(model, self.processModelUpdate)
         return reqid
     
     #----------------------------------------------------------------------
@@ -213,26 +213,41 @@ class FxcmApi(object):
         return reqid     
     
     #----------------------------------------------------------------------
-    def openTrade(self, accountID, symbol, isBuy, amount, limit, 
-                  isInPips, atMarket, orderType, timeInForce,
-                  rate=0, stop=0, trailingStep=0):
-        """开仓交易"""
+    def updateSubscriptions(self, symbol):
+        """订阅报价表"""
+        uri = '/trading/update_subscriptions'
+        params = {
+            'symbol': symbol,
+            'visible': 'true'
+        }
+        #params = {'symbol': symbol}        
+        reqid = self.sendReq(self.METHOD_POST, uri, params, self.onUpdateSubscriptions)
+        return reqid                
+    
+    #----------------------------------------------------------------------
+    def openTrade(self, accountID, symbol, isBuy, amount,
+                  atMarket, orderType, timeInForce,
+                  rate=0, limit=0, stop=0, 
+                  trailingStep=0, isInPips=False):
+        """市价开仓交易"""
         uri = '/trading/open_trade'
         params = {
             'account_id': accountID,
             'symbol': symbol,
             'is_buy': isBuy,
             'amount': amount,
-            'limit': limit,
-            'is_in_pips': isInPips,
             'at_market': atMarket,
             'order_type': orderType,
-            'time_in_force': timeInForce
+            'time_in_force': timeInForce,
+            'is_in_pips': isInPips
         }
         
         if rate:
             params['rate'] = rate
-            
+        
+        if rate:
+            params['limit'] = limit
+                
         if stop:
             params['stop'] = stop
             
@@ -241,6 +256,36 @@ class FxcmApi(object):
         
         reqid = self.sendReq(self.METHOD_POST, uri, params, self.onOpenTrade)
         return reqid       
+    
+    #----------------------------------------------------------------------
+    def createEntryOrder(self, accountID, symbol, isBuy, rate, 
+                         amount, orderType, timeInForce,
+                         limit=0, stop=0, trailingStep=0, isInPips=False):
+        """限价开仓交易"""
+        uri = '/trading/create_entry_order'
+        
+        params = {
+            'account_id': accountID,
+            'symbol': symbol,
+            'is_buy': isBuy,
+            'rate': rate,
+            'amount': amount,
+            'order_type': orderType,
+            'time_in_force': timeInForce,
+            'is_in_pips': isInPips
+        }
+        
+        if rate:
+            params['limit'] = limit
+                
+        if stop:
+            params['stop'] = stop
+            
+        if trailingStep:
+            params['trailing_step'] = trailingStep
+        
+        reqid = self.sendReq(self.METHOD_POST, uri, params, self.onOpenTrade)
+        return reqid
     
     #----------------------------------------------------------------------
     def closeTrade(self, tradeID, amount, atMarket, orderType, timeInForce, rate=0):
@@ -306,9 +351,17 @@ class FxcmApi(object):
         print data, reqid
         
     #----------------------------------------------------------------------
-    def onGetTable(self, data, reqid):
+    def onGetModel(self, data, reqid):
         """查询表回调"""
-        print data, reqid        
+        print '*' * 30
+        print data
+        for d in data['offers']:
+            #if str(d['currency']) == 'EUR/USD':
+            #    print d
+            print d['currency']#, d['visible']
+        #print len(data['summary'])
+        #print data
+        
         
     #----------------------------------------------------------------------
     def onSubscribe(self, data, reqid):	
@@ -331,6 +384,11 @@ class FxcmApi(object):
         print data, reqid   
         
     #----------------------------------------------------------------------
+    def onUpdateSubscriptions(self, data, reqid):
+        """订阅报价表回调"""
+        print data, reqid
+        
+    #----------------------------------------------------------------------
     def onOpenTrade(self, data, reqid):
         """开仓回调"""
         print data, reqid
@@ -348,7 +406,20 @@ class FxcmApi(object):
     #----------------------------------------------------------------------
     def onDeleteOrder(self, data, reqid):
         """撤单回调"""
-        print data, reqid       
+        print data, reqid    
+    
+    #----------------------------------------------------------------------
+    def processPriceUpdate(self, msg):
+        """行情推送"""
+        data = json.loads(msg)
+        self.onPriceUpdate(data)
+        
+    #----------------------------------------------------------------------
+    def processModelUpdate(self, msg):
+        """表推送"""
+        print msg
+        data = json.loads(msg)
+        self.onModelUpdate(data)
     
     #----------------------------------------------------------------------
     def onPriceUpdate(self, data):
@@ -358,6 +429,12 @@ class FxcmApi(object):
     #----------------------------------------------------------------------
     def onModelUpdate(self, data):
         """表推送"""
-        print data    
+        print data
+        #print '*' * 30
+        #fsubscribeModel
+        #print len(data), data.get('isTotal', None), data
+        #print '*' * 30
+        #for d in data:
+        #    print d
 
     
