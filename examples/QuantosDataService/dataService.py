@@ -66,7 +66,12 @@ def generateVtBar(row):
     sec=bar.time[4:6]
     if minute=="00":
         minute="59"
-        hour=str(int(hour)-1).rjust(2,'0')
+        
+        h = int(hour)
+        if h == 0:
+            h = 24
+        
+        hour=str(h-1).rjust(2,'0')
     else:
         minute=str(int(minute)-1).rjust(2,'0')
     bar.time=hour+minute+sec
