@@ -80,7 +80,8 @@ class CtaGrid(object):
         j['closeStatus'] = self.closeStatus        # 平仓状态
         j['lockGrids'] = self.lockGrids         # 对锁的网格
         j['reuse'] = self.reuse                 # 是否重用
-        j['type'] = self.reuse  # 是否重用
+
+        j['type'] = self.type  # 类型
 
         j['openPrices'] = self.openPrices       # 套利中，两腿的开仓价格
         j['snapshot'] = self.snapshot           # 切片数据
@@ -104,11 +105,13 @@ class CtaGrid(object):
         return str
     def __eq__(self,other):
         return self.id == other.id
+
 class CtaGridTrade(object):
     """网格交易类
     包括两个方向的网格队列，
     v1, 基本版
     v2，增加更新最小价格跳动，增加动态上下网格间距
+    v3, 增加持久化到Mongo数据库
     """
 
     def __init__(self, strategy, maxlots=5, height=2, win=2, vol=1, minDiff = 1):
@@ -122,6 +125,7 @@ class CtaGridTrade(object):
         self.minDiff = minDiff
         self.strategy = strategy
         self.jsonName = self.strategy.name  #策略名称
+        self.useMongoDb = True
 
         self.maxLots = maxlots      # 缺省网格数量
         self.gridHeight = height    # 最小网格高度
