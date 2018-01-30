@@ -7,6 +7,7 @@ CTA模块相关的GUI控制组件
 
 import os
 from time import sleep
+import traceback
 
 from vnpy.trader.app.ctaStrategy.language import text
 from vnpy.trader.uiBasicWidget import QtWidgets, QtGui, QtCore, BasicCell
@@ -58,7 +59,7 @@ class CtaValueMonitor(QtWidgets.QTableWidget):
             # 更新数据
             for k, v in data.items():
                 cell = self.keyCellDict[k]
-                cell.setText(v)
+                cell.setText(str(v))
 
         #cell.setBackgroundColor()
 
@@ -272,10 +273,14 @@ class CtaEngineManager(QtWidgets.QWidget):
     def load(self):
         """加载策略"""
         if not self.strategyLoaded:
-            self.ctaEngine.loadSetting()
-            self.initStrategyManager()
-            self.strategyLoaded = True
-            self.ctaEngine.writeCtaLog(text.STRATEGY_LOADED)
+            try:
+                self.ctaEngine.loadSetting()
+                self.initStrategyManager()
+                self.strategyLoaded = True
+                self.ctaEngine.writeCtaLog(text.STRATEGY_LOADED)
+            except Exception as ex:
+                self.ctaEngine.writeCtaError(str(ex))
+                traceback.print_exc()
         
     #----------------------------------------------------------------------
     def updateCtaLog(self, event):

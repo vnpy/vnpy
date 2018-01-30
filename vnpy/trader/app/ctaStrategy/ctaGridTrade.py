@@ -635,10 +635,10 @@ class CtaGridTrade(object):
         """计算网格的平均开仓价"""
         up_open_list = [x for x in self.upGrids if x.openStatus]
 
-        self.max_up_open_price = 0 - sys.maxint
-        self.avg_up_open_price = 0 - sys.maxint
-        self.min_dn_open_price = sys.maxint
-        self.avg_dn_open_price = sys.maxint
+        self.max_up_open_price = 0 - sys.maxsize
+        self.avg_up_open_price = 0 - sys.maxsize
+        self.min_dn_open_price = sys.maxsize
+        self.avg_dn_open_price = sys.maxsize
 
         total_price = EMPTY_FLOAT
         total_volume = EMPTY_INT

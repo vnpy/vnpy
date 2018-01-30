@@ -2,13 +2,13 @@
 
 
 import os
-import cPickle
+import pickle as cPickle
 import csv
 import pandas
 import copy
 
 from datetime import datetime, timedelta
-from ctaBase import *
+from .ctaBase import *
 from vnpy.trader.setup_logger import get_logger
 
 

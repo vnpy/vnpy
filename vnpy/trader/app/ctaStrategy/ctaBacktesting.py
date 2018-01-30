@@ -18,7 +18,7 @@ import pymongo
 #import MySQLdb
 import json
 import sys
-import cPickle
+import pickle as cPickle
 import csv
 import copy
 import pandas as pd
