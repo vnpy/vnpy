@@ -1,4 +1,4 @@
 {
-    "repAddress": "tcp://*:2014", 
-    "pubAddress": "tcp://*:0602"
+    "repAddress": "tcp://*:6688", 
+    "pubAddress": "tcp://*:8866"
 }

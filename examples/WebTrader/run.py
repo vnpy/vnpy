@@ -13,8 +13,8 @@ from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE,
 from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq
 from vnpy.trader.app.rpcService.rsClient import MainEngineProxy
 
-reqAddress = 'tcp://localhost:2014'
-subAddress = 'tcp://localhost:0602'    
+reqAddress = 'tcp://localhost:6688'
+subAddress = 'tcp://localhost:8866'    
 
 ee = EventEngine2()
 me = MainEngineProxy(ee)
@@ -150,7 +150,7 @@ class Order(Resource):
             return None
         
         data = me.getAllOrders()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l
     
     #----------------------------------------------------------------------
@@ -225,7 +225,7 @@ class Trade(Resource):
             return None
         
         data = me.getAllTrades()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l
     
 
@@ -250,7 +250,7 @@ class Account(Resource):
             return None
         
         data = me.getAllAccounts()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l        
 
 
@@ -275,7 +275,7 @@ class Position(Resource):
             return None
         
         data = me.getAllPositions()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l
 
 
@@ -301,7 +301,7 @@ class Contract(Resource):
             return None
         
         data = me.getAllContracts()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l        
 
 
@@ -326,7 +326,7 @@ class Log(Resource):
             return None
         
         data = me.getLog()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l   
 
 
@@ -351,7 +351,7 @@ class Error(Resource):
             return None
         
         data = me.getError()
-        l = {o.__dict__ for o in data}
+        l = [o.__dict__ for o in data]
         return l
 
 
