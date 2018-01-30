@@ -6,13 +6,13 @@ vn.ctp的gateway接入
 考虑到现阶段大部分CTP中的ExchangeID字段返回的都是空值
 vtSymbol直接使用symbol
 '''
-print 'loading ctpGateway.py'
+print('loading ctpGateway.py')
 import os
 import json
 
 # 加载经booster编译转换的SO API库
-from vnctpmd import MdApi
-from vnctptd import TdApi
+from vnpy.trader.gateway.ctpGateway.vnctpmd import MdApi
+from vnpy.trader.gateway.ctpGateway.vnctptd import TdApi
 
 from vnpy.trader.vtConstant import  *
 from vnpy.trader.vtGateway import *
@@ -113,7 +113,7 @@ class CtpGateway(VtGateway):
         else:
             self.writeLog(u'交易接口已实例化')
         try:
-            f = file(fileName)
+            f = open(fileName,'r',encoding='utf8')
         except IOError:
             self.writeLog(text.LOADING_ERROR)
             return
@@ -319,7 +319,7 @@ class CtpMdApi(MdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -340,7 +340,7 @@ class CtpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
 
     #---------------------------------------------------------------------- 
@@ -358,7 +358,7 @@ class CtpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------  
@@ -395,7 +395,9 @@ class CtpMdApi(MdApi):
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
-        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        #tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
+        # =》 Python 3
+        tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec'])])
         tick.date = data['TradingDay']
 
         # add by Incense Lee
@@ -465,7 +467,7 @@ class CtpMdApi(MdApi):
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
         #if self.loginStatus:
-        print u'subscribe {0}'.format(str(subscribeReq.symbol))
+        print(u'subscribe {0}'.format(str(subscribeReq.symbol)))
         self.subscribeMarketData(str(subscribeReq.symbol))
         self.writeLog(u'订阅合约:{0}'.format(str(subscribeReq.symbol)))
         #else:
@@ -602,7 +604,7 @@ class CtpTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
 
     def resentReqQryInstrument(self):
@@ -625,7 +627,7 @@ class CtpTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            err.errorMsg = error['ErrorMsg']    #.decode('gbk')
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -660,7 +662,7 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         err.additionalInfo = u'onRspOrderInsert():{0},{1},{2},{3}'.\
             format(order.vtSymbol, order.orderID, order.direction , order.offset)
         self.gateway.onError(err)
@@ -686,7 +688,7 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         err.additionalInfo = u'onRspOrderAction,{0}'.format(symbol)
         self.gateway.onError(err)
     
@@ -888,7 +890,7 @@ class CtpTdApi(TdApi):
         contract.symbol = data['InstrumentID']
         contract.exchange = exchangeMapReverse[data['ExchangeID']]
         contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
-        contract.name = data['InstrumentName'].decode('GBK')
+        contract.name = data['InstrumentName']  #.decode('GBK')
         
         # 合约数值
         contract.size = data['VolumeMultiple']
@@ -1068,7 +1070,7 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = u'onRspError' + error['ErrorMsg'].decode('gbk')
+        err.errorMsg = u'onRspError' + error['ErrorMsg']    #.decode('gbk')
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -1165,7 +1167,7 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = error['ErrorMsg'] #.decode('gbk')
         err.additionalInfo = u'onErrRtnOrderInsert.{0},v:{1},ref:{2}:'\
             .format(order.vtSymbol , order.totalVolume, order.orderID)
         self.gateway.onError(err)
@@ -1179,7 +1181,7 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        err.errorMsg = error['ErrorMsg']    #.decode('gbk')
         err.additionalInfo =u'onErrRtnOrderAction.{0}'.format(symbol)
         self.gateway.onError(err)
     
@@ -1569,7 +1571,7 @@ def test():
     
     def print_log(event):
         log = event.dict_['data']
-        print ':'.join([log.logTime, log.logContent])
+        print(':'.join([log.logTime, log.logContent]))
     
     app = QtCore.QCoreApplication(sys.argv)    
 

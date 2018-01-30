@@ -2,9 +2,9 @@
 
 import os
 
-print u'init path:{0}'.format(os.path.dirname(__file__))
+print( u'init path:{0}'.format(os.path.dirname(__file__)))
 from vnpy.trader import vtConstant
-from ctpGateway import CtpGateway
+from vnpy.trader.gateway.ctpGateway.ctpGateway import CtpGateway
 
 gatewayClass = CtpGateway
 gatewayName = 'CTP'
