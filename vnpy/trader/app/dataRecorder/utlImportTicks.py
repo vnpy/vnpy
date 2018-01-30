@@ -225,7 +225,7 @@ def load_ticks_from_txt_file(file_name, symbol, trading_day):
 
     last_tick_datetime = None
     # 文件句柄
-    csv_read_file = open(file_name, 'rb',encoding='utf8')
+    csv_read_file = open(file_name, 'r',encoding='utf8')
 
     # 通过csv模块的DictReader，一次性读取所有数据
     reader = csv.DictReader(csv_read_file, delimiter=",")
