@@ -301,8 +301,8 @@ class CtaGridTrade(object):
 
         # 状态一致，价格大于最低价格
         if direction == DIRECTION_LONG:
-            if begin == EMPTY_FLOAT: begin = sys.maxint
-            if end == EMPTY_FLOAT: end = 0-sys.maxint
+            if begin == EMPTY_FLOAT: begin = sys.maxsize
+            if end == EMPTY_FLOAT: end = 0-sys.maxsize
             grids = [x for x in self.dnGrids
                      if x.orderStatus == ordered
                      and x.openStatus == opened
@@ -315,8 +315,8 @@ class CtaGridTrade(object):
 
         # 状态一致，开仓价格小于最高价格
         if direction == DIRECTION_SHORT:
-            if begin == EMPTY_FLOAT: begin = 0-sys.maxint
-            if end == EMPTY_FLOAT: end = sys.maxint
+            if begin == EMPTY_FLOAT: begin = 0-sys.maxsize
+            if end == EMPTY_FLOAT: end = sys.maxsize
             grids = [x for x in self.upGrids
                      if x.orderStatus == ordered
                      and x.openStatus == opened
