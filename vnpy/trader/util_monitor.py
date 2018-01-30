@@ -72,18 +72,18 @@ class BasicMonitor(object):
         s = []
         for header, value in self.headerDict.items():
             v = getattr(data, header)
-            if isinstance(v, basestring) and not isinstance(v, unicode):
-                try:
-                    v = v.decode('gbk')
-                except:
-                    v = v.decode('utf8')
+            #if isinstance(v, basestring) and not isinstance(v, unicode):
+            #    try:
+            #        v = v.decode('gbk')
+            #    except:
+            #        v = v.decode('utf8')
             s.append('%s: %s' % (value['chinese'], v))
         if self.logger is not None:
            self.logger.info(' '.join(s))
 
     def createLogger(self, monitor_name):
         filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', monitor_name))
-        print u'create logger:{}'.format(filename)
+        print( u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name=monitor_name)
 
 ########################################################################

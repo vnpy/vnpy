@@ -6,7 +6,6 @@ import sys
 import ctypes
 from datetime import datetime, timedelta, date
 from time import sleep
-from threading import Thread
 
 # 将repostory的目录i，作为根目录，添加到系统环境中。
 ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..'))
@@ -48,7 +47,7 @@ class NoUiMain(object):
         ee = EventEngine2()
 
         # 实例化 主引擎
-        print u'instance mainengine'
+        print(u'instance mainengine')
         self.mainEngine = MainEngine(ee)
 
         self.mainEngine.addGateway(ctpGateway, self.gateway_name)
@@ -56,7 +55,6 @@ class NoUiMain(object):
         # 添加应用
         self.mainEngine.addApp(ctaStrategy)
         self.mainEngine.addApp(riskManager)
-
 
 
     def trade_off(self):
@@ -87,7 +85,7 @@ class NoUiMain(object):
         dt = datetime.now()
         if dt.hour != self.last_dt.hour:
             self.last_dt = dt
-            print u'noUiMain.py checkpoint:{0}'.format(dt)
+            print(u'noUiMain.py checkpoint:{0}'.format(dt))
             self.mainEngine.writeLog( u'noUiMain.py checkpoint:{0}'.format(dt))
 
         # 定时断开
@@ -131,20 +129,20 @@ class NoUiMain(object):
         #self.mainEngine.dbConnect()
 
         # 加载cta的配置
-        print u'load cta setting'
+        print(u'load cta setting')
         self.mainEngine.ctaEngine.loadSetting()
 
-        print u'initialize all strategies'
+        print(u'initialize all strategies')
         # 初始化策略，如果多个，则需要逐一初始化多个
         for s in self.strategies:
-            print 'init trategy {0}'.format(s)
+            print( 'init trategy {0}'.format(s))
             self.mainEngine.ctaEngine.initStrategy(s)
             # 逐一启动策略
-            print 'start strategy {0}'.format(s)
+            print( 'start strategy {0}'.format(s))
             self.mainEngine.ctaEngine.startStrategy(s)
 
         # 指定的连接配置
-        print u'connect gateway:{0}'.format(self.gateway_name)
+        print( u'connect gateway:{0}'.format(self.gateway_name))
         self.mainEngine.connect(self.gateway_name)
         self.connected = True
 
@@ -165,7 +163,7 @@ def run_noui():
         log_file_name = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                  'logs', u'noUiMain.log'))
     except Exception as ex:
-        print u'Use local dict:{0}'.format(os.getcwd())
+        print( u'Use local dict:{0}'.format(os.getcwd()))
         log_file_name = os.path.abspath(os.path.join(os.getcwd(), 'logs', u'noUiMain.log'))
 
     setup_logger(filename=log_file_name, debug=False)

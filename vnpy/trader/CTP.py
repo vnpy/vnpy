@@ -26,7 +26,7 @@ from vnpy.trader.vtEvent import *
 from vnpy.rpc import RpcServer
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.gateway import ctpGateway
-from vnpy.trader.setup_logger import setup_logger
+from vnpy.trader.setup_logger import setup_logger,get_logger
 from vnpy.trader.util_monitor import *
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.util_gpid import *
@@ -35,7 +35,7 @@ from vnpy.trader.app import ctaStrategy,riskManager
 AUTO_CONNCET_GW = 'CTP'
 ########################################################################
 class VtServer(RpcServer):
-    """vn.trader服务器"""
+    """vn.trader 无界面服务器"""
 
     # ----------------------------------------------------------------------
     def __init__(self, repAddress, pubAddress):
@@ -48,8 +48,7 @@ class VtServer(RpcServer):
         # gateway 的连接名称，在vtEngine.initGateway()里面定义，对应的配置文件是 "连接名称_connect.json"，
         self.gateway_name = AUTO_CONNCET_GW
         # 启动的策略实例，须在catStrategy/CtaSetting.json 里面定义  [u'S28_RB1001', u'S28_TFT', u'S28_HCRB',u'atr_rsi']
-        self.strategies = []
-
+        self.strategies = [u'S30_RB0510', u'S30_HCRB05']
         self.g_count = 0
         self.disconnect_signal = 0
         self.last_dt = datetime.now()
@@ -58,7 +57,7 @@ class VtServer(RpcServer):
         ee = EventEngine2()
 
         # 创建主引擎对象
-        print u'instance mainengine'
+        print( u'instance mainengine')
         self.engine = MainEngine(ee)
 
         # 添加CTP Gateway,配置文件为 CTP_Post
@@ -128,7 +127,7 @@ class VtServer(RpcServer):
         self.engine.qryStatus()
         if dt.hour != self.last_dt.hour:
             self.last_dt = dt
-            print u'noUiMain.py checkpoint:{0}'.format(dt)
+            print(u'noUiMain.py checkpoint:{0}'.format(dt))
             self.engine.writeLog( u'noUiMain.py checkpoint:{0}'.format(dt))
 
         # 定时断开
@@ -172,21 +171,21 @@ class VtServer(RpcServer):
         # self.mainEngine.dbConnect()
 
         # 加载cta的配置
-        print u'load cta setting'
+        print( u'load cta setting')
         self.engine.ctaEngine.loadSetting()
 
-        print u'initialize all strategies'
+        print(u'initialize all strategies')
         # 初始化策略，如果多个，则需要逐一初始化多个
         for s in self.strategies:
-            print 'init trategy {0}'.format(s)
+            print( 'init trategy {0}'.format(s))
             self.engine.ctaEngine.initStrategy(s)
             # 逐一启动策略
-            print 'start strategy {0}'.format(s)
+            print( 'start strategy {0}'.format(s))
             self.engine.ctaEngine.startStrategy(s)
 
         # 指定的连接配置
         if not self.trade_off():
-            print u'connect gateway:{0}'.format(self.gateway_name)
+            print( u'connect gateway:{0}'.format(self.gateway_name))
             self.engine.connect(self.gateway_name)
             self.connected = True
 
@@ -214,12 +213,12 @@ class VtServer(RpcServer):
                 self.publish(event.type_.encode('utf-8'), event)
 
         except Exception as ex:
-            print u'event Handler exception:{0}'.format(str(ex))
+            print( u'event Handler exception:{0}'.format(str(ex)))
 
     # ----------------------------------------------------------------------
     def stopServer(self):
         """停止服务器"""
-        print 'stopServer'
+        print( 'stopServer')
         # 关闭引擎
         self.engine.exit()
         # 停止服务器线程
@@ -228,7 +227,7 @@ class VtServer(RpcServer):
 # ----------------------------------------------------------------------
 def printLog(content):
     """打印日志"""
-    print datetime.now().strftime("%H:%M:%S"), '\t', content
+    print( datetime.now().strftime("%H:%M:%S"), '\t', content)
 
 # ----------------------------------------------------------------------
 def runServer():
@@ -238,7 +237,7 @@ def runServer():
         log_file_name = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                  'logs', u'noUiMain.log'))
     except Exception as ex:
-        print u'Use local dict:{0}'.format(os.getcwd())
+        print( u'Use local dict:{0}'.format(os.getcwd()))
         log_file_name = os.path.abspath(os.path.join(os.getcwd(), 'logs', u'noUiMain.log'))
 
     setup_logger(filename=log_file_name, debug=False)

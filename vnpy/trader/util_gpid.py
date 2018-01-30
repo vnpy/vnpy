@@ -21,14 +21,14 @@ def _check_gpid(gpid):
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         returncode = p.wait()
     except OSError as e:
-        print u'can not find shell command ps'
+        print( u'can not find shell command ps')
         exit(1)
     try:
         p2 = subprocess.Popen("uniq", stdin=p.stdout, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, shell=False)
         returncode = p2.wait()
     except OSError as e:
-        print u'can not find shell command uniq'
+        print(u'can not find shell command uniq')
         exit(1)
     for i in p2.stdout.readlines():
         if i.decode().strip() == gpid:
@@ -46,7 +46,7 @@ def _status():
     return None
 
 if _status():
-    print u'another service is already running...'
+    print( u'another service is already running...')
     exit(0)
 
 def _save_gpid():
@@ -56,7 +56,7 @@ def _save_gpid():
         gpid = os.getpid()
     else:   # unix
         gpid = os.getpgrp()
-    print 'gpid={}'.format(gpid)
+    print( 'gpid={}'.format(gpid))
 
     with open(gpid_file, 'w') as f:
         f.write(str(gpid))

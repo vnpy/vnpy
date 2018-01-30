@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-print 'load vtClient.py'
+print('load vtClient.py')
 import ctypes
 import platform
 import sys
@@ -9,7 +9,7 @@ from vnpy.rpc import RpcClient
 from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
 from vnpy.trader.app.dataRecorder.drEngine import DrEngine
 from vnpy.trader.app.riskManager.rmEngine import RmEngine
-from uiMainWindow import *
+from vnpy.trader.uiMainWindow import *
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))    

@@ -35,14 +35,14 @@ def _check_gpid(gpid):
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         returncode = p.wait()
     except OSError as e:
-        print 'cant not find shell command ps'
+        print('cant not find shell command ps')
         exit(1)
     try:
         p2 = subprocess.Popen("uniq", stdin=p.stdout, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, shell=False)
         returncode = p2.wait()
     except OSError as e:
-        print 'cant not find shell command uniq'
+        print( 'cant not find shell command uniq')
         exit(1)
     for i in p2.stdout.readlines():
         if i.decode().strip() == gpid:
@@ -115,47 +115,47 @@ def _start():
     gpid = _status()
     if _check_stop_time():
         if gpid:
-            print 'it is not in valid time span, will kill the service[gpid={}]'.format(gpid)
+            print('it is not in valid time span, will kill the service[gpid={}]'.format(gpid))
             import signal
             # 杀死进程组
             os.killpg(int(gpid), signal.SIGKILL)
             while _status():
                 time.sleep(1)
-            print 'already stop the service[gpid={}]'.format(gpid)
+            print( 'already stop the service[gpid={}]'.format(gpid))
             try:
                 sendmail.sendmail(subject='{0} killed by service.py'.format(ctp_gateway_name),
                                   msgcontent='already stop the service[gpid={}]'.format(gpid))
             except:
                 pass
         else:
-            print 'it is not in valid time span, can not start the service'
+            print( 'it is not in valid time span, can not start the service')
     else:
         if not gpid:
-            print 'it is in valid time span, will start the service'
+            print( 'it is in valid time span, will start the service')
             os.popen(program_command)
             while True:
                 gpid = _status()
                 if gpid:
                     break
                 time.sleep(1)
-            print 'already start the service[gpid={}]'.format(gpid)
+            print( 'already start the service[gpid={}]'.format(gpid))
         else:
-            print 'it is in valid time span, the service is running...'
+            print( 'it is in valid time span, the service is running...')
 
 
 def schedule():
-    print '======schedule========'
+    print( '======schedule========')
     _start()
 
 
 def status():
-    print '======status========'
+    print( '======status========')
 
     gpid = _status()
     if gpid:
-        print 'the service[gpid={}] is running...'.format(gpid)
+        print( 'the service[gpid={}] is running...'.format(gpid))
     else:
-        print 'the service is not running...'
+        print( 'the service is not running...')
 
 # operate的可选字符串为：add, del
 def operate_crontab(operate):
@@ -178,7 +178,7 @@ def operate_crontab(operate):
         
         # 追加方式比上面好，能自动判断上行是否有回车
         os.popen('echo "{}" >> {}'.format(cron_content, tmp_cron_file))
-        print ' add new crontab item: {}'.format(cron_content)
+        print( ' add new crontab item: {}'.format(cron_content))
         os.popen("crontab {}".format(tmp_cron_file))
 
     if operate == "del" and exist_flag:
@@ -186,16 +186,16 @@ def operate_crontab(operate):
             f.writelines(remain_cron_list)
 
         os.popen("crontab {}".format(tmp_cron_file))
-        print 'del old crontab item: {}'.format(old_cron_content)
+        print( 'del old crontab item: {}'.format(old_cron_content))
     
     # os.remove(tmp_cron_file)
 
 
 def start():
-    print '======start========'
+    print( '======start========')
     operate_crontab("add")
     _start()
-    print 'start service done!!!'
+    print( 'start service done!!!')
 
 
 def _stop():
@@ -207,26 +207,26 @@ def _stop():
         os.killpg(int(gpid), signal.SIGKILL)
         while _status():
             time.sleep(1)
-        print 'already stop the service[gpid={}]'.format(gpid)
+        print( 'already stop the service[gpid={}]'.format(gpid))
         try:
             sendmail.sendmail(subject='{0} stopped by service.py'.format(ctp_gateway_name),msgcontent= 'already stop the service[gpid={}]'.format(gpid))
         except:
             pass
     else:
-        print 'the service is not running...'
+        print( 'the service is not running...')
 
 
 def stop():
-    print '======stop========'
+    print('======stop========')
     _stop()
-    print 'stop service done!!!'
+    print( 'stop service done!!!')
 
 
 def restart():
-    print '======restart========'
+    print( '======restart========')
     _stop()
     _start()
-    print 'restart service done!!!'
+    print('restart service done!!!')
 
 
 if __name__ == '__main__':
@@ -245,4 +245,4 @@ if __name__ == '__main__':
     elif fun == 'schedule':
         schedule()
     else:
-        print 'Usage: {} (status|start|stop|restart)'.format(os.path.basename(__file__))
+        print( 'Usage: {} (status|start|stop|restart)'.format(os.path.basename(__file__)))

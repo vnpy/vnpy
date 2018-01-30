@@ -20,7 +20,7 @@
 
 '''
 
-print 'load ctaEngine.py'
+print( 'load ctaEngine.py')
 import json
 import os
 import traceback
@@ -100,6 +100,9 @@ class CtaEngine(object):
         self.registerEvent()
 
         self.logger = None
+
+        self.createLogger()
+
     # ----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy,priceType=PRICETYPE_LIMITPRICE):
         """发单"""
@@ -585,8 +588,12 @@ class CtaEngine(object):
         if self.logger:
             self.logger.info(content)
         else:
-            filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..','logs', 'ctaEngine'))
-            self.logger = setup_logger(filename=filename, name='ctaEngine')
+            self.createLogger()
+
+    def createLogger(self):
+        filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs', 'ctaEngine'))
+        print( u'create logger:{}'.format(filename))
+        self.logger = setup_logger(filename=filename, name='ctaEngine')
 
     def writeCtaError(self,content):
         """快速发出CTA模块错误日志事件"""
@@ -699,7 +706,7 @@ class CtaEngine(object):
             # 5.调用主引擎的订阅接口
             self.mainEngine.subscribe(req, contract.gatewayName)
         else:
-            print u'Warning, can not find {0} in contracts'.format(symbol)
+            print( u'Warning, can not find {0} in contracts'.format(symbol))
             self.writeCtaLog(u'交易合约{}无法找到，添加到待订阅列表'.format (symbol))
             self.pendingSubcribeSymbols[symbol]=strategy
 

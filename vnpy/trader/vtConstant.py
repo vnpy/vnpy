@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-print 'laod vtConstant.py'
+print('laod vtConstant.py')
 
 # 默认空值
 EMPTY_STRING = ''

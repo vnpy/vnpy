@@ -4,12 +4,13 @@
 import os
 import cPickle
 import csv
-import logging
 import pandas
 import copy
 
 from datetime import datetime, timedelta
 from ctaBase import *
+from vnpy.trader.setup_logger import get_logger
+
 
 class UtilArbTickLoader(object):
     """一个套利tick的数据加载工具类"""
@@ -23,14 +24,18 @@ class UtilArbTickLoader(object):
 
         self.symbol = symbol
 
+        self.logger = None
+
     def writeCtaLog(self, content):
         """记录日志"""
         # log = str(self.dt) + ' ' + content
         # self.logList.append(log)
 
         # 写入本地log日志
-        logging.info(content)
-
+        if self.logger:
+            self.logger.info(content)
+        else:
+            self.logger = get_logger()
     def writeCtaError(self, content):
         """记录异常"""
         self.output(content)
@@ -38,7 +43,7 @@ class UtilArbTickLoader(object):
 
     def output(self, content):
         """输出内容"""
-        print str(datetime.now()) + "\t" + content
+        print( str(datetime.now()) + "\t" + content)
 
     # ----------------------------------------------------------------------
 
@@ -68,7 +73,7 @@ class UtilArbTickLoader(object):
             # 先读取leg2的数据到目录，以日期时间为key
             leg2Ticks = {}
 
-            leg2CsvReadFile = file(leg2File, 'rb')
+            leg2CsvReadFile = open(leg2File, 'rb',encoding='utf8')
             #reader = csv.DictReader((line.replace('\0',' ') for line in leg2CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg2CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg2File))
@@ -118,7 +123,7 @@ class UtilArbTickLoader(object):
                 else:
                     leg2Ticks[dtStr] = tick
 
-            leg1CsvReadFile = file(leg1File, 'rb')
+            leg1CsvReadFile = open(leg1File, 'rb',encoding='utf8')
             #reader = csv.DictReader((line.replace('\0',' ') for line in leg1CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg1CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg1File))

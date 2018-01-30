@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-from language import text
+from vnpy.trader.language import text
 
 # 将常量定义添加到vtText.py的局部字典中
 d = locals()

@@ -275,7 +275,7 @@ class BacktestingEngine(object):
         # 载入json文件
         fileName = 'mysql_connect.json'
         try:
-            f = file(fileName)
+            f = open(fileName,'r',encoding='utf8')
         except IOError:
             self.writeCtaLog(u'回测引擎读取Mysql_connect.json失败')
             return
@@ -1571,7 +1571,7 @@ class BacktestingEngine(object):
         self.output(u'开始回放数据')
 
         import csv
-        csvfile = file(filename,'rb')
+        csvfile = open(filename,'rb',encoding='utf8')
         reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
         last_tradingDay = None
         for row in reader:
@@ -1610,7 +1610,7 @@ class BacktestingEngine(object):
                         last_tradingDay = bar.tradingDay
 
                     self.newBar(bar)
-                    self.last_bar = bar
+
             except Exception as ex:
                 self.writeCtaLog(u'{0}:{1}'.format(Exception, ex))
                 traceback.print_exc()
@@ -1798,8 +1798,9 @@ class BacktestingEngine(object):
         self.crossStopOrder()       # 再撮合停止单
         self.strategy.onBar(bar)    # 推送K线到策略中
         self.__sendOnBarEvent(bar)  # 推送K线到事件
+        self.last_bar = bar
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def newTick(self, tick):
         """新的Tick"""
         self.tick = tick
@@ -1808,7 +1809,7 @@ class BacktestingEngine(object):
         self.crossStopOrder()
         self.strategy.onTick(tick)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initStrategy(self, strategyClass, setting=None):
         """
         初始化策略
@@ -1832,7 +1833,6 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy, priceType=PRICETYPE_LIMITPRICE):
         """发单"""
-
 
         self.limitOrderCount += 1
         orderID = str(self.limitOrderCount)
@@ -2110,7 +2110,12 @@ class BacktestingEngine(object):
     def loadTick(self, dbName, collectionName, startDate):
         """直接返回初始化数据列表中的Tick"""
         return self.initData
-    
+
+    def createLogger(self, debug=False):
+        filename = os.path.abspath(os.path.join(cta_engine_path, 'TestLogs', '{}'.format(
+            self.strategy_name if len(self.strategy_name) > 0 else 'strategy')))
+
+        self.logger = setup_logger(filename=filename, name=self.strategy_name if len(self.strategy_name) > 0 else 'strategy',debug=debug )
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录日志"""
@@ -2121,12 +2126,7 @@ class BacktestingEngine(object):
         if self.logger:
             self.logger.info(content)
         else:
-            filename = os.path.abspath(os.path.join(cta_engine_path, 'TestLogs','{}'.format(self.strategy_name if len(self.strategy_name)>0 else 'strategy')))
-
-            self.logger = setup_logger(
-                filename=filename,name=self.strategy_name if len(self.strategy_name)>0 else 'strategy'
-            )
-
+            self.createLogger()
 
     def writeCtaError(self, content):
         """记录异常"""
@@ -3290,7 +3290,7 @@ class BacktestingEngine(object):
                                                      '{}_TradeList_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'))))
 
         import csv
-        csvWriteFile = file(csvOutputFile, 'wb')
+        csvWriteFile = open(csvOutputFile, 'wb',encoding='utf8')
         fieldnames = ['vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit']
         writer = csv.DictWriter(f=csvWriteFile, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
@@ -3307,7 +3307,7 @@ class BacktestingEngine(object):
         else:
             csvOutputFile2 = self.daily_report_name
 
-        csvWriteFile2 = file(csvOutputFile2, 'wb')
+        csvWriteFile2 = open(csvOutputFile2, 'wb',encoding='utf8')
         fieldnames = ['date','capital','net', 'maxCapital','rate','longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
         writer2 = csv.DictWriter(f=csvWriteFile2, fieldnames=fieldnames, dialect='excel')
         writer2.writeheader()
@@ -3595,11 +3595,11 @@ class OptimizationSetting(object):
             return
 
         if end < start:
-            print u'参数起始点必须不大于终止点'
+            print( u'参数起始点必须不大于终止点')
             return
 
         if step <= 0:
-            print u'参数布进必须大于0'
+            print( u'参数布进必须大于0')
             return
 
         l = []

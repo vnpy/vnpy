@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
-from ctaEngine import CtaEngine
-from uiCtaWidget import CtaEngineManager
+from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
+from vnpy.trader.app.ctaStrategy.uiCtaWidget import CtaEngineManager
 
 appName = 'CtaStrategy'
 appDisplayName = u'CTA策略'

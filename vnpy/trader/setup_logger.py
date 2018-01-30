@@ -252,8 +252,8 @@ class MultiprocessHandler(logging.FileHandler):
             if not os.path.exists(_dir):
                 os.makedirs(_dir)
         except Exception:
-            print u"创建文件夹失败"
-            print u"文件夹路径：" + self.filePath
+            print( u"创建文件夹失败")
+            print( u"文件夹路径：" + self.filePath)
             pass
 
         if codecs is None:
@@ -299,9 +299,9 @@ class MultiprocessHandler(logging.FileHandler):
             self.stream = self._open()
         #删除多于保留个数的所有日志文件
         if self.backupCount > 0:
-            print '删除日志'
+            print('删除日志')
             for s in self.getFilesToDelete():
-                print s
+                print(s)
                 os.remove(s)
 
     def getFilesToDelete(self):
@@ -371,12 +371,12 @@ def setup_logger(filename, name=None, debug=False):
             name = names[-1]
 
         _logger = logging.getLogger(name)
-        #logger.setLevel(logging.DEBUG)
-        #stream_handler = logging.StreamHandler(sys.stdout)
-        #stream_handler.setLevel(logging.DEBUG)
-        #stream_handler.setFormatter(fmt)
-
-        #_logger = multiprocessing.get_logger()
+        if debug:
+            _logger.setLevel(logging.DEBUG)
+            stream_handler = logging.StreamHandler(sys.stdout)
+            stream_handler.setLevel(logging.DEBUG)
+            stream_handler.setFormatter(fmt)
+            _logger.addHandler(stream_handler)
 
         _fileHandler = MultiprocessHandler(filename, when='D')
         if debug:
@@ -384,7 +384,7 @@ def setup_logger(filename, name=None, debug=False):
         else:
             _fileHandler.setLevel(logging.INFO)
             _fileHandler.setFormatter(fmt)
-        #_logger.addHandler(stream_handler)
+
         _logger.addHandler(_fileHandler)
 
         if debug:

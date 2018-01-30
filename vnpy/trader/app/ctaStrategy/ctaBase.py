@@ -5,7 +5,7 @@
 '''
 
 from __future__ import division
-print 'load ctaBase.py'
+print( 'load ctaBase.py')
 
 # 常量定义
 # CTA引擎中涉及到的交易方向类型

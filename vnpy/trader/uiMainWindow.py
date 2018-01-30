@@ -3,7 +3,7 @@ import sys
 
 # from uiFullMonitorWidget import MonitorWidget
 # from uiKChartWidget import CandleForm
-print 'load uiMainWindows.py'
+print('load uiMainWindows.py')
 import psutil
 import traceback
 
@@ -293,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow):
             try:
                 r = self.mainEngine.connect(gatewayName)
             except:
-                print "Unexpected error:", sys.exc_info()[0]
+                print( "Unexpected error:", sys.exc_info()[0])
                 traceback.print_exc()
 
             if r:
@@ -334,7 +334,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
                     self.widgetDict[appName].show()
                 except:
-                    print "Unexpected error:", sys.exc_info()[0]
+                    print( "Unexpected error:", sys.exc_info()[0])
                     traceback.print_exc()
 
         return openAppFunction
@@ -365,7 +365,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.widgetDict['contractM'] = ContractMonitor(self.mainEngine)
                 self.widgetDict['contractM'].show()
             except :
-                print "Unexpected error:", sys.exc_info()[0]
+                print( "Unexpected error:", sys.exc_info()[0])
                 traceback.print_exc()
 
     # ----------------------------------------------------------------------
@@ -378,7 +378,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.widgetDict['settingEditor'] = SettingEditor(self.mainEngine)
                 self.widgetDict['settingEditor'].show()
             except :
-                print "Unexpected error:", sys.exc_info()[0]
+                print( "Unexpected error:", sys.exc_info()[0])
                 traceback.print_exc()
 
     # ----------------------------------------------------------------------
@@ -390,14 +390,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         try:
             if self.mainEngine.ctaEngine is None:
-                print u'not init Cta Engine'
+                print( u'not init Cta Engine')
                 return
 
             from vnpy.trader.app.ctaStrategy.uiSpreadTrade import SpreadTradeManager
             self.widgetDict['spread'] = SpreadTradeManager(self.mainEngine.ctaEngine, self.eventEngine)
             self.widgetDict['spread'].show()
         except Exception as ex:
-            print "Unexpected error:", sys.exc_info()[0]
+            print( "Unexpected error:", sys.exc_info()[0])
             traceback.print_exc()
             return
 

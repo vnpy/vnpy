@@ -7,4 +7,4 @@ conda config --set show_channel_urls yes
 conda install -c quantopian ta-lib=0.4.9
 
 :: Install vn.py
-python setup.py install
+#python setup.py install

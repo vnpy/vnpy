@@ -37,7 +37,7 @@ class VtServer(RpcServer):
         self.engine = MainEngine()
 
         for gw_name in init_gateway_names['CTP']:
-            print 'add {0}'.format(gw_name)
+            print( 'add {0}'.format(gw_name))
             self.engine.addGateway(ctpGateway, gw_name)
 
         # 注册主引擎的方法到服务器的RPC函数
@@ -84,7 +84,7 @@ class VtServer(RpcServer):
 #----------------------------------------------------------------------
 def printLog(content):
     """打印日志"""
-    print datetime.now().strftime("%H:%M:%S"), '\t', content
+    print( datetime.now().strftime("%H:%M:%S"), '\t', content)
 
 
 #----------------------------------------------------------------------

@@ -5,11 +5,12 @@ import csv
 import os
 import platform
 from collections import OrderedDict
+import traceback
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import *
 from vnpy.trader.vtGateway import *
-import vtText
+from vnpy.trader.vtText import text as vtText
 from vnpy.trader.uiQt import QtWidgets, QtGui, QtCore, BASIC_FONT
 
 if str(platform.system()) == 'Windows':
@@ -35,8 +36,10 @@ class BasicCell(QtWidgets.QTableWidgetItem):
         """设置内容"""
         if text == '0' or text == '0.0' or type(text) == type(None):
             self.setText('')
+        #elif type(text) == type(float):
+        #    self.setText(str(text))
         else:
-            self.setText(text)
+            self.setText(str(text))
 
 
 ########################################################################
@@ -131,7 +134,7 @@ class BidCell(QtWidgets.QTableWidgetItem):
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
-        self.setText(text)
+        self.setText(str(text))
 
 
 ########################################################################
@@ -153,7 +156,7 @@ class AskCell(QtWidgets.QTableWidgetItem):
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
-        self.setText(text)
+        self.setText(str(text))
 
 ########################################################################
 class PnlCell(QtWidgets.QTableWidgetItem):
@@ -283,10 +286,14 @@ class BasicMonitor(QtWidgets.QTableWidget):
     #----------------------------------------------------------------------
     def updateEvent(self, event):
         """收到事件更新"""
-        data = event.dict_['data']
-        self.updateData(data)
+        try:
+            data = event.dict_['data']
+            self.updateData(data)
+        except Exception as ex:
+            print(ex)
+            traceback.print_exc()
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def updateData(self, data):
         """将数据更新到表格中"""
         # 如果允许了排序功能，则插入数据前必须关闭，否则插入新的数据会变乱
@@ -376,11 +383,11 @@ class BasicMonitor(QtWidgets.QTableWidget):
 
         try:
             if not os.path.exists(path):
-                with open(unicode(path), 'wb') as f:
+                with open(path, 'wb') as f:
                     writer = csv.writer(f)
                     
                     # 保存标签
-                    headers = [header.encode('gbk') for header in self.headerList]
+                    headers = [header for header in self.headerList]
                     writer.writerow(headers)
                     
                     # 保存每行内容
@@ -389,8 +396,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
                         for column in range(self.columnCount()):
                             item = self.item(row, column)
                             if item is not None:
-                                rowdata.append(
-                                    unicode(item.text()).encode('gbk'))
+                                rowdata.append(item.text())
                             else:
                                 rowdata.append('')
                         writer.writerow(rowdata)
@@ -940,10 +946,10 @@ class TradingWidget(QtWidgets.QFrame):
         """合约变化"""
         # 读取组件数据
         symbol = str(self.lineSymbol.text())
-        exchange = unicode(self.comboExchange.currentText())
-        currency = unicode(self.comboCurrency.currentText())
-        productClass = unicode(self.comboProductClass.currentText())           
-        gatewayName = unicode(self.comboGateway.currentText())
+        exchange = self.comboExchange.currentText()
+        currency = self.comboCurrency.currentText()
+        productClass = self.comboProductClass.currentText()
+        gatewayName = self.comboGateway.currentText()
         
         # 查询合约
         if exchange:
@@ -1014,33 +1020,33 @@ class TradingWidget(QtWidgets.QFrame):
         if tick.vtSymbol == self.symbol:
             if not self.checkFixed.isChecked():
                 self.spinPrice.setValue(tick.lastPrice)
-            self.labelBidPrice1.setText(str(tick.bidPrice1))
-            self.labelAskPrice1.setText(str(tick.askPrice1))
-            self.labelBidVolume1.setText(str(tick.bidVolume1))
-            self.labelAskVolume1.setText(str(tick.askVolume1))
+            self.labelBidPrice1.setText('{}'.format(tick.bidPrice1))
+            self.labelAskPrice1.setText('{}'.format(tick.askPrice1))
+            self.labelBidVolume1.setText('{}'.format(tick.bidVolume1))
+            self.labelAskVolume1.setText('{}'.format(tick.askVolume1))
             
             if tick.bidPrice2:
-                self.labelBidPrice2.setText(str(tick.bidPrice2))
-                self.labelBidPrice3.setText(str(tick.bidPrice3))
-                self.labelBidPrice4.setText(str(tick.bidPrice4))
-                self.labelBidPrice5.setText(str(tick.bidPrice5))
+                self.labelBidPrice2.setText('{}'.format(tick.bidPrice2))
+                self.labelBidPrice3.setText('{}'.format(tick.bidPrice3))
+                self.labelBidPrice4.setText('{}'.format(tick.bidPrice4))
+                self.labelBidPrice5.setText('{}'.format(tick.bidPrice5))
     
-                self.labelAskPrice2.setText(str(tick.askPrice2))
-                self.labelAskPrice3.setText(str(tick.askPrice3))
-                self.labelAskPrice4.setText(str(tick.askPrice4))
-                self.labelAskPrice5.setText(str(tick.askPrice5))
+                self.labelAskPrice2.setText('{}'.format(tick.askPrice2))
+                self.labelAskPrice3.setText('{}'.format(tick.askPrice3))
+                self.labelAskPrice4.setText('{}'.format(tick.askPrice4))
+                self.labelAskPrice5.setText('{}'.format(tick.askPrice5))
     
-                self.labelBidVolume2.setText(str(tick.bidVolume2))
-                self.labelBidVolume3.setText(str(tick.bidVolume3))
-                self.labelBidVolume4.setText(str(tick.bidVolume4))
-                self.labelBidVolume5.setText(str(tick.bidVolume5))
+                self.labelBidVolume2.setText('{}'.format(tick.bidVolume2))
+                self.labelBidVolume3.setText('{}'.format(tick.bidVolume3))
+                self.labelBidVolume4.setText('{}'.format(tick.bidVolume4))
+                self.labelBidVolume5.setText('{}'.format(tick.bidVolume5))
                 
-                self.labelAskVolume2.setText(str(tick.askVolume2))
-                self.labelAskVolume3.setText(str(tick.askVolume3))
-                self.labelAskVolume4.setText(str(tick.askVolume4))
-                self.labelAskVolume5.setText(str(tick.askVolume5))	
+                self.labelAskVolume2.setText('{}'.format(tick.askVolume2))
+                self.labelAskVolume3.setText('{}'.format(tick.askVolume3))
+                self.labelAskVolume4.setText('{}'.format(tick.askVolume4))
+                self.labelAskVolume5.setText('{}'.format(tick.askVolume5))
 
-            self.labelLastPrice.setText(str(tick.lastPrice))
+            self.labelLastPrice.setText('{}'.format(tick.lastPrice))
             
             if tick.preClosePrice:
                 rt = (tick.lastPrice/tick.preClosePrice)-1
@@ -1057,10 +1063,10 @@ class TradingWidget(QtWidgets.QFrame):
     def sendOrder(self):
         """发单"""
         symbol = str(self.lineSymbol.text())
-        exchange = unicode(self.comboExchange.currentText())
-        currency = unicode(self.comboCurrency.currentText())
-        productClass = unicode(self.comboProductClass.currentText())           
-        gatewayName = unicode(self.comboGateway.currentText())        
+        exchange = self.comboExchange.currentText()
+        currency = self.comboCurrency.currentText()
+        productClass = self.comboProductClass.currentText()
+        gatewayName = self.comboGateway.currentText()
 
         # 查询合约
         if exchange:
@@ -1080,9 +1086,9 @@ class TradingWidget(QtWidgets.QFrame):
         req.exchange = exchange
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
-        req.direction = unicode(self.comboDirection.currentText())
-        req.priceType = unicode(self.comboPriceType.currentText())
-        req.offset = unicode(self.comboOffset.currentText())
+        req.direction = self.comboDirection.currentText()
+        req.priceType = self.comboPriceType.currentText()
+        req.offset = self.comboOffset.currentText()
         req.currency = currency
         req.productClass = productClass
         
@@ -1353,12 +1359,12 @@ class SettingEditor(QtWidgets.QWidget):
         filePath = jsonPathDict[self.currentFileName]
         self.labelPath.setText(filePath)
 
-        with open(filePath) as f:
+        with open(filePath,'rb',encoding='utf8') as f:
             self.editSetting.clear()
 
             for line in f:
                 line = line.replace('\n', '')  # 移除换行符号
-                line = line.decode('UTF-8')
+                #line = line.decode('UTF-8')
                 self.editSetting.append(line)
 
     # ----------------------------------------------------------------------
@@ -1369,9 +1375,9 @@ class SettingEditor(QtWidgets.QWidget):
 
         filePath = jsonPathDict[self.currentFileName]
 
-        with open(filePath, 'w') as f:
+        with open(filePath, 'wb', encoding='utf8') as f:
             content = self.editSetting.toPlainText()
-            content = content.encode('UTF-8')
+            #content = content.encode('UTF-8')
             f.write(content)
 
     # ----------------------------------------------------------------------

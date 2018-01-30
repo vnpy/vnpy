@@ -80,8 +80,7 @@ class CtaGrid(object):
         j['closeStatus'] = self.closeStatus        # 平仓状态
         j['lockGrids'] = self.lockGrids         # 对锁的网格
         j['reuse'] = self.reuse                 # 是否重用
-
-        j['type'] = self.type  # 类型
+        j['type'] = self.reuse  # 是否重用
 
         j['openPrices'] = self.openPrices       # 套利中，两腿的开仓价格
         j['snapshot'] = self.snapshot           # 切片数据
@@ -847,7 +846,7 @@ class CtaGridTrade(object):
             return []
 
         try:
-            f = file(jsonFileName)
+            f = open(jsonFileName,'rb',encoding='utf8')
         except IOError:
             self.writeCtaLog(u'读取网格出错，请检查')
             return []

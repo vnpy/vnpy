@@ -3,7 +3,7 @@
 """
 通过VT_setting.json加载全局配置
 """
-print 'load vtGlobal.py'
+print('load vtGlobal.py')
 import os
 import traceback
 import json
@@ -15,7 +15,7 @@ path = os.path.abspath(os.path.dirname(__file__))
 settingFileName = os.path.join(path, settingFileName)
 
 try:
-    f = file(settingFileName)
-    globalSetting = json.load(f)
+    with open(settingFileName,'r',encoding="utf8") as f:
+        globalSetting = json.load(f)
 except:
     traceback.print_exc()

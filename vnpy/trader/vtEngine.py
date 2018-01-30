@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-print 'load vtEngine.py'
+print( 'load vtEngine.py')
 
 import shelve
 from collections import OrderedDict
@@ -273,8 +273,9 @@ class MainEngine(object):
             return True
 
         except Exception as ex:
-            print u'vtEngine.disconnect Exception:{0} '.format(str(ex))
+            print( u'vtEngine.disconnect Exception:{0} '.format(str(ex)))
             return False
+
     # ----------------------------------------------------------------------
     def writeLog(self, content):
         """快速发出日志事件"""
@@ -292,7 +293,7 @@ class MainEngine(object):
 
     def createLogger(self):
         filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', 'vnpy'))
-        print u'create logger:{}'.format(filename)
+        print( u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
 
     # ----------------------------------------------------------------------
@@ -308,8 +309,9 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.error(content)
         else:
-            print content
+            print(content)
             self.createLogger()
+
     # ----------------------------------------------------------------------
     def writeWarning(self, content):
         """快速发出告警日志事件"""
@@ -323,7 +325,7 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.warning(content)
         else:
-            print content
+            print( content)
             self.createLogger()
 
         # 发出邮件
@@ -361,7 +363,7 @@ class MainEngine(object):
         if self.logger:
             self.logger.critical(content)
         else:
-            print content
+            print( content)
             self.createLogger()
 
         # 发出邮件

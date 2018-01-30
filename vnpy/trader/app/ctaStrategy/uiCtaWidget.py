@@ -48,7 +48,7 @@ class CtaValueMonitor(QtWidgets.QTableWidget):
             # 新增数据
             col = 0
             for k, v in data.items():
-                cell = QtWidgets.QTableWidgetItem(unicode(v))
+                cell = QtWidgets.QTableWidgetItem(v)
                 self.keyCellDict[k] = cell
                 self.setItem(0, col, cell)
                 col += 1
@@ -58,7 +58,7 @@ class CtaValueMonitor(QtWidgets.QTableWidget):
             # 更新数据
             for k, v in data.items():
                 cell = self.keyCellDict[k]
-                cell.setText(unicode(v))
+                cell.setText(v)
 
         #cell.setBackgroundColor()
 

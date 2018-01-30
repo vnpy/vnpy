@@ -119,7 +119,7 @@ class VtGateway(object):
 
     def createLogger(self):
         filename = os.path.abspath(os.path.join(os.path.dirname(__file__),  'logs', 'Gateway'))
-        print u'create logger:{}'.format(filename)
+        print( u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
 
     # ----------------------------------------------------------------------

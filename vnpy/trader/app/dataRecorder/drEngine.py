@@ -11,7 +11,7 @@ import os
 import copy
 from collections import OrderedDict
 from datetime import datetime, timedelta
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 
 from vnpy.trader.vtEvent import *
