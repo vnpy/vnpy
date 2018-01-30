@@ -846,7 +846,7 @@ class CtaGridTrade(object):
             return []
 
         try:
-            f = open(jsonFileName,'rb',encoding='utf8')
+            f = open(jsonFileName,'r',encoding='utf8')
         except IOError:
             self.writeCtaLog(u'读取网格出错，请检查')
             return []

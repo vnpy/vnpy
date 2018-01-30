@@ -16,8 +16,8 @@ from multiprocessing.pool import ThreadPool
 from collections import OrderedDict
 import pandas as pd
 
-from ctaBase import *
-from datayesClient import DatayesClient
+from .ctaBase import *
+from .datayesClient import DatayesClient
 
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtFunction import loadMongoSetting
@@ -336,7 +336,7 @@ def loadMcCsv(fileName, dbName, symbol):
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
     
     # 读取数据和插入到数据库
-    f = open(fileName,'rb',encoding='utf8')
+    f = open(fileName,'r',encoding='utf8')
     reader = csv.DictReader(f)
     for d in reader:
         bar = CtaBarData()

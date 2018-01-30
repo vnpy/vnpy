@@ -1571,7 +1571,7 @@ class BacktestingEngine(object):
         self.output(u'开始回放数据')
 
         import csv
-        csvfile = open(filename,'rb',encoding='utf8')
+        csvfile = open(filename,'r',encoding='utf8')
         reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
         last_tradingDay = None
         for row in reader:
@@ -3290,7 +3290,7 @@ class BacktestingEngine(object):
                                                      '{}_TradeList_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'))))
 
         import csv
-        csvWriteFile = open(csvOutputFile, 'wb',encoding='utf8')
+        csvWriteFile = open(csvOutputFile, 'w',encoding='utf8')
         fieldnames = ['vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit']
         writer = csv.DictWriter(f=csvWriteFile, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
@@ -3307,7 +3307,7 @@ class BacktestingEngine(object):
         else:
             csvOutputFile2 = self.daily_report_name
 
-        csvWriteFile2 = open(csvOutputFile2, 'wb',encoding='utf8')
+        csvWriteFile2 = open(csvOutputFile2, 'w',encoding='utf8')
         fieldnames = ['date','capital','net', 'maxCapital','rate','longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
         writer2 = csv.DictWriter(f=csvWriteFile2, fieldnames=fieldnames, dialect='excel')
         writer2.writeheader()

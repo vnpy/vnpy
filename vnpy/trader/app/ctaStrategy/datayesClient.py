@@ -31,7 +31,7 @@ class DatayesClient(object):
     def loadSetting(self):
         """载入配置"""
         try:
-            f = open(FILENAME,'rb',encoding='utf8')
+            f = open(FILENAME,'r',encoding='utf8')
         except IOError:
             print( u'%s无法打开配置文件' % self.name)
             return

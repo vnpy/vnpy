@@ -73,7 +73,7 @@ class UtilArbTickLoader(object):
             # 先读取leg2的数据到目录，以日期时间为key
             leg2Ticks = {}
 
-            leg2CsvReadFile = open(leg2File, 'rb',encoding='utf8')
+            leg2CsvReadFile = open(leg2File, 'r',encoding='utf8')
             #reader = csv.DictReader((line.replace('\0',' ') for line in leg2CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg2CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg2File))
@@ -123,7 +123,7 @@ class UtilArbTickLoader(object):
                 else:
                     leg2Ticks[dtStr] = tick
 
-            leg1CsvReadFile = open(leg1File, 'rb',encoding='utf8')
+            leg1CsvReadFile = open(leg1File, 'r',encoding='utf8')
             #reader = csv.DictReader((line.replace('\0',' ') for line in leg1CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg1CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg1File))
