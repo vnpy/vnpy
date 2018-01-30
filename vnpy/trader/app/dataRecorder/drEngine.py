@@ -18,7 +18,7 @@ from vnpy.trader.vtEvent import *
 from vnpy.trader.vtGateway import VtSubscribeReq, VtLogData
 from vnpy.trader.vtFunction import todayDate
 
-from drBase import *
+from .drBase import *
 
 ########################################################################
 class DrEngine(object):
