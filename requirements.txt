@@ -6,6 +6,7 @@ pymongo
 websocket-client
 msgpack-python
 zmq
-PySide
+qtpy
+pyqt
 qdarkstyle
 SortedContainers
