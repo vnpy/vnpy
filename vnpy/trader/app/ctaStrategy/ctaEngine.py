@@ -17,25 +17,23 @@
 
  Modified by IncenseLee（李来佳）
  1、增加单一策略里，多个vtSymbol的配置。
-
+ 2、修改loadSetting和SaveSetting
 '''
 
-print( 'load ctaEngine.py')
+print('load ctaEngine.py')
 import json
 import os
 import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
-import logging
 import re
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData, VtSignalData
-from vnpy.trader.vtFunction import todayDate
 from vnpy.trader.app.ctaStrategy.ctaBase import *
-from vnpy.trader.setup_logger import get_logger,setup_logger
-
+from vnpy.trader.setup_logger import setup_logger
+from vnpy.trader.vtFunction import todayDate, getJsonPath
 
 # 加载 strategy目录下所有的策略
 from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
@@ -46,8 +44,7 @@ class CtaEngine(object):
 
     # 策略配置文件
     settingFileName = 'CTA_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)
+    settingfilePath = getJsonPath(settingFileName, __file__)
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -61,7 +58,11 @@ class CtaEngine(object):
         # 保存策略实例的字典
         # key为策略名称，value为策略实例，注意策略名称不允许重复
         self.strategyDict = {}
-        
+
+        # 保存策略设置的字典
+        # key为策略名称，value为策略设置，注意策略名称不允许重复
+        self.settingDict = {}
+
         # 保存vtSymbol和策略实例映射的字典（用于推送tick数据）
         # 由于可能多个strategy交易同一个vtSymbol，因此key为vtSymbol
         # value为包含所有相关strategy对象的list
@@ -645,49 +646,52 @@ class CtaEngine(object):
         # 防止策略重名
         if name in self.strategyDict:
             self.writeCtaLog(u'策略实例重名：%s' %name)
-        else:
-            # 1.创建策略对象
-            strategy = strategyClass(self, setting)  
-            self.strategyDict[name] = strategy
+            return
 
-            # 2.保存Tick映射关系（symbol <==> Strategy[] )
-            # modifid by Incenselee 支持多个Symbol的订阅
-            symbols = []
-            # 套利合约
-            if strategy.vtSymbol.find(' ') != -1:
-                # 排除SP SPC SPD
-                s = strategy.vtSymbol.split(' ')
-                if len(s) > 1:
-                    arb_symbols = s[1]
+        self.settingDict[name] = setting
 
-                    # 只提取leg1合约
-                    if arb_symbols.find('&') != -1:
-                        symbols = arb_symbols.split('&')
-                else:
-                    symbols.append(s[0])
+        # 1.创建策略对象
+        strategy = strategyClass(self, setting)
+        self.strategyDict[name] = strategy
+
+        # 2.保存Tick映射关系（symbol <==> Strategy[] )
+        # modifid by Incenselee 支持多个Symbol的订阅
+        symbols = []
+        # 套利合约
+        if strategy.vtSymbol.find(' ') != -1:
+            # 排除SP SPC SPD
+            s = strategy.vtSymbol.split(' ')
+            if len(s) > 1:
+                arb_symbols = s[1]
+
+                # 只提取leg1合约
+                if arb_symbols.find('&') != -1:
+                    symbols = arb_symbols.split('&')
             else:
-                symbols = strategy.vtSymbol.split(';')
+                symbols.append(s[0])
+        else:
+            symbols = strategy.vtSymbol.split(';')
 
-            # 判断是否有Leg1Symbol,Leg2Symbol 两个合约属性
-            if hasattr(strategy, 'Leg1Symbol'):
-                if strategy.Leg1Symbol not in symbols:
-                    symbols.append(strategy.Leg1Symbol)
-            if hasattr(strategy, 'Leg2Symbol'):
-                if strategy.Leg2Symbol not in symbols:
-                    symbols.append(strategy.Leg2Symbol)
+        # 判断是否有Leg1Symbol,Leg2Symbol 两个合约属性
+        if hasattr(strategy, 'Leg1Symbol'):
+            if strategy.Leg1Symbol not in symbols:
+                symbols.append(strategy.Leg1Symbol)
+        if hasattr(strategy, 'Leg2Symbol'):
+            if strategy.Leg2Symbol not in symbols:
+                symbols.append(strategy.Leg2Symbol)
 
-            for symbol in symbols:
-                self.writeCtaLog(u'添加合约{0}与策略的匹配目录'.format(symbol))
-                if symbol in self.tickStrategyDict:
-                    l = self.tickStrategyDict[symbol]
-                else:
-                    l = []
-                    self.tickStrategyDict[symbol] = l
-                l.append(strategy)
-            
-                # 3.订阅合约
-                self.writeCtaLog(u'向gateway订阅合约{0}'.format(symbol))
-                self.subscribe(strategy=strategy, symbol=symbol)
+        for symbol in symbols:
+            self.writeCtaLog(u'添加合约{0}与策略的匹配目录'.format(symbol))
+            if symbol in self.tickStrategyDict:
+                l = self.tickStrategyDict[symbol]
+            else:
+                l = []
+                self.tickStrategyDict[symbol] = l
+            l.append(strategy)
+
+            # 3.订阅合约
+            self.writeCtaLog(u'向gateway订阅合约{0}'.format(symbol))
+            self.subscribe(strategy=strategy, symbol=symbol)
 
     def subscribe(self, strategy, symbol):
         """订阅合约，不成功时，加入到待订阅列表"""
@@ -794,28 +798,26 @@ class CtaEngine(object):
     # ----------------------------------------------------------------------
     def saveSetting(self):
         """保存策略配置"""
-        with open(self.settingFileName, 'w') as f:
-            l = []
-            # 逐一循环：name，策略实例名称，strategy，策略
-            for strategy in self.strategyDict.values():
-                # 配置串
-                setting = {}
-                for param in strategy.paramList:
-                    setting[param] = strategy.__getattribute__(param)
-                l.append(setting)
-            
-            jsonL = json.dumps(l, indent=4)
-            f.write(jsonL)
-    
+        try:
+            with open(self.settingfilePath, 'w') as f:
+                l = self.settingDict.values()
+                jsonL = json.dumps(l, indent=4)
+                f.write(jsonL)
+        except Exception as ex:
+            self.writeCtaCritical(u'保存策略配置异常:{}'.format(str(ex)))
+            traceback.print_exc()
+
     # ----------------------------------------------------------------------
     def loadSetting(self):
         """读取策略配置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingfilePath) as f:
             l = json.load(f)
-            
             for setting in l:
-                self.loadStrategy(setting)
-    
+                try:
+                    self.loadStrategy(setting)
+                except Exception as ex:
+                    self.writeCtaCritical(u'加载策略:{}'.format(str(ex)))
+                    traceback.print_exc()
         self.loadPosition()
 
     # ----------------------------------------------------------------------

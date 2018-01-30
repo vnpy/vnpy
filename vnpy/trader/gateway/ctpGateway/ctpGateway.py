@@ -18,6 +18,7 @@ from vnpy.trader.vtConstant import  *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.gateway.ctpGateway.language import text
 from vnpy.trader.gateway.ctpGateway.ctpDataType import *
+from vnpy.trader.vtFunction import getJsonPath
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -99,8 +100,8 @@ class CtpGateway(VtGateway):
         """连接"""
         # 载入json文件
         fileName = self.gatewayName + '_connect.json'
-        path = os.path.abspath(os.path.dirname(__file__))
-        fileName = os.path.join(path, fileName)
+        filePath = getJsonPath(fileName, __file__)
+
         if self.mdApi is None:
             self.writeLog(u'行情接口未实例化，创建实例')
             self.mdApi = CtpMdApi(self)     # 行情API
@@ -112,8 +113,9 @@ class CtpGateway(VtGateway):
             self.tdApi = CtpTdApi(self)     # 交易API
         else:
             self.writeLog(u'交易接口已实例化')
+
         try:
-            f = open(fileName,'r',encoding='utf8')
+            f = open(filePath,'r',encoding='utf8')
         except IOError:
             self.writeLog(text.LOADING_ERROR)
             return
