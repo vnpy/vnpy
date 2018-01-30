@@ -17,7 +17,7 @@ class TestClient(RpcClient):
     #----------------------------------------------------------------------
     def callback(self, topic, data):
         """回调函数实现"""
-        print 'client received topic:', topic, ', data:', data
+        print( 'client received topic:', topic, ', data:', data)
     
 
 if __name__ == '__main__':
@@ -29,5 +29,5 @@ if __name__ == '__main__':
     tc.start()
     
     while 1:
-        print tc.add(1, 3)
+        #print tc.add(1, 3)
         sleep(2)

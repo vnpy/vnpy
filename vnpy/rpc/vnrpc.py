@@ -38,8 +38,8 @@ class RpcObject(object):
     def __init__(self):
         """Constructor"""
         # 默认使用msgpack作为序列化工具
-        self.useMsgpack()
-        #self.usePickle()
+        #self.useMsgpack()
+        self.usePickle()
     
     #----------------------------------------------------------------------
     def pack(self, data):
@@ -84,7 +84,7 @@ class RpcObject(object):
     #----------------------------------------------------------------------
     def useJson(self):
         """使用json作为序列化工具"""
-        print 'Use Json Serialization'
+        print( 'Use Json Serialization')
 
         self.pack = self.__jsonPack
         self.unpack = self.__jsonUnpack
@@ -92,14 +92,14 @@ class RpcObject(object):
     #----------------------------------------------------------------------
     def useMsgpack(self):
         """使用msgpack作为序列化工具"""
-        print 'Use MsgPack Serialization'
+        print( 'Use MsgPack Serialization')
         self.pack = self.__msgpackPack
         self.unpack = self.__msgpackUnpack
         
     #----------------------------------------------------------------------
     def usePickle(self):
         """使用cPickle作为序列化工具"""
-        print 'Use Pickle Serialization'
+        print( 'Use Pickle Serialization')
         self.pack = self.__picklePack
         self.unpack = self.__pickleUnpack
 
@@ -189,7 +189,8 @@ class RpcServer(RpcObject):
         """
         # 序列化数据
         datab = self.pack(data)
-        topic = topic.encode('utf-8')
+        if len(topic) >0 :
+            topic = topic.encode('utf-8')
         # 通过广播socket发送数据
         self.__socketPUB.send_multipart([topic, datab])
         
@@ -249,7 +250,9 @@ class RpcClient(RpcObject):
     def start(self):
         """启动客户端"""
         # 连接端口
+        print( 'conenct to req:{0}'.format(self.__reqAddress))
         self.__socketREQ.connect(self.__reqAddress)
+        print( 'connect to sub:{0}'.format(self.__subAddress))
         self.__socketSUB.connect(self.__subAddress)
     
         # 将服务器设为启动
@@ -279,7 +282,8 @@ class RpcClient(RpcObject):
             
             # 从订阅socket收取广播数据
             topic, datab = self.__socketSUB.recv_multipart()
-            topic = topic.decode("utf-8")
+            if len(topic)>0:
+                topic = topic.decode("utf-8")
 
             # 序列化解包
             data = self.unpack(datab)
@@ -299,7 +303,10 @@ class RpcClient(RpcObject):
         
         可以使用topic=''来订阅所有的主题
         """
-        topic = topic.encode('utf-8')
+        if len(topic)==0:
+            topic = ''
+        else:
+            topic = topic.encode('utf-8')
         self.__socketSUB.setsockopt(zmq.SUBSCRIBE, topic)
 
 
