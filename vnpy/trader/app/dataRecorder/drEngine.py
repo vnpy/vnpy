@@ -16,7 +16,7 @@ from threading import Thread
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtGateway import VtSubscribeReq, VtLogData
-from vnpy.trader.vtFunction import todayDate
+from vnpy.trader.vtFunction import todayDate,getJsonPath
 
 from .drBase import *
 
@@ -25,8 +25,7 @@ class DrEngine(object):
     """数据记录引擎"""
     
     settingFileName = 'DR_setting.json'
-    path = os.path.abspath(os.path.dirname(__file__))
-    settingFileName = os.path.join(path, settingFileName)
+    settingFilePath = getJsonPath(settingFileName,__file__)
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -57,7 +56,7 @@ class DrEngine(object):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """载入设置"""
-        with open(self.settingFileName) as f:
+        with open(self.settingFilePath) as f:
             drSetting = json.load(f)
             
             # 如果working设为False则不启动行情记录功能
