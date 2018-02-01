@@ -139,9 +139,9 @@ def calculateImpv(price, f, k, r, t, cp, n=15):
     # 检查期权价格是否满足最小价值（即到期行权价值）
     meet = False
     
-    if cp == 1 and (price > (f - k) * exp(-r * t)):
+    if cp == 1 and (price > f - k):
         meet = True
-    elif cp == -1 and (price > k * exp(-r * t) - f):
+    elif cp == -1 and (price > k - f):
         meet = True
     
     # 若不满足最小价值，则直接返回0
