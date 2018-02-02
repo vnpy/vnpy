@@ -46,7 +46,7 @@ def generateTree(f, k, r, t, v, cp, n):
     dt = t / n 
     u = exp(v * sqrt(dt))
     d = 1 / u
-    a = exp(r * dt)
+    a = 1                       # 针对期货期权a应当设为1
     uTree = np.zeros((n+1,n+1))
     oTree = np.zeros((n+1,n+1))
 
