@@ -8,7 +8,7 @@ from datetime import time
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarManager
+from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate, BarGenerator
 
 
 ########################################################################
@@ -64,7 +64,7 @@ class DualThrustStrategy(CtaTemplate):
         """Constructor"""
         super(DualThrustStrategy, self).__init__(ctaEngine, setting) 
         
-        self.bm = BarManager(self.onBar)
+        self.bg = BarGenerator(self.onBar)
         self.barList = []
 
     #----------------------------------------------------------------------
@@ -94,7 +94,7 @@ class DualThrustStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
-        self.bm.updateTick(tick)
+        self.bg.updateTick(tick)
         
     #----------------------------------------------------------------------
     def onBar(self, bar):

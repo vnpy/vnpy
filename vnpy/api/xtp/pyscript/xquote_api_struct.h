@@ -192,6 +192,15 @@ typedef struct OrderBookStruct {
     ///合约代码（不包含交易所信息），不带空格，以'\0'结尾
     char    ticker[XTP_TICKER_LEN];
 
+    ///最新价
+    double last_price;
+    ///数量，为总成交量
+    int64_t qty;
+    ///成交金额，为总成交金额
+    double  turnover;
+    ///成交笔数
+    int64_t trades_count;
+
     // 买卖盘
     ///十档申买价
     double bid[10];
@@ -204,6 +213,77 @@ typedef struct OrderBookStruct {
     /// 时间类
     int64_t data_time;
 } XTPOB;
+
+////////////////////////////////// 逐笔数据
+
+
+///逐笔委托(仅适用深交所)
+struct XTPTickByTickEntrust {
+    ///频道代码
+    int32_t channel_no;
+    ///委托序号(在同一个channel_no内唯一，从1开始连续)
+    int64_t seq;
+    ///委托价格
+    double  price;
+    ///委托数量
+    int64_t qty;
+    ///'1':买; '2':卖; 'G':借入; 'F':出借
+    char  side;
+    ///订单类别: '1': 市价; '2': 限价; '3': 本方最优
+    char ord_type;
+};
+
+///逐笔成交
+struct XTPTickByTickTrade {
+    ///频道代码
+    int32_t channel_no;
+    ///委托序号(在同一个channel_no内唯一，从1开始连续)
+    int64_t seq;
+    ///成交价格
+    double price;
+    ///成交量
+    int64_t qty;
+    ///成交金额(仅适用上交所)
+    double money;
+    ///买方订单号
+    int64_t bid_no;
+    ///卖方订单号
+    int64_t ask_no;
+    /// SH: 内外盘标识('B':主动买; 'S':主动卖; 'N':未知)
+    /// SZ: 成交标识('4':撤; 'F':成交)
+    char trade_flag;
+};
+
+///逐笔数据信息
+typedef struct XTPTickByTickStruct {
+    ///交易所代码
+    XTP_EXCHANGE_TYPE exchange_id;
+    ///合约代码（不包含交易所信息），不带空格，以'\0'结尾
+    char ticker[XTP_TICKER_LEN];
+    ///预留
+    int64_t seq;
+    ///委托时间 or 成交时间
+    int64_t data_time;
+    ///委托 or 成交
+    XTP_TBT_TYPE type;
+
+    union {
+        XTPTickByTickEntrust entrust;
+        XTPTickByTickTrade     trade;
+    };
+} XTPTBT;
+
+
+///供查询的最新信息
+typedef struct XTPTickerPriceInfo {
+    ///交易所代码
+    XTP_EXCHANGE_TYPE exchange_id;
+    ///合约代码（不包含交易所信息），不带空格，以'\0'结尾
+    char ticker[XTP_TICKER_LEN];
+    ///最新价
+    double last_price;
+} XTPTPI;
+
 
 #pragma pack()
 

@@ -1,5 +1,9 @@
 # encoding: UTF-8
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import multiprocessing
 from time import sleep
 from datetime import datetime, time

@@ -27,6 +27,9 @@
     <ClInclude Include="vnxtptrader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\xtpapi\xoms_api_fund_struct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\xtpapi\xoms_api_struct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -61,18 +64,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\xtpapi\xtpquoteapiD.lib">
+    <Library Include="..\..\xtpapi\xtpquoteapi.lib">
       <Filter>Resource Files</Filter>
     </Library>
-    <Library Include="..\..\xtpapi\xtptraderapiD.lib">
+    <Library Include="..\..\xtpapi\xtptraderapi.lib">
       <Filter>Resource Files</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\xtpapi\xtpquoteapiD.dll">
+    <None Include="..\..\xtpapi\libsodium.dll">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\..\xtpapi\xtptraderapiD.dll">
+    <None Include="..\..\xtpapi\xtpquoteapi.dll">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\xtpapi\xtptraderapi.dll">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -55,34 +55,89 @@ namespace XTP {
 			///@remark 每条订阅的合约均对应一条订阅应答，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
 			virtual void OnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last) {};
 
-			///取消订阅行情应答
+			///退订行情应答
 			///@param ticker 详细的合约取消订阅情况
 			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
 			///@param is_last 是否此次取消订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
 			///@remark 每条取消订阅的合约均对应一条取消订阅应答，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
 			virtual void OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last) {};
 
-			///行情通知
-			///@param market_data 行情数据，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
-			virtual void OnMarketData(XTPMD *market_data) {};
+			///深度行情通知，包含买一卖一队列
+			///@param market_data 行情数据
+			///@param bid1_qty 买一队列数据
+			///@param bid1_count 买一队列的有效委托笔数
+			///@param max_bid1_count 买一队列总委托笔数
+			///@param ask1_qty 卖一队列数据
+			///@param ask1_count 卖一队列的有效委托笔数
+			///@param max_ask1_count 卖一队列总委托笔数
+			///@remark 需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+			virtual void OnDepthMarketData(XTPMD *market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[], int32_t ask1_count, int32_t max_ask1_count) {};
 
-			///订阅行情订单簿应答（此函数接口为保留接口，功能暂不支持）
+			///订阅行情订单簿应答
 			///@param ticker 详细的合约订阅情况
 			///@param error_info 订阅合约发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
 			///@param is_last 是否此次订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
 			///@remark 每条订阅的合约均对应一条订阅应答，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
 			virtual void OnSubOrderBook(XTPST *ticker, XTPRI *error_info, bool is_last) {};
 
-			///取消订阅行情订单簿应答（此函数接口为保留接口，功能暂不支持）
+			///退订行情订单簿应答
 			///@param ticker 详细的合约取消订阅情况
 			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
 			///@param is_last 是否此次取消订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
 			///@remark 每条取消订阅的合约均对应一条取消订阅应答，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
 			virtual void OnUnSubOrderBook(XTPST *ticker, XTPRI *error_info, bool is_last) {};
 
-			///行情订单簿通知（此函数接口为保留接口，功能暂不支持）
+			///行情订单簿通知
 			///@param order_book 行情订单簿数据，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
 			virtual void OnOrderBook(XTPOB *order_book) {};
+
+			///订阅逐笔行情应答
+			///@param ticker 详细的合约订阅情况
+			///@param error_info 订阅合约发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@param is_last 是否此次订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+			///@remark 每条订阅的合约均对应一条订阅应答，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+			virtual void OnSubTickByTick(XTPST *ticker, XTPRI *error_info, bool is_last) {};
+
+			///退订逐笔行情应答
+			///@param ticker 详细的合约取消订阅情况
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@param is_last 是否此次取消订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+			///@remark 每条取消订阅的合约均对应一条取消订阅应答，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+			virtual void OnUnSubTickByTick(XTPST *ticker, XTPRI *error_info, bool is_last) {};
+
+			///逐笔行情通知
+			///@param tbt_data 逐笔行情数据，包括逐笔委托和逐笔成交，此为共用结构体，需要根据type来区分是逐笔委托还是逐笔成交，需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+			virtual void OnTickByTick(XTPTBT *tbt_data) {};
+
+			///订阅全市场的行情应答
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@remark 需要快速返回
+			virtual void OnSubscribeAllMarketData(XTPRI *error_info) {};
+
+			///退订全市场的行情应答
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@remark 需要快速返回
+			virtual void OnUnSubscribeAllMarketData(XTPRI *error_info) {};
+
+			///订阅全市场的行情订单簿应答
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@remark 需要快速返回
+			virtual void OnSubscribeAllOrderBook(XTPRI *error_info) {};
+
+			///退订全市场的行情订单簿应答
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@remark 需要快速返回
+			virtual void OnUnSubscribeAllOrderBook(XTPRI *error_info) {};
+
+			///订阅全市场的逐笔行情应答
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@remark 需要快速返回
+			virtual void OnSubscribeAllTickByTick(XTPRI *error_info) {};
+
+			///退订全市场的逐笔行情应答
+			///@param error_info 取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@remark 需要快速返回
+			virtual void OnUnSubscribeAllTickByTick(XTPRI *error_info) {};
 
 
 			///查询可交易合约的应答
@@ -90,6 +145,12 @@ namespace XTP {
 			///@param error_info 查询可交易合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
 			///@param is_last 是否此次查询可交易合约的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
 			virtual void OnQueryAllTickers(XTPQSI* ticker_info, XTPRI *error_info, bool is_last) {};
+
+			///查询合约的最新价格信息应答
+			///@param ticker_info 合约的最新价格信息
+			///@param error_info 查询合约的最新价格信息时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+			///@param is_last 是否此次查询的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+			virtual void OnQueryTickersPriceInfo(XTPTPI* ticker_info, XTPRI *error_info, bool is_last) {};
 		};
 	}
 }
@@ -140,10 +201,19 @@ namespace XTP {
 			///@remark 可以在调用api接口失败时调用，例如login失败时
 			virtual XTPRI *GetApiLastError() = 0;
 
+			///设置采用UDP方式连接时的接收缓冲区大小
+			///@remark 需要在Login之前调用，默认大小和最小设置均为64MB。此缓存大小单位为MB，请输入2的次方数，例如128MB请输入128。
+			virtual void SetUDPBufferSize(uint32_t buff_size) = 0;
+
 
 			///注册回调接口
 			///@param spi 派生自回调接口类的实例，请在登录之前设定
 			virtual void RegisterSpi(QuoteSpi *spi) = 0;
+
+			///设置心跳检测时间间隔，单位为秒
+			///@param interval 心跳检测时间间隔，单位为秒
+			///@remark 此函数必须在Login之前调用
+			virtual void SetHeartBeatInterval(uint32_t interval) = 0;
 
 			///订阅行情。
 			///@return 订阅接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
@@ -158,10 +228,10 @@ namespace XTP {
 			///@param ticker 合约ID数组，注意合约代码必须以'\0'结尾，不包含空格  
 			///@param count 要订阅/退订行情的合约个数
 			///@param exchage_id 交易所代码
-			///@remark 可以一次性取消订阅同一证券交易所的多个合约
+			///@remark 可以一次性取消订阅同一证券交易所的多个合约，需要与订阅行情接口配套使用
 			virtual int UnSubscribeMarketData(char *ticker[], int count, XTP_EXCHANGE_TYPE exchage_id) = 0;
 
-			///订阅行情订单簿。(此函数接口为保留接口，功能暂不支持)
+			///订阅行情订单簿。
 			///@return 订阅行情订单簿接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
 			///@param ticker 合约ID数组，注意合约代码必须以'\0'结尾，不包含空格 
 			///@param count 要订阅/退订行情订单簿的合约个数
@@ -169,13 +239,59 @@ namespace XTP {
 			///@remark 可以一次性订阅同一证券交易所的多个合约，无论用户因为何种问题需要重新登录行情服务器，都需要重新订阅行情(暂不支持)
 			virtual int SubscribeOrderBook(char *ticker[], int count, XTP_EXCHANGE_TYPE exchage_id) = 0;
 
-			///退订行情订单簿。(此函数接口为保留接口，功能暂不支持)
+			///退订行情订单簿。
 			///@return 取消订阅行情订单簿接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
 			///@param ticker 合约ID数组，注意合约代码必须以'\0'结尾，不包含空格  
 			///@param count 要订阅/退订行情订单簿的合约个数
 			///@param exchage_id 交易所代码
-			///@remark 可以一次性取消订阅同一证券交易所的多个合约(暂不支持)
+			///@remark 可以一次性取消订阅同一证券交易所的多个合约，需要与订阅行情订单簿接口配套使用
 			virtual int UnSubscribeOrderBook(char *ticker[], int count, XTP_EXCHANGE_TYPE exchage_id) = 0;
+
+			///订阅逐笔行情。
+			///@return 订阅逐笔行情接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@param ticker 合约ID数组，注意合约代码必须以'\0'结尾，不包含空格  
+			///@param count 要订阅/退订行情订单簿的合约个数
+			///@param exchage_id 交易所代码
+			///@remark 可以一次性订阅同一证券交易所的多个合约，无论用户因为何种问题需要重新登录行情服务器，都需要重新订阅行情(暂不支持)
+			virtual int SubscribeTickByTick(char *ticker[], int count, XTP_EXCHANGE_TYPE exchage_id) = 0;
+
+			///退订逐笔行情。
+			///@return 取消订阅逐笔行情接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@param ticker 合约ID数组，注意合约代码必须以'\0'结尾，不包含空格  
+			///@param count 要订阅/退订行情订单簿的合约个数
+			///@param exchage_id 交易所代码
+			///@remark 可以一次性取消订阅同一证券交易所的多个合约，需要与订阅逐笔行情接口配套使用
+			virtual int UnSubscribeTickByTick(char *ticker[], int count, XTP_EXCHANGE_TYPE exchage_id) = 0;
+
+			///订阅全市场的行情
+			///@return 订阅全市场行情接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@remark 需要与全市场退订行情接口配套使用
+			virtual int SubscribeAllMarketData() = 0;
+
+			///退订全市场的行情
+			///@return 退订全市场行情接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@remark 需要与订阅全市场行情接口配套使用
+			virtual int UnSubscribeAllMarketData() = 0;
+
+			///订阅全市场的行情订单簿
+			///@return 订阅全市场行情订单簿接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@remark 需要与全市场退订行情订单簿接口配套使用
+			virtual int SubscribeAllOrderBook() = 0;
+
+			///退订全市场的行情订单簿
+			///@return 退订全市场行情订单簿接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@remark 需要与订阅全市场行情订单簿接口配套使用
+			virtual int UnSubscribeAllOrderBook() = 0;
+
+			///订阅全市场的逐笔行情
+			///@return 订阅全市场逐笔行情接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@remark 需要与全市场退订逐笔行情接口配套使用
+			virtual int SubscribeAllTickByTick() = 0;
+
+			///退订全市场的逐笔行情
+			///@return 退订全市场逐笔行情接口调用是否成功，“0”表示接口调用成功，非“0”表示接口调用出错
+			///@remark 需要与订阅全市场逐笔行情接口配套使用
+			virtual int UnSubscribeAllTickByTick() = 0;
 
 			///用户登录请求
 			///@return 登录是否成功，“0”表示登录成功，“-1”表示连接服务器出错，此时用户可以调用GetApiLastError()来获取错误代码，“-2”表示已存在连接，不允许重复登录，如果需要重连，请先logout，“-3”表示输入有错误
@@ -183,7 +299,7 @@ namespace XTP {
 			///@param port 服务器端口号
 			///@param user 登陆用户名
 			///@param password 登陆密码
-			///@param sock_type “1”代表TCP，“2”代表UDP，目前暂时只支持TCP
+			///@param sock_type “1”代表TCP，“2”代表UDP
 			///@remark 此函数为同步阻塞式，不需要异步等待登录成功，当函数返回即可进行后续操作，此api只能有一个连接
 			virtual int Login(const char* ip, int port, const char* user, const char* password, XTP_PROTOCOL_TYPE sock_type) = 0;
 
@@ -197,6 +313,15 @@ namespace XTP {
 			///@return 查询是否成功，“0”表示查询成功，非“0”表示查询不成功
 			///@param exchage_id 交易所代码
 			virtual int QueryAllTickers(XTP_EXCHANGE_TYPE exchage_id) = 0;
+
+			///获取合约的最新价格信息
+			///@return 查询是否成功，“0”表示查询成功，非“0”表示查询不成功
+			///@param exchage_id 交易所代码
+			virtual int QueryTickersPriceInfo(char *ticker[], int count, XTP_EXCHANGE_TYPE exchage_id) = 0;
+
+			///获取所有合约的最新价格信息
+			///@return 查询是否成功，“0”表示查询成功，非“0”表示查询不成功
+			virtual int QueryAllTickersPriceInfo() = 0;
 
 
 		protected:

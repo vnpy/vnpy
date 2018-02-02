@@ -1,0 +1,9 @@
+{
+	"accountID": "随意取个账户名",
+    "accessKey": "accessID",
+    "secretKey": "secretKey",
+    "username": "你的网站用户名",
+    "password": "你的网站密码",
+    "interval": 3,
+    "debug": false
+}

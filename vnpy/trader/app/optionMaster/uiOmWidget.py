@@ -13,6 +13,7 @@ from .uiOmManualTrader import ManualTrader
 from .uiOmGreeksMonitor import GreeksMonitor
 from .uiOmVolatilityManager import VolatilityChart, VolatilityManager
 from .uiOmAnalysisManager import AnalysisManager
+from .uiOmStrategyManager import StrategyEngineManager
 
 
 ########################################################################
@@ -75,6 +76,10 @@ class OmManager(QtWidgets.QWidget):
         self.buttonAnalysisManager.clicked.connect(self.openAnalysisManager)
         self.buttonAnalysisManager.setDisabled(True)
         
+        self.buttonStrategyManager = QtWidgets.QPushButton(u'策略交易')
+        self.buttonStrategyManager.clicked.connect(self.openStrategyManager)
+        self.buttonStrategyManager.setDisabled(True)        
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
@@ -86,6 +91,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.buttonVolatilityChart)
         hbox.addWidget(self.buttonVolatilityManager)
         hbox.addWidget(self.buttonAnalysisManager)
+        hbox.addWidget(self.buttonStrategyManager)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -123,6 +129,7 @@ class OmManager(QtWidgets.QWidget):
         self.buttonVolatilityChart.setEnabled(True)
         self.buttonVolatilityManager.setEnabled(True)
         self.buttonAnalysisManager.setEnabled(True)
+        self.buttonStrategyManager.setEnabled(True)
         
     #----------------------------------------------------------------------
     def writeLog(self, content, time=''):
@@ -182,7 +189,16 @@ class OmManager(QtWidgets.QWidget):
             self.widgetDict['analysisManager'].showMaximized()
         except KeyError:
             self.widgetDict['analysisManager'] = AnalysisManager(self.omEngine)
-            self.widgetDict['analysisManager'].showMaximized()     
+            self.widgetDict['analysisManager'].showMaximized()  
+            
+    #----------------------------------------------------------------------
+    def openStrategyManager(self):
+        """打开策略交易组件"""
+        try:
+            self.widgetDict['strategyManager'].showMaximized()
+        except KeyError:
+            self.widgetDict['strategyManager'] = StrategyEngineManager(self.omEngine)
+            self.widgetDict['strategyManager'].showMaximized()  
 
     #----------------------------------------------------------------------
     def close(self):

@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 SAVE_DATA = 'Save Data'
+RESIZE_COLUMNS = 'Resize Columns'
 
 CONTRACT_SYMBOL = 'Symbol'
 CONTRACT_NAME = 'Name'

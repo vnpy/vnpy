@@ -10,16 +10,18 @@ import json
 import csv
 import os
 import copy
+import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from Queue import Queue, Empty
 from threading import Thread
+from pymongo.errors import DuplicateKeyError
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import todayDate, getJsonPath
 from vnpy.trader.vtObject import VtSubscribeReq, VtLogData, VtBarData, VtTickData
-from vnpy.trader.app.ctaStrategy.ctaTemplate import BarManager
+from vnpy.trader.app.ctaStrategy.ctaTemplate import BarGenerator
 
 from .drBase import *
 from .language import text
@@ -48,7 +50,7 @@ class DrEngine(object):
         self.tickSymbolSet = set()
         
         # K线合成器字典
-        self.bmDict = {}
+        self.bgDict = {}
         
         # 配置字典
         self.settingDict = OrderedDict()
@@ -153,7 +155,7 @@ class DrEngine(object):
                         d['bar'] = True     
                         
                     # 创建BarManager对象
-                    self.bmDict[vtSymbol] = BarManager(self.onBar)
+                    self.bgDict[vtSymbol] = BarGenerator(self.onBar)
 
             # 主力合约记录配置
             if 'active' in drSetting:
@@ -177,7 +179,7 @@ class DrEngine(object):
 
         self.onTick(tick)
         
-        bm = self.bmDict.get(vtSymbol, None)
+        bm = self.bgDict.get(vtSymbol, None)
         if bm:
             bm.updateTick(tick)
         
@@ -241,7 +243,10 @@ class DrEngine(object):
                 #self.mainEngine.dbUpdate(dbName, collectionName, d, flt, True)
                 
                 # 使用insert模式更新数据，可能存在时间戳重复的情况，需要用户自行清洗
-                self.mainEngine.dbInsert(dbName, collectionName, d)
+                try:
+                    self.mainEngine.dbInsert(dbName, collectionName, d)
+                except DuplicateKeyError:
+                    self.writeDrLog(u'键值重复插入失败，报错信息：' %traceback.format_exc())
             except Empty:
                 pass
             
