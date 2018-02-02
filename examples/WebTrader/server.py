@@ -5,6 +5,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+import signal
 from time import sleep
 
 # vn.trader模块
@@ -34,6 +35,10 @@ def main():
     
     # 创建主引擎
     me = MainEngine(ee)
+    
+    # 安全退出机制
+    for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+        signal.signal(sig, me.exit)
     
     # 添加交易接口
     me.addGateway(ctpGateway)
