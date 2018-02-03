@@ -47,10 +47,12 @@ with open("WEB_setting.json") as f:
 from flask import Flask
 from flask.ext.restful import Api, Resource, reqparse
 from flask.ext.socketio import SocketIO
+from flask.ext.cors import CORS
 
 app = Flask(__name__)
 api = Api(app)
 socketio = SocketIO(app)
+cors = CORS(app, supports_credentials=True)
 
 
 # 创建资源
@@ -156,7 +158,7 @@ class Order(Resource):
     #----------------------------------------------------------------------
     def post(self):
         """发单"""
-        args = self.deleteParser.parse_args()
+        args = self.postParser.parse_args()
         token = args['token']
         if token != TOKEN:
             return None
@@ -176,7 +178,7 @@ class Order(Resource):
         req.symbol = contract.symbol
         req.exchange = contract.exchange
         req.price = float(price)
-        req.volume = int(symbol)
+        req.volume = int(volume)
         req.priceType = priceType
         req.direction = direction
         req.offset = offset
