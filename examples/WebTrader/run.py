@@ -140,6 +140,7 @@ class Order(Resource):
         self.deleteParser = reqparse.RequestParser()
         self.deleteParser.add_argument('vtOrderID')        
         self.deleteParser.add_argument('token')
+        self.deleteParser.add_argument('cancelAll')
         
         super(Order, self).__init__()
     
@@ -193,18 +194,32 @@ class Order(Resource):
         if token != TOKEN:
             return None
         
-        vtOrderID = args['vtOrderID']
+        cancelAll = args['cancelAll']
         
-        order = me.getOrder(vtOrderID)
-        if not order:
-            return False
+        # 单一撤单
+        if not cancelAll:
+            vtOrderID = args['vtOrderID']
+            
+            order = me.getOrder(vtOrderID)
+            if not order:
+                return False
+            
+            req = VtCancelOrderReq()
+            req.orderID = order.orderID
+            req.exchange = order.exchange
+            req.symbol = order.symbol
+            me.cancelOrder(req, order.gatewayName)
+        # 全撤
+        else:
+            l = me.getAllWorkingOrders()
+            
+            for order in l:
+                req = VtCancelOrderReq()
+                req.orderID = order.orderID
+                req.exchange = order.exchange
+                req.symbol = order.symbol
+                me.cancelOrder(req, order.gatewayName)                
         
-        req = VtCancelOrderReq()
-        req.orderID = order.orderID
-        req.exchange = order.exchange
-        req.symbol = order.symbol
-        me.cancelOrder(req, order.gatewayName)
-
 
 ########################################################################
 class Trade(Resource):
