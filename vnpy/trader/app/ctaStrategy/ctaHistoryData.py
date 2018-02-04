@@ -228,7 +228,7 @@ def loadOKEXCsv(fileName, dbName, symbol):
             bar.vtSymbol = symbol
             bar.symbol = symbol
 
-            bar.datetime = datetime.strptime(d[1], '%Y-%m-%d %H:%M')
+            bar.datetime = datetime.strptime(d[1], '%Y-%m-%d %H:%M:%S')
             bar.date = bar.datetime.date().strftime('%Y%m%d')
             bar.time = bar.datetime.time().strftime('%H:%M:%S')
 
