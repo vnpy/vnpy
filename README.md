@@ -1,23 +1,24 @@
-Fork版本主要改进如下：
+#Fork版本主要改进如下：
 1、增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件
 2、增加自动断线重连功能，在开盘前启动，收盘后重连CTP
 3、修改回测引擎，提供实时计算净值
 4、修改CtaTemplate，增加了未执行订单的跟踪
 5、提供非GUI界面启动的主程序。
 
-启动模式：
+#启动模式：
 可视化：python vtMain.py
 命令行：python noUiMain.py
 
-2018年1月，升级至py3版本
+# 重要更新日志
+1、2018年1月，升级至py3版本
 
 大佳
 QQ/Wechat：28888502
 
 
 --------------------------------------------------------------------------------------------
-FAQ：
-1、CentOS的环境
+###FAQ：
+#1、CentOS的环境
     # 安装解压包支持
 	yum install bzip2.x86_64
 	# 安装nodejs，支持request
@@ -34,7 +35,7 @@ FAQ：
 	./bootstrap.sh --with-libraries=atomic,date_time,exception,filesystem,iostreams,locale,program_options,regex,signals,system,test,thread,timer,log
 	./b2 install
 
-2、Ubuntu环境
+#2、Ubuntu环境
     apt-get install gcc
     apt-get install make
     apt-get install libssl-dev
@@ -49,7 +50,8 @@ FAQ：
     sudo apt-get install nodejs
     sudo apt-get update && sudo apt-get install build-essential
 
-3、创建多版本环境：
+#3、创建多版本环境：
+
     wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.3.1-Linux-x86_64.sh
     chmod a+x Anaconda3-4.3.1-Linux-x86_64.sh
     ./Anaconda3-4.3.1-Linux-x86_64.sh
@@ -67,11 +69,11 @@ FAQ：
     source activate py35
 
 
-3、碰到的问题：importError: libGL.so.1: cannot open shared object file: No such file or directory
+#4、碰到的问题：importError: libGL.so.1: cannot open shared object file: No such file or directory
     ubuntu下：sudo apt install libgl1-mesa-glx
     centOS下：sudo yum install mesa-libGL.x86_64
 
-4、碰到的问题：version `GLIBCXX_3.4.21' not found
+#5、碰到的问题：version `GLIBCXX_3.4.21' not found
     conda install libgcc
 
 
