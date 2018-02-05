@@ -7,12 +7,7 @@
     "chain": [
         {
             "underlyingSymbol": "510050", 
-            "chainSymbol": "510050-1712", 
-            "r": 0.03
-        },
-        {
-            "underlyingSymbol": "510050", 
-            "chainSymbol": "510050-1801", 
+            "chainSymbol": "510050-1802", 
             "r": 0.03
         },
         {
@@ -23,6 +18,11 @@
         {
             "underlyingSymbol": "510050", 
             "chainSymbol": "510050-1806", 
+            "r": 0.03
+        },
+        {
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1809", 
             "r": 0.03
         }
     ]
