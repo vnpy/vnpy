@@ -37,8 +37,13 @@ def main():
     me = MainEngine(ee)
     
     # 安全退出机制
+    def shutdown(signal, frame):
+        le.info(u'安全关闭进程')
+        me.exit()
+        sys.exit()
+        
     for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
-        signal.signal(sig, me.exit)
+        signal.signal(sig, shutdown)
     
     # 添加交易接口
     me.addGateway(ctpGateway)
