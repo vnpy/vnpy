@@ -10,3 +10,5 @@ qtpy
 pyqt
 qdarkstyle
 SortedContainers
+statsmodels
+openpyxl

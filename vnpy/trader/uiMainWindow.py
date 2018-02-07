@@ -208,7 +208,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.statusLabel.setText(info)
             if self.connectGatewayDict:
-                s = u','.join(str(e) for e in self.connectGatewayDict.values())
+                s = u','.join(str(e) for e in list(self.connectGatewayDict.values()))
 
                 if not self.connected:
                     s = s + u' [已断开]'
@@ -218,7 +218,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # 定时断开
             if self.connected and self.trade_off() and self.autoDisConnect:
                self.disconnect()
-               self.mainEngine.writeLog(u'断开连接{0}'.format(self.connectGatewayDict.values()))
+               self.mainEngine.writeLog(u'断开连接{0}'.format(list(self.connectGatewayDict.values())))
                self.mainEngine.writeLog(u'清空数据引擎')
                self.mainEngine.clearData()
                self.mainEngine.writeLog(u'清空委托列表')
@@ -238,7 +238,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.widgetOrderM.clearData()
                     self.mainEngine.writeLog(u'清空交易列表')
                     self.widgetTradeM.clearData()
-                    s = u''.join(str(e) for e in self.connectGatewayDict.values())
+                    s = u''.join(str(e) for e in list(self.connectGatewayDict.values()))
                     self.mainEngine.writeLog(u'重新连接{0}'.format(s))
 
                     for key in self.connectGatewayDict.keys():
@@ -423,7 +423,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                            QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
         if reply == QtWidgets.QMessageBox.Yes:
-            for widget in self.widgetDict.values():
+            for widget in list(self.widgetDict.values()):
                 widget.close()
             self.saveWindowSettings('custom')
             

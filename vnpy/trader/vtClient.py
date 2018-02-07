@@ -183,10 +183,7 @@ class ClientEngine(object):
 #----------------------------------------------------------------------
 def main():
     """客户端主程序入口"""
-    # 重载sys模块，设置默认字符串编码方式为utf8
-    reload(sys)
-    sys.setdefaultencoding('utf8')    
-    
+
     # 设置Windows底部任务栏图标
     if 'Windows' in platform.uname() :
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')    

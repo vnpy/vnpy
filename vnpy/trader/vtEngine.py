@@ -5,6 +5,7 @@ print( 'load vtEngine.py')
 import shelve
 from collections import OrderedDict
 import os
+import copy
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
@@ -21,9 +22,9 @@ from vnpy.trader.setup_logger import get_logger,setup_logger
 
 import psutil
 try:
-    from util_mail import *
+    from .util_mail import *
 except:
-    pass
+    print('import util_mail fail')
 
 ########################################################################
 class MainEngine(object):
@@ -228,6 +229,18 @@ class MainEngine(object):
         else:
             return 0, 0, 0, 0
 
+    def qryAccountNo(self,gatewayName):
+        """
+         根据gateway名称，返回账号
+        :param gatewayName: 
+        :return: 
+        """
+        if gatewayName in self.gatewayDict:
+            gateway = self.gatewayDict[gatewayName]
+            if gateway.accountID:
+                return copy.copy(gateway.accountID)
+
+        return gatewayName
     # ----------------------------------------------------------------------
     def qryPosition(self, gatewayName):
         """查询特定接口的持仓"""

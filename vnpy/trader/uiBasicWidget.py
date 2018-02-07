@@ -262,7 +262,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
         self.setColumnCount(col)
         
         # 设置列表头
-        labels = [d['chinese'] for d in self.headerDict.values()]
+        labels = [d['chinese'] for d in list(self.headerDict.values())]
         self.setHorizontalHeaderLabels(labels)
         
         # 关闭左边的垂直表头
@@ -383,7 +383,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
 
         try:
             if not os.path.exists(path):
-                with open(path, 'wb') as f:
+                with open(path, 'w',encoding='utf8') as f:
                     writer = csv.writer(f)
                     
                     # 保存标签
@@ -1359,7 +1359,7 @@ class SettingEditor(QtWidgets.QWidget):
         filePath = jsonPathDict[self.currentFileName]
         self.labelPath.setText(filePath)
 
-        with open(filePath,'rb',encoding='utf8') as f:
+        with open(filePath,'r',encoding='utf8') as f:
             self.editSetting.clear()
 
             for line in f:
@@ -1375,7 +1375,7 @@ class SettingEditor(QtWidgets.QWidget):
 
         filePath = jsonPathDict[self.currentFileName]
 
-        with open(filePath, 'wb', encoding='utf8') as f:
+        with open(filePath, 'w', encoding='utf8') as f:
             content = self.editSetting.toPlainText()
             #content = content.encode('UTF-8')
             f.write(content)

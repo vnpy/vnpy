@@ -27,7 +27,7 @@ def createQApp():
             import qdarkstyle
             qApp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
         except :
-            print( "Unexpected error when import darkStyle:", sys.exc_info()[0])
+            print("Unexpected error when import darkStyle:", sys.exc_info()[0])
 
     # 设置Windows底部任务栏图标
     if 'Windows' in platform.uname():

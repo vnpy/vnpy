@@ -2,8 +2,8 @@
 
 from collections import OrderedDict
 
-from vtGateway import *
-from setup_logger import setup_logger
+from .vtGateway import *
+from .setup_logger import setup_logger
 
 ########################################################################
 class BasicMonitor(object):

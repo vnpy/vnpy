@@ -20,7 +20,7 @@ class VtGateway(object):
         self.eventEngine = eventEngine
         self.gatewayName = gatewayName
         self.logger = None
-
+        self.accountID = 'AccountID'
         self.createLogger()
 
     # ----------------------------------------------------------------------
@@ -87,7 +87,9 @@ class VtGateway(object):
         event2 = Event(type_=EVENT_ACCOUNT+account.vtAccountID)
         event2.dict_['data'] = account
         self.eventEngine.put(event2)
-    
+
+        # 更新账号ID
+        self.accountID = account.vtAccountID
     # ----------------------------------------------------------------------
     def onError(self, error):
         """错误信息推送"""

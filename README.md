@@ -1,3 +1,5 @@
+### “当你想放弃时，想想你为什么开始。”
+
 #Fork版本主要改进如下：
 1、增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件
 2、增加自动断线重连功能，在开盘前启动，收盘后重连CTP
@@ -75,6 +77,12 @@ QQ/Wechat：28888502
 
 #5、碰到的问题：version `GLIBCXX_3.4.21' not found
     conda install libgcc
+
+#6、碰到的问题：在3.5 env下安装RqPlus时，报错:talib/common.c:242:28: fatal error: ta-lib/ta_defs.h: No such file or directory
+    locate ta_defs.h
+    找到地址：/home/user/anaconda3/pkgs/ta-lib-0.4.9-np111py27_0/include/ta-lib
+    # 复制一份到/usr/include目录下
+    sudo cp /home/user/anaconda3/pkgs/ta-lib-0.4.9-np111py27_0/include/ta-lib /usr/include -R
 
 
 --------------------------------------------------------------------------------------------

@@ -7,15 +7,14 @@ print('load vtGlobal.py')
 import os
 import traceback
 import json
-
+from .vtFunction import getJsonPath
 globalSetting = {}      # 全局配置字典
 
 settingFileName = "VT_setting.json"
-path = os.path.abspath(os.path.dirname(__file__))
-settingFileName = os.path.join(path, settingFileName)
+settingFilePath = getJsonPath(settingFileName, __file__)
 
 try:
-    with open(settingFileName,'r',encoding="utf8") as f:
+    with open(settingFilePath,'r',encoding="utf8") as f:
         globalSetting = json.load(f)
 except:
     traceback.print_exc()

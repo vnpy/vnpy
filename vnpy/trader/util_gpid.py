@@ -4,8 +4,8 @@ import subprocess
 import os
 import sys
 import platform
-base_path = os.path.dirname(os.path.realpath(sys.argv[0]))
-gpid_file = os.path.abspath(os.path.join(base_path, 'logs','gpid.txt'))
+
+gpid_file = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs','gpid.txt'))
 
 def _check_gpid(gpid):
     plat = str(platform.system())
