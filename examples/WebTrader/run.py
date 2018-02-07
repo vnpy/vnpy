@@ -12,6 +12,7 @@ from vnpy.trader.vtEvent import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE,
                                  EVENT_ERROR, EVENT_CONTRACT)
 from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq
 from vnpy.trader.app.rpcService.rsClient import MainEngineProxy
+from vnpy.trader.app.ctaStrategy.ctaBase import EVENT_CTA_LOG, EVENT_CTA_STRATEGY
 
 reqAddress = 'tcp://localhost:6688'
 subAddress = 'tcp://localhost:8866'    
@@ -608,7 +609,8 @@ ee.register(EVENT_POSITION, handleEvent)
 ee.register(EVENT_CONTRACT, handleEvent)
 ee.register(EVENT_LOG, handleEvent)
 ee.register(EVENT_ERROR, handleEvent)
-    
+ee.register(EVENT_CTA_LOG, handleEvent)
+ee.register(EVENT_CTA_STRATEGY, handleEvent)
 
 
 

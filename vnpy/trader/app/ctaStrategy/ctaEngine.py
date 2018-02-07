@@ -566,9 +566,14 @@ class CtaEngine(object):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
         strategy = self.strategyDict[name]
         d = {k:strategy.__getattribute__(k) for k in strategy.varList}
+        
         event = Event(EVENT_CTA_STRATEGY+name)
         event.dict_['data'] = d
         self.eventEngine.put(event)
+        
+        event2 = Event(EVENT_CTA_STRATEGY)
+        event2.dict_['data'] = d
+        self.eventEngine.put(event2)        
         
     #----------------------------------------------------------------------
     def callStrategyFunc(self, strategy, func, params=None):

@@ -335,8 +335,12 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
-        # 通常不在乎订阅错误，选择忽略
-        pass
+        if 'ErrorID' in error and error['ErrorID']:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
         
     #----------------------------------------------------------------------  
     def onRspUnSubMarketData(self, data, error, n, last):
@@ -844,9 +848,11 @@ class CtpTdApi(TdApi):
         contract.size = data['VolumeMultiple']
         contract.priceTick = data['PriceTick']
         contract.strikePrice = data['StrikePrice']
-        contract.underlyingSymbol = data['UnderlyingInstrID']
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
         contract.expiryDate = data['ExpireDate']
+        
+        #contract.underlyingSymbol = data['UnderlyingInstrID']   # 针对商品期权
+        contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
         
         # 期权类型
         if contract.productClass is PRODUCT_OPTION:
