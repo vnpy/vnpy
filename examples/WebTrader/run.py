@@ -596,7 +596,11 @@ api.add_resource(CtaStrategyVar, '/ctastrategy/var')
 def handleEvent(event):
     """处理事件"""
     eventType = event.type_
-    eventData = event.dict_['data'].__dict__
+    eventData = event.dict_['data']
+
+    if not isinstance(eventData, dict):
+        eventData = eventData.__dict__
+    
     socketio.emit(eventType, eventData)
     #print eventData
 
