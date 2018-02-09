@@ -41,8 +41,8 @@ def main():
         le.info(u'安全关闭进程')
         me.exit()
         sys.exit()
-        
-    for sig in [signal.SIGINT, signal.SIGHUP, signal.SIGTERM]:
+    
+    for sig in [signal.SIGINT, signal.SIGTERM]:
         signal.signal(sig, shutdown)
     
     # 添加交易接口

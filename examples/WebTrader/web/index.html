@@ -348,7 +348,7 @@
 <!-- 引入组件库 -->
 <script src="https://cdn.bootcss.com/element-ui/2.1.0/index.js"></script>
 <script>
-var socket = io.connect("http://101.37.23.188:5000", { transports: ['websocket'] });
+var socket = io.connect("http://127.0.0.1:5000", { transports: ['websocket'] });
 var _strategy = new Object()
 new Vue({
     el: '#app',
@@ -443,7 +443,7 @@ new Vue({
                 break;
             }
 
-            axios.post("http://101.37.23.188:5000/ctastrategy/" + type,{
+            axios.post("http://127.0.0.1:5000/ctastrategy/" + type,{
                 name:name,
                 token:this.config.token
             })
@@ -465,7 +465,7 @@ new Vue({
             const that = this;
             let strategy = {};
             that.loading.strategy = true;
-            axios.post('http://101.37.23.188:5000/ctastrategy/load', {
+            axios.post('http://127.0.0.1:5000/ctastrategy/load', {
                     token: this.config.token
                 })
                 .then(res => {
@@ -485,7 +485,7 @@ new Vue({
         gVar(name) {
             const that = this,
                 _var = new Object();
-            axios.get("http://101.37.23.188:5000/ctastrategy/var?name=" + name + "&token=" + this.config.token)
+            axios.get("http://127.0.0.1:5000/ctastrategy/var?name=" + name + "&token=" + this.config.token)
                 .then(res => {
                     if (res.data.result_code !== "success") {
                         that.$notify({ title: '警告', message: 'ctastrategy/var接口报错', type: 'warning', duration: 0, });
@@ -521,7 +521,7 @@ new Vue({
 
         gParams(name) {
             const that = this;
-            axios.get("http://101.37.23.188:5000/ctastrategy/param?name=" + name + "&token=" + this.config.token)
+            axios.get("http://127.0.0.1:5000/ctastrategy/param?name=" + name + "&token=" + this.config.token)
                 .then(res => {
                     if (res.data.result_code !== "success") {
                         that.$notify({ title: '警告', message: 'ctastrategy/param接口报错', type: 'warning', duration: 0, });
@@ -545,7 +545,7 @@ new Vue({
             if (this.config.token !== undefined) {
                 gInfo(apiName, this.config.token)
             } else {
-                axios.get('http://101.37.23.188:5000/token?username=test&password=test', {
+                axios.get('http://127.0.0.1:5000/token?username=test&password=test', {
 
                     })
                     .then(function(res) {
@@ -562,7 +562,7 @@ new Vue({
             }
 
             function gInfo(apiName, token) {
-                axios.get("http://101.37.23.188:5000/" + apiName + "?token=" + token)
+                axios.get("http://127.0.0.1:5000/" + apiName + "?token=" + token)
                     .then(res => {
                         if (res.data.result_code == "success") {
                             that[dataArr] = that[dataArr].concat(res.data.data).reverse()
@@ -578,7 +578,7 @@ new Vue({
         onSubmit(e) {
             this.loading.order = true;
             const that = this;
-            axios.post('http://101.37.23.188:5000/order', {
+            axios.post('http://127.0.0.1:5000/order', {
                     vtSymbol: this.form.vtSymbol,
                     price: this.form.lastPrice,
                     volume: this.form.volume,
@@ -616,7 +616,7 @@ new Vue({
                 });
             } else {
                 this.loading.subScribe = true;
-                axios.post("http://101.37.23.188:5000/tick", {
+                axios.post("http://127.0.0.1:5000/tick", {
                         vtSymbol: _vtSymbol,
                         token: this.config.token
                     })
@@ -640,7 +640,7 @@ new Vue({
         dOrder(e) {
             let vtOrderID = e.vtOrderID,
                 that = this;
-            axios.delete("http://101.37.23.188:5000/order?vtOrderID=" + vtOrderID + "&token=" + this.config.token)
+            axios.delete("http://127.0.0.1:5000/order?vtOrderID=" + vtOrderID + "&token=" + this.config.token)
                 .then(res => {
                     if (res.data.result_code == "success") {
                         that.$message({ message: '撤单已提交', type: 'success' });
@@ -654,7 +654,7 @@ new Vue({
         },
         gToken() {
             const that = this;
-            axios.get('http://101.37.23.188:5000/token?username=test&password=test')
+            axios.get('http://127.0.0.1:5000/token?username=test&password=test')
                 .then(function(res) {
                     if (res.status == 200 && res.data.result_code == "success") {
                         that.config.token = res.data.data
@@ -682,7 +682,7 @@ new Vue({
         },
         judgeIfStrategy(){
             let that = this;
-            axios.get("http://101.37.23.188:5000/ctastrategy/name?token="+this.config.token)
+            axios.get("http://127.0.0.1:5000/ctastrategy/name?token="+this.config.token)
                 .then(res=>{
                     let nameArray = res.data.data;
                     nameArray.forEach(function(item){
@@ -698,7 +698,7 @@ new Vue({
         gContract(){
             const that = this;
             if (that.contract.length == 0) {
-                axios.get("http://101.37.23.188:5000/contract?token=" + this.config.token)
+                axios.get("http://127.0.0.1:5000/contract?token=" + this.config.token)
                     .then(res => {
                         that.loading.contract = false;
                         if (res.data.result_code == "success") {
@@ -714,7 +714,7 @@ new Vue({
 
         },
         gGateway(token) {
-            axios.post('http://101.37.23.188:5000/gateway', {
+            axios.post('http://127.0.0.1:5000/gateway', {
                     token: token,
                     gatewayName: 'CTP'
                 })
