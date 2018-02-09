@@ -68,10 +68,10 @@ find_library(PYTHON_LIBRARY
   PATHS C:/Python27/libs)
 include_directories(${PYTHON_INCLUDE_PATH})
 else()
-set(PYTHON_INCLUDE_PATH /usr/include/python2.7/)
+set(PYTHON_INCLUDE_PATH /home/tensorflow/anaconda3/envs/py35/include)
 find_library(PYTHON_LIBRARY
-  NAMES python2.7
-  PATHS /usr/lib/x86_64-linux-gnu)
+  NAMES python35
+  PATHS /home/tensorflow/anaconda3/envs/py35/lib)
 include_directories(${PYTHON_INCLUDE_PATH})
 endif()
 
