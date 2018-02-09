@@ -495,6 +495,30 @@ class CtaStrategyStop(Resource):
 
 
 ########################################################################
+class CtaStrategyName(Resource):
+    """获取策略名"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """初始化"""
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('token')
+        super(CtaStrategyName, self).__init__()        
+    
+    #----------------------------------------------------------------------
+    def get(self):
+        """获取策略名""" 
+        args = self.parser.parse_args()
+        token = args['token']
+        if token != TOKEN:
+            return None
+        
+        engine = me.getApp('CtaStrategy')
+        l = engine.getStrategyNames()
+        return l
+    
+
+########################################################################
 class CtaStrategyLoad(Resource):
     """加载策略"""
     
@@ -589,6 +613,7 @@ api.add_resource(CtaStrategyStart, '/ctastrategy/start')
 api.add_resource(CtaStrategyStop, '/ctastrategy/stop')
 api.add_resource(CtaStrategyParam, '/ctastrategy/param')
 api.add_resource(CtaStrategyVar, '/ctastrategy/var')
+api.add_resource(CtaStrategyName, '/ctastrategy/name')
 
 
 # SocketIO
