@@ -383,7 +383,6 @@ class Tick(Resource):
     #----------------------------------------------------------------------
     def post(self):
         """订阅"""
-	print 'posting to tick'
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
@@ -625,9 +624,9 @@ def handleEvent(event):
     eventData = event.dict_['data']
 
     if not isinstance(eventData, dict):
-	eventData = eventData.__dict__
+        eventData = eventData.__dict__
 
-    if( eventType == 'eTick.' ):
+    if eventType == 'eTick.':
         del eventData['datetime']
 
     socketio.emit(eventType, eventData)
