@@ -41,20 +41,19 @@ with open("WEB_setting.json") as f:
     setting = json.load(f)
     USERNAME = setting['username']
     PASSWORD = setting['password']
-    TOKEN = base64.encodestring(TODAY+PASSWORD).replace('\n', '')
+    TOKEN = base64.encodestring(TODAY+PASSWORD).replace('\n','')
 
 
 # 创建Flask对象
 from flask import Flask
 from flask.ext.restful import Api, Resource, reqparse
 from flask.ext.socketio import SocketIO
-from flask.ext.cors import CORS
+from flask_cors import *
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 api = Api(app)
 socketio = SocketIO(app)
-cors = CORS(app, supports_credentials=True)
-
 
 # 创建资源
 
@@ -78,9 +77,9 @@ class Token(Resource):
         password = args['password']
         
         if username == USERNAME and password == PASSWORD:
-            return TOKEN
+            return {'result_code':'success','data':TOKEN}
         else:
-            return ''
+            return {'result_code':'error','message':'wrong username or password'}
 
 
 ########################################################################
@@ -101,11 +100,14 @@ class Gateway(Resource):
         """查询"""
         args = self.parser.parse_args()
         token = args['token']
+        print token
+        print TOKEN
         if token != TOKEN:
-            return None
+            print 'token error'
+            return {'result_code':'error','message':'token error'}
         
         l = me.getAllGatewayDetails()
-        return l
+        return {'result_code':'success','data':l}
     
     #----------------------------------------------------------------------
     def post(self):
@@ -113,10 +115,12 @@ class Gateway(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            print 'token error'
+            return {'result_code':'error','message':'token error'}
                 
         gatewayName = args['gatewayName']
         me.connect(gatewayName)
+        return {'result_code':'success','data':''}
 
 
 ########################################################################
@@ -141,7 +145,6 @@ class Order(Resource):
         self.deleteParser = reqparse.RequestParser()
         self.deleteParser.add_argument('vtOrderID')        
         self.deleteParser.add_argument('token')
-        self.deleteParser.add_argument('cancelAll')
         
         super(Order, self).__init__()
     
@@ -151,11 +154,11 @@ class Order(Resource):
         args = self.getParser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getAllOrders()
         l = [o.__dict__ for o in data]
-        return l
+        return {'result_code':'success','data':l}
     
     #----------------------------------------------------------------------
     def post(self):
@@ -163,8 +166,8 @@ class Order(Resource):
         args = self.postParser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
-        
+            return {'result_code':'error','message':'token error'}
+        print args
         vtSymbol = args['vtSymbol']        
         price = args['price']        
         volume = args['volume']        
@@ -174,18 +177,22 @@ class Order(Resource):
         
         contract = me.getContract(vtSymbol)
         if not contract:
-            return ''
+            return {'result_code':'error','message':'contract error'}
+        
+        priceType_map = {'PRICETYPE_LIMITPRICE' : u'限价','PRICETYPE_MARKETPRICE' : u'市价','PRICETYPE_FAK' : u'FAK','PRICETYPE_FOK' : u'FOK'}
+        direction_map = {'DIRECTION_LONG' : u'多','DIRECTION_SHORT' : u'空'}
+        offset_map    = {'OFFSET_OPEN' : u'开仓',  'OFFSET_CLOSE' : u'平仓','OFFSET_CLOSETODAY' : u'平今','OFFSET_CLOSEYESTERDAY' : u'平昨'}
         
         req = VtOrderReq()
-        req.symbol = contract.symbol
-        req.exchange = contract.exchange
-        req.price = float(price)
-        req.volume = int(volume)
-        req.priceType = priceType
-        req.direction = direction
-        req.offset = offset
-        vtOrderID = me.sendOrder(req, contract.gatewayName)
-        return vtOrderID
+        req.symbol    = contract.symbol
+        req.exchange  = contract.exchange
+        req.price     = float(price)
+        req.volume    = int(volume)
+        req.priceType = priceType_map[ priceType ]
+        req.direction = direction_map[ direction ]
+        req.offset    = offset_map[ offset ]
+        vtOrderID     = me.sendOrder(req, contract.gatewayName)
+        return {'result_code':'success','data':vtOrderID}
     
     #----------------------------------------------------------------------
     def delete(self):
@@ -193,34 +200,20 @@ class Order(Resource):
         args = self.deleteParser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
-        cancelAll = args['cancelAll']
+        vtOrderID = args['vtOrderID']
         
-        # 单一撤单
-        if not cancelAll:
-            vtOrderID = args['vtOrderID']
-            
-            order = me.getOrder(vtOrderID)
-            if not order:
-                return False
-            
-            req = VtCancelOrderReq()
-            req.orderID = order.orderID
-            req.exchange = order.exchange
-            req.symbol = order.symbol
-            me.cancelOrder(req, order.gatewayName)
-        # 全撤
-        else:
-            l = me.getAllWorkingOrders()
-            
-            for order in l:
-                req = VtCancelOrderReq()
-                req.orderID = order.orderID
-                req.exchange = order.exchange
-                req.symbol = order.symbol
-                me.cancelOrder(req, order.gatewayName)                
+        order = me.getOrder(vtOrderID)
+        if not order:
+            return {'result_code':'error','message':'vtOrderID error'}
         
+        req = VtCancelOrderReq()
+        req.orderID = order.orderID
+        req.exchange = order.exchange
+        req.symbol = order.symbol
+        me.cancelOrder(req, order.gatewayName)
+        return {'result_code':'success','data':""}
 
 ########################################################################
 class Trade(Resource):
@@ -240,11 +233,11 @@ class Trade(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getAllTrades()
         l = [o.__dict__ for o in data]
-        return l
+        return {'result_code':'success','data':l}
     
 
 ########################################################################
@@ -265,11 +258,11 @@ class Account(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getAllAccounts()
         l = [o.__dict__ for o in data]
-        return l        
+        return {'result_code':'success','data':l}        
 
 
 ########################################################################
@@ -290,11 +283,12 @@ class Position(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getAllPositions()
+        print 'position',data
         l = [o.__dict__ for o in data]
-        return l
+        return {'result_code':'success','data':l}
 
 
 ########################################################################
@@ -316,11 +310,12 @@ class Contract(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getAllContracts()
+        print 'Contract',data
         l = [o.__dict__ for o in data]
-        return l        
+        return {'result_code':'success','data':l}        
 
 
 ########################################################################
@@ -341,11 +336,11 @@ class Log(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getLog()
         l = [o.__dict__ for o in data]
-        return l   
+        return {'result_code':'success','data':l}   
 
 
 ########################################################################
@@ -366,11 +361,11 @@ class Error(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         data = me.getError()
         l = [o.__dict__ for o in data]
-        return l
+        return {'result_code':'success','data':l}
 
 
 ########################################################################
@@ -388,23 +383,25 @@ class Tick(Resource):
     #----------------------------------------------------------------------
     def post(self):
         """订阅"""
+	print 'posting to tick'
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
-        
+            return {'result_code':'error','message':'token error'}
+
         vtSymbol = args['vtSymbol']
-        
+
         contract = me.getContract(vtSymbol)
         if not contract:
-            return False
-        
+            return {'result_code':'error','message':'contract error'}
+
         req = VtSubscribeReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
         req.vtSymbol = contract.vtSymbol
+        
         me.subscribe(req, contract.gatewayName)
-        return True
+        return {'result_code':'success','data':''}
     
 
 ########################################################################
@@ -425,7 +422,7 @@ class CtaStrategyInit(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         name = args['name']
         
@@ -434,6 +431,7 @@ class CtaStrategyInit(Resource):
             engine.initAll()
         else:
             engine.initStrategy(name)
+        return {'result_code':'success','data':''}
 
 
 ########################################################################
@@ -454,7 +452,7 @@ class CtaStrategyStart(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         name = args['name']
         
@@ -463,6 +461,7 @@ class CtaStrategyStart(Resource):
             engine.startAll()
         else:
             engine.startStrategy(name)
+        return {'result_code':'success','data':''}
 
 
 ########################################################################
@@ -483,7 +482,7 @@ class CtaStrategyStop(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         name = args['name']
         
@@ -492,31 +491,30 @@ class CtaStrategyStop(Resource):
             engine.stopAll()
         else:
             engine.stopStrategy(name)
-
+        return {'result_code':'success','data':''}
 
 ########################################################################
 class CtaStrategyName(Resource):
-    """获取策略名"""
+    """»ñÈ¡²ßÂÔÃû"""
     
     #----------------------------------------------------------------------
     def __init__(self):
-        """初始化"""
+        """³õÊ¼»¯"""
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('token')
         super(CtaStrategyName, self).__init__()        
     
     #----------------------------------------------------------------------
     def get(self):
-        """获取策略名""" 
+        """»ñÈ¡²ßÂÔÃû""" 
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         engine = me.getApp('CtaStrategy')
         l = engine.getStrategyNames()
-        return l
-    
+        return {'result_code':'success','data':l}
 
 ########################################################################
 class CtaStrategyLoad(Resource):
@@ -535,12 +533,12 @@ class CtaStrategyLoad(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         engine = me.getApp('CtaStrategy')
         engine.loadSetting()
         l = engine.getStrategyNames()
-        return l
+        return {'result_code':'success','data':l}
 
 
 ########################################################################
@@ -561,12 +559,13 @@ class CtaStrategyParam(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
-        return engine.getStrategyParam(name)
+        l = engine.getStrategyParam(name)
+        return {'result_code':'success','data':l}
 
 
 ########################################################################
@@ -587,12 +586,13 @@ class CtaStrategyVar(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            return None
+            return {'result_code':'error','message':'token error'}
         
         name = args['name']
         
         engine = me.getApp('CtaStrategy')
-        return engine.getStrategyVar(name)
+        l = engine.getStrategyVar(name)
+        return {'result_code':'success','data':l}
 
 
 # 注册资源
@@ -621,13 +621,16 @@ api.add_resource(CtaStrategyName, '/ctastrategy/name')
 def handleEvent(event):
     """处理事件"""
     eventType = event.type_
+
     eventData = event.dict_['data']
 
     if not isinstance(eventData, dict):
-        eventData = eventData.__dict__
-    
+	eventData = eventData.__dict__
+
+    if( eventType == 'eTick.' ):
+        del eventData['datetime']
+
     socketio.emit(eventType, eventData)
-    #print eventData
 
 
 ee.register(EVENT_TICK, handleEvent)
@@ -640,8 +643,7 @@ ee.register(EVENT_LOG, handleEvent)
 ee.register(EVENT_ERROR, handleEvent)
 ee.register(EVENT_CTA_LOG, handleEvent)
 ee.register(EVENT_CTA_STRATEGY, handleEvent)
-
-
+    
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app,debug=True,host='0.0.0.0',port=5000)
