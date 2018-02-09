@@ -57,7 +57,7 @@ def generateVtBar(row):
     bar.close = row['close']
     bar.volume = row['volume']
     
-    bar.date = str(row['trade_date'])
+    bar.date = str(row['date'])
     bar.time = str(row['time']).rjust(6, '0')
    
     #将bar的时间改成提前一分钟
