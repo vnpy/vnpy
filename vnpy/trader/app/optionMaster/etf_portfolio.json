@@ -1,6 +1,6 @@
 {
     "name": "etf_portfolio", 
-    "model": "black",
+    "model": "bsCython",
     "underlying": [
         "510050"
     ],     

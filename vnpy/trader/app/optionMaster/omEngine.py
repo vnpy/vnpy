@@ -17,7 +17,7 @@ from vnpy.trader.vtConstant import (PRODUCT_OPTION, OPTION_CALL, OPTION_PUT,
                                     DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE,
                                     PRICETYPE_LIMITPRICE)
-from vnpy.pricing import black, bs, crr
+from vnpy.pricing import black, bs, crr, bsCython
 
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
                      EVENT_OM_LOG, EVENT_OM_STRATEGY, EVENT_OM_STRATEGYLOG,
@@ -31,6 +31,7 @@ MODEL_DICT = {}
 MODEL_DICT['black'] = black
 MODEL_DICT['bs'] = bs
 MODEL_DICT['crr'] = crr
+MODEL_DICT['bsCython'] = bsCython
 
 
 
