@@ -395,7 +395,7 @@ class SecMdApi(MdApi):
         tick.gatewayName = self.gatewayName
     
         tick.symbol = data['securityID']
-        tick.exchange = exchangeMapReverse.get(data['exchangeID'], u'未知')
+        tick.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
     
         tick.lastPrice = data['latestPrice']
@@ -444,7 +444,7 @@ class SecMdApi(MdApi):
         tick.gatewayName = self.gatewayName
     
         tick.symbol = data['securityID']
-        tick.exchange = exchangeMapReverse.get(data['exchangeID'], u'未知')
+        tick.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
     
         tick.lastPrice = data['latestPrice']
@@ -905,7 +905,7 @@ class SecTdApi(TdApi):
             contract.gatewayName = self.gatewayName
     
             contract.symbol = data['securityID']
-            contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+            contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
             
             contract.name = data['securityName'].decode('GBK')
@@ -948,7 +948,7 @@ class SecTdApi(TdApi):
         
             # 保存后续不会变化的数据
             order.symbol = data['securityID']
-            order.exchange = exchangeMapReverse[data['exchangeID']]
+            order.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
             order.vtSymbol = '.'.join([order.symbol, order.exchange])
             
             order.orderID = str(newLocalID)
@@ -983,7 +983,7 @@ class SecTdApi(TdApi):
         
         # 保存代码和报单号
         trade.symbol = data['securityID']
-        trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
         trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
         
         trade.tradeID = data['tradeID']
@@ -1035,7 +1035,7 @@ class SecTdApi(TdApi):
         
             # 保存后续不会变化的数据
             order.symbol = data['securityID']
-            order.exchange = exchangeMapReverse[data['exchangeID']]
+            order.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
             order.vtSymbol = '.'.join([order.symbol, order.exchange])
             
             order.orderID = str(newLocalID)
@@ -1302,7 +1302,7 @@ class SecTdApi(TdApi):
         
             # 保存后续不会变化的数据
             order.symbol = data['securityID']
-            order.exchange = exchangeMapReverse[data['exchangeID']]
+            order.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
             order.vtSymbol = '.'.join([order.symbol, order.exchange])
             
             order.orderID = str(newLocalID)
@@ -1338,7 +1338,7 @@ class SecTdApi(TdApi):
         
         # 保存代码和报单号
         trade.symbol = data['securityID']
-        trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        trade.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
         trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
         
         trade.tradeID = data['tradeID']
@@ -1391,7 +1391,7 @@ class SecTdApi(TdApi):
         
             # 保存后续不会变化的数据
             order.symbol = data['securityID']
-            order.exchange = exchangeMapReverse[data['exchangeID']]
+            order.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
             order.vtSymbol = '.'.join([order.symbol, order.exchange])
             
             order.orderID = str(newLocalID)
