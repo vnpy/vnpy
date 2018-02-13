@@ -1218,7 +1218,7 @@ class SecTdApi(TdApi):
         contract.gatewayName = self.gatewayName
 
         contract.symbol = data['securityOptionID']
-        contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
         contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
         
         contract.name = data['contractName'].decode('GBK')
