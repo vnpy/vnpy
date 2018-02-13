@@ -56,7 +56,6 @@ api = Api(app)
 socketio = SocketIO(app)
 
 # 创建资源
-
 ########################################################################
 class Token(Resource):
     """登录验证"""
@@ -204,16 +203,33 @@ class Order(Resource):
         
         vtOrderID = args['vtOrderID']
         
-        order = me.getOrder(vtOrderID)
-        if not order:
-            return {'result_code':'error','message':'vtOrderID error'}
-        
+        # 撤单某一委托
+        if vtOrderID:
+            order = me.getOrder(vtOrderID)
+            if not order:
+                return {'result_code':'error','message':'vtOrderID error'}
+            
+            self.cancel(order)
+        # 全撤
+        else:
+            l = me.getAllWorkingOrders()
+            
+            for order in l:
+                self.cancel(order)
+            
+        return {'result_code':'success','data':""}
+    
+    #----------------------------------------------------------------------
+    def cancel(self, order):
+        """撤单"""
         req = VtCancelOrderReq()
         req.orderID = order.orderID
         req.exchange = order.exchange
         req.symbol = order.symbol
-        me.cancelOrder(req, order.gatewayName)
-        return {'result_code':'success','data':""}
+        req.frontID = order.frontID
+        req.sessionID = order.sessionID
+        me.cancelOrder(req, order.gatewayName)                
+
 
 ########################################################################
 class Trade(Resource):
@@ -598,7 +614,8 @@ class CtaStrategyVar(Resource):
 @app.route('/')
 def index_html():
     """首页"""
-    return send_file( os.path.abspath('.') + '/web/index.html' )
+    return send_file('./templates/index.html')
+
 
 # 注册资源
 api.add_resource(Token, '/token')
