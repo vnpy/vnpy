@@ -851,8 +851,12 @@ class CtpTdApi(TdApi):
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
         contract.expiryDate = data['ExpireDate']
         
-        #contract.underlyingSymbol = data['UnderlyingInstrID']   # 针对商品期权
-        contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
+        # ETF期权的标的命名方式需要调整（ETF代码 + 到期月份）
+        if contract.exchange in [EXCHANGE_SSE, EXCHANGE_SZSE]:
+            contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
+        # 商品期权无需调整
+        else:
+            contract.underlyingSymbol = data['UnderlyingInstrID']   
         
         # 期权类型
         if contract.productClass is PRODUCT_OPTION:
