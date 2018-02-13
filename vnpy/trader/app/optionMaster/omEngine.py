@@ -105,8 +105,9 @@ class OmEngine(object):
         if self.portfolio:
             return False
         
-        f = file(fileName)
+        f = open(fileName)
         setting = json.load(f)
+        f.close()
         
         # 读取定价模型
         model = MODEL_DICT.get(setting['model'], None)

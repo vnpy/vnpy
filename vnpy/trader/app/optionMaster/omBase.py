@@ -118,6 +118,9 @@ class OmUnderlying(OmInstrument):
         """Constructor"""
         super(OmUnderlying, self).__init__(contract, detail)
         
+        # 标的类型
+        self.productClass = contract.productClass
+        
         # 以该合约为标的物的期权链字典
         self.chainDict = OrderedDict()
         
@@ -393,11 +396,15 @@ class OmChain(object):
         for n, call in enumerate(callList):
             put = putList[n]
             
+            # 如果标的为期货，则不进行调整
+            if call.underlying.productClass == PRODUCT_FUTURES:
+                return
+            
             # 如果有任意中间价为0，则忽略该PCP
             if (not call.underlying.midPrice or
                 not put.midPrice or 
                 not call.midPrice or
-                not call.k,
+                not call.k or
                 not call.t):
                 continue
             
@@ -406,6 +413,9 @@ class OmChain(object):
             l.append(r)
         
         # 求平均值来计算拟合折现率
+        if not l:
+            return
+        
         self.r = sum(l)/len(l)
         for option in self.optionDict.values():
             option.setR(r)

@@ -42,7 +42,7 @@ class OmManager(QtWidgets.QWidget):
         # 读取配置文件
         settingFileList = []
         
-        path = os.path.abspath(os.path.dirname(__file__))
+        path = os.getcwd()
         for root, subdirs, files in os.walk(path):
             for name in files:      
                 if '_portfolio.json' in name:
@@ -112,7 +112,7 @@ class OmManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def initOmEngine(self):
         """初始化引擎"""
-        path = os.path.abspath(os.path.dirname(__file__))
+        path = os.getcwd()
         fileName = unicode(self.comboSettingFile.currentText())
         fileName = os.path.join(path, fileName)
         result = self.omEngine.initEngine(fileName)
