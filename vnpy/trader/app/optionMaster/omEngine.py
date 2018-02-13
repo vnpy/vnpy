@@ -223,7 +223,16 @@ class OmEngine(object):
         
         event = Event(EVENT_OM_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)     
+        self.eventEngine.put(event)    
+        
+    #----------------------------------------------------------------------
+    def adjustR(self):
+        """调整折现率"""
+        if self.portfolio:
+            self.portfolio.adjustR()
+            
+        for chain in self.portfolio.chainDict.values():
+            self.writeLog(u'期权链%s的折现率r拟合为%.3f' %(chain.symbol, chain.r))
 
 
 ########################################################################

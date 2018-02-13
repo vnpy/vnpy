@@ -4,6 +4,7 @@ from __future__ import division
 
 from copy import copy
 from collections import OrderedDict
+from math import log1p
 
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtTickData
@@ -271,7 +272,12 @@ class OmOption(OmInstrument):
     def setUnderlying(self, underlying):
         """设置标的物对象"""
         self.underlying = underlying
-        
+    
+    #----------------------------------------------------------------------
+    def setR(self, r):
+        """设置折现率"""
+        self.r = r
+ 
 
 ########################################################################
 class OmChain(object):
@@ -375,6 +381,34 @@ class OmChain(object):
         self.posGamma = self.posGamma - oldPosGamma + option.posGamma
         self.posTheta = self.posTheta - oldPosTheta + option.posTheta
         self.posVega = self.posVega - oldPosVega + option.posVega
+    
+    #----------------------------------------------------------------------
+    def adjustR(self):
+        """调整折现率（r）"""
+        l = []
+        callList = self.callDict.values()
+        putList = self.putDict.values()
+        
+        # 通过计算期权链所有PCP的平价利率
+        for n, call in enumerate(callList):
+            put = putList[n]
+            
+            # 如果有任意中间价为0，则忽略该PCP
+            if (not call.underlying.midPrice or
+                not put.midPrice or 
+                not call.midPrice or
+                not call.k,
+                not call.t):
+                continue
+            
+            temp = (call.underlying.midPrice + put.midPrice - call.midPrice) / call.k
+            r = log1p(temp-1) / (-call.t)
+            l.append(r)
+        
+        # 求平均值来计算拟合折现率
+        self.r = sum(l)/len(l)
+        for option in self.optionDict.values():
+            option.setR(r)
 
 
 ########################################################################
@@ -470,3 +504,10 @@ class OmPortfolio(object):
             underlying = self.underlyingDict[symbol]
             underlying.newTrade(trade)
             self.calculatePosGreeks()
+    
+    #----------------------------------------------------------------------
+    def adjustR(self):
+        """调整折现率"""
+        for chain in self.chainDict.values():
+            chain.adjustR()
+        

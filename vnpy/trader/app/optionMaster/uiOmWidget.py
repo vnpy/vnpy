@@ -80,6 +80,10 @@ class OmManager(QtWidgets.QWidget):
         self.buttonStrategyManager.clicked.connect(self.openStrategyManager)
         self.buttonStrategyManager.setDisabled(True)        
         
+        self.buttonAdjustR = QtWidgets.QPushButton(u'拟合利率')
+        self.buttonAdjustR.clicked.connect(self.omEngine.adjustR)
+        self.buttonAdjustR.setDisabled(True)        
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
@@ -92,6 +96,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.buttonVolatilityManager)
         hbox.addWidget(self.buttonAnalysisManager)
         hbox.addWidget(self.buttonStrategyManager)
+        hbox.addWidget(self.buttonAdjustR)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -130,6 +135,7 @@ class OmManager(QtWidgets.QWidget):
         self.buttonVolatilityManager.setEnabled(True)
         self.buttonAnalysisManager.setEnabled(True)
         self.buttonStrategyManager.setEnabled(True)
+        self.buttonAdjustR.setEnabled(True)
         
     #----------------------------------------------------------------------
     def writeLog(self, content, time=''):
