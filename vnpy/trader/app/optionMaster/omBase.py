@@ -211,8 +211,13 @@ class OmOption(OmInstrument):
         
         self.askImpv = self.calculateImpv(self.askPrice1, underlyingPrice, self.k,
                                           self.r, self.t, self.cp)
+        if self.askImpv > 1:        # 正常情况下波动率不应该超过100%
+            self.askImpv = 0.01     # 若超过则大概率为溢出，调整为1%
+            
         self.bidImpv = self.calculateImpv(self.bidPrice1, underlyingPrice, self.k,
                                           self.r, self.t, self.cp)        
+        if self.bidImpv > 1:
+            self.bidImpv = 0.01
         self.midImpv = (self.askImpv + self.bidImpv) / 2
     
     #----------------------------------------------------------------------

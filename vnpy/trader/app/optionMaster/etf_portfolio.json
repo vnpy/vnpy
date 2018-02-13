@@ -8,10 +8,8 @@
         {
             "underlyingSymbol": "510050", 
             "chainSymbol": "510050-1802", 
-            "r": 0.03
-        }
-    ],
-    "other": [
+            "r": 0.04
+        },
         {
             "underlyingSymbol": "510050", 
             "chainSymbol": "510050-1803", 
