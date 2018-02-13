@@ -45,7 +45,7 @@ with open("WEB_setting.json") as f:
 
 
 # 创建Flask对象
-from flask import Flask
+from flask import Flask, send_file
 from flask.ext.restful import Api, Resource, reqparse
 from flask.ext.socketio import SocketIO
 from flask_cors import *
@@ -593,6 +593,12 @@ class CtaStrategyVar(Resource):
         l = engine.getStrategyVar(name)
         return {'result_code':'success','data':l}
 
+      
+########################################################################
+@app.route('/')
+def index_html():
+    """首页"""
+    return send_file( os.path.abspath('.') + '/web/index.html' )
 
 # 注册资源
 api.add_resource(Token, '/token')
