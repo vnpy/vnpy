@@ -86,7 +86,13 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
     start = time()
     
     code, exchange = vtSymbol.split('.')
-    cl = db[code]
+
+    # 对于期货合约的vtSymbol没有交易所后缀
+    if exchange in ['SSE', 'SZSE']:
+        cl = db[vtSymbol]
+    else:
+        cl = db[code]
+
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
     
     dt = datetime.strptime(startDate, '%Y%m%d')
