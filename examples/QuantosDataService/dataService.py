@@ -84,8 +84,9 @@ def generateVtBar(row):
 def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
     """下载某一合约的分钟线数据"""
     start = time()
-
-    cl = db[vtSymbol]
+    
+    code, exchange = vtSymbol.split('.')
+    cl = db[code]
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
     
     dt = datetime.strptime(startDate, '%Y%m%d')
@@ -96,7 +97,6 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
         end = datetime.now()
     delta = timedelta(1)
     
-    code, exchange = vtSymbol.split('.')
     symbol = '.'.join([code, exchangeMap[exchange]]) 
     
     while dt <= end:
