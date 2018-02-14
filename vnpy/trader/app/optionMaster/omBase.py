@@ -4,6 +4,7 @@ from __future__ import division
 
 from copy import copy
 from collections import OrderedDict
+from math import log1p
 
 from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtTickData
@@ -15,8 +16,12 @@ from .omDate import getTimeToMaturity
 CALL = 1
 PUT = -1
 
+OM_DB_NAME = 'VnTrader_OptionMaster_Db'
+
 # 事件定义
 EVENT_OM_LOG = 'eOmLog'
+EVENT_OM_STRATEGY = 'eOmStrategy.'
+EVENT_OM_STRATEGYLOG = 'eOmStrategyLog'
 
 
 ########################################################################
@@ -113,6 +118,9 @@ class OmUnderlying(OmInstrument):
         """Constructor"""
         super(OmUnderlying, self).__init__(contract, detail)
         
+        # 标的类型
+        self.productClass = contract.productClass
+        
         # 以该合约为标的物的期权链字典
         self.chainDict = OrderedDict()
         
@@ -202,13 +210,18 @@ class OmOption(OmInstrument):
     def calculateOptionImpv(self):
         """计算隐含波动率"""
         underlyingPrice = self.underlying.midPrice
-        if not underlyingPrice:
+        if not underlyingPrice or not self.t:
             return        
         
         self.askImpv = self.calculateImpv(self.askPrice1, underlyingPrice, self.k,
                                           self.r, self.t, self.cp)
+        if self.askImpv > 1:        # 正常情况下波动率不应该超过100%
+            self.askImpv = 0.01     # 若超过则大概率为溢出，调整为1%
+            
         self.bidImpv = self.calculateImpv(self.bidPrice1, underlyingPrice, self.k,
                                           self.r, self.t, self.cp)        
+        if self.bidImpv > 1:
+            self.bidImpv = 0.01
         self.midImpv = (self.askImpv + self.bidImpv) / 2
     
     #----------------------------------------------------------------------
@@ -262,7 +275,12 @@ class OmOption(OmInstrument):
     def setUnderlying(self, underlying):
         """设置标的物对象"""
         self.underlying = underlying
-        
+    
+    #----------------------------------------------------------------------
+    def setR(self, r):
+        """设置折现率"""
+        self.r = r
+ 
 
 ########################################################################
 class OmChain(object):
@@ -366,6 +384,41 @@ class OmChain(object):
         self.posGamma = self.posGamma - oldPosGamma + option.posGamma
         self.posTheta = self.posTheta - oldPosTheta + option.posTheta
         self.posVega = self.posVega - oldPosVega + option.posVega
+    
+    #----------------------------------------------------------------------
+    def adjustR(self):
+        """调整折现率（r）"""
+        l = []
+        callList = self.callDict.values()
+        putList = self.putDict.values()
+        
+        # 通过计算期权链所有PCP的平价利率
+        for n, call in enumerate(callList):
+            put = putList[n]
+            
+            # 如果标的为期货，则不进行调整
+            if call.underlying.productClass == PRODUCT_FUTURES:
+                return
+            
+            # 如果有任意中间价为0，则忽略该PCP
+            if (not call.underlying.midPrice or
+                not put.midPrice or 
+                not call.midPrice or
+                not call.k or
+                not call.t):
+                continue
+            
+            temp = (call.underlying.midPrice + put.midPrice - call.midPrice) / call.k
+            r = log1p(temp-1) / (-call.t)
+            l.append(r)
+        
+        # 求平均值来计算拟合折现率
+        if not l:
+            return
+        
+        self.r = sum(l)/len(l)
+        for option in self.optionDict.values():
+            option.setR(r)
 
 
 ########################################################################
@@ -461,3 +514,10 @@ class OmPortfolio(object):
             underlying = self.underlyingDict[symbol]
             underlying.newTrade(trade)
             self.calculatePosGreeks()
+    
+    #----------------------------------------------------------------------
+    def adjustR(self):
+        """调整折现率"""
+        for chain in self.chainDict.values():
+            chain.adjustR()
+        

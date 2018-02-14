@@ -406,9 +406,13 @@ class BasicMonitor(QtWidgets.QTableWidget):
         """初始化右键菜单"""
         self.menu = QtWidgets.QMenu(self)    
         
+        resizeAction = QtWidgets.QAction(vtText.RESIZE_COLUMNS, self)
+        resizeAction.triggered.connect(self.resizeColumns)        
+        
         saveAction = QtWidgets.QAction(vtText.SAVE_DATA, self)
         saveAction.triggered.connect(self.saveToCsv)
         
+        self.menu.addAction(resizeAction)
         self.menu.addAction(saveAction)
         
     #----------------------------------------------------------------------

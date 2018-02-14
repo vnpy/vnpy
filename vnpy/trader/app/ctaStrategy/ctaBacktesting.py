@@ -779,6 +779,7 @@ class BacktestingEngine(object):
         d['profitLossRatio'] = profitLossRatio
         d['posList'] = posList
         d['tradeTimeList'] = tradeTimeList
+        d['resultList'] = resultList
         
         return d
         

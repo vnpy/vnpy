@@ -336,7 +336,7 @@ def test():
     """测试函数"""
     import sys
     from datetime import datetime
-    from PyQt4.QtCore import QCoreApplication
+    from qtpy.QtCore import QCoreApplication
     
     def simpletest(event):
         print(u'处理每秒触发的计时器事件：{}'.format(str(datetime.now())))
