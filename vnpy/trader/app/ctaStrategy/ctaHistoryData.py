@@ -7,6 +7,7 @@
 3. 增加从通达信导出的历史数据载入到MongoDB中的函数
 """
 
+import csv
 from datetime import datetime, timedelta
 from time import time
 
@@ -208,10 +209,10 @@ def loadTdxCsv(fileName, dbName, symbol):
         print bar.date, bar.time
     
     print u'插入完毕，耗时：%s' % (time()-start)
+
+#----------------------------------------------------------------------
 def loadOKEXCsv(fileName, dbName, symbol):
     """将OKEX导出的csv格式的历史分钟数据插入到Mongo数据库中"""
-    import csv
-
     start = time()
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
 

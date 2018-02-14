@@ -454,6 +454,8 @@ class DataEngine(object):
     def processTradeEvent(self, event):
         """处理成交事件"""
         trade = event.dict_['data']
+        
+        self.tradeDict[trade.vtTradeID] = trade
     
         # 更新到持仓细节中
         detail = self.getPositionDetail(trade.vtSymbol)
