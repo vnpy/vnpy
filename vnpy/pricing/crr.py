@@ -46,7 +46,7 @@ def generateTree(f, k, r, t, v, cp, n):
     dt = t / n 
     u = exp(v * sqrt(dt))
     d = 1 / u
-    a = exp(r * dt)
+    a = 1                       # 针对期货期权a应当设为1
     uTree = np.zeros((n+1,n+1))
     oTree = np.zeros((n+1,n+1))
 
@@ -139,9 +139,9 @@ def calculateImpv(price, f, k, r, t, cp, n=15):
     # 检查期权价格是否满足最小价值（即到期行权价值）
     meet = False
     
-    if cp == 1 and (price > (f - k) * exp(-r * t)):
+    if cp == 1 and (price > f - k):
         meet = True
-    elif cp == -1 and (price > k * exp(-r * t) - f):
+    elif cp == -1 and (price > k - f):
         meet = True
     
     # 若不满足最小价值，则直接返回0

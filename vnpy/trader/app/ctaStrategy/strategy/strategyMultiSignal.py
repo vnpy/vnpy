@@ -216,6 +216,8 @@ class MultiSignalStrategy(TargetPosTemplate):
         self.cciSignal.onTick(tick)
         self.maSignal.onTick(tick)
         
+        self.calculateTargetPos()
+        
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
@@ -225,6 +227,11 @@ class MultiSignalStrategy(TargetPosTemplate):
         self.cciSignal.onBar(bar)
         self.maSignal.onBar(bar)
         
+        self.calculateTargetPos()
+        
+    #----------------------------------------------------------------------
+    def calculateTargetPos(self):
+        """计算目标仓位"""
         self.signalPos['rsi'] = self.rsiSignal.getSignalPos()
         self.signalPos['cci'] = self.cciSignal.getSignalPos()
         self.signalPos['ma'] = self.maSignal.getSignalPos()

@@ -1,0 +1,172 @@
+html {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
+
+.body-left .el-row,
+.body-left button,
+.el-col {
+    margin-bottom: 8px;
+}
+
+.el-main {
+    padding: 0px;
+}
+
+.el-button+.el-button {
+    margin-left: 0px;
+}
+
+.body-left__btn {
+    display: flex;
+    display: -webkit-flex;
+    justify-content: center;
+    -webkit-justify-content: center;
+    margin-top: 32px;
+}
+
+.el-table th {
+    background-color: #F5F5F5;
+    padding: 6px 0px;
+}
+
+html,
+.body {
+    height: 100%;
+    overflow: hidden;
+}
+
+.body-left__connection {
+    font-size: 12px;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 330px;
+    background-color: #f5f5f5;
+    padding: 10px 8px;
+    border-top: 1px solid #bdbdbd;
+    color: #909399;
+}
+
+.body-left__connection p {
+    display: inline;
+    color: #F56C6C;
+}
+
+.el-tabs {
+    margin-top: -1px;
+    z-index: 2;
+}
+
+.el-tabs--card>.el-tabs__header .el-tabs__nav {
+    border-radius: 0px;
+}
+
+.el-tabs--card>.el-tabs__header .el-tabs__item.is-active {
+    border-bottom: 2px solid #409eff;
+    transition: all 0.5s ease-in-out;
+    /*background-color: rgba(64, 158, 255, 1);
+    color: white;*/
+}
+
+.el-input {
+    width: 130px;
+}
+
+.el-tabs__header {
+    margin-bottom: 0px !important;
+}
+
+.el-table__fixed,
+.el-table__fixed-right {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.el-table .caret-wrapper {
+    width: 4px;
+}
+
+.el-table {
+    font-size: 12px;
+}
+
+.el-table .cell,
+.el-table th div,
+.el-table--border td:first-child .cell,
+.el-table--border th:first-child .cell {
+    padding-left: 0px;
+    text-align: center;
+}
+
+.el-table th>.cell {
+    text-align: center;
+}
+
+.el-form-item__label {
+    line-height: 20px;
+}
+
+.el-form-item__label,
+.el-form p {
+    display: inline;
+    font-size: 14px;
+    color: #606266;
+}
+
+.el-input--suffix .el-input__inner {
+    padding-right: 0px;
+}
+
+.el-input-number .el-input__inner {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.el-input-number {
+    width: 130px;
+}
+
+.el-table__row:hover {
+    cursor: pointer;
+}
+
+.el-input-group__append,
+.el-input-group__prepend {
+    padding: 0 8px;
+    font-size: 10px;
+}
+
+.leftTrade {
+    width: 320px;
+    overflow-y: scroll;
+}
+
+.cta-frame{
+    height: 60%;
+    border:1px solid #ebeef5;
+    padding:16px;
+}
+
+.cta-frame__top{
+    overflow-y: scroll;
+}
+
+.cta-frame__top_section{
+    padding:8px 12px;
+    /* background-color: #FAFAFA; */
+    margin-bottom:12px;
+    border:1px dashed #ebeef5;
+}
+
+.cta-frame__top .itemName{
+    color:#409EFF;
+    margin:12px 0px 24px 0px; 
+}
+
+.itemName +button{
+    margin-bottom: 24px;
+}
+
+.cta-frame__bottom{
+    height: 120px;
+}

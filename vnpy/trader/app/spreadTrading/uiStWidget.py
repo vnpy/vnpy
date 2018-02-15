@@ -141,7 +141,16 @@ class StBuyPriceSpinBox(QtWidgets.QDoubleSpinBox):
     def setPrice(self, value):
         """设置价格"""
         self.algoEngine.setAlgoBuyPrice(self.spreadName, value)
-    
+   
+    #----------------------------------------------------------------------
+    def algoActiveChanged(self, active):
+        """算法运行状态改变"""
+        # 只允许算法停止时修改运行模式
+        if active:
+            self.setEnabled(False)
+        else:
+            self.setEnabled(True)    
+
 
 ########################################################################
 class StSellPriceSpinBox(QtWidgets.QDoubleSpinBox):
@@ -165,6 +174,15 @@ class StSellPriceSpinBox(QtWidgets.QDoubleSpinBox):
     def setPrice(self, value):
         """设置价格"""
         self.algoEngine.setAlgoSellPrice(self.spreadName, value)
+    
+    #----------------------------------------------------------------------
+    def algoActiveChanged(self, active):
+        """算法运行状态改变"""
+        # 只允许算法停止时修改运行模式
+        if active:
+            self.setEnabled(False)
+        else:
+            self.setEnabled(True)
 
 
 ########################################################################
@@ -190,6 +208,15 @@ class StShortPriceSpinBox(QtWidgets.QDoubleSpinBox):
         """设置价格"""
         self.algoEngine.setAlgoShortPrice(self.spreadName, value)
 
+    #----------------------------------------------------------------------
+    def algoActiveChanged(self, active):
+        """算法运行状态改变"""
+        # 只允许算法停止时修改运行模式
+        if active:
+            self.setEnabled(False)
+        else:
+            self.setEnabled(True)
+
 
 ########################################################################
 class StCoverPriceSpinBox(QtWidgets.QDoubleSpinBox):
@@ -214,6 +241,15 @@ class StCoverPriceSpinBox(QtWidgets.QDoubleSpinBox):
         """设置价格"""
         self.algoEngine.setAlgoCoverPrice(self.spreadName, value)
     
+    #----------------------------------------------------------------------
+    def algoActiveChanged(self, active):
+        """算法运行状态改变"""
+        # 只允许算法停止时修改运行模式
+        if active:
+            self.setEnabled(False)
+        else:
+            self.setEnabled(True)    
+
 
 ########################################################################
 class StMaxPosSizeSpinBox(QtWidgets.QSpinBox):
@@ -237,7 +273,16 @@ class StMaxPosSizeSpinBox(QtWidgets.QSpinBox):
         """设置价格"""
         self.algoEngine.setAlgoMaxPosSize(self.spreadName, size)
 
-
+    #----------------------------------------------------------------------
+    def algoActiveChanged(self, active):
+        """算法运行状态改变"""
+        # 只允许算法停止时修改运行模式
+        if active:
+            self.setEnabled(False)
+        else:
+            self.setEnabled(True)
+            
+            
 ########################################################################
 class StMaxOrderSizeSpinBox(QtWidgets.QSpinBox):
     """"""
@@ -259,6 +304,15 @@ class StMaxOrderSizeSpinBox(QtWidgets.QSpinBox):
     def setSize(self, size):
         """设置价格"""
         self.algoEngine.setAlgoMaxOrderSize(self.spreadName, size)    
+
+    #----------------------------------------------------------------------
+    def algoActiveChanged(self, active):
+        """算法运行状态改变"""
+        # 只允许算法停止时修改运行模式
+        if active:
+            self.setEnabled(False)
+        else:
+            self.setEnabled(True)
 
 
 ########################################################################
@@ -422,6 +476,12 @@ class StAlgoManager(QtWidgets.QTableWidget):
             self.setCellWidget(row, 8, comboMode)
             self.setCellWidget(row, 9, buttonActive)
             
+            buttonActive.signalActive.connect(spinBuyPrice.algoActiveChanged)
+            buttonActive.signalActive.connect(spinSellPrice.algoActiveChanged)
+            buttonActive.signalActive.connect(spinShortPrice.algoActiveChanged)
+            buttonActive.signalActive.connect(spinCoverPrice.algoActiveChanged)
+            buttonActive.signalActive.connect(spinMaxOrderSize.algoActiveChanged)
+            buttonActive.signalActive.connect(spinMaxPosSize.algoActiveChanged)
             buttonActive.signalActive.connect(comboMode.algoActiveChanged)
             
             self.buttonActiveDict[d['spreadName']] = buttonActive
