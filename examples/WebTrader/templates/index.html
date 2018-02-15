@@ -98,7 +98,7 @@
                             <el-row class="body-left__btn">
                                 <div class="el-col el-col-18">
                                     <el-button class="el-col el-col-24" type="primary" @click="onSubmit" v-loading="loading.order">发单</el-button>
-                                    <el-button class="el-col el-col-24">全撤</el-button>
+                                    <el-button class="el-col el-col-24" @click="dAllOrder">全撤</el-button>
                                     <el-button class="el-col el-col-24" v-loading="loading.token" @click="gGateway">连接CTP</el-button>
                                 </div>
                             </el-row>
@@ -115,8 +115,8 @@
                                         <el-table :data="eTick" :height="table_height" @cell-click="clickTick" border style="width: 100%">
                                             <el-table-column sortable fixed prop="symbol" width="80" label="合约代码">
                                             </el-table-column>
-                                            <el-table-column sortable prop="available" label="名称">
-                                            </el-table-column>
+                                            <!--<el-table-column sortable prop="available" label="名称">
+                                            </el-table-column>-->
                                             <el-table-column sortable prop="lastPrice" label="最新价">
                                             </el-table-column>
                                             <el-table-column sortable prop="preClosePrice" label="昨收盘">
@@ -153,8 +153,8 @@
                                             </el-table-column>
                                             <el-table-column sortable width="80" prop="symbol" label="合约代码">
                                             </el-table-column>
-                                            <el-table-column sortable width="80" prop="name" label="名称">
-                                            </el-table-column>
+                                            <!--<el-table-column sortable width="80" prop="name" label="名称">
+                                            </el-table-column>-->
                                             <el-table-column sortable width="80" prop="direction" label="方向">
                                             </el-table-column>
                                             <el-table-column sortable width="80" prop="offset" label="开平">
@@ -189,8 +189,8 @@
                                                             </el-table-column>
                                                             <el-table-column sortable width="80" prop="symbol" label="合约代码">
                                                             </el-table-column>
-                                                            <el-table-column sortable width="80" prop="askPrice3" label="名称">
-                                                            </el-table-column>
+                                                            <!--<el-table-column sortable width="80" prop="askPrice3" label="名称">
+                                                            </el-table-column>-->
                                                             <el-table-column sortable width="80" prop="direction" label="方向">
                                                             </el-table-column>
                                                             <el-table-column sortable width="80" prop="offset" label="开平">
@@ -237,8 +237,8 @@
                                                         <el-table :data="position" :height="table_height" border style="width: 100%">
                                                             <el-table-column fixed sortable prop="symbol" width="80" label="合约代码">
                                                             </el-table-column>
-                                                            <el-table-column sortable width="80" prop="" label="名称">
-                                                            </el-table-column>
+                                                            <!--<el-table-column sortable width="80" prop="" label="名称">
+                                                            </el-table-column>-->
                                                             <el-table-column sortable width="80" prop="direction" label="方向">
                                                             </el-table-column>
                                                             <el-table-column sortable width="80" prop="position" label="持仓">
@@ -344,7 +344,7 @@
                                 <el-table :data="ctaLog" height="200" border style="width: 100%">
                                     <el-table-column fixed width="120" sortable prop="logTime" label="时间">
                                     </el-table-column>
-                                    <el-table-column sortable prop="logContent" label="内容">
+                                    <el-table-column prop="logContent" label="内容">
                                     </el-table-column>
                                     </el-table-column>
                                 </el-table>
@@ -362,9 +362,15 @@
 <!-- 引入组件库 -->
 <script src="https://cdn.bootcss.com/element-ui/2.1.0/index.js"></script>
 <script>
-var host = "http://127.0.0.1:5000"
+var host = window.location;
 var socket = io.connect(host + "", { transports: ['websocket'] });
 var _strategy = new Object()
+function sortTime(a, b) {
+    return b.logTime.replace(/:/g,"") - a.logTime.replace(/:/g,"")
+}
+function sortVtOrderID(a, b) {
+    return parseInt(b.match(/[0-9]*/g).join("")) - parseInt(a.match(/[0-9]*/g).join(""))
+}
 new Vue({
     el: '#app',
     data: function() {
@@ -400,6 +406,7 @@ new Vue({
             log: [], //日志
             position: [], //持仓
             order: [], //委托
+            orderObj: {}, //委托对象
             trade: [], //成交
             account: [], //资金
             error: [], //错误
@@ -450,6 +457,7 @@ new Vue({
                         that.onLoadInfo('account', 'account')
                         that.onLoadInfo('trades', 'trade')
                         that.onLoadInfo('position', 'position')
+                        that.onLoadInfo('order', 'order')
                         that.onLoadInfo('log', 'log')
                         that.onLoadInfo('error', 'error')
                     } else {
@@ -465,9 +473,12 @@ new Vue({
         doAction(e, type) {
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
@@ -507,9 +518,12 @@ new Vue({
         doOnLoad() {
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
@@ -537,9 +551,12 @@ new Vue({
         gVar(name) {
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
@@ -573,18 +590,24 @@ new Vue({
         gCtaLog() {
             let that = this,
                 logObj = new Object();
+
             socket.on("eCtaLog", function(data) {
                 logObj[data.logTime] = data
-                that.ctaLog = that.ctaLog.concat(Object.values(logObj)).reverse()
+                let dataArr = that.ctaLog.concat(Object.values(logObj));
+                dataArr.sort(sortTime)
+                that.ctaLog = dataArr;
             });
         },
 
         gParams(name) {
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
@@ -632,7 +655,20 @@ new Vue({
                 axios.get(host + "/" + apiName + "?token=" + token)
                     .then(res => {
                         if (res.data.result_code == "success") {
-                            that[dataArr] = that[dataArr].concat(res.data.data).reverse()
+                            if (apiName == "order") {
+                                res.data.data.forEach((item)=>{
+                                    item["_vtOrderID"] = item.vtOrderID.replace(/\./g,"")
+                                    that.orderObj[item._vtOrderID] = item;
+                                })
+                                sorted_order_list = Object.keys( that.orderObj ).sort( sortVtOrderID );
+                                for(i in sorted_order_list){
+                                    that.order.push( that.orderObj[sorted_order_list[i]] );
+                                }
+                            }
+                            else{
+                                that[dataArr] = that[dataArr].concat(res.data.data).reverse()
+                            }
+
                         } else {
                             that.$notify({ title: '警告', message: '服务异常，获取信息失败1', type: 'warning', duration: 3000, });
                         }
@@ -643,14 +679,43 @@ new Vue({
             }
         },
         onSubmit(e) {
-            this.loading.order = true;
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
                 return;
             }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.form.vtSymbol == "") {
+                this.$alert('请填写代码！', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            if (this.form.lastPrice == "") {
+                this.$alert('请填写价格！', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            if (this.form.volume == "") {
+                this.$alert('请填写数量！', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            if (this.form.priceType == "") {
+                this.$alert('请选择价格类型！', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            if (this.form.direction == "") {
+                this.$alert('请选择方向类型！', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            if (this.form.offset == "") {
+                this.$alert('请选择开平！', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            this.loading.order = true;
 
             const that = this;
             axios.post(host + '/order', {
@@ -677,13 +742,16 @@ new Vue({
         },
         onSubscribe(target) {
 
-
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
                 return;
             }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
             const that = this;
             if (typeof(target) !== "object") {
                 var _vtSymbol = target
@@ -723,13 +791,42 @@ new Vue({
         dOrder(e) {
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            console.log(e.vtOrderID);
             let vtOrderID = e.vtOrderID,
+                that = this;
+            axios.delete(host + "/order?vtOrderID=" + vtOrderID + "&token=" + this.config.token)
+                .then(res => {
+                    if (res.data.result_code == "success") {
+                        that.$message({ message: '撤单已提交', type: 'success' });
+                    } else {
+                        that.$notify({ title: '警告', message: '服务异常，撤单提交失败', type: 'warning', duration: 2000, });
+                    }
+                })
+                .catch(res => {
+                    that.$notify({ title: '警告', message: '服务异常，撤单提交失败', type: 'warning', duration: 2000, });
+                })
+        },
+        dAllOrder(e) {
+
+            if (this.config.token == undefined || this.config.token == "") {
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+            console.log(e.vtOrderID);
+            let vtOrderID = "",
                 that = this;
             axios.delete(host + "/order?vtOrderID=" + vtOrderID + "&token=" + this.config.token)
                 .then(res => {
@@ -759,9 +856,12 @@ new Vue({
         judgeIfStrategy() {
 
             if (this.config.token == undefined || this.config.token == "") {
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
@@ -783,9 +883,13 @@ new Vue({
 
             if (this.config.token == undefined || this.config.token == "") {
                 this.loading.contract = false;
-                this.$alert('请先连接CTP', '警告', {
-                    confirmButtonText: '确定',
-                });
+                this.$alert('请先登录', '警告', {confirmButtonText: '确定',});
+                return;
+            }
+
+            if (this.config.gateway == undefined || this.config.gateway == "") {
+                this.loading.contract = false;
+                this.$alert('请先连接CTP', '警告', {confirmButtonText: '确定',});
                 return;
             }
 
@@ -813,6 +917,7 @@ new Vue({
                     gatewayName: 'CTP'
                 })
                 .then(function(res) {
+                    that.config.gateway = true;
                     that.$message({ message: '已连接CTP', type: 'success' });
                 })
                 .catch(function(err) {
@@ -824,7 +929,7 @@ new Vue({
                 tick = new Object(),
                 tickObj = new Object();
             socket.on("eTick.", function(data) {
-                tick[data.symbol] = data
+                tick[data.vtSymbol] = data
                 that.tickObj = tick
                 that.eTick = Object.values(tick).reverse()
             });
@@ -857,15 +962,24 @@ new Vue({
             let that = this,
                 orderObj = new Object();
             socket.on("eOrder.", function(data) {
-                orderObj[data.orderID] = data
-                that.order = Object.values(orderObj).reverse()
+                console.log( data );
+                data["_vtOrderID"] = data.vtOrderID.replace(/\./g,"")
+                that.orderObj[data._vtOrderID] = data;
+                sorted_order_list = Object.keys( that.orderObj ).sort( sortVtOrderID );
+                console.log( sorted_order_list );
+                order_tmp = []
+                for(i in sorted_order_list){
+                    order_tmp.push( that.orderObj[sorted_order_list[i]] );
+                }
+                that.order = order_tmp
+                console.log( that.order )
             });
         },
         gAccount() {
             let that = this,
                 accounts = new Object();
             socket.on("eAccount.", function(data) {
-                accounts[data.orderID] = data
+                accounts[data.vtAccountID] = data
                 that.account = Object.values(accounts).reverse()
             });
         },
@@ -881,7 +995,7 @@ new Vue({
             let that = this,
                 trades = new Object();
             socket.on("eTrade.", function(data) {
-                trades[data.orderID] = data
+                trades[data.vtOrderID] = data
                 that.trade = that.trade.concat(Object.values(trades)).reverse()
             });
         },
@@ -897,7 +1011,7 @@ new Vue({
         gLog() {
             let that = this,
                 logObj = new Object();
-            socket.on("eLog.", function(data) {
+            socket.on("eLog", function(data) {
                 logObj[data.logTime] = data
                 that.log = that.log.concat(Object.values(logObj)).reverse()
             });
