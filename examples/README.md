@@ -6,6 +6,8 @@
 
 * OptionMaster: 期权量化交易系统
 
+* WebTrader：使用Web前端作为监控的交易系统
+
 * DataRecording：全自动行情记录工具（无需用户每日定时重启）
 
 * CtaTrading：无图形界面模式的CTA策略交易
