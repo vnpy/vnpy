@@ -1,7 +1,7 @@
 # By Traders, For Traders.
 
 
-![vn.py_logo](http://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_logo.png)
+![vn.py-logo](http://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png)
 
 ---
 
