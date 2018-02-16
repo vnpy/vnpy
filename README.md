@@ -37,6 +37,8 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
     - OANDA（oanda）
 
+    - 福汇（fxcm）
+
     - OKCOIN（okcoin）
 
     - 火币（huobi）

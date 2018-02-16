@@ -1053,9 +1053,9 @@ class PositionDetail(object):
                 if ydAvailable > 0:
                     reqClose = copy(req)
                     if self.exchange is EXCHANGE_SHFE:
-                        req.offset = OFFSET_CLOSEYESTERDAY
+                        reqClose.offset = OFFSET_CLOSEYESTERDAY
                     else:
-                        req.offset = OFFSET_CLOSE
+                        reqClose.offset = OFFSET_CLOSE
                     reqClose.volume = ydAvailable
                     
                     l.append(reqClose)
