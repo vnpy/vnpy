@@ -1,5 +1,7 @@
 # WebTrader使用说明
 
+**开发作者：cccbbbaaab**
+
 ## 使用步骤
 
 1. 修改CTP_connect.json中的账号和服务器地址

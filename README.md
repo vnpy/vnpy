@@ -1,5 +1,7 @@
-# vn.py - By Traders, For Traders.
+# By Traders, For Traders.
 
+
+![Logo](http://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy_logo.png)
 
 ---
 
