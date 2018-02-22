@@ -112,7 +112,7 @@ def calculateImpv(price, f, k, r, t, cp):
     
     if cp == 1 and (price > (f - k) * exp(-r * t)):
         meet = True
-    elif cp == -1 and (price > k * exp(-r * t) - f):
+    elif cp == -1 and (price > k - f):
         meet = True
     
     # 若不满足最小价值，则直接返回0

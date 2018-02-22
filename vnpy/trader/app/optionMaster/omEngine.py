@@ -17,7 +17,7 @@ from vnpy.trader.vtConstant import (PRODUCT_OPTION, OPTION_CALL, OPTION_PUT,
                                     DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE,
                                     PRICETYPE_LIMITPRICE)
-from vnpy.pricing import black, bs, crr
+from vnpy.pricing import black, bs, crr, bsCython
 
 from .omBase import (OmOption, OmUnderlying, OmChain, OmPortfolio,
                      EVENT_OM_LOG, EVENT_OM_STRATEGY, EVENT_OM_STRATEGYLOG,
@@ -31,6 +31,7 @@ MODEL_DICT = {}
 MODEL_DICT['black'] = black
 MODEL_DICT['bs'] = bs
 MODEL_DICT['crr'] = crr
+MODEL_DICT['bsCython'] = bsCython
 
 
 
@@ -104,8 +105,9 @@ class OmEngine(object):
         if self.portfolio:
             return False
         
-        f = file(fileName)
+        f = open(fileName)
         setting = json.load(f)
+        f.close()
         
         # 读取定价模型
         model = MODEL_DICT.get(setting['model'], None)
@@ -222,7 +224,16 @@ class OmEngine(object):
         
         event = Event(EVENT_OM_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)     
+        self.eventEngine.put(event)    
+        
+    #----------------------------------------------------------------------
+    def adjustR(self):
+        """调整折现率"""
+        if self.portfolio:
+            self.portfolio.adjustR()
+            
+        for chain in self.portfolio.chainDict.values():
+            self.writeLog(u'期权链%s的折现率r拟合为%.3f' %(chain.symbol, chain.r))
 
 
 ########################################################################

@@ -266,6 +266,9 @@ class CtaEngine(object):
     def processTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
+        
+        tick = copy(tick)
+        
         # 收到tick行情后，先处理本地停止单（检查是否要立即发出）
         self.processStopOrder(tick)
         
@@ -555,12 +558,27 @@ class CtaEngine(object):
         else:
             self.writeCtaLog(u'策略实例不存在：' + name)    
             return None
+    
+    #----------------------------------------------------------------------
+    def getStrategyNames(self):
+        """查询所有策略名称"""
+        return self.strategyDict.keys()        
         
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
+        strategy = self.strategyDict[name]
+        d = {k:strategy.__getattribute__(k) for k in strategy.varList}
+        
         event = Event(EVENT_CTA_STRATEGY+name)
+        event.dict_['data'] = d
         self.eventEngine.put(event)
+        
+        d2 = {k:str(v) for k,v in d.items()}
+        d2['name'] = name
+        event2 = Event(EVENT_CTA_STRATEGY)
+        event2.dict_['data'] = d2
+        self.eventEngine.put(event2)        
         
     #----------------------------------------------------------------------
     def callStrategyFunc(self, strategy, func, params=None):

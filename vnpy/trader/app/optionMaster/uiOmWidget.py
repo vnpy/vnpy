@@ -42,7 +42,7 @@ class OmManager(QtWidgets.QWidget):
         # 读取配置文件
         settingFileList = []
         
-        path = os.path.abspath(os.path.dirname(__file__))
+        path = os.getcwd()
         for root, subdirs, files in os.walk(path):
             for name in files:      
                 if '_portfolio.json' in name:
@@ -80,6 +80,10 @@ class OmManager(QtWidgets.QWidget):
         self.buttonStrategyManager.clicked.connect(self.openStrategyManager)
         self.buttonStrategyManager.setDisabled(True)        
         
+        self.buttonAdjustR = QtWidgets.QPushButton(u'拟合利率')
+        self.buttonAdjustR.clicked.connect(self.omEngine.adjustR)
+        self.buttonAdjustR.setDisabled(True)        
+        
         self.logMonitor = QtWidgets.QTextEdit()
         self.logMonitor.setReadOnly(True)
         
@@ -92,6 +96,7 @@ class OmManager(QtWidgets.QWidget):
         hbox.addWidget(self.buttonVolatilityManager)
         hbox.addWidget(self.buttonAnalysisManager)
         hbox.addWidget(self.buttonStrategyManager)
+        hbox.addWidget(self.buttonAdjustR)
         hbox.addStretch()
         
         hbox2 = QtWidgets.QHBoxLayout()
@@ -107,7 +112,7 @@ class OmManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def initOmEngine(self):
         """初始化引擎"""
-        path = os.path.abspath(os.path.dirname(__file__))
+        path = os.getcwd()
         fileName = unicode(self.comboSettingFile.currentText())
         fileName = os.path.join(path, fileName)
         result = self.omEngine.initEngine(fileName)
@@ -130,6 +135,7 @@ class OmManager(QtWidgets.QWidget):
         self.buttonVolatilityManager.setEnabled(True)
         self.buttonAnalysisManager.setEnabled(True)
         self.buttonStrategyManager.setEnabled(True)
+        self.buttonAdjustR.setEnabled(True)
         
     #----------------------------------------------------------------------
     def writeLog(self, content, time=''):
