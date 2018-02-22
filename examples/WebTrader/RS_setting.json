@@ -1,0 +1,4 @@
+{
+    "repAddress": "tcp://*:6688", 
+    "pubAddress": "tcp://*:8866"
+}

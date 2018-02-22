@@ -12,7 +12,7 @@ from datetime import datetime
 from copy import copy
 
 import futuquant as ft
-from futuquant.open_context import (RET_ERROR, RET_OK,
+from futuquant.open_context import (RET_ERROR, RET_OK, PriceRegularMode,
                                     StockQuoteHandlerBase, OrderBookHandlerBase,
                                     USTradeOrderHandlerBase, USTradeDealHandlerBase,
                                     HKTradeOrderHandlerBase, HKTradeDealHandlerBase)
@@ -241,10 +241,17 @@ class FutuGateway(VtGateway):
         side = directionMap[orderReq.direction]
         priceType = 0       # 只支持限价单
         
+        # 设置价格调整模式为向内调整（即买入调整后价格比原始价格低）
+        if orderReq.direction ==  DIRECTION_LONG:
+            priceMode = PriceRegularMode.LOWER
+        else:
+            priceMode = PriceRegularMode.UPPER
+        
         code, data = self.tradeCtx.place_order(orderReq.price, orderReq.volume, 
                                                orderReq.symbol, side, 
                                                priceType, self.env,
-                                               order_deal_push=True)
+                                               order_deal_push=True,
+                                               price_mode=priceMode)
         
         if code:
             self.writeError(code, u'委托失败：%s' %data)
@@ -439,6 +446,11 @@ class FutuGateway(VtGateway):
             
             tick.lastPrice = row['last_price']
             tick.volume = row['volume']
+            
+            if 'price_spread' in row:
+                spread = row['price_spread']
+                tick.upperLimit = tick.lastPrice + spread * 10
+                tick.lowerLimit = tick.lastPrice - spread * 10
             
             newTick = copy(tick)
             self.onTick(newTick)

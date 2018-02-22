@@ -5,8 +5,7 @@
 
 注意事项：
 1. 作者不对交易盈利做任何保证，策略代码仅供参考
-2. 本策略需要用到talib，没有安装的用户请先参考www.vnpy.org上的教程安装
-3. 将IF0000_1min.csv用ctaHistoryData.py导入MongoDB后，直接运行本文件即可回测策略
+2. 将IF0000_1min.csv用ctaHistoryData.py导入MongoDB后，直接运行本文件即可回测策略
 
 """
 

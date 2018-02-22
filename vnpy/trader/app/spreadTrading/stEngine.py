@@ -239,7 +239,6 @@ class StDataEngine(object):
         event2.dict_['data'] = spread
         self.eventEngine.put(event2)         
         
-    
     #----------------------------------------------------------------------
     def registerEvent(self):
         """"""
@@ -308,6 +307,10 @@ class StAlgoEngine(object):
     def processSpreadTickEvent(self, event):
         """处理价差行情事件"""
         spread = event.dict_['data']
+        
+        # 若价差的买卖价均为0，则意味着尚未初始化，直接返回
+        if not spread.bidPrice and not spread.askPrice:
+            return
         
         algo = self.algoDict.get(spread.name, None)
         if algo:
