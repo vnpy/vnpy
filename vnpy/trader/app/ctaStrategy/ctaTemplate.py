@@ -284,11 +284,11 @@ class TargetPosTemplate(CtaTemplate):
             if posChange > 0:
                 longPrice = self.lastTick.askPrice1 + self.tickAdd
                 if tick.upperLimit:
-                    longPrice = min(longPrice, tick.upperLimit)         # 涨停价检查
+                    longPrice = min(longPrice, self.lastTick.upperLimit)         # 涨停价检查
             else:
                 shortPrice = self.lastTick.bidPrice1 - self.tickAdd
                 if tick.lowerLimit:
-                    shortPrice = max(shortPrice, tick.lowerLimit)       # 跌停价检查
+                    shortPrice = max(shortPrice, self.lastTick.lowerLimit)       # 跌停价检查
         else:
             if posChange > 0:
                 longPrice = self.lastBar.close + self.tickAdd
