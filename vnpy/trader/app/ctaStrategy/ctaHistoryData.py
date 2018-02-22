@@ -2,9 +2,10 @@
 
 """
 本模块中主要包含：
-1. 从通联数据下载历史行情的引擎
-2. 用来把MultiCharts导出的历史数据载入到MongoDB中用的函数
-3. 增加从通达信导出的历史数据载入到MongoDB中的函数
+1. 将MultiCharts导出的历史数据载入到MongoDB中用的函数
+2. 将通达信导出的历史数据载入到MongoDB中的函数
+3. 将交易开拓者导出的历史数据载入到MongoDB中的函数
+4. 将OKEX下载的历史数据载入到MongoDB中的函数
 """
 
 import csv

@@ -872,7 +872,8 @@ class BacktestingEngine(object):
             self.output('setting: %s' %str(setting))
             self.initStrategy(strategyClass, setting)
             self.runBacktesting()
-            d = self.calculateBacktestingResult()
+            df = self.calculateDailyResult()
+            df, d = self.calculateDailyStatistics(df)            
             try:
                 targetValue = d[targetName]
             except KeyError:
