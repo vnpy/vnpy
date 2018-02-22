@@ -265,6 +265,11 @@ class MainEngine(object):
         self.dbInsert(LOG_DB_NAME, self.todayDate, d)
     
     #----------------------------------------------------------------------
+    def getTick(self, vtSymbol):
+        """查询行情"""
+        return self.dataEngine.getTick(vtSymbol)          
+    
+    #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
         """查询合约"""
         return self.dataEngine.getContract(vtSymbol)
@@ -395,6 +400,7 @@ class DataEngine(object):
         self.eventEngine = eventEngine
         
         # 保存数据的字典和列表
+        self.tickDict = {}
         self.contractDict = {}
         self.orderDict = {}
         self.workingOrderDict = {}  # 可撤销委托
@@ -417,6 +423,7 @@ class DataEngine(object):
     #----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
+        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
         self.eventEngine.register(EVENT_CONTRACT, self.processContractEvent)
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
@@ -424,6 +431,12 @@ class DataEngine(object):
         self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
         self.eventEngine.register(EVENT_LOG, self.processLogEvent)
         self.eventEngine.register(EVENT_ERROR, self.processErrorEvent)
+        
+    #----------------------------------------------------------------------
+    def processTickEvent(self, event):
+        """处理成交事件"""
+        tick = event.dict_['data']
+        self.tickDict[tick.vtSymbol] = tick    
     
     #----------------------------------------------------------------------
     def processContractEvent(self, event):
@@ -489,6 +502,14 @@ class DataEngine(object):
         """处理错误事件"""
         error = event.dict_['data']
         self.errorList.append(error)
+        
+    #----------------------------------------------------------------------
+    def getTick(self, vtSymbol):
+        """查询行情对象"""
+        try:
+            return self.tickDict[vtSymbol]
+        except KeyError:
+            return None        
     
     #----------------------------------------------------------------------
     def getContract(self, vtSymbol):
