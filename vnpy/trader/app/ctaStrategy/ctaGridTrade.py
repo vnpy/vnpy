@@ -794,11 +794,19 @@ class CtaGridTrade(object):
 
         # 更新开仓均价
         self.recount_avg_open_price()
-        path = os.path.abspath(os.path.dirname(__file__))
+
+        # 工作目录
+        currentFolder = os.path.abspath(os.path.join(os.getcwd(), u'data'))
+        if os.path.isdir(currentFolder):
+            # 如果工作目录下，存在data子目录，就使用data子目录
+            path = currentFolder
+        else:
+            # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), u'data'))
 
         # 保存上网格列表
         if direction == DIRECTION_SHORT:
-            jsonFileName = os.path.join(path, u'data', u'{0}_upGrids.json'.format(self.jsonName))
+            jsonFileName = os.path.join(path, u'{0}_upGrids.json'.format(self.jsonName))
 
             l = []
             for grid in self.upGrids:
@@ -812,7 +820,7 @@ class CtaGridTrade(object):
 
         # 保存上网格列表
         if direction == DIRECTION_LONG:
-            jsonFileName = os.path.join(path, u'data', u'{0}_dnGrids.json'.format(self.jsonName))
+            jsonFileName = os.path.join(path, u'{0}_dnGrids.json'.format(self.jsonName))
 
             l = []
             for grid in self.dnGrids:
@@ -832,13 +840,20 @@ class CtaGridTrade(object):
         :return: 
         """
 
-        path = os.path.abspath(os.path.dirname(__file__))
+        # 工作目录
+        currentFolder = os.path.abspath(os.path.join(os.getcwd(), u'data'))
+        if os.path.isdir(currentFolder):
+            # 如果工作目录下，存在data子目录，就使用data子目录
+            path = currentFolder
+        else:
+            # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), u'data'))
 
         if direction == DIRECTION_SHORT:
-            jsonFileName = os.path.join(path, u'data', u'{0}_upGrids.json'.format(self.jsonName))
+            jsonFileName = os.path.join(path, '{0}_upGrids.json'.format(self.jsonName))
             self.writeCtaLog(u'开始加载上网格文件{0}'.format(jsonFileName))
         if direction == DIRECTION_LONG:
-            jsonFileName = os.path.join(path, u'data', u'{0}_dnGrids.json'.format(self.jsonName))
+            jsonFileName = os.path.join(path, u'{0}_dnGrids.json'.format(self.jsonName))
             self.writeCtaLog(u'开始加载上网格文件{0}'.format(jsonFileName))
 
         if not os.path.isfile(jsonFileName):
