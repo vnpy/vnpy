@@ -46,7 +46,7 @@ option(BUILD_CTP_MD "build ctp md" ON)
 if (BUILD_CTP_MD)
   add_definitions(-DBUILD_CTP_MD)
   set(CTP_MD_PATH vnctpmd/vnctpmd)
-  include_directories(CTP_MD_PATH)
+  include_directories(${CTP_MD_PATH})
   set(VN_CTP_MD_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/vnctpmd/vnctpmd/vnctpmd.cpp)
   add_library(vnctpmd SHARED ${VN_CTP_MD_SOURCE})
 endif()
@@ -54,10 +54,11 @@ option(BUILD_CTP_TD "build ctp td" ON)
 if (BUILD_CTP_TD)
   add_definitions(-DBUILD_CTP_TD)
   set(CTP_TD_PATH vnctptd/vnctptd)
-  include_directories(CTP_TD_PATH)
+  include_directories(${CTP_TD_PATH})
   set(VN_CTP_TD_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/vnctptd/vnctptd/vnctptd.cpp)
   add_library(vnctptd SHARED ${VN_CTP_TD_SOURCE})  
 endif()
+
 
 # 设置Python所在的目录
 set(PYTHON_LIBRARY )
@@ -68,19 +69,22 @@ find_library(PYTHON_LIBRARY
   PATHS C:/Python27/libs)
 include_directories(${PYTHON_INCLUDE_PATH})
 else()
-set(PYTHON_INCLUDE_PATH /home/tensorflow/anaconda3/envs/py35/include)
+set(PYTHON_INCLUDE_PATH /home/tensorflow/anaconda3/envs/py35/include/python3.5m)
 find_library(PYTHON_LIBRARY
-  NAMES python35
-  PATHS /home/tensorflow/anaconda3/envs/py35/lib)
+  NAMES python3.5
+  PATHS /home/tensorflow/anaconda3/envs/py35/lib/)
 include_directories(${PYTHON_INCLUDE_PATH})
 endif()
+
+# hard code virtual environment
+set (PYTHON_LIBRARY /home/tensorflow/anaconda3/envs/py35/lib/libpython3.so)
 
 # 链接boost库，anaconda
 if (WIN32)
     set(Boost_USE_STATIC_LIBS        ON)    #链接boost静态库
 endif()
 set(Boost_USE_MULTITHREADED      ON)
-find_package(Boost 1.55.0 COMPONENTS python thread date_time system chrono REQUIRED) # 如果boost库没有完全编译，需要将编译的库明确地指出，否者message(${Boost_LIBRARIES})会出错
+find_package(Boost 1.66.0 COMPONENTS locale thread date_time system chrono python3 REQUIRED) # 如果boost库没有完全编译，需要将编译的库明确地指出，否者message(${Boost_LIBRARIES})会出错
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
@@ -88,8 +92,9 @@ endif()
 # 去掉生成的so文件名中前缀的lib
 set_target_properties(vnctpmd PROPERTIES PREFIX "")
 
+set(MY_BOOST /usr/local/lib)
 # 链接生成.so文件
-target_link_libraries(vnctpmd  ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${CTPAPI_MD_LIBRARY})
+target_link_libraries(vnctpmd  ${MY_BOOST} ${Boost_LIBRARIES}  ${PYTHON_LIBRARY} ${CTPAPI_MD_LIBRARY})
 
 # 将生成的dll文件后缀名修改为pyd（仅在windows下）
 set(MD_DLL "${LIBRARY_OUTPUT_PATH}/Release/vnctpmd.dll")
@@ -99,7 +104,7 @@ endif()
 
 # 和上面的MD相同
 set_target_properties(vnctptd PROPERTIES PREFIX "")
-target_link_libraries(vnctptd  ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${CTPAPI_TD_LIBRARY})
+target_link_libraries(vnctptd ${MY_BOOST} ${Boost_LIBRARIES} ${PYTHON_LIBRARY} ${CTPAPI_TD_LIBRARY})
 set(TD_DLL ${LIBRARY_OUTPUT_PATH}/Release/vnctptd.dll)
 if (EXISTS ${TD_DLL})
   file(RENAME  ${TD_DLL} ${LIBRARY_OUTPUT_PATH}/Release/vnctptd.pyd)

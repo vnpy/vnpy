@@ -1,6 +1,6 @@
 #!/bin/bash
 # Written by Suzhengchun on 20160213
-
+# updated by Incenselee on 20180226, support PY3 in Linux
 set -e
 BUILDDIR=build
 rm -rf $BUILDDIR
