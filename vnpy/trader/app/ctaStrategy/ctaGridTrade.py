@@ -80,7 +80,7 @@ class CtaGrid(object):
         j['closeStatus'] = self.closeStatus        # 平仓状态
         j['lockGrids'] = self.lockGrids         # 对锁的网格
         j['reuse'] = self.reuse                 # 是否重用
-        j['type'] = self.reuse  # 是否重用
+        j['type'] = self.type                # 类型
 
         j['openPrices'] = self.openPrices       # 套利中，两腿的开仓价格
         j['snapshot'] = self.snapshot           # 切片数据
