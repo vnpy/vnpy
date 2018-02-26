@@ -1441,7 +1441,6 @@ class BacktestingEngine(object):
             self.savingDailyData(testday, self.capital, self.maxCapital)
 
     def __loadNotStdArbTicksFromMongoDB(self,testday, leg1Symbol, leg2Symbol):
-
         self.writeCtaLog(u'从MongoDB加载回测日期:{0}的{1}-{2}价差tick'.format(testday,leg1Symbol, leg2Symbol))
 
         leg1Ticks = self.__loadTicksFromMongoDB(tickDate=testday, vtSymbol=leg1Symbol)
@@ -1961,7 +1960,7 @@ class BacktestingEngine(object):
             vtSymbol = self.tick.vtSymbol
         
         # 遍历限价单字典中的所有限价单
-        for orderID, order in self.workingLimitOrderDict.items():
+        for orderID, order in list(self.workingLimitOrderDict.items()):
             # 判断是否会成交
             buyCross = order.direction == DIRECTION_LONG and order.price >= buyCrossPrice and vtSymbol.lower() == order.vtSymbol.lower()
             sellCross = order.direction == DIRECTION_SHORT and order.price <= sellCrossPrice and vtSymbol.lower() == order.vtSymbol.lower()
@@ -3615,8 +3614,8 @@ class OptimizationSetting(object):
     def generateSetting(self):
         """生成优化参数组合"""
         # 参数名的列表
-        nameList = self.paramDict.keys()
-        paramList = self.paramDict.values()
+        nameList = list(self.paramDict.keys())
+        paramList = list(self.paramDict.values())
 
         # 使用迭代工具生产参数对组合
         productList = list(product(*paramList))

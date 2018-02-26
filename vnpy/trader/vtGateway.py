@@ -120,7 +120,20 @@ class VtGateway(object):
             self.createLogger()
 
     def createLogger(self):
-        filename = os.path.abspath(os.path.join(os.path.dirname(__file__),  'logs', 'Gateway'))
+        """
+        创建日志记录
+        :return: 
+        """
+        currentFolder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+        if os.path.isdir(currentFolder):
+            # 如果工作目录下，存在data子目录，就使用data子目录
+            path = currentFolder
+        else:
+            # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs'))
+
+        filename = os.path.abspath(os.path.join(path, 'Gateway'))
+
         print( u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
 

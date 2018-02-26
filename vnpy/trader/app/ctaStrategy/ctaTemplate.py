@@ -238,12 +238,11 @@ class CtaTemplate(object):
     # ----------------------------------------------------------------------
     def setParam(self, setting):
         """设置参数"""
+        self.writeCtaLog(u'使用参数:{}'.format(setting))
         d = self.__dict__
         for key in self.paramList:
             if key in setting:
-
                 d[key] = setting[key]
-
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
@@ -311,6 +310,50 @@ class CtaTemplate(object):
             return '{0}1{1}'.format(short_symbol, symbol_month)
         else:
             return symbol
+
+class MatrixTemplate(CtaTemplate):
+
+    # ----------------------------------------------------------------------
+    tradingOpen = True          # 允许开仓
+    forceTradingClose = False   # 强制平仓标志
+    delayMission = []            # 延迟的任务
+
+    # ----------------------------------------------------------------------
+    def __init__(self, ctaEngine, setting):
+        """Constructor"""
+        super(MatrixTemplate, self).__init__(ctaEngine, setting)
+
+    def checkExistDelayMission(self, func):
+        if len(self.delayMission) == 0:
+            return False
+
+        for mission in self.delayMission:
+            if 'func' in mission and mission['func'] == func:
+                return True
+        return False
+
+    def cancelForceClose(self):
+        """
+        取消强制平仓
+        :return: 
+        """
+        pass
+
+    def forceCloseAllPos(self):
+        """
+        策略实现上层调度，强制平所有仓位，不再开仓
+        :return: 
+        """
+        pass
+
+    def forceOpenPos(self, longPos, shortPos):
+        """
+        策略实现上层调度，强制开仓
+        :param longPos: 对应开仓的多单[{"price": 2560, volume": 77, "symbol": "RB99", "margin": -953, "direction": "long" }]
+        :param shortPos: 对应开仓的空单[{"price": 2560, volume": 77, "symbol": "RB99", "margin": -953, "direction": "short" }]
+        :return: 
+        """
+        pass
 
 ########################################################################
 class TargetPosTemplate(CtaTemplate):

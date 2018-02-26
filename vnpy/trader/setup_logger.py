@@ -381,10 +381,11 @@ def setup_logger(filename, name=None, debug=False):
         _fileHandler = MultiprocessHandler(filename, when='D')
         if debug:
             _fileHandler.setLevel(logging.DEBUG)
+
         else:
             _fileHandler.setLevel(logging.INFO)
-            _fileHandler.setFormatter(fmt)
 
+        _fileHandler.setFormatter(fmt)
         _logger.addHandler(_fileHandler)
 
         if debug:

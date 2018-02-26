@@ -74,6 +74,8 @@ class MainEngine(object):
         else:
             gatewayName = gateway_name
 
+        self.writeLog(u'add gateway:{}'.format(gateway_name))
+
         # 创建接口实例
         self.gatewayDict[gatewayName] = gatewayModule.gatewayClass(self.eventEngine,
                                                                    gatewayName)
@@ -123,6 +125,7 @@ class MainEngine(object):
     def connect(self, gatewayName):
         """连接特定名称的接口"""
         if gatewayName in self.gatewayDict:
+            self.writeLog(u'vtEngine conncet :{}'.format(gatewayName))
             gateway = self.gatewayDict[gatewayName]
             gateway.connect()
 
@@ -305,7 +308,20 @@ class MainEngine(object):
             self.createLogger()
 
     def createLogger(self):
-        filename = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs', 'vnpy'))
+        """
+        创建日志记录
+        :return: 
+        """
+        currentFolder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+        if os.path.isdir(currentFolder):
+            # 如果工作目录下，存在data子目录，就使用data子目录
+            path = currentFolder
+        else:
+            # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs'))
+
+        filename = os.path.abspath(os.path.join(path, 'vnpy'))
+
         print( u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
 

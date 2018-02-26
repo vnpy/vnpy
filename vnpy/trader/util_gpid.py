@@ -5,7 +5,14 @@ import os
 import sys
 import platform
 
-gpid_file = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs','gpid.txt'))
+run_path = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+if os.path.isdir(run_path):
+    # 如果工作目录下，存在logs子目录，就使用logs子目录
+    base_path = run_path
+else:
+    base_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'logs'))
+
+gpid_file = os.path.abspath(os.path.join(base_path, 'gpid.txt'))
 
 def _check_gpid(gpid):
     plat = str(platform.system())

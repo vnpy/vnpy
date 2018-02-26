@@ -115,9 +115,9 @@ class CtpGateway(VtGateway):
             self.writeLog(u'交易接口已实例化')
 
         try:
-            f = open(filePath,'r',encoding='utf8')
+            f = open(filePath,'r')
         except IOError:
-            self.writeLog(text.LOADING_ERROR)
+            self.writeLog('{} {}'.format(filePath,text.LOADING_ERROR))
             return
 
         # 解析json文件

@@ -163,8 +163,8 @@ def _start():
                 time.sleep(1)
             print('进程组已停止运行[gpid={}]'.format(gpid))
             try:
-                sendmail.sendmail(subject='Notification: {0} killed by service.py'.format('runDispatchServer.py'),
-                                  msgcontent='停止运行时间,已将进程组[gpid={}]杀死'.format(gpid))
+                sendmail.sendmail(subject='Notification: {0}目录下服务 killed by service.py'.format(base_path),
+                                  msgcontent='停止运行时间,已将进程组[gpid={}]杀死.'.format(gpid))
             except:
                 print(u'发送通知邮件失败', file=sys.stderr)
                 pass
@@ -181,7 +181,7 @@ def _start():
                     print('属于运行时间,成功启动服务[gpid={}]'.format(gpid))
                     try:
                         sendmail.sendmail(
-                            subject='Notification: {0}进程启动'.format('runDispatchServer.py'),
+                            subject='Notification: {0}目录下进程启动'.format(base_path),
                             msgcontent='属于运行时间,已启动服务[gpid={}]'.format(gpid))
                     except:
                         print(u'发送通知邮件失败', file=sys.stderr)
@@ -279,7 +279,7 @@ def _stop():
             time.sleep(1)
         print(u'成功停止服务[gpid={}]'.format(gpid))
         try:
-            sendmail.sendmail(subject='Notification: {0} 服务进程停止'.format('runDispatchServer'),
+            sendmail.sendmail(subject='Notification: {}目录下服务进程停止'.format(base_path),
                               msgcontent= '服务进程[gpid={}]停止'.format(gpid))
         except:
             print(u'发送通知邮件失败')

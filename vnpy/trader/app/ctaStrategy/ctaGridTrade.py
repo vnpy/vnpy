@@ -405,7 +405,7 @@ class CtaGridTrade(object):
                 elif t == u'OrderRef' and x.orderRef == orderRef:
                     return x
 
-        self.writeCtaLog(u'异常，（）getGrid找不到网格[direction={0},oepnPrice={1},closePrice={2},orderRef={3},t={4}]'.format(direction, openPrice, closePrice, orderRef, t))
+        self.writeCtaLog(u'异常，getGrid找不到网格[direction={0},oepnPrice={1},closePrice={2},orderRef={3},t={4}]'.format(direction, openPrice, closePrice, orderRef, t))
         return None
 
     def getFirstLastGrid(self, direction,type = EMPTY_STRING):

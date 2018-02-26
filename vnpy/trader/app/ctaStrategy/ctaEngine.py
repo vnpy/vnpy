@@ -561,6 +561,7 @@ class CtaEngine(object):
         return l
     
     # ----------------------------------------------------------------------
+
     def loadTick(self, dbName, collectionName, days):
         """从数据库中读取Tick数据，startDate是datetime对象"""
         startDate = self.today - timedelta(days)
@@ -577,6 +578,7 @@ class CtaEngine(object):
         return l    
 
     # ----------------------------------------------------------------------
+    # 日志相关
     def writeCtaLog(self, content):
         """快速发出CTA模块日志事件"""
         log = VtLogData()
@@ -592,9 +594,22 @@ class CtaEngine(object):
             self.createLogger()
 
     def createLogger(self):
-        filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs', 'ctaEngine'))
+        """
+        创建日志记录
+        :return: 
+        """
+        currentFolder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+        if os.path.isdir(currentFolder):
+            # 如果工作目录下，存在data子目录，就使用data子目录
+            path = currentFolder
+        else:
+            # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs'))
+
+        filename = os.path.abspath(os.path.join(path, 'ctaEngine'))
+
         print( u'create logger:{}'.format(filename))
-        self.logger = setup_logger(filename=filename, name='ctaEngine')
+        self.logger = setup_logger(filename=filename, name='ctaEngine', debug=True)
 
     def writeCtaError(self,content):
         """快速发出CTA模块错误日志事件"""
@@ -624,29 +639,127 @@ class CtaEngine(object):
         event.dict_['data'] = s
         self.eventEngine.put(event)
 
+    # ----------------------------------------------------------------------
+    # 订阅合约相关
+    def subscribe(self, strategy, symbol):
+        """订阅合约，不成功时，加入到待订阅列表"""
+        contract = self.mainEngine.getContract(symbol)
+
+        if contract:
+            # 4.构造订阅请求包
+            req = VtSubscribeReq()
+            req.symbol = contract.symbol
+            req.exchange = contract.exchange
+
+            # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
+            req.currency = strategy.currency
+            req.productClass = strategy.productClass
+
+            # 5.调用主引擎的订阅接口
+            self.mainEngine.subscribe(req, contract.gatewayName)
+        else:
+            print( u'Warning, can not find {0} in contracts'.format(symbol))
+            self.writeCtaLog(u'交易合约{}无法找到，添加到待订阅列表'.format (symbol))
+            self.pendingSubcribeSymbols[symbol]=strategy
+
+    def checkUnsubscribedSymbols(self, event):
+        """持仓更新信息时，检查未提交的合约"""
+        for symbol in self.pendingSubcribeSymbols.keys():
+            contract = self.mainEngine.getContract(symbol)
+            if contract:
+                # 获取合约的缩写号
+                s = self.getShortSymbol(symbol)
+                #if s == symbol:    # 合约缩写提取失败
+                #    continue
+                dt = datetime.now()
+                # 若为中金所的合约，白天才提交订阅请求
+                if s in MARKET_ZJ and not(9 < dt.hour < 16):
+                    continue
+
+                self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))
+                strategy = self.pendingSubcribeSymbols[symbol]
+                self.subscribe(strategy=strategy, symbol=symbol)
 
     # ----------------------------------------------------------------------
-    def loadStrategy(self, setting):
-        """载入策略"""
+    # 策略相关（加载/初始化/启动/停止)
+    def checkStrategy(self, name):
+        """
+        检查策略
+        :param name: 
+        :return: NOTRUN：没有运行；RUNING：正常运行；FORCECLOSING:正在关闭;FORCECLOSED:已经关闭
+        """
+        if name not in self.strategyDict:
+            return NOTRUN
+
+        strategy = self.strategyDict[name]
+        if hasattr(strategy, 'forceTradingClose'):
+            if strategy.forceTradingClose == False:
+                return RUNING
+
+            if strategy.trading:
+                return FORCECLOSING
+            else:
+                return FORCECLOSED
+
+        return RUNING
+
+    def loadStrategy(self, setting,is_dispatch=False):
+        """
+        载入策略
+        :param setting: 策略设置参数
+        :param is_dispatch: 是否为调度
+        :return: 
+        """
         try:
             name = setting['name']
             className = setting['className']
         except Exception as e:
-            self.writeCtaLog(u'载入策略出错：%s' %e)
-            self.mainEngine.writeCritical(u'载入策略出错：%s' %e)
-            return
-        
+            self.writeCtaLog(u'载入策略出错：%s' % e)
+            self.mainEngine.writeCritical(u'载入策略出错：%s' % e)
+            return False
+
         # 获取策略类
         strategyClass = STRATEGY_CLASS.get(className, None)
         if not strategyClass:
-            self.writeCtaLog(u'STRATEGY_CLASS找不到策略类：%s' %className)
-            self.mainEngine.writeCritical(u'STRATEGY_CLASS找不到策略类：%s' %className)
-            return
-        
-        # 防止策略重名
-        if name in self.strategyDict:
-            self.writeCtaLog(u'策略实例重名：%s' %name)
-            return
+            self.writeCtaLog(u'STRATEGY_CLASS找不到策略类：%s' % className)
+            self.mainEngine.writeCritical(u'STRATEGY_CLASS找不到策略类：%s' % className)
+            return False
+
+        if is_dispatch:
+            # 属于调度
+            runing_status = self.checkStrategy(name)
+            if name in self.settingDict:
+                if runing_status == RUNING:
+                    self.writeCtaLog(u'策略{}正常运行，不做加载'.format(name))
+                    return False
+                elif runing_status in [FORCECLOSING,FORCECLOSED]:
+                    try:
+                        cur_strategy = self.strategyDict[name]
+                        cur_strategy.cancelForceClose()
+                        self.settingDict[name] = setting
+                        self.writeCtaLog(u'撤销运行中策略{}的强制清仓，恢复运行'.format(name))
+                        return False
+                    except Exception as ex:
+                        self.writeCtaCritical(u'撤销运行中策略{}的强制清仓时异常：{}'.format(name,str(ex)))
+                        traceback.print_exc()
+                        return False
+        else:
+            # 防止策略重名
+            if name in self.strategyDict:
+                self.writeCtaLog(u'策略实例重名：%s' % name)
+                return False
+
+            # 检查策略中的forceClose，如果当前日期超过最后平仓日期一周，不再启动。
+            if 'forceClose' in setting:
+                try:
+                    forceCloseDate = datetime.strptime(setting['forceClose'], '%Y-%m-%d')
+                    dt = datetime.now()
+                    if (dt - forceCloseDate).days > 7:
+                        self.writeCtaLog(u'日期超过最后平仓日期,不再启动')
+                        return False
+                except Exception as ex:
+                    self.writeCtaCritical(u'配置文件的强制平仓日期提取异常:{}'.format(str(ex)))
+                    traceback.print_exc()
 
         self.settingDict[name] = setting
 
@@ -693,46 +806,18 @@ class CtaEngine(object):
             self.writeCtaLog(u'向gateway订阅合约{0}'.format(symbol))
             self.subscribe(strategy=strategy, symbol=symbol)
 
-    def subscribe(self, strategy, symbol):
-        """订阅合约，不成功时，加入到待订阅列表"""
-        contract = self.mainEngine.getContract(symbol)
+        # 自动初始化
+        if 'auto_init' in setting:
+            if setting['auto_init'] == True:
+                self.writeCtaLog(u'自动初始化策略')
+                self.initStrategy(name=name)
 
-        if contract:
-            # 4.构造订阅请求包
-            req = VtSubscribeReq()
-            req.symbol = contract.symbol
-            req.exchange = contract.exchange
+        if 'auto_start' in setting:
+            if setting['auto_start'] == True:
+                self.writeCtaLog(u'自动启动策略')
+                self.startStrategy(name=name)
+        return True
 
-            # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-            req.currency = strategy.currency
-            req.productClass = strategy.productClass
-
-            # 5.调用主引擎的订阅接口
-            self.mainEngine.subscribe(req, contract.gatewayName)
-        else:
-            print( u'Warning, can not find {0} in contracts'.format(symbol))
-            self.writeCtaLog(u'交易合约{}无法找到，添加到待订阅列表'.format (symbol))
-            self.pendingSubcribeSymbols[symbol]=strategy
-
-    def checkUnsubscribedSymbols(self, event):
-        """持仓更新信息时，检查未提交的合约"""
-        for symbol in self.pendingSubcribeSymbols.keys():
-            contract = self.mainEngine.getContract(symbol)
-            if contract:
-                # 获取合约的缩写号
-                s = self.getShortSymbol(symbol)
-                #if s == symbol:    # 合约缩写提取失败
-                #    continue
-                dt = datetime.now()
-                # 若为中金所的合约，白天才提交订阅请求
-                if s in MARKET_ZJ and not(9 < dt.hour < 16):
-                    continue
-
-                self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))
-                strategy = self.pendingSubcribeSymbols[symbol]
-                self.subscribe(strategy=strategy, symbol=symbol)
-
-    #----------------------------------------------------------------------
     def initStrategy(self, name, force = False):
         """初始化策略"""
         if name in self.strategyDict:
@@ -747,10 +832,8 @@ class CtaEngine(object):
         else:
             self.writeCtaError(u'策略实例不存在：%s' %name)
 
-    # ---------------------------------------------------------------------
     def startStrategy(self, name):
         """启动策略"""
-
         # 1.判断策略名称是否存在字典中
         if name in self.strategyDict:
 
@@ -765,11 +848,9 @@ class CtaEngine(object):
                 self.callStrategyFunc(strategy, strategy.onStart)
         else:
             self.writeCtaError(u'策略实例不存在：%s' %name)
-    
-    # ----------------------------------------------------------------------
+
     def stopStrategy(self, name):
         """停止策略运行"""
-
         # 1.判断策略名称是否存在字典中
         if name in self.strategyDict:
             # 2.提取策略
@@ -777,7 +858,6 @@ class CtaEngine(object):
 
             # 3.停止交易
             if strategy.trading:
-
                 # 4.设置交易状态为False
                 strategy.trading = False
                 # 5.调用策略的停止方法
@@ -794,33 +874,70 @@ class CtaEngine(object):
                         self.cancelStopOrder(stopOrderID)   
         else:
             self.writeCtaError(u'策略实例不存在：%s' %name)
-    
+
+    def removeStrategy(self, name):
+        """
+        移除策略
+        :param name: 
+        :return: 
+        """
+        # 移除策略设置,下次启动不再执行
+        if name in self.settingDict:
+            self.settingDict.pop(name, None)
+
+        try:
+            # 调动策略的强制清仓方法
+            self.writeCtaLog(u'调动策略的强制清仓方法')
+            strategy = self.strategyDict[name]
+
+            self.writeCtaLog(u'调动策略{}的强制清仓方法'.format(name))
+            strategy.forceCloseAllPos()
+
+            # 将运行dict的策略移除.
+            self.strategyDict[name] = None
+            self.writeCtaLog(u'将运行dict的策略{}关联移除'.format(name))
+            self.strategyDict.pop(name, None)
+
+        except Exception as ex:
+            self.writeCtaError(u'移除策略异常:{}'.format(str(ex)))
+            traceback.print_exc()
+
     # ----------------------------------------------------------------------
+    # 策略配置相关
     def saveSetting(self):
         """保存策略配置"""
         try:
             with open(self.settingfilePath, 'w') as f:
-                l = self.settingDict.values()
+                l = list(self.settingDict.values())
                 jsonL = json.dumps(l, indent=4)
                 f.write(jsonL)
         except Exception as ex:
             self.writeCtaCritical(u'保存策略配置异常:{}'.format(str(ex)))
             traceback.print_exc()
 
-    # ----------------------------------------------------------------------
+
     def loadSetting(self):
-        """读取策略配置"""
-        with open(self.settingfilePath) as f:
-            l = json.load(f)
-            for setting in l:
-                try:
-                    self.loadStrategy(setting)
-                except Exception as ex:
-                    self.writeCtaCritical(u'加载策略:{}'.format(str(ex)))
-                    traceback.print_exc()
-        self.loadPosition()
+        """
+        读取策略配置文件，CTA_setting.json
+        逐一运行
+        :return: 
+        """
+        try:
+            with open(self.settingfilePath) as f:
+                l = json.load(f)
+                for setting in l:
+                    try:
+                        self.loadStrategy(setting)
+                    except Exception as ex:
+                        self.writeCtaCritical(u'加载策略:{}'.format(str(ex)))
+                        traceback.print_exc()
+            self.loadPosition()
+        except Exception as ex:
+            self.writeCtaCritical(u'加载策略配置异常:{}'.format(str(ex)))
+            traceback.print_exc()
 
     # ----------------------------------------------------------------------
+    # 策略运行监控相关
     def getStrategyVar(self, name):
         """获取策略当前的变量字典"""
         if name in self.strategyDict:
@@ -836,8 +953,7 @@ class CtaEngine(object):
         else:
             self.writeCtaLog(u'策略实例不存在：' + name)    
             return None
-    
-    # ----------------------------------------------------------------------
+
     def getStrategyParam(self, name):
         """获取策略的参数字典"""
         if name in self.strategyDict:
@@ -852,8 +968,20 @@ class CtaEngine(object):
             return paramDict
         else:
             self.writeCtaLog(u'策略实例不存在：' + name)    
-            return None   
-        
+            return None
+
+    def getStrategySetting(self, name):
+        """
+        获取策略的配置参数
+        :param name: 策略实例名称
+        :return: 
+        """
+
+        if name in self.settingDict:
+            return self.settingDict[name]
+
+        else:
+            return None
     # ----------------------------------------------------------------------
     def putStrategyEvent(self, name):
         """触发策略状态变化事件（通常用于通知GUI更新）"""
@@ -885,6 +1013,7 @@ class CtaEngine(object):
             self.mainEngine.writeCritical(content)
 
     # ----------------------------------------------------------------------
+    # 仓位持久化相关
     def savePosition(self):
         """保存所有策略的持仓情况到数据库"""
         for strategy in self.strategyDict.values():
@@ -901,7 +1030,7 @@ class CtaEngine(object):
             content = '策略%s持仓保存成功' % strategy.name
             self.writeCtaLog(content)
 
-    # ----------------------------------------------------------------------
+
     def loadPosition(self):
         """从数据库载入策略的持仓情况"""
         try:
@@ -914,7 +1043,9 @@ class CtaEngine(object):
                     strategy.pos = d['pos']
         except:
             self.writeCtaLog(u'loadPosition Exception from Mongodb')
+
     # ----------------------------------------------------------------------
+    # 公共方法相关
     def roundToPriceTick(self, priceTick, price):
         """取整价格到合约最小价格变动"""
         if not priceTick:
@@ -922,6 +1053,32 @@ class CtaEngine(object):
 
         newPrice = round(price / priceTick, 0) * priceTick
         return newPrice
+
+    def getShortSymbol(self, symbol):
+        """取得合约的短号"""
+        # 套利合约
+        if symbol.find(' ') != -1:
+            # 排除SP SPC SPD
+            s = symbol.split(' ')
+            if len(s) < 2:
+                return symbol
+            symbol = s[1]
+
+            # 只提取leg1合约
+            if symbol.find('&') != -1:
+                s = symbol.split('&')
+                if len(s) < 2:
+                    return symbol
+                symbol = s[0]
+
+        p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+        shortSymbol = p.match(symbol)
+
+        if shortSymbol is None:
+            self.writeCtaLog(u'{0}不能正则分解'.format(symbol))
+            return symbol
+
+        return shortSymbol.group(1)
 
     # ----------------------------------------------------------------------
     def getAccountInfo(self):
@@ -960,32 +1117,6 @@ class CtaEngine(object):
         self.workingStopOrderDict = {}
         self.posBufferDict = {}
         self.stopOrderDict = {}
-
-    def getShortSymbol(self, symbol):
-        """取得合约的短号"""
-        # 套利合约
-        if symbol.find(' ') != -1:
-            # 排除SP SPC SPD
-            s = symbol.split(' ')
-            if len(s) < 2:
-                return symbol
-            symbol = s[1]
-
-            # 只提取leg1合约
-            if symbol.find('&') != -1:
-                s = symbol.split('&')
-                if len(s) < 2:
-                    return symbol
-                symbol = s[0]
-
-        p = re.compile(r"([A-Z]+)[0-9]+", re.I)
-        shortSymbol = p.match(symbol)
-
-        if shortSymbol is None:
-            self.writeCtaLog(u'{0}不能正则分解'.format(symbol))
-            return symbol
-
-        return shortSymbol.group(1)
 
     def qryStatus(self):
         """查询cta Engined的运行状态"""

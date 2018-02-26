@@ -89,10 +89,12 @@ def getJsonPath(name, moduleFile):
     currentFolder = os.getcwd()
     currentJsonPath = os.path.join(currentFolder, name)
     if os.path.isfile(currentJsonPath):
+        print(u'use work folder file:{}'.format(currentJsonPath))
         jsonPathDict[name] = currentJsonPath
         return currentJsonPath
 
     moduleFolder = os.path.abspath(os.path.dirname(moduleFile))
     moduleJsonPath = os.path.join(moduleFolder, '.', name)
+    print(u'use module file:{}'.format(moduleJsonPath))
     jsonPathDict[name] = moduleJsonPath
     return moduleJsonPath
