@@ -34,7 +34,7 @@ QQ/Wechat：28888502
 	mv download boost_1_55_0.tar.gz
 	tar -xvzf boost_1_55_0.tar.gz
 	cd boost_1_55_0/
-	./bootstrap.sh --with-libraries=atomic,date_time,exception,filesystem,iostreams,locale,program_options,regex,signals,system,test,thread,timer,log
+	./bootstrap.sh  --with-python=/home/trade/anaconda3/envs/py35/bin/python3 --with-python-version=3.5 --with-python-root=/home/trade/anaconda3/envs/py35
 	./b2 install
 
 #2、Ubuntu环境

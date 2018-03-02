@@ -22,6 +22,10 @@ except :
 
 # python容器文件
 python_path = '/home/tensorflow/anaconda3/envs/py35/bin/python'
+
+# shell 文件，不使用sh
+bash = "/bin/bash"
+
 # 运行时间段
 valid_time_span = '08:55:00~15:30:00,20:45:00~02:35:00'
 
@@ -44,8 +48,8 @@ log_file = os.path.abspath(os.path.join(base_path,'logs', 'service.log'))
 error_file = os.path.abspath(os.path.join(base_path, 'logs', 'service-error.log'))
 null_file = "/dev/null"
 
-cron_content = "* * * * * {} {} schedule >{} 2>{}".format(python_path, os.path.realpath(__file__), log_file, error_file)
-program_command = "nohup {} {} >{} 2>{} &".format(python_path, program_file, log_file, error_file)
+cron_content = "* * * * * {} {} schedule >>{} 2>>{}".format(python_path, os.path.realpath(__file__), log_file, error_file)
+program_command = "nohup {} {} >>{} 2>>{} &".format(bash, program_file, log_file, error_file)
 
 def _check_gpid(gpid):
     """
@@ -62,6 +66,7 @@ def _check_gpid(gpid):
         print('找不到shell运行命令ps', file=sys.stderr)
         exit(1)
 
+    #print('returncode1:{}'.format(returncode))
     try:
         p2 = subprocess.Popen("uniq", stdin=p.stdout, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, shell=False)
@@ -69,9 +74,15 @@ def _check_gpid(gpid):
     except OSError as e:
         print(u'找不到shell运行命令uniq', file=sys.stderr)
         exit(1)
+
+   # print('returncode2:{}'.format(returncode))
     for i in p2.stdout.readlines():
+        #print (u'p2.line:{}'.format(i))
         if i.decode().strip() == gpid:
+            print(u'找到gpid:{}'.format(gpid))
             return True
+
+    print(u'找不到gpid:{}'.format(gpid))
     return False
 
 def _status():
@@ -79,10 +90,11 @@ def _status():
     查询当前状态
     :return: 
     """
+    print(u'检查{}'.format(gpid_file))
     if os.path.exists(gpid_file):
         with open(gpid_file, 'r') as f:
             gpid = f.read().strip()
-            # print(gpid)
+            print(u'gpid={}'.format(gpid))
         if gpid != "" and _check_gpid(gpid):
             return gpid
 
@@ -151,7 +163,6 @@ def _start():
     """
     # 获取进程组id
     gpid = _status()
-
     if _check_stop_time():
         # 属于停止运行期间
         if gpid:
@@ -159,8 +170,12 @@ def _start():
             import signal
             # 杀死进程组
             os.killpg(int(gpid), signal.SIGKILL)
+            i = 0
             while _status():
                 time.sleep(1)
+                i += 1
+                print(u'杀死进程中，等待{}秒'.format(i))
+
             print('进程组已停止运行[gpid={}]'.format(gpid))
             try:
                 sendmail.sendmail(subject='Notification: {0}目录下服务 killed by service.py'.format(base_path),
@@ -173,24 +188,35 @@ def _start():
     else:
         # 属于运行时间
         if not gpid:
-            print(u'属于运行时间,将启动服务')
+            print(u'属于运行时间,将启动服务:{}'.format(program_command))
+            if os.path.isfile(gpid_file):
+                print(u'{0}文件存在，先执行删除'.format(gpid_file))
+            try:
+                os.remove(gpid_file)
+            except:
+                pass
+
             os.popen(program_command)
+            i = 0
             while True:
                 gpid = _status()
                 if gpid:
-                    print('属于运行时间,成功启动服务[gpid={}]'.format(gpid))
+                    print('{}属于运行时间,成功启动服务[gpid={}]'.format(datetime.now(), gpid))
                     try:
                         sendmail.sendmail(
                             subject='Notification: {0}目录下进程启动'.format(base_path),
-                            msgcontent='属于运行时间,已启动服务[gpid={}]'.format(gpid))
+                            msgcontent='{}属于运行时间,已启动服务[gpid={}]'.format(datetime.now(), gpid))
                     except:
                         print(u'发送通知邮件失败', file=sys.stderr)
                         pass
                     break
-                time.sleep(1)
-        else:
-            print(u'属于运行时间,服务已运行')
 
+                i += 1
+                print(u'启动进程中，等待{}秒'.format(i))
+                time.sleep(1)
+
+        else:
+            print(u'属于运行时间,{}服务已运行'.format(base_path))
 
 def schedule():
     """
@@ -207,9 +233,9 @@ def status():
 
     gpid = _status()
     if gpid:
-        print('服务进程[gpid={}]正在运行'.format(gpid))
+        print('{}服务进程[gpid={}]正在运行'.format(base_path,gpid))
     else:
-        print('服务进程没有运行.')
+        print('{}服务进程没有运行.'.format(base_path))
 
 # operate的可选字符串为：add, del
 def operate_crontab(operate):
@@ -261,7 +287,7 @@ def start():
     operate_crontab("add")
     # 执行启动
     _start()
-    print(u'启动服务执行完毕')
+    print(u'启动{}服务执行完毕'.format(base_path))
 
 def _stop():
     print(u'======stop========')
@@ -275,9 +301,14 @@ def _stop():
         import signal
         # 杀死进程组
         os.killpg(int(gpid), signal.SIGKILL)
+        i = 0
         while _status():
             time.sleep(1)
-        print(u'成功停止服务[gpid={}]'.format(gpid))
+            i += 1
+            print(u'等待{}秒'.format(i))
+
+        print(u'{}成功停止{}服务[gpid={}]'.format(datetime.now(), base_path,gpid))
+
         try:
             sendmail.sendmail(subject='Notification: {}目录下服务进程停止'.format(base_path),
                               msgcontent= '服务进程[gpid={}]停止'.format(gpid))
@@ -285,23 +316,22 @@ def _stop():
             print(u'发送通知邮件失败')
             pass
     else:
-        print(u'服务进程没有运行')
+        print(u'{}服务进程没有运行'.format(base_path))
 
 def stop():
     """
     停止服务
     :return: 
     """
-    print(u'======stop========')
     _stop()
-    print(u'执行停止服务完成')
+    print(u'执行停止{}服务完成'.format(base_path))
 
 
 def restart():
     print(u'======restart========')
     _stop()
     _start()
-    print('执行重启服务完成')
+    print('执行重启{}服务完成'.format(base_path))
 
 
 if __name__ == '__main__':

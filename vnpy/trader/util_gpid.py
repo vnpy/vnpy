@@ -6,13 +6,11 @@ import sys
 import platform
 
 run_path = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
-if os.path.isdir(run_path):
-    # 如果工作目录下，存在logs子目录，就使用logs子目录
-    base_path = run_path
-else:
-    base_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'logs'))
+if not os.path.isdir(run_path):
+    os.mkdir(run_path)
+assert os.path.isdir(run_path)
 
-gpid_file = os.path.abspath(os.path.join(base_path, 'gpid.txt'))
+gpid_file = os.path.abspath(os.path.join(run_path, 'gpid.txt'))
 
 def _check_gpid(gpid):
     plat = str(platform.system())
@@ -68,4 +66,5 @@ def _save_gpid():
     with open(gpid_file, 'w') as f:
         f.write(str(gpid))
 
+    print(u'wrote gpid file:{}'.format(gpid_file))
 _save_gpid()
