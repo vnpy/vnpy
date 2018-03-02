@@ -1,5 +1,7 @@
-# vn.py - By Traders, For Traders.
+# By Traders, For Traders.
 
+
+![vn.py-logo](http://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png)
 
 ---
 
@@ -36,6 +38,8 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
     - Interactive Brokers（ib）
 
     - OANDA（oanda）
+
+    - 福汇（fxcm）
 
     - OKCOIN（okcoin）
 

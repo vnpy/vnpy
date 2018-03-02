@@ -12,6 +12,7 @@ from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine, LogEngine
 from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
+from vnpy.trader.vtEvent import EVENT_LOG
 
 # 加载底层接口
 from vnpy.trader.gateway import ctpGateway
