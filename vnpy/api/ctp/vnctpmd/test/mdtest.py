@@ -3,9 +3,10 @@
 import sys
 from time import sleep
 
-from qtpy import QtGui
+#from qtpy import QtGui
 
 from vnctpmd import *
+from threading import Thread
 
 
 #----------------------------------------------------------------------
@@ -44,13 +45,13 @@ class TestMdApi(MdApi):
     @simple_log    
     def onFrontDisconnected(self, n):
         """服务器断开"""
-        print( n)
+        print (n)
         
     #----------------------------------------------------------------------
     @simple_log    
     def onHeartBeatWarning(self, n):
         """心跳报警"""
-        print( n)
+        print (n)
     
     #----------------------------------------------------------------------
     @simple_log    
@@ -119,7 +120,7 @@ def main():
     reqid = 0
     
     # 创建Qt应用对象，用于事件循环
-    app = QtGui.QApplication(sys.argv)
+    #app = QtGui.QApplication(sys.argv)
 
     # 创建API对象
     api = TestMdApi()
@@ -128,7 +129,7 @@ def main():
     api.createFtdcMdApi('')
     
     # 注册前置机地址
-    api.registerFront("tcp://qqfz-md1.ctp.shcifco.com:32313")
+    api.registerFront("tcp://180.168.146.187:10011")
     
     # 初始化api，连接前置机
     api.init()
@@ -138,7 +139,7 @@ def main():
     loginReq = {}                           # 创建一个空字典
     loginReq['UserID'] = ''                 # 参数作为字典键值的方式传入
     loginReq['Password'] = ''               # 键名和C++中的结构体成员名对应
-    loginReq['BrokerID'] = ''    
+    loginReq['BrokerID'] = '9999'    
     reqid = reqid + 1                       # 请求数必须保持唯一性
     i = api.reqUserLogin(loginReq, 1)
     sleep(0.5)
@@ -157,7 +158,7 @@ def main():
     #sleep(0.5)
     
     ## 订阅合约，测试通过
-    #i = api.subscribeMarketData('IF1505')
+    i = api.subscribeMarketData('IF1805')
     
     ## 退订合约，测试通过
     #i = api.unSubscribeMarketData('IF1505')
@@ -169,9 +170,11 @@ def main():
     i = api.unSubscribeForQuoteRsp('IO1504-C-3900')
     
     # 连续运行，用于输出行情
-    app.exec_()
+    #app.exec_()
     
     
     
 if __name__ == '__main__':
-    main()
+    # 主程序
+    thread = Thread(target=main, args=())
+    thread.start()

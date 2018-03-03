@@ -69,15 +69,15 @@ find_library(PYTHON_LIBRARY
   PATHS C:/Python27/libs)
 include_directories(${PYTHON_INCLUDE_PATH})
 else()
-set(PYTHON_INCLUDE_PATH /home/tensorflow/anaconda3/envs/py35/include/python3.5m)
+set(PYTHON_INCLUDE_PATH /home/trade/anaconda3/envs/py35/include/python3.5m)
 find_library(PYTHON_LIBRARY
   NAMES python3.5
-  PATHS /home/tensorflow/anaconda3/envs/py35/lib/)
+  PATHS /home/trade/anaconda3/envs/py35/lib/)
 include_directories(${PYTHON_INCLUDE_PATH})
 endif()
 
 # hard code virtual environment
-set (PYTHON_LIBRARY /home/tensorflow/anaconda3/envs/py35/lib/libpython3.so)
+set (PYTHON_LIBRARY /home/trade/anaconda3/envs/py35/lib/libpython3.so)
 
 # 链接boost库，anaconda
 if (WIN32)
@@ -88,6 +88,10 @@ find_package(Boost 1.66.0 COMPONENTS locale thread date_time system chrono pytho
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
+
+# hard code boost include folder
+set(MY_BOOST_INCLUDE /usr/local/include/boost)
+include_directories(${MY_BOOST_INCLUDE})
 
 # 去掉生成的so文件名中前缀的lib
 set_target_properties(vnctpmd PROPERTIES PREFIX "")
