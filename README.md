@@ -20,7 +20,9 @@ QQ/Wechat：28888502
 
 --------------------------------------------------------------------------------------------
 ###FAQ：
-#1、CentOS的环境
+#1、CentOS的环境（管理员身份）
+    # 安装 cmake
+    yum install cmake
     # 安装解压包支持
 	yum install bzip2.x86_64
 	# 安装nodejs，支持request
@@ -29,15 +31,34 @@ QQ/Wechat：28888502
 	yum -y install openssl-devel
 	# 安装python开发库
     yum  install python-devel.x86_64
-	#安装boost
-	wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz/download
-	mv download boost_1_55_0.tar.gz
-	tar -xvzf boost_1_55_0.tar.gz
-	cd boost_1_55_0/
-	./bootstrap.sh  --with-python=/home/trade/anaconda3/envs/py35/bin/python3 --with-python-version=3.5 --with-python-root=/home/trade/anaconda3/envs/py35
-	./b2 install
 
-#2、Ubuntu环境
+	# 安装boost
+	wget http://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download
+	mv download boost_1_66_0.tar.gz
+	tar -xvzf boost_1_66_0.tar.gz
+	cd boost_1_66_0/
+	记得先创建好py35的虚拟环境
+	export CPLUS_INCLUDE_PATH=/home/trade/anaconda3/envs/py35/include/python3.5m
+    修改 boost_1_66_0/tools/build/example/user-config.jam ：
+    using python : 3.5 : /home/trade/anaconda3/envs/py35/bin/python3 : /home/trade/anaconda3/envs/py35/include/python3.5m : /home/trade/anaconda3/envs/py35/lib ;
+    运行bootstrap.sh
+	./bootstrap.sh  --with-python=/home/trade/anaconda3/envs/py35/bin/python3 --with-python-version=3.5 --with-python-root=/home/trade/anaconda3/envs/py35
+	编译，安装
+	./b2 --buildtype=complete install
+	检查 /usr/local下，include/boost, lib/libboos_python3.so等是否存在
+
+    # 编译ctp的api(运行用户，例如trade)
+    cd /home/trade/vnpy-master
+    cd vnpy/api/ctp
+    激活python环境
+    source activate py35
+    sh build.sh
+    cd vnctptd/test
+    修改tdtest.py，填写账号和ip等信息
+    python tdtest.py 验证 ctp api是否正常。
+
+
+#2、Ubuntu环境（开发环境）
     apt-get install gcc
     apt-get install make
     apt-get install libssl-dev
@@ -64,7 +85,7 @@ QQ/Wechat：28888502
 
     选择其中一个来创建
     conda create --name py27 python=2.7
-    conda create --name py35 python =3.5
+    conda create --name py35 python=3.5
 
     激活的例子
     source activate py27
