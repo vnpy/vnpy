@@ -16,7 +16,7 @@
                     <el-input v-model="loginForm.user" auto-complete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="密码" :label-width="formLabelWidth">
-                    <el-input v-model="loginForm.pwd" auto-complete="off"></el-input>
+                    <el-input v-model="loginForm.pwd" auto-complete="off" type="password"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -103,7 +103,7 @@
                                 </div>
                             </el-row>
                             <el-row class="body-left__connection">
-                                <div>服务器连接：
+                                <div>socket服务器连接：
                                     <p>{{connection}}</p>
                                 </div>
                             </el-row>
@@ -987,7 +987,7 @@ new Vue({
             let that = this,
                 positions = new Object();
             socket.on("ePosition.", function(data) {
-                positions[data.vtSymbol] = data
+                positions[data.vtPositionName] = data
                 that.position = Object.values(positions).reverse()
             });
         },
