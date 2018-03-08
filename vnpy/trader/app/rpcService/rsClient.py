@@ -107,6 +107,7 @@ class MainEngineProxy(object):
     
     #----------------------------------------------------------------------
     def exit(self):
-        self.eventEvent.stop()
+        self.eventEngine.stop()
+        
         if self.client:
             self.client.stop()  

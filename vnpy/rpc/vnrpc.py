@@ -298,8 +298,7 @@ class RpcClient(RpcObject):
         注意topic必须是ascii编码
         """
         self.__socketSUB.setsockopt(zmq.SUBSCRIBE, topic)
-        
-    
+  
 
 ########################################################################
 class RemoteException(Exception):

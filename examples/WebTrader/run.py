@@ -99,10 +99,8 @@ class Gateway(Resource):
         """查询"""
         args = self.parser.parse_args()
         token = args['token']
-        print token
-        print TOKEN
+        
         if token != TOKEN:
-            print 'token error'
             return {'result_code':'error','message':'token error'}
         
         l = me.getAllGatewayDetails()
