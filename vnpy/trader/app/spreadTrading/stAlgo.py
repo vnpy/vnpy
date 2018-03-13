@@ -288,6 +288,33 @@ class SniperAlgo(StAlgoTemplate):
         if self.hedgeCount > self.hedgeInterval:
             self.cancelAllPassiveLegOrders()
             self.hedgeCount = 0
+    
+    #----------------------------------------------------------------------
+    def checkPrice(self):
+        """检查价格"""
+        # 做多检查
+        if self.mode != self.MODE_SHORTONLY:
+            if self.buyPrice >= self.sellPrice:
+                self.writeLog(u'启动失败，允许多头交易时BuyPrice必须小于SellPrice')
+                return False
+            
+        # 做空检查
+        if self.mode != self.MODE_LONGONLY:
+            if self.shortPrice <= self.coverPrice:
+                self.writeLog(u'启动失败，允许空头交易时ShortPrice必须大于CoverPrice')
+                return False
+            
+        # 多空检查
+        if self.mode == self.MODE_LONGSHORT:
+            if self.buyPrice >= self.coverPrice:
+                self.writeLog(u'启动失败，允许双向交易时BuyPrice必须小于CoverPrice')
+                return False
+            
+            if self.shortPrice <= self.sellPrice:
+                self.writeLog(u'启动失败，允许双向交易时ShortPrice必须大于SellPrice')
+                return False
+            
+        return True
         
     #----------------------------------------------------------------------
     def start(self):
@@ -296,27 +323,9 @@ class SniperAlgo(StAlgoTemplate):
         if self.active:
             return self.active
         
-        # 做多检查
-        if self.mode != self.MODE_SHORTONLY:
-            if self.buyPrice >= self.sellPrice:
-                self.writeLog(u'启动失败，允许多头交易时BuyPrice必须小于SellPrice')
-                return self.active
-            
-        # 做空检查
-        if self.mode != self.MODE_LONGONLY:
-            if self.shortPrice <= self.coverPrice:
-                self.writeLog(u'启动失败，允许空头交易时ShortPrice必须大于CoverPrice')
-                return self.active
-            
-        # 多空检查
-        if self.mode == self.MODE_LONGSHORT:
-            if self.buyPrice >= self.coverPrice:
-                self.writeLog(u'启动失败，允许双向交易时BuyPrice必须小于CoverPrice')
-                return self.active
-            
-            if self.shortPrice <= self.sellPrice:
-                self.writeLog(u'启动失败，允许双向交易时ShortPrice必须大于SellPrice')
-                return self.active
+        # 检查价格安全性
+        if not self.checkPrice():
+            return False
         
         # 启动算法
         self.quoteCount = 0

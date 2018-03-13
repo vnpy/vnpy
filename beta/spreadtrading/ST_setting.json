@@ -1,0 +1,23 @@
+[
+    {
+        "name": "cuzn4",
+        "formula" : "(B+()2)/A",
+        "activeLeg": 
+            {
+                "vtSymbol": "zn1806",
+                "ratio": -2,
+                "payup": 2,
+                "legname" : "A"
+            },
+
+        "passiveLegs": [
+            {
+                "vtSymbol": "cu1806",
+                "ratio": 1,
+                "payup": 2,
+                "legname" : "B"
+            }
+        ]
+    }
+
+]

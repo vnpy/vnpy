@@ -2,11 +2,13 @@
 
 """
 本模块中主要包含：
-1. 从通联数据下载历史行情的引擎
-2. 用来把MultiCharts导出的历史数据载入到MongoDB中用的函数
-3. 增加从通达信导出的历史数据载入到MongoDB中的函数
+1. 将MultiCharts导出的历史数据载入到MongoDB中用的函数
+2. 将通达信导出的历史数据载入到MongoDB中的函数
+3. 将交易开拓者导出的历史数据载入到MongoDB中的函数
+4. 将OKEX下载的历史数据载入到MongoDB中的函数
 """
 
+import csv
 from datetime import datetime, timedelta
 from time import time
 
@@ -209,4 +211,40 @@ def loadTdxCsv(fileName, dbName, symbol):
     
     print u'插入完毕，耗时：%s' % (time()-start)
 
+#----------------------------------------------------------------------
+def loadOKEXCsv(fileName, dbName, symbol):
+    """将OKEX导出的csv格式的历史分钟数据插入到Mongo数据库中"""
+    start = time()
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
+
+    # 锁定集合，并创建索引
+    client = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)
+
+    # 读取数据和插入到数据库
+    reader = csv.reader(open(fileName,"r"))
+    for d in reader:
+        if len(d[1]) > 10:
+            bar = VtBarData()
+            bar.vtSymbol = symbol
+            bar.symbol = symbol
+
+            bar.datetime = datetime.strptime(d[1], '%Y-%m-%d %H:%M:%S')
+            bar.date = bar.datetime.date().strftime('%Y%m%d')
+            bar.time = bar.datetime.time().strftime('%H:%M:%S')
+
+            bar.open = float(d[2])
+            bar.high = float(d[3])
+            bar.low = float(d[4])
+            bar.close = float(d[5])
+
+            bar.volume = float(d[6])
+            bar.tobtcvolume = float(d[7])
+
+            flt = {'datetime': bar.datetime}
+            collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)
+            print('%s \t %s' % (bar.date, bar.time))
+
+    print u'插入完毕，耗时：%s' % (time()-start)
     
