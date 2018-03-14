@@ -3,7 +3,7 @@
 import sys
 from time import sleep
 
-from PyQt4 import QtGui
+from qtpy import QtGui
 
 from vnksotpmd import *
 

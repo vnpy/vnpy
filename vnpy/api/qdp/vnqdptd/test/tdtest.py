@@ -5,7 +5,7 @@ sys.path.append('./')
 
 from time import sleep
 
-from PyQt4 import QtGui
+from qtpy import QtGui
 
 from vnctptd import *
 

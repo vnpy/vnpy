@@ -4,7 +4,7 @@ import sys
 from time import sleep
 import datetime
 
-from PyQt4 import QtGui
+from qtpy import QtGui
 
 from vnxspeedmd import *
 
