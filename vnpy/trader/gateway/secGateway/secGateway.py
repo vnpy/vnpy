@@ -804,7 +804,7 @@ class SecTdApi(TdApi):
 
         # 保存代码
         pos.symbol = data['securityID']
-        pos.exchange = exchangeMap.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        pos.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
         pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
         pos.direction = DIRECTION_LONG
         pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
@@ -1152,7 +1152,7 @@ class SecTdApi(TdApi):
 
         # 保存代码
         pos.symbol = data['securityOptionID']
-        pos.exchange = exchangeMap.get(data['exchangeID'], EXCHANGE_UNKNOWN)
+        pos.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_UNKNOWN)
         pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
         pos.direction = directionMapReverse.get(data['entrustDirection'], DIRECTION_UNKNOWN)
         pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
