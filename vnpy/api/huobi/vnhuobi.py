@@ -63,6 +63,9 @@ class TradeApi(object):
     """交易API"""
     HUOBI = 'huobi'
     HADAX = 'hadax'
+    
+    SYNC_MODE = 'sync'
+    ASYNC_MODE = 'async'
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -70,13 +73,14 @@ class TradeApi(object):
         self.accessKey = ''
         self.secretKey = ''
     
+        self.mode = self.ASYNC_MODE
         self.active = False         # API工作状态   
         self.reqid = 0              # 请求编号
         self.queue = Queue()        # 请求队列
         self.pool = None            # 线程池
         
     #----------------------------------------------------------------------
-    def init(self, host, accessKey, secretKey):
+    def init(self, host, accessKey, secretKey, mode=None):
         """初始化"""
         if host == self.HUOBI:
             self.hostname = HUOBI_API_HOST
@@ -87,12 +91,17 @@ class TradeApi(object):
         self.accessKey = accessKey
         self.secretKey = secretKey
         
+        if mode:
+            self.mode = mode
+        
     #----------------------------------------------------------------------
     def start(self, n=10):
         """启动"""
         self.active = True
-        self.pool = Pool(n)
-        self.pool.map_async(self.run, range(n))
+        
+        if self.mode == self.ASYNC_MODE:
+            self.pool = Pool(n)
+            self.pool.map_async(self.run, range(n))
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -170,11 +179,16 @@ class TradeApi(object):
     
     #----------------------------------------------------------------------
     def addReq(self, path, params, func, callback):
-        """添加请求"""
-        self.reqid += 1
-        req = (path, params, func, callback, self.reqid)
-        self.queue.put(req)
-        return self.reqid
+        """添加请求"""       
+        # 异步模式
+        if self.mode == self.ASYNC_MODE:
+            self.reqid += 1
+            req = (path, params, func, callback, self.reqid)
+            self.queue.put(req)
+            return self.reqid
+        # 同步模式
+        else:
+            return func(path, params)
     
     #----------------------------------------------------------------------
     def processReq(self, req):

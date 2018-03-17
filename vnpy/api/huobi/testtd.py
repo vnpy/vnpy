@@ -11,13 +11,13 @@ def testTrade():
     # 创建API对象并初始化
     api = TradeApi()
     
-    api.init(api.HADAX, accessKey, secretKey)
+    api.init(api.HADAX, accessKey, secretKey, mode=api.SYNC_MODE)
     api.start()
     
     # 查询
-    #api.getSymbols()
-    #api.getCurrencys()
-    #api.getTimestamp()
+    print api.getSymbols()
+    print api.getCurrencys()
+    print api.getTimestamp()
     
     
     accountid = ''
