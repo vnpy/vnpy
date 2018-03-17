@@ -10,37 +10,36 @@ def testTrade():
     
     # 创建API对象并初始化
     api = TradeApi()
-    api.DEBUG = True
-    api.init(accessKey, secretKey)
     
-    # 查询账户，测试通过
-    api.getAccountInfo()
+    api.init(api.HADAX, accessKey, secretKey)
+    api.start()
     
-    # 查询委托，测试通过
-    #api.getOrders()
+    # 查询
+    #api.getSymbols()
+    #api.getCurrencys()
+    #api.getTimestamp()
     
-    # 买入，测试通过
-    #api.buy(7100, 0.0095)
     
-    # 卖出，测试通过
-    #api.sell(7120, 0.0095)
+    accountid = ''
+    symbol = 'aaceth'
     
-    # 撤单，测试通过
-    #api.cancelOrder(3915047376L)
+    #api.getAccounts()
+    #api.getAccountBalance(accountid)
+    #api.getOrders(symbol, 'pre-submitted,submitted,partial-filled,partial-canceled,filled,canceled')
+    #api.getOrders(symbol, 'filled')
+    #api.getMatchResults(symbol)
     
-    # 查询杠杆额度，测试通过
-    #api.getLoanAvailable()
+    api.getOrder('2440401255')
+    api.getMatchResult('2440401255')
     
-    # 查询杠杆列表，测试通过
-    #api.getLoans()
- 
-    # 阻塞
+    #api.placeOrder(accountid, '2', symbol, 'sell-market', source='api')
+    #api.cancelOrder('2440451757')
+    #api.batchCancel(['2440538580', '2440537853', '2440536765'])
+    
     input()    
 
 
     
     
 if __name__ == '__main__':
-    #testTrade()
-    
-    testData()
+    testTrade()

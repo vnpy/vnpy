@@ -1,526 +1,468 @@
 # encoding: utf-8
 
 import urllib
+import hmac
+import base64
 import hashlib
-import json
-import requests
-import zlib
-from time import time, sleep
-from Queue import Queue, Empty
+import requests 
+from copy import copy
+from datetime import datetime
 from threading import Thread
+from queue import Queue, Empty
+from multiprocessing.dummy import Pool
 
+import json
+import zlib
 from websocket import create_connection, _exceptions
 
 
 # 常量定义
-COINTYPE_BTC = 1
-COINTYPE_LTC = 2
+TIMEOUT = 5
+HUOBI_API_HOST = "api.huobi.pro"
+HADAX_API_HOST = "api.hadax.com"
+LANG = 'zh-CN'
 
-ACCOUNTTYPE_CNY = 1
-ACCOUNTTYPE_USD = 2
+DEFAULT_GET_HEADERS = {
+    "Content-type": "application/x-www-form-urlencoded",
+    'Accept': 'application/json',
+    'Accept-Language': LANG,
+    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+}
 
-LOANTYPE_CNY = 1
-LOANTYPE_BTC = 2
-LOANTYPE_LTC = 3
-LOANTYPE_USD = 4
-
-MARKETTYPE_CNY = 'cny'
-MARKETTYPE_USD = 'usd'
-
-SYMBOL_BTCCNY = 'BTC_CNY'
-SYMBOL_LTCCNY = 'LTC_CNY'
-SYMBOL_BTCUSD = 'BTC_USD'
-
-PERIOD_1MIN = '001'
-PERIOD_5MIN = '005'
-PERIOD_15MIN = '015'
-PERIOD_30MIN = '030'
-PERIOD_60MIN = '060'
-PERIOD_DAILY = '100'
-PERIOD_WEEKLY = '200'
-PERIOD_MONTHLY = '300'
-PERIOD_ANNUALLY = '400'
-
-# API相关定义
-HUOBI_TRADE_API = 'https://api.huobi.com/apiv3'
-
-# 功能代码
-FUNCTIONCODE_GETACCOUNTINFO = 'get_account_info'
-FUNCTIONCODE_GETORDERS = 'get_orders'
-FUNCTIONCODE_ORDERINFO = 'order_info'
-FUNCTIONCODE_BUY = 'buy'
-FUNCTIONCODE_SELL = 'sell'
-FUNCTIONCODE_BUYMARKET = 'buy_market'
-FUNCTIONCODE_SELLMARKET = 'sell_market'
-FUNCTIONCODE_CANCELORDER = 'cancel_order'
-FUNCTIONCODE_GETNEWDEALORDERS = 'get_new_deal_orders'
-FUNCTIONCODE_GETORDERIDBYTRADEID = 'get_order_id_by_trade_id'
-FUNCTIONCODE_WITHDRAWCOIN = 'withdraw_coin'
-FUNCTIONCODE_CANCELWITHDRAWCOIN = 'cancel_withdraw_coin'
-FUNCTIONCODE_GETWITHDRAWCOINRESULT = 'get_withdraw_coin_result'
-FUNCTIONCODE_TRANSFER = 'transfer'
-FUNCTIONCODE_LOAN = 'loan'
-FUNCTIONCODE_REPAYMENT = 'repayment'
-FUNCTIONCODE_GETLOANAVAILABLE = 'get_loan_available'
-FUNCTIONCODE_GETLOANS = 'get_loans'
+DEFAULT_POST_HEADERS = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Accept-Language': LANG,
+    "User-Agent": "Chrome/39.0.2171.71",
+    'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'    
+    #'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
+}
 
 
 #----------------------------------------------------------------------
-def signature(params):
-    """生成签名"""
-    params = sorted(params.iteritems(), key=lambda d:d[0], reverse=False)
-    message = urllib.urlencode(params)
+def createSign(params, method, host, path, secretKey):
+    """创建签名"""
+    sortedParams = sorted(params.items(), key=lambda d: d[0], reverse=False)
+    encodeParams = urllib.urlencode(sortedParams)
     
-    m = hashlib.md5()
-    m.update(message)
-    m.digest()
+    payload = [method, host, path, encodeParams]
+    payload = '\n'.join(payload)
+    payload = payload.encode(encoding='UTF8')
 
-    sig=m.hexdigest()
-    return sig    
-    
+    secretKey = secretKey.encode(encoding='UTF8')
+
+    digest = hmac.new(secretKey, payload, digestmod=hashlib.sha256).digest()
+
+    signature = base64.b64encode(digest)
+    signature = signature.decode()
+    return signature    
+
 
 ########################################################################
 class TradeApi(object):
-    """交易接口"""
-    DEBUG = True
+    """交易API"""
+    HUOBI = 'huobi'
+    HADAX = 'hadax'
 
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.accessKey = ''
         self.secretKey = ''
-        
+    
         self.active = False         # API工作状态   
-        self.reqID = 0              # 请求编号
-        self.reqQueue = Queue()     # 请求队列
-        self.reqThread = Thread(target=self.processQueue)   # 请求处理线程        
-    
+        self.reqid = 0              # 请求编号
+        self.queue = Queue()        # 请求队列
+        self.pool = None            # 线程池
+        
     #----------------------------------------------------------------------
-    def processRequest(self, req):
-        """处理请求"""
-        # 读取方法和参数
-        method = req['method']
-        params = req['params']
-        optional = req['optional']
-        
-        # 在参数中增加必须的字段
-        params['created'] = long(time())
-        params['access_key'] = self.accessKey
-        params['secret_key'] = self.secretKey
-        params['method'] = method
-        
-        # 添加签名
-        sign = signature(params)
-        params['sign'] = sign
-        del params['secret_key']
-        
-        # 添加选填参数
-        if optional:
-            params.update(optional)
-        
-        # 发送请求
-        payload = urllib.urlencode(params)
-
-        r = requests.post(HUOBI_TRADE_API, params=payload)
-        if r.status_code == 200:
-            data = r.json()
-            return data
-        else:
-            return None        
-    
-    #----------------------------------------------------------------------
-    def processQueue(self):
-        """处理请求队列中的请求"""
-        while self.active:
-            try:
-                req = self.reqQueue.get(block=True, timeout=1)  # 获取请求的阻塞为一秒
-                callback = req['callback']
-                reqID = req['reqID']
-                
-                data = self.processRequest(req)
-                
-                # 请求失败
-                if 'code' in data and 'message' in data:
-                    error = u'错误信息：%s' %data['message']
-                    self.onError(error, req, reqID)
-                # 请求成功
-                else:
-                    if self.DEBUG:
-                        print callback.__name__
-                    callback(data, req, reqID)
-                
-            except Empty:
-                pass    
-            
-    #----------------------------------------------------------------------
-    def sendRequest(self, method, params, callback, optional=None):
-        """发送请求"""
-        # 请求编号加1
-        self.reqID += 1
-        
-        # 生成请求字典并放入队列中
-        req = {}
-        req['method'] = method
-        req['params'] = params
-        req['callback'] = callback
-        req['optional'] = optional
-        req['reqID'] = self.reqID
-        self.reqQueue.put(req)
-        
-        # 返回请求编号
-        return self.reqID
-        
-    ####################################################
-    ## 主动函数
-    ####################################################    
-    
-    #----------------------------------------------------------------------
-    def init(self, accessKey, secretKey):
+    def init(self, host, accessKey, secretKey):
         """初始化"""
+        if host == self.HUOBI:
+            self.hostname = HUOBI_API_HOST
+        else:
+            self.hostname = HADAX_API_HOST
+        self.hosturl = 'https://%s' %self.hostname
+            
         self.accessKey = accessKey
         self.secretKey = secretKey
         
+    #----------------------------------------------------------------------
+    def start(self, n=10):
+        """启动"""
         self.active = True
-        self.reqThread.start()
+        self.pool = Pool(n)
+        self.pool.map_async(self.run, range(n))
         
     #----------------------------------------------------------------------
-    def exit(self):
-        """退出"""
+    def stop(self):
+        """停止"""
         self.active = False
+        self.pool.close()
+        self.pool.join()
         
-        if self.reqThread.isAlive():
-            self.reqThread.join()    
+    #----------------------------------------------------------------------
+    def httpGet(self, url, params):
+        """HTTP GET"""        
+        headers = copy(DEFAULT_GET_HEADERS)
+        postdata = urllib.urlencode(params)
+        
+        try:
+            response = requests.get(url, postdata, headers=headers, timeout=TIMEOUT)
+            if response.status_code == 200:
+                return True, response.json()
+            else:
+                return False, u'GET请求失败，状态代码：%s' %response.status_code
+        except Exception as e:
+            return False, u'GET请求触发异常，原因：%s' %e
+    
+    #----------------------------------------------------------------------    
+    def httpPost(self, url, params, add_to_headers=None):
+        """HTTP POST"""       
+        headers = copy(DEFAULT_POST_HEADERS)
+        postdata = json.dumps(params)
+        
+        try:
+            response = requests.post(url, postdata, headers=headers, timeout=TIMEOUT)
+            if response.status_code == 200:
+                return True, response.json()
+            else:
+                return False, u'POST请求失败，返回信息：%s' %response.json()
+        except Exception as e:
+            return False, u'POST请求触发异常，原因：%s' %e
+        
+    #----------------------------------------------------------------------
+    def generateSignParams(self):
+        """生成签名参数"""
+        timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+        d = {
+            'AccessKeyId': self.accessKey,
+            'SignatureMethod': 'HmacSHA256',
+            'SignatureVersion': '2',
+            'Timestamp': timestamp
+        }    
+        
+        return d
+        
+    #----------------------------------------------------------------------
+    def apiGet(self, path, params):
+        """API GET"""
+        method = 'GET'
+        
+        params.update(self.generateSignParams())
+        params['Signature'] = createSign(params, method, self.hostname, path, self.secretKey)
+        
+        url = self.hosturl + path
+        
+        return self.httpGet(url, params)
     
     #----------------------------------------------------------------------
-    def getAccountInfo(self, market='cny'):
+    def apiPost(self, path, params):
+        """API POST"""
+        method = 'POST'
+        
+        signParams = self.generateSignParams()
+        signParams['Signature'] = createSign(signParams, method, self.hostname, path, self.secretKey)
+        
+        url = self.hosturl + path + '?' + urllib.urlencode(signParams)
+
+        return self.httpPost(url, params)
+    
+    #----------------------------------------------------------------------
+    def addReq(self, path, params, func, callback):
+        """添加请求"""
+        self.reqid += 1
+        req = (path, params, func, callback, self.reqid)
+        self.queue.put(req)
+        return self.reqid
+    
+    #----------------------------------------------------------------------
+    def processReq(self, req):
+        """处理请求"""
+        path, params, func, callback, reqid = req
+        result, data = func(path, params)
+        
+        if result:
+            if data['status'] == 'ok':
+                callback(data['data'], reqid)
+            else:
+                msg = u'错误代码：%s，错误信息：%s' %(data['err-code'], data['err-msg'])
+                self.onError(msg, reqid)
+        else:
+            self.onError(data, reqid)
+    
+    #----------------------------------------------------------------------
+    def run(self, n):
+        """连续运行"""
+        while self.active:    
+            try:
+                req = self.queue.get(timeout=1)
+                self.processReq(req)
+            except Empty:
+                pass
+    
+    #----------------------------------------------------------------------
+    def getSymbols(self):
+        """查询合约代码"""
+        if self.hostname == HUOBI_API_HOST:
+            path = '/v1/common/symbols'
+        else:
+            path = '/v1/hadax/common/symbols'
+
+        params = {}
+        func = self.apiGet
+        callback = self.onGetSymbols
+        
+        return self.addReq(path, params, func, callback)
+    
+    #----------------------------------------------------------------------
+    def getCurrencys(self):
+        """查询支持货币"""
+        if self.hostname == HUOBI_API_HOST:
+            path = '/v1/common/currencys'
+        else:
+            path = '/v1/hadax/common/currencys'
+
+        params = {}
+        func = self.apiGet
+        callback = self.onGetCurrencys
+        
+        return self.addReq(path, params, func, callback)   
+    
+    #----------------------------------------------------------------------
+    def getTimestamp(self):
+        """查询系统时间"""
+        path = '/v1/common/timestamp'
+        params = {}
+        func = self.apiGet
+        callback = self.onGetCurrencys
+        
+        return self.addReq(path, params, func, callback) 
+    
+    #----------------------------------------------------------------------
+    def getAccounts(self):
         """查询账户"""
-        method = FUNCTIONCODE_GETACCOUNTINFO
+        path = '/v1/account/accounts'
         params = {}
-        callback = self.onGetAccountInfo
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)
+        func = self.apiGet
+        callback = self.onGetAccounts
+    
+        return self.addReq(path, params, func, callback)         
     
     #----------------------------------------------------------------------
-    def getOrders(self, coinType=COINTYPE_BTC, market='cny'):
+    def getAccountBalance(self, accountid):
+        """查询余额"""
+        if self.hostname == HUOBI_API_HOST:
+            path = '/v1/account/accounts/%s/balance' %accountid
+        else:
+            path = '/v1/hadax/account/accounts/%s/balance' %accountid
+            
+        params = {}
+        func = self.apiGet
+        callback = self.onGetAccountBalance
+    
+        return self.addReq(path, params, func, callback) 
+    
+    #----------------------------------------------------------------------
+    def getOrders(self, symbol, states, types=None, startDate=None, 
+                  endDate=None, from_=None, direct=None, size=None):
         """查询委托"""
-        method = FUNCTIONCODE_GETORDERS
-        params = {'coin_type': coinType}
+        path = '/v1/order/orders'
+        
+        params = {
+            'symbol': symbol,
+            'states': states
+        }
+        
+        if types:
+            params['types'] = types
+        if startDate:
+            params['start-date'] = startDate
+        if endDate:
+            params['end-date'] = endDate        
+        if from_:
+            params['from'] = from_
+        if direct:
+            params['direct'] = direct
+        if size:
+            params['size'] = size        
+    
+        func = self.apiGet
         callback = self.onGetOrders
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)
-        
-    #----------------------------------------------------------------------
-    def orderInfo(self, id_, coinType=COINTYPE_BTC, market='cny'):
-        """获取委托详情"""
-        method = FUNCTIONCODE_ORDERINFO
-        params = {
-            'coin_type': coinType,
-            'id': id_
-        }
-        callback = self.onOrderInfo
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)
+    
+        return self.addReq(path, params, func, callback)     
     
     #----------------------------------------------------------------------
-    def buy(self, price, amount, coinType=COINTYPE_BTC, 
-            tradePassword='', tradeId = '', market='cny'):
-        """委托买入"""
-        method = FUNCTIONCODE_BUY
-        params = {
-            'coin_type': coinType,
-            'price': price,
-            'amount': amount
-        }
-        callback = self.onBuy
-        optional = {
-            'trade_password': tradePassword,
-            'trade_id': tradeId,
-            'market': market
-        }
-        return self.sendRequest(method, params, callback, optional)
+    def getMatchResults(self, symbol, types=None, startDate=None, 
+                  endDate=None, from_=None, direct=None, size=None):
+        """查询委托"""
+        path = '/v1/order/matchresults'
 
-    #----------------------------------------------------------------------
-    def sell(self, price, amount, coinType=COINTYPE_BTC, 
-            tradePassword='', tradeId = '', market='cny'):
-        """委托卖出"""
-        method = FUNCTIONCODE_SELL
         params = {
-            'coin_type': coinType,
-            'price': price,
-            'amount': amount
+            'symbol': symbol
         }
-        callback = self.onSell
-        optional = {
-            'trade_password': tradePassword,
-            'trade_id': tradeId,
-            'market': market
-        }
-        return self.sendRequest(method, params, callback, optional)
+
+        if types:
+            params['types'] = types
+        if startDate:
+            params['start-date'] = startDate
+        if endDate:
+            params['end-date'] = endDate        
+        if from_:
+            params['from'] = from_
+        if direct:
+            params['direct'] = direct
+        if size:
+            params['size'] = size        
+
+        func = self.apiGet
+        callback = self.onGetMatchResults
+
+        return self.addReq(path, params, func, callback)   
     
     #----------------------------------------------------------------------
-    def buyMarket(self, amount, coinType=COINTYPE_BTC, 
-                  tradePassword='', tradeId = '', market='cny'):
-        """市价买入"""
-        method = FUNCTIONCODE_BUYMARKET
-        params = {
-            'coin_type': coinType,
-            'amount': amount
-        }
-        callback = self.onBuyMarket
-        optional = {
-            'trade_password': tradePassword,
-            'trade_id': tradeId,
-            'market': market
-        }
-        return self.sendRequest(method, params, callback, optional) 
+    def getOrder(self, orderid):
+        """查询某一委托"""
+        path = '/v1/order/orders/%s' %orderid
+    
+        params = {}
+    
+        func = self.apiGet
+        callback = self.onGetOrder
+    
+        return self.addReq(path, params, func, callback)             
     
     #----------------------------------------------------------------------
-    def sellMarket(self, amount, coinType=COINTYPE_BTC, 
-                  tradePassword='', tradeId = '', market='cny'):
-        """市价卖出"""
-        method = FUNCTIONCODE_SELLMARKET
-        params = {
-            'coin_type': coinType,
-            'amount': amount
-        }
-        callback = self.onSellMarket
-        optional = {
-            'trade_password': tradePassword,
-            'trade_id': tradeId,
-            'market': market
-        }
-        return self.sendRequest(method, params, callback, optional)      
+    def getMatchResult(self, orderid):
+        """查询某一委托"""
+        path = '/v1/order/orders/%s/matchresults' %orderid
+    
+        params = {}
+    
+        func = self.apiGet
+        callback = self.onGetMatchResult
+    
+        return self.addReq(path, params, func, callback)     
     
     #----------------------------------------------------------------------
-    def cancelOrder(self, id_, coinType=COINTYPE_BTC, market='cny'):
-        """撤销委托"""
-        method = FUNCTIONCODE_CANCELORDER
+    def placeOrder(self, accountid, amount, symbol, type_, price=None, source=None):
+        """下单"""
+        if self.hostname == HUOBI_API_HOST:
+            path = '/v1/order/orders/place'
+        else:
+            path = '/v1/hadax/order/orders/place'
+        
         params = {
-            'coin_type': coinType,
-            'id': id_
+            'account-id': accountid,
+            'amount': amount,
+            'symbol': symbol,
+            'type': type_
         }
+        
+        if price:
+            params['price'] = price
+        if source:
+            params['source'] = source     
+
+        func = self.apiPost
+        callback = self.onPlaceOrder
+
+        return self.addReq(path, params, func, callback)           
+    
+    #----------------------------------------------------------------------
+    def cancelOrder(self, orderid):
+        """撤单"""
+        path = '/v1/order/orders/%s/submitcancel' %orderid
+        
+        params = {}
+        
+        func = self.apiPost
         callback = self.onCancelOrder
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)    
 
-    #----------------------------------------------------------------------
-    def getNewDealOrders(self, market='cny'):
-        """查询最新10条成交"""
-        method = FUNCTIONCODE_GETNEWDEALORDERS
-        params = {}
-        callback = self.onGetNewDealOrders
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)
+        return self.addReq(path, params, func, callback)          
     
     #----------------------------------------------------------------------
-    def getOrderIdByTradeId(self, tradeId, coinType=COINTYPE_BTC, 
-                            market='cny'):
-        """通过成交编号查询委托编号"""
-        method = FUNCTIONCODE_GETORDERIDBYTRADEID
+    def batchCancel(self, orderids):
+        """批量撤单"""
+        path = '/v1/order/orders/batchcancel'
+    
         params = {
-            'coin_type': coinType,
-            'trade_id': tradeId
+            'order-ids': orderids
         }
-        callback = self.onGetOrderIdByTradeId
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional) 
     
-    #----------------------------------------------------------------------
-    def withdrawCoin(self, withdrawAddress, withdrawAmount,
-                     coinType=COINTYPE_BTC, tradePassword='',
-                     market='cny', withdrawFee=0.0001):
-        """提币"""
-        method = FUNCTIONCODE_WITHDRAWCOIN
-        params = {
-            'coin_type': coinType,
-            'withdraw_address': withdrawAddress,
-            'withdraw_amount': withdrawAmount
-        }
-        callback = self.onWithdrawCoin
-        optional = {
-            'market': market,
-            'withdraw_fee': withdrawFee
-        }
-        return self.sendRequest(method, params, callback, optional)  
+        func = self.apiPost
+        callback = self.onBatchCancel
     
-    #----------------------------------------------------------------------
-    def cancelWithdrawCoin(self, id_, market='cny'):
-        """取消提币"""
-        method = FUNCTIONCODE_CANCELWITHDRAWCOIN
-        params = {'withdraw_coin_id': id_}
-        callback = self.onCancelWithdrawCoin
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)         
-    
-    #----------------------------------------------------------------------
-    def onGetWithdrawCoinResult(self, id_, market='cny'):
-        """查询提币结果"""
-        method = FUNCTIONCODE_GETWITHDRAWCOINRESULT
-        params = {'withdraw_coin_id': id_}
-        callback = self.onGetWithdrawCoinResult
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)         
-    
-    #----------------------------------------------------------------------
-    def transfer(self, amountFrom, amountTo, amount, 
-                 coinType=COINTYPE_BTC ):
-        """账户内转账"""
-        method = FUNCTIONCODE_TRANSFER
-        params = {
-            'amount_from': amountFrom,
-            'amount_to': amountTo,
-            'amount': amount,
-            'coin_type': coinType
-        }
-        callback = self.onTransfer
-        optional = {}
-        return self.sendRequest(method, params, callback, optional)          
+        return self.addReq(path, params, func, callback)     
         
     #----------------------------------------------------------------------
-    def loan(self, amount, loan_type=LOANTYPE_CNY, 
-             market=MARKETTYPE_CNY):
-        """申请杠杆"""
-        method = FUNCTIONCODE_LOAN
-        params = {
-            'amount': amount,
-            'loan_type': loan_type
-        }
-        callback = self.onLoan
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)
+    def onError(self, msg, reqid):
+        """错误回调"""
+        print msg, reqid
+        
+    #----------------------------------------------------------------------
+    def onGetSymbols(self, data, reqid):
+        """查询代码回调"""
+        #print reqid, data 
+        for d in data['data']:
+            print d
     
     #----------------------------------------------------------------------
-    def repayment(self, id_, amount, repayAll=0,
-                  market=MARKETTYPE_CNY):
-        """归还杠杆"""
-        method = FUNCTIONCODE_REPAYMENT
-        params = {
-            'loan_id': id_,
-            'amount': amount
-        }
-        callback = self.onRepayment
-        optional = {
-            'repay_all': repayAll,
-            'market': market
-        }
-        return self.sendRequest(method, params, callback, optional)
+    def onGetCurrencys(self, data, reqid):
+        """查询货币回调"""
+        print reqid, data        
     
     #----------------------------------------------------------------------
-    def getLoanAvailable(self, market='cny'):
-        """查询杠杆额度"""
-        method = FUNCTIONCODE_GETLOANAVAILABLE
-        params = {}
-        callback = self.onLoanAvailable
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)
-    
+    def onGetTimestamp(self, data, reqid):
+        """查询时间回调"""
+        print reqid, data    
+        
     #----------------------------------------------------------------------
-    def getLoans(self, market='cny'):
-        """查询杠杆列表"""
-        method = FUNCTIONCODE_GETLOANS
-        params = {}
-        callback = self.onGetLoans
-        optional = {'market': market}
-        return self.sendRequest(method, params, callback, optional)    
-    
-    ####################################################
-    ## 回调函数
-    ####################################################
-    
-    #----------------------------------------------------------------------
-    def onError(self, error, req, reqID):
-        """错误推送"""
-        print error, reqID    
-
-    #----------------------------------------------------------------------
-    def onGetAccountInfo(self, data, req, reqID):
+    def onGetAccounts(self, data, reqid):
         """查询账户回调"""
-        print data
+        print reqid, data     
     
     #----------------------------------------------------------------------
-    def onGetOrders(self, data, req, reqID, fuck):
+    def onGetAccountBalance(self, data, reqid):
+        """查询余额回调"""
+        print reqid, data
+        for d in data['data']['list']:
+            print d
+        
+    #----------------------------------------------------------------------
+    def onGetOrders(self, data, reqid):
         """查询委托回调"""
-        print data
+        print reqid, data    
         
     #----------------------------------------------------------------------
-    def onOrderInfo(self, data, req, reqID):
-        """委托详情回调"""
-        print data
-
-    #----------------------------------------------------------------------
-    def onBuy(self, data, req, reqID):
-        """买入回调"""
-        print data
+    def onGetMatchResults(self, data, reqid):
+        """查询成交回调"""
+        print reqid, data      
         
     #----------------------------------------------------------------------
-    def onSell(self, data, req, reqID):
-        """卖出回调"""
-        print data    
+    def onGetOrder(self, data, reqid):
+        """查询单一委托回调"""
+        print reqid, data    
         
     #----------------------------------------------------------------------
-    def onBuyMarket(self, data, req, reqID):
-        """市价买入回调"""
-        print data
+    def onGetMatchResult(self, data, reqid):
+        """查询单一成交回调"""
+        print reqid, data    
         
     #----------------------------------------------------------------------
-    def onSellMarket(self, data, req, reqID):
-        """市价卖出回调"""
-        print data        
-        
+    def onPlaceOrder(self, data, reqid):
+        """委托回调"""
+        print reqid, data
+    
     #----------------------------------------------------------------------
-    def onCancelOrder(self, data, req, reqID):
+    def onCancelOrder(self, data, reqid):
         """撤单回调"""
-        print data
-    
-    #----------------------------------------------------------------------
-    def onGetNewDealOrders(self, data, req, reqID):
-        """查询最新成交回调"""
-        print data    
+        print reqid, data          
         
     #----------------------------------------------------------------------
-    def onGetOrderIdByTradeId(self, data, req, reqID):
-        """通过成交编号查询委托编号回调"""
-        print data    
-        
-    #----------------------------------------------------------------------
-    def onWithdrawCoin(self, data, req, reqID):
-        """提币回调"""
-        print data
-        
-    #----------------------------------------------------------------------
-    def onCancelWithdrawCoin(self, data, req, reqID):
-        """取消提币回调"""
-        print data      
-        
-    #----------------------------------------------------------------------
-    def onGetWithdrawCoinResult(self, data, req, reqID):
-        """查询提币结果回调"""
-        print data           
-        
-    #----------------------------------------------------------------------
-    def onTransfer(self, data, req, reqID):
-        """转账回调"""
-        print data
-        
-    #----------------------------------------------------------------------
-    def onLoan(self, data, req, reqID):
-        """申请杠杆回调"""
-        print data      
-        
-    #----------------------------------------------------------------------
-    def onRepayment(self, data, req, reqID):
-        """归还杠杆回调"""
-        print data    
-    
-    #----------------------------------------------------------------------
-    def onLoanAvailable(self, data, req, reqID):
-        """查询杠杆额度回调"""
-        print data      
-        
-    #----------------------------------------------------------------------
-    def onGetLoans(self, data, req, reqID):
-        """查询杠杆列表"""
-        print data
+    def onBatchCancel(self, data, reqid):
+        """批量撤单回调"""
+        print reqid, data      
 
 
 ########################################################################
