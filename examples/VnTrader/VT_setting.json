@@ -11,7 +11,7 @@
 
 	"logActive": true,
 	"logLevel": "debug",
-	"logConsole": true,
+	"logConsole": false,
 	"logFile": true,
 
 	"tdPenalty": ["IF", "IH", "IC"]

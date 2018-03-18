@@ -122,20 +122,12 @@ class HuobiGateway(VtGateway):
         self.tradeApi.cancelOrder(cancelOrderReq)
         
     #----------------------------------------------------------------------
-    def qryPosition(self):
-        """查询持仓"""
-        self.tradeApi.qryPosition()
-        
-    #----------------------------------------------------------------------
-    def qryTrade(self):
-        """查询成交"""
+    def qryInfo(self):
+        """查询委托、成交、持仓"""
+        self.tradeApi.qryOrder()
         self.tradeApi.qryTrade()
-        
-    #----------------------------------------------------------------------
-    def qryOrder(self):
-        """查询委托"""
-        self.tradeApi.qryOrder()    
-        
+        self.tradeApi.qryPosition()
+            
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
@@ -149,11 +141,7 @@ class HuobiGateway(VtGateway):
         """初始化连续查询"""
         if self.qryEnabled:
             # 需要循环的查询函数列表
-            self.qryFunctionList = [
-                self.qryPosition,
-                self.qryTrade,
-                self.qryOrder
-            ]
+            self.qryFunctionList = [self.qryInfo]
             
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 1         # 查询触发点
@@ -331,6 +319,7 @@ class HuobiDataApi(DataApi):
         tick.lowPrice = t['low']
         tick.lastPrice = t['close']
         tick.volume = t['vol']
+        tick.preClosePrice = tick.openPrice
         
         if tick.bidPrice1:
             newtick = copy(tick)
@@ -350,9 +339,6 @@ class HuobiTradeApi(TradeApi):
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
-        self.reqID = EMPTY_INT              # 操作请求编号
-        self.localID = EMPTY_INT            # 订单编号
-        
         self.connectionStatus = False       # 连接状态
         self.accountid = ''
         
@@ -365,7 +351,13 @@ class HuobiTradeApi(TradeApi):
         self.tradeIDs = set()   # 成交编号集合
         
         self.qryOrderID = None  # 查询起始委托编号
-    
+        
+        self.localid = 100000       # 订单编号，10000为起始
+        self.reqLocalDict = {}      # 请求编号和本地委托编号映射
+        self.localOrderDict = {}    # 本地委托编号和交易所委托编号映射
+        self.orderLocalDict = {}    # 交易所委托编号和本地委托编号映射
+        self.cancelReqDict = {}     # 撤单请求字典
+        
     #----------------------------------------------------------------------
     def connect(self, exchange, accessKey, secretKey, symbols=''):
         """初始化连接"""
@@ -388,6 +380,9 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def qryOrder(self):
         """查询委托"""
+        if not self.accountid:
+            return
+        
         states = 'pre-submitted,submitting,submitted,partial-filled,partial-canceled,filled,canceled'
         for symbol in self.symbols:
             self.getOrders(symbol, states, startDate=self.todayDate)
@@ -397,6 +392,9 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def qryTrade(self):
         """查询成交"""
+        if not self.accountid:
+            return
+        
         for symbol in self.symbols:
             self.getMatchResults(symbol, startDate=self.todayDate)
             #self.getMatchResults(symbol, startDate=self.todayDate, from_=self.qryTradeID)    
@@ -404,28 +402,40 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
-        self.localID += 1
-        vtOrderID = '.'.join([self.gatewayName, str(self.localID)])
+        self.localid += 1
+        localid = str(self.localid)
+        vtOrderID = '.'.join([self.gatewayName, localid])
         
         if orderReq.direction == DIRECTION_LONG:
             type_ = 'buy-limit'
         else:
             type_ = 'sell-limit'
         
-        self.placeOrder(self.accountid, 
-                        str(orderReq.volume), 
-                        orderReq.symbol, 
-                        type_, 
-                        price=str(orderReq.price),
-                        source='api')
-         
+        reqid = self.placeOrder(self.accountid, 
+                                str(orderReq.volume), 
+                                orderReq.symbol, 
+                                type_, 
+                                price=str(orderReq.price),
+                                source='api')
+        
+        self.reqLocalDict[reqid] = localid
+        
+        print 'send', vtOrderID
         # 返回订单号
         return vtOrderID
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        super(HuobiTradeApi, self).cancelOrder(cancelOrderReq.orderID)
+        localid = cancelOrderReq.orderID
+        orderID = self.localOrderDict.get(localid, None)
+        
+        if orderID:
+            super(HuobiTradeApi, self).cancelOrder(orderID)
+            if localid in self.cancelReqDict:
+                del self.cancelReqDict[localid]
+        else:
+            self.cancelReqDict[localid] = cancelOrderReq
         
     #----------------------------------------------------------------------
     def writeLog(self, content):
@@ -500,24 +510,36 @@ class HuobiTradeApi(TradeApi):
                 pos.direction = DIRECTION_LONG
                 pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
             
-            if d['type'] == 'trade':
-                pos.position = float(d['balance'])
-            else:
+            pos.position += float(d['balance'])
+            if d['type'] == 'fozen':
                 pos.frozen = float(d['balance'])
                 
             posDict[symbol] = pos
         
         for pos in posDict.values():
-            self.gateway.onPosition(pos)
+            if pos.position:
+                self.gateway.onPosition(pos)
         
     #----------------------------------------------------------------------
     def onGetOrders(self, data, reqid):
         """查询委托回调"""
         qryOrderID = None
         
+        data.reverse()
+        
         for d in data:
             orderID = d['id']
+            strOrderID = str(orderID)
             updated = False
+            
+            if strOrderID in self.orderLocalDict:
+                localid = self.orderLocalDict[strOrderID]
+            else:
+                self.localid += 1
+                localid = str(self.localid)
+                
+                self.orderLocalDict[strOrderID] = localid
+                self.localOrderDict[localid] = strOrderID
             
             order = self.orderDict.get(orderID, None)
             if not order:
@@ -526,7 +548,7 @@ class HuobiTradeApi(TradeApi):
                 order = VtOrderData()
                 order.gatewayName = self.gatewayName
                 
-                order.orderID = str(orderID)
+                order.orderID = localid
                 order.vtOrderID = '.'.join([order.gatewayName, order.orderID])
             
                 order.symbol = d['symbol']
@@ -541,7 +563,9 @@ class HuobiTradeApi(TradeApi):
                     order.direction = DIRECTION_LONG
                 else:
                     order.direction = DIRECTION_SHORT
-                order.offset = OFFSET_NONE                
+                order.offset = OFFSET_NONE  
+                
+                self.orderDict[orderID] = order
             
             # 数据更新，只有当成交数量或者委托状态变化时，才执行推送
             if d['canceled-at']:
@@ -573,6 +597,8 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetMatchResults(self, data, reqid):
         """查询成交回调"""
+        data.reverse()
+        
         for d in data:
             tradeID = d['match-id']
             
@@ -600,10 +626,13 @@ class HuobiTradeApi(TradeApi):
             else:
                 trade.direction = DIRECTION_SHORT
             trade.offset = OFFSET_NONE
-                
-            trade.orderID = str(d['order-id'])
+            
+            strOrderID = str(d['order-id'])
+            localid = self.orderLocalDict.get(strOrderID, '')
+            trade.orderID = localid
             trade.vtOrderID = '.'.join([trade.gatewayName, trade.orderID])
-            trade.tradeID = str(d['match-id'])
+            
+            trade.tradeID = str(tradeID)
             trade.vtTradeID = '.'.join([trade.gatewayName, trade.tradeID])
             
             trade.price = float(d['price'])
@@ -627,7 +656,14 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onPlaceOrder(self, data, reqid):
         """委托回调"""
-        print reqid, data
+        localid = self.reqLocalDict[reqid]
+        
+        self.localOrderDict[localid] = data
+        self.orderLocalDict[data] = localid
+        
+        if localid in self.cancelReqDict:
+            req = self.cancelReqDict[localid]
+            self.cancelOrder(req)
     
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
