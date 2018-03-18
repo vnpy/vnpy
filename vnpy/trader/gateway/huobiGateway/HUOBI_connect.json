@@ -1,0 +1,6 @@
+{
+	"exchange": "hadax",
+	"accessKey": "请在火币网站获取",
+	"secretKey": "请在火币网站获取",
+	"symbols": ["aaceth"]
+}

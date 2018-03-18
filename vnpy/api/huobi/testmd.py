@@ -53,7 +53,7 @@ from vnhuobi import DataApi
 
 api = DataApi()
 api.connect("wss://api.huobipro.com/ws")
-#api.subscribeMarketDepth('ethusdt')
+api.subscribeMarketDepth('ethusdt')
 #api.subscribeTradeDetail('ethusdt')
-api.subscribeMarketDetail('ethusdt')
+#api.subscribeMarketDetail('ethusdt')
 input()

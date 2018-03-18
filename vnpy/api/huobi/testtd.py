@@ -20,17 +20,17 @@ def testTrade():
     print api.getTimestamp()
     
     
-    accountid = ''
+    #accountid = ''
     symbol = 'aaceth'
     
     #api.getAccounts()
     #api.getAccountBalance(accountid)
     #api.getOrders(symbol, 'pre-submitted,submitted,partial-filled,partial-canceled,filled,canceled')
     #api.getOrders(symbol, 'filled')
-    #api.getMatchResults(symbol)
+    print api.getMatchResults(symbol)
     
-    api.getOrder('2440401255')
-    api.getMatchResult('2440401255')
+    #api.getOrder('2440401255')
+    #api.getMatchResult('2440401255')
     
     #api.placeOrder(accountid, '2', symbol, 'sell-market', source='api')
     #api.cancelOrder('2440451757')

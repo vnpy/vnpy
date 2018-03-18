@@ -5,6 +5,7 @@ import hmac
 import base64
 import hashlib
 import requests 
+import traceback
 from copy import copy
 from datetime import datetime
 from threading import Thread
@@ -33,9 +34,7 @@ DEFAULT_POST_HEADERS = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     'Accept-Language': LANG,
-    "User-Agent": "Chrome/39.0.2171.71",
     'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'    
-    #'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:53.0) Gecko/20100101 Firefox/53.0'
 }
 
 
@@ -93,6 +92,8 @@ class TradeApi(object):
         
         if mode:
             self.mode = mode
+            
+        return True
         
     #----------------------------------------------------------------------
     def start(self, n=10):
@@ -418,7 +419,7 @@ class TradeApi(object):
     def onGetSymbols(self, data, reqid):
         """查询代码回调"""
         #print reqid, data 
-        for d in data['data']:
+        for d in data:
             print d
     
     #----------------------------------------------------------------------
@@ -523,8 +524,17 @@ class DataApi(object):
             
             return True
         except:
-            self.onError(u'行情服务器连接失败')
+            msg = traceback.format_exc()
+            self.onError(u'行情服务器连接失败：%s' %msg)
             return False
+        
+    #----------------------------------------------------------------------
+    def stop(self):
+        """停止"""
+        if self.active:
+            self.active = False
+            self.thread.join()
+            self.ws.close()
         
     #----------------------------------------------------------------------
     def sendReq(self, req):
@@ -569,7 +579,7 @@ class DataApi(object):
     #----------------------------------------------------------------------
     def subscribeMarketDepth(self, symbol):
         """订阅行情深度"""
-        topic = 'market.%s.depth.step5' %symbol
+        topic = 'market.%s.depth.step0' %symbol
         self.subTopic(topic)
         
     #----------------------------------------------------------------------
