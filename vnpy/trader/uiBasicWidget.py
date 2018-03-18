@@ -2,7 +2,7 @@
 
 import json
 import csv
-import os
+import os,sys
 import platform
 from collections import OrderedDict
 import traceback
@@ -302,7 +302,15 @@ class BasicMonitor(QtWidgets.QTableWidget):
         
         # 如果设置了dataKey，则采用存量更新模式
         if self.dataKey:
-            key = data.__getattribute__(self.dataKey)
+            if isinstance(self.dataKey, list):
+                # 多个key，逐一组合
+                key = '_'.join([getattr(data, item, '') for item in self.dataKey])
+            else:
+                # 单个key
+                key = getattr(data, self.dataKey, None)
+                if key is None:
+                    print('uiBaseWidget.updateData() error: data had not attribute {} '.format(self.dataKey))
+                    return
             # 如果键在数据字典中不存在，则先插入新的一行，并创建对应单元格
             if key not in self.dataDict:
                 self.insertRow(0)     
@@ -459,14 +467,17 @@ class MarketMonitor(BasicMonitor):
         self.setHeaderDict(d)
         
         # 设置数据键
-        self.setDataKey('vtSymbol')
+        self.setDataKey(['vtSymbol','gatewayName'])
         
         # 设置监控事件类型
         self.setEventType(EVENT_TICK)
         
         # 设置字体
         self.setFont(BASIC_FONT)
-        
+
+        # 保存cell绑定数据
+        self.setSaveData(True)
+
         # 设置允许排序
         self.setSorting(True)
         
@@ -599,7 +610,7 @@ class OrderMonitor(BasicMonitor):
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
-        self.setDataKey('vtOrderID')
+        self.setDataKey(['vtOrderID','gatewayName'])
         self.setEventType(EVENT_ORDER)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
@@ -652,8 +663,10 @@ class PositionMonitor(BasicMonitor):
         d['positionProfit'] = {'chinese':vtText.POSITION_PROFIT, 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
-        
-        self.setDataKey('vtPositionName')
+
+        # 设置合约/接口为联合索引
+        self.setDataKey(['vtSymbol','gatewayName'])
+
         self.setEventType(EVENT_POSITION)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
@@ -685,7 +698,7 @@ class AccountMonitor(BasicMonitor):
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
-        self.setDataKey('vtAccountID')
+        self.setDataKey(['vtAccountID','gatewayName'])
         self.setEventType(EVENT_ACCOUNT)
         self.setFont(BASIC_FONT)
         self.initTable()
@@ -724,18 +737,21 @@ class TradingWidget(QtWidgets.QFrame):
                     EXCHANGE_CME,
                     EXCHANGE_NYMEX,
                     EXCHANGE_GLOBEX,
-                    EXCHANGE_IDEALPRO]
+                    EXCHANGE_IDEALPRO,
+                    EXCHANGE_OKEX]
     
     currencyList = [CURRENCY_NONE,
                     CURRENCY_CNY,
                     CURRENCY_HKD,
-                    CURRENCY_USD]
+                    CURRENCY_USD,
+                    CURRENCY_UNKNOWN]
     
     productClassList = [PRODUCT_NONE,
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
                         PRODUCT_OPTION,
-                        PRODUCT_FOREX]
+                        PRODUCT_FOREX,
+                        PRODUCT_SPOT]
     
     gatewayList = ['']
 
@@ -788,11 +804,12 @@ class TradingWidget(QtWidgets.QFrame):
         self.spinPrice = QtWidgets.QDoubleSpinBox()
         self.spinPrice.setDecimals(4)
         self.spinPrice.setMinimum(-10000)    # 原来是0，为支持套利，改为-10000
-        self.spinPrice.setMaximum(100000)
+        self.spinPrice.setMaximum(sys.maxsize)
 
-        self.spinVolume = QtWidgets.QSpinBox()
+        self.spinVolume = QtWidgets.QDoubleSpinBox()
         self.spinVolume.setMinimum(0)
-        self.spinVolume.setMaximum(1000000)
+        self.spinVolume.setDecimals(4)
+        self.spinVolume.setMaximum(sys.maxsize)
 
         self.comboPriceType = QtWidgets.QComboBox()
         self.comboPriceType.addItems(self.priceTypeList)
@@ -994,8 +1011,10 @@ class TradingWidget(QtWidgets.QFrame):
         self.labelReturn.setText('')
 
         # 重新注册事件监听
-        self.eventEngine.unregister(EVENT_TICK + self.symbol, self.signal.emit)
-        self.eventEngine.register(EVENT_TICK + vtSymbol, self.signal.emit)
+        if len(self.symbol) > 0:
+            self.eventEngine.unregister(EVENT_TICK + self.symbol, self.signal.emit)
+        if vtSymbol != self.symbol:
+            self.eventEngine.register(EVENT_TICK + vtSymbol, self.signal.emit)
 
         # 订阅合约
         req = VtSubscribeReq()
@@ -1126,26 +1145,48 @@ class TradingWidget(QtWidgets.QFrame):
     #----------------------------------------------------------------------
     def closePosition(self, cell):
         """根据持仓信息自动填写交易组件"""
-        # 读取持仓数据，cell是一个表格中的单元格对象
-        pos = cell.data
-        symbol = pos.symbol
-        
-        # 更新交易组件的显示合约
-        self.lineSymbol.setText(symbol)
-        self.updateSymbol()
-        
-        # 自动填写信息
-        self.comboPriceType.setCurrentIndex(self.priceTypeList.index(PRICETYPE_LIMITPRICE))
-        self.comboOffset.setCurrentIndex(self.offsetList.index(OFFSET_CLOSE))
-        self.spinVolume.setValue(pos.position)
+        try:
+            # 读取持仓数据，cell是一个表格中的单元格对象
+            pos = cell.data
+            symbol = pos.symbol
 
-        if pos.direction == DIRECTION_LONG or pos.direction == DIRECTION_NET:
-            self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_SHORT))
-        else:
-            self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_LONG))
+            # 更新交易组件的显示合约
+            self.lineSymbol.setText(symbol)
+            self.updateSymbol()
 
+            # 自动填写信息
+            self.comboPriceType.setCurrentIndex(self.priceTypeList.index(PRICETYPE_LIMITPRICE))
+            self.comboOffset.setCurrentIndex(self.offsetList.index(OFFSET_CLOSE))
+            self.spinVolume.setValue(pos.position)
+
+            if pos.direction == DIRECTION_LONG or pos.direction == DIRECTION_NET:
+                self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_SHORT))
+            else:
+                self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_LONG))
+        except Exception as ex:
+            self.mainEngine.writeError(u'tradingWg.closePosition exception:{}'.format(str(ex)))
         # 价格留待更新后由用户输入，防止有误操作
+        # ----------------------------------------------------------------------
 
+    def autoFillSymbol(self, cell):
+        """根据行情信息自动填写交易组件"""
+        try:
+            # 读取行情数据，cell是一个表格中的单元格对象
+            tick = cell.data
+            if tick is None:
+                return
+
+            if tick.vtSymbol:
+                # 更新交易组件的显示合约
+                self.lineSymbol.setText(tick.vtSymbol)
+                self.updateSymbol()
+
+            # 自动填写信息
+            if tick.gatewayName:
+                self.comboGateway.setCurrentIndex(self.gatewayList.index(tick.gatewayName))
+
+        except Exception as ex:
+            self.mainEngine.writeError(u'tradingWg.autoFillSymbol exception:{}'.format(str(ex)))
 
 ########################################################################
 class ContractMonitor(BasicMonitor):
