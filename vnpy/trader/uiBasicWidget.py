@@ -665,7 +665,7 @@ class PositionMonitor(BasicMonitor):
         self.setHeaderDict(d)
 
         # 设置合约/接口为联合索引
-        self.setDataKey(['vtSymbol','gatewayName'])
+        self.setDataKey(['vtSymbol','direction','gatewayName'])
 
         self.setEventType(EVENT_POSITION)
         self.setFont(BASIC_FONT)
