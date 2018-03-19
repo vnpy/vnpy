@@ -114,14 +114,15 @@ class CtpGateway(VtGateway):
         else:
             self.writeLog(u'交易接口已实例化')
 
+        setting = None
         try:
-            f = open(filePath,'r')
+            with open(filePath,'r') as f:
+                # 解析json文件
+                setting = json.load(f)
         except IOError:
             self.writeLog('{} {}'.format(filePath,text.LOADING_ERROR))
             return
 
-        # 解析json文件
-        setting = json.load(f)
         try:
             userID = str(setting['userID'])
             password = str(setting['password'])
@@ -810,7 +811,7 @@ class CtpTdApi(TdApi):
         # 查询回报结束
         if last:
             # 遍历推送
-            for pos in self.posDict.values():
+            for pos in list(self.posDict.values()):
                 self.gateway.onPosition(pos)
     
             # 清空缓存
@@ -1497,9 +1498,14 @@ class CtpTdApi(TdApi):
         
         req['InstrumentID'] = orderReq.symbol
         req['LimitPrice'] = orderReq.price
-        req['VolumeTotalOriginal'] = orderReq.volume
+
+        # 增加检查，ctp不支持float的volume下单
+        if isinstance(orderReq.volume, float):
+            req['VolumeTotalOriginal'] = int(orderReq.volume)
+        else:
+            req['VolumeTotalOriginal'] = orderReq.volume
         
-        # 下面如果由于传入的类型本接口不支持，则会返回空字符串
+        # 下面如果由于传入的类型本接口不支持，则会 返回空字符串
         req['OrderPriceType'] = priceTypeMap.get(orderReq.priceType, '')
         req['Direction'] = directionMap.get(orderReq.direction, '')
         req['CombOffsetFlag'] = offsetMap.get(orderReq.offset, '')
