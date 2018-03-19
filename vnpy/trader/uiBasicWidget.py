@@ -467,7 +467,7 @@ class MarketMonitor(BasicMonitor):
         self.setHeaderDict(d)
         
         # 设置数据键
-        self.setDataKey(['vtSymbol','gatewayName'])
+        self.setDataKey(['vtSymbol', 'gatewayName'])
         
         # 设置监控事件类型
         self.setEventType(EVENT_TICK)
@@ -563,7 +563,7 @@ class TradeMonitor(BasicMonitor):
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
 
-        self.setDataKey('vtTradeID')
+        self.setDataKey(['vtTradeID','gatewayName'])
         self.setEventType(EVENT_TRADE)
         self.setFont(BASIC_FONT)
         self.setSorting(True)
@@ -1343,8 +1343,13 @@ class WorkingOrderMonitor(OrderMonitor):
 
         # 如果该委托已完成，则隐藏该行
         if data.status in self.STATUS_COMPLETED:
-            vtOrderID = data.vtOrderID
-            cellDict = self.dataDict[vtOrderID]
+            if isinstance(self.dataKey, list):
+                # 多个key，逐一组合
+                key = '_'.join([getattr(data, item, '') for item in self.dataKey])
+            else:
+                # 单个key
+                key = getattr(data, self.dataKey, None)
+            cellDict = self.dataDict[key]
             cell = cellDict['status']
             row = self.row(cell)
             self.hideRow(row)
