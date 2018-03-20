@@ -508,7 +508,7 @@ class DataApi(object):
             except zlib.error:
                 self.onError(u'数据解压出错：%s' %stream)
             except _exceptions.WebSocketConnectionClosedException:
-                self.onError(u'行情服务器连接断开：%s' %stream)
+                self.onError(u'行情服务器连接断开：%s' %str(stream))
                 break
         
     #----------------------------------------------------------------------
@@ -529,7 +529,7 @@ class DataApi(object):
             return False
         
     #----------------------------------------------------------------------
-    def stop(self):
+    def close(self):
         """停止"""
         if self.active:
             self.active = False

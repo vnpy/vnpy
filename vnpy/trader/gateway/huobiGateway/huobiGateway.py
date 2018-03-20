@@ -15,23 +15,6 @@ from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
 
 
-# 以下为一些VT类型和SEC类型的映射字典
-priceTypeMap = {}
-priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
-
-# 方向类型映射
-directionMap = {}
-#directionMap[DIRECTION_LONG] = DATA_TYPE.DFITCSEC_ED_Buy
-#directionMap[DIRECTION_SHORT] = DATA_TYPE.DFITCSEC_ED_Sell
-directionMapReverse = {v: k for k, v in directionMap.items()}
-
-# 开平类型映射
-offsetMap = {}
-#offsetMap[OFFSET_OPEN] = DATA_TYPE.DFITCSEC_OCF_Open
-#offsetMap[OFFSET_CLOSE] = DATA_TYPE.DFITCSEC_OCF_Close
-offsetMapReverse = {v:k for k,v in offsetMap.items()}
-
-
 # 委托状态类型映射
 statusMapReverse = {}
 statusMapReverse['pre-submitted'] = STATUS_UNKNOWN
@@ -194,6 +177,8 @@ class HuobiDataApi(DataApi):
         
         self.tickDict = {}
         
+        self.subscribeDict = {}
+        
     #----------------------------------------------------------------------
     def connect(self, exchange):
         """连接服务器"""
@@ -207,10 +192,16 @@ class HuobiDataApi(DataApi):
         
         if self.connectionStatus:
             self.writeLog(u'行情服务器连接成功')
+            
+            # 订阅所有之前订阅过的行情
+            for req in self.subscribeDict.values():
+                self.subscribe(req)
         
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅合约"""
+        self.subscribeDict[subscribeReq.symbol] = subscribeReq
+        
         if not self.connectionStatus:
             return
         
@@ -420,7 +411,6 @@ class HuobiTradeApi(TradeApi):
         
         self.reqLocalDict[reqid] = localid
         
-        print 'send', vtOrderID
         # 返回订单号
         return vtOrderID
     
