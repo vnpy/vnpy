@@ -13,6 +13,13 @@
 
 # 重要更新日志
 1、2018年1月，升级至py3版本
+2、linux下安装步骤
+    1)root身份安装cmake/bzip/openssl/nodejs/python-dev等
+    2)用户身份安装anaconda3.6 64bit，创建虚拟环境py35
+    3)root安装编译boost
+    4)激活py35环境下，安装requirement.txt里面的包
+    5)编译ctp api(for boost & py3.5)
+    6)vnpy/trader目录下,python vtmain.py 试试看
 
 大佳
 QQ/Wechat：28888502
@@ -84,11 +91,9 @@ QQ/Wechat：28888502
     conda config --set show_channel_urls yes
 
     选择其中一个来创建
-    conda create --name py27 python=2.7
     conda create --name py35 python=3.5
 
     激活的例子
-    source activate py27
     source activate py35
 
 
