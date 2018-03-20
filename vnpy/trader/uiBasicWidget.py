@@ -609,8 +609,9 @@ class OrderMonitor(BasicMonitor):
         #d['sessionID'] = {'chinese':vtText.SESSION_ID, 'cellType':BasicCell}
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
-        
-        self.setDataKey(['vtOrderID','gatewayName'])
+
+        # vtOrderId已经包含了gatewayName和本地orderId，已经足够作为主键
+        self.setDataKey('vtOrderID')
         self.setEventType(EVENT_ORDER)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
@@ -643,6 +644,11 @@ class OrderMonitor(BasicMonitor):
         req.orderID = order.orderID
         self.mainEngine.cancelOrder(req, order.gatewayName)
 
+    def updateData(self, data):
+        """更新数据"""
+        super(OrderMonitor, self).updateData(data)
+
+        # 为了跟踪调试
 
 ########################################################################
 class PositionMonitor(BasicMonitor):
@@ -664,8 +670,8 @@ class PositionMonitor(BasicMonitor):
         d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
 
-        # 设置合约/接口为联合索引
-        self.setDataKey(['vtSymbol','direction','gatewayName'])
+        # 设置合约/多空/接口为联合索引
+        self.setDataKey(['vtSymbol', 'direction', 'gatewayName'])
 
         self.setEventType(EVENT_POSITION)
         self.setFont(BASIC_FONT)
@@ -1164,9 +1170,10 @@ class TradingWidget(QtWidgets.QFrame):
             else:
                 self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_LONG))
         except Exception as ex:
-            self.mainEngine.writeError(u'tradingWg.closePosition exception:{}'.format(str(ex)))
+            self.mainEngine.writeError(u'tradingWg.closePosition exception:{},{}'.format(str(ex),traceback.format_exc()))
         # 价格留待更新后由用户输入，防止有误操作
-        # ----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
 
     def autoFillSymbol(self, cell):
         """根据行情信息自动填写交易组件"""
@@ -1349,10 +1356,12 @@ class WorkingOrderMonitor(OrderMonitor):
             else:
                 # 单个key
                 key = getattr(data, self.dataKey, None)
-            cellDict = self.dataDict[key]
-            cell = cellDict['status']
-            row = self.row(cell)
-            self.hideRow(row)
+            if key is not None:
+                cellDict = self.dataDict.get(key)
+                if cellDict is not None:
+                    cell = cellDict['status']
+                    row = self.row(cell)
+                    self.hideRow(row)
 
 
 ########################################################################

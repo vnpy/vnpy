@@ -35,8 +35,8 @@ class VtTickData(VtBaseData):
 
         # 成交数据
         self.lastPrice = EMPTY_FLOAT  # 最新成交价
-        self.lastVolume = EMPTY_INT  # 最新成交量
-        self.volume = EMPTY_INT  # 今天总成交量
+        self.lastVolume = EMPTY_FLOAT  # 最新成交量
+        self.volume = EMPTY_FLOAT  # 今天总成交量
         self.preOpenInterest = EMPTY_INT  # 昨持仓量
         self.openInterest = EMPTY_INT  # 持仓量
         self.time = EMPTY_STRING  # 时间 11:20:56.5
@@ -65,17 +65,17 @@ class VtTickData(VtBaseData):
         self.askPrice4 = EMPTY_FLOAT
         self.askPrice5 = EMPTY_FLOAT
 
-        self.bidVolume1 = EMPTY_INT
-        self.bidVolume2 = EMPTY_INT
-        self.bidVolume3 = EMPTY_INT
-        self.bidVolume4 = EMPTY_INT
-        self.bidVolume5 = EMPTY_INT
+        self.bidVolume1 = EMPTY_FLOAT
+        self.bidVolume2 = EMPTY_FLOAT
+        self.bidVolume3 = EMPTY_FLOAT
+        self.bidVolume4 = EMPTY_FLOAT
+        self.bidVolume5 = EMPTY_FLOAT
 
-        self.askVolume1 = EMPTY_INT
-        self.askVolume2 = EMPTY_INT
-        self.askVolume3 = EMPTY_INT
-        self.askVolume4 = EMPTY_INT
-        self.askVolume5 = EMPTY_INT
+        self.askVolume1 = EMPTY_FLOAT
+        self.askVolume2 = EMPTY_FLOAT
+        self.askVolume3 = EMPTY_FLOAT
+        self.askVolume4 = EMPTY_FLOAT
+        self.askVolume5 = EMPTY_FLOAT
 
 
 ########################################################################
@@ -100,7 +100,7 @@ class VtBarData(VtBaseData):
         self.time = EMPTY_STRING            # 时间
         self.datetime = None                # python的datetime时间对象
 
-        self.volume = EMPTY_INT             # 成交量
+        self.volume = EMPTY_FLOAT             # 成交量
         self.openInterest = EMPTY_INT       # 持仓量
 
 
@@ -127,7 +127,7 @@ class VtTradeData(VtBaseData):
         self.direction = EMPTY_UNICODE  # 成交方向
         self.offset = EMPTY_UNICODE  # 成交开平仓
         self.price = EMPTY_FLOAT  # 成交价格
-        self.volume = EMPTY_INT  # 成交数量
+        self.volume = EMPTY_FLOAT  # 成交数量
         self.tradeTime = EMPTY_STRING  # 成交时间
 
 
@@ -152,8 +152,8 @@ class VtOrderData(VtBaseData):
         self.direction = EMPTY_UNICODE  # 报单方向
         self.offset = EMPTY_UNICODE  # 报单开平仓
         self.price = EMPTY_FLOAT  # 报单价格
-        self.totalVolume = EMPTY_INT  # 报单总数量
-        self.tradedVolume = EMPTY_INT  # 报单成交数量
+        self.totalVolume = EMPTY_FLOAT  # 报单总数量
+        self.tradedVolume = EMPTY_FLOAT  # 报单成交数量
         self.status = EMPTY_UNICODE  # 报单状态
 
         self.orderTime = EMPTY_STRING  # 发单时间
@@ -271,7 +271,7 @@ class VtContractData(VtBaseData):
         self.name = EMPTY_UNICODE  # 合约中文名
 
         self.productClass = EMPTY_UNICODE  # 合约类型
-        self.size = EMPTY_INT  # 合约大小
+        self.size = EMPTY_FLOAT  # 合约大小
         self.priceTick = EMPTY_FLOAT  # 合约最小价格TICK
 
         self.longMarginRatio = EMPTY_FLOAT  # 多头保证金率
@@ -282,6 +282,8 @@ class VtContractData(VtBaseData):
         self.underlyingSymbol = EMPTY_STRING  # 标的物合约代码
         self.optionType = EMPTY_UNICODE  # 期权类型
 
+        # 数字货币有关
+        self.volumeTick = EMPTY_FLOAT  #合约最小交易量
 
 ########################################################################
 class VtSubscribeReq(object):
@@ -311,7 +313,7 @@ class VtOrderReq(object):
         self.symbol = EMPTY_STRING  # 代码
         self.exchange = EMPTY_STRING  # 交易所
         self.price = EMPTY_FLOAT  # 价格
-        self.volume = EMPTY_INT  # 数量
+        self.volume = EMPTY_FLOAT  # 数量
 
         self.priceType = EMPTY_STRING  # 价格类型
         self.direction = EMPTY_STRING  # 买卖

@@ -252,12 +252,13 @@ class MultiprocessHandler(logging.FileHandler):
             if not os.path.exists(_dir):
                 os.makedirs(_dir)
         except Exception:
-            print( u"创建文件夹失败")
-            print( u"文件夹路径：" + self.filePath)
+            print( u"创建log文件夹失败")
+            print( u"log文件夹路径：" + self.filePath)
             pass
 
         if codecs is None:
             encoding = None
+        print(u'MultiprocessHandler create logger:{}'.format(self.filePath))
 
         logging.FileHandler.__init__(self,self.filePath,'a+',encoding,delay)
 
@@ -347,7 +348,7 @@ class MultiprocessHandler(logging.FileHandler):
         except:
             self.handleError(record)
 
-def setup_logger(filename, name=None, debug=False):
+def setup_logger(filename, name=None, debug=False,force=False):
     """
     设置日志文件，包括路径
     自动在后面添加 "_日期.log"
@@ -359,39 +360,43 @@ def setup_logger(filename, name=None, debug=False):
     global _fileHandler
     global _logger_filename
 
-    if _logger is not None and _logger_filename == filename:
+    if _logger is not None and _logger_filename == filename and not force:
         return _logger
 
-    if _logger_filename != filename:
-        _logger_filename = filename
+    if _logger_filename != filename or force:
+        if force:
+            _logger_filename = filename
+
         # 定义日志输出格式
         fmt = logging.Formatter(RECORD_FORMAT)
         if name is None:
             names = filename.replace('.log','').split('/')
             name = names[-1]
 
-        _logger = logging.getLogger(name)
+        logger = logging.getLogger(name)
         if debug:
-            _logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
             stream_handler = logging.StreamHandler(sys.stdout)
             stream_handler.setLevel(logging.DEBUG)
             stream_handler.setFormatter(fmt)
-            _logger.addHandler(stream_handler)
+            if not logger.hasHandlers():
+                logger.addHandler(stream_handler)
 
-        _fileHandler = MultiprocessHandler(filename, when='D')
+        fileHandler = MultiprocessHandler(filename,encoding='utf8', when='D')
         if debug:
-            _fileHandler.setLevel(logging.DEBUG)
-
+            fileHandler.setLevel(logging.DEBUG)
         else:
-            _fileHandler.setLevel(logging.INFO)
+            fileHandler.setLevel(logging.INFO)
 
-        _fileHandler.setFormatter(fmt)
-        _logger.addHandler(_fileHandler)
+        fileHandler.setFormatter(fmt)
+        logger.addHandler(fileHandler)
 
         if debug:
-            _logger.setLevel(logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
         else:
-            _logger.setLevel(logging.INFO)
+            logger.setLevel(logging.INFO)
+
+        return logger
 
     return _logger
 
@@ -407,6 +412,7 @@ def get_logger(name=None):
 
     return _logger
 
+# -------------------测试代码------------
 def single_func(para):
     setup_logger('logs/MyLog{}'.format(para))
     logger = get_logger()

@@ -134,8 +134,8 @@ class VtGateway(object):
 
         filename = os.path.abspath(os.path.join(path, 'Gateway'))
 
-        print( u'create logger:{}'.format(filename))
-        self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
+        print(u'create logger:{}'.format(filename))
+        self.logger = setup_logger(filename=filename, name='vtGateway', debug=True)
 
     # ----------------------------------------------------------------------
     def onContract(self, contract):

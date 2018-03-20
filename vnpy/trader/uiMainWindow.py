@@ -79,7 +79,8 @@ class MainWindow(QtWidgets.QMainWindow):
     
         # 连接组件之间的信号
         widgetPositionM.itemDoubleClicked.connect(widgetTradingW.closePosition)
-        
+        widgetMarketM.itemDoubleClicked.connect(widgetTradingW.autoFillSymbol)
+
         # 保存默认设置
         self.saveWindowSettings('default')
 
@@ -252,7 +253,13 @@ class MainWindow(QtWidgets.QMainWindow):
             if dt.hour == 15 and dt.minute == 16 and len(self.connectGatewayDict) > 0 and today!=self.orderSaveDate:
                 self.orderSaveDate = today
                 self.mainEngine.writeLog(u'保存所有委托记录')
-                orderfile = os.getcwd() +'/orders/{0}.csv'.format(self.orderSaveDate)
+                orders_folder = os.path.abspath(os.path.join(os.getcwd(), 'orders'))
+
+                if not os.path.isdir(orders_folder):
+                    os.mkdir(orders_folder)
+
+                orderfile = os.path.abspath(os.path.join(orders_folder, '{}.csv'.format(self.orderSaveDate)))
+
                 if os.path.exists(orderfile):
                     return
                 else:
