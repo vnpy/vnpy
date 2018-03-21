@@ -10,9 +10,10 @@ import json
 from datetime import datetime
 from math import isnan
 
+from vtGlobal import globalSetting
 
 MAX_NUMBER = 10000000000000
-MAX_DECIMAL = 4
+MAX_DECIMAL = globalSetting.get('maxDecimal', 4)
 
 #----------------------------------------------------------------------
 def safeUnicode(value):
@@ -40,7 +41,13 @@ def todayDate():
 # 图标路径
 iconPathDict = {}
 
-path = os.path.abspath(os.path.dirname(__file__))
+path = os.path.abspath(os.path.dirname(__file__))   # 遍历vnpy安装目录
+for root, subdirs, files in os.walk(path):
+    for fileName in files:
+        if '.ico' in fileName:
+            iconPathDict[fileName] = os.path.join(root, fileName)
+
+path = os.getcwd()      # 遍历工作目录
 for root, subdirs, files in os.walk(path):
     for fileName in files:
         if '.ico' in fileName:
