@@ -7,13 +7,10 @@
 import os
 import decimal
 import json
+import traceback
 from datetime import datetime
 from math import isnan
 
-from vtGlobal import globalSetting
-
-MAX_NUMBER = 10000000000000
-MAX_DECIMAL = globalSetting.get('maxDecimal', 4)
 
 #----------------------------------------------------------------------
 def safeUnicode(value):
@@ -93,6 +90,29 @@ def getJsonPath(name, moduleFile):
     jsonPathDict[name] = moduleJsonPath
     return moduleJsonPath
 
+
+# 加载全局配置
+#----------------------------------------------------------------------
+def loadJsonSetting(settingFileName):
+    """加载JSON配置"""
+    settingFilePath = getJsonPath(settingFileName, __file__)
+
+    setting = {}
+
+    try:
+        with open(settingFilePath, 'rb') as f:
+            setting = f.read()
+            if type(setting) is not str:
+                setting = str(setting, encoding='utf8')
+            setting = json.loads(setting)
+    except:
+        traceback.print_exc()
+    
+    return setting
     
     
-    
+# 函数常量    
+MAX_NUMBER = 10000000000000
+
+globalSetting = loadJsonSetting('VT_setting.json')
+MAX_DECIMAL = globalSetting.get('maxDecimal', 4)
