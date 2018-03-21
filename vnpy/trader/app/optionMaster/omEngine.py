@@ -362,7 +362,11 @@ class OmStrategyEngine(object):
             
             # 保存Tick映射关系
             for vtSymbol in strategy.vtSymbols:
-                l = self.symbolStrategyDict.setdefault(vtSymbol, [])
+                if vtSymbol in self.symbolStrategyDict:
+                    l = self.symbolStrategyDict[vtSymbol]
+                else:
+                    l = []
+                    self.symbolStrategyDict[vtSymbol] = l
                 l.append(strategy)    
     
     #----------------------------------------------------------------------
