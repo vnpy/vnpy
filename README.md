@@ -48,6 +48,9 @@ QQ/Wechat：28888502
 	export CPLUS_INCLUDE_PATH=/home/trade/anaconda3/envs/py35/include/python3.5m
     修改 boost_1_66_0/tools/build/example/user-config.jam ：
     using python : 3.5 : /home/trade/anaconda3/envs/py35/bin/python3 : /home/trade/anaconda3/envs/py35/include/python3.5m : /home/trade/anaconda3/envs/py35/lib ;
+    把user-config.jam复制到用户目录
+    cp user-config.jam  /root/
+    回到 boost_1_66_0/
     运行bootstrap.sh
 	./bootstrap.sh  --with-python=/home/trade/anaconda3/envs/py35/bin/python3 --with-python-version=3.5 --with-python-root=/home/trade/anaconda3/envs/py35
 	编译，安装
@@ -110,6 +113,8 @@ QQ/Wechat：28888502
     # 复制一份到/usr/include目录下
     sudo cp /home/user/anaconda3/pkgs/ta-lib-0.4.9-np111py27_0/include/ta-lib /usr/include -R
 
+#7、碰到的问题：安装某些组件，提示 cl.exe Not found
+    如果你安装了VC基础组件，需要增加一个用户环境变量，把"C:\Program Files (x86)\Microsoft Visual Studio\Shared\14.0\VC\bin" 添加到path变量中
 
 --------------------------------------------------------------------------------------------
 # vn.py - 基于python的开源交易平台开发框架
