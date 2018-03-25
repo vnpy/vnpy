@@ -30,7 +30,7 @@ from vnpy.trader.vtConstant import *
 from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtEvent import *
-from vnpy.trader.setup_logger import setup_logger,get_logger
+from vnpy.trader.setup_logger import setup_logger
 
 
 ########################################################################
@@ -1032,12 +1032,12 @@ class BacktestingEngine(object):
             # 加载运行白天数据
             self.__loadNotStdArbTicks(leg1MainPath, leg2MainPath, testday, leg1Symbol,leg2Symbol)
 
-            self.savingDailyData(testday, self.capital, self.maxCapital)
+            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
 
             # 加载运行夜盘数据
             self.__loadNotStdArbTicks(leg1MainPath+'_night', leg2MainPath+'_night', testday, leg1Symbol, leg2Symbol)
 
-        self.savingDailyData(self.dataEndDate, self.capital, self.maxCapital)
+        self.savingDailyData(self.dataEndDate, self.capital, self.maxCapital,self.totalCommission)
 
     def __loadTicksFromTxtFile(self, filepath, tickDate, vtSymbol):
         """从文件中读取tick"""
@@ -1229,7 +1229,7 @@ class BacktestingEngine(object):
             # 加载运行每天数据
             self.__loadNotStdArbTicks2(leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol)
 
-            self.savingDailyData(testday, self.capital, self.maxCapital)
+            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
 
 
     def __loadTicksFromCsvFile(self, filepath, tickDate, vtSymbol):
@@ -1438,7 +1438,7 @@ class BacktestingEngine(object):
             # 加载运行每天数据
             self.__loadNotStdArbTicksFromMongoDB( testday, leg1Symbol, leg2Symbol)
 
-            self.savingDailyData(testday, self.capital, self.maxCapital)
+            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
 
     def __loadNotStdArbTicksFromMongoDB(self,testday, leg1Symbol, leg2Symbol):
         self.writeCtaLog(u'从MongoDB加载回测日期:{0}的{1}-{2}价差tick'.format(testday,leg1Symbol, leg2Symbol))
@@ -1594,18 +1594,22 @@ class BacktestingEngine(object):
                 bar.close = float(row['close'])
                 bar.volume = float(row['volume'])
                 barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
-                bar.tradingDay = row['trading_date']
+
                 # 使用Bar的开始时间作为datetime
                 bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
 
                 bar.date = bar.datetime.strftime('%Y-%m-%d')
                 bar.time = bar.datetime.strftime('%H:%M:%S')
+                if 'trading_date' in row:
+                    bar.tradingDay = row['trading_date']
+                else:
+                    bar.tradingDay = bar.date
 
                 if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
                     if last_tradingDay != bar.tradingDay:
                         if last_tradingDay is not None:
                             self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
-                                                 self.maxCapital)
+                                                 self.maxCapital,self.totalCommission)
                         last_tradingDay = bar.tradingDay
 
                     self.newBar(bar)
@@ -1778,7 +1782,7 @@ class BacktestingEngine(object):
                         .format(testday.strftime('%Y-%m-%d'), count_ticks, str(datetime.now() - query_time),
                                 str(datetime.now() - process_time)))
             # 记录每日净值
-            self.savingDailyData(testday, self.capital, self.maxCapital)
+            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
 
     def __sendOnBarEvent(self, bar):
         """发送Bar的事件"""
@@ -2009,11 +2013,11 @@ class BacktestingEngine(object):
                 try:
                     del self.workingLimitOrderDict[orderID]
                 except Exception as ex:
-                    self.writeCtaError(u'{0}:{1}'.format(Exception, ex))
+                    self.writeCtaError(u'crossLimitOrder exception:{},{}'.format(str(ex),traceback.format_exec()))
 
         # 实时计算模式
         if self.calculateMode == self.REALTIME_MODE:
-            self.realtimeCalculate2()
+            self.realtimeCalculate()
                 
     #----------------------------------------------------------------------
     def crossStopOrder(self):
@@ -2092,7 +2096,7 @@ class BacktestingEngine(object):
 
         # 若采用实时计算净值
         if self.calculateMode == self.REALTIME_MODE:
-            self.realtimeCalculate2()
+            self.realtimeCalculate()
 
 
     #----------------------------------------------------------------------
@@ -2110,11 +2114,37 @@ class BacktestingEngine(object):
         """直接返回初始化数据列表中的Tick"""
         return self.initData
 
-    def createLogger(self, debug=False):
-        filename = os.path.abspath(os.path.join(cta_engine_path, 'TestLogs', '{}'.format(
-            self.strategy_name if len(self.strategy_name) > 0 else 'strategy')))
+    def get_data_path(self):
+        """
+        获取数据保存目录
+        :return:
+        """
+        logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'data'))
+        if os.path.exists(logs_folder):
+            return logs_folder
+        else:
+            return os.path.abspath(os.path.join(cta_engine_path, 'data'))
 
-        self.logger = setup_logger(filename=filename, name=self.strategy_name if len(self.strategy_name) > 0 else 'strategy',debug=debug )
+    def get_logs_path(self):
+        """
+        获取日志保存目录
+        :return:
+        """
+        logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+        if os.path.exists(logs_folder):
+            return logs_folder
+        else:
+            return os.path.abspath(os.path.join(cta_engine_path, 'TestLogs'))
+
+    def createLogger(self, debug=False):
+        """
+        创建日志
+        :param debug:
+        :return:
+        """
+        filename = os.path.abspath(os.path.join(self.get_logs_path(), '{}'.format(self.strategy_name if len(self.strategy_name) > 0 else 'strategy')))
+        self.logger = setup_logger(filename=filename, name=self.strategy_name if len(self.strategy_name) > 0 else 'strategy', debug=debug)
+
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录日志"""
@@ -2150,434 +2180,6 @@ class BacktestingEngine(object):
         pass
 
     def realtimeCalculate(self):
-        """实时计算交易结果"""
-
-        if len(self.tradeDict) < 1:
-            return
-
-        resultDict = OrderedDict()  # 交易结果记录
-
-        longTrade = []              # 未平仓的多头交易
-        shortTrade = []             # 未平仓的空头交易
-        longid = EMPTY_STRING
-        shortid = EMPTY_STRING
-
-        no_match_shortTrade = False
-        no_match_longTrade = False
-
-        # 对交易记录逐一处理
-        for tradeid in self.tradeDict.keys():
-            trade = self.tradeDict[tradeid]
-            # 多头交易
-            if trade.direction == DIRECTION_LONG:
-                # 存在空单
-                if len(shortTrade)>0:
-                    # 检查是否存在与Symbol一致的空单
-                    pop_indexs = [i for i, val in enumerate(shortTrade) if val.vtSymbol == trade.vtSymbol]
-                    if len(pop_indexs) < 1:
-                        #self.output(u'空头交易清单，没有{0}的空单'.format(trade.vtSymbol))
-                        no_match_shortTrade = True
-
-                # 如果尚无空单
-                if len(shortTrade) == 0 or no_match_shortTrade:
-                    #self.output(u'{0}多开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
-                    #self.writeCtaLog(u'{0}多开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
-                    longTrade.append(trade)
-                    longid = tradeid
-                    no_match_shortTrade = False
-
-                # 当前多头交易为平空
-                else:
-                    gId = tradeid    # 交易组（多个平仓数为一组）
-                    gr = None       # 组合的交易结果
-
-                    coverVolume = trade.volume
-
-                    while coverVolume > 0:
-                        if len(shortTrade)==0:
-                            self.writeCtaError(u'异常，没有开空仓的数据')
-                            raise RuntimeError(u'realtimeCalculate() Exception,没有开空仓的数据')
-
-
-                        pop_indexs = [i for i, val in enumerate(shortTrade) if val.vtSymbol == trade.vtSymbol]
-                        if len(pop_indexs) < 1:
-                            self.writeCtaError(u'没有对应的symbol:{0}开空仓数据'.format(trade.vtSymbol))
-                            raise RuntimeError(u'realtimeCalculate() Exception,没有对应的symbol:{0}开空仓数据'.format(trade.vtSymbol))
-
-                        pop_index = pop_indexs[0]
-                        # 从未平仓的空头交易
-                        entryTrade = shortTrade.pop(pop_index)
-
-                        # 开空volume，不大于平仓volume
-                        if coverVolume >= entryTrade.volume:
-                            self.writeCtaLog(u'coverVolume:{0} >= entryTrade.volume:{1}'.format(coverVolume, entryTrade.volume))
-                            coverVolume = coverVolume - entryTrade.volume
-
-                            #self.output(u'{0}空平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
-                            #self.writeCtaLog(u'{0}空平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
-
-                            result = TradingResult(entryPrice=entryTrade.price,
-                                                   entryDt=entryTrade.dt,
-                                                   exitPrice=trade.price,
-                                                   exitDt=trade.dt,
-                                                   volume=-entryTrade.volume,
-                                                   rate=self.rate,
-                                                   slippage=self.slippage,
-                                                   size=self.size,
-                                                   groupId=gId,
-                                                   fixcommission=self.fixCommission)
-
-                            t = {}
-                            t['vtSymbol'] = entryTrade.vtSymbol
-                            t['OpenTime'] = entryTrade.tradeTime
-                            t['OpenPrice'] = entryTrade.price
-                            t['Direction'] = u'Short'
-                            t['CloseTime'] = trade.tradeTime
-                            t['ClosePrice'] = trade.price
-                            t['Volume'] = entryTrade.volume
-                            t['Profit'] = result.pnl
-                            self.exportTradeList.append(t)
-
-                            msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9}'\
-                                .format(gId, entryTrade.vtSymbol, entryTrade.tradeTime, shortid, entryTrade.price,
-                                                     trade.tradeTime, tradeid, trade.price,
-                                                     entryTrade.volume, result.pnl)
-                            self.output(msg)
-
-                            self.writeCtaLog(msg)
-
-                            if type(gr) == type(None):
-                                if coverVolume > 0:
-                                    # 属于组合
-                                    gr = copy.deepcopy(result)
-
-                                    # 删除开空交易单
-                                    del self.tradeDict[entryTrade.tradeID]
-
-                                else:
-                                    # 不属于组合
-                                    resultDict[entryTrade.dt] = result
-
-                                    # 删除平空交易单，
-                                    del self.tradeDict[trade.tradeID]
-                                    # 删除开空交易单
-                                    del self.tradeDict[entryTrade.tradeID]
-
-                            else:
-                                # 更新组合的数据
-                                gr.turnover = gr.turnover + result.turnover
-                                gr.commission = gr.commission + result.commission
-                                gr.slippage = gr.slippage + result.slippage
-                                gr.pnl = gr.pnl + result.pnl
-
-                                # 删除开空交易单
-                                del self.tradeDict[entryTrade.tradeID]
-
-                                # 所有仓位平完
-                                if coverVolume == 0:
-                                    gr.volume = trade.volume
-                                    resultDict[entryTrade.dt] = gr
-                                    # 删除平空交易单，
-                                    del self.tradeDict[trade.tradeID]
-
-                        # 开空volume,大于平仓volume，需要更新减少tradeDict的数量。
-                        else:
-                            self.writeCtaLog(u'Short volume:{0} > Cover volume:{1}，需要更新减少tradeDict的数量。'.format(entryTrade.volume,coverVolume))
-                            shortVolume = entryTrade.volume - coverVolume
-
-                            result = TradingResult(entryPrice=entryTrade.price,
-                                                   entryDt=entryTrade.dt,
-                                                   exitPrice=trade.price,
-                                                   exitDt=trade.dt,
-                                                   volume=-coverVolume,
-                                                   rate=self.rate,
-                                                   slippage=self.slippage,
-                                                   size=self.size,
-                                                   groupId=gId,
-                                                   fixcommission=self.fixCommission)
-
-                            t = {}
-                            t['vtSymbol'] = entryTrade.vtSymbol
-                            t['OpenTime'] = entryTrade.tradeTime
-                            t['OpenPrice'] = entryTrade.price
-                            t['Direction'] = u'Short'
-                            t['CloseTime'] = trade.tradeTime
-                            t['ClosePrice'] = trade.price
-                            t['Volume'] = coverVolume
-                            t['Profit'] = result.pnl
-                            self.exportTradeList.append(t)
-
-                            msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9}'\
-                                .format(gId, entryTrade.vtSymbol, entryTrade.tradeTime, shortid, entryTrade.price,
-                                                     trade.tradeTime, tradeid, trade.price,
-                                                     coverVolume, result.pnl)
-                            self.output(msg)
-                            self.writeCtaLog(msg)
-
-                            # 更新（减少）开仓单的volume,重新推进开仓单列表中
-                            entryTrade.volume = shortVolume
-                            shortTrade.append(entryTrade)
-
-                            coverVolume = 0
-
-                            if type(gr) == type(None):
-                                resultDict[entryTrade.dt] = result
-
-                            else:
-                                # 更新组合的数据
-                                gr.turnover = gr.turnover + result.turnover
-                                gr.commission = gr.commission + result.commission
-                                gr.slippage = gr.slippage + result.slippage
-                                gr.pnl = gr.pnl + result.pnl
-                                gr.volume = trade.volume
-                                resultDict[entryTrade.dt] = gr
-
-                            # 删除平空交易单，
-                            del self.tradeDict[trade.tradeID]
-
-                    if type(gr) != type(None):
-                        self.writeCtaLog(u'组合净盈亏:{0}'.format(gr.pnl))
-
-                    self.writeCtaLog(u'-------------')
-
-            # 空头交易
-            else:
-                if len(longTrade) > 0:
-                    pop_indexs = [i for i, val in enumerate(longTrade) if val.vtSymbol == trade.vtSymbol]
-                    if len(pop_indexs) < 1:
-                        #self.output(u'多头交易清单，没有{0}的多单'.format(trade.vtSymbol))
-                        no_match_longTrade = True
-
-                # 如果尚无多单
-                if len(longTrade) == 0 or no_match_longTrade:
-                    #self.output(u'{0}空开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
-                    #self.writeCtaLog(u'{0}空开:{1},{2}'.format(trade.vtSymbol, trade.volume, trade.price))
-                    shortTrade.append(trade)
-                    shortid = tradeid
-                    no_match_longTrade = False
-
-                # 当前空头交易为平多
-                else:
-                    gId = tradeid       # 交易组（多个平仓数为一组）                                                                                                                                    s
-                    gr = None           # 组合的交易结果
-
-                    sellVolume = trade.volume
-
-                    while sellVolume > 0:
-                        if len(longTrade) == 0:
-                            self.writeCtaError(u'异常，没有开多单')
-                            raise RuntimeError(u'realtimeCalculate() Exception,没有开多单')
-                            return
-
-                        pop_indexs = [i for i, val in enumerate(longTrade) if val.vtSymbol == trade.vtSymbol]
-                        if len(pop_indexs) < 1:
-                            self.writeCtaError(u'没有对应的symbol{0}开多仓数据,'.format(trade.vtSymbol))
-                            raise RuntimeError(u'realimeCalculate() Exception,没有对应的symbol{0}开多仓数据,'.format(trade.vtSymbol))
-                            return
-
-                        pop_index = pop_indexs[0]
-
-                        entryTrade = longTrade.pop(pop_index)
-
-                         # 开多volume，不大于平仓volume
-                        if sellVolume >= entryTrade.volume:
-                            self.writeCtaLog(u'{0}Sell Volume:{1} >= Entry Volume:{2}'.format(entryTrade.vtSymbol, sellVolume, entryTrade.volume))
-                            sellVolume = sellVolume - entryTrade.volume
-                            #self.output(u'{0}多平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
-                            #self.writeCtaLog(u'{0}多平:{1},{2}'.format(entryTrade.vtSymbol, entryTrade.volume, trade.price))
-
-
-                            result = TradingResult(entryPrice=entryTrade.price,
-                                                   entryDt=entryTrade.dt,
-                                                   exitPrice=trade.price,
-                                                   exitDt=trade.dt,
-                                                   volume=entryTrade.volume,
-                                                   rate=self.rate,
-                                                   slippage=self.slippage,
-                                                   size=self.size,
-                                                   groupId=gId,
-                                                   fixcommission=self.fixCommission)
-
-                            t = {}
-                            t['vtSymbol'] = entryTrade.vtSymbol
-                            t['OpenTime'] = entryTrade.tradeTime
-                            t['OpenPrice'] = entryTrade.price
-                            t['Direction'] = u'Long'
-                            t['CloseTime'] = trade.tradeTime
-                            t['ClosePrice'] = trade.price
-                            t['Volume'] = entryTrade.volume
-                            t['Profit'] = result.pnl
-                            self.exportTradeList.append(t)
-
-                            msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'\
-                                .format(gId, entryTrade.vtSymbol,
-                                            entryTrade.tradeTime, longid, entryTrade.price,
-                                            trade.tradeTime, tradeid, trade.price,
-                                            entryTrade.volume, result.pnl)
-                            self.output(msg)
-                            self.writeCtaLog(msg)
-
-                            if type(gr) == type(None):
-                                if sellVolume > 0:
-                                    # 属于组合
-                                    gr = copy.deepcopy(result)
-                                    # 删除开多交易单
-                                    del self.tradeDict[entryTrade.tradeID]
-
-                                else:
-                                    # 不属于组合
-                                    resultDict[entryTrade.dt] = result
-
-                                    # 删除平多交易单，
-                                    del self.tradeDict[trade.tradeID]
-                                    # 删除开多交易单
-                                    del self.tradeDict[entryTrade.tradeID]
-
-                            else:
-                                # 更新组合的数据
-                                gr.turnover = gr.turnover + result.turnover
-                                gr.commission = gr.commission + result.commission
-                                gr.slippage = gr.slippage + result.slippage
-                                gr.pnl = gr.pnl + result.pnl
-
-                                # 删除开多交易单
-                                del self.tradeDict[entryTrade.tradeID]
-
-                                if sellVolume == 0:
-                                    gr.volume = trade.volume
-                                    resultDict[entryTrade.dt] = gr
-                                    # 删除平多交易单，
-                                    del self.tradeDict[trade.tradeID]
-
-                        # 开多volume,大于平仓volume，需要更新减少tradeDict的数量。
-                        else:
-                            longVolume = entryTrade.volume -sellVolume
-                            self.writeCtaLog(u'Long Volume:{0} > sell Volume:{1}'.format(entryTrade.volume,sellVolume))
-
-                            result = TradingResult(entryPrice=entryTrade.price,
-                                                   entryDt=entryTrade.dt,
-                                                   exitPrice=trade.price,
-                                                   exitDt=trade.dt,
-                                                   volume=sellVolume,
-                                                   rate=self.rate,
-                                                   slippage=self.slippage,
-                                                   size=self.size,
-                                                   groupId=gId,
-                                                   fixcommission=self.fixCommission)
-
-                            t = {}
-                            t['vtSymbol'] = entryTrade.vtSymbol
-                            t['OpenTime'] = entryTrade.tradeTime
-                            t['OpenPrice'] = entryTrade.price
-                            t['Direction'] = u'Long'
-                            t['CloseTime'] = trade.tradeTime
-                            t['ClosePrice'] = trade.price
-                            t['Volume'] = sellVolume
-                            t['Profit'] = result.pnl
-                            self.exportTradeList.append(t)
-
-                            self.writeCtaLog(u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'
-                                             .format(gId, entryTrade.vtSymbol,entryTrade.tradeTime, longid, entryTrade.price,
-                                                     trade.tradeTime, tradeid, trade.price,
-                                                     sellVolume, result.pnl))
-
-                            # 减少开多volume,重新推进开多单列表中
-                            entryTrade.volume = longVolume
-                            longTrade.append(entryTrade)
-
-                            sellVolume = 0
-
-                            if type(gr) == type(None):
-                                resultDict[entryTrade.dt] = result
-
-                            else:
-                                # 更新组合的数据
-                                gr.turnover = gr.turnover + result.turnover
-                                gr.commission = gr.commission + result.commission
-                                gr.slippage = gr.slippage + result.slippage
-                                gr.pnl = gr.pnl + result.pnl
-                                gr.volume = trade.volume
-                                resultDict[entryTrade.dt] = gr
-
-                            # 删除平多交易单，
-                            del self.tradeDict[trade.tradeID]
-
-                    if type(gr) != type(None):
-                        self.writeCtaLog(u'组合净盈亏:{0}'.format(gr.pnl))
-
-                    self.writeCtaLog(u'-------------')
-
-        # 计算仓位比例
-        occupyMoney = EMPTY_FLOAT
-        occupyLongVolume = EMPTY_INT
-        occupyShortVolume = EMPTY_INT
-        if len(longTrade) > 0:
-            for t in longTrade:
-                occupyMoney += t.price * abs(t.volume) * self.size * self.margin_rate
-                occupyLongVolume += abs(t.volume)
-        if len(shortTrade) > 0:
-            for t in shortTrade:
-                occupyMoney += t.price * abs(t.volume) * self.size * self.margin_rate
-                occupyShortVolume += (t.volume)
-
-        self.output(u'occupyLongVolume:{0},occupyShortVolume:{1}'.format(occupyLongVolume,occupyShortVolume))
-        self.writeCtaLog(u'occupyLongVolume:{0},occupyShortVolume:{1}'.format(occupyLongVolume, occupyShortVolume))
-        # 最大持仓
-        self.maxVolume = max(self.maxVolume, occupyLongVolume + occupyShortVolume)
-
-        self.avaliable = self.capital - occupyMoney
-        self.percent = round(float(occupyMoney * 100 / self.capital), 2)
-
-        # 检查是否有平交易
-        if not resultDict:
-
-            msg = u''
-            if len(longTrade) > 0:
-                msg += u'持多仓{0},'.format(occupyLongVolume)
-
-            if len(shortTrade) > 0:
-                msg += u'持空仓{0},'.format(occupyShortVolume)
-
-            msg += u'资金占用:{0},仓位:{1}'.format(occupyMoney, self.percent)
-            self.output(msg)
-            self.writeCtaLog(msg)
-            return
-
-        # 对交易结果汇总统计
-        for time, result in resultDict.items():
-
-            if result.pnl > 0:
-                self.winningResult += 1
-                self.totalWinning += result.pnl
-            else:
-                self.losingResult += 1
-                self.totalLosing += result.pnl
-            self.capital += result.pnl
-            self.maxCapital = max(self.capital, self.maxCapital)
-            #self.maxVolume = max(self.maxVolume, result.volume)
-            drawdown = self.capital - self.maxCapital
-            drawdownRate = round(float(drawdown*100/self.maxCapital),4)
-
-            self.pnlList.append(result.pnl)
-            self.timeList.append(time)
-            self.capitalList.append(self.capital)
-            self.drawdownList.append(drawdown)
-            self.drawdownRateList.append(drawdownRate)
-
-            self.totalResult += 1
-            self.totalTurnover += result.turnover
-            self.totalCommission += result.commission
-            self.totalSlippage += result.slippage
-
-            self.output(u'[{5}],{6} Vol:{0},盈亏:{1},回撤:{2}/{3},权益:{4}'.
-                        format(abs(result.volume), result.pnl, drawdown,
-                               drawdownRate, self.capital, result.groupId, time))
-
-        # 重新计算一次avaliable
-        self.avaliable = self.capital - occupyMoney
-        self.percent = round(float(occupyMoney * 100 / self.capital), 2)
-
-    def realtimeCalculate2(self):
         """实时计算交易结果2
         支持多空仓位并存"""
 
@@ -2661,12 +2263,13 @@ class BacktestingEngine(object):
                         t['ClosePrice'] = trade.price
                         t['Volume'] = entryTrade.volume
                         t['Profit'] = result.pnl
+                        t['Commission'] = result.commission
                         self.exportTradeList.append(t)
 
-                        msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9}'\
+                        msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏:{9},手续费:{10}'\
                             .format(gId, entryTrade.vtSymbol, entryTrade.tradeTime, shortid, entryTrade.price,
                                                  trade.tradeTime, tradeid, trade.price,
-                                                 entryTrade.volume, result.pnl)
+                                                 entryTrade.volume, result.pnl,result.commission)
                         self.output(msg)
                         self.writeCtaLog(msg)
 
@@ -2720,12 +2323,13 @@ class BacktestingEngine(object):
                         t['ClosePrice'] = trade.price
                         t['Volume'] = coverVolume
                         t['Profit'] = result.pnl
+                        t['Commission'] = result.commission
                         self.exportTradeList.append(t)
 
-                        msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9}'\
+                        msg = u'Gid:{0} {1}[{2}:开空tid={3}:{4}]-[{5}.平空tid={6},{7},vol:{8}],净盈亏：{9},手续费:{10}'\
                             .format(gId, entryTrade.vtSymbol, entryTrade.tradeTime, shortid, entryTrade.price,
                                                  trade.tradeTime, tradeid, trade.price,
-                                                 coverVolume, result.pnl)
+                                                 coverVolume, result.pnl,result.commission)
                         self.output(msg)
                         self.writeCtaLog(msg)
 
@@ -2811,13 +2415,14 @@ class BacktestingEngine(object):
                         t['ClosePrice'] = trade.price
                         t['Volume'] = entryTrade.volume
                         t['Profit'] = result.pnl
+                        t['Commission'] = result.commission
                         self.exportTradeList.append(t)
 
-                        msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'\
+                        msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9},手续费:{10}'\
                             .format(gId, entryTrade.vtSymbol,
                                         entryTrade.tradeTime, longid, entryTrade.price,
                                         trade.tradeTime, tradeid, trade.price,
-                                        entryTrade.volume, result.pnl)
+                                        entryTrade.volume, result.pnl, result.commission)
                         self.output(msg)
                         self.writeCtaLog(msg)
 
@@ -2872,11 +2477,12 @@ class BacktestingEngine(object):
                         t['ClosePrice'] = trade.price
                         t['Volume'] = sellVolume
                         t['Profit'] = result.pnl
+                        t['Commission'] = result.commission
                         self.exportTradeList.append(t)
 
-                        msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9}'\
+                        msg = u'Gid:{0} {1}[{2}:开多tid={3}:{4}]-[{5}.平多tid={6},{7},vol:{8}],净盈亏：{9},手续费:{10}'\
                             .format(gId, entryTrade.vtSymbol,entryTrade.tradeTime, longid, entryTrade.price,
-                                    trade.tradeTime, tradeid, trade.price, sellVolume, result.pnl)
+                                    trade.tradeTime, tradeid, trade.price, sellVolume, result.pnl, result.commission)
                         self.output(msg)
                         self.writeCtaLog(msg)
 
@@ -2979,9 +2585,9 @@ class BacktestingEngine(object):
             self.totalCommission += result.commission
             self.totalSlippage += result.slippage
 
-            msg =u'[{0}] {1} 盈亏:{2},回撤:{3}/{4},权益:{5}'\
+            msg =u'[{0}] {1} 盈亏:{2},回撤:{3}/{4},权益:{5},手续费:{6}'\
                 .format(result.groupId, time, result.pnl, drawdown,
-                        drawdownRate, self.capital, )
+                        drawdownRate, self.capital,self.totalCommission )
             self.output(msg)
             self.writeCtaLog(msg)
 
@@ -2989,7 +2595,7 @@ class BacktestingEngine(object):
         self.avaliable = self.capital - occupyMoney
         self.percent = round(float(occupyMoney * 100 / self.capital), 2)
 
-    def savingDailyData(self, d, c, m):
+    def savingDailyData(self, d, c, m, commission):
         """保存每日数据"""
         dict = {}
         dict['date'] = d.strftime('%Y/%m/%d')
@@ -3048,6 +2654,7 @@ class BacktestingEngine(object):
         dict['shortMoney'] = short_pos_occupy_money
         dict['occupyMoney'] = max(long_pos_occupy_money, short_pos_occupy_money)
         dict['occupyRate'] = dict['occupyMoney'] / dict['capital']
+        dict['commission'] = commission
         self.dailyList.append(dict)
 
     # ----------------------------------------------------------------------
@@ -3136,6 +2743,7 @@ class BacktestingEngine(object):
                         t['ClosePrice'] = trade.price
                         t['Volume'] = tradeUnit
                         t['Profit'] = result.pnl
+                        t['Commission'] = result.commission
                         self.exportTradeList.append(t)
 
                         self.writeCtaLog(u'{9}@{6} [{7}:开空{0},short:{1}]-[{8}:平空{2},cover:{3},vol:{4}],净盈亏:{5}'
@@ -3202,6 +2810,7 @@ class BacktestingEngine(object):
                         t['ClosePrice'] = trade.price
                         t['Volume'] = tradeUnit
                         t['Profit'] = result.pnl
+                        t['Commission'] = result.commission
                         self.exportTradeList.append(t)
 
                         self.writeCtaLog(u'{9}@{6} [{7}:开多{0},buy:{1}]-[{8}.平多{2},sell:{3},vol:{4}],净盈亏：{5}'
@@ -3279,35 +2888,40 @@ class BacktestingEngine(object):
 
     # ---------------------------------------------------------------------
     def exportTradeResult(self):
-        """到处回测结果表"""
+        """
+        导出回测结果表
+        导出每日净值结果表
+        :return:
+        """
         if not self.exportTradeList:
             return
         s = EMPTY_STRING
         s = self.strategy_name.replace('&','')
         s = s.replace(' ', '')
-        csvOutputFile = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
+        csvOutputFile = os.path.abspath(os.path.join(self.get_logs_path(),
                                                      '{}_TradeList_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'))))
 
         import csv
-        csvWriteFile = open(csvOutputFile, 'w',encoding='utf8')
-        fieldnames = ['vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit']
+        csvWriteFile = open(csvOutputFile, 'w', encoding='utf8')
+        fieldnames = ['vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit', 'Commission']
         writer = csv.DictWriter(f=csvWriteFile, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
 
         for row in self.exportTradeList:
             writer.writerow(row)
 
+        # 导出每日净值记录表
         if not self.dailyList:
             return
 
         if self.daily_report_name == EMPTY_STRING:
-            csvOutputFile2 = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
+            csvOutputFile2 = os.path.abspath(os.path.join(self.get_logs_path(),
                                          'DailyList_{0}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))))
         else:
             csvOutputFile2 = self.daily_report_name
 
-        csvWriteFile2 = open(csvOutputFile2, 'w',encoding='utf8')
-        fieldnames = ['date','capital','net', 'maxCapital','rate','longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
+        csvWriteFile2 = open(csvOutputFile2, 'w', encoding='utf8')
+        fieldnames = ['date', 'capital','net', 'maxCapital','rate', 'commission', 'longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
         writer2 = csv.DictWriter(f=csvWriteFile2, fieldnames=fieldnames, dialect='excel')
         writer2.writeheader()
 
@@ -3440,7 +3054,7 @@ class BacktestingEngine(object):
         plt.tight_layout()
         #plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
 
-        fig_file_name = os.path.abspath(os.path.join(os.path.dirname(__file__), 'TestLogs',
+        fig_file_name = os.path.abspath(os.path.join(self.get_logs_path(),
                                                      '{}_plot_{}.png'.format(self.strategy_name,
                                                           datetime.now().strftime('%Y%m%d_%H%M'))))
 
