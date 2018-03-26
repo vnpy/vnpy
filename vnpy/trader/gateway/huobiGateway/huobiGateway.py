@@ -75,6 +75,8 @@ class HuobiGateway(VtGateway):
             accessKey = str(setting['accessKey'])
             secretKey = str(setting['secretKey'])
             symbols = setting['symbols']
+            proxyHost = str(setting['proxyHost'])
+            proxyPort = int(setting['proxyPort'])
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -83,7 +85,7 @@ class HuobiGateway(VtGateway):
             return            
         
         # 创建行情和交易接口对象
-        self.dataApi.connect(exchange)
+        self.dataApi.connect(exchange, proxyHost, proxyPort)
         self.tradeApi.connect(exchange, accessKey, secretKey, symbols)
         
         # 初始化并启动查询
@@ -180,14 +182,17 @@ class HuobiDataApi(DataApi):
         self.subscribeDict = {}
         
     #----------------------------------------------------------------------
-    def connect(self, exchange):
+    def connect(self, exchange, proxyHost, proxyPort):
         """连接服务器"""
         if exchange == 'huobi':
             url = 'wss://api.huobi.pro/ws'
         else:
             url = 'wss://api.hadax.com/ws'
         
-        self.connectionStatus = super(HuobiDataApi, self).connect(url)
+        if proxyHost:
+            self.connectionStatus = super(HuobiDataApi, self).connect(url, proxyHost, proxyPort)
+        else:
+            self.connectionStatus = super(HuobiDataApi, self).connect(url)
         self.gateway.mdConnected = True
         
         if self.connectionStatus:
@@ -360,6 +365,7 @@ class HuobiTradeApi(TradeApi):
             self.start()
             self.writeLog(u'交易服务器连接成功')
             
+            self.getTimestamp()
             self.getSymbols()
 
     #----------------------------------------------------------------------
@@ -473,7 +479,9 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetTimestamp(self, data, reqid):
         """查询时间回调"""
-        print reqid, data    
+        event = Event(EVENT_LOG+'Time')
+        event.dict_['data'] = datetime.fromtimestamp(data/1000)
+        self.gateway.eventEngine.put(event)
         
     #----------------------------------------------------------------------
     def onGetAccounts(self, data, reqid):

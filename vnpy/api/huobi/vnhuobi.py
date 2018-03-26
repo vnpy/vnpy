@@ -93,6 +93,8 @@ class TradeApi(object):
         if mode:
             self.mode = mode
             
+        self.proxies = {}
+        
         return True
         
     #----------------------------------------------------------------------
@@ -250,7 +252,7 @@ class TradeApi(object):
         path = '/v1/common/timestamp'
         params = {}
         func = self.apiGet
-        callback = self.onGetCurrencys
+        callback = self.onGetTimestamp
         
         return self.addReq(path, params, func, callback) 
     
@@ -512,12 +514,17 @@ class DataApi(object):
                 break
         
     #----------------------------------------------------------------------
-    def connect(self, url):
+    def connect(self, url, proxyHost='', proxyPort=0):
         """连接"""
         self.url = url
         
         try:
-            self.ws = create_connection(self.url)
+            if not proxyHost:
+                self.ws = create_connection(self.url)
+            else:
+                self.ws = create_connection(self.url, 
+                                            http_proxy_host=proxyHost, 
+                                            http_proxy_port=proxyPort)
             
             self.active = True
             self.thread.start()
