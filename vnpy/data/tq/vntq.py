@@ -222,6 +222,7 @@ class TqApi(object):
             l = pack["data"]
         else:
             print u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack)
+            return
 
         for data in l:
             # 合并更新数据字典
