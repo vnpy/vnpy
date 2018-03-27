@@ -76,6 +76,8 @@ EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
 EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
 EXCHANGE_HUOBI = 'HUOBI'       # 火币比特币交易所
 EXCHANGE_LHANG = 'LHANG'       # 链行比特币交易所
+EXCHANGE_OKEX = 'OKEX'		 # OKEX比特币交易所
+EXCHANGE_BINANCE = 'BINANCE'   # 币安比特币交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
