@@ -7,6 +7,11 @@ from qtpy import QtWidgets, QtGui, QtCore
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtFunction import loadIconPath
 
+
+if not hasattr(QtCore, 'pyqtSignal'):
+    QtCore.pyqtSignal = QtCore.Signal
+
+
 BASIC_FONT = None
 try:
     family = globalSetting['fontFamily']
