@@ -735,6 +735,7 @@ class TradingWidget(QtWidgets.QFrame):
                     EXCHANGE_CZCE,
                     EXCHANGE_SSE,
                     EXCHANGE_SZSE,
+                    EXCHANGE_INE,
                     EXCHANGE_SGE,
                     EXCHANGE_HKEX,
                     EXCHANGE_HKFE,
@@ -1191,6 +1192,8 @@ class TradingWidget(QtWidgets.QFrame):
             # 自动填写信息
             if tick.gatewayName:
                 self.comboGateway.setCurrentIndex(self.gatewayList.index(tick.gatewayName))
+
+            self.spinVolume.setValue(1)
 
         except Exception as ex:
             self.mainEngine.writeError(u'tradingWg.autoFillSymbol exception:{}'.format(str(ex)))
