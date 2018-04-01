@@ -2185,7 +2185,7 @@ class BacktestingEngine(object):
 
         if len(self.tradeDict) < 1: return
 
-        tradeids = self.tradeDict.keys()
+        tradeids = list(self.tradeDict.keys())
         resultDict = OrderedDict()  # 交易结果记录
         longid = EMPTY_STRING
         shortid = EMPTY_STRING
@@ -2624,9 +2624,9 @@ class BacktestingEngine(object):
                     longpos.volume) * self.size * self.margin_rate
 
             today_margin += pos_margin
-            long_list.append({'symbol':symbol,'direction':'long','price':longpos.price,'volume':longpos.volume,'margin':pos_margin})
+            long_list.append({'symbol': symbol, 'direction':'long','price':longpos.price,'volume':longpos.volume,'margin':pos_margin})
 
-        short_list =[]
+        short_list = []
         for shortpos in self.shortPosition:
             symbol = '-' if shortpos.vtSymbol == EMPTY_STRING else shortpos.vtSymbol
             # 计算持仓浮盈浮亏/占用保证金
@@ -2901,8 +2901,10 @@ class BacktestingEngine(object):
         csvOutputFile = os.path.abspath(os.path.join(self.get_logs_path(),
                                                      '{}_TradeList_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'))))
 
+        self.writeCtaLog(u'save trade records to:{}'.format(csvOutputFile))
         import csv
-        csvWriteFile = open(csvOutputFile, 'w', encoding='utf8')
+        csvWriteFile = open(csvOutputFile, 'w', encoding='utf8',newline='')
+
         fieldnames = ['vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit', 'Commission']
         writer = csv.DictWriter(f=csvWriteFile, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
@@ -2919,8 +2921,9 @@ class BacktestingEngine(object):
                                          'DailyList_{0}.csv'.format(datetime.now().strftime('%Y%m%d_%H%M'))))
         else:
             csvOutputFile2 = self.daily_report_name
+        self.writeCtaLog(u'save daily records to:{}'.format(csvOutputFile2))
 
-        csvWriteFile2 = open(csvOutputFile2, 'w', encoding='utf8')
+        csvWriteFile2 = open(csvOutputFile2, 'w', encoding='utf8',newline='')
         fieldnames = ['date', 'capital','net', 'maxCapital','rate', 'commission', 'longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
         writer2 = csv.DictWriter(f=csvWriteFile2, fieldnames=fieldnames, dialect='excel')
         writer2.writeheader()
