@@ -1,22 +1,14 @@
 # encoding: UTF-8
 
 """
-这里的Demo是一个最简单的双均线策略实现，并未考虑太多实盘中的交易细节，如：
-1. 委托价格超出涨跌停价导致的委托失败
-2. 委托未成交，需要撤单后重新委托
-3. 断网后恢复交易状态
-4. 等等
-这些点是作者选择特意忽略不去实现，因此想实盘的朋友请自己多多研究CTA交易的一些细节，
-做到了然于胸后再去交易，对自己的money和时间负责。
-也希望社区能做出一个解决了以上潜在风险的Demo出来。
+这里的Demo是一个最简单的双均线策略实现
 """
 
 from __future__ import division
 
-#from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING, EMPTY_FLOAT
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
-                                                     BarManager,
+                                                     BarGenerator,
                                                      ArrayManager)
 
 
@@ -29,7 +21,7 @@ class DoubleMaStrategy(CtaTemplate):
     # 策略参数
     fastWindow = 10     # 快速均线参数
     slowWindow = 60     # 慢速均线参数
-    initDays = 10   # 初始化数据所用的天数
+    initDays = 10       # 初始化数据所用的天数
     
     # 策略变量
     fastMa0 = EMPTY_FLOAT   # 当前最新的快速EMA
@@ -54,13 +46,16 @@ class DoubleMaStrategy(CtaTemplate):
                'fastMa1',
                'slowMa0',
                'slowMa1']  
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(DoubleMaStrategy, self).__init__(ctaEngine, setting)
         
-        self.bm = BarManager(self.onBar)
+        self.bg = BarGenerator(self.onBar)
         self.am = ArrayManager()
         
         # 注意策略类中的可变对象属性（通常是list和dict等），在策略初始化时需要重新创建，
@@ -94,7 +89,7 @@ class DoubleMaStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
-        self.bm.updateTick(tick)
+        self.bg.updateTick(tick)
         
     #----------------------------------------------------------------------
     def onBar(self, bar):

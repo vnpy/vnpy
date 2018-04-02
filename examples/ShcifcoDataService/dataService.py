@@ -65,7 +65,7 @@ def downMinuteBarBySymbol(symbol, num):
         d = bar.__dict__
         flt = {'datetime': bar.datetime}
         cl.replace_one(flt, d, True)
-
+        
     end = time.time()
     cost = (end - start) * 1000
 

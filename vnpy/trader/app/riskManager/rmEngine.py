@@ -224,9 +224,9 @@ class RmEngine(object):
                               %(orderReq.symbol, self.orderCancelDict[orderReq.symbol], self.orderCancelLimit))
             return False
         
-        # 检查保证金比例
-        if gatewayName in self.marginRatioDict and self.marginRatioDict[gatewayName] >= self.marginRatioLimit:
-            self.writeRiskLog(u'%s接口保证金占比%S，超过限制%s'
+        # 检查保证金比例（只针对开仓委托）
+        if orderReq.offset == OFFSET_OPEN and gatewayName in self.marginRatioDict and self.marginRatioDict[gatewayName] >= self.marginRatioLimit:
+            self.writeRiskLog(u'%s接口保证金占比%s，超过限制%s'
                               %(gatewayName, self.marginRatioDict[gatewayName], self.marginRatioLimit))
             return False
         

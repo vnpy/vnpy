@@ -46,6 +46,9 @@ class CtaTemplate(object):
     varList = ['inited',
                'trading',
                'pos']
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
@@ -186,6 +189,12 @@ class CtaTemplate(object):
         """查询当前运行的环境"""
         return self.ctaEngine.engineType
     
+    #----------------------------------------------------------------------
+    def saveSyncData(self):
+        """保存同步数据到数据库"""
+        if self.trading:
+            self.ctaEngine.saveSyncData(self)
+    
 
 ########################################################################
 class TargetPosTemplate(CtaTemplate):
@@ -246,7 +255,8 @@ class TargetPosTemplate(CtaTemplate):
     def onOrder(self, order):
         """收到委托推送"""
         if order.status == STATUS_ALLTRADED or order.status == STATUS_CANCELLED:
-            self.orderList.remove(order.vtOrderID)
+            if order.vtOrderID in self.orderList:
+                self.orderList.remove(order.vtOrderID)
     
     #----------------------------------------------------------------------
     def setTargetPos(self, targetPos):
@@ -259,9 +269,7 @@ class TargetPosTemplate(CtaTemplate):
     def trade(self):
         """执行交易"""
         # 先撤销之前的委托
-        for vtOrderID in self.orderList:
-            self.cancelOrder(vtOrderID)
-        self.orderList = []
+        self.cancelAll()
         
         # 如果目标仓位和实际仓位一致，则不进行任何操作
         posChange = self.targetPos - self.pos
@@ -275,8 +283,12 @@ class TargetPosTemplate(CtaTemplate):
         if self.lastTick:
             if posChange > 0:
                 longPrice = self.lastTick.askPrice1 + self.tickAdd
+                if tick.upperLimit:
+                    longPrice = min(longPrice, tick.upperLimit)         # 涨停价检查
             else:
                 shortPrice = self.lastTick.bidPrice1 - self.tickAdd
+                if tick.lowerLimit:
+                    shortPrice = max(shortPrice, tick.lowerLimit)       # 跌停价检查
         else:
             if posChange > 0:
                 longPrice = self.lastBar.close + self.tickAdd
@@ -300,25 +312,35 @@ class TargetPosTemplate(CtaTemplate):
             
             # 买入
             if posChange > 0:
+                # 若当前有空头持仓
                 if self.pos < 0:
-                    l = self.cover(longPrice, abs(self.pos))
+                    # 若买入量小于空头持仓，则直接平空买入量
+                    if posChange < abs(self.pos):
+                        l = self.cover(longPrice, posChange)
+                    # 否则先平所有的空头仓位
+                    else:
+                        l = self.cover(longPrice, abs(self.pos))
+                # 若没有空头持仓，则执行开仓操作
                 else:
                     l = self.buy(longPrice, abs(posChange))
-            # 卖出
+            # 卖出和以上相反
             else:
                 if self.pos > 0:
-                    l = self.sell(shortPrice, abs(self.pos))
+                    if abs(posChange) < self.pos:
+                        l = self.sell(shortPrice, abs(posChange))
+                    else:
+                        l = self.sell(shortPrice, abs(self.pos))
                 else:
                     l = self.short(shortPrice, abs(posChange))
             self.orderList.extend(l)
     
     
 ########################################################################
-class BarManager(object):
+class BarGenerator(object):
     """
     K线合成器，支持：
     1. 基于Tick合成1分钟K线
-    2. 基于1分钟K线合成X分钟K线（X可以是2、3、5、10、15、30、60）
+    2. 基于1分钟K线合成X分钟K线（X可以是2、3、5、10、15、30	）
     """
 
     #----------------------------------------------------------------------
@@ -395,19 +417,20 @@ class BarManager(object):
             self.xminBar.open = bar.open
             self.xminBar.high = bar.high
             self.xminBar.low = bar.low            
+            
+            self.xminBar.datetime = bar.datetime    # 以第一根分钟K线的开始时间戳作为X分钟线的时间戳
         # 累加老K线
         else:
             self.xminBar.high = max(self.xminBar.high, bar.high)
             self.xminBar.low = min(self.xminBar.low, bar.low)
     
         # 通用部分
-        self.xminBar.close = bar.close
-        self.xminBar.datetime = bar.datetime
+        self.xminBar.close = bar.close        
         self.xminBar.openInterest = bar.openInterest
         self.xminBar.volume += int(bar.volume)                
             
         # X分钟已经走完
-        if not bar.datetime.minute % self.xmin:   # 可以用X整除
+        if not (bar.datetime.minute + 1) % self.xmin:   # 可以用X整除
             # 生成上一X分钟K线的时间戳
             self.xminBar.datetime = self.xminBar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
             self.xminBar.date = self.xminBar.datetime.strftime('%Y%m%d')
@@ -448,7 +471,7 @@ class ArrayManager(object):
         if not self.inited and self.count >= self.size:
             self.inited = True
         
-        self.openArray[0:self.size-1] = self.closeArray[1:self.size]
+        self.openArray[0:self.size-1] = self.openArray[1:self.size]
         self.highArray[0:self.size-1] = self.highArray[1:self.size]
         self.lowArray[0:self.size-1] = self.lowArray[1:self.size]
         self.closeArray[0:self.size-1] = self.closeArray[1:self.size]
@@ -578,3 +601,41 @@ class ArrayManager(object):
         if array:
             return up, down
         return up[-1], down[-1]
+    
+
+########################################################################
+class CtaSignal(object):
+    """
+    CTA策略信号，负责纯粹的信号生成（目标仓位），不参与具体交易管理
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.signalPos = 0      # 信号仓位
+    
+    #----------------------------------------------------------------------
+    def onBar(self, bar):
+        """K线推送"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def onTick(self, tick):
+        """Tick推送"""
+        pass
+        
+    #----------------------------------------------------------------------
+    def setSignalPos(self, pos):
+        """设置信号仓位"""
+        self.signalPos = pos
+        
+    #----------------------------------------------------------------------
+    def getSignalPos(self):
+        """获取信号仓位"""
+        return self.signalPos
+        
+        
+        
+        
+    
+    

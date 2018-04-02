@@ -112,6 +112,10 @@ class MainWindow(QtWidgets.QMainWindow):
         appMenu = menubar.addMenu(vtText.APPLICATION)
         
         for appDetail in self.appDetailList:
+            # 如果没有应用界面，则不添加菜单按钮
+            if not appDetail['appWidget']:
+                continue
+            
             function = self.createOpenAppFunction(appDetail)
             action = self.createAction(appDetail['appDisplayName'], function, loadIconPath(appDetail['appIco']))
             appMenu.addAction(action)

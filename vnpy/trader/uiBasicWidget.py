@@ -406,9 +406,13 @@ class BasicMonitor(QtWidgets.QTableWidget):
         """初始化右键菜单"""
         self.menu = QtWidgets.QMenu(self)    
         
+        resizeAction = QtWidgets.QAction(vtText.RESIZE_COLUMNS, self)
+        resizeAction.triggered.connect(self.resizeColumns)        
+        
         saveAction = QtWidgets.QAction(vtText.SAVE_DATA, self)
         saveAction.triggered.connect(self.saveToCsv)
         
+        self.menu.addAction(resizeAction)
         self.menu.addAction(saveAction)
         
     #----------------------------------------------------------------------
@@ -454,8 +458,8 @@ class MarketMonitor(BasicMonitor):
         # 设置字体
         self.setFont(BASIC_FONT)
         
-        # 设置允许排序
-        self.setSorting(True)
+        # 设置排序
+        self.setSorting(False)
         
         # 初始化表格
         self.initTable()
@@ -697,7 +701,8 @@ class TradingWidget(QtWidgets.QFrame):
                         PRODUCT_EQUITY,
                         PRODUCT_FUTURES,
                         PRODUCT_OPTION,
-                        PRODUCT_FOREX]
+                        PRODUCT_FOREX,
+                        PRODUCT_SPOT]
     
     gatewayList = ['']
 
@@ -1026,6 +1031,7 @@ class TradingWidget(QtWidgets.QFrame):
     def sendOrder(self):
         """发单"""
         symbol = str(self.lineSymbol.text())
+        vtSymbol = symbol
         exchange = unicode(self.comboExchange.currentText())
         currency = unicode(self.comboCurrency.currentText())
         productClass = unicode(self.comboProductClass.currentText())           
@@ -1042,11 +1048,12 @@ class TradingWidget(QtWidgets.QFrame):
         if contract:
             gatewayName = contract.gatewayName
             exchange = contract.exchange    # 保证有交易所代码
+            vtSymbol = contract.vtSymbol
             
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
-        req.vtSymbol = contract.vtSymbol
+        req.vtSymbol = vtSymbol
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
         req.direction = unicode(self.comboDirection.currentText())

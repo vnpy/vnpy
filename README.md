@@ -1,5 +1,7 @@
-# vn.py - By Traders, For Traders.
+# By Traders, For Traders.
 
+
+![vn.py-logo](http://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png)
 
 ---
 
@@ -11,7 +13,7 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
 ### 项目结构
 
-1. 丰富的Python交易和数据API接口（vnpy.api），基本覆盖了国内外所有常规交易品种（股票、期货、期权、外汇、外盘、比特币），具体包括：
+1. 丰富的Python交易API接口（vnpy.api），基本覆盖了国内外所有常规交易品种（股票、期货、期权、外汇、外盘、比特币），具体包括：
 
     - CTP（ctp）
 
@@ -37,13 +39,13 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
     - OANDA（oanda）
 
+    - 福汇（fxcm）
+
     - OKCOIN（okcoin）
 
     - 火币（huobi）
 
-    - 链行（lhang）
-
-    - 通联数据（datayes）
+    - LBank（lbank）
 
 2. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心
 
@@ -53,7 +55,7 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
     * 同时登录多个交易接口，在一套界面上监控多种市场的行情和多种资产账户的资金、持仓、委托、成交情况
 
-    * 支持跨市场套利（CTP期货和LTS证券）、境内外套利（CTP期货和IB外盘）、多市场数据整合实时预测走势（CTP的股指期货数据、IB的外盘A50数据、Wind的行业指数数据）等策略应用
+    * 支持跨市场套利（CTP期货和XTP证券）、境内外套利（CTP期货和IB外盘）、多市场数据整合实时预测走势（CTP的股指期货数据、IB的外盘A50数据、Wind的行业指数数据）等策略应用
 
     * CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
@@ -84,6 +86,7 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 2. 安装[MongoDB](https://www.mongodb.org/downloads#production)，并[将MongoDB配置为系统服务](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/#configure-a-windows-service-for-mongodb-community-edition)
 3. 安装[Anaconda](http://www.continuum.io/downloads)，**注意必须是Python 2.7 32位版本**
 4. 安装[Visual C++ Redistributable Packages for VS2013 x86版本](https://support.microsoft.com/en-us/help/3138367/update-for-visual-c-2013-and-visual-c-redistributable-package)
+5. 安装[python-snappy](https://www.lfd.uci.edu/~gohlke/pythonlibs/)，使用命令**pip install python_snappy-0.5.1-cp27-cp27m-win32.whl**
 
 **Ubuntu**
 
@@ -148,10 +151,11 @@ from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
 from vnpy.trader.gateway import (ctpGateway, oandaGateway, ibGateway, 
-                                 huobiGateway, okcoinGateway)
+                                 tkproGateway)
 
 if system == 'Windows':
-    from vnpy.trader.gateway import femasGateway, xspeedGateway
+    from vnpy.trader.gateway import (femasGateway, xspeedGateway, 
+                                     futuGateway, secGateway)
     
 if system == 'Linux':
     from vnpy.trader.gateway import xtpGateway
@@ -174,14 +178,15 @@ def main():
     
     # 添加交易接口
     me.addGateway(ctpGateway)
+    me.addGateway(tkproGateway)
     me.addGateway(oandaGateway)
     me.addGateway(ibGateway)
-    me.addGateway(huobiGateway)
-    me.addGateway(okcoinGateway)
     
     if system == 'Windows':
         me.addGateway(femasGateway)
         me.addGateway(xspeedGateway)
+        me.addGateway(secGateway)
+        me.addGateway(futuGateway)
         
     if system == 'Linux':
         me.addGateway(xtpGateway)

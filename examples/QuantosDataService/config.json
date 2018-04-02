@@ -1,0 +1,10 @@
+{
+	"MONGO_HOST": "localhost",
+	"MONGO_PORT": 27017,
+
+	"DATA_SERVER": "tcp://data.tushare.org:8910",
+	"USERNAME": "18616966847",
+	"TOKEN": "eyJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVfdGltZSI6IjE1MTI2NDAzNzAxNjIiLCJpc3MiOiJhdXRoMCIsImlkIjoiMTg2MTY5NjY4NDcifQ.xp1nDYfFgEeHtNoVFVKqXcmSQHR1-kdm99fzXqnowoo",
+
+	"SYMBOLS": ["IF1712.CFFEX", "510050.SSE", "510300.SSE"]
+}
