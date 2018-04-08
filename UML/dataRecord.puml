@@ -1,88 +1,119 @@
 @startuml
+database mongoDB as db
 participant runDataRecord as run
-participant mongoDB as db
 participant MainEngine as me
+participant DataEngine as dt
+participant LogEngine as le
 participant DrEngine as dr
 participant Queue as drq
+participant Thread as drt
 participant eventEngine as ee
+participant Thread as eet
 participant Queue as eeq
 participant ibGateway as gw
 
-activate db
+
 activate run
-'create ee
-run->ee: new evnetEngine()
-activate ee
+    run->ee ** :create evnetEngine object
+        activate ee
+        ee->ee ++ : init()
+            ee->eeq ** : Create Queue
+            ee->eet ** : Create Child Thread
+            return
+        return object
+|||
+|||
+    run->me ** : new mainEngine(ee)
+        activate me
+        me->me ++ : init()
+            me->ee ++ : ee.start()
+            note right: 启动ee的子线程
+                ee->eet ++ #red : thread.start()
+                ee-->me--: return
+            me->dt ** :创建DataEngine()
+                activate dt
+                dt->dt ++ : init()
+                    return
+                return object
+            me->le ** :创建LogEngine()
+                activate le
+                le->le ++ : init()
+                    return
+                return
+            me-->me--:return
+        me-->run--:return object
+|||
+|||
+    run->me: addGateway(ibGateway)
+        activate me
+        return
+|||
+|||
+    run->me: addApp()
+    activate me
+    return
+|||
+|||
+    run->ee: ee.regiser() 注册日志处理事件
+    activate ee
+    return
+|||
+|||
+    run->me++: me.Connect(IB)
+        note right: 连接IB网关
+        me->dr**: new DrEngine(me,ee)
+            activate dr
+            dr->dr++:init()
+                dr->drq **:Create Queue
+                dr->drt **:Create Thread
+                    activate drt #blue
+                dr->dr:loadSetting()
+                    note right
+                    从配置文件中加载
+                    订阅设置到字典对象
+                    end note
+                dr->ee++:register(TICK, handler)
+                    return
+                dr-->dr -- : return
+            'return object
+            dr-->me--: object
+        run<--me--:return
+
+|||
+|||
+    eet->ee--: ee.run()
+        activate ee #red
+        loop
+            ee->eeq:queue.get()
+            gw->eeq ++: queue.put(tick/bar)
+                return
+            eeq-->ee: event
+            ee->ee ++ : __process(event)
+                ee->dr ++ #red :call procecssTickEvent()
+                    dr->dr ++ :OnTick()
+                        dr->drq ++: queue.put(tick)
+                            return
+                        return
+
+                    dr->dr ++ :OnBar()
+                        dr->drq ++: queue.put(bar)
+                            return
+                        return
+                    return
+                return
+        end loop
+        deactivate ee
 
 
-ee->ee: __init__()
-activate ee
-create eeq
-ee->eeq: Create Queue
-activate eeq
-ee->ee: Create Child Thread
-deactivate ee
+    drt->dr -- :run()
+        activate dr #blue
+        loop
+            dr->drq ++ :queue.get()
+            drq-->dr --:data
+            dr->me:insertDB(data)
+        end loop
+        deactivate dr
 
-
-create me
-run->me: new mainEngine(ee)
-activate me
-me->ee: ee.start()
-note right
-启动ee的子线程
-end note
-me->me:创建DataEngine()
-
-
-run->me: addGateway(ibGateway)
-run->me: addApp()
-run->ee: regiser() 注册日志处理事件
-run->me: 连接IB网关
-create dr
-me->dr: new DrEngine(me,ee)
-
-activate dr
-
-dr->dr:loadSetting()
-note right
-从配置文件中加载
-订阅设置到字典对象
-end note
-create drq
-dr->drq:Create Queue
-activate drq
-dr->ee:register(TICK, handler)
-deactivate ee
-gw-->eeq: queue.put(tick/bar)
-activate ee #red
-loop
-ee->eeq:queue.get()
-eeq-->ee: Message
-ee->ee: process(mesage)
-end
-ee->dr:call procecssTickEvent()
-deactivate ee
-activate dr #blue
-dr->dr:OnTick()
-activate dr
-dr->drq: queue.put(tick)
-deactivate dr
-dr->dr:OnBar()
-activate dr
-dr->drq: queue.put(bar)
-deactivate dr
-deactivate dr
-deactivate dr
-
-dr->dr:run()
-activate dr #blue
-loop
-dr->drq:queue.get()
-drq-->dr:data
-dr->me:insertDB(data)
-end
-deactivate dr
-
-me->db: 写入mongoDB
+    me->db: 写入mongoDB
 
 @enduml
