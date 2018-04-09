@@ -4,7 +4,7 @@ participant runDataRecord as rundr
 participant Process as run
 participant MainEngine as me
 participant LogEngine as runle
-participant DataEngine as dt
+participant DataEngine as dte
 participant LogEngine as le
 participant DrEngine as dr
 participant Queue as drq
@@ -49,9 +49,24 @@ run->me ** : new mainEngine(ee)
             ee->eet ++ #red : thread.start()
             ee->eetm ++ #green : timer.start()
             ee-->me--: return
-        me->dt ** :创建DataEngine()
-            activate dt
-            dt->dt ++ : init()
+        me->dte ** :创建DataEngine()
+            activate dte
+            dte->dte ++ : init()
+                dte->dte ++ : registerEvent()
+                    dte->ee ++ : ee.register(EVENT_CONTRACT, self.processContractEvent)
+                        return
+                    dte->ee ++ : ee.register(EVENT_ORDER, self.processOrderEvent)
+                        return
+                    dte->ee ++ : ee.register(EVENT_TRADE, self.processTradeEvent)
+                        return
+                    dte->ee ++ : ee.register(EVENT_POSITION, self.processPositionEvent)
+                        return
+                    dte->ee ++ : ee.register(EVENT_ACCOUNT, self.processAccountEvent)
+                        return
+                    dte->ee ++ : ee.register(EVENT_LOG, self.processLogEvent)
+                        return
+                    dte->ee ++ : ee.register(EVENT_ERROR, self.processErrorEvent)
+                        return
                 return
             return object
         me->le ** :创建LogEngine()
