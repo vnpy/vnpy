@@ -34,8 +34,8 @@ STOPORDERPREFIX = 'CtaStopOrder.'
 
 # 各类商品所在市场
 NIGHT_MARKET_SQ1 = {'AU': 0, 'AG': 0}
-NIGHT_MARKET_SQ2 = {'CU': 0, 'PB': 0, 'AL': 0, 'ZN': 0, 'FU': 0, 'BU': 0, 'WR': 0, 'HC': 0}
-NIGHT_MARKET_SQ3 = {'RU': 0, 'RB': 0}
+NIGHT_MARKET_SQ2 = {'CU': 0, 'PB': 0, 'AL': 0, 'ZN': 0, 'FU': 0, 'BU': 0, 'WR': 0}
+NIGHT_MARKET_SQ3 = {'RU': 0, 'RB': 0, 'HC': 0}
 NIGHT_MARKET_ZZ = {'TA': 0, 'JR': 0, 'OI': 0, 'RO': 0, 'PM': 0, 'WT': 0, 'WS': 0, 'WH': 0, 'CF': 0, 'SR': 0, 'FG': 0,
                    'ME': 0, 'MA': 0, 'RS': 0, 'RM': 0, 'TC': 0, 'RI': 0, 'ER': 0}
 NIGHT_MARKET_DL = {'V': 0, 'L': 0, 'BB': 0, 'I': 0, 'FB': 0, 'C': 0, 'PP': 0, 'A': 0, 'B': 0, 'M': 0, 'Y': 0, 'P': 0,
@@ -108,6 +108,7 @@ class CtaBarData(object):
                                             # CTAORDER_SHORT 、CTAORDER_COVER 、 CTAORDER_OPEN_REJECT 、
                                             # CTAORDER_OPEN_FAIL 、CTAORDER_CLOSE_FAIL
 
+        self.mid3 = EMPTY_FLOAT             # (CLOSE+HIGH+LOW)/3;
         self.mid4 = EMPTY_FLOAT             # (2*CLOSE+HIGH+LOW)/4;
         self.mid5 = EMPTY_FLOAT             # (2*CLOSE+HIGH+LOW+OPEN)/5
 
