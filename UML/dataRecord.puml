@@ -13,14 +13,18 @@ participant eventEngine as ee
 participant EventProcessThread as eet
 participant Queue as eeq
 participant TimerThread as eetm
-participant ibGateway as gw
+participant "ibGateway:vtGateway" as gw
+participant "IbWrapper:EWrapper" as wrap
+
+
+
 
 
 activate rundr
     loop
-        rundr->rundr: 检查是否处于时间段
-        rundr->rundr: 监控子进程是否存在
-        rundr->run ** : create process
+        rundr->rundr: 检查是否处于交易时间段\n非交易时间段不起动子进程
+        rundr->rundr: 若处于非交易时间段 && 有子进程存在，\n就终止子进程运行
+        rundr->run ** : 若处于交易时间段 && 不存在子进程\ncreate process
         activate run
         rundr->rundr: sleep(5)
     end loop
@@ -52,21 +56,24 @@ run->me ** : new mainEngine(ee)
         me->dte ** :创建DataEngine()
             activate dte
             dte->dte ++ : init()
+                dte->dte ++ : loadContract()
+                    return
+                |||
                 dte->dte ++ : registerEvent()
-                    dte->ee ++ : ee.register(EVENT_CONTRACT, self.processContractEvent)
+                    dte->ee ++ : ee.register(交易类事件, 对应的事件处理句柄)
+                        note right
+                            **以下事件处理句柄都在DataEngine中定义**
+
+                            (EVENT_CONTRACT, processContractEvent) 合约
+                            (EVENT_ORDER, processOrderEvent) 订单
+                            (EVENT_TRADE, processTradeEvent) 交易
+                            (EVENT_POSITION, processPositionEvent) 头寸
+                            (EVENT_ACCOUNT, processAccountEvent) 帐号
+                            (EVENT_LOG, processLogEvent) LOG
+                            (EVENT_ERROR, processErrorEvent) ERROR
+                        end note
                         return
-                    dte->ee ++ : ee.register(EVENT_ORDER, self.processOrderEvent)
-                        return
-                    dte->ee ++ : ee.register(EVENT_TRADE, self.processTradeEvent)
-                        return
-                    dte->ee ++ : ee.register(EVENT_POSITION, self.processPositionEvent)
-                        return
-                    dte->ee ++ : ee.register(EVENT_ACCOUNT, self.processAccountEvent)
-                        return
-                    dte->ee ++ : ee.register(EVENT_LOG, self.processLogEvent)
-                        return
-                    dte->ee ++ : ee.register(EVENT_ERROR, self.processErrorEvent)
-                        return
+                    return
                 return
             return object
         me->le ** :创建LogEngine()
@@ -78,23 +85,31 @@ run->me ** : new mainEngine(ee)
     me-->run--: object
 |||
 |||
-run->me: addGateway(ibGateway)
-    activate me
+run->me ++ : addGateway(ibGateway)
+    me->gw ** : Create IbGateway(ee, "IB")
+        activate gw
+            gw->gw ++ : init()
+                note right
+                    ** 将ee保存到私有变量
+                    ** 内部变量初始化为空
+                    ** 获取连接IB G/W的信息
+                end note
+                gw->wrap ** : Create IbWrap(self)
+                    note right
+                        EWrapper类是C++实现, 存在于IB提供的源代码中。
+                        通过boost.python机制，
+                        Python的IbWrapper类从EWrapper派生
+                    end note
+                    activate wrap
+                    wrap->wrap ++ : 构造函数()
+                        return object
+                    return object
+                return
+        return object
     return
 |||
 |||
-run->me: addApp()
-    activate me
-    return
-|||
-|||
-run->ee: ee.regiser() 注册日志处理事件
-    activate ee
-    return
-|||
-|||
-run->me++: me.Connect(IB)
-    note right: 连接IB网关
+run->me ++ : addApp()
     me->dr**: new DrEngine(me,ee)
         activate dr
         dr->dr++:init()
@@ -108,9 +123,35 @@ run->me++: me.Connect(IB)
                 end note
             dr->ee++:register(TICK, handler)
                 return
-            dr-->dr -- : return
-        'return object
+            dr-->dr -- :
         dr-->me--: object
+    |||
+    me->me ++ : 初始化其他内部变量
+        return
+
+    run<--me -- : return
+|||
+|||
+run->ee: ee.regiser() 注册日志处理事件
+    activate ee
+    note right
+        登记EVENT_LOG事件处理句柄
+        登记EVENT_ERROR事件处理句柄
+    end note
+    return
+|||
+|||
+run->me++: me.Connect(IB)
+    note right: 连接IB网关
+    me->gw ++ : gw.connect()
+        gw-> wrap : wrap.eConnect(host, port, clientId, false)
+        return
+    me->me ++ : dbConnect()
+        me->db ++ : MongoClient()
+            return dbClinet
+        me->ee ++ : ee.register(EVENT_LOG, self.dbLogging)
+            return
+        return
     run<--me--:return
 
 |||
