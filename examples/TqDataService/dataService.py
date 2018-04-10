@@ -18,7 +18,6 @@ setting = json.load(config)
 
 MONGO_HOST = setting['MONGO_HOST']
 MONGO_PORT = setting['MONGO_PORT']
-SYMBOLS = setting['SYMBOLS']
 
 mc = MongoClient(MONGO_HOST, MONGO_PORT)        # Mongo连接
 db = mc[MINUTE_DB_NAME]                         # 数据库
@@ -80,16 +79,16 @@ def downMinuteBarBySymbol(symbol, num):
     api.subscribe_chart(symbol, 60, num, onChart)
     
 #----------------------------------------------------------------------
-def downloadAllMinuteBar(num):
+def downloadAllMinuteBar(num, symbols):
     """下载所有配置中的合约的分钟线数据"""
     print '-' * 50
     print u'开始下载合约分钟线数据'
     print '-' * 50
     
     # 添加下载任务
-    taskList.extend(SYMBOLS)
+    taskList.extend(symbols)
     
-    for symbol in SYMBOLS:
+    for symbol in symbols:
         downMinuteBarBySymbol(str(symbol), num)
     
     while True:
