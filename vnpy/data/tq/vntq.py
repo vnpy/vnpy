@@ -5,6 +5,7 @@
 使用时需要在本机先启动一个天勤终端进程
 天勤行情终端: http://www.tq18.cn
 """
+from __future__ import print_function
 
 
 import json
@@ -215,7 +216,7 @@ class TqApi(object):
         if 'data' in pack:
             l = pack["data"]
         else:
-            print u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack)
+            print(u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack))
 
         for data in l:
             # 合并更新数据字典

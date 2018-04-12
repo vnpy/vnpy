@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from xtp_data_type import *
@@ -38,7 +39,7 @@ def main():
 
     lcpp = replaceTabs(fcpp)
     for n, line in enumerate(lcpp):
-        print n
+        print(n)
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]

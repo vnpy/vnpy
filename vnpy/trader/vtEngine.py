@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 from __future__ import division
+from __future__ import print_function
 
 import os
 import shelve
@@ -968,11 +969,11 @@ class PositionDetail(object):
     #----------------------------------------------------------------------
     def output(self):
         """"""
-        print self.vtSymbol, '-'*30
-        print 'long, total:%s, td:%s, yd:%s' %(self.longPos, self.longTd, self.longYd)
-        print 'long frozen, total:%s, td:%s, yd:%s' %(self.longPosFrozen, self.longTdFrozen, self.longYdFrozen)
-        print 'short, total:%s, td:%s, yd:%s' %(self.shortPos, self.shortTd, self.shortYd)
-        print 'short frozen, total:%s, td:%s, yd:%s' %(self.shortPosFrozen, self.shortTdFrozen, self.shortYdFrozen)        
+        print(self.vtSymbol, '-'*30)
+        print('long, total:%s, td:%s, yd:%s' %(self.longPos, self.longTd, self.longYd))
+        print('long frozen, total:%s, td:%s, yd:%s' %(self.longPosFrozen, self.longTdFrozen, self.longYdFrozen))
+        print('short, total:%s, td:%s, yd:%s' %(self.shortPos, self.shortTd, self.shortYd))
+        print('short frozen, total:%s, td:%s, yd:%s' %(self.shortPosFrozen, self.shortTdFrozen, self.shortYdFrozen))        
     
     #----------------------------------------------------------------------
     def convertOrderReq(self, req):

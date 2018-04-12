@@ -3,6 +3,7 @@
 '''
 vn.coincheck的gateway接入
 '''
+from __future__ import print_function
 import os
 import json
 from datetime import datetime
@@ -146,7 +147,7 @@ class CoincheckGateway(VtGateway):
 
     #----------------------------------------------------------------------
     def onListOrder(self, data):
-        print data
+        print(data)
     
     #----------------------------------------------------------------------
     def setQryEnabled(self, qryEnabled):
@@ -181,7 +182,7 @@ class CoincheckTradeApi(vncoincheck.TradeApi):
     #----------------------------------------------------------------------
     
     def onError(self, method ,data):
-        print method , data 
+        print(method , data) 
     #
     '''
     "return" :
@@ -191,7 +192,7 @@ ty_status': u'identity_verified', u'id': 1007549}
     '''
     def onGet_info(self, data, req, reqID):
         """用户信息"""
-        print data
+        print(data)
     '''
     {u'zec': u'0', u'rep_debt': u'0.0', u'xem': u'0', u'lsk': u'0', u'rep_lend_in_use': u'0.0', u'ltc_de
 bt': u'0.0', u'xmr_reserved': u'0.0', u'cny': u'0', u'btc_reserved': u'0.0', u'dao_reserved': u'0.0'
@@ -215,8 +216,8 @@ u'dash': u'0', u'cny_debt': u'0.0', u'xrp_lend_in_use': u'0.0', u'xem_reserved':
     '''
     def onGet_balance(self, data, req, reqID):
         if data["success"] == 0:
-            print "Error in onGet_balance"
-            print data
+            print("Error in onGet_balance")
+            print(data)
         else:
             account = VtAccountData()
             account.gatewayName = self.gatewayName
@@ -308,8 +309,8 @@ u'id': 324141928}
         # print "onBuy_btc"
         # print data
         if data["success"] == 0:
-            print "Error in onBuy_btc"
-            print data
+            print("Error in onBuy_btc")
+            print(data)
         else:
             localID = self.reqLocalDict[reqID]
             systemID = data['id']
@@ -335,7 +336,7 @@ u'id': 324141928}
         # print data
         """卖出回调"""
         if data["success"] == 0:
-            print "Error in onSell_btc"
+            print("Error in onSell_btc")
         else:
             localID = self.reqLocalDict[reqID]
             systemID = data['id']
@@ -513,7 +514,7 @@ pending_market_buy_amount': None, u'rate': u'100.0', u'pair': u'btc_jpy', u'stop
             self.gateway.onOrder(order)
 
     def onHistory_orders(self, data, req, reqID):
-        print data
+        print(data)
 
     def cancel(self, req):
         localID = req.orderID
@@ -594,7 +595,7 @@ class CoincheckSocketDataApi(vncoincheck.DataApiSocket):
                 tick.bidPrice3, tick.bidVolume3 = bids[2]
                 tick.bidPrice4, tick.bidVolume4 = bids[3]
                 tick.bidPrice5, tick.bidVolume5 = bids[4]
-            except Exception,ex:
+            except Exception as ex:
                 pass
 
             try:
@@ -603,7 +604,7 @@ class CoincheckSocketDataApi(vncoincheck.DataApiSocket):
                 tick.askPrice3, tick.askVolume3 = asks[2]
                 tick.askPrice4, tick.askVolume4 = asks[3]
                 tick.askPrice5, tick.askVolume5 = asks[4]
-            except Exception,ex:
+            except Exception as ex:
                 pass
 
             now = datetime.now()
@@ -716,7 +717,7 @@ class CoincheckDataApi(vncoincheck.DataApi):
     #----------------------------------------------------------------------
     def onTrades(self, data):
         """实时成交推送"""
-        print data
+        print(data)
 
     #----------------------------------------------------------------------
     def onOrderbooks(self, data):

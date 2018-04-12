@@ -6,6 +6,7 @@ vnpy.api.okex的gateway接入
 注意：
 1. 目前仅支持USD现货交易
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -232,7 +233,7 @@ class SpotApi(OkexSpotApi):
         data = self.readData(evt)[0]
         try:
             channel = data['channel']
-        except Exception,ex:
+        except Exception as ex:
             channel = None
         if channel == None:
             return
@@ -310,7 +311,7 @@ class SpotApi(OkexSpotApi):
 
     #----------------------------------------------------------------------
     def spotAllOrders(self):
-        print spotAllOrders
+        print(spotAllOrders)
         for symbol in registerSymbolPairArray:
             if symbol in okex_all_symbol_pairs:
                 self.spotOrderInfo(symbol, '-1')
@@ -453,8 +454,8 @@ class SpotApi(OkexSpotApi):
             # print "ticker", tick.date, tick.time
             # newtick = copy(tick)
             # self.gateway.onTick(newtick)
-        except Exception,ex:
-            print "Error in onTicker ", channel
+        except Exception as ex:
+            print("Error in onTicker ", channel)
     
     #----------------------------------------------------------------------
     def onDepth(self, data):
@@ -464,7 +465,7 @@ class SpotApi(OkexSpotApi):
         try:
             channel = data['channel']
             symbol = self.channelSymbolMap[channel]
-        except Exception,ex:
+        except Exception as ex:
             symbol = None
 
         if symbol == None:
@@ -789,7 +790,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
     def onSpotOrderInfo(self, data):
         """委托信息查询回调"""
         if "error_code" in data.keys():
-            print data
+            print(data)
             return 
         rawData = data['data']
         for d in rawData['orders']:
@@ -839,7 +840,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
     def onSpotOrder(self, data):
         rawData = data['data']
         if 'error_code' in rawData.keys():
-            print data
+            print(data)
             return
 
         orderId = str(rawData['order_id'])

@@ -1,19 +1,24 @@
 # encoding: utf-8
 
+from __future__ import absolute_import
 from time import time, sleep
 
-from vnlbank import LbankApi
+from .vnlbank import LbankApi
 
+try:
+    raw_input          # Python 2
+except NameError:
+    raw_input = input  # Python 3
 
 if __name__ == '__main__':
     apiKey = ''
     secretKey = ''
-    
+
     # 创建API对象并初始化
     api = LbankApi()
     api.DEBUG = True
     api.init(apiKey, secretKey, 2)
-    
+
     # 查询行情
     api.getTicker('btc_cny')
 
@@ -44,4 +49,4 @@ if __name__ == '__main__':
     #api.getOrdersInfoHistory('btc_cny', '0', '1', '100')
 
     # 阻塞
-    raw_input()    
+    raw_input()

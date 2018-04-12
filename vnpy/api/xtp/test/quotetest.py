@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import os
 from time import sleep
 
@@ -8,11 +9,11 @@ from vnxtpquote import *
 #----------------------------------------------------------------------
 def printDict(d):
     """"""
-    print '-' * 50
+    print('-' * 50)
     l = d.keys()
     l.sort()
     for k in l:
-        print k, d[k]
+        print(k, d[k])
     
     
 
@@ -28,32 +29,32 @@ class TestApi(QuoteApi):
     #----------------------------------------------------------------------
     def onDisconnected(self, reason):
         """"""
-        print 'disconnect', reason
+        print('disconnect', reason)
         
     #----------------------------------------------------------------------
     def onError(self, data):
         """"""
-        print 'error'
+        print('error')
         printDict(data)
         
     #----------------------------------------------------------------------
     def onSubMarketData(self, data, error, last):
         """"""
-        print 'sub market data'
+        print('sub market data')
         printDict(data)
         printDict(error)
         
     #----------------------------------------------------------------------
     def onUnSubMarketData(self, data, error, last):
         """"""
-        print 'unsub market data'
+        print('unsub market data')
         printDict(data)
         printDict(error)
         
     #----------------------------------------------------------------------
     def onMarketData(self, data):
         """"""
-        print 'new market data'
+        print('new market data')
         printDict(data)
         
     #----------------------------------------------------------------------
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     
     # 登录
     n = api.login(ip, port, user, password, 1)
-    print 'login result', n    
+    print('login result', n)    
     
     # 订阅行情
     api.subscribeMarketData('000001', 2)
