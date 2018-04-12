@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-from vnzaif import *
+from __future__ import absolute_import
+from .vnzaif import *
 
 def testTrade():
     """测试交易"""

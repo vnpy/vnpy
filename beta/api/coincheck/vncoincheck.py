@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+from __future__ import print_function
 import urllib
 import hashlib
 
@@ -108,7 +109,7 @@ class TradeApi(object):
         if r != None and r.status_code == 200:
             data = r.json()
             if data['success'] == 0:
-                print "error in coincheck %s" % method
+                print("error in coincheck %s" % method)
                 return data
             else:
                 return data
@@ -116,7 +117,7 @@ class TradeApi(object):
             try:
                 data = json.loads(r.text)
                 return data
-            except Exception,ex:
+            except Exception as ex:
                 return None    
 
     #----------------------------------------------------------------------
@@ -138,12 +139,12 @@ class TradeApi(object):
                 # 请求成功
                 if data != None :
                     if self.DEBUG:
-                        print callback.__name__
+                        print(callback.__name__)
                     callback(data, req, reqID)
 
                 self.reqQueue.pop(0)
                 sleep(0.1)
-            except Exception,ex:
+            except Exception as ex:
                 pass    
 
     #----------------------------------------------------------------------
@@ -205,11 +206,11 @@ class TradeApi(object):
         return self.sendRequest( self.API_balance , FUNCTIONCODE_GET_BALANCE_COINCHECK , self.onGet_balance , None)
 
     def buy_btc_jpy(self , **kwargs):
-        print "buy_btc_jpy"
+        print("buy_btc_jpy")
         return self.sendRequest( self.API_trade , FUNCTIONCODE_BUY_ORDER_COINCHECK , self.onBuy_btc , kwargs = kwargs, optional = None)
 
     def sell_btc_jpy(self, **kwargs):
-        print "sell_btc_jpy"
+        print("sell_btc_jpy")
         return self.sendRequest( self.API_trade , FUNCTIONCODE_SELL_ORDER_COINCHECK , self.onSell_btc , kwargs = kwargs, optional = None)
 
     def list_orders(self):
@@ -225,19 +226,19 @@ class TradeApi(object):
     ## 回调函数
     ####################################################
     def onGet_info(self, data, req, reqID):
-        print data
+        print(data)
     def onGet_balance(self, data, req, reqID):
-        print data
+        print(data)
     def onBuy_btc(self, data, req, reqID):
-        print data
+        print(data)
     def onSell_btc(self, data, req, reqID):
-        print data
+        print(data)
     def onList_order(self, data, req, reqID):
-        print data
+        print(data)
     def onCancel_orders(self, data, req, reqID):
-        print data
+        print(data)
     def onHistory_orders(self, data, req, reqID):
-        print data
+        print(data)
 
 class DataApiSocket(object):
     """基于websocket的API对象"""
@@ -257,24 +258,24 @@ class DataApiSocket(object):
     #----------------------------------------------------------------------
     def onMessage(self, ws, evt):
         """信息推送""" 
-        print 'onMessage'
-        print evt
+        print('onMessage')
+        print(evt)
         
     #----------------------------------------------------------------------
     def onError(self, ws, evt):
         """错误推送"""
-        print 'onError'
-        print evt
+        print('onError')
+        print(evt)
         
     #----------------------------------------------------------------------
     def onClose(self, ws):
         """接口断开"""
-        print 'onClose'
+        print('onClose')
         
     #----------------------------------------------------------------------
     def onOpen(self, ws):
         """接口打开"""
-        print "onOpen"
+        print("onOpen")
         self.sendOrderbookRequest()
         self.sendTradesRequest()
 
@@ -415,10 +416,10 @@ class DataApi(object):
                     if r.status_code == 200:
                         data = r.json()
                         if self.DEBUG:
-                            print callback.__name__
+                            print(callback.__name__)
                         callback(data)
-                except Exception, e:
-                    print e
+                except Exception as e:
+                    print(e)
             sleep(self.taskInterval)
 
     #----------------------------------------------------------------------
@@ -445,16 +446,16 @@ class DataApi(object):
     #----------------------------------------------------------------------
     def onTick(self, data):
         """实时成交推送"""
-        print data
+        print(data)
     #----------------------------------------------------------------------
     def onTrades(self, data):
         """实时成交推送"""
-        print data
+        print(data)
 
     #----------------------------------------------------------------------
     def onOrderbooks(self, data):
         """实时成交推送"""
-        print data
+        print(data)
 
 if __name__ == '__main__':
     pass

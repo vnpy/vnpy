@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
-from vnzb import *
+from __future__ import absolute_import
+from .vnzb import *
 
 # 在OkCoin网站申请这两个Key，分别对应用户名和密码
 apiKey = '你的apiKey'

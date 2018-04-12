@@ -1,15 +1,19 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import hashlib
 import zlib
 import json
 from time import sleep
 from threading import Thread
 
-import websocket    
+import websocket
 import urllib2, hashlib,struct,sha,time
 
-
+try:
+    xrange          # Python 2
+except NameError:
+    xrange = range  # Python 3
 
 # OKEX网站
 zb_usd_url = "wss://api.zb.com:9999/websocket"
@@ -36,17 +40,17 @@ class ZB_Sub_Spot_Api(object):
         """重新连接"""
         # 首先关闭之前的连接
         self.close()
-        
+
         # 再执行重连任务
-        self.ws_sub_spot = websocket.WebSocketApp(self.host, 
+        self.ws_sub_spot = websocket.WebSocketApp(self.host,
                                          on_message=self.onMessage,
                                          on_error=self.onError,
                                          on_close=self.onClose,
-                                         on_open=self.onOpen)        
-    
+                                         on_open=self.onOpen)
+
         self.thread = Thread(target=self.ws_sub_spot.run_forever)
         self.thread.start()
-    
+
     #----------------------------------------------------------------------
     def connect_Subpot(self, apiKey , secretKey , trace = False):
         self.host = zb_usd_url
@@ -55,12 +59,12 @@ class ZB_Sub_Spot_Api(object):
 
         websocket.enableTrace(trace)
 
-        self.ws_sub_spot = websocket.WebSocketApp(self.host, 
+        self.ws_sub_spot = websocket.WebSocketApp(self.host,
                                              on_message=self.onMessage,
                                              on_error=self.onError,
                                              on_close=self.onClose,
-                                             on_open=self.onOpen)        
-            
+                                             on_open=self.onOpen)
+
         self.thread = Thread(target=self.ws_sub_spot.run_forever)
         self.thread.start()
 
@@ -69,13 +73,13 @@ class ZB_Sub_Spot_Api(object):
         """解压缩推送收到的数据"""
         # # 创建解压器
         # decompress = zlib.decompressobj(-zlib.MAX_WBITS)
-        
+
         # # 将原始数据解压成字符串
         # inflated = decompress.decompress(evt) + decompress.flush()
-        
+
         # 通过json解析字符串
         data = json.loads(evt)
-        
+
         return data
 
     #----------------------------------------------------------------------
@@ -87,24 +91,24 @@ class ZB_Sub_Spot_Api(object):
 
     #----------------------------------------------------------------------
     def onMessage(self, ws, evt):
-        """信息推送""" 
-        print evt
-        
+        """信息推送"""
+        print(evt)
+
     #----------------------------------------------------------------------
     def onError(self, ws, evt):
         """错误推送"""
-        print 'onError'
-        print evt
-        
+        print('onError')
+        print(evt)
+
     #----------------------------------------------------------------------
     def onClose(self, ws):
         """接口断开"""
-        print 'onClose'
-        
+        print('onClose')
+
     #----------------------------------------------------------------------
     def onOpen(self, ws):
         """接口打开"""
-        print 'onOpen'
+        print('onOpen')
 
     #----------------------------------------------------------------------
     def subscribeSpotTicker(self, symbol_pair):
@@ -151,7 +155,7 @@ class ZB_Sub_Spot_Api(object):
         m.update(k_ipad)
         m.update(value)
         dg = m.digest()
-        
+
         m = hashlib.md5()
         m.update(k_opad)
         subStr = dg[0:16]
@@ -189,43 +193,43 @@ class ZB_Sub_Spot_Api(object):
         params['event'] = "addChannel"
 
         params['sign'] = self.generateSign(params)
-        
+
         # 使用json打包并发送
         j = json.dumps(params)
-        
+
         # 若触发异常则重连
         try:
             self.ws_sub_spot.send(j)
         except websocket.WebSocketConnectionClosedException:
-            pass 
+            pass
 
     #----------------------------------------------------------------------
     def spotTrade(self, symbol_pair, type_, price, amount):
         """现货委托"""
-        symbol_pair = symbol_pair.replace('_','') 
+        symbol_pair = symbol_pair.replace('_','')
         params = {}
         params['tradeType'] = str(type_)
         params['price'] = str(price)
         params['amount'] = str(amount)
-        
+
         channel = symbol_pair.lower() + "_order"
-        
-        print channel , str(type_) , str(price) , str(amount)
+
+        print(channel , str(type_) , str(price) , str(amount))
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
     def spotCancelOrder(self, symbol_pair, orderid):
         """现货撤单"""
         bef_symbol_pair = symbol_pair
-        symbol_pair = symbol_pair.replace('_','') 
+        symbol_pair = symbol_pair.replace('_','')
         params = {}
         params['id'] = str(orderid)
         params['no'] = str(bef_symbol_pair) + "." + str(orderid)
-        
+
         channel = symbol_pair.lower() + "_cancelorder"
 
         self.sendTradingRequest(channel, params)
-    
+
     #----------------------------------------------------------------------
     def spotUserInfo(self):
         """查询现货账户"""
@@ -235,12 +239,12 @@ class ZB_Sub_Spot_Api(object):
     #----------------------------------------------------------------------
     def spotOrderInfo(self, symbol_pair, orderid):
         """查询现货委托信息"""
-        symbol_pair = symbol_pair.replace('_','') 
+        symbol_pair = symbol_pair.replace('_','')
         params = {}
         params['id'] = str(orderid)
-        
+
         channel = symbol_pair.lower() + "_getorder"
-        
+
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------

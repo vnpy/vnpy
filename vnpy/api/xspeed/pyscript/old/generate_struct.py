@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from ksgold_data_type import *
@@ -47,7 +48,7 @@ def main():
                 n = line.index('//')
                 line = line[:n]
 
-            print no, ':', line
+            print(no, ':', line)
 
             content = line.split('\t')
 

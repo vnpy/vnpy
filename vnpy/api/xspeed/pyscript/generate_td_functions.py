@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from string import join
@@ -33,7 +34,7 @@ def processCallBack(line):
                 cbArgsTypeList.append(content[0])           # 参数类型列表
                 cbArgsValueList.append(content[1])          # 参数数据列表
             else:
-                print content
+                print(content)
                 cbArgsTypeList.append(content[1])           # 参数类型列表
                 cbArgsValueList.append(content[2]+content[3])          # 参数数据列表
 
@@ -230,8 +231,8 @@ def processFunction(line):
             fcArgsTypeList.append(content[1])           # 参数类型列表
             fcArgsValueList.append(content[3])          # 参数数据列表
 
-    print line
-    print fcArgsTypeList
+    print(line)
+    print(fcArgsTypeList)
     if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
         
@@ -263,7 +264,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
         elif value == 'short':
             line = '\tgetShort(req, "' + key + '", &myreq.' + key + ');\n'
         elif value == 'float':
-            print line
+            print(line)
             line = '\tgetDouble(req, "' + key + '", &myreq.' + key + ');\n'
         ffunction.write(line)
 
@@ -294,10 +295,10 @@ define_count = 1
 
 for line in fcpp:
     if "    virtual void On" in line:
-        print 'callback'
+        print('callback')
         processCallBack(line)
     elif "    virtual int" in line:
-        print 'function'
+        print('function')
         processFunction(line)
 
 fcpp.close()

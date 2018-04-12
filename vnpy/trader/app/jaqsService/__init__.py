@@ -1,7 +1,8 @@
 # encoding: UTF-8
 
-from jsEngine import JsEngine
-from uiJsWidget import JsEngineManager
+from __future__ import absolute_import
+from .jsEngine import JsEngine
+from .uiJsWidget import JsEngineManager
 
 appName = 'JaqsService'
 appDisplayName = u'Jaqs服务'

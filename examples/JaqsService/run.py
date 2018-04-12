@@ -1,6 +1,10 @@
 # encoding: UTF-8
 
 # 重载sys模块，设置默认字符串编码方式为utf8
+try:
+    reload         # Python 2
+except NameError:  # Python 3
+    from importlib import reload
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -28,24 +32,24 @@ def main():
     le.setLogLevel(le.LEVEL_INFO)
     le.addConsoleHandler()
     le.addFileHandler()
-    
+
     le.info(u'启动JAQS服务进程')
-    
+
     ee = EventEngine()
     le.info(u'事件引擎创建成功')
-    
+
     me = MainEngine(ee)
     me.addGateway(ctpGateway)
     me.addApp(jaqsService)
     le.info(u'主引擎创建成功')
-    
+
     ee.register(EVENT_LOG, le.processLogEvent)
     ee.register(EVENT_JS_LOG, le.processLogEvent)
-    le.info(u'注册日志事件监听')    
-    
+    le.info(u'注册日志事件监听')
+
     me.connect('CTP')
-    le.info(u'连接CTP接口')    
-    
+    le.info(u'连接CTP接口')
+
     while True:
         sleep(1)
 

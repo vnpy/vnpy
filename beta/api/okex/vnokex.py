@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import hashlib
 import zlib
 import json
@@ -129,23 +130,23 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def onMessage(self, ws, evt):
         """信息推送""" 
-        print evt
+        print(evt)
         
     #----------------------------------------------------------------------
     def onError(self, ws, evt):
         """错误推送"""
-        print 'onError'
-        print evt
+        print('onError')
+        print(evt)
         
     #----------------------------------------------------------------------
     def onClose(self, ws):
         """接口断开"""
-        print 'onClose'
+        print('onClose')
         
     #----------------------------------------------------------------------
     def onOpen(self, ws):
         """接口打开"""
-        print 'onOpen'
+        print('onOpen')
         
     #----------------------------------------------------------------------
     def generateSign(self, params):

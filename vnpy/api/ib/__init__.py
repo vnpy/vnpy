@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnib import *
+from __future__ import absolute_import
+from .vnib import *
