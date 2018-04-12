@@ -15,6 +15,7 @@ participant Queue as eeq
 participant TimerThread as eetm
 participant "ibGateway:vtGateway" as gw
 participant "IbWrapper:IbApi" as wrap
+participant "IB Gateway/IB TWS" as ib
 
 
 
@@ -94,7 +95,7 @@ run->me ++ : addGateway(ibGateway)
                     ** 内部变量初始化为空
                     ** 获取连接IB G/W的信息
                 end note
-                gw->wrap ** : Create IbWrap(self)
+                gw->wrap ** : Create IbWrapper(self)
                     note right
                         IbApi是基于Boost.python的封装。
                         用C++实现，但是可以提供给Python程序使用。
@@ -126,6 +127,7 @@ run->me ++ : addApp()
                 订阅设置到字典对象
                 end note
             dr->ee++:register(TICK, handler)
+                note right: 登记EVENT_TICK事件
                 return
             dr-->dr -- :
         dr-->me--: object
@@ -148,9 +150,50 @@ run->ee: ee.regiser() 注册日志处理事件
 run->me++: me.Connect(IB)
     note right: 连接IB网关
     me->gw ++ : gw.connect()
-        gw-> wrap ++ : wrap.eConnect(host, port, clientId, false)
+        gw-> wrap ++ : ibwrapper.eConnect(host, port, clientId, false)
+            wrap-\ib ++ : 调用IB的C++代码，发送连接请求数据包到IB网关
+                return
+            return
+
+
+        gw->wrap ++ : ibwrapper.reqCurrentTime()
+            wrap->ib ++: 调用IB的C++代码，发送服务器时间查询数据包到IB网关
+                return
+            return
+
+        return
+
+    ib-/ wrap ++ : connectAck()\nIB网关发回响应数据包到IB的C++代码，该代码回调函数
+        return
+
+    ib->wrap ++ : currentTime()\nIB网关发回响应数据包到IB的C++代码，该代码回调函数
+        wrap->gw ++ : 修改连接状态\ngateway.conntected=true
+            return
+
+        wrap->gw ++ : 订阅市场行情\nsubscribe(subscribeReq)
+            gw->wrap ++ : 请求合约详细\nreqContractDetails(self.tickerId, contract)
+                return
+            gw->wrap ++ : 请求市场数据\nreqMktData(self.tickerId, contract, '', False, TagValueList())
+                return
+            |||
+            return
+        |||
+        return
+
+    ib->wrap ++ : contractDetails(reqId, contractDetails)\nIB网关响应的合约信息通过回调函数传入
+        wrap -> gw ++ : OnContract(contract)\n推送事件
+                gw->ee ++ : ee.put(event(EVENT_CONTRACT, contract))
+                    return
             return
         return
+
+    ib->wrap ++ : tickPrice(tickerId, field, price, canAutoExecute)\nIB网关响应的合约信息通过回调函数传入
+        wrap -> gw ++ : OnTick(tick)\n推送事件
+                gw->ee ++ : ee.put(event(EVENT_TICK, tick))
+                    return
+            return
+        return
+
     me->me ++ : dbConnect()
         me->db ++ : MongoClient()
             return dbClinet

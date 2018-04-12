@@ -1,14 +1,18 @@
 @startuml
 
+class EClient
+class EClientSocket
 abstract class EWrapper
 class  IbWrapper
 class VnIbApi
 class IbApiWrap
 class IbApi
 
+EClient <|-- EClientSocket
 
 EWrapper <|-- IbWrapper
 IbWrapper *-- VnIbApi
+EClientSocket *-- VnIbApi
 IbWrapper --* VnIbApi
 VnIbApi <|-- IbApiWrap : Boost.python封装
 note right
@@ -23,7 +27,19 @@ Python的程序对接使用此类型。
 end note
 
 
+class EClient {
+}
+note right
+IB提供的C++源代码。
+此类定义了应用程序向IB网关发起请求的主动函数。
+end note
 
+class EClientSocket {
+}
+note right
+IB提供的C++源代码。
+此类定义了应用程序向IB网关发起请求的主动函数。
+end note
 
 abstract class EWrapper {
 }
