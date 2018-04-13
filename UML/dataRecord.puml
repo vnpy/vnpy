@@ -1,4 +1,7 @@
 @startuml
+
+title Data Recording
+
 database mongoDB as db
 participant runDataRecord as rundr
 participant Process as run
@@ -33,7 +36,6 @@ activate rundr
 
 run->runle ** : create runle
 |||
-|||
 run->ee ** :create evnetEngine object
     activate ee
     ee->ee ++ : init()
@@ -44,7 +46,6 @@ run->ee ** :create evnetEngine object
         note right: 定时器子线程
         return
     return object
-|||
 |||
 run->me ** : new mainEngine(ee)
     activate me
@@ -85,7 +86,6 @@ run->me ** : new mainEngine(ee)
         me-->me--:return
     me-->run--: object
 |||
-|||
 run->me ++ : addGateway(ibGateway)
     me->gw ** : Create IbGateway(ee, "IB")
         activate gw
@@ -96,15 +96,7 @@ run->me ++ : addGateway(ibGateway)
                     ** 获取连接IB G/W的信息
                 end note
                 gw->wrap ** : Create IbWrapper(self)
-                    note right
-                        IbApi是基于Boost.python的封装。
-                        用C++实现，但是可以提供给Python程序使用。
-                        IbApi使用IB提供的C++接口源代码，
-                        来和IB网关进行数据交互
-                        IbApi提供两类函数功能：
-                            主动请求IB网关的功能
-                            接收IB网关异步返回数据的功能
-                    end note
+                    note right: IbApi是基于Boost.python的封装。\n用C++实现，但是可以提供给Python程序使用。
                     activate wrap
                     wrap->wrap ++ : 构造函数()
                         return object
@@ -112,7 +104,6 @@ run->me ++ : addGateway(ibGateway)
                 return
         return object
     return
-|||
 |||
 run->me ++ : addApp()
     me->dr**: new DrEngine(me,ee)
@@ -137,7 +128,6 @@ run->me ++ : addApp()
 
     run<--me -- : return
 |||
-|||
 run->ee: ee.regiser() 注册日志处理事件
     activate ee
     note right
@@ -145,7 +135,6 @@ run->ee: ee.regiser() 注册日志处理事件
         登记EVENT_ERROR事件处理句柄
     end note
     return
-|||
 |||
 run->me++: me.Connect(IB)
     note right: 连接IB网关
@@ -201,28 +190,20 @@ run->me++: me.Connect(IB)
             return
         return
     run<--me--:return
-
-|||
 |||
 run->ee ++ : ee.register(EVENT_LOG, le.processLogEvent)
     return
-
-|||
 |||
 run->ee ++ : ee.register(EVENT_ERROR, le.processErrorEvent)
     return
-
-|||
 |||
 loop
     run->run: sleep(1)
 end loop
 deactivate run
 |||
-|||
 gw->eeq ++: queue.put(tick/bar)
     return
-|||
 |||
 eetm->ee -- : ee.__runTimer()
     activate ee #green
@@ -232,7 +213,6 @@ eetm->ee -- : ee.__runTimer()
         ee->ee : 休眠1秒
     end loop
     deactivate ee
-|||
 |||
 eet->ee--: ee.run()
     activate ee #red
