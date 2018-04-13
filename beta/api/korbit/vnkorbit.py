@@ -4,6 +4,7 @@ import urllib
 import hashlib
 
 import json
+import logging
 import requests
 import hmac
 import time
@@ -11,7 +12,7 @@ from datetime import datetime
 from time import time, sleep , mktime
 from Queue import Queue, Empty
 from threading import Thread
-import urllib 
+import urllib
 import websocket
 
 import inspect
@@ -49,9 +50,9 @@ class Korbit_TradeApi(object):
         # self.reqQueue = Queue()    # 请求队列
         self.reqQueue = []          # 请求的队列
 
-        self.reqThread = Thread(target=self.processQueue)   # 请求处理线程  
+        self.reqThread = Thread(target=self.processQueue)   # 请求处理线程
 
-        self.DEBUG = True    
+        self.DEBUG = True
 
     '''
     直接发送 request ,获得身份
@@ -104,9 +105,9 @@ class Korbit_TradeApi(object):
     def exit(self):
         """退出"""
         self.active = False
-        
+
         if self.reqThread.isAlive():
-            self.reqThread.join()   
+            self.reqThread.join()
 
     @property
     def nonce(self):
@@ -173,7 +174,7 @@ class Korbit_TradeApi(object):
                 return data
             except Exception,ex:
                 print ex
-                return None   
+                return None
 
     #----------------------------------------------------------------------
     def processQueue(self):
@@ -184,10 +185,10 @@ class Korbit_TradeApi(object):
                 if len(self.reqQueue) > 0:
                     (Type , req) = self.reqQueue[0]
                     self.reqQueue.pop(0)
-                    
+
                     callback = req['callback']
                     reqID = req['reqID']
-                    
+
                     data = self.processRequest(req)
 
                     # 请求成功
@@ -195,18 +196,18 @@ class Korbit_TradeApi(object):
                         if self.DEBUG:
                             print callback.__name__
                         callback(data, req, reqID)
-                    
+
                     sleep(0.1)
 
             except Exception,ex:
                 print ex
-                
+
     #----------------------------------------------------------------------
     def sendRequest(self, url , method, callback, kwargs = None,optional=None):
         """发送请求"""
         # 请求编号加1
         self.reqID += 1
-        
+
         # 生成请求字典并放入队列中
         req = {}
         req['url'] = url
@@ -227,26 +228,26 @@ class Korbit_TradeApi(object):
         else:
             self.reqQueue.append( (method , req))
         #self.reqQueue.put(req)
-        
+
         # 返回请求编号
         return self.reqID
     #----------------------------------------------------------------------
     def exit(self):
         """退出"""
         self.active = False
-        
+
         if self.reqThread.isAlive():
-            self.reqThread.join()    
+            self.reqThread.join()
 
     ####################################################
     ## 主动函数
-    ####################################################    
+    ####################################################
     #----------------------------------------------------------------------
     def init(self, accessKey, secretKey , username , password):
         """初始化"""
         self.accessKey = accessKey
         self.secretKey = secretKey
-        
+
         self.create_token_directly( username , password)
 
         self.active = True
@@ -293,7 +294,7 @@ class Korbit_TradeApi(object):
 class Korbit_DataApi(object):
 
     simple_ticker_url = korbit_host + "ticker"
-    detail_ticker_url = korbit_host + "ticker/detailed" 
+    detail_ticker_url = korbit_host + "ticker/detailed"
     orderbook_url = korbit_host + "orderbook"
     transactions_url = korbit_host + "transactions"
     constants_url = korbit_host + "constants"
@@ -310,7 +311,7 @@ class Korbit_DataApi(object):
         """初始化"""
         self.taskInterval = interval
         self.DEBUG = debug
-        
+
         self.active = True
         self.taskThread.start()
 
@@ -318,10 +319,10 @@ class Korbit_DataApi(object):
     def exit(self):
         """退出"""
         self.active = False
-        
+
         if self.taskThread.isAlive():
             self.taskThread.join()
-    
+
     #----------------------------------------------------------------------
     def run(self):
         """连续运行"""
@@ -353,11 +354,11 @@ class Korbit_DataApi(object):
         url = self.transactions_url + "?currency_pair=" + symbol + "&time=" + "minute"
         task = (url, self.onTrades , symbol)
         self.taskList.append(task)
-    
+
     #----------------------------------------------------------------------
     def subscribeOrderbooks(self, symbol):
         """订阅实时成交数据"""
-        url = self.orderbook_url + "?currency_pair=" + symbol 
+        url = self.orderbook_url + "?currency_pair=" + symbol
         task = (url, self.onOrderbooks , symbol)
         self.taskList.append(task)
 
@@ -374,4 +375,3 @@ class Korbit_DataApi(object):
     def onOrderbooks(self, data):
         """实时成交推送"""
         print data
-
