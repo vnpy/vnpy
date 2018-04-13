@@ -1,0 +1,15 @@
+{
+    "working": true,
+
+    "tick":
+    [
+        ["700", "IB", "SEHK", "HKD", "股票"],
+        ["USD.JPY", "IB", "IDEALPRO", "JPY", "外汇"]
+    ],
+
+    "bar":
+    [
+        ["700", "IB", "SEHK", "HKD", "股票"],
+        ["USD.JPY", "IB", "IDEALPRO", "JPY", "外汇"]
+    ]
+}
