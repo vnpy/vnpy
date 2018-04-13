@@ -1951,10 +1951,10 @@ class BacktestingEngine(object):
         """基于最新数据撮合限价单"""
         # 先确定会撮合成交的价格
         if self.mode == self.BAR_MODE:
-            buyCrossPrice = self.bar.low        # 若买入方向限价单价格高于该价格，则会成交
-            sellCrossPrice = self.bar.high      # 若卖出方向限价单价格低于该价格，则会成交
-            buyBestCrossPrice = self.bar.open   # 在当前时间点前发出的买入委托可能的最优成交价
-            sellBestCrossPrice = self.bar.open  # 在当前时间点前发出的卖出委托可能的最优成交价
+            buyCrossPrice = self.roundToPriceTick(self.bar.low) + self.priceTick        # 若买入方向限价单价格高于该价格，则会成交
+            sellCrossPrice = self.roundToPriceTick(self.bar.high) - self.priceTick      # 若卖出方向限价单价格低于该价格，则会成交
+            buyBestCrossPrice = self.roundToPriceTick(self.bar.open) + self.priceTick   # 在当前时间点前发出的买入委托可能的最优成交价
+            sellBestCrossPrice = self.roundToPriceTick(self.bar.open) - self.priceTick  # 在当前时间点前发出的卖出委托可能的最优成交价
             vtSymbol = self.bar.vtSymbol
         else:
             buyCrossPrice = self.tick.askPrice1
@@ -2013,7 +2013,7 @@ class BacktestingEngine(object):
                 try:
                     del self.workingLimitOrderDict[orderID]
                 except Exception as ex:
-                    self.writeCtaError(u'crossLimitOrder exception:{},{}'.format(str(ex),traceback.format_exec()))
+                    self.writeCtaError(u'crossLimitOrder exception:{},{}'.format(str(ex), traceback.format_exc()))
 
         # 实时计算模式
         if self.calculateMode == self.REALTIME_MODE:
@@ -2186,7 +2186,8 @@ class BacktestingEngine(object):
         if len(self.tradeDict) < 1: return
 
         tradeids = list(self.tradeDict.keys())
-        resultDict = OrderedDict()  # 交易结果记录
+        #resultDict = OrderedDict()  # 交易结果记录
+        resultDict = []
         longid = EMPTY_STRING
         shortid = EMPTY_STRING
 
@@ -2254,7 +2255,8 @@ class BacktestingEngine(object):
                                                groupId=gId,
                                                fixcommission=self.fixCommission)
 
-                        t = {}
+                        t = OrderedDict()
+                        t['Gid'] = gId
                         t['vtSymbol'] = entryTrade.vtSymbol
                         t['OpenTime'] = entryTrade.tradeTime
                         t['OpenPrice'] = entryTrade.price
@@ -2272,6 +2274,7 @@ class BacktestingEngine(object):
                                                  entryTrade.volume, result.pnl,result.commission)
                         self.output(msg)
                         self.writeCtaLog(msg)
+                        resultDict.append(result)
 
                         if type(gr) == type(None):
                             if coverVolume > 0:
@@ -2279,8 +2282,6 @@ class BacktestingEngine(object):
                                 gr = copy.deepcopy(result)
 
                             else:
-                                # 不属于组合
-                                resultDict[entryTrade.dt] = result
                                 # 删除平空交易单，
                                 del self.tradeDict[trade.tradeID]
 
@@ -2293,8 +2294,8 @@ class BacktestingEngine(object):
 
                             # 所有仓位平完
                             if coverVolume == 0:
-                                gr.volume = trade.volume
-                                resultDict[entryTrade.dt] = gr
+                                gr.volume = abs(trade.volume)
+                                #resultDict[entryTrade.dt] = gr
                                 # 删除平空交易单，
                                 del self.tradeDict[trade.tradeID]
 
@@ -2314,7 +2315,8 @@ class BacktestingEngine(object):
                                                groupId=gId,
                                                fixcommission=self.fixCommission)
 
-                        t = {}
+                        t = OrderedDict()
+                        t['Gid'] = gId
                         t['vtSymbol'] = entryTrade.vtSymbol
                         t['OpenTime'] = entryTrade.tradeTime
                         t['OpenPrice'] = entryTrade.price
@@ -2338,18 +2340,15 @@ class BacktestingEngine(object):
                         self.shortPosition.append(entryTrade)
 
                         coverVolume = 0
+                        resultDict.append(result)
 
-                        if type(gr) == type(None):
-                            resultDict[entryTrade.dt] = result
-
-                        else:
+                        if type(gr) != type(None):
                             # 更新组合的数据
                             gr.turnover = gr.turnover + result.turnover
                             gr.commission = gr.commission + result.commission
                             gr.slippage = gr.slippage + result.slippage
                             gr.pnl = gr.pnl + result.pnl
-                            gr.volume = trade.volume
-                            resultDict[entryTrade.dt] = gr
+                            gr.volume = abs(trade.volume)
 
                         # 删除平空交易单，
                         del self.tradeDict[trade.tradeID]
@@ -2406,7 +2405,8 @@ class BacktestingEngine(object):
                                                groupId=gId,
                                                fixcommission=self.fixCommission)
 
-                        t = {}
+                        t = OrderedDict()
+                        t['Gid'] = gId
                         t['vtSymbol'] = entryTrade.vtSymbol
                         t['OpenTime'] = entryTrade.tradeTime
                         t['OpenPrice'] = entryTrade.price
@@ -2425,6 +2425,7 @@ class BacktestingEngine(object):
                                         entryTrade.volume, result.pnl, result.commission)
                         self.output(msg)
                         self.writeCtaLog(msg)
+                        resultDict.append(result)
 
                         if type(gr) == type(None):
                             if sellVolume > 0:
@@ -2432,9 +2433,6 @@ class BacktestingEngine(object):
                                 gr = copy.deepcopy(result)
 
                             else:
-                                # 不属于组合
-                                resultDict[entryTrade.dt] = result
-
                                 # 删除平多交易单，
                                 del self.tradeDict[trade.tradeID]
 
@@ -2446,8 +2444,7 @@ class BacktestingEngine(object):
                             gr.pnl = gr.pnl + result.pnl
 
                             if sellVolume == 0:
-                                gr.volume = trade.volume
-                                resultDict[entryTrade.dt] = gr
+                                gr.volume = abs(trade.volume)
                                 # 删除平多交易单，
                                 del self.tradeDict[trade.tradeID]
 
@@ -2468,7 +2465,8 @@ class BacktestingEngine(object):
                                                groupId=gId,
                                                fixcommission=self.fixCommission)
 
-                        t = {}
+                        t = OrderedDict()
+                        t['Gid'] = gId
                         t['vtSymbol'] = entryTrade.vtSymbol
                         t['OpenTime'] = entryTrade.tradeTime
                         t['OpenPrice'] = entryTrade.price
@@ -2491,18 +2489,15 @@ class BacktestingEngine(object):
                         self.longPosition.append(entryTrade)
 
                         sellVolume = 0
+                        resultDict.append(result)
 
-                        if type(gr) == type(None):
-                            resultDict[entryTrade.dt] = result
-
-                        else:
+                        if type(gr) != type(None):
                             # 更新组合的数据
                             gr.turnover = gr.turnover + result.turnover
                             gr.commission = gr.commission + result.commission
                             gr.slippage = gr.slippage + result.slippage
                             gr.pnl = gr.pnl + result.pnl
-                            gr.volume = trade.volume
-                            resultDict[entryTrade.dt] = gr
+                            gr.volume = abs(trade.volume)
 
                         # 删除平多交易单，
                         del self.tradeDict[trade.tradeID]
@@ -2545,8 +2540,7 @@ class BacktestingEngine(object):
         self.percent = round(float(occupyMoney * 100 / self.capital), 2)
 
         # 检查是否有平交易
-        if not resultDict:
-
+        if len(resultDict) ==0:
             msg = u''
             if len(self.longPosition) > 0:
                 msg += u'持多仓{0},'.format( str(longPos))
@@ -2560,7 +2554,7 @@ class BacktestingEngine(object):
             return
 
         # 对交易结果汇总统计
-        for time, result in resultDict.items():
+        for result in resultDict:
 
             if result.pnl > 0:
                 self.winningResult += 1
@@ -2575,7 +2569,7 @@ class BacktestingEngine(object):
             drawdownRate = round(float(drawdown*100/self.maxCapital),4)
 
             self.pnlList.append(result.pnl)
-            self.timeList.append(time)
+            self.timeList.append(result.exitDt)
             self.capitalList.append(self.capital)
             self.drawdownList.append(drawdown)
             self.drawdownRateList.append(drawdownRate)
@@ -2585,8 +2579,8 @@ class BacktestingEngine(object):
             self.totalCommission += result.commission
             self.totalSlippage += result.slippage
 
-            msg =u'[{0}] {1} 盈亏:{2},回撤:{3}/{4},权益:{5},手续费:{6}'\
-                .format(result.groupId, time, result.pnl, drawdown,
+            msg =u'[gid:{}] {} 交易盈亏:{},交易手续费:{}回撤:{}/{},账号权益:{},累计手续费:{}'\
+                .format(result.groupId, result.exitDt, result.pnl, result.commission, drawdown,
                         drawdownRate, self.capital,self.totalCommission )
             self.output(msg)
             self.writeCtaLog(msg)
@@ -2735,7 +2729,9 @@ class BacktestingEngine(object):
                                 gr.volume = trade.volume
                                 resultDict[entryTrade.dt] = gr
 
-                        t = {}
+                        t = OrderedDict()
+                        t['Gid'] = gId
+                        t['vtSymbol'] = entryTrade.vtSymbol
                         t['OpenTime'] = entryTrade.tradeTime.strftime('%Y/%m/%d %H:%M:%S')
                         t['OpenPrice'] = entryTrade.price
                         t['Direction'] = u'Short'
@@ -2802,7 +2798,9 @@ class BacktestingEngine(object):
                                 gr.volume = trade.volume
                                 resultDict[entryTrade.dt] = gr
 
-                        t = {}
+                        t = OrderedDict()
+                        t['Gid'] = gId
+                        t['vtSymbol'] = entryTrade.vtSymbol
                         t['OpenTime'] = entryTrade.tradeTime.strftime('%Y/%m/%d %H:%M:%S')
                         t['OpenPrice'] = entryTrade.price
                         t['Direction'] = u'Long'
@@ -2903,9 +2901,9 @@ class BacktestingEngine(object):
 
         self.writeCtaLog(u'save trade records to:{}'.format(csvOutputFile))
         import csv
-        csvWriteFile = open(csvOutputFile, 'w', encoding='utf8',newline='')
+        csvWriteFile = open(csvOutputFile, 'w', encoding='utf8', newline='')
 
-        fieldnames = ['vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit', 'Commission']
+        fieldnames = ['Gid', 'vtSymbol','OpenTime', 'OpenPrice', 'Direction', 'CloseTime', 'ClosePrice', 'Volume', 'Profit', 'Commission']
         writer = csv.DictWriter(f=csvWriteFile, fieldnames=fieldnames, dialect='excel')
         writer.writeheader()
 
@@ -3163,8 +3161,6 @@ class BacktestingEngine(object):
 
         newPrice = round(price/self.priceTick, 0) * self.priceTick
         return newPrice
-
-
 
 ########################################################################
 class TradingResult(object):
