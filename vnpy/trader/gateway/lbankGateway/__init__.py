@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 from vnpy.trader import vtConstant
-from lbankGateway import LbankGateway
+from lbankGateway import lbankGateway
 
 gatewayClass = lbankGateway
 gatewayName = 'LBANK'
