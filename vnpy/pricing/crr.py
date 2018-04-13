@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from __future__ import division
+
 '''
 Cox-Ross-Rubinstein二叉树期权定价模型，主要用于标的物为期货的美式期权的定价
 
@@ -54,7 +56,7 @@ def generateTree(f, k, r, t, v, cp, n):
     p = (a - d) / (u - d)
     p1 = p / a
     p2 = (1 - p) / a
-
+    
     # 计算标的树
     uTree[0, 0] = f
 
@@ -139,9 +141,9 @@ def calculateImpv(price, f, k, r, t, cp, n=15):
     # 检查期权价格是否满足最小价值（即到期行权价值）
     meet = False
     
-    if cp == 1 and (price > f - k):
+    if cp == 1 and price > (f - k):
         meet = True
-    elif cp == -1 and (price > k - f):
+    elif cp == -1 and price > (k - f):
         meet = True
     
     # 若不满足最小价值，则直接返回0

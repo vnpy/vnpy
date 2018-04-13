@@ -7,12 +7,10 @@
 import os
 import decimal
 import json
+import traceback
 from datetime import datetime
 from math import isnan
 
-
-MAX_NUMBER = 10000000000000
-MAX_DECIMAL = 4
 
 #----------------------------------------------------------------------
 def safeUnicode(value):
@@ -40,7 +38,13 @@ def todayDate():
 # 图标路径
 iconPathDict = {}
 
-path = os.path.abspath(os.path.dirname(__file__))
+path = os.path.abspath(os.path.dirname(__file__))   # 遍历vnpy安装目录
+for root, subdirs, files in os.walk(path):
+    for fileName in files:
+        if '.ico' in fileName:
+            iconPathDict[fileName] = os.path.join(root, fileName)
+
+path = os.getcwd()      # 遍历工作目录
 for root, subdirs, files in os.walk(path):
     for fileName in files:
         if '.ico' in fileName:
@@ -86,6 +90,29 @@ def getJsonPath(name, moduleFile):
     jsonPathDict[name] = moduleJsonPath
     return moduleJsonPath
 
+
+# 加载全局配置
+#----------------------------------------------------------------------
+def loadJsonSetting(settingFileName):
+    """加载JSON配置"""
+    settingFilePath = getJsonPath(settingFileName, __file__)
+
+    setting = {}
+
+    try:
+        with open(settingFilePath, 'rb') as f:
+            setting = f.read()
+            if type(setting) is not str:
+                setting = str(setting, encoding='utf8')
+            setting = json.loads(setting)
+    except:
+        traceback.print_exc()
+    
+    return setting
     
     
-    
+# 函数常量    
+MAX_NUMBER = 10000000000000
+
+globalSetting = loadJsonSetting('VT_setting.json')
+MAX_DECIMAL = globalSetting.get('maxDecimal', 4)
