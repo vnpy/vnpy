@@ -277,4 +277,5 @@ class TqApi(object):
     def _generate_chart_id(self, ins_id, duration_seconds):
         """生成图表编号"""
         chart_id = "VN_%s_%d" % (ins_id, duration_seconds)
+        chart_id = chart_id.replace(".", "_")
         return chart_id
