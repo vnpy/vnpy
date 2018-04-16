@@ -107,7 +107,7 @@ class TradeApi(object):
             self.pool.map_async(self.run, range(n))
         
     #----------------------------------------------------------------------
-    def stop(self):
+    def close(self):
         """停止"""
         self.active = False
         self.pool.close()
