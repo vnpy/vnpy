@@ -5,6 +5,7 @@
 
 注意: 请确保本程序运行时, 本机天勤终端 (0.8.0 以上版本)正在运行中
 """
+from __future__ import print_function
 
 import time
 import datetime
@@ -34,6 +35,6 @@ if __name__ == '__main__':
             # 更新任务完成的日期
             taskCompletedDate = t.date()
         else:
-            print u'当前时间%s，任务定时%s' %(t, taskTime)
+            print(u'当前时间%s，任务定时%s' %(t, taskTime))
     
         time.sleep(60)
