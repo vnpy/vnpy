@@ -11,6 +11,7 @@ from datetime import datetime
 from threading import Thread
 from queue import Queue, Empty
 from multiprocessing.dummy import Pool
+from time import sleep
 
 import json
 import zlib
@@ -207,6 +208,9 @@ class TradeApi(object):
                 self.onError(msg, reqid)
         else:
             self.onError(data, reqid)
+            
+            # 失败的请求重新放回队列，等待下次处理
+            self.queue.put(req)
     
     #----------------------------------------------------------------------
     def run(self, n):
@@ -498,6 +502,10 @@ class DataApi(object):
         
         self.subDict = {}
         
+        self.url = ''
+        self.proxyHost = ''
+        self.proxyPort = 0        
+        
     #----------------------------------------------------------------------
     def run(self):
         """执行连接"""
@@ -509,22 +517,54 @@ class DataApi(object):
                 self.onData(data)
             except zlib.error:
                 self.onError(u'数据解压出错：%s' %stream)
-            except _exceptions.WebSocketConnectionClosedException:
-                self.onError(u'行情服务器连接断开：%s' %str(stream))
-                break
+            except:
+                self.onError('行情服务器连接断开')
+                result = self.reconnect()
+                if not result:
+                    self.onError(u'等待3秒后再次重连')
+                    sleep(3)
+                else:
+                    self.onError(u'行情服务器重连成功')
+                    self.resubscribe()
+    
+    #----------------------------------------------------------------------
+    def reconnect(self):
+        """重连"""
+        try:
+            if not self.proxyHost:
+                self.ws = create_connection(self.url)
+            else:
+                self.ws = create_connection(self.url, 
+                                            http_proxy_host=self.proxyHost, 
+                                            http_proxy_port=self.proxyPort)
+            return True
+        except:
+            msg = traceback.format_exc()
+            self.onError(u'行情服务器重连失败：%s' %msg)            
+            return False
+        
+    #----------------------------------------------------------------------
+    def resubscribe(self):
+        """重新订阅"""
+        d = self.subDict
+        self.subDict = {}
+        for topic in d.keys():
+            self.subTopic(topic)
         
     #----------------------------------------------------------------------
     def connect(self, url, proxyHost='', proxyPort=0):
         """连接"""
         self.url = url
+        self.proxyHost = proxyHost
+        self.proxyPort = proxyPort
         
         try:
-            if not proxyHost:
+            if not self.proxyHost:
                 self.ws = create_connection(self.url)
             else:
                 self.ws = create_connection(self.url, 
-                                            http_proxy_host=proxyHost, 
-                                            http_proxy_port=proxyPort)
+                                            http_proxy_host=self.proxyHost, 
+                                            http_proxy_port=self.proxyPort)
             
             self.active = True
             self.thread.start()
@@ -533,7 +573,7 @@ class DataApi(object):
         except:
             msg = traceback.format_exc()
             self.onError(u'行情服务器连接失败：%s' %msg)
-            return False
+            return False 
         
     #----------------------------------------------------------------------
     def close(self):

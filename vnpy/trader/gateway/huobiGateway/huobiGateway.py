@@ -354,6 +354,8 @@ class HuobiTradeApi(TradeApi):
         self.orderLocalDict = {}    # 交易所委托编号和本地委托编号映射
         self.cancelReqDict = {}     # 撤单请求字典
         
+        self.activeOrderSet = set() # 活动委托集合
+        
     #----------------------------------------------------------------------
     def connect(self, exchange, accessKey, secretKey, symbols=''):
         """初始化连接"""
@@ -380,12 +382,11 @@ class HuobiTradeApi(TradeApi):
         if not self.accountid:
             return
         
-        states = 'pre-submitted,submitting,submitted,partial-filled,partial-canceled,filled,canceled'
+        #states = 'pre-submitted,submitting,submitted,partial-filled,partial-canceled,filled,canceled'
+        states = 'pre-submitted,submitting,submitted,partial-filled'
         for symbol in self.symbols:
             self.getOrders(symbol, states, startDate=self.todayDate)
-            #print u'查询委托', self.qryOrderID
-            #self.getOrders(symbol, states, startDate=self.todayDate, from_=self.qryOrderID, direct='next')
-    
+            
     #----------------------------------------------------------------------
     def qryTrade(self):
         """查询成交"""
@@ -393,9 +394,8 @@ class HuobiTradeApi(TradeApi):
             return
         
         for symbol in self.symbols:
-            self.getMatchResults(symbol, startDate=self.todayDate)
-            #self.getMatchResults(symbol, startDate=self.todayDate, from_=self.qryTradeID)    
-    
+            self.getMatchResults(symbol, startDate=self.todayDate, size=50)
+            
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
@@ -521,6 +521,16 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetOrders(self, data, reqid):
         """查询委托回调"""
+        # 比对寻找已结束的委托号
+        newset = set([d['id'] for d in data])
+        
+        for id_ in self.activeOrderSet:
+            if id_ not in newset:
+                self.getOrder(id_)
+        
+        self.activeOrderSet = newset        
+        
+        # 推送数据
         qryOrderID = None
         
         data.reverse()
@@ -581,16 +591,16 @@ class HuobiTradeApi(TradeApi):
             if updated:
                 self.gateway.onOrder(order)
                 
-            # 计算查询下标（即最早的未全成或撤委托）
-            if order.status not in [STATUS_ALLTRADED, STATUS_CANCELLED]:
-                if not qryOrderID:
-                    qryOrderID = orderID
-                else:
-                    qryOrderID = min(qryOrderID, orderID)
+            ## 计算查询下标（即最早的未全成或撤委托）
+            #if order.status not in [STATUS_ALLTRADED, STATUS_CANCELLED]:
+                #if not qryOrderID:
+                    #qryOrderID = orderID
+                #else:
+                    #qryOrderID = min(qryOrderID, orderID)
             
-        # 更新查询下标        
-        if qryOrderID:
-            self.qryOrderID = qryOrderID
+        ## 更新查询下标        
+        #if qryOrderID:
+            #self.qryOrderID = qryOrderID
         
     #----------------------------------------------------------------------
     def onGetMatchResults(self, data, reqid):
@@ -644,7 +654,18 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetOrder(self, data, reqid):
         """查询单一委托回调"""
-        print reqid, data    
+        orderID = data['id']
+        strOrderID = str(orderID)
+        localid = self.orderLocalDict[strOrderID]
+        order = self.orderDict[orderID]
+
+        order.tradedVolume = float(data['field-amount'])
+        order.status = statusMapReverse.get(data['state'], STATUS_UNKNOWN)
+
+        if data['canceled-at']:
+            order.cancelTime = datetime.fromtimestamp(data['canceled-at']/1000).strftime('%H:%M:%S')
+        
+        self.gateway.onOrder(order)
         
     #----------------------------------------------------------------------
     def onGetMatchResult(self, data, reqid):
