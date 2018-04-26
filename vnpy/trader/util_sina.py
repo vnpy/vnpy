@@ -48,12 +48,27 @@ class UtilSinaClient(object):
                     tick.vtSymbol = symbol
                     tick.symbol = symbol
 
+                    # 交易日
                     if len(item) >= 6:
                         datevalue = item[6]
 
+                    tick.tradingDay = datevalue
                     tick.date = datevalue
                     tick.time = item[4] + u':00'
                     tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
+                    if tick.datetime.hour >= 20:
+                        if tick.datetime.isoweekday() == 1:
+                            # 交易日是星期一，实际时间是星期五
+                            tick.datetime = tick.datetime - timedelta(days=3)
+                            tick.date = tick.datetime.strftime('%Y-%m-%d')
+                        else:
+                            # 第二天
+                            tick.datetime = tick.datetime - timedelta(days=1)
+                            tick.date = tick.datetime.strftime('%Y-%m-%d')
+                    elif tick.datetime.hour < 8 and tick.datetime.isoweekday() == 1:
+                        # 星期一 => 星期六
+                        tick.datetime = tick.datetime + timedelta(days=2)
+                        tick.date = tick.datetime.strftime('%Y-%m-%d')
 
                     if start_dt is not None:
                         # 丢弃约定开始时间之前的
@@ -109,6 +124,7 @@ class UtilSinaClient(object):
                 tick.date = datevalue
                 tick.time = item[0] + u':00'
                 tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
+                tick.tradingDay = tick.date
 
                 if start_dt is not None:
                     if tick.datetime < start_dt:
@@ -184,7 +200,21 @@ class UtilSinaClient(object):
                     if bar.datetime < start_dt:
                         continue
                 bar.date = bar.datetime.strftime('%Y%m%d')
-                bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
+                #bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
+                if bar.datetime.hour >= 21:
+                    if bar.datetime.isoweekday() == 5:
+                        # 星期五=》星期一
+                        bar.tradingDay = (bar.datetime + timedelta(days=3)).strftime('%Y-%m-%d')
+                    else:
+                        # 第二天
+                        bar.tradingDay = (bar.datetime + timedelta(days=1)).strftime('%Y-%m-%d')
+                elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6:
+                    # 星期六=>星期一
+                    bar.tradingDay = (bar.datetime + timedelta(days=2)).strftime('%Y-%m-%d')
+                else:
+                    bar.tradingDay = bar.date
+
+
                 bar.time = bar.datetime.strftime('%H:%M:00')
 
                 bar.open = float(item[1])
@@ -270,8 +300,21 @@ class UtilSinaClient(object):
                 if start_dt is not None:
                     if bar.datetime < start_dt:
                         continue
-                bar.date = bar.datetime.strftime('%Y%m%d')
-                bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
+
+                #bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
+                if bar.datetime.hour >= 21:
+                    if bar.datetime.isoweekday() == 5:
+                        # 星期五=》星期一
+                        bar.tradingDay = (bar.datetime + timedelta(days=3)).strftime('%Y-%m-%d')
+                    else:
+                        # 第二天
+                        bar.tradingDay = (bar.datetime + timedelta(days=1)).strftime('%Y-%m-%d')
+                elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6:
+                    # 星期六=>星期一
+                    bar.tradingDay = (bar.datetime + timedelta(days=2)).strftime('%Y-%m-%d')
+                else:
+                    bar.tradingDay = bar.date
+
                 bar.time = bar.datetime.strftime('%H:%M:00')
 
                 bar.open = float(item['o'])
@@ -340,7 +383,8 @@ class UtilSinaClient(object):
                         continue
 
                 bar.date = bar.datetime.strftime('%Y%m%d')
-                bar.tradingDay = bar.date       # todo: 需要修改，晚上21点后，修改为next workingday
+                bar.tradingDay = bar.date
+
                 bar.time = bar.datetime.strftime('%H:%M:00')
 
                 bar.open = float(item['open'])
@@ -378,7 +422,7 @@ class TestStrategy(object):
         pass
 
     def addBar(self, bar):
-        print(u'{0},o:{1},h:{2},l:{3},c:{4},v:{5}'.format(bar.datetime, bar.open, bar.high, bar.low, bar.close, bar.volume))
+        print(u'tradingDay:{},dt:{},o:{},h:{},l:{},c:{},v:{}'.format(bar.tradingDay,bar.datetime, bar.open, bar.high, bar.low, bar.close, bar.volume))
 
     def addTick(self, tick):
         print(u'{0},{1},ap:{2},av:{3},bp:{4},bv:{5}'.format(tick.datetime, tick.lastPrice, tick.askPrice1, tick.askVolume1, tick.bidPrice1, tick.bidVolume1))
@@ -391,11 +435,11 @@ if __name__ == '__main__':
 
     sina = UtilSinaClient(t)
 
-    rt=sina.getDayBars(symbol='RB1810', callback=t.addBar)
+    #rt=sina.getDayBars(symbol='RB1810', callback=t.addBar)
 
-    rt = sina.getMinBars(symbol='RB1810',minute = 60, callback=t.addBar)
+    #rt = sina.getMinBars(symbol='RB1810',minute = 5, callback=t.addBar)
 
-    #rt = sina.getTicks(symbol='RB1705', callback=t.addTick)
+    rt = sina.getTicks(symbol='RB1810', callback=t.addTick)
 
     #rt = sina.getTicks2(symbol='TF1706', callback=t.addTick)
     #rt = sina.getTicks3(symbol='TF1709', callback=t.addTick)
