@@ -246,7 +246,7 @@ class DrEngine(object):
                 try:
                     self.mainEngine.dbInsert(dbName, collectionName, d)
                 except DuplicateKeyError:
-                    self.writeDrLog(u'键值重复插入失败，报错信息：' %traceback.format_exc())
+                    self.writeDrLog(u'键值重复插入失败，报错信息：%s' %traceback.format_exc())
             except Empty:
                 pass
             
