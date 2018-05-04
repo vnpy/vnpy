@@ -88,9 +88,11 @@ EXCHANGE_HUOBI = 'HUOBI'         # 火币比特币交易所
 EXCHANGE_LBANK = 'LBANK'         # LBANK比特币交易所
 EXCHANGE_KORBIT = 'KORBIT'	 # KORBIT韩国交易所
 EXCHANGE_ZB = 'ZB'		 # 比特币中国比特币交易所
+EXCHANGE_GATE = "GATEIO"	   # GateIO 交易所
 EXCHANGE_OKEX = 'OKEX'		 # OKEX比特币交易所
 EXCHANGE_ZAIF = "ZAIF"		 # ZAIF日本比特币交易所
 EXCHANGE_COINCHECK = "COINCHECK" # COINCHECK日本比特币交易所
+EXCHANGE_COINEX = "COINEX" 		# COINEX 中国比特币交易所 
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元

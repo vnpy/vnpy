@@ -20,6 +20,32 @@ class VtGateway(object):
         self.gatewayName = gatewayName
         
     #----------------------------------------------------------------------
+    def writeLog(self, content):
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = content
+        self.onLog(log)
+
+        if self.logger:
+            self.logger.info(content)
+
+    #----------------------------------------------------------------------
+    def writeError(self,  content , error_id = 0):
+        """
+        发送错误通知/记录日志文件
+        :param content:
+        :return:
+        """
+        error = VtErrorData()
+        error.gatewayName = self.gatewayName
+        error.errorID = error_id
+        error.errorMsg = content
+        self.onError(error)
+
+        if self.logger:
+            self.logger.error(content , error_id)
+
+    #----------------------------------------------------------------------
     def onTick(self, tick):
         """市场行情推送"""
         # 通用事件
