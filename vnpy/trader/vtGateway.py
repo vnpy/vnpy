@@ -18,7 +18,7 @@ class VtGateway(object):
         """Constructor"""
         self.eventEngine = eventEngine
         self.gatewayName = gatewayName
-        
+
     #----------------------------------------------------------------------
     def writeLog(self, content):
         log = VtLogData()
@@ -35,7 +35,7 @@ class VtGateway(object):
         发送错误通知/记录日志文件
         :param content:
         :return:
-        """
+        """ 
         error = VtErrorData()
         error.gatewayName = self.gatewayName
         error.errorID = error_id
