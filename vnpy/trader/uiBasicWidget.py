@@ -757,7 +757,7 @@ class TradingWidget(QtWidgets.QFrame):
         self.spinPrice = QtWidgets.QDoubleSpinBox()
         self.spinPrice.setDecimals(globalSetting.get('maxDecimal', 4))
         self.spinPrice.setMinimum(0)
-        self.spinPrice.setMaximum(100000)
+        self.spinPrice.setMaximum(1000000)
 
         self.spinVolume = QtWidgets.QSpinBox()
         self.spinVolume.setMinimum(0)
