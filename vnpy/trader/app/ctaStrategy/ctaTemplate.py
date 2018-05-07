@@ -4,7 +4,7 @@
 本文件包含了CTA引擎中的策略开发用模板，开发策略时需要继承CtaTemplate类。
 '''
 
-from datetime import datetime
+from datetime import datetime,timedelta
 
 from .ctaBase import *
 from vnpy.trader.vtConstant import *
@@ -108,8 +108,11 @@ class CtaTemplate(object):
         raise NotImplementedError
     
     # ----------------------------------------------------------------------
-    def buy(self, price, volume, stop=False ,orderTime=datetime.now(),grid=None):
+    def buy(self, price, volume, stop=False ,orderTime=None, grid=None):
         """买开"""
+        if orderTime is None:
+            orderTime = datetime.now()
+
         orderID = self.sendOrder(CTAORDER_BUY, price, volume, stop)
         if orderID !='':
             self.entrust = 1                            # 委托状态
@@ -126,8 +129,11 @@ class CtaTemplate(object):
             return ''
     
     # ----------------------------------------------------------------------
-    def sell(self, price, volume, stop=False, orderTime=datetime.now(),grid=None):
+    def sell(self, price, volume, stop=False, orderTime=None, grid=None):
         """卖平"""
+        if orderTime is None:
+            orderTime = datetime.now()
+
         orderID = self.sendOrder(CTAORDER_SELL, price, volume, stop)
         if orderID !='':
             self.entrust = -1                           # 置当前策略的委托单状态
@@ -144,8 +150,11 @@ class CtaTemplate(object):
             return ''
 
     # ----------------------------------------------------------------------
-    def short(self, price, volume, stop=False, orderTime=datetime.now(),grid = None):
+    def short(self, price, volume, stop=False, orderTime=None, grid = None):
         """卖开"""
+        if orderTime is None:
+            orderTime = datetime.now()
+
         orderID = self.sendOrder(CTAORDER_SHORT, price, volume, stop)
         if orderID !='':
             self.entrust = -1                           # 委托状态
@@ -161,8 +170,12 @@ class CtaTemplate(object):
             return ''
  
     # ----------------------------------------------------------------------
-    def cover(self, price, volume, stop=False, orderTime=datetime.now(),grid = None):
+    def cover(self, price, volume, stop=False, orderTime=None, grid = None):
         """买平"""
+
+        if orderTime is None:
+            orderTime = datetime.now()
+
         orderID = self.sendOrder(CTAORDER_COVER, price, volume, stop)
 
         if orderID !='':
@@ -311,13 +324,39 @@ class CtaTemplate(object):
         else:
             return symbol
 
+    def getTradingDate(self, dt=None):
+        """
+        根据输入的时间，返回交易日的日期
+        :param dt:
+        :return:
+        """
+        tradingDay = ''
+        if dt is None:
+            dt = datetime.now()
+
+        if dt.hour >= 21:
+            if dt.isoweekday() == 5:
+                # 星期五=》星期一
+                return (dt + timedelta(days=3)).strftime('%Y-%m-%d')
+            else:
+                # 第二天
+                return (dt + timedelta(days=1)).strftime('%Y-%m-%d')
+        elif dt.hour < 8 and dt.isoweekday() == 6:
+            # 星期六=>星期一
+            return (dt + timedelta(days=2)).strftime('%Y-%m-%d')
+        else:
+            return dt.strftime('%Y-%m-%d')
+
+
 class MatrixTemplate(CtaTemplate):
 
     # ----------------------------------------------------------------------
     tradingOpen = True          # 允许开仓
     forceTradingClose = False   # 强制平仓标志
     delayMission = []            # 延迟的任务
+    position = None              # 持仓
 
+    is_7x24 = False                # 是否7x24运行
     # ----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
@@ -354,6 +393,138 @@ class MatrixTemplate(CtaTemplate):
         :return: 
         """
         pass
+
+    def cancelAllOrders(self):
+        """
+        撤销所有委托
+        :return: 
+        """
+        pass
+
+    def getPositions(self):
+        """
+        获取策略当前持仓
+        :return: [{'vtSymbol':symbol,'direction':direction,'volume':volume]
+        """
+        if not self.position:
+            return []
+        l = []
+        if self.position.longPos > 0:
+            l.append({'vtSymbol': self.vtSymbol, 'direction': DIRECTION_LONG, 'volume': self.position.longPos})
+
+        if abs(self.position.shortPos) > 0:
+            l.append({'vtSymbol': self.vtSymbol, 'direction': DIRECTION_SHORT, 'volume': abs(self.position.shortPos)})
+
+        self.writeCtaLog(u'当前持仓:{}'.format(l))
+        return l
+
+    def timeWindow(self, dt):
+        """交易与平仓窗口"""
+        # 交易窗口 避开早盘和夜盘的前5分钟，防止隔夜跳空。
+
+        if self.is_7x24:
+            self.closeWindow = False
+            self.tradeWindow = True
+            self.openWindow = False
+            return
+
+        self.closeWindow = False
+        self.tradeWindow = False
+        self.openWindow = False
+
+        # 开市期，波动较大，用于判断止损止盈，或开仓
+        if dt.hour in [9, 21] and dt.minute < 10:
+            self.openWindow = True
+
+        # 日盘
+        if dt.hour == 9 and dt.minute >= 0:
+            self.tradeWindow = True
+            return
+
+        if dt.hour == 10:
+            if dt.minute <= 15 or dt.minute >= 30:
+                self.tradeWindow = True
+                return
+
+        if dt.hour == 11 and dt.minute <= 30:
+            self.tradeWindow = True
+            return
+
+        if dt.hour == 13 and dt.minute >= 30:
+            self.tradeWindow = True
+            return
+
+        if dt.hour == 14:
+            if dt.minute <= 55:
+                self.tradeWindow = True
+                return
+
+            if dt.minute > 55:  # 日盘平仓
+                self.closeWindow = True
+                return
+
+        # 夜盘
+        if dt.hour == 21 and dt.minute >= 0:
+            self.tradeWindow = True
+            return
+
+        # 上期 贵金属， 次日凌晨2:30
+        if self.shortSymbol in NIGHT_MARKET_SQ1:
+            if dt.hour == 22 or dt.hour == 23 or dt.hour == 0 or dt.hour == 1:
+                self.tradeWindow = True
+                return
+
+            if dt.hour == 2:
+                if dt.minute <= 1:  # 收市前29分钟
+                    self.tradeWindow = True
+                    return
+                if dt.minute > 24:  # 夜盘平仓
+                    self.closeWindow = True
+                    return
+            return
+
+        # 上期 有色金属，黑色金属，沥青 次日01:00
+        if self.shortSymbol in NIGHT_MARKET_SQ2:
+            if dt.hour in [22, 23]:
+                self.tradeWindow = True
+                return
+
+            if dt.hour == 0:
+                if dt.minute <= 31:  # 收市前29分钟
+                    self.tradeWindow = True
+                    return
+
+                if dt.minute > 54:  # 夜盘平仓
+                    self.closeWindow = True
+                    return
+
+            return
+
+        # 上期 天然橡胶  23:00
+        if self.shortSymbol in NIGHT_MARKET_SQ3:
+
+            if dt.hour == 22:
+                if dt.minute <= 31:  # 收市前29分钟
+                    self.tradeWindow = True
+                    return
+
+                if dt.minute > 54:  # 夜盘平仓
+                    self.closeWindow = True
+                    return
+        # 郑商、大连 23:30
+        if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if dt.hour == 22:
+                self.tradeWindow = True
+                return
+
+            if dt.hour == 23:
+                if dt.minute <= 1:  # 收市前29分钟
+                    self.tradeWindow = True
+                    return
+                if dt.minute > 24:  # 夜盘平仓
+                    self.closeWindow = True
+                    return
+            return
 
 ########################################################################
 class TargetPosTemplate(CtaTemplate):
