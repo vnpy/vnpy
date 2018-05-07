@@ -1,9 +1,13 @@
 # encoding: UTF-8
 
 # 修改编码
+from __future__ import print_function
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+try:
+    reload(sys)  # Python 2
+    sys.setdefaultencoding('utf8')
+except NameError:
+    pass         # Python 3
 
 # 创建主引擎代理对象
 from vnpy.event import EventEngine2
@@ -25,7 +29,7 @@ me.init(reqAddress, subAddress)
 def printLog(event):
     """打印日志"""
     log = event.dict_['data']
-    print log.logTime, log.logContent
+    print(log.logTime, log.logContent)
     
 ee.register(EVENT_LOG, printLog)
     
@@ -112,7 +116,7 @@ class Gateway(Resource):
         args = self.parser.parse_args()
         token = args['token']
         if token != TOKEN:
-            print 'token error'
+            print('token error')
             return {'result_code':'error','message':'token error'}
                 
         gatewayName = args['gatewayName']
@@ -164,7 +168,7 @@ class Order(Resource):
         token = args['token']
         if token != TOKEN:
             return {'result_code':'error','message':'token error'}
-        print args
+        print(args)
         vtSymbol = args['vtSymbol']        
         price = args['price']        
         volume = args['volume']        
@@ -300,7 +304,7 @@ class Position(Resource):
             return {'result_code':'error','message':'token error'}
         
         data = me.getAllPositions()
-        print 'position',data
+        print('position',data)
         l = [o.__dict__ for o in data]
         return {'result_code':'success','data':l}
 
@@ -327,7 +331,7 @@ class Contract(Resource):
             return {'result_code':'error','message':'token error'}
         
         data = me.getAllContracts()
-        print 'Contract',data
+        print('Contract',data)
         l = [o.__dict__ for o in data]
         return {'result_code':'success','data':l}        
 
