@@ -374,13 +374,19 @@ class OmStrategyEngine(object):
     def initStrategy(self, name):
         """初始化策略"""
         strategy = self.strategyDict[name]
-        self.callStrategyFunc(strategy, strategy.onInit)
+        
+        if not strategy.inited: 
+            strategy.inited = True
+            self.callStrategyFunc(strategy, strategy.onInit)
     
     #----------------------------------------------------------------------
     def startStrategy(self, name):
         """启动策略"""
         strategy = self.strategyDict[name]
-        self.callStrategyFunc(strategy, strategy.onStart)        
+        
+        if strategy.inited and not strategy.trading:
+            strategy.trading = True
+            self.callStrategyFunc(strategy, strategy.onStart)        
    
     #----------------------------------------------------------------------
     def stopStrategy(self, name):
