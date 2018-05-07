@@ -139,8 +139,10 @@ class BacktestingEngine(object):
         self.usageCompounding = False       # 是否使用简单复利 （只针对FINAL_MODE有效）
 
         self.initCapital = 1000000            # 期初资金
-        self.capital = self.initCapital     # 资金  （相当于Balance）
+        self.capital = self.initCapital     # 资金
+        self.netCapital = self.initCapital  # 实时资金净值（每日根据capital和持仓浮盈计算）
         self.maxCapital = self.initCapital          # 资金最高净值
+        self.maxNetCapital = self.initCapital
 
         self.maxPnl = 0                     # 最高盈利
         self.minPnl = 0                     # 最大亏损
@@ -159,7 +161,11 @@ class BacktestingEngine(object):
         self.pnlList = []            # 每笔盈亏序列
         self.capitalList = []        # 盈亏汇总的时间序列
         self.drawdownList = []       # 回撤的时间序列
-        self.drawdownRateList = []   # 最大回撤比例的时间序列
+        self.drawdownRateList = []   # 最大回撤比例的时间序列(成交结算）
+
+        self.maxNetCapital_time = ''
+        self.max_drowdown_rate_time = ''
+        self.daily_max_drawdown_rate = 0    # 按照日结算价计算
 
         self.dailyList = []
         self.exportTradeList = []    # 导出交易记录列表
@@ -170,10 +176,10 @@ class BacktestingEngine(object):
 
     def getAccountInfo(self):
         """返回账号的实时权益，可用资金，仓位比例,投资仓位比例上限"""
-        if self.capital == EMPTY_FLOAT:
+        if self.netCapital == EMPTY_FLOAT:
             self.percent = EMPTY_FLOAT
 
-        return self.capital, self.avaliable, self.percent, self.percentLimit
+        return self.netCapital, self.avaliable, self.percent, self.percentLimit
 
     #----------------------------------------------------------------------
     def setStartDate(self, startDate='20100416', initDays=10):
@@ -662,7 +668,7 @@ class BacktestingEngine(object):
             # 先读取leg2的数据到目录，以日期时间为key
             leg2Ticks = {}
 
-            leg2CsvReadFile = file(leg2File, 'rb')
+            leg2CsvReadFile = open(leg2File, 'rb')
             #reader = csv.DictReader((line.replace('\0',' ') for line in leg2CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg2CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg2File))
@@ -1588,10 +1594,10 @@ class BacktestingEngine(object):
                 #barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
 
                 # 从ricequant导出的csv文件
-                bar.open = float(row['open'])
-                bar.high = float(row['high'])
-                bar.low = float(row['low'])
-                bar.close = float(row['close'])
+                bar.open = self.roundToPriceTick(float(row['open']))
+                bar.high = self.roundToPriceTick(float(row['high']))
+                bar.low = self.roundToPriceTick(float(row['low']))
+                bar.close = self.roundToPriceTick(float(row['close']))
                 bar.volume = float(row['volume'])
                 barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
 
@@ -1603,7 +1609,18 @@ class BacktestingEngine(object):
                 if 'trading_date' in row:
                     bar.tradingDay = row['trading_date']
                 else:
-                    bar.tradingDay = bar.date
+                    if bar.datetime.hour >=21:
+                        if bar.datetime.isoweekday() == 5:
+                            # 星期五=》星期一
+                            bar.tradingDay = (barEndTime + timedelta(days=3)).strftime('%Y-%m-%d')
+                        else:
+                            # 第二天
+                            bar.tradingDay = (barEndTime + timedelta(days=1)).strftime('%Y-%m-%d')
+                    elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6:
+                        # 星期六=>星期一
+                        bar.tradingDay = (barEndTime + timedelta(days=2)).strftime('%Y-%m-%d')
+                    else:
+                        bar.tradingDay = bar.date
 
                 if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
                     if last_tradingDay != bar.tradingDay:
@@ -1613,6 +1630,10 @@ class BacktestingEngine(object):
                         last_tradingDay = bar.tradingDay
 
                     self.newBar(bar)
+
+                if self.netCapital < 0:
+                    self.writeCtaError(u'净值低于0，回测停止')
+                    return
 
             except Exception as ex:
                 self.writeCtaLog(u'{0}:{1}'.format(Exception, ex))
@@ -2143,7 +2164,7 @@ class BacktestingEngine(object):
         :return:
         """
         filename = os.path.abspath(os.path.join(self.get_logs_path(), '{}'.format(self.strategy_name if len(self.strategy_name) > 0 else 'strategy')))
-        self.logger = setup_logger(filename=filename, name=self.strategy_name if len(self.strategy_name) > 0 else 'strategy', debug=debug)
+        self.logger = setup_logger(filename=filename, name=self.strategy_name if len(self.strategy_name) > 0 else 'strategy', debug=debug,backtesing=True)
 
     #----------------------------------------------------------------------
     def writeCtaLog(self, content):
@@ -2536,8 +2557,9 @@ class BacktestingEngine(object):
         # 最大持仓
         self.maxVolume = max(self.maxVolume, occupyLongVolume + occupyShortVolume)
 
-        self.avaliable = self.capital - occupyMoney
-        self.percent = round(float(occupyMoney * 100 / self.capital), 2)
+        # 更改为持仓净值
+        self.avaliable = self.netCapital - occupyMoney
+        self.percent = round(float(occupyMoney * 100 / self.netCapital), 2)
 
         # 检查是否有平交易
         if len(resultDict) ==0:
@@ -2564,6 +2586,8 @@ class BacktestingEngine(object):
                 self.totalLosing += result.pnl
             self.capital += result.pnl
             self.maxCapital = max(self.capital, self.maxCapital)
+            self.netCapital = max(self.netCapital, self.capital)
+            self.maxNetCapital = max(self.netCapital,self.maxNetCapital)
             #self.maxVolume = max(self.maxVolume, result.volume)
             drawdown = self.capital - self.maxCapital
             drawdownRate = round(float(drawdown*100/self.maxCapital),4)
@@ -2579,15 +2603,15 @@ class BacktestingEngine(object):
             self.totalCommission += result.commission
             self.totalSlippage += result.slippage
 
-            msg =u'[gid:{}] {} 交易盈亏:{},交易手续费:{}回撤:{}/{},账号权益:{},累计手续费:{}'\
+            msg =u'[gid:{}] {} 交易盈亏:{},交易手续费:{}回撤:{}/{},账号平仓权益:{},持仓权益：{}，累计手续费:{}'\
                 .format(result.groupId, result.exitDt, result.pnl, result.commission, drawdown,
-                        drawdownRate, self.capital,self.totalCommission )
+                        drawdownRate, self.capital,self.netCapital, self.totalCommission )
             self.output(msg)
             self.writeCtaLog(msg)
 
         # 重新计算一次avaliable
-        self.avaliable = self.capital - occupyMoney
-        self.percent = round(float(occupyMoney * 100 / self.capital), 2)
+        self.avaliable = self.netCapital - occupyMoney
+        self.percent = round(float(occupyMoney * 100 / self.netCapital), 2)
 
     def savingDailyData(self, d, c, m, commission):
         """保存每日数据"""
@@ -2649,7 +2673,20 @@ class BacktestingEngine(object):
         dict['occupyMoney'] = max(long_pos_occupy_money, short_pos_occupy_money)
         dict['occupyRate'] = dict['occupyMoney'] / dict['capital']
         dict['commission'] = commission
+
         self.dailyList.append(dict)
+
+        # 更新每日浮动净值
+        self.netCapital = dict['net']
+
+        # 更新最大初次持仓浮盈净值
+        if dict['net'] > self.maxNetCapital:
+            self.maxNetCapital = dict['net']
+            self.maxNetCapital_time = dict['date']
+        drawdown_rate = round((float(self.maxNetCapital - dict['net'])*100)/m, 4)
+        if drawdown_rate > self.daily_max_drawdown_rate:
+            self.daily_max_drawdown_rate = drawdown_rate
+            self.max_drowdown_rate_time = dict['date']
 
     # ----------------------------------------------------------------------
     def calculateBacktestingResult(self):
@@ -2868,7 +2905,7 @@ class BacktestingEngine(object):
                 self.totalLosing += result.pnl
 
             self.capital += result.pnl*compounding
-            self.maxCapital = max(self.capital, self.maxCapital)
+            self.maxCapital = max(self.capital, self.maxCapital)        # 平仓后结算收益最大
             self.maxVolume = max(self.maxVolume, result.volume*compounding)
             drawdown = self.capital - self.maxCapital
             drawdownRate = round(float(drawdown*100/self.maxCapital),4)
@@ -2935,7 +2972,7 @@ class BacktestingEngine(object):
         d = {}
         d['initCapital'] = self.initCapital
         d['capital'] = self.capital - self.initCapital
-        d['maxCapital'] = self.maxCapital
+        d['maxCapital'] = self.maxNetCapital    # 取消原 maxCapital
 
         if len(self.pnlList)  == 0:
             return {}
@@ -2952,7 +2989,7 @@ class BacktestingEngine(object):
         d['pnlList'] = self.pnlList
         d['capitalList'] = self.capitalList
         d['drawdownList'] = self.drawdownList
-        d['drawdownRateList'] = self.drawdownRateList
+        d['drawdownRateList'] = self.drawdownRateList           #净值最大回撤率列表
         d['winningRate'] = round(100 * self.winningResult / len(self.pnlList), 4)
 
         averageWinning = 0  # 这里把数据都初始化为0
@@ -2996,11 +3033,14 @@ class BacktestingEngine(object):
         self.writeCtaNotification(u'期初资金：\t%s' % formatNumber(d['initCapital']))
         self.writeCtaNotification(u'总盈亏：\t%s' % formatNumber(d['capital']))
         self.writeCtaNotification(u'资金最高净值：\t%s' % formatNumber(d['maxCapital']))
+        self.writeCtaNotification(u'资金最高净值时间：\t%s' % self.maxNetCapital_time)
 
         self.writeCtaNotification(u'每笔最大盈利：\t%s' % formatNumber(d['maxPnl']))
         self.writeCtaNotification(u'每笔最大亏损：\t%s' % formatNumber(d['minPnl']))
         self.writeCtaNotification(u'净值最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))
-        self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(min(d['drawdownRateList'])))
+        #self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(max(d['drawdownRateList'])))
+        self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(self.daily_max_drawdown_rate))
+        self.writeCtaNotification(u'净值最大回撤时间：\t%s' % self.max_drowdown_rate_time)
         self.writeCtaNotification(u'胜率：\t%s' % formatNumber(d['winningRate']))
 
         self.writeCtaNotification(u'盈利交易平均值\t%s' % formatNumber(d['averageWinning']))
@@ -3015,6 +3055,7 @@ class BacktestingEngine(object):
         self.writeCtaNotification(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
             
         # 绘图
+        """
         import matplotlib
         import matplotlib.pyplot as plt
         import numpy as np
@@ -3040,18 +3081,7 @@ class BacktestingEngine(object):
         pPnl.set_ylabel("pnl")
         pPnl.hist(d['pnlList'], bins=50, color='c')
 
-        """
-        pPos = plt.subplot(4, 1, 4)
-        pPos.set_ylabel("Position")
-        if d['posList'][-1] == 0:
-            del d['posList'][-1]
-        tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
-        xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
-        tradeTimeIndex = map(lambda i: tradeTimeIndex[i], xindex)
-        pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
-        pPos.set_ylim(-1.2, 1.2)
-        plt.sca(pPos)
-        """
+       
         plt.tight_layout()
         #plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
 
@@ -3064,7 +3094,7 @@ class BacktestingEngine(object):
         fig.savefig(fig_file_name)
         self.output (u'图表保存至：{0}'.format(fig_file_name))
         #plt.show()
-    
+        """
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):
         """发送策略更新事件，回测中忽略"""
@@ -3161,6 +3191,29 @@ class BacktestingEngine(object):
 
         newPrice = round(price/self.priceTick, 0) * self.priceTick
         return newPrice
+
+    def getTradingDate(self, dt=None):
+        """
+        根据输入的时间，返回交易日的日期
+        :param dt:
+        :return:
+        """
+        tradingDay = ''
+        if dt is None:
+            dt = datetime.now()
+
+        if dt.hour >= 21:
+            if dt.isoweekday() == 5:
+                # 星期五=》星期一
+                return (dt + timedelta(days=3)).strftime('%Y-%m-%d')
+            else:
+                # 第二天
+                return (dt + timedelta(days=1)).strftime('%Y-%m-%d')
+        elif dt.hour < 8 and dt.isoweekday() == 6:
+            # 星期六=>星期一
+            return (dt + timedelta(days=2)).strftime('%Y-%m-%d')
+        else:
+            return dt.strftime('%Y-%m-%d')
 
 ########################################################################
 class TradingResult(object):
