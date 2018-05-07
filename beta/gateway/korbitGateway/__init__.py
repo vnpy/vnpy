@@ -1,7 +1,8 @@
 # encoding: UTF-8
 
+from __future__ import absolute_import
 from vnpy.trader import vtConstant
-from korbitGateway import korbitGateway
+from .korbitGateway import korbitGateway
 
 gatewayClass = korbitGateway
 gatewayName = 'KORBIT'
