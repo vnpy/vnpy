@@ -398,7 +398,8 @@ class BarGenerator(object):
         self.bar.openInterest = tick.openInterest
    
         if self.lastTick:
-            self.bar.volume += (tick.volume - self.lastTick.volume) # 当前K线内的成交量
+            volumeChange = tick.volume - self.lastTick.volume   # 当前K线内的成交量
+            self.bar.volume += max(volumeChange, 0)             # 避免夜盘开盘lastTick.volume为昨日收盘数据，导致成交量变化为负的情况
             
         # 缓存Tick
         self.lastTick = tick
