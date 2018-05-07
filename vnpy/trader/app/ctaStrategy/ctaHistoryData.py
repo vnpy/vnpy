@@ -177,11 +177,22 @@ def loadTbPlusCsv(fileName, dbName, symbol):
     print u'插入完毕，耗时：%s' % (time()-start)
 
 #----------------------------------------------------------------------
+"""
+使用中银国际证券通达信导出的1分钟K线数据为模版
+格式：csv
+样例：
+
+时间                    开盘价   最高价  最低价   收盘价  成交量
+2017/09/28-10:52	    3457	 3459	 3456	  3458	  466
+
+注意事项：导出csv后手工删除表头和表尾
+"""
 def loadTdxCsv(fileName, dbName, symbol):
     """将通达信导出的csv格式的历史分钟数据插入到Mongo数据库中"""
     import csv
     
     start = time()
+    date_correct = ""
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
     # 锁定集合，并创建索引
@@ -195,19 +206,75 @@ def loadTdxCsv(fileName, dbName, symbol):
         bar = VtBarData()
         bar.vtSymbol = symbol
         bar.symbol = symbol
-        bar.open = float(d[2])
-        bar.high = float(d[3])
-        bar.low = float(d[4])
-        bar.close = float(d[5])
-        bar.date = datetime.strptime(d[0], '%Y/%m/%d').strftime('%Y%m%d')
-        bar.time = d[1][:2]+':'+d[1][2:4]+':00'
+        bar.open = float(d[1])
+        bar.high = float(d[2])
+        bar.low = float(d[3])
+        bar.close = float(d[4])
+        #通达信的夜盘时间按照新的一天计算，此处将其按照当天日期统计，方便后续查阅
+        date_temp,time_temp = d[0].strip(' ').replace('\xef\xbb\xbf','').split('-',1)
+        if time_temp == '15:00':
+            date_correct = date_temp
+        if time_temp[:2] == "21" or time_temp[:2] == "22" or time_temp[:2] == "23":
+            date_temp = date_correct
+            
+        bar.date = datetime.strptime(date_temp, '%Y/%m/%d').strftime('%Y%m%d')
+        bar.time = time_temp[:2]+':'+time_temp[3:5]+':00'
         bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
-        bar.volume = d[6]
-        bar.openInterest = d[7]
+        bar.volume = d[5]
 
         flt = {'datetime': bar.datetime}
         collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
-        print bar.date, bar.time
+    
+    print u'插入完毕，耗时：%s' % (time()-start)
+
+#----------------------------------------------------------------------
+"""
+使用中银国际证券通达信导出的1分钟K线数据为模版
+格式：lc1
+
+注意事项：
+"""   
+def loadTdxLc1(fileName, dbName, symbol):
+    """将通达信导出的lc1格式的历史分钟数据插入到Mongo数据库中"""
+    from struct import *
+
+    start = time()
+
+    print u'开始读取通达信Lc1文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
+    
+    # 锁定集合，并创建索引
+    client = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
+    collection = client[dbName][symbol]
+    collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)  
+
+    #读取二进制文件
+    ofile=open(fileName,'rb')
+    buf=ofile.read()
+    ofile.close()
+    
+    num=len(buf)
+    no=num/32
+    b=0
+    e=32  
+    dl = []
+    for i in xrange(no):
+        a=unpack('hhfffffii',buf[b:e])
+        b=b+32
+        e=e+32
+        bar = VtBarData()
+        bar.vtSymbol = symbol
+        bar.symbol = symbol
+        bar.open = a[2]
+        bar.high = a[3]
+        bar.low = a[4]
+        bar.close = a[5]
+        bar.date = str(int(a[0]/2048)+2004)+str(int(a[0]%2048/100)).zfill(2)+str(a[0]%2048%100).zfill(2)
+        bar.time = str(int(a[1]/60)).zfill(2)+':'+str(a[1]%60).zfill(2)+':00'
+        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
+        bar.volume = a[7]
+
+        flt = {'datetime': bar.datetime}
+        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)
     
     print u'插入完毕，耗时：%s' % (time()-start)
 
