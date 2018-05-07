@@ -55,7 +55,8 @@ def runChildProcess():
     me.connect('CTP')
     le.info(u'连接CTP接口')
     
-    sleep(10)    # 等待CTP接口初始化
+    sleep(10)                       # 等待CTP接口初始化
+    me.dataEngine.saveContracts()   # 保存合约信息到文件
     
     cta = me.getApp(ctaStrategy.appName)
     
