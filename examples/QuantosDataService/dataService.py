@@ -50,7 +50,12 @@ def generateVtBar(row):
     
     bar.symbol = symbol
     bar.exchange = exchangeMapReverse[exchange]
-    bar.vtSymbol = '.'.join([bar.symbol, bar.exchange])
+    
+    if bar.exchange in ['SSE', 'SZSE']:
+        bar.vtSymbol = '.'.join([bar.symbol, bar.exchange])
+    else:
+        bar.vtSymbol = bar.symbol
+        
     bar.open = row['open']
     bar.high = row['high']
     bar.low = row['low']
@@ -92,7 +97,7 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
         cl = db[vtSymbol]
     else:
         cl = db[code]
-
+        
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
     
     dt = datetime.strptime(startDate, '%Y%m%d')
