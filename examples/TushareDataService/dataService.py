@@ -60,7 +60,7 @@ def downMinuteBarBySymbol(symbol):
     cl = db[symbol]
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
     
-    df = ts.bar(symbol, ktype='1min')
+    df = ts.bar(symbol, freq='1min')
     df = df.sort_index()
     
     for ix, row in df.iterrows():
