@@ -2,17 +2,19 @@
 
 # AUTHOR:李来佳
 # WeChat/QQ: 28888502
+# 广东华富资产管理
 
-
-from datetime import datetime
+from datetime import datetime,timedelta
 import talib as ta
 import numpy as np
 import math
 import copy,csv
 from pykalman import KalmanFilter
+import traceback
 
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.vtConstant import *
+from vnpy.trader.vtConstant import DIRECTION_LONG, DIRECTION_SHORT
 from vnpy.trader.app.ctaStrategy.ctaPeriod import *
 
 DEBUGCTALOG = True
@@ -70,6 +72,15 @@ class CtaLineBar(object):
         # 创建内部变量
         self.init_properties()
 
+        self.ma12_count = 0    # ma1 与 ma2 ,金叉/死叉后第几根bar
+        self.ma13_count = 0    # ma1 与 ma3 ,金叉/死叉后第几根bar
+        self.ma23_count = 0    # ma2 与 ma3 ,金叉/死叉后第几根bar
+
+        self.skd_divergence = 0     # 背离，>0,底背离， < 0 顶背离
+        self.lineSkTop = []         # SK 高位
+        self.lineSkButtom = []      # SK 低位
+        self.skd_last_cross = 0  # 最近一次金叉/死叉的点位
+
         if setting:
             self.setParam(setting)
 
@@ -123,6 +134,8 @@ class CtaLineBar(object):
         self.paramList.append('inputKF')
         self.paramList.append('inputSkd')
         self.paramList.append('inputYb')
+        self.paramList.append('inputYbLen')
+        self.paramList.append('inputYbRef')
 
         self.paramList.append('minDiff')
         self.paramList.append('shortSymbol')
@@ -288,14 +301,20 @@ class CtaLineBar(object):
         self.inputSkd = False
         self.inputSkdLen1 = 13  # 周期1
         self.inputSkdLen2 = 8  # 周期2
+        self.lineSkdRSI = []    # 参照的RSI
+        self.lineSkdSTO = []    # 根据RSI演算的STO
         self.lineSK = []  # 快线
         self.lineSD = []  # 慢线
-        self.lowSkd = 30
-        self.highSkd = 70
+        self.lowSkd = 25
+        self.highSkd = 75
+        self.skd_count = 0 # 当前金叉/死叉后累加
 
         # 多空趋势线
         self.inputYb = False
         self.lineYb = []
+        self.inputYbRef = 1
+        self.inputYbLen = 10
+        self.yb_count = 0  # 当前黄/蓝累加
 
     def setParam(self, setting):
         """设置参数"""
@@ -321,6 +340,7 @@ class CtaLineBar(object):
         if tick.datetime.hour == 8 or tick.datetime.hour == 20:
             self.writeCtaLog(u'竞价排名tick时间:{0}'.format(tick.datetime))
             return
+
         if self.lastTick is None:
             self.lastTick = tick
 
@@ -328,8 +348,6 @@ class CtaLineBar(object):
 
         # 3.生成x K线，若形成新Bar，则触发OnBar事件
         self.__drawLineBar(tick)
-
-        self.lastTick = tick
 
         # 更新curPeriod的High，low
         if self.curPeriod is not None:
@@ -341,11 +359,12 @@ class CtaLineBar(object):
         # 4.执行 bar内计算
         self.__recountKdj(countInBar=True)
 
-    def addBar(self, bar, bar_is_completed=False):
+    def addBar(self, bar, bar_is_completed=False, bar_freq=1):
         """
         予以外部初始化程序增加bar
         :param bar: 
         :param bar_is_completed: 插入的bar，其周期与K线周期一致，就设为True
+
         :return: 
         """
         l1 = len(self.lineBar)
@@ -451,15 +470,31 @@ class CtaLineBar(object):
 
         if self.inputMa2Len > 0 and len(self.lineMa2) > 0:
             msg = msg + u',MA({0}):{1}'.format(self.inputMa2Len, self.lineMa2[-1])
+            if self.ma12_count == 1:
+                msg = msg + u'MA{}金叉MA{}'.format(self.inputMa1Len,self.inputMa2Len)
+            elif  self.ma12_count == -1:
+                msg = msg + u'MA{}死叉MA{}'.format(self.inputMa1Len,self.inputMa2Len)
 
         if self.inputMa3Len > 0 and len(self.lineMa3) > 0:
             msg = msg + u',MA({0}):{1}'.format(self.inputMa3Len, self.lineMa3[-1])
+            if self.ma13_count == 1:
+                msg = msg + u'MA{}金叉MA{}'.format(self.inputMa1Len,self.inputMa3Len)
+            elif self.ma13_count == -1:
+                msg = msg + u'MA{}死叉MA{}'.format(self.inputMa1Len,self.inputMa3Len)
+
+            if self.ma23_count == 1:
+                msg = msg + u'MA{}金叉MA{}'.format(self.inputMa2Len, self.inputMa3Len)
+            elif self.ma23_count == -1:
+                msg = msg + u'MA{}死叉MA{}'.format(self.inputMa2Len, self.inputMa3Len)
 
         if self.inputEma1Len > 0 and len(self.lineEma1) > 0:
             msg = msg + u',EMA({0}):{1}'.format(self.inputEma1Len, self.lineEma1[-1])
 
         if self.inputEma2Len > 0 and len(self.lineEma2) > 0:
             msg = msg + u',EMA({0}):{1}'.format(self.inputEma2Len, self.lineEma2[-1])
+
+        if self.inputEma3Len > 0 and len(self.lineEma3) > 0:
+            msg = msg + u',EMA({0}):{1}'.format(self.inputEma3Len, self.lineEma3[-1])
 
         if self.inputDmiLen > 0 and len(self.linePdi) > 0:
             msg = msg + u',Pdi:{1};Mdi:{1};Adx:{2}'.format(self.linePdi[-1], self.lineMdi[-1], self.lineAdx[-1])
@@ -506,9 +541,20 @@ class CtaLineBar(object):
         if self.inputKF and len(self.lineStateMean) > 0:
             msg = msg + u',Kalman:{0}'.format(self.lineStateMean[-1])
 
-        if self.inputSkd and len(self.lineSK) > 0 and len(self.lineSD) > 0:
-            msg = msg + u',SK:{}/SD:{}'.format( self.lineSK[-1],self.lineSD[-1])
+        if self.inputSkd and len(self.lineSK) > 1 and len(self.lineSD) > 1:
+            golden_cross = self.lineSK[-1] > self.lineSK[-2] and self.lineSK[-1] > self.lineSD[-1] and self.lineSK[-2] < self.lineSD[-2]
+            dead_cross = self.lineSK[-1] < self.lineSK[-2] and self.lineSK[-1] < self.lineSD[-1] and self.lineSK[-2] > self.lineSD[-2]
+            msg = msg + u',SK:{}/SD:{}{}{},count:{}'\
+                .format(round(self.lineSK[-1], 2), round(self.lineSD[-1], 2), u'金叉' if golden_cross else u'', u'死叉' if dead_cross else u'', self.skd_count)
 
+            if self.skd_divergence == 1:
+                msg = msg + u'底背离'
+            elif self.skd_divergence == -1:
+                msg = msg + u'顶背离'
+
+        if self.inputYb and len(self.lineYb) > 1:
+            c = 'Blue' if self.lineYb[-1] < self.lineYb[-2] else 'Yellow'
+            msg = msg + u',YB:{},[{}({})]'.format(self.lineYb[-1], c, self.yb_count)
         return msg
 
     def __firstTick(self, tick):
@@ -658,6 +704,9 @@ class CtaLineBar(object):
             else:
                 lastBar.color = COLOR_EQUAL
 
+        if not endtick:
+            self.lastTick = tick
+
     # ----------------------------------------------------------------------
     def __recountPreHighLow(self):
         """计算 K线的前周期最高和最低"""
@@ -772,24 +821,111 @@ class CtaLineBar(object):
                 del self.lineMa3[0]
             self.lineMa3.append(barMa3)
 
+        # 计算MA1，MA2，MA3的金叉死叉
+        if len(self.lineMa1)>=2 and len(self.lineMa2) > 2:
+            golden_cross = self.lineMa1[-1] > self.lineMa1[-2] and self.lineMa1[-1] > self.lineMa2[-1] and self.lineMa1[-2]<=self.lineMa2[-2]
+            dead_cross = self.lineMa1[-1] < self.lineMa1[-2] and self.lineMa1[-1] < self.lineMa2[-1] and self.lineMa1[-2]>=self.lineMa2[-2]
+
+            if self.ma12_count <= 0:
+                if golden_cross:
+                    self.ma12_count = 1
+                elif self.lineMa1[-1] < self.lineMa2[-1]:
+                    self.ma12_count -= 1
+
+            elif self.ma12_count >= 0:
+                if dead_cross:
+                    self.ma12_count = -1
+                elif self.lineMa1[-1] > self.lineMa2[-1]:
+                    self.ma12_count += 1
+
+        if len(self.lineMa2) >= 2 and len(self.lineMa3) > 2:
+            golden_cross = self.lineMa2[-1] > self.lineMa2[-2] and self.lineMa2[-1] > self.lineMa3[-1] \
+                           and self.lineMa2[-2] <= self.lineMa3[-2]
+            dead_cross = self.lineMa2[-1] < self.lineMa2[-2] and self.lineMa2[-1] < self.lineMa3[-1] and\
+                         self.lineMa2[-2] >= self.lineMa3[-2]
+
+            if self.ma23_count <= 0:
+                if golden_cross:
+                    self.ma23_count = 1
+                elif self.lineMa2[-1] < self.lineMa3[-1]:
+                    self.ma23_count -= 1
+
+            elif self.ma23_count >= 0:
+                if dead_cross:
+                    self.ma23_count = -1
+                elif self.lineMa2[-1] > self.lineMa3[-1]:
+                    self.ma23_count += 1
+
+        if len(self.lineMa1) >= 2 and len(self.lineMa3) > 2:
+            golden_cross = self.lineMa1[-1] > self.lineMa1[-2] and self.lineMa1[-1] > self.lineMa3[-1]\
+                           and self.lineMa1[-2] <= self.lineMa3[-2]
+            dead_cross = self.lineMa1[-1] < self.lineMa1[-2] and self.lineMa1[-1] < self.lineMa3[-1] \
+                         and self.lineMa1[-2] >= self.lineMa3[-2]
+
+            if self.ma13_count <= 0:
+                if golden_cross:
+                    self.ma13_count = 1
+                elif self.lineMa1[-1] < self.lineMa3[-1]:
+                    self.ma13_count -= 1
+
+            elif self.ma13_count >= 0:
+                if dead_cross:
+                    self.ma13_count = -1
+                elif self.lineMa1[-1] > self.lineMa3[-1]:
+                    self.ma13_count += 1
+
+    def getRuntimeMa(self, ma_num):
+        """
+        实时计算MA得值
+        :param ma_num:第几条均线, 1，对应inputMa1Len,,,,
+        :return:
+        """
+        if ma_num not in [1, 2, 3]:
+            return None
+
+        ma_len = 1
+        if ma_num == 1 and self.inputMa1Len > 0:
+            ma_len = self.inputMa1Len
+        elif ma_num == 2 and self.inputMa2Len > 0:
+            ma_len = self.inputMa2Len
+        elif ma_num == 3 and self.inputMa3Len > 0:
+            ma_len = self.inputMa3Len
+        else:
+            return None
+        ma_data_len = ma_len + 2
+
+        if len(self.lineBar) < ma_data_len:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{}，计算实时MA {} 需要：{}'.
+                             format(len(self.lineBar), ma_len, ma_data_len))
+            return None
+
+        # 3、获取前InputN周期(不包含当前周期）的K线
+        listClose = [x.close for x in self.lineBar[-ma_data_len:]]
+        barMa = ta.MA(np.array(listClose, dtype=float), ma_len)[-1]
+        barMa = round(float(barMa), self.round_n)
+
+        return barMa
+
     #----------------------------------------------------------------------
     def __recountEma(self):
         """计算K线的EMA1 和EMA2"""
 
-        if not (self.inputEma1Len > 0 or self.inputEma2Len >0 or self.inputEma3Len > 0 ):           # 不计算
+        if not (self.inputEma1Len > 0 or self.inputEma2Len >0 or self.inputEma3Len > 0):           # 不计算
             return
 
         l = len(self.lineBar)
-
+        ema1_data_len = min(self.inputEma1Len * 4, self.inputEma1Len + 40) if self.inputEma1Len > 0 else 0
+        ema2_data_len = min(self.inputEma2Len * 4, self.inputEma2Len + 40) if self.inputEma2Len > 0 else 0
+        ema3_data_len = min(self.inputEma3Len * 4, self.inputEma3Len + 40) if self.inputEma3Len > 0 else 0
+        max_data_len = max(ema1_data_len, ema2_data_len, ema3_data_len)
         # 1、lineBar满足长度才执行计算
-        if len(self.lineBar) < max(7, self.inputEma1Len, self.inputEma2Len, self.inputEma3Len)+2:
+        if len(self.lineBar) < max_data_len:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算EMA需要：{1}'.
-                             format(len(self.lineBar), max(7, self.inputEma1Len, self.inputEma2Len, self.inputEma3Len)+2))
+                             format(len(self.lineBar), max_data_len))
             return
 
         # 计算第一条EMA均线
         if self.inputEma1Len > 0:
-
             if self.inputEma1Len > l:
                 ema1Len = l
             else:
@@ -797,9 +933,9 @@ class CtaLineBar(object):
 
             # 3、获取前InputN周期(不包含当前周期）的K线
             if self.mode == self.TICK_MODE:
-                listClose=[x.close for x in self.lineBar[-ema1Len - 1:-1]]
+                listClose=[x.close for x in self.lineBar[-ema1_data_len - 1:-1]]
             else:
-                listClose=[x.close for x in self.lineBar[-ema1Len:]]
+                listClose=[x.close for x in self.lineBar[-ema1_data_len:]]
 
             barEma1 = ta.EMA(np.array(listClose, dtype=float), ema1Len)[-1]
 
@@ -818,9 +954,9 @@ class CtaLineBar(object):
 
             # 3、获取前InputN周期(不包含当前周期）的自适应均线
             if self.mode == self.TICK_MODE:
-                listClose=[x.close for x in self.lineBar[-ema2Len - 1:-1]]
+                listClose=[x.close for x in self.lineBar[-ema2_data_len - 1:-1]]
             else:
-                listClose=[x.close for x in self.lineBar[-ema2Len:]]
+                listClose=[x.close for x in self.lineBar[-ema2_data_len:]]
 
             barEma2 = ta.EMA(np.array(listClose, dtype=float), ema2Len)[-1]
 
@@ -839,17 +975,48 @@ class CtaLineBar(object):
 
             # 3、获取前InputN周期(不包含当前周期）的自适应均线
             if self.mode == self.TICK_MODE:
-                listClose = [x.close for x in self.lineBar[-ema3Len - 1:-1]]
+                listClose = [x.close for x in self.lineBar[-ema3_data_len - 1:-1]]
             else:
-                listClose = [x.close for x in self.lineBar[-ema3Len:]]
+                listClose = [x.close for x in self.lineBar[-ema3_data_len:]]
 
-            barEma3 = ta.EMA(np.array(listClose, dtype=float), ema3Len)[-1]
+            barEma3 = ta.EMA(np.array(listClose, dtype=float), ema3_data_len)[-1]
 
             barEma3 = round(float(barEma3), self.round_n)
 
             if len(self.lineEma3) > max(self.inputEma3Len, 20):
                 del self.lineEma3[0]
             self.lineEma3.append(barEma3)
+
+    def getRuntimeEma(self, ema_num):
+        """
+        实时计算EMA得值
+        :param ema_num:第几条均线, 1，对应inputEma1Len,,,,
+        :return:
+        """
+        if ema_num not in [1, 2, 3]:
+            return None
+
+        ema_len = 1
+        if ema_num == 1 and self.inputEma1Len > 0:
+            ema_len = self.inputEma1Len
+        elif ema_num == 2 and self.inputEma2Len > 0:
+            ema_len = self.inputEma2Len
+        elif ema_num == 3 and self.inputEma3Len > 0:
+            ema_len = self.inputEma3Len
+        else:
+            return None
+
+        ema_data_len = min(ema_len*2, ema_len + 20)
+        # 1、lineBar满足长度才执行计算
+        if len(self.lineBar) < ema_data_len:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算实时EMA需要：{1}'.
+                             format(len(self.lineBar), ema_data_len))
+            return
+
+        listClose = [x.close for x in self.lineBar[-ema_data_len - 1:]]
+        rtEma = ta.EMA(np.array(listClose, dtype=float), ema_len)[-1]
+        rtEma = round(float(rtEma), self.round_n)
+        return rtEma
 
     def __recountDmi(self):
         """计算K线的DMI数据和条件"""
@@ -1787,67 +1954,361 @@ class CtaLineBar(object):
         if not self.inputSkd:
             return
 
-        if len(self.lineBar) < max(self.inputSkdLen1, self.inputSkdLen2) * 4:
+        data_len = max(self.inputSkdLen1 * 2, self.inputSkdLen1 + 20)
+        if len(self.lineBar) <data_len:
             return
 
         # 取得Len1*2 长度的Close
         if self.mode == self.TICK_MODE:
-            close_list = [x.close for x in self.lineBar[-max(self.inputSkdLen1, self.inputSkdLen2)*4:-1]]
-            idx = 2
+            close_list = [x.close for x in self.lineBar[-data_len:-1]]
         else:
-            close_list = [x.close for x in self.lineBar[-max(self.inputSkdLen1, self.inputSkdLen2)*4:]]
-            idx = 1
+            close_list = [x.close for x in self.lineBar[-data_len:]]
 
-        np_close = np.array(close_list[1:])
-        np_pre_close = np.array(close_list[:-1])
+        # 计算最后一根Bar的RSI指标
+        last_rsi = ta.RSI(np.array(close_list, dtype=float), self.inputSkdLen1)[-1]
+        # 添加到lineSkdRSI队列
+        if len(self.lineSkdRSI) > data_len:
+            del self.lineSkdRSI[0]
+        self.lineSkdRSI.append(last_rsi)
 
-        # 计算优化后的RSI指标
-        #rsi1 = 100 * ta.SMA(np.maximum(np_close - np_pre_close,0),self.inputSkdLen1) / ta.SMA(np.abs(np_close - np_pre_close),self.inputSkdLen1)
-        rsi1 = ta.RSI(np_close, self.inputSkdLen1)
+        if len(self.lineSkdRSI) < self.inputSkdLen2:
+            return
 
-        rsi1 = np.where(np.isnan(rsi1), 0, rsi1)
+        # 计算最后根的最高价/最低价
+        rsi_HHV = max(self.lineSkdRSI[-self.inputSkdLen2:])
+        rsi_LLV = min(self.lineSkdRSI[-self.inputSkdLen2:])
 
-        rsi1_HHV = ta.MAX(rsi1, self.inputSkdLen2)
-        rsi1_LLV = ta.MIN(rsi1, self.inputSkdLen2)
+        # 计算STO
+        if rsi_HHV == rsi_LLV:
+            sto = 0
+        else:
+            sto = 100 * (last_rsi - rsi_LLV)/(rsi_HHV - rsi_LLV)
+        sto_len = len(self.lineSkdSTO)
+        if sto_len > data_len * 2:
+            del self.lineSkdSTO[0]
+        self.lineSkdSTO.append(sto)
 
-        sto = (np.abs(rsi1_HHV - rsi1_LLV) > 1e-5).astype(int) * ( 100 * (rsi1 - rsi1_LLV)/(rsi1_HHV - rsi1_LLV + 1e-5))
-        sto = np.where(np.isnan(sto), 0, sto)
-        sk = ta.EMA(sto, 5)
-        sk = np.where(np.isnan(sk), 0, sk)
-        sd = ta.EMA(sk, 3)
-
-        if len(self.lineSK) > 60*8:
+        # 根据STO，计算SK = EMA(STO,5)
+        if sto_len < 5:
+            return
+        sk = ta.EMA(np.array(self.lineSkdSTO, dtype=float), 5)[-1]
+        if len(self.lineSK) > data_len*2:
             del self.lineSK[0]
+        self.lineSK.append(sk)
 
-        self.lineSK.append(sk[-1])
+        if len(self.lineSK) < 3:
+            return
 
-        if len(self.lineSD) > 60 * 8:
+        sd = ta.EMA(np.array(self.lineSK, dtype=float), 3)[-1]
+        if len(self.lineSD) > data_len*2:
             del self.lineSD[0]
+        self.lineSD.append(sd)
 
-        self.lineSD.append(sd[-1])
+        if len(self.lineSD) < 2:
+            return
+
+        for t in self.lineSkTop[-1:]:
+            t['bars'] += 1
+
+        for b in self.lineSkButtom[-1:]:
+            b['bars'] += 1
+
+        #  记录所有SK的顶部和底部
+        # 峰(顶部)
+        if self.lineSK[-1] < self.lineSK[-2] and self.lineSK[-3] < self.lineSK[-2]:
+            t={}
+            t['type'] = u'T'
+            t['sk'] = self.lineSK[-2]
+            t['price'] = max([bar.high for bar in self.lineBar[-4:]])
+            t['time'] = self.lineBar[-1].datetime
+            t['bars'] = 0
+            if len(self.lineSkTop) > self.inputSkdLen2:
+                del self.lineSkTop[0]
+            self.lineSkTop.append(t)
+            if self.skd_count >0:
+                # 检查是否有顶背离
+                if self.is_sk_divergence(direction=DIRECTION_LONG):
+                    self.skd_divergence = -1
+
+        # 谷(底部)
+        elif self.lineSK[-1] > self.lineSK[-2] and self.lineSK[-3] > self.lineSK[-2]:
+            b={}
+            b['type'] = u'B'
+            b['sk'] = self.lineSK[-2]
+            b['price'] = min([bar.low for bar in self.lineBar[-4:]])
+            b['time'] = self.lineBar[-1].datetime
+            b['bars'] = 0
+            if len(self.lineSkButtom) > self.inputSkdLen2:
+                del self.lineSkButtom[0]
+            self.lineSkButtom.append(b)
+            if self.skd_count < 0:
+                # 检查是否有底背离
+                if self.is_sk_divergence(direction=DIRECTION_SHORT):
+                    self.skd_divergence = 1
+
+        # 判断是否金叉和死叉
+        golden_cross = self.lineSK[-1] > self.lineSK[-2] and self.lineSK[-2] < self.lineSD[-2] \
+                    and self.lineSK[-1] > self.lineSD[-1]
+
+        dead_cross = self.lineSK[-1] < self.lineSK[-2] and self.lineSK[-2] > self.lineSD[-2] \
+                     and self.lineSK[-1] < self.lineSD[-1]
+
+        if self.skd_count <= 0:
+            if golden_cross:
+                # 金叉
+                self.skd_count = 1
+                self.skd_last_cross = (self.lineSK[-1] + self.lineSK[-2] + self.lineSD[-1] + self.lineSD[-2])/4
+                if self.skd_divergence < 0:
+                    # 若原来是顶背离，消失
+                    self.skd_divergence = 0
+
+            elif self.lineSK[-1] < self.lineSK[-2]:
+                # 延续死叉
+                self.skd_count -= 1
+                # 延续顶背离
+                if self.skd_divergence < 0:
+                    self.skd_divergence -= 1
+            return
+
+        elif self.skd_count >= 0:
+            if dead_cross:
+                self.skd_count = -1
+                self.skd_last_cross = (self.lineSK[-1] + self.lineSK[-2] + self.lineSD[-1] + self.lineSD[-2]) / 4
+                # 若原来是底背离，消失
+                if self.skd_divergence > 0:
+                    self.skd_divergence = 0
+
+            elif self.lineSK[-1] > self.lineSK[-2]:
+                # 延续金叉
+                self.skd_count += 1
+                # 延续底背离
+                if self.skd_divergence > 0:
+                    self.skd_divergence += 1
+
+    def get_2nd_item(self, line):
+        """
+        获取第二个合适的选项
+        :param line:
+        :return:
+        """
+        bars = 0
+        for item in reversed(line):
+            bars += item['bars']
+            if bars > 5:
+                return item
+
+        return line[0]
+
+    def is_sk_divergence(self, direction, runtime=False):
+        """
+        检查是否有背离
+        :param:direction，多：检查是否有顶背离，空，检查是否有底背离
+        :return:
+        """
+        if len(self.lineSkTop) < 2 or len(self.lineSkButtom) < 2:
+            return False
+
+        t1 = self.lineSkTop[-1]
+        t2 = self.get_2nd_item(self.lineSkTop[:-1])
+        b1 = self.lineSkButtom[-1]
+        b2 = self.get_2nd_item(self.lineSkButtom[:-1])
+
+        if runtime:
+            sk, sd = self.getRuntimeSKD()
+            # 峰(顶部)
+            if sk < self.lineSK[-1] and self.lineSK[-2] < self.lineSK[-1]:
+                t1 = {}
+                t1['type'] = u'T'
+                t1['sk'] = self.lineSK[-1]
+                t1['price'] = max([bar.high for bar in self.lineBar[-4:]])
+                t1['time'] = self.lineBar[-1].datetime
+                t1['bars'] = 0
+                t2 = self.get_2nd_item(self.lineSkTop)
+            # 谷(底部)
+            elif sk > self.lineSK[-1] and self.lineSK[-2] > self.lineSK[-1]:
+                b1 = {}
+                b1['type'] = u'B'
+                b1['sk'] = self.lineSK[-1]
+                b1['price'] = min([bar.low for bar in self.lineBar[-4:]])
+                b1['time'] = self.lineBar[-1].datetime
+                b1['bars'] = 0
+                b2 = self.get_2nd_item(self.lineSkButtom)
+
+        # 检查顶背离
+        if direction == DIRECTION_LONG:
+            t1_price = t1.get('price', 0)
+            t2_price = t2.get('price', 0)
+            t1_sk = t1.get('sk', 0)
+            t2_sk = t2.get('sk', 0)
+            b1_sk = b1.get('sk', 0)
+
+            t2_t1_price_rate = ((t1_price - t2_price) / t2_price) if t2_price != 0 else 0
+            t2_t1_sk_rate = ((t1_sk - t2_sk)/ t2_sk) if t2_sk !=0 else 0
+            # 背离：价格创新高，SK指标没有创新高
+            if t2_t1_price_rate > 0 and t2_t1_sk_rate < 0 and b1_sk > self.highSkd :
+                return True
+
+        elif direction == DIRECTION_SHORT:
+            b1_price = b1.get('price', 0)
+            b2_price = b2.get('price', 0)
+            b1_sk = b1.get('sk', 0)
+            b2_sk = b2.get('sk', 0)
+            t1_sk = t1.get('sk', 0)
+            b2_b1_price_rate = ((b1_price - b2_price) / b2_price) if b2_price != 0 else 0
+            b2_b1_sk_rate = ((b1_sk - b2_sk) / b2_sk) if b2_sk != 0 else 0
+            # 背离：价格创新低，指标没有创新低
+            if b2_b1_price_rate < 0 and b2_b1_sk_rate > 0 and t1_sk < self.lowSkd:
+                return True
+
+        return False
+
+    def getRuntimeSKD(self):
+        """
+        获取实时SKD
+        :return:
+        """
+        if not self.inputSkd:
+            return 0, 0
+
+        data_len = max(self.inputSkdLen1 * 2, self.inputSkdLen1 + 20)
+        if len(self.lineBar) <data_len:
+            return 0, 0
+
+        close_list = [x.close for x in self.lineBar[-data_len:]]
+        last_rsi = ta.RSI(np.array(close_list, dtype=float), self.inputSkdLen1)[-1]
+
+        if len(self.lineSkdRSI) < self.inputSkdLen2:
+            return 0, 0
+
+        rsi_list = self.lineSkdRSI[1-self.inputSkdLen2:]
+        rsi_list.append(last_rsi)
+
+        rsi_HHV = max(rsi_list)
+        rsi_LLV = min(rsi_list)
+        # 计算STO
+        if rsi_HHV == rsi_LLV:
+            sto = 0
+        else:
+            sto = 100 * (last_rsi - rsi_LLV) / (rsi_HHV - rsi_LLV)
+
+        sto_len = len(self.lineSkdSTO)
+        if sto_len < 5:
+            return self.lineSK[-1] if len(self.lineSK)>0 else 0,self.lineSD[-1] if len(self.lineSD) > 0 else 0
+
+        sto_list = self.lineSkdSTO[:]
+        sto_list.append(sto)
+
+        sk = ta.EMA(np.array(sto_list, dtype=float), 5)[-1]
+
+        sk_list = self.lineSK[:]
+        sk_list.append(sk)
+        if len(sk_list) < 5:
+            return sk, self.lineSD[-1] if len(self.lineSD) > 0 else 0
+        sd = ta.EMA(np.array(sk_list, dtype=float), 3)[-1]
+
+        return sk, sd
+
+    def skd_is_risk(self, direction, dist=15, runtime=False):
+        """
+        检查SDK的方向风险
+        :return:
+        """
+        if not self.inputSkd or len(self.lineSK)<2:
+            return False
+
+        if runtime:
+            sk, _ = self.getRuntimeSKD()
+        else:
+            sk = self.lineSK[-1]
+        if direction == DIRECTION_LONG and sk >= 100 - dist:
+            return True
+
+        if direction == DIRECTION_SHORT and sk <= dist:
+            return True
+
+        return False
+
+    def skd_is_high_dead_cross(self, runtime=False):
+        """
+        检查是否高位死叉
+        :return:
+        """
+        if not self.inputSkd or len(self.lineSK) < self.inputSkdLen2:
+            return False
+
+        skd_count = self.skd_count
+        sdk_last_cross = self.skd_last_cross
+        if runtime:
+            sk, sd = self.getRuntimeSKD()
+            # 判断是否金叉和死叉
+            golden_cross = sk > self.lineSK[-1] and self.lineSK[-1] < self.lineSD[-1] and sk > sd
+            dead_cross = sk < self.lineSK[-1] and self.lineSK[-1] > self.lineSD[-1] and sk < sd
+            if skd_count <= 0 and golden_cross:
+                # 金叉
+                skd_count = 1
+                sdk_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1])/4
+            elif skd_count >=0 and dead_cross:
+                skd_count = -1
+                sdk_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
+
+        # 高位死叉
+        if skd_count < 0 and sdk_last_cross > self.highSkd:
+            return True
+
+        return False
+
+    def skd_is_low_golden_cross(self, runtime=False):
+        """
+        检查是否低位死叉
+        :return:
+        """
+        if not self.inputSkd or len(self.lineSK) < self.inputSkdLen2:
+            return False
+
+        skd_count = self.skd_count
+        sdk_last_cross = self.skd_last_cross
+        if runtime:
+            sk,sd = self.getRuntimeSKD()
+            # 判断是否金叉和死叉
+            golden_cross = sk > self.lineSK[-1] and self.lineSK[-1] < self.lineSD[-1] and sk > sd
+            dead_cross = sk < self.lineSK[-1] and self.lineSK[-1] > self.lineSD[-1] and sk < sd
+            if skd_count <= 0 and golden_cross:
+                # 金叉
+                skd_count = 1
+                sdk_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
+            elif skd_count >=0 and dead_cross:
+                skd_count = -1
+                sdk_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
+
+        # 低位金叉
+        if skd_count > 0 and sdk_last_cross < self.lowSkd:
+            return True
+
+        return False
 
     def __recountYB(self):
         """某种趋势线"""
 
-        if not self.inputYb:
+        if not self.inputYb and not self.inputYbLen:
+            return
+
+        if self.inputYbRef < 1:
+            self.debugCtaLog(u'参数 self.inputYbRef:{}不能低于1'.format(self.inputYbRef))
             return
 
         # 1、lineBar满足长度才执行计算
-        if len(self.lineBar) < 20:
+        if len(self.lineBar) < 4 * self.inputYbLen:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算YB 需要：{1}'.
-                             format(len(self.lineBar), 20))
+                             format(len(self.lineBar), 4 * self.inputYbLen))
             return
 
-        emaLen = 10
-
+        emaLen = self.inputYbLen
         # 3、获取前InputN周期(不包含当前周期）的K线
         if self.mode == self.TICK_MODE:
-            list_mid3 = [x.mid3 for x in self.lineBar[-emaLen - 1:-1]]
+            list_mid3 = [x.mid3 for x in self.lineBar[-emaLen*4 - 1:-1]]
         else:
-            list_mid3 = [x.mid3 for x in self.lineBar[-emaLen:]]
-
+            list_mid3 = [x.mid3 for x in self.lineBar[-emaLen*4:]]
         bar_mid3_ema10 = ta.EMA(np.array(list_mid3, dtype=float), emaLen)[-1]
-
         bar_mid3_ema10 = round(float(bar_mid3_ema10), self.round_n)
 
         if len(self.lineYb) > emaLen*4:
@@ -1855,6 +2316,40 @@ class CtaLineBar(object):
 
         self.lineYb.append(bar_mid3_ema10)
 
+        if len(self.lineYb) < self.inputYbRef + 1:
+            return
+
+        if self.lineYb[-1] > self.lineYb[-1 - self.inputYbRef]:
+            self.yb_count = self.yb_count + 1 if self.yb_count >= 0 else 1
+        else:
+            self.yb_count = self.yb_count - 1 if self.yb_count <= 0 else -1
+
+    def getRuningYb(self):
+        """
+        获取未完结的bar计算出来的YB值
+        :return: None，空值；float,计算值
+        """
+        if not self.inputYb and not self.inputYbLen:
+            return None
+
+        if self.inputYbRef < 1:
+            self.debugCtaLog(u'参数 self.inputYbRef:{}不能低于1'.format(self.inputYbRef))
+            return None
+
+        # 1、lineBar满足长度才执行计算
+        if len(self.lineBar) < 4 * self.inputYbLen:
+            self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算YB 需要：{1}'.
+                             format(len(self.lineBar), 4 * self.inputYbLen))
+            return None
+
+        emaLen = self.inputYbLen
+        # 3、获取前InputN周期(包含当前周期）的K线
+        list_mid3 = [x.mid3 for x in self.lineBar[-emaLen*4:-1]]
+        last_bar_mid3 = (self.lineBar[-1].close + self.lineBar[-1].high + self.lineBar[-1].low)/3
+        list_mid3.append(last_bar_mid3)
+        bar_mid3_ema10 = ta.EMA(np.array(list_mid3, dtype=float), emaLen)[-1]
+        bar_mid3_ema10 = round(float(bar_mid3_ema10), self.round_n)
+        return bar_mid3_ema10
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
@@ -1865,9 +2360,33 @@ class CtaLineBar(object):
         if DEBUGCTALOG:
             self.strategy.writeCtaLog(u'['+self.name+u'-DEBUG]'+content)
 
+    def getTradingDate(self, dt=None):
+        """
+        根据输入的时间，返回交易日的日期
+        :param dt:
+        :return:
+        """
+        tradingDay = ''
+        if dt is None:
+            dt = datetime.now()
+
+        if dt.hour >= 21:
+            if dt.isoweekday() == 5:
+                # 星期五=》星期一
+                return (dt + timedelta(days=3)).strftime('%Y-%m-%d')
+            else:
+                # 第二天
+                return (dt + timedelta(days=1)).strftime('%Y-%m-%d')
+        elif dt.hour < 8 and dt.isoweekday() == 6:
+            # 星期六=>星期一
+            return (dt + timedelta(days=2)).strftime('%Y-%m-%d')
+        else:
+            return dt.strftime('%Y-%m-%d')
+
 class CtaHourBar(CtaLineBar):
     """
     小时级别K线
+    对比基类CtaLineBar
     """
     def __init__(self, strategy, onBarFunc, setting=None ):
 
@@ -1875,6 +2394,10 @@ class CtaHourBar(CtaLineBar):
             del setting['period']
 
         super(CtaHourBar, self).__init__(strategy, onBarFunc, setting)
+
+        # bar内得分钟数量累计
+        self.m1_bars_count = 0
+        self.last_minute = None
 
     def init_properties(self):
         """
@@ -1909,6 +2432,8 @@ class CtaHourBar(CtaLineBar):
         self.paramList.append('inputKF')
         self.paramList.append('inputSkd')
         self.paramList.append('inputYb')
+        self.paramList.append('inputYbLen')
+        self.paramList.append('inputYbRef')
 
         self.paramList.append('minDiff')
         self.paramList.append('shortSymbol')
@@ -1921,7 +2446,7 @@ class CtaHourBar(CtaLineBar):
         self.period = PERIOD_HOUR  # 小时级别周期
         self.barTimeInterval = 1  # 缺省为小时周期
 
-        self.barMinuteInterval = 60
+        self.barMinuteInterval = 60   #
 
         self.inputPreLen = EMPTY_INT  # 1
 
@@ -2074,46 +2599,63 @@ class CtaHourBar(CtaLineBar):
         self.inputSkd = False
         self.inputSkdLen1 = 13  # 周期1
         self.inputSkdLen2 = 8  # 周期2
+        self.lineSkdRSI = []  # 参照的RSI
+        self.lineSkdSTO = []  # 根据RSI演算的STO
         self.lineSK = []  # 快线
         self.lineSD = []  # 慢线
         self.lowSkd = 30
         self.highSkd = 70
+        self.skd_count = 0  # 当前金叉/死叉后累加
 
         # 多空趋势线
         self.inputYb = False
         self.lineYb = []
+        self.inputYbRef = 1
+        self.inputYbLen = 10
+        self.yb_count = 0  # 当前黄/蓝累加
 
-    def addBar(self, bar, bar_is_completed=False):
+    def addBar(self, bar, bar_is_completed=False, bar_freq=1):
         """
         予以外部初始化程序增加bar
         :param bar:
         :param bar_is_completed: 插入的bar，其周期与K线周期一致，就设为True
+         :param bar_freq, bar对象得frequency
         :return:
         """
+        if bar.tradingDay is None:
+            bar.tradingDay = self.getTradingDate(bar.datetime)
+
         l1 = len(self.lineBar)
 
         if l1 == 0:
             self.lineBar.append(bar)
-            self.curTradingDay = bar.date
-            self.onBar(bar)
+            self.curTradingDay = bar.tradingDay
+            self.m1_bars_count += bar_freq
+            if bar_is_completed:
+                self.m1_bars_count = 0
+                self.onBar(bar)
             return
 
         # 与最后一个BAR的时间比对，判断是否超过K线的周期
         lastBar = self.lineBar[-1]
-        self.curTradingDay = bar.tradingDay if bar.tradingDay is not None else bar.date
 
         is_new_bar = False
         if bar_is_completed:
             is_new_bar = True
 
-        if bar.datetime.hour > lastBar.datetime.hour and bar.datetime.hour > lastBar.datetime.hour +  self.barTimeInterval:
+        if self.curTradingDay != bar.tradingDay:
             is_new_bar = True
-        elif bar.datetime.hour < lastBar.datetime.hour and (bar.datetime.hour + 24) > lastBar.datetime.hour + self.barTimeInterval:
+            self.curTradingDay = bar.tradingDay
+
+
+
+        if self.m1_bars_count + bar_freq > 60 * self.barTimeInterval:
             is_new_bar = True
 
         if is_new_bar:
             # 添加新的bar
             self.lineBar.append(bar)
+            self.m1_bars_count = bar_freq
             # 将上一个Bar推送至OnBar事件
             self.onBar(lastBar)
             return
@@ -2126,9 +2668,11 @@ class CtaHourBar(CtaLineBar):
         lastBar.volume = lastBar.volume + bar.volume
         lastBar.dayVolume = bar.dayVolume
 
+        lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
         lastBar.mid4 = round((2*lastBar.close + lastBar.high + lastBar.low)/4, self.round_n)
         lastBar.mid5 = round((2*lastBar.close + lastBar.open + lastBar.high + lastBar.low)/5, self.round_n)
 
+        self.m1_bars_count += bar_freq
 # ----------------------------------------------------------------------
     def __drawLineBar(self, tick):
         """
@@ -2147,20 +2691,47 @@ class CtaHourBar(CtaLineBar):
         # 清除480周期前的数据，
         if l1 > 60 * 8:
             del self.lineBar[0]
+            # 处理日内的间隔时段最后一个tick，如10:15分，11:30分，15:00 和 2:30分
+            endtick = False
+            if (tick.datetime.hour == 10 and tick.datetime.minute == 15) \
+                    or (tick.datetime.hour == 11 and tick.datetime.minute == 30) \
+                    or (tick.datetime.hour == 15 and tick.datetime.minute == 00) \
+                    or (tick.datetime.hour == 2 and tick.datetime.minute == 30):
+                endtick = True
+
+            # 夜盘1:30收盘
+            if self.shortSymbol in NIGHT_MARKET_SQ2 and tick.datetime.hour == 1 and tick.datetime.minute == 00:
+                endtick = True
+
+            # 夜盘23:00收盘
+            if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
+                endtick = True
+            # 夜盘23:30收盘
+            if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+                if tick.datetime.hour == 23 and tick.datetime.minute == 30:
+                    endtick = True
 
         # 与最后一个BAR的时间比对，判断是否超过K线周期
         lastBar = self.lineBar[-1]
-
         is_new_bar = False
 
-        if tick.datetime.hour > lastBar.datetime.hour and tick.datetime.hour > lastBar.datetime.hour +  self.barTimeInterval:
+        # 不在同一交易日，推入新bar
+        if self.curTradingDay != tick.tradingDay:
             is_new_bar = True
-        elif tick.datetime.hour < lastBar.datetime.hour and (tick.datetime.hour + 24) > lastBar.datetime.hour + self.barTimeInterval:
+            self.curTradingDay = tick.tradingDay
+        else:
+            # 同一交易日，看分钟是否一致
+            if tick.datetime.minute != self.last_minute and not endtick:
+                self.m1_bars_count += 1
+                self.last_minute = tick.datetime.minute
+
+        if self.m1_bars_count > 60 * self.barTimeInterval:
             is_new_bar = True
 
         if is_new_bar:
             # 创建并推入新的Bar
             self.__firstTick(tick)
+            self.m1_bars_count = 1
             # 触发OnBar事件
             self.onBar(lastBar)
 
@@ -2189,6 +2760,13 @@ class CtaHourBar(CtaLineBar):
             else:
                 lastBar.color = COLOR_EQUAL
 
+            lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
+            lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
+            lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, self.round_n)
+
+        if not endtick:
+            self.lastTick = tick
+
 class CtaDayBar(CtaLineBar):
     """
     日线级别K线
@@ -2203,6 +2781,7 @@ class CtaDayBar(CtaLineBar):
             del setting['barTimeInterval']
 
         super(CtaDayBar, self).__init__(strategy, onBarFunc, setting)
+
 
     def init_properties(self):
         """
@@ -2237,6 +2816,8 @@ class CtaDayBar(CtaLineBar):
         self.paramList.append('inputKF')
         self.paramList.append('inputSkd')
         self.paramList.append('inputYb')
+        self.paramList.append('inputYbLen')
+        self.paramList.append('inputYbRef')
 
         self.paramList.append('minDiff')
         self.paramList.append('shortSymbol')
@@ -2402,20 +2983,27 @@ class CtaDayBar(CtaLineBar):
         self.inputSkd = False
         self.inputSkdLen1 = 13  # 周期1
         self.inputSkdLen2 = 8  # 周期2
+        self.lineSkdRSI = []  # 参照的RSI
+        self.lineSkdSTO = []  # 根据RSI演算的STO
         self.lineSK = []  # 快线
         self.lineSD = []  # 慢线
         self.lowSkd = 30
         self.highSkd = 70
+        self.skd_count = 0  # 当前金叉/死叉后累加
 
         # 多空趋势线
         self.inputYb = False
         self.lineYb = []
+        self.inputYbRef = 1
+        self.inputYbLen = 10
+        self.yb_count = 0   # 当前黄/蓝累加
 
-    def addBar(self, bar, bar_is_completed=False):
+    def addBar(self, bar, bar_is_completed=False,bar_freq=1):
         """
         予以外部初始化程序增加bar
         :param bar:
         :param bar_is_completed: 插入的bar，其周期与K线周期一致，就设为True
+        :param bar_freq, bar对象得frequency
         :return:
         """
         l1 = len(self.lineBar)
@@ -2462,6 +3050,7 @@ class CtaDayBar(CtaLineBar):
         lastBar.volume = lastBar.volume + bar.volume
         lastBar.dayVolume = lastBar.volume
 
+        lastBar.mid3 = round(( lastBar.close + lastBar.high + lastBar.low) / 3, self.round_n)
         lastBar.mid4 = round((2*lastBar.close + lastBar.high + lastBar.low)/4, self.round_n)
         lastBar.mid5 = round((2*lastBar.close + lastBar.open + lastBar.high + lastBar.low)/5, self.round_n)
 
@@ -2491,7 +3080,6 @@ class CtaDayBar(CtaLineBar):
 
         if tick.tradingDay != lastBar.tradingDay:
             is_new_bar = True
-
 
         if is_new_bar:
             # 创建并推入新的Bar
@@ -2524,3 +3112,139 @@ class CtaDayBar(CtaLineBar):
             else:
                 lastBar.color = COLOR_EQUAL
 
+        self.lastTick = tick
+
+class TestStrategy(object):
+
+    def __init__(self):
+
+        self.minDiff = 1
+        self.shortSymbol = 'I'
+        self.vtSymbol = 'I99'
+        self.lineH2 = None
+        self.lineD = None
+
+    def createLineH2(self):
+        # 创建2小时K线
+        lineH2Setting = {}
+        lineH2Setting['name'] = u'H2'
+        lineH2Setting['period'] = PERIOD_HOUR
+        lineH2Setting['barTimeInterval'] = 2
+        lineH2Setting['inputPreLen'] = 5
+        lineH2Setting['inputMa1Len'] = 10
+        lineH2Setting['inputRsi1Len'] = 7
+        lineH2Setting['inputRsi2Len'] = 14
+
+        lineH2Setting['inputYb'] = True
+        lineH2Setting['inputSkd'] = True
+        lineH2Setting['mode'] = CtaLineBar.TICK_MODE
+        lineH2Setting['minDiff'] = self.minDiff
+        lineH2Setting['shortSymbol'] = self.shortSymbol
+        self.lineH2 = CtaHourBar(self, self.onBarH2, lineH2Setting)
+
+    def createLineD(self):
+        # 创建的日K线
+        lineDaySetting = {}
+        lineDaySetting['name'] = u'D1'
+        lineDaySetting['barTimeInterval'] = 1
+        lineDaySetting['inputPreLen'] = 5
+        lineDaySetting['inputAtr1Len'] = 26
+        lineDaySetting['inputMa1Len'] = 5
+        lineDaySetting['inputMa2Len'] = 10
+        lineDaySetting['inputMa3Len'] = 18
+        lineDaySetting['inputYb'] = True
+        lineDaySetting['mode'] = CtaDayBar.TICK_MODE
+        lineDaySetting['minDiff'] = self.minDiff
+        lineDaySetting['shortSymbol'] = self.shortSymbol
+        self.lineD = CtaDayBar(self, self.onBarD, lineDaySetting)
+
+    def onBar(self, bar):
+        #print(u'tradingDay:{},dt:{},o:{},h:{},l:{},c:{},v:{}'.format(bar.tradingDay,bar.datetime, bar.open, bar.high, bar.low, bar.close, bar.volume))
+        if self.lineD:
+            self.lineD.addBar(bar)
+        if self.lineH2:
+            self.lineH2.addBar(bar)
+
+    def onBarH2(self, bar):
+        self.writeCtaLog(self.lineH2.displayLastBar())
+
+    def onBarD(self, bar):
+        self.writeCtaLog(self.lineD.displayLastBar())
+
+    def onTick(self, tick):
+        print(u'{0},{1},ap:{2},av:{3},bp:{4},bv:{5}'.format(tick.datetime, tick.lastPrice, tick.askPrice1, tick.askVolume1, tick.bidPrice1, tick.bidVolume1))
+
+    def writeCtaLog(self, content):
+        print(content)
+
+if __name__ == '__main__':
+    t = TestStrategy()
+    # 回测2小时线
+    t.createLineH2()
+
+    # 回测日线
+    #t.createLineD()
+
+    filename = 'cache/I99_20141201_20171231_1m.csv'
+
+    barTimeInterval = 60        # 60秒
+    minDiff = 0.5       #回测数据的最小跳动
+
+    def pickPrice(price, minDiff):
+        return int(price / minDiff) * minDiff
+
+    import csv
+    csvfile = open(filename,'r',encoding='utf8')
+    reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
+    last_tradingDay = None
+    for row in reader:
+        try:
+            bar = CtaBarData()
+            bar.symbol = t.vtSymbol
+            bar.vtSymbol = t.vtSymbol
+
+            # 从tb导出的csv文件
+            #bar.open = float(row['Open'])
+            #bar.high = float(row['High'])
+            #bar.low = float(row['Low'])
+            #bar.close = float(row['Close'])
+            #bar.volume = float(row['TotalVolume'])#
+            #barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
+
+            # 从ricequant导出的csv文件
+
+            bar.open = pickPrice(float(row['open']),minDiff)
+            bar.high = pickPrice(float(row['high']), minDiff)
+            bar.low = pickPrice(float(row['low']), minDiff)
+            bar.close = pickPrice( float(row['close']), minDiff)
+
+            bar.volume = float(row['volume'])
+            barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
+
+            # 使用Bar的开始时间作为datetime
+            bar.datetime = barEndTime - timedelta(seconds=barTimeInterval)
+
+            bar.date = bar.datetime.strftime('%Y-%m-%d')
+            bar.time = bar.datetime.strftime('%H:%M:%S')
+            if 'trading_date' in row:
+                bar.tradingDay = row['trading_date']
+            else:
+                if bar.datetime.hour >=21:
+                    if bar.datetime.isoweekday() == 5:
+                        # 星期五=》星期一
+                        bar.tradingDay = (barEndTime + timedelta(days=3)).strftime('%Y-%m-%d')
+                    else:
+                        # 第二天
+                        bar.tradingDay = (barEndTime + timedelta(days=1)).strftime('%Y-%m-%d')
+                elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6:
+                    # 星期六=>星期一
+                    bar.tradingDay = (barEndTime + timedelta(days=2)).strftime('%Y-%m-%d')
+                else:
+                    bar.tradingDay = bar.date
+
+            t.onBar(bar)
+
+        except Exception as ex:
+            t.writeCtaLog(u'{0}:{1}'.format(Exception, ex))
+            traceback.print_exc()
+            break
