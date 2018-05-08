@@ -354,6 +354,8 @@ class BarGenerator(object):
         self.onXminBar = onXminBar  # X分钟K线的回调函数
         
         self.lastTick = None        # 上一TICK缓存对象
+
+        self.shortSymbol = EMPTY_STRING  # 商品的短代码
         
     #----------------------------------------------------------------------
     def updateTick(self, tick):
@@ -399,9 +401,29 @@ class BarGenerator(object):
    
         if self.lastTick:
             self.bar.volume += (tick.volume - self.lastTick.volume) # 当前K线内的成交量
-            
-        # 缓存Tick
-        self.lastTick = tick
+
+        endtick = False
+        if (tick.datetime.hour == 10 and tick.datetime.minute == 15) \
+                or (tick.datetime.hour == 11 and tick.datetime.minute == 30) \
+                or (tick.datetime.hour == 15 and tick.datetime.minute == 00) \
+                or (tick.datetime.hour == 2 and tick.datetime.minute == 30):
+            endtick = True
+
+        # 夜盘1:30收盘
+        if self.shortSymbol in NIGHT_MARKET_SQ2 and tick.datetime.hour == 1 and tick.datetime.minute == 00:
+            endtick = True
+
+        # 夜盘23:00收盘
+        if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
+            endtick = True
+        # 夜盘23:30收盘
+        if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if tick.datetime.hour == 23 and tick.datetime.minute == 30:
+                endtick = True
+
+        if not endtick:
+            # 缓存Tick
+            self.lastTick = tick
 
     #----------------------------------------------------------------------
     def updateBar(self, bar):
