@@ -6,6 +6,7 @@
 天勤行情终端: http://www.tq18.cn
 天勤接口文档: http://doc.tq18.cn/tq/latest/extension/wsapi/index.html
 """
+from __future__ import print_function
 
 
 import json
@@ -221,7 +222,7 @@ class TqApi(object):
         if 'data' in pack:
             l = pack["data"]
         else:
-            print u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack)
+            print(u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack))
             return
 
         for data in l:
