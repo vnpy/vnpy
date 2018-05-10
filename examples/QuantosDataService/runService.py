@@ -3,6 +3,7 @@
 """
 定时服务，可无人值守运行，实现每日自动下载更新历史行情数据到数据库中。
 """
+from __future__ import print_function
 
 import datetime as ddt
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
             info, msg = api.login(USERNAME, TOKEN)
             
             if not info:
-                print u'数据服务器登录失败，原因：%s' %msg    
+                print(u'数据服务器登录失败，原因：%s' %msg)    
         
             # 下载数据
             downloadAllMinuteBar(api)            
@@ -34,6 +35,6 @@ if __name__ == '__main__':
             # 更新任务完成的日期
             taskCompletedDate = t.date()
         else:
-            print u'当前时间%s，任务定时%s' %(t, taskTime)
+            print(u'当前时间%s，任务定时%s' %(t, taskTime))
     
         sleep(60)
