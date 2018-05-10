@@ -60,6 +60,7 @@ setup(
                        '*.h', '*.cpp', '*.bash', '*.txt',
                        '*.dll', '*.lib', '*.so', '*.pyd',
                        '*.dat', '*.ini', '*.pfx', '*.scc', '*.crt', '*.key']},
+    install_requires=['six>=1.11.0'],
     extras_require={
         'tq': ["tornado>=4.5.1", "sortedcontainers>=1.5.7"],
     }
