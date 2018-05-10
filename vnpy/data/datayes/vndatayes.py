@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 '''一个简单的通联数据客户端，主要使用requests开发，比通联官网的python例子更为简洁。'''
+from __future__ import print_function
 
 import os
 import requests
@@ -34,7 +35,7 @@ class DatayesApi(object):
         r = requests.get(url=url, headers=self.header, params=params)
         
         if r.status_code != HTTP_OK:
-            print u'http请求失败，状态代码%s' %r.status_code
+            print(u'http请求失败，状态代码%s' %r.status_code)
             return None
         else:
             result = r.json()
@@ -42,9 +43,9 @@ class DatayesApi(object):
                 return result['data']
             else:
                 if 'retMsg' in result:
-                    print u'查询失败，返回信息%s' %result['retMsg']
+                    print(u'查询失败，返回信息%s' %result['retMsg'])
                 elif 'message' in result:
-                    print u'查询失败，返回信息%s' %result['message']
+                    print(u'查询失败，返回信息%s' %result['message'])
                 return None
                     
                     
