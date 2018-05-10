@@ -1,9 +1,10 @@
 # encoding: UTF-8
 
+from __future__ import absolute_import
 import json
 from collections import defaultdict
 
-import jrpc_server
+from . import jrpc_server
 
 from vnpy.event import Event
 from vnpy.trader.vtFunction import getJsonPath

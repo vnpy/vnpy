@@ -10,13 +10,14 @@ import json
 import traceback
 from datetime import datetime
 from math import isnan
+from six import text_type
 
 
 #----------------------------------------------------------------------
 def safeUnicode(value):
     """检查接口数据潜在的错误，保证转化为的字符串正确"""
     # 检查是数字接近0时会出现的浮点数上限
-    if type(value) is int or type(value) is float:
+    if isinstance(value, (int, float)):
         if value > MAX_NUMBER or isnan(value):
             value = 0
     
@@ -26,7 +27,7 @@ def safeUnicode(value):
         if abs(d.as_tuple().exponent) > MAX_DECIMAL:
             value = round(value, ndigits=MAX_DECIMAL)
     
-    return unicode(value)
+    return text_type(value)
 
 
 #----------------------------------------------------------------------

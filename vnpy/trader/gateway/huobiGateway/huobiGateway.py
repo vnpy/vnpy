@@ -3,6 +3,7 @@
 '''
 vn.sec的gateway接入
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -29,11 +30,11 @@ statusMapReverse['canceled'] = STATUS_CANCELLED
 #----------------------------------------------------------------------
 def print_dict(d):
     """"""
-    print '-' * 30
+    print('-' * 30)
     l = d.keys()
     l.sort()
     for k in l:
-        print '%s:%s' %(k, d[k])
+        print('%s:%s' %(k, d[k]))
     
 
 ########################################################################
@@ -294,7 +295,7 @@ class HuobiDataApi(DataApi):
     #----------------------------------------------------------------------
     def onTradeDetail(self, data):
         """成交细节推送"""
-        print data
+        print(data)
     
     #----------------------------------------------------------------------
     def onMarketDetail(self, data):
@@ -670,7 +671,7 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetMatchResult(self, data, reqid):
         """查询单一成交回调"""
-        print reqid, data    
+        print(reqid, data)    
         
     #----------------------------------------------------------------------
     def onPlaceOrder(self, data, reqid):
@@ -692,4 +693,4 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onBatchCancel(self, data, reqid):
         """批量撤单回调"""
-        print reqid, data      
+        print(reqid, data)      
