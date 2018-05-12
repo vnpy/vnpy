@@ -4,6 +4,7 @@ import subprocess
 import os
 import sys
 import platform
+import psutil
 
 run_path = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 if not os.path.isdir(run_path):
@@ -11,6 +12,15 @@ if not os.path.isdir(run_path):
 assert os.path.isdir(run_path)
 
 gpid_file = os.path.abspath(os.path.join(run_path, 'gpid.txt'))
+
+USE_GPID = False
+
+def _check_pid(pid):
+
+    cur_pid = os.getpid()
+    if cur_pid != pid:
+        return False
+    return True
 
 def _check_gpid(gpid):
     plat = str(platform.system())
@@ -45,9 +55,13 @@ def _status():
         with open(gpid_file, 'r') as f:
             gpid = f.read().strip()
             # print(gpid)
-        if gpid != "" and _check_gpid(gpid):
-            return gpid
-
+        if gpid != "" :
+            if USE_GPID:
+                if _check_gpid(gpid):
+                    return gpid
+            else:
+                if _check_pid(gpid):
+                    return gpid
     return None
 
 if _status():
@@ -60,11 +74,19 @@ def _save_gpid():
     if plat == 'Windows':
         gpid = os.getpid()
     else:   # unix
-        gpid = os.getpgrp()
+        gpid = os.getpgrp() if USE_GPID else os.getpid()
     print( 'gpid={}'.format(gpid))
 
     with open(gpid_file, 'w') as f:
         f.write(str(gpid))
 
     print(u'wrote gpid file:{}'.format(gpid_file))
+
 _save_gpid()
+
+if __name__ == '__main__':
+    test_pid = 20671
+    print('check pid:{}:result:{}'.format(test_pid, _check_pid(test_pid)))
+
+    if psutil.pid_exists(test_pid):
+        print('pid:{} exist:'.format(test_pid))
