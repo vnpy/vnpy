@@ -440,8 +440,8 @@ class StAlgoManager(QtWidgets.QTableWidget):
                    u'状态']
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
-        self.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-        
+        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
         
