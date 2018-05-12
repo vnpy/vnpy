@@ -7,6 +7,7 @@ vn.xspeed的gateway接入
 import os
 import json
 import time
+from time import sleep
 from copy import copy
 
 from vnpy.api.xspeed import MdApi, TdApi, defineDict
