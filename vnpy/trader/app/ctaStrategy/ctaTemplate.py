@@ -195,6 +195,12 @@ class CtaTemplate(object):
         if self.trading:
             self.ctaEngine.saveSyncData(self)
     
+    #----------------------------------------------------------------------
+    def getPriceTick(self):
+        """查询最小价格变动"""
+        return self.ctaEngine.getPriceTick(self)
+        
+
 
 ########################################################################
 class TargetPosTemplate(CtaTemplate):
