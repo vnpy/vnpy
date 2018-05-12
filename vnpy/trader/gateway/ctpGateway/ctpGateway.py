@@ -13,12 +13,13 @@ import json
 # 加载经booster编译转换的SO API库
 from vnpy.trader.gateway.ctpGateway.vnctpmd import MdApi
 from vnpy.trader.gateway.ctpGateway.vnctptd import TdApi
-
+print(u'loaded vnctpmd/vnctptd')
 from vnpy.trader.vtConstant import  *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.gateway.ctpGateway.language import text
 from vnpy.trader.gateway.ctpGateway.ctpDataType import *
 from vnpy.trader.vtFunction import getJsonPath
+from datetime import datetime,timedelta
 
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
@@ -205,12 +206,14 @@ class CtpGateway(VtGateway):
     def close(self):
         """关闭"""
         if self.mdApi is not None:
+            self.writeLog(u'断开行情API')
             tmp1 = self.mdApi
             self.mdApi = None
             tmp1.close()
             self.mdConnected = False
 
         if self.tdApi is not None:
+            self.writeLog(u'断开交易API')
             tmp2 = self.tdApi
             self.tdApi = None
             tmp2.close()
@@ -379,9 +382,12 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
-        # 忽略成交量为0的无效tick数据
-        #if not data['Volume']:
-        #    return
+        # 忽略成交量为0的无效单合约tick数据
+        if not data['Volume'] and '&' not in data['InstrumentID']:
+            self.writeLog(u'忽略成交量为0的无效单合约tick数据:')
+            self.writeLog(data)
+            return
+
         if not self.connectionStatus:
             self.connectionStatus = True
 
@@ -405,6 +411,23 @@ class CtpMdApi(MdApi):
 
         # add by Incense Lee
         tick.tradingDay = data['TradingDay']
+
+        # 先根据交易日期，生成时间
+        tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S')
+        # 修正时间
+        if tick.datetime.hour >= 20:
+            if tick.datetime.isoweekday() == 1:
+                # 交易日是星期一，实际时间应该是星期五
+                tick.datetime = tick.datetime - timedelta(days=3)
+                tick.date = tick.datetime.strftime('%Y-%m-%d')
+            else:
+                # 第二天
+                tick.datetime = tick.datetime - timedelta(days=1)
+                tick.date = tick.datetime.strftime('%Y-%m-%d')
+        elif tick.datetime.hour < 8 and tick.datetime.isoweekday() == 1:
+            # 如果交易日是星期一，并且时间是早上8点前 => 星期六
+            tick.datetime = tick.datetime + timedelta(days=2)
+            tick.date = tick.datetime.strftime('%Y-%m-%d')
 
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
@@ -1571,6 +1594,7 @@ class CtpTdApi(TdApi):
         log.logContent = content
         self.gateway.onLog(log)
 
+print(u'fininsh load ctpGateway.py')
 
 #----------------------------------------------------------------------
 def test():
