@@ -6,7 +6,7 @@ from datetime import datetime
 import json
 import uuid
 import shutil
-
+from collections import OrderedDict
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.vtConstant import *
 
@@ -65,7 +65,7 @@ class CtaGrid(object):
     def toJson(self):
         """输出JSON"""
 
-        j = {}
+        j = OrderedDict()
         j['id'] = self.id
         j['direction'] = self.direction
         j['openPrice'] = self.openPrice      # 开仓价格
@@ -157,7 +157,7 @@ class CtaGridTrade(object):
         else:
             return rate
 
-    def initGrid(self, upline=EMPTY_FLOAT, dnline=EMPTY_FLOAT, max_lots=EMPTY_INT):
+    def initGrid(self, upline=EMPTY_FLOAT, dnline=EMPTY_FLOAT, max_lots=EMPTY_INT, reuse= False):
         """初始化网格队列
         upline，上支撑线
         dnline，下阻力线
@@ -180,6 +180,8 @@ class CtaGridTrade(object):
                                    openprice=upline+self.gridHeight*i,
                                    closeprice=upline+self.gridHeight*i-self.gridWin,
                                    volume=self.volume*self.getVolumeRate(i))
+                    if reuse:
+                        grid.reuse = reuse
                     self.upGrids.append(grid)
 
                 self.writeCtaLog(u'上网格{0}~{1}初始化完成'.format(upline,upline+self.gridHeight*self.maxLots))
@@ -197,6 +199,8 @@ class CtaGridTrade(object):
                                    openprice=dnline - self.gridHeight * i,
                                    closeprice=dnline - self.gridHeight * i + self.gridWin,
                                    volume=self.volume*self.getVolumeRate(i))
+                    if reuse:
+                        grid.reuse = reuse
                     self.dnGrids.append(grid)
 
                 self.writeCtaLog(u'下网格{0}~{1}初始化完成'.format(dnline,dnline-self.gridHeight*self.maxLots))
@@ -205,12 +209,13 @@ class CtaGridTrade(object):
     def writeCtaLog(self, log):
         self.strategy.writeCtaLog(log)
 
-    def toStr(self,direction):
+    def toStr(self, direction):
         """显示网格"""
 
         pendingCloseList = u''      # 平仓清单
         pendingOpenList = u''       # 开仓清单
         deactiveList = u''          # 待激活清单
+        openedVolumeDict = {}    # 开仓数量汇总
 
         if direction == DIRECTION_LONG:
             for grid in self.dnGrids:
@@ -221,28 +226,37 @@ class CtaGridTrade(object):
                     t = u'T:'
                 elif grid.type == PERIOD_GRID:
                     t = u'P:'
+                else:
+                    t = grid.type
                 # 待平仓
-                if grid.openStatus :
+                if grid.openStatus:
+                    opened_volume = 0
                     if grid.tradedVolume == EMPTY_INT:
-                        pendingCloseList = pendingCloseList + u'{}[{}->{},v:{}];'\
-                            .format(t,grid.openPrice, grid.closePrice, grid.volume)
+                        pendingCloseList = pendingCloseList + u'{}[{}->{},sp:{},v:{}];'\
+                            .format(t,grid.openPrice, grid.closePrice, grid.stopPrice, grid.volume)
+                        opened_volume = grid.volume
                     else:
-                        pendingCloseList = pendingCloseList + u'[{}{}->{},v:{}/{}];'\
-                            .format(t, grid.openPrice, grid.closePrice, grid.volume, grid.tradedVolume)
+                        pendingCloseList = pendingCloseList + u'[{}{}->{},sp:{},v:{}/{}];'\
+                            .format(t, grid.openPrice, grid.closePrice, grid.volume, grid.stopPrice, grid.tradedVolume)
+                        opened_volume = grid.volume - grid.tradedVolume
+
+                    if grid.type != EMPTY_STRING:
+                        openedVolumeDict[grid.type] = opened_volume if grid.type not in openedVolumeDict else opened_volume + openedVolumeDict[grid.type]
+                    openedVolumeDict['All'] = opened_volume if 'All' not in openedVolumeDict else opened_volume + openedVolumeDict['All']
 
                 # 待开仓成交
                 elif not grid.openStatus and grid.orderStatus:
                     if grid.tradedVolume == EMPTY_INT:
                         pendingOpenList = pendingOpenList + u'[{}{},v:{}];'.format(t, grid.openPrice, grid.volume)
                     else:
-                        pendingOpenList = pendingOpenList + u'[{}{},v:{}/{}];'\
+                        pendingOpenList = pendingOpenList + u'[{} {},v:{}/{}];'\
                             .format(t, grid.openPrice, grid.volume, grid.tradedVolume)
 
                 # 等待挂单
                 else:
-                    deactiveList = deactiveList + u'[{}{}];'.format(t,grid.openPrice)
+                    deactiveList = deactiveList + u'[{}{}];'.format(t, grid.openPrice)
 
-            return u'多:待平:{0};开:{1};待:{2}'.format(pendingCloseList,pendingOpenList,deactiveList)
+            return u'多:待平:[{}],{};开:{};待:{}'.format(openedVolumeDict, pendingCloseList, pendingOpenList, deactiveList)
 
         if direction == DIRECTION_SHORT:
             for grid in self.upGrids:
@@ -253,44 +267,85 @@ class CtaGridTrade(object):
                     t = u'T:'
                 elif grid.type == PERIOD_GRID:
                     t = u'P:'
+                else:
+                    t = grid.type
                 # 待平仓
                 if grid.openStatus:
+                    opened_volume = 0
                     if grid.tradedVolume == EMPTY_INT:
-                        pendingCloseList = pendingCloseList + u'[{}{}->{},v:{}];'\
-                            .format(t,grid.openPrice, grid.closePrice, grid.volume)
+                        pendingCloseList = pendingCloseList + u'[{} {}->{},sp:{},v:{}];'\
+                            .format(t,grid.openPrice, grid.closePrice, grid.stopPrice, grid.volume)
+                        opened_volume = grid.volume
                     else:
-                        pendingCloseList = pendingCloseList + u'[{}{}->{},v:{}/{}];'\
-                            .format(t,grid.openPrice, grid.closePrice, grid.volume, grid.tradedVolume)
-
+                        pendingCloseList = pendingCloseList + u'[{} {}->{},sp:{}, v:{}/{}];'\
+                            .format(t,grid.openPrice, grid.closePrice, grid.stopPrice, grid.volume, grid.tradedVolume)
+                        opened_volume = grid.volume - grid.tradedVolume
+                    if grid.type != EMPTY_STRING:
+                        openedVolumeDict[grid.type] = opened_volume if grid.type not in openedVolumeDict else opened_volume + openedVolumeDict[grid.type]
+                    openedVolumeDict['All'] = opened_volume if 'All' not in openedVolumeDict else opened_volume + openedVolumeDict['All']
                 # 待开仓成交
                 elif not grid.openStatus and grid.orderStatus:
                     if grid.tradedVolume == EMPTY_INT:
-                        pendingOpenList = pendingOpenList + u'[{}{},v:{}];'.format(t, grid.openPrice, grid.volume)
+                        pendingOpenList = pendingOpenList + u'[{} {},v:{}];'.format(t, grid.openPrice, grid.volume)
                     else:
-                        pendingOpenList = pendingOpenList + u'[{}{},v:{}/{}];'\
+                        pendingOpenList = pendingOpenList + u'[{} {},v:{}/{}];'\
                             .format(t, grid.openPrice, grid.volume, grid.tradedVolume)
 
                 # 等待挂单
                 else:
                     deactiveList = deactiveList + u'[{}{}];'.format(t, grid.openPrice)
 
-            return u'空:待平:{0};开:{1};待:{2}'.format(pendingCloseList,pendingOpenList,deactiveList)
+            return u'空:待平:[{}],{};开:{};待:{}'.format(openedVolumeDict, pendingCloseList,pendingOpenList,deactiveList)
 
-    def getGridsWithType(self, direction, type=EMPTY_STRING):
+    def getGridsWithTypes(self, direction, types=[]):
         """获取符合类型的网格
         direction:做多、做空方向: 做多方向时，从dnGrids中获取;  做空方向时，从upGrids中获取
-        type：网格类型，
+        type：网格类型列表，
         """
         # 状态一致，价格大于最低价格
         if direction == DIRECTION_LONG:
             grids = [x for x in self.dnGrids
-                     if x.type == type]
+                     if x.type in types]
             return grids
 
         # 状态一致，开仓价格小于最高价格
         if direction == DIRECTION_SHORT:
             grids = [x for x in self.upGrids
-                     if x.type == type]
+                     if x.type in types]
+            return grids
+
+    def getOpenedGridsWithTypes(self, direction, types=[]):
+        """获取符合类型的持仓网格
+        direction:做多、做空方向: 做多方向时，从dnGrids中获取;  做空方向时，从upGrids中获取
+        type：网格类型列表，
+        """
+        # 状态一致，价格大于最低价格
+        if direction == DIRECTION_LONG:
+            grids = [x for x in self.dnGrids
+                     if x.openStatus == True and x.type in types]
+            return grids
+
+        # 状态一致，开仓价格小于最高价格
+        if direction == DIRECTION_SHORT:
+            grids = [x for x in self.upGrids
+                     if x.openStatus == True and x.type in types]
+            return grids
+
+    def getOpenedGrids(self, direction):
+        """获取已开仓的网格
+        direction:做多、做空方向: 做多方向时，从dnGrids中获取;  做空方向时，从upGrids中获取
+        """
+        # 状态一致，价格大于最低价格
+        if direction == DIRECTION_LONG:
+            grids = [x for x in self.dnGrids
+                     if x.openStatus == True and x.volume - x.tradedVolume > 0]
+
+            return grids
+
+        # 状态一致，开仓价格小于最高价格
+        if direction == DIRECTION_SHORT:
+            grids = [x for x in self.upGrids
+                     if x.openStatus == True and x.volume - x.tradedVolume > 0]
             return grids
 
     def getGrids(self, direction, ordered=False, opened=False, closed=False, begin=EMPTY_FLOAT, end=EMPTY_FLOAT, type=EMPTY_STRING):
@@ -329,6 +384,24 @@ class CtaGridTrade(object):
                      and x.openPrice <= end
                      and x.type == type]
             return grids
+
+    def getGridById(self,direction, id):
+        """寻找指定id的网格"""
+        if id == EMPTY_STRING or len(id) <1:
+            return
+        if direction == DIRECTION_LONG:
+            for x in self.dnGrids[:]:
+                if x.id == id:
+                    self.writeCtaLog(u'找到下网格[open={},close={},stop={},volume={}]'.format(x.openPrice,x.closePrice,x.stopPrice,x.volume))
+                    return x
+
+        if direction == DIRECTION_SHORT:
+            for x in self.upGrids[:]:
+                if x.id == id:
+                    self.writeCtaLog(u'找到上网格[open={},close={},stop={},volume={}]'.format(x.openPrice,x.closePrice,x.stopPrice,x.volume))
+                    return x
+
+        return None
 
     def getPosition(self,direction, type=EMPTY_STRING):
         """获取特定类型的网格持仓"""
@@ -416,7 +489,7 @@ class CtaGridTrade(object):
         """获取最前/后一个的网格"""
         # 做空网格：,first =开仓价最高一个,last= 最低一个
         if direction == DIRECTION_SHORT:
-            short_grids = self.getGridsWithType(direction=direction, type=type)
+            short_grids = self.getGridsWithTypes(direction=direction, types=[type])
             if short_grids is None or len(short_grids) ==0 :
                 return None, None
 
@@ -429,7 +502,7 @@ class CtaGridTrade(object):
 
         # 做多网格： first =最低一个,last= 开仓价最高一个
         if direction == DIRECTION_LONG:
-            long_grids = self.getGridsWithType(direction=direction, type=type)
+            long_grids = self.getGridsWithTypes(direction=direction, types=[type])
             if long_grids is None or len(long_grids) ==0:
                 return None, None
 
@@ -441,7 +514,7 @@ class CtaGridTrade(object):
 
         return None,None
 
-    def getLastOpenedGrid(self, direction,type = EMPTY_STRING,orderby_asc=True):
+    def getLastOpenedGrid(self, direction,type = EMPTY_STRING, orderby_asc=True):
         """获取最后一个开仓的网格"""
         # highest_short_price_grid = getLastOpenedGrid(DIRECTION_SHORT
         if direction == DIRECTION_SHORT:
@@ -516,13 +589,13 @@ class CtaGridTrade(object):
         if direction == DIRECTION_LONG:
             for x in self.dnGrids[:]:
                 if x.id == id:
-                    self.writeCtaLog(u'清除下网格[open={0}]'.format(x.openPrice))
+                    self.writeCtaLog(u'清除下网格[open={},close={},stop={},volume={}]'.format(x.openPrice,x.closePrice,x.stopPrice,x.volume))
                     self.dnGrids.remove(x)
 
         if direction == DIRECTION_SHORT:
             for x in self.upGrids[:]:
                 if x.id == id:
-                    self.writeCtaLog(u'清除上网格[open={0}]'.format(x.openPrice))
+                    self.writeCtaLog(u'清除上网格[open={},close={},stop={},volume={}]'.format(x.openPrice,x.closePrice,x.stopPrice,x.volume))
                     self.upGrids.remove(x)
 
     def removeGrids(self, direction, priceline, type=EMPTY_STRING):
@@ -738,7 +811,7 @@ class CtaGridTrade(object):
             self.writeCtaLog(
                 u'合并后多网格为{}=>{},v:{}'.format(saved_grid.openPrice, saved_grid.closePrice, saved_grid.volume))
 
-    def clearDuplicateGrids(self,direction=EMPTY_STRING,type=EMPTY_STRING):
+    def clearDuplicateGrids(self, direction=EMPTY_STRING, type=EMPTY_STRING):
         """去除重复开仓价的未开仓网格"""
 
         if direction == DIRECTION_SHORT or direction==EMPTY_STRING:
@@ -788,7 +861,7 @@ class CtaGridTrade(object):
                 except:
                     pass
 
-    def save(self, direction):
+    def save(self, direction=None):
         """
         保存网格至本地Json文件"
         2017/11/23 update: 保存时，空的列表也保存
@@ -890,21 +963,21 @@ class CtaGridTrade(object):
             if len(data) == 0:
                 data['up_grids'] = []
                 data['dn_grids'] = []
-                self.writeCtaLog(u'{}不存在，初始化')
+                self.writeCtaLog(u'{}不存在，保存'.format(grid_json_file))
             else:
-                self.writeCtaLog(u'{}不存在，保存')
+                self.writeCtaLog(u'{}不存在，保存'.format(grid_json_file))
             try:
                 with open(grid_json_file, 'w') as f:
                     json_data = json.dumps(data, indent=4)
                     f.write(json_data)
-            except IOError as ex:
+            except Exception as ex:
                 self.writeCtaLog(u'写入网格文件{}异常:{}'.format(grid_json_file,str(ex)))
         else:
             # 读取json文件
             try:
                 with open(grid_json_file, 'r', encoding='utf8') as f:
                     data = json.load(f)
-            except IOError as ex:
+            except Exception as ex:
                 self.writeCtaLog(u'读取网格文件{}异常:{}'.format(grid_json_file,str(ex)))
 
         #  从文件获取数据
@@ -1072,5 +1145,19 @@ class CtaGridTrade(object):
         """
         return self.json_file_path
 
+    def getTypesOfOpenedGrids(self, direction, include_empty=False):
+        """
+        获取开仓的网格类型列表
+        :param direction:
+        :param include_empty: 是否包含空值的类型
+        :return:
+        """
+        grids = self.getOpenedGrids(direction)
+        type_list = []
+        for g in grids:
+            if g.type not in type_list and (g.type !=EMPTY_STRING if not include_empty else True):
+                type_list.append(g.type)
+
+        return type_list
 
 
