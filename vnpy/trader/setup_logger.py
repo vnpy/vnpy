@@ -12,7 +12,9 @@ from datetime import datetime
 import multiprocessing
 
 SIMPLE_FORMAT = "[%(asctime)s] %(message)s"
-RECORD_FORMAT = "%(levelname)s  [%(asctime)s.%(msecs)d][%(filename)s:%(lineno)d][%(process)d:%(threadName)s] %(message)s"
+#RECORD_FORMAT = "%(levelname)s  [%(asctime)s.%(msecs)d][%(filename)s:%(lineno)d][%(process)d:%(threadName)s] %(message)s"
+RECORD_FORMAT = "%(levelname)s  [%(asctime)s][%(filename)s:%(lineno)d] %(message)s"
+BACKTEST_FORMAT = "%(levelname)s  %(message)s"
 COLOR_FORMAT = {
     'DEBUG': "\033[1;34m%(levelname)s\033[0m: ",
     'INFO': "\033[1;32m%(levelname)s\033[0m: ",
@@ -348,7 +350,7 @@ class MultiprocessHandler(logging.FileHandler):
         except:
             self.handleError(record)
 
-def setup_logger(filename, name=None, debug=False,force=False):
+def setup_logger(filename, name=None, debug=False,force=False,backtesing=False):
     """
     设置日志文件，包括路径
     自动在后面添加 "_日期.log"
@@ -368,7 +370,7 @@ def setup_logger(filename, name=None, debug=False,force=False):
             _logger_filename = filename
 
         # 定义日志输出格式
-        fmt = logging.Formatter(RECORD_FORMAT)
+        fmt = logging.Formatter(RECORD_FORMAT if not backtesing else BACKTEST_FORMAT)
         if name is None:
             names = filename.replace('.log','').split('/')
             name = names[-1]
