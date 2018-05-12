@@ -1,52 +1,52 @@
 # vn.ctp
 
-### ���
-CTP��̨API�ӿڵ�Python��װ������pyscriptĿ¼�µĽű��Զ�����ͷ�ļ����ɷ�װ����ģ�飬�ṩԭ��C++ API�е�ȫ�����ܡ�
+
+### 简介
+CTP柜台API接口的Python封装，基于pyscript目录下的脚本自动分析头文件生成封装代码模块，提供原生C++ API中的全部功能。
 
 
-### Ŀ¼˵��
-* vnctpmd: ����API
-* vnctptd: ����API
-* pyscript: �Զ���װ�ű�
-* ctpapi��C++ API�ļ�
+### 目录说明
+* py3: Windows下编译
+* vnctpmd: 行情API(py3)
+* vnctptd: 交易API(py3)
+* pyscript: 自动封装脚本
+* ctpapi：C++ API文件
 
-### ʹ��CMake����
+### 使用CMake编译
 
-**Windows 7**
+**Windows 7/10**
 
-��������:
+环境配置:
 
-* Anaconda��Boost�İ�װ��ʽ��ο�www.vnpy.org�ϵĽ̳̣�����ʹ��32λ
+* Anaconda使用64bit，python 3， 如 python 3.5 3.6
 
-* cmake:��װ���°汾��cmake,�������ñ��뻷��
+* Boost 使用 1.57 以上
+  boost 安装后，有一个stage的版本，对应include & lib的路径。
+* cmake:安装最新版本的cmake,用于配置编译环境
 
-* ���û���������BOOST_ROOT = C:\boost_1_57_0
+* 设置环境变量：BOOST_ROOT = C:\boost_1_57_0
 
-* ���빤�ߣ�Visual Studio 2013
-
-
-�������:
-
-* ��vn.ctpĿ¼���½��ļ��У�������Ϊbuild, ����������ʱ�ļ������ļ�
-
-* �������й������룺cmake-gui .. ���cmake���ý���
-
-* ���configure��
-
-* ���generate�����û�д��������óɹ�
-
-* ����buildĿ¼��˫��vn_ctp_api.sln�򿪽������
-
-* ������밴ť,�������release��
+* 编译工具：Visual Studio 2017
 
 
-**Linux (Debian jessie, Ubuntu 16.04,)**
+编译过程:
 
-�������ã�
+* 使用 Visual Studio 2017, 打开 py3/vnctpmd下解决方案vnctpmd.sln
 
-* �ο�[����](http://www.continuum.io/downloads)�Ľ̳����ز���װAnaconda��Linux 64λ�汾
+* 检查“项目”配置中，对应的include和ib目录，均要包含python 3.x 和boost的include & lib路径
 
-* ʹ��apt-get��װ������صĹ��ߣ�ע��ĳЩ�ϵ�Ubuntu����ָ��ʹ��boost 1.58.0�汾��
+* 点击编译按钮,建议编译release库
+
+* vnctptd的编译同上。
+
+
+**Linux (Debian jessie, Ubuntu 16.04)**
+
+环境配置：
+
+* 参考[这里](http://www.continuum.io/downloads)的教程下载并安装Anaconda的Linux 64位版本
+
+* 使用apt-get安装编译相关的工具，注意某些老的Ubuntu必须指定使用boost 1.58.0版本：
 
     - apt-get install build-essential
 
@@ -56,26 +56,15 @@ CTP��̨API�ӿڵ�Python��װ������pyscriptĿ¼�µĽű�
 
     - apt-get install cmake
 
-* ����ӹ��������µ�ctp api tar��������v6.3.5_20150803_tradeapi_linux64.tar����Ҫ������ctp api so�ļ�����������Ժ��Ըò��裩��
+* 如果从官网下载新的ctp api tar包，比如v6.3.5_20150803_tradeapi_linux64.tar，需要重命名ctp api so文件名（否则可以忽略该步骤）：
 
     - thostmduserapi.so --> libthostmduserapi.so
 
     - thosttraderapi.so --> libthosttraderapi.so
 
-  centos
-  see root/readme
 
-������̣�
+编译过程：
 
-* ��ǰĿ¼����build.sh����ɱ���
+* 当前目录运行build.sh，完成编译
 
-### API�汾
-���ڣ�2015-08-04
 
-���ƣ�fsopt_traderapi
-
-������������ȨAPI  
-
-���ӣ�[http://www.sfit.com.cn/5_2_DocumentDown.htm](http://www.sfit.com.cn/5_2_DocumentDown.htm)
-
-˵����ctpapi�ļ����µ���Windows��32λ�汾�������ļ���x64_linux�е���Linux��64λ�汾
