@@ -1,14 +1,15 @@
 # encoding: UTF-8
 
-print( 'load vtEngine.py')
+print('load vtEngine.py')
 
 import shelve
 from collections import OrderedDict
-import os
+import os,sys
 import copy
 
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
+from pymongo.errors import ConnectionFailure,AutoReconnect
+#import vnpy.trader.mongo_proxy
 
 from vnpy.trader.vtEvent import Event as vn_event
 from vnpy.trader.language import text
@@ -25,6 +26,8 @@ try:
     from .util_mail import *
 except:
     print('import util_mail fail')
+
+LOG_DB_NAME = 'vt_logger'
 
 ########################################################################
 class MainEngine(object):
@@ -45,6 +48,7 @@ class MainEngine(object):
         
         # MongoDB数据库相关
         self.dbClient = None    # MongoDB客户端对象
+        self.db_has_connected = False
 
         # 接口实例
         self.gatewayDict = OrderedDict()
@@ -282,9 +286,11 @@ class MainEngine(object):
             # 只断开指定的gateway
             if gateway_name != EMPTY_STRING:
                 if gateway_name in self.gatewayDict:
+                    self.writeLog(u'获取{} gateway'.format(gateway_name))
                     gateway = self.gatewayDict[gateway_name]
                     gateway.close()
                     if gateway_name in self.connected_gw_names:
+                        self.writeLog(u'移除connected_gw_names[{}]'.format(gateway_name))
                         self.connected_gw_names.remove(gateway_name)
                     return
                 else:
@@ -346,7 +352,7 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.error(content)
         else:
-            print(content)
+            print(content, file=sys.stderr)
             self.createLogger()
 
     # ----------------------------------------------------------------------
@@ -362,7 +368,7 @@ class MainEngine(object):
         if self.logger is not None:
             self.logger.warning(content)
         else:
-            print( content)
+            print(content,file=sys.stderr)
             self.createLogger()
 
         # 发出邮件
@@ -400,7 +406,7 @@ class MainEngine(object):
         if self.logger:
             self.logger.critical(content)
         else:
-            print( content)
+            print( content,file=sys.stderr)
             self.createLogger()
 
         # 发出邮件
@@ -424,48 +430,198 @@ class MainEngine(object):
                 self.dbClient.server_info()
 
                 self.writeLog(text.DATABASE_CONNECTING_COMPLETED)
+                self.db_has_connected = True
 
                 # 如果启动日志记录，则注册日志事件监听函数
-                if logging:
-                    self.eventEngine.register(EVENT_LOG, self.dbLogging)
+                #if logging:
+                #    self.eventEngine.register(EVENT_LOG, self.dbLogging)
 
             except ConnectionFailure:
+                self.dbClient = None
                 self.writeError(text.DATABASE_CONNECTING_FAILED)
+                self.db_has_connected = False
+
     
     # ----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
-        if self.dbClient:
-            db = self.dbClient[dbName]
-            collection = db[collectionName]
-            collection.insert_one(d)
-        else:
+        try:
+            if self.dbClient:
+                db = self.dbClient[dbName]
+                collection = db[collectionName]
+                collection.insert_one(d)
+            else:
+                self.writeLog(text.DATA_INSERT_FAILED)
+                if self.db_has_connected:
+                    self.writeLog(u'重新尝试连接数据库')
+                    self.dbConnect()
+        except ConnectionFailure:
+            self.dbClient = None
+            self.writeError(u'数据库连接断开')
+            if self.db_has_connected:
+                self.writeLog(u'重新尝试连接数据库')
+                self.dbConnect()
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
+        except Exception as ex:
+            self.writeError(u'dbInsert exception:{}'.format(str(ex)))
+
+    def dbInsertMany(self,dbName, collectionName, data_list,ordered=True):
+        """
+        向MongoDB中插入数据，data_list是具体数据 列表
+        :param dbName:
+        :param collectionName:
+        :param data_list:
+        :param ordered: 是否忽略insert error
+        :return:
+        """
+        if not isinstance(data_list,list):
             self.writeLog(text.DATA_INSERT_FAILED)
-    
+            return
+        try:
+            if self.dbClient:
+                db = self.dbClient[dbName]
+                collection = db[collectionName]
+                collection.insert_many(data_list, ordered = ordered)
+            else:
+                self.writeLog(text.DATA_INSERT_FAILED)
+                if self.db_has_connected:
+                    self.writeLog(u'重新尝试连接数据库')
+                    self.dbConnect()
+        except ConnectionFailure:
+            self.dbClient = None
+            self.writeError(u'数据库连接断开')
+            if self.db_has_connected:
+                self.writeLog(u'重新尝试连接数据库')
+                self.dbConnect()
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
+        except Exception as ex:
+            self.writeError(u'dbInsertMany exception:{}'.format(str(ex)))
+
     # ----------------------------------------------------------------------
     def dbQuery(self, dbName, collectionName, d):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
-        if self.dbClient:
-            db = self.dbClient[dbName]
-            collection = db[collectionName]
-            cursor = collection.find(d)
-            if cursor:
-                return list(cursor)
+        try:
+            if self.dbClient:
+                db = self.dbClient[dbName]
+                collection = db[collectionName]
+                cursor = collection.find(d)
+                if cursor:
+                    return list(cursor)
+                else:
+                        return []
             else:
-                    return []
-        else:
-            self.writeLog(text.DATA_QUERY_FAILED)
-            return []
+                self.writeLog(text.DATA_QUERY_FAILED)
+                if self.db_has_connected:
+                    self.writeLog(u'重新尝试连接数据库')
+                    self.dbConnect()
 
+        except ConnectionFailure:
+            self.dbClient = None
+            self.writeError(u'数据库连接断开')
+            if self.db_has_connected:
+                self.writeLog(u'重新尝试连接数据库')
+                self.dbConnect()
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
+
+        except Exception as ex:
+            self.writeError(u'dbQuery exception:{}'.format(str(ex)))
+
+        return []
+
+    def dbQueryBySort(self, dbName, collectionName, d, sortName, sortType, limitNum=0):
+        """从MongoDB中读取数据，d是查询要求，sortName是排序的字段,sortType是排序类型
+          返回的是数据库查询的指针"""
+        try:
+            if self.dbClient:
+                db = self.dbClient[dbName]
+                collection = db[collectionName]
+                if limitNum > 0:
+                    cursor = collection.find(d).sort(sortName, sortType).limit(limitNum)
+                else:
+                    cursor = collection.find(d).sort(sortName, sortType)
+                if cursor:
+                    return list(cursor)
+                else:
+                    return []
+            else:
+                self.writeLog(text.DATA_QUERY_FAILED)
+                if self.db_has_connected:
+                    self.writeLog(u'重新尝试连接数据库')
+                    self.dbConnect()
+
+        except ConnectionFailure:
+            self.dbClient = None
+            self.writeError(u'数据库连接断开')
+            if self.db_has_connected:
+                self.writeLog(u'重新尝试连接数据库')
+                self.dbConnect()
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
+        except Exception as ex:
+            self.writeError(u'dbQueryBySort exception:{}'.format(str(ex)))
+
+        return []
     #----------------------------------------------------------------------
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):
         """向MongoDB中更新数据，d是具体数据，flt是过滤条件，upsert代表若无是否要插入"""
-        if self.dbClient:
-            db = self.dbClient[dbName]
-            collection = db[collectionName]
-            collection.replace_one(flt, d, upsert)
-        else:
-            self.writeLog(text.DATA_UPDATE_FAILED)
+        try:
+            if self.dbClient:
+                db = self.dbClient[dbName]
+                collection = db[collectionName]
+                collection.replace_one(flt, d, upsert)
+            else:
+                self.writeLog(text.DATA_UPDATE_FAILED)
+                if self.db_has_connected:
+                    self.writeLog(u'重新尝试连接数据库')
+                    self.dbConnect()
+        except ConnectionFailure:
+            self.dbClient = None
+            self.writeError(u'数据库连接断开')
+            if self.db_has_connected:
+                self.writeLog(u'重新尝试连接数据库')
+                self.dbConnect()
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
+        except Exception as ex:
+            self.writeError(u'dbUpdate exception:{}'.format(str(ex)))
+
+    def dbDelete(self,dbName, collectionName, flt):
+        """
+        向mongodb中，删除数据，flt是过滤条件
+        :param dbName:
+        :param collectionName:
+        :param flt:
+        :return:
+        """
+        try:
+            if self.dbClient:
+                db = self.dbClient[dbName]
+                collection = db[collectionName]
+                collection.delete_many(flt)
+            else:
+                self.writeLog(text.DATA_DELETE_FAILED)
+                if self.db_has_connected:
+                    self.writeLog(u'重新尝试连接数据库')
+                    self.dbConnect()
+        except ConnectionFailure:
+            self.dbClient = None
+            self.writeError(u'数据库连接断开')
+            if self.db_has_connected:
+                self.writeLog(u'重新尝试连接数据库')
+                self.dbConnect()
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
+        except Exception as ex:
+            self.writeError(u'dbDelete exception:{}'.format(str(ex)))
 
     #----------------------------------------------------------------------
     def dbLogging(self, event):
