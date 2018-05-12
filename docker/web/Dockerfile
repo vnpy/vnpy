@@ -15,7 +15,6 @@ RUN apt-get install git bzip2 -y
 RUN apt-get install libgl1-mesa-glx libglib2.0 libsm6 libxrender1 -y
 
 # Install Anaconda
-#RUN wget https://repo.continuum.io/archive/Anaconda2-4.0.0-Linux-x86_64.sh
 ADD https://repo.continuum.io/archive/Anaconda2-4.0.0-Linux-x86_64.sh .
 RUN bash Anaconda2-4.0.0-Linux-x86_64.sh -b -p /opt/conda/
 
@@ -26,4 +25,5 @@ RUN git clone https://github.com/vnpy/vnpy.git
 WORKDIR vnpy
 RUN bash install.sh
 
-
+# Set Entry Point
+ENTRYPOINT python /vnpy/examples/WebTrader/run.py
