@@ -4,10 +4,11 @@
 包含一些开发中常用的函数
 """
 
-import os
+import os,sys
 import decimal
 import json
 from datetime import datetime
+import importlib
 
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 4
@@ -98,3 +99,168 @@ def getJsonPath(name, moduleFile):
     print(u'use module file:{}'.format(moduleJsonPath))
     jsonPathDict[name] = moduleJsonPath
     return moduleJsonPath
+
+
+# ----------------------------- 扩展的功能 ---------
+try:
+    import openpyxl
+    from openpyxl.utils.dataframe import dataframe_to_rows
+    from openpyxl.drawing.image import Image
+except:
+    print(u'can not import openpyxl',file=sys.stderr)
+
+def save_df_to_excel(file_name, sheet_name, df):
+    """
+    保存dataframe到execl
+    :param file_name: 保存的excel文件名
+    :param sheet_name: 保存的sheet
+    :param df: dataframe
+    :return: True/False
+    """
+    if file_name is None or sheet_name is None or df is None:
+        return False
+
+    if 'openpyxl' not in sys.modules:
+        print(u'can not import openpyxl', file=sys.stderr)
+        return False
+
+    try:
+        ws = None
+
+        try:
+            # 读取文件
+            wb = openpyxl.load_workbook(file_name)
+        except:
+            # 创建一个excel workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = sheet_name
+        try:
+            # 定位WorkSheet
+            if ws is None:
+                ws = wb[sheet_name]
+        except:
+            # 创建一个WorkSheet
+            ws = wb.create_sheet()
+            ws.title = sheet_name
+
+        rows = dataframe_to_rows(df)
+        for r_idx, row in enumerate(rows, 1):
+            for c_idx, value in enumerate(row, 1):
+                ws.cell(row=r_idx, column=c_idx, value=value)
+
+        # Save the workbook
+        wb.save(file_name)
+        wb.close()
+    except Exception as ex:
+        import traceback
+        print(u'save_df_to_excel exception:{}'.format(str(ex)), traceback.format_exc(),file=sys.stderr)
+
+def save_text_to_excel(file_name, sheet_name, text):
+    """
+    保存文本文件到excel
+    :param file_name:
+    :param sheet_name:
+    :param text:
+    :return:
+    """
+    if file_name is None or len(sheet_name)==0 or len(text) == 0 :
+        return False
+
+    if 'openpyxl' not in sys.modules:
+        return False
+
+    try:
+        ws = None
+        try:
+            # 读取文件
+            wb = openpyxl.load_workbook(file_name)
+        except:
+            # 创建一个excel workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = sheet_name
+        try:
+            # 定位WorkSheet
+            if ws is None:
+                ws = wb[sheet_name]
+        except:
+            # 创建一个WorkSheet
+            ws = wb.create_sheet()
+            ws.title = sheet_name
+
+        # 设置宽度，自动换行方式
+        ws.column_dimensions["A"].width = 120
+        ws['A2'].alignment = openpyxl.styles.Alignment(wrapText=True)
+        ws['A2'].value = text
+
+        # Save the workbook
+        wb.save(file_name)
+        wb.close()
+        return True
+    except Exception as ex:
+        import traceback
+        print(u'save_text_to_excel exception:{}'.format(str(ex)), traceback.format_exc(),file=sys.stderr)
+        return False
+
+
+def save_images_to_excel(file_name, sheet_name, image_names):
+    """
+    # 保存图形文件到excel
+    :param file_name: excel文件名
+    :param sheet_name: workSheet
+    :param image_names: 图像文件名列表
+    :return:
+    """
+    if file_name is None or len(sheet_name) == 0 or len(image_names) == 0:
+        return False
+
+    if 'openpyxl' not in sys.modules:
+        return False
+    try:
+        ws = None
+
+        try:
+            # 读取文件
+            wb = openpyxl.load_workbook(file_name)
+        except:
+            # 创建一个excel workbook
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = sheet_name
+        try:
+            # 定位WorkSheet
+            if ws is None:
+                ws = wb[sheet_name]
+        except:
+            # 创建一个WorkSheet
+            ws = wb.create_sheet()
+            ws.title = sheet_name
+
+        i = 1
+
+        for image_name in image_names:
+            try:
+                # 加载图形文件
+                img1 = Image(image_name)
+
+                cell_id = 'A{0}'.format(i)
+                ws[cell_id].value = image_name
+                cell_id = 'A{0}'.format(i + 1)
+
+                i += 30
+
+                # 添加至对应的WorkSheet中
+                ws.add_image(img1, cell_id)
+            except:
+                print('exception loading image {0}'.format(image_name), file=sys.stderr)
+                return False
+
+        # Save the workbook
+        wb.save(file_name)
+        wb.close()
+        return True
+    except Exception as ex:
+        import traceback
+        print(u'save_images_to_excel exception:{}'.format(str(ex)), traceback.format_exc(),file=sys.stderr)
+        return False
