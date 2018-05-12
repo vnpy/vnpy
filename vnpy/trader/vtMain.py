@@ -23,7 +23,7 @@ from vnpy.trader.uiMainWindow import *
 # 加载底层接口
 from vnpy.trader.gateway import ctpGateway
 # 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json    'CTP_Prod', 'CTP_JR', , 'CTP_JK', 'CTP_02'
-init_gateway_names = {'CTP': ['CTP','CTP_YH01', 'CTP_YH02', 'CTP_YH03','CTP_JK']}
+init_gateway_names = {'CTP': ['CTP','CTP_YH01', 'CTP_YH02', 'CTP_YH03','CTP_JK','CTP_Huafu001','CTP_Huafu002']}
 
 from vnpy.trader.app import (ctaStrategy, riskManager, spreadTrading)
 
@@ -32,7 +32,7 @@ path = os.path.abspath(os.path.dirname(__file__))
 ICON_FILENAME = 'vnpy.ico'
 ICON_FILENAME = os.path.join(path, ICON_FILENAME)
 
-from vnpy.trader.setup_logger import setup_logger,get_logger
+from vnpy.trader.setup_logger import setup_logger
 
 # ----------------------------------------------------------------------
 def main():
