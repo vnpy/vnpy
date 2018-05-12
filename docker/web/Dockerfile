@@ -11,7 +11,7 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 # Install software
 RUN apt-get update
 RUN apt-get install gcc g++ cmake libboost-all-dev -y
-RUN apt-get install git bzip2 -y 
+RUN apt-get install git bzip2 vi nano -y 
 RUN apt-get install libgl1-mesa-glx libglib2.0 libsm6 libxrender1 -y
 
 # Install Anaconda
@@ -26,4 +26,4 @@ WORKDIR vnpy
 RUN bash install.sh
 
 # Set Entry Point
-ENTRYPOINT python /vnpy/examples/WebTrader/run.py
+WORKDIR vnpy/examples/WebTrader
