@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-from vncoincheck import *
+from __future__ import absolute_import
+from .vncoincheck import *
 
 def testTrade():
     """测试交易"""

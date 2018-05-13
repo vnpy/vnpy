@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import sys
 import json
 from datetime import datetime, timedelta
@@ -50,7 +51,12 @@ def generateVtBar(row):
     
     bar.symbol = symbol
     bar.exchange = exchangeMapReverse[exchange]
-    bar.vtSymbol = '.'.join([bar.symbol, bar.exchange])
+    
+    if bar.exchange in ['SSE', 'SZSE']:
+        bar.vtSymbol = '.'.join([bar.symbol, bar.exchange])
+    else:
+        bar.vtSymbol = bar.symbol
+        
     bar.open = row['open']
     bar.high = row['high']
     bar.low = row['low']
@@ -92,7 +98,7 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
         cl = db[vtSymbol]
     else:
         cl = db[code]
-
+        
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
     
     dt = datetime.strptime(startDate, '%Y%m%d')
@@ -123,15 +129,15 @@ def downMinuteBarBySymbol(api, vtSymbol, startDate, endDate=''):
     e = time()
     cost = (e - start) * 1000
 
-    print u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(vtSymbol, startDate, end.strftime('%Y%m%d'), cost)
+    print(u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(vtSymbol, startDate, end.strftime('%Y%m%d'), cost))
 
     
 #----------------------------------------------------------------------
 def downloadAllMinuteBar(api, days=10):
     """下载所有配置中的合约的分钟线数据"""
-    print '-' * 50
-    print u'开始下载合约分钟线数据'
-    print '-' * 50
+    print('-' * 50)
+    print(u'开始下载合约分钟线数据')
+    print('-' * 50)
     
     startDt = datetime.today() - days * timedelta(1)
     startDate = startDt.strftime('%Y%m%d')
@@ -140,7 +146,7 @@ def downloadAllMinuteBar(api, days=10):
     for symbol in SYMBOLS:
         downMinuteBarBySymbol(api, str(symbol), startDate)
     
-    print '-' * 50
-    print u'合约分钟线数据下载完成'
-    print '-' * 50
+    print('-' * 50)
+    print(u'合约分钟线数据下载完成')
+    print('-' * 50)
     

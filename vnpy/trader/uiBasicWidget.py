@@ -721,7 +721,7 @@ class TradingWidget(QtWidgets.QFrame):
         self.gatewayList.extend(gatewayNameList)
 
         self.initUi()
-        self.connectSignal()
+        self.registerEvent()
 
     #----------------------------------------------------------------------
     def initUi(self):
@@ -755,9 +755,9 @@ class TradingWidget(QtWidgets.QFrame):
         self.comboOffset.addItems(self.offsetList)
 
         self.spinPrice = QtWidgets.QDoubleSpinBox()
-        self.spinPrice.setDecimals(4)
+        self.spinPrice.setDecimals(globalSetting.get('maxDecimal', 4))
         self.spinPrice.setMinimum(0)
-        self.spinPrice.setMaximum(100000)
+        self.spinPrice.setMaximum(1000000)
 
         self.spinVolume = QtWidgets.QSpinBox()
         self.spinVolume.setMinimum(0)
@@ -961,10 +961,6 @@ class TradingWidget(QtWidgets.QFrame):
         self.labelLastPrice.setText('')
         self.labelReturn.setText('')
 
-        # 重新注册事件监听
-        self.eventEngine.unregister(EVENT_TICK + self.symbol, self.signal.emit)
-        self.eventEngine.register(EVENT_TICK + vtSymbol, self.signal.emit)
-
         # 订阅合约
         req = VtSubscribeReq()
         req.symbol = symbol
@@ -984,48 +980,51 @@ class TradingWidget(QtWidgets.QFrame):
     def updateTick(self, event):
         """更新行情"""
         tick = event.dict_['data']
+        if tick.vtSymbol != self.symbol:
+            return
+        
+        if not self.checkFixed.isChecked():
+            self.spinPrice.setValue(tick.lastPrice)
+        
+        self.labelBidPrice1.setText(str(tick.bidPrice1))
+        self.labelAskPrice1.setText(str(tick.askPrice1))
+        self.labelBidVolume1.setText(str(tick.bidVolume1))
+        self.labelAskVolume1.setText(str(tick.askVolume1))
+        
+        if tick.bidPrice2:
+            self.labelBidPrice2.setText(str(tick.bidPrice2))
+            self.labelBidPrice3.setText(str(tick.bidPrice3))
+            self.labelBidPrice4.setText(str(tick.bidPrice4))
+            self.labelBidPrice5.setText(str(tick.bidPrice5))
 
-        if tick.vtSymbol == self.symbol:
-            if not self.checkFixed.isChecked():
-                self.spinPrice.setValue(tick.lastPrice)
-            self.labelBidPrice1.setText(str(tick.bidPrice1))
-            self.labelAskPrice1.setText(str(tick.askPrice1))
-            self.labelBidVolume1.setText(str(tick.bidVolume1))
-            self.labelAskVolume1.setText(str(tick.askVolume1))
-            
-            if tick.bidPrice2:
-                self.labelBidPrice2.setText(str(tick.bidPrice2))
-                self.labelBidPrice3.setText(str(tick.bidPrice3))
-                self.labelBidPrice4.setText(str(tick.bidPrice4))
-                self.labelBidPrice5.setText(str(tick.bidPrice5))
-    
-                self.labelAskPrice2.setText(str(tick.askPrice2))
-                self.labelAskPrice3.setText(str(tick.askPrice3))
-                self.labelAskPrice4.setText(str(tick.askPrice4))
-                self.labelAskPrice5.setText(str(tick.askPrice5))
-    
-                self.labelBidVolume2.setText(str(tick.bidVolume2))
-                self.labelBidVolume3.setText(str(tick.bidVolume3))
-                self.labelBidVolume4.setText(str(tick.bidVolume4))
-                self.labelBidVolume5.setText(str(tick.bidVolume5))
-                
-                self.labelAskVolume2.setText(str(tick.askVolume2))
-                self.labelAskVolume3.setText(str(tick.askVolume3))
-                self.labelAskVolume4.setText(str(tick.askVolume4))
-                self.labelAskVolume5.setText(str(tick.askVolume5))	
+            self.labelAskPrice2.setText(str(tick.askPrice2))
+            self.labelAskPrice3.setText(str(tick.askPrice3))
+            self.labelAskPrice4.setText(str(tick.askPrice4))
+            self.labelAskPrice5.setText(str(tick.askPrice5))
 
-            self.labelLastPrice.setText(str(tick.lastPrice))
+            self.labelBidVolume2.setText(str(tick.bidVolume2))
+            self.labelBidVolume3.setText(str(tick.bidVolume3))
+            self.labelBidVolume4.setText(str(tick.bidVolume4))
+            self.labelBidVolume5.setText(str(tick.bidVolume5))
             
-            if tick.preClosePrice:
-                rt = (tick.lastPrice/tick.preClosePrice)-1
-                self.labelReturn.setText(('%.2f' %(rt*100))+'%')
-            else:
-                self.labelReturn.setText('')
+            self.labelAskVolume2.setText(str(tick.askVolume2))
+            self.labelAskVolume3.setText(str(tick.askVolume3))
+            self.labelAskVolume4.setText(str(tick.askVolume4))
+            self.labelAskVolume5.setText(str(tick.askVolume5))	
+
+        self.labelLastPrice.setText(str(tick.lastPrice))
+        
+        if tick.preClosePrice:
+            rt = (tick.lastPrice/tick.preClosePrice)-1
+            self.labelReturn.setText(('%.2f' %(rt*100))+'%')
+        else:
+            self.labelReturn.setText('')
 
     #----------------------------------------------------------------------
-    def connectSignal(self):
-        """连接Signal"""
+    def registerEvent(self):
+        """注册事件监听"""
         self.signal.connect(self.updateTick)
+        self.eventEngine.register(EVENT_TICK, self.signal.emit)        
 
     #----------------------------------------------------------------------
     def sendOrder(self):

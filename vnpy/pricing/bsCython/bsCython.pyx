@@ -1,3 +1,5 @@
+from __future__ import division
+
 DX_TARGET = 0.00001
 
 

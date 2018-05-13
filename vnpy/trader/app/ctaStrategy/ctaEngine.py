@@ -643,3 +643,12 @@ class CtaEngine(object):
             else:
                 self.cancelOrder(orderID)
 
+    #----------------------------------------------------------------------
+    def getPriceTick(self, strategy):
+        """获取最小价格变动"""
+        contract = self.mainEngine.getContract(strategy.vtSymbol)
+        if contract:
+            return contract.priceTick
+        return 0
+        
+        

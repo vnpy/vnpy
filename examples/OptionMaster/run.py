@@ -2,8 +2,11 @@
 
 # 重载sys模块，设置默认字符串编码方式为utf8
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+try:
+    reload(sys)  # Python 2
+    sys.setdefaultencoding('utf8')
+except NameError:
+    pass         # Python 3
 
 # 判断操作系统
 import platform
