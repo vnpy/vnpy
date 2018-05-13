@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from ctp_struct import structDict
@@ -257,7 +258,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
         ffunction.write(line)
 
         if type_ == 'CThostFtdcInputOrderField':
-            print(key, value)
+            print((key, value))
             print(line)
 
     ffunction.write('\tint i = this->api->' + fcName + '(&myreq, nRequestID);\n')

@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+from __future__ import print_function
 import json
 import requests
 from Queue import Queue, Empty
@@ -208,7 +209,7 @@ class OandaApi(object):
         
         try:
             r = self.session.send(pre, stream=stream)
-        except Exception, e:
+        except Exception as e:
             error = e
 
         return r, error
@@ -228,9 +229,9 @@ class OandaApi(object):
                     try:
                         data = r.json()
                         if self.DEBUG:
-                            print callback.__name__                        
+                            print(callback.__name__)                        
                         callback(data, reqID)    
-                    except Exception, e:                  
+                    except Exception as e:                  
                         self.onError(str(e), reqID)                      
                 else:                
                     self.onError(error, reqID)
@@ -260,7 +261,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onError(self, error, reqID):
         """错误信息回调"""
-        print error, reqID
+        print(error, reqID)
             
     #----------------------------------------------------------------------
     def getInstruments(self, params):
@@ -270,7 +271,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetInstruments(self, data, reqID):
         """回调函数"""
-        print data, reqID
+        print(data, reqID)
         
     #----------------------------------------------------------------------
     def getPrices(self, params):
@@ -280,7 +281,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetPrices(self, data, reqID):
         """回调函数"""
-        print data, reqID
+        print(data, reqID)
         
     #----------------------------------------------------------------------
     def getPriceHisory(self, params):
@@ -290,7 +291,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetPriceHistory(self, data, reqID):
         """回调函数"""
-        print data, reqID    
+        print(data, reqID)    
         
     #----------------------------------------------------------------------
     def getAccounts(self):
@@ -300,7 +301,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetAccounts(self, data, reqID):
         """回调函数"""
-        print data, reqID   
+        print(data, reqID)   
         
     #----------------------------------------------------------------------
     def getAccountInfo(self):
@@ -310,7 +311,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetAccountInfo(self, data, reqID):
         """回调函数"""
-        print data, reqID   
+        print(data, reqID)   
         
     #----------------------------------------------------------------------
     def getOrders(self, params):
@@ -320,7 +321,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetOrders(self, data, reqID):
         """回调函数"""
-        print data, reqID     
+        print(data, reqID)     
 
     #----------------------------------------------------------------------
     def sendOrder(self, params):
@@ -330,7 +331,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onSendOrder(self, data, reqID):
         """回调函数"""
-        print data, reqID         
+        print(data, reqID)         
     
     #----------------------------------------------------------------------
     def getOrderInfo(self, optional):
@@ -340,7 +341,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetOrderInfo(self, data, reqID):
         """回调函数"""
-        print data, reqID     
+        print(data, reqID)     
         
     #----------------------------------------------------------------------
     def modifyOrder(self, params, optional):
@@ -350,7 +351,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onModifyOrder(self, data, reqID):
         """回调函数"""
-        print data, reqID      
+        print(data, reqID)      
     
     #----------------------------------------------------------------------
     def cancelOrder(self, optional):
@@ -360,7 +361,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqID):
         """回调函数"""
-        print data, reqID     
+        print(data, reqID)     
     
     #----------------------------------------------------------------------
     def getTrades(self, params):
@@ -370,7 +371,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetTrades(self, data, reqID):
         """回调函数"""
-        print data, reqID     
+        print(data, reqID)     
     
     #----------------------------------------------------------------------
     def getTradeInfo(self, optional):
@@ -380,7 +381,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetTradeInfo(self, data, reqID):
         """回调函数"""
-        print data, reqID     
+        print(data, reqID)     
         
     #----------------------------------------------------------------------
     def modifyTrade(self, params, optional):
@@ -390,7 +391,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onModifyTrade(self, data, reqID):
         """回调函数"""
-        print data, reqID      
+        print(data, reqID)      
     
     #----------------------------------------------------------------------
     def closeTrade(self, optional):
@@ -400,7 +401,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onCloseTrade(self, data, reqID):
         """回调函数"""
-        print data, reqID         
+        print(data, reqID)         
 
     #----------------------------------------------------------------------
     def getPositions(self):
@@ -410,7 +411,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetPositions(self, data, reqID):
         """回调函数"""
-        print data, reqID  
+        print(data, reqID)  
         
     #----------------------------------------------------------------------
     def getPositionInfo(self, optional):
@@ -420,7 +421,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetPositionInfo(self, data, reqID):
         """回调函数"""
-        print data, reqID         
+        print(data, reqID)         
 
     #----------------------------------------------------------------------
     def closePosition(self, optional):
@@ -430,7 +431,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onClosePosition(self, data, reqID):
         """回调函数"""
-        print data, reqID      
+        print(data, reqID)      
     
     
     #----------------------------------------------------------------------
@@ -441,7 +442,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetTransactions(self, data, reqID):
         """回调函数"""
-        print data, reqID  
+        print(data, reqID)  
         
     #----------------------------------------------------------------------
     def getTransactionInfo(self, optional):
@@ -451,7 +452,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetTransactionInfo(self, data, reqID):
         """回调函数"""
-        print data, reqID   
+        print(data, reqID)   
         
     #----------------------------------------------------------------------
     def getAccountHistory(self):
@@ -461,7 +462,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetAccountHistory(self, data, reqID):
         """回调函数"""
-        print data, reqID      
+        print(data, reqID)      
     
     #----------------------------------------------------------------------
     def getCalendar(self, params):
@@ -471,7 +472,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetCalendar(self, data, reqID):
         """回调函数"""
-        print data, reqID       
+        print(data, reqID)       
         
     #----------------------------------------------------------------------
     def getPositionRatios(self, params):
@@ -481,7 +482,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetPositionRatios(self, data, reqID):
         """回调函数"""
-        print data, reqID  
+        print(data, reqID)  
         
     #----------------------------------------------------------------------
     def getSpreads(self, params):
@@ -491,7 +492,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetSpreads(self, data, reqID):
         """回调函数"""
-        print data, reqID       
+        print(data, reqID)       
         
     #----------------------------------------------------------------------
     def getCommitments(self, params):
@@ -501,7 +502,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetCommitments(self, data, reqID):
         """回调函数"""
-        print data, reqID       
+        print(data, reqID)       
     
     #----------------------------------------------------------------------
     def getOrderbook(self, params):
@@ -511,7 +512,7 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetOrderbook(self, data, reqID):
         """回调函数"""
-        print data, reqID       
+        print(data, reqID)       
         
     #----------------------------------------------------------------------
     def getAutochartist(self, params):
@@ -521,17 +522,17 @@ class OandaApi(object):
     #----------------------------------------------------------------------
     def onGetAutochartist(self, data, reqID):
         """回调函数"""
-        print data, reqID   
+        print(data, reqID)   
         
     #----------------------------------------------------------------------
     def onPrice(self, data):
         """行情推送"""
-        print data
+        print(data)
         
     #----------------------------------------------------------------------
     def onEvent(self, data):
         """事件推送（成交等）"""
-        print data
+        print(data)
         
     #----------------------------------------------------------------------
     def processStreamPrices(self):
@@ -546,7 +547,7 @@ class OandaApi(object):
             try:
                 data = r.json()
                 symbols = [d['instrument'] for d in data['instruments']]   
-            except Exception, e:
+            except Exception as e:
                 self.onError(e, -1)
                 return
         else:
@@ -570,10 +571,10 @@ class OandaApi(object):
                         msg = json.loads(line)
                         
                         if self.DEBUG:
-                            print self.onPrice.__name__
+                            print(self.onPrice.__name__)
                             
                         self.onPrice(msg)
-                    except Exception, e:
+                    except Exception as e:
                         self.onError(e, -1)
                 
                 if not self.active:
@@ -597,10 +598,10 @@ class OandaApi(object):
                         msg = json.loads(line)
                         
                         if self.DEBUG:
-                            print self.onEvent.__name__
+                            print(self.onEvent.__name__)
                             
                         self.onEvent(msg)
-                    except Exception, e:
+                    except Exception as e:
                         self.onError(e, -1)
                 
                 if not self.active:
