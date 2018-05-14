@@ -3,8 +3,8 @@
 '''
 vn.sec的gateway接入
 '''
+from __future__ import print_function
 
-import os
 import json
 from datetime import datetime, timedelta
 from copy import copy
@@ -12,7 +12,7 @@ from math import pow
 
 from vnpy.api.huobi import TradeApi, DataApi
 from vnpy.trader.vtGateway import *
-from vnpy.trader.vtFunction import getJsonPath, getTempPath
+from vnpy.trader.vtFunction import getJsonPath
 
 
 # 委托状态类型映射
@@ -29,11 +29,9 @@ statusMapReverse['canceled'] = STATUS_CANCELLED
 #----------------------------------------------------------------------
 def print_dict(d):
     """"""
-    print '-' * 30
-    l = d.keys()
-    l.sort()
-    for k in l:
-        print '%s:%s' %(k, d[k])
+    print('-' * 30)
+    for key in sorted(d):
+        print('%s:%s' % (key, d[key]))
 
 
 ########################################################################
@@ -60,7 +58,7 @@ class HuobiGateway(VtGateway):
     def connect(self):
         """连接"""
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -294,7 +292,7 @@ class HuobiDataApi(DataApi):
     #----------------------------------------------------------------------
     def onTradeDetail(self, data):
         """成交细节推送"""
-        print data
+        print(data)
 
     #----------------------------------------------------------------------
     def onMarketDetail(self, data):
@@ -320,7 +318,6 @@ class HuobiDataApi(DataApi):
         if tick.bidPrice1:
             newtick = copy(tick)
             self.gateway.onTick(tick)
-
 
 
 ########################################################################
@@ -693,7 +690,7 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetMatchResult(self, data, reqid):
         """查询单一成交回调"""
-        print reqid, data
+        print(reqid, data)
 
     #----------------------------------------------------------------------
     def onPlaceOrder(self, data, reqid):
@@ -717,4 +714,4 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onBatchCancel(self, data, reqid):
         """批量撤单回调"""
-        print reqid, data
+        print(reqid, data)
