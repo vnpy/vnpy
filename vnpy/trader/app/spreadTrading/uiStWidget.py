@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 from collections import OrderedDict
+from six import text_type
 
 from vnpy.event import Event
 from vnpy.trader.uiQt import QtWidgets, QtCore
@@ -338,17 +339,14 @@ class StModeComboBox(QtWidgets.QComboBox):
     #----------------------------------------------------------------------
     def setMode(self):
         """设置模式"""
-        mode = unicode(self.currentText())
+        mode = text_type(self.currentText())
         self.algoEngine.setAlgoMode(self.spreadName, mode)
     
     #----------------------------------------------------------------------
     def algoActiveChanged(self, active):
         """算法运行状态改变"""
         # 只允许算法停止时修改运行模式
-        if active:
-            self.setEnabled(False)
-        else:
-            self.setEnabled(True)
+        self.setEnabled(not active)
 
 
 ########################################################################
