@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import json
 import requests
 from socketIO_client import SocketIO
@@ -334,32 +335,32 @@ class FxcmApi(object):
     #----------------------------------------------------------------------
     def onConnect(self):
         """连接回调"""
-        print 'onConnect'
+        print('onConnect')
         
     #----------------------------------------------------------------------
     def onDisconnect(self):
         """断开回调"""
-        print 'onClose'
+        print('onClose')
         
     #----------------------------------------------------------------------
     def onError(self, error, reqid):
         """错误回调"""
-        print 'onError', error
+        print('onError', error)
     
     #----------------------------------------------------------------------
     def onGetInstruments(self, data, reqid):
         """查询合约代码回调"""
-        print data, reqid
+        print(data, reqid)
         
     #----------------------------------------------------------------------
     def onGetModel(self, data, reqid):
         """查询表回调"""
-        print '*' * 30
-        print data
+        print('*' * 30)
+        print(data)
         for d in data['offers']:
             #if str(d['currency']) == 'EUR/USD':
             #    print d
-            print d['currency']#, d['visible']
+            print(d['currency'])#, d['visible']
         #print len(data['summary'])
         #print data
         
@@ -367,47 +368,47 @@ class FxcmApi(object):
     #----------------------------------------------------------------------
     def onSubscribe(self, data, reqid):	
         """订阅行情回调"""
-        print data, reqid    
+        print(data, reqid)    
     
     #----------------------------------------------------------------------
     def onUnsubscribe(self, data, reqid):
         """退订行情回调"""
-        print data, reqid 
+        print(data, reqid) 
         
     #----------------------------------------------------------------------
     def onSubscribeModel(self, data, reqid):
         """订阅表回调"""
-        print data, reqid    
+        print(data, reqid)    
     
     #----------------------------------------------------------------------
     def onUnsubscribeModel(self, data, reqid):
         """退订表回调"""
-        print data, reqid   
+        print(data, reqid)   
         
     #----------------------------------------------------------------------
     def onUpdateSubscriptions(self, data, reqid):
         """订阅报价表回调"""
-        print data, reqid
+        print(data, reqid)
         
     #----------------------------------------------------------------------
     def onOpenTrade(self, data, reqid):
         """开仓回调"""
-        print data, reqid
+        print(data, reqid)
         
     #----------------------------------------------------------------------
     def onCloseTrade(self, data, reqid):
         """平仓回调"""
-        print data, reqid 
+        print(data, reqid) 
         
     #----------------------------------------------------------------------
     def onChangeOrder(self, data, reqid):
         """改单回调"""
-        print data, reqid       
+        print(data, reqid)       
 
     #----------------------------------------------------------------------
     def onDeleteOrder(self, data, reqid):
         """撤单回调"""
-        print data, reqid    
+        print(data, reqid)    
     
     #----------------------------------------------------------------------
     def processPriceUpdate(self, msg):
@@ -418,19 +419,19 @@ class FxcmApi(object):
     #----------------------------------------------------------------------
     def processModelUpdate(self, msg):
         """表推送"""
-        print msg
+        print(msg)
         data = json.loads(msg)
         self.onModelUpdate(data)
     
     #----------------------------------------------------------------------
     def onPriceUpdate(self, data):
         """行情推送"""
-        print data
+        print(data)
         
     #----------------------------------------------------------------------
     def onModelUpdate(self, data):
         """表推送"""
-        print data
+        print(data)
         #print '*' * 30
         #fsubscribeModel
         #print len(data), data.get('isTotal', None), data
