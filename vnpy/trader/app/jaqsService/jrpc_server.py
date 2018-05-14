@@ -1,3 +1,4 @@
+from __future__ import print_function
 import zmq
 import Queue
 import threading
@@ -108,11 +109,11 @@ class JRpcServer :
                         #client_addr_map[client_id] = identity
                         self._on_data_arrived(identity, data)
 
-            except zmq.error.Again, e:
+            except zmq.error.Again as e:
                 #print "RECV timeout: ", e
                 pass
-            except Exception, e:
-                print("_recv_run:", e)
+            except Exception as e:
+                print(("_recv_run:", e))
 
     def _callback_run(self):
         while not self._should_close:
@@ -120,12 +121,12 @@ class JRpcServer :
                 r = self._callback_queue.get(timeout = 1)
                 if r :
                     r()
-            except Queue.Empty, e:
+            except Queue.Empty as e:
                 pass
 
-            except Exception, e:
+            except Exception as e:
                 traceback.print_exc(e)
-                print "_callback_run", type(e), e
+                print("_callback_run", type(e), e)
 
     def _async_call(self, func):
         self._callback_queue.put( func )
@@ -164,12 +165,12 @@ class JRpcServer :
             #print "RECV", msg
 
             if not msg:
-                print "wrong message format"
+                print("wrong message format")
                 return
 
-            method = msg['method'] if msg.has_key('method') else None
+            method = msg['method'] if 'method' in msg else None
 
-            call_id = msg['id'] if msg.has_key('id') and msg['id'] else None
+            call_id = msg['id'] if 'id' in msg and msg['id'] else None
 
             if call_id and method:
                 if method == ".sys.heartbeat":
@@ -183,8 +184,8 @@ class JRpcServer :
                 if self.on_call :
                     self._async_call( lambda : self.on_call(identity, msg))
 
-        except Exception, e:
-            print( "_on_data_arrived:", e)
+        except Exception as e:
+            print(( "_on_data_arrived:", e))
             pass
     
 

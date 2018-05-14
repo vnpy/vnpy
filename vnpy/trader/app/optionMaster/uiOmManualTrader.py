@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import absolute_import
 from vnpy.event import Event
 
 from vnpy.trader.vtConstant import DIRECTION_LONG, DIRECTION_SHORT, OFFSET_OPEN, OFFSET_CLOSE, PRICETYPE_LIMITPRICE
@@ -7,7 +8,7 @@ from vnpy.trader.vtObject import VtOrderReq
 from vnpy.trader.vtEvent import EVENT_TICK, EVENT_TRADE
 from vnpy.trader.uiBasicWidget import WorkingOrderMonitor, PositionMonitor
 
-from uiOmBase import *
+from .uiOmBase import *
 
 
 
