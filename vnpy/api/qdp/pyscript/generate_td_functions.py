@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from string import join
@@ -250,8 +251,8 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
         ffunction.write(line)
 
         if type_ == 'CQdpFtdcInputOrderField':
-            print key, value
-            print line
+            print(key, value)
+            print(line)
 
     ffunction.write('\tint i = this->api->' + fcName + '(&myreq, nRequestID);\n')
     ffunction.write('\treturn i;\n')
