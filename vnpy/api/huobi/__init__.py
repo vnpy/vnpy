@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnhuobi import TradeApi, DataApi
+from __future__ import absolute_import
+from .vnhuobi import TradeApi, DataApi
