@@ -1,8 +1,11 @@
 # encoding: utf-8
 
+from __future__ import absolute_import
 from time import time, sleep
 
-from vnlbank import LbankApi
+from six.moves import input
+
+from .vnlbank import LbankApi
 
 
 if __name__ == '__main__':
@@ -44,4 +47,4 @@ if __name__ == '__main__':
     #api.getOrdersInfoHistory('btc_cny', '0', '1', '100')
 
     # 阻塞
-    raw_input()    
+    input()    
