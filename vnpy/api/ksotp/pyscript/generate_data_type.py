@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 # C++和python类型的映射字典
@@ -88,9 +89,9 @@ def main():
         fcpp.close()
         fpy.close()
 
-        print u'data_type.py生成过程完成'
+        print(u'data_type.py生成过程完成')
     except:
-        print u'data_type.py生成过程出错'
+        print(u'data_type.py生成过程出错')
 
 
 if __name__ == '__main__':

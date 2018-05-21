@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import sys
 from time import sleep
 
@@ -11,15 +12,15 @@ from vnfemastd import *
 def print_dict(d):
     """按照键值打印一个字典"""
     for key,value in d.items():
-        print key + ':' + str(value)
+        print(key + ':' + str(value))
         
         
 #----------------------------------------------------------------------
 def simple_log(func):
     """简单装饰器用于输出函数名"""
     def wrapper(*args, **kw):
-        print ""
-        print str(func.__name__)
+        print("")
+        print(str(func.__name__))
         return func(*args, **kw)
     return wrapper
 
@@ -43,13 +44,13 @@ class TestTdApi(TdApi):
     @simple_log    
     def onFrontDisconnected(self, n):
         """服务器断开"""
-        print n
+        print(n)
         
     #----------------------------------------------------------------------
     @simple_log    
     def onHeartBeatWarning(self, n):
         """心跳报警"""
-        print n
+        print(n)
     
     #----------------------------------------------------------------------
     @simple_log    
@@ -95,8 +96,8 @@ class TestTdApi(TdApi):
         """查询合约回报"""
         print_dict(data)
         print_dict(error)
-        print n
-        print last
+        print(n)
+        print(last)
         
         
 #----------------------------------------------------------------------

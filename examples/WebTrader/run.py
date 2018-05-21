@@ -36,7 +36,7 @@ if __name__ == '__main__':
         
         currentTime = dt.time()
         
-        if currentTime >= START_TIME and currentTime <= CLOSE_TIME:
+        if currentTime >= START_TIME or currentTime <= CLOSE_TIME:
             le.info(u'当前处于交易时间段')
             
             if not pTrading:
