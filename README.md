@@ -82,11 +82,12 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
 **Windows**
 
+推荐使用Windows环境一键安装脚本init.bat，打开cmd后运行即可自动完成以下环境和vn.py框架的下载安装工作。若由于网络不稳定的原因，导致某些步骤安装耗时过长而失败，可以配置好VPN后，手动在cmd中执行失败的命令继续完成安装。
+
 1. 支持的操作系统：Windows 7/8/10/Server 2008
 2. 安装[MongoDB](https://www.mongodb.org/downloads#production)，并[将MongoDB配置为系统服务](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/#configure-a-windows-service-for-mongodb-community-edition)
 3. 安装[Anaconda](http://www.continuum.io/downloads)，**注意必须是Python 2.7 32位版本**
 4. 安装[Visual C++ Redistributable Packages for VS2013 x86版本](https://support.microsoft.com/en-us/help/3138367/update-for-visual-c-2013-and-visual-c-redistributable-package)
-5. 安装[python-snappy](https://www.lfd.uci.edu/~gohlke/pythonlibs/)，使用命令**pip install python_snappy-0.5.1-cp27-cp27m-win32.whl**
 
 **Ubuntu**
 
@@ -95,20 +96,10 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 ---
 ### 项目安装
 
-**方法1**
-
 在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后:
 
 * Windows：双击运行install.bat自动安装
 * Ubuntu：在Terminal中运行bash install.sh自动安装
-
-**方法2**
-
-```
-pip install vnpy pymongo msgpack-python websocket-client qdarkstyle
-
-conda install -c quantopian ta-lib=0.4.9
-```
 
 **关于TA-Lib安装**
 

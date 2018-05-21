@@ -568,8 +568,12 @@ class BacktestingEngine(object):
     def saveSyncData(self, strategy):
         """保存同步数据（无效）"""
         pass
-        
-
+    
+    #----------------------------------------------------------------------
+    def getPriceTick(self, strategy):
+        """获取最小价格变动"""
+        return self.priceTick
+    
     #------------------------------------------------
     # 结果计算相关
     #------------------------------------------------      

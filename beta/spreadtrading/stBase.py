@@ -184,8 +184,8 @@ class StSpread(object):
         askok = True
         
         for k in self.code.co_names :
-            bidok = bidok and legbidglobal.has_key(k)
-            askok = askok and legaskglobal.has_key(k)
+            bidok = bidok and k in legbidglobal
+            askok = askok and k in legaskglobal
         
         if bidok and askok :
             self.bidPrice = eval(self.code,legbidglobal)

@@ -3,6 +3,7 @@
 '''
 vn.coincheck的gateway接入
 '''
+from __future__ import print_function
 import os
 import json
 from datetime import datetime
@@ -255,13 +256,13 @@ class KorbitTradeApi(vnkorbit.Korbit_TradeApi):
 
     #--------------------------------------------------------------------
     def onError(self, method ,data):
-        print method , data 
+        print(method , data) 
 
     #--------------------------------------------------------------------
     def on_buy_currency(self, data , req, reqID):
         if data["status"] != "success":
-            print "Error in on_buy_currency"
-            print data
+            print("Error in on_buy_currency")
+            print(data)
         else:
             localID = self.reqLocalDict[reqID]
             systemID = str(data['orderId'])
@@ -286,7 +287,7 @@ class KorbitTradeApi(vnkorbit.Korbit_TradeApi):
     def on_sell_currency(self, data , req, reqID):
         """卖出回调"""
         if data["status"] != "success":
-            print "Error in on_sell_currency"
+            print("Error in on_sell_currency")
         else:
             localID = self.reqLocalDict[reqID]
             systemID = str(data['orderId'])
@@ -306,7 +307,7 @@ class KorbitTradeApi(vnkorbit.Korbit_TradeApi):
             self.tradedVolumeDict[localID] = 0.0
             self.gateway.onOrder(order)
 
-            print "what"
+            print("what")
 
     #--------------------------------------------------------------------
     def on_list_exchange_orders(self, data , req, reqID):

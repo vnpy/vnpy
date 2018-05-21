@@ -1,4 +1,4 @@
-# VNPY 的 Docker 镜像
+# VNC模式的Docker镜像
 
 author: [@lamter](https://github.com/lamter) and [@crystalphi](https://github.com/crystalphi)
 

@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnzaif import TradeApi, DataApi
+from __future__ import absolute_import
+from .vnzaif import TradeApi, DataApi

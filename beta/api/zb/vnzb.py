@@ -1,15 +1,16 @@
 # encoding: UTF-8
 
+from __future__ import print_function
+
 import hashlib
-import zlib
 import json
-from time import sleep
+import sha
+import struct
 from threading import Thread
 
-import websocket    
-import urllib2, hashlib,struct,sha,time
+from six import xrange
 
-
+import websocket
 
 # OKEX网站
 zb_usd_url = "wss://api.zb.com:9999/websocket"
@@ -88,23 +89,23 @@ class ZB_Sub_Spot_Api(object):
     #----------------------------------------------------------------------
     def onMessage(self, ws, evt):
         """信息推送""" 
-        print evt
+        print(evt)
         
     #----------------------------------------------------------------------
     def onError(self, ws, evt):
         """错误推送"""
-        print 'onError'
-        print evt
+        print('onError')
+        print(evt)
         
     #----------------------------------------------------------------------
     def onClose(self, ws):
         """接口断开"""
-        print 'onClose'
+        print('onClose')
         
     #----------------------------------------------------------------------
     def onOpen(self, ws):
         """接口打开"""
-        print 'onOpen'
+        print('onOpen')
 
     #----------------------------------------------------------------------
     def subscribeSpotTicker(self, symbol_pair):
@@ -210,7 +211,7 @@ class ZB_Sub_Spot_Api(object):
         
         channel = symbol_pair.lower() + "_order"
         
-        print channel , str(type_) , str(price) , str(amount)
+        print(channel , str(type_) , str(price) , str(amount))
         self.sendTradingRequest(channel, params)
 
     #----------------------------------------------------------------------
