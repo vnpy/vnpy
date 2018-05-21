@@ -1,8 +1,10 @@
 # encoding: UTF-8
 
+from __future__ import print_function
+from __future__ import absolute_import
 from time import sleep
 
-from vnfxcm import FxcmApi
+from .vnfxcm import FxcmApi
 
 url = 'https://api-demo.fxcm.com:443'
 port = 443    
@@ -10,10 +12,10 @@ token = '48055b5d9afac0a300143ac067ce04cd2430a434'
 proxy = 'https://localhost:1080'
 
 api = FxcmApi()
-print 'api created'
+print('api created')
 
 api.connect(url, port, token, proxy)
-print api.bearer
+print(api.bearer)
 
 sleep(20)
 #api.getInstruments()
