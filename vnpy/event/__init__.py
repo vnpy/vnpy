@@ -1,3 +1,5 @@
 # encoding: UTF-8
 
-from .eventEngine import EventEngine, EventEngine2, Event, EVENT_TIMER
+from .oeventEngine import EventEngine, EVENT_TIMER
+from .event import Event
+from .eventEngine import EventEngine2
