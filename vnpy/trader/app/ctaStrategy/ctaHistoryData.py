@@ -11,6 +11,7 @@
 import csv
 from datetime import datetime, timedelta
 from time import time
+from struct import unpack
 
 import pymongo
 
@@ -73,8 +74,6 @@ def downloadEquityDailyBarts(self, symbol):
 #----------------------------------------------------------------------
 def loadMcCsv(fileName, dbName, symbol):
     """将Multicharts导出的csv格式的历史数据插入到Mongo数据库中"""
-    import csv
-    
     start = time()
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
@@ -107,8 +106,6 @@ def loadMcCsv(fileName, dbName, symbol):
 #----------------------------------------------------------------------
 def loadTbCsv(fileName, dbName, symbol):
     """将TradeBlazer导出的csv格式的历史分钟数据插入到Mongo数据库中"""
-    import csv
-    
     start = time()
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
     
@@ -142,8 +139,6 @@ def loadTbCsv(fileName, dbName, symbol):
  #----------------------------------------------------------------------
 def loadTbPlusCsv(fileName, dbName, symbol):
     """将TB极速版导出的csv格式的历史分钟数据插入到Mongo数据库中"""
-    import csv    
-
     start = time()
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol) 
 
@@ -189,8 +184,6 @@ def loadTbPlusCsv(fileName, dbName, symbol):
 """
 def loadTdxCsv(fileName, dbName, symbol):
     """将通达信导出的csv格式的历史分钟数据插入到Mongo数据库中"""
-    import csv
-    
     start = time()
     date_correct = ""
     print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
@@ -236,8 +229,6 @@ def loadTdxCsv(fileName, dbName, symbol):
 """   
 def loadTdxLc1(fileName, dbName, symbol):
     """将通达信导出的lc1格式的历史分钟数据插入到Mongo数据库中"""
-    from struct import *
-
     start = time()
 
     print u'开始读取通达信Lc1文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)
