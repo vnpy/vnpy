@@ -12,10 +12,14 @@ from datetime import datetime
 from copy import copy
 
 import futuquant as ft
-from futuquant.open_context import (RET_ERROR, RET_OK, PriceRegularMode,
-                                    StockQuoteHandlerBase, OrderBookHandlerBase,
-                                    USTradeOrderHandlerBase, USTradeDealHandlerBase,
-                                    HKTradeOrderHandlerBase, HKTradeDealHandlerBase)
+from futuquant import (RET_ERROR, RET_OK, PriceRegularMode, 
+                       StockQuoteHandlerBase, OrderBookHandlerBase,
+                       TradeOrderHandlerBase, TradeDealHandlerBase)
+                       
+#from futuquant.open_context import (RET_ERROR, RET_OK, PriceRegularMode,
+                                    #StockQuoteHandlerBase, OrderBookHandlerBase,
+                                    #USTradeOrderHandlerBase, USTradeDealHandlerBase,
+                                    #HKTradeOrderHandlerBase, HKTradeDealHandlerBase)
 
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
