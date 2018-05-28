@@ -28,18 +28,47 @@ QQ/Wechat：28888502
 --------------------------------------------------------------------------------------------
 ###FAQ：
 #1、CentOS的环境（管理员身份）
-    # 安装 cmake
+    # 1.1 安装系列开发环境：
+    # cmake
     yum install cmake
     # 安装解压包支持
 	yum install bzip2.x86_64
 	# 安装nodejs，支持request
 	yum -y install nodejs
+	（如果安装不了，更新yum后再安装）
 	# 支持ssl
 	yum -y install openssl-devel
 	# 安装python开发库
     yum  install python-devel.x86_64
 
-	# 安装boost
+    # 1.2 创建anaconda下的py35环境 (切换至运行用户身份，例如trade)
+    su - trade
+    wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.3.1-Linux-x86_64.sh
+    chmod a+x Anaconda3-4.3.1-Linux-x86_64.sh
+    ./Anaconda3-4.3.1-Linux-x86_64.sh
+
+    # 配置为国内的镜像
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+    conda config --set show_channel_urls yes
+
+    选择其中一个来创建
+    conda create --name py35 python=3.5
+
+    激活py35
+    source activate py35
+
+
+    # 1.3 编译ctp的api
+    cd /home/trade/vnpy-master
+    cd vnpy/api/ctp
+    激活python环境
+    source activate py35
+    sh build.sh
+    cd vnctptd/test
+    修改tdtest.py，填写账号和ip等信息
+    python tdtest.py 验证 ctp api是否正常。
+
+	# 安装boost (root身份）
 	wget http://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download
 	mv download boost_1_66_0.tar.gz
 	tar -xvzf boost_1_66_0.tar.gz
@@ -57,47 +86,50 @@ QQ/Wechat：28888502
 	./b2 --buildtype=complete install
 	检查 /usr/local下，include/boost, lib/libboos_python3.so等是否存在
 
-    # 编译ctp的api(运行用户，例如trade)
-    cd /home/trade/vnpy-master
-    cd vnpy/api/ctp
-    激活python环境
-    source activate py35
-    sh build.sh
-    cd vnctptd/test
-    修改tdtest.py，填写账号和ip等信息
-    python tdtest.py 验证 ctp api是否正常。
+    # 1.4 安装vnpy其他需要的包
+    (py35)/home/trade/vnpy-master:  conda install pyqt
+    (py35)/home/trade/vnpy-master:  pip install -r requirements.txt
 
+    # 1.5 运行vnpy无界面
+    (py35)/home/trade/vnpy-master/Examples/
 
-#2、Ubuntu环境（开发环境）
-    apt-get install gcc
-    apt-get install make
-    apt-get install libssl-dev
-    apt-get install freetds-dev
-    apt-get install python-dev
-    apt-get install mpi-default-dev
-    apt-get install libicu-dev
-    apt-get install libbz2-dev
-    apt-get install libboost-thread-dev
-    apt-get install libboost-python-dev
-    apt-get install cython
+#2、Ubuntu的环境
+
+    sudo apt-get install gcc
+    sudo apt-get install make
+    sudo apt-get install libssl-dev
+    sudo apt-get install freetds-dev
+    sudo apt-get install python-dev
+    sudo apt-get install mpi-default-dev
+    sudo apt-get install libicu-dev
+    sudo apt-get install libbz2-dev
+    sudo apt-get install libboost-thread-dev
+    sudo apt-get install libboost-python-dev
+    sudo apt-get install cython
     sudo apt-get install nodejs
     sudo apt-get update && sudo apt-get install build-essential
 
-#3、创建多版本环境：
+    # 安装anaconda并创建py35虚拟环境(trade 用户)
+    # 编译CTP API(见上)
+    # 安装vnpy其他需要的包(见上)
 
-    wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.3.1-Linux-x86_64.sh
-    chmod a+x Anaconda3-4.3.1-Linux-x86_64.sh
-    ./Anaconda3-4.3.1-Linux-x86_64.sh
 
-    # 配置为国内的镜像
-    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-    conda config --set show_channel_urls yes
+#3、Windows 10的环境
+    # minconda 安装 清华https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ 下载windows下x86_64最新版本
+      安装时，添加minconda到系统环境路径
 
-    选择其中一个来创建
+    # 重启后，命令行窗口:
     conda create --name py35 python=3.5
 
-    激活的例子
-    source activate py35
+    激活py35
+    activate py35
+
+    # 安装 pyqt
+    conda install pyqt
+
+    # 安装其他包
+    cd c:\vnpy
+    pip install -r requirements.txt
 
 
 #4、碰到的问题：importError: libGL.so.1: cannot open shared object file: No such file or directory
