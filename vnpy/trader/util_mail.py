@@ -63,7 +63,7 @@ class mail_thread(Thread):
             # print '发送成功'
         except Exception as e:
             #pass
-            print str(e)
+            print( str(e))
         print("mail sent successful!")
 
         time.sleep(5)
