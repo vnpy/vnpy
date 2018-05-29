@@ -178,7 +178,7 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def generateSign(self, params):
         """生成签名"""
-        print(u'vnokex.generateSign')
+        #print(u'vnokex.generateSign')
         l = []
         for key in sorted(params.keys()):
             l.append('%s=%s' %(key, params[key]))
@@ -187,9 +187,9 @@ class OkexApi(object):
         return hashlib.md5(sign.encode('utf-8')).hexdigest().upper()
 
     #----------------------------------------------------------------------
-    def sendTradingRequest(self, channel, params):
-        """发送交易请求"""
-        print(u'vnokex.sendTradingRequest')
+    def sendRequest(self, channel, params):
+        """发送指令请求"""
+        print(u'vnokex.sendRequest:{}'.format(channel))
         # 在参数字典中加上api_key和签名字段
         params['api_key'] = self.apiKey
         params['sign'] = self.generateSign(params)
@@ -212,7 +212,7 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def sendDataRequest(self, channel):
         """发送数据请求"""
-        print(u'vnokex.sendDataRequest')
+        print(u'vnokex.sendDataRequest:{}'.format(channel))
         d = {}
         d['event'] = 'addChannel'
         d['channel'] = channel
@@ -331,7 +331,7 @@ class WsSpotApi(OkexApi):
         
         channel = 'ok_spot_order'
         
-        self.sendTradingRequest(channel, params)
+        self.sendRequest(channel, params)
 
     #----------------------------------------------------------------------
     def spotCancelOrder(self, symbol, orderid):
@@ -348,7 +348,7 @@ class WsSpotApi(OkexApi):
         
         channel = 'ok_spot_cancel_order'
 
-        self.sendTradingRequest(channel, params)
+        self.sendRequest(channel, params)
     
     #----------------------------------------------------------------------
     def spotUserInfo(self):
@@ -358,7 +358,7 @@ class WsSpotApi(OkexApi):
         """""
         print(u'vnokex.spotUserInfo()')
         channel = 'ok_spot_userinfo'
-        self.sendTradingRequest(channel, {})
+        self.sendRequest(channel, {})
 
     #----------------------------------------------------------------------
     def spotOrderInfo(self, symbol, orderid):
@@ -376,7 +376,7 @@ class WsSpotApi(OkexApi):
         
         channel = 'ok_spot_orderinfo'
         
-        self.sendTradingRequest(channel, params)
+        self.sendRequest(channel, params)
 
 
 ########################################################################
