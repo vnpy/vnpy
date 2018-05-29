@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from xspeed_data_type import *
@@ -47,10 +48,10 @@ def main():
                 n = line.index('//')
                 line = line[:n]
 
-            print no, ':', line
+            print(no, ':', line)
 
             content = line.split('\t')
-            print content
+            print(content)
 
             typedef = content[1]
             type_ = typedefDict[typedef]
