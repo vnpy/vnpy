@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from xtp_data_type import *
@@ -27,7 +28,7 @@ def main():
     fpy.write('\n')
 
     for row, line in enumerate(fcpp):
-        print row
+        print(row)
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]
@@ -38,7 +39,7 @@ def main():
 
         # 结构体申明
         elif 'struct ' in line:
-            print line
+            print(line)
             content = line.split(' ')
             name = content[1].replace('\n','')
             name = name.replace('\r', '')
