@@ -11,7 +11,23 @@ from datetime import datetime
 import importlib
 
 MAX_NUMBER = 10000000000000
-MAX_DECIMAL = 4
+MAX_DECIMAL = 8
+
+
+def floatToStr(float_str):
+    """格式化显示浮点字符串，去除后面的0"""
+    if '.' in float_str:
+        llen = len(float_str)
+        if llen > 0:
+            for i in range(llen):
+                vv = llen - i - 1
+                if float_str[vv] not in ['.', '0']:
+                    return float_str[:vv + 1]
+                elif float_str[vv] in ['.']:
+                    return float_str[:vv]
+        return float_str
+    else:
+        return float_str
 
 # ----------------------------------------------------------------------
 def safeUnicode(value):
@@ -25,8 +41,8 @@ def safeUnicode(value):
     if type(value) is float:
         d = decimal.Decimal(str(value))
         if abs(d.as_tuple().exponent) > MAX_DECIMAL:
-            value = round(value, ndigits=MAX_DECIMAL)
-    
+            value = round(float(value), ndigits=MAX_DECIMAL)
+
     return value
 
 #----------------------------------------------------------------------

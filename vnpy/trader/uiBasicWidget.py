@@ -12,6 +12,7 @@ from vnpy.trader.vtFunction import *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtText import text as vtText
 from vnpy.trader.uiQt import QtWidgets, QtGui, QtCore, BASIC_FONT
+from vnpy.trader.vtConstant import EXCHANGE_BINANCE,EXCHANGE_OKEX
 
 if str(platform.system()) == 'Windows':
     import winsound
@@ -36,8 +37,9 @@ class BasicCell(QtWidgets.QTableWidgetItem):
         """设置内容"""
         if text == '0' or text == '0.0' or type(text) == type(None):
             self.setText('')
-        #elif type(text) == type(float):
-        #    self.setText(str(text))
+        elif isinstance(text, float):
+            f_str = str("%.8f" % text)
+            self.setText(floatToStr(f_str))
         else:
             self.setText(str(text))
 
@@ -295,73 +297,76 @@ class BasicMonitor(QtWidgets.QTableWidget):
     
     # ----------------------------------------------------------------------
     def updateData(self, data):
-        """将数据更新到表格中"""
-        # 如果允许了排序功能，则插入数据前必须关闭，否则插入新的数据会变乱
-        if self.sorting:
-            self.setSortingEnabled(False)
-        
-        # 如果设置了dataKey，则采用存量更新模式
-        if self.dataKey:
-            if isinstance(self.dataKey, list):
-                # 多个key，逐一组合
-                key = '_'.join([getattr(data, item, '') for item in self.dataKey])
+        try:
+            """将数据更新到表格中"""
+            # 如果允许了排序功能，则插入数据前必须关闭，否则插入新的数据会变乱
+            if self.sorting:
+                self.setSortingEnabled(False)
+
+            # 如果设置了dataKey，则采用存量更新模式
+            if self.dataKey:
+                if isinstance(self.dataKey, list):
+                    # 多个key，逐一组合
+                    key = '_'.join([getattr(data, item, '') for item in self.dataKey])
+                else:
+                    # 单个key
+                    key = getattr(data, self.dataKey, None)
+                    if key is None:
+                        print('uiBaseWidget.updateData() error: data had not attribute {} '.format(self.dataKey))
+                        return
+                # 如果键在数据字典中不存在，则先插入新的一行，并创建对应单元格
+                if key not in self.dataDict:
+                    self.insertRow(0)
+                    d = {}
+                    for n, header in enumerate(self.headerList):
+                        content = safeUnicode(data.__getattribute__(header))
+                        cellType = self.headerDict[header]['cellType']
+                        cell = cellType(content, self.mainEngine)
+
+                        if self.font:
+                            cell.setFont(self.font)  # 如果设置了特殊字体，则进行单元格设置
+
+                        if self.saveData:            # 如果设置了保存数据对象，则进行对象保存
+                            cell.data = data
+
+                        self.setItem(0, n, cell)
+                        d[header] = cell
+                    self.dataDict[key] = d
+                # 否则如果已经存在，则直接更新相关单元格
+                else:
+                    d = self.dataDict[key]
+                    for header in self.headerList:
+                        content = safeUnicode(data.__getattribute__(header))
+                        cell = d[header]
+                        cell.setContent(content)
+
+                        if self.saveData:            # 如果设置了保存数据对象，则进行对象保存
+                            cell.data = data
+            # 否则采用增量更新模式
             else:
-                # 单个key
-                key = getattr(data, self.dataKey, None)
-                if key is None:
-                    print('uiBaseWidget.updateData() error: data had not attribute {} '.format(self.dataKey))
-                    return
-            # 如果键在数据字典中不存在，则先插入新的一行，并创建对应单元格
-            if key not in self.dataDict:
-                self.insertRow(0)     
-                d = {}
+                self.insertRow(0)
                 for n, header in enumerate(self.headerList):
                     content = safeUnicode(data.__getattribute__(header))
                     cellType = self.headerDict[header]['cellType']
                     cell = cellType(content, self.mainEngine)
-                    
+
                     if self.font:
-                        cell.setFont(self.font)  # 如果设置了特殊字体，则进行单元格设置
-                    
-                    if self.saveData:            # 如果设置了保存数据对象，则进行对象保存
+                        cell.setFont(self.font)
+
+                    if self.saveData:
                         cell.data = data
-                        
+
                     self.setItem(0, n, cell)
-                    d[header] = cell
-                self.dataDict[key] = d
-            # 否则如果已经存在，则直接更新相关单元格
-            else:
-                d = self.dataDict[key]
-                for header in self.headerList:
-                    content = safeUnicode(data.__getattribute__(header))
-                    cell = d[header]
-                    cell.setContent(content)
-                    
-                    if self.saveData:            # 如果设置了保存数据对象，则进行对象保存
-                        cell.data = data                    
-        # 否则采用增量更新模式
-        else:
-            self.insertRow(0)  
-            for n, header in enumerate(self.headerList):
-                content = safeUnicode(data.__getattribute__(header))
-                cellType = self.headerDict[header]['cellType']
-                cell = cellType(content, self.mainEngine)
-                
-                if self.font:
-                    cell.setFont(self.font)
 
-                if self.saveData:            
-                    cell.data = data                
+            # 调整列宽
+            self.resizeColumns()
 
-                self.setItem(0, n, cell)            
-                
-        # 调整列宽
-        self.resizeColumns()
-        
-        # 重新打开排序
-        if self.sorting:
-            self.setSortingEnabled(True)
-    
+            # 重新打开排序
+            if self.sorting:
+                self.setSortingEnabled(True)
+        except Exception as ex:
+            print('update data exception:{},{}'.format(str(ex),traceback.format_exc()),file=sys.stderr)
+
     #----------------------------------------------------------------------
     def resizeColumns(self):
         """调整各列的大小"""
@@ -745,7 +750,8 @@ class TradingWidget(QtWidgets.QFrame):
                     EXCHANGE_NYMEX,
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO,
-                    EXCHANGE_OKEX]
+                    EXCHANGE_OKEX,
+                    EXCHANGE_BINANCE]
     
     currencyList = [CURRENCY_NONE,
                     CURRENCY_CNY,
@@ -815,7 +821,7 @@ class TradingWidget(QtWidgets.QFrame):
 
         self.spinVolume = QtWidgets.QDoubleSpinBox()
         self.spinVolume.setMinimum(0)
-        self.spinVolume.setDecimals(4)
+        #self.spinVolume.setDecimals(8)
         self.spinVolume.setMaximum(sys.maxsize)
 
         self.comboPriceType = QtWidgets.QComboBox()
@@ -991,7 +997,7 @@ class TradingWidget(QtWidgets.QFrame):
             
         # 清空价格数量
         self.spinPrice.setValue(0)
-        self.spinVolume.setValue(0)
+        #self.spinVolume.setValue(0)
 
         # 清空行情显示
         self.labelBidPrice1.setText('')
@@ -1045,7 +1051,13 @@ class TradingWidget(QtWidgets.QFrame):
 
         if tick.vtSymbol == self.symbol:
             if not self.checkFixed.isChecked():
+                if isinstance(tick.lastPrice, float):
+                    p = decimal.Decimal(str(tick.lastPrice))
+                    decimal_len = abs(p.as_tuple().exponent)
+                    if decimal_len != self.spinPrice.decimals():
+                        self.spinPrice.setDecimals(decimal_len)
                 self.spinPrice.setValue(tick.lastPrice)
+
             self.labelBidPrice1.setText('{}'.format(tick.bidPrice1))
             self.labelAskPrice1.setText('{}'.format(tick.askPrice1))
             self.labelBidVolume1.setText('{}'.format(tick.bidVolume1))
@@ -1089,6 +1101,7 @@ class TradingWidget(QtWidgets.QFrame):
     def sendOrder(self):
         """发单"""
         symbol = str(self.lineSymbol.text())
+        vtSymbol = symbol
         exchange = self.comboExchange.currentText()
         currency = self.comboCurrency.currentText()
         productClass = self.comboProductClass.currentText()
@@ -1109,6 +1122,7 @@ class TradingWidget(QtWidgets.QFrame):
             
         req = VtOrderReq()
         req.symbol = symbol
+        req.vtSymbol = vtSymbol
         req.exchange = exchange
         req.price = self.spinPrice.value()
         req.volume = self.spinVolume.value()
@@ -1157,6 +1171,17 @@ class TradingWidget(QtWidgets.QFrame):
             pos = cell.data
             symbol = pos.symbol
 
+            symbol_split_list = symbol.split('.')
+            if len(symbol_split_list)==2:
+                exchange_name = symbol_split_list[-1]
+                if exchange_name in [EXCHANGE_OKEX,EXCHANGE_BINANCE]:
+                    symbol = symbol_split_list[0]
+
+                    symbol_pair_list = symbol.split('_')
+                    if len(symbol_pair_list) ==1:
+                        if symbol.lower() == 'usdt':
+                            return
+                        symbol = symbol_pair_list[0] + '_' + 'usdt'+'.'+symbol_split_list[-1]
             # 更新交易组件的显示合约
             self.lineSymbol.setText(symbol)
             self.updateSymbol()
@@ -1164,6 +1189,14 @@ class TradingWidget(QtWidgets.QFrame):
             # 自动填写信息
             self.comboPriceType.setCurrentIndex(self.priceTypeList.index(PRICETYPE_LIMITPRICE))
             self.comboOffset.setCurrentIndex(self.offsetList.index(OFFSET_CLOSE))
+            if isinstance(pos.position, float):
+                p = decimal.Decimal(str(pos.position))
+                decimal_len = abs(p.as_tuple().exponent)
+                if decimal_len > self.spinVolume.decimals():
+                    self.spinVolume.setDecimals(decimal_len)
+            elif isinstance(pos.position, int):
+                self.spinVolume.setDecimals(0)
+
             self.spinVolume.setValue(pos.position)
 
             if pos.direction == DIRECTION_LONG or pos.direction == DIRECTION_NET:

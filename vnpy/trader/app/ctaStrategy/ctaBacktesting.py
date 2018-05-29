@@ -3,6 +3,8 @@
 '''
 本文件中包含的是CTA模块的回测引擎，回测引擎的API和CTA引擎一致，
 可以使用和实盘相同的代码进行回测。
+
+修改者： 华富资产/李来佳/28888502
 '''
 from __future__ import division
 
@@ -31,7 +33,6 @@ from vnpy.trader.vtGateway import VtOrderData, VtTradeData
 from vnpy.trader.vtFunction import loadMongoSetting
 from vnpy.trader.vtEvent import *
 from vnpy.trader.setup_logger import setup_logger
-
 
 ########################################################################
 class BacktestingEngine(object):
@@ -125,12 +126,13 @@ class BacktestingEngine(object):
         self.last_leg1_tick = None
         self.last_leg2_tick = None
         self.last_bar = None
+        self.is_7x24 = False
 
         # csvFile相关
         self.barTimeInterval = 60          # csv文件，属于K线类型，K线的周期（秒数）,缺省是1分钟
 
         # 费用情况
-        self.avaliable = EMPTY_FLOAT
+
         self.percent = EMPTY_FLOAT
         self.percentLimit = 30              # 投资仓位比例上限
 
@@ -143,6 +145,7 @@ class BacktestingEngine(object):
         self.netCapital = self.initCapital  # 实时资金净值（每日根据capital和持仓浮盈计算）
         self.maxCapital = self.initCapital          # 资金最高净值
         self.maxNetCapital = self.initCapital
+        self.avaliable =  self.initCapital
 
         self.maxPnl = 0                     # 最高盈利
         self.minPnl = 0                     # 最大亏损
@@ -168,8 +171,10 @@ class BacktestingEngine(object):
         self.daily_max_drawdown_rate = 0    # 按照日结算价计算
 
         self.dailyList = []
-        self.exportTradeList = []    # 导出交易记录列表
+        self.daily_first_benchmark = None
 
+        self.exportTradeList = []    # 导出交易记录列表
+        self.export_wenhua_signal = False
         self.fixCommission = EMPTY_FLOAT    # 固定交易费用
 
         self.logger = None
@@ -1569,10 +1574,6 @@ class BacktestingEngine(object):
         self.strategy.onInit()
         self.output(u'策略初始化完成')
 
-        self.strategy.trading = True
-        self.strategy.onStart()
-        self.output(u'策略启动完成')
-
         self.output(u'开始回放数据')
 
         import csv
@@ -1609,14 +1610,14 @@ class BacktestingEngine(object):
                 if 'trading_date' in row:
                     bar.tradingDay = row['trading_date']
                 else:
-                    if bar.datetime.hour >=21:
+                    if bar.datetime.hour >=21 and not self.is_7x24:
                         if bar.datetime.isoweekday() == 5:
                             # 星期五=》星期一
                             bar.tradingDay = (barEndTime + timedelta(days=3)).strftime('%Y-%m-%d')
                         else:
                             # 第二天
                             bar.tradingDay = (barEndTime + timedelta(days=1)).strftime('%Y-%m-%d')
-                    elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6:
+                    elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6 and not self.is_7x24:
                         # 星期六=>星期一
                         bar.tradingDay = (barEndTime + timedelta(days=2)).strftime('%Y-%m-%d')
                     else:
@@ -1626,10 +1627,15 @@ class BacktestingEngine(object):
                     if last_tradingDay != bar.tradingDay:
                         if last_tradingDay is not None:
                             self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
-                                                 self.maxCapital,self.totalCommission)
+                                                 self.maxCapital,self.totalCommission,benchmark=bar.close)
                         last_tradingDay = bar.tradingDay
 
                     self.newBar(bar)
+
+                if not self.strategy.trading and self.strategyStartDate < bar.datetime:
+                    self.strategy.trading = True
+                    self.strategy.onStart()
+                    self.output(u'策略启动完成')
 
                 if self.netCapital < 0:
                     self.writeCtaError(u'净值低于0，回测停止')
@@ -1844,7 +1850,7 @@ class BacktestingEngine(object):
             self.strategy.name = self.strategy.className
 
         self.strategy.onInit()
-        self.strategy.onStart()
+        #self.strategy.onStart()
 
     # ---------------------------------------------------------------------
     def saveStrategyData(self):
@@ -2167,7 +2173,7 @@ class BacktestingEngine(object):
         self.logger = setup_logger(filename=filename, name=self.strategy_name if len(self.strategy_name) > 0 else 'strategy', debug=debug,backtesing=True)
 
     #----------------------------------------------------------------------
-    def writeCtaLog(self, content):
+    def writeCtaLog(self, content,strategy_name=None):
         """记录日志"""
         #log = str(self.dt) + ' ' + content
         #self.logList.append(log)
@@ -2178,17 +2184,17 @@ class BacktestingEngine(object):
         else:
             self.createLogger()
 
-    def writeCtaError(self, content):
+    def writeCtaError(self, content,strategy_name=None):
         """记录异常"""
         self.output(u'Error:{}'.format(content))
         self.writeCtaLog(content)
 
-    def writeCtaWarning(self, content):
+    def writeCtaWarning(self, content,strategy_name=None):
         """记录告警"""
         self.output(u'Warning:{}'.format(content))
         self.writeCtaLog(content)
 
-    def writeCtaNotification(self,content):
+    def writeCtaNotification(self,content,strategy_name=None):
         """记录通知"""
         #print content
         self.output(u'Notify:{}'.format(content))
@@ -2613,7 +2619,7 @@ class BacktestingEngine(object):
         self.avaliable = self.netCapital - occupyMoney
         self.percent = round(float(occupyMoney * 100 / self.netCapital), 2)
 
-    def savingDailyData(self, d, c, m, commission):
+    def savingDailyData(self, d, c, m, commission, benchmark=0):
         """保存每日数据"""
         dict = {}
         dict['date'] = d.strftime('%Y/%m/%d')
@@ -2623,6 +2629,14 @@ class BacktestingEngine(object):
         today_margin = 0
         long_pos_occupy_money = 0
         short_pos_occupy_money = 0
+
+        if self.daily_first_benchmark is None and benchmark >0:
+            self.daily_first_benchmark = benchmark
+
+        if benchmark > 0 and self.daily_first_benchmark is not None and self.daily_first_benchmark > 0:
+            benchmark = benchmark / self.daily_first_benchmark
+        else:
+            benchmark = 1
 
         for longpos in self.longPosition:
             symbol = '-' if longpos.vtSymbol == EMPTY_STRING else longpos.vtSymbol
@@ -2673,7 +2687,7 @@ class BacktestingEngine(object):
         dict['occupyMoney'] = max(long_pos_occupy_money, short_pos_occupy_money)
         dict['occupyRate'] = dict['occupyMoney'] / dict['capital']
         dict['commission'] = commission
-
+        dict['benchmark'] = benchmark
         self.dailyList.append(dict)
 
         # 更新每日浮动净值
@@ -2687,6 +2701,45 @@ class BacktestingEngine(object):
         if drawdown_rate > self.daily_max_drawdown_rate:
             self.daily_max_drawdown_rate = drawdown_rate
             self.max_drowdown_rate_time = dict['date']
+
+    # ----------------------------------------------------------------------
+    def writeWenHuaSignal(self, filehandle, count, bardatetime, price, text):
+        """
+        输出到文华信号
+        :param filehandle:
+        :param count:
+        :param bardatetime:
+        :param text:
+        :return:
+        """
+        # 文华信号
+        barDate = bardatetime.strftime('%Y%m%d')
+        barTime = bardatetime.strftime('%H%M')
+        outputMsg = 'AA{}:=DATE={};\n'.format(count, barDate[2:])
+        filehandle.write(outputMsg)
+        outputMsg = 'BB{}:=PERIOD=1&&TIME={};\n'.format(count, barDate[2:], barTime)
+        #filehandle.write(outputMsg)
+        outputMsg = 'CC{}:=PERIOD=2&&TIME>={}&&TIME<={}+3;\n'.format(count, barTime, barTime)
+        #filehandle.write(outputMsg)
+        outputMsg = 'DD{}:=PERIOD=3&&TIME>={}&&TIME<={}+5;\n'.format(count, barTime, barTime)
+        #filehandle.write(outputMsg)
+        outputMsg = 'EE{}:=PERIOD=4&&TIME>={}&&TIME<={}+10;\n'.format(count, barTime, barTime)
+        #filehandle.write(outputMsg)
+        outputMsg = 'FF{}:=PERIOD=5&&TIME>={}&&TIME<={}+30;\n'.format(count, barTime, barTime)
+        filehandle.write(outputMsg)
+        outputMsg = 'GG{}:=PERIOD=6&&TIME>={}&&TIME<={}+60;\n'.format(count, barTime, barTime)
+        filehandle.write(outputMsg)
+        outputMsg = 'HH{}:=PERIOD=7&&TIME>={}&&TIME<={}+120;\n'.format(count, barTime, barTime)
+        filehandle.write(outputMsg)
+        outputMsg = 'II{}:=PERIOD=8;\n'.format(count)
+        filehandle.write(outputMsg)
+        outputMsg = 'DRAWICON(AA{} AND ( FF{} OR GG{} OR HH{} OR II{}), L, \'ICO14\');\n'.format(
+            count, count, count, count, count)
+        filehandle.write(outputMsg)
+        outputMsg = 'DRAWTEXT(AA{} AND (FF{} OR GG{} OR HH{} OR II{}), {}, \'{}\');\n'.format(
+            count, count, count, count, count, price, text)
+        filehandle.write(outputMsg)
+        filehandle.flush()
 
     # ----------------------------------------------------------------------
     def calculateBacktestingResult(self):
@@ -2947,6 +3000,68 @@ class BacktestingEngine(object):
         for row in self.exportTradeList:
             writer.writerow(row)
 
+        if self.export_wenhua_signal:
+            wh_records = OrderedDict()
+            for t in self.exportTradeList:
+                if t['Direction'] is 'Long':
+                    k = '{}_{}_{}'.format(t['OpenTime'], 'Buy', t['OpenPrice'])
+                    # 生成文华用的指标信号
+                    v = {'time': datetime.strptime(t['OpenTime'], '%Y-%m-%d %H:%M:%S'), 'price':t['OpenPrice'], 'action': 'Buy', 'volume':t['Volume']}
+                    r = wh_records.get(k,None)
+                    if r is not None:
+                        r['volume'] += t['Volume']
+                    else:
+                        wh_records[k] = v
+
+                    k = '{}_{}_{}'.format(t['CloseTime'], 'Sell', t['ClosePrice'])
+                    # 生成文华用的指标信号
+                    v = {'time': datetime.strptime(t['CloseTime'], '%Y-%m-%d %H:%M:%S'), 'price': t['ClosePrice'], 'action': 'Sell', 'volume': t['Volume']}
+                    r = wh_records.get(k, None)
+                    if r is not None:
+                        r['volume'] += t['Volume']
+                    else:
+                        wh_records[k] = v
+
+                else:
+                    k = '{}_{}_{}'.format(t['OpenTime'], 'Short', t['OpenPrice'])
+                    # 生成文华用的指标信号
+                    v = {'time': datetime.strptime(t['OpenTime'], '%Y-%m-%d %H:%M:%S'), 'price': t['OpenPrice'], 'action': 'Short', 'volume': t['Volume']}
+                    r = wh_records.get(k, None)
+                    if r is not None:
+                        r['volume'] += t['Volume']
+                    else:
+                        wh_records[k] = v
+                    k = '{}_{}_{}'.format(t['CloseTime'], 'Cover', t['ClosePrice'])
+                    # 生成文华用的指标信号
+                    v = {'time': datetime.strptime(t['CloseTime'], '%Y-%m-%d %H:%M:%S'), 'price': t['ClosePrice'], 'action': 'Cover', 'volume': t['Volume']}
+                    r = wh_records.get(k, None)
+                    if r is not None:
+                        r['volume'] += t['Volume']
+                    else:
+                        wh_records[k] = v
+
+            branchs =  0
+            count = 0
+            wh_signal_file = None
+            for r in list(wh_records.values()):
+                if count % 200 == 0:
+                    if wh_signal_file is not None:
+                        wh_signal_file.close()
+
+                    # 交易记录生成文华对应的公式
+                    filename = os.path.abspath(os.path.join(self.get_logs_path(),
+                                                            '{}_WenHua_{}_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'), branchs)))
+                    branchs += 1
+                    self.writeCtaLog(u'save trade records for WenHua:{}'.format(filename))
+
+                    wh_signal_file = open(filename, mode='w')
+
+                count += 1
+                if wh_signal_file is not None:
+                    self.writeWenHuaSignal(filehandle=wh_signal_file, count=count, bardatetime=r['time'],price=r['price'], text='{}({})'.format(r['action'],r['volume']))
+            if wh_signal_file is not None:
+                wh_signal_file.close()
+
         # 导出每日净值记录表
         if not self.dailyList:
             return
@@ -2959,7 +3074,7 @@ class BacktestingEngine(object):
         self.writeCtaLog(u'save daily records to:{}'.format(csvOutputFile2))
 
         csvWriteFile2 = open(csvOutputFile2, 'w', encoding='utf8',newline='')
-        fieldnames = ['date', 'capital','net', 'maxCapital','rate', 'commission', 'longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos']
+        fieldnames = ['date', 'capital','net', 'maxCapital','rate', 'commission', 'longMoney','shortMoney','occupyMoney','occupyRate','longPos','shortPos','benchmark']
         writer2 = csv.DictWriter(f=csvWriteFile2, fieldnames=fieldnames, dialect='excel')
         writer2.writeheader()
 
@@ -3332,38 +3447,5 @@ def optimize(strategyClass, setting, targetName,
     return (str(setting), targetValue)
 
 
-if __name__ == '__main__':
-    # 以下内容是一段回测脚本的演示，用户可以根据自己的需求修改
-    # 建议使用ipython notebook或者spyder来做回测
-    # 同样可以在命令模式下进行回测（一行一行输入运行）
-    from strategy.strategyEmaDemo import *
-    
-    # 创建回测引擎
-    engine = BacktestingEngine()
-    
-    # 设置引擎的回测模式为K线
-    engine.setBacktestingMode(engine.BAR_MODE)
-
-    # 设置回测用的数据起始日期
-    engine.setStartDate('20110101')
-    
-    # 载入历史数据到引擎中
-    engine.setDatabase(MINUTE_DB_NAME, 'IF0000')
-    
-    # 设置产品相关参数
-    engine.setSlippage(0.2)     # 股指1跳
-    engine.setRate(0.3/10000)   # 万0.3
-    engine.setSize(300)         # 股指合约大小    
-    
-    # 在引擎中创建策略对象
-    engine.initStrategy(EmaDemoStrategy, {})
-    
-    # 开始跑回测
-    engine.runBacktesting()
-    
-    # 显示回测结果
-    # spyder或者ipython notebook中运行时，会弹出盈亏曲线图
-    # 直接在cmd中回测则只会打印一些回测数值
-    engine.showBacktestingResult()
     
     

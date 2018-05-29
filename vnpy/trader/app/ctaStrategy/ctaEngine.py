@@ -112,7 +112,7 @@ class CtaEngine(object):
         self.strategy_group = EMPTY_STRING
 
         self.logger = None
-
+        self.strategy_loggers = {}
         self.createLogger()
 
     # ----------------------------------------------------------------------
@@ -128,6 +128,7 @@ class CtaEngine(object):
         req = VtOrderReq()
         req.symbol = contract.symbol  # 合约代码
         req.exchange = contract.exchange  # 交易所
+        req.vtSymbol = contract.vtSymbol
         req.price = self.roundToPriceTick(contract.priceTick, price)  # 价格
         req.volume = volume  # 数量
 
@@ -410,9 +411,9 @@ class CtaEngine(object):
             for key in d.keys():
                 d[key] = tick.__getattribute__(key)
 
-            if ctaTick.datetime:
+            if not ctaTick.datetime:
                 # 添加datetime字段
-                ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+                ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y-%m-%d %H:%M:%S.%f')
 
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
@@ -471,7 +472,7 @@ class CtaEngine(object):
                 self.posBufferDict[trade.vtSymbol] = posBuffer
             posBuffer.updateTradeData(trade)
 
-            # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     def processPositionEvent(self, event):
         """处理持仓推送"""
@@ -615,7 +616,7 @@ class CtaEngine(object):
         # ----------------------------------------------------------------------
 
     # 日志相关
-    def writeCtaLog(self, content):
+    def writeCtaLog(self, content, strategy_name=None):
         """快速发出CTA模块日志事件"""
         log = VtLogData()
         log.logContent = content
@@ -623,13 +624,19 @@ class CtaEngine(object):
         event.dict_['data'] = log
         self.eventEngine.put(event)
 
-        # 写入本地log日志
-        if self.logger:
-            self.logger.info(content)
+        if strategy_name is None:
+            # 写入本地log日志
+            if self.logger:
+                self.logger.info(content)
+            else:
+                self.createLogger()
         else:
-            self.createLogger()
+            if strategy_name in self.strategy_loggers:
+                self.strategy_loggers[strategy_name].info(content)
+            else:
+                self.createLogger(strategy_name=strategy_name)
 
-    def createLogger(self):
+    def createLogger(self, strategy_name=None):
         """
         创建日志记录
         :return:
@@ -642,25 +649,58 @@ class CtaEngine(object):
             # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
             path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs'))
 
-        filename = os.path.abspath(os.path.join(path, 'ctaEngine'))
+        if strategy_name is None:
+            filename = os.path.abspath(os.path.join(path, 'ctaEngine'))
 
-        print(u'create logger:{}'.format(filename))
-        self.logger = setup_logger(filename=filename, name='ctaEngine', debug=True)
+            print(u'create logger:{}'.format(filename))
+            self.logger = setup_logger(filename=filename, name='ctaEngine', debug=True)
+        else:
+            filename = os.path.abspath(os.path.join(path, str(strategy_name)))
+            print(u'create logger:{}'.format(filename))
+            self.strategy_loggers[strategy_name] = setup_logger(filename=filename, name=str(strategy_name), debug=True)
 
-    def writeCtaError(self, content):
+    def writeCtaError(self, content, strategy_name=None):
         """快速发出CTA模块错误日志事件"""
+        if strategy_name is not None:
+            if strategy_name in self.strategy_loggers:
+                self.strategy_loggers[strategy_name].error(content)
+            else:
+                self.createLogger(strategy_name=strategy_name)
+                try:
+                    self.strategy_loggers[strategy_name].error(content)
+                except Exception as ex:
+                    pass
+
         self.mainEngine.writeError(content)
 
-    def writeCtaWarning(self, content):
+    def writeCtaWarning(self, content, strategy_name=None):
         """快速发出CTA模块告警日志事件"""
+        if strategy_name is not None:
+            if strategy_name in self.strategy_loggers:
+                self.strategy_loggers[strategy_name].warning(content)
+            else:
+                self.createLogger(strategy_name=strategy_name)
+                try:
+                    self.strategy_loggers[strategy_name].warning(content)
+                except Exception as ex:
+                    pass
         self.mainEngine.writeWarning(content)
 
-    def writeCtaNotification(self, content):
+    def writeCtaNotification(self, content, strategy_name=None):
         """快速发出CTA模块通知事件"""
         self.mainEngine.writeNotification(content)
 
-    def writeCtaCritical(self, content):
+    def writeCtaCritical(self, content, strategy_name=None):
         """快速发出CTA模块异常日志事件"""
+        if strategy_name is not None:
+            if strategy_name in self.strategy_loggers:
+                self.strategy_loggers[strategy_name].critical(content)
+            else:
+                self.createLogger(strategy_name=strategy_name)
+                try:
+                    self.strategy_loggers[strategy_name].critical(content)
+                except Exception as ex:
+                    pass
         self.mainEngine.writeCritical(content)
 
     def sendCtaSignal(self, source, symbol, direction, price, level):
@@ -830,7 +870,7 @@ class CtaEngine(object):
                 symbols.append(strategy.Leg2Symbol)
 
         for symbol in symbols:
-            self.writeCtaLog(u'添加合约{0}与策略的匹配目录'.format(symbol))
+            self.writeCtaLog(u'添加合约{}与策略{}的匹配目录'.format(symbol,strategy.name))
             if symbol in self.tickStrategyDict:
                 l = self.tickStrategyDict[symbol]
             else:
@@ -840,6 +880,7 @@ class CtaEngine(object):
 
             # 3.订阅合约
             self.writeCtaLog(u'向gateway订阅合约{0}'.format(symbol))
+            self.pendingSubcribeSymbols[symbol] = strategy
             self.subscribe(strategy=strategy, symbol=symbol)
 
         # 自动初始化
@@ -1950,23 +1991,43 @@ class PositionBuffer(object):
         self.shortPosition = EMPTY_INT
         self.shortToday = EMPTY_INT
         self.shortYd = EMPTY_INT
+
         
     #----------------------------------------------------------------------
     def updatePositionData(self, pos):
         """更新持仓数据"""
-        if pos.direction == DIRECTION_LONG:
-            self.longPosition = pos.position      # >=0
-            self.longYd = pos.ydPosition          # >=0
-            self.longToday = self.longPosition - self.longYd  # >=0
+        if pos.direction == DIRECTION_SHORT:
+            self.shortPosition = pos.position  # >=0
+            self.shortYd = pos.ydPosition  # >=0
+            self.shortToday = self.shortPosition - self.shortYd  # >=0
         else:
-            self.shortPosition = pos.position    # >=0
-            self.shortYd = pos.ydPosition        # >=0
-            self.shortToday = self.shortPosition - self.shortYd   # >=0
-    
+            self.longPosition = pos.position  # >=0
+            self.longYd = pos.ydPosition  # >=0
+            self.longToday = self.longPosition - self.longYd  # >=0
+
     #----------------------------------------------------------------------
     def updateTradeData(self, trade):
         """更新成交数据"""
-        if trade.direction == DIRECTION_LONG:
+
+        if trade.direction == DIRECTION_SHORT:
+            # 空头和多头相同
+            if trade.offset == OFFSET_OPEN:
+                self.shortPosition += trade.volume
+                self.shortToday += trade.volume
+            elif trade.offset == OFFSET_CLOSETODAY:
+                self.longPosition -= trade.volume
+                self.longToday -= trade.volume
+            else:
+                self.longPosition -= trade.volume
+                self.longYd -= trade.volume
+
+            if self.longPosition <= 0:
+                self.longPosition = 0
+            if self.longToday <= 0:
+                self.longToday = 0
+            if self.longYd <= 0:
+                self.longYd = 0
+        else:
             # 多方开仓，则对应多头的持仓和今仓增加
             if trade.offset == OFFSET_OPEN:
                 self.longPosition += trade.volume
@@ -1986,21 +2047,3 @@ class PositionBuffer(object):
             if self.shortYd <= 0:
                 self.shortYd = 0
             # 多方平昨，对应空头的持仓和昨仓减少
-        else:
-            # 空头和多头相同
-            if trade.offset == OFFSET_OPEN:
-                self.shortPosition += trade.volume
-                self.shortToday += trade.volume
-            elif trade.offset == OFFSET_CLOSETODAY:
-                self.longPosition -= trade.volume
-                self.longToday -= trade.volume
-            else:
-                self.longPosition -= trade.volume
-                self.longYd -= trade.volume
-
-            if self.longPosition <= 0:
-                self.longPosition = 0
-            if self.longToday <= 0:
-                self.longToday = 0
-            if self.longYd <= 0:
-                self.longYd = 0

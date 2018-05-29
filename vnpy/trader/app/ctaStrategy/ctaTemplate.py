@@ -259,20 +259,29 @@ class CtaTemplate(object):
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
-        content = self.name + ':' + content
-        self.ctaEngine.writeCtaLog(content)
+        try:
+            self.ctaEngine.writeCtaLog(content, strategy_name=self.name)
+        except Exception as ex:
+            content = self.name + ':' + content
+            self.ctaEngine.writeCtaLog(content)
 
     # ----------------------------------------------------------------------
     def writeCtaError(self, content):
         """记录CTA出错日志"""
-        content = self.name + ':' + content
-        self.ctaEngine.writeCtaError(content)
+        try:
+            self.ctaEngine.writeCtaError(content, strategy_name=self.name)
+        except Exception as ex:
+            content = self.name + ':' + content
+            self.ctaEngine.writeCtaError(content)
 
     # ----------------------------------------------------------------------
     def writeCtaWarning(self, content):
         """记录CTA告警日志"""
-        content = self.name + ':' + content
-        self.ctaEngine.writeCtaWarning(content)
+        try:
+            self.ctaEngine.writeCtaWarning(content, strategy_name=self.name)
+        except Exception as ex:
+            content = self.name + ':' + content
+            self.ctaEngine.writeCtaWarning(content)
 
     # ----------------------------------------------------------------------
     def writeCtaNotification(self, content):
@@ -287,10 +296,15 @@ class CtaTemplate(object):
     # ----------------------------------------------------------------------
     def writeCtaCritical(self, content):
         """记录CTA系统异常日志"""
-        content = self.name + ':' + content
+
         if not self.backtesting:
-            self.ctaEngine.writeCtaCritical(content)
+            try:
+                self.ctaEngine.writeCtaCritical(content,strategy_name=self.name)
+            except Exception as ex:
+                content = self.name + ':' + content
+                self.ctaEngine.writeCtaCritical(content)
         else:
+            content = self.name + ':' + content
             self.ctaEngine.writeCtaError(content)
 
     def sendSignal(self,direction,price, level):
