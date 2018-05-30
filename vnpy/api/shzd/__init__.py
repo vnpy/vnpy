@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnshzd import ShzdApi
+from __future__ import absolute_import
+from .vnshzd import ShzdApi
