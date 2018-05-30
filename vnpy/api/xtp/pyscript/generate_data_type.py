@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = u'用Python的交易员'
 
 # C++和python类型的映射字典
@@ -128,7 +129,7 @@ def main():
     fcpp.close()
     fpy.close()
 
-    print u'data_type.py生成过程完成'
+    print(u'data_type.py生成过程完成')
 
 
 if __name__ == '__main__':
