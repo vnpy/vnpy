@@ -126,28 +126,32 @@ class Client(object):
         return params
 
     def _request(self, method, uri, signed, force_params=False, **kwargs):
-
         data = kwargs.get('data', None)
+        #if data is None:
+        #    kwargs['data'] = data
         if data and isinstance(data, dict):
             kwargs['data'] = data
+
         if signed:
+            if data is None:
+                kwargs['data'] = {}
             # generate signature
             kwargs['data']['timestamp'] = int(time.time() * 1000)
             kwargs['data']['recvWindow'] = 20000
             kwargs['data']['signature'] = self._generate_signature(kwargs['data'])
-
 
         if data and (method == 'get' or force_params):
             kwargs['params'] = self._order_params(kwargs['data'])
             del(kwargs['data'])
 
         # kwargs["verify"] = False  # I don't know whay this is error
-
+        print('_request:method:{} uri:{},{}'.format(method, uri, kwargs))
         response = getattr(self.session, method)(uri, **kwargs )
         return self._handle_response(response , uri , **kwargs )
 
     def _request_api(self, method, path, signed=False, version=PUBLIC_API_VERSION, **kwargs):
         uri = self._create_api_uri(path, signed, version)
+
         return self._request(method, uri, signed, **kwargs)
 
     def _request_withdraw_api(self, method, path, signed=False, **kwargs):
@@ -393,6 +397,7 @@ class Client(object):
         :raises: BinanceResponseException, BinanceAPIException
 
         """
+
         return self._get('depth', data=params)
 
     def get_recent_trades(self, **params):

@@ -101,17 +101,16 @@ class BinanceSpotApi(object):
         self.active = True
         self.reqThread.start()
 
-
     #----------------------------------------------------------------------
     def processQueue(self):
         """处理请求队列中的请求"""
         while self.active:
-            try:
-                #req = self.reqQueue.get(block=True, timeout=0.001)  # 获取请求的阻塞为一秒
-                if len(self.reqQueue) == 0:
-                    continue
-                (Type , req) = self.reqQueue[0]
+            #req = self.reqQueue.get(block=True, timeout=0.001)  # 获取请求的阻塞为一秒
+            if len(self.reqQueue) == 0:
+                continue
+            (Type , req) = self.reqQueue[0]
 
+            try:
                 callback = req['callback']
                 reqID = req['reqID']
                 
@@ -126,7 +125,12 @@ class BinanceSpotApi(object):
                     print(u'processQueue exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
                 self.reqQueue.pop(0)
                 sleep(0.1)
+            #except BinanceAPIException as ex:
+            #    print(u'BinanceAPIException:{},{}'.format( str(ex),traceback.format_exc()),file=sys.stderr)
+            #except BinanceRequestException as ex:
+            #    print(u'BinanceRequestException:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
             except Exception as ex:
+                self.onAllError(ex,req,reqID)
                 print(u'processQueue exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
 
     #----------------------------------------------------------------------
@@ -227,7 +231,9 @@ class BinanceSpotApi(object):
                 callback(data , req , reqID)
 
         except Exception as ex:
-            print(u'processQueue exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
+            if req is not None or reqID is not None:
+                self.onAllError(ex, req, reqID)
+            print(u'processRequest exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
             # pass
 
     #----------------------------------------------------------------------

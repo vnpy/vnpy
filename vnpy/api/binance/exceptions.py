@@ -5,21 +5,25 @@ class BinanceAPIException(Exception):
 
     LISTENKEY_NOT_EXIST = '-1125'
 
-    def __init__(self, response):
+    def __init__(self, response, uri, **kwargs):
         json_res = response.json()
         self.status_code = response.status_code
         self.response = response
         self.code = json_res['code']
         self.message = json_res['msg']
         self.request = getattr(response, 'request', None)
+        self.kwargs = kwargs
+        self.uri = uri
 
     def __str__(self):  # pragma: no cover
         return 'APIError(code=%s): %s' % (self.code, self.message)
 
-
 class BinanceRequestException(Exception):
-    def __init__(self, message):
+
+    def __init__(self, message, uri, **kwargs):
         self.message = message
+        self.kwargs = kwargs
+        self.uri = uri
 
     def __str__(self):
         return 'BinanceRequestException: %s' % self.message

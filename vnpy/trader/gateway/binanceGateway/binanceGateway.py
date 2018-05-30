@@ -16,7 +16,7 @@ import json
 from datetime import datetime , timedelta
 import time
 
-from vnpy.api.binance import BinanceSpotApi
+from vnpy.api.binance import BinanceSpotApi,BinanceAPIException,BinanceRequestException
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.gateway.binanceGateway.DigitalCurrency import systemSymbolToVnSymbol , VnSymbolToSystemSymbol
@@ -238,10 +238,26 @@ class BinanceApi(BinanceSpotApi):
         symbol = (req.vtSymbol.split('.'))[0]
 
         self.gateway.writeLog( "send order %s,%s,%s,%s" % (req.vtSymbol , str(req.direction) , str(req.price) , str(req.volume) ))
-        if req.direction == DIRECTION_LONG:
-            reqID = self.spotTrade(symbol_pair=symbol, type_="buy",  price=float(req.price), amount=req.volume)
-        else:
-            reqID = self.spotTrade(symbol_pair=symbol, type_="sell", price=float(req.price), amount=req.volume)
+
+        try:
+            reqID = self.spotTrade(symbol_pair=symbol, type_="buy" if req.direction == DIRECTION_LONG else "sell",  price=float(req.price), amount=req.volume)
+
+        except BinanceAPIException as ex:
+            self.gateway.writeError(content=ex.message, error_id=ex.code)
+            self.gateway.writeLog(traceback.format_exc())
+            return None
+        except BinanceRequestException as ex:
+            self.gateway.writeError(content=ex.message)
+            self.gateway.writeLog(traceback.format_exc())
+            return None
+        except Exception as ex:
+            self.gateway.writeError(str(ex))
+            self.gateway.writeLog(traceback.format_exc())
+            return None
+
+        if reqID is None:
+            self.gateway.writeError(u'委托异常: %s,%s,%s,%s'.format(req.vtSymbol , str(req.direction) , str(req.price) , str(req.volume) ))
+            return None
 
         self.localID += 1
         localID = str(self.localID)
@@ -269,7 +285,7 @@ class BinanceApi(BinanceSpotApi):
         self.workingOrderDict[localID] = order
         
         self.reqToLocalID[reqID] = localID
-        # self.gateway.onOrder(order)
+        self.gateway.onOrder(order)
 
         # 返回委托号
         return order.vtOrderID
@@ -285,7 +301,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
        """
     # ----------------------------------------------------------------------
     def onAllError(self, ex , req , reqID):
-        self.gateway.writeError(  ex.message + " " + ex.uri , ex.status_code)
+
+        self.gateway.writeError(content=str(ex) + ' ' + getattr(ex,'uri',''),error_id=getattr(ex,'status_code',0))
         
         # 判断是否应该是 发出的无效订单
         localID = self.reqToLocalID.get( reqID , None)
@@ -378,6 +395,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
                 contract.size = float(volume_filter["stepSize"])
                 contract.priceTick = float(price_filter["tickSize"])
                 contract.productClass = PRODUCT_SPOT
+                contract.volumeTick = float(volume_filter["minQty"])
+
                 self.gateway.onContract(contract)
 
     #----------------------------------------------------------------------
