@@ -160,7 +160,12 @@ class OkexGateway(VtGateway):
         :return:
         """
         try:
-            if subscribeReq.symbol in SPOT_SYMBOL:
+            symbol_pair_gateway = subscribeReq.symbol
+            arr = symbol_pair_gateway.split('.')
+            # 提取品种对 eth_usdt
+            symbol_pair = arr[0]
+
+            if symbol_pair in SPOT_SYMBOL:
                 if self.api_spot and self.spot_connected:
                     self.api_spot.subscribe(subscribeReq)
                 else:

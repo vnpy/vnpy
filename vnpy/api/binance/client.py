@@ -6,6 +6,7 @@ import hmac
 import requests
 import six
 import time
+import sys
 from .exceptions import BinanceAPIException, BinanceRequestException, BinanceWithdrawException
 
 if six.PY2:
@@ -68,7 +69,7 @@ class Client(object):
     ORDER_RESP_TYPE_RESULT = 'RESULT'
     ORDER_RESP_TYPE_FULL = 'FULL'
 
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, api=None):
         """Binance API Client constructor
 
         :param api_key: Api Key
@@ -80,10 +81,36 @@ class Client(object):
 
         self.API_KEY = api_key
         self.API_SECRET = api_secret
+        self.api = api
+        self.DEBUG = False
         self.session = self._init_session()
 
         # init DNS and SSL cert
         self.ping()
+
+
+    def writeLog(self, content):
+        content = 'client ' + content
+        if not self.api:
+            print(content)
+            return
+        if not hasattr(self.api, 'writeLog'):
+            print(content)
+            return
+
+        self.api.writeLog(content)
+
+    def writeError(self, content, error_id=0):
+        content = 'client ' + content
+        if not self.api:
+            print(u'{},error_id:{}'.format(content, error_id) ,file=sys.stderr)
+            return
+
+        if not hasattr(self.api, 'writeError'):
+            print(u'{},error_id:{}'.format(content, error_id), file=sys.stderr)
+            return
+
+        self.api.writeError(content, error_id)
 
     def _init_session(self):
         session = requests.session()
@@ -127,14 +154,12 @@ class Client(object):
 
     def _request(self, method, uri, signed, force_params=False, **kwargs):
         data = kwargs.get('data', None)
-        #if data is None:
-        #    kwargs['data'] = data
-        if data and isinstance(data, dict):
+        if data is None:
             kwargs['data'] = data
 
+        if data and isinstance(data, dict):
+            kwargs['data'] = data
         if signed:
-            if data is None:
-                kwargs['data'] = {}
             # generate signature
             kwargs['data']['timestamp'] = int(time.time() * 1000)
             kwargs['data']['recvWindow'] = 20000
@@ -145,13 +170,18 @@ class Client(object):
             del(kwargs['data'])
 
         # kwargs["verify"] = False  # I don't know whay this is error
-        print('_request:method:{} uri:{},{}'.format(method, uri, kwargs))
+        if self.DEBUG:
+            self.writeLog('_request:method:{} uri:{},{}'.format(method, uri, kwargs))
+
         response = getattr(self.session, method)(uri, **kwargs )
+
+        if self.DEBUG:
+            self.writeLog(str(response))
+
         return self._handle_response(response , uri , **kwargs )
 
     def _request_api(self, method, path, signed=False, version=PUBLIC_API_VERSION, **kwargs):
         uri = self._create_api_uri(path, signed, version)
-
         return self._request(method, uri, signed, **kwargs)
 
     def _request_withdraw_api(self, method, path, signed=False, **kwargs):

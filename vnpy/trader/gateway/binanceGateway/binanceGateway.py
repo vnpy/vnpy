@@ -27,11 +27,17 @@ from vnpy.trader.vtConstant import STATUS_UNKNOWN, STATUS_REJECTED, STATUS_ALLTR
 '''
 class BinanceGateway(VtGateway):
     """Binance 接口"""
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, eventEngine , gatewayName='BINANCE'):
         """Constructor"""
         super(BinanceGateway, self).__init__(eventEngine, gatewayName)
+
+        # 创建现货交易API实例
         self.api_spot = BinanceApi(self)
+
+        # 绑定写入日志和错误
+        self.api_spot.writeLog = self.writeLog
+        self.api_spot.writeError = self.writeError
 
         self.connected = False
         self.qryEnabled = True
@@ -46,7 +52,8 @@ class BinanceGateway(VtGateway):
 
         # 消息调试
         self.log_message = False
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def connect(self):
         try:
             f = open(self.filePath, 'r')
@@ -61,22 +68,28 @@ class BinanceGateway(VtGateway):
             apiKey = str(setting['accessKey'])
             secretKey = str(setting['secretKey'])
             self.interval = float(setting['interval'])
-
-            self.api_spot.setAccount(self.accountID)
-
             self.log_message = setting['log_message'] if 'log_message' in setting else False
+            self.api_spot.setAccount(self.accountID)
 
         except KeyError:
             self.writeLog(u'BINANCE连接配置缺少字段，请检查')
             return            
 
         self.api_spot.active = True
-        self.api_spot.connect_Subpot( apiKey , secretKey)
+
+        if self.log_message:
+            self.api_spot.DEBUG = True
+
+        self.api_spot.connect_Subpot(apiKey, secretKey)
         self.api_spot.spotExchangeInfo()
 
-        # sub = VtSubscribeReq()
-        # sub.symbol = "etc_btc.BINANCE"
-        # self.subscribe(sub)
+        sub = VtSubscribeReq()
+        sub.symbol = "btc_usdt.BINANCE"
+        self.subscribe(sub)
+
+        sub = VtSubscribeReq()
+        sub.symbol = "eth_usdt.BINANCE"
+        self.subscribe(sub)
 
         self.writeLog(u'{}接口初始化成功'.format(self.gatewayName))
 
@@ -84,7 +97,7 @@ class BinanceGateway(VtGateway):
         self.initQuery()
         self.startQuery()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情，自动订阅全部行情，无需实现"""
         self.api_spot.register(subscribeReq)
@@ -95,7 +108,7 @@ class BinanceGateway(VtGateway):
         try:
             return self.api_spot.sendOrder(orderReq)
         except Exception as ex:
-            print(u'send order Exception:{},{}'.format(str(ex),traceback.format_exc()),file=sys.stderr)
+            self.writeError(u'send order Exception:{},{}'.format(str(ex),traceback.format_exc()))
 
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
@@ -219,8 +232,8 @@ class BinanceApi(BinanceSpotApi):
         symbol = (subscribeReq.symbol.split('.'))[0]
         if symbol not in self.registerSymbolSets:
             self.registerSymbolSets.add( symbol )
-            self.subscribeSpotTicker( symbol )
-            self.subscribeSpotDepth( symbol )
+        self.subscribeSpotTicker( symbol )
+        self.subscribeSpotDepth( symbol )
 
     #----------------------------------------------------------------------
     def setAccount(self, useAccountID):
@@ -862,14 +875,16 @@ BREAK
             status = use_order["status"]
             side = use_order["side"]
             tradedVolume = float(use_order["executedQty"])
+
             use_dt , use_date, now_time = self.generateDateTime(use_order["time"])
             # now_time = self.generateDateTime(use_order["time"])
             if systemID in local_system_dict_keys:
                 localID = self.systemLocalDict[systemID]
                 order = self.workingOrderDict.get(localID, None)
                 if order != None:
-                    bef_has_volume = self.tradedVolumeDict.get(localID , 0.0)
+                    bef_has_volume = self.tradedVolumeDict.get(localID, 0.0)
                     newTradeVolume = tradedVolume - bef_has_volume
+                    self.writeLog('{} 成交:{} ,之前累计成交:{},当次成交:{}'.format(localID, tradedVolume, bef_has_volume, newTradeVolume))
                     order.tradedVolume = tradedVolume
 
                     if newTradeVolume > 0.000001:
@@ -880,7 +895,7 @@ BREAK
 
                         self.tradeID += 1
                         trade.tradeID = str(self.tradeID)
-                        trade.vtTradeID = '.'.join([ trade.gatewayName,trade.tradeID])
+                        trade.vtTradeID = '.'.join([trade.gatewayName, trade.tradeID])
                         trade.orderID = order.orderID
                         trade.vtOrderID =  order.vtOrderID
 
@@ -913,6 +928,7 @@ BREAK
                         del self.systemLocalDict[systemID]
                         del self.workingOrderDict[localID]
 
+                    # 部分成交
                     elif status == "PARTIALLY_FILLED":
                         order.status = STATUS_PARTTRADED
                         self.gateway.onOrder(order)
@@ -922,7 +938,6 @@ BREAK
                         self.gateway.onOrder(order)
             else:
                 # 说明是以前发的单子
-                
 
                 symbol_pair =  systemSymbolToVnSymbol(use_order["symbol"])
 
@@ -960,7 +975,7 @@ BREAK
                     
                     self.gateway.onOrder(order)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancel(self, req):
         localID = req.orderID
         if localID in self.localSystemDict:

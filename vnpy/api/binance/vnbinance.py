@@ -84,13 +84,18 @@ class BinanceSpotApi(object):
 
         self.active = False      # API工作状态
 
-        self.DEBUG = True
+        self.DEBUG = False
+
+        self.writeLog = None
+        self.writeError = None
+
     #----------------------------------------------------------------------
     def connect_Subpot(self, apiKey , secretKey ):
         self.apiKey = apiKey
         self.secretKey = secretKey
 
-        self.client = Client( apiKey , secretKey)
+        self.client = Client( apiKey , secretKey, self)
+        self.client.DEBUG = self.DEBUG
 
         self.bm = BinanceSocketManager(self.client)
 
@@ -105,33 +110,31 @@ class BinanceSpotApi(object):
     def processQueue(self):
         """处理请求队列中的请求"""
         while self.active:
-            #req = self.reqQueue.get(block=True, timeout=0.001)  # 获取请求的阻塞为一秒
+
             if len(self.reqQueue) == 0:
                 continue
+
             (Type , req) = self.reqQueue[0]
 
-            try:
-                callback = req['callback']
-                reqID = req['reqID']
-                
-                try:
-                    data = self.processRequest(req)
-                    # 请求成功
-                    if data != None :
-                        if self.DEBUG:
-                            print(callback.__name__)
-                        callback(data, req, reqID)
-                except Exception as ex:
-                    print(u'processQueue exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
+            if req is None:
                 self.reqQueue.pop(0)
-                sleep(0.1)
-            #except BinanceAPIException as ex:
-            #    print(u'BinanceAPIException:{},{}'.format( str(ex),traceback.format_exc()),file=sys.stderr)
-            #except BinanceRequestException as ex:
-            #    print(u'BinanceRequestException:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
+                continue
+
+            callback = req.get('callback', None)
+            reqID = req.get('reqID', None)
+
+            try:
+                data = self.processRequest(req)
+                # 请求成功
+                if data != None :
+                    if self.DEBUG:
+                        self.writeLog(callback.__name__)
+                    callback(data, req, reqID)
             except Exception as ex:
-                self.onAllError(ex,req,reqID)
-                print(u'processQueue exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
+                self.writeError(u'processQueue exception:{},{}'.format(str(ex), traceback.format_exc()))
+
+            self.reqQueue.pop(0)
+            sleep(0.1)
 
     #----------------------------------------------------------------------
     def processRequest(self, req):
@@ -140,6 +143,7 @@ class BinanceSpotApi(object):
         :param req:
         :return:
         """
+
         try:
             method = req['method']
             reqID = req["reqID"]
@@ -233,7 +237,7 @@ class BinanceSpotApi(object):
         except Exception as ex:
             if req is not None or reqID is not None:
                 self.onAllError(ex, req, reqID)
-            print(u'processRequest exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
+            self.writeError(u'processRequest exception:{},{}'.format(str(ex), traceback.format_exc()))
             # pass
 
     #----------------------------------------------------------------------
@@ -343,21 +347,21 @@ class BinanceSpotApi(object):
             # print "self.bm != None:"
             symbol = self.legalSymbolLower(symbol)
             symbol = symbolFromOtherExchangesToBinance(symbol)
-            self.bm.start_symbol_ticker_socket( symbol , self.onPreDealTicker)
+            self.bm.start_symbol_ticker_socket(symbol, self.onPreDealTicker)
 
     #----------------------------------------------------------------------
     def subscribeSpotDepth(self, symbol):
         if self.bm != None:
             symbol = self.legalSymbolLower(symbol)
             symbol = symbolFromOtherExchangesToBinance(symbol)
-            self.bm.start_depth_socket(symbol , self.onPreDealDepth)
+            self.bm.start_depth_socket(symbol, self.onPreDealDepth)
 
     #----------------------------------------------------------------------
     def subscribeSpotTrades(self, symbol):
         if self.bm != None:
             symbol = self.legalSymbolLower(symbol)
             symbol = symbolFromOtherExchangesToBinance(symbol)
-            self.bm.start_trade_socket(symbol , self.onPreDealTrades)
+            self.bm.start_trade_socket(symbol, self.onPreDealTrades)
 
     #----------------------------------------------------------------------
     def http_get_request(self, url, params, add_to_headers=None):
@@ -374,10 +378,10 @@ class BinanceSpotApi(object):
             if response.status_code == 200:
                 return response.json()
             else:
-                return {"status":"fail"}
+                return {"status": "fail"}
         except Exception as e:
-            print("httpGet failed, detail is:%s" %e)
-            return {"status":"fail","msg":e}
+            self.writeError('httpGet failed, detail is:{}'.format(str(e)))
+            return {"status": "fail", "msg":e}
 
     # limit in [5, 10, 20, 50, 100, 500, 1000]
     #----------------------------------------------------------------------
@@ -402,7 +406,7 @@ class BinanceSpotApi(object):
 
     #----------------------------------------------------------------------
     def onAllError(self, ex , req , reqID):
-        print( "onAllError" + str(ex))
+        self.writeError("onAllError" + str(ex))
 
     #----------------------------------------------------------------------
     def onPreDealAllTicker(self, msg):
@@ -413,7 +417,7 @@ class BinanceSpotApi(object):
     #----------------------------------------------------------------------
     def onAllTicker(self,msg):
         """币安支持所有 ticker 同时socket过来"""
-        print(u'onAllTicker:'.format(msg))
+        self.writeLog(u'onAllTicker:'.format(msg))
 
     # ----------------------------------------------------------------------
     def onPreDealTicker(self, msg):
@@ -423,7 +427,7 @@ class BinanceSpotApi(object):
 
     #----------------------------------------------------------------------
     def onTick(self, msg):
-        print(u'onTick:'.format(msg))
+        self.writeLog(u'onTick:'.format(msg))
 
     # ----------------------------------------------------------------------
     def onPreDealDepth(self, msg):
@@ -432,7 +436,7 @@ class BinanceSpotApi(object):
         self.onDepth(msg)
     #----------------------------------------------------------------------
     def onDepth(self, msg):
-        print(u'onDepth:'.format(msg))
+        self.writeLog(u'onDepth:'.format(msg))
 
     # ----------------------------------------------------------------------
     def onPreDealTrades(self, msg):
@@ -441,36 +445,36 @@ class BinanceSpotApi(object):
         self.onTrades(msg)
     #----------------------------------------------------------------------
     def onTrades(self, msg):
-        print(u'onTrades:{}'.format(msg))
+        self.writeLog(u'onTrades:{}'.format(msg))
 
     #----------------------------------------------------------------------
     def onGetAccount(self, data, req, reqID):
-        print(u'onGetAccount:'.format(data, req, reqID))
+        self.writeLog(u'onGetAccount:'.format(data, req, reqID))
 
     #----------------------------------------------------------------------
     def onGetOpenOrders(self, data, req, reqID):
-        print(u'onGetOpenOrders:ata:{}, req:{}, reqID:{}'.format(data, req, reqID))
+        self.writeLog(u'onGetOpenOrders:ata:{}, req:{}, reqID:{}'.format(data, req, reqID))
 
     #----------------------------------------------------------------------
     def onGetAllOrders(self, data, req, reqID):
-        print(u'onGetAllOrders:data:{}, req:{}, reqID:{}'.format(data, req, reqID))
+        self.writeLog(u'onGetAllOrders:data:{}, req:{}, reqID:{}'.format(data, req, reqID))
 
     #----------------------------------------------------------------------
     def onGetBuyOrder(self, data, req, reqID):
-        print(u'onGetBuyOrder:data:{}, req:{}, reqID:{}'.format(data, req, reqID))
+        self.writeLog(u'onGetBuyOrder:data:{}, req:{}, reqID:{}'.format(data, req, reqID))
 
     #----------------------------------------------------------------------
     def onGetSellOrder(self, data, req, reqID):
-        print(u'onGetSellOrder:data:{}, req:{}, reqID:{}'.format(data, req, reqID))
+        self.writeLog(u'onGetSellOrder:data:{}, req:{}, reqID:{}'.format(data, req, reqID))
 
     #----------------------------------------------------------------------
     def onGetCancelOrder(self, data, req, reqID):
-        print(u'onGetCancelOrder:data:{},req:{},reqId:{}'.format(data, req, reqID))
+        self.writeLog(u'onGetCancelOrder:data:{},req:{},reqId:{}'.format(data, req, reqID))
 
     #----------------------------------------------------------------------
     def onExchangeInfo(self, data, req, reqID):
-        print(u'onExchangeInfo:data:{},req:{},reqId:{}'.format(data, req, reqID))
+        self.writeLog(u'onExchangeInfo:data:{},req:{},reqId:{}'.format(data, req, reqID))
 
     # ----------------------------------------------------------------------
     def onTradeOrder(self, data, req, reqID):
-        print (u'onTradeOrder:{}'.format(data))
+        self.writeLog (u'onTradeOrder:{}'.format(data))
