@@ -50,6 +50,7 @@ statusMap[1] = STATUS_PARTTRADED    # 部分成交
 statusMap[2] = STATUS_ALLTRADED     # 全部成交
 statusMap[3] = STATUS_UNKNOWN
 statusMap[4] = STATUS_UNKNOWN       # 未知状态
+statusMap[5] = STATUS_UNKNOWN       # 未知状态
 
 EVENT_OKEX_INDEX_FUTURE = "eFuture_Index_OKEX"
 
@@ -1082,7 +1083,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             dt = datetime.now()
             order.cancelTime = dt.strftime("%H:%M:%S.%f")
 
-        # 推送onOrder event
+        # 推送现货委托单到vtGateway.onOrder event
         self.gateway.writeLog(u'onSpotSubOrder:发出OnOrder，vtOrderId={},orderStatus:{}'.format(order.vtOrderID,order.status))
         self.gateway.onOrder(copy(order))
 
@@ -1204,7 +1205,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             order.tradedVolume = data_order['deal_amount']      # 更新成交数量
             order.status = statusMap[data_order['status']]      # 更新成交状态
             self.gateway.writeLog('orderId:{},tradedVolume:{},status:{}'.format(order.vtOrderID,order.tradedVolume,order.status))
-            self.gateway.onOrder(copy(order))                   # 提交onOrder事件
+            self.gateway.onOrder(copy(order))                   # 提交现货委托单到vtGatway.onOrder事件
 
     # ----------------------------------------------------------------------
     """ onSpotOrder的回报 ws_data 例子    
@@ -1238,6 +1239,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
                 order.status = STATUS_REJECTED
                 order.updateTime = datetime.now().strftime("%H:%M:%S.%f")
                 self.gateway.writeLog(u'发出OnOrder，拒单,vtOrderId={}'.format(vtOrderId))
+                # 发送现货委托单（拒单消息）到vtGateway
                 self.gateway.onOrder(order)
             return
 
@@ -1319,6 +1321,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
         order.status = STATUS_CANCELLED
         dt = datetime.now()
         order.cancelTime = dt.strftime("%H:%M:%S.%f")
+        # 发送现货委托单（撤单消息）到vtGateway
         self.gateway.onOrder(order)
 
        # #self.gateway.writeLog(u'onSpotCancelOrder:删除self.orderDict[{}]'.format(ok_order_id))
@@ -2084,6 +2087,7 @@ h_this_week_usd'}
                 order.cancelTime = dt.strftime("%H:%M:%S.%f")
                 order.status = STATUS_REJECTED
                 self.gateway.writeLog(u'onFutureOrder发出OnOrder，拒单,vtOrderId={}'.format(vtOrderId))
+                # 发送期货委托单（拒单消息）到vtGateway
                 self.gateway.onOrder(order)
             return
         ok_order_id = data.get('order_id')
@@ -2145,6 +2149,7 @@ h_this_week_usd'}
         dt = datetime.now()
         order.cancelTime = dt.strftime("%H:%M:%S.%f")
         order.status = STATUS_CANCELLED
+        # 发送现货委托单（撤单消息）到vtGateway
         self.gateway.onOrder(order)
 
         # 删除本地委托号与orderid的绑定
@@ -2371,7 +2376,7 @@ u'contracts': [], u'balance': 0, u'rights': 0}, u'xrp': {u'contracts': [], u'bal
                 dic_info = self.contract_name_dict[contract_name]
 
                 use_contract_type = dic_info["contract_type"]
-                order.symbol = '.'.join([order_data["symbol"] + ":" + use_contract_type + ":" + str(self._use_leverage)]) #, EXCHANGE_OKEX])
+                order.symbol = '.'.join([order_data["symbol"] + ":" + use_contract_type + ":" + str(self._use_leverage), EXCHANGE_OKEX])
 
                 order.vtSymbol = order.symbol
                 order.orderID = self.orderIdDict[orderId]                # 更新orderId为本地的序列号
@@ -2388,7 +2393,7 @@ u'contracts': [], u'balance': 0, u'rights': 0}, u'xrp': {u'contracts': [], u'bal
 
             order.tradedVolume = order_data['deal_amount']
             order.status = statusMap[int(order_data['status'])]
-            # 推送到OnOrder中
+            # 推送期货委托单到vtGatway.OnOrder中
             self.gateway.onOrder(copy(order))
 
     '''
@@ -2470,8 +2475,9 @@ user_id': 6548935, u'contract_id': 201802160040063L, u'price': 24.555, u'create_
                 self.gateway.writeLog(u'no contract_name:{} in self.contract_name_dict'.format(contract_name))
                 return
 
-            symbol = contract_info["symbol"] + "_usd"       # 自动添加_usd结尾
-            order.symbol = ':'.join([symbol, use_contract_type, str(self._use_leverage)])
+            symbol = contract_info["symbol"] + "_usd"                                        # 自动添加_usd结尾
+            future_symbol = ':'.join([symbol, use_contract_type, str(self._use_leverage)])   # 满足格式
+            order.symbol = '.'.join([future_symbol, EXCHANGE_OKEX])                          # 合约.OKE
             order.vtSymbol = order.symbol
             order.orderID = localNo
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
@@ -2492,6 +2498,7 @@ user_id': 6548935, u'contract_id': 201802160040063L, u'price': 24.555, u'create_
             order.tradedVolume = float(data['deal_amount'])
             order.status = statusMap[data['status']]
 
+        # 发出期货委托事件
         self.gateway.onOrder(copy(order))
 
         # 判断成交数量是否有变化，有，则发出onTrade事件
@@ -2774,7 +2781,7 @@ utureusd_positions'}
             self.writeLog(u'futureSendOrder 请求合约代码格式错误:{},exception:{},{}'.format(req.symbol,str(ex),traceback.format_exc()))
             return ''
 
-        # print symbol_pair ,  symbol, contract_type , leverage
+        # print symbol_pair(例如:btc_usd) ,  symbol(btc), contract_type(this_week) , leverage(10)
         type_ = priceContractTypeMapReverse[(req.direction, req.offset)]
         self.writeLog(u'futureSendOrder:{},{},{},{},{}'.format(symbol_pair,  symbol, contract_type, leverage, type_))
         # 本地委托号加1，并将对应字符串保存到队列中，返回基于本地委托号的vtOrderID
