@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from string import join
@@ -331,4 +332,4 @@ fheaderon.close()
 fheaderfunction.close()
 fwrap.close()
 
-print 'md functions done'
+print('md functions done')

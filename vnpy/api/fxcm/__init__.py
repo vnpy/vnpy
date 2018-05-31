@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnfxcm import FxcmApi
+from __future__ import absolute_import
+from .vnfxcm import FxcmApi

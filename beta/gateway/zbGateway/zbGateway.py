@@ -3,6 +3,7 @@
 '''
 vn.zb的gateway接入
 '''
+from __future__ import print_function
 import os
 import json
 from datetime import datetime
@@ -224,7 +225,7 @@ class ZB_API_Spot(ZB_Sub_Spot_Api):
         data = self.readData(evt)
         try:
             channel = data['channel']
-        except Exception,ex:
+        except Exception as ex:
             channel = None
         if channel == None:
             return
@@ -379,8 +380,8 @@ class ZB_API_Spot(ZB_Sub_Spot_Api):
             # print "ticker", tick.date , tick.time
             # newtick = copy(tick)
             # self.gateway.onTick(newtick)
-        except Exception,ex:
-            print "Error in onTicker " , channel
+        except Exception as ex:
+            print("Error in onTicker " , channel)
 
     #----------------------------------------------------------------------
     def onDepth(self, data):
@@ -388,7 +389,7 @@ class ZB_API_Spot(ZB_Sub_Spot_Api):
         try:
             channel = data['channel']
             symbol = self.channelSymbolMap[channel]
-        except Exception,ex:
+        except Exception as ex:
             symbol = None
 
         if symbol == None:
@@ -605,7 +606,7 @@ class ZB_API_Spot(ZB_Sub_Spot_Api):
         # 现在的处理方式是， 先缓存这里的信息，等到出现了 localID，再来处理这一段
         localNo = self.orderIdDict.get(orderId , None)
         if localNo == None:
-            print "Error , localNo is none !" + str(localNo)
+            print("Error , localNo is none !" + str(localNo))
             return 
 
         # 委托信息
@@ -812,8 +813,8 @@ class ZB_API_Spot(ZB_Sub_Spot_Api):
             rawData = json.loads(rawData)
             coins = rawData["coins"]
 
-        except Exception,ex:
-            print ex
+        except Exception as ex:
+            print(ex)
 
         for coin in coins:
             symbol = coin["cnName"].lower()

@@ -1,6 +1,8 @@
 # encoding: utf-8
 
-from vnhuobi import *
+from __future__ import print_function
+from __future__ import absolute_import
+from .vnhuobi import *
 
 #----------------------------------------------------------------------
 def testTrade():
@@ -15,9 +17,9 @@ def testTrade():
     api.start()
     
     # 查询
-    print api.getSymbols()
-    print api.getCurrencys()
-    print api.getTimestamp()
+    print(api.getSymbols())
+    print(api.getCurrencys())
+    print(api.getTimestamp())
     
     
     #accountid = ''
@@ -27,7 +29,7 @@ def testTrade():
     #api.getAccountBalance(accountid)
     #api.getOrders(symbol, 'pre-submitted,submitted,partial-filled,partial-canceled,filled,canceled')
     #api.getOrders(symbol, 'filled')
-    print api.getMatchResults(symbol)
+    print(api.getMatchResults(symbol))
     
     #api.getOrder('2440401255')
     #api.getMatchResult('2440401255')

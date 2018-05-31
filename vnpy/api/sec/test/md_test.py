@@ -1,7 +1,9 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import sys
 
+from six.moves import input
 from vnsecmd import MdApi
 
 
@@ -9,7 +11,7 @@ from vnsecmd import MdApi
 def print_dict(d):
     """输出字典"""
     for k, v in d.items():
-        print '%s:%s' %(k, v)
+        print('%s:%s' %(k, v))
     
 
 ########################################################################
@@ -24,119 +26,119 @@ class TestMdApi(MdApi):
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, reason):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRtnNotice(self, data):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspError(self, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
-        print dict(error)
+        print(sys._getframe().f_code.co_name)
+        print(locals())
+        print(dict(error))
     
     #----------------------------------------------------------------------
     def onRspStockUserLogin(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspStockUserLogout(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspSOPUserLogin(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
         print_dict(data)
         print_dict(error)
     
     #----------------------------------------------------------------------
     def onRspSOPUserLogout(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspFASLUserLogin(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspFASLUserLogout(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspStockSubMarketData(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspStockUnSubMarketData(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspSOPSubMarketData(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspSOPUnSubMarketData(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onStockMarketData(self, data):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onSOPMarketData(self, data):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspStockAvailableQuot(self, data, error, flag):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspSopAvailableQuot(self, data, error, flag):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
     
     #----------------------------------------------------------------------
     def onRspUserMDPasswordUpdate(self, data, error):
         """"""
-        print sys._getframe().f_code.co_name
-        print locals()
+        print(sys._getframe().f_code.co_name)
+        print(locals())
 
 
 if __name__ == '__main__':
@@ -157,5 +159,5 @@ if __name__ == '__main__':
     }
     
     api.reqSOPUserLogin(req)
-    
-    raw_input()
+
+    input()

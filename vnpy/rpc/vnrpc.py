@@ -136,13 +136,13 @@ class RpcServer(RpcObject):
             self.__thread.start()
 
     #----------------------------------------------------------------------
-    def stop(self):
+    def stop(self, join=False):
         """停止服务器"""
         # 将服务器设为停止
         self.__active = False
 
         # 等待工作线程退出
-        if self.__thread.isAlive():
+        if join and self.__thread.isAlive():
             self.__thread.join()
 
     #----------------------------------------------------------------------

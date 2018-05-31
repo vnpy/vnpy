@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 from vnpy.trader import vtConstant
-from futuGateway import FutuGateway
+from .futuGateway import FutuGateway
 
 gatewayClass = FutuGateway
 gatewayName = 'FUTU'

@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
-from vnkorbit import Korbit_TradeApi , Korbit_DataApi
+from __future__ import absolute_import
+from .vnkorbit import Korbit_TradeApi , Korbit_DataApi
 
 apiKey = 'FssV9Jw0aZVCOYbu9YlqVNc2Rhgmh1QpruNgSVhvVmFP1iw1aPfc3APbfz0ZM'
 secretKey = 'lSMc1TT2AZYX5pyEm01SFqx7PgMjNB18eXWpi8DQKHf0rcYhLiaiRVzJwaVZR'

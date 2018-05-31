@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnoanda import OandaApi
+from __future__ import absolute_import
+from .vnoanda import OandaApi

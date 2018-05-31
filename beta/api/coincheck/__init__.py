@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vncoincheck import TradeApi, DataApi
+from __future__ import absolute_import
+from .vncoincheck import TradeApi, DataApi

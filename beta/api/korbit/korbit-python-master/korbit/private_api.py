@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from __future__ import absolute_import
 import time
-from public_api import PublicAPI
+from .public_api import PublicAPI
 
 
 class PrivateAPI(PublicAPI):
@@ -105,7 +107,7 @@ class PrivateAPI(PublicAPI):
             'offset': offset,
             'limit': limit
         }
-        print "user/orders" , self.headers , params
+        print("user/orders" , self.headers , params)
         return self.request_get("user/orders", headers=self.headers, params=params)
 
     def view_transfers(self, offset=0, limit=10, currency="btc"):

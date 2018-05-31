@@ -6,6 +6,7 @@ vn.okex的gateway接入
 注意：
 1. 前仅支持USD  现货交易，以及usd的期货交易
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -1660,6 +1661,7 @@ class Api_Spot(OKEX_Sub_Spot_Api):
             else:
                 self.gateway.writeLog(u'其他数据:{}'.format(ws_data))
 
+
         if isinstance( ws_data , list):
             for data in ws_data:
                 try:
@@ -1672,6 +1674,7 @@ class Api_Spot(OKEX_Sub_Spot_Api):
                 # DEBUG !!! 
                 # if 'depth' not in channel and 'tick' not in channel:
                 #     print data
+
 
                 # try:
                 if channel == "addChannel" and 'data' in data:
@@ -1770,6 +1773,7 @@ class Api_Spot(OKEX_Sub_Spot_Api):
         #     if order != None:
         #         symbol_pair = (order.symbol.split('.'))[0]
         #         self.spotOrderInfo(symbol_pair , orderId)
+
 
     #----------------------------------------------------------------------
     def onOpen(self, ws):       
@@ -1908,8 +1912,9 @@ class Api_Spot(OKEX_Sub_Spot_Api):
 
             # newtick = copy(tick)
             # self.gateway.onTick(newtick)
-        except Exception,ex:
-            print "Error in onTicker " , channel
+
+        except Exception as ex:
+            print("Error in onTicker ", channel)
     
     '''
     [{u'binary': 0, u'data': {u'timestamp': 1521512662184L, u'bids': [[u'0.00000351'
@@ -1928,7 +1933,7 @@ tc_depth_5'}]
         try:
             channel = data['channel']
             symbol = self.channelSymbolMap[channel]
-        except Exception,ex:
+        except Exception as ex:
             symbol = None
 
         if symbol == None:
@@ -2305,6 +2310,11 @@ nel': u'ok_sub_spot_etc_usdt_order'}
     #----------------------------------------------------------------------
     def onSpotOrderInfo(self, data):
         """委托信息查询回调"""
+
+        if "error_code" in data.keys():
+            print(data)
+            return 
+
         rawData = data['data']
         if "error_code" in rawData.keys():
             error_id = str(rawData.get('error_code', 0))
@@ -2388,6 +2398,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
     ]
     '''
     def onSpotOrder(self, data):
+
         data = data.get('data', {})
 
         if 'error_code' in data:
@@ -2425,6 +2436,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             if str(localNo) in self.cacheSendLocalOrder:
                 self.cacheSendLocalOrder.remove(str(localNo))
                 self.gateway.writeLog( "cacheSendLocalOrder remove rejected localNo %s" % (str(localNo)))
+
             return
         else:
 

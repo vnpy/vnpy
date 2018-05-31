@@ -1,8 +1,8 @@
 # encoding: UTF-8
 
-from okex_error_info import *
+from __future__ import absolute_import
 from vnpy.trader import vtConstant
-from okexGateway import okexGateway , Api_contract , Api_Spot
+from .okexGateway import okexGateway
 
 
 gatewayClass = okexGateway
