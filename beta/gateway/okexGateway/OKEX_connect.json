@@ -1,6 +1,9 @@
 {
-    "apiKey": "你的apiKey",
-    "secretKey": "你的secretKey",
+    "apiKey": "",
+    "secretKey": "",
+    "spot_connect":false,
+    "future_connect":true,
     "trace": false,
-    "leverage": 10
+    "leverage": 10,
+    "qryEnabled":true
 }

@@ -1,4 +1,4 @@
 # encoding: UTF-8
 
 from __future__ import absolute_import
-from .vnokex import OkexSpotApi, OkexFuturesApi, CONTRACT_SYMBOL, SPOT_CURRENCY
+from .vnokex import OKEX_Sub_Spot_Api , OKEX_Contract_Api , okex_all_symbol_pairs , okex_all_contract_symbol , okex_all_symbol_type , okex_all_contract_all_symbol_usd , okex_all_contract_type
