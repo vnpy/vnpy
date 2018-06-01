@@ -322,7 +322,6 @@ class HuobiDataApi(DataApi):
             self.gateway.onTick(tick)
 
 
-
 ########################################################################
 class HuobiTradeApi(TradeApi):
     """交易API实现"""
