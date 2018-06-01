@@ -524,7 +524,6 @@ class SpotApi(OkexSpotApi):
         """初始化接口"""
         self.symbols = symbols
         self.initCallback()
-        
         self.connect(OKEX_SPOT_HOST, apiKey, secretKey, trace)
         self.writeLog(u'接口初始化成功')
 
@@ -533,7 +532,11 @@ class SpotApi(OkexSpotApi):
         """发单"""
         type_ = priceTypeMapReverse[(req.direction, req.priceType)]
         req.volume = 0.001
-        self.spotOrder(req.symbol, type_, str(req.price), str(req.volume))
+        result = self.spotOrder(req.symbol, type_, str(req.price), str(req.volume))
+        
+        # 若请求失败，则返回空字符串委托号
+        if not result:
+            return ''
         
         # 本地委托号加1，并将对应字符串保存到队列中，返回基于本地委托号的vtOrderID
         self.localNo += 1

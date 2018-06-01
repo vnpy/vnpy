@@ -75,14 +75,16 @@ class OkexApi(object):
         self.heartbeatCount = 0         # 心跳计数
         self.heartbeatThread = None     # 心跳线程
         self.heartbeatReceived = True   # 心跳是否收到
+        
+        self.reconnecting = False       # 重新连接中
     
     #----------------------------------------------------------------------
     def heartbeat(self):
         """"""
         while self.active:
             self.heartbeatCount += 1
-
-            if self.heartbeatCount < 30:
+            
+            if self.heartbeatCount < 10:
                 sleep(1)
             else:
                 self.heartbeatCount = 0
@@ -90,16 +92,26 @@ class OkexApi(object):
                 if not self.heartbeatReceived:
                     self.reconnect()
                 else:
+                    self.heartbeatReceived = False
                     d = {'event': 'ping'}
                     j = json.dumps(d)
-                    self.ws.send(j)   
-                    self.heartbeatReceived = False
+                    
+                    try:
+                        self.ws.send(j) 
+                    except websocket.WebSocketConnectionClosedException:
+                        self.reconnect()
+                    
 
     #----------------------------------------------------------------------
     def reconnect(self):
         """重新连接"""
-        self.close()            # 首先关闭之前的连接
-        self.initWebsocket()
+        if not self.reconnecting:
+            self.reconnecting = True
+            
+            self.closeWebsocket()   # 首先关闭之前的连接
+            self.initWebsocket()
+        
+            self.reconnecting = False
         
     #----------------------------------------------------------------------
     def connect(self, host, apiKey, secretKey, trace=False):
@@ -132,15 +144,24 @@ class OkexApi(object):
         return data
 
     #----------------------------------------------------------------------
-    def close(self):
+    def closeHeartbeat(self):
         """关闭接口"""
         if self.heartbeatThread and self.heartbeatThread.isAlive():
             self.active = False
             self.heartbeatThread.join()
-        
+
+    #----------------------------------------------------------------------
+    def closeWebsocket(self):
+        """关闭WS"""
         if self.wsThread and self.wsThread.isAlive():
             self.ws.close()
             self.wsThread.join()
+    
+    #----------------------------------------------------------------------
+    def close(self):
+        """"""
+        self.closeHeartbeat()
+        self.closeWebsocket()
         
     #----------------------------------------------------------------------
     def onMessage(self, data):
@@ -186,8 +207,9 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def onOpenCallback(self, ws):
         """"""
-        self.heartbeatThread = Thread(target=self.heartbeat)
-        self.heartbeatThread.start()
+        if not self.heartbeatThread:
+            self.heartbeatThread = Thread(target=self.heartbeat)
+            self.heartbeatThread.start()
         
         self.onOpen()
         
@@ -221,8 +243,10 @@ class OkexApi(object):
         # 若触发异常则重连
         try:
             self.ws.send(j)
+            return True
         except websocket.WebSocketConnectionClosedException:
-            pass
+            self.reconnect()
+            return False
 
     #----------------------------------------------------------------------
     def login(self):
@@ -241,6 +265,7 @@ class OkexApi(object):
             self.ws.send(j)
             return True
         except websocket.WebSocketConnectionClosedException:
+            self.reconnect()
             return False
 
 
@@ -288,7 +313,7 @@ class OkexSpotApi(OkexApi):
         
         channel = 'ok_spot_order'
         
-        self.sendRequest(channel, params)
+        return self.sendRequest(channel, params)
 
     #----------------------------------------------------------------------
     def spotCancelOrder(self, symbol, orderid):
