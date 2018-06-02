@@ -531,7 +531,6 @@ class SpotApi(OkexSpotApi):
     def sendOrder(self, req):
         """发单"""
         type_ = priceTypeMapReverse[(req.direction, req.priceType)]
-        req.volume = 0.001
         result = self.spotOrder(req.symbol, type_, str(req.price), str(req.volume))
         
         # 若请求失败，则返回空字符串委托号
