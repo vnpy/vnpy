@@ -1,5 +1,11 @@
 # encoding: UTF-8
 
+'''
+OKEX的高性能异步交易API
+
+Contributor：ipqhjjybj 大佳
+'''
+
 from __future__ import print_function
 
 import hashlib

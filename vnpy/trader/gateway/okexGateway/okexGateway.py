@@ -2,6 +2,8 @@
 
 '''
 vnpy.api.okex的gateway接入
+
+Contributor：ipqhjjybj 大佳
 '''
 from __future__ import print_function
 
