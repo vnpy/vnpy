@@ -2492,7 +2492,7 @@ user_id': 6548935, u'contract_id': 201802160040063L, u'price': 24.555, u'create_
             # 更新成交数量/状态
             order = self.orderDict[orderId]
             self.gateway.writeLog(u'orderid:{},tradedVolume:{}=>{},status:{}=>{}'
-                                  .format(order.orderId,
+                                  .format(order.orderID,
                                           order.tradedVolume, float(data['deal_amount']),
                                           order.status, statusMap[data['status']]))
             order.tradedVolume = float(data['deal_amount'])
