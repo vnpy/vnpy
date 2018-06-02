@@ -329,6 +329,28 @@ class SpotApi(OkexSpotApi):
         tick.askPrice4, tick.askVolume4 = d['asks'][-4]
         tick.askPrice5, tick.askVolume5 = d['asks'][-5]     
         
+        tick.bidPrice1 = float(tick.bidPrice1)
+        tick.bidPrice2 = float(tick.bidPrice2)
+        tick.bidPrice3 = float(tick.bidPrice3)
+        tick.bidPrice4 = float(tick.bidPrice4)
+        tick.bidPrice5 = float(tick.bidPrice5)
+        tick.askPrice1 = float(tick.askPrice1)
+        tick.askPrice2 = float(tick.askPrice2)
+        tick.askPrice3 = float(tick.askPrice3)
+        tick.askPrice4 = float(tick.askPrice4)
+        tick.askPrice5 = float(tick.askPrice5)   
+        
+        tick.bidVolume1 = float(tick.bidVolume1)
+        tick.bidVolume2 = float(tick.bidVolume2)
+        tick.bidVolume3 = float(tick.bidVolume3)
+        tick.bidVolume4 = float(tick.bidVolume4)
+        tick.bidVolume5 = float(tick.bidVolume5)
+        tick.askVolume1 = float(tick.askVolume1)
+        tick.askVolume2 = float(tick.askVolume2)
+        tick.askVolume3 = float(tick.askVolume3)
+        tick.askVolume4 = float(tick.askVolume4)
+        tick.askVolume5 = float(tick.askVolume5)          
+        
         tick.date, tick.time = self.generateDateTime(d['timestamp'])
         
         if tick.lastPrice:
