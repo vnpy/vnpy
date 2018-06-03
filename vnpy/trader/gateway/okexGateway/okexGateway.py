@@ -22,6 +22,8 @@ from vnpy.api.okex import OkexSpotApi, OKEX_SPOT_HOST
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
 
+from okex_error_info import *
+
 # 价格类型映射
 # 买卖类型： 限价单（buy/sell） 市价单（buy_market/sell_market）
 priceTypeMap = {}
@@ -229,10 +231,10 @@ class SpotApi(OkexSpotApi):
         for symbol in self.symbols:
             contract = VtContractData()
             contract.gatewayName = self.gatewayName
-            contract.symbol = symbol
+            contract.symbol = symbol + "." + EXCHANGE_OKEX
             contract.exchange = EXCHANGE_OKEX
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
-            contract.name = symbol
+            contract.name = u'OKEX现货%s' % symbol
             contract.size = 0.00001
             contract.priceTick = 0.00001
             contract.productClass = PRODUCT_SPOT
@@ -410,6 +412,7 @@ class SpotApi(OkexSpotApi):
         
         # 查询委托
         for symbol in self.symbols:
+            print( "self.spotOrderInfo(%s, '-1') " % symbol)
             self.spotOrderInfo(symbol, '-1')        
             
     #----------------------------------------------------------------------
@@ -555,7 +558,11 @@ class SpotApi(OkexSpotApi):
     def sendOrder(self, req):
         """发单"""
         type_ = priceTypeMapReverse[(req.direction, req.priceType)]
-        result = self.spotOrder(req.symbol, type_, str(req.price), str(req.volume))
+
+        symbol_pair = (req.vtSymbol.split('.'))[0]
+        self.registerSymbolPairArray.add(req.vtSymbol)
+
+        result = self.spotOrder(symbol_pair, type_, str(req.price), str(req.volume))
         
         # 若请求失败，则返回空字符串委托号
         if not result:
@@ -578,6 +585,11 @@ class SpotApi(OkexSpotApi):
         order.direction = req.direction
         order.price = req.price
         order.totalVolume = req.volume
+
+        if req.direction == DIRECTION_LONG:
+            order.offset = OFFSET_OPEN
+        else:
+            order.offset = OFFSET_CLOSE
         
         self.localOrderDict[str(self.localNo)] = order
 
@@ -618,10 +630,13 @@ class SpotApi(OkexSpotApi):
         if 'error_code' not in rawData:
             return False
         else:
+            error_id = str(rawData.get('error_code', 0))
+            msg = OKEX_Error_Info.get( error_id , "error in %s" % (data['channel']))
+
             error = VtErrorData()
             error.gatewayName = self.gatewayName
             error.errorID = rawData['error_code']
-            error.errorMsg = u'请求失败，功能：%s' %data['channel']
+            error.errorMsg = u'请求失败，功能：%s , msg:%s , data:%s' % (data['channel'] , msg , data)
             self.gateway.onError(error)
             return True
 
