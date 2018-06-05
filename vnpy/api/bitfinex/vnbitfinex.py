@@ -2,6 +2,7 @@
 
 import json
 import requests
+import traceback
 from threading import Thread
 from queue import Queue, Empty
 
@@ -37,19 +38,34 @@ class BitfinexApi(object):
         
         self.restThread = Thread(target=self.runRest)
         self.restThread.start()
+    
+    #----------------------------------------------------------------------
+    def reconnect(self):
+        """"""
+        self.ws = websocket.create_connection(WEBSOCKET_V2_URL)        
         
     #----------------------------------------------------------------------
     def run(self):
         """"""
         while self.active:
-            stream = self.ws.recv()
-            data = json.loads(stream)
-            self.onData(data)
+            try:
+                stream = self.ws.recv()
+                data = json.loads(stream)
+                self.onData(data)
+            except:
+                msg = traceback.format_exc()
+                self.onError(msg)
+                self.reconnect()
     
     #----------------------------------------------------------------------
     def onData(self, data):
         """"""
         print data
+    
+    #----------------------------------------------------------------------
+    def onError(self, msg):
+        """"""
+        print msg
     
     #----------------------------------------------------------------------
     def sendReq(self, req):

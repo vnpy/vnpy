@@ -163,6 +163,7 @@ class GatewayApi(BitfinexApi):
         self.apiKey = ''
         self.secretKey = ''
         self.symbols = []
+        self.currencys = []
 
         self.tickDict = {}
         self.bidDict = {}
@@ -241,6 +242,8 @@ class GatewayApi(BitfinexApi):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """"""
+        orderReq.volume = 0.02
+        
         self.orderId += 1
         orderId = self.date + self.orderId
         vtOrderID = '.'.join([self.gatewayName, str(orderId)])
@@ -279,6 +282,16 @@ class GatewayApi(BitfinexApi):
             }
         ]
         
+        self.sendReq(req)
+    
+    #----------------------------------------------------------------------
+    def calc(self):
+        """"""
+        l = []
+        for currency in self.currencys:
+            l.append(['wallet_exchange_' + currency])
+        
+        req = [0, 'calc', None, l]
         self.sendReq(req)
     
     #----------------------------------------------------------------------
@@ -416,11 +429,13 @@ class GatewayApi(BitfinexApi):
         if name == 'ws':
             for l in info:
                 self.onWallet(l)
+            self.writeLog(u'账户资金获取成功')
         elif name == 'wu':
             self.onWallet(info)
         elif name == 'os':
             for l in info:
                 self.onOrder(l)
+            self.writeLog(u'活动委托获取成功')
         elif name in ['on', 'ou', 'oc']:
             self.onOrder(info)
         elif name == 'te':
@@ -445,6 +460,7 @@ class GatewayApi(BitfinexApi):
             else:
                 pos.frozen = pos.position - float(data[-1])
             
+            self.currencys.append(pos.symbol)
             self.gateway.onPosition(pos) 
     
     #----------------------------------------------------------------------
@@ -479,7 +495,9 @@ class GatewayApi(BitfinexApi):
         
         self.orderLocalDict[data[0]] = order.orderID
         
-        self.gateway.onOrder(order)        
+        self.gateway.onOrder(order)      
+        
+        self.calc()
     
     #----------------------------------------------------------------------
     def onTrade(self, data):
