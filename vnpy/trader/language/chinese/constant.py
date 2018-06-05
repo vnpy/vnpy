@@ -91,6 +91,8 @@ EXCHANGE_ZB = 'ZB'		 # 比特币中国比特币交易所
 EXCHANGE_OKEX = 'OKEX'		 # OKEX比特币交易所
 EXCHANGE_ZAIF = "ZAIF"		 # ZAIF日本比特币交易所
 EXCHANGE_COINCHECK = "COINCHECK" # COINCHECK日本比特币交易所
+EXCHANGE_BINANCE = "BINANCE"     # 币安比特币交易所
+EXCHANGE_BITFINEX = "BITFINEX"   # Bitfinex比特币交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元

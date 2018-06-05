@@ -479,8 +479,6 @@ class GatewayApi(BinanceApi):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """"""
-        orderReq.volume = 0.02
-        
         self.orderId += 1
         orderId = self.date + str(self.orderId).rjust(6, '0')
         vtOrderID = '.'.join([self.gatewayName, orderId])
