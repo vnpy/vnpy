@@ -1,15 +1,10 @@
 # encoding: UTF-8
 
-'''
-OKEX的高性能异步交易API
-
-Contributor：ipqhjjybj 大佳
-'''
-
 from __future__ import print_function
 
 import hashlib
 import json
+import traceback
 from threading import Thread
 from time import sleep
 
@@ -104,9 +99,10 @@ class OkexApi(object):
                     
                     try:
                         self.ws.send(j) 
-                    except websocket.WebSocketConnectionClosedException:
+                    except:
+                        msg = traceback.format_exc()
+                        self.onError(msg)
                         self.reconnect()
-                    
 
     #----------------------------------------------------------------------
     def reconnect(self):
