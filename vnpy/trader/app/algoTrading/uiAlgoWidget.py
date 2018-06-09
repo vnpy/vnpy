@@ -53,7 +53,11 @@ class AlgoWidget(QtWidgets.QWidget):
     def saveAlgoSetting(self):
         """保存算法配置"""
         setting = self.getAlgoSetting()
+        setting['templateName'] = self.templateName
+        setting['settingName'] = unicode(self.lineSettingName.text())
         self.algoEngine.saveAlgoSetting(setting)
+        
+        self.lineSettingName.setText('')
     
     #----------------------------------------------------------------------
     def initAlgoLayout(self):

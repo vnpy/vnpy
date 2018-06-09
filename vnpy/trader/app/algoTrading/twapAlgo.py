@@ -248,17 +248,16 @@ class TwapWidget(AlgoWidget):
     #----------------------------------------------------------------------
     def getAlgoSetting(self):
         """"""
-        setting = {
-            'templateName': TwapAlgo.templateName,
-            'vtSymbol': str(self.lineSymbol.text()),
-            'direction': str(self.comboDirection.currentText()),
-            'targetPrice': float(self.spinPrice.value()),
-            'totalVolume': float(self.spinVolume.value()),
-            'time': int(self.spinTime.value()),
-            'interval': int(self.spinInterval.value()),
-            'priceLevel': int(self.spinPriceLevel.value()),
-            'minVolume': float(self.spinMinVolume.value())
-        }
+        setting = OrderedDict()
+        setting['templateName'] = TwapAlgo.templateName
+        setting['vtSymbol'] = str(self.lineSymbol.text())
+        setting['direction'] = str(self.comboDirection.currentText())
+        setting['targetPrice'] = float(self.spinPrice.value())
+        setting['totalVolume'] = float(self.spinVolume.value())
+        setting['time'] = int(self.spinTime.value())
+        setting['interval'] = int(self.spinInterval.value())
+        setting['priceLevel'] = int(self.spinPriceLevel.value())
+        setting['minVolume'] = float(self.spinMinVolume.value())
         
         return setting
     

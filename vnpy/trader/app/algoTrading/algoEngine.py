@@ -228,9 +228,9 @@ class AlgoEngine(object):
         return tick
     
     #----------------------------------------------------------------------
-    def saveAlgoSetting(self, settingName, algoSetting):
+    def saveAlgoSetting(self, algoSetting):
         """保存算法配置"""
-        algoSetting['settingName'] = settingName
+        settingName = algoSetting['settingName']
         self.settingDict[settingName] = algoSetting
         
         self.mainEngine.dbUpdate(ALGOTRADING_DB_NAME, 
@@ -252,6 +252,18 @@ class AlgoEngine(object):
             settingName = algoSetting['settingName']
             self.settingDict[settingName] = algoSetting
             self.putSettingEvent(settingName, algoSetting)
+    
+    #----------------------------------------------------------------------
+    def deleteAlgoSetting(self, algoSetting):
+        """删除算法配置"""
+        settingName = algoSetting['settingName']
+        
+        del self.settingDict[settingName]
+        self.mainEngine.dbDelete(ALGOTRADING_DB_NAME,
+                                 SETTING_COLLECTION_NAME,
+                                 {'settingName': settingName})
+        
+        self.putSettingEvent(settingName, {})
         
     #----------------------------------------------------------------------
     def putSettingEvent(self, settingName, algoSetting):
