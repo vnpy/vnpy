@@ -18,10 +18,16 @@ from .twapAlgo import TwapAlgo
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
 EVENT_ALGO_PARAM = 'eAlgoParam'     # 算法参数事件
 EVENT_ALGO_VAR = 'eAlgoVar'         # 算法变量事件
+EVENT_ALGO_SETTING = 'eAlgoSetting' # 算法配置事件
+
+
+ALGOTRADING_DB_NAME = 'VnTrader_AlgoTrading_Db'
+
+SETTING_COLLECTION_NAME = 'AlgoSetting'
 
 
 ALGO_DICT = {
-    TwapAlgo.name: TwapAlgo
+    TwapAlgo.templateName: TwapAlgo
 }
 
 
@@ -39,6 +45,7 @@ class AlgoEngine(object):
         self.algoDict = {}          # algoName:algo
         self.orderAlgoDict = {}     # vtOrderID:algo
         self.symbolAlgoDict = {}    # vtSymbol:algo set
+        self.settingDict = {}       # settingName:setting
         
         self.registerEvent()
 
@@ -90,9 +97,10 @@ class AlgoEngine(object):
             algo.updateTimer()
     
     #----------------------------------------------------------------------
-    def addAlgo(self, name, algoSetting):
+    def addAlgo(self, algoSetting):
         """新增算法"""
-        algoClass = ALGO_DICT[name]
+        templateName = algoSetting['templateName']
+        algoClass = ALGO_DICT[templateName]
         algo = algoClass.new(self, algoSetting)
         self.algoDict[algo.algoName] = algo
         return algo.algoName
@@ -218,4 +226,39 @@ class AlgoEngine(object):
             return            
             
         return tick
+    
+    #----------------------------------------------------------------------
+    def saveAlgoSetting(self, settingName, algoSetting):
+        """保存算法配置"""
+        algoSetting['settingName'] = settingName
+        self.settingDict[settingName] = algoSetting
+        
+        self.mainEngine.dbUpdate(ALGOTRADING_DB_NAME, 
+                                 SETTING_COLLECTION_NAME,
+                                 algoSetting,
+                                 {'settingName': settingName},
+                                 True)
+        
+        self.putSettingEvent(settingName, algoSetting)
+    
+    #----------------------------------------------------------------------
+    def loadAlgoSetting(self):
+        """加载算法配置"""
+        l = self.mainEngine.dbQuery(ALGOTRADING_DB_NAME,
+                                    SETTING_COLLECTION_NAME,
+                                    {},
+                                    'templateName')
+        for algoSetting in l:
+            settingName = algoSetting['settingName']
+            self.settingDict[settingName] = algoSetting
+            self.putSettingEvent(settingName, algoSetting)
+        
+    #----------------------------------------------------------------------
+    def putSettingEvent(self, settingName, algoSetting):
+        """发出算法配置更新事件"""
+        algoSetting['settingName'] = settingName
+        
+        event = Event(EVENT_ALGO_SETTING)
+        event.dict_['data'] = algoSetting
+        self.eventEngine.put(event)
 
