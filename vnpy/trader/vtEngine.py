@@ -251,7 +251,17 @@ class MainEngine(object):
             collection = db[collectionName]
             collection.replace_one(flt, d, upsert)
         else:
-            self.writeLog(text.DATA_UPDATE_FAILED)        
+            self.writeLog(text.DATA_UPDATE_FAILED)   
+    
+    #----------------------------------------------------------------------
+    def dbDelete(self, dbName, collectionName, flt):
+        """从数据库中删除数据，flt是过滤条件"""
+        if self.dbClient:
+            db = self.dbClient[dbName]
+            collection = db[collectionName]
+            collection.delete_one(flt)
+        else:
+            self.writeLog(text.DATA_DELETE_FAILED)          
             
     #----------------------------------------------------------------------
     def dbLogging(self, event):
@@ -735,7 +745,7 @@ class LogEngine(object):
         function = self.levelFunctionDict[log.logLevel]     # 获取日志级别对应的处理函数
         msg = '\t'.join([log.gatewayName, log.logContent])
         function(msg)
-        
+  
     
 ########################################################################
 class PositionDetail(object):
