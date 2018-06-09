@@ -9,4 +9,4 @@ appName = 'AlgoTrading'
 appDisplayName = u'算法交易'
 appEngine = AlgoEngine
 appWidget = AlgoManager
-appIco = 'ct.ico'
+appIco = 'at.ico'
