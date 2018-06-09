@@ -240,4 +240,4 @@ class AlgoManager(QtWidgets.QWidget):
     def addAlgoWidget(self, widgetClass):
         """"""
         w = widgetClass(self.algoEngine)
-        self.tab.addTab(w, w.name)    
+        self.tab.addTab(w, w.templateName)    

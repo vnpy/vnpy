@@ -12,7 +12,7 @@ STATUS_ACTIVE = [STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_UNKNOWN]
 ########################################################################
 class AlgoTemplate(object):
     """算法模板"""
-    name = 'AlgoTemplate'
+    templateName = 'AlgoTemplate'
     count = 0
     
     @classmethod
@@ -20,7 +20,7 @@ class AlgoTemplate(object):
     def new(cls, engine, setting):
         """创建新对象"""
         cls.count += 1
-        algoName = '%s_%s' %(cls.name, cls.count)
+        algoName = '%s_%s' %(cls.templateName, cls.count)
         
         algo = cls(engine, setting, algoName)
         return algo

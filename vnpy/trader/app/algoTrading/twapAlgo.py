@@ -6,14 +6,15 @@ from collections import OrderedDict
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT)
 from vnpy.trader.uiQt import QtWidgets
 
-from algoTemplate import AlgoTemplate
+from .algoTemplate import AlgoTemplate
+from .uiAlgoWidget import AlgoWidget, QtWidgets
 
 
 ########################################################################
 class TwapAlgo(AlgoTemplate):
     """TWAP算法"""
     
-    name = 'TWAP'
+    templateName = 'TWAP'
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):
@@ -168,23 +169,19 @@ class TwapAlgo(AlgoTemplate):
         self.putParamEvent(d)
 
 
-
 ########################################################################
-class TwapWidget(QtWidgets.QWidget):
+class TwapWidget(AlgoWidget):
     """"""
-    name = TwapAlgo.name
-
+    
     #----------------------------------------------------------------------
-    def __init__(self, algoEngine):
+    def __init__(self, algoEngine, parent=None):
         """Constructor"""
-        super(TwapWidget, self).__init__()
+        super(TwapWidget, self).__init__(algoEngine, parent)
         
-        self.algoEngine = algoEngine
-        
-        self.initUi()
+        self.templateName = TwapAlgo.templateName
         
     #----------------------------------------------------------------------
-    def initUi(self):
+    def initAlgoLayout(self):
         """"""
         self.lineSymbol = QtWidgets.QLineEdit()
         
@@ -245,14 +242,14 @@ class TwapWidget(QtWidgets.QWidget):
         grid.addWidget(self.spinPriceLevel, 6, 1)
         grid.addWidget(Label(u'数量取整'), 7, 0)
         grid.addWidget(self.spinMinVolume, 7, 1)
-        grid.addWidget(buttonStart, 8, 0, 1, 2)
-        
-        self.setLayout(grid)
+
+        return grid
     
     #----------------------------------------------------------------------
-    def addAlgo(self):
+    def getAlgoSetting(self):
         """"""
         setting = {
+            'templateName': TwapAlgo.templateName,
             'vtSymbol': str(self.lineSymbol.text()),
             'direction': str(self.comboDirection.currentText()),
             'targetPrice': float(self.spinPrice.value()),
@@ -263,10 +260,6 @@ class TwapWidget(QtWidgets.QWidget):
             'minVolume': float(self.spinMinVolume.value())
         }
         
-        self.algoEngine.addAlgo(TwapAlgo.name, setting)
-        
-        
-        
-        
+        return setting
     
     
