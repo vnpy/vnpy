@@ -453,7 +453,7 @@ class HuobiTradeApi(TradeApi):
     def onError(self, msg, reqid):
         """错误回调"""
         # 忽略请求超时错误
-        if '429' in msg:
+        if '429' in msg or 'api-signature-not-valid' in msg:
             return
         
         err = VtErrorData()
