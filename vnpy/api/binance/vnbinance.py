@@ -85,8 +85,10 @@ class BinanceApi(object):
     def close(self):
         """"""
         self.active = False
-        self.pool.close()
-        self.pool.join()
+        
+        if self.pool:
+            self.pool.close()
+            self.pool.join()
     
     #----------------------------------------------------------------------
     def request(self, method, path, params=None, signed=False, stream=False):
