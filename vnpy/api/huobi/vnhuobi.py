@@ -20,7 +20,7 @@ from websocket import create_connection, _exceptions
 
 
 # 常量定义
-TIMEOUT = 5
+TIMEOUT = 10
 HUOBI_API_HOST = "api.huobi.pro"
 HADAX_API_HOST = "api.hadax.com"
 LANG = 'zh-CN'
