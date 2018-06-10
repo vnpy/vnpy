@@ -182,10 +182,13 @@ class GatewayApi(BitfinexApi):
         self.start()
         self.writeLog(u'交易API启动成功')
         
-        for symbol in symbols:
+    #----------------------------------------------------------------------
+    def onConnect(self):
+        """"""
+        for symbol in self.symbols:
             self.subscribe(symbol, 'ticker')
             self.subscribe(symbol, 'book')
-        self.writeLog(u'行情推送订阅成功')
+        self.writeLog(u'行情推送订阅成功')             
         
         self.authenticate()
         self.writeLog(u'交易推送订阅成功')

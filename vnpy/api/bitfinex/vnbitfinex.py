@@ -38,11 +38,15 @@ class BitfinexApi(object):
         
         self.restThread = Thread(target=self.runRest)
         self.restThread.start()
+        
+        self.onConnect()
     
     #----------------------------------------------------------------------
     def reconnect(self):
         """"""
-        self.ws = websocket.create_connection(WEBSOCKET_V2_URL)        
+        self.ws = websocket.create_connection(WEBSOCKET_V2_URL)   
+        
+        self.onConnect()
         
     #----------------------------------------------------------------------
     def run(self):
@@ -56,6 +60,12 @@ class BitfinexApi(object):
                 msg = traceback.format_exc()
                 self.onError(msg)
                 self.reconnect()
+    
+    #----------------------------------------------------------------------
+    def onConnect(self):
+        """"""
+        print 'connected'
+        
     
     #----------------------------------------------------------------------
     def onData(self, data):
