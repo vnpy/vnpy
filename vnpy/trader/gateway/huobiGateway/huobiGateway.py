@@ -84,7 +84,7 @@ class HuobiGateway(VtGateway):
 
         # 创建行情和交易接口对象
         self.dataApi.connect(exchange, symbols)
-        self.tradeApi.connect(exchange, accessKey, secretKey, symbols)
+        self.tradeApi.connect(exchange, symbols, accessKey, secretKey)
 
         # 初始化并启动查询
         self.initQuery()
@@ -495,8 +495,9 @@ class HuobiTradeApi(TradeApi):
     def onGetAccounts(self, data, reqid):
         """查询账户回调"""
         for d in data:
-            self.accountid = str(d['id'])
-            self.writeLog(u'交易账户%s查询成功' %self.accountid)
+            if str(d['type']) == 'spot':
+                self.accountid = str(d['id'])
+                self.writeLog(u'交易账户%s查询成功' %self.accountid)
 
     #----------------------------------------------------------------------
     def onGetAccountBalance(self, data, reqid):
