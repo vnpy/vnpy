@@ -551,7 +551,7 @@ class DataApi(object):
         self.url = url
         
         try:
-            self.ws = create_connection(self.url)
+            self.ws = create_connection(self.url, sslopt={'cert_reqs': ssl.CERT_NONE})
             self.active = True
             self.thread.start()
             

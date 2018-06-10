@@ -5,6 +5,7 @@ import requests
 import hmac
 import hashlib
 import traceback
+import ssl
 
 from queue import Queue, Empty
 from threading import Thread
@@ -535,7 +536,8 @@ class BinanceApi(object):
     def connectDataStream(self):
         """"""
         try:
-            self.dataStreamWs = create_connection(self.dataStreamUrl)
+            self.dataStreamWs = create_connection(self.dataStreamUrl,
+                                                  sslopt={'cert_reqs': ssl.CERT_NONE})
             return True
         except:
             msg = traceback.format_exc()
@@ -595,7 +597,8 @@ class BinanceApi(object):
     def connectUserStream(self):
         """"""
         try:
-            self.userStreamWs = create_connection(self.userStreamUrl)
+            self.userStreamWs = create_connection(self.userStreamUrl,
+                                                  sslopt={'cert_reqs': ssl.CERT_NONE})
             return True
         except:
             msg = traceback.format_exc()
