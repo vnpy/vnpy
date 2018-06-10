@@ -342,6 +342,7 @@ class AlgoSettingMonitor(QtWidgets.QTableWidget):
             
             self.cellDict[settingName] = {
                 'start': buttonStart,
+                'template': cellTemplateName,
                 'text': cellSettingText,
                 'delete': buttonDelete
             }
@@ -349,6 +350,7 @@ class AlgoSettingMonitor(QtWidgets.QTableWidget):
         else:
             d = self.cellDict[settingName]
             d['start'].updateSetting(setting)
+            d['template'].setText(setting['templateName'])
             d['text'].setText(self.generateText(setting))
             d['delete'].updateSetting(setting)
         
