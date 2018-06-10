@@ -21,9 +21,10 @@ EVENT_ALGO_VAR = 'eAlgoVar'         # 算法变量事件
 EVENT_ALGO_SETTING = 'eAlgoSetting' # 算法配置事件
 
 
-ALGOTRADING_DB_NAME = 'VnTrader_AlgoTrading_Db'
+ALGOTRADING_DB_NAME = 'VnTrader_AlgoTrading_Db'     # AlgoTrading数据库名
 
-SETTING_COLLECTION_NAME = 'AlgoSetting'
+SETTING_COLLECTION_NAME = 'AlgoSetting'             # 算法配置集合名
+HISTORY_COLLECTION_NAME = 'AlgoHistory'             # 算法历史集合名
 
 
 ALGO_DICT = {
@@ -46,6 +47,7 @@ class AlgoEngine(object):
         self.orderAlgoDict = {}     # vtOrderID:algo
         self.symbolAlgoDict = {}    # vtSymbol:algo set
         self.settingDict = {}       # settingName:setting
+        self.historyDict = {}       # algoName:dict
         
         self.registerEvent()
 
@@ -102,7 +104,9 @@ class AlgoEngine(object):
         templateName = algoSetting['templateName']
         algoClass = ALGO_DICT[templateName]
         algo = algoClass.new(self, algoSetting)
+        
         self.algoDict[algo.algoName] = algo
+        
         return algo.algoName
     
     #----------------------------------------------------------------------
@@ -204,18 +208,44 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def putVarEvent(self, algo, d):
         """更新变量"""
-        d['algoName'] = algo.algoName
+        algoName = algo.algoName
+        
+        d['algoName'] = algoName
         event = Event(EVENT_ALGO_VAR)
         event.dict_['data'] = d
         self.eventEngine.put(event)
+        
+        # 保存数据到数据库
+        history = self.historyDict.setdefault(algoName, {})
+        history['algoName'] = algoName
+        history['var'] = d
+        
+        self.mainEngine.dbUpdate(ALGOTRADING_DB_NAME,
+                                 HISTORY_COLLECTION_NAME,
+                                 history,
+                                 {'algoName': algoName},
+                                 True)
     
     #----------------------------------------------------------------------
     def putParamEvent(self, algo, d):
         """更新参数"""
-        d['algoName'] = algo.algoName
+        algoName = algo.algoName
+        
+        d['algoName'] = algoName
         event = Event(EVENT_ALGO_PARAM)
         event.dict_['data'] = d
         self.eventEngine.put(event)    
+        
+        # 保存数据到数据库
+        history = self.historyDict.setdefault(algoName, {})
+        history['algoName'] = algoName
+        history['param'] = d
+        
+        self.mainEngine.dbUpdate(ALGOTRADING_DB_NAME,
+                                 HISTORY_COLLECTION_NAME,
+                                 history,
+                                 {'algoName': algoName},
+                                 True)        
     
     #----------------------------------------------------------------------
     def getTick(self, algo, vtSymbol):
