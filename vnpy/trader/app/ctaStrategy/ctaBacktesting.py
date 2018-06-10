@@ -234,8 +234,8 @@ class BacktestingEngine(object):
 
         self.output(u'开始回测')
         
-        self.strategy.inited = True
         self.strategy.onInit()
+        self.strategy.inited = True
         self.output(u'策略初始化完成')
         
         self.strategy.trading = True
