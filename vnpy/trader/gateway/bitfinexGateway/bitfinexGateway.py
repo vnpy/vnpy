@@ -381,7 +381,7 @@ class GatewayApi(BitfinexApi):
             
             # BID
             bidPriceList = bid.keys()
-            bidPriceList.sort()
+            bidPriceList.sort(reverse=True)
             
             tick.bidPrice1 = bidPriceList[0]
             tick.bidPrice2 = bidPriceList[1]
@@ -398,7 +398,6 @@ class GatewayApi(BitfinexApi):
             # ASK
             askPriceList = ask.keys()
             askPriceList.sort()
-            askPriceList.reverse()
             
             tick.askPrice1 = askPriceList[0]
             tick.askPrice2 = askPriceList[1]
