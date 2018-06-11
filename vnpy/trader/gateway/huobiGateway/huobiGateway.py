@@ -257,14 +257,14 @@ class HuobiDataApi(DataApi):
         bids = data['tick']['bids']
         for n in range(5):
             l = bids[n]
-            tick.__setattr__('bidPrice' + str(n+1), l[0])
-            tick.__setattr__('bidVolume' + str(n+1), l[1])
+            tick.__setattr__('bidPrice' + str(n+1), float(l[0]))
+            tick.__setattr__('bidVolume' + str(n+1), float(l[1]))
 
         asks = data['tick']['asks']
         for n in range(5):
             l = asks[n]
-            tick.__setattr__('askPrice' + str(n+1), l[0])
-            tick.__setattr__('askVolume' + str(n+1), l[1])
+            tick.__setattr__('askPrice' + str(n+1), float(l[0]))
+            tick.__setattr__('askVolume' + str(n+1), float(l[1]))
 
         #print '-' * 50
         #for d in data['tick']['asks']:
@@ -309,12 +309,12 @@ class HuobiDataApi(DataApi):
         tick.time = tick.datetime.strftime('%H:%M:%S.%f')
 
         t = data['tick']
-        tick.openPrice = t['open']
-        tick.highPrice = t['high']
-        tick.lowPrice = t['low']
-        tick.lastPrice = t['close']
-        tick.volume = t['vol']
-        tick.preClosePrice = tick.openPrice
+        tick.openPrice = float(t['open'])
+        tick.highPrice = float(t['high'])
+        tick.lowPrice = float(t['low'])
+        tick.lastPrice = float(t['close'])
+        tick.volume = float(t['vol'])
+        tick.preClosePrice = float(tick.openPrice)
 
         if tick.bidPrice1:
             newtick = copy(tick)
