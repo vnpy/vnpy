@@ -570,7 +570,7 @@ class TkproDataApi(object):
             tick.lowerLimit = data['limit_down']
     
             self.gateway.onTick(tick)
-        except Exception, e:
+        except Exception as e:
             self.writeLog(u'行情更新失败，错误信息：%s' % str(e))
 
     #----------------------------------------------------------------------

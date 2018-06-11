@@ -3,6 +3,7 @@
 '''
 Wind Python API的gateway接入
 '''
+from __future__ import print_function
 
 from copy import copy
 
@@ -11,7 +12,7 @@ w = None
 try:
     from WindPy import w
 except ImportError:
-    print u'请先安装WindPy接口'
+    print(u'请先安装WindPy接口')
 
 from vnpy.trader.vtGateway import *
 

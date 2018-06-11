@@ -3,6 +3,7 @@
 '''
 vn.lts的gateway接入
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -980,7 +981,7 @@ class LtsQryApi(QryApi):
         elif data['ProductClass'] == '8':
             contract.productClass = PRODUCT_EQUITY
         else:
-            print data['ProductClass']
+            print(data['ProductClass'])
         
         # 期权类型
         if data['InstrumentType'] == '1':
