@@ -1,6 +1,6 @@
 {
 	"host": "localhost",
-	"port": 7497,
+	"port": 4002,
 	"clientId": 888,
-	"accountCode": "DU545254"
+	"accountCode": "123456"
 }
