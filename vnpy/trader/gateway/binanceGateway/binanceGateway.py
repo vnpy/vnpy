@@ -3,6 +3,7 @@
 '''
 vnpy.api.binance的gateway接入
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -40,11 +41,11 @@ priceTypeMap[PRICETYPE_MARKETPRICE] = 'MARKET'
 #----------------------------------------------------------------------
 def print_dict(d):
     """"""
-    print '-' * 30
+    print('-' * 30)
     l = d.keys()
     l.sort()
     for k in l:
-        print '%s:%s' %(k, d[k])
+        print('%s:%s' %(k, d[k]))
 
 
 ########################################################################

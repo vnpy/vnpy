@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from six import text_type
+
 from vnpy.trader.uiQt import QtWidgets
 
 
@@ -54,7 +56,7 @@ class AlgoWidget(QtWidgets.QWidget):
         """保存算法配置"""
         setting = self.getAlgoSetting()
         setting['templateName'] = self.templateName
-        setting['settingName'] = unicode(self.lineSettingName.text())
+        setting['settingName'] = text_type(self.lineSettingName.text())
         self.algoEngine.saveAlgoSetting(setting)
         
         self.lineSettingName.setText('')
