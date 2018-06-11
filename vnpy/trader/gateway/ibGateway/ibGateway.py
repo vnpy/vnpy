@@ -83,6 +83,9 @@ currencyMap = {}
 currencyMap[CURRENCY_USD] = 'USD'
 currencyMap[CURRENCY_CNY] = 'CNY'
 currencyMap[CURRENCY_HKD] = 'HKD'
+currencyMap[CURRENCY_JPY] = 'JPY'
+currencyMap[CURRENCY_EUR] = 'EUR'
+currencyMap[CURRENCY_GBP] = 'GBP'
 currencyMap = {v:k for k,v in currencyMap.items()}
 
 # Tick数据的Field和名称映射
@@ -141,7 +144,20 @@ class IbGateway(VtGateway):
         self.api = IbWrapper(self)      # API接口
         
         self.fileName = self.gatewayName + '_connect.json'
-        self.filePath = getJsonPath(self.fileName, __file__)             
+        self.filePath = getJsonPath(self.fileName, __file__)
+
+
+
+    def __reqHistBarData(self, tickerId, contract, req):
+        """请求历史Bar数据"""
+        tid = tickerId
+
+        dt = datetime.now()
+        self.api.reqHistoricalData(tid, contract, req.endDateTime, req.duration,
+                                   req.barSize,
+                                   req.whatToShow, req.useRTH, req.formatDate,
+                                   TagValueList())
+        return tid
 
     #----------------------------------------------------------------------
     def connect(self):
@@ -175,15 +191,24 @@ class IbGateway(VtGateway):
         
         # 查询服务器时间
         self.api.reqCurrentTime()
-    
+
+
+
+
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
+
+
         """订阅行情"""
+        # reqType=0 实时行情数据，  reqType=1 历史Bar数据，  reqType=2 历史Tick数据
         # 如果尚未连接行情，则将订阅请求缓存下来后直接返回
         if not self.connected:
             self.subscribeReqDict[subscribeReq.symbol] = subscribeReq
             return
-        
+
+        import pydevd
+        pydevd.settrace(suspend=False, trace_only_current_thread=True)
+
         contract = Contract()
         contract.localSymbol = str(subscribeReq.symbol)
         contract.exchange = exchangeMap.get(subscribeReq.exchange, '')
@@ -205,11 +230,18 @@ class IbGateway(VtGateway):
         ct.vtSymbol = '.'.join([ct.symbol, ct.exchange])
         ct.productClass = subscribeReq.productClass
         self.contractDict[ct.vtSymbol] = ct
-        
+
+
+
         # 订阅行情
-        self.tickerId += 1   
-        self.api.reqMktData(self.tickerId, contract, '', False, TagValueList())
-        
+        self.tickerId += 1
+        if subscribeReq.reqType == 0:
+            self.api.reqMktData(self.tickerId, contract, '', False, TagValueList())
+        elif subscribeReq.reqType == 1:
+            self.tickerId = self.__reqHistBarData(self.tickerId, contract, subscribeReq)
+        elif subscribeReq.reqType == 2:
+            pass
+
         # 创建Tick对象并保存到字典中
         tick = VtTickData()
         tick.symbol = subscribeReq.symbol
@@ -615,7 +647,10 @@ class IbWrapper(IbApi):
     #----------------------------------------------------------------------
     def historicalData(self, reqId, date, open_, high, low, close, volume, barCount, WAP, hasGaps):
         """"""
-        pass
+        log = VtLogData()
+        log.gatewayName = self.gatewayName
+        log.logContent = 'date=%s open=%f high=%f low=%f close=%f volume=%d barCount=%d WAP=%f hasGrps=%d' % (date, open_, high, low, close, volume, barCount, WAP, hasGaps)
+        self.gateway.onLog(log)
         
     #----------------------------------------------------------------------
     def scannerParameters(self, xml):
@@ -736,4 +771,4 @@ class IbWrapper(IbApi):
     def softDollarTiers(self, reqId, tiers):
         """"""
         pass
-        
+

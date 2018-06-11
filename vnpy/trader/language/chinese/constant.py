@@ -69,6 +69,7 @@ EXCHANGE_UNKNOWN = 'UNKNOWN'# 未知交易所
 EXCHANGE_NONE = ''          # 空交易所
 EXCHANGE_HKEX = 'HKEX'      # 港交所
 EXCHANGE_HKFE = 'HKFE'      # 香港期货交易所
+EXCHANGE_SEHK = 'SEHK'      # 港交所. IB平台适用
 
 
 EXCHANGE_SMART = 'SMART'       # IB智能路由（股票、期权）
@@ -96,6 +97,9 @@ EXCHANGE_COINCHECK = "COINCHECK" # COINCHECK日本比特币交易所
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币
 CURRENCY_HKD = 'HKD'            # 港币
+CURRENCY_EUR = 'EUR'            # 欧元
+CURRENCY_JPY = 'JPY'            # 欧元
+CURRENCY_GBP = 'GBP'            # 欧元
 CURRENCY_UNKNOWN = 'UNKNOWN'    # 未知货币
 CURRENCY_NONE = ''              # 空货币
 

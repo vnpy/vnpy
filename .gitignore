@@ -53,3 +53,4 @@ vn.trader/build/*
 vn.trader/dist/*
 *.bak
 
+*.o

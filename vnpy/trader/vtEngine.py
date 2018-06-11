@@ -114,7 +114,10 @@ class MainEngine(object):
         if gateway:
             gateway.connect()
             
-            # 接口连接后自动执行数据库连接的任务
+            # 接口连接后自动执行数据库连接的任务        import pydevd
+            #import pydevd
+            #pydevd.settrace(suspend=False, trace_only_current_thread=True)
+
             self.dbConnect()        
    
     #----------------------------------------------------------------------

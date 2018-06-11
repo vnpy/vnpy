@@ -102,6 +102,16 @@ class DrEngine(object):
                         req.currency = setting[3]
                         req.productClass = setting[4]
 
+                    #  针对IB历史Bar数据接口， 订阅历史数Bar据至少需要截止日期，期间以及bar size。
+                    if len(setting)>=8:
+                        req.reqType = 1 # 修改默认的reqType，MainEngine和Gateway的subscribe()中发挥作用  ZL
+                        req.endDateTime = setting[5].encode('utf8')
+                        req.duration = setting[6].encode('utf8')
+                        req.barSize = setting[7].encode('utf8')
+                        req.whatToShow = setting[8].encode('utf8')
+                        req.useRTH = 1
+                        req.formatDate = 1
+
                     self.mainEngine.subscribe(req, gateway)
 
                     #tick = VtTickData()           # 该tick实例可以用于缓存部分数据（目前未使用）
@@ -139,6 +149,17 @@ class DrEngine(object):
                     if len(setting)>=5:
                         req.currency = setting[3]
                         req.productClass = setting[4]                    
+
+                    #  针对IB历史Bar数据接口， 订阅历史数Bar据至少需要截止日期，期间以及bar size。
+                    if len(setting)>=8:
+                        req.reqType = 1 # 修改默认的reqType，MainEngine和Gateway的subscribe()中发挥作用  ZL
+                        req.endDateTime = setting[5].encode('utf8')
+                        req.duration = setting[6].encode('utf8')
+                        req.barSize = setting[7].encode('utf8')
+                        req.whatToShow = setting[8].encode('utf8')
+                        req.useRTH = 1
+                        req.formatDate = 1
+
 
                     self.mainEngine.subscribe(req, gateway)  
                     

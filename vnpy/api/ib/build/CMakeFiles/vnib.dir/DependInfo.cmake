@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/vnpy/桌面/new/vn.ib/vnib/vnib/vnib.cpp" "/home/vnpy/桌面/new/vn.ib/build/CMakeFiles/vnib.dir/vnib/vnib/vnib.cpp.o"
+  "/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/vnib.cpp" "/home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/vnib.dir/vnib/vnib/vnib.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

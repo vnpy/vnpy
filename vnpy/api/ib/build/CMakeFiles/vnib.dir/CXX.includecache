@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -146,29 +146,29 @@ vector
 
 .././ibapi/linux/client/shared_ptr.h
 
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/vnib.cpp
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/vnib.cpp
 StdAfx.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/StdAfx.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/StdAfx.h
 vnib.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/vnib.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/vnib.h
 Contract.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/Contract.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/Contract.h
 OrderState.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/OrderState.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/OrderState.h
 Execution.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/Execution.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/Execution.h
 CommissionReport.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/CommissionReport.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/CommissionReport.h
 ScannerSubscription.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/ScannerSubscription.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/ScannerSubscription.h
 TagValue.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/TagValue.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/TagValue.h
 Order.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/Order.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/Order.h
 
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/vnib.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/vnib.h
 StdAfx.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/StdAfx.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/StdAfx.h
 string
 -
 boost/python/module.hpp
@@ -190,9 +190,9 @@ boost/bind.hpp
 boost/shared_ptr.hpp
 -
 EWrapper.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/EWrapper.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/EWrapper.h
 EClientSocket.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/EClientSocket.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/EClientSocket.h
 EReader.h
-/home/vnpy/桌面/new/vn.ib/vnib/vnib/EReader.h
+/home/zl/PycharmProjects/vnpy/vnpy/api/ib/vnib/vnib/EReader.h
 

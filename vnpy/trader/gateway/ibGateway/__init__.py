@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 from vnpy.trader import vtConstant
-from ibGateway import IbGateway
+from ibGateway import IbGateway, IbGateway
 
 gatewayClass = IbGateway
 gatewayName = 'IB'

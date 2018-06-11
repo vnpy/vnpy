@@ -1,24 +1,24 @@
 Determining if the pthread_create exist failed with the following output:
-Change Dir: /home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp
+Change Dir: /home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_deeb6/fast"
-/usr/bin/make -f CMakeFiles/cmTC_deeb6.dir/build.make CMakeFiles/cmTC_deeb6.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_deeb6.dir/CheckSymbolExists.cxx.o
-/usr/bin/c++     -fPIC -std=c++11    -o CMakeFiles/cmTC_deeb6.dir/CheckSymbolExists.cxx.o -c /home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
-Linking CXX executable cmTC_deeb6
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_deeb6.dir/link.txt --verbose=1
-/usr/bin/c++    -fPIC -std=c++11     CMakeFiles/cmTC_deeb6.dir/CheckSymbolExists.cxx.o  -o cmTC_deeb6 -rdynamic 
-CMakeFiles/cmTC_deeb6.dir/CheckSymbolExists.cxx.o：在函数‘main’中：
+Run Build Command:"/usr/bin/make" "cmTC_38a3a/fast"
+/usr/bin/make -f CMakeFiles/cmTC_38a3a.dir/build.make CMakeFiles/cmTC_38a3a.dir/build
+make[1]: 进入目录“/home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp”
+Building CXX object CMakeFiles/cmTC_38a3a.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++    -fPIC -std=c++11    -o CMakeFiles/cmTC_38a3a.dir/CheckSymbolExists.cxx.o -c /home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+Linking CXX executable cmTC_38a3a
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_38a3a.dir/link.txt --verbose=1
+/usr/bin/c++   -fPIC -std=c++11     -rdynamic CMakeFiles/cmTC_38a3a.dir/CheckSymbolExists.cxx.o  -o cmTC_38a3a 
+CMakeFiles/cmTC_38a3a.dir/CheckSymbolExists.cxx.o：在函数‘main’中：
 CheckSymbolExists.cxx:(.text+0x1b)：对‘pthread_create’未定义的引用
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_deeb6.dir/build.make:97: recipe for target 'cmTC_deeb6' failed
-make[1]: *** [cmTC_deeb6] Error 1
-make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_deeb6/fast' failed
-make: *** [cmTC_deeb6/fast] Error 2
+CMakeFiles/cmTC_38a3a.dir/build.make:97: recipe for target 'cmTC_38a3a' failed
+make[1]: *** [cmTC_38a3a] Error 1
+make[1]: 离开目录“/home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp”
+Makefile:126: recipe for target 'cmTC_38a3a/fast' failed
+make: *** [cmTC_38a3a/fast] Error 2
 
-File /home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+File /home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
 /* */
 #include <pthread.h>
 
@@ -34,22 +34,22 @@ int main(int argc, char** argv)
 }
 
 Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp
+Change Dir: /home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_704c9/fast"
-/usr/bin/make -f CMakeFiles/cmTC_704c9.dir/build.make CMakeFiles/cmTC_704c9.dir/build
-make[1]: Entering directory '/home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_704c9.dir/CheckFunctionExists.cxx.o
-/usr/bin/c++     -fPIC -std=c++11 -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_704c9.dir/CheckFunctionExists.cxx.o -c /home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
-Linking CXX executable cmTC_704c9
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_704c9.dir/link.txt --verbose=1
-/usr/bin/c++    -fPIC -std=c++11 -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_704c9.dir/CheckFunctionExists.cxx.o  -o cmTC_704c9 -rdynamic -lpthreads 
-/usr/bin/ld: 找不到 -lpthreads
+Run Build Command:"/usr/bin/make" "cmTC_3691e/fast"
+/usr/bin/make -f CMakeFiles/cmTC_3691e.dir/build.make CMakeFiles/cmTC_3691e.dir/build
+make[1]: 进入目录“/home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp”
+Building CXX object CMakeFiles/cmTC_3691e.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++    -fPIC -std=c++11 -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_3691e.dir/CheckFunctionExists.cxx.o -c /home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_3691e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3691e.dir/link.txt --verbose=1
+/usr/bin/c++   -fPIC -std=c++11 -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_3691e.dir/CheckFunctionExists.cxx.o  -o cmTC_3691e -lpthreads 
+/usr/bin/x86_64-linux-gnu-ld: 找不到 -lpthreads
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_704c9.dir/build.make:97: recipe for target 'cmTC_704c9' failed
-make[1]: *** [cmTC_704c9] Error 1
-make[1]: Leaving directory '/home/vnpy/桌面/new/vn.ib/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_704c9/fast' failed
-make: *** [cmTC_704c9/fast] Error 2
+CMakeFiles/cmTC_3691e.dir/build.make:97: recipe for target 'cmTC_3691e' failed
+make[1]: *** [cmTC_3691e] Error 1
+make[1]: 离开目录“/home/zl/PycharmProjects/vnpy/vnpy/api/ib/build/CMakeFiles/CMakeTmp”
+Makefile:126: recipe for target 'cmTC_3691e/fast' failed
+make: *** [cmTC_3691e/fast] Error 2
 
 

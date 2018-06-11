@@ -272,6 +272,8 @@ class VtSubscribeReq(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
+        self.reqType = 0 # 0实时行情订阅， 1历史数据订阅。 默认为0，保证向前兼容 ZL
+
         self.symbol = EMPTY_STRING              # 代码
         self.exchange = EMPTY_STRING            # 交易所
         
@@ -281,6 +283,16 @@ class VtSubscribeReq(object):
         self.expiry = EMPTY_STRING              # 到期日
         self.strikePrice = EMPTY_FLOAT          # 行权价
         self.optionType = EMPTY_UNICODE         # 期权类型
+
+        # 以下为IB历史数据订阅
+        self.endDateTime = EMPTY_STRING  # 历史数据的截止时间 yyyyMMdd HH:mm:ss
+        self.duration = EMPTY_STRING  # 历史数据的期间宽度 "1 M"，“300 D”
+        self.barSize = EMPTY_STRING  # bar数据的尺寸 "1 D", "4 H"
+        self.whatToShow = EMPTY_STRING  # 参见http://interactivebrokers.github.io/tws-api/historical_bars.html#hd_what_to_show
+        self.useRTH = EMPTY_INT # 1获得常规交易时间的数据  0获得常规和非常规交易时间的数据
+        self.formatDate = EMPTY_INT # 1 时间格式为yyyyMMdd HH:mm:ss, 0 1970以来的秒数
+        self.keepUpToDate = False #
+
 
 
 ########################################################################

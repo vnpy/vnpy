@@ -104,6 +104,8 @@ class VtGateway(object):
     def onContract(self, contract):
         """合约基础信息推送"""
         # 通用事件
+        import pydevd
+        pydevd.settrace(suspend=False, trace_only_current_thread=True)
         event1 = Event(type_=EVENT_CONTRACT)
         event1.dict_['data'] = contract
         self.eventEngine.put(event1)        
