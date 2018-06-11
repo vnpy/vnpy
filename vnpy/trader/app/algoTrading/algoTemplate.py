@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 from __future__ import division
+from datetime import datetime
 
 from vnpy.trader.vtConstant import STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_UNKNOWN
 
@@ -13,15 +14,22 @@ STATUS_ACTIVE = [STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_UNKNOWN]
 class AlgoTemplate(object):
     """算法模板"""
     templateName = 'AlgoTemplate'
+    
+    timestamp = ''
     count = 0
     
     @classmethod
     #----------------------------------------------------------------------
     def new(cls, engine, setting):
         """创建新对象"""
-        cls.count += 1
-        algoName = '%s_%s' %(cls.templateName, cls.count)
-        
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        if timestamp != cls.timestamp:
+            cls.timestamp = timestamp
+            cls.count = 0
+        else:
+            cls.count += 1
+            
+        algoName = '_'.join([cls.templateName, cls.timestamp, str(cls.count)])
         algo = cls(engine, setting, algoName)
         return algo
 
