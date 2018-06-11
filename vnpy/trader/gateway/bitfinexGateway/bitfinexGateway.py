@@ -390,37 +390,43 @@ class GatewayApi(BitfinexApi):
                     else:
                         ask[price] = amount
             
-            # BID
-            bidPriceList = bid.keys()
-            bidPriceList.sort(reverse=True)
-            
-            tick.bidPrice1 = bidPriceList[0]
-            tick.bidPrice2 = bidPriceList[1]
-            tick.bidPrice3 = bidPriceList[2]
-            tick.bidPrice4 = bidPriceList[3]
-            tick.bidPrice5 = bidPriceList[4]
-            
-            tick.bidVolume1 = bid[tick.bidPrice1]
-            tick.bidVolume2 = bid[tick.bidPrice2]
-            tick.bidVolume3 = bid[tick.bidPrice3]
-            tick.bidVolume4 = bid[tick.bidPrice4]
-            tick.bidVolume5 = bid[tick.bidPrice5]
-            
-            # ASK
-            askPriceList = ask.keys()
-            askPriceList.sort()
-            
-            tick.askPrice1 = askPriceList[0]
-            tick.askPrice2 = askPriceList[1]
-            tick.askPrice3 = askPriceList[2]
-            tick.askPrice4 = askPriceList[3]
-            tick.askPrice5 = askPriceList[4]
-            
-            tick.askVolume1 = ask[tick.askPrice1]
-            tick.askVolume2 = ask[tick.askPrice2]
-            tick.askVolume3 = ask[tick.askPrice3]
-            tick.askVolume4 = ask[tick.askPrice4]
-            tick.askVolume5 = ask[tick.askPrice5]            
+            # Bitfinex的深度数据更新是逐档推送变动情况，而非5档一起推
+            # 因此会出现没有Bid或者Ask的情况，这里使用try...catch过滤
+            # 只有买卖深度满足5档时才做推送
+            try:
+                # BID
+                bidPriceList = bid.keys()
+                bidPriceList.sort(reverse=True)
+                
+                tick.bidPrice1 = bidPriceList[0]
+                tick.bidPrice2 = bidPriceList[1]
+                tick.bidPrice3 = bidPriceList[2]
+                tick.bidPrice4 = bidPriceList[3]
+                tick.bidPrice5 = bidPriceList[4]
+                
+                tick.bidVolume1 = bid[tick.bidPrice1]
+                tick.bidVolume2 = bid[tick.bidPrice2]
+                tick.bidVolume3 = bid[tick.bidPrice3]
+                tick.bidVolume4 = bid[tick.bidPrice4]
+                tick.bidVolume5 = bid[tick.bidPrice5]
+                
+                # ASK
+                askPriceList = ask.keys()
+                askPriceList.sort()
+                
+                tick.askPrice1 = askPriceList[0]
+                tick.askPrice2 = askPriceList[1]
+                tick.askPrice3 = askPriceList[2]
+                tick.askPrice4 = askPriceList[3]
+                tick.askPrice5 = askPriceList[4]
+                
+                tick.askVolume1 = ask[tick.askPrice1]
+                tick.askVolume2 = ask[tick.askPrice2]
+                tick.askVolume3 = ask[tick.askPrice3]
+                tick.askVolume4 = ask[tick.askPrice4]
+                tick.askVolume5 = ask[tick.askPrice5]  
+            except IndexError:
+                return            
         
         dt = datetime.now()
         tick.date = dt.strftime('%Y%m%d')
