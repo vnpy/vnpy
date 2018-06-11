@@ -7,7 +7,7 @@ from datetime import datetime, time
 from vnpy.event import EventEngine2
 from vnpy.trader.vtEvent import EVENT_LOG, EVENT_ERROR
 from vnpy.trader.vtEngine import MainEngine, LogEngine
-from vnpy.trader.gateway import ctpGateway
+from vnpy.trader.gateway import ibGateway
 from vnpy.trader.app import dataRecorder
 
 
@@ -27,7 +27,7 @@ def runChildProcess():
 
     # 创建日志引擎
     le = LogEngine()
-    le.setLogLevel(le.LEVEL_INFO)
+    le.setLogLevel(le.LEVEL_DEBUG)
     le.addConsoleHandler()
     le.info(u'启动行情记录运行子进程')
     
@@ -35,7 +35,7 @@ def runChildProcess():
     le.info(u'事件引擎创建成功')
     
     me = MainEngine(ee)
-    me.addGateway(ctpGateway)
+    me.addGateway(ibGateway)
     me.addApp(dataRecorder)
     le.info(u'主引擎创建成功')
 
@@ -43,8 +43,8 @@ def runChildProcess():
     ee.register(EVENT_ERROR, processErrorEvent)
     le.info(u'注册日志事件监听')
 
-    me.connect('CTP')
-    le.info(u'连接CTP接口')
+    me.connect('IB')
+    le.info(u'连接IB接口')
 
     while True:
         sleep(1)
@@ -81,6 +81,7 @@ def runParentProcess():
             (datetime.today().weekday() == 0 and currentTime < DAY_START)):
             recording = False
 
+        recording = True
         # 记录时间则需要启动子进程
         if recording and p is None:
             le.info(u'启动子进程')
