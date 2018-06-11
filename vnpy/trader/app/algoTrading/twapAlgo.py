@@ -152,6 +152,7 @@ class TwapAlgo(AlgoTemplate):
         d[u'单笔委托'] = self.orderSize
         d[u'本轮读秒'] = self.timerCount
         d[u'累计读秒'] = self.timerTotal
+        d['active'] = self.active
         self.putVarEvent(d)
     
     #----------------------------------------------------------------------

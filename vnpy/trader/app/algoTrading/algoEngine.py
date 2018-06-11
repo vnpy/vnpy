@@ -15,6 +15,7 @@ from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, V
 
 from .twapAlgo import TwapAlgo
 from .dmaAlgo import DmaAlgo
+from .stopAlgo import StopAlgo
 
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
 EVENT_ALGO_PARAM = 'eAlgoParam'     # 算法参数事件
@@ -29,7 +30,9 @@ HISTORY_COLLECTION_NAME = 'AlgoHistory'             # 算法历史集合名
 
 
 ALGO_DICT = {
-    TwapAlgo.templateName: TwapAlgo
+    TwapAlgo.templateName: TwapAlgo,
+    DmaAlgo.templateName: DmaAlgo,
+    StopAlgo.templateName: StopAlgo
 }
 
 
@@ -113,8 +116,9 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def stopAlgo(self, algoName):
         """停止算法"""
-        self.algoDict[algoName].stop()
-        del self.algoDict[algoName]
+        if algoName in self.algoDict:
+            self.algoDict[algoName].stop()
+            del self.algoDict[algoName]
     
     #----------------------------------------------------------------------
     def stopAll(self):
