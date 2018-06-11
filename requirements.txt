@@ -1,0 +1,12 @@
+pymongo 
+websocket-client
+msgpack-python
+qdarkstyle
+SortedContainers
+futuquant
+wmi
+future
+flask-socketio
+flask-restful
+flask-cors
+gevent-websocket

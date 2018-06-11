@@ -1,0 +1,6 @@
+{
+    "apiKey": "你的apiKey",
+    "secretKey": "你的secretKey",
+    "trace": false,
+    "leverage": 10
+}

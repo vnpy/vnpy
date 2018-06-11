@@ -1,0 +1,7 @@
+{
+    "username": "请在quantos.org申请",
+    "token": "请在quantos.org申请",
+    "strategy": 625,
+    "tradeAddress": "tcp://gw.quantos.org:8901", 
+    "dataAddress": "tcp://data.tushare.org:8910"
+}

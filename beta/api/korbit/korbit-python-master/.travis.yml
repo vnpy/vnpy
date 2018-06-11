@@ -1,0 +1,8 @@
+language: python
+python:
+  - "2.7"
+  - "3.5"
+install: "pip install requests"
+script: "python -m unittest"
+notifications:
+  slack: test1030team:nXUuJifoc4Rg8VFYmdW9cd1T
