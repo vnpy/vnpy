@@ -172,8 +172,17 @@ run->me++: me.Connect(IB)
     ib->wrap ++ : currentTime()\nIB网关发回响应数据包到IB的C++代码，\n该代码回调函数
         wrap->gw ++ : 将缓存的req取出，进行实际订阅\nsubscribe(subscribeReq)
             gw->wrap ++ : 请求合约详细\nreqContractDetails(tickerId, contract)
+                wrap->ib ++ : 发送合约详细信息的请求数据包
+                    return
                 return
             gw->wrap ++ : 请求市场数据\nreqMktData(tickerId, contract, '',\nFalse, TagValueList())
+                note right
+                    reqMktData()请求的Tick数据分多次返回，每次返回一种TickType。
+                    TickType由第三个参数指定，如果不指定，就返回常用的TickType。
+                end note
+                wrap->ib ++ : 发送实时市场行情数据的请求数据包
+                    return
+                return
                 return
             |||
             return
@@ -187,7 +196,14 @@ run->me++: me.Connect(IB)
             return
         return
 
-    ib->wrap ++ : tickPrice(tickerId, field, price, canAutoExecute)\nIB网关响应的合约信息通过回调函数传入
+    ib->wrap ++ : tickPrice(tickerId, field, price, canAutoExecute)\nIB网关响应的价格信息通过回调函数传入\nBid,Ask等价格类型由field指定，每次传回一种。
+        wrap -> gw ++ : OnTick(tick)\n推送事件
+                gw->ee ++ : ee.put(event(EVENT_TICK, tick))
+                    return
+            return
+        return
+
+    ib->wrap ++ : tickSize(tickerId, field, size)\nIB网关响应的交易量信息通过回调函数传入
         wrap -> gw ++ : OnTick(tick)\n推送事件
                 gw->ee ++ : ee.put(event(EVENT_TICK, tick))
                     return
