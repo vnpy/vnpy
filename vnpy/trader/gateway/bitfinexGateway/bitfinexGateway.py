@@ -353,11 +353,11 @@ class GatewayApi(BitfinexApi):
         
         # 常规行情更新
         if channel == 'ticker':
-            tick.volume = l[-3]
-            tick.highPrice = l[-2]
-            tick.lowPrice = l[-1]
-            tick.lastPrice = l[-4]
-            tick.openPrice = tick.lastPrice - l[4]
+            tick.volume = float(l[-3])
+            tick.highPrice = float(l[-2])
+            tick.lowPrice = float(l[-1])
+            tick.lastPrice = float(l[-4])
+            tick.openPrice = float(tick.lastPrice - l[4])
         # 深度报价更新
         elif channel == 'book':
             bid = self.bidDict.setdefault(symbol, {})
@@ -365,12 +365,20 @@ class GatewayApi(BitfinexApi):
             
             if len(l) > 3:
                 for price, count, amount in l:
+                    price = float(price)
+                    count = int(count)
+                    amount = float(amount)
+                    
                     if amount > 0:
                         bid[price] = amount
                     else:
                         ask[price] = -amount
             else:
                 price, count, amount = l
+                price = float(price)
+                count = int(count)
+                amount = float(amount)                
+                
                 if not count:
                     if price in bid:
                         del bid[price]

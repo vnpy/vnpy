@@ -3,6 +3,7 @@
 '''
 vn.lhang的gateway接入
 '''
+from __future__ import print_function
 
 
 import os
@@ -244,11 +245,11 @@ class LbankApi(LbankApi):
     # ----------------------------------------------------------------------
     def onGetTrades(self, data, req, reqID):
         """查询历史成交"""
-        print data, reqID
+        print(data, reqID)
 
     # ----------------------------------------------------------------------
     def onGetKline(self, data, req, reqID):
-        print data, reqID
+        print(data, reqID)
     
     # ----------------------------------------------------------------------
     def onGetUserInfo(self, data, req, reqID):

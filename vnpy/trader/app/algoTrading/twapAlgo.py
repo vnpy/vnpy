@@ -21,15 +21,15 @@ class TwapAlgo(AlgoTemplate):
         """Constructor"""
         super(TwapAlgo, self).__init__(engine, setting, algoName)
         
-        # 参数
-        self.vtSymbol = setting['vtSymbol']             # 合约代码
-        self.direction = setting['direction']           # 买卖
-        self.targetPrice = setting['targetPrice']       # 目标价格
-        self.totalVolume = setting['totalVolume']       # 总数量
-        self.time = setting['time']                     # 执行时间
-        self.interval = setting['interval']             # 执行间隔
-        self.minVolume = setting['minVolume']           # 最小委托数量
-        self.priceLevel = setting['priceLevel']   # 使用第几档价格委托
+        # 参数，强制类型转换，保证从CSV加载的配置正确
+        self.vtSymbol = str(setting['vtSymbol'])            # 合约代码
+        self.direction = unicode(setting['direction'])      # 买卖
+        self.targetPrice = float(setting['targetPrice'])    # 目标价格
+        self.totalVolume = float(setting['totalVolume'])    # 总数量
+        self.time = int(setting['time'])                    # 执行时间
+        self.interval = int(setting['interval'])            # 执行间隔
+        self.minVolume = float(setting['minVolume'])        # 最小委托数量
+        self.priceLevel = int(setting['priceLevel'])        # 使用第几档价格委托
         
         # 变量
         self.orderSize = self.totalVolume / (self.time / self.interval)
