@@ -375,7 +375,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
         self.menu.close()
         
         # 获取想要保存的文件名
-        path = QtWidgets.QFileDialog.getSaveFileName(self, vtText.SAVE_DATA, '', 'CSV(*.csv)')
+        path, fileType = QtWidgets.QFileDialog.getSaveFileName(self, vtText.SAVE_DATA, '', 'CSV(*.csv)')
 
         try:
             #if not path.isEmpty():

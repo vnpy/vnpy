@@ -1,5 +1,9 @@
 # encoding: UTF-8
 
+import csv
+import traceback
+from collections import OrderedDict
+
 from vnpy.event import Event
 from vnpy.trader.uiQt import QtCore, QtWidgets
 
@@ -26,7 +30,7 @@ class StopButton(QtWidgets.QPushButton):
             self.setText(u'停止')
             self.clicked.connect(self.stopAlgo)
         else:
-            self.setText(u'全部停止')
+            self.setText(u'停止全部算法')
             self.clicked.connect(self.stopAll)
     
     #----------------------------------------------------------------------
@@ -388,17 +392,32 @@ class AlgoManager(QtWidgets.QWidget):
         """"""
         self.setWindowTitle(u'算法交易')
         
-        self.tab = QtWidgets.QTabWidget()
-        self.buttonStop = StopButton(self.algoEngine)
+        buttonWidth = 400
+        buttonHeight = 60        
         
-        self.tab.setMaximumWidth(400)
-        self.buttonStop.setMaximumWidth(400)
-        self.buttonStop.setFixedHeight(100)
+        self.tab = QtWidgets.QTabWidget()
+        self.tab.setMaximumWidth(buttonWidth)
+        
+        self.buttonStop = StopButton(self.algoEngine)
+        self.buttonStop.setMaximumWidth(buttonWidth)
+        self.buttonStop.setFixedHeight(buttonHeight)
+        
+        self.buttonAddAlgo = QtWidgets.QPushButton(u'启动篮子算法')
+        self.buttonAddAlgo.setStyleSheet("color:white;background-color:green")
+        self.buttonAddAlgo.clicked.connect(self.addAlgoFromCsv)
+        self.buttonAddAlgo.setFixedHeight(buttonHeight)
+        
+        self.buttonSaveSetting = QtWidgets.QPushButton(u'加载算法配置')
+        self.buttonSaveSetting.setStyleSheet("color:white;background-color:blue")
+        self.buttonSaveSetting.clicked.connect(self.saveSettingFromCsv)
+        self.buttonSaveSetting.setFixedHeight(buttonHeight)
         
         vbox1 = QtWidgets.QVBoxLayout()
         vbox1.addWidget(self.tab)
         vbox1.addStretch()
         vbox1.addWidget(self.buttonStop)
+        vbox1.addWidget(self.buttonAddAlgo)
+        vbox1.addWidget(self.buttonSaveSetting)
         
         workingMonitor = AlgoStatusMonitor(self.algoEngine, AlgoStatusMonitor.MODE_WORKING)
         historyMonitor = AlgoStatusMonitor(self.algoEngine, AlgoStatusMonitor.MODE_HISTORY)
@@ -431,6 +450,45 @@ class AlgoManager(QtWidgets.QWidget):
         
     #----------------------------------------------------------------------
     def addAlgoWidget(self, widgetClass):
-        """"""
+        """添加算法控制组件 """
         w = widgetClass(self.algoEngine)
-        self.tab.addTab(w, w.templateName)    
+        self.tab.addTab(w, w.templateName)
+    
+    #----------------------------------------------------------------------
+    def loadCsv(self, path):
+        """读取CSV配置文件"""
+        try:
+            with open(unicode(path)) as f:
+                buf = [line.encode('UTF-8') for line in f]
+            
+            reader = csv.DictReader(buf)
+            l = []
+            
+            for d in reader:
+                setting = OrderedDict()    
+                for name in reader.fieldnames:
+                    setting[str(name)] = d[name]
+                l.append(setting)
+            
+            return l
+        
+        except:
+            msg = traceback.format_exc()
+            self.algoEngine.writeLog(u'读取CSV文件失败：\n' + msg)
+            return []
+    
+    #----------------------------------------------------------------------
+    def saveSettingFromCsv(self):
+        """从CSV加载配置到数据库"""
+        path, fileType = QtWidgets.QFileDialog.getOpenFileName(self, u'加载算法配置', '', 'CSV(*.csv)')
+        l = self.loadCsv(path)
+        for setting in l:
+            self.algoEngine.saveAlgoSetting(setting)
+    
+    #----------------------------------------------------------------------
+    def addAlgoFromCsv(self):
+        """从CSV启动一篮子算法"""
+        path, fileType = QtWidgets.QFileDialog.getOpenFileName(self, u'启动篮子算法', '', 'CSV(*.csv)        ')
+        l = self.loadCsv(path)
+        for setting in l:
+            self.algoEngine.addAlgo(setting)
