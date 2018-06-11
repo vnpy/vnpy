@@ -5,6 +5,8 @@ from __future__ import division
 import os
 from datetime import datetime
 
+from six import text_type
+
 from vnpy.event import Event
 
 from .omBase import EVENT_OM_LOG
@@ -113,7 +115,7 @@ class OmManager(QtWidgets.QWidget):
     def initOmEngine(self):
         """初始化引擎"""
         path = os.getcwd()
-        fileName = unicode(self.comboSettingFile.currentText())
+        fileName = text_type(self.comboSettingFile.currentText())
         fileName = os.path.join(path, fileName)
         result = self.omEngine.initEngine(fileName)
         

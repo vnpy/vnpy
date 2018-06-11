@@ -1,7 +1,8 @@
 # encoding: UTF-8
 
-from drEngine import DrEngine
-from uiDrWidget import DrEngineManager
+from __future__ import absolute_import
+from .drEngine import DrEngine
+from .uiDrWidget import DrEngineManager
 
 appName = 'DataRecorder'
 appDisplayName = u'行情记录'
