@@ -1,0 +1,129 @@
+@startuml
+title 回测
+
+database mongoDB as db
+participant main as main
+participant BacktestingEngine as be
+participant KkStrategy as kk
+participant BarGenerator as bg
+participant ArrayManager as am
+
+
+activate main
+    create be
+    main->be ++: 创建回测引擎对象
+        return
+    |||
+    main->be ++: 设置引擎的回测模式为K线\nsetBacktestingMode(BAR_MODE)
+        return
+    |||
+    main->be ++: 设置回测用的数据起始日期\nsetStartDate('20120101')
+        return
+    |||
+    main->be ++: 设置产品相关参数:股指1跳\nsetSlippage('0.2)
+        return
+    main->be ++: 设置产品相关参数:万0.3\nsetRate(0.3/10000)
+        return
+    main->be ++: 设置产品相关参数:股指合约大小\nsetSize(300)
+        return
+    main->be ++: 设置产品相关参数:股指最小价格变动\nsetPriceTick(0.2)
+        return
+    |||
+    main->be ++: 设置使用的历史数据库\nsetDatabase(MINUTE_DB_NAME, 'IF0000')
+        return
+    |||
+    main->be ++: 在引擎中创建策略对象\ninitStrategy(KkStrategy, d)
+        create kk
+        be -> kk ++ : 创建策略对象\nKkStrategy(self, {})
+            kk -> kk: self.ctaEngine=BacktestingEngine
+            note left: 此处将CTA引擎和CTA策略对象绑定
+            create bg
+            kk -> bg ++: BarGenerator(self.onBar, 5, self.onFiveBar)
+                note right: 创建Bar合成器对象
+                return
+            create am
+            kk -> am ++: ArrayManager()
+                note right: 创建序列管理对象
+                return
+            return
+        return
+    |||
+    main->be ++: 开始跑回测\nrunBacktesting()
+        be->be ++: 载入历史数据到内存列表中\nloadHistoryData()
+            note left
+                数据分为两部分：
+                数据1：为了让策略生效所必须的初始化数据，
+                      例如200天移动平均线的前200个数据
+                数据2：作为触发条件发给策略的数据
+            end note
+            be -> db ++: 读取DB
+                return
+            return
+        |||
+        be->kk ++ : 初始化策略\nself.strategy.onInit()
+            kk->kk ++: initData=loadBar(initDays)
+                kk -> be ++ : loadBar(barDbName, vtSymbol, days)
+                    return
+                return
+            loop
+                kk -> kk ++: onBar(initData[i])
+                    kk -> bg ++: updateBar(initData[i])
+                        bg->bg: 利用最新1分钟的bar来更新\nX分钟的OHLC数值以及交易量
+                        bg->kk ++: 如果X分钟已经走完，则调用onXminBar()\nonFiveBar()
+                            note left
+                                onFiveBar()实现策略的主要逻辑。
+                                主要思路如下：
+                                1 有5分钟Bar事件来触发策略执行
+                                2 进入策略时，清除未成交的订单
+                                3 如果没有仓位，。。。
+                                4 如果持有长仓，。。。
+                                5 如果持有短仓，。。。
+                            end note
+                            kk->kk ++: cancelOrder()
+                                return
+                            kk->am ++: updateBar(bar)
+                                am->am : 将bar追加到序列数组中
+                                return
+                            kk->am ++: keltner(self.kkLength, self.kkDev)
+                                return kkUp, kkDown
+                            kk->kk: 实现策略的主体，最终产生交易订单
+                            kk->kk ++: 保存同步数据到数据库\nsaveSyncData()
+                                return
+                            return
+                        |||
+                        return
+                    return
+            end loop
+
+            return
+        |||
+        be->kk ++ : 启动策略\nself.strategy.onStart()
+            note right: 回测时onStart()为空转
+            return
+        |||
+        loop
+            be->be : 将上述数据2逐一取出，\n并创建VtBarData或者VtTickData后赋值给data
+            be->kk ++ : self.strategy.onBar/onTick(data)
+                    kk -> bg ++: updateBar(data)
+                        bg->kk ++: 满足条件时调用onXminBar()\nonFiveBar()
+                            note left
+                                onFiveBar()实现策略的主要逻辑。
+                                主要思路如下：
+                                1 有5分钟Bar事件来触发策略执行
+                                2 进入策略时，清除未成交的订单
+                                3 如果没有仓位，。。。
+                                4 如果持有长仓，。。。
+                                5 如果持有短仓，。。。
+                            end note
+                            return
+                        |||
+                        return
+                return
+        end loop
+        return
+    |||
+    main->be ++: 显示回测结果\nshowBacktestingResult()
+        return
+deactivate main
+
+@enduml
