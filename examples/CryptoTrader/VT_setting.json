@@ -9,12 +9,12 @@
 	"darkStyle": true,
 	"language": "chinese",
 
-	"logActive": true,
+	"logActive": false,
 	"logLevel": "debug",
 	"logConsole": true,
 	"logFile": true,
 
-	"tdPenalty": ["IF", "IH", "IC"],
+	"tdPenalty": [],
 
-	"maxDecimal": 4
+	"maxDecimal": 10
 }

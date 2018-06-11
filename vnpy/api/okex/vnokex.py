@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import ssl
 import hashlib
 import json
 import traceback
@@ -136,7 +137,8 @@ class OkexApi(object):
                                          on_close=self.onCloseCallback,
                                          on_open=self.onOpenCallback)        
         
-        self.wsThread = Thread(target=self.ws.run_forever)
+        kwargs = {'sslopt': {'cert_reqs': ssl.CERT_NONE}}
+        self.wsThread = Thread(target=self.ws.run_forever, kwargs=kwargs)
         self.wsThread.start()
 
     #----------------------------------------------------------------------

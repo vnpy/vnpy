@@ -3,6 +3,7 @@
 import json
 import requests
 import traceback
+import ssl
 from threading import Thread
 from queue import Queue, Empty
 
@@ -30,19 +31,25 @@ class BitfinexApi(object):
     #----------------------------------------------------------------------
     def start(self):
         """"""
-        self.ws = websocket.create_connection(WEBSOCKET_V2_URL)
+        self.ws = websocket.create_connection(WEBSOCKET_V2_URL,
+                                              sslopt={'cert_reqs': ssl.CERT_NONE})
         
-        self.active =True
+        self.active = True
         self.thread = Thread(target=self.run)
         self.thread.start()
         
         self.restThread = Thread(target=self.runRest)
         self.restThread.start()
+        
+        self.onConnect()
     
     #----------------------------------------------------------------------
     def reconnect(self):
         """"""
-        self.ws = websocket.create_connection(WEBSOCKET_V2_URL)        
+        self.ws = websocket.create_connection(WEBSOCKET_V2_URL,
+                                              sslopt={'cert_reqs': ssl.CERT_NONE})   
+        
+        self.onConnect()
         
     #----------------------------------------------------------------------
     def run(self):
@@ -56,6 +63,22 @@ class BitfinexApi(object):
                 msg = traceback.format_exc()
                 self.onError(msg)
                 self.reconnect()
+    
+    #----------------------------------------------------------------------
+    def close(self):
+        """"""
+        self.active = False
+        
+        if self.thread:
+            self.thread.join()
+        
+        if self.restThread:
+            self.thread.join()
+    
+    #----------------------------------------------------------------------
+    def onConnect(self):
+        """"""
+        print 'connected'
     
     #----------------------------------------------------------------------
     def onData(self, data):

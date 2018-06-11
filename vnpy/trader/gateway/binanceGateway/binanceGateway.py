@@ -223,9 +223,6 @@ class GatewayApi(BinanceApi):
     def onQueryExchangeInfo(self, data, reqid):
         """"""
         for d in data['symbols']:
-            if str(d['symbol']) == 'ETHUSDT':
-                print d
-                
             contract = VtContractData()
             contract.gatewayName = self.gatewayName
             

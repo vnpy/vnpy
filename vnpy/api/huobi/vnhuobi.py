@@ -20,7 +20,7 @@ from websocket import create_connection, _exceptions
 
 
 # 常量定义
-TIMEOUT = 5
+TIMEOUT = 10
 HUOBI_API_HOST = "api.huobi.pro"
 HADAX_API_HOST = "api.hadax.com"
 LANG = 'zh-CN'
@@ -504,8 +504,6 @@ class DataApi(object):
         self.subDict = {}
         
         self.url = ''
-        self.proxyHost = ''
-        self.proxyPort = 0        
         
     #----------------------------------------------------------------------
     def run(self):
@@ -532,12 +530,7 @@ class DataApi(object):
     def reconnect(self):
         """重连"""
         try:
-            if not self.proxyHost:
-                self.ws = create_connection(self.url)
-            else:
-                self.ws = create_connection(self.url, 
-                                            http_proxy_host=self.proxyHost, 
-                                            http_proxy_port=self.proxyPort)
+            self.ws = create_connection(self.url)
             return True
         except:
             msg = traceback.format_exc()
@@ -553,20 +546,12 @@ class DataApi(object):
             self.subTopic(topic)
         
     #----------------------------------------------------------------------
-    def connect(self, url, proxyHost='', proxyPort=0):
+    def connect(self, url):
         """连接"""
         self.url = url
-        self.proxyHost = proxyHost
-        self.proxyPort = proxyPort
         
         try:
-            if not self.proxyHost:
-                self.ws = create_connection(self.url)
-            else:
-                self.ws = create_connection(self.url, 
-                                            http_proxy_host=self.proxyHost, 
-                                            http_proxy_port=self.proxyPort)
-            
+            self.ws = create_connection(self.url, sslopt={'cert_reqs': ssl.CERT_NONE})
             self.active = True
             self.thread.start()
             
