@@ -10,6 +10,7 @@ from vnpy.trader.uiQt import QtCore, QtWidgets
 from .algoEngine import (EVENT_ALGO_LOG, EVENT_ALGO_PARAM, 
                          EVENT_ALGO_VAR, EVENT_ALGO_SETTING)
 from .twapAlgo import TwapWidget
+from .dmaAlgo import DmaWidget
 
 
 ########################################################################
@@ -384,6 +385,7 @@ class AlgoManager(QtWidgets.QWidget):
         
         self.initUi()
         self.addAlgoWidget(TwapWidget)
+        self.addAlgoWidget(DmaWidget)
         
         self.algoEngine.loadAlgoSetting()   # 界面初始化后，再加载算法配置
         

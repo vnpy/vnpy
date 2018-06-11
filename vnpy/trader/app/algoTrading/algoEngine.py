@@ -7,13 +7,14 @@ from __future__ import division
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, PRICETYPE_LIMITPRICE,
+from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
+                                    PRICETYPE_LIMITPRICE, PRICETYPE_MARKETPRICE,
                                     OFFSET_OPEN, OFFSET_CLOSE,
                                     OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY)
 from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 
 from .twapAlgo import TwapAlgo
-
+from .dmaAlgo import DmaAlgo
 
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
 EVENT_ALGO_PARAM = 'eAlgoParam'     # 算法参数事件
@@ -143,7 +144,8 @@ class AlgoEngine(object):
             self.mainEngine.subscribe(req, contract.gatewayName)
 
     #----------------------------------------------------------------------
-    def sendOrder(self, algo, vtSymbol, direction, price, volume):
+    def sendOrder(self, algo, vtSymbol, direction, price, volume, 
+                  priceType=None, offset=None):
         """发单"""
         contract = self.mainEngine.getContract(vtSymbol)
         if not contract:
@@ -153,24 +155,34 @@ class AlgoEngine(object):
         req.vtSymbol = vtSymbol
         req.symbol = contract.symbol
         req.exchange = contract.exchange
-        req.direction = direction
-        req.priceType = PRICETYPE_LIMITPRICE
+        req.direction = direction        
         req.offset = OFFSET_CLOSETODAY
         req.price = price
         req.volume = volume
+        
+        if priceType:
+            req.priceType = priceType
+        else:
+            req.priceType = PRICETYPE_LIMITPRICE
+        
+        if offset:
+            req.offset = offset
+        else:
+            req.offset = OFFSET_OPEN
+        
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)
         
         return vtOrderID
 
     #----------------------------------------------------------------------
-    def buy(self, algo, vtSymbol, price, volume):
+    def buy(self, algo, vtSymbol, price, volume, priceType=None, offset=None):
         """买入"""
-        return self.sendOrder(algo, vtSymbol, DIRECTION_LONG, price, volume)
+        return self.sendOrder(algo, vtSymbol, DIRECTION_LONG, price, volume, priceType, offset)
 
     #----------------------------------------------------------------------
-    def sell(self, algo, vtSymbol, price, volume):
+    def sell(self, algo, vtSymbol, price, volume, priceType=None, offset=None):
         """卖出"""
-        return self.sendOrder(algo, vtSymbol, DIRECTION_SHORT, price, volume)
+        return self.sendOrder(algo, vtSymbol, DIRECTION_SHORT, price, volume, priceType, offset)
 
     #----------------------------------------------------------------------
     def cancelOrder(self, algo, vtOrderID):
