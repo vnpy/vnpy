@@ -119,14 +119,14 @@ class AlgoTemplate(object):
         self.engine.subscribe(self, vtSymbol)
     
     #----------------------------------------------------------------------
-    def buy(self, vtSymbol, price, volume):
+    def buy(self, vtSymbol, price, volume, priceType=None, offset=None):
         """"""
-        return self.engine.buy(self, vtSymbol, price, volume)
+        return self.engine.buy(self, vtSymbol, price, volume, priceType, offset)
     
     #----------------------------------------------------------------------
-    def sell(self, vtSymbol, price, volume):
+    def sell(self, vtSymbol, price, volume, priceType=None, offset=None):
         """"""
-        return self.engine.sell(self, vtSymbol, price, volume)
+        return self.engine.sell(self, vtSymbol, price, volume, priceType, offset)
     
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
