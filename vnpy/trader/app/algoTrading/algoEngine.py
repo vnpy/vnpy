@@ -179,6 +179,7 @@ class AlgoEngine(object):
             req.offset = OFFSET_OPEN
         
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)
+        self.orderAlgoDict[vtOrderID] = algo
         
         return vtOrderID
 
