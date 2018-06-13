@@ -30,7 +30,7 @@ def createQApp():
     if globalSetting['darkStyle']:
         try:
             import qdarkstyle
-            qApp.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
+            qApp.setStyleSheet(qdarkstyle.load_stylesheet_from_environment())
         except ImportError:
             pass
         

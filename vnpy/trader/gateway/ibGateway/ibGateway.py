@@ -10,6 +10,7 @@ Interactive Brokers的gateway接入，已经替换为vn.ib封装。
 4. 目前只支持股票和期货交易，ib api里期权合约的确定是基于Contract对象的多个字段，比较复杂暂时没做
 5. 海外市场的交易规则和国内有很多细节上的不同，所以一些字段类型的映射可能不合理，如果发现问题欢迎指出
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -375,7 +376,7 @@ class IbWrapper(IbApi):
                 newtick = copy(tick)
                 self.gateway.onTick(newtick)
         else:
-            print field
+            print(field)
         
     #----------------------------------------------------------------------
     def tickSize(self, tickerId, field, size):
@@ -385,7 +386,7 @@ class IbWrapper(IbApi):
             key = tickFieldMap[field]
             tick.__setattr__(key, size)   
         else:
-            print field
+            print(field)
         
     #----------------------------------------------------------------------
     def tickOptionComputation(self, tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice):

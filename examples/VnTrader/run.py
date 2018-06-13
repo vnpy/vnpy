@@ -27,10 +27,11 @@ if system == 'Linux':
     from vnpy.trader.gateway import xtpGateway
 elif system == 'Windows':
     from vnpy.trader.gateway import (femasGateway, xspeedGateway,
-                                     futuGateway, secGateway)
+                                     secGateway)
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
+from vnpy.trader.app import (riskManager, ctaStrategy, 
+                             spreadTrading, algoTrading)
 
 
 #----------------------------------------------------------------------
@@ -54,7 +55,6 @@ def main():
         me.addGateway(femasGateway)
         me.addGateway(xspeedGateway)
         me.addGateway(secGateway)
-        me.addGateway(futuGateway)
 
     if system == 'Linux':
         me.addGateway(xtpGateway)
@@ -63,6 +63,7 @@ def main():
     me.addApp(riskManager)
     me.addApp(ctaStrategy)
     me.addApp(spreadTrading)
+    me.addApp(algoTrading)
 
     # 创建主窗口
     mw = MainWindow(me, ee)

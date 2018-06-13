@@ -5,6 +5,7 @@
 可以使用和实盘相同的代码进行回测。
 '''
 from __future__ import division
+from __future__ import print_function
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -112,7 +113,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出内容"""
-        print str(datetime.now()) + "\t" + content     
+        print(str(datetime.now()) + "\t" + content)     
     
     #------------------------------------------------
     # 参数设置相关
@@ -234,8 +235,8 @@ class BacktestingEngine(object):
 
         self.output(u'开始回测')
         
-        self.strategy.inited = True
         self.strategy.onInit()
+        self.strategy.inited = True
         self.output(u'策略初始化完成')
         
         self.strategy.trading = True
@@ -1213,11 +1214,11 @@ class OptimizationSetting(object):
             return 
         
         if end < start:
-            print u'参数起始点必须不大于终止点'
+            print(u'参数起始点必须不大于终止点')
             return
         
         if step <= 0:
-            print u'参数布进必须大于0'
+            print(u'参数布进必须大于0')
             return
         
         l = []

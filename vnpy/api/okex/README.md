@@ -10,5 +10,5 @@ OKEX的比特币交易接口，基于Websocket API开发，实现了以下功能
 
 ### API信息
 
-链接：[https://www.okex.com/ws_getStarted.html](https://www.okex.com/ws_getStarted.html)
+链接：[https://github.com/okcoin-okex/API-docs-OKEx.com](https://github.com/okcoin-okex/API-docs-OKEx.com)
 

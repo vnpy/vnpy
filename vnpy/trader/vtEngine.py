@@ -251,7 +251,17 @@ class MainEngine(object):
             collection = db[collectionName]
             collection.replace_one(flt, d, upsert)
         else:
-            self.writeLog(text.DATA_UPDATE_FAILED)        
+            self.writeLog(text.DATA_UPDATE_FAILED)   
+    
+    #----------------------------------------------------------------------
+    def dbDelete(self, dbName, collectionName, flt):
+        """从数据库中删除数据，flt是过滤条件"""
+        if self.dbClient:
+            db = self.dbClient[dbName]
+            collection = db[collectionName]
+            collection.delete_one(flt)
+        else:
+            self.writeLog(text.DATA_DELETE_FAILED)          
             
     #----------------------------------------------------------------------
     def dbLogging(self, event):
@@ -735,7 +745,7 @@ class LogEngine(object):
         function = self.levelFunctionDict[log.logLevel]     # 获取日志级别对应的处理函数
         msg = '\t'.join([log.gatewayName, log.logContent])
         function(msg)
-        
+  
     
 ########################################################################
 class PositionDetail(object):
@@ -872,8 +882,6 @@ class PositionDetail(object):
             self.shortPnl = pos.positionProfit
             self.shortPrice = pos.price
             
-        #self.output()
-    
     #----------------------------------------------------------------------
     def updateOrderReq(self, req, vtOrderID):
         """发单更新"""
@@ -986,15 +994,6 @@ class PositionDetail(object):
             self.longPosFrozen = self.longYdFrozen + self.longTdFrozen
             self.shortPosFrozen = self.shortYdFrozen + self.shortTdFrozen
             
-    #----------------------------------------------------------------------
-    def output(self):
-        """"""
-        print self.vtSymbol, '-'*30
-        print 'long, total:%s, td:%s, yd:%s' %(self.longPos, self.longTd, self.longYd)
-        print 'long frozen, total:%s, td:%s, yd:%s' %(self.longPosFrozen, self.longTdFrozen, self.longYdFrozen)
-        print 'short, total:%s, td:%s, yd:%s' %(self.shortPos, self.shortTd, self.shortYd)
-        print 'short frozen, total:%s, td:%s, yd:%s' %(self.shortPosFrozen, self.shortTdFrozen, self.shortYdFrozen)        
-    
     #----------------------------------------------------------------------
     def convertOrderReq(self, req):
         """转换委托请求"""

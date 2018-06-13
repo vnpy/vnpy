@@ -1,7 +1,8 @@
 # encoding: UTF-8
 
+from __future__ import absolute_import
 from vnpy.trader import vtConstant
-from ksotpGateway import KsotpGateway
+from .ksotpGateway import KsotpGateway
 
 gatewayClass = KsotpGateway
 gatewayName = 'KSOTP'

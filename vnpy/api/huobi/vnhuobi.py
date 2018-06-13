@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+from __future__ import print_function
 import urllib
 import hmac
 import base64
@@ -19,7 +20,7 @@ from websocket import create_connection, _exceptions
 
 
 # 常量定义
-TIMEOUT = 5
+TIMEOUT = 10
 HUOBI_API_HOST = "api.huobi.pro"
 HADAX_API_HOST = "api.hadax.com"
 LANG = 'zh-CN'
@@ -419,71 +420,71 @@ class TradeApi(object):
     #----------------------------------------------------------------------
     def onError(self, msg, reqid):
         """错误回调"""
-        print msg, reqid
+        print(msg, reqid)
         
     #----------------------------------------------------------------------
     def onGetSymbols(self, data, reqid):
         """查询代码回调"""
         #print reqid, data 
         for d in data:
-            print d
+            print(d)
     
     #----------------------------------------------------------------------
     def onGetCurrencys(self, data, reqid):
         """查询货币回调"""
-        print reqid, data        
+        print(reqid, data)        
     
     #----------------------------------------------------------------------
     def onGetTimestamp(self, data, reqid):
         """查询时间回调"""
-        print reqid, data    
+        print(reqid, data)    
         
     #----------------------------------------------------------------------
     def onGetAccounts(self, data, reqid):
         """查询账户回调"""
-        print reqid, data     
+        print(reqid, data)     
     
     #----------------------------------------------------------------------
     def onGetAccountBalance(self, data, reqid):
         """查询余额回调"""
-        print reqid, data
+        print(reqid, data)
         for d in data['data']['list']:
-            print d
+            print(d)
         
     #----------------------------------------------------------------------
     def onGetOrders(self, data, reqid):
         """查询委托回调"""
-        print reqid, data    
+        print(reqid, data)    
         
     #----------------------------------------------------------------------
     def onGetMatchResults(self, data, reqid):
         """查询成交回调"""
-        print reqid, data      
+        print(reqid, data)      
         
     #----------------------------------------------------------------------
     def onGetOrder(self, data, reqid):
         """查询单一委托回调"""
-        print reqid, data    
+        print(reqid, data)    
         
     #----------------------------------------------------------------------
     def onGetMatchResult(self, data, reqid):
         """查询单一成交回调"""
-        print reqid, data    
+        print(reqid, data)    
         
     #----------------------------------------------------------------------
     def onPlaceOrder(self, data, reqid):
         """委托回调"""
-        print reqid, data
+        print(reqid, data)
     
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
         """撤单回调"""
-        print reqid, data          
+        print(reqid, data)          
         
     #----------------------------------------------------------------------
     def onBatchCancel(self, data, reqid):
         """批量撤单回调"""
-        print reqid, data      
+        print(reqid, data)      
 
 
 ########################################################################
@@ -503,8 +504,6 @@ class DataApi(object):
         self.subDict = {}
         
         self.url = ''
-        self.proxyHost = ''
-        self.proxyPort = 0        
         
     #----------------------------------------------------------------------
     def run(self):
@@ -531,12 +530,7 @@ class DataApi(object):
     def reconnect(self):
         """重连"""
         try:
-            if not self.proxyHost:
-                self.ws = create_connection(self.url)
-            else:
-                self.ws = create_connection(self.url, 
-                                            http_proxy_host=self.proxyHost, 
-                                            http_proxy_port=self.proxyPort)
+            self.ws = create_connection(self.url)
             return True
         except:
             msg = traceback.format_exc()
@@ -552,20 +546,12 @@ class DataApi(object):
             self.subTopic(topic)
         
     #----------------------------------------------------------------------
-    def connect(self, url, proxyHost='', proxyPort=0):
+    def connect(self, url):
         """连接"""
         self.url = url
-        self.proxyHost = proxyHost
-        self.proxyPort = proxyPort
         
         try:
-            if not self.proxyHost:
-                self.ws = create_connection(self.url)
-            else:
-                self.ws = create_connection(self.url, 
-                                            http_proxy_host=self.proxyHost, 
-                                            http_proxy_port=self.proxyPort)
-            
+            self.ws = create_connection(self.url, sslopt={'cert_reqs': ssl.CERT_NONE})
             self.active = True
             self.thread.start()
             
@@ -644,7 +630,7 @@ class DataApi(object):
     #----------------------------------------------------------------------
     def onError(self, msg):
         """错误推送"""
-        print msg
+        print(msg)
         
     #----------------------------------------------------------------------
     def onData(self, data):
@@ -664,14 +650,14 @@ class DataApi(object):
     #----------------------------------------------------------------------
     def onMarketDepth(self, data):
         """行情深度推送 """
-        print data
+        print(data)
     
     #----------------------------------------------------------------------
     def onTradeDetail(self, data):
         """成交细节推送"""
-        print data
+        print(data)
     
     #----------------------------------------------------------------------
     def onMarketDetail(self, data):
         """市场细节推送"""
-        print data
+        print(data)

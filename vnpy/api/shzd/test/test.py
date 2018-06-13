@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 from time import sleep
 
 from vnshzd import *
@@ -10,7 +11,7 @@ def printDict(d):
     l = d.keys()
     l.sort()
     for key in l:
-        print '%s:%s' %(key, d[key])
+        print('%s:%s' %(key, d[key]))
 
 
 ########################################################################
@@ -26,19 +27,19 @@ class TestApi(ShzdApi):
     #----------------------------------------------------------------------
     def onReceiveErrorInfo(self, errcode, errmsg):
         """"""
-        print '-' * 50
-        print 'errorcode %s, error msg %s' %(errcode, errmsg)
+        print('-' * 50)
+        print('errorcode %s, error msg %s' %(errcode, errmsg))
     
     #----------------------------------------------------------------------
     def onReceiveMarketInfo(self, data):
         """"""
-        print '-' * 50
+        print('-' * 50)
         printDict(data)
     
     #----------------------------------------------------------------------
     def onReceiveTradeInfo(self, data):
         """"""
-        print '-' * 50
+        print('-' * 50)
         printDict(data)
         
 if __name__ == '__main__':
@@ -49,8 +50,8 @@ if __name__ == '__main__':
     api.initShZdServer()
     
     # 注册前置机地址
-    print api.registerFront('222.73.119.230', 7003)
-    print api.registerMarket('222.73.119.230', 9003)
+    print(api.registerFront('222.73.119.230', 7003))
+    print(api.registerMarket('222.73.119.230', 9003))
     
     # 登录
     sleep(1)
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     data['201'] = '+'
     #data['307'] = "CME,6J1609"
     data['307'] = 'ICE,WBS1611'
-    print data
+    print(data)
     api.shzdSendInfoToMarket(data)
     
     # # 查询合约
