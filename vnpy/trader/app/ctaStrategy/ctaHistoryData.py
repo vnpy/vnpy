@@ -137,11 +137,13 @@ def loadTbCsv(fileName, dbName, symbol):
     
     print(u'插入完毕，耗时：%s' % (time()-start))
     
- #----------------------------------------------------------------------
+#----------------------------------------------------------------------
 def loadTbPlusCsv(fileName, dbName, symbol):
-    """将TB极速版导出的csv格式的历史分钟数据插入到Mongo数据库中"""
+    """将TB极速版导出的csv格式的历史分钟/Tick数据插入到Mongo数据库中"""
+    import csv    
+
     start = time()
-    print(u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol)) 
+    print u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol) 
 
     # 锁定集合，并创建索引
     client = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
@@ -150,27 +152,72 @@ def loadTbPlusCsv(fileName, dbName, symbol):
 
     # 读取数据和插入到数据库
     reader = csv.reader(file(fileName, 'r'))
-    for d in reader:
-        bar = VtBarData()
-        bar.vtSymbol = symbol
-        bar.symbol = symbol
-        bar.open = float(d[2])
-        bar.high = float(d[3])
-        bar.low = float(d[4])
-        bar.close = float(d[5])
-        bar.date = str(d[0])
-        
-        tempstr=str(round(float(d[1])*10000)).split(".")[0].zfill(4)
-        bar.time = tempstr[:2]+":"+tempstr[2:4]+":00"
-        
-        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
-        bar.volume = d[6]
-        bar.openInterest = d[7]
-        flt = {'datetime': bar.datetime}
-        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
-        print(bar.date, bar.time)    
+    if dbName == MINUTE_DB_NAME:
+        count = 0
+        for d in reader:
+            bar = VtBarData()
+            bar.vtSymbol = symbol
+            bar.symbol = symbol
 
-    print(u'插入完毕，耗时：%s' % (time()-start))
+            bar.date = d[0]
+            timeStr = "0.0" if d[1] == "0" else d[1]              
+            bar.datetime = datetime.strptime(d[0] + " " + timeStr + "0" * (8 - len(timeStr)),"%Y%m%d 0.%H%M%S") #用0在后面补全
+            bar.time = bar.datetime.strftime('%H:%M:%S.%f')
+
+            bar.open = float(d[2])
+            bar.high = float(d[3])
+            bar.low = float(d[4])
+            bar.close = float(d[5])
+
+            bar.volume = int(d[6])
+            bar.openInterest = int(d[7])
+            flt = {'datetime': bar.datetime}
+            collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
+            count += 1
+            if count%10000==0:
+                print bar.date, bar.time    
+
+        print u'插入完毕，耗时：%s' % (time()-start)
+        print u'数据总量:%s' % (count)
+    elif dbName == TICK_DB_NAME:
+        count = 0
+        volume = 0 
+        lastDate = "00000000"
+        lastTime = "00:00:00.0"
+        for d in reader:
+            tick = VtTickData()            
+            tick.vtSymbol = symbol
+            tick.symbol = symbol
+
+            tick.date = d[0]
+            timeStr = "0.0" if d[1] == "0" else d[1]  
+            tick.datetime = datetime.strptime(d[0] + " " + timeStr + "0" * (14-len(timeStr)),"%Y%m%d 0.%H%M%S%f") #用0在后面补全
+            tick.time = tick.datetime.strftime("%H:%M:%S.%f")[:10]
+
+            tick.lastVolume = int(d[3])
+            tick.bidVolume1 = int(d[5])
+            tick.askVolume1 = int(d[6])
+            tick.askPrice1 = float(d[8])
+            tick.bidPrice1 = float(d[9])
+            tick.lastPrice = float(d[7])
+
+            if (lastTime < "16:00:00" and tick.time > "20:55:00") or (lastDate < d[0] and tick.time > "20:55:00") or (lastDate < d[0] and lastTime < "16:00:00"):
+                volume = 0
+            lastDate = d[0]
+            lastTime = tick.time
+            tick.lastVolume = volume
+            volume += int(d[3])
+            tick.volume = volume
+
+            tick.openInterest = int(d[10])
+            flt = {'datetime': tick.datetime}
+            collection.update_one(flt, {'$set':tick.__dict__}, upsert=True)  
+            count += 1
+            if count%10000==0:
+                print tick.date, tick.time    
+
+        print u'插入完毕，耗时：%s' % (time()-start)
+        print u'数据总量:%s' % (count)
 
 #----------------------------------------------------------------------
 """
