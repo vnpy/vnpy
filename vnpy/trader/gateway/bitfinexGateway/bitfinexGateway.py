@@ -388,7 +388,7 @@ class GatewayApi(BitfinexApi):
                     if amount > 0:
                         bid[price ] = amount
                     else:
-                        ask[price] = amount
+                        ask[price] = -amount
             
             # Bitfinex的深度数据更新是逐档推送变动情况，而非5档一起推
             # 因此会出现没有Bid或者Ask的情况，这里使用try...catch过滤
