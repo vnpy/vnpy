@@ -41,6 +41,9 @@ PRODUCT_FOREX = u'外汇'
 PRODUCT_UNKNOWN = u'未知'
 PRODUCT_SPOT = u'现货'
 PRODUCT_DEFER = u'延期'
+PRODUCT_ETF = u'ETF'
+PRODUCT_WARRANT = u'权证'
+PRODUCT_BOND = u'债券'
 PRODUCT_NONE = ''
 
 # 价格类型常量
@@ -78,9 +81,18 @@ EXCHANGE_ICE = 'ICE'           # ICE交易所
 EXCHANGE_LME = 'LME'           # LME交易所
 
 EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
-EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
-EXCHANGE_HUOBI = 'HUOBI'       # 火币比特币交易所
-EXCHANGE_LHANG = 'LHANG'       # 链行比特币交易所
+EXCHANGE_FXCM = 'FXCM'         # FXCM外汇做市商
+
+EXCHANGE_OKCOIN = 'OKCOIN'       # OKCOIN比特币交易所
+EXCHANGE_HUOBI = 'HUOBI'         # 火币比特币交易所
+EXCHANGE_LBANK = 'LBANK'         # LBANK比特币交易所
+EXCHANGE_KORBIT = 'KORBIT'	 # KORBIT韩国交易所
+EXCHANGE_ZB = 'ZB'		 # 比特币中国比特币交易所
+EXCHANGE_OKEX = 'OKEX'		 # OKEX比特币交易所
+EXCHANGE_ZAIF = "ZAIF"		 # ZAIF日本比特币交易所
+EXCHANGE_COINCHECK = "COINCHECK" # COINCHECK日本比特币交易所
+EXCHANGE_BINANCE = "BINANCE"     # 币安比特币交易所
+EXCHANGE_BITFINEX = "BITFINEX"   # Bitfinex比特币交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元

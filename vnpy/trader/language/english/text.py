@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 SAVE_DATA = 'Save Data'
+RESIZE_COLUMNS = 'Resize Columns'
 
 CONTRACT_SYMBOL = 'Symbol'
 CONTRACT_NAME = 'Name'
@@ -137,3 +138,4 @@ DATABASE_CONNECTING_FAILED = u'Failed to connect to MongoDB.'
 DATA_INSERT_FAILED = u'Data insert failed，please connect MongoDB first.'
 DATA_QUERY_FAILED = u'Data query failed, please connect MongoDB first.'
 DATA_UPDATE_FAILED = u'Data update failed, please connect MongoDB first.'
+DATA_DELETE_FAILED = u'Data delete failed, please connect MongoDB first.'

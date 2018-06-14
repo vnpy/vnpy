@@ -12,5 +12,9 @@
 	"logActive": true,
 	"logLevel": "debug",
 	"logConsole": true,
-	"logFile": true
+	"logFile": true,
+
+	"tdPenalty": ["IF", "IH", "IC"],
+
+	"maxDecimal": 4
 }

@@ -3,7 +3,11 @@
 import sys
 import os
 import json
+import socket
+import urllib
 from time import sleep
+
+import wmi
 
 from vnpy.api.cshshlp import CsHsHlp
 from vnpy.api.ctp import MdApi
@@ -586,9 +590,39 @@ class CshshlpTdApi(CsHsHlp):
     def connect(self, opEntrustWay, opStation, fundAccount, password):
         """"""
         self.opEntrustWay = opEntrustWay
-        self.opStation = opStation
+        #self.opStation = opStation
         self.fundAccount = fundAccount
         self.password = password        
+        
+        # 生成op_station        
+        data = json.loads(urllib.urlopen("http://ip.jsontest.com/").read())
+        iip = data["ip"]        
+        
+        c = wmi.WMI()
+        
+        for interface in c.Win32_NetworkAdapterConfiguration(IPEnabled=1):
+            mac = interface.MACAddress     # MAC地址
+            lip = interface.IPAddress[0]   # 公网IP
+            
+        for processor in c.Win32_Processor():
+            cpu = processor.Processorid.strip()   # CPU编号
+            
+        for disk in c.Win32_DiskDrive():   # 硬盘编号
+            hdd = disk.SerialNumber.strip()   
+            
+        for disk in c.Win32_LogicalDisk (DriveType=3):   # 硬盘分区信息
+            pi = ','.join([disk.Caption, disk.Size])
+          
+        pcn = socket.gethostname()         # 计算机名称
+        
+        self.opStation = 'TYJR-%s-IIP.%s-LIP.%s-MAC.%s-HD.%s-PCN.%s-CPU.%s-PI.%s' %(opStation,
+                                                                                    iip,
+                                                                                    lip,
+                                                                                    mac,
+                                                                                    hd,
+                                                                                    pcn,
+                                                                                    cpu,
+                                                                                    pi)
         
         # 读取配置文件 
         i = self.loadConfig("Hsconfig.ini")

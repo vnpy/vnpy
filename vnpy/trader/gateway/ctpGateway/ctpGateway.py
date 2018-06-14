@@ -11,7 +11,7 @@ vtSymbol直接使用symbol
 import os
 import json
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from vnpy.api.ctp import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *
@@ -48,6 +48,7 @@ exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_SSE] = 'SSE'
+exchangeMap[EXCHANGE_SZSE] = 'SZSE'
 exchangeMap[EXCHANGE_INE] = 'INE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
@@ -65,6 +66,8 @@ productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
 productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
 productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
+productClassMapReverse[defineDict["THOST_FTDC_PC_ETFOption"]] = PRODUCT_OPTION
+productClassMapReverse[defineDict["THOST_FTDC_PC_Stock"]] = PRODUCT_EQUITY
 
 # 委托状态映射
 statusMap = {}
@@ -73,6 +76,12 @@ statusMap[STATUS_PARTTRADED] = defineDict["THOST_FTDC_OST_PartTradedQueueing"]
 statusMap[STATUS_NOTTRADED] = defineDict["THOST_FTDC_OST_NoTradeQueueing"]
 statusMap[STATUS_CANCELLED] = defineDict["THOST_FTDC_OST_Canceled"]
 statusMapReverse = {v:k for k,v in statusMap.items()}
+
+# 全局字典, key:symbol, value:exchange
+symbolExchangeDict = {}
+
+# 夜盘交易时间段分隔判断
+NIGHT_TRADING = datetime(1900, 1, 1, 20).time()
 
 
 ########################################################################
@@ -134,7 +143,7 @@ class CtpGateway(VtGateway):
         
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.tdApi.connect(userID, password, brokerID, tdAddress,authCode, userProductInfo)
+        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
         
         # 初始化并启动查询
         self.initQuery()
@@ -213,7 +222,6 @@ class CtpGateway(VtGateway):
         """设置是否要启动循环查询"""
         self.qryEnabled = qryEnabled
     
-
 
 ########################################################################
 class CtpMdApi(MdApi):
@@ -315,8 +323,12 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
-        # 通常不在乎订阅错误，选择忽略
-        pass
+        if 'ErrorID' in error and error['ErrorID']:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
         
     #----------------------------------------------------------------------  
     def onRspUnSubMarketData(self, data, error, n, last):
@@ -327,22 +339,26 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
+        # 过滤尚未获取合约交易所时的行情推送
+        symbol = data['InstrumentID']
+        if symbol not in symbolExchangeDict:
+            return
+        
         # 创建对象
         tick = VtTickData()
         tick.gatewayName = self.gatewayName
         
-        tick.symbol = data['InstrumentID']
-        tick.exchange = exchangeMapReverse.get(data['ExchangeID'], u'未知')
-        tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, EXCHANGE_UNKNOWN])
+        tick.symbol = symbol
+        tick.exchange = symbolExchangeDict[tick.symbol]
+        tick.vtSymbol = tick.symbol #'.'.join([tick.symbol, tick.exchange])
         
         tick.lastPrice = data['LastPrice']
         tick.volume = data['Volume']
         tick.openInterest = data['OpenInterest']
         tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
         
-        # 这里由于交易所夜盘时段的交易日数据有误，所以选择本地获取
-        #tick.date = data['TradingDay']
-        tick.date = datetime.now().strftime('%Y%m%d')   
+        # 上期所和郑商所可以直接使用，大商所需要转换
+        tick.date = data['ActionDay']
         
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
@@ -357,6 +373,10 @@ class CtpMdApi(MdApi):
         tick.bidVolume1 = data['BidVolume1']
         tick.askPrice1 = data['AskPrice1']
         tick.askVolume1 = data['AskVolume1']
+        
+        # 大商所日期转换
+        if tick.exchange is EXCHANGE_DCE:
+            tick.date = datetime.now().strftime('%Y%m%d')
         
         self.gateway.onTick(tick)
         
@@ -504,6 +524,12 @@ class CtpTdApi(TdApi):
             self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
             
             self.login()
+        else:
+            err = VtErrorData()
+            err.gatewayName = self.gatewayName
+            err.errorID = error['ErrorID']
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            self.gateway.onError(err)
         
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
@@ -701,15 +727,15 @@ class CtpTdApi(TdApi):
             pos.ydPosition = data['Position']
             
         # 计算成本
-        cost = pos.price * pos.position
+        size = self.symbolSizeDict[pos.symbol]
+        cost = pos.price * pos.position * size
         
         # 汇总总仓
         pos.position += data['Position']
         pos.positionProfit += data['PositionProfit']
         
         # 计算持仓均价
-        if pos.position and pos.symbol in self.symbolSizeDict:
-            size = self.symbolSizeDict[pos.symbol]
+        if pos.position and size:    
             pos.price = (cost + data['PositionCost']) / (pos.position * size)
         
         # 读取冻结
@@ -799,9 +825,15 @@ class CtpTdApi(TdApi):
         contract.size = data['VolumeMultiple']
         contract.priceTick = data['PriceTick']
         contract.strikePrice = data['StrikePrice']
-        contract.underlyingSymbol = data['UnderlyingInstrID']
-
         contract.productClass = productClassMapReverse.get(data['ProductClass'], PRODUCT_UNKNOWN)
+        contract.expiryDate = data['ExpireDate']
+        
+        # ETF期权的标的命名方式需要调整（ETF代码 + 到期月份）
+        if contract.exchange in [EXCHANGE_SSE, EXCHANGE_SZSE]:
+            contract.underlyingSymbol = '-'.join([data['UnderlyingInstrID'], str(data['ExpireDate'])[2:-2]])
+        # 商品期权无需调整
+        else:
+            contract.underlyingSymbol = data['UnderlyingInstrID']   
         
         # 期权类型
         if contract.productClass is PRODUCT_OPTION:
@@ -816,6 +848,9 @@ class CtpTdApi(TdApi):
 
         # 推送
         self.gateway.onContract(contract)
+        
+        # 缓存合约代码和交易所映射
+        symbolExchangeDict[contract.symbol] = contract.exchange
 
         if last:
             self.writeLog(text.CONTRACT_DATA_RECEIVED)
@@ -1457,3 +1492,9 @@ class CtpTdApi(TdApi):
         log.gatewayName = self.gatewayName
         log.logContent = content
         self.gateway.onLog(log)        
+
+
+
+
+
+    

@@ -1,0 +1,7 @@
+{
+    "repAddress": "tcp://*:8888", 
+    "pubAddress": "tcp://*:6666",
+    "eventType": {
+    	"eTick.": "symbol"
+    }
+}

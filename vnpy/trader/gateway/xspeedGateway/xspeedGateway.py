@@ -8,6 +8,7 @@ import os
 import json
 import time
 from copy import copy
+from time import sleep
 
 from vnpy.api.xspeed import MdApi, TdApi, defineDict
 from vnpy.trader.vtGateway import *

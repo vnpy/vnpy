@@ -98,6 +98,14 @@ class StSpread(object):
         
         # 遍历价差腿列表
         for n, leg in enumerate(self.allLegs):
+            # 过滤有某条腿尚未初始化的情况（无挂单量）
+            if not leg.bidVolume or not leg.askVolume:
+                self.bidPrice = EMPTY_FLOAT
+                self.askPrice = EMPTY_FLOAT
+                self.askVolume = EMPTY_INT
+                self.bidVolume = EMPTY_INT                
+                return
+                
             # 计算价格
             if leg.multiplier > 0:
                 self.bidPrice += leg.bidPrice * leg.multiplier

@@ -104,4 +104,10 @@ class MainEngineProxy(object):
     def getApp(self, name):
         """获取应用引擎对象"""
         return self.__getattr__(name)
+    
+    #----------------------------------------------------------------------
+    def exit(self):
+        self.eventEngine.stop()
         
+        if self.client:
+            self.client.stop()  

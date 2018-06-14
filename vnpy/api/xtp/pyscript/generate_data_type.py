@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = u'用Python的交易员'
 
 # C++和python类型的映射字典
@@ -43,7 +44,7 @@ def process_enum(line):
     content = content.replace('\r', '')
     content = content.split(' ')
     type_ = 'enum'
-    keyword = content[1]
+    keyword = content[2]
     py_line = 'typedefDict["%s"] = "%s"\n' % (keyword, type_)
 
     return py_line
@@ -128,7 +129,7 @@ def main():
     fcpp.close()
     fpy.close()
 
-    print u'data_type.py生成过程完成'
+    print(u'data_type.py生成过程完成')
 
 
 if __name__ == '__main__':

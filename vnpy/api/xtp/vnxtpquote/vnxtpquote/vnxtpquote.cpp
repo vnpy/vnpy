@@ -1,6 +1,8 @@
 // vnctpmd.cpp : 定义 DLL 应用程序的导出函数。
 //
-
+#ifdef WIN32
+	#include "stdafx.h"
+#endif
 #include "vnxtpquote.h"
 
 ///-------------------------------------------------------------------------------------
@@ -142,10 +144,10 @@ void QuoteApi::OnUnSubMarketData(XTPST *ticker, XTPRI *error_info, bool is_last)
     this->task_queue.push(task);
 };
 
-void QuoteApi::OnMarketData(XTPMD *market_data)
+void QuoteApi::OnDepthMarketData(XTPMD *market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[], int32_t ask1_count, int32_t max_ask1_count)
 {
     Task* task = new Task();
-    task->task_name = ONMARKETDATA;
+    task->task_name = ONDEPTHMARKETDATA;
 
     if (market_data)
     {
@@ -153,6 +155,7 @@ void QuoteApi::OnMarketData(XTPMD *market_data)
         *task_data = *market_data;
         task->task_data = task_data;
     }
+
     this->task_queue.push(task);
 };
 
@@ -216,6 +219,159 @@ void QuoteApi::OnOrderBook(XTPOB *order_book)
     this->task_queue.push(task);
 };
 
+void QuoteApi::OnSubTickByTick(XTPST *ticker, XTPRI *error_info, bool is_last) 
+{
+	Task* task = new Task();
+	task->task_name = ONSUBTICKBYTICK;
+
+	if (ticker)
+	{
+		XTPST *task_data = new XTPST();
+		*task_data = *ticker;
+		task->task_data = task_data;
+	}
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	task->task_last = is_last;
+	this->task_queue.push(task);
+};
+
+void QuoteApi::OnUnSubTickByTick(XTPST *ticker, XTPRI *error_info, bool is_last)
+{
+	Task* task = new Task();
+	task->task_name = ONUNSUBTICKBYTICK;
+
+	if (ticker)
+	{
+		XTPST *task_data = new XTPST();
+		*task_data = *ticker;
+		task->task_data = task_data;
+	}
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	task->task_last = is_last;
+	this->task_queue.push(task);
+};
+
+void QuoteApi::OnTickByTick(XTPTBT *tbt_data)
+{
+	Task* task = new Task();
+	task->task_name = ONTICKBYTICK;
+
+	if (tbt_data)
+	{
+		XTPTBT *task_data = new XTPTBT();
+		*task_data = *tbt_data;
+		task->task_data = task_data;
+	}
+
+	this->task_queue.push(task);
+};
+
+void QuoteApi::OnSubscribeAllMarketData(XTPRI *error_info)
+{
+	Task* task = new Task();
+	task->task_name = ONSUBSCRIBEALLMARKETDATA;
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	this->task_queue.push(task);
+};
+
+void QuoteApi::OnUnSubscribeAllMarketData(XTPRI *error_info)
+{
+	Task* task = new Task();
+	task->task_name = ONUNSUBSCRIBEALLMARKETDATA;
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	this->task_queue.push(task);
+};
+
+void QuoteApi::OnSubscribeAllOrderBook(XTPRI *error_info)
+{
+	Task* task = new Task();
+	task->task_name = ONSUBSCRIBEALLORDERBOOK;
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	this->task_queue.push(task);
+};
+
+
+void QuoteApi::OnUnSubscribeAllOrderBook(XTPRI *error_info)
+{
+	Task* task = new Task();
+	task->task_name = ONUNSUBSCRIBEALLMARKETDATA;
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	this->task_queue.push(task);
+};
+
+
+void QuoteApi::OnSubscribeAllTickByTick(XTPRI *error_info)
+{
+	Task* task = new Task();
+	task->task_name = ONSUBSCRIBEALLTICKBYTICK;
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	this->task_queue.push(task);
+};
+
+void QuoteApi::OnUnSubscribeAllTickByTick(XTPRI *error_info)
+{
+	Task* task = new Task();
+	task->task_name = ONUNSUBSCRIBEALLTICKBYTICK;
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	this->task_queue.push(task);
+};
+
 void QuoteApi::OnQueryAllTickers(XTPQSI* ticker_info, XTPRI *error_info, bool is_last)
 {
     Task* task = new Task();
@@ -237,6 +393,29 @@ void QuoteApi::OnQueryAllTickers(XTPQSI* ticker_info, XTPRI *error_info, bool is
 
     task->task_last = is_last;
     this->task_queue.push(task);
+};
+
+void QuoteApi::OnQueryTickersPriceInfo(XTPTPI* ticker_info, XTPRI *error_info, bool is_last)
+{
+	Task* task = new Task();
+	task->task_name = ONQUERYTICKERSPRICEINFO;
+
+	if (ticker_info)
+	{
+		XTPTPI *task_data = new XTPTPI();
+		*task_data = *ticker_info;
+		task->task_data = task_data;
+	}
+
+	if (error_info)
+	{
+		XTPRI *task_error = new XTPRI();
+		*task_error = *error_info;
+		task->task_error = task_error;
+	}
+
+	task->task_last = is_last;
+	this->task_queue.push(task);
 };
 
 
@@ -276,9 +455,9 @@ void QuoteApi::processTask()
 			    break;
 			}
 
-			case ONMARKETDATA:
+			case ONDEPTHMARKETDATA:
 			{
-			    this->processMarketData(task);
+			    this->processDepthMarketData(task);
 			    break;
 			}
 
@@ -300,10 +479,70 @@ void QuoteApi::processTask()
 			    break;
 			}
 
+			case ONSUBTICKBYTICK:
+			{
+				this->processSubTickByTick(task);
+				break;
+			}
+
+			case ONUNSUBTICKBYTICK:
+			{
+				this->processUnSubTickByTick(task);
+				break;
+			}
+
+			case ONTICKBYTICK:
+			{
+				this->processTickByTick(task);
+				break;
+			}
+
+			case ONSUBSCRIBEALLMARKETDATA:
+			{
+				this->processSubscribeAllMarketData(task);
+				break;
+			}
+
+			case ONUNSUBSCRIBEALLMARKETDATA:
+			{
+				this->processUnSubscribeAllMarketData(task);
+				break;
+			}
+
+			case ONSUBSCRIBEALLORDERBOOK:
+			{
+				this->processSubscribeAllOrderBook(task);
+				break;
+			}
+
+			case ONUNSUBSCRIBEALLORDERBOOK:
+			{
+				this->processUnSubscribeAllOrderBook(task);
+				break;
+			}
+
+			case ONSUBSCRIBEALLTICKBYTICK:
+			{
+				this->processSubscribeAllTickByTick(task);
+				break;
+			}
+
+			case ONUNSUBSCRIBEALLTICKBYTICK:
+			{
+				this->processUnSubscribeAllTickByTick(task);
+				break;
+			}
+
 			case ONQUERYALLTICKERS:
 			{
 			    this->processQueryAllTickers(task);
 			    break;
+			}
+
+			case ONQUERYTICKERSPRICEINFO:
+			{
+				this->processQueryTickersPriceInfo(task);
+				break;
 			}
 		};
 	}
@@ -384,7 +623,7 @@ void QuoteApi::processUnSubMarketData(Task *task)
     delete task;
 };
 
-void QuoteApi::processMarketData(Task *task)
+void QuoteApi::processDepthMarketData(Task *task)
 {
     PyLock lock;
     dict data;
@@ -473,7 +712,7 @@ void QuoteApi::processMarketData(Task *task)
 			delete task->task_data;
     }
 
-    this->onMarketData(data);
+    this->onDepthMarketData(data);
     delete task;
 };
 
@@ -562,6 +801,195 @@ void QuoteApi::processOrderBook(Task *task)
     delete task;
 };
 
+void QuoteApi::processSubTickByTick(Task *task)
+{
+	PyLock lock;
+	dict data;
+	if (task->task_data)
+	{
+		XTPST *task_data = (XTPST*)task->task_data;
+		data["exchange_id"] = (int)task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
+		delete task->task_data;
+	}
+
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onSubTickByTick(data, error, task->task_last);
+	delete task;
+};
+
+void QuoteApi::processUnSubTickByTick(Task *task)
+{
+	PyLock lock;
+	dict data;
+	if (task->task_data)
+	{
+		XTPST *task_data = (XTPST*)task->task_data;
+		data["exchange_id"] = (int)task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
+		delete task->task_data;
+	}
+
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onUnSubTickByTick(data, error, task->task_last);
+	delete task;
+};
+
+void QuoteApi::processTickByTick(Task *task)
+{
+	PyLock lock;
+	dict data;
+	if (task->task_data)
+	{
+		XTPTBT *task_data = (XTPTBT*)task->task_data;
+
+
+		data["exchange_id"] = (int)task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
+		//data["seq"] = task_data->seq;
+		data["data_time"] = task_data->data_time;
+		data["type"] = (int)task_data->type;
+
+		if (task_data->type == XTP_TBT_ENTRUST)
+		{
+			data["channel_no"] = task_data->entrust.channel_no;
+			data["seq"] = task_data->entrust.seq;
+			data["price"] = task_data->entrust.price;
+			data["qty"] = task_data->entrust.qty;
+			data["side"] = task_data->entrust.side;
+			data["ord_type"] = task_data->entrust.ord_type;
+		}
+		else
+		{
+			data["channel_no"] = task_data->trade.channel_no;
+			data["seq"] = task_data->trade.seq;
+			data["price"] = task_data->trade.price;
+			data["qty"] = task_data->trade.qty;
+			data["money"] = task_data->trade.money;
+			data["bid_no"] = task_data->trade.bid_no;
+			data["ask_no"] = task_data->trade.ask_no;
+			data["trade_flag"] = task_data->trade.trade_flag;
+		}
+
+		delete task->task_data;
+	}
+
+	this->onTickByTick(data);
+	delete task;
+};
+
+void QuoteApi::processSubscribeAllMarketData(Task *task)
+{
+	PyLock lock;
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onSubscribeAllMarketData(error);
+	delete task;
+};
+
+void QuoteApi::processUnSubscribeAllMarketData(Task *task)
+{
+	PyLock lock;
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onUnSubscribeAllMarketData(error);
+	delete task;
+};
+
+void QuoteApi::processSubscribeAllOrderBook(Task *task)
+{
+	PyLock lock;
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onSubscribeAllOrderBook(error);
+	delete task;
+};
+
+void QuoteApi::processUnSubscribeAllOrderBook(Task *task)
+{
+	PyLock lock;
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onUnSubscribeAllOrderBook(error);
+	delete task;
+};
+
+void QuoteApi::processSubscribeAllTickByTick(Task *task)
+{
+	PyLock lock;
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onSubscribeAllTickByTick(error);
+	delete task;
+};
+
+void QuoteApi::processUnSubscribeAllTickByTick(Task *task)
+{
+	PyLock lock;
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onUnSubscribeAllTickByTick(error);
+	delete task;
+};
+
 void QuoteApi::processQueryAllTickers(Task *task)
 {
     PyLock lock;
@@ -596,6 +1024,35 @@ void QuoteApi::processQueryAllTickers(Task *task)
 
     this->onQueryAllTickers(data, error, task->task_last);
     delete task;
+};
+
+void QuoteApi::processQueryTickersPriceInfo(Task *task)
+{
+	PyLock lock;
+
+	//手动修改
+	dict data;
+	if (task->task_data)
+	{
+		XTPTPI *task_data = (XTPTPI*)task->task_data;
+		data["exchange_id"] = (int)task_data->exchange_id;
+		data["ticker"] = task_data->ticker;
+		data["last_price"] = task_data->last_price;
+
+		delete task->task_data;
+	}
+
+	dict error;
+	if (task->task_error)
+	{
+		XTPRI *task_error = (XTPRI*)task->task_error;
+		error["error_id"] = task_error->error_id;
+		error["error_msg"] = task_error->error_msg;
+		delete task->task_error;
+	}
+
+	this->onQueryTickersPriceInfo(data, error, task->task_last);
+	delete task;
 };
 
 
@@ -635,6 +1092,27 @@ string QuoteApi::getApiVersion()
 	return version;
 };
 
+dict QuoteApi::getApiLastError()
+{
+	XTPRI *error = this->api->GetApiLastError();
+	dict err;
+
+	err["error_id"] = error->error_id;
+	err["error_msg"] = error->error_msg;
+
+	return err;
+};
+
+void QuoteApi::setUDPBufferSize(int size)
+{
+	this->api->SetUDPBufferSize(size);
+};
+
+void QuoteApi::setHeartBeatInterval(int interval)
+{
+	this->api->SetHeartBeatInterval(interval);
+};
+
 int QuoteApi::subscribeMarketData(string ticker, int exchange)
 {
 	char* buffer = (char*)ticker.c_str();
@@ -667,6 +1145,51 @@ int QuoteApi::unSubscribeOrderBook(string ticker, int exchange)
 	return i;
 };
 
+int QuoteApi::subscribeTickByTick(string ticker, int exchange)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };;
+	int i = this->api->SubscribeTickByTick(myreq, 1, (XTP_EXCHANGE_TYPE)exchange);
+	return i;
+};
+
+int QuoteApi::unSubscribeTickByTick(string ticker, int exchange)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };;
+	int i = this->api->UnSubscribeTickByTick(myreq, 1, (XTP_EXCHANGE_TYPE)exchange);
+	return i;
+};
+
+void QuoteApi::subscribeAllMarketData()
+{
+	this->api->SubscribeAllMarketData();
+};
+
+void QuoteApi::unSubscribeAllMarketData()
+{
+	this->api->UnSubscribeAllMarketData();
+};
+
+void QuoteApi::subscribeAllOrderBook()
+{
+	this->api->SubscribeAllOrderBook();
+};
+
+void QuoteApi::unSubscribeAllOrderBook()
+{
+	this->api->UnSubscribeAllOrderBook();
+};
+
+void QuoteApi::subscribeAllTickByTick()
+{
+	this->api->SubscribeAllTickByTick();
+};
+
+void QuoteApi::unSubscribeAllTickByTick()
+{
+	this->api->UnSubscribeAllTickByTick();
+};
 
 int QuoteApi::login(string ip, int port, string user, string password, int socktype)
 {
@@ -685,6 +1208,20 @@ int QuoteApi::queryAllTickers(int exchange)
 	int i = this->api->QueryAllTickers((XTP_EXCHANGE_TYPE)exchange);
 	return i;
 };
+
+int QuoteApi::queryTickersPriceInfo(string ticker, int exchange)
+{
+	char* buffer = (char*)ticker.c_str();
+	char* myreq[1] = { buffer };;
+	int i = this->api->QueryTickersPriceInfo(myreq, 1, (XTP_EXCHANGE_TYPE)exchange);
+	return i;
+}
+
+int QuoteApi::queryAllTickersPriceInfo()
+{
+	int i = this->api->QueryAllTickersPriceInfo();
+	return i;
+}
 
 ///-------------------------------------------------------------------------------------
 ///Boost.Python封装
@@ -740,11 +1277,11 @@ struct QuoteApiWrap : QuoteApi, wrapper < QuoteApi >
 	    }
 	};
 
-	virtual void onMarketData(dict data)
+	virtual void onDepthMarketData(dict data)
 	{
 	    try
 	    {
-	        this->get_override("onMarketData")(data);
+	        this->get_override("onDepthMarketData")(data);
 	    }
 	    catch (error_already_set const &)
 	    {
@@ -788,6 +1325,114 @@ struct QuoteApiWrap : QuoteApi, wrapper < QuoteApi >
 	    }
 	};
 
+	virtual void onSubTickByTick(dict data, dict error, bool last)
+	{
+		try
+		{
+			this->get_override("onSubTickByTick")(data, error, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onUnSubTickByTick(dict data, dict error, bool last)
+	{
+		try
+		{
+			this->get_override("onUnSubTickByTick")(data, error, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onTickByTick(dict data)
+	{
+		try
+		{
+			this->get_override("onTickByTick")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onSubscribeAllMarketData(dict data)
+	{
+		try
+		{
+			this->get_override("onSubscribeAllMarketData")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onUnSubscribeAllMarketData(dict data)
+	{
+		try
+		{
+			this->get_override("onUnSubscribeAllMarketData")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onSubscribeAllOrderBook(dict data)
+	{
+		try
+		{
+			this->get_override("onSubscribeAllOrderBook")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onUnSubscribeAllOrderBook(dict data)
+	{
+		try
+		{
+			this->get_override("onUnSubscribeAllOrderBook")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onSubscribeAllTickByTick(dict data)
+	{
+		try
+		{
+			this->get_override("onSubscribeAllTickByTick")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onUnSubscribeAllTickByTick(dict data)
+	{
+		try
+		{
+			this->get_override("onUnSubscribeAllTickByTick")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
 	virtual void onQueryAllTickers(dict data, dict error, bool last)
 	{
 	    try
@@ -798,6 +1443,18 @@ struct QuoteApiWrap : QuoteApi, wrapper < QuoteApi >
 	    {
 	        PyErr_Print();
 	    }
+	};
+
+	virtual void onQueryTickersPriceInfo(dict data, dict error, bool last)
+	{
+		try
+		{
+			this->get_override("onQueryTickersPriceInfo")(data, error, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
 	};
 };
 
@@ -811,22 +1468,46 @@ BOOST_PYTHON_MODULE(vnxtpquote)
 		.def("release", &QuoteApiWrap::release)
 		.def("exit", &QuoteApiWrap::exit)
 		.def("getTradingDay", &QuoteApiWrap::getTradingDay)
+		.def("getApiVersion", &QuoteApiWrap::getApiVersion)
+		.def("getApiLastError", &QuoteApiWrap::getApiLastError)
+		.def("setUDPBufferSize", &QuoteApiWrap::setUDPBufferSize)
+		.def("setHeartBeatInterval", &QuoteApiWrap::setHeartBeatInterval)
 		.def("subscribeMarketData", &QuoteApiWrap::subscribeMarketData)
 		.def("unSubscribeMarketData", &QuoteApiWrap::unSubscribeMarketData)
 		.def("subscribeOrderBook", &QuoteApiWrap::subscribeOrderBook)
 		.def("unSubscribeOrderBook", &QuoteApiWrap::unSubscribeOrderBook)
+		.def("subscribeTickByTick", &QuoteApiWrap::subscribeTickByTick)
+		.def("unSubscribeTickByTick", &QuoteApiWrap::unSubscribeTickByTick)
+		.def("subscribeAllMarketData", &QuoteApiWrap::subscribeAllMarketData)
+		.def("unSubscribeAllMarketData", &QuoteApiWrap::unSubscribeAllMarketData)
+		.def("subscribeAllOrderBook", &QuoteApiWrap::subscribeAllOrderBook)
+		.def("unSubscribeAllOrderBook", &QuoteApiWrap::unSubscribeAllOrderBook)
+		.def("subscribeAllTickByTick", &QuoteApiWrap::subscribeAllTickByTick)
+		.def("unSubscribeAllTickByTick", &QuoteApiWrap::unSubscribeAllTickByTick)
 		.def("login", &QuoteApiWrap::login)
 		.def("logout", &QuoteApiWrap::logout)
 		.def("queryAllTickers", &QuoteApiWrap::queryAllTickers)
+		.def("queryTickersPriceInfo", &QuoteApiWrap::queryTickersPriceInfo)
+		.def("queryAllTickersPriceInfo", &QuoteApiWrap::queryAllTickersPriceInfo)
 
 		.def("onDisconnected", pure_virtual(&QuoteApiWrap::onDisconnected))
 		.def("onError", pure_virtual(&QuoteApiWrap::onError))
 		.def("onSubMarketData", pure_virtual(&QuoteApiWrap::onSubMarketData))
 		.def("onUnSubMarketData", pure_virtual(&QuoteApiWrap::onUnSubMarketData))
-		.def("onMarketData", pure_virtual(&QuoteApiWrap::onMarketData))
+		.def("onDepthMarketData", pure_virtual(&QuoteApiWrap::onDepthMarketData))
 		.def("onSubOrderBook", pure_virtual(&QuoteApiWrap::onSubOrderBook))
 		.def("onUnSubOrderBook", pure_virtual(&QuoteApiWrap::onUnSubOrderBook))
 		.def("onOrderBook", pure_virtual(&QuoteApiWrap::onOrderBook))
+		.def("onSubTickByTick", pure_virtual(&QuoteApiWrap::onSubTickByTick))
+		.def("onUnSubTickByTick", pure_virtual(&QuoteApiWrap::onUnSubTickByTick))
+		.def("onTickByTick", pure_virtual(&QuoteApiWrap::onTickByTick))
+		.def("onSubscribeAllMarketData", pure_virtual(&QuoteApiWrap::onSubscribeAllMarketData))
+		.def("onUnSubscribeAllMarketData", pure_virtual(&QuoteApiWrap::onUnSubscribeAllMarketData))
+		.def("onSubscribeAllOrderBook", pure_virtual(&QuoteApiWrap::onSubscribeAllOrderBook))
+		.def("onUnSubscribeAllOrderBook", pure_virtual(&QuoteApiWrap::onUnSubscribeAllOrderBook))
+		.def("onSubscribeAllTickByTick", pure_virtual(&QuoteApiWrap::onSubscribeAllTickByTick))
+		.def("onUnSubscribeAllTickByTick", pure_virtual(&QuoteApiWrap::onUnSubscribeAllTickByTick))
 		.def("onQueryAllTickers", pure_virtual(&QuoteApiWrap::onQueryAllTickers))
+		.def("onQueryTickersPriceInfo", pure_virtual(&QuoteApiWrap::onQueryTickersPriceInfo))
 		;
 };

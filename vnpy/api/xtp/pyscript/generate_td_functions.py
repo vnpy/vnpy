@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 from string import join
@@ -194,7 +195,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
     fprocess.write("    PyLock lock;\n")
 
     onArgsList = []
-    print cbName, cbArgsTypeList
+    print(cbName, cbArgsTypeList)
     
     for i, type_ in enumerate(cbArgsTypeList):
         if 'XTPRI' in type_:
@@ -258,7 +259,7 @@ def processFunction(line):
     fcArgs = fcArgs.replace(')', '')
 
     fcArgsList = fcArgs.split(', ')                 # 将每个参数转化为列表
-    print fcArgsList
+    print(fcArgsList)
     fcArgsTypeList = []
     fcArgsValueList = []
 
@@ -352,4 +353,4 @@ fheaderon.close()
 fheaderfunction.close()
 fwrap.close()
 
-print 'td functions done'
+print('td functions done')

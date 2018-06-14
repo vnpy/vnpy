@@ -7,6 +7,11 @@ from qtpy import QtWidgets, QtGui, QtCore
 from vnpy.trader.vtGlobal import globalSetting
 from vnpy.trader.vtFunction import loadIconPath
 
+
+if not hasattr(QtCore, 'pyqtSignal'):
+    QtCore.pyqtSignal = QtCore.Signal
+
+
 BASIC_FONT = None
 try:
     family = globalSetting['fontFamily']
@@ -25,7 +30,7 @@ def createQApp():
     if globalSetting['darkStyle']:
         try:
             import qdarkstyle
-            qApp.setStyleSheet(qdarkstyle.load_stylesheet(pyside=False))
+            qApp.setStyleSheet(qdarkstyle.load_stylesheet_from_environment())
         except ImportError:
             pass
         

@@ -10,6 +10,7 @@ Interactive Brokers的gateway接入，已经替换为vn.ib封装。
 4. 目前只支持股票和期货交易，ib api里期权合约的确定是基于Contract对象的多个字段，比较复杂暂时没做
 5. 海外市场的交易规则和国内有很多细节上的不同，所以一些字段类型的映射可能不合理，如果发现问题欢迎指出
 '''
+from __future__ import print_function
 
 import os
 import json
@@ -69,6 +70,7 @@ productClassMap[PRODUCT_FUTURES] = 'FUT'
 productClassMap[PRODUCT_OPTION] = 'OPT'
 productClassMap[PRODUCT_FOREX] = 'CASH'
 productClassMap[PRODUCT_INDEX] = 'IND'
+productClassMap[PRODUCT_SPOT] = 'CMDTY'
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
 
 # 期权类型映射
@@ -363,7 +365,8 @@ class IbWrapper(IbApi):
             tick.__setattr__(key, price)
             
             # IB的外汇行情没有成交价和时间，通过本地计算生成，同时立即推送
-            if self.tickProductDict[tickerId] == PRODUCT_FOREX:
+            p = self.tickProductDict[tickerId]
+            if p == PRODUCT_FOREX or p == PRODUCT_SPOT:
                 tick.lastPrice = (tick.bidPrice1 + tick.askPrice1) / 2
                 dt = datetime.now()
                 tick.time = dt.strftime('%H:%M:%S.%f')
@@ -373,7 +376,7 @@ class IbWrapper(IbApi):
                 newtick = copy(tick)
                 self.gateway.onTick(newtick)
         else:
-            print field
+            print(field)
         
     #----------------------------------------------------------------------
     def tickSize(self, tickerId, field, size):
@@ -383,7 +386,7 @@ class IbWrapper(IbApi):
             key = tickFieldMap[field]
             tick.__setattr__(key, size)   
         else:
-            print field
+            print(field)
         
     #----------------------------------------------------------------------
     def tickOptionComputation(self, tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice):

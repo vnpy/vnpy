@@ -63,7 +63,7 @@ Using the vn.py project, institutional investors and professional traders, such 
 
 3. RPC framework (vn.rpc) which also supports pushing data from server to client, aimed at implementing distributed trading systems.
 
-4. Ready to use trading platform (vn.trader), which has intergrated all the trading APIs in vn.api, and provides easy to use strategy engines for developing different types of quantitative strategies and trading algorithms.
+4. Ready to use trading platform (vn.trader), which has integrated all the trading APIs in vn.api, and provides easy to use strategy engines for developing different types of quantitative strategies and trading algorithms.
 
 5. Tutorials about how to use vn.py to solve real world trading issues.
 

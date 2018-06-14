@@ -239,7 +239,6 @@ class StDataEngine(object):
         event2.dict_['data'] = spread
         self.eventEngine.put(event2)         
         
-    
     #----------------------------------------------------------------------
     def registerEvent(self):
         """"""
@@ -309,6 +308,10 @@ class StAlgoEngine(object):
         """处理价差行情事件"""
         spread = event.dict_['data']
         
+        # 若价差的买卖价均为0，则意味着尚未初始化，直接返回
+        if not spread.bidPrice and not spread.askPrice:
+            return
+        
         algo = self.algoDict.get(spread.name, None)
         if algo:
             algo.updateSpreadTick(spread)
@@ -356,6 +359,7 @@ class StAlgoEngine(object):
         req = VtOrderReq()
         req.symbol = contract.symbol
         req.exchange = contract.exchange
+        req.vtSymbol = contract.vtSymbol
         req.direction = direction
         req.offset = offset
         req.volume = int(volume)
@@ -365,9 +369,16 @@ class StAlgoEngine(object):
             req.price = price + payup * contract.priceTick
         else:
             req.price = price - payup * contract.priceTick
+            
+        # 委托转换
+        reqList = self.mainEngine.convertOrderReq(req)
+        vtOrderIDList = []
         
-        vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)
-        return vtOrderID
+        for req in reqList:
+            vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)
+            vtOrderIDList.append(vtOrderID)
+        
+        return vtOrderIDList
         
     #----------------------------------------------------------------------
     def cancelOrder(self, vtOrderID):
@@ -388,45 +399,25 @@ class StAlgoEngine(object):
     #----------------------------------------------------------------------
     def buy(self, vtSymbol, price, volume, payup=0):
         """买入"""
-        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_OPEN, price, volume, payup)
-        l = []
-        
-        if vtOrderID:
-            l.append(vtOrderID)
-
+        l = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_OPEN, price, volume, payup)
         return l
     
     #----------------------------------------------------------------------
     def sell(self, vtSymbol, price, volume, payup=0):
         """卖出"""
-        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_CLOSE, price, volume, payup)
-        l = []
-        
-        if vtOrderID:
-            l.append(vtOrderID)
-
+        l = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_CLOSE, price, volume, payup)
         return l
     
     #----------------------------------------------------------------------
     def short(self, vtSymbol, price, volume, payup=0):
         """卖空"""
-        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_OPEN, price, volume, payup)
-        l = []
-        
-        if vtOrderID:
-            l.append(vtOrderID)
-
+        l = self.sendOrder(vtSymbol, DIRECTION_SHORT, OFFSET_OPEN, price, volume, payup)
         return l
     
     #----------------------------------------------------------------------
     def cover(self, vtSymbol, price, volume, payup=0):
         """平空"""
-        vtOrderID = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_CLOSE, price, volume, payup)
-        l = []
-        
-        if vtOrderID:
-            l.append(vtOrderID)
-
+        l = self.sendOrder(vtSymbol, DIRECTION_LONG, OFFSET_CLOSE, price, volume, payup)
         return l
     
     #----------------------------------------------------------------------

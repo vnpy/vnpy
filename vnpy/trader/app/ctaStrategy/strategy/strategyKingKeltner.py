@@ -4,20 +4,16 @@
 基于King Keltner通道的交易策略，适合用在股指上，
 展示了OCO委托和5分钟K线聚合的方法。
 
-注意事项：
-1. 作者不对交易盈利做任何保证，策略代码仅供参考
-2. 本策略需要用到talib，没有安装的用户请先参考www.vnpy.org上的教程安装
-3. 将IF0000_1min.csv用ctaHistoryData.py导入MongoDB后，直接运行本文件即可回测策略
+注意事项：作者不对交易盈利做任何保证，策略代码仅供参考
 """
 
 from __future__ import division
 
-import talib
-import numpy as np
-
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import CtaTemplate
+from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
+                                                     BarGenerator, 
+                                                     ArrayManager)
 
 
 ########################################################################
@@ -34,25 +30,13 @@ class KkStrategy(CtaTemplate):
     fixedSize = 1           # 每次交易的数量
 
     # 策略变量
-    bar = None                  # 1分钟K线对象
-    barMinute = EMPTY_STRING    # K线当前的分钟
-    fiveBar = None              # 1分钟K线对象
-
-    bufferSize = 100                    # 需要缓存的数据的大小
-    bufferCount = 0                     # 目前已经缓存了的数据的计数
-    highArray = np.zeros(bufferSize)    # K线最高价的数组
-    lowArray = np.zeros(bufferSize)     # K线最低价的数组
-    closeArray = np.zeros(bufferSize)   # K线收盘价的数组
-    
-    atrValue = 0                        # 最新的ATR指标数值
-    kkMid = 0                           # KK通道中轨
     kkUp = 0                            # KK通道上轨
     kkDown = 0                          # KK通道下轨
     intraTradeHigh = 0                  # 持仓期内的最高点
     intraTradeLow = 0                   # 持仓期内的最低点
 
-    buyOrderID = None                   # OCO委托买入开仓的委托号
-    shortOrderID = None                 # OCO委托卖出开仓的委托号
+    buyOrderIDList = []                 # OCO委托买入开仓的委托号
+    shortOrderIDList = []               # OCO委托卖出开仓的委托号
     orderList = []                      # 保存委托代码的列表
 
     # 参数列表，保存了参数的名称
@@ -67,15 +51,25 @@ class KkStrategy(CtaTemplate):
     varList = ['inited',
                'trading',
                'pos',
-               'atrValue',
-               'kkMid',
                'kkUp',
-               'kkDown']  
+               'kkDown']
+    
+    # 同步列表，保存了需要保存到数据库的变量名称
+    syncList = ['pos',
+                'intraTradeHigh',
+                'intraTradeLow']    
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
         super(KkStrategy, self).__init__(ctaEngine, setting)
+        
+        self.bg = BarGenerator(self.onBar, 5, self.onFiveBar)     # 创建K线合成器对象
+        self.am = ArrayManager()
+        
+        self.buyOrderIDList = []
+        self.shortOrderIDList = []
+        self.orderList = []
         
     #----------------------------------------------------------------------
     def onInit(self):
@@ -103,79 +97,13 @@ class KkStrategy(CtaTemplate):
 
     #----------------------------------------------------------------------
     def onTick(self, tick):
-        """收到行情TICK推送（必须由用户继承实现）"""
-        # 聚合为1分钟K线
-        tickMinute = tick.datetime.minute
-
-        if tickMinute != self.barMinute:  
-            if self.bar:
-                self.onBar(self.bar)
-
-            bar = VtBarData()              
-            bar.vtSymbol = tick.vtSymbol
-            bar.symbol = tick.symbol
-            bar.exchange = tick.exchange
-
-            bar.open = tick.lastPrice
-            bar.high = tick.lastPrice
-            bar.low = tick.lastPrice
-            bar.close = tick.lastPrice
-
-            bar.date = tick.date
-            bar.time = tick.time
-            bar.datetime = tick.datetime    # K线的时间设为第一个Tick的时间
-
-            self.bar = bar                  # 这种写法为了减少一层访问，加快速度
-            self.barMinute = tickMinute     # 更新当前的分钟
-        else:                               # 否则继续累加新的K线
-            bar = self.bar                  # 写法同样为了加快速度
-
-            bar.high = max(bar.high, tick.lastPrice)
-            bar.low = min(bar.low, tick.lastPrice)
-            bar.close = tick.lastPrice
+        """收到行情TICK推送（必须由用户继承实现）""" 
+        self.bg.updateTick(tick)
 
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        # 如果当前是一个5分钟走完（分钟线的时间戳是当前分钟的开始时间戳，因此要+1）
-        if (bar.datetime.minute + 1) % 5 == 0:
-            # 如果已经有聚合5分钟K线
-            if self.fiveBar:
-                # 将最新分钟的数据更新到目前5分钟线中
-                fiveBar = self.fiveBar
-                fiveBar.high = max(fiveBar.high, bar.high)
-                fiveBar.low = min(fiveBar.low, bar.low)
-                fiveBar.close = bar.close
-                
-                # 推送5分钟线数据
-                self.onFiveBar(fiveBar)
-                
-                # 清空5分钟线数据缓存
-                self.fiveBar = None
-        else:
-            # 如果没有缓存则新建
-            if not self.fiveBar:
-                fiveBar = VtBarData()
-                
-                fiveBar.vtSymbol = bar.vtSymbol
-                fiveBar.symbol = bar.symbol
-                fiveBar.exchange = bar.exchange
-            
-                fiveBar.open = bar.open
-                fiveBar.high = bar.high
-                fiveBar.low = bar.low
-                fiveBar.close = bar.close
-            
-                fiveBar.date = bar.date
-                fiveBar.time = bar.time
-                fiveBar.datetime = bar.datetime 
-                
-                self.fiveBar = fiveBar
-            else:
-                fiveBar = self.fiveBar
-                fiveBar.high = max(fiveBar.high, bar.high)
-                fiveBar.low = min(fiveBar.low, bar.low)
-                fiveBar.close = bar.close
+        self.bg.updateBar(bar)
     
     #----------------------------------------------------------------------
     def onFiveBar(self, bar):
@@ -186,27 +114,14 @@ class KkStrategy(CtaTemplate):
         self.orderList = []
     
         # 保存K线数据
-        self.closeArray[0:self.bufferSize-1] = self.closeArray[1:self.bufferSize]
-        self.highArray[0:self.bufferSize-1] = self.highArray[1:self.bufferSize]
-        self.lowArray[0:self.bufferSize-1] = self.lowArray[1:self.bufferSize]
-    
-        self.closeArray[-1] = bar.close
-        self.highArray[-1] = bar.high
-        self.lowArray[-1] = bar.low
-    
-        self.bufferCount += 1
-        if self.bufferCount < self.bufferSize:
+        am = self.am
+        am.updateBar(bar)
+        if not am.inited:
             return
-    
+        
         # 计算指标数值
-        self.atrValue = talib.ATR(self.highArray, 
-                                  self.lowArray, 
-                                  self.closeArray,
-                                  self.kkLength)[-1]
-        self.kkMid = talib.MA(self.closeArray, self.kkLength)[-1]
-        self.kkUp = self.kkMid + self.atrValue * self.kkDev
-        self.kkDown = self.kkMid - self.atrValue * self.kkDev
-    
+        self.kkUp, self.kkDown = am.keltner(self.kkLength, self.kkDev)
+        
         # 判断是否要进行交易
     
         # 当前无仓位，发送OCO开仓委托
@@ -220,18 +135,21 @@ class KkStrategy(CtaTemplate):
             self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
             self.intraTradeLow = bar.low
             
-            orderID = self.sell(self.intraTradeHigh*(1-self.trailingPrcnt/100), 
-                                abs(self.pos), True)
-            self.orderList.append(orderID)
+            l = self.sell(self.intraTradeHigh*(1-self.trailingPrcnt/100), 
+                          abs(self.pos), True)
+            self.orderList.extend(l)
     
         # 持有空头仓位
         elif self.pos < 0:
             self.intraTradeHigh = bar.high
             self.intraTradeLow = min(self.intraTradeLow, bar.low)
             
-            orderID = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100),
-                               abs(self.pos), True)
-            self.orderList.append(orderID)
+            l = self.cover(self.intraTradeLow*(1+self.trailingPrcnt/100), 
+                           abs(self.pos), True)
+            self.orderList.extend(l)
+    
+        # 同步数据到数据库
+        self.saveSyncData()    
     
         # 发出状态更新事件
         self.putEvent()        
@@ -243,21 +161,21 @@ class KkStrategy(CtaTemplate):
 
     #----------------------------------------------------------------------
     def onTrade(self, trade):
-        # 多头开仓成交后，撤消空头委托
-        if self.pos > 0:
-            self.cancelOrder(self.shortOrderID)
-            if self.buyOrderID in self.orderList:
-                self.orderList.remove(self.buyOrderID)
-            if self.shortOrderID in self.orderList:
-                self.orderList.remove(self.shortOrderID)
-        # 反之同样
-        elif self.pos < 0:
-            self.cancelOrder(self.buyOrderID)
-            if self.buyOrderID in self.orderList:
-                self.orderList.remove(self.buyOrderID)
-            if self.shortOrderID in self.orderList:
-                self.orderList.remove(self.shortOrderID)
-        
+        if self.pos != 0:
+            # 多头开仓成交后，撤消空头委托
+            if self.pos > 0:
+                for shortOrderID in self.shortOrderIDList:
+                    self.cancelOrder(shortOrderID)
+            # 反之同样
+            elif self.pos < 0:
+                for buyOrderID in self.buyOrderIDList:
+                    self.cancelOrder(buyOrderID)
+            
+            # 移除委托号
+            for orderID in (self.buyOrderIDList + self.shortOrderIDList):
+                if orderID in self.orderList:
+                    self.orderList.remove(orderID)
+                
         # 发出状态更新事件
         self.putEvent()
         
@@ -272,12 +190,12 @@ class KkStrategy(CtaTemplate):
         3. 一个方向的停止单成交后会立即撤消另一个方向的
         """
         # 发送双边的停止单委托，并记录委托号
-        self.buyOrderID = self.buy(buyPrice, volume, True)
-        self.shortOrderID = self.short(shortPrice, volume, True)
+        self.buyOrderIDList = self.buy(buyPrice, volume, True)
+        self.shortOrderIDList = self.short(shortPrice, volume, True)
         
         # 将委托号记录到列表中
-        self.orderList.append(self.buyOrderID)
-        self.orderList.append(self.shortOrderID)
+        self.orderList.extend(self.buyOrderIDList)
+        self.orderList.extend(self.shortOrderIDList)
 
     #----------------------------------------------------------------------
     def onStopOrder(self, so):

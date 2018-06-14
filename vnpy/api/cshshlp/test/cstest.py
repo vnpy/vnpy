@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import sys
 from time import sleep
 
@@ -14,21 +15,21 @@ branch_no = ''
 def print_list(l):
     """"""
     for d in l:
-        print d
+        print(d)
 
 #----------------------------------------------------------------------
 def print_dict(d):
     """按照键值打印一个字典"""
     for key,value in d.items():
-        print key + ':' + str(value)
+        print(key + ':' + str(value))
         
         
 #----------------------------------------------------------------------
 def simple_log(func):
     """简单装饰器用于输出函数名"""
     def wrapper(*args, **kw):
-        print '-' * 20
-        print str(func.__name__)
+        print('-' * 20)
+        print(str(func.__name__))
         return func(*args, **kw)
     return wrapper
 
@@ -59,18 +60,18 @@ class TestHlp(CsHsHlp):
     @simple_log
     def onMsg(self, type_, data, reqNo, errorNo, errorInfo):
         """"""
-        print 'type:', type_
+        print('type:', type_)
         # print_list(data)
-        print 'reqNo:', reqNo
-        print 'errorNo:', errorNo
-        print 'errorInfo:', errorInfo
+        print('reqNo:', reqNo)
+        print('errorNo:', errorNo)
+        print('errorInfo:', errorInfo)
         '''
         for i in data[0].keys():
             print "key=%s,value=%s"%(i,data[0][i])
         '''
         
         for dd in data:
-            print dd        
+            print(dd)        
         
         self.data = data
 
@@ -101,23 +102,23 @@ class TestHlp(CsHsHlp):
         '''
         i = self.loadConfig("Hsconfig.ini")
         if i:
-            print u'加载配置失败：', i
+            print(u'加载配置失败：', i)
             return i            
-        print u'加载配置成功'
+        print(u'加载配置成功')
         
         # 初始化
         i = self.init()
         if i:
-            print u'初始化失败：', i
+            print(u'初始化失败：', i)
             return i
-        print u'初始化成功'
+        print(u'初始化成功')
 
         # 连接服务器
         i = self.connectServer()
         if i:
-            print u'服务器连接失败：', i
+            print(u'服务器连接失败：', i)
             return i
-        print u'服务器连接成功'
+        print(u'服务器连接成功')
 
         return int(0)
 
@@ -135,10 +136,10 @@ def test():
     # 初始化端口
     i = api.init_api()
     if i:
-        print u'初始化端口失败，请检查clog文件', i
+        print(u'初始化端口失败，请检查clog文件', i)
         return
     # 登录
-    print u'尝试登录'
+    print(u'尝试登录')
     i = api.beginParam()
     api.setValue("identity_type", "2")
     api.setValue("password_type", "2")
@@ -150,7 +151,7 @@ def test():
     api.setValue('option_fund_account', account['id'])
     api.setValue('op_station', '<yangxs><vnpy><test>')
     i = api.bizCallAndCommit(331100)
-    print u'尝试登录返回', i
+    print(u'尝试登录返回', i)
     sleep(3)
     #---------------------------------------------------------
     # 配置self的变量
@@ -170,34 +171,34 @@ def test():
         api.request_num = '500'
         api.op_station = '<yangxs><vnpy><test>'
     else:
-        print 'error in set the value'
+        print('error in set the value')
 
     
     #------------------------------------------
     # 订阅  620001  成交回报  33011
     # 订阅  620001  委托回写  33012
     # api.setNessaryParam()
-    print u'订阅 33011'
+    print(u'订阅 33011')
     api.beginParam()
     acc_info = '~' .join([api.branch_no, api.fund_account])
     api.setValue('issue_type', "33011")
     api.setValue('acc_info', acc_info)
     i = api.subscribeData(620001)
-    print i
+    print(i)
     sleep(1)
 
 
-    print u'订阅 33012'
+    print(u'订阅 33012')
     api.beginParam()
     acc_info = '~' .join([api.branch_no, api.fund_account])
     api.setValue('issue_type', "33012")
     api.setValue('acc_info', acc_info)
     i = api.subscribeData(620001)
-    print i
+    print(i)
     sleep(1)
 
     
-    print u'配置参数，进行下单'
+    print(u'配置参数，进行下单')
     # 配置
     api.setNessaryParam()
     # 下单参数 338011
@@ -211,22 +212,22 @@ def test():
     api.setValue('entrust_prop', '0')
     api.setValue('covered_flag', '')
     i = api.bizCallAndCommit(338011)
-    print u'尝试下单返回', i
+    print(u'尝试下单返回', i)
     sleep(3)
     
     
-    print u'查询持仓'
+    print(u'查询持仓')
      # 查询持仓
     # api.beginParam()
     api.setNessaryParam()
     i = api.bizCallAndCommit(338023)
     sleep(3)
-    print u'查询持仓返回',i
+    print(u'查询持仓返回',i)
     if(len(api.data)):
         for dd in api.data:
-            print "-----------------------"
+            print("-----------------------")
             for i in dd.keys():
-                print "key=%s,value=%s"%(i,api.data[0][i])
+                print("key=%s,value=%s"%(i,api.data[0][i]))
 
     # --------------------------------------------------------------------------   
     # 测试撤单 338012,先下单，间隔后撤单
@@ -241,7 +242,7 @@ def test():
     api.setValue('entrust_prop', '0')
     api.setValue('covered_flag', '')
     i = api.bizCallAndCommit(338011)
-    print u'尝试下单返回', i
+    print(u'尝试下单返回', i)
     sleep(3)
     # print api.data
 
@@ -251,16 +252,16 @@ def test():
             e_no = tt['entrust_no']
             api.order[e_no] = tt
         
-    print api.order
+    print(api.order)
     api.setNessaryParam()
     api.setValue('exchange_type','1')
     for kk in api.order.keys():
         api.setValue('entrust_no', kk)
         i = api.bizCallAndCommit(338012)
-        print u'尝试撤单', kk
+        print(u'尝试撤单', kk)
         sleep(1)
         #pop or del
-    print api.data
+    print(api.data)
 
     
     #-----------------------------------
@@ -271,15 +272,15 @@ def test():
 
         api.setValue('locate_entrust_no', kk)
         i = api.bizCallAndCommit(338020)
-        print u'查询指定订单', kk
+        print(u'查询指定订单', kk)
         sleep(1)
-    print api.data
+    print(api.data)
     
     api.setNessaryParam()
     api.setValue('query_kind', '1')
     i = api.bizCallAndCommit(338020)
     sleep(1)
-    print api.data
+    print(api.data)
     
 
     
