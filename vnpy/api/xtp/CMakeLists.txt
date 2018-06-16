@@ -31,10 +31,10 @@ endif()
 include_directories(${XTPAPI_PATH})
 set(XTPAPI_LIBRARY )
 find_library(XTPAPI_MD_LIBRARY
-  NAMES libxtpquoteapiD.so
+  NAMES libxtpquoteapi.so
   PATHS ${XTPAPI_PATH}) 
 find_library(XTPAPI_TD_LIBRARY
-  NAMES libxtptraderapiD.so
+  NAMES libxtptraderapi.so
   PATHS ${XTPAPI_PATH})
 
 
