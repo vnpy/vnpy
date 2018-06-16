@@ -4,9 +4,6 @@ cache: pip
 python:
     - 2.7
     - 3.6
-matrix:
-    allow_failures:
-        - python: 3.6
 install:
     - pip install -r requirements.txt
     - pip install flake8  # pytest  # add another testing frameworks later
