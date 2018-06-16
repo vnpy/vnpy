@@ -25,7 +25,7 @@ class TwapAlgo(AlgoTemplate):
         
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.vtSymbol = str(setting['vtSymbol'])            # 合约代码
-        self.direction = text_type(setting['direction'])      # 买卖
+        self.direction = text_type(setting['direction'])    # 买卖
         self.targetPrice = float(setting['targetPrice'])    # 目标价格
         self.totalVolume = float(setting['totalVolume'])    # 总数量
         self.time = int(setting['time'])                    # 执行时间
