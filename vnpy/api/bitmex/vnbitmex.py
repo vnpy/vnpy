@@ -51,7 +51,7 @@ class BitmexRestApi(object):
         self.apiSecret = apiSecret
         
     #----------------------------------------------------------------------
-    def start(self, n=10):
+    def start(self, n=3):
         """启动"""
         if self.active:
             return
@@ -222,8 +222,8 @@ class BitmexWebsocketApi(object):
 
 
 if __name__ == '__main__':
-    API_KEY = '08zsKDmvaNHAqey0eMMHEG4t'
-    API_SECRET = 'lIzHW2wpG6Pk7hBNUXc6onwNfxFYKOPQZC4EItf6MeHTa9yC'
+    API_KEY = ''
+    API_SECRET = ''
     
     ## REST测试
     #rest = BitmexRestApi()
