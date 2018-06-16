@@ -171,13 +171,13 @@ class OkexApi(object):
     def onMessage(self, data):
         """信息推送""" 
         print('onMessage')
-        print(evt)
+        print(data)
         
     #----------------------------------------------------------------------
     def onError(self, data):
         """错误推送"""
         print('onError')
-        print(evt)
+        print(data)
         
     #----------------------------------------------------------------------
     def onClose(self):
