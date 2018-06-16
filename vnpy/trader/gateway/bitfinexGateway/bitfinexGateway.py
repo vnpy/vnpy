@@ -157,7 +157,7 @@ class GatewayApi(BitfinexApi):
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
-        self.orderId = 0
+        self.orderId = 1000000
         self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
         
         self.apiKey = ''
@@ -245,8 +245,6 @@ class GatewayApi(BitfinexApi):
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """"""
-        orderReq.volume = 0.02
-        
         self.orderId += 1
         orderId = self.date + self.orderId
         vtOrderID = '.'.join([self.gatewayName, str(orderId)])
@@ -468,7 +466,7 @@ class GatewayApi(BitfinexApi):
             pos.exchange = EXCHANGE_BITFINEX
             pos.vtSymbol = '.'.join([pos.vtSymbol, pos.direction])
             pos.direction = DIRECTION_LONG
-            pos.vtPositionName = '.'.join([pos.symbol, pos.direction])
+            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
             pos.position = float(data[2])
             
             if data[-1] is None:

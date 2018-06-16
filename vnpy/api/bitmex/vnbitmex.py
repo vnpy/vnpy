@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import ssl
+import traceback
 
 from queue import Queue, Empty
 from multiprocessing.dummy import Pool
@@ -84,14 +85,20 @@ class BitmexRestApi(object):
         url = REST_HOST + path
         expires = int(time() + 5) 
         
+        rq = requests.Request(url=url, data=postdict)
+        p = rq.prepare()
+        
         header = copy(self.header)
         header['api-expires'] = str(expires)
         header['api-key'] = self.apiKey
-        header['api-signature'] = self.generateSignature(method, path, expires, params, postdict)
+        header['api-signature'] = self.generateSignature(method, path, expires, params, body=p.body)
         
         # 使用长连接的session，比短连接的耗时缩短80%
         session = self.sessionDict[i]
-        resp = session.request(method, url, headers=header, params=params, json=postdict)
+        resp = session.request(method, url, headers=header, params=params, data=postdict)
+        
+        #resp = requests.request(method, url, headers=header, params=params, data=postdict)
+        
         code = resp.status_code
         d = resp.json()
         
@@ -113,21 +120,17 @@ class BitmexRestApi(object):
                 pass
 
     #----------------------------------------------------------------------
-    def generateSignature(self, method, path, expires, params=None, postdict=None):
+    def generateSignature(self, method, path, expires, params=None, body=None):
         """生成签名"""
         # 对params在HTTP报文路径中，以请求字段方式序列化
         if params:
             query = urlencode(sorted(params.items()))
             path = path + '?' + query
-
-        msg = method + '/api/v1' + path + str(expires)
         
-        # 对postdict在HTTP报文体中，是作为表单内容以json序列化
-        # 因此这里需要采用同样方式，不能直接用str()来转换
-        if postdict:
-            buf = json.dumps(postdict)      
-            msg += buf
+        if body is None:
+            body = ''
         
+        msg = method + '/api/v1' + path + str(expires) + body
         signature = hmac.new(self.apiSecret, msg,
                              digestmod=hashlib.sha256).hexdigest()
         return signature
@@ -171,7 +174,7 @@ class BitmexWebsocketApi(object):
     #----------------------------------------------------------------------
     def reconnect(self):
         """重连"""
-        self.ws = websocket.create_connection(WEBSOCKET_V2_URL,
+        self.ws = websocket.create_connection(WEBSOCKET_HOST,
                                               sslopt={'cert_reqs': ssl.CERT_NONE})   
         
         self.onConnect()
@@ -205,7 +208,11 @@ class BitmexWebsocketApi(object):
     #----------------------------------------------------------------------
     def onData(self, data):
         """数据回调"""
-        print data
+        print '-' * 30
+        l = data.keys()
+        l.sort()
+        for k in l:
+            print k, data[k]
     
     #----------------------------------------------------------------------
     def onError(self, msg):
@@ -226,22 +233,39 @@ if __name__ == '__main__':
     API_SECRET = ''
     
     ## REST测试
-    #rest = BitmexRestApi()
-    #rest.init(API_KEY, API_SECRET)
-    #rest.start(3)
+    rest = BitmexRestApi()
+    rest.init(API_KEY, API_SECRET)
+    rest.start(3)
     
-    #data = {
-        #'token': 'test'
-    #}
-    #rest.addReq('POST', '/confirmEmail', rest.onData, postdict=data)
+    data = {
+        'symbol': 'XBTUSD'
+    }
+    rest.addReq('POST', '/position/isolate', rest.onData, postdict=data)
     #rest.addReq('GET', '/instrument', rest.onData)
     
     # WEBSOCKET测试
-    ws = BitmexWebsocketApi()
-    ws.start()
+    #ws = BitmexWebsocketApi()
+    #ws.start()
     
-    req = {"op": "subscribe", "args": ['quote']}
-    ws.sendReq(req)
+    #req = {"op": "subscribe", "args": ['order', 'trade', 'position', 'margin']}
+    #ws.sendReq(req)
+    
+    #expires = int(time())
+    #method = 'GET'
+    #path = '/realtime'
+    #msg = method + path + str(expires)
+    #signature = hmac.new(API_SECRET, msg, digestmod=hashlib.sha256).hexdigest()
+    
+    #req = {
+        #'op': 'authKey', 
+        #'args': [API_KEY, expires, signature]
+    #}    
+    
+    #ws.sendReq(req)
+    
+    #req = {"op": "subscribe", "args": ['order', 'execution', 'position', 'margin']}
+    #req = {"op": "subscribe", "args": ['instrument']}
+    #ws.sendReq(req)    
     
     raw_input()
     
