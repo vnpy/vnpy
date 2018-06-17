@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import json
 import requests
 import hmac
@@ -389,107 +390,107 @@ class BinanceApi(object):
     #----------------------------------------------------------------------
     def onError(self, data, reqid):
         """"""
-        print(data, reqid)
+        print((data, reqid))
 
     #----------------------------------------------------------------------
     def onQueryPing(self, data, reqid):
         """"""
-        print(data, reqid)
+        print((data, reqid))
 
     #----------------------------------------------------------------------
     def onQueryTime(self, data, reqid):
         """"""
-        print(data, reqid)
+        print((data, reqid))
         
     #----------------------------------------------------------------------
     def onQueryExchangeInfo(self, data, reqid):
         """"""
-        print(data, reqid)
+        print((data, reqid))
     
     #----------------------------------------------------------------------
     def onQueryDepth(self, data, reqid):
         """"""
-        print(data, reqid)    
+        print((data, reqid))    
     
     #----------------------------------------------------------------------
     def onQueryTrades(self, data, reqid):
         """"""
-        print(data, reqid)       
+        print((data, reqid))       
     
     #----------------------------------------------------------------------
     def onQueryAggTrades(self, data, reqid):
         """"""
-        print(data, reqid)           
+        print((data, reqid))           
     
     #----------------------------------------------------------------------
     def onQueryKlines(self, data, reqid):
         """"""
-        print(data, reqid)               
+        print((data, reqid))               
         
     #----------------------------------------------------------------------
     def onQueryTicker24HR(self, data, reqid):
         """"""
-        print(data, reqid)         
+        print((data, reqid))         
     
     #----------------------------------------------------------------------
     def onQueryTickerPrice(self, data, reqid):
         """"""
-        print(data, reqid)    
+        print((data, reqid))    
     
     #----------------------------------------------------------------------
     def onQueryBookTicker(self, data, reqid):
         """"""
-        print(data, reqid)          
+        print((data, reqid))          
     
     #----------------------------------------------------------------------
     def onNewOrder(self, data, reqid):
         """"""
-        print(data, reqid)              
+        print((data, reqid))              
     
     #----------------------------------------------------------------------
     def onQueryOrder(self, data, reqid):
         """"""
-        print(data, reqid)          
+        print((data, reqid))          
         
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
         """"""
-        print(data, reqid)          
+        print((data, reqid))          
         
     #----------------------------------------------------------------------
     def onQueryOpenOrders(self, data, reqid):
         """"""
-        print(data, reqid)          
+        print((data, reqid))          
         
     #----------------------------------------------------------------------
     def onQueryAllOrders(self, data, reqid):
         """"""
-        print(data, reqid)          
+        print((data, reqid))          
         
     #----------------------------------------------------------------------
     def onQueryAccount(self, data, reqid):
         """"""
-        print(data, reqid)          
+        print((data, reqid))          
         
     #----------------------------------------------------------------------
     def onQueryMyTrades(self, data, reqid):
         """"""
-        print(data, reqid)         
+        print((data, reqid))         
         
     #----------------------------------------------------------------------
     def onStartStream(self, data, reqid):
         """"""
-        print(data, reqid)
+        print((data, reqid))
     
     #----------------------------------------------------------------------
     def onKeepaliveStream(self, data, reqid):
         """"""
-        print(data, reqid)              
+        print((data, reqid))              
     
     #----------------------------------------------------------------------
     def onCloseStream(self, data, reqid):
         """"""
-        print(data, reqid)              
+        print((data, reqid))              
     
     ###################################################
     ## Websocket Function
@@ -547,12 +548,12 @@ class BinanceApi(object):
     #----------------------------------------------------------------------
     def onDataStreamError(self, msg):
         """"""
-        print msg
+        print(msg)
     
     #----------------------------------------------------------------------
     def onMarketData(self, data):
         """"""
-        print data
+        print(data)
         
     #----------------------------------------------------------------------
     def initUserStream(self, key):
@@ -608,12 +609,12 @@ class BinanceApi(object):
     #----------------------------------------------------------------------
     def onUserStreamError(self, msg):
         """"""
-        print msg
+        print(msg)
     
     #----------------------------------------------------------------------
     def onUserData(self, data):
         """"""
-        print data
+        print(data)
     
     #----------------------------------------------------------------------
     def runKeepalive(self):
