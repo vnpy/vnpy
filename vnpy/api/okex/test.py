@@ -7,7 +7,7 @@ apiKey = '你的apiKey'
 secretKey = '你的secretKey'
 
 # 创建API对象
-api = OkexSpotApi()
+api = WsSpotApi()
 
 api.connect(apiKey, secretKey, True)
 

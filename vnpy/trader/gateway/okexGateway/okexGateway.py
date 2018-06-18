@@ -17,8 +17,8 @@ from threading import Thread
 from time import sleep
 import traceback
 
-from vnpy.api.okex import WsSpotApi, WsFuturesApi, SPOT_SYMBOL, CONTRACT_SYMBOL, CONTRACT_TYPE, SPOT_CURRENCY
-from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT, SPOT_ERROR_DICT, FUTURES_ERROR_DICT
+from vnpy.api.okex import WsSpotApi, WsFuturesApi, SPOT_SYMBOL_PAIRS, CONTRACT_SYMBOL, CONTRACT_TYPE, SPOT_CURRENCY
+from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT, SPOT_REST_ERROR_DICT, SPORT_WS_ERROR_DICT, FUTURES_ERROR_DICT
 
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
@@ -68,6 +68,9 @@ class OkexGateway(VtGateway):
 
         self.leverage = 0
         self.spot_connected = False                 # 现货交易接口连接状态
+        self.use_spot_symbol_pairs = set()          # 使用现货合约对（从配置文件读取，减少运算量）
+        self.auto_subscribe_symbol_pairs = set()    # 自动订阅现货合约对清单
+
         self.futures_connected = False              # 期货交易接口连接状态
 
         self.qryCount = 0                           # 查询触发倒计时
@@ -82,6 +85,7 @@ class OkexGateway(VtGateway):
         # 消息调试
         self.log_message = False
 
+        self.qryFunctionList = []
     # ----------------------------------------------------------------------
     def connect(self):
         """连接"""
@@ -98,19 +102,34 @@ class OkexGateway(VtGateway):
             apiKey = str(setting['apiKey'])
             secretKey = str(setting['secretKey'])
             trace = setting['trace']
-            self.leverage = setting['leverage'] if 'leverage' in setting else 0
+            self.leverage = setting.get('leverage', 1)
             spot_connect = setting['spot_connect']
             futures_connect = setting['futures_connect']
-            self.log_message = setting['log_message'] if 'log_message' in setting else False
+            self.log_message = setting.get('log_message', False)
 
+            # 若限定使用的合约对
+            if "symbol_pairs" in setting.keys():
+                self.use_spot_symbol_pairs = set(setting["symbol_pairs"])
+
+            # 若希望连接后自动订阅
+            if 'auto_subscribe' in setting.keys():
+                self.auto_subscribe_symbol_pairs = set(setting['auto_subscribe'])
+
+            self.qryEnabled = setting.get('qryEnabled', True)
         except KeyError:
             self.writeError(u'OkexGateway.connect:连接配置缺少字段，请检查')
             return
 
         if spot_connect:
             self.api_spot.active = True
+
+            for symbol_pair in self.auto_subscribe_symbol_pairs:
+                self.writeLog(u'自动订阅现货合约:{}'.format(symbol_pair))
+                self.api_spot.registerSymbolPairArray.add(symbol_pair)
+
             self.api_spot.connect(apiKey, secretKey, trace)
             self.writeLog(u'connect okex ws spot api')
+            self.api_spot.setSymbolPairs(self.use_spot_symbol_pairs)
 
         if futures_connect:
             self.api_futures.active = True
@@ -126,29 +145,6 @@ class OkexGateway(VtGateway):
         self.initQuery()
         self.startQuery()
 
-    def writeLog(self, content):
-        """
-        记录日志文件
-        :param content:
-        :return:
-        """
-        if self.logger:
-            self.logger.info(content)
-
-    def writeError(self, content, error_id = 0):
-        """
-        发送错误通知/记录日志文件
-        :param content:
-        :return:
-        """
-        error = VtErrorData()
-        error.gatewayName = self.gatewayName
-        error.errorID = error_id
-        error.errorMsg = content
-        self.onError(error)
-
-        if self.logger:
-            self.logger.error(content)
 
     def checkStatus(self):
         return self.spot_connected or self.futures_connected
@@ -166,12 +162,12 @@ class OkexGateway(VtGateway):
             # 提取品种对 eth_usdt
             symbol_pair = arr[0]
 
-            if symbol_pair in SPOT_SYMBOL:
+            if symbol_pair in SPOT_SYMBOL_PAIRS:
                 if self.api_spot and self.spot_connected:
                     self.api_spot.subscribe(subscribeReq)
                 else:
                     self.writeError(u'现货接口未创建/未连接，无法调用subscribe')
-
+                    self.auto_subscribe_symbol_pairs.add(symbol_pair)
             else:
                 if self.api_futures and self.futures_connected:
                     self.api_futures.subscribe(subscribeReq)
@@ -190,7 +186,7 @@ class OkexGateway(VtGateway):
         order_req_symbol = orderReq.symbol
         order_req_symbol = order_req_symbol.replace('.{}'.format(EXCHANGE_OKEX),'')
 
-        if order_req_symbol in SPOT_SYMBOL:
+        if order_req_symbol in SPOT_SYMBOL_PAIRS:
             if self.api_spot and self.spot_connected:
                 return self.api_spot.spotSendOrder(orderReq)
             else:
@@ -205,11 +201,19 @@ class OkexGateway(VtGateway):
     # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        if self.spot_connected:
-            self.api_spot.spotCancel(cancelOrderReq)
-
-        if self.futures_connected:
-            self.api_futures.futureCancel(cancelOrderReq)
+        # btc_usdt.OKEX => btc_usdt
+        order_req_symbol = cancelOrderReq.symbol
+        order_req_symbol = order_req_symbol.replace('.{}'.format(EXCHANGE_OKEX), '')
+        if order_req_symbol in SPOT_SYMBOL_PAIRS:
+            if self.spot_connected:
+                self.api_spot.spotCancel(cancelOrderReq)
+            else:
+                self.writeError(u'现货接口未创建/连接，无法调用cancelOrder')
+        else:
+            if self.futures_connected:
+                self.api_futures.futureCancel(cancelOrderReq)
+            else:
+                self.writeError(u'期货接口未创建/连接，无法调用cancelOrder')
 
     # ----------------------------------------------------------------------
     def qryAccount(self):
@@ -348,11 +352,28 @@ class OkexSpotApi(WsSpotApi):
 
         self.tradeID = 0
 
+        # 缺省启动得品种对队列
+        self.use_symbol_pairs = set([])
+
         # 已登记的品种对队列
         self.registerSymbolPairArray = set([])
 
         # 初始化回调函数
         self.initCallback()
+
+    def setSymbolPairs(self, symbol_pairs):
+        """
+        设置合约对
+        :param symbol_pairs: set[]
+        :return:
+        """
+        if isinstance(symbol_pairs ,list):
+            self.use_symbol_pairs = set(symbol_pairs)
+
+        elif isinstance(symbol_pairs, set):
+            self.use_symbol_pairs = symbol_pairs
+
+        self.gateway.writeLog(u'设置合约对:{}'.format(symbol_pairs))
 
     '''
     登录后，每次订单执行撤销后又这样的 推送。。不知道干啥的。先过滤掉了
@@ -416,7 +437,6 @@ class OkexSpotApi(WsSpotApi):
                         self.gateway.writeLog(u'功能订阅请求:{} 成功:'.format(channel_value))
                     continue
 
-
                 # 其他回调/数据推送
                 callback = self.cbDict.get(channel_value)
                 if callback:
@@ -426,7 +446,7 @@ class OkexSpotApi(WsSpotApi):
                         self.gateway.writeError(u'Spot {}回调函数处理异常，请查日志'.format(channel_value))
                         self.gateway.writeLog(u'Spot onMessage call back {} exception：{},{}'.format(channel_value, str(ex),traceback.format_exc()))
                 else:
-                    self.gateway.writeError(u'Spot unkonw msg:{}'.format(data))
+                    self.gateway.writeError(u'Spot unkown msg:{}'.format(data))
 
     # ----------------------------------------------------------------------
     def onError(self, ws, evt):
@@ -443,7 +463,7 @@ class OkexSpotApi(WsSpotApi):
         error.gatewayName = self.gatewayName
         if 'data' in data and 'error_code' in data['data']:
             error_code =data['data']['error_code']
-            error.errorMsg = u'SpotApi 出错:{}'.format(SPOT_ERROR_DICT.get(str(error_code)))
+            error.errorMsg = u'SpotApi 出错:{}'.format(SPORT_WS_ERROR_DICT.get(str(error_code)))
             error.errorID = error_code
         else:
             error.errorMsg = str(data)
@@ -507,8 +527,9 @@ class OkexSpotApi(WsSpotApi):
         :param symbol:合约（对）
         :return:
         """
+
         self.gateway.writeLog(u'SpotApi.subscribeSingleSymbol({})'.format(symbol))
-        if symbol in SPOT_TRADE_SIZE_DICT:
+        if symbol in SPOT_SYMBOL_PAIRS:
             # 订阅行情数据
             self.subscribeSpotTicker(symbol)
             # 订阅委托深度
@@ -516,7 +537,7 @@ class OkexSpotApi(WsSpotApi):
             # 订阅该合约的委托成交回报（所有人，不是你得账号)
             #self.subscribeSpotDeals(symbol)
         else:
-            self.gateway.writeError(u'SpotApi:订阅失败，{}不在SPOT_TRADE_SIZE_DICT中，'.format(symbol))
+            self.gateway.writeError(u'SpotApi:订阅失败，{}不在SPOT_SYMBOL_PAIRS中，'.format(symbol))
 
     # ----------------------------------------------------------------------
     def spotAllOrders(self):
@@ -528,7 +549,7 @@ class OkexSpotApi(WsSpotApi):
 
         # 根据已登记的品种对清单，逐一发委托查询
         for symbol in self.registerSymbolPairArray:
-            if symbol in SPOT_TRADE_SIZE_DICT:
+            if symbol in SPOT_SYMBOL_PAIRS:
                 self.spotOrderInfo(symbol, '-1')
 
         # 对已经发送委托，根据orderid，发出查询请求
@@ -554,23 +575,9 @@ class OkexSpotApi(WsSpotApi):
         # 连接后查询现货账户和委托数据
         self.spotUserInfo()
 
-        # 尝试订阅一个合约对
-        if len(self.registerSymbolPairArray) == 0:
-            #self.subscribeSingleSymbol("etc_usdt")
-            #self.subscribeSingleSymbol("btc_usdt")
-            self.registerSymbolPairArray.add('eth_usdt')
-            self.registerSymbolPairArray.add('btc_usdt')
-            self.registerSymbolPairArray.add('ltc_usdt')
-
-        for symbol_pair in self.registerSymbolPairArray:
-            # 发起品种行情订阅请求
-            self.subscribeSingleSymbol(symbol_pair)
-            # 查询该品种对的订单
-            self.spotOrderInfo(symbol_pair, '-1')
-
         self.gateway.writeLog(u'SpotApi初始化合约信息')
-
-        for symbol in SPOT_TRADE_SIZE_DICT:
+        # 如果有缺省得使用合约对，就仅初始化这些合约对，否则全部初始化
+        for symbol in SPOT_SYMBOL_PAIRS if len(self.use_symbol_pairs) == 0 else self.use_symbol_pairs:
             # self.subscribeSpotTicker(symbol)
             # self.subscribeSpotDepth5(symbol)
             # self.subscribeSpotDeals(symbol)
@@ -595,6 +602,13 @@ class OkexSpotApi(WsSpotApi):
             contract.productClass = PRODUCT_SPOT
             self.gateway.onContract(contract)
 
+        # 对所有登记得品种对，发起订阅
+        for symbol_pair in self.registerSymbolPairArray:
+            # 发起品种行情订阅请求
+            self.subscribeSingleSymbol(symbol_pair)
+            # 查询该品种对的订单
+            self.spotOrderInfo(symbol_pair, '-1')
+
     '''
     [{
     "channel":"ok_sub_spot_bch_btc_deals",
@@ -618,7 +632,7 @@ class OkexSpotApi(WsSpotApi):
         :return:
         """
         # USD_SPOT 把每一个币币交易对的回调函数登记在字典中
-        for symbol_pair in SPOT_TRADE_SIZE_DICT:
+        for symbol_pair in SPOT_SYMBOL_PAIRS:
             self.cbDict["ok_sub_spot_%s_ticker" % symbol_pair] = self.onTicker              # 该币对的行情数据回报
             self.cbDict["ok_sub_spot_%s_depth_5" % symbol_pair] = self.onDepth              # 该币对的委托深度回报
             self.cbDict["ok_sub_spot_%s_deals" % symbol_pair] = self.onSpotSubDeals         # 该币对的成交记录回报
@@ -1229,8 +1243,13 @@ nel': u'ok_sub_spot_etc_usdt_order'}
 
         if 'error_code' in data:
             error_id = data.get('error_code')
-            self.gateway.writeError(u'SpotApi.onSpotOrder 委托返回错误:{}'.format(SPOT_ERROR_DICT.get(str(error_id))), error_id=error_id)
+            self.gateway.writeError(u'SpotApi.onSpotOrder 委托返回错误:{}'.format(SPORT_WS_ERROR_DICT.get(str(error_id))), error_id=error_id)
             self.gateway.writeLog(ws_data)
+
+            # 特殊处理服务超时得异常
+            if str(error_id) == '20100':
+                return
+
             localNo = self.localNoQueue.get_nowait()
             self.gateway.writeLog(u'移除本地localNo:{}'.format(localNo))
             vtOrderId = '.'.join([self.gatewayName,localNo])
@@ -1238,7 +1257,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
             if order is not None:
                 order.status = STATUS_REJECTED
                 order.updateTime = datetime.now().strftime("%H:%M:%S.%f")
-                self.gateway.writeLog(u'发出OnOrder，拒单,vtOrderId={}'.format(vtOrderId))
+                self.gateway.writeLog(u'发出OnOrder，拒单,vtOrderId={},错误:{},error_id:{}'.format(vtOrderId, SPORT_WS_ERROR_DICT.get(str(error_id)), error_id))
                 # 发送现货委托单（拒单消息）到vtGateway
                 self.gateway.onOrder(order)
             return
@@ -1284,7 +1303,7 @@ nel': u'ok_sub_spot_etc_usdt_order'}
 
         if 'error_code' in data:
             error_id = data.get('error_code')
-            self.gateway.writeError(u'SpotApi.onSpotCancelOrder 委托返回错误:{}'.format(SPOT_ERROR_DICT.get(str(error_id))), error_id=error_id)
+            self.gateway.writeError(u'SpotApi.onSpotCancelOrder 委托返回错误:{}'.format(SPORT_WS_ERROR_DICT.get(str(error_id))), error_id=error_id)
             self.gateway.writeLog(ws_data)
             return
 

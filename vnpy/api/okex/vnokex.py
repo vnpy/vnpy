@@ -12,7 +12,7 @@ import sys
 
 # API文档 https://github.com/okcoin-okex/OKEx.com-api-docs
 
-from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT,SPOT_ERROR_DICT, FUTURES_ERROR_DICT
+from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT,SPOT_REST_ERROR_DICT, FUTURES_ERROR_DICT
 
 # OKEX网站
 OKEX_USD_SPOT = 'wss://real.okex.com:10441/websocket'               # OKEX (币币交易）现货地址
@@ -27,7 +27,7 @@ SPOT_CURRENCY = ["usdt",
                  "etc",
                  "bch"]
 
-SPOT_SYMBOL = ["ltc_btc",
+SPOT_SYMBOL_PAIRS = set(["ltc_btc",
                "eth_btc",
                "etc_btc",
                "bch_btc",
@@ -46,8 +46,8 @@ SPOT_SYMBOL = ["ltc_btc",
                "gas_btc",
                "qtum_usdt",
                "hsr_usdt",
-               "neo_usdt",
-               "gas_usdt"]
+                     "neo_usdt",
+                     "gas_usdt"])
 
 KLINE_PERIOD = ["1min","3min","5min","15min","30min","1hour","2hour","4hour","6hour","12hour","day","3day","week"]
 
@@ -326,9 +326,15 @@ class WsSpotApi(OkexApi):
         params = {}
         params['symbol'] = str(symbol)
         params['type'] = str(type_)
-        params['price'] = str(price)
-        params['amount'] = str(amount)
-        
+
+        if str(type_) == 'buy' or str(type_) == 'sell':
+            params['price'] = str(price)
+            params['amount'] = str(amount)
+        elif str(type_) == 'buy_market':
+            params['type'] = str(type_)
+        elif str(type_) == 'sell_market':
+            params['amount'] = str(amount)
+
         channel = 'ok_spot_order'
         
         self.sendRequest(channel, params)
