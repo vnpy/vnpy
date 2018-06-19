@@ -12,14 +12,9 @@ from datetime import datetime
 from copy import copy
 
 import futuquant as ft
-from futuquant import (RET_ERROR, RET_OK, PriceRegularMode, 
+from futuquant import (RET_ERROR, RET_OK, TrdEnv,
                        StockQuoteHandlerBase, OrderBookHandlerBase,
                        TradeOrderHandlerBase, TradeDealHandlerBase)
-                       
-#from futuquant.open_context import (RET_ERROR, RET_OK, PriceRegularMode,
-                                    #StockQuoteHandlerBase, OrderBookHandlerBase,
-                                    #USTradeOrderHandlerBase, USTradeDealHandlerBase,
-                                    #HKTradeOrderHandlerBase, HKTradeDealHandlerBase)
 
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
@@ -182,15 +177,11 @@ class FutuGateway(VtGateway):
         # 连接交易接口
         if self.market == 'US':
             self.tradeCtx = ft.OpenUSTradeContext(self.host, self.port)
-            OrderHandlerBase = USTradeOrderHandlerBase
-            DealHandlerBase = USTradeDealHandlerBase
         else:
             self.tradeCtx = ft.OpenHKTradeContext(self.host, self.port)
-            OrderHandlerBase = HKTradeOrderHandlerBase
-            DealHandlerBase = HKTradeDealHandlerBase          
-        
+            
         # 继承实现处理器类
-        class OrderHandler(OrderHandlerBase):
+        class OrderHandler(TradeOrderHandlerBase):
             """委托处理器"""
             gateway = self  # 缓存Gateway对象
             
@@ -201,7 +192,7 @@ class FutuGateway(VtGateway):
                 self.gateway.processOrder(content)
                 return RET_OK, content            
             
-        class DealHandler(DealHandlerBase):
+        class DealHandler(TradeDealHandlerBase):
             """订单簿处理器"""
             gateway = self
             
@@ -222,11 +213,6 @@ class FutuGateway(VtGateway):
         
         # 启动交易接口
         self.tradeCtx.start()
-        
-        # 订阅委托推送
-        self.tradeCtx.subscribe_order_deal_push([], 
-                                               order_deal_push=True, 
-                                               envtype=self.env)
         
         self.writeLog(u'交易接口连接成功')
     
@@ -306,7 +292,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
-        code, data = self.tradeCtx.accinfo_query(self.env)
+        code, data = self.tradeCtx.accinfo_query(trd_env=self.env, acc_id=0)
         
         if code:
             self.writeError(code, u'查询账户资金失败：%s' %data)
@@ -327,7 +313,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
-        code, data = self.tradeCtx.position_list_query(envtype=self.env)
+        code, data = self.tradeCtx.position_list_query(trd_env=self.env, acc_id=0)
         
         if code:
             self.writeError(code, u'查询持仓失败：%s' %data)
@@ -356,7 +342,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryOrder(self):
         """查询委托"""
-        code, data = self.tradeCtx.order_list_query("", envtype=self.env)
+        code, data = self.tradeCtx.order_list_query("", trd_env=self.env)
         
         if code:
             self.writeError(code, u'查询委托失败：%s' %data)

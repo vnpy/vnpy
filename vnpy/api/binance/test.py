@@ -1,6 +1,9 @@
+from __future__ import absolute_import
 from time import sleep
 
-from vnbinance import BinanceApi
+from six.moves import input
+
+from .vnbinance import BinanceApi
 
 
 if __name__ == '__main__':
@@ -40,4 +43,4 @@ if __name__ == '__main__':
     #api.initDataStream(['btcusdt@ticker', 'btcusdt@depth5'])
     #api.initUserStream('NXvaiFwZz2LuKqINVerKOnWaQQG1JhdQNejiZKY9Kmgk4lZgTvm3nRAnXJK7')
     
-    raw_input()
+    input()

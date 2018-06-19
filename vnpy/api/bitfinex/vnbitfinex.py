@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import json
 import requests
 import traceback
@@ -8,6 +9,8 @@ from threading import Thread
 from queue import Queue, Empty
 
 import websocket
+
+from six.moves import input
 
 
 WEBSOCKET_V2_URL = 'wss://api.bitfinex.com/ws/2'
@@ -78,17 +81,17 @@ class BitfinexApi(object):
     #----------------------------------------------------------------------
     def onConnect(self):
         """"""
-        print 'connected'
+        print('connected')
     
     #----------------------------------------------------------------------
     def onData(self, data):
         """"""
-        print data
+        print(data)
     
     #----------------------------------------------------------------------
     def onError(self, msg):
         """"""
-        print msg
+        print(msg)
     
     #----------------------------------------------------------------------
     def sendReq(self, req):
@@ -130,5 +133,4 @@ if __name__ == '__main__':
     }
     api.sendReq(d)
     
-    raw_input()
-    
+    input()

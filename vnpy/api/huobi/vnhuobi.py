@@ -1,23 +1,25 @@
 # encoding: utf-8
 
 from __future__ import print_function
-import urllib
-import hmac
+
 import base64
 import hashlib
-import requests 
+import hmac
+import json
+import ssl
 import traceback
+import urllib
+import zlib
 from copy import copy
 from datetime import datetime
-from threading import Thread
-from queue import Queue, Empty
 from multiprocessing.dummy import Pool
+from queue import Empty, Queue
+from threading import Thread
 from time import sleep
 
-import json
-import zlib
-from websocket import create_connection, _exceptions
+import requests
 
+from websocket import _exceptions, create_connection
 
 # 常量定义
 TIMEOUT = 10

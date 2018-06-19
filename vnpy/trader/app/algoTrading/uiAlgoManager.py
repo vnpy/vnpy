@@ -4,6 +4,8 @@ import csv
 import traceback
 from collections import OrderedDict
 
+from six import text_type
+
 from vnpy.event import Event
 from vnpy.trader.uiQt import QtCore, QtWidgets
 
@@ -465,7 +467,7 @@ class AlgoManager(QtWidgets.QWidget):
     def loadCsv(self, path):
         """读取CSV配置文件"""
         try:
-            with open(unicode(path)) as f:
+            with open(text_type(path)) as f:
                 buf = [line.encode('UTF-8') for line in f]
             
             reader = csv.DictReader(buf)
