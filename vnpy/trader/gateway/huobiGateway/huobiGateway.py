@@ -600,13 +600,14 @@ class HuobiTradeApi(TradeApi):
             if d['canceled-at']:
                 order.cancelTime = datetime.fromtimestamp(d['canceled-at']/1000).strftime('%H:%M:%S')
 
-            newTradedVolume = d['field-amount']
+            newTradedVolume = float(d['field-amount'])
             newStatus = statusMapReverse.get(d['state'], STATUS_UNKNOWN)
 
             if newTradedVolume != order.tradedVolume or newStatus != order.status:
                 updated = True
-                order.tradedVolume = float(newTradedVolume)
-                order.status = newStatus
+            
+            order.tradedVolume = newTradedVolume
+            order.status = newStatus
 
             # 只推送有更新的数据
             if updated:

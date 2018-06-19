@@ -106,7 +106,7 @@ class TwapAlgo(AlgoTemplate):
                     
                     # 发出委托
                     self.buy(self.vtSymbol, price, size)
-                    self.writeLog(u'委托买入%s，数量%，价格%s' %(self.vtSymbol, self.orderSize, price))
+                    self.writeLog(u'委托买入%s，数量%s，价格%s' %(self.vtSymbol, self.orderSize, price))
             # 卖出
             if self.direction == DIRECTION_SHORT:
                 # 市场卖1价大于目标价

@@ -90,6 +90,7 @@ EXCHANGE_COINCHECK = "COINCHECK" # COINCHECK日本比特币交易所
 EXCHANGE_BINANCE = "BINANCE"     # 币安比特币交易所
 EXCHANGE_BITFINEX = "BITFINEX"   # Bitfinex比特币交易所
 EXCHANGE_BITMEX = 'BITMEX'       # BitMEX比特币交易所
+EXCHANGE_FCOIN = 'FCOIN'         # FCoin比特币交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
