@@ -46,6 +46,7 @@ vn.ctp/build/*
 vn.lts/build/*
 .idea
 .vscode
+.python-version
 .gitignore
 
 vn.trader/ctaAlgo/data/*
