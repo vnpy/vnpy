@@ -26,10 +26,10 @@ class StopAlgo(AlgoTemplate):
         
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.vtSymbol = str(setting['vtSymbol'])            # 合约代码
-        self.direction = text_type(setting['direction'])      # 买卖
+        self.direction = text_type(setting['direction'])    # 买卖
         self.stopPrice = float(setting['stopPrice'])        # 触发价格
         self.totalVolume = float(setting['totalVolume'])    # 数量
-        self.offset = text_type(setting['offset'])            # 开平
+        self.offset = text_type(setting['offset'])          # 开平
         self.priceAdd = float(setting['priceAdd'])          # 下单时的超价
         
         self.vtOrderID = ''     # 委托号
