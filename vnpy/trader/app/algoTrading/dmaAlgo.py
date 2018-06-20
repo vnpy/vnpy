@@ -12,6 +12,7 @@ from vnpy.trader.uiQt import QtWidgets
 from .algoTemplate import AlgoTemplate
 from .uiAlgoWidget import AlgoWidget, QtWidgets
 
+from six import text_type
 
 
 STATUS_FINISHED = set([STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED])
@@ -30,9 +31,9 @@ class DmaAlgo(AlgoTemplate):
         
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.vtSymbol = str(setting['vtSymbol'])            # 合约代码
-        self.direction = unicode(setting['direction'])      # 买卖
-        self.offset = unicode(setting['offset'])            # 开平
-        self.priceType = unicode(setting['priceType'])      # 价格类型
+        self.direction = text_type(setting['direction'])      # 买卖
+        self.offset = text_type(setting['offset'])            # 开平
+        self.priceType = text_type(setting['priceType'])      # 价格类型
         self.price = float(setting['price'])                # 价格
         self.totalVolume = float(setting['totalVolume'])    # 数量
         
@@ -178,11 +179,11 @@ class DmaWidget(AlgoWidget):
         setting = OrderedDict()
         setting['templateName'] = DmaAlgo.templateName
         setting['vtSymbol'] = str(self.lineSymbol.text())
-        setting['direction'] = unicode(self.comboDirection.currentText())
+        setting['direction'] = text_type(self.comboDirection.currentText())
         setting['price'] = float(self.spinPrice.value())
         setting['totalVolume'] = float(self.spinVolume.value())
-        setting['priceType'] = unicode(self.comboPriceType.currentText())
-        setting['offset'] = unicode(self.comboOffset.currentText())
+        setting['priceType'] = text_type(self.comboPriceType.currentText())
+        setting['offset'] = text_type(self.comboOffset.currentText())
         
         return setting
     
