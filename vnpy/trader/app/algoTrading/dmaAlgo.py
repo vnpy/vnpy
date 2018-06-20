@@ -31,9 +31,9 @@ class DmaAlgo(AlgoTemplate):
         
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.vtSymbol = str(setting['vtSymbol'])            # 合约代码
-        self.direction = text_type(setting['direction'])      # 买卖
-        self.offset = text_type(setting['offset'])            # 开平
-        self.priceType = text_type(setting['priceType'])      # 价格类型
+        self.direction = text_type(setting['direction'])    # 买卖
+        self.offset = text_type(setting['offset'])          # 开平
+        self.priceType = text_type(setting['priceType'])    # 价格类型
         self.price = float(setting['price'])                # 价格
         self.totalVolume = float(setting['totalVolume'])    # 数量
         
