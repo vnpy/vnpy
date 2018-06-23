@@ -240,6 +240,8 @@ class SniperAlgo(StAlgoTemplate):
 
         vtOrderID = order.vtOrderID
         vtSymbol = order.vtSymbol
+		if vtOrderID not in self.legOrderDict[vtSymbol]:
+			return
         newTradedVolume = order.tradedVolume
         lastTradedVolume = self.orderTradedDict.get(vtOrderID, 0)
         
