@@ -147,6 +147,11 @@ class AlgoTemplate(object):
     def getTick(self, vtSymbol):
         """"""
         return self.engine.getTick(self, vtSymbol) 
+   
+    #----------------------------------------------------------------------
+    def getContract(self, vtSymbol):
+        """"""
+        return self.engine.getContract(self, vtSymbol)    
         
     #----------------------------------------------------------------------
     def roundValue(self, value, change):
