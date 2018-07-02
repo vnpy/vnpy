@@ -15,6 +15,7 @@ from .algoEngine import (EVENT_ALGO_LOG, EVENT_ALGO_PARAM,
 from .twapAlgo import TwapWidget
 from .dmaAlgo import DmaWidget
 from .stopAlgo import StopWidget
+from .stAlgo import StWidget
 
 
 ########################################################################
@@ -393,6 +394,7 @@ class AlgoManager(QtWidgets.QWidget):
         self.addAlgoWidget(TwapWidget)
         self.addAlgoWidget(DmaWidget)
         self.addAlgoWidget(StopWidget)
+        self.addAlgoWidget(StWidget)
         
         self.algoEngine.loadAlgoSetting()   # 界面初始化后，再加载算法配置
         

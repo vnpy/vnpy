@@ -16,6 +16,7 @@ from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, V
 from .twapAlgo import TwapAlgo
 from .dmaAlgo import DmaAlgo
 from .stopAlgo import StopAlgo
+from .stAlgo import StAlgo
 
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
 EVENT_ALGO_PARAM = 'eAlgoParam'     # 算法参数事件
@@ -32,7 +33,8 @@ HISTORY_COLLECTION_NAME = 'AlgoHistory'             # 算法历史集合名
 ALGO_DICT = {
     TwapAlgo.templateName: TwapAlgo,
     DmaAlgo.templateName: DmaAlgo,
-    StopAlgo.templateName: StopAlgo
+    StopAlgo.templateName: StopAlgo,
+    StAlgo.templateName: StAlgo
 }
 
 
@@ -273,6 +275,17 @@ class AlgoEngine(object):
             return            
             
         return tick
+    
+    #----------------------------------------------------------------------
+    def getContract(self, algo, vtSymbol):
+        """查询合约"""
+        contract = self.mainEngine.getContract(vtSymbol)
+        if not contract:
+            self.writeLog(u'%s查询合约失败，找不到报价：%s' %(algo.algoName, vtSymbol))
+            return            
+        
+        return contract
+        
     
     #----------------------------------------------------------------------
     def saveAlgoSetting(self, algoSetting):
