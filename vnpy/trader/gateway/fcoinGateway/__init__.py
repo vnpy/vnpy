@@ -1,9 +1,9 @@
 # encoding: UTF-8
 
 from vnpy.trader import vtConstant
-from .fcoinGateway import FcoinGateay
+from .fcoinGateway import FcoinGateway
 
-gatewayClass = FcoinGateay
+gatewayClass = FcoinGateway
 gatewayName = 'FCOIN'
 gatewayDisplayName = 'FCOIN'
 gatewayType = vtConstant.GATEWAYTYPE_BTC

@@ -39,13 +39,13 @@ priceTypeMap[PRICETYPE_MARKETPRICE] = 'market'
 
 
 ########################################################################
-class FcoinGateay(VtGateway):
+class FcoinGateway(VtGateway):
     """FCOIN接口"""
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName=''):
         """Constructor"""
-        super(FcoinGateay, self).__init__(eventEngine, gatewayName)
+        super(FcoinGateway, self).__init__(eventEngine, gatewayName)
 
         self.restApi = RestApi(self)
         self.wsApi = WebsocketApi(self)

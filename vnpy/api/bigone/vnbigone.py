@@ -95,7 +95,7 @@ class BigoneRestApi(object):
             if code == 200:
                 callback(d, reqid)
             else:
-                self.onError(code, d)    
+                self.onError(code, str(d))    
         except Exception as e:
             self.onError(type(e), e.message)
     
