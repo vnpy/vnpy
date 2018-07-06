@@ -11,7 +11,7 @@ from vnpy.trader.app.ctaStrategy.ctaBase import CtaBarData, CtaTickData
 period_list = ['1min','3min','5min','15min','30min','1day','1week','1hour','2hour','4hour','6hour','12hour']
 symbol_list = ['ltc_btc','eth_btc','etc_btc','bch_btc','btc_usdt','eth_usdt','ltc_usdt','etc_usdt','bch_usdt',
               'etc_eth','bt1_btc','bt2_btc','btg_btc','qtum_btc','hsr_btc','neo_btc','gas_btc',
-              'qtum_usdt','hsr_usdt','neo_usdt','gas_usdt']
+              'qtum_usdt','hsr_usdt','neo_usdt','gas_usdt','eos_usdt']
 
 
 class OkexData(object):
@@ -35,21 +35,22 @@ class OkexData(object):
         symbol：合约
         period: 周期: 1min,3min,5min,15min,30min,1day,3day,1hour,2hour,4hour,6hour,12hour
         """
+        ret_bars = []
         if symbol not in symbol_list:
             self.strategy.writeCtaError(u'{} {}不在下载清单中'.format(datetime.now(), symbol))
-            return
+            return False,ret_bars
 
         url = u'https://www.okex.com/api/v1/kline.do?symbol={}&type={}'.format(symbol, period)
         self.strategy.writeCtaLog('{}开始下载:{} {}数据.URL:{}'.format(datetime.now(), symbol, period,url))
 
         content = None
+        bars = []
         try:
             content = self.session.get(url).content.decode('gbk')
+            bars = execjs.eval(content)
         except Exception as ex:
             self.strategy.writeCtaError('exception in get:{},{},{}'.format(url,str(ex), traceback.format_exc()))
-            return
-
-        bars = execjs.eval(content)
+            return False,ret_bars
 
         for i, bar in enumerate(bars):
             if len(bar) < 5:
@@ -72,16 +73,15 @@ class OkexData(object):
                 add_bar.volume = float(bar[5])
             except Exception as ex:
                 self.strategy.writeCtaError('error when convert bar:{},ex:{},t:{}'.format(bar, str(ex), traceback.format_exc()))
-                return False
+                return False,ret_bars
 
             if start_dt is not None and bar.datetime < start_dt:
                 continue
-
+            ret_bars.append(add_bar)
             if callback is not None:
                 callback(add_bar, bar_is_completed, bar_freq)
 
-        return True
-
+        return True,ret_bars
 
 
 

@@ -3,8 +3,6 @@
 '''
 本文件中包含的是CTA模块的回测引擎，回测引擎的API和CTA引擎一致，
 可以使用和实盘相同的代码进行回测。
-
-修改者： 华富资产/李来佳/28888502
 '''
 from __future__ import division
 
@@ -1593,13 +1591,14 @@ class BacktestingEngine(object):
                 #bar.close = float(row['Close'])
                 #bar.volume = float(row['TotalVolume'])#
                 #barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
-
+                if len(row['open'])==0 or len(row['high'])==0 or len(row['low'])==0 or len(row['close'])==0:
+                    continue
                 # 从ricequant导出的csv文件
                 bar.open = self.roundToPriceTick(float(row['open']))
                 bar.high = self.roundToPriceTick(float(row['high']))
                 bar.low = self.roundToPriceTick(float(row['low']))
                 bar.close = self.roundToPriceTick(float(row['close']))
-                bar.volume = float(row['volume'])
+                bar.volume = float(row['volume']) if len(row['volume'])>0 else 0
                 barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
 
                 # 使用Bar的开始时间作为datetime
@@ -1642,9 +1641,8 @@ class BacktestingEngine(object):
                     return
 
             except Exception as ex:
-                self.writeCtaLog(u'{0}:{1}'.format(Exception, ex))
-                traceback.print_exc()
-                continue
+                self.writeCtaLog(u'{}:{}'.format(str(ex),traceback.format_exc()))
+                return
 
     #----------------------------------------------------------------------
     def runBacktestingWithMysql(self):
@@ -3299,12 +3297,14 @@ class BacktestingEngine(object):
             self.output(u'%s: %s' %(result[0], result[1]))
 
     #----------------------------------------------------------------------
-    def roundToPriceTick(self, price):
+    def roundToPriceTick(self, price, priceTick=None):
         """取整价格到合约最小价格变动"""
-        if not self.priceTick:
+        if not priceTick:
+            priceTick = self.priceTick
+        if not priceTick:
             return price
 
-        newPrice = round(price/self.priceTick, 0) * self.priceTick
+        newPrice = round(price/priceTick, 0) * priceTick
         return newPrice
 
     def getTradingDate(self, dt=None):

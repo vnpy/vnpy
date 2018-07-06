@@ -989,16 +989,20 @@ class CtaGridTrade(object):
             json_grids = data['dn_grids'] if 'dn_grids' in data else []
 
         grids = []
+        ids = []
         for i in json_grids:
-
             closePrice = float(i['closePrice'])
             openPrice = float(i['openPrice'])
             stopPrice = float(i['stopPrice'])
-
+            id = i.get('id')
             self.writeCtaLog(u'load Grid:open:{0},close:{1},stop:{2}'.format(openPrice, closePrice, stopPrice))
 
             grid = CtaGrid(direction=i['direction'], openprice=openPrice, closeprice=closePrice,
                                stopprice=stopPrice, volume=i['volume'])
+            if id is not None and id not in ids:
+                grid.id = id
+            ids.append(id)
+
             grid.orderStatus = i['orderStatus']       # 挂单状态: True,已挂单，False，未挂单
             grid.orderRef = i['orderRef']           # OrderId
             grid.openStatus = i['openStatus']         # 开仓状态

@@ -29,6 +29,39 @@ def floatToStr(float_str):
     else:
         return float_str
 
+# -----------------------------------------
+def systemSymbolToVnSymbol(symbol):
+    """
+    数字交易所合约symbol转化vnpy合约symbol
+	ethusdt --> eth_usdt
+	etcbtc  --> etc_btc
+	ethusdt.HUOBI --> eth_usdt
+	etcbtc.HUOBI  --> etc_btc
+	ETHUSDT--> eth_usdt
+    :param symbol:
+    :return:
+    """
+    symbol = symbol.replace('_', '')
+    symbol = ((symbol.split('.'))[0]).lower()
+    if 'usdt' in symbol:
+        return symbol[:-4] + "_usdt"
+    else:
+        return symbol[:-3] + "_" + symbol[-3:]
+
+# -------------------------------------
+def VnSymbolToSystemSymbol(symbol):
+    """
+    vnpy合约转化至数字交易所合约
+    etc_btc  --> etcbtc
+	eth_usdt --> ethusdt
+	btc_usdt.OKEX => btcusdt
+    :param symbol:
+    :return:
+    """
+    symbol = (symbol.split('.'))[0]
+    return (''.join(symbol.split('_'))).lower()
+
+
 # ----------------------------------------------------------------------
 def safeUnicode(value):
     """检查接口数据潜在的错误，保证转化为的字符串正确"""

@@ -9,7 +9,6 @@ from collections import OrderedDict
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.vtConstant import *
 
-
 class CtaPolicy(object):
     """
     策略的持久化Policy
@@ -428,12 +427,15 @@ class TrendPolicy(CtaPolicy):
         self.low_price_in_short = 0      # 空趋势时，最低价
         self.last_under_open_price = 0   # 低于首次开仓价的补仓价格
         self.add_pos_count_under_first_price = 0  # 低于首次开仓价的补仓次数
+        self.add_pos_count = 3           # 剩余允许加仓次数
         self.tns_direction = None        # 日线方向 DIRECTION_LONG 向上/ DIRECTION_SHORT向下
         self.tns_count = 0               # 日线事务，>0，做多方向，<0，做空方向
         self.max_pos = 0                 # 事务中最大仓位
         self.pos_to_add = []             # 开仓/加仓得仓位数量分布列表
         self.pos_reduced = {}            # 减仓记录
+        self.pos_for_readd = {}          # 供补仓的仓位{'total':0,'added':0}
         self.last_reduce_price = 0       # 最近一次减仓记录
+        self.last_change_price = 0       # 最近一次修改加仓价
 
         self.tns_has_opened = False
         self.tns_open_date = ''          # 事务开启的交易日
@@ -460,6 +462,8 @@ class TrendPolicy(CtaPolicy):
         j['high_price_in_long'] = self.high_price_in_long if self.high_price_in_long is not None else 0
         j['low_price_in_short'] = self.low_price_in_short if self.low_price_in_short is not None else 0
         j['add_pos_count_under_first_price'] = self.add_pos_count_under_first_price if self.add_pos_count_under_first_price is not None else 0
+        j['add_pos_count'] = self.add_pos_count if self.add_pos_count is not None else 3
+
         j['last_under_open_price'] = self.last_under_open_price if self.last_under_open_price is not None else 0
 
         j['max_pos'] = self.max_pos if self.max_pos is not None else 0
@@ -467,9 +471,11 @@ class TrendPolicy(CtaPolicy):
         j['tns_count'] = self.tns_count if self.tns_count is not None else 0
         j['pos_to_add'] = self.pos_to_add
         j['pos_reduced'] = self.pos_reduced
+        j['pos_for_readd'] = self.pos_for_readd
         j['tns_has_opened'] = self.tns_has_opened
         j['last_balance_level'] = self.last_balance_level
         j['last_reduce_price'] = self.last_reduce_price
+        j['last_change_price'] = self.last_change_price
         j['dtosc_add_pos'] = self.dtosc_add_pos
         return j
 
@@ -528,6 +534,13 @@ class TrendPolicy(CtaPolicy):
                 self.writeCtaError(u'解释last_reduce_price异常:{}'.format(str(ex)))
                 self.last_reduce_price = 0
 
+        if 'last_change_price' in json_data:
+            try:
+                self.last_change_price = json_data['last_change_price']
+            except Exception as ex:
+                self.writeCtaError(u'解释last_change_price异常:{}'.format(str(ex)))
+                self.last_change_price = 0
+
         if 'stop_price' in json_data:
             try:
                 self.stop_price = json_data['stop_price']
@@ -563,6 +576,13 @@ class TrendPolicy(CtaPolicy):
                 self.writeCtaError(u'解释add_pos_count_under_first_price异常:{}'.format(str(ex)))
                 self.add_pos_count_under_first_price = 0
 
+        if 'add_pos_count' in json_data:
+            try:
+                self.add_pos_count = json_data['add_pos_count']
+            except Exception as ex:
+                self.writeCtaError(u'解释add_pos_count异常:{}'.format(str(ex)))
+                self.add_pos_count = 3
+
         if 'tns_direction' in json_data:
             try:
                 self.tns_direction = json_data['tns_direction']
@@ -590,6 +610,12 @@ class TrendPolicy(CtaPolicy):
             except Exception as ex:
                 self.writeCtaError(u'解释pos_reduced异常:{}'.format(str(ex)))
                 self.pos_reduced = {}
+        if 'pos_for_readd' in json_data:
+            try:
+                self.pos_for_readd = json_data['pos_for_readd']
+            except Exception as ex:
+                self.writeCtaError(u'解释pos_for_readd异常:{}'.format(str(ex)))
+                self.pos_for_readd = {}
 
         if 'tns_has_opened' in json_data:
             try:
@@ -627,10 +653,14 @@ class TrendPolicy(CtaPolicy):
         self.low_price_in_short = 0
         self.max_pos = 0
         self.add_pos_count_under_first_price = 0
+        self.add_pos_count_under_first_price = 3
         self.tns_direction = None
+        self.tns_count = 0
         self.pos_to_add = []
         self.pos_reduced = {}
+        self.pos_for_readd = {}
         self.last_reduce_price = 0
+        self.last_change_price = 0
         self.tns_has_opened = False
         self.last_balance_level = 0
         self.dtosc_add_pos = {}
@@ -663,9 +693,18 @@ class TrendPolicy(CtaPolicy):
         :param reduce_volume:
         :return:
         """
+        # 检查是否已经补仓过
+        readd_pos = self.pos_for_readd.get('added',0)
+        if readd_pos > 0:
+            self.writeCtaLog(u'已经存在使用的补仓记录{}，原有减仓记录{}将失效.'.format(self.pos_for_readd,self.pos_reduced))
+            self.pos_reduced = {}
+            self.pos_for_readd = {}
+
         reduce_list = self.pos_reduced.get(reduce_type, [])
         reduce_list.append(reduce_volume)
         self.pos_reduced[reduce_type] = reduce_list
+
+        self.pos_for_readd['total'] = self.pos_for_readd.get('total',0) + reduce_volume
 
     def calculatePosToAdd(self, total_pos, add_count):
         """

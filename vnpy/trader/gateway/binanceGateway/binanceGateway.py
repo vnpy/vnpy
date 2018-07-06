@@ -19,7 +19,7 @@ import time
 from vnpy.api.binance import BinanceSpotApi,BinanceAPIException,BinanceRequestException
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
-from vnpy.trader.gateway.binanceGateway.DigitalCurrency import systemSymbolToVnSymbol , VnSymbolToSystemSymbol
+from vnpy.trader.vtFunction import systemSymbolToVnSymbol , VnSymbolToSystemSymbol
 from vnpy.trader.vtConstant import PRICETYPE_LIMITPRICE, DIRECTION_LONG, DIRECTION_NET,DIRECTION_SHORT, PRODUCT_SPOT, EXCHANGE_BINANCE, OFFSET_OPEN, OFFSET_CLOSE
 from vnpy.trader.vtConstant import STATUS_UNKNOWN, STATUS_REJECTED, STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_PARTTRADED, STATUS_NOTTRADED
 '''
@@ -50,6 +50,8 @@ class BinanceGateway(VtGateway):
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
 
+        self.auto_subscribe_symbol_pairs = set()  # 自动订阅现货合约对清单
+
         # 消息调试
         self.log_message = False
 
@@ -70,10 +72,15 @@ class BinanceGateway(VtGateway):
             self.interval = float(setting['interval'])
             self.log_message = setting['log_message'] if 'log_message' in setting else False
             self.api_spot.setAccount(self.accountID)
+            # 若希望连接后自动订阅
+            if 'auto_subscribe' in setting.keys():
+                self.auto_subscribe_symbol_pairs = set(setting['auto_subscribe'])
 
         except KeyError:
             self.writeLog(u'BINANCE连接配置缺少字段，请检查')
-            return            
+            return
+
+
 
         self.api_spot.active = True
 
@@ -83,13 +90,12 @@ class BinanceGateway(VtGateway):
         self.api_spot.connect_Subpot(apiKey, secretKey)
         self.api_spot.spotExchangeInfo()
 
-        sub = VtSubscribeReq()
-        sub.symbol = "btc_usdt.BINANCE"
-        self.subscribe(sub)
+        for symbol_pair in self.auto_subscribe_symbol_pairs:
+            self.writeLog(u'{}自动订阅现货合约:{}'.format(EXCHANGE_BINANCE, symbol_pair))
+            sub = VtSubscribeReq()
+            sub.symbol = symbol_pair
+            self.subscribe(sub)
 
-        sub = VtSubscribeReq()
-        sub.symbol = "eth_usdt.BINANCE"
-        self.subscribe(sub)
 
         self.writeLog(u'{}接口初始化成功'.format(self.gatewayName))
 
@@ -389,7 +395,7 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
         """通过查询交易所，获得 合约具体信息"""
         symbols = data["symbols"]
         for symbol_dict in symbols:
-            #ymbol = systemSymbolToVnSymbol(symbol_dic["symbol"])
+            #symbol = systemSymbolToVnSymbol(symbol_dic["symbol"])
             symbol = '{}_{}'.format(symbol_dict.get('baseAsset', '').lower(),symbol_dict.get('quoteAsset', '').lower())
             if symbol == '_':
                 continue
@@ -599,12 +605,13 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
 
         try:
             arr = sorted(depth_dict_bids.items(),  key=lambda x: x[0])
-            # print "tick1" , arr 
-            tick.bidPrice1, tick.bidVolume1  = arr[-1]
-            tick.bidPrice2, tick.bidVolume2  = arr[-2]
-            tick.bidPrice3, tick.bidVolume3  = arr[-3]
-            tick.bidPrice4, tick.bidVolume4  = arr[-4]
-            tick.bidPrice5, tick.bidVolume5  = arr[-5]
+            # print "tick1" , arr
+            arr_len = len(arr)
+            (tick.bidPrice1, tick.bidVolume1)  = arr[-1] if arr_len >=1 else (0,0)
+            (tick.bidPrice2, tick.bidVolume2)  = arr[-2] if arr_len >=2 else (0,0)
+            (tick.bidPrice3, tick.bidVolume3)  = arr[-3] if arr_len >=3 else (0,0)
+            (tick.bidPrice4, tick.bidVolume4)  = arr[-4] if arr_len >=4 else (0,0)
+            (tick.bidPrice5, tick.bidVolume5)  = arr[-5] if arr_len >=5 else (0,0)
         except Exception as ex:
             self.gateway.writeError(u'OnDepth Exception:{}'.format(str(ex)))
             self.gateway.writeLog(u'OnDepth {}'.format(traceback.format_exc()))
@@ -612,11 +619,12 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
         try:
             arr = sorted(depth_dict_asks.items(), key=lambda x: x[0])
             # print "tick2", arr
-            tick.askPrice1, tick.askVolume1  = arr[0]
-            tick.askPrice2, tick.askVolume2  = arr[1]
-            tick.askPrice3, tick.askVolume3  = arr[2]
-            tick.askPrice4, tick.askVolume4  = arr[3]
-            tick.askPrice5, tick.askVolume5  = arr[4]
+            arr_len = len(arr)
+            (tick.askPrice1, tick.askVolume1)  = arr[0] if arr_len >=1 else (0,0)
+            (tick.askPrice2, tick.askVolume2)  = arr[1] if arr_len >=2 else (0,0)
+            (tick.askPrice3, tick.askVolume3)  = arr[2] if arr_len >=3 else (0,0)
+            (tick.askPrice4, tick.askVolume4)  = arr[3] if arr_len >=4 else (0,0)
+            (tick.askPrice5, tick.askVolume5)  = arr[4] if arr_len >=5 else (0,0)
         except Exception as ex:
             self.gateway.writeError(u'OnDepth Exception:{}'.format(str(ex)))
             self.gateway.writeLog(u'OnDepth {}'.format(traceback.format_exc()))

@@ -25,29 +25,31 @@ SPOT_CURRENCY = ["usdt",
                  "ltc",
                  "eth",
                  "etc",
-                 "bch"]
+                 "bch",
+                 "eos"]
 
 SPOT_SYMBOL_PAIRS = set(["ltc_btc",
-               "eth_btc",
-               "etc_btc",
-               "bch_btc",
-               "btc_usdt",
-               "eth_usdt",
-               "ltc_usdt",
-               "etc_usdt",
-               "bch_usdt",
-               "etc_eth",
-               "bt1_btc",
-               "bt2_btc",
-               "btg_btc",
-               "qtum_btc",
-               "hsr_btc",
-               "neo_btc",
-               "gas_btc",
-               "qtum_usdt",
-               "hsr_usdt",
-                     "neo_usdt",
-                     "gas_usdt"])
+                         "eos_usdt",
+                        "eth_btc",
+                        "etc_btc",
+                        "bch_btc",
+                        "btc_usdt",
+                        "eth_usdt",
+                        "ltc_usdt",
+                        "etc_usdt",
+                        "bch_usdt",
+                        "etc_eth",
+                        "bt1_btc",
+                        "bt2_btc",
+                        "btg_btc",
+                        "qtum_btc",
+                        "hsr_btc",
+                        "neo_btc",
+                        "gas_btc",
+                        "qtum_usdt",
+                        "hsr_usdt",
+                        "neo_usdt",
+                        "gas_usdt"])
 
 KLINE_PERIOD = ["1min","3min","5min","15min","30min","1hour","2hour","4hour","6hour","12hour","day","3day","week"]
 
@@ -677,9 +679,9 @@ class WsFuturesApi(object):
         self.sendTradingRequest(channel, {})
 
     # ----------------------------------------------------------------------
-    # def futureSubUserInfo(self):
-    #     channel = 'ok_sub_futureusd_userinfo'
-    #     self.sendTradingRequest(channel, {})
+    def futureSubUserInfo(self):
+         channel = 'ok_sub_futureusd_userinfo'
+         self.sendTradingRequest(channel, {})
 
     # ----------------------------------------------------------------------
     def futureOrderInfo(self, symbol_pair, order_id, contract_type, status, current_page, page_length=50):
@@ -716,15 +718,6 @@ class WsFuturesApi(object):
             for contract_type in CONTRACT_TYPE:
                 # orderid = -1,
                 self.futureOrderInfo(symbol_usd, -1, contract_type, 1, 1, 50)
-
-    # ----------------------------------------------------------------------
-    def subscribeFutureTrades(self):
-        """
-        订阅期货成交回报
-        :return:
-        """
-        channel = 'ok_sub_futureusd_trades'
-        self.sendTradingRequest(channel, {})
 
     # ----------------------------------------------------------------------
     def subscribeFutureUserInfo(self):

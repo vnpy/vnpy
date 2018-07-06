@@ -1,0 +1,12 @@
+{
+    "commeent":"incense",
+    "apiKey": "xx-xx-xxxx-b999-8d1100e9f8f7",
+    "secretKey": "xx",
+    "trace": false,
+    "leverage": 10,
+    "spot_connect": true,
+    "futures_connect": true,
+    "log_message": false,
+    "symbol_pairs" : ["btc_usdt","eth_usdt","eos_usdt"],
+    "auto_subscribe":["btc_usdt","btc:this_week:10","btc:next_week:10"]
+}

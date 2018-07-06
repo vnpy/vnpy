@@ -35,7 +35,6 @@ SYMBOL_LIST = ['ltc_btc', 'eth_btc', 'etc_btc', 'bch_btc', 'btc_usdt', 'eth_usdt
 
 
 class BinanceData(object):
-
     # ----------------------------------------------------------------------
     def __init__(self, strategy):
         """
@@ -43,47 +42,30 @@ class BinanceData(object):
         :param strategy: 上层策略，主要用与使用strategy.writeCtaLog（）
         """
         self.strategy = strategy
-        self.client = None
-        self.init_client()
 
-    def init_client(self):
-        fileName = globalSetting.get('gateway_name', '') + '_connect.json'
-        filePath = getJsonPath(fileName, __file__)
-        try:
-            with open(filePath, 'r') as f:
-                # 解析json文件
-                setting = json.load(f)
-                apiKey = setting.get('accessKey',None)
-                secretKey = setting.get('secretKey',None)
+        self.client = Client('-', '-')
 
-                if apiKey is not None and secretKey is not None:
-                    self.client = Client(apiKey, secretKey)
-
-        except IOError:
-            self.strategy.writeCtaError(u'BINANCE读取连接配置{}出错，请检查'.format(filePath))
-            return
-
-    def get_bars(self, symbol, period, callback, bar_is_completed=False,bar_freq=1, start_dt=None):
+    def get_bars(self, symbol, period, callback, bar_is_completed=False, bar_freq=1, start_dt=None):
         """
         返回k线数据
         symbol：合约
         period: 周期: 1min,3min,5min,15min,30min,1day,3day,1hour,2hour,4hour,6hour,12hour
         """
+        ret_bars = []
         if symbol not in SYMBOL_LIST:
             self.strategy.writeCtaError(u'{} 合约{}不在下载清单中'.format(datetime.now(), symbol))
-            return False
+            return False,ret_bars
         if period not in PERIOD_MAPPING:
             self.strategy.writeCtaError(u'{} 周期{}不在下载清单中'.format(datetime.now(), period))
-            return False
+            return False,ret_bars
         if self.client is None:
-            return False
+            return False,ret_bars
 
         binance_symbol = symbol.upper().replace('_' , '')
         binance_period = PERIOD_MAPPING.get(period)
 
         self.strategy.writeCtaLog('{}开始下载binance:{} {}数据.'.format(datetime.now(), binance_symbol, binance_period))
 
-        bars = []
         try:
             bars = self.client.get_klines(symbol=binance_symbol, interval=binance_period)
             for i, bar in enumerate(bars):
@@ -107,13 +89,12 @@ class BinanceData(object):
 
                 if start_dt is not None and bar.datetime < start_dt:
                     continue
-
+                ret_bars.append(add_bar)
                 if callback is not None:
                     callback(add_bar, bar_is_completed, bar_freq)
-
-            return True
+            return True,ret_bars
         except Exception as ex:
             self.strategy.writeCtaError('exception in get:{},{},{}'.format(binance_symbol,str(ex), traceback.format_exc()))
-            return False
+            return False,ret_bars
 
 

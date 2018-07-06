@@ -2,5 +2,9 @@
     "apiKey": "你的apiKey",
     "secretKey": "你的secretKey",
     "trace": false,
-    "leverage": 10
+    "leverage": 10,
+    "spot_connect": true,
+    "futures_connect": true,
+    "log_message": true,
+    "auto_subscribe":["btc_usdt"]
 }

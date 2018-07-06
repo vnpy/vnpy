@@ -4,6 +4,7 @@
 # WeChat/QQ: 28888502
 # 广东华富资产管理
 
+import sys,os,csv
 from datetime import datetime,timedelta
 import talib as ta
 import numpy as np
@@ -114,6 +115,9 @@ class CtaLineBar(object):
         self.bar = None  # K线数据对象
         self.lineBar = []  # K线缓存数据队列
         self.barFirstTick = False  # K线的第一条Tick数据
+
+        self.export_filename = None
+        self.export_fields = []
 
         # 创建内部变量
         self.init_properties()
@@ -367,6 +371,7 @@ class CtaLineBar(object):
         self.lineSkTop = []         # SK 高位
         self.lineSkButtom = []      # SK 低位
         self.skd_last_cross = 0     # 最近一次金叉/死叉的点位
+        self.skd_cross_price = 0    # 最近一次发生金叉/死叉的价格
         self.skd_rt_count = 0       # 实时金叉/死叉, default = 0； -1 实时死叉； 1：实时金叉
         self.skd_rt_last_cross = 0  # 实时金叉/死叉的位置
         self.skd_rt_cross_price = 0 # 发生实时金叉死叉时的价格
@@ -500,8 +505,37 @@ class CtaLineBar(object):
         self.__recountSKD()
         self.__recountYB()
         self.__recountSar()
+        self.export_to_csv(bar)
         # 回调上层调用者
         self.onBarFunc(bar)
+
+    def export_to_csv(self,bar):
+        if self.export_filename is None or len(self.export_fields) == 0:
+            return
+        field_names = []
+        save_dict = {}
+        for field in self.export_fields:
+            field_name = field.get('name',None)
+            attr_name = field.get('attr', None)
+            source = field.get('source', None)
+            type_ = field.get('type_',None)
+            if field_name is None or attr_name is None or source is None or type_ is None:
+                continue
+            field_names.append(field_name)
+            if source == 'bar':
+                save_dict[field_name] = getattr(bar,str(attr_name),None)
+            else:
+                if type_ == 'list':
+                    l =  getattr(self, str(attr_name),None)
+                    if l is None or len(l) == 0:
+                        save_dict[field_name] = 0
+                    else:
+                        save_dict[field_name] =l[-1]
+                else:
+                    save_dict[field_name] = getattr(self, str(attr_name),0)
+
+        if len(save_dict) >0:
+            self.append_data(file_name=self.export_filename,dict_data=save_dict,field_names=field_names)
 
     def displayLastBar(self):
         """显示最后一个Bar的信息"""
@@ -2247,8 +2281,9 @@ class CtaLineBar(object):
                 self.skd_last_cross = (self.lineSK[-1] + self.lineSK[-2] + self.lineSD[-1] + self.lineSD[-2])/4
                 self.skd_rt_count = self.skd_count
                 self.skd_rt_last_cross = self.skd_last_cross
-                self.skd_rt_cross_price = self.lineBar[-1].close
-
+                if self.skd_rt_cross_price == 0 or self.lineBar[-1].close < self.skd_rt_cross_price:
+                    self.skd_rt_cross_price = self.lineBar[-1].close
+                self.skd_cross_price = min(self.lineBar[-1].close ,self.skd_rt_cross_price)
                 if self.skd_divergence < 0:
                     # 若原来是顶背离，消失
                     self.skd_divergence = 0
@@ -2256,6 +2291,11 @@ class CtaLineBar(object):
             else: #if self.lineSK[-1] < self.lineSK[-2]:
                 # 延续死叉
                 self.skd_count -= 1
+                # 取消实时的数据
+                self.skd_rt_count = 0
+                self.skd_rt_last_cross = 0
+                self.skd_rt_cross_price = 0
+
                 # 延续顶背离
                 if self.skd_divergence < 0:
                     self.skd_divergence -= 1
@@ -2267,7 +2307,9 @@ class CtaLineBar(object):
                 self.skd_last_cross = (self.lineSK[-1] + self.lineSK[-2] + self.lineSD[-1] + self.lineSD[-2]) / 4
                 self.skd_rt_count = self.skd_count
                 self.skd_rt_last_cross = self.skd_last_cross
-                self.skd_rt_cross_price = self.lineBar[-1].close
+                if self.skd_rt_cross_price == 0 or self.lineBar[-1].close > self.skd_rt_cross_price:
+                    self.skd_rt_cross_price = self.lineBar[-1].close
+                self.skd_cross_price = max(self.lineBar[-1].close, self.skd_rt_cross_price)
 
                 # 若原来是底背离，消失
                 if self.skd_divergence > 0:
@@ -2276,6 +2318,12 @@ class CtaLineBar(object):
             else: #if self.lineSK[-1] > self.lineSK[-2]:
                 # 延续金叉
                 self.skd_count += 1
+
+                # 取消实时的数据
+                self.skd_rt_count = 0
+                self.skd_rt_last_cross = 0
+                self.skd_rt_cross_price = 0
+
                 # 延续底背离
                 if self.skd_divergence > 0:
                     self.skd_divergence += 1
@@ -2434,32 +2482,25 @@ class CtaLineBar(object):
         if high_skd is None:
             high_skd = self.highSkd
 
-        skd_count = self.skd_count
-        skd_last_cross = self.skd_last_cross
         if runtime:
             sk, sd = self.getRuntimeSKD()
-            # 判断是否金叉和死叉
-            golden_cross = sk > self.lineSK[-1] and self.lineSK[-1] < self.lineSD[-1] and sk > sd
+            # 判断是否实时死叉
             dead_cross = sk < self.lineSK[-1] and self.lineSK[-1] > self.lineSD[-1] and sk < sd
 
-            # bar处于死叉状态，实时是金叉
-            if self.skd_count <= 0 and golden_cross:
-                # 实时金叉
-                skd_count = 1
-                skd_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1])/4
-
-            elif self.skd_count >= 0 and dead_cross:
-                skd_count = -1
+            # 实时死叉
+            if self.skd_count >= 0 and dead_cross:
                 skd_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
+                # 记录bar内首次死叉后的值:交叉值，价格
+                if self.skd_rt_count >= 0:
+                    self.skd_rt_count = -1
+                    self.skd_rt_last_cross = skd_last_cross
+                    self.skd_rt_cross_price = self.lineBar[-1].close
 
-            # 实时金叉死叉发生了变化，记录变化后的值，交叉值，价格
-            if self.skd_rt_count != skd_count:
-                self.skd_rt_count = skd_count
-                self.skd_rt_last_cross = skd_last_cross
-                self.skd_rt_cross_price = self.lineBar[-1].close
+                if skd_last_cross > high_skd:
+                    return True
 
-        # 高位死叉
-        if skd_count < 0 and skd_last_cross > high_skd:
+        # 非实时，高位死叉
+        if self.skd_count < 0 and self.skd_last_cross > high_skd:
             return True
 
         return False
@@ -2474,23 +2515,25 @@ class CtaLineBar(object):
         if low_skd is None:
             low_skd = self.lowSkd
 
-        skd_count = self.skd_count
-        sdk_last_cross = self.skd_last_cross
         if runtime:
-            sk,sd = self.getRuntimeSKD()
+            sk, sd = self.getRuntimeSKD()
             # 判断是否金叉和死叉
             golden_cross = sk > self.lineSK[-1] and self.lineSK[-1] < self.lineSD[-1] and sk > sd
-            dead_cross = sk < self.lineSK[-1] and self.lineSK[-1] > self.lineSD[-1] and sk < sd
-            if skd_count <= 0 and golden_cross:
-                # 金叉
-                skd_count = 1
-                sdk_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
-            elif skd_count >=0 and dead_cross:
-                skd_count = -1
-                sdk_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
 
-        # 低位金叉
-        if skd_count > 0 and sdk_last_cross < low_skd:
+            if self.skd_count <= 0 and golden_cross:
+                # 实时金叉
+                skd_last_cross = (sk + self.lineSK[-1] + sd + self.lineSD[-1]) / 4
+
+                if self.skd_rt_count <=0:
+                    self.skd_rt_count = 1
+                    self.skd_rt_last_cross = skd_last_cross
+                    self.skd_rt_cross_price = self.lineBar[-1].close
+
+                if skd_last_cross < low_skd:
+                    return True
+
+        # 非实时低位金叉
+        if self.skd_count > 0 and self.skd_last_cross < low_skd:
             return True
 
         return False
@@ -2498,7 +2541,10 @@ class CtaLineBar(object):
     def __recountYB(self):
         """某种趋势线"""
 
-        if not self.inputYb and not self.inputYbLen:
+        if not self.inputYb:
+            return
+
+        if self.inputYbLen <1:
             return
 
         if self.inputYbRef < 1:
@@ -2538,9 +2584,10 @@ class CtaLineBar(object):
         获取未完结的bar计算出来的YB值
         :return: None，空值；float,计算值
         """
-        if not self.inputYb and not self.inputYbLen:
+        if not self.inputYb :
             return None
-
+        if self.inputYbLen < 1:
+            return None
         if self.inputYbRef < 1:
             self.debugCtaLog(u'参数 self.inputYbRef:{}不能低于1'.format(self.inputYbRef))
             return None
@@ -2591,6 +2638,38 @@ class CtaLineBar(object):
             return (dt + timedelta(days=2)).strftime('%Y-%m-%d')
         else:
             return dt.strftime('%Y-%m-%d')
+
+    def append_data(self, file_name, dict_data, field_names=None):
+        """
+        添加数据到csv文件中
+        :param file_name:  csv的文件全路径
+        :param dict_data:  OrderedDict
+        :return:
+        """
+        if not isinstance(dict_data, dict):
+            print(u'{}.append_data，输入数据不是dict'.format(self.name), file=sys.stderr)
+            return
+
+        dict_fieldnames = list(dict_data.keys()) if field_names is None else field_names
+
+        if not isinstance(dict_fieldnames, list):
+            print(u'{}append_data，输入字段不是list'.format(self.name),file=sys.stderr)
+            return
+        try:
+            if not os.path.exists(file_name):
+                self.writeCtaLog(u'create csv file:{}'.format(file_name))
+                with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    self.writeCtaLog(u'write csv header:{}'.format(dict_fieldnames))
+                    writer.writeheader()
+                    writer.writerow(dict_data)
+            else:
+                with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    writer.writerow(dict_data)
+        except Exception as ex:
+            print(u'{}.append_data exception:{}/{}'.format(self.name,str(ex),traceback.format_exc()))
+
 
 class CtaMinuteBar(CtaLineBar):
     """
@@ -3040,8 +3119,8 @@ class CtaHourBar(CtaLineBar):
         :return:
         """
         if self.inputSkd:
-            self.skd_is_high_dead_cross(runtime=True, high_skd=0)
-            self.skd_is_low_golden_cross(runtime=True,low_skd=100)
+            self.skd_is_high_dead_cross(runtime=True, high_skd=self.highSkd)
+            self.skd_is_low_golden_cross(runtime=True,low_skd=self.lowSkd)
 
 
 
@@ -3344,6 +3423,10 @@ class TestStrategy(object):
         if self.lineM30:
             self.lineM30.addBar(bar, bar_freq=self.TMinuteInterval)
 
+        #if self.lineH2:
+        #    self.lineH2.skd_is_high_dead_cross(runtime=True, high_skd=30)
+        #    self.lineH2.skd_is_low_golden_cross(runtime=True, low_skd=70)
+
     def onBarM30(self, bar):
         self.writeCtaLog(self.lineM30.displayLastBar())
 
@@ -3468,16 +3551,16 @@ if __name__ == '__main__':
     t.shortSymbol = 'J'
     t.vtSymbol = 'J99'
     # 创建M30线
-    t.createLineM30()
+    #t.createLineM30()
 
     # 回测1小时线
-    t.createLineH1()
+    #t.createLineH1()
 
     # 回测2小时线
     t.createLineH2()
 
     # 回测日线
-    t.createLineD()
+    #t.createLineD()
 
     filename = 'cache/{}_20141201_20171231_1m.csv'.format(t.vtSymbol)
 

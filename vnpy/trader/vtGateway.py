@@ -184,7 +184,29 @@ class VtGateway(object):
         """关闭"""
         pass
 
-    
+    def writeLog(self, content):
+        """
+        记录日志文件
+        :param content:
+        :return:
+        """
+        if self.logger:
+            self.logger.info(content)
+
+    def writeError(self, content, error_id = 0):
+        """
+        发送错误通知/记录日志文件
+        :param content:
+        :return:
+        """
+        error = VtErrorData()
+        error.gatewayName = self.gatewayName
+        error.errorID = error_id
+        error.errorMsg = content
+        self.onError(error)
+
+        if self.logger:
+            self.logger.error(content)
     
     
     

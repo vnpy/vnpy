@@ -76,6 +76,7 @@ class Client(object):
         :type api_key: str.
         :param api_secret: Api Secret
         :type api_secret: str.
+        :type api: 上层得api
 
         """
 
@@ -90,6 +91,11 @@ class Client(object):
 
 
     def writeLog(self, content):
+        """
+        写日志
+        :param content:
+        :return:
+        """
         content = 'client ' + content
         if not self.api:
             print(content)
@@ -101,6 +107,7 @@ class Client(object):
         self.api.writeLog(content)
 
     def writeError(self, content, error_id=0):
+        """写异常"""
         content = 'client ' + content
         if not self.api:
             print(u'{},error_id:{}'.format(content, error_id) ,file=sys.stderr)
@@ -174,9 +181,6 @@ class Client(object):
             self.writeLog('_request:method:{} uri:{},{}'.format(method, uri, kwargs))
 
         response = getattr(self.session, method)(uri, **kwargs )
-
-        if self.DEBUG:
-            self.writeLog(str(response))
 
         return self._handle_response(response , uri , **kwargs )
 

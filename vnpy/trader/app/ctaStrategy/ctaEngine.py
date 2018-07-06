@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 import re
 import csv
 import copy
+import decimal
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
@@ -115,22 +116,49 @@ class CtaEngine(object):
         self.strategy_loggers = {}
         self.createLogger()
 
+    def analysis_vtSymbol(self, vtSymbol):
+        """
+        分析合约
+        :param vtSymbol:
+        :return:
+        """
+        base_symbol, quote_symbol,exchange = None,None,None
+
+        if '.' not in vtSymbol:
+            exchange = None
+            symbol_pair = vtSymbol
+        else:
+            s1 = vtSymbol.split('.')
+            exchange = s1[1]
+            symbol_pair = s1[0]
+
+        if '_' not in symbol_pair:
+            return vtSymbol, quote_symbol,exchange
+
+        s2 = symbol_pair.split('_')
+        base_symbol = s2[0]
+        quote_symbol = s2[1]
+        return base_symbol, quote_symbol, exchange
+
     # ----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, orderType, price, volume, strategy, priceType=PRICETYPE_LIMITPRICE):
         """发单"""
+        base_symbol, quote_symbol, exchange = self.analysis_vtSymbol(vtSymbol)
+
         contract = self.mainEngine.getContract(vtSymbol)
         if contract is None:
             self.writeCtaError(
-                u'vtEngine.sendOrder取不到{}合约得信息,{}发送{}委托:{},v{}失败'.format(vtSymbol, strategy.name, orderType, price,
+                u'vtEngine.sendOrder取不到{}合约得信息,{}发送{}委托:{},v{}'.format(vtSymbol, strategy.name, orderType, price,
                                                                          volume))
             return ''
 
         req = VtOrderReq()
         req.symbol = contract.symbol  # 合约代码
-        req.exchange = contract.exchange  # 交易所
+        req.exchange = contract.exchange # 交易所
         req.vtSymbol = contract.vtSymbol
         req.price = self.roundToPriceTick(contract.priceTick, price)  # 价格
-        req.volume = volume  # 数量
+
+        req.volume = self.roundToVolumeTick(volumeTick=contract.volumeTick,volume=volume)  # 数量
 
         if strategy:
             req.productClass = strategy.productClass
@@ -221,6 +249,10 @@ class CtaEngine(object):
                 #    req.offset = OFFSET_CLOSE
 
         vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)  # 发单
+
+        if vtOrderID is None or len(vtOrderID) == 0:
+            self.writeCtaError(u'{} 发送委托失败. {} {} {} {}'.format(strategy.name if strategy else 'CtaEngine', vtSymbol, req.offset, req.direction, volume, price))
+            return ''
 
         if strategy:
             self.orderStrategyDict[vtOrderID] = strategy  # 保存vtOrderID和策略的映射关系
@@ -728,8 +760,10 @@ class CtaEngine(object):
             req.exchange = contract.exchange
 
             # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
-            req.currency = strategy.currency
-            req.productClass = strategy.productClass
+            if hasattr(strategy,'currency'):
+                req.currency = strategy.currency
+            if hasattr(strategy, 'productClass'):
+                req.productClass = strategy.productClass
 
             # 5.调用主引擎的订阅接口
             self.mainEngine.subscribe(req, contract.gatewayName)
@@ -856,6 +890,7 @@ class CtaEngine(object):
                 # 只提取leg1合约
                 if arb_symbols.find('&') != -1:
                     symbols = arb_symbols.split('&')
+                symbols.append(strategy.vtSymbol)
             else:
                 symbols.append(s[0])
         else:
@@ -1768,7 +1803,27 @@ class CtaEngine(object):
             return price
 
         newPrice = round(price / priceTick, 0) * priceTick
+
+        if isinstance(priceTick,float):
+            price_exponent = decimal.Decimal(str(newPrice))
+            tick_exponent = decimal.Decimal(str(priceTick))
+            if abs(price_exponent.as_tuple().exponent) > abs(tick_exponent.as_tuple().exponent):
+                newPrice = round(newPrice, ndigits=abs(tick_exponent.as_tuple().exponent))
+                newPrice = float(str(newPrice))
         return newPrice
+
+    def roundToVolumeTick(self,volumeTick,volume):
+        if volumeTick == 0:
+            return volume
+        newVolume = round(volume / volumeTick, 0) * volumeTick
+        if isinstance(volumeTick,float):
+            v_exponent = decimal.Decimal(str(newVolume))
+            vt_exponent = decimal.Decimal(str(volumeTick))
+            if abs(v_exponent.as_tuple().exponent) > abs(vt_exponent.as_tuple().exponent):
+                newVolume = round(newVolume, ndigits=abs(vt_exponent.as_tuple().exponent))
+                newVolume = float(str(newVolume))
+
+        return newVolume
 
     def getShortSymbol(self, symbol):
         """取得合约的短号"""
@@ -1972,7 +2027,6 @@ class CtaEngine(object):
 
         return True
 
-
 ########################################################################
 class PositionBuffer(object):
     """持仓缓存信息（本地维护的持仓数据）"""
@@ -1986,12 +2040,13 @@ class PositionBuffer(object):
         self.longPosition = EMPTY_INT
         self.longToday = EMPTY_INT
         self.longYd = EMPTY_INT
-        
+
         # 空头
         self.shortPosition = EMPTY_INT
         self.shortToday = EMPTY_INT
         self.shortYd = EMPTY_INT
 
+        self.frozen = EMPTY_FLOAT
         
     #----------------------------------------------------------------------
     def updatePositionData(self, pos):
@@ -2000,10 +2055,12 @@ class PositionBuffer(object):
             self.shortPosition = pos.position  # >=0
             self.shortYd = pos.ydPosition  # >=0
             self.shortToday = self.shortPosition - self.shortYd  # >=0
+            self.frozen = pos.frozen
         else:
             self.longPosition = pos.position  # >=0
             self.longYd = pos.ydPosition  # >=0
             self.longToday = self.longPosition - self.longYd  # >=0
+            self.frozen = pos.frozen
 
     #----------------------------------------------------------------------
     def updateTradeData(self, trade):

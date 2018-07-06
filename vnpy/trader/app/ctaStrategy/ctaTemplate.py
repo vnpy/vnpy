@@ -5,7 +5,7 @@
 '''
 
 from datetime import datetime,timedelta
-
+import os,csv
 from .ctaBase import *
 from vnpy.trader.vtConstant import *
 
@@ -361,6 +361,36 @@ class CtaTemplate(object):
         else:
             return dt.strftime('%Y-%m-%d')
 
+    def append_data(self, file_name, dict_data, field_names=None):
+        """
+        添加数据到csv文件中
+        :param file_name:  csv的文件全路径
+        :param dict_data:  OrderedDict
+        :return:
+        """
+        if not isinstance(dict_data, dict):
+            self.writeCtaError(u'append_data，输入数据不是dict')
+            return
+
+        dict_fieldnames = list(dict_data.keys()) if field_names is None else field_names
+
+        if not isinstance(dict_fieldnames, list):
+            self.writeCtaError(u'append_data，输入字段不是list')
+            return
+        try:
+            if not os.path.exists(file_name):
+                self.writeCtaLog(u'create csv file:{}'.format(file_name))
+                with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    self.writeCtaLog(u'write csv header:{}'.format(dict_fieldnames))
+                    writer.writeheader()
+                    writer.writerow(dict_data)
+            else:
+                with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    writer.writerow(dict_data)
+        except Exception as ex:
+            self.writeCtaError(u'append_data exception:{}'.format(str(ex)))
 
 class MatrixTemplate(CtaTemplate):
 

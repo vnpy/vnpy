@@ -1,7 +1,10 @@
 # encoding: UTF-8
 
-from vnpy.vnbinance import *
+from vnbinance import *
 
+# 在OkCoin网站申请这两个Key，分别对应用户名和密码
+# apiKey = 'xx'
+# secretKey = 'xxx'
 
 # api = BINANCE_Sub_Spot_Api()
 

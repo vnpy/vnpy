@@ -18,8 +18,9 @@ from vnpy.trader.language import text
 #from vnpy.trader.app.riskManager.rmEngine import RmEngine
 from vnpy.trader.vtFunction import loadMongoSetting, getTempPath
 from vnpy.trader.vtGateway import *
-from vnpy.trader.app import (ctaStrategy, riskManager)
+from vnpy.trader.app import (ctaStrategy,cmaStrategy, riskManager)
 from vnpy.trader.setup_logger import setup_logger
+import traceback
 
 import psutil
 try:
@@ -62,8 +63,10 @@ class MainEngine(object):
         self.ctaEngine = None       # CtaEngine(self, self.eventEngine)  # cta策略运行模块
         self.drEngine = None        # DrEngine(self, self.eventEngine)    # 数据记录模块
         self.rmEngine = None        #   RmEngine(self, self.eventEngine)    # 风险管理模块
-
+        self.cmaEngine = None       # 跨市场套利引擎
         self.connected_gw_names = []
+
+        self.save_contract_counter = 0
 
         self.logger = None
 
@@ -112,6 +115,8 @@ class MainEngine(object):
             self.ctaEngine = self.appDict[appName]
         elif appName == riskManager.appName:
             self.rmEngine = self.appDict[appName]
+        elif appName == cmaStrategy.appName:
+            self.cmaEngine = self.appDict[appName]
 
         # 保存应用信息
         d = {
@@ -144,6 +149,14 @@ class MainEngine(object):
         """check gateway connect status"""
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
+
+            # 借用检查网关状态来持久化合约数据
+            self.save_contract_counter += 1
+            if self.save_contract_counter > 60 and self.dataEngine is not None:
+
+                self.dataEngine.saveContracts()
+                self.save_contract_counter = 0
+
             return gateway.checkStatus()
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
@@ -201,9 +214,17 @@ class MainEngine(object):
         """对特定接口发单"""
         # 如果风控检查失败则不发单
         if self.rmEngine and not self.rmEngine.checkRisk(orderReq):
-            self.writeCritical(u'风控检查不通过')
-            return ''    
-        
+            self.writeCritical(u'风控检查不通过,gw:{},{} {} {} p:{} v:{}'.format(gatewayName, orderReq.direction, orderReq.offset, orderReq.symbol, orderReq.price, orderReq.volume))
+            return ''
+
+        if self.rmEngine and self.rmEngine.active\
+                and self.dataEngine and \
+                self.dataEngine.check_self_trade_risk(vtSymbol=orderReq.symbol,direction=orderReq.direction, price=orderReq.price, gatewayName=gatewayName):
+            self.writeCritical(
+                u'自成交检查不通过,gw:{},{} {} {} p:{} v:{}'.format(gatewayName, orderReq.direction, orderReq.offset,
+                                                           orderReq.symbol, orderReq.price, orderReq.volume))
+            return ''
+
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             return gateway.sendOrder(orderReq)
@@ -351,6 +372,7 @@ class MainEngine(object):
         # 写入本地log日志
         if self.logger is not None:
             self.logger.error(content)
+            print(content, file=sys.stderr)
         else:
             print(content, file=sys.stderr)
             self.createLogger()
@@ -405,8 +427,9 @@ class MainEngine(object):
         # 写入本地log日志
         if self.logger:
             self.logger.critical(content)
+            print(content, file=sys.stderr)
         else:
-            print( content,file=sys.stderr)
+            print(content, file=sys.stderr)
             self.createLogger()
 
         # 发出邮件
@@ -455,15 +478,16 @@ class MainEngine(object):
                 if self.db_has_connected:
                     self.writeLog(u'重新尝试连接数据库')
                     self.dbConnect()
+
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
         except ConnectionFailure:
             self.dbClient = None
             self.writeError(u'数据库连接断开')
             if self.db_has_connected:
                 self.writeLog(u'重新尝试连接数据库')
                 self.dbConnect()
-        except AutoReconnect as ex:
-            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
-            time.sleep(1)
         except Exception as ex:
             self.writeError(u'dbInsert exception:{}'.format(str(ex)))
 
@@ -489,15 +513,16 @@ class MainEngine(object):
                 if self.db_has_connected:
                     self.writeLog(u'重新尝试连接数据库')
                     self.dbConnect()
+
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
         except ConnectionFailure:
             self.dbClient = None
             self.writeError(u'数据库连接断开')
             if self.db_has_connected:
                 self.writeLog(u'重新尝试连接数据库')
                 self.dbConnect()
-        except AutoReconnect as ex:
-            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
-            time.sleep(1)
         except Exception as ex:
             self.writeError(u'dbInsertMany exception:{}'.format(str(ex)))
 
@@ -519,16 +544,15 @@ class MainEngine(object):
                     self.writeLog(u'重新尝试连接数据库')
                     self.dbConnect()
 
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
         except ConnectionFailure:
             self.dbClient = None
             self.writeError(u'数据库连接断开')
             if self.db_has_connected:
                 self.writeLog(u'重新尝试连接数据库')
                 self.dbConnect()
-        except AutoReconnect as ex:
-            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
-            time.sleep(1)
-
         except Exception as ex:
             self.writeError(u'dbQuery exception:{}'.format(str(ex)))
 
@@ -555,15 +579,15 @@ class MainEngine(object):
                     self.writeLog(u'重新尝试连接数据库')
                     self.dbConnect()
 
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
         except ConnectionFailure:
             self.dbClient = None
             self.writeError(u'数据库连接断开')
             if self.db_has_connected:
                 self.writeLog(u'重新尝试连接数据库')
                 self.dbConnect()
-        except AutoReconnect as ex:
-            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
-            time.sleep(1)
         except Exception as ex:
             self.writeError(u'dbQueryBySort exception:{}'.format(str(ex)))
 
@@ -581,15 +605,16 @@ class MainEngine(object):
                 if self.db_has_connected:
                     self.writeLog(u'重新尝试连接数据库')
                     self.dbConnect()
+
+        except AutoReconnect as ex:
+            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
+            time.sleep(1)
         except ConnectionFailure:
             self.dbClient = None
             self.writeError(u'数据库连接断开')
             if self.db_has_connected:
                 self.writeLog(u'重新尝试连接数据库')
                 self.dbConnect()
-        except AutoReconnect as ex:
-            self.writeError(u'数据库连接断开重连:{}'.format(str(ex)))
-            time.sleep(1)
         except Exception as ex:
             self.writeError(u'dbUpdate exception:{}'.format(str(ex)))
 
@@ -761,6 +786,7 @@ class DataEngine(object):
     # ----------------------------------------------------------------------
     def saveContracts(self):
         """保存所有合约对象到硬盘"""
+        self.mainEngine.writeLog(u'持久化合约数据')
         f = shelve.open(self.contractFilePath)
         f['data'] = self.contractDict
         f.close()
@@ -789,7 +815,38 @@ class DataEngine(object):
         # 否则则更新字典中的数据        
         else:
             self.workingOrderDict[order.vtOrderID] = order
-        
+
+    def check_self_trade_risk(self, vtSymbol, direction,  price, gatewayName):
+        """
+        检查自成交
+        :param vtSymbol:
+        :param direction:
+        :param price:
+        :return:True;有风险；False:无风险
+        """
+        if len(self.workingOrderDict) == 0:
+            return False
+
+        try:
+            if direction == DIRECTION_LONG:
+                for order in list(self.workingOrderDict.values()):
+                    if order.vtSymbol == vtSymbol and order.direction == DIRECTION_SHORT and order.gatewayName==gatewayName and order.price <= price:
+                        self.mainEngine.writeNotification(u'存在反向委托单:id:{},{},gw:{},order.price:{}<{}，有自成交风险'.
+                                                          format(order.vtOrderID,order.direction,order.gatewayName, order.price,price))
+                        return True
+            elif direction == DIRECTION_SHORT:
+                for order in list(self.workingOrderDict.values()):
+                    if order.vtSymbol == vtSymbol and order.direction == DIRECTION_LONG and order.gatewayName == gatewayName and order.price >= price:
+                        self.mainEngine.writeNotification(u'存在反向委托单:id:{},{},gw:{},order.price:{}>{}，有自成交风险'.
+                                                          format(order.vtOrderID, order.direction, order.gatewayName,
+                                                                 order.price, price))
+                        return True
+
+            return False
+        except Exception as ex:
+            self.mainEngine.writeCritical(u'DataEngine check_self_trade_risk Exception:{} /{}'.format(str(ex),traceback.format_exc()))
+            return False
+
     # ----------------------------------------------------------------------
     def getOrder(self, vtOrderID):
         """查询委托单（报单）"""

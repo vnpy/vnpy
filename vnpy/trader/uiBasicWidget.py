@@ -12,7 +12,7 @@ from vnpy.trader.vtFunction import *
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtText import text as vtText
 from vnpy.trader.uiQt import QtWidgets, QtGui, QtCore, BASIC_FONT
-from vnpy.trader.vtConstant import EXCHANGE_BINANCE,EXCHANGE_OKEX
+from vnpy.trader.vtConstant import EXCHANGE_BINANCE,EXCHANGE_OKEX,EXCHANGE_GATEIO,EXCHANGE_HUOBI
 
 if str(platform.system()) == 'Windows':
     import winsound
@@ -643,6 +643,7 @@ class OrderMonitor(BasicMonitor):
         
         req = VtCancelOrderReq()
         req.symbol = order.symbol
+        req.vtSymbol = order.symbol
         req.exchange = order.exchange
         req.frontID = order.frontID
         req.sessionID = order.sessionID
@@ -751,7 +752,10 @@ class TradingWidget(QtWidgets.QFrame):
                     EXCHANGE_GLOBEX,
                     EXCHANGE_IDEALPRO,
                     EXCHANGE_OKEX,
-                    EXCHANGE_BINANCE]
+                    EXCHANGE_BINANCE,
+                    EXCHANGE_HUOBI,
+                    EXCHANGE_GATEIO,
+                    EXCHANGE_FCOIN]
     
     currencyList = [CURRENCY_NONE,
                     CURRENCY_CNY,
@@ -991,7 +995,8 @@ class TradingWidget(QtWidgets.QFrame):
         
         if contract:
             vtSymbol = contract.vtSymbol
-            gatewayName = contract.gatewayName
+            if len(gatewayName)==0 and len(contract.gatewayName) > 0:
+                gatewayName = contract.gatewayName
             self.lineName.setText(contract.name)
             exchange = contract.exchange    # 保证有交易所代码
             
@@ -1057,6 +1062,12 @@ class TradingWidget(QtWidgets.QFrame):
                     if decimal_len != self.spinPrice.decimals():
                         self.spinPrice.setDecimals(decimal_len)
                 self.spinPrice.setValue(tick.lastPrice)
+
+                if isinstance(tick.askVolume1,float):
+                    p = decimal.Decimal(str(tick.askVolume1))
+                    decimal_len = abs(p.as_tuple().exponent)
+                    if decimal_len > self.spinVolume.decimals():
+                        self.spinVolume.setDecimals(decimal_len)
 
             self.labelBidPrice1.setText('{}'.format(tick.bidPrice1))
             self.labelAskPrice1.setText('{}'.format(tick.askPrice1))
@@ -1174,7 +1185,7 @@ class TradingWidget(QtWidgets.QFrame):
             symbol_split_list = symbol.split('.')
             if len(symbol_split_list)==2:
                 exchange_name = symbol_split_list[-1]
-                if exchange_name in [EXCHANGE_OKEX,EXCHANGE_BINANCE]:
+                if exchange_name in [EXCHANGE_OKEX,EXCHANGE_BINANCE,EXCHANGE_HUOBI,EXCHANGE_GATEIO]:
                     symbol = symbol_split_list[0]
 
                     symbol_pair_list = symbol.split('_')

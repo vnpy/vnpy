@@ -112,6 +112,7 @@ class BinanceSpotApi(object):
         while self.active:
 
             if len(self.reqQueue) == 0:
+                sleep(0.1)
                 continue
 
             (Type , req) = self.reqQueue[0]
@@ -343,6 +344,8 @@ class BinanceSpotApi(object):
 
     #----------------------------------------------------------------------
     def subscribeSpotTicker(self , symbol):
+        if '.' in symbol:
+            symbol = symbol.split('.')[0]
         if self.bm != None:
             # print "self.bm != None:"
             symbol = self.legalSymbolLower(symbol)
@@ -351,6 +354,8 @@ class BinanceSpotApi(object):
 
     #----------------------------------------------------------------------
     def subscribeSpotDepth(self, symbol):
+        if '.' in symbol:
+            symbol = symbol.split('.')[0]
         if self.bm != None:
             symbol = self.legalSymbolLower(symbol)
             symbol = symbolFromOtherExchangesToBinance(symbol)
@@ -373,8 +378,7 @@ class BinanceSpotApi(object):
             headers.update(add_to_headers)
         postdata = urllib.parse.urlencode(params)
         try:
-            #response = requests.get(url, postdata, headers=headers, timeout=5)
-            response = requests.get(url )
+            response = requests.get(url, postdata, headers=headers, timeout=5 )
             if response.status_code == 200:
                 return response.json()
             else:

@@ -26,6 +26,7 @@ STATUS_ALLTRADED = u'全部成交'
 STATUS_CANCELLED = u'已撤销'
 STATUS_REJECTED = u'拒单'
 STATUS_UNKNOWN = u'未知'
+STATUS_CANCELING = u'撤销中'
 
 # 合约类型常量
 PRODUCT_EQUITY = u'股票'
@@ -77,7 +78,8 @@ EXCHANGE_HUOBI = 'HUOBI'       # 火币比特币交易所
 EXCHANGE_LHANG = 'LHANG'       # 链行比特币交易所
 EXCHANGE_OKEX = 'OKEX'		   # OKEX比特币交易所
 EXCHANGE_BINANCE = 'BINANCE'   # 币安比特币交易所
-
+EXCHANGE_GATEIO = 'GATEIO'     # gate.io比特币交易所
+EXCHANGE_FCOIN = 'FCOIN'       # fcoin.com 比特币交易所
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币

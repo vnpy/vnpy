@@ -99,6 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # 系统，连接的接口清单
         gatewayDetails = self.mainEngine.getAllGatewayDetails()
 
+        gatewayDetails = sorted(gatewayDetails,key=lambda  gw:gw['gatewayName'])
         has_gw = False
         # 期货类接口
         for d in gatewayDetails:
