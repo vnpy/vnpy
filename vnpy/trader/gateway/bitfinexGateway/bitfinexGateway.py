@@ -255,7 +255,7 @@ class GatewayApi(BitfinexApi):
             amount = -orderReq.volume
             
         o = {
-            'CID': orderId,
+            'cid': orderId,
             'type': priceTypeMap[orderReq.priceType],
             'symbol': 't' + orderReq.symbol,
             'amount': str(amount),
