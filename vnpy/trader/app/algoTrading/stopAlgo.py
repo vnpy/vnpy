@@ -18,6 +18,8 @@ class StopAlgo(AlgoTemplate):
     """停止单算法，也可以用于止损单"""
     
     templateName = 'STOP'
+    
+    STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):
