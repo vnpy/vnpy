@@ -137,8 +137,8 @@ if __name__ == '__main__':
     from datetime import datetime
     from time import sleep
     
-    API_KEY = 'c9c61d5e-6a4b-42c5-9d9d-e0656feb2c94'
-    API_SECRET = '806E0FAEFCD2FF8CBD325A55D77B3E018BB7A9B94419EA4F5B2B3F71F5B188CB'
+    API_KEY = ''
+    API_SECRET = ''
     
     # REST测试
     rest = BigoneRestApi()
