@@ -605,7 +605,7 @@ pending_cancel  撤销已提交
                         self.cache_trade_data.append(trade)
 
                     # 订单已经结束
-                    if status in ["filled","canceled"]:
+                    if status in ["filled","canceled","partial_canceled"]:
                         # 判断是否是 撤销单
                         if tradedVolume + 0.000001 < totalVolume:
                             order.status = STATUS_CANCELLED
@@ -635,7 +635,7 @@ pending_cancel  撤销已提交
             else:
                 # 说明是以前发的单子
                 if systemID not in self.cancelSystemOrderFilter:        # 排除已经cancel消失得单子
-                    if status not in ["filled" , "canceled"]:
+                    if status not in ["filled" , "canceled","partial_canceled"]:
                         symbol_pair = systemSymbolToVnSymbol(use_order["symbol"])
                         if symbol_pair in self.registerSymbols:
                             self.localID += 1
