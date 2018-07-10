@@ -727,7 +727,7 @@ class TradingWidget(QtWidgets.QFrame):
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(vtText.TRADING)
-        self.setMaximumWidth(400)
+        self.setFixedWidth(500)
         self.setFrameShape(self.Box)    # 设置边框
         self.setLineWidth(1)           
 
@@ -754,14 +754,14 @@ class TradingWidget(QtWidgets.QFrame):
         self.comboOffset = QtWidgets.QComboBox()
         self.comboOffset.addItems(self.offsetList)
 
-        self.spinPrice = QtWidgets.QDoubleSpinBox()
-        self.spinPrice.setDecimals(globalSetting.get('maxDecimal', 4))
-        self.spinPrice.setMinimum(0)
-        self.spinPrice.setMaximum(1000000)
+        validator = QtGui.QDoubleValidator()
+        validator.setBottom(0)        
 
-        self.spinVolume = QtWidgets.QSpinBox()
-        self.spinVolume.setMinimum(0)
-        self.spinVolume.setMaximum(1000000)
+        self.linePrice = QtWidgets.QLineEdit()
+        self.linePrice.setValidator(validator)
+        
+        self.lineVolume = QtWidgets.QLineEdit()
+        self.lineVolume.setValidator(validator)
 
         self.comboPriceType = QtWidgets.QComboBox()
         self.comboPriceType.addItems(self.priceTypeList)
@@ -796,8 +796,8 @@ class TradingWidget(QtWidgets.QFrame):
         gridleft.addWidget(self.comboDirection, 2, 1, 1, -1)
         gridleft.addWidget(self.comboOffset, 3, 1, 1, -1)
         gridleft.addWidget(self.checkFixed, 4, 1)
-        gridleft.addWidget(self.spinPrice, 4, 2)
-        gridleft.addWidget(self.spinVolume, 5, 1, 1, -1)
+        gridleft.addWidget(self.linePrice, 4, 2)
+        gridleft.addWidget(self.lineVolume, 5, 1, 1, -1)
         gridleft.addWidget(self.comboPriceType, 6, 1, 1, -1)
         gridleft.addWidget(self.comboExchange, 7, 1, 1, -1)
         gridleft.addWidget(self.comboCurrency, 8, 1, 1, -1)
@@ -882,6 +882,8 @@ class TradingWidget(QtWidgets.QFrame):
         gridRight.addWidget(self.labelBidVolume3, 8, 2)
         gridRight.addWidget(self.labelBidVolume4, 9, 2)
         gridRight.addWidget(self.labelBidVolume5, 10, 2)
+        
+        self.labelBidVolume5.setFixedWidth(100)
 
         # 发单按钮
         buttonSendOrder = QtWidgets.QPushButton(vtText.SEND_ORDER)
@@ -934,8 +936,8 @@ class TradingWidget(QtWidgets.QFrame):
             exchange = contract.exchange    # 保证有交易所代码
             
         # 清空价格数量
-        self.spinPrice.setValue(0)
-        self.spinVolume.setValue(0)
+        self.linePrice.clear()
+        self.lineVolume.clear()
 
         # 清空行情显示
         self.labelBidPrice1.setText('')
@@ -984,7 +986,7 @@ class TradingWidget(QtWidgets.QFrame):
             return
         
         if not self.checkFixed.isChecked():
-            self.spinPrice.setValue(tick.lastPrice)
+            self.linePrice.setText(str(tick.lastPrice))
         
         self.labelBidPrice1.setText(str(tick.bidPrice1))
         self.labelAskPrice1.setText(str(tick.askPrice1))
@@ -1053,8 +1055,8 @@ class TradingWidget(QtWidgets.QFrame):
         req.symbol = symbol
         req.exchange = exchange
         req.vtSymbol = vtSymbol
-        req.price = self.spinPrice.value()
-        req.volume = self.spinVolume.value()
+        req.price = float(self.linePrice.text())
+        req.volume = float(self.lineVolume.text())
         req.direction = unicode(self.comboDirection.currentText())
         req.priceType = unicode(self.comboPriceType.currentText())
         req.offset = unicode(self.comboOffset.currentText())
