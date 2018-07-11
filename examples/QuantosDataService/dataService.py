@@ -62,7 +62,6 @@ def generateVtBar(row):
     bar.low = row['low']
     bar.close = row['close']
     bar.volume = row['volume']
-    
     bar.date = str(row['date'])
     bar.time = str(row['time']).rjust(6, '0')
    
@@ -70,6 +69,19 @@ def generateVtBar(row):
     hour=bar.time[0:2]
     minute=bar.time[2:4]
     sec=bar.time[4:6]
+
+    # ------------------------------add by yzl :start
+    # print(row.date, type(row.date), row.time, type(row.time))# add by yzl to show the date type and value
+    # 20180328 < type'long' > 93400 < type'long' >
+    # 最佳改进方法： 构建一个datetime,然后滞后一分钟，不能简单0：00：00处理，日期减一，弊端:处理量太大
+    # 改进2：找出 0：00,此时日期回退一天
+    if int(hour) == 0 and int(minute) == 0:
+        temp_date = datetime(int(bar.date[:4]), int(bar.date[4:6]), int(bar.date[6:])).date()
+        temp_date = temp_date - timedelta(days=1)
+        bar.date = temp_date.strftime("%Y%m%d")
+
+    # -------------------------------add by yzl :end
+
     if minute=="00":
         minute="59"
         
@@ -81,6 +93,8 @@ def generateVtBar(row):
     else:
         minute=str(int(minute)-1).rjust(2,'0')
     bar.time=hour+minute+sec
+
+
    
     bar.datetime = datetime.strptime(' '.join([bar.date, bar.time]), '%Y%m%d %H%M%S')
     
