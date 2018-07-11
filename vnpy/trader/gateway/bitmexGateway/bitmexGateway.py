@@ -41,13 +41,13 @@ priceTypeMap[PRICETYPE_MARKETPRICE] = 'Market'
 
 
 ########################################################################
-class BitmexGateay(VtGateway):
+class BitmexGateway(VtGateway):
     """Bitfinex接口"""
 
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName=''):
         """Constructor"""
-        super(BitmexGateay, self).__init__(eventEngine, gatewayName)
+        super(BitmexGateway, self).__init__(eventEngine, gatewayName)
 
         self.restApi = RestApi(self)
         self.wsApi = WebsocketApi(self)

@@ -23,7 +23,8 @@ from vnpy.trader.uiMainWindow import MainWindow
 from vnpy.trader.gateway import (huobiGateway, okexGateway,
                                  binanceGateway, bitfinexGateway,
                                  bitmexGateway, fcoinGateway,
-                                 bigoneGateway, lbankGateway)
+                                 bigoneGateway, lbankGateway,
+                                 coinbaseGateway)
 
 # 加载上层应用
 from vnpy.trader.app import (algoTrading)
@@ -42,6 +43,7 @@ def main():
     me = MainEngine(ee)
 
     # 添加交易接口
+    me.addGateway(coinbaseGateway)
     me.addGateway(lbankGateway)
     me.addGateway(bigoneGateway)
     me.addGateway(fcoinGateway)

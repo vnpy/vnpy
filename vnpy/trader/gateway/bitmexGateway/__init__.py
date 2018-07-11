@@ -1,9 +1,9 @@
 # encoding: UTF-8
 
 from vnpy.trader import vtConstant
-from .bitmexGateway import BitmexGateay
+from .bitmexGateway import BitmexGateway
 
-gatewayClass = BitmexGateay
+gatewayClass = BitmexGateway
 gatewayName = 'BITMEX'
 gatewayDisplayName = 'BITMEX'
 gatewayType = vtConstant.GATEWAYTYPE_BTC
