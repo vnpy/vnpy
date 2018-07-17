@@ -53,7 +53,7 @@ class StopAlgo(AlgoTemplate):
         
         # 如果到达止损位，才触发委托
         if (self.direction == DIRECTION_LONG and 
-            tick.lastPrice >= self.price):
+            tick.lastPrice >= self.stopPrice):
             # 计算超价委托价格
             price = self.stopPrice + self.priceAdd
             
