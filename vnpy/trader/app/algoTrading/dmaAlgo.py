@@ -55,7 +55,7 @@ class DmaAlgo(AlgoTemplate):
             else:
                 func = self.sell
                 
-            self.vtOrderID = func(self.vtSymbol, self.price, self.volume, 
+            self.vtOrderID = func(self.vtSymbol, self.price, self.totalVolume, 
                                   self.priceType, self.offset)
         
         # 更新变量
