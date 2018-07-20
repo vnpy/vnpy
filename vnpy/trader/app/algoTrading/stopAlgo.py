@@ -3,6 +3,8 @@
 from __future__ import division
 from collections import OrderedDict
 
+from six import text_type
+
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE)
 from vnpy.trader.uiQt import QtWidgets
@@ -10,7 +12,9 @@ from vnpy.trader.uiQt import QtWidgets
 from .algoTemplate import AlgoTemplate
 from .uiAlgoWidget import AlgoWidget, QtWidgets
 
-from six import text_type
+
+
+STATUS_FINISHED = set([STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED])
 
 
 ########################################################################
@@ -49,7 +53,7 @@ class StopAlgo(AlgoTemplate):
         
         # 如果到达止损位，才触发委托
         if (self.direction == DIRECTION_LONG and 
-            tick.lastPrice >= self.price):
+            tick.lastPrice >= self.stopPrice):
             # 计算超价委托价格
             price = self.stopPrice + self.priceAdd
             

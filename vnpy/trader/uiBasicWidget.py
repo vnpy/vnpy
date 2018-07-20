@@ -1050,13 +1050,30 @@ class TradingWidget(QtWidgets.QFrame):
             gatewayName = contract.gatewayName
             exchange = contract.exchange    # 保证有交易所代码
             vtSymbol = contract.vtSymbol
-            
+        
+        # 获取价格
+        priceText = self.linePrice.text()
+        if not priceText:
+            return
+        price = float(priceText)
+        
+        # 获取数量
+        volumeText = self.lineVolume.text()
+        if not volumeText:
+            return
+        
+        if '.' in volumeText:
+            volume = float(volumeText)
+        else:
+            volume = int(volumeText)
+        
+        # 委托
         req = VtOrderReq()
         req.symbol = symbol
         req.exchange = exchange
         req.vtSymbol = vtSymbol
-        req.price = float(self.linePrice.text())
-        req.volume = float(self.lineVolume.text())
+        req.price = price
+        req.volume = volume
         req.direction = unicode(self.comboDirection.currentText())
         req.priceType = unicode(self.comboPriceType.currentText())
         req.offset = unicode(self.comboOffset.currentText())
