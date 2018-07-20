@@ -645,7 +645,7 @@ if __name__ == '__main__':
     rest = RestApi(BithumbGateway(eventEngine=eventEngine))
     rest.connect(API_KEY, API_SECRET)
 
-    translate_dict = {
+    translateDict = {
         u'\uac70\ub798 \uccb4\uacb0\ub0b4\uc5ed\uc774 '
         u'\uc874\uc7ac\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.': "交易记录不存在",
 
@@ -665,7 +665,7 @@ if __name__ == '__main__':
         if rest.checkError('', data=jsonObj):
             print('error : ')
             msg = jsonObj['message']
-            print(translate_dict.get(msg, msg))
+            print(translateDict.get(msg, msg))
 
     def manualCancelOrder(sysID):
         def onTradeCancel(jsonObj, reqid):
