@@ -256,7 +256,6 @@ class RestApi(BithumbRestApi):
     def onSendOrder(self, data, reqid):  # type: (dict, int)->None
         """下单回执"""
         if self.checkError(u'委托', data):
-            printError(data)
             return
 
         order = self.reqOrderDict[reqid]
