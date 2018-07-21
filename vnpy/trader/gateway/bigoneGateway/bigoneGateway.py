@@ -444,7 +444,7 @@ class RestApi(BigoneRestApi):
             tick.lastPrice = float(d['close'])
             #tick.volume = float(d['volume'])
             tick.datetime = datetime
-            tick.date = data
+            tick.date = date
             tick.time = time
             
             # 只有订阅了深度行情才推送
