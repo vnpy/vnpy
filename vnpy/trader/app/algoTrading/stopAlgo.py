@@ -6,7 +6,8 @@ from collections import OrderedDict
 from six import text_type
 
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
-                                    OFFSET_OPEN, OFFSET_CLOSE)
+                                    OFFSET_OPEN, OFFSET_CLOSE,
+                                    STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED)
 from vnpy.trader.uiQt import QtWidgets
 
 from .algoTemplate import AlgoTemplate
