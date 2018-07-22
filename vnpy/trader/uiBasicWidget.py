@@ -6,6 +6,8 @@ import os
 import platform
 from collections import OrderedDict
 
+from six import text_type
+
 from vnpy.event import *
 from .vtEvent import *
 from .vtFunction import *
@@ -394,7 +396,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
                             item = self.item(row, column)
                             if item is not None:
                                 rowdata.append(
-                                    unicode(item.text()).encode('gbk'))
+                                    text_type(item.text()).encode('gbk'))
                             else:
                                 rowdata.append('')
                         writer.writerow(rowdata)     
@@ -916,10 +918,10 @@ class TradingWidget(QtWidgets.QFrame):
         """合约变化"""
         # 读取组件数据
         symbol = str(self.lineSymbol.text())
-        exchange = unicode(self.comboExchange.currentText())
-        currency = unicode(self.comboCurrency.currentText())
-        productClass = unicode(self.comboProductClass.currentText())           
-        gatewayName = unicode(self.comboGateway.currentText())
+        exchange = text_type(self.comboExchange.currentText())
+        currency = text_type(self.comboCurrency.currentText())
+        productClass = text_type(self.comboProductClass.currentText())           
+        gatewayName = text_type(self.comboGateway.currentText())
         
         # 查询合约
         if exchange:
@@ -1033,10 +1035,10 @@ class TradingWidget(QtWidgets.QFrame):
         """发单"""
         symbol = str(self.lineSymbol.text())
         vtSymbol = symbol
-        exchange = unicode(self.comboExchange.currentText())
-        currency = unicode(self.comboCurrency.currentText())
-        productClass = unicode(self.comboProductClass.currentText())           
-        gatewayName = unicode(self.comboGateway.currentText())        
+        exchange = text_type(self.comboExchange.currentText())
+        currency = text_type(self.comboCurrency.currentText())
+        productClass = text_type(self.comboProductClass.currentText())           
+        gatewayName = text_type(self.comboGateway.currentText())        
 
         # 查询合约
         if exchange:
@@ -1074,9 +1076,9 @@ class TradingWidget(QtWidgets.QFrame):
         req.vtSymbol = vtSymbol
         req.price = price
         req.volume = volume
-        req.direction = unicode(self.comboDirection.currentText())
-        req.priceType = unicode(self.comboPriceType.currentText())
-        req.offset = unicode(self.comboOffset.currentText())
+        req.direction = text_type(self.comboDirection.currentText())
+        req.priceType = text_type(self.comboPriceType.currentText())
+        req.offset = text_type(self.comboOffset.currentText())
         req.currency = currency
         req.productClass = productClass
         
