@@ -202,8 +202,11 @@ class FutuGateway(VtGateway):
                 return RET_OK, content  
 
         # 只有港股实盘交易才需要解锁
-        if self.market == 'HK' and self.env == TrdEnv.REAL:
-            self.tradeCtx.unlock_trade(self.password)
+        code, data = self.tradeCtx.unlock_trade(self.password)
+        if code == RET_OK:
+            self.writeLog(u'交易接口解锁成功')
+        else:
+            self.writeLog(u'交易接口解锁失败，原因：%s' %data)
         
         # 设置回调处理对象
         self.tradeCtx.set_handler(OrderHandler())
@@ -474,9 +477,10 @@ class FutuGateway(VtGateway):
         """处理委托推送"""
         for ix, row in data.iterrows():
             # 如果状态是已经删除，则直接忽略
-            if str(row['status']) == '7':
+            if row['order_status'] == OrderStatus.DELETED:
                 continue
             
+            print(row['order_status'])
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
@@ -500,7 +504,7 @@ class FutuGateway(VtGateway):
     def processDeal(self, data):
         """处理成交推送"""
         for ix, row in data.iterrows():
-            tradeID = row['deal_id']
+            tradeID = str(row['deal_id'])
             if tradeID in self.tradeSet:
                 continue
             self.tradeSet.add(tradeID)
