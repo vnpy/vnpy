@@ -6,7 +6,7 @@ from vnpy.trader.uiQt import QtWidgets
 
 
 ########################################################################
-class AlgoWidget(QtWidgets.QWidget):
+class AlgoWidget(QtWidgets.QFrame):
     """算法启动组件"""
     
     #----------------------------------------------------------------------
@@ -22,6 +22,7 @@ class AlgoWidget(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
+        self.setFrameShape(self.Box)
         algoLayout = self.initAlgoLayout()
         
         buttonStart = QtWidgets.QPushButton(u'启动算法')

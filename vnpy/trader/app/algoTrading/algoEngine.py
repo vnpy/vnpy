@@ -4,6 +4,8 @@
 '''
 
 from __future__ import division
+import os
+import importlib
 
 from vnpy.event import Event
 from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE
@@ -13,30 +15,24 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY)
 from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 
+
 from .twapAlgo import TwapAlgo
 from .dmaAlgo import DmaAlgo
 from .stopAlgo import StopAlgo
 from .stAlgo import StAlgo
+from .mmAlgo import MmAlgo
+
+
 
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
 EVENT_ALGO_PARAM = 'eAlgoParam'     # 算法参数事件
 EVENT_ALGO_VAR = 'eAlgoVar'         # 算法变量事件
 EVENT_ALGO_SETTING = 'eAlgoSetting' # 算法配置事件
 
-
 ALGOTRADING_DB_NAME = 'VnTrader_AlgoTrading_Db'     # AlgoTrading数据库名
 
 SETTING_COLLECTION_NAME = 'AlgoSetting'             # 算法配置集合名
 HISTORY_COLLECTION_NAME = 'AlgoHistory'             # 算法历史集合名
-
-
-ALGO_DICT = {
-    TwapAlgo.templateName: TwapAlgo,
-    DmaAlgo.templateName: DmaAlgo,
-    StopAlgo.templateName: StopAlgo,
-    StAlgo.templateName: StAlgo
-}
-
 
 
 ########################################################################
@@ -285,7 +281,6 @@ class AlgoEngine(object):
             return            
         
         return contract
-        
     
     #----------------------------------------------------------------------
     def saveAlgoSetting(self, algoSetting):
@@ -334,3 +329,31 @@ class AlgoEngine(object):
         event.dict_['data'] = algoSetting
         self.eventEngine.put(event)
 
+
+# 加载目录下的算法模板
+ALGO_DICT = {}
+WIDGET_DICT = {}
+
+path = os.path.abspath(os.path.dirname(__file__))
+
+for root, subdirs, files in os.walk(path):
+    for name in files:
+        # 只有文件名以Algo.py结尾的才是算法文件
+        if len(name)>7 and name[-7:] == 'Algo.py':
+            # 模块名称需要模块路径前缀
+            moduleName = 'vnpy.trader.app.algoTrading.' + name.replace('.py', '')
+            module = importlib.import_module(moduleName)
+            
+            # 获取算法类和控件类
+            for k in dir(module):
+                # 以Algo结尾的类，是算法
+                if k[-4:] == 'Algo':
+                    algo = module.__getattribute__(k)
+                
+                # 以Widget结尾的类，是控件
+                if k[-6:] == 'Widget':
+                    widget = module.__getattribute__(k)
+            
+            # 保存到字典中
+            ALGO_DICT[algo.templateName] = algo
+            WIDGET_DICT[algo.templateName] = widget

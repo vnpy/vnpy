@@ -166,6 +166,7 @@ class AlgoTemplate(object):
     #----------------------------------------------------------------------
     def putVarEvent(self, d):
         """更新变量"""
+        d['active'] = self.active
         self.engine.putVarEvent(self, d)
         
     #----------------------------------------------------------------------
