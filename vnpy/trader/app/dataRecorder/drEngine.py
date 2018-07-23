@@ -175,7 +175,10 @@ class DrEngine(object):
         
         # 生成datetime对象
         if not tick.datetime:
-            tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
+            if '.' in tick.time:
+                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            else:
+                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S')
 
         self.onTick(tick)
         

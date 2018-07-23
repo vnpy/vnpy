@@ -149,17 +149,17 @@ if __name__ == '__main__':
     rest.start(1)
 
 
-    def on_btc_tick(jsonObj, reqid):
+    def onBtcTick(jsonObj, reqid):
         print('on_btc_tick : \n{}'.format(jsonObj))
         pass
 
 
-    def on_account_info(jsonObj, reqid):
+    def onAccountInfo(jsonObj, reqid):
         print('on_account_info : \n{}'.format(jsonObj))
         pass
 
 
-    rest.addReq('POST', '/public/ticker/BTC', on_btc_tick)
-    rest.addReq('POST', '/info/account', on_account_info, postdict={'currency': 'BTC'})
+    rest.addReq('POST', '/public/ticker/BTC', onBtcTick)
+    rest.addReq('POST', '/info/account', onAccountInfo, postdict={'currency': 'BTC'})
 
     raw_input()
