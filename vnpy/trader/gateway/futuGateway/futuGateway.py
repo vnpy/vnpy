@@ -67,13 +67,13 @@ class FutuGateway(VtGateway):
         self.ip = 0
         self.market = ''
         self.password = ''
-        self.env = 1        # 默认仿真交易
+        self.env = TrdEnv.SIMULATE  # 默认仿真交易
         
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
         
         self.tickDict = {}
-        self.tradeSet = set()      # 保存成交编号的集合，防止重复推送
+        self.tradeSet = set()       # 保存成交编号的集合，防止重复推送
         
         self.qryEnabled = True
         self.qryThread = Thread(target=self.qryData)
@@ -283,7 +283,7 @@ class FutuGateway(VtGateway):
                 contract.name = row['name']
                 contract.productClass = vtProductClass
                 contract.size = int(row['lot_size'])
-                contract.priceTick = 0.01
+                contract.priceTick = 0.001
                 
                 self.onContract(contract)
         
@@ -328,10 +328,10 @@ class FutuGateway(VtGateway):
             pos.direction = DIRECTION_LONG
             pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
             
-            pos.position = int(row['qty'])
+            pos.position = float(row['qty'])
             pos.price = float(row['cost_price'])
             pos.positionProfit = float(row['pl_val'])
-            pos.frozen = int(row['qty']) - int(row['can_sell_qty'])
+            pos.frozen = float(row['qty']) - float(row['can_sell_qty'])
             
             if pos.price < 0: pos.price = 0 
             if pos.positionProfit > 100000000: pos.positionProfit = 0 
@@ -491,8 +491,8 @@ class FutuGateway(VtGateway):
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             
             order.price = float(row['price'])
-            order.totalVolume = int(row['qty'])
-            order.tradedVolume = int(row['dealt_qty'])
+            order.totalVolume = float(row['qty'])
+            order.tradedVolume = float(row['dealt_qty'])
             order.orderTime = row['create_time'].split(' ')[-1]      
 
             order.status = statusMapReverse.get(row['order_status'], STATUS_UNKNOWN)
