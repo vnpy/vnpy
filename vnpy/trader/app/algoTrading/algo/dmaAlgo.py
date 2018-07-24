@@ -8,9 +8,8 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     PRICETYPE_LIMITPRICE, PRICETYPE_MARKETPRICE,
                                     STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED)
 from vnpy.trader.uiQt import QtWidgets
-
-from .algoTemplate import AlgoTemplate
-from .uiAlgoWidget import AlgoWidget, QtWidgets
+from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
+from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 
 from six import text_type
 

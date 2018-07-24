@@ -15,13 +15,7 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY)
 from vnpy.trader.vtObject import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 
-
-from .twapAlgo import TwapAlgo
-from .dmaAlgo import DmaAlgo
-from .stopAlgo import StopAlgo
-from .stAlgo import StAlgo
-from .mmAlgo import MmAlgo
-
+from .algo import ALGO_DICT
 
 
 EVENT_ALGO_LOG = 'eAlgoLog'         # 算法日志事件
@@ -328,32 +322,3 @@ class AlgoEngine(object):
         event = Event(EVENT_ALGO_SETTING)
         event.dict_['data'] = algoSetting
         self.eventEngine.put(event)
-
-
-# 加载目录下的算法模板
-ALGO_DICT = {}
-WIDGET_DICT = {}
-
-path = os.path.abspath(os.path.dirname(__file__))
-
-for root, subdirs, files in os.walk(path):
-    for name in files:
-        # 只有文件名以Algo.py结尾的才是算法文件
-        if len(name)>7 and name[-7:] == 'Algo.py':
-            # 模块名称需要模块路径前缀
-            moduleName = 'vnpy.trader.app.algoTrading.' + name.replace('.py', '')
-            module = importlib.import_module(moduleName)
-            
-            # 获取算法类和控件类
-            for k in dir(module):
-                # 以Algo结尾的类，是算法
-                if k[-4:] == 'Algo':
-                    algo = module.__getattribute__(k)
-                
-                # 以Widget结尾的类，是控件
-                if k[-6:] == 'Widget':
-                    widget = module.__getattribute__(k)
-            
-            # 保存到字典中
-            ALGO_DICT[algo.templateName] = algo
-            WIDGET_DICT[algo.templateName] = widget

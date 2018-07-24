@@ -10,8 +10,9 @@ from vnpy.event import Event
 from vnpy.trader.uiQt import QtCore, QtWidgets
 
 from .algoEngine import (EVENT_ALGO_LOG, EVENT_ALGO_PARAM, 
-                         EVENT_ALGO_VAR, EVENT_ALGO_SETTING,
-                         WIDGET_DICT)
+                         EVENT_ALGO_VAR, EVENT_ALGO_SETTING)
+from .algo import WIDGET_DICT
+
 
 
 ########################################################################

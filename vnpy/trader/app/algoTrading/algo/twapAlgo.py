@@ -7,9 +7,8 @@ from six import text_type
 
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT)
 from vnpy.trader.uiQt import QtWidgets
-
-from .algoTemplate import AlgoTemplate
-from .uiAlgoWidget import AlgoWidget, QtWidgets
+from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
+from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 
 
 ########################################################################

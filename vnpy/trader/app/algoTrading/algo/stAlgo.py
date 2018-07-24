@@ -6,9 +6,8 @@ from collections import OrderedDict
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE)
 from vnpy.trader.uiQt import QtWidgets
-
-from .algoTemplate import AlgoTemplate
-from .uiAlgoWidget import AlgoWidget, QtWidgets
+from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
+from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 
 
 
