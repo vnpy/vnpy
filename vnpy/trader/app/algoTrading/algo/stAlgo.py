@@ -15,7 +15,7 @@ from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 class StAlgo(AlgoTemplate):
     """自成交算法（self trade），用于刷成交量"""
     
-    templateName = 'ST'
+    templateName = u'SelfTrade 刷单'
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):

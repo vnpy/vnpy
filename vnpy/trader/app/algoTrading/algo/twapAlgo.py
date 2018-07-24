@@ -15,7 +15,7 @@ from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 class TwapAlgo(AlgoTemplate):
     """TWAP算法"""
     
-    templateName = 'TWAP'
+    templateName = u'TWAP 时间加权平均'
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):
