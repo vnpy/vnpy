@@ -19,7 +19,7 @@ STATUS_FINISHED = set([STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED])
 
 ########################################################################
 class IcebergAlgo(AlgoTemplate):
-    """冰山算法"""
+    """冰山算法，可用于护盘"""
     
     templateName = u'Iceberg 冰山'
 
@@ -34,8 +34,10 @@ class IcebergAlgo(AlgoTemplate):
         self.price = float(setting['price'])                # 价格
         self.volume = float(setting['volume'])              # 数量
         self.display = float(setting['display'])            # 挂出数量
+        self.interval = text_type(setting['interval'])      # 间隔
         self.offset = text_type(setting['offset'])          # 开平
         
+        self.count = 0          # 执行计数
         self.vtOrderID = ''     # 委托号
         self.tradedVolume = 0   # 成交数量
         
@@ -70,6 +72,13 @@ class IcebergAlgo(AlgoTemplate):
     #----------------------------------------------------------------------
     def onTimer(self):
         """"""
+        self.count += 1
+        if self.count < self.interval:
+            self.varEvent()
+            return
+        
+        self.count = 0
+        
         if not self.vtOrderID:
             orderVolume = self.volume - self.tradedVolume
             orderVolume = min(orderVolume, self.display)
@@ -81,7 +90,7 @@ class IcebergAlgo(AlgoTemplate):
                 self.vtOrderID = self.sell(self.vtSymbol, self.price,
                                            orderVolume, offset=self.offset)
             
-            self.varEvent()
+        self.varEvent()
         
     #----------------------------------------------------------------------
     def onStop(self):
@@ -94,6 +103,7 @@ class IcebergAlgo(AlgoTemplate):
         """更新变量"""
         d = OrderedDict()
         d[u'算法状态'] = self.active
+        d[u'运行读秒'] = self.count
         d[u'委托号'] = self.vtOrderID
         d[u'成交数量'] = self.tradedVolume
         self.putVarEvent(d)
@@ -107,6 +117,7 @@ class IcebergAlgo(AlgoTemplate):
         d[u'价格'] = self.price
         d[u'数量'] = self.volume
         d[u'挂出数量'] = self.display
+        d[u'运行间隔'] = self.interval
         d[u'开平'] = self.offset
         self.putParamEvent(d)
 
@@ -135,6 +146,9 @@ class IcebergWidget(AlgoWidget):
         doubleValidator = QtGui.QDoubleValidator()
         doubleValidator.setBottom(0)
         
+        intValidator = QtGui.QIntValidator()
+        intValidator.setBottom(1)        
+        
         self.linePrice = QtWidgets.QLineEdit()
         self.linePrice.setValidator(doubleValidator)
         
@@ -142,7 +156,10 @@ class IcebergWidget(AlgoWidget):
         self.lineVolume.setValidator(doubleValidator)
         
         self.lineDisplay = QtWidgets.QLineEdit()
-        self.lineDisplay.setValidator(doubleValidator)        
+        self.lineDisplay.setValidator(doubleValidator)  
+        
+        self.lineInterval = QtWidgets.QLineEdit()
+        self.lineInterval.setValidator(intValidator)
         
         self.comboOffset = QtWidgets.QComboBox()
         self.comboOffset.addItems(['', OFFSET_OPEN, OFFSET_CLOSE])
@@ -164,9 +181,11 @@ class IcebergWidget(AlgoWidget):
         grid.addWidget(Label(u'数量'), 3, 0)
         grid.addWidget(self.lineVolume, 3, 1)
         grid.addWidget(Label(u'挂出数量'), 4, 0)
-        grid.addWidget(self.lineDisplay, 4, 1)        
-        grid.addWidget(Label(u'开平'), 5, 0)
-        grid.addWidget(self.comboOffset, 5, 1)
+        grid.addWidget(self.lineDisplay, 4, 1)     
+        grid.addWidget(Label(u'运行间隔'), 5, 0)
+        grid.addWidget(self.lineInterval, 5, 1)     
+        grid.addWidget(Label(u'开平'), 6, 0)
+        grid.addWidget(self.comboOffset, 6, 1)
         
         return grid
     
@@ -193,6 +212,11 @@ class IcebergWidget(AlgoWidget):
         if not displayText:
             return
         setting['display'] = float(displayText)        
+        
+        intervalText = self.lineInterval.text()
+        if not intervalText:
+            return
+        setting['interval'] = int(intervalText)
         
         return setting
     
