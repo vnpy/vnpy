@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 '''
+算法交易引擎
 '''
 
 from __future__ import division
@@ -8,6 +9,7 @@ import os
 import importlib
 
 from vnpy.event import Event
+from vnpy.rpc import RpcServer
 from vnpy.trader.vtEvent import EVENT_TIMER, EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT, 
                                     PRICETYPE_LIMITPRICE, PRICETYPE_MARKETPRICE,
@@ -38,6 +40,7 @@ class AlgoEngine(object):
         """"""
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
+        self.rpcServer = None
         
         self.algoDict = {}          # algoName:algo
         self.orderAlgoDict = {}     # vtOrderID:algo
@@ -58,7 +61,8 @@ class AlgoEngine(object):
     #----------------------------------------------------------------------
     def stop(self):
         """停止"""
-        pass
+        if self.rpcServer:
+            self.rpcServer.stop()
     
     #----------------------------------------------------------------------
     def processTickEvent(self, event):
@@ -322,3 +326,32 @@ class AlgoEngine(object):
         event = Event(EVENT_ALGO_SETTING)
         event.dict_['data'] = algoSetting
         self.eventEngine.put(event)
+    
+    #----------------------------------------------------------------------
+    def startRpc(self, repPort, pubPort):
+        """启动RPC服务"""
+        if self.rpcServer:
+            return
+        
+        self.rpcServer = AlgoRpcServer(self, repPort, pubPort)
+        self.rpcServer.start()
+        self.writeLog(u'算法交易RPC服务启动成功，REP端口:%s，PUB端口:%s' %(repPort, pubPort))
+
+
+########################################################################
+class AlgoRpcServer(RpcServer):
+    """算法交易RPC服务器"""
+    
+    #----------------------------------------------------------------------
+    def __init__(self, engine, repPort, pubPort):
+        """Constructor"""
+        self.engine = engine
+        repAddress = 'tcp://*:%s' %repPort
+        pubAddress = 'tcp://*:%s' %pubPort
+        
+        super(AlgoRpcServer, self).__init__(repAddress, pubAddress)
+        
+        self.register(self.engine.addAlgo)
+        self.register(self.engine.stopAlgo)
+        self.register(self.engine.stopAll)
+    

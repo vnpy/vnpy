@@ -397,17 +397,17 @@ class AlgoManager(QtWidgets.QWidget):
         """"""
         self.setWindowTitle(u'算法交易')
         
-        buttonWidth = 400
-        buttonHeight = 60        
+        #buttonWidth = 400
+        #buttonHeight = 60        
         
         self.comboTemplate = QtWidgets.QComboBox()
-        self.comboTemplate.setMaximumWidth(buttonWidth)
+        #self.comboTemplate.setMaximumWidth(buttonWidth)
         self.comboTemplate.currentIndexChanged.connect(self.changeWidget)
         
         vbox = QtWidgets.QVBoxLayout()
         for templateName, widgetClass in WIDGET_DICT.items():
             widget = widgetClass(self.algoEngine)
-            widget.setMaximumWidth(buttonWidth)
+            #widget.setMaximumWidth(buttonWidth)
             widget.hide()
             vbox.addWidget(widget)
             
@@ -415,18 +415,21 @@ class AlgoManager(QtWidgets.QWidget):
             self.comboTemplate.addItem(templateName)
         
         self.buttonStop = StopButton(self.algoEngine)
-        self.buttonStop.setMaximumWidth(buttonWidth)
-        self.buttonStop.setFixedHeight(buttonHeight)
         
         self.buttonAddAlgo = QtWidgets.QPushButton(u'启动篮子算法')
         self.buttonAddAlgo.setStyleSheet("color:white;background-color:green")
         self.buttonAddAlgo.clicked.connect(self.addAlgoFromCsv)
-        self.buttonAddAlgo.setFixedHeight(buttonHeight)
         
         self.buttonSaveSetting = QtWidgets.QPushButton(u'加载算法配置')
         self.buttonSaveSetting.setStyleSheet("color:white;background-color:blue")
         self.buttonSaveSetting.clicked.connect(self.saveSettingFromCsv)
-        self.buttonSaveSetting.setFixedHeight(buttonHeight)
+        
+        self.lineRepPort = QtWidgets.QLineEdit('8899')
+        self.linePubPort = QtWidgets.QLineEdit('9988')
+        
+        self.buttonStartRpc = QtWidgets.QPushButton(u'启动RPC服务')
+        self.buttonStartRpc.setStyleSheet("color:black;background-color:orange")
+        self.buttonStartRpc.clicked.connect(self.startRpc)
         
         label = QtWidgets.QLabel(u'算法类型')
         label.setFixedWidth(100)
@@ -435,6 +438,12 @@ class AlgoManager(QtWidgets.QWidget):
         hbox.addWidget(label)
         hbox.addWidget(self.comboTemplate)
         
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(QtWidgets.QLabel(u'REP端口'), 0, 0)
+        grid.addWidget(self.lineRepPort, 0, 1)
+        grid.addWidget(QtWidgets.QLabel(u'PUB端口'), 1, 0)
+        grid.addWidget(self.linePubPort, 1, 1)
+        
         vbox1 = QtWidgets.QVBoxLayout()
         vbox1.addLayout(hbox)
         vbox1.addLayout(vbox)
@@ -442,8 +451,13 @@ class AlgoManager(QtWidgets.QWidget):
         vbox1.addWidget(self.buttonStop)
         vbox1.addWidget(self.buttonAddAlgo)
         vbox1.addWidget(self.buttonSaveSetting)
+        vbox1.addStretch()
+        vbox1.addLayout(grid)
+        vbox1.addWidget(self.buttonStartRpc)
         
         workingMonitor = AlgoStatusMonitor(self.algoEngine, AlgoStatusMonitor.MODE_WORKING)
+        workingMonitor.setFixedWidth(1500)
+        
         historyMonitor = AlgoStatusMonitor(self.algoEngine, AlgoStatusMonitor.MODE_HISTORY)
         logMonitor = AlgoLogMonitor(self.algoEngine)        
         settingMonitor = AlgoSettingMonitor(self.algoEngine)
@@ -526,3 +540,22 @@ class AlgoManager(QtWidgets.QWidget):
         l = self.loadCsv(path)
         for setting in l:
             self.algoEngine.addAlgo(setting)
+    
+    #----------------------------------------------------------------------
+    def startRpc(self):
+        """启动算法服务"""
+        try:
+            repPort = int(self.lineRepPort.text())
+            pubPort = int(self.linePubPort.text())
+        except:
+            self.algoEngine.writeLog(u'请检查RPC端口，只能使用整数')
+            return
+        
+        self.algoEngine.startRpc(repPort, pubPort)
+    
+    #----------------------------------------------------------------------
+    def show(self):
+        """"""
+        self.showMaximized()
+        
+        
