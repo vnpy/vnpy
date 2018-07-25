@@ -228,6 +228,10 @@ class AlgoEngine(object):
         event.dict_['data'] = d
         self.eventEngine.put(event)
         
+        # RPC推送
+        if self.rpcServer:
+            self.rpcServer.publish('AlgoTrading', event)
+        
         # 保存数据到数据库
         history = self.historyDict.setdefault(algoName, {})
         history['algoName'] = algoName
@@ -238,7 +242,8 @@ class AlgoEngine(object):
                                  history,
                                  {'algoName': algoName},
                                  True)
-    
+        
+        
     #----------------------------------------------------------------------
     def putParamEvent(self, algo, d):
         """更新参数"""
@@ -248,6 +253,10 @@ class AlgoEngine(object):
         event = Event(EVENT_ALGO_PARAM)
         event.dict_['data'] = d
         self.eventEngine.put(event)    
+        
+        # RPC推送
+        if self.rpcServer:
+            self.rpcServer.publish('AlgoTrading', event)        
         
         # 保存数据到数据库
         history = self.historyDict.setdefault(algoName, {})
