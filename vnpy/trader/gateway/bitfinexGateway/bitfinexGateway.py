@@ -459,23 +459,15 @@ class GatewayApi(BitfinexApi):
     def onWallet(self, data):
         """"""
         if str(data[0]) == 'exchange':
-            pos = VtPositionData()
-            pos.gatewayName = self.gatewayName
+            account = VtAccountData()
+            account.gatewayName = self.gatewayName
             
-            pos.symbol = str(data[1])
-            pos.exchange = EXCHANGE_BITFINEX
-            pos.vtSymbol = '.'.join([pos.vtSymbol, pos.direction])
-            pos.direction = DIRECTION_LONG
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-            pos.position = float(data[2])
+            account.accountID = str(data[1])
+            account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+            account.balance = float(data[2])
+            account.available = float(data[-1])
             
-            if data[-1] is None:
-                pos.frozen = 0
-            else:
-                pos.frozen = pos.position - float(data[-1])
-            
-            self.currencys.append(pos.symbol)
-            self.gateway.onPosition(pos) 
+            self.gateway.onAccount(account)            
     
     #----------------------------------------------------------------------
     def onOrder(self, data):

@@ -105,7 +105,7 @@ class BigoneGateway(VtGateway):
             # 需要循环的查询函数列表
             self.qryFunctionList = [self.restApi.qryTickers,
                                     self.restApi.qryDepth,
-                                    self.restApi.qryPosition,
+                                    self.restApi.qryAccount,
                                     self.restApi.qryOrder]
             
             self.qryCount = 0           # 查询触发倒计时
@@ -266,9 +266,9 @@ class RestApi(BigoneRestApi):
         self.addReq('GET', '/viewer/orders', self.onQryOrder, params=req)
     
     #----------------------------------------------------------------------
-    def qryPosition(self):
+    def qryAccount(self):
         """"""
-        self.addReq('GET', '/viewer/accounts', self.onQryPosition)
+        self.addReq('GET', '/viewer/accounts', self.onQryAccount)
         
     #----------------------------------------------------------------------
     def onSendOrder(self, data, reqid):
@@ -383,24 +383,21 @@ class RestApi(BigoneRestApi):
                 self.gateway.onTrade(trade)
 
     #----------------------------------------------------------------------
-    def onQryPosition(self, data, reqid):
+    def onQryAccount(self, data, reqid):
         """"""
-        if self.checkError(u'查询持仓', data):
+        if self.checkError(u'查询资金', data):
             return
         
         for d in data['data']:
-            pos = VtPositionData()
-            pos.gatewayName = self.gatewayName
+            account = VtAccountData()
+            account.gatewayName = self.gatewayName
             
-            pos.symbol = d['asset_id']
-            pos.exchange = EXCHANGE_BIGONE
-            pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
-            pos.direction = DIRECTION_NET
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-            pos.position = float(d['balance'])
-            pos.frozen = float(d['locked_balance'])
+            account.accountID = d['asset_id']
+            account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+            account.balance = float(d['balance'])
+            account.available = account.balance - float(d['locked_balance'])
             
-            self.gateway.onPosition(pos)        
+            self.gateway.onAccount(account)
     
     #----------------------------------------------------------------------
     def onQryContract(self, data, reqid):

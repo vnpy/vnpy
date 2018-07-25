@@ -504,30 +504,26 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetAccountBalance(self, data, reqid):
         """查询余额回调"""
-        posDict = {}
-
+        accountDict = {}
+        
         for d in data['list']:
-            symbol = d['currency']
-            pos = posDict.get(symbol, None)
+            currency = d['currency']
+            account = accountDict.get(currency, None)
 
-            if not pos:
-                pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
-                pos.symbol = d['currency']
-                pos.exchange = EXCHANGE_HUOBI
-                pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
-                pos.direction = DIRECTION_LONG
-                pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-
-            pos.position += float(d['balance'])
+            if not account:
+                account = VtAccountData()
+                account.gatewayName = self.gatewayName
+                account.accountID = d['currency']
+                account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+                
+                accountDict[currency] = account
+                
+            account.balance += float(d['balance'])
             if d['type'] == 'fozen':
-                pos.frozen = float(d['balance'])
+                account.available = account.balance - float(d['balance'])
 
-            posDict[symbol] = pos
-
-        for pos in posDict.values():
-            if pos.position:
-                self.gateway.onPosition(pos)
+        for account in accountDict.values():
+            self.gateway.onAccount(account)
 
     #----------------------------------------------------------------------
     def onGetOrders(self, data, reqid):

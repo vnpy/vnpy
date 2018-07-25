@@ -392,19 +392,15 @@ class SpotApi(OkexSpotApi):
             available = float(free[symbol])
             
             if frozen or available:
-                pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
+                account = VtAccountData()
+                account.gatewayName = self.gatewayName
                 
-                pos.symbol = symbol
-                pos.exchange = EXCHANGE_OKEX
-                pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
-                pos.direction = DIRECTION_LONG
-                pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+                account.accountID = symbol
+                account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+                account.balance = frozen + available
+                account.available = available
                 
-                pos.frozen = frozen
-                pos.position = frozen + available
-                    
-                self.gateway.onPosition(pos)
+                self.gateway.onAccount(account)                      
         
         self.writeLog(u'持仓信息查询成功')
         
@@ -530,18 +526,16 @@ class SpotApi(OkexSpotApi):
         free = rawData['info']['free']
         freezed = rawData['info']['freezed']
         
-        for symbol in free.keys():
-            pos = VtPositionData()
-            pos.gatewayName = self.gatewayName
-            pos.symbol = symbol
-            pos.exchange = EXCHANGE_OKEX
-            pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
-            pos.direction = DIRECTION_LONG
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-            pos.frozen = float(freezed[symbol])
-            pos.position = pos.frozen + float(free[symbol])
-
-            self.gateway.onPosition(pos)
+        for symbol in free.keys():            
+            account = VtAccountData()
+            account.gatewayName = self.gatewayName
+            
+            account.accountID = symbol
+            account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+            account.available = float(free[symbol])
+            account.balance = account.available + float(freezed[symbol])
+            
+            self.gateway.onAccount(account)                   
     
     #----------------------------------------------------------------------
     def init(self, apiKey, secretKey, trace, symbols):

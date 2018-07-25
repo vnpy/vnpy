@@ -405,18 +405,15 @@ class RestApi(FcoinRestApi):
     def onQryPosition(self, data, reqid):
         """"""
         for d in data['data']:
-            pos = VtPositionData()
-            pos.gatewayName = self.gatewayName
+            account = VtAccountData()
+            account.gatewayName = self.gatewayName
             
-            pos.symbol = d['currency']
-            pos.exchange = EXCHANGE_FCOIN
-            pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
-            pos.direction = DIRECTION_NET
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
-            pos.position = d['balance']
-            pos.frozen = d['frozen']
+            account.accountID = d['currency']
+            account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+            account.balance = float(d['balance'])
+            account.available = account.balance - float(d['frozen'])
             
-            self.gateway.onPosition(pos)        
+            self.gateway.onAccount(account)            
     
     #----------------------------------------------------------------------
     def onQryContract(self, data, reqid):

@@ -285,17 +285,15 @@ class GatewayApi(BinanceApi):
             free = float(d['free'])
             locked = float(d['locked'])
             
-            if free or locked:
-                pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
-                pos.symbol = d['asset']
-                pos.exchange = EXCHANGE_BINANCE
-                pos.vtSymbol = '.'.join([pos.vtSymbol, pos.direction])
-                pos.direction = DIRECTION_LONG
-                pos.vtPositionName = '.'.join([pos.symbol, pos.direction])
-                pos.frozen = locked
-                pos.position = free + locked
-                self.gateway.onPosition(pos)
+            account = VtAccountData()
+            account.gatewayName = self.gatewayName
+            
+            account.accountID = d['asset']
+            account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+            account.balance = free + locked
+            account.available = free
+            
+            self.gateway.onAccount(account)
         
     #----------------------------------------------------------------------
     def onQueryMyTrades(self, data, reqid):
@@ -334,18 +332,16 @@ class GatewayApi(BinanceApi):
             free = float(d['f'])
             locked = float(d['l'])
             
-            if free or locked:
-                pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
-                pos.symbol = d['a']
-                pos.exchange = EXCHANGE_BINANCE
-                pos.vtSymbol = '.'.join([pos.vtSymbol, pos.direction])
-                pos.direction = DIRECTION_LONG
-                pos.vtPositionName = '.'.join([pos.symbol, pos.direction])
-                pos.frozen = locked
-                pos.position = free + locked
-                self.gateway.onPosition(pos)            
-    
+            account = VtAccountData()
+            account.gatewayName = self.gatewayName
+            
+            account.accountID = d['a']
+            account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
+            account.balance = free + locked
+            account.available = free
+            
+            self.gateway.onAccount(account)
+
     #----------------------------------------------------------------------
     def onPushOrder(self, d):
         """"""
