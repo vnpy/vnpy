@@ -30,6 +30,9 @@ class BasicCell(QtWidgets.QTableWidgetItem):
         """Constructor"""
         super(BasicCell, self).__init__()
         self.data = None
+        
+        self.setTextAlignment(QtCore.Qt.AlignCenter)
+        
         if text:
             self.setContent(text)
     
@@ -43,17 +46,14 @@ class BasicCell(QtWidgets.QTableWidgetItem):
 
 
 ########################################################################
-class NumCell(QtWidgets.QTableWidgetItem):
+class NumCell(BasicCell):
     """用来显示数字的单元格"""
 
     #----------------------------------------------------------------------
     def __init__(self, text=None, mainEngine=None):
         """Constructor"""
-        super(NumCell, self).__init__()
-        self.data = None
-        if text:
-            self.setContent(text)
-    
+        super(NumCell, self).__init__(text)
+        
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
@@ -68,16 +68,13 @@ class NumCell(QtWidgets.QTableWidgetItem):
             
 
 ########################################################################
-class DirectionCell(QtWidgets.QTableWidgetItem):
+class DirectionCell(BasicCell):
     """用来显示买卖方向的单元格"""
 
     #----------------------------------------------------------------------
     def __init__(self, text=None, mainEngine=None):
         """Constructor"""
-        super(DirectionCell, self).__init__()
-        self.data = None
-        if text:
-            self.setContent(text)
+        super(DirectionCell, self).__init__(text)
         
     #----------------------------------------------------------------------
     def setContent(self, text):
@@ -90,7 +87,7 @@ class DirectionCell(QtWidgets.QTableWidgetItem):
 
 
 ########################################################################
-class NameCell(QtWidgets.QTableWidgetItem):
+class NameCell(BasicCell):
     """用来显示合约中文的单元格"""
 
     #----------------------------------------------------------------------
@@ -117,21 +114,17 @@ class NameCell(QtWidgets.QTableWidgetItem):
 
 
 ########################################################################
-class BidCell(QtWidgets.QTableWidgetItem):
+class BidCell(BasicCell):
     """买价单元格"""
 
     #----------------------------------------------------------------------
     def __init__(self, text=None, mainEngine=None):
         """Constructor"""
-        super(BidCell, self).__init__()
-        self.data = None
-
+        super(BidCell, self).__init__(text)
+        
         self.setForeground(QtGui.QColor('black'))
         self.setBackground(QtGui.QColor(255,174,201))
         
-        if text:
-            self.setContent(text)
-    
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
@@ -139,21 +132,17 @@ class BidCell(QtWidgets.QTableWidgetItem):
 
 
 ########################################################################
-class AskCell(QtWidgets.QTableWidgetItem):
+class AskCell(BasicCell):
     """卖价单元格"""
 
     #----------------------------------------------------------------------
     def __init__(self, text=None, mainEngine=None):
         """Constructor"""
-        super(AskCell, self).__init__()
-        self.data = None
-
+        super(AskCell, self).__init__(text)
+        
         self.setForeground(QtGui.QColor('black'))
         self.setBackground(QtGui.QColor(160,255,160))
         
-        if text:
-            self.setContent(text)
-    
     #----------------------------------------------------------------------
     def setContent(self, text):
         """设置内容"""
@@ -161,7 +150,7 @@ class AskCell(QtWidgets.QTableWidgetItem):
 
 
 ########################################################################
-class PnlCell(QtWidgets.QTableWidgetItem):
+class PnlCell(BasicCell):
     """显示盈亏的单元格"""
 
     #----------------------------------------------------------------------
@@ -232,6 +221,9 @@ class BasicMonitor(QtWidgets.QTableWidget):
         # 默认不允许根据表头进行排序，需要的组件可以开启
         self.sorting = False
         
+        # 默认表头可调整
+        self.resizeMode = QtWidgets.QHeaderView.Interactive
+        
         # 初始化右键菜单
         self.initMenu()
         
@@ -283,6 +275,9 @@ class BasicMonitor(QtWidgets.QTableWidget):
         
         # 设置允许排序
         self.setSortingEnabled(self.sorting)
+        
+        # 设为表头拉伸
+        self.horizontalHeader().setSectionResizeMode(self.resizeMode)
 
     #----------------------------------------------------------------------
     def registerEvent(self):
@@ -350,10 +345,10 @@ class BasicMonitor(QtWidgets.QTableWidget):
 
                 self.setItem(0, n, cell)                        
                 
-        # 调整列宽
-        if not self.columnResized:
-            self.resizeColumns()
-            self.columnResized = True
+        ## 调整列宽
+        #if not self.columnResized:
+            #self.resizeColumns()
+            #self.columnResized = True
         
         # 重新打开排序
         if self.sorting:
@@ -368,6 +363,11 @@ class BasicMonitor(QtWidgets.QTableWidget):
     def setSorting(self, sorting):
         """设置是否允许根据表头排序"""
         self.sorting = sorting
+    
+    #----------------------------------------------------------------------
+    def setResizeMode(self, mode):
+        """"""
+        self.resizeMode = mode
         
     #----------------------------------------------------------------------
     def saveToCsv(self):
@@ -433,6 +433,7 @@ class MarketMonitor(BasicMonitor):
         
         # 设置表头有序字典
         d = OrderedDict()
+        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
         d['lastPrice'] = {'chinese':vtText.LAST_PRICE, 'cellType':BasicCell}
         d['volume'] = {'chinese':vtText.VOLUME, 'cellType':BasicCell}
@@ -444,26 +445,18 @@ class MarketMonitor(BasicMonitor):
         d['askPrice1'] = {'chinese':vtText.ASK_PRICE_1, 'cellType':AskCell}
         d['askVolume1'] = {'chinese':vtText.ASK_VOLUME_1, 'cellType':AskCell}
         d['time'] = {'chinese':vtText.TIME, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
-        # 设置数据键
         self.setDataKey('vtSymbol')
-        
-        # 设置监控事件类型
         self.setEventType(EVENT_TICK)
-        
-        # 设置字体
         self.setFont(BASIC_FONT)
-        
-        # 设置排序
         self.setSorting(False)
+        self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
-        # 初始化表格
         self.initTable()
-        
-        # 注册事件监听
         self.registerEvent()
+        
+        self.setFixedHeight(400)
 
 
 ########################################################################
@@ -477,9 +470,9 @@ class LogMonitor(BasicMonitor):
         super(LogMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()        
+        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         d['logTime'] = {'chinese':vtText.TIME, 'cellType':BasicCell}
         d['logContent'] = {'chinese':vtText.CONTENT, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_LOG)
@@ -489,6 +482,9 @@ class LogMonitor(BasicMonitor):
         
         self.signalError.connect(self.processErrorEvent)
         self.eventEngine.register(EVENT_ERROR, self.signalError.emit)
+        
+        self.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        self.setFixedHeight(200)
     
     #----------------------------------------------------------------------
     def processErrorEvent(self, event):
@@ -516,6 +512,7 @@ class TradeMonitor(BasicMonitor):
         super(TradeMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
+        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         d['tradeID'] = {'chinese':vtText.TRADE_ID, 'cellType':NumCell}
         d['orderID'] = {'chinese':vtText.ORDER_ID, 'cellType':NumCell}
         d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
@@ -523,16 +520,18 @@ class TradeMonitor(BasicMonitor):
         d['price'] = {'chinese':vtText.PRICE, 'cellType':BasicCell}
         d['volume'] = {'chinese':vtText.VOLUME, 'cellType':BasicCell}
         d['tradeTime'] = {'chinese':vtText.TRADE_TIME, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setEventType(EVENT_TRADE)
         self.setFont(BASIC_FONT)
         self.setSorting(True)
+        self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
         self.registerEvent()
 
+        self.setFixedHeight(200)
+        
 
 ########################################################################
 class OrderMonitor(BasicMonitor):
@@ -546,6 +545,7 @@ class OrderMonitor(BasicMonitor):
         self.mainEngine = mainEngine
         
         d = OrderedDict()
+        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         d['orderID'] = {'chinese':vtText.ORDER_ID, 'cellType':NumCell}
         d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
         d['direction'] = {'chinese':vtText.DIRECTION, 'cellType':DirectionCell}
@@ -554,7 +554,6 @@ class OrderMonitor(BasicMonitor):
         d['tradedVolume'] = {'chinese':vtText.TRADED_VOLUME, 'cellType':BasicCell}
         d['status'] = {'chinese':vtText.ORDER_STATUS, 'cellType':BasicCell}
         d['orderTime'] = {'chinese':vtText.ORDER_TIME, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtOrderID')
@@ -562,6 +561,7 @@ class OrderMonitor(BasicMonitor):
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
         self.setSorting(True)
+        self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
         self.registerEvent()
@@ -596,18 +596,19 @@ class PositionMonitor(BasicMonitor):
         super(PositionMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
+        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         d['symbol'] = {'chinese':vtText.CONTRACT_SYMBOL, 'cellType':BasicCell}
         d['direction'] = {'chinese':vtText.DIRECTION, 'cellType':DirectionCell}
         d['position'] = {'chinese':vtText.POSITION, 'cellType':BasicCell}
         d['frozen'] = {'chinese':vtText.FROZEN, 'cellType':BasicCell}
         d['price'] = {'chinese':vtText.PRICE, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtPositionName')
         self.setEventType(EVENT_POSITION)
         self.setFont(BASIC_FONT)
         self.setSaveData(True)
+        self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         
         self.initTable()
         self.registerEvent()
@@ -623,17 +624,36 @@ class AccountMonitor(BasicMonitor):
         super(AccountMonitor, self).__init__(mainEngine, eventEngine, parent)
         
         d = OrderedDict()
+        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         d['accountID'] = {'chinese':vtText.ACCOUNT_ID, 'cellType':BasicCell}
         d['balance'] = {'chinese':vtText.BALANCE, 'cellType':BasicCell}
         d['available'] = {'chinese':vtText.AVAILABLE, 'cellType':BasicCell}
-        d['gatewayName'] = {'chinese':vtText.GATEWAY, 'cellType':BasicCell}
         self.setHeaderDict(d)
         
         self.setDataKey('vtAccountID')
         self.setEventType(EVENT_ACCOUNT)
         self.setFont(BASIC_FONT)
+        self.setSaveData(True)
+        self.setResizeMode(QtWidgets.QHeaderView.Stretch)
+        
         self.initTable()
         self.registerEvent()
+    
+    #----------------------------------------------------------------------
+    def updateData(self, data):
+        """更新数据"""
+        super(AccountMonitor, self).updateData(data)
+
+        # 如果该委托已完成，则隐藏该行
+        vtAccountID = data.vtAccountID
+        cellDict = self.dataDict[vtAccountID]
+        cell = cellDict['balance']
+        row = self.row(cell)
+        
+        if data.balance == 0:    
+            self.hideRow(row)
+        else:
+            self.showRow(row)
 
 
 ########################################################################
@@ -1047,6 +1067,7 @@ class ContractMonitor(BasicMonitor):
         """初始化界面"""
         self.setMinimumSize(800, 800)
         self.setFont(BASIC_FONT)
+        self.setResizeMode(QtWidgets.QHeaderView.Stretch)
         self.initTable()
         self.addMenuAction()
     
