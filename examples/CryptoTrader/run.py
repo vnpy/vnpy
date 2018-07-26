@@ -17,7 +17,6 @@ system = platform.system()
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiQt import createQApp
-from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
 from vnpy.trader.gateway import (huobiGateway, okexGateway,
@@ -29,6 +28,8 @@ from vnpy.trader.gateway import (huobiGateway, okexGateway,
 # 加载上层应用
 from vnpy.trader.app import (algoTrading)
 
+# 当前目录组件
+from uiCryptoWindow import MainWindow
 
 #----------------------------------------------------------------------
 def main():
