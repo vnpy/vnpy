@@ -20,6 +20,22 @@
     4)激活py35环境下，安装requirement.txt里面的包
     5)编译ctp api(for boost & py3.5)
     6)vnpy/trader目录下,python vtmain.py 试试看
+3、Windows下安装步骤
+    1)minconda 安装 清华https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ 下载windows下x86_64最新版本
+      安装时，添加minconda到系统环境路径
+
+    2)重启后，命令行窗口:
+    conda create --name py35 python=3.5
+
+    3)激活py35
+    activate py35
+
+    4)安装 pyqt
+    conda install pyqt
+
+    5) 安装其他包
+    cd c:\vnpy
+    pip install -r requirements.txt
 
 大佳
 QQ/Wechat：28888502
@@ -114,22 +130,8 @@ QQ/Wechat：28888502
     # 安装vnpy其他需要的包(见上)
 
 
-#3、Windows 10的环境
-    # minconda 安装 清华https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ 下载windows下x86_64最新版本
-      安装时，添加minconda到系统环境路径
-
-    # 重启后，命令行窗口:
-    conda create --name py35 python=3.5
-
-    激活py35
-    activate py35
-
-    # 安装 pyqt
-    conda install pyqt
-
-    # 安装其他包
-    cd c:\vnpy
-    pip install -r requirements.txt
+#3、碰到的问题：找不到vnpy.xx.xx(原2.7环境)
+    可能你使用了vnpy的原版，安装到conda环境中了。需要先卸载 pip uninstall vnpy
 
 
 #4、碰到的问题：importError: libGL.so.1: cannot open shared object file: No such file or directory

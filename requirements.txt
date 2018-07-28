@@ -7,7 +7,6 @@ websocket-client
 msgpack-python
 zmq
 qtpy
-pyqt
 qdarkstyle
 SortedContainers
 statsmodels
