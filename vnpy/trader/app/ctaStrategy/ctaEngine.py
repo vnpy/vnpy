@@ -234,19 +234,22 @@ class CtaEngine(object):
                             price = tick.lowerLimit
                         
                         # 发出市价委托
-                        self.sendOrder(so.vtSymbol, so.orderType, price, so.volume, so.strategy)
+                        vtOrderID = self.sendOrder(so.vtSymbol, so.orderType, 
+                                                   price, so.volume, so.strategy)
                         
-                        # 从活动停止单字典中移除该停止单
-                        del self.workingStopOrderDict[so.stopOrderID]
-                        
-                        # 从策略委托号集合中移除
-                        s = self.strategyOrderDict[so.strategy.name]
-                        if so.stopOrderID in s:
-                            s.remove(so.stopOrderID)
-                        
-                        # 更新停止单状态，并通知策略
-                        so.status = STOPORDER_TRIGGERED
-                        so.strategy.onStopOrder(so)
+                        # 检查因为风控流控等原因导致的委托失败（无委托号）
+                        if vtOrderID:
+                            # 从活动停止单字典中移除该停止单
+                            del self.workingStopOrderDict[so.stopOrderID]
+                            
+                            # 从策略委托号集合中移除
+                            s = self.strategyOrderDict[so.strategy.name]
+                            if so.stopOrderID in s:
+                                s.remove(so.stopOrderID)
+                            
+                            # 更新停止单状态，并通知策略
+                            so.status = STOPORDER_TRIGGERED
+                            so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processTickEvent(self, event):
