@@ -526,7 +526,8 @@ class WebsocketApi(FcoinWebsocketApi):
         tick.lastPrice = ticker[0]
         tick.volume = ticker[9]
         
-        self.gateway.onTick(copy(tick))
+        if tick.askPrice1:
+            self.gateway.onTick(copy(tick))
 
     #----------------------------------------------------------------------
     def onDepth(self, d):
@@ -565,7 +566,8 @@ class WebsocketApi(FcoinWebsocketApi):
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S')
         
-        self.gateway.onTick(copy(tick))        
+        if tick.lastPrice:
+            self.gateway.onTick(copy(tick))        
 
 
 #----------------------------------------------------------------------
