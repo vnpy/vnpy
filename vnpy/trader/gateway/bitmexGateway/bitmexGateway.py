@@ -87,9 +87,6 @@ class BitmexGateway(VtGateway):
         self.restApi.connect(apiKey, apiSecret, sessionCount)
         self.wsApi.connect(apiKey, apiSecret, symbols)
 
-        # 初始化并启动查询
-        #self.initQuery()
-
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
