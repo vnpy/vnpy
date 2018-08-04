@@ -1111,7 +1111,7 @@ class TradingWidget(QtWidgets.QFrame):
         # 自动填写信息
         self.comboPriceType.setCurrentIndex(self.priceTypeList.index(PRICETYPE_LIMITPRICE))
         self.comboOffset.setCurrentIndex(self.offsetList.index(OFFSET_CLOSE))
-        self.spinVolume.setValue(pos.position)
+        self.lineVolume.setText(str(pos.position))
 
         if pos.direction == DIRECTION_LONG or pos.direction == DIRECTION_NET:
             self.comboDirection.setCurrentIndex(self.directionList.index(DIRECTION_SHORT))
