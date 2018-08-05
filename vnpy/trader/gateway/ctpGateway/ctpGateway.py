@@ -722,9 +722,15 @@ class CtpTdApi(TdApi):
             pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
             pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
         
+        exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
+        
         # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
-        if data['YdPosition'] and not data['TodayPosition']:
-            pos.ydPosition = data['Position']
+        if exchange == EXCHANGE_SHFE:
+            if data['YdPosition'] and not data['TodayPosition']:
+                pos.ydPosition = data['Position']
+        # 否则基于总持仓和今持仓来计算昨仓数据
+        else:
+            pos.ydPosition = data['Position'] - data['TodayPosition']
             
         # 计算成本
         size = self.symbolSizeDict[pos.symbol]
