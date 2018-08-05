@@ -43,6 +43,15 @@ Release/
 *.log
 *.bak
 
+# 编译临时文件夹
+build/
+
+# CMake临时文件
+CMakeCache.txt
+CMakeFiles/
+build/cmake_install.cmake
+build/Makefile
+
 # 目录
 .idea
 .vscode
