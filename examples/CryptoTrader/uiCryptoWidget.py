@@ -497,10 +497,11 @@ class LogMonitor(BasicMonitor):
         cellLogContent = BasicCell(logContent)
         cellGatewayName = BasicCell(error.gatewayName)
         
-        self.setItem(0, 0, cellLogTime)
-        self.setItem(0, 1, cellLogContent)
-        self.setItem(0, 2, cellGatewayName)
-        
+        self.setItem(0, 0, cellGatewayName)
+        self.setItem(0, 1, cellLogTime)
+        self.setItem(0, 2, cellLogContent)
+
+
 
 ########################################################################
 class TradeMonitor(BasicMonitor):
