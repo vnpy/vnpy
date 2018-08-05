@@ -3,6 +3,7 @@
 import json
 import traceback
 import shelve
+from collections import OrderedDict
 
 from vnpy.event import Event
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
@@ -289,8 +290,8 @@ class StAlgoEngine(object):
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         
-        self.algoDict = {}          # spreadName:algo
-        self.vtSymbolAlgoDict = {}  # vtSymbol:algo
+        self.algoDict = OrderedDict()   # spreadName:algo
+        self.vtSymbolAlgoDict = {}      # vtSymbol:algo
         
         self.registerEvent()
         

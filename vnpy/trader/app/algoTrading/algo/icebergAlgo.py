@@ -34,7 +34,7 @@ class IcebergAlgo(AlgoTemplate):
         self.price = float(setting['price'])                # 价格
         self.volume = float(setting['volume'])              # 数量
         self.display = float(setting['display'])            # 挂出数量
-        self.interval = text_type(setting['interval'])      # 间隔
+        self.interval = int(setting['interval'])            # 间隔
         self.offset = text_type(setting['offset'])          # 开平
         
         self.count = 0          # 执行计数
@@ -73,11 +73,17 @@ class IcebergAlgo(AlgoTemplate):
     def onTimer(self):
         """"""
         self.count += 1
+        
         if self.count < self.interval:
             self.varEvent()
             return
         
         self.count = 0
+        
+        contract = self.getContract(self.vtSymbol)
+        if not contract:
+            self.writeLog(u'找不到合约%s' %self.vtSymbol)
+            return
         
         if not self.vtOrderID:
             orderVolume = self.volume - self.tradedVolume
@@ -193,7 +199,7 @@ class IcebergWidget(AlgoWidget):
     def getAlgoSetting(self):
         """"""
         setting = OrderedDict()
-        setting['templateName'] = StopAlgo.templateName
+        setting['templateName'] = self.templateName
         setting['vtSymbol'] = str(self.lineVtSymbol.text())
         setting['direction'] = text_type(self.comboDirection.currentText())
         setting['offset'] = text_type(self.comboOffset.currentText())

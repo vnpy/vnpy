@@ -188,7 +188,7 @@ class BlWidget(AlgoWidget):
     def getAlgoSetting(self):
         """"""
         setting = OrderedDict()
-        setting['templateName'] = StopAlgo.templateName
+        setting['templateName'] = self.templateName
         setting['vtSymbol'] = str(self.lineVtSymbol.text())
         setting['direction'] = text_type(self.comboDirection.currentText())
         setting['offset'] = text_type(self.comboOffset.currentText())

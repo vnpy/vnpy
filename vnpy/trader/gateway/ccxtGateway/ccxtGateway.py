@@ -488,7 +488,11 @@ class CcxtApi(object):
         tick.lowPrice = float(data['low'])
         tick.lastPrice = float(data['close'])
         tick.volume = float(data['quoteVolume'])
-        tick.datetime = datetime.fromtimestamp(data['timestamp']/1000)
+        
+        if data['timestamp']:
+            tick.datetime = datetime.fromtimestamp(data['timestamp']/1000)
+        else:
+            tick.datetime = datetime.now()        
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S')
         
@@ -509,8 +513,11 @@ class CcxtApi(object):
         for n, ask in enumerate(data['asks'][:5]):
             tick.__setattr__('askPrice%s' %(n+1), float(ask[0]))
             tick.__setattr__('askVolume%s' %(n+1), float(ask[1]))
-                
-        tick.datetime = datetime.fromtimestamp(data['timestamp']/1000)
+        
+        if data['timestamp']:
+            tick.datetime = datetime.fromtimestamp(data['timestamp']/1000)
+        else:
+            tick.datetime = datetime.now()
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S')        
         

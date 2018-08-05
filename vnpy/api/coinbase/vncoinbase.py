@@ -199,18 +199,14 @@ class CoinbaseWebsocketApi(object):
     def run(self):
         """运行"""
         while self.active:
-            stream = self.ws.recv()
-            data = json.loads(stream)
-            self.onData(data)
-            
-            #try:
-                #stream = self.ws.recv()
-                #data = json.loads(stream)
-                #self.onData(data)
-            #except:
-                #msg = traceback.format_exc()
-                #self.onError(msg)
-                #self.reconnect()
+            try:
+                stream = self.ws.recv()
+                data = json.loads(stream)
+                self.onData(data)
+            except:
+                msg = traceback.format_exc()
+                self.onError(msg)
+                self.reconnect()
     
     #----------------------------------------------------------------------
     def close(self):
