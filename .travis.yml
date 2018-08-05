@@ -1,4 +1,4 @@
-group: travis_latest
+group: travis_latest 
 language: python
 cache: pip
 python:
