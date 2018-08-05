@@ -84,23 +84,24 @@ def loadMcCsv(fileName, dbName, symbol):
     collection.ensure_index([('datetime', pymongo.ASCENDING)], unique=True)   
     
     # 读取数据和插入到数据库
-    reader = csv.DictReader(file(fileName, 'r'))
-    for d in reader:
-        bar = VtBarData()
-        bar.vtSymbol = symbol
-        bar.symbol = symbol
-        bar.open = float(d['Open'])
-        bar.high = float(d['High'])
-        bar.low = float(d['Low'])
-        bar.close = float(d['Close'])
-        bar.date = datetime.strptime(d['Date'], '%Y-%m-%d').strftime('%Y%m%d')
-        bar.time = d['Time']
-        bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
-        bar.volume = d['TotalVolume']
-
-        flt = {'datetime': bar.datetime}
-        collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
-        print(bar.date, bar.time)
+    with open(fileName, 'r') as f:
+        reader = csv.DictReader(f)
+        for d in reader:
+            bar = VtBarData()
+            bar.vtSymbol = symbol
+            bar.symbol = symbol
+            bar.open = float(d['Open'])
+            bar.high = float(d['High'])
+            bar.low = float(d['Low'])
+            bar.close = float(d['Close'])
+            bar.date = datetime.strptime(d['Date'], '%Y-%m-%d').strftime('%Y%m%d')
+            bar.time = d['Time']
+            bar.datetime = datetime.strptime(bar.date + ' ' + bar.time, '%Y%m%d %H:%M:%S')
+            bar.volume = d['TotalVolume']
+    
+            flt = {'datetime': bar.datetime}
+            collection.update_one(flt, {'$set':bar.__dict__}, upsert=True)  
+            print(bar.date, bar.time)
     
     print(u'插入完毕，耗时：%s' % (time()-start))
 
