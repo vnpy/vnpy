@@ -7,7 +7,7 @@
 ///从Python对象到C++类型转换用的函数
 ///-------------------------------------------------------------------------------------
 
-void getInt(dict d, const string &key, int *value)
+void getInt(dict d, string key, int *value)
 {
 	if (d.has_key(key))		//检查字典中是否存在该键值
 	{
@@ -20,7 +20,7 @@ void getInt(dict d, const string &key, int *value)
 	}
 };
 
-void getDouble(dict d, const string &key, double *value)
+void getDouble(dict d, string key, double *value)
 {
 	if (d.has_key(key))
 	{
@@ -33,9 +33,7 @@ void getDouble(dict d, const string &key, double *value)
 	}
 };
 
-// 使用特化的strcpy_s，能提升性能
-template <class CharType, size_t size>
-void getStr(dict d, const string &key, const CharType(&value)[size])
+void getStr(dict d, string key, char *value)
 {
 	if (d.has_key(key))
 	{
@@ -45,18 +43,18 @@ void getStr(dict d, const string &key, const CharType(&value)[size])
 		{
 			string s = x();
 			const char *buffer = s.c_str();
+			//对字符串指针赋值必须使用strcpy_s, vs2013使用strcpy编译通不过
+			//+1应该是因为C++字符串的结尾符号？不是特别确定，不加这个1会出错
 #ifdef _MSC_VER //WIN32
-			strcpy_s(value, buffer);
+			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
 			strncpy(value, buffer, strlen(buffer) + 1);
-#else
-#pragma error("unsupported compiler")
 #endif
 		}
 	}
-}
+};
 
-void getChar(dict d, const string &key, char *value)
+void getChar(dict d, string key, char *value)
 {
 	if (d.has_key(key))
 	{
