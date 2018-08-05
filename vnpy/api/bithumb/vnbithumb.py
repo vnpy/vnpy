@@ -7,6 +7,7 @@ from multiprocessing.dummy import Pool
 from time import time
 
 import requests
+from six.moves import input
 from queue import Queue, Empty
 
 REST_HOST = 'https://api.bithumb.com'
@@ -162,4 +163,4 @@ if __name__ == '__main__':
     rest.addReq('POST', '/public/ticker/BTC', onBtcTick)
     rest.addReq('POST', '/info/account', onAccountInfo, postdict={'currency': 'BTC'})
 
-    raw_input()
+    input()

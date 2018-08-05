@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import hashlib
 import hmac
 import json
@@ -17,7 +18,7 @@ from threading import Thread
 
 import requests
 from jwt import PyJWS
-
+from six.moves import input
 
 REST_HOST = 'https://big.one/api/v2/'
 
@@ -121,14 +122,14 @@ class BigoneRestApi(object):
     #----------------------------------------------------------------------
     def onError(self, code, error):
         """错误回调"""
-        print 'on error'
-        print code, error
+        print('on error')
+        print(code, error)
     
     #----------------------------------------------------------------------
     def onData(self, data, reqid):
         """通用回调"""
-        print 'on data'
-        print data, reqid
+        print('on data')
+        print(data, reqid)
 
     
 
@@ -150,6 +151,4 @@ if __name__ == '__main__':
     rest.addReq('GET', '/viewer/orders', rest.onData)
     
 
-    raw_input()
-    
-    
+    input()

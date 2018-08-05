@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import hashlib
 import hmac
 import json
@@ -17,6 +18,7 @@ from threading import Thread
 
 import requests
 import websocket
+from six.moves import input
 
 
 REST_HOST = 'https://api.fcoin.com/v2'
@@ -146,14 +148,14 @@ class FcoinRestApi(object):
     #----------------------------------------------------------------------
     def onError(self, code, error):
         """错误回调"""
-        print 'on error'
-        print code, error
+        print('on error')
+        print(code, error)
     
     #----------------------------------------------------------------------
     def onData(self, data, reqid):
         """通用回调"""
-        print 'on data'
-        print data, reqid
+        print('on data')
+        print(data, reqid)
 
     
 ########################################################################
@@ -211,21 +213,21 @@ class FcoinWebsocketApi(object):
     #----------------------------------------------------------------------
     def onConnect(self):
         """连接回调"""
-        print 'connected'
+        print('connected')
     
     #----------------------------------------------------------------------
     def onData(self, data):
         """数据回调"""
-        print '-' * 30
+        print('-' * 30)
         l = data.keys()
         l.sort()
         for k in l:
-            print k, data[k]
+            print(k, data[k])
     
     #----------------------------------------------------------------------
     def onError(self, msg):
         """错误回调"""
-        print msg
+        print(msg)
     
     #----------------------------------------------------------------------
     def sendReq(self, req):
@@ -287,6 +289,6 @@ if __name__ == '__main__':
     
     #ws.sendReq(req)
 
-    raw_input()
+    input()
     
     
