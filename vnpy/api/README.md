@@ -12,7 +12,6 @@
 
 ### 外盘
 * vn.ib：Interactive Brokers接口
-* vn.oanda：OANDA接口
 * vn.shzd：直达期货接口
 
 ### 比特币
