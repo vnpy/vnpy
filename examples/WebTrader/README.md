@@ -7,7 +7,7 @@
 1. 修改CTP_connect.json中的账号和服务器地址
 2. 修改WEB_setting.json中的网页登录用户名和密码
 3. 打开cmd，运行python run.py
-4. 用浏览器（推荐Chrome）访问http://localhost:5000/
+4. 浏览器将会自动打开，并访问http://127.0.0.1:5000/
 5. 输入2中的用户名和密码登录后，点击左下角的“连接CTP”
 6. 网页前端的使用方法和常规版本的VnTrader基本一致
 7. 如需运行CTA策略，请修改CTA_setting.json中的配置
