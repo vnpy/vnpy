@@ -9,6 +9,8 @@ from time import sleep
 from datetime import datetime, time
 from multiprocessing import Process
 
+import webbrowser
+
 from webServer import run as runWebServer
 from tradingServer import main as runTradingServer
 from vnpy.trader.vtEngine import LogEngine
@@ -27,6 +29,9 @@ if __name__ == '__main__':
     # 进入循环
     pWeb = None
     pTrading = None
+    
+    import os
+    print(os.getpid())
     
     while True:  
         le.info('-'*30)
@@ -48,6 +53,8 @@ if __name__ == '__main__':
                 pWeb = Process(target=runWebServer)
                 pWeb.start()
                 le.info(u'启动WEB服务器进程')
+                
+                webbrowser.open('http://127.0.0.1:5000')
         
         else:
             le.info(u'当前处于非交易时间段')
