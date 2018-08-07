@@ -159,9 +159,11 @@ class CalendarManager(QtWidgets.QWidget):
 #----------------------------------------------------------------------
 def runCalendarEditor():
     """运行日历编辑器"""
-    reload(sys)
-    sys.setdefaultencoding('utf8')
-    
+    try:               # Python 2
+        reload(sys)
+        sys.setdefaultencoding('utf8')
+    except NameError:  # Python 3
+        pass
     app = QtWidgets.QApplication(sys.argv)
     app.setFont(QtGui.QFont(u'微软雅黑', 12))
     

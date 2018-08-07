@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 from generate_data_type import pre_process
 
 import sec_struct
@@ -69,7 +70,7 @@ def process_function(cpp_line):
         args_type_list.append(l[0])
         args_name_list.append(l[1])    
 
-    print args_type_list
+    print(args_type_list)
     if args_type_list and args_type_list[0] in STRUCT_DICT:
         create_function(fc_name, args_type_list, args_name_list)
     
@@ -298,4 +299,4 @@ header_process_f.close()
 header_on_f.close()
 header_function_f.close()
 
-print API_NAME + u'处理完成'
+print(API_NAME + u'处理完成')

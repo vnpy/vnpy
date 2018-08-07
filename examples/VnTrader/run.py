@@ -5,9 +5,14 @@ try:
     reload         # Python 2
 except NameError:  # Python 3
     from importlib import reload
+
 import sys
 reload(sys)
-sys.setdefaultencoding('utf8')
+
+try:
+    sys.setdefaultencoding('utf8')
+except AttributeError:
+    pass
 
 # 判断操作系统
 import platform
@@ -20,17 +25,17 @@ from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import (ctpGateway, oandaGateway,
-                                 ibGateway)
+from vnpy.trader.gateway import (ctpGateway, ibGateway)
 
 if system == 'Linux':
     from vnpy.trader.gateway import xtpGateway
 elif system == 'Windows':
     from vnpy.trader.gateway import (femasGateway, xspeedGateway,
-                                     futuGateway, secGateway)
+                                     secGateway)
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
+from vnpy.trader.app import (riskManager, ctaStrategy, 
+                             spreadTrading, algoTrading)
 
 
 #----------------------------------------------------------------------
@@ -47,14 +52,12 @@ def main():
 
     # 添加交易接口
     me.addGateway(ctpGateway)
-    me.addGateway(oandaGateway)
     me.addGateway(ibGateway)
 
     if system == 'Windows':
         me.addGateway(femasGateway)
         me.addGateway(xspeedGateway)
         me.addGateway(secGateway)
-        me.addGateway(futuGateway)
 
     if system == 'Linux':
         me.addGateway(xtpGateway)
@@ -63,6 +66,7 @@ def main():
     me.addApp(riskManager)
     me.addApp(ctaStrategy)
     me.addApp(spreadTrading)
+    me.addApp(algoTrading)
 
     # 创建主窗口
     mw = MainWindow(me, ee)

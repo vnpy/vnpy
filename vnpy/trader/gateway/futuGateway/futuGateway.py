@@ -11,11 +11,11 @@ from time import sleep
 from datetime import datetime
 from copy import copy
 
-import futuquant as ft
-from futuquant.open_context import (RET_ERROR, RET_OK, PriceRegularMode,
-                                    StockQuoteHandlerBase, OrderBookHandlerBase,
-                                    USTradeOrderHandlerBase, USTradeDealHandlerBase,
-                                    HKTradeOrderHandlerBase, HKTradeDealHandlerBase)
+from futuquant import (OpenQuoteContext, OpenHKTradeContext, OpenUSTradeContext,
+                       RET_ERROR, RET_OK, 
+                       TrdEnv, TrdSide, OrderType, OrderStatus, ModifyOrderOp,
+                       StockQuoteHandlerBase, OrderBookHandlerBase,
+                       TradeOrderHandlerBase, TradeDealHandlerBase)
 
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
@@ -34,23 +34,20 @@ productMap[PRODUCT_WARRANT] = 'WARRANT'
 productMap[PRODUCT_BOND] = 'BOND'
 
 directionMap = {}
-directionMap[DIRECTION_LONG] = '0'
-directionMap[DIRECTION_SHORT] = '1'
+directionMap[DIRECTION_LONG] = TrdSide.BUY
+directionMap[DIRECTION_SHORT] = TrdSide.SELL
 directionMapReverse = {v:k for k,v in directionMap.items()}
 
 statusMapReverse = {}
-statusMapReverse['0'] = STATUS_UNKNOWN
-statusMapReverse['1'] = STATUS_NOTTRADED
-statusMapReverse['2'] = STATUS_PARTTRADED
-statusMapReverse['3'] = STATUS_ALLTRADED
-statusMapReverse['4'] = STATUS_CANCELLED
-statusMapReverse['5'] = STATUS_REJECTED
-statusMapReverse['6'] = STATUS_CANCELLED
-statusMapReverse['7'] = STATUS_CANCELLED
-statusMapReverse['8'] = STATUS_UNKNOWN
-statusMapReverse['21'] = STATUS_UNKNOWN
-statusMapReverse['22'] = STATUS_UNKNOWN
-statusMapReverse['23'] = STATUS_UNKNOWN
+statusMapReverse[OrderStatus.NONE] = STATUS_UNKNOWN
+statusMapReverse[OrderStatus.SUBMITTED] = STATUS_NOTTRADED
+statusMapReverse[OrderStatus.FILLED_PART] = STATUS_PARTTRADED
+statusMapReverse[OrderStatus.FILLED_ALL] = STATUS_ALLTRADED
+statusMapReverse[OrderStatus.CANCELLED_ALL] = STATUS_CANCELLED
+statusMapReverse[OrderStatus.CANCELLED_PART] = STATUS_CANCELLED
+statusMapReverse[OrderStatus.SUBMIT_FAILED] = STATUS_REJECTED
+statusMapReverse[OrderStatus.FAILED] = STATUS_REJECTED
+statusMapReverse[OrderStatus.DISABLED] = STATUS_CANCELLED
 
 
 
@@ -70,13 +67,13 @@ class FutuGateway(VtGateway):
         self.ip = 0
         self.market = ''
         self.password = ''
-        self.env = 1        # 默认仿真交易
+        self.env = TrdEnv.SIMULATE  # 默认仿真交易
         
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
         
         self.tickDict = {}
-        self.tradeSet = set()      # 保存成交编号的集合，防止重复推送
+        self.tradeSet = set()       # 保存成交编号的集合，防止重复推送
         
         self.qryEnabled = True
         self.qryThread = Thread(target=self.qryData)
@@ -138,7 +135,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def connectQuote(self):
         """连接行情功能"""
-        self.quoteCtx = ft.OpenQuoteContext(self.host, self.port)
+        self.quoteCtx = OpenQuoteContext(self.host, self.port)
         
         # 继承实现处理器类
         class QuoteHandler(StockQuoteHandlerBase):
@@ -177,16 +174,12 @@ class FutuGateway(VtGateway):
         """连接交易功能"""
         # 连接交易接口
         if self.market == 'US':
-            self.tradeCtx = ft.OpenUSTradeContext(self.host, self.port)
-            OrderHandlerBase = USTradeOrderHandlerBase
-            DealHandlerBase = USTradeDealHandlerBase
+            self.tradeCtx = OpenUSTradeContext(self.host, self.port)
         else:
-            self.tradeCtx = ft.OpenHKTradeContext(self.host, self.port)
-            OrderHandlerBase = HKTradeOrderHandlerBase
-            DealHandlerBase = HKTradeDealHandlerBase          
-        
+            self.tradeCtx = OpenHKTradeContext(self.host, self.port)
+            
         # 继承实现处理器类
-        class OrderHandler(OrderHandlerBase):
+        class OrderHandler(TradeOrderHandlerBase):
             """委托处理器"""
             gateway = self  # 缓存Gateway对象
             
@@ -197,7 +190,7 @@ class FutuGateway(VtGateway):
                 self.gateway.processOrder(content)
                 return RET_OK, content            
             
-        class DealHandler(DealHandlerBase):
+        class DealHandler(TradeDealHandlerBase):
             """订单簿处理器"""
             gateway = self
             
@@ -209,8 +202,11 @@ class FutuGateway(VtGateway):
                 return RET_OK, content  
 
         # 只有港股实盘交易才需要解锁
-        if self.market == 'HK' and self.env == 0:
-            self.tradeCtx.unlock_trade(self.password)
+        code, data = self.tradeCtx.unlock_trade(self.password)
+        if code == RET_OK:
+            self.writeLog(u'交易接口解锁成功')
+        else:
+            self.writeLog(u'交易接口解锁失败，原因：%s' %data)
         
         # 设置回调处理对象
         self.tradeCtx.set_handler(OrderHandler())
@@ -218,11 +214,6 @@ class FutuGateway(VtGateway):
         
         # 启动交易接口
         self.tradeCtx.start()
-        
-        # 订阅委托推送
-        self.tradeCtx.subscribe_order_deal_push([], 
-                                               order_deal_push=True, 
-                                               envtype=self.env)
         
         self.writeLog(u'交易接口连接成功')
     
@@ -239,26 +230,25 @@ class FutuGateway(VtGateway):
     def sendOrder(self, orderReq):
         """发单"""
         side = directionMap[orderReq.direction]
-        priceType = 0       # 只支持限价单
+        priceType = OrderType.NORMAL        # 只支持限价单
         
         # 设置价格调整模式为向内调整（即买入调整后价格比原始价格低）
         if orderReq.direction ==  DIRECTION_LONG:
-            priceMode = PriceRegularMode.LOWER
+            adjustLimit = 0.05
         else:
-            priceMode = PriceRegularMode.UPPER
-        
+            adjustLimit = -0.05
+            
         code, data = self.tradeCtx.place_order(orderReq.price, orderReq.volume, 
-                                               orderReq.symbol, side, 
-                                               priceType, self.env,
-                                               order_deal_push=True,
-                                               price_mode=priceMode)
+                                               orderReq.symbol, side, priceType, 
+                                               trd_env=self.env,
+                                               adjust_limit=adjustLimit)
         
         if code:
             self.writeError(code, u'委托失败：%s' %data)
             return ''
         
         for ix, row in data.iterrows():
-            orderID = str(row['orderid'])
+            orderID = str(row['order_id'])
         
         vtOrderID = '.'.join([self.gatewayName, orderID])
         
@@ -267,8 +257,8 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
-        code, data = self.tradeCtx.set_order_status(0, int(cancelOrderReq.orderID), 
-                                                    self.env)
+        code, data = self.tradeCtx.modify_order(ModifyOrderOp.CANCEL, cancelOrderReq.orderID, 
+                                                0, 0, trd_env=self.env) 
         
         if code:
             self.writeError(code, u'撤单失败：%s' %data)
@@ -293,7 +283,7 @@ class FutuGateway(VtGateway):
                 contract.name = row['name']
                 contract.productClass = vtProductClass
                 contract.size = int(row['lot_size'])
-                contract.priceTick = 0.01
+                contract.priceTick = 0.001
                 
                 self.onContract(contract)
         
@@ -302,7 +292,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
-        code, data = self.tradeCtx.accinfo_query(self.env)
+        code, data = self.tradeCtx.accinfo_query(trd_env=self.env, acc_id=0)
         
         if code:
             self.writeError(code, u'查询账户资金失败：%s' %data)
@@ -314,16 +304,15 @@ class FutuGateway(VtGateway):
             
             account.accountID = '%s_%s' %(self.gatewayName, self.market)
             account.vtAccountID = '.'.join([self.gatewayName, account.accountID])
-            account.balance = float(row['ZCJZ'])
-            account.margin = float(row['GPBZJ'])
-            account.available = float(row['XJJY'])
+            account.balance = float(row['total_assets'])
+            account.available = float(row['avl_withdrawal_cash'])
             
             self.onAccount(account)
         
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
-        code, data = self.tradeCtx.position_list_query(envtype=self.env)
+        code, data = self.tradeCtx.position_list_query(trd_env=self.env, acc_id=0)
         
         if code:
             self.writeError(code, u'查询持仓失败：%s' %data)
@@ -339,10 +328,10 @@ class FutuGateway(VtGateway):
             pos.direction = DIRECTION_LONG
             pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
             
-            pos.position = int(row['qty'])
+            pos.position = float(row['qty'])
             pos.price = float(row['cost_price'])
             pos.positionProfit = float(row['pl_val'])
-            pos.frozen = int(row['qty']) - int(row['can_sell_qty'])
+            pos.frozen = float(row['qty']) - float(row['can_sell_qty'])
             
             if pos.price < 0: pos.price = 0 
             if pos.positionProfit > 100000000: pos.positionProfit = 0 
@@ -352,7 +341,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryOrder(self):
         """查询委托"""
-        code, data = self.tradeCtx.order_list_query("", envtype=self.env)
+        code, data = self.tradeCtx.order_list_query("", trd_env=self.env)
         
         if code:
             self.writeError(code, u'查询委托失败：%s' %data)
@@ -458,7 +447,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def processOrderBook(self, data):
         """订单簿推送"""
-        symbol = data['stock_code']
+        symbol = data['code']
     
         tick = self.tickDict.get(symbol, None)
         if not tick:
@@ -488,34 +477,34 @@ class FutuGateway(VtGateway):
         """处理委托推送"""
         for ix, row in data.iterrows():
             # 如果状态是已经删除，则直接忽略
-            if str(row['status']) == '7':
+            if row['order_status'] == OrderStatus.DELETED:
                 continue
             
+            print(row['order_status'])
             order = VtOrderData()
             order.gatewayName = self.gatewayName
             
             order.symbol = row['code']
             order.vtSymbol = order.symbol
             
-            order.orderID = str(row['orderid'])
+            order.orderID = str(row['order_id'])
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             
             order.price = float(row['price'])
-            order.totalVolume = int(row['qty'])
-            order.tradedVolume = int(row['dealt_qty'])
-            
-            t = datetime.fromtimestamp(float(row['submited_time']))
-            order.orderTime = t.strftime('%H:%M:%S')            
+            order.totalVolume = float(row['qty'])
+            order.tradedVolume = float(row['dealt_qty'])
+            order.orderTime = row['create_time'].split(' ')[-1]      
 
-            order.status = statusMapReverse.get(str(row['status']), STATUS_UNKNOWN)
-            order.direction = directionMapReverse[str(row['order_side'])]
+            order.status = statusMapReverse.get(row['order_status'], STATUS_UNKNOWN)
+            order.direction = directionMapReverse[row['trd_side']]
+            
             self.onOrder(order)        
     
     #----------------------------------------------------------------------
     def processDeal(self, data):
         """处理成交推送"""
         for ix, row in data.iterrows():
-            tradeID = row['dealid']
+            tradeID = str(row['deal_id'])
             if tradeID in self.tradeSet:
                 continue
             self.tradeSet.add(tradeID)
@@ -529,14 +518,13 @@ class FutuGateway(VtGateway):
             trade.tradeID = tradeID
             trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
             
-            trade.orderID = row['orderid']
+            trade.orderID = row['order_id']
             trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
             
             trade.price = float(row['price'])
             trade.volume = float(row['qty'])
-            trade.direction = directionMapReverse[str(row['order_side'])]
+            trade.direction = directionMapReverse[row['trd_side']]
             
-            t = datetime.fromtimestamp(float(row['time']))
-            trade.tradeTime = t.strftime('%H:%M:%S')
+            trade.tradeTime = row['create_time'].split(' ')[-1]
             
             self.onTrade(trade)

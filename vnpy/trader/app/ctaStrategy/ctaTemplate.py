@@ -449,6 +449,13 @@ class BarGenerator(object):
             # 清空老K线缓存对象
             self.xminBar = None
 
+    #----------------------------------------------------------------------
+    def generate(self):
+        """手动强制立即完成K线合成"""
+        self.onBar(self.bar)
+        self.bar = None
+
+
 
 ########################################################################
 class ArrayManager(object):

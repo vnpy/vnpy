@@ -5,7 +5,8 @@
 #import zlib
 #import time
 
-from vnhuobi import DataApi
+from __future__ import absolute_import
+from .vnhuobi import DataApi
 
 #if __name__ == '__main__':
     #while(1):

@@ -16,8 +16,6 @@ Using the vn.py project, institutional investors and professional traders, such 
 	**International Financial Markets**
 
 	- Interactive Brokers（vn.ib）
-
-	- OANDA（vn.oanda）
 	
 	- Shanghai Zhida Futures（vn.shzd）
 
