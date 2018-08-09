@@ -158,10 +158,39 @@ class OkexGateway(VtGateway):
         self.initQuery()
         self.startQuery()
 
+    def writeLog(self, content):
+        """
+        记录日志文件
+        :param content:
+        :return:
+        """
+        if self.logger:
+            self.logger.info(content)
+
+    def writeError(self, content, error_id = 0):
+        """
+        发送错误通知/记录日志文件
+        :param content:
+        :return:
+        """
+        error = VtErrorData()
+        error.gatewayName = self.gatewayName
+        error.errorID = error_id
+        error.errorMsg = content
+        self.onError(error)
+
+        if self.logger:
+            self.logger.error(content)
 
     def checkStatus(self):
-        return self.spot_connected or self.futures_connected
+        if not self.spot_connected and not self.futures_connected:
+            return False
 
+        if self.spot_connected:
+            return self.api_spot.checkStatus()
+
+        if self.futures_connected:
+            return self.api_futures.checkStatus()
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """
@@ -704,6 +733,20 @@ class OkexSpotApi(WsSpotApi):
     vol(double): 成交量(最近的24小时)
     """
 
+    def checkStatus(self):
+        """
+        检查状态
+        :return:
+        """
+        if len(self.tickDict)>0:
+            symbol,last_tick = list(self.tickDict.items())[0]
+            if (datetime.now()-last_tick.datetime).seconds > 60:
+                return False
+
+            return True
+        else:
+            return False
+
     def onTicker(self, ws_data):
         """
         tick行情数据回报
@@ -713,7 +756,7 @@ class OkexSpotApi(WsSpotApi):
         channel = ws_data.get('channel')
         data = ws_data.get('data', {})
         # 检查channel/data
-        if channel is None and len(data) ==0:
+        if channel is None and len(data) == 0:
             return
 
         try:
@@ -1907,6 +1950,20 @@ class OkexFuturesApi(WsFuturesApi):
     }    
     """
 
+    def checkStatus(self):
+        """
+        检查状态
+        :return:
+        """
+        if len(self.tickDict) > 0:
+            symbol,last_tick = list(self.tickDict.items())[0]
+            if (datetime.now() - last_tick.datetime).seconds > 60:
+                return False
+
+            return True
+        else:
+            return False
+
     def onTicker(self, ws_data):
         """
         期货行情推送
@@ -2217,7 +2274,8 @@ h_this_week_usd'}
                 },
                 "channel":"ok_futureusd_cancel_order"
             }
-        """
+    """
+
     def onFutureOrderCancel(self, ws_data):
         """
         委托撤单的响应"
@@ -2254,7 +2312,6 @@ h_this_week_usd'}
         #del self.orderDict[orderId]
         #del self.orderIdDict[orderId]
         #del self.localNoDict[localNo]
-
 
     '''
     逐仓返回：
@@ -2401,6 +2458,17 @@ h_this_week_usd'}
                 account.closeProfit = float(s_inf.get('profit_real',0.0))
                 account.positionProfit = float(s_inf.get('profit_unreal',0.0))
                 account.margin = float(s_inf.get('keep_deposit',0.0))
+
+                # 更新持仓信息
+                pos = VtPositionData()
+                pos.gatewayName = self.gatewayName + u'_Future'
+                pos.symbol = u'{}.{}_Future'.format(symbol, EXCHANGE_OKEX)
+                pos.vtSymbol = u'{}.{}_Future'.format(symbol, EXCHANGE_OKEX)
+                pos.position = account.balance
+                pos.frozen = float(s_inf.get('keep_deposit',0.0))
+                pos.direction = DIRECTION_NET
+                self.gateway.onPosition(pos)
+
                 self.gateway.onAccount(account)
 
                 # 如果该合约账号的净值大于0,则通过rest接口，逐一合约类型获取持仓
@@ -2415,22 +2483,34 @@ h_this_week_usd'}
 
                 #if t_balance > 0 or t_rights > 0:
                 account = VtAccountData()
-                account.gatewayName = self.gatewayName + u'_合约'
+                account.gatewayName = self.gatewayName + u'_Future'
                 account.accountID = u'[逐仓]{}'.format(symbol)
                 account.vtAccountID = account.accountID
                 account.balance = t_rights
                 account.available = t_balance
-                for contract in t_contracts:
-                    # 保证金
-                    account.margin += contract.get('bond',0.0)
-                    # 平仓盈亏
-                    account.closeProfit += contract.get('profit',0.0)
-                    # 持仓盈亏
-                    account.positionProfit += contract.get('unprofit',0.0)
 
-                    if account.balance > 0 or account.available > 0:
-                        for contractType in CONTRACT_TYPE:
-                            self.query_future_position_4fix(symbol=symbol, contractType=contractType)
+                # 更新持仓信息
+                pos = VtPositionData()
+                pos.gatewayName = self.gatewayName + u'_Future'
+                pos.symbol = u'{}.{}_Future'.format(symbol,EXCHANGE_OKEX)
+                pos.vtSymbol = u'{}.{}_Future'.format(symbol,EXCHANGE_OKEX)
+                pos.position = t_rights
+                pos.frozen = t_rights - t_balance
+                pos.direction = DIRECTION_NET
+                self.gateway.onPosition(pos)
+
+            for contract in t_contracts:
+                # 保证金
+                account.margin += contract.get('bond',0.0)
+                # 平仓盈亏
+                account.closeProfit += contract.get('profit',0.0)
+                # 持仓盈亏
+                account.positionProfit += contract.get('unprofit',0.0)
+
+
+                if account.balance > 0 or account.available > 0:
+                    for contractType in CONTRACT_TYPE:
+                        self.query_future_position_4fix(symbol=symbol, contractType=contractType)
 
                 self.gateway.onAccount(account)
 
@@ -2482,7 +2562,7 @@ h_this_week_usd'}
                     pos.positionProfit = holding.get('buy_profit_real', 0.0)
                     self.gateway.onPosition(pos)
                 if holding.get('sell_amount', 0) > 0:
-                    sell_pos = copy.copy(pos)
+                    sell_pos = copy(pos)
                     sell_pos.direction = DIRECTION_SHORT
                     sell_pos.vtPositionName = sell_pos.symbol + sell_pos.direction
                     sell_pos.price = holding.get('sell_price_avg', 0.0)
@@ -2499,7 +2579,7 @@ h_this_week_usd'}
 
     def query_future_position_4fix(self,symbol, contractType,leverate=1):
         """
-
+        逐仓模式下，查询仓位
         :param symbol:
         :param contractType:
         :param leverate: 默认返回10倍杠杆持仓 type=1 返回全部持仓数据
@@ -2547,11 +2627,10 @@ h_this_week_usd'}
                         pos.frozen = pos.position - (volume_rate * holding.get('buy_available') / price)
                     else:
                         pos.frozen = 0
-
                     pos.positionProfit = holding.get('buy_profit_real', 0.0)
                     self.gateway.onPosition(pos)
                 if holding.get('sell_amount', 0) > 0:
-                    sell_pos = copy.copy(pos)
+                    sell_pos = copy(pos)
                     sell_pos.direction = DIRECTION_SHORT
                     sell_pos.vtPositionName = sell_pos.symbol + sell_pos.direction
                     sell_pos.price = holding.get('sell_price_avg', 0.0)

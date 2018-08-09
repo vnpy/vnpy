@@ -4,7 +4,6 @@
 from vnpy.api.okex.HttpMD5Util import buildMySign,httpGet,httpPost
 
 class OKCoinSpot:
-
     def __init__(self,url,apikey,secretkey):
         self.__url = url
         self.__apikey = apikey
@@ -26,7 +25,27 @@ class OKCoinSpot:
             params = 'symbol=%(symbol)s' %{'symbol':symbol}
         return httpGet(self.__url,DEPTH_RESOURCE,params) 
 
-    #获取OKCOIN现货历史交易信息
+    def kline(self,symbol,type_,size_=None, since=None):
+        """
+        获取OKEx币币K线数据(每个周期数据条数2000左右)
+        :param symbol:币对如ltc_btc
+        :param type_: 1min/3min/5min/15min/30min/1day/3day/1week/1hour/2hour/4hour/6hour/12hour
+        :param size_: 默认全部
+        :param since: 时间戳，返回该时间戳以后的数据(例如1417536000000)
+        :return:
+        """
+        KLINE_RESOURCE = "/api/v1/kline.do"
+
+        params = 'symbol={}&type={}'.format(symbol,type_)
+
+        if size_ is not None and isinstance(size_,int):
+            params = params + '&size={}'.format(size_)
+
+        if since is not None and isinstance(since,int):
+            params = params + '&since={}'.format(since)
+        return httpGet(self.__url, KLINE_RESOURCE, params)
+
+        #获取OKCOIN现货历史交易信息
     def trades(self,symbol = ''):
         TRADES_RESOURCE = "/api/v1/trades.do"
         params=''

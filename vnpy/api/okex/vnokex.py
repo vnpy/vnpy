@@ -29,27 +29,27 @@ SPOT_CURRENCY = ["usdt",
                  "eos"]
 
 SPOT_SYMBOL_PAIRS = set(["ltc_btc",
-                         "eos_usdt",
-                        "eth_btc",
-                        "etc_btc",
-                        "bch_btc",
-                        "btc_usdt",
-                        "eth_usdt",
-                        "ltc_usdt",
-                        "etc_usdt",
-                        "bch_usdt",
-                        "etc_eth",
-                        "bt1_btc",
-                        "bt2_btc",
-                        "btg_btc",
-                        "qtum_btc",
-                        "hsr_btc",
-                        "neo_btc",
-                        "gas_btc",
-                        "qtum_usdt",
-                        "hsr_usdt",
-                        "neo_usdt",
-                        "gas_usdt"])
+               "eth_btc",
+               "etc_btc",
+               "bch_btc",
+               "btc_usdt",
+               "eth_usdt",
+               "ltc_usdt",
+               "etc_usdt",
+               "bch_usdt",
+               "etc_eth",
+               "bt1_btc",
+               "bt2_btc",
+               "btg_btc",
+               "qtum_btc",
+               "hsr_btc",
+               "neo_btc",
+               "gas_btc",
+               "qtum_usdt",
+               "hsr_usdt",
+               "neo_usdt",
+               "gas_usdt",
+               "eos_usdt"])
 
 KLINE_PERIOD = ["1min","3min","5min","15min","30min","1hour","2hour","4hour","6hour","12hour","day","3day","week"]
 
@@ -191,7 +191,7 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def sendRequest(self, channel, params):
         """发送指令请求"""
-        print(u'vnokex.sendRequest:{}'.format(channel))
+        #print(u'vnokex.sendRequest:{}'.format(channel))
         # 在参数字典中加上api_key和签名字段
         params['api_key'] = self.apiKey
         params['sign'] = self.generateSign(params)
@@ -214,7 +214,7 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def sendDataRequest(self, channel):
         """发送数据请求"""
-        print(u'vnokex.sendDataRequest:{}'.format(channel))
+        #print(u'vnokex.sendDataRequest:{}'.format(channel))
         d = {}
         d['event'] = 'addChannel'
         d['channel'] = channel
@@ -236,7 +236,7 @@ class OkexApi(object):
         d = {'event': 'ping'}
         # 若触发异常则重连
         try:
-            print(u'vnokex.sendHeartBeat')
+            #print(u'vnokex.sendHeartBeat')
             j = json.dumps(d)
             self.ws.send(j)
         except websocket.WebSocketConnectionClosedException as ex:
@@ -281,7 +281,7 @@ class WsSpotApi(OkexApi):
 
     #----------------------------------------------------------------------
     def subscribeSpotTicker(self, symbol):
-        print(u'vnokex.subscribeSpotTicker:{}'.format(symbol))
+        #print(u'vnokex.subscribeSpotTicker:{}'.format(symbol))
 
         """订阅现货的Tick"""
         channel = 'ok_sub_spot_%s_ticker' %symbol
@@ -290,7 +290,7 @@ class WsSpotApi(OkexApi):
     #----------------------------------------------------------------------
     def subscribeSpotDepth(self, symbol, depth=0):
         """订阅现货的深度"""
-        print(u'vnokex.subscribeSpotDepth:{}'.format(symbol))
+        #print(u'vnokex.subscribeSpotDepth:{}'.format(symbol))
 
         channel = 'ok_sub_spot_%s_depth' %symbol
         if depth:
@@ -304,7 +304,7 @@ class WsSpotApi(OkexApi):
         :param symbol:
         :return:
         """
-        print(u'vnokex.subscribeSpotDeals:{}'.format(symbol))
+        #print(u'vnokex.subscribeSpotDeals:{}'.format(symbol))
         channel = 'ok_sub_spot_%s_deals' %symbol
         self.sendDataRequest(channel)
 
@@ -316,14 +316,14 @@ class WsSpotApi(OkexApi):
         :param period:
         :return:
         """
-        print(u'vnokex.subscribeSpotKlines:{} {}'.format(symbol,period))
+        #print(u'vnokex.subscribeSpotKlines:{} {}'.format(symbol,period))
         channel = 'ok_sub_spot_%s_kline_%s' %(symbol, period)
         self.sendDataRequest(channel)
 
     #----------------------------------------------------------------------
     def spotTrade(self, symbol, type_, price, amount):
         """现货委托"""
-        print(u'vnokex.stopTrade:symbol:{} type:{} price:{} amount:{}'.format(symbol, type_, price,amount))
+        #print(u'vnokex.stopTrade:symbol:{} type:{} price:{} amount:{}'.format(symbol, type_, price,amount))
 
         params = {}
         params['symbol'] = str(symbol)
@@ -349,7 +349,7 @@ class WsSpotApi(OkexApi):
         :param orderid:
         :return:
         """
-        print(u'vnokex.spotCancelOrder:{} orderid:{}'.format(symbol, orderid))
+        #print(u'vnokex.spotCancelOrder:{} orderid:{}'.format(symbol, orderid))
         params = {}
         params['symbol'] = str(symbol)
         params['order_id'] = str(orderid)
@@ -364,7 +364,7 @@ class WsSpotApi(OkexApi):
         查询现货账户"
         :return: 
         """""
-        print(u'vnokex.spotUserInfo()')
+        #print(u'vnokex.spotUserInfo()')
         channel = 'ok_spot_userinfo'
         self.sendRequest(channel, {})
 
@@ -376,7 +376,7 @@ class WsSpotApi(OkexApi):
         :param orderid: 委托编号
         :return:
         """
-        print(u'vnokex.spotOrderInfo:{},orderid:{}'.format(symbol,orderid))
+        #print(u'vnokex.spotOrderInfo:{},orderid:{}'.format(symbol,orderid))
 
         params = {}
         params['symbol'] = str(symbol)
@@ -679,9 +679,9 @@ class WsFuturesApi(object):
         self.sendTradingRequest(channel, {})
 
     # ----------------------------------------------------------------------
-    def futureSubUserInfo(self):
-         channel = 'ok_sub_futureusd_userinfo'
-         self.sendTradingRequest(channel, {})
+    # def futureSubUserInfo(self):
+    #     channel = 'ok_sub_futureusd_userinfo'
+    #     self.sendTradingRequest(channel, {})
 
     # ----------------------------------------------------------------------
     def futureOrderInfo(self, symbol_pair, order_id, contract_type, status, current_page, page_length=50):
@@ -718,6 +718,15 @@ class WsFuturesApi(object):
             for contract_type in CONTRACT_TYPE:
                 # orderid = -1,
                 self.futureOrderInfo(symbol_usd, -1, contract_type, 1, 1, 50)
+
+    # ----------------------------------------------------------------------
+    def subscribeFutureTrades(self):
+        """
+        订阅期货成交回报
+        :return:
+        """
+        channel = 'ok_sub_futureusd_trades'
+        self.sendTradingRequest(channel, {})
 
     # ----------------------------------------------------------------------
     def subscribeFutureUserInfo(self):
