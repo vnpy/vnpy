@@ -1333,6 +1333,7 @@ def runHistoryDataServer():
     hds.start()
 
     print(u'按任意键退出')
+    hds.stop()
     raw_input()
 
 #----------------------------------------------------------------------
