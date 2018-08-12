@@ -152,10 +152,15 @@ class OmEngine(object):
                     detail = self.mainEngine.getPositionDetail(contract.vtSymbol)
                     option = OmOption(contract, detail, underlying, model, r)
                     
+                    key = str(option.k)
                     if contract.optionType is OPTION_CALL:
-                        callDict[option.k] = option
+                        if key in callDict:
+                            key += 'a'
+                        callDict[key] = option
                     else:
-                        putDict[option.k] = option
+                        if key in putDict:
+                            key += 'a'                        
+                        putDict[key] = option
                         
             # 期权排序
             strikeList = callDict.keys()

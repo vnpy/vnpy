@@ -50,8 +50,8 @@ with open("WEB_setting.json") as f:
 
 # 创建Flask对象
 from flask import Flask, send_file
-from flask.ext.restful import Api, Resource, reqparse
-from flask.ext.socketio import SocketIO
+from flask_restful import Api, Resource, reqparse
+from flask_socketio import SocketIO
 from flask_cors import *
 
 app = Flask(__name__)
@@ -510,6 +510,7 @@ class CtaStrategyStop(Resource):
             engine.stopStrategy(name)
         return {'result_code':'success','data':''}
 
+
 ########################################################################
 class CtaStrategyName(Resource):
     """»ñÈ¡²ßÂÔÃû"""
@@ -532,6 +533,7 @@ class CtaStrategyName(Resource):
         engine = me.getApp('CtaStrategy')
         l = engine.getStrategyNames()
         return {'result_code':'success','data':l}
+
 
 ########################################################################
 class CtaStrategyLoad(Resource):
@@ -672,7 +674,11 @@ ee.register(EVENT_CTA_STRATEGY, handleEvent)
 #----------------------------------------------------------------------
 def run():
     """启动Web服务"""
-    socketio.run(app,debug=True,host='0.0.0.0',port=5000)
+    socketio.run(app, 
+                 debug=True,
+                 host='0.0.0.0',
+                 port=5000,
+                 use_reloader=False)
 
 
 if __name__ == '__main__':

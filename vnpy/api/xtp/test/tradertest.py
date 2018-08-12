@@ -1,20 +1,23 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import os
 from time import sleep
 
+from six.moves import input
+
 from vnxtptrader import *
+
 
 #----------------------------------------------------------------------
 def printDict(d):
     """"""
-    print '-' * 50
+    print('-' * 50)
     l = d.keys()
     l.sort()
     for k in l:
-        print k, d[k]
-    
-    
+        print(k, d[k])
+
 
 ########################################################################
 class TestApi(TraderApi):
@@ -28,79 +31,79 @@ class TestApi(TraderApi):
     #----------------------------------------------------------------------
     def onDisconnected(self, reason):
         """"""
-        print '-' * 30
-        print 'onDisconnected'
-        print reason
+        print('-' * 30)
+        print('onDisconnected')
+        print(reason)
         
     #----------------------------------------------------------------------
     def onError(self, data):
         """"""
-        print '-' * 30
-        print 'onError'
+        print('-' * 30)
+        print('onError')
         printDict(data)
         
     #----------------------------------------------------------------------
     def onOrderEvent(self, data, error):
         """"""
-        print '-' * 30
-        print 'onOrderEvent'
+        print('-' * 30)
+        print('onOrderEvent')
         printDict(data)
         printDict(error)
         
     #----------------------------------------------------------------------
     def onTradeEvent(self, data):
         """"""
-        print '-' * 30
-        print 'onTradeEvent'
+        print('-' * 30)
+        print('onTradeEvent')
         printDict(data)
         
     #----------------------------------------------------------------------
     def onCancelOrderError(self, data, error):
         """"""
-        print '-' * 30
-        print 'onCancelOrderError'
+        print('-' * 30)
+        print('onCancelOrderError')
         printDict(data)
         printDict(error)
         
     #----------------------------------------------------------------------
     def onQueryOrder(self, data, error, reqid, last):
         """"""
-        print '-' * 30
-        print 'onQueryOrder'
+        print('-' * 30)
+        print('onQueryOrder')
         printDict(data)
         printDict(error) 
-        print reqid
-        print last
+        print(reqid)
+        print(last)
         
     #----------------------------------------------------------------------
     def onQueryTrade(self, data, error, reqid, last):
         """"""
-        print '-' * 30
-        print 'onQueryTrade'
+        print('-' * 30)
+        print('onQueryTrade')
         printDict(data)
         printDict(error)
-        print reqid
-        print last        
+        print(reqid)
+        print(last)        
         
     #----------------------------------------------------------------------
     def onQueryPosition(self, data, error, reqid, last):
         """"""
-        print '-' * 30
-        print 'onQueryPosition'
+        print('-' * 30)
+        print('onQueryPosition')
         printDict(data)
         printDict(error)
-        print reqid
-        print last        
+        print(reqid)
+        print(last)        
         
     #----------------------------------------------------------------------
     def onQueryAsset(self, data, error, reqid, last):
         """"""
-        print '-' * 30
-        print 'onQueryAsset'
+        print('-' * 30)
+        print('onQueryAsset')
         printDict(data)
         printDict(error)
-        print reqid
-        print last        
+        print(reqid)
+        print(last)        
 
 
 
@@ -121,12 +124,12 @@ if __name__ == '__main__':
     
     # 登录
     session = api.login(ip, port, user, password, 1)
-    print 'login result', session
+    print('login result', session)
 
     # 调用同步函数查询一些信息
-    print 'trading day is:', api.getTradingDay()
-    print 'api version is:', api.getApiVersion()
-    print 'last error is:', api.getApiLastError()
+    print('trading day is:', api.getTradingDay())
+    print('api version is:', api.getApiVersion())
+    print('last error is:', api.getApiLastError())
     
     # 查询资产
     sleep(2)
@@ -166,7 +169,7 @@ if __name__ == '__main__':
     
     # 登出
     sleep(5)
-    print 'logout:', api.logout(session)
+    print('logout:', api.logout(session))
     
     # 阻塞
-    raw_input()
+    input()

@@ -10,6 +10,7 @@
 
 建议将所有的常量定义放在该文件中，便于检查是否存在重复的现象。
 '''
+from __future__ import print_function
 
 
 EVENT_TIMER = 'eTimer'                  # 计时器事件，每隔1秒发送一次

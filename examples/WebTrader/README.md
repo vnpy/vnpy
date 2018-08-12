@@ -6,17 +6,17 @@
 
 1. 修改CTP_connect.json中的账号和服务器地址
 2. 修改WEB_setting.json中的网页登录用户名和密码
-3. 打开cmd，运行python server.py
-4. 打开另一个cmd，运行python run.py
-5. 用浏览器（推荐Chrome）访问http://localhost:5000/
-6. 输入2中的用户名和密码登录后，点击左下角的“连接CTP”
-7. 网页前端的使用方法和常规版本的VnTrader基本一致
-8. 如需运行CTA策略，请修改CTA_setting.json中的配置
+3. 打开cmd，运行python run.py
+4. 浏览器将会自动打开，并访问http://127.0.0.1:5000/
+5. 输入2中的用户名和密码登录后，点击左下角的“连接CTP”
+6. 网页前端的使用方法和常规版本的VnTrader基本一致
+7. 如需运行CTA策略，请修改CTA_setting.json中的配置
 
 ## 文件功能
 
-* server.py：基于vnpy.rpc模块实现的交易服务器，包含CTP接口和CTA策略模块
-* run.py：基于Flask实现的Web服务器，内部通过vnpy.rpc客户端来访问交易服务器
+* tradingServer.py：基于vnpy.rpc模块实现的交易服务器，包含CTP接口和CTA策略模块
+* webServer.py：基于Flask实现的Web服务器，内部通过vnpy.rpc客户端来访问交易服务器
+* run.py: 无人值守服务
 
 ## 架构设计
 

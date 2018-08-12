@@ -2,6 +2,7 @@
 
 
 # C++和Python类型映射
+from __future__ import print_function
 type_map = {
     'int': 'int',
     'long': 'long', 
@@ -97,7 +98,7 @@ def main(cpp_filename, py_filename):
     cpp_f.close()
     py_f.close()
         
-    print u'data_type处理完成'
+    print(u'data_type处理完成')
     
 
 if __name__ == '__main__':

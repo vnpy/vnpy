@@ -11,6 +11,8 @@ import traceback
 from datetime import datetime
 from math import isnan
 
+from six import text_type
+
 
 #----------------------------------------------------------------------
 def safeUnicode(value):
@@ -26,7 +28,7 @@ def safeUnicode(value):
         if abs(d.as_tuple().exponent) > MAX_DECIMAL:
             value = round(value, ndigits=MAX_DECIMAL)
     
-    return unicode(value)
+    return text_type(value)
 
 
 #----------------------------------------------------------------------

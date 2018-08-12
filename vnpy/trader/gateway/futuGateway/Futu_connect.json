@@ -3,5 +3,5 @@
 	"port": 11111,
 	"market": "HK",
     "password": "123123",
-    "env": 1
+    "env": "REAL"
 }

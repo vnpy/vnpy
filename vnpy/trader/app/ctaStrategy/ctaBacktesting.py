@@ -5,6 +5,7 @@
 可以使用和实盘相同的代码进行回测。
 '''
 from __future__ import division
+from __future__ import print_function
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -16,6 +17,9 @@ import pymongo
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+from vnpy.rpc import RpcClient, RpcServer, RemoteException
+
 
 # 如果安装了seaborn则设置为白色风格
 try:
@@ -70,6 +74,7 @@ class BacktestingEngine(object):
         
         self.dbClient = None        # 数据库客户端
         self.dbCursor = None        # 数据库指针
+        self.hdsClient = None       # 历史数据服务器客户端
         
         self.initData = []          # 初始化用的数据
         self.dbName = ''            # 回测数据库名
@@ -112,7 +117,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出内容"""
-        print str(datetime.now()) + "\t" + content     
+        print(str(datetime.now()) + "\t" + content)     
     
     #------------------------------------------------
     # 参数设置相关
@@ -181,13 +186,22 @@ class BacktestingEngine(object):
     #------------------------------------------------    
     
     #----------------------------------------------------------------------
+    def initHdsClient(self):
+        """初始化历史数据服务器客户端"""
+        reqAddress = 'tcp://localhost:5555'
+        subAddress = 'tcp://localhost:7777'   
+        
+        self.hdsClient = RpcClient(reqAddress, subAddress)
+        self.hdsClient.start()
+    
+    #----------------------------------------------------------------------
     def loadHistoryData(self):
         """载入历史数据"""
         self.dbClient = pymongo.MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'])
         collection = self.dbClient[self.dbName][self.symbol]          
 
         self.output(u'开始载入数据')
-      
+        
         # 首先根据回测模式，确认要使用的数据类
         if self.mode == self.BAR_MODE:
             dataClass = VtBarData
@@ -196,10 +210,16 @@ class BacktestingEngine(object):
             dataClass = VtTickData
             func = self.newTick
 
-        # 载入初始化需要用的数据
-        flt = {'datetime':{'$gte':self.dataStartDate,
-                           '$lt':self.strategyStartDate}}        
-        initCursor = collection.find(flt).sort('datetime')
+        # 载入初始化需要用的数据        
+        if self.hdsClient:
+            initCursor = self.hdsClient.loadHistoryData(self.dbName,
+                                                        self.symbol,
+                                                        self.dataStartDate,
+                                                        self.strategyStartDate)
+        else:
+            flt = {'datetime':{'$gte':self.dataStartDate,
+                               '$lt':self.strategyStartDate}}        
+            initCursor = collection.find(flt).sort('datetime')
         
         # 将数据从查询指针中读取出，并生成列表
         self.initData = []              # 清空initData列表
@@ -209,14 +229,24 @@ class BacktestingEngine(object):
             self.initData.append(data)      
         
         # 载入回测数据
-        if not self.dataEndDate:
-            flt = {'datetime':{'$gte':self.strategyStartDate}}   # 数据过滤条件
+        if self.hdsClient:
+            self.dbCursor = self.hdsClient.loadHistoryData(self.dbName,
+                                                           self.symbol,
+                                                           self.strategyStartDate,
+                                                           self.dataEndDate)
         else:
-            flt = {'datetime':{'$gte':self.strategyStartDate,
-                               '$lte':self.dataEndDate}}  
-        self.dbCursor = collection.find(flt).sort('datetime')
+            if not self.dataEndDate:
+                flt = {'datetime':{'$gte':self.strategyStartDate}}   # 数据过滤条件
+            else:
+                flt = {'datetime':{'$gte':self.strategyStartDate,
+                                   '$lte':self.dataEndDate}}  
+            self.dbCursor = collection.find(flt).sort('datetime')
         
-        self.output(u'载入完成，数据量：%s' %(initCursor.count() + self.dbCursor.count()))
+        if isinstance(self.dbCursor, list):
+            count = len(initCursor) + len(self.dbCursor)
+        else:
+            count = initCursor.count() + self.dbCursor.count()
+        self.output(u'载入完成，数据量：%s' %count)
         
     #----------------------------------------------------------------------
     def runBacktesting(self):
@@ -234,8 +264,8 @@ class BacktestingEngine(object):
 
         self.output(u'开始回测')
         
-        self.strategy.inited = True
         self.strategy.onInit()
+        self.strategy.inited = True
         self.output(u'策略初始化完成')
         
         self.strategy.trading = True
@@ -584,6 +614,11 @@ class BacktestingEngine(object):
         计算回测结果
         """
         self.output(u'计算回测结果')
+        
+        # 检查成交记录
+        if not self.tradeDict:
+            self.output(u'成交记录为空，无法计算回测结果')
+            return {}
         
         # 首先基于回测后的成交记录，计算每笔交易的盈亏
         resultList = []             # 交易结果列表
@@ -941,6 +976,11 @@ class BacktestingEngine(object):
         """计算按日统计的交易结果"""
         self.output(u'计算按日统计结果')
         
+        # 检查成交记录
+        if not self.tradeDict:
+            self.output(u'成交记录为空，无法计算回测结果')
+            return {}
+        
         # 将成交添加到每日交易结果中
         for trade in self.tradeDict.values():
             date = trade.dt.date()
@@ -1213,11 +1253,11 @@ class OptimizationSetting(object):
             return 
         
         if end < start:
-            print u'参数起始点必须不大于终止点'
+            print(u'参数起始点必须不大于终止点')
             return
         
         if step <= 0:
-            print u'参数布进必须大于0'
+            print(u'参数布进必须大于0')
             return
         
         l = []
@@ -1252,6 +1292,59 @@ class OptimizationSetting(object):
         """设置优化目标字段"""
         self.optimizeTarget = target
 
+
+########################################################################
+class HistoryDataServer(RpcServer):
+    """历史数据缓存服务器"""
+
+    #----------------------------------------------------------------------
+    def __init__(self, repAddress, pubAddress):
+        """Constructor"""
+        super(HistoryDataServer, self).__init__(repAddress, pubAddress)
+        
+        self.dbClient = pymongo.MongoClient(globalSetting['mongoHost'], 
+                                            globalSetting['mongoPort'])
+        
+        self.historyDict = {}
+        
+        self.register(self.loadHistoryData)
+    
+    #----------------------------------------------------------------------
+    def loadHistoryData(self, dbName, symbol, start, end):
+        """"""
+        # 首先检查是否有缓存，如果有则直接返回
+        history = self.historyDict.get((dbName, symbol, start, end), None)
+        if history:
+            print(u'找到内存缓存：%s %s %s %s' %(dbName, symbol, start, end))
+            return history
+        
+        # 否则从数据库加载
+        collection = self.dbClient[dbName][symbol]
+        
+        if end:
+            flt = {'datetime':{'$gte':start, '$lt':end}}        
+        else:
+            flt = {'datetime':{'$gte':start}}        
+            
+        cx = collection.find(flt).sort('datetime')
+        history = [d for d in cx]
+        
+        self.historyDict[(dbName, symbol, start, end)] = history
+        print(u'从数据库加载：%s %s %s %s' %(dbName, symbol, start, end))
+        return history
+    
+#----------------------------------------------------------------------
+def runHistoryDataServer():
+    """"""
+    repAddress = 'tcp://*:5555'
+    pubAddress = 'tcp://*:7777'
+
+    hds = HistoryDataServer(repAddress, pubAddress)
+    hds.start()
+
+    print(u'按任意键退出')
+    hds.stop()
+    raw_input()
 
 #----------------------------------------------------------------------
 def formatNumber(n):

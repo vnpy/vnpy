@@ -2,7 +2,7 @@
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
 ::安装Anaconda
-choco install anaconda2 --version 4.0.0 --x86 -y --ignorechecksum --params="'/AddToPath=1'"
+choco install anaconda2 --version 5.2.0 --x86 -y --ignorechecksum --params="'/AddToPath=1'"
 setx PATH "%PATH%;C:\Program Files\Anaconda2\;C:\Program Files\Anaconda2\Scripts\"
 
 ::安装VC Redist
