@@ -615,6 +615,11 @@ class BacktestingEngine(object):
         """
         self.output(u'计算回测结果')
         
+        # 检查成交记录
+        if not self.tradeDict:
+            self.output(u'成交记录为空，无法计算回测结果')
+            return {}
+        
         # 首先基于回测后的成交记录，计算每笔交易的盈亏
         resultList = []             # 交易结果列表
         
@@ -970,6 +975,11 @@ class BacktestingEngine(object):
     def calculateDailyResult(self):
         """计算按日统计的交易结果"""
         self.output(u'计算按日统计结果')
+        
+        # 检查成交记录
+        if not self.tradeDict:
+            self.output(u'成交记录为空，无法计算回测结果')
+            return {}
         
         # 将成交添加到每日交易结果中
         for trade in self.tradeDict.values():
@@ -1333,6 +1343,7 @@ def runHistoryDataServer():
     hds.start()
 
     print(u'按任意键退出')
+    hds.stop()
     raw_input()
 
 #----------------------------------------------------------------------

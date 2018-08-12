@@ -11,4 +11,4 @@ flask-restful
 flask-cors
 gevent-websocket
 pyjwt
-webbrowser
+ccxt
