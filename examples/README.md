@@ -2,6 +2,8 @@
 
 本文件夹中的内容主要是关于如何在交易业务中使用vn.py的示例
 
+* CryptoTrader：vn.crypto数字货币交易平台
+
 * VnTrader：最常用的vn.py图形交易系统
 
 * OptionMaster: 期权量化交易系统
@@ -25,3 +27,5 @@
 * TushareDataService：TuShare历史行情服务（A股）
 
 * FutuDataService：富途证券历史行情服务（美股、港股）
+
+* CoinapiDataService：CoinAPI.io历史行情服务（数字货币）

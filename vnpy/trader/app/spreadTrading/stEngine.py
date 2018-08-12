@@ -196,13 +196,7 @@ class StDataEngine(object):
         spread.calculatePos()
         
         # 推送价差持仓更新
-        event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
-        event1.dict_['data'] = spread
-        self.eventEngine.put(event1)
-        
-        event2 = Event(EVENT_SPREADTRADING_POS)
-        event2.dict_['data'] = spread
-        self.eventEngine.put(event2)
+        self.putSpreadPosEvent(spread)
     
     #----------------------------------------------------------------------
     def processPosEvent(self, event):
