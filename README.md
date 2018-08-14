@@ -30,9 +30,11 @@
 3、Windows下安装步骤
 
     1)minconda 安装 清华https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ 下载windows下x86_64最新版本
-      安装时，添加minconda到系统环境路径
+      安装时，记得勾选，添加minconda到系统环境路径
 
     2)重启后，命令行窗口:
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+    conda config --set show_channel_urls yes
     conda create --name py35 python=3.5
 
     3)激活py35
@@ -44,6 +46,8 @@
     5) 安装其他包
     cd c:\vnpy
     pip install -r requirements.txt
+
+    6）安装Talib，见下8
 
 大佳
 QQ/Wechat：28888502
@@ -157,6 +161,11 @@ QQ/Wechat：28888502
 
 #7、碰到的问题：安装某些组件，提示 cl.exe Not found
     如果你安装了VC基础组件，需要增加一个用户环境变量，把"C:\Program Files (x86)\Microsoft Visual Studio\Shared\14.0\VC\bin" 添加到path变量中
+
+#8、Install Ta-Lib
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --set show_channel_urls yes
+conda install -c quantopian ta-lib=0.4.9
 
 --------------------------------------------------------------------------------------------
 # vn.py - 基于python的开源交易平台开发框架
