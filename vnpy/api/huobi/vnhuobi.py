@@ -13,7 +13,10 @@ import zlib
 from copy import copy
 from datetime import datetime
 from multiprocessing.dummy import Pool
-from queue import Empty, Queue
+try:
+    from queue import Empty, Queue
+except ImportError:
+    from Queue import Empty, Queue
 from threading import Thread
 from time import sleep
 

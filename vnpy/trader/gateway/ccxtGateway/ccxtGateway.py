@@ -8,7 +8,10 @@ import os
 import json
 import time
 import traceback
-from queue import Queue, Empty
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
 from multiprocessing.dummy import Pool
 from datetime import datetime, timedelta
 from copy import copy

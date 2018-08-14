@@ -14,7 +14,10 @@ from datetime import datetime
 from time import sleep
 from copy import copy
 from threading import Condition
-from queue import Queue, Empty
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
 from threading import Thread
 from time import sleep
 

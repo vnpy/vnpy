@@ -7,8 +7,11 @@ import json
 import ssl
 import traceback
 import base64
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
 
-from queue import Queue, Empty
 from multiprocessing.dummy import Pool
 from time import time
 from urlparse import urlparse
