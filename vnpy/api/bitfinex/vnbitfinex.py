@@ -6,7 +6,10 @@ import requests
 import traceback
 import ssl
 from threading import Thread
-from queue import Queue, Empty
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
 
 import websocket
 

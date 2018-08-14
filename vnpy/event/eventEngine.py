@@ -2,7 +2,10 @@
 
 # 系统模块
 from __future__ import print_function
-from queue import Queue, Empty
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
 from threading import Thread
 from time import sleep
 from collections import defaultdict

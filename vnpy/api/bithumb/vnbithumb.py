@@ -8,7 +8,11 @@ from time import time
 
 import requests
 from six.moves import input
-from queue import Queue, Empty
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
+
 
 REST_HOST = 'https://api.bithumb.com'
 

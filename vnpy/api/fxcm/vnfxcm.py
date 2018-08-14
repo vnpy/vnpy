@@ -5,7 +5,11 @@ import json
 import requests
 from socketIO_client import SocketIO
 from threading import Thread
-from queue import Queue, Empty
+try:
+    from queue import Queue, Empty
+except ImportError:
+    from Queue import Queue, Empty
+
 
 
 ########################################################################
