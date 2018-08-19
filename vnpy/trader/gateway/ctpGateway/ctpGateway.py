@@ -375,8 +375,22 @@ class CtpMdApi(MdApi):
         tick.askVolume1 = data['AskVolume1']
         
         # 大商所日期转换
+		# 大商所actionDay信息，周一至周四晚上夜盘开始到24:00之前，actionday实际是tradingday，也就是比实际发生交易的日期早了一天
+		# 而在周五晚上，actionday也是下周一，也就是比实际发生交易的日期早了3天
+		# 夜盘24:00之后的actionday信息就是tradingday，如实际相符
+		# 全部采用tick时间戳进行日期处理，而不采用本地时间判断，从而避免24:00前后的tick出现逻辑错误
+		
         if tick.exchange is EXCHANGE_DCE:
-            tick.date = datetime.now().strftime('%Y%m%d')
+            newTime = datetime.strptime(tick.time, '%H:%M:%S.%f').time()    # 最新tick时间戳
+
+            #  夜盘日期减1或3
+            if newTime > NIGHT_TRADING :   # 夜盘开始，同时还没有过24:00，因此需要转换
+                actionDay = datetime.strptime(tick.date,'%Y%m%d')  # 获取交易日信息并转化为date对象
+                if actionDay.weekday() == 0:  #  夜盘actionDay为周一，则实际交易的自然日是上周五
+                    actionDay += timedelta(-3)                          # 日期减3
+                else:
+                    actionDay += timedelta(-1)
+                tick.date = actionDay.strftime('%Y%m%d')    # 生成新的日期字符串
         
         self.gateway.onTick(tick)
         
