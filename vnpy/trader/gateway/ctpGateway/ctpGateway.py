@@ -118,6 +118,7 @@ class CtpGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             userID = str(setting['userID'])
             password = str(setting['password'])
