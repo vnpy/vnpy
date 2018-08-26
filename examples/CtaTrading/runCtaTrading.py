@@ -1,8 +1,12 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+try:
+    reload(sys)  # Python 2
+    sys.setdefaultencoding('utf8')
+except NameError:
+    pass         # Python 3
 
 import multiprocessing
 from time import sleep
@@ -24,12 +28,12 @@ def processErrorEvent(event):
     错误信息在每次登陆后，会将当日所有已产生的均推送一遍，所以不适合写入日志
     """
     error = event.dict_['data']
-    print u'错误代码：%s，错误信息：%s' %(error.errorID, error.errorMsg)
+    print(u'错误代码：%s，错误信息：%s' %(error.errorID, error.errorMsg))
     
 #----------------------------------------------------------------------
 def runChildProcess():
     """子进程运行函数"""
-    print '-'*20
+    print('-'*20)
     
     # 创建日志引擎
     le = LogEngine()
@@ -55,7 +59,8 @@ def runChildProcess():
     me.connect('CTP')
     le.info(u'连接CTP接口')
     
-    sleep(10)    # 等待CTP接口初始化
+    sleep(10)                       # 等待CTP接口初始化
+    me.dataEngine.saveContracts()   # 保存合约信息到文件
     
     cta = me.getApp(ctaStrategy.appName)
     

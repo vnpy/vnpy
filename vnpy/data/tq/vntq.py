@@ -4,7 +4,9 @@
 对接天勤行情的网关接口，可以提供国内期货的报价/K线/Tick序列等数据的实时推送和历史仿真
 使用时需要在本机先启动一个天勤终端进程
 天勤行情终端: http://www.tq18.cn
+天勤接口文档: http://doc.tq18.cn/tq/latest/extension/wsapi/index.html
 """
+from __future__ import print_function
 
 
 import json
@@ -47,10 +49,15 @@ class TqApi(object):
         订阅实时行情.
         指定一个合约列表，订阅其实时报价信息
         每次调用此函数时，都会覆盖前一次的订阅设定，不在订阅列表里的合约，会停止行情推送
-        :param ins_list: ins_list 是一个列表，列出全部需要实时行情的合约代码。
+        :param ins_list: ins_list 是一个列表，列出全部需要实时行情的合约代码。注意：天勤接口从0.8版本开始，合约代码格式变更为 交易所代码.合约代码的格式. 交易所代码如下：
+                         CFFEX: 中金所
+                         SHFE: 上期所
+                         DCE: 大商所
+                         CZCE: 郑商所
+                         INE: 能源交易所(原油)
         :param callback_func (可选): callback_func 是一个回调函数，每当有报价数据变更时会触发。此函数应该接受一个参数 ins_id
         :example:
-            订阅 cu1803,SR709,IF1709 这三个合约的报价:  subscribe_quote(["cu1803", ”SR709", "IF1709"])
+            订阅 SHFE.cu1803,CZCE.SR709,CFFEX.IF1709 这三个合约的报价:  subscribe_quote(["SHFE.cu1803", ”CZCE.SR709", "CFFEX.IF1709"])
         """
         if callback_func:
             self.quote_callback_func = callback_func
@@ -74,8 +81,8 @@ class TqApi(object):
         :param data_length: 需要获取的序列长度。每个序列最大支持请求 8964 个数据
         :param callback_func (可选): callback_func 是一个回调函数，每当序列数据变更时会触发。此函数应该接受2个参数 ins_id, duration_seconds
         :example:
-            订阅 cu1803 的1分钟线： subscribe_chart("cu1803", 60)
-            订阅 IF1709 的tick线： subscribe_chart("IF1709", 0)
+            订阅 SHFE.cu1803 的1分钟线： subscribe_chart("SHFE.cu1803", 60)
+            订阅 CFFEX.IF1709 的tick线： subscribe_chart("CFFEX.IF1709", 0)
         """
         chart_id = self._generate_chart_id(ins_id, duration_seconds)
         
@@ -102,7 +109,7 @@ class TqApi(object):
         :return: 若指定的数据不存在，返回None，否则返回如下所示的一个dict
         {
             u'datetime': u'2017-07-26 23:04:21.000001',# tick从交易所发出的时间(按北京时区)
-            u'instrument_id': u'SR801', # 合约代码
+            u'instrument_id': u'CZCE.SR801', # 合约代码
             u'last_price': 6122.0, # 最新价
             u'bid_price1': 6121.0, # 买一价
             u'ask_price1': 6122.0, # 卖一价
@@ -215,7 +222,8 @@ class TqApi(object):
         if 'data' in pack:
             l = pack["data"]
         else:
-            print u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack)
+            print(u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack))
+            return
 
         for data in l:
             # 合并更新数据字典
@@ -270,4 +278,5 @@ class TqApi(object):
     def _generate_chart_id(self, ins_id, duration_seconds):
         """生成图表编号"""
         chart_id = "VN_%s_%d" % (ins_id, duration_seconds)
+        chart_id = chart_id.replace(".", "_")
         return chart_id

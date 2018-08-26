@@ -12,7 +12,7 @@ import os
 import copy
 import traceback
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from Queue import Queue, Empty
 from threading import Thread
 from pymongo.errors import DuplicateKeyError
@@ -60,6 +60,11 @@ class DrEngine(object):
         self.queue = Queue()                    # 队列
         self.thread = Thread(target=self.run)   # 线程
         
+        # 收盘相关
+        self.marketCloseTime = None             # 收盘时间
+        self.timerCount = 0                     # 定时器计数
+        self.lastTimerTime = None               # 上一次记录时间
+        
         # 载入设置，订阅行情
         self.loadSetting()
         
@@ -79,6 +84,11 @@ class DrEngine(object):
             working = drSetting['working']
             if not working:
                 return
+            
+            # 加载收盘时间
+            if 'marketCloseTime' in drSetting:
+                timestamp = drSetting['marketCloseTime']
+                self.marketCloseTime = datetime.strptime(timestamp, '%H:%M:%S').time()
 
             # Tick记录配置
             if 'tick' in drSetting:
@@ -175,14 +185,47 @@ class DrEngine(object):
         
         # 生成datetime对象
         if not tick.datetime:
-            tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
+            if '.' in tick.time:
+                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')
+            else:
+                tick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S')
 
         self.onTick(tick)
         
         bm = self.bgDict.get(vtSymbol, None)
         if bm:
             bm.updateTick(tick)
+    
+    #----------------------------------------------------------------------
+    def processTimerEvent(self, event):
+        """处理定时事件"""
+        # 如果没有设置收盘时间，则无需处理
+        if not self.marketCloseTime:
+            return
         
+        # 10秒检查一次
+        self.timerCount += 1
+        if self.timerCount < 10:
+            return
+        self.timerCount = 0
+        
+        # 获取当前时间
+        currentTime = datetime.now().time()
+        
+        if not self.lastTimerTime:
+            self.lastTimerTime = currentTime
+            return
+        
+        # 上一个时间戳尚未到收盘时间，且当前时间戳已经到收盘时间
+        if (self.lastTimerTime < self.marketCloseTime and
+            currentTime >= self.marketCloseTime):
+            # 强制所有的K线生成器立即完成K线
+            for bg in self.bgDict.values():
+                bg.generate()
+        
+        # 记录新的时间
+        self.lastTimerTime = currentTime
+    
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """Tick更新"""
@@ -224,6 +267,7 @@ class DrEngine(object):
     def registerEvent(self):
         """注册事件监听"""
         self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
+        self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
  
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -246,7 +290,7 @@ class DrEngine(object):
                 try:
                     self.mainEngine.dbInsert(dbName, collectionName, d)
                 except DuplicateKeyError:
-                    self.writeDrLog(u'键值重复插入失败，报错信息：' %traceback.format_exc())
+                    self.writeDrLog(u'键值重复插入失败，报错信息：%s' %traceback.format_exc())
             except Empty:
                 pass
             

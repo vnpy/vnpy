@@ -3,6 +3,7 @@
 import json
 import traceback
 import shelve
+from collections import OrderedDict
 
 from vnpy.event import Event
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
@@ -195,13 +196,7 @@ class StDataEngine(object):
         spread.calculatePos()
         
         # 推送价差持仓更新
-        event1 = Event(EVENT_SPREADTRADING_POS+spread.name)
-        event1.dict_['data'] = spread
-        self.eventEngine.put(event1)
-        
-        event2 = Event(EVENT_SPREADTRADING_POS)
-        event2.dict_['data'] = spread
-        self.eventEngine.put(event2)
+        self.putSpreadPosEvent(spread)
     
     #----------------------------------------------------------------------
     def processPosEvent(self, event):
@@ -289,8 +284,8 @@ class StAlgoEngine(object):
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
         
-        self.algoDict = {}          # spreadName:algo
-        self.vtSymbolAlgoDict = {}  # vtSymbol:algo
+        self.algoDict = OrderedDict()   # spreadName:algo
+        self.vtSymbolAlgoDict = {}      # vtSymbol:algo
         
         self.registerEvent()
         

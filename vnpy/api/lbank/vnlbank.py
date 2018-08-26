@@ -1,307 +1,225 @@
 # encoding: utf-8
 
+from __future__ import print_function
 import urllib
 import hashlib
+import ssl
+import json
+import traceback
 
 import requests
 from Queue import Queue, Empty
 from threading import Thread
-from time import sleep
+from multiprocessing.dummy import Pool
+from time import time
+
+import websocket
 
 
 
-API_ROOT ="https://api.lbank.info/v1/"
-
-FUNCTION_TICKER = ('ticker.do', 'get')
-FUNCTION_DEPTH = ('depth.do', 'get')
-FUNCTION_TRADES = ('trades.do', 'get')
-FUNCTION_KLINE = ('kline.do', 'get')
-
-FUNCTION_USERINFO = ('user_info.do', 'post')
-FUNCTION_CREATEORDER = ('create_order.do', 'post')
-FUNCTION_CANCELORDER = ('cancel_order.do', 'post')
-FUNCTION_ORDERSINFO = ('orders_info.do', 'post')
-FUNCTION_ORDERSINFOHISTORY = ('orders_info_history.do', 'post')
+REST_HOST = "https://api.lbank.info/v1"
+WEBSOCKET_HOST = 'ws://api.lbank.info/ws'
 
 
-#----------------------------------------------------------------------
-def signature(params, secretKey):
-    """生成签名"""
-    params = sorted(params.iteritems(), key=lambda d:d[0], reverse=False)
-    params.append(('secret_key', secretKey))
-    message = urllib.urlencode(params)
-    
-    m = hashlib.md5()
-    m.update(message)
-    m.digest()
-
-    sig=m.hexdigest()
-    return sig    
-    
 
 ########################################################################
-class LbankApi(object):
+class LbankRestApi(object):
     """"""
-    DEBUG = True
-
+    
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.apiKey = ''
         self.secretKey = ''
 
-        self.interval = 1           # 每次请求的间隔等待
         self.active = False         # API工作状态   
         self.reqID = 0              # 请求编号
-        self.reqQueue = Queue()     # 请求队列
-        self.reqThread = Thread(target=self.processQueue)   # 请求处理线程        
-    
+        self.queue = Queue()        # 请求队列
+        self.pool = None            # 线程池
+        self.sessionDict = {}       # 连接池
+        
     #----------------------------------------------------------------------
-    def init(self, apiKey, secretKey, interval):
+    def init(self, apiKey, secretKey):
         """初始化"""
         self.apiKey = apiKey
         self.secretKey = secretKey
-        self.interval = interval
-        
-        self.active = True
-        self.reqThread.start()
         
     #----------------------------------------------------------------------
-    def exit(self):
+    def start(self, n=10):
+        """"""
+        if self.active:
+            return
+        
+        self.active = True
+        self.pool = Pool(n)
+        self.pool.map_async(self.run, range(n))
+        
+    #----------------------------------------------------------------------
+    def close(self):
         """退出"""
         self.active = False
         
-        if self.reqThread.isAlive():
-            self.reqThread.join()
+        if self.pool:
+            self.pool.close()
+            self.pool.join()
     
     #----------------------------------------------------------------------
-    def processRequest(self, req):
+    def processReq(self, req, i):
         """处理请求"""
         # 读取方法和参数
-        api, method = req['function']
-        params = req['params']
-        url = API_ROOT + api
+        method, path, params, callback, reqID = req
+        url = REST_HOST + path
         
         # 在参数中增加必须的字段
         params['api_key'] = self.apiKey
-        
-        # 添加签名
-        sign = signature(params, self.secretKey)
-        params['sign'] = sign
+        params['sign'] = self.generateSignature(params)
         
         # 发送请求
         payload = urllib.urlencode(params)
-    
-        r = requests.request(method, url, params=payload)
-        if r.status_code == 200:
-            data = r.json()
-            return data
-        else:
-            return None        
+        
+        try:
+            # 使用会话重用技术，请求延时降低80%
+            session = self.sessionDict[i]
+            resp = session.request(method, url, params=payload)
+            #resp = requests.request(method, url, params=payload)
+            
+            code = resp.status_code
+            d = resp.json()
+
+            if code == 200:
+                callback(d, reqID)
+            else:
+                self.onError(code, str(d))    
+
+        except Exception as e:
+            self.onError(type(e), e.message)   
     
     #----------------------------------------------------------------------
-    def processQueue(self):
-        """处理请求队列中的请求"""
+    def run(self, i):
+        """连续运行"""
+        self.sessionDict[i] = requests.Session()
+        
         while self.active:
             try:
-                req = self.reqQueue.get(block=True, timeout=1)  # 获取请求的阻塞为一秒
-                callback = req['callback']
-                reqID = req['reqID']
-                
-                data = self.processRequest(req)
-                
-                # 请求失败
-                if data is None:
-                    error = u'请求失败'
-                    self.onError(error, req, reqID)
-                elif 'error_code' in data:
-                    error = u'请求出错，错误代码：%s' % data['error_code']
-                    self.onError(error, req, reqID)
-                # 请求成功
-                else:
-                    if self.DEBUG:
-                        print callback.__name__                        
-                    callback(data, req, reqID)
-
-                # 流控等待
-                sleep(self.interval)
-                
+                req = self.queue.get(block=True, timeout=1)  # 获取请求的阻塞为一秒
+                self.processReq(req, i)
             except Empty:
                 pass    
             
     #----------------------------------------------------------------------
-    def sendRequest(self, function, params, callback):
+    def addReq(self, method, path, params, callback):
         """发送请求"""
         # 请求编号加1
         self.reqID += 1
         
         # 生成请求字典并放入队列中
-        req = {}
-        req['function'] = function
-        req['params'] = params
-        req['callback'] = callback
-        req['reqID'] = self.reqID
-        self.reqQueue.put(req)
+        req = (method, path, params, callback, self.reqID)
+        self.queue.put(req)
         
         # 返回请求编号
         return self.reqID
-    
+
     #----------------------------------------------------------------------
-    def onError(self, error, req, reqID):
+    def generateSignature(self, params):
+        """生成签名"""
+        params = sorted(params.iteritems(), key=lambda d:d[0], reverse=False)
+        params.append(('secret_key', self.secretKey))
+        message = urllib.urlencode(params)
+        
+        m = hashlib.md5()
+        m.update(message)
+        m.digest()
+    
+        sig = m.hexdigest()
+        return sig    
+
+    #----------------------------------------------------------------------
+    def onError(self, code, msg):
         """错误推送"""
-        print error, req, reqID
+        print(code, msg)
 
-    ###############################################
-    # 行情接口
-    ###############################################
+    #----------------------------------------------------------------------
+    def onData(self, data, reqID):
+        """"""
+        print(data, reqID)
+
+
+########################################################################
+class LbankWebsocketApi(object):
+    """Websocket API"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.ws = None
+        self.thread = None
+        self.active = False
     
     #----------------------------------------------------------------------
-    def getTicker(self, symbol):
-        """查询行情"""
-        function = FUNCTION_TICKER
-        params = {'symbol': symbol}
-        callback = self.onGetTicker
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def getDepth(self, symbol, size, merge):
-        """查询深度"""
-        function = FUNCTION_DEPTH
-        params = {
-            'symbol': symbol,
-            'size': size,
-            'mege': merge
-        }
-        callback = self.onGetDepth
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def getTrades(self, symbol, size, time):
-        """查询历史成交"""
-        function = FUNCTION_TRADES
-        params = {
-            'symbol': symbol,
-            'size': size,
-            'time': time
-        }
-        callback = self.onGetTrades
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def getKline(self, symbol, size, type_, time):
-        """查询K线"""
-        function = FUNCTION_KLINE
-        params = {
-            'symbol': symbol,
-            'size': size,
-            'type': type_,
-            'time': time
-        }
-        callback = self.onGetKline
-        return self.sendRequest(function, params, callback)
-
+    def start(self):
+        """启动"""
+        self.ws = websocket.create_connection(WEBSOCKET_HOST,
+                                              sslopt={'cert_reqs': ssl.CERT_NONE})
+    
+        self.active = True
+        self.thread = Thread(target=self.run)
+        self.thread.start()
+        
+        self.onConnect()
+    
     #----------------------------------------------------------------------
-    def onGetTicker(self, data, req, reqID):
-        """查询行情回调"""
-        print data, reqID
+    def reconnect(self):
+        """重连"""
+        self.ws = websocket.create_connection(WEBSOCKET_HOST,
+                                              sslopt={'cert_reqs': ssl.CERT_NONE})   
+        
+        self.onConnect()
+        
+    #----------------------------------------------------------------------
+    def run(self):
+        """运行"""
+        while self.active:
+            try:
+                stream = self.ws.recv()
+                data = json.loads(stream)
+                self.onData(data)
+            except:
+                msg = traceback.format_exc()
+                print(msg)                
+                self.onError(msg)
+                self.reconnect()
+    
+    #----------------------------------------------------------------------
+    def close(self):
+        """关闭"""
+        self.active = False
+        
+        if self.thread:
+            self.ws.shutdown()
+            self.thread.join()
+            
+    #----------------------------------------------------------------------
+    def onConnect(self):
+        """连接回调"""
+        print('connected')
+    
+    #----------------------------------------------------------------------
+    def onData(self, data):
+        """数据回调"""
+        print('-' * 30)
+        l = data.keys()
+        l.sort()
+        for k in l:
+            print(k, data[k])
+    
+    #----------------------------------------------------------------------
+    def onError(self, msg):
+        """错误回调"""
+        print(msg)
+    
+    #----------------------------------------------------------------------
+    def sendReq(self, req):
+        """发出请求"""
+        self.ws.send(json.dumps(req))      
 
-    # ----------------------------------------------------------------------
-    def onGetDepth(self, data, req, reqID):
-        """查询深度回调"""
-        print data, reqID
-
-    # ----------------------------------------------------------------------
-    def onGetTrades(self, data, req, reqID):
-        """查询历史成交"""
-        print data, reqID
-
-    # ----------------------------------------------------------------------
-    def onGetKline(self, data, req, reqID):
-        """查询Ｋ线回报"""
-        print data, reqID
-
-    ###############################################
-    # 交易接口
-    ###############################################
-
-    # ----------------------------------------------------------------------
-    def getUserInfo(self):
-        """查询账户信息"""
-        function = FUNCTION_USERINFO
-        params = {}
-        callback = self.onGetUserInfo
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def createOrder(self, symbol, type_, price, amount):
-        """发送委托"""
-        function = FUNCTION_CREATEORDER
-        params = {
-            'symbol': symbol,
-            'type': type_,
-            'price': price,
-            'amount': amount
-        }
-        callback = self.onCreateOrder
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def cancelOrder(self, symbol, orderId):
-        """撤单"""
-        function = FUNCTION_CANCELORDER
-        params = {
-            'symbol': symbol,
-            'order_id': orderId
-        }
-        callback = self.onCancelOrder
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def getOrdersInfo(self, symbol, orderId):
-        """查询委托"""
-        function = FUNCTION_ORDERSINFO
-        params = {
-            'symbol': symbol,
-            'order_id': orderId
-        }
-        callback = self.onGetOrdersInfo
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def getOrdersInfoHistory(self, symbol, status, currentPage, pageLength):
-        """撤单"""
-        function = FUNCTION_ORDERSINFOHISTORY
-        params = {
-            'symbol': symbol,
-            'status': status,
-            'current_page': currentPage,
-            'page_length': pageLength
-        }
-        callback = self.onGetOrdersInfoHistory
-        return self.sendRequest(function, params, callback)
-
-    # ----------------------------------------------------------------------
-    def onGetUserInfo(self, data, req, reqID):
-        """查询账户信息"""
-        print data, reqID
-
-    # ----------------------------------------------------------------------
-    def onCreateOrder(self, data, req, reqID):
-        """委托回报"""
-        print data, reqID
-
-    # ----------------------------------------------------------------------
-    def onCancelOrder(self, data, req, reqID):
-        """撤单回报"""
-        print data, reqID
-
-    # ----------------------------------------------------------------------
-    def onGetOrdersInfo(self, data, req, reqID):
-        """查询委托回报"""
-        print data, reqID
-
-    # ----------------------------------------------------------------------
-    def onGetOrdersInfoHistory(self, data, req, reqID):
-        """撤单回报"""
-        print data, reqID
 

@@ -1,47 +1,67 @@
-# encoding: utf-8
+# encoding: UTF-8
 
-from time import time, sleep
+from six.moves import input
+from time import time
 
-from vnlbank import LbankApi
+from vnlbank import LbankRestApi, LbankWebsocketApi
+
+API_KEY = '132a36ce-ad1c-409a-b48c-09b7877ae49b'
+SECRET_KEY = '319320BF875297E7F4050E1195B880E8'
+
+
+#----------------------------------------------------------------------
+def restTest():
+    """"""    
+    # 创建API对象并初始化
+    api = LbankRestApi()
+    api.init(API_KEY, SECRET_KEY)
+    api.start(1)
+    
+    # 测试
+    #api.addReq('GET', '/currencyPairs.do', {}, api.onData)
+    #api.addReq('GET', '/accuracy.do', {}, api.onData)
+
+    #api.addReq('GET', '/ticker.do', {'symbol': 'eth_btc'}, api.onData)
+    #api.addReq('GET', '/depth.do', {'symbol': 'eth_btc', 'size': '5'}, api.onData)
+    
+    #api.addReq('post', '/user_info.do', {}, api.onData)
+    
+    req = {
+        'symbol': 'sc_btc',
+        'current_page': '1',
+        'page_length': '50'
+    }
+    api.addReq('POST', '/orders_info_no_deal.do', req, api.onData)
+    
+    # 阻塞
+    input()    
+
+
+#----------------------------------------------------------------------
+def wsTest():
+    """"""    
+    ws = LbankWebsocketApi()
+    ws.start()
+    
+    channels = [
+        'lh_sub_spot_eth_btc_depth_20',
+        'lh_sub_spot_eth_btc_trades',
+        'lh_sub_spot_eth_btc_ticker'
+    ]
+    
+    for channel in channels:
+        req = {
+            'event': 'addChannel',
+            'channel': channel
+        }
+        ws.sendReq(req)
+    
+    
+    # 阻塞
+    input()   
 
 
 if __name__ == '__main__':
-    apiKey = ''
-    secretKey = ''
+    restTest()
     
-    # 创建API对象并初始化
-    api = LbankApi()
-    api.DEBUG = True
-    api.init(apiKey, secretKey, 2)
-    
-    # 查询行情
-    api.getTicker('btc_cny')
-
-    # 查询深度
-    api.getDepth('btc_cny', '60', '1')
-
-    # 查询历史成交
-    #api.getTrades('btc_cny', '1', str(int(time())))
-
-    # 查询Ｋ线
-    #t = int(time())
-    #sleep(300)
-    #api.getKline('btc_cny', '20', 'minute1', str(t))
-
-    # 查询账户
-    #api.getUserInfo()
-
-    # 发送委托
-    #api.createOrder('btc_cny', 'sell', '8000', '0.001')
-
-    # 撤单
-    #api.cancelOrder('btc_cny', '725bd2da-73aa-419f-8090-f68488074e8f')
-
-    # 查询委托
-    #api.getOrdersInfo('btc_cny', '725bd2da-73aa-419f-8090-f68488074e8f')
-
-    # 查询委托历史
-    #api.getOrdersInfoHistory('btc_cny', '0', '1', '100')
-
-    # 阻塞
-    raw_input()    
+    #wsTest()

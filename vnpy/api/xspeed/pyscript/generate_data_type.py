@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 # C++和python类型的映射字典
@@ -48,7 +49,7 @@ def process_typedef(line):
     else:
         keyword = content[-1]
         keyword = keyword.replace(';\n', '')
-        print content, keyword
+        print(content, keyword)
 
     if '[' in keyword:
         i = keyword.index('[')
@@ -97,15 +98,15 @@ def main():
             py_line = process_line(line)
             if py_line:
                 fpy.write(py_line.decode('gbk').encode('utf-8'))
-                print n 
+                print(n) 
 
         fcpp.close()
         fpy.close()
 
-        print u'data_type.py生成过程完成'
-    except Exception, e:
-        print u'data_type.py生成过程出错'
-        print e
+        print(u'data_type.py生成过程完成')
+    except Exception as e:
+        print(u'data_type.py生成过程出错')
+        print(e)
 
 
 if __name__ == '__main__':

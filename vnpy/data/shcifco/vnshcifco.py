@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 
+from __future__ import print_function
 import requests
 
 HTTP_OK = 200
@@ -34,7 +35,7 @@ class ShcifcoApi(object):
         r = requests.get(url=url, params=params)
         
         if r.status_code != HTTP_OK:
-            print u'http请求失败，状态代码%s' %r.status_code
+            print(u'http请求失败，状态代码%s' %r.status_code)
             return None
         else:
             return r.text

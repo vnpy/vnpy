@@ -2,18 +2,6 @@
 
 '''
 本文件中实现了CTA策略引擎，针对CTA类型的策略，抽象简化了部分底层接口的功能。
-
-关于平今和平昨规则：
-1. 普通的平仓OFFSET_CLOSET等于平昨OFFSET_CLOSEYESTERDAY
-2. 只有上期所的品种需要考虑平今和平昨的区别
-3. 当上期所的期货有今仓时，调用Sell和Cover会使用OFFSET_CLOSETODAY，否则
-   会使用OFFSET_CLOSE
-4. 以上设计意味着如果Sell和Cover的数量超过今日持仓量时，会导致出错（即用户
-   希望通过一个指令同时平今和平昨）
-5. 采用以上设计的原因是考虑到vn.trader的用户主要是对TB、MC和金字塔类的平台
-   感到功能不足的用户（即希望更高频的交易），交易策略不应该出现4中所述的情况
-6. 对于想要实现4中所述情况的用户，需要实现一个策略信号引擎和交易委托引擎分开
-   的定制化统结构（没错，得自己写）
 '''
 
 from __future__ import division
@@ -31,15 +19,14 @@ from vnpy.trader.vtConstant import *
 from vnpy.trader.vtObject import VtTickData, VtBarData
 from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, VtLogData
 from vnpy.trader.vtFunction import todayDate, getJsonPath
+from vnpy.trader.app import AppEngine
 
 from .ctaBase import *
 from .strategy import STRATEGY_CLASS
 
 
-
-
 ########################################################################
-class CtaEngine(object):
+class CtaEngine(AppEngine):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
     settingfilePath = getJsonPath(settingFileName, __file__)
@@ -248,19 +235,22 @@ class CtaEngine(object):
                             price = tick.lowerLimit
                         
                         # 发出市价委托
-                        self.sendOrder(so.vtSymbol, so.orderType, price, so.volume, so.strategy)
+                        vtOrderID = self.sendOrder(so.vtSymbol, so.orderType, 
+                                                   price, so.volume, so.strategy)
                         
-                        # 从活动停止单字典中移除该停止单
-                        del self.workingStopOrderDict[so.stopOrderID]
-                        
-                        # 从策略委托号集合中移除
-                        s = self.strategyOrderDict[so.strategy.name]
-                        if so.stopOrderID in s:
-                            s.remove(so.stopOrderID)
-                        
-                        # 更新停止单状态，并通知策略
-                        so.status = STOPORDER_TRIGGERED
-                        so.strategy.onStopOrder(so)
+                        # 检查因为风控流控等原因导致的委托失败（无委托号）
+                        if vtOrderID:
+                            # 从活动停止单字典中移除该停止单
+                            del self.workingStopOrderDict[so.stopOrderID]
+                            
+                            # 从策略委托号集合中移除
+                            s = self.strategyOrderDict[so.strategy.name]
+                            if so.stopOrderID in s:
+                                s.remove(so.stopOrderID)
+                            
+                            # 更新停止单状态，并通知策略
+                            so.status = STOPORDER_TRIGGERED
+                            so.strategy.onStopOrder(so)
 
     #----------------------------------------------------------------------
     def processTickEvent(self, event):
@@ -444,8 +434,9 @@ class CtaEngine(object):
             strategy = self.strategyDict[name]
             
             if not strategy.inited:
-                strategy.inited = True
                 self.callStrategyFunc(strategy, strategy.onInit)
+                strategy.inited = True
+                
                 self.loadSyncData(strategy)                             # 初始化完成后加载同步数据
                 self.subscribeMarketData(strategy)                      # 加载同步数据后再订阅行情
             else:
@@ -657,3 +648,12 @@ class CtaEngine(object):
             else:
                 self.cancelOrder(orderID)
 
+    #----------------------------------------------------------------------
+    def getPriceTick(self, strategy):
+        """获取最小价格变动"""
+        contract = self.mainEngine.getContract(strategy.vtSymbol)
+        if contract:
+            return contract.priceTick
+        return 0
+        
+        

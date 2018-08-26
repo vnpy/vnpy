@@ -1,3 +1,4 @@
 # encoding: UTF-8
 
-from vnlbank import LbankApi
+from __future__ import absolute_import
+from .vnlbank import LbankRestApi, LbankWebsocketApi

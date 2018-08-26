@@ -10,3 +10,5 @@ flask-socketio
 flask-restful
 flask-cors
 gevent-websocket
+pyjwt
+ccxt

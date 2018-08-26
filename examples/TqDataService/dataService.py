@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import sys
 import json
 from datetime import datetime
@@ -18,7 +19,6 @@ setting = json.load(config)
 
 MONGO_HOST = setting['MONGO_HOST']
 MONGO_PORT = setting['MONGO_PORT']
-SYMBOLS = setting['SYMBOLS']
 
 mc = MongoClient(MONGO_HOST, MONGO_PORT)        # Mongo连接
 db = mc[MINUTE_DB_NAME]                         # 数据库
@@ -68,7 +68,7 @@ def onChart(symbol, seconds):
     
     start = datetime.fromtimestamp(l[0]['datetime']/1000000000)
     end = datetime.fromtimestamp(l[-1]['datetime']/1000000000)
-    print u'合约%s下载完成%s - %s' %(symbol, start, end)
+    print(u'合约%s下载完成%s - %s' %(symbol, start, end))
     
     # 移除已经完成的任务
     if symbol in taskList:
@@ -80,16 +80,16 @@ def downMinuteBarBySymbol(symbol, num):
     api.subscribe_chart(symbol, 60, num, onChart)
     
 #----------------------------------------------------------------------
-def downloadAllMinuteBar(num):
+def downloadAllMinuteBar(num, symbols):
     """下载所有配置中的合约的分钟线数据"""
-    print '-' * 50
-    print u'开始下载合约分钟线数据'
-    print '-' * 50
+    print('-' * 50)
+    print(u'开始下载合约分钟线数据')
+    print('-' * 50)
     
     # 添加下载任务
-    taskList.extend(SYMBOLS)
+    taskList.extend(symbols)
     
-    for symbol in SYMBOLS:
+    for symbol in symbols:
         downMinuteBarBySymbol(str(symbol), num)
     
     while True:
@@ -97,9 +97,9 @@ def downloadAllMinuteBar(num):
 
         # 如果任务列表为空，则说明数据已经全部下载完成
         if not taskList:
-            print '-' * 50
-            print u'合约分钟线数据下载完成'
-            print '-' * 50
+            print('-' * 50)
+            print(u'合约分钟线数据下载完成')
+            print('-' * 50)
             return       
     
 

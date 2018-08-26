@@ -82,8 +82,8 @@ def rtdData(name, field):
 
 
 # 连接客户端
-reqAddress = 'tcp://localhost:88888'
-subAddress = 'tcp://localhost:66666'
+reqAddress = 'tcp://localhost:8888'
+subAddress = 'tcp://localhost:6666'
 
 c = RtdClient(reqAddress, subAddress)
 c.subscribeTopic('')

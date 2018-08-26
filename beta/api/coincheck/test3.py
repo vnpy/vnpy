@@ -1,6 +1,8 @@
 # encoding: utf-8
 
-from vncoincheck import *
+from __future__ import print_function
+from __future__ import absolute_import
+from .vncoincheck import *
 
 import socket
 import json
@@ -10,7 +12,7 @@ from websocket import create_connection
 ws = None
 def open():
     global ws
-    print "open"
+    print("open")
     ws.send( json.dumps({"type": "subscribe", "channel": "btc_jpy-trades"}))
 
 def testWebsocket():
@@ -20,7 +22,7 @@ def testWebsocket():
         ws = create_connection("wss://ws-api.coincheck.com/", on_open=open)
         if ws.connected:
             
-            print ws.recv()
+            print(ws.recv())
 
     sleep(5)
 

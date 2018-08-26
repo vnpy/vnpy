@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 from generate_data_type import pre_process
 
 import sec_data_type
@@ -62,7 +63,7 @@ def main(cpp_filename, py_filename):
     cpp_f.close()
     py_f.close()
         
-    print u'struct处理完成'
+    print(u'struct处理完成')
     
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from __future__ import division
+
 '''
 Cox-Ross-Rubinstein二叉树期权定价模型，主要用于标的物为期货的美式期权的定价
 
@@ -23,8 +25,6 @@ gamma：当f变动1%时，delta的变动
 theta：当t变动1天时，price的变动（国内交易日每年240天）
 vega：当v涨跌1个点时，price的变动（如从16%涨到17%）
 '''
-
-from __future__ import division
 
 import numpy as np
 from math import (isnan, exp, sqrt, pow)
@@ -54,7 +54,7 @@ def generateTree(f, k, r, t, v, cp, n):
     p = (a - d) / (u - d)
     p1 = p / a
     p2 = (1 - p) / a
-
+    
     # 计算标的树
     uTree[0, 0] = f
 
@@ -139,9 +139,9 @@ def calculateImpv(price, f, k, r, t, cp, n=15):
     # 检查期权价格是否满足最小价值（即到期行权价值）
     meet = False
     
-    if cp == 1 and (price > f - k):
+    if cp == 1 and price > (f - k):
         meet = True
-    elif cp == -1 and (price > k - f):
+    elif cp == -1 and price > (k - f):
         meet = True
     
     # 若不满足最小价值，则直接返回0

@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 import json
 from datetime import datetime, timedelta, time
 
@@ -22,7 +23,7 @@ NIGHT_END = time(2, 30)
 #----------------------------------------------------------------------
 def cleanData(dbName, collectionName, start):
     """清洗数据"""
-    print u'\n清洗数据库：%s, 集合：%s, 起始日：%s' %(dbName, collectionName, start)
+    print(u'\n清洗数据库：%s, 集合：%s, 起始日：%s' %(dbName, collectionName, start))
     
     mc = MongoClient('localhost', 27017)    # 创建MongoClient
     cl = mc[dbName][collectionName]         # 获取数据集合
@@ -47,17 +48,17 @@ def cleanData(dbName, collectionName, start):
         
         # 如果需要清洗
         if cleanRequired:
-            print u'删除无效数据，时间戳：%s' %data['datetime']
+            print(u'删除无效数据，时间戳：%s' %data['datetime'])
             cl.delete_one(data)
     
-    print u'清洗完成，数据库：%s, 集合：%s' %(dbName, collectionName)
+    print(u'清洗完成，数据库：%s, 集合：%s' %(dbName, collectionName))
     
 
 
 #----------------------------------------------------------------------
 def runDataCleaning():
     """运行数据清洗"""
-    print u'开始数据清洗工作'
+    print(u'开始数据清洗工作')
     
     # 加载配置
     setting = {}
@@ -77,7 +78,7 @@ def runDataCleaning():
         symbol = l[0]
         cleanData(MINUTE_DB_NAME, symbol, start)
     
-    print u'数据清洗工作完成'
+    print(u'数据清洗工作完成')
     
 
 if __name__ == '__main__':
