@@ -9,10 +9,7 @@ import zmq
 import time
 import random
 
-try:
-    import queue
-except ImportError:
-    import queue as queue
+import queue
 import threading
 import msgpack
 import snappy

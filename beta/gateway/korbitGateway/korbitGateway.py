@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 from copy import copy
 from threading import Condition
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 
 import json
