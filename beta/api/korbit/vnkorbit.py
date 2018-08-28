@@ -11,7 +11,7 @@ import hmac
 import time
 from datetime import datetime
 from time import time, sleep , mktime
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 import urllib
 import websocket

@@ -13,7 +13,7 @@ import copy
 import traceback
 from collections import OrderedDict
 from datetime import datetime, timedelta, time
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 from pymongo.errors import DuplicateKeyError
 
