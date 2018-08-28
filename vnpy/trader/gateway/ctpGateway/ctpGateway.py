@@ -108,7 +108,7 @@ class CtpGateway(VtGateway):
     def connect(self):
         """连接"""
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -118,6 +118,7 @@ class CtpGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             userID = str(setting['userID'])
             password = str(setting['password'])
