@@ -47,7 +47,7 @@ class korbitGateway(VtGateway):
         """连接"""
         # 载入json文件
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -57,6 +57,7 @@ class korbitGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             self.accountID = str(setting["accountID"])
             self.accessKey = str(setting['accessKey'])

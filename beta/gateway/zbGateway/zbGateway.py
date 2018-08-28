@@ -65,7 +65,7 @@ class zbGateway(VtGateway):
         """连接"""
         # 载入json文件
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -75,6 +75,7 @@ class zbGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             apiKey = str(setting['apiKey'])
             secretKey = str(setting['secretKey'])
