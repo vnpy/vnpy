@@ -46,7 +46,7 @@ class CoincheckGateway(VtGateway):
         """连接"""
         # 载入json文件
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -56,6 +56,7 @@ class CoincheckGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             accessKey = str(setting['accessKey'])
             secretKey = str(setting['secretKey'])

@@ -96,7 +96,7 @@ class TkproGateway(VtGateway):
     def connect(self):
         """连接"""
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -105,6 +105,7 @@ class TkproGateway(VtGateway):
             return
         
         setting = json.load(f)
+        f.close()
         try:
             username = str(setting['username'])
             token = str(setting['token'])
