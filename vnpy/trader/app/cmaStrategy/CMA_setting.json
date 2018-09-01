@@ -1,0 +1,20 @@
+[
+	   {
+          "name": "S45_BINANCE_FCOIN",
+          "className": "Strategy45",
+          "vtSymbol": "btc_usdt",
+          "master_exchange":"BINANCE",
+          "slave_exchange":"FCOIN",
+          "master_gateway":"BINANCE_2",
+          "slave_gateway":"FCOIN_3",
+          "baseUpLine":10,
+          "baseMidLine":0,
+          "baseDnLine":-10,
+          "minDiff":0.01,
+          "inputSS":0.01,
+          "min_trade_size":0.002,
+          "mode":"tick",
+           "auto_init": true,
+           "auto_start": true
+      }
+]
