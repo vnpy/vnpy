@@ -888,7 +888,10 @@ class CshshlpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg']
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
 
     #---------------------------------------------------------------------- 
