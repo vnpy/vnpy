@@ -555,7 +555,10 @@ class ShzdGatewayApi(ShzdApi):
             contract.exchange = exchangeMapReverse.get(data['306'], EXCHANGE_UNKNOWN)
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
             
-            contract.name = data['332'].decode('GBK')
+            try:
+                contract.name = data['332'].decode('GBK')
+            except AttributeError:
+                contract.name = data['332']
             contract.productClass = productClassMapReverse.get(data['335'], '')
             contract.size = float(data['336'])
             contract.priceTick = float(data['337'])

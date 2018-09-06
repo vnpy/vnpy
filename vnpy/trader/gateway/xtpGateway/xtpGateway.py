@@ -278,7 +278,10 @@ class XtpMdApi(QuoteApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['error_id']
-        err.errorMsg = error['error_msg'].decode('gbk')
+        try:
+            err.errorMsg = error['error_msg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['error_msg']
         self.gateway.onError(err)        
         
     #----------------------------------------------------------------------
@@ -331,7 +334,10 @@ class XtpMdApi(QuoteApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['error_id']
-            err.errorMsg = error['error_msg'].decode('gbk')
+            try:
+                err.errorMsg = error['error_msg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['error_msg']
             self.gateway.onError(err)
             return
         
@@ -529,7 +535,10 @@ class XtpTdApi(TraderApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['error_id']
-        err.errorMsg = error['error_msg'].decode('gbk')
+        try:
+            err.errorMsg = error['error_msg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['error_msg']
         self.gateway.onError(err)    
         
     #----------------------------------------------------------------------
@@ -586,7 +595,10 @@ class XtpTdApi(TraderApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['error_id']
-            err.errorMsg = u'委托号' + str(order.orderID) + ':' + error['error_msg'].decode('gbk')
+            try:
+                err.errorMsg = u'委托号' + str(order.orderID) + ':' + error['error_msg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = u'委托号' + str(order.orderID) + ':' + error['error_msg']
             err.errorTime = order.orderTime
             self.gateway.onError(err)           
         
@@ -645,7 +657,10 @@ class XtpTdApi(TraderApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['error_id']
-            err.errorMsg = u'委托号' + str(data['order_xtp_id']) + ':' + error['error_msg'].decode('gbk')
+            try:
+                err.errorMsg = u'委托号' + str(data['order_xtp_id']) + ':' + error['error_msg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = u'委托号' + str(data['order_xtp_id']) + ':' + error['error_msg']
             self.gateway.onError(err)   
         
     #----------------------------------------------------------------------
