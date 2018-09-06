@@ -1432,7 +1432,7 @@ class CtpTdApi(TdApi):
         
         req['InstrumentID'] = orderReq.symbol
         req['LimitPrice'] = orderReq.price
-        req['VolumeTotalOriginal'] = orderReq.volume
+        req['VolumeTotalOriginal'] = int(orderReq.volume)
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
         req['OrderPriceType'] = priceTypeMap.get(orderReq.priceType, '')
@@ -1460,7 +1460,7 @@ class CtpTdApi(TdApi):
         if orderReq.priceType == PRICETYPE_FOK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
             req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
-            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_CV']        
+            req['VolumeCondition'] = int(defineDict['THOST_FTDC_VC_CV'])
         
         self.reqOrderInsert(req, self.reqID)
         
