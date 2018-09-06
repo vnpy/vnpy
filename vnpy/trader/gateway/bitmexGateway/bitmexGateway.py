@@ -364,6 +364,7 @@ class WebsocketApi(BitmexWebsocketApi):
         tick.date = date.replace('-', '')
         tick.time = time.replace('Z', '')
         
+        tick = copy(tick)
         self.gateway.onTick(tick)
 
     #----------------------------------------------------------------------
@@ -388,6 +389,7 @@ class WebsocketApi(BitmexWebsocketApi):
         tick.date = date.replace('-', '')
         tick.time = time.replace('Z', '')
         
+        tick = copy(tick)
         self.gateway.onTick(tick)
     
     #----------------------------------------------------------------------
