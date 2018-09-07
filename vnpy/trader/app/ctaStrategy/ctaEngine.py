@@ -29,7 +29,7 @@ from .strategy import STRATEGY_CLASS
 class CtaEngine(AppEngine):
     """CTA策略引擎"""
     settingFileName = 'CTA_setting.json'
-    settingfilePath = getJsonPath(settingFileName, __file__)
+    settingFilePath = getJsonPath(settingFileName, __file__)
     
     STATUS_FINISHED = set([STATUS_REJECTED, STATUS_CANCELLED, STATUS_ALLTRADED])
 
@@ -499,7 +499,7 @@ class CtaEngine(AppEngine):
     #----------------------------------------------------------------------
     def saveSetting(self):
         """保存策略配置"""
-        with open(self.settingfilePath, 'w') as f:
+        with open(self.settingFilePath, 'w') as f:
             l = []
             
             for strategy in self.strategyDict.values():
@@ -514,7 +514,7 @@ class CtaEngine(AppEngine):
     #----------------------------------------------------------------------
     def loadSetting(self):
         """读取策略配置"""
-        with open(self.settingfilePath) as f:
+        with open(self.settingFilePath) as f:
             l = json.load(f)
             
             for setting in l:

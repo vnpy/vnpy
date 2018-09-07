@@ -246,7 +246,7 @@ class OmEngine(object):
 class OmStrategyEngine(object):
     """策略引擎"""
     settingFileName = 'strategy_setting.json'
-    settingfilePath = getJsonPath(settingFileName, __file__)    
+    settingFilePath = getJsonPath(settingFileName, __file__)    
 
     #----------------------------------------------------------------------
     def __init__(self, omEngine, eventEngine):
@@ -335,7 +335,7 @@ class OmStrategyEngine(object):
         """加载配置"""
         self.portfolio = self.omEngine.portfolio
         
-        with open(self.settingfilePath) as f:
+        with open(self.settingFilePath) as f:
             l = json.load(f)
             
             for setting in l:

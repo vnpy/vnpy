@@ -47,7 +47,7 @@ EXCHANGE_MAP_REVERSE = {v:k for k, v in EXCHANGE_MAP.items()}
 class JsEngine(object):
     """JAQS服务引擎"""
     settingFileName = 'JS_setting.json'
-    settingfilePath = getJsonPath(settingFileName, __file__)    
+    settingFilePath = getJsonPath(settingFileName, __file__)    
 
     #----------------------------------------------------------------------
     def __init__(self, mainEngine, eventEngine):
@@ -88,7 +88,7 @@ class JsEngine(object):
     #----------------------------------------------------------------------
     def initServer(self):
         """初始化"""
-        with open(self.settingfilePath) as f:
+        with open(self.settingFilePath) as f:
             setting = json.load(f)
             host = setting['host']
             port = setting['port']

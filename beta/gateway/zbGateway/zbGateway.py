@@ -10,7 +10,7 @@ from datetime import datetime
 from time import sleep
 from copy import copy
 from threading import Condition
-from Queue import Queue
+from queue import Queue
 from threading import Thread
 from time import sleep
 
@@ -65,7 +65,7 @@ class zbGateway(VtGateway):
         """连接"""
         # 载入json文件
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -75,6 +75,7 @@ class zbGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             apiKey = str(setting['apiKey'])
             secretKey = str(setting['secretKey'])

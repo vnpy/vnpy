@@ -1,6 +1,6 @@
 from __future__ import print_function
 import zmq
-import Queue
+import queue
 import threading
 import msgpack
 import snappy
@@ -37,7 +37,7 @@ class JRpcServer :
         self._should_close = False
         self._send_lock = threading.Lock()
 
-        self._callback_queue = Queue.Queue()
+        self._callback_queue = queue.Queue()
 
         self._ctx = zmq.Context()
         self._pull_sock = self._ctx.socket(zmq.PULL)
@@ -121,7 +121,7 @@ class JRpcServer :
                 r = self._callback_queue.get(timeout = 1)
                 if r :
                     r()
-            except Queue.Empty as e:
+            except queue.Empty as e:
                 pass
 
             except Exception as e:
