@@ -1430,37 +1430,37 @@ class CtpTdApi(TdApi):
         
         req = {}
         
-        req['InstrumentID'] = orderReq.symbol
-        req['LimitPrice'] = orderReq.price
+        req['InstrumentID'] = str(orderReq.symbol)
+        req['LimitPrice'] = float(orderReq.price)
         req['VolumeTotalOriginal'] = int(orderReq.volume)
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
-        req['OrderPriceType'] = priceTypeMap.get(orderReq.priceType, '')
-        req['Direction'] = directionMap.get(orderReq.direction, '')
-        req['CombOffsetFlag'] = offsetMap.get(orderReq.offset, '')
+        req['OrderPriceType'] = str(priceTypeMap.get(orderReq.priceType, ''))
+        req['Direction'] = str(directionMap.get(orderReq.direction, ''))
+        req['CombOffsetFlag'] = (offsetMap.get(orderReq.offset, ''))
             
         req['OrderRef'] = str(self.orderRef)
-        req['InvestorID'] = self.userID
-        req['UserID'] = self.userID
-        req['BrokerID'] = self.brokerID
+        req['InvestorID'] = str(self.userID)
+        req['UserID'] = str(self.userID)
+        req['BrokerID'] = str(self.brokerID)
         
-        req['CombHedgeFlag'] = defineDict['THOST_FTDC_HF_Speculation']       # 投机单
-        req['ContingentCondition'] = defineDict['THOST_FTDC_CC_Immediately'] # 立即发单
-        req['ForceCloseReason'] = defineDict['THOST_FTDC_FCC_NotForceClose'] # 非强平
+        req['CombHedgeFlag'] = str(defineDict['THOST_FTDC_HF_Speculation'])       # 投机单
+        req['ContingentCondition'] = str(defineDict['THOST_FTDC_CC_Immediately']) # 立即发单
+        req['ForceCloseReason'] = str(defineDict['THOST_FTDC_FCC_NotForceClose']) # 非强平
         req['IsAutoSuspend'] = 0                                             # 非自动挂起
-        req['TimeCondition'] = defineDict['THOST_FTDC_TC_GFD']               # 今日有效
-        req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']              # 任意成交量
+        req['TimeCondition'] = str(defineDict['THOST_FTDC_TC_GFD'])               # 今日有效
+        req['VolumeCondition'] = str(defineDict['THOST_FTDC_VC_AV'])              # 任意成交量
         req['MinVolume'] = 1                                                 # 最小成交量为1
         
         # 判断FAK和FOK
         if orderReq.priceType == PRICETYPE_FAK:
-            req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
-            req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
-            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_AV']
+            req['OrderPriceType'] = str(defineDict["THOST_FTDC_OPT_LimitPrice"])
+            req['TimeCondition'] = str(defineDict['THOST_FTDC_TC_IOC'])
+            req['VolumeCondition'] = str(defineDict['THOST_FTDC_VC_AV'])
         if orderReq.priceType == PRICETYPE_FOK:
-            req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
-            req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
-            req['VolumeCondition'] = int(defineDict['THOST_FTDC_VC_CV'])
+            req['OrderPriceType'] = str(defineDict["THOST_FTDC_OPT_LimitPrice"])
+            req['TimeCondition'] = str(defineDict['THOST_FTDC_TC_IOC'])
+            req['VolumeCondition'] = str(defineDict['THOST_FTDC_VC_CV'])
         
         self.reqOrderInsert(req, self.reqID)
         
