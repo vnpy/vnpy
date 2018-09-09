@@ -1,0 +1,29 @@
+{
+    "name": "etf_portfolio", 
+    "model": "bsCython",
+    "underlying": [
+        "510050"
+    ],     
+    "chain": [
+        {
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1804", 
+            "r": 0.04
+        },
+        {
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1805", 
+            "r": 0.03
+        },
+        {
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1806", 
+            "r": 0.03
+        },
+        {
+            "underlyingSymbol": "510050", 
+            "chainSymbol": "510050-1809", 
+            "r": 0.03
+        }
+    ]
+}

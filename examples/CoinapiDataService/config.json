@@ -1,0 +1,11 @@
+{
+	"MONGO_HOST": "localhost",
+	"MONGO_PORT": 27017,
+
+	"APIKEY": "",
+
+	"SYMBOLS": [
+		"BINANCE_SPOT_BTC_USDT",
+		"BINANCE_SPOT_ETH_USDT"
+	]
+}

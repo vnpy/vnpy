@@ -1,0 +1,13 @@
+{
+	"MONGO_HOST": "localhost",
+	"MONGO_PORT": 27017,
+
+	"SHCIFCO_IP": "180.169.126.123",
+	"SHCIFCO_PORT": "10083",
+	"SHCIFCO_TOKEN": "请联系上海中期申请",
+
+	"SYMBOLS": ["cu1707", "cu1708", "cu1709", "cu1712", 
+				"m1707", "m1708", "m1709", "m1712",
+				"SR801", "SR803",
+				"IF1701"]
+}
