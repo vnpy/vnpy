@@ -3131,7 +3131,7 @@ class CtaMinuteBar(CtaLineBar):
         # 一天内bar的数量累计
         self.bars_count = 0
         self.minutes_adjust = -15
-
+        self.m1_bars_count = 0
         self.lastMinuteBar = CtaBarData()
 
     def init_properties(self):
@@ -3214,9 +3214,9 @@ class CtaMinuteBar(CtaLineBar):
         if l1 == 0:
             self.lineBar.append(bar)
             self.curTradingDay = bar.tradingDay
-            self.m1_bars_count += bar_freq
+            #self.m1_bars_count += bar_freq
             if bar_is_completed:
-                self.m1_bars_count = 0
+                #self.m1_bars_count = 0
                 self.onBar(bar)
             return
 
@@ -3278,7 +3278,6 @@ class CtaMinuteBar(CtaLineBar):
         lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
         lastBar.mid4 = round((2*lastBar.close + lastBar.high + lastBar.low)/4, self.round_n)
         lastBar.mid5 = round((2*lastBar.close + lastBar.open + lastBar.high + lastBar.low)/5, self.round_n)
-
 
     # ----------------------------------------------------------------------
     def drawLineBar(self, tick):
@@ -3516,7 +3515,7 @@ class CtaHourBar(CtaLineBar):
             self.curTradingDay = bar.tradingDay
 
         if self.is_7x24:
-            if (bar.datetime - lastBar.datetime).total_seconds() >=60 * self.barTimeInterval:
+            if (bar.datetime - lastBar.datetime).total_seconds() >=3600 * self.barTimeInterval:
                 is_new_bar = True
                 self.curTradingDay = bar.tradingDay
 
