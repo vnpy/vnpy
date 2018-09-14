@@ -734,6 +734,8 @@ class CtpTdApi(TdApi):
             pos.ydPosition = data['Position'] - data['TodayPosition']
             
         # 计算成本
+        if pos.symbol not in self.symbolSizeDict:
+            return
         size = self.symbolSizeDict[pos.symbol]
         cost = pos.price * pos.position * size
         
