@@ -266,6 +266,22 @@ class VtContractData(VtBaseData):
 
 
 ########################################################################
+class VtHistoryData(object):
+    """K线时间序列数据"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.vtSymbol = EMPTY_STRING    # vt系统代码
+        self.symbol = EMPTY_STRING      # 代码
+        self.exchange = EMPTY_STRING    # 交易所
+        
+        self.interval = EMPTY_UNICODE   # K线时间周期
+        self.queryID = EMPTY_STRING     # 查询号
+        self.barList = []               # VtBarData列表
+    
+
+########################################################################
 class VtSubscribeReq(object):
     """订阅行情时传入的对象类"""
 
@@ -326,6 +342,22 @@ class VtCancelOrderReq(object):
         self.frontID = EMPTY_STRING             # 前置机号
         self.sessionID = EMPTY_STRING           # 会话号
 
+
+########################################################################
+class VtHistoryReq(object):
+    """查询历史数据时传入的对象类"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.symbol = EMPTY_STRING              # 代码
+        self.exchange = EMPTY_STRING            # 交易所
+        self.vtSymbol = EMPTY_STRING            # VT合约代码
+        
+        self.interval = EMPTY_UNICODE           # K线周期
+        self.start = None                       # 起始时间datetime对象
+        self.end = None                         # 结束时间datetime对象
+    
 
 ########################################################################
 class VtSingleton(type):
