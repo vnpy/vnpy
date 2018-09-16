@@ -77,6 +77,7 @@ class BitmexGateway(VtGateway):
             apiSecret = str(setting['apiSecret'])
             sessionCount = int(setting['sessionCount'])
             symbols = setting['symbols']
+            testnet = setting.get('testnet',False)
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -85,8 +86,8 @@ class BitmexGateway(VtGateway):
             return
 
         # 创建行情和交易接口对象
-        self.restApi.connect(apiKey, apiSecret, sessionCount)
-        self.wsApi.connect(apiKey, apiSecret, symbols)
+        self.restApi.connect(apiKey, apiSecret, sessionCount, testnet)
+        self.wsApi.connect(apiKey, apiSecret, symbols, testnet)
 
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -167,9 +168,9 @@ class RestApi(BitmexRestApi):
         self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
         
     #----------------------------------------------------------------------
-    def connect(self, apiKey, apiSecret, sessionCount):
+    def connect(self, apiKey, apiSecret, sessionCount, testnet):
         """连接服务器"""
-        self.init(apiKey, apiSecret)
+        self.init(apiKey, apiSecret, testnet)
         self.start(sessionCount)
         
         self.writeLog(u'REST API启动成功')
@@ -262,7 +263,7 @@ class WebsocketApi(BitmexWebsocketApi):
         self.tradeSet = set()
         
     #----------------------------------------------------------------------
-    def connect(self, apiKey, apiSecret, symbols):
+    def connect(self, apiKey, apiSecret, symbols, testnet):
         """"""
         self.apiKey = apiKey
         self.apiSecret = apiSecret
@@ -275,7 +276,7 @@ class WebsocketApi(BitmexWebsocketApi):
             tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
             self.tickDict[symbol] = tick
             
-        self.start()
+        self.start(testnet)
     
     #----------------------------------------------------------------------
     def onConnect(self):
@@ -286,7 +287,13 @@ class WebsocketApi(BitmexWebsocketApi):
     #----------------------------------------------------------------------
     def onData(self, data):
         """数据回调"""
-        if 'request' in data:
+        if 'error' in data:
+            self.writeLog(u'Websocket API报错：%s' %data['error'])
+            
+            if 'not valid' in data['error']:
+                self.active = False
+            
+        elif 'request' in data:
             req = data['request']
             success = data['success']
             

@@ -178,7 +178,7 @@ class BitmexWebsocketApi(object):
         else:
             self.host = WEBSOCKET_HOST
             
-        self.ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
+        self.connectWs()
     
         self.active = True
         self.thread = Thread(target=self.run)
@@ -189,9 +189,13 @@ class BitmexWebsocketApi(object):
     #----------------------------------------------------------------------
     def reconnect(self):
         """重连"""
-        self.ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})   
-        
+        self.connectWs()
         self.onConnect()
+    
+    #----------------------------------------------------------------------
+    def connectWs(self):
+        """"""
+        self.ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})   
         
     #----------------------------------------------------------------------
     def run(self):
