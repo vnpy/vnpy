@@ -134,7 +134,7 @@ class BitmexRestApi(object):
         """生成签名"""
         # 对params在HTTP报文路径中，以请求字段方式序列化
         if params:
-            query = urlencode(sorted(params.items()))
+            query = urlencode(params.items())
             path = path + '?' + query
         
         if body is None:
