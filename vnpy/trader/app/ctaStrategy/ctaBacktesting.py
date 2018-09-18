@@ -949,7 +949,8 @@ class BacktestingEngine(object):
         
         # 显示结果
         resultList = [res.get() for res in l]
-        return resultList.sort(reverse=True, key=lambda result:result[1])
+        resultList.sort(reverse=True, key=lambda result:result[1])
+        return resultList
 
     def outputOptimizeResult(self, resultList):
         self.output('-' * 30)
