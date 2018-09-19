@@ -921,12 +921,8 @@ class BacktestingEngine(object):
         
         # 显示结果
         resultList.sort(reverse=True, key=lambda result:result[1])
-        self.output('-' * 30)
-        self.output(u'优化结果：')
-        for result in resultList:
-            self.output(u'参数：%s，目标：%s' %(result[0], result[1]))    
-        return resultList
-            
+        return self.outputOptimizeResult(resultList)
+
     #----------------------------------------------------------------------
     def runParallelOptimization(self, strategyClass, optimizationSetting):
         """并行优化参数"""
@@ -954,11 +950,13 @@ class BacktestingEngine(object):
         # 显示结果
         resultList = [res.get() for res in l]
         resultList.sort(reverse=True, key=lambda result:result[1])
+        return resultList
+
+    def outputOptimizeResult(self, resultList):
         self.output('-' * 30)
         self.output(u'优化结果：')
         for result in resultList:
-            self.output(u'参数：%s，目标：%s' %(result[0], result[1]))    
-            
+            self.output(u'参数：%s，目标：%s' % (result[0], result[1]))
         return resultList
 
     #----------------------------------------------------------------------
