@@ -436,7 +436,7 @@ class StAlgoManager(QtWidgets.QTableWidget):
         """初始化表格"""
         headers = [u'价差',
                    u'算法',
-                   u'净持仓'
+                   u'净持仓',
                    'BuyPrice',
                    'SellPrice',
                    'CoverPrice',

@@ -330,7 +330,7 @@ class BacktestingEngine(object):
             sellBestCrossPrice = self.tick.bidPrice1
         
         # 遍历限价单字典中的所有限价单
-        for orderID, order in self.workingLimitOrderDict.items():
+        for orderID, order in list(self.workingLimitOrderDict.items()):
             # 推送委托进入队列（未成交）的状态更新
             if not order.status:
                 order.status = STATUS_NOTTRADED
@@ -400,7 +400,7 @@ class BacktestingEngine(object):
             bestCrossPrice = self.tick.lastPrice
         
         # 遍历停止单字典中的所有停止单
-        for stopOrderID, so in self.workingStopOrderDict.items():
+        for stopOrderID, so in list(self.workingStopOrderDict.items()):
             # 判断是否会成交
             buyCross = so.direction==DIRECTION_LONG and so.price<=buyCrossPrice
             sellCross = so.direction==DIRECTION_SHORT and so.price>=sellCrossPrice
@@ -587,11 +587,11 @@ class BacktestingEngine(object):
     def cancelAll(self, name):
         """全部撤单"""
         # 撤销限价单
-        for orderID in self.workingLimitOrderDict.keys():
+        for orderID in list(self.workingLimitOrderDict.keys()):
             self.cancelOrder(orderID)
         
         # 撤销停止单
-        for stopOrderID in self.workingStopOrderDict.keys():
+        for stopOrderID in list(self.workingStopOrderDict.keys()):
             self.cancelStopOrder(stopOrderID)
 
     #----------------------------------------------------------------------
@@ -866,7 +866,7 @@ class BacktestingEngine(object):
             del d['posList'][-1]
         tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
         xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
-        tradeTimeIndex = map(lambda i: tradeTimeIndex[i], xindex)
+        tradeTimeIndex = list(map(lambda i: tradeTimeIndex[i], xindex))
         pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
         pPos.set_ylim(-1.2, 1.2)
         plt.sca(pPos)
@@ -921,12 +921,8 @@ class BacktestingEngine(object):
         
         # 显示结果
         resultList.sort(reverse=True, key=lambda result:result[1])
-        self.output('-' * 30)
-        self.output(u'优化结果：')
-        for result in resultList:
-            self.output(u'参数：%s，目标：%s' %(result[0], result[1]))    
-        return resultList
-            
+        return self.outputOptimizeResult(resultList)
+
     #----------------------------------------------------------------------
     def runParallelOptimization(self, strategyClass, optimizationSetting):
         """并行优化参数"""
@@ -954,11 +950,13 @@ class BacktestingEngine(object):
         # 显示结果
         resultList = [res.get() for res in l]
         resultList.sort(reverse=True, key=lambda result:result[1])
+        return resultList
+
+    def outputOptimizeResult(self, resultList):
         self.output('-' * 30)
         self.output(u'优化结果：')
         for result in resultList:
-            self.output(u'参数：%s，目标：%s' %(result[0], result[1]))    
-            
+            self.output(u'参数：%s，目标：%s' % (result[0], result[1]))
         return resultList
 
     #----------------------------------------------------------------------
