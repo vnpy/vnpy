@@ -196,6 +196,11 @@ class RestApi(BitmexRestApi):
             'orderQty': orderReq.volume,
             'clOrdID': str(orderId)
         }
+        
+        # 市价单不能有price字段
+        if orderReq.priceType == PRICETYPE_MARKETPRICE:
+            req.pop('price')
+        
         self.addReq('POST', '/order', self.onSendOrder, postdict=req)
         
         return vtOrderID
