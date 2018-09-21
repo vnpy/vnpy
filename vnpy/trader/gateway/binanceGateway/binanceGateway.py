@@ -80,8 +80,6 @@ class BinanceGateway(VtGateway):
             self.writeLog(u'BINANCE连接配置缺少字段，请检查')
             return
 
-
-
         self.api_spot.active = True
 
         if self.log_message:
@@ -96,12 +94,14 @@ class BinanceGateway(VtGateway):
             sub.symbol = symbol_pair
             self.subscribe(sub)
 
-
         self.writeLog(u'{}接口初始化成功'.format(self.gatewayName))
 
         # 启动查询
         self.initQuery()
         self.startQuery()
+
+    def checkStatus(self):
+        return self.connected and self.api_spot.checkStatus()
 
     # ----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
@@ -116,7 +116,7 @@ class BinanceGateway(VtGateway):
         except Exception as ex:
             self.writeError(u'send order Exception:{},{}'.format(str(ex),traceback.format_exc()))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         return self.api_spot.cancel(cancelOrderReq)
@@ -418,6 +418,23 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
 
                 self.gateway.onContract(contract)
 
+    def checkStatus(self):
+        """
+        检查接口状态:
+        若active为False，return False
+        若active为True，检查ticker得更新时间
+        :return:
+        """
+        if not self.active:
+            return False
+
+        if len(self.tickDict.items())>0:
+            symbol,last_tick = list(self.tickDict.items())[0]
+            if last_tick.datetime and (datetime.now()-last_tick.datetime).total_seconds() > 60:
+                return False
+
+        return True
+
     #----------------------------------------------------------------------
     def onAllTicker(self,msg):
         """币安支持所有 ticker 同时socket过来"""
@@ -459,6 +476,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
             tick.askPrice5, tick.askVolume5 = [0 , 0]
 
             tick.datetime , tick.date , tick.time = self.generateDateTime( float(msg["E"]))
+            utc_dt = datetime.utcfromtimestamp( float(msg["E"])/1e3)
+            tick.tradingDay = utc_dt.strftime('%Y-%m-%d')
             self.gateway.onTick(tick)
 
     #----------------------------------------------------------------------
@@ -630,7 +649,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
             self.gateway.writeLog(u'OnDepth {}'.format(traceback.format_exc()))
 
         tick.datetime , tick.date, tick.time = self.generateDateTime(uu_time_stamp)
-        
+        utc_dt = datetime.utcfromtimestamp(float(uu_time_stamp)/ 1e3)
+        tick.tradingDay = utc_dt.strftime('%Y-%m-%d')
         # print tick.__dict__
         self.gateway.onTick(tick)
         #self.gateway.onTick(copy(tick))
@@ -773,6 +793,10 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
     '''
     #----------------------------------------------------------------------
     def onGetAccount(self, data, req, reqID):
+
+        if self.gateway and not self.gateway.connected:
+            self.gateway.connected = True
+
         balances = data["balances"]
         account = VtAccountData()
         account.gatewayName = self.gatewayName
@@ -1114,5 +1138,5 @@ BREAK
         """生成时间"""
         dt = datetime.fromtimestamp(float(s)/1e3)
         time = dt.strftime("%H:%M:%S.%f")
-        date = dt.strftime("%Y%m%d")
+        date = dt.strftime("%Y-%m-%d")
         return dt , date, time

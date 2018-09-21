@@ -26,7 +26,7 @@ PERIOD_MINUTE = 'minute'  # 分钟级别周期
 PERIOD_HOUR = 'hour'  # 小时级别周期
 PERIOD_DAY = 'day'  # 日级别周期
 
-def getCtaBarByType(bar_type):
+def getCtaBarClass(bar_type):
     assert  isinstance(bar_type,str)
     if bar_type == PERIOD_SECOND:
         return CtaLineBar
@@ -38,6 +38,7 @@ def getCtaBarByType(bar_type):
         return CtaDayBar
 
     raise Exception('no matched CTA  bar type:{}'.format(bar_type))
+
 
 class CtaLineBar(object):
     """CTA K线"""
@@ -124,6 +125,8 @@ class CtaLineBar(object):
         self.curTick = None
         self.lastTick = None
         self.curTradingDay = EMPTY_STRING
+
+        self.cur_price = EMPTY_FLOAT
 
         # K线保存数据
         self.bar = None  # K线数据对象
@@ -472,16 +475,18 @@ class CtaLineBar(object):
             self.writeCtaLog(u'竞价排名tick时间:{0}'.format(tick.datetime))
             return
 
-        self.curTick = tick
+        self.curTick = copy.copy(tick)
+        if self.curTick.lastPrice is None or self.curTick.lastPrice == 0:
+            self.curTick.lastPrice = (self.curTick.askPrice1 + self.curTick.bidPrice1) / 2
+            self.cur_price = (self.curTick.askPrice1 + self.curTick.bidPrice1) / 2
+        else:
+            self.cur_price = self.curTick.lastPrice
 
         # 3.生成x K线，若形成新Bar，则触发OnBar事件
         self.drawLineBar(tick)
 
         # 更新curPeriod的High，low
         if self.curPeriod is not None:
-            if self.curTick.lastPrice is None:
-                self.curTick.lastPrice = (self.curTick.askPrice1 + self.curTick.bidPrice1) / 2
-
             self.curPeriod.onPrice(self.curTick.lastPrice)
 
         # 4.执行 bar内计算
@@ -497,6 +502,9 @@ class CtaLineBar(object):
         :return: 
         """
         l1 = len(self.lineBar)
+
+        # 更新最后价格
+        self.cur_price = bar.close
 
         if l1 == 0:
             new_bar = copy.copy(bar)
@@ -2696,13 +2704,13 @@ class CtaLineBar(object):
                 self.skd_last_cross = (self.lineSK[-1] + self.lineSK[-2] + self.lineSD[-1] + self.lineSD[-2])/4
                 self.skd_rt_count = self.skd_count
                 self.skd_rt_last_cross = self.skd_last_cross
-                if self.skd_rt_cross_price == 0 or self.lineBar[-1].close < self.skd_rt_cross_price:
-                    self.skd_rt_cross_price = self.lineBar[-1].close
-                self.skd_cross_price = min(self.lineBar[-1].close ,self.skd_rt_cross_price)
+                if self.skd_rt_cross_price == 0 or self.cur_price < self.skd_rt_cross_price:
+                    self.skd_rt_cross_price = self.cur_price
+                self.skd_cross_price = self.cur_price
                 if self.skd_divergence < 0:
                     # 若原来是顶背离，消失
                     self.skd_divergence = 0
-
+                self.writeCtaLog(u'{} Gold Cross:{} at {}'.format(self.name, self.skd_last_cross, self.skd_cross_price))
             else: #if self.lineSK[-1] < self.lineSK[-2]:
                 # 延续死叉
                 self.skd_count -= 1
@@ -2722,13 +2730,15 @@ class CtaLineBar(object):
                 self.skd_last_cross = (self.lineSK[-1] + self.lineSK[-2] + self.lineSD[-1] + self.lineSD[-2]) / 4
                 self.skd_rt_count = self.skd_count
                 self.skd_rt_last_cross = self.skd_last_cross
-                if self.skd_rt_cross_price == 0 or self.lineBar[-1].close > self.skd_rt_cross_price:
-                    self.skd_rt_cross_price = self.lineBar[-1].close
-                self.skd_cross_price = max(self.lineBar[-1].close, self.skd_rt_cross_price)
+                if self.skd_rt_cross_price == 0 or self.cur_price > self.skd_rt_cross_price:
+                    self.skd_rt_cross_price = self.cur_price
+                self.skd_cross_price = self.cur_price
 
                 # 若原来是底背离，消失
                 if self.skd_divergence > 0:
                     self.skd_divergence = 0
+
+                self.writeCtaLog(u'{} Dead Cross:{} at {}'.format(self.name, self.skd_last_cross, self.skd_cross_price))
 
             else: #if self.lineSK[-1] > self.lineSK[-2]:
                 # 延续金叉
@@ -2909,7 +2919,9 @@ class CtaLineBar(object):
                 if self.skd_rt_count >= 0:
                     self.skd_rt_count = -1
                     self.skd_rt_last_cross = skd_last_cross
-                    self.skd_rt_cross_price = self.lineBar[-1].close
+                    self.skd_rt_cross_price = self.cur_price
+                    self.writeCtaLog(u'{} rt Dead Cross at:{} ,price:{}'
+                                     .format(self.name, self.skd_rt_last_cross, self.skd_rt_cross_price))
 
                 if skd_last_cross > high_skd:
                     return True
@@ -2942,8 +2954,9 @@ class CtaLineBar(object):
                 if self.skd_rt_count <=0:
                     self.skd_rt_count = 1
                     self.skd_rt_last_cross = skd_last_cross
-                    self.skd_rt_cross_price = self.lineBar[-1].close
-
+                    self.skd_rt_cross_price = self.cur_price
+                    self.writeCtaLog(u'{} rt Gold Cross at:{} ,price:{}'
+                                     .format(self.name, self.skd_rt_last_cross,self.skd_rt_cross_price))
                 if skd_last_cross < low_skd:
                     return True
 
@@ -3116,6 +3129,82 @@ class CtaLineBar(object):
                         return None
             return None
 
+    def is_shadow_line(self,open, high, low, close, direction, shadow_rate, wave_rate):
+        """
+        是否上影线/下影线
+        :param open: 开仓价
+        :param high: 最高价
+        :param low: 最低价
+        :param close: 收盘价
+        :param direction: 方向（多/空）
+        :param shadown_rate: 上影线比例（百分比）
+        :param wave_rate:振幅（百分比）
+        :return:
+        """
+        if close<=0 or high <= low or shadow_rate <=0 or wave_rate <=0:
+            self.writeCtaLog(u'是否上下影线,参数出错.close={}, high={},low={},shadow_rate={},wave_rate={}'
+                               .format(close, high, low, shadow_rate, wave_rate))
+            return False
+
+        # 振幅 = 高-低 / 收盘价 百分比
+        cur_wave_rate = round(100 * float((high - low) / close), 2)
+
+        # 上涨时，判断上影线
+        if direction == DIRECTION_LONG:
+            # 上影线比例 = 上影线（高- max（开盘，收盘））/ 当日振幅=（高-低）
+            cur_shadow_rate = round(100 * float((high - max(open,close)) / (high-low)),2)
+            if cur_wave_rate >= wave_rate and cur_shadow_rate >= shadow_rate:
+                return True
+
+        # 下跌时，判断下影线
+        elif direction == DIRECTION_SHORT:
+            cur_shadow_rate = round(100 * float((min(open,close)-low) / (high-low)),2)
+            if cur_wave_rate >= wave_rate and cur_shadow_rate >= shadow_rate:
+                return True
+
+        return False
+
+    def is_end_tick(self, tick_dt):
+        """
+        根据短合约和时间，判断是否为最后一个tick
+        :param tick_dt:
+        :return:
+        """
+        if self.is_7x24:
+            return False
+
+        # 中金所，只有11：30 和15：15，才有最后一个tick
+        if self.shortSymbol in MARKET_ZJ:
+            if (tick_dt.hour == 11 and tick_dt.minute == 30) or (tick_dt.hour == 15 and tick_dt.minute == 15):
+                return True
+            else:
+                return False
+
+        # 其他合约(上期所/郑商所/大连）
+        if 2 <= tick_dt.hour < 23:
+            if (tick_dt.hour == 10 and tick_dt.minute == 15) \
+                    or (tick_dt.hour == 11 and tick_dt.minute == 30) \
+                    or (tick_dt.hour == 15 and tick_dt.minute == 00) \
+                    or (tick_dt.hour == 2 and tick_dt.minute == 30):
+                return True
+            else:
+                return False
+
+        # 夜盘1:30收盘
+        if self.shortSymbol in NIGHT_MARKET_SQ2 and tick_dt.hour == 1 and tick_dt.minute == 00:
+            return True
+
+        # 夜盘23:00收盘
+        if self.shortSymbol in NIGHT_MARKET_SQ3 and tick_dt.hour == 23 and tick_dt.minute == 00:
+            return True
+
+        # 夜盘23:30收盘
+        if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if tick_dt.hour == 23 and tick_dt.minute == 30:
+                return True
+
+        return False
+
 class CtaMinuteBar(CtaLineBar):
     """
     分钟级别K线
@@ -3208,6 +3297,9 @@ class CtaMinuteBar(CtaLineBar):
         #))
         if bar.tradingDay is None:
             bar.tradingDay = self.getTradingDate(bar.datetime)
+
+        # 更新最后价格
+        self.cur_price = bar.close
 
         l1 = len(self.lineBar)
 
@@ -3489,6 +3581,9 @@ class CtaHourBar(CtaLineBar):
         if bar.tradingDay is None:
             bar.tradingDay = self.getTradingDate(bar.datetime)
 
+        # 更新最后价格
+        self.cur_price = bar.close
+
         l1 = len(self.lineBar)
 
         if l1 == 0:
@@ -3567,7 +3662,6 @@ class CtaHourBar(CtaLineBar):
         endtick = False
         if not self.is_7x24:
             # 处理日内的间隔时段最后一个tick，如10:15分，11:30分，15:00 和 2:30分
-
             if (tick.datetime.hour == 10 and tick.datetime.minute == 15) \
                     or (tick.datetime.hour == 11 and tick.datetime.minute == 30) \
                     or (tick.datetime.hour == 15 and tick.datetime.minute == 00) \
@@ -3590,10 +3684,22 @@ class CtaHourBar(CtaLineBar):
         lastBar = self.lineBar[-1]
         is_new_bar = False
 
+        if self.last_minute is None:
+            if tick.datetime.second == 0:
+                self.m1_bars_count += 1
+            self.last_minute = tick.datetime.minute
+
         # 不在同一交易日，推入新bar
         if self.curTradingDay != tick.tradingDay:
             is_new_bar = True
+            # 去除分钟和秒数
+            tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:00:00'), '%Y-%m-%d %H:%M:%S')
+            tick.time = tick.datetime.strftime('%H:%M:%S')
             self.curTradingDay = tick.tradingDay
+            self.writeCtaLog('{} drawLineBar() new_bar,{} curTradingDay:{},tick.tradingDay:{}'
+                             .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), self.curTradingDay,
+                                     tick.tradingDay))
+
         else:
             # 同一交易日，看分钟是否一致
             if tick.datetime.minute != self.last_minute and not endtick:
@@ -3602,14 +3708,27 @@ class CtaHourBar(CtaLineBar):
 
         if self.is_7x24:
             if (tick.datetime - lastBar.datetime).total_seconds() >= 3600 * self.barTimeInterval:
+                self.writeCtaLog('{} drawLineBar() new_bar,{} - {} > 3600 * {} '
+                                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), lastBar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                                        self.barTimeInterval))
                 is_new_bar = True
-                if len(tick.tradingDay) >0:
+                # 去除分钟和秒数
+                tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:00:00'), '%Y-%m-%d %H:%M:%S')
+                tick.time = tick.datetime.strftime('%H:%M:%S')
+                if len(tick.tradingDay) > 0:
                     self.curTradingDay = tick.tradingDay
                 else:
                     self.curTradingDay = tick.date
 
         if self.m1_bars_count > 60 * self.barTimeInterval:
+            self.writeCtaLog('{} drawLineBar() new_bar,{} {} > 60 * {} '
+                             .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                                     self.m1_bars_count,
+                                     self.barTimeInterval))
             is_new_bar = True
+            # 去除秒数
+            tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:%M:00'), '%Y-%m-%d %H:%M:%S')
+            tick.time = tick.datetime.strftime('%H:%M:%S')
 
         if is_new_bar:
             # 创建并推入新的Bar
@@ -3741,6 +3860,9 @@ class CtaDayBar(CtaLineBar):
         :param bar_freq, bar对象得frequency
         :return:
         """
+        # 更新最后价格
+        self.cur_price = bar.close
+
         l1 = len(self.lineBar)
 
         if l1 == 0:

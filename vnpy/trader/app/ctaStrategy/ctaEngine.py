@@ -40,7 +40,10 @@ from vnpy.trader.vtFunction import todayDate, getJsonPath
 from vnpy.trader.util_mail import sendmail
 # 加载 strategy目录下所有的策略
 from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
-
+try:
+    from vnpy.trader.util_wechat import *
+except:
+    print('import util_wechat fail')
 
 MATRIX_DB_NAME = 'matrix'                               # 虚拟策略矩阵的数据库名称
 POSITION_DISPATCH_COLL_NAME = 'position_dispatch'       # 虚拟策略矩阵的策略调度配置collection名称
@@ -148,7 +151,7 @@ class CtaEngine(object):
         contract = self.mainEngine.getContract(vtSymbol)
         if contract is None:
             self.writeCtaError(
-                u'vtEngine.sendOrder取不到{}合约得信息,{}发送{}委托:{},v{}'.format(vtSymbol, strategy.name, orderType, price,
+                u'vtEngine.sendOrder取不到{}合约得信息,{}发送{}委托:{},v{}失败'.format(vtSymbol, strategy.name, orderType, price,
                                                                          volume))
             return ''
 
@@ -256,12 +259,18 @@ class CtaEngine(object):
 
         if strategy:
             self.orderStrategyDict[vtOrderID] = strategy  # 保存vtOrderID和策略的映射关系
-
-            self.writeCtaLog(u'策略%s发送委托，%s, %s，%s，%s@%s'
-                             % (strategy.name, vtSymbol, req.offset, req.direction, volume, price))
+            msg = u'策略%s发送委托，%s, %s，%s，%s@%s' % (strategy.name, vtSymbol, req.offset, req.direction, volume, price)
+            self.writeCtaLog(msg)
         else:
-            self.writeCtaLog(u'%s发送委托，%s, %s，%s，%s@%s'
-                             % ('CtaEngine', vtSymbol, req.offset, req.direction, volume, price))
+            msg = u'%s发送委托，%s, %s，%s，%s@%s' % ('CtaEngine', vtSymbol, req.offset, req.direction, volume, price)
+            self.writeCtaLog(msg)
+
+        # 发送微信
+        try:
+            sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
+        except:
+            pass
+
         return vtOrderID
 
     # ----------------------------------------------------------------------
@@ -283,6 +292,13 @@ class CtaEngine(object):
                 req.sessionID = order.sessionID
                 req.orderID = order.orderID
                 self.mainEngine.cancelOrder(req, order.gatewayName)
+
+                # 发送微信
+                try:
+                    msg = u'发送撤单指令，%s, %s，%s' % (order.symbol, order.orderID, order.gatewayName)
+                    sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
+                except:
+                    pass
             else:
                 if order.status == STATUS_ALLTRADED:
                     self.writeCtaLog(u'委托单({0}已执行，无法撤销'.format(vtOrderID))
@@ -326,6 +342,13 @@ class CtaEngine(object):
                                          order.totalVolume - order.tradedVolume))
                 self.mainEngine.cancelOrder(req, order.gatewayName)
 
+                # 发送微信
+                try:
+                    msg = u'撤销所有单，{}'.format(symbol)
+                    sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
+                except:
+                    pass
+
     # ----------------------------------------------------------------------
     def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
         """发停止单（本地实现）"""
@@ -361,10 +384,14 @@ class CtaEngine(object):
         self.stopOrderDict[stopOrderID] = so  # 字典中不会删除
         self.workingStopOrderDict[stopOrderID] = so  # 字典中会删除
 
-        self.writeCtaLog(u'发停止单成功，'
-                         u'Id:{0},Symbol:{1},Type:{2},Price:{3},Volume:{4}'
-                         u'.'.format(stopOrderID, vtSymbol, orderType, price, volume))
+        msg = u'发停止单成功，Id:{},Symbol:{},Type:{},Price:{},Volume:{}'.format(stopOrderID, vtSymbol, orderType, price, volume)
+        self.writeCtaLog(msg)
 
+        # 发送微信
+        try:
+            sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
+        except:
+            pass
         return stopOrderID
 
     # ----------------------------------------------------------------------
@@ -379,9 +406,21 @@ class CtaEngine(object):
             so.status = STOPORDER_CANCELLED  # STOPORDER_WAITING =》STOPORDER_CANCELLED
             del self.workingStopOrderDict[stopOrderID]  # 删除
             self.writeCtaLog(u'撤销停止单:{0}成功.'.format(stopOrderID))
+
+            # 发送微信
+            try:
+                sendWeChatMsg(u'撤销停止单:{0}成功.'.format(stopOrderID), target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
+            except:
+                pass
             return True
         else:
             self.writeCtaLog(u'撤销停止单:{0}失败，不存在Id.'.format(stopOrderID))
+
+            # 发送微信
+            try:
+                sendWeChatMsg(u'撤销停止单:{0}失败，不存在Id.'.format(stopOrderID), target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
+            except:
+                pass
             return False
 
     # ----------------------------------------------------------------------
@@ -441,11 +480,13 @@ class CtaEngine(object):
             ctaTick = CtaTickData()
             d = ctaTick.__dict__
             for key in d.keys():
-                d[key] = tick.__getattribute__(key)
+                if key in tick.__dict__:
+                    d[key] = tick.__getattribute__(key)
 
             if not ctaTick.datetime:
                 # 添加datetime字段
-                ctaTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y-%m-%d %H:%M:%S.%f')
+                tickDate = tick.date.replace('-', '')
+                ctaTick.datetime = datetime.strptime(' '.join([tickDate, tick.time]), '%Y%m%d %H:%M:%S.%f')
 
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
@@ -735,6 +776,26 @@ class CtaEngine(object):
                     pass
         self.mainEngine.writeCritical(content)
 
+    def sendAlertToWechat(self,content,target):
+        """发送微信告警"""
+        gw = EMPTY_STRING
+        if len(self.mainEngine.connected_gw_names)>0:
+            gw = self.mainEngine.connected_gw_names[0]
+        else:
+            if len(self.mainEngine.gatewayDetailList) > 0:
+                d = self.mainEngine.gatewayDetailList[0]
+                if isinstance(d, dict):
+                    gw = d.get('gatewayDisplayName','Gateway')
+
+        if len(gw)>0:
+            content = u'[gw:{}]{}'.format(gw,content)
+        try:
+            from vnpy.trader import util_wechat
+            self.writeCtaLog(u'发送微信通知:{}'.format(content))
+            util_wechat.sendWeChatMsg(content=content, target=target,level=util_wechat.WECHAT_LEVEL_DEBUG)
+        except Exception as ex:
+            self.writeCtaError(u'调用微信接口失败:{} {}'.format(str(ex), traceback.format_exc()))
+
     def sendCtaSignal(self, source, symbol, direction, price, level):
         """发出交易信号"""
         s = VtSignalData()
@@ -850,8 +911,8 @@ class CtaEngine(object):
                         self.writeCtaLog(u'撤销运行中策略{}的强制清仓，恢复运行'.format(name))
                         return False
                     except Exception as ex:
-                        self.writeCtaCritical(u'撤销运行中策略{}的强制清仓时异常：{}'.format(name, str(ex)))
-                        traceback.print_exc()
+                        self.writeCtaCritical(u'撤销运行中策略{}的强制清仓时异常：{},{}'.format(name, str(ex),traceback.format_exc()))
+
                         return False
         else:
             # 防止策略重名
@@ -921,13 +982,21 @@ class CtaEngine(object):
         # 自动初始化
         if 'auto_init' in setting:
             if setting['auto_init'] == True:
-                self.writeCtaLog(u'自动初始化策略')
-                self.initStrategy(name=name)
+                self.writeCtaLog(u'自动初始化策略：{}'.format(name))
+                try:
+                    self.initStrategy(name=name)
+                except Exception as ex:
+                    self.writeCtaCritical(u'初始化策略：{} 异常,{},{}'.format(name,str(ex),traceback.format_exc()))
+                    return False
 
         if 'auto_start' in setting:
             if setting['auto_start'] == True:
-                self.writeCtaLog(u'自动启动策略')
-                self.startStrategy(name=name)
+                self.writeCtaLog(u'自动启动策略：{}'.format(name))
+                try:
+                    self.startStrategy(name=name)
+                except Exception as ex:
+                    self.writeCtaCritical(u'自动启动策略：{} 异常,{},{}'.format(name, str(ex), traceback.format_exc()))
+                    return False
         return True
 
     def initStrategy(self, name, force=False):
@@ -1593,7 +1662,7 @@ class CtaEngine(object):
         :return: 
         """
         try:
-            with open(self.settingfilePath) as f:
+            with open(self.settingfilePath,'r',encoding='UTF-8') as f:
                 l = json.load(f)
                 for setting in l:
                     try:
@@ -1761,8 +1830,12 @@ class CtaEngine(object):
 
             # 发出日志
             content =u'策略{}触发异常已停止.{}'.format(strategy.name,traceback.format_exc())
-            self.writeCtaLog(content)
+            self.writeCtaError(content)
             self.mainEngine.writeCritical(content)
+
+            if hasattr(strategy,'backtesting') and hasattr(strategy,'wechat_source'):
+                if not strategy.backtesting and len(strategy.wechat_source)>0:
+                    self.sendAlertToWechat(content=content,target=strategy.wechat_source)
 
     # ----------------------------------------------------------------------
     # 仓位持久化相关
@@ -2047,7 +2120,14 @@ class PositionBuffer(object):
         self.shortYd = EMPTY_INT
 
         self.frozen = EMPTY_FLOAT
-        
+
+    # ----------------------------------------------------------------------
+    def toStr(self):
+        """更新显示信息"""
+        str = u'long:{},yd:{},td:{}, short:{},yd:{},td:{}, fz:{};' \
+            .format(self.longPosition, self.longYd, self.longToday,
+                    self.shortPosition, self.shortYd, self.shortToday,self.frozen)
+        return str
     #----------------------------------------------------------------------
     def updatePositionData(self, pos):
         """更新持仓数据"""

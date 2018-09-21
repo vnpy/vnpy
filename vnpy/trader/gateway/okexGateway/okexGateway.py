@@ -920,7 +920,7 @@ class OkexSpotApi(WsSpotApi):
 
         tick.date, tick.time,tick.datetime = self.generateDateTime(data['timestamp'])
         # print "Depth", tick.date, tick.time
-
+        tick.tradingDay = tick.date
         # 推送tick事件
         newtick = copy(tick)
         self.gateway.onTick(newtick)
