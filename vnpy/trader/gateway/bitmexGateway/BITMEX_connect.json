@@ -2,5 +2,5 @@
 	"apiKey": "",
 	"apiSecret": "",
 	"sessionCount": 3,
-	"symbols": ["XBTUSD", "EOSM18", "XRPM18"]
+	"symbols": ["XBTUSD","XBTU18","ETHU18", "EOSU18", "BCHU18", "LTCU18", "XRPU18","ADAU18","TRXU18"]
 }
