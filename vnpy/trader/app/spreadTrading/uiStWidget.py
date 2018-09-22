@@ -429,7 +429,7 @@ class StAlgoManager(QtWidgets.QTableWidget):
     #----------------------------------------------------------------------
     def stopAll(self):
         """停止所有算法"""
-        for button in self.buttonActiveDict.values():
+        for button in list(self.buttonActiveDict.values()):
             button.stop()     
 
 

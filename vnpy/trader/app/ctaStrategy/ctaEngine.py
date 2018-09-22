@@ -266,10 +266,10 @@ class CtaEngine(object):
             self.writeCtaLog(msg)
 
         # 发送微信
-        try:
-            sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
-        except:
-            pass
+        #try:
+        #    sendWeChatMsg(msg, target=self.mainEngine.gatewayDetailList[0]['gatewayName'])
+        #except:
+        #    pass
 
         return vtOrderID
 
@@ -294,11 +294,11 @@ class CtaEngine(object):
                 self.mainEngine.cancelOrder(req, order.gatewayName)
 
                 # 发送微信
-                try:
-                    msg = u'发送撤单指令，%s, %s，%s' % (order.symbol, order.orderID, order.gatewayName)
-                    sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
-                except:
-                    pass
+                #try:
+                #    msg = u'发送撤单指令，%s, %s，%s' % (order.symbol, order.orderID, order.gatewayName)
+                #    sendWeChatMsg(msg, target=self.mainEngine.gatewayDetailList[0]['gatewayName'])
+                #except:
+                #    pass
             else:
                 if order.status == STATUS_ALLTRADED:
                     self.writeCtaLog(u'委托单({0}已执行，无法撤销'.format(vtOrderID))
@@ -343,11 +343,11 @@ class CtaEngine(object):
                 self.mainEngine.cancelOrder(req, order.gatewayName)
 
                 # 发送微信
-                try:
-                    msg = u'撤销所有单，{}'.format(symbol)
-                    sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
-                except:
-                    pass
+                #try:
+                #    msg = u'撤销所有单，{}'.format(symbol)
+                #    sendWeChatMsg(msg, target=self.mainEngine.gatewayDetailList[0]['gatewayName'])
+                #except:
+                #    pass
 
     # ----------------------------------------------------------------------
     def sendStopOrder(self, vtSymbol, orderType, price, volume, strategy):
@@ -388,10 +388,10 @@ class CtaEngine(object):
         self.writeCtaLog(msg)
 
         # 发送微信
-        try:
-            sendWeChatMsg(msg, target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
-        except:
-            pass
+        #try:#
+        #    sendWeChatMsg(msg, target=self.mainEngine.gatewayDetailList[0]['gatewayName'])
+        #except:
+        #    pass
         return stopOrderID
 
     # ----------------------------------------------------------------------
@@ -408,19 +408,19 @@ class CtaEngine(object):
             self.writeCtaLog(u'撤销停止单:{0}成功.'.format(stopOrderID))
 
             # 发送微信
-            try:
-                sendWeChatMsg(u'撤销停止单:{0}成功.'.format(stopOrderID), target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
-            except:
-                pass
+            #try:
+            #    sendWeChatMsg(u'撤销停止单:{0}成功.'.format(stopOrderID), target=self.mainEngine.gatewayDetailList[0]['gatewayName'])
+            #except:
+            #    pass
             return True
         else:
             self.writeCtaLog(u'撤销停止单:{0}失败，不存在Id.'.format(stopOrderID))
 
             # 发送微信
-            try:
-                sendWeChatMsg(u'撤销停止单:{0}失败，不存在Id.'.format(stopOrderID), target=self.ctaEngine.mainEngine.gatewayDetailList[0]['gatewayName'])
-            except:
-                pass
+            #try:
+            #    sendWeChatMsg(u'撤销停止单:{0}失败，不存在Id.'.format(stopOrderID), target=self.mainEngine.gatewayDetailList[0]['gatewayName'])
+            #except:
+            #    pass
             return False
 
     # ----------------------------------------------------------------------

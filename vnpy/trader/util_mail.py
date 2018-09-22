@@ -6,7 +6,7 @@
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
-from threading import *
+from threading import Lock,Thread
 import time
 
 # 创建一个带附件的实例
@@ -15,6 +15,23 @@ global maillock
 maillock = Lock()
 
 
+#用于发送邮件的邮箱列表
+senders_list = [('xxx010@163.com','xxxx'),
+                ('xxx013@163.com','xxxx'),
+                ('xxx014@163.com','xxxx'),
+                ('xxx015@163.com','xxxx'),
+                ('xxx016@163.com','xxxx'),
+                ('xxx017@163.com','xxxx'),
+                ('xxx018@163.com','xxxx'),
+                ('xxx019@163.com','xxxx'),
+                ('xxx020@163.com','xxxx'),
+                ('xxx021@163.com','xxxx'),
+                ('xxx022@163.com','xxxx'),
+                ('xxx023@163.com','xxxx'),
+                ('xxx024@163.com','xxxx'),
+                ('xxx025@163.com','xxxx'),
+                ('xxx026@163.com','xxxx'),
+                ('xxx027@163.com','xxxx')]
 class mail_thread(Thread):
     def __init__(self, to_list, subject, msgcontent, attachlist):
         super(mail_thread, self).__init__(name="mail_thread")
@@ -35,6 +52,16 @@ class mail_thread(Thread):
         print("sendmail run!")
         self.lock.acquire()
         print("lock acquire %s" % time.ctime())
+
+        random_limit = len(senders_list) - 1
+        if random_limit != 0:
+            index = random.randint(0, random_limit)
+            self.mailfrom, self.mailpwd = senders_list[index]
+
+        if len(self.mailfrom)==0 or len(self.mailpwd) == 0:
+            print("sendmail user/pwd error!")
+            self.lock.release()
+            return
 
         msg = MIMEMultipart()
         # 文本肉容

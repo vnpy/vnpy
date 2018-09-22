@@ -26,7 +26,8 @@ class arbTemplate(object):
     base_symbol = EMPTY_STRING          # 交易主货币   btc
     quote_symbol = EMPTY_STRING         # 基准货币     usdt
     spot_symbol = EMPTY_STRING          # 现货交易所币对 btc_usdt
-    future_symbol = EMPTY_STRING         # 期货合约 btc:next_week:10
+    future_symbol = EMPTY_STRING        # 期货合约 btc:next_week:10
+    future_net_symbol = EMPTY_STRING    # 合约账号内的期货合约净仓symbol btc.[future]
     Leg1Symbol = EMPTY_STRING           # 带交易所信息的symbol，如： btc_usdt.OKEX
     Leg2Symbol = EMPTY_STRING           # 带交易所信息的symbol，如： btc:next_week:10.OKEX
     exchange = EMPTY_STRING
@@ -46,6 +47,7 @@ class arbTemplate(object):
                  'quote_symbol',
                  'spot_symbol',
                  'future_symbol',
+                 'future_net_symbol',
                  'Leg1Symbol',
                  'Leg2Symbol',
                  'exchange',

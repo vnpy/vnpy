@@ -7,7 +7,7 @@ from collections import OrderedDict
 import os,sys
 import copy
 
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from pymongo.errors import ConnectionFailure,AutoReconnect
 #import vnpy.trader.mongo_proxy
 
@@ -26,7 +26,11 @@ import psutil
 try:
     from .util_mail import *
 except:
-    print('import util_mail fail')
+    print('import util_mail fail',file=sys.stderr)
+try:
+    from .util_wechat import *
+except:
+    print('import util_wechat fail',file=sys.stderr)
 
 LOG_DB_NAME = 'vt_logger'
 
@@ -147,15 +151,15 @@ class MainEngine(object):
 
     def checkGatewayStatus(self,gatewayName):
         """check gateway connect status"""
+        # 借用检查网关状态来持久化合约数据
+        self.save_contract_counter += 1
+        if self.save_contract_counter > 60 and self.dataEngine is not None:
+            self.writeLog(u'保存持久化合约数据')
+            self.dataEngine.saveContracts()
+            self.save_contract_counter = 0
+
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
-
-            # 借用检查网关状态来持久化合约数据
-            self.save_contract_counter += 1
-            if self.save_contract_counter > 60 and self.dataEngine is not None:
-
-                self.dataEngine.saveContracts()
-                self.save_contract_counter = 0
 
             return gateway.checkStatus()
         else:
@@ -372,10 +376,21 @@ class MainEngine(object):
         # 写入本地log日志
         if self.logger is not None:
             self.logger.error(content)
+            print('{}'.format(datetime.now()),file=sys.stderr)
             print(content, file=sys.stderr)
         else:
             print(content, file=sys.stderr)
             self.createLogger()
+
+        # 发出邮件/微信
+       #try:
+       #    if len(self.gatewayDetailList) > 0:
+       #        target = self.gatewayDetailList[0]['gatewayName']
+       #    else:
+       #        target = WECHAT_GROUP["DEBUG_01"]
+       #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_ERROR)
+       #except Exception as ex:
+       #    print(u'send wechat exception:{}'.format(str(ex)),file=sys.stderr)
 
     # ----------------------------------------------------------------------
     def writeWarning(self, content):
@@ -399,6 +414,16 @@ class MainEngine(object):
         except:
             pass
 
+        # 发出微信
+        #try:
+        #    if len(self.gatewayDetailList) > 0:
+        #        target = self.gatewayDetailList[0]['gatewayName']
+        #    else:
+        #        target = WECHAT_GROUP["DEBUG_01"]
+        #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_WARNING)
+        #except Exception as ex:
+        #    print(u'send wechat exception:{}'.format(str(ex)), file=sys.stderr)
+
     # ----------------------------------------------------------------------
     def writeNotification(self, content):
         """快速发出通知日志事件"""
@@ -414,6 +439,16 @@ class MainEngine(object):
         except:
             pass
 
+        # 发出微信
+       # try:
+       #     if len(self.gatewayDetailList) > 0:
+       #         target = self.gatewayDetailList[0]['gatewayName']
+       #     else:
+       #         target = WECHAT_GROUP["DEBUG_01"]
+       #     sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_INFO)
+       # except Exception as ex:
+       #     print(u'send wechat exception:{}'.format(str(ex)), file=sys.stderr)
+
     # ----------------------------------------------------------------------
     def writeCritical(self, content):
         """快速发出严重错误日志事件"""
@@ -427,6 +462,7 @@ class MainEngine(object):
         # 写入本地log日志
         if self.logger:
             self.logger.critical(content)
+            print('{}'.format(datetime.now()), file=sys.stderr)
             print(content, file=sys.stderr)
         else:
             print(content, file=sys.stderr)
@@ -438,6 +474,16 @@ class MainEngine(object):
         except:
             pass
 
+        ## 发出微信
+        #try:
+        # #   if len(self.gatewayDetailList) > 0:
+        #        target = self.gatewayDetailList[0]['gatewayName']
+        #    else:
+        #        target = WECHAT_GROUP["DEBUG_01"]
+        #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_FATAL)
+        #except:
+        #    pass
+#
     # ----------------------------------------------------------------------
     def dbConnect(self):
         """连接MongoDB数据库"""
@@ -527,13 +573,18 @@ class MainEngine(object):
             self.writeError(u'dbInsertMany exception:{}'.format(str(ex)))
 
     # ----------------------------------------------------------------------
-    def dbQuery(self, dbName, collectionName, d):
+    def dbQuery(self, dbName, collectionName, d, sortKey='', sortDirection=ASCENDING):
         """从MongoDB中读取数据，d是查询要求，返回的是数据库查询的指针"""
         try:
             if self.dbClient:
                 db = self.dbClient[dbName]
                 collection = db[collectionName]
-                cursor = collection.find(d)
+
+                if sortKey:
+                    cursor = collection.find(d).sort(sortKey, sortDirection)  # 对查询出来的数据进行排序
+                else:
+                    cursor = collection.find(d)
+
                 if cursor:
                     return list(cursor)
                 else:

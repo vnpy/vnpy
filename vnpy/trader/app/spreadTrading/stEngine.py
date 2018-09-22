@@ -274,7 +274,7 @@ class StDataEngine(object):
     #----------------------------------------------------------------------
     def getAllSpreads(self):
         """获取所有的价差"""
-        return self.spreadDict.values() 
+        return list(self.spreadDict.values())
 
     
 ########################################################################
@@ -343,7 +343,7 @@ class StAlgoEngine(object):
     #----------------------------------------------------------------------
     def processTimerEvent(self, event):
         """"""
-        for algo in self.algoDict.values():
+        for algo in list(self.algoDict.values()):
             algo.updateTimer()
 
     #----------------------------------------------------------------------
@@ -450,7 +450,7 @@ class StAlgoEngine(object):
     def saveSetting(self):
         """保存算法配置"""
         setting = {}
-        for algo in self.algoDict.values():
+        for algo in list(self.algoDict.values()):
             setting[algo.spreadName] = algo.getAlgoParams()
             
         f = shelve.open(self.algoFilePath)
@@ -478,7 +478,7 @@ class StAlgoEngine(object):
         if not setting:
             return
         
-        for algo in self.algoDict.values():
+        for algo in list(self.algoDict.values()):
             if algo.spreadName in setting:
                 d = setting[algo.spreadName]
                 algo.setAlgoParams(d)
@@ -486,7 +486,7 @@ class StAlgoEngine(object):
     #----------------------------------------------------------------------
     def stopAll(self):
         """停止全部算法"""
-        for algo in self.algoDict.values():
+        for algo in list(self.algoDict.values()):
             algo.stop()
             
     #----------------------------------------------------------------------
@@ -506,7 +506,7 @@ class StAlgoEngine(object):
     #----------------------------------------------------------------------
     def getAllAlgoParams(self):
         """获取所有算法的参数"""
-        return [algo.getAlgoParams() for algo in self.algoDict.values()]
+        return [algo.getAlgoParams() for algo in list(self.algoDict.values())]
     
     #----------------------------------------------------------------------
     def setAlgoBuyPrice(self, spreadName, buyPrice):

@@ -72,14 +72,21 @@ EXCHANGE_IDEALPRO = 'IDEALPRO' # IB外汇ECN
 EXCHANGE_CME = 'CME'           # CME交易所
 EXCHANGE_ICE = 'ICE'           # ICE交易所
 
+
 EXCHANGE_OANDA = 'OANDA'       # OANDA外汇做市商
+
+
 EXCHANGE_OKCOIN = 'OKCOIN'     # OKCOIN比特币交易所
 EXCHANGE_HUOBI = 'HUOBI'       # 火币比特币交易所
 EXCHANGE_LHANG = 'LHANG'       # 链行比特币交易所
 EXCHANGE_OKEX = 'OKEX'		   # OKEX比特币交易所
 EXCHANGE_BINANCE = 'BINANCE'   # 币安比特币交易所
 EXCHANGE_GATEIO = 'GATEIO'     # gate.io比特币交易所
-EXCHANGE_FCOIN = 'FCOIN'       # fcoin.com 比特币交易所
+EXCHANGE_BITFINEX = "BITFINEX"   # Bitfinex比特币交易所
+EXCHANGE_BITMEX = 'BITMEX'       # BitMEX比特币交易所
+EXCHANGE_FCOIN = 'FCOIN'         # FCoin比特币交易所
+EXCHANGE_BIGONE = 'BIGONE'       # BigOne比特币交易所
+
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元
 CURRENCY_CNY = 'CNY'            # 人民币

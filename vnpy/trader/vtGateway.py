@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-import time,os
+import time,os,sys
 from datetime import datetime
 
 from vnpy.trader.vtEvent import *
@@ -98,10 +98,11 @@ class VtGateway(object):
         event1.dict_['data'] = error
         self.eventEngine.put(event1)
 
-        logMsg = u'{0}:[{1}]:{2}'.format(error.gatewayName, error.errorID,error.errorMsg )
+        logMsg = u'{} {}:[{}]:{}'.format(datetime.now(), error.gatewayName, error.errorID,error.errorMsg )
         # 写入本地log日志
         if self.logger:
-            self.logger.info(logMsg)
+            self.logger.error(logMsg)
+            print(logMsg,file=sys.stderr)
         else:
             self.createLogger()
 
@@ -205,12 +206,9 @@ class VtGateway(object):
         error.errorMsg = content
         self.onError(error)
 
+        # 输出到错误管道
+        print(u'{}:{} {}'.format(datetime.now(),self.gatewayName,content),file=sys.stderr)
+
         if self.logger:
             self.logger.error(content)
-    
-    
-    
 
-    
-    
-    

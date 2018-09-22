@@ -56,7 +56,7 @@ ENGINETYPE_TRADING = 'trading'          # 实盘
 
 
 # CTA引擎中涉及的数据类定义
-from vnpy.trader.vtConstant import *
+from vnpy.trader.vtConstant import EMPTY_STRING,EMPTY_UNICODE,EMPTY_FLOAT,EMPTY_INT,COLOR_EQUAL
 
 ########################################################################
 class StopOrder(object):

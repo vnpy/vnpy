@@ -496,7 +496,7 @@ class SniperAlgo(StAlgoTemplate):
     #----------------------------------------------------------------------
     def cancelAllOrders(self):
         """撤销全部委托"""
-        for orderList in self.legOrderDict.values():
+        for orderList in list(self.legOrderDict.values()):
             for vtOrderID in orderList:
                 self.algoEngine.cancelOrder(vtOrderID)
         

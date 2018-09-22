@@ -26,7 +26,7 @@ class GridKline(QtWidgets.QWidget):
         self.parent = parent
         super(GridKline, self).__init__(parent)
 
-        self.periods = ['m30', 'h1', 'h2', 'd']
+        self.periods = ['m30', 'h1', 'h2','d']
         self.kline_dict = {}
 
         self.initUI()
@@ -71,19 +71,23 @@ class GridKline(QtWidgets.QWidget):
                     df = df.set_index(pd.DatetimeIndex(df['datetime']))
                     canvas.loadData(df, main_indicators=['ma5', 'ma10', 'ma18'], sub_indicators=['sk', 'sd'])
 
-            # 载入 回测引擎生成的成交记录
             trade_list_file = 'TradeList.csv'
             if os.path.exists(trade_list_file):
                 df_trade = pd.read_csv(trade_list_file)
                 self.kline_dict['h1'].add_signals(df_trade)
 
-            # 载入策略生成的交易事务过程
             tns_file = 'tns.csv'
             if os.path.exists(tns_file):
                 df_tns = pd.read_csv(tns_file)
                 self.kline_dict['h2'].add_trans_df(df_tns)
                 self.kline_dict['d'].add_trans_df(df_tns)
 
+            markup_file = 'dist.csv'
+            if os.path.exists(markup_file):
+                df_markup = pd.read_csv(markup_file)
+                df_markup = df_markup[['datetime', 'price', 'operation']]
+                df_markup.rename(columns={'operation': 'markup'}, inplace=True)
+                self.kline_dict['m30'].add_markups(df_markup=df_markup, include_list=['balance'], exclude_list=['buy', 'short', 'sell', 'cover'])
 
         except Exception as ex:
             traceback.print_exc()

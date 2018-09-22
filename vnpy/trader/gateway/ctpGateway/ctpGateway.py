@@ -383,10 +383,10 @@ class CtpMdApi(MdApi):
     def onRtnDepthMarketData(self, data):
         """行情推送"""
         # 忽略成交量为0的无效单合约tick数据
-        if not data['Volume'] and '&' not in data['InstrumentID']:
-            self.writeLog(u'忽略成交量为0的无效单合约tick数据:')
-            self.writeLog(data)
-            return
+        #if not data['Volume'] and '&' not in data['InstrumentID']:
+        #    self.writeLog(u'忽略成交量为0的无效单合约tick数据:')
+        #    self.writeLog(data)
+        #    return
 
         if not self.connectionStatus:
             self.connectionStatus = True
@@ -407,11 +407,19 @@ class CtpMdApi(MdApi):
         #tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
         # =》 Python 3
         tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec'])])
-        tick.date = data['TradingDay']
+        # 上期所和郑商所可以直接使用，大商所需要转换
+        tick.date = data['ActionDay']
+        # 大商所日期转换
+        if tick.exchange is EXCHANGE_DCE:
+            tick.date = datetime.now().strftime('%Y%m%d')
+
+        #tick.date = data['TradingDay']
 
         # add by Incense Lee
         tick.tradingDay = data['TradingDay']
-
+        if len(tick.tradingDay) == 8:
+            tradingDay = tick.tradingDay
+            tick.tradingDay = "{}-{}-{}".format(tradingDay[:4], tradingDay[4:6], tradingDay[6:])
         # 先根据交易日期，生成时间
         tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y%m%d %H:%M:%S.%f')
         # 修正时间
@@ -428,6 +436,8 @@ class CtpMdApi(MdApi):
             # 如果交易日是星期一，并且时间是早上8点前 => 星期六
             tick.datetime = tick.datetime + timedelta(days=2)
             tick.date = tick.datetime.strftime('%Y-%m-%d')
+
+        tick.date = tick.datetime.strftime('%Y-%m-%d')
 
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
@@ -1437,7 +1447,7 @@ class CtpTdApi(TdApi):
         """"""
         pass
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def connect(self, userID, password, brokerID, address, authCode, userProductInfo):
         """初始化连接"""
         self.userID = userID                # 账号
@@ -1472,7 +1482,7 @@ class CtpTdApi(TdApi):
             elif not self.loginStatus:
                 self.login()    
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def login(self):
         """连接服务器"""
         # 如果填入了用户名密码等，则登录
@@ -1484,7 +1494,7 @@ class CtpTdApi(TdApi):
             self.reqID += 1
             self.reqUserLogin(req, self.reqID)   
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def authenticate(self):
         """申请验证"""
         if self.userID and self.brokerID and self.authCode and self.userProductInfo:
@@ -1496,13 +1506,13 @@ class CtpTdApi(TdApi):
             self.reqID +=1
             self.reqAuthenticate(req, self.reqID)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户"""
         self.reqID += 1
         self.reqQryTradingAccount({}, self.reqID)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
         self.reqID += 1
@@ -1511,7 +1521,7 @@ class CtpTdApi(TdApi):
         req['InvestorID'] = self.userID
         self.reqQryInvestorPosition(req, self.reqID)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """发单"""
         self.reqID += 1
@@ -1562,7 +1572,7 @@ class CtpTdApi(TdApi):
         vtOrderID = '.'.join([self.gatewayName, str(self.orderRef)])
         return vtOrderID
     
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.reqID += 1
@@ -1581,12 +1591,12 @@ class CtpTdApi(TdApi):
         
         self.reqOrderAction(req, self.reqID)
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def close(self):
         """关闭"""
         self.exit()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
         log = VtLogData()
