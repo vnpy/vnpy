@@ -76,7 +76,6 @@ class Client(object):
         :type api_key: str.
         :param api_secret: Api Secret
         :type api_secret: str.
-        :type api: 上层得api
 
         """
 
@@ -91,11 +90,6 @@ class Client(object):
 
 
     def writeLog(self, content):
-        """
-        写日志
-        :param content:
-        :return:
-        """
         content = 'client ' + content
         if not self.api:
             print(content)
@@ -107,7 +101,6 @@ class Client(object):
         self.api.writeLog(content)
 
     def writeError(self, content, error_id=0):
-        """写异常"""
         content = 'client ' + content
         if not self.api:
             print(u'{},error_id:{}'.format(content, error_id) ,file=sys.stderr)
@@ -139,6 +132,7 @@ class Client(object):
     def _generate_signature(self, data):
         query_string = urlencode(data)
         m = hmac.new(self.API_SECRET.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256)
+
         return m.hexdigest()
 
     def _order_params(self, data):
@@ -168,8 +162,8 @@ class Client(object):
             kwargs['data'] = data
         if signed:
             # generate signature
+            kwargs['data']['recvWindow'] = 5000
             kwargs['data']['timestamp'] = int(time.time() * 1000)
-            kwargs['data']['recvWindow'] = 20000
             kwargs['data']['signature'] = self._generate_signature(kwargs['data'])
 
         if data and (method == 'get' or force_params):
@@ -181,6 +175,9 @@ class Client(object):
             self.writeLog('_request:method:{} uri:{},{}'.format(method, uri, kwargs))
 
         response = getattr(self.session, method)(uri, **kwargs )
+
+        if self.DEBUG:
+            self.writeLog(str(response))
 
         return self._handle_response(response , uri , **kwargs )
 
