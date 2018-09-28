@@ -288,7 +288,7 @@ class HuobiDataApi(DataApi):
 
         if tick.lastPrice:
             newtick = copy(tick)
-            self.gateway.onTick(tick)
+            self.gateway.onTick(newtick)
 
     #----------------------------------------------------------------------
     def onTradeDetail(self, data):
@@ -318,7 +318,7 @@ class HuobiDataApi(DataApi):
 
         if tick.bidPrice1:
             newtick = copy(tick)
-            self.gateway.onTick(tick)
+            self.gateway.onTick(newtick)
 
 
 ########################################################################
