@@ -57,6 +57,7 @@ build/Makefile
 .vscode
 .python-version
 .gitignore
+temp/
 
 
 

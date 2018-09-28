@@ -12,3 +12,4 @@ flask-cors
 gevent-websocket
 pyjwt
 ccxt
+pyqtgraph
