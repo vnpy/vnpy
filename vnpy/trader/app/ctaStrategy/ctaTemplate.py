@@ -260,27 +260,28 @@ class CtaTemplate(object):
     def writeCtaLog(self, content):
         """记录CTA日志"""
         try:
+            content = self.name + ':' + content
             self.ctaEngine.writeCtaLog(content, strategy_name=self.name)
         except Exception as ex:
-            content = self.name + ':' + content
+
             self.ctaEngine.writeCtaLog(content)
 
     # ----------------------------------------------------------------------
     def writeCtaError(self, content):
         """记录CTA出错日志"""
         try:
+            content = self.name + ':' + content
             self.ctaEngine.writeCtaError(content, strategy_name=self.name)
         except Exception as ex:
-            content = self.name + ':' + content
             self.ctaEngine.writeCtaError(content)
 
     # ----------------------------------------------------------------------
     def writeCtaWarning(self, content):
         """记录CTA告警日志"""
         try:
+            content = self.name + ':' + content
             self.ctaEngine.writeCtaWarning(content, strategy_name=self.name)
         except Exception as ex:
-            content = self.name + ':' + content
             self.ctaEngine.writeCtaWarning(content)
 
     # ----------------------------------------------------------------------
@@ -296,15 +297,15 @@ class CtaTemplate(object):
     # ----------------------------------------------------------------------
     def writeCtaCritical(self, content):
         """记录CTA系统异常日志"""
-
+        content = self.name + ':' + content
         if not self.backtesting:
             try:
                 self.ctaEngine.writeCtaCritical(content,strategy_name=self.name)
             except Exception as ex:
-                content = self.name + ':' + content
+
                 self.ctaEngine.writeCtaCritical(content)
         else:
-            content = self.name + ':' + content
+
             self.ctaEngine.writeCtaError(content)
 
     def sendSignal(self,direction,price, level):
@@ -486,11 +487,18 @@ class MatrixTemplate(CtaTemplate):
             return
 
         if dt.hour == 10:
-            if dt.minute <= 15 or dt.minute >= 30:
+            if self.shortSymbol not in MARKET_ZJ and 15 <= dt.minute < 30:
+                pass
+            else:
                 self.tradeWindow = True
                 return
 
-        if dt.hour == 11 and dt.minute <= 30:
+        if dt.hour == 11 and dt.minute < 30:
+            self.tradeWindow = True
+            return
+
+        # 中金
+        if self.shortSymbol not in MARKET_ZJ and dt.hour == 13:
             self.tradeWindow = True
             return
 
@@ -499,7 +507,7 @@ class MatrixTemplate(CtaTemplate):
             return
 
         if dt.hour == 14:
-            if dt.minute <= 55:
+            if dt.minute <= 59:
                 self.tradeWindow = True
                 return
 
@@ -514,12 +522,12 @@ class MatrixTemplate(CtaTemplate):
 
         # 上期 贵金属， 次日凌晨2:30
         if self.shortSymbol in NIGHT_MARKET_SQ1:
-            if dt.hour == 22 or dt.hour == 23 or dt.hour == 0 or dt.hour == 1:
+            if dt.hour in [22,23,0,1] :
                 self.tradeWindow = True
                 return
 
             if dt.hour == 2:
-                if dt.minute <= 1:  # 收市前29分钟
+                if dt.minute <= 29:  # 收市前29分钟
                     self.tradeWindow = True
                     return
                 if dt.minute > 24:  # 夜盘平仓
@@ -529,18 +537,13 @@ class MatrixTemplate(CtaTemplate):
 
         # 上期 有色金属，黑色金属，沥青 次日01:00
         if self.shortSymbol in NIGHT_MARKET_SQ2:
-            if dt.hour in [22, 23]:
+            if dt.hour in [22, 23,0]:
                 self.tradeWindow = True
                 return
 
-            if dt.hour == 0:
-                if dt.minute <= 31:  # 收市前29分钟
-                    self.tradeWindow = True
-                    return
-
-                if dt.minute > 54:  # 夜盘平仓
-                    self.closeWindow = True
-                    return
+            if dt.minute > 54:  # 夜盘平仓
+                self.closeWindow = True
+                return
 
             return
 
@@ -548,7 +551,7 @@ class MatrixTemplate(CtaTemplate):
         if self.shortSymbol in NIGHT_MARKET_SQ3:
 
             if dt.hour == 22:
-                if dt.minute <= 31:  # 收市前29分钟
+                if dt.minute <= 59:  # 收市前29分钟
                     self.tradeWindow = True
                     return
 
@@ -562,7 +565,7 @@ class MatrixTemplate(CtaTemplate):
                 return
 
             if dt.hour == 23:
-                if dt.minute <= 1:  # 收市前29分钟
+                if dt.minute <= 29:  # 收市 23:30分钟
                     self.tradeWindow = True
                     return
                 if dt.minute > 24:  # 夜盘平仓

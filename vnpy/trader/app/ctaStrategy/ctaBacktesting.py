@@ -1431,7 +1431,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'{0}文件不存在'.format(filepath))
             return ticks
         dt = None
-        csvReadFile = file(filepath, 'rb')
+        csvReadFile = open(filepath, 'rb')
 
         reader = csv.DictReader(csvReadFile, delimiter=",")
         self.writeCtaLog(u'加载{0}'.format(filepath))
@@ -1624,7 +1624,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'{0}文件不存在'.format(filepath))
             return ticks
         dt = None
-        csvReadFile = file(filepath, 'rb')
+        csvReadFile = open(filepath, 'rb')
         df = pd.read_csv(filepath, encoding='gbk',parse_dates=False)
         df.columns = ['date', 'time', 'lastPrice', 'lastVolume', 'totalInterest', 'position',
                       'bidPrice1', 'bidVolume1', 'bidPrice2', 'bidVolume2', 'bidPrice3', 'bidVolume3',
@@ -1965,6 +1965,15 @@ class BacktestingEngine(object):
                 #bar.close = float(row['Close'])
                 #bar.volume = float(row['TotalVolume'])#
                 #barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
+                if row.get('open',None) is None:
+                    continue
+                if row.get('high', None) is None:
+                    continue
+                if row.get('low', None) is None:
+                    continue
+                if row.get('close', None) is None:
+                    continue
+
                 if len(row['open'])==0 or len(row['high'])==0 or len(row['low'])==0 or len(row['close'])==0:
                     continue
                 # 从ricequant导出的csv文件

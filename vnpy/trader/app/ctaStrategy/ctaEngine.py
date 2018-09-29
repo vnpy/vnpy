@@ -957,6 +957,12 @@ class CtaEngine(object):
         else:
             symbols = strategy.vtSymbol.split(';')
 
+        # 数字货币 btc_usdt.OKEX
+        #if strategy.vtSymbol.find('.') != -1:
+        #    symbol_pairs = strategy.vtSymbol.split('.')
+        #    if len(symbol_pairs)==2:
+        #        symbols.append(symbol_pairs[0])
+
         # 判断是否有Leg1Symbol,Leg2Symbol 两个合约属性
         if hasattr(strategy, 'Leg1Symbol'):
             if strategy.Leg1Symbol not in symbols:

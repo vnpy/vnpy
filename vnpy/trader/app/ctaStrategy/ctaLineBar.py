@@ -2934,7 +2934,7 @@ class CtaLineBar(object):
 
     def skd_is_low_golden_cross(self, runtime=False, low_skd=None):
         """
-        检查是否低位死叉
+        检查是否低位金叉
         :return:
         """
         if not self.inputSkd or len(self.lineSK) < self.inputSkdLen2:
@@ -3695,6 +3695,7 @@ class CtaHourBar(CtaLineBar):
             # 去除分钟和秒数
             tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:00:00'), '%Y-%m-%d %H:%M:%S')
             tick.time = tick.datetime.strftime('%H:%M:%S')
+            self.last_minute = tick.datetime.minute
             self.curTradingDay = tick.tradingDay
             self.writeCtaLog('{} drawLineBar() new_bar,{} curTradingDay:{},tick.tradingDay:{}'
                              .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), self.curTradingDay,
@@ -3707,6 +3708,7 @@ class CtaHourBar(CtaLineBar):
                 self.last_minute = tick.datetime.minute
 
         if self.is_7x24:
+            # 数字货币，用前后时间间隔
             if (tick.datetime - lastBar.datetime).total_seconds() >= 3600 * self.barTimeInterval:
                 self.writeCtaLog('{} drawLineBar() new_bar,{} - {} > 3600 * {} '
                                  .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), lastBar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
@@ -3719,16 +3721,17 @@ class CtaHourBar(CtaLineBar):
                     self.curTradingDay = tick.tradingDay
                 else:
                     self.curTradingDay = tick.date
-
-        if self.m1_bars_count > 60 * self.barTimeInterval:
-            self.writeCtaLog('{} drawLineBar() new_bar,{} {} > 60 * {} '
-                             .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                                     self.m1_bars_count,
-                                     self.barTimeInterval))
-            is_new_bar = True
-            # 去除秒数
-            tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:%M:00'), '%Y-%m-%d %H:%M:%S')
-            tick.time = tick.datetime.strftime('%H:%M:%S')
+        else:
+            # 国内期货,用bar累加
+            if self.m1_bars_count > 60 * self.barTimeInterval:
+                self.writeCtaLog('{} drawLineBar() new_bar,{} {} > 60 * {} '
+                                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                                         self.m1_bars_count,
+                                         self.barTimeInterval))
+                is_new_bar = True
+                # 去除秒数
+                tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:%M:00'), '%Y-%m-%d %H:%M:%S')
+                tick.time = tick.datetime.strftime('%H:%M:%S')
 
         if is_new_bar:
             # 创建并推入新的Bar
