@@ -528,7 +528,7 @@ class WebsocketApi(BitmexWebsocketApi):
         contract.name = contract.vtSymbol
         contract.productClass = PRODUCT_FUTURES
         contract.priceTick = d['tickSize']
-        contract.size = d['multiplier']
+        contract.size = d['lotSize']
         
         self.gateway.onContract(contract)        
 

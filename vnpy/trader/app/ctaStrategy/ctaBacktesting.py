@@ -892,6 +892,9 @@ class BacktestingEngine(object):
         self.tradeCount = 0
         self.tradeDict.clear()
         
+        # 清空逐日统计相关
+        self.dailyResultDict.clear()
+        
     #----------------------------------------------------------------------
     def runOptimization(self, strategyClass, optimizationSetting):
         """优化参数"""
