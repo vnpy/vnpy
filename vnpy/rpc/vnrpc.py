@@ -8,7 +8,7 @@ import zmq
 from msgpack import packb, unpackb
 from json import dumps, loads
 
-import cPickle
+import pickle as cPickle
 pDumps = cPickle.dumps
 pLoads = cPickle.loads
 
@@ -128,7 +128,7 @@ class RpcServer(RpcObject):
         # 工作线程相关
         self.__active = False                             # 服务器的工作状态
         self.__thread = threading.Thread(target=self.run) # 服务器的工作线程
-        
+
     #----------------------------------------------------------------------
     def start(self):
         """启动服务器"""
@@ -307,7 +307,7 @@ class RpcClient(RpcObject):
             topic = ''
         else:
             topic = topic.encode('utf-8')
-        self.__socketSUB.setsockopt(zmq.SUBSCRIBE, topic)
+        self.__socketSUB.setsockopt_string(zmq.SUBSCRIBE, topic)
 
 
 ########################################################################
