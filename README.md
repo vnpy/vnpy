@@ -62,6 +62,7 @@ QQ/Wechat：28888502
     # 安装解压包支持
 	yum install bzip2.x86_64
 	# 安装nodejs，支持request
+	wget -qO- https://rpm.nodesource.com/setup_8.x | bash -
 	yum -y install nodejs
 	（如果安装不了，更新yum后再安装）
 	# 支持ssl
@@ -84,7 +85,6 @@ QQ/Wechat：28888502
 
     激活py35
     source activate py35
-
 
     # 1.3 编译ctp的api
     cd /home/trade/vnpy-master
@@ -121,6 +121,16 @@ QQ/Wechat：28888502
     # 1.5 运行vnpy无界面
     (py35)/home/trade/vnpy-master/Examples/
 
+# 编译ctp的api(运行用户，例如trade)
+    cd /home/trade/vnpy-master
+    cd vnpy/api/ctp
+    激活python环境
+    source activate py35
+    sh build.sh
+    cd vnctptd/test
+    修改tdtest.py，填写账号和ip等信息
+    python tdtest.py 验证 ctp api是否正常。
+
 #2、Ubuntu的环境
 
     sudo apt-get install gcc
@@ -137,10 +147,24 @@ QQ/Wechat：28888502
     sudo apt-get install nodejs
     sudo apt-get update && sudo apt-get install build-essential
 
-    # 安装anaconda并创建py35虚拟环境(trade 用户)
-    # 编译CTP API(见上)
-    # 安装vnpy其他需要的包(见上)
+#3、创建多版本环境：
 
+    wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.3.1-Linux-x86_64.sh
+    chmod a+x Anaconda3-4.3.1-Linux-x86_64.sh
+    ./Anaconda3-4.3.1-Linux-x86_64.sh
+
+    # 配置为国内的镜像
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+    conda config --set show_channel_urls yes
+
+    选择其中一个来创建
+    conda create --name py35 python=3.5
+
+    激活的例子
+    source activate py35
+
+    升级虚拟环境得pip
+    pip install --upgrade pip
 
 #3、碰到的问题：找不到vnpy.xx.xx(原2.7环境)
     可能你使用了vnpy的原版，安装到conda环境中了。需要先卸载 pip uninstall vnpy
@@ -163,9 +187,19 @@ QQ/Wechat：28888502
     如果你安装了VC基础组件，需要增加一个用户环境变量，把"C:\Program Files (x86)\Microsoft Visual Studio\Shared\14.0\VC\bin" 添加到path变量中
 
 #8、Install Ta-Lib
+如果你用py35虚拟环境
+source activate py35
+
 conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
 conda config --set show_channel_urls yes
 conda install -c quantopian ta-lib=0.4.9
+
+# 9、数字货币的增量安装
+conda install scipy
+
+pip install autobahn
+pip install twisted
+pip install pyOpenSSL
 
 --------------------------------------------------------------------------------------------
 # vn.py - 基于python的开源交易平台开发框架
