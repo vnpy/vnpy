@@ -256,7 +256,6 @@ class CtaEngine(AppEngine):
     def processTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
-        
         tick = copy(tick)
         
         # 收到tick行情后，先处理本地停止单（检查是否要立即发出）
@@ -276,7 +275,8 @@ class CtaEngine(AppEngine):
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
-                self.callStrategyFunc(strategy, strategy.onTick, tick)
+                if strategy.inited:
+                    self.callStrategyFunc(strategy, strategy.onTick, tick)
     
     #----------------------------------------------------------------------
     def processOrderEvent(self, event):
