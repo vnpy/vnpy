@@ -913,13 +913,13 @@ class BacktestingEngine(object):
             self.output('setting: %s' %str(setting))
             self.initStrategy(strategyClass, setting)
             self.runBacktesting()
-            df = self.calculateDailyResult()
-            df, d = self.calculateDailyStatistics(df)            
+            self.calculateDailyResult()
+            d, result = self.calculateDailyStatistics()            
             try:
-                targetValue = d[targetName]
+                targetValue = result[targetName]
             except KeyError:
                 targetValue = 0
-            resultList.append(([str(setting)], targetValue, d))
+            resultList.append(([str(setting)], targetValue, result))
         
         # 显示结果
         resultList.sort(reverse=True, key=lambda result:result[1])
@@ -1387,11 +1387,11 @@ def optimize(strategyClass, setting, targetName,
     engine.initStrategy(strategyClass, setting)
     engine.runBacktesting()
     
-    df = engine.calculateDailyResult()
-    df, d = engine.calculateDailyStatistics(df)
+    self.calculateDailyResult()
+    d, result = self.calculateDailyStatistics()            
     try:
-        targetValue = d[targetName]
+        targetValue = result[targetName]
     except KeyError:
-        targetValue = 0            
-    return (str(setting), targetValue, d)    
+        targetValue = 0       
+    return (str(setting), targetValue, result)    
     
