@@ -144,7 +144,7 @@ class BinanceSpotApi(object):
         :param req:
         :return:
         """
-
+        reqID = None
         try:
             method = req['method']
             reqID = req["reqID"]
@@ -275,6 +275,7 @@ class BinanceSpotApi(object):
         req['kwargs'] = kwargs
         req['reqID'] = self.reqID
 
+        # 如果方法是查询委托订单和查询账号信息，则需要检查是否重复
         if method in [FUNCTIONCODE_GET_OPEN_ORDERS , FUNCTIONCODE_GET_ACCOUNT_BINANCE ]:
             flag = False
             for use_method ,r in self.reqQueue:
@@ -292,8 +293,17 @@ class BinanceSpotApi(object):
     #----------------------------------------------------------------------
     def spotTrade(self, symbol_pair, type_, price, amount):
         """现货委托"""
-        symbol_pair = self.legalSymbolUpper(symbol_pair)
-        symbol_pair = symbolFromOtherExchangesToBinance(symbol_pair)
+        print('binance:spotTrade:symbol_pair:{}'.format(symbol_pair))
+        upper_symbol_pair = self.legalSymbolUpper(symbol_pair)
+        if upper_symbol_pair != symbol_pair:
+            print('upper symbol_pair:{}=>{}'.format(symbol_pair,upper_symbol_pair))
+            symbol_pair = upper_symbol_pair
+
+        other_symbol_pair = symbolFromOtherExchangesToBinance(symbol_pair)
+        if other_symbol_pair != symbol_pair:
+            print('symbol_pair:{}=>{}'.format(symbol_pair,other_symbol_pair))
+            symbol_pair = other_symbol_pair
+
         if type_ == "buy":
             return self.sendTradingRequest( method = FUNCTIONCODE_BUY_ORDER_BINANCE , callback = self.onTradeOrder , kwargs = {"symbol":symbol_pair, "price":price,"quantity":amount} , optional=None)
         elif type_ == "sell":
@@ -344,8 +354,6 @@ class BinanceSpotApi(object):
 
     #----------------------------------------------------------------------
     def subscribeSpotTicker(self , symbol):
-        if '.' in symbol:
-            symbol = symbol.split('.')[0]
         if self.bm != None:
             # print "self.bm != None:"
             symbol = self.legalSymbolLower(symbol)
@@ -354,8 +362,6 @@ class BinanceSpotApi(object):
 
     #----------------------------------------------------------------------
     def subscribeSpotDepth(self, symbol):
-        if '.' in symbol:
-            symbol = symbol.split('.')[0]
         if self.bm != None:
             symbol = self.legalSymbolLower(symbol)
             symbol = symbolFromOtherExchangesToBinance(symbol)
