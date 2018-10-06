@@ -9,10 +9,6 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-# 判断操作系统
-import platform
-system = platform.system()
-
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine

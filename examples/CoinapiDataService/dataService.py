@@ -51,8 +51,8 @@ def downMinuteBarBySymbol(symbol, period, start, end):
     """下载某一合约的分钟线数据"""
     startTime = time.time()
     
-    cl = db[symbol]                                                 # 集合
-    cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
+    cl = db[symbol]                                                 
+    cl.ensure_index([('datetime', ASCENDING)], unique=True)         
     
     startDt = datetime.datetime.strptime(start, '%Y%m%d')
     endDt = datetime.datetime.strptime(end, '%Y%m%d')
