@@ -1387,8 +1387,8 @@ def optimize(strategyClass, setting, targetName,
     engine.initStrategy(strategyClass, setting)
     engine.runBacktesting()
     
-    self.calculateDailyResult()
-    d, result = self.calculateDailyStatistics()            
+    engine.calculateDailyResult()
+    d, result = engine.calculateDailyStatistics()            
     try:
         targetValue = result[targetName]
     except KeyError:
