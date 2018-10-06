@@ -1009,45 +1009,48 @@ class BacktestingEngine(object):
         return resultDf
     
     #----------------------------------------------------------------------
-    def calculateDailyStatistics(self, df):
-        """计算按日统计的结果"""
-        df['balance'] = df['netPnl'].cumsum() + self.capital
-        df['return'] = (np.log(df['balance']) - np.log(df['balance'].shift(1))).fillna(0)
-        df['highlevel'] = df['balance'].rolling(min_periods=1,window=len(df),center=False).max()
-        df['drawdown'] = df['balance'] - df['highlevel']        
-        df['ddPercent'] = df['drawdown'] / df['highlevel'] * 100
+    def calculateDailyStatistics(self, dailyResult):
+        """计算按日统计的结果
+        @:param dailyResult: calculateDailyResult()的返回值
+        @:return dailyResult(没变), newResult
+        """
+        dailyResult['balance'] = dailyResult['netPnl'].cumsum() + self.capital
+        dailyResult['return'] = (np.log(dailyResult['balance']) - np.log(dailyResult['balance'].shift(1))).fillna(0)
+        dailyResult['highlevel'] = dailyResult['balance'].rolling(min_periods=1, window=len(dailyResult), center=False).max()
+        dailyResult['drawdown'] = dailyResult['balance'] - dailyResult['highlevel']
+        dailyResult['ddPercent'] = dailyResult['drawdown'] / dailyResult['highlevel'] * 100
         
         # 计算统计结果
-        startDate = df.index[0]
-        endDate = df.index[-1]
+        startDate = dailyResult.index[0]
+        endDate = dailyResult.index[-1]
 
-        totalDays = len(df)
-        profitDays = len(df[df['netPnl']>0])
-        lossDays = len(df[df['netPnl']<0])
+        totalDays = len(dailyResult)
+        profitDays = len(dailyResult[dailyResult['netPnl'] > 0])
+        lossDays = len(dailyResult[dailyResult['netPnl'] < 0])
         
-        endBalance = df['balance'].iloc[-1]
-        maxDrawdown = df['drawdown'].min()
-        maxDdPercent = df['ddPercent'].min()
+        endBalance = dailyResult['balance'].iloc[-1]
+        maxDrawdown = dailyResult['drawdown'].min()
+        maxDdPercent = dailyResult['ddPercent'].min()
         
-        totalNetPnl = df['netPnl'].sum()
+        totalNetPnl = dailyResult['netPnl'].sum()
         dailyNetPnl = totalNetPnl / totalDays
         
-        totalCommission = df['commission'].sum()
+        totalCommission = dailyResult['commission'].sum()
         dailyCommission = totalCommission / totalDays
         
-        totalSlippage = df['slippage'].sum()
+        totalSlippage = dailyResult['slippage'].sum()
         dailySlippage = totalSlippage / totalDays
         
-        totalTurnover = df['turnover'].sum()
+        totalTurnover = dailyResult['turnover'].sum()
         dailyTurnover = totalTurnover / totalDays
         
-        totalTradeCount = df['tradeCount'].sum()
+        totalTradeCount = dailyResult['tradeCount'].sum()
         dailyTradeCount = totalTradeCount / totalDays
         
         totalReturn = (endBalance/self.capital - 1) * 100
         annualizedReturn = totalReturn / totalDays * 240
-        dailyReturn = df['return'].mean() * 100
-        returnStd = df['return'].std() * 100
+        dailyReturn = dailyResult['return'].mean() * 100
+        returnStd = dailyResult['return'].std() * 100
         
         if returnStd:
             sharpeRatio = dailyReturn / returnStd * np.sqrt(240)
@@ -1081,14 +1084,14 @@ class BacktestingEngine(object):
             'sharpeRatio': sharpeRatio
         }
         
-        return df, result
+        return dailyResult, result
     
     #----------------------------------------------------------------------
-    def showDailyResult(self, df=None, result=None):
+    def showDailyResult(self, dailyResult=None, result=None):
         """显示按日统计的交易结果"""
-        if df is None:
-            df = self.calculateDailyResult()
-            df, result = self.calculateDailyStatistics(df)
+        if dailyResult is None:
+            dailyResult = self.calculateDailyResult()
+            dailyResult, result = self.calculateDailyStatistics(dailyResult)
             
         # 输出统计结果
         self.output('-' * 30)
@@ -1128,19 +1131,19 @@ class BacktestingEngine(object):
         
         pBalance = plt.subplot(4, 1, 1)
         pBalance.set_title('Balance')
-        df['balance'].plot(legend=True)
+        dailyResult['balance'].plot(legend=True)
         
         pDrawdown = plt.subplot(4, 1, 2)
         pDrawdown.set_title('Drawdown')
-        pDrawdown.fill_between(range(len(df)), df['drawdown'].values)
+        pDrawdown.fill_between(range(len(dailyResult)), dailyResult['drawdown'].values)
         
         pPnl = plt.subplot(4, 1, 3)
         pPnl.set_title('Daily Pnl') 
-        df['netPnl'].plot(kind='bar', legend=False, grid=False, xticks=[])
+        dailyResult['netPnl'].plot(kind='bar', legend=False, grid=False, xticks=[])
 
         pKDE = plt.subplot(4, 1, 4)
         pKDE.set_title('Daily Pnl Distribution')
-        df['netPnl'].hist(bins=50)
+        dailyResult['netPnl'].hist(bins=50)
         
         plt.show()
        
@@ -1370,8 +1373,8 @@ def optimize(strategyClass, setting, targetName,
     engine.initStrategy(strategyClass, setting)
     engine.runBacktesting()
     
-    df = engine.calculateDailyResult()
-    df, d = engine.calculateDailyStatistics(df)
+    dailyResult = engine.calculateDailyResult()
+    dailyResult, d = engine.calculateDailyStatistics(dailyResult)
     try:
         targetValue = d[targetName]
     except KeyError:
