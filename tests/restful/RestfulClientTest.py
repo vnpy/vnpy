@@ -12,7 +12,8 @@ class TestRestfulClient(RestfulClient):
     
     def __init__(self):
         urlBase = 'https://httpbin.org'
-        super(TestRestfulClient, self).__init__(urlBase, requestsSessionProvider)
+        super(TestRestfulClient, self).__init__()
+        self.init(urlBase)
         
         self.p = Promise()
     

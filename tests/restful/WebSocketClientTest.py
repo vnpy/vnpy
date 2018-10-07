@@ -9,8 +9,9 @@ from vnpy.restful.WebSocketClient import WebsocketClient
 class TestWebsocketClient(WebsocketClient):
     
     def __init__(self):
-        urlBase = 'wss://echo.websocket.org'
-        super(TestWebsocketClient, self).__init__(urlBase)
+        host = 'wss://echo.websocket.org'
+        super(TestWebsocketClient, self).__init__()
+        self.init(host)
         self.p = Promise()
     
     def onMessage(self, packet):
