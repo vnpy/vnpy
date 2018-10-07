@@ -18,11 +18,12 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.ws = None  # type: websocket.WebSocket
-        self.workerThread = None  # type: Thread
-        self.pingThread = None  # type: Thread
-        self.active = False
         self.host = None  # type: str
+        
+        self._ws = None  # type: websocket.WebSocket
+        self._workerThread = None  # type: Thread
+        self._pingThread = None  # type: Thread
+        self._active = False
 
     #----------------------------------------------------------------------
     def init(self, host):
@@ -33,12 +34,12 @@ class WebsocketClient(object):
         """启动"""
         self._connect()
         
-        self.active = True
-        self.workerThread = Thread(target=self._run)
-        self.workerThread.start()
+        self._active = True
+        self._workerThread = Thread(target=self._run)
+        self._workerThread.start()
         
-        self.pingThread = Thread(target=self._runPing)
-        self.pingThread.start()
+        self._pingThread = Thread(target=self._runPing)
+        self._pingThread.start()
         
         self.onConnect()
         
@@ -48,23 +49,23 @@ class WebsocketClient(object):
         关闭
         @note 不能从工作线程，也就是websocket的回调中调用
         """
-        self.active = False
+        self._active = False
         self._disconnect()
 
     #----------------------------------------------------------------------
     def sendReq(self, req):  # type: (dict)->None
         """发出请求"""
-        return self.ws.send(json.dumps(req), opcode=websocket.ABNF.OPCODE_TEXT)
+        return self._ws.send(json.dumps(req), opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
         """发出请求"""
-        return self.ws.send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+        return self._ws.send(text, opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendData(self, data):  # type: (bytes)->None
         """发出请求"""
-        return self.ws.send_binary(data)
+        return self._ws.send_binary(data)
     
     #----------------------------------------------------------------------
     def _reconnect(self):
@@ -75,40 +76,40 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def _connect(self):
         """"""
-        self.ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
+        self._ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
         self.onConnect()
     
     #----------------------------------------------------------------------
     def _disconnect(self):
         """"""
-        self.ws.close()
+        self._ws.close()
     
     #----------------------------------------------------------------------
     def _run(self):
         """运行"""
-        while self.active:
+        while self._active:
             try:
-                stream = self.ws.recv()
+                stream = self._ws.recv()
                 data = json.loads(stream)
                 self.onMessage(data)
             except:
                 et, ev, tb = sys.exc_info()
                 self.onError(et, ev, tb)
-                if self.active:
+                if self._active:
                     self._reconnect()
     
     #----------------------------------------------------------------------
     def _runPing(self):
-        while self.active:
+        while self._active:
             self._ping()
             for i in range(60):
-                if not self.active:
+                if not self._active:
                     break
                 time.sleep(1)
     
     #----------------------------------------------------------------------
     def _ping(self):
-        return self.ws.send('ping', websocket.ABNF.OPCODE_PING)
+        return self._ws.send('ping', websocket.ABNF.OPCODE_PING)
     
     #----------------------------------------------------------------------
     @abstractmethod
