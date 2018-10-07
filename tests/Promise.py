@@ -24,7 +24,7 @@ class Promise(object):
         res = self._queue.get(timeout=timeout)
         if res[0] == PromiseResultType.Result:
             return res[1]
-        raise res[2]
+        raise res[1]
     
     def set_exception(self, val):
         self._queue.put((PromiseResultType.Exception, val))
