@@ -54,19 +54,29 @@ class Request(object):
 class RestfulClient(object):
     
     #----------------------------------------------------------------------
-    def __init__(self, urlBase, sessionProvider):
+    def __init__(self):
         """
         :param urlBase: 路径前缀。 例如'https://www.bitmex.com/api/v1/'
-        :param sessionProvider: callable。调用后应该返回一个对象带request函数的对象，该request函数的用法应该和requests中的一致。\
-        每个工作线程会调用该函数一次以期获得一个独立的session实例。可以选择requestsSessionProvider。
         """
-        self.urlBase = urlBase  # type: str
+        self.urlBase = None  # type: str
+        self.sessionProvider = requestsSessionProvider
         
         self._active = False
         
         self._queue = Queue()
         self._pool = None  # type: Pool
-        
+
+    #----------------------------------------------------------------------
+    def init(self, urlBase):
+        self.urlBase = urlBase
+
+    #----------------------------------------------------------------------
+    def setSessionProvider(self, sessionProvider):
+        """
+        设置sessionProvider可以使用自定义的requests实现。
+        @:param sessionProvider: callable。调用后应该返回一个对象带request函数的对象，该request函数的用法应该和requests中的一致。 \
+                每个工作线程会调用该函数一次以期获得一个独立的session实例。
+        """
         self.sessionProvider = sessionProvider
     
     #----------------------------------------------------------------------

@@ -16,12 +16,16 @@ class WebsocketClient(object):
     """Websocket API"""
     
     #----------------------------------------------------------------------
-    def __init__(self, host):
+    def __init__(self):
         """Constructor"""
         self.ws = None  # type: websocket.WebSocket
         self.workerThread = None  # type: Thread
         self.pingThread = None  # type: Thread
         self.active = False
+        self.host = None  # type: str
+
+    #----------------------------------------------------------------------
+    def init(self, host):
         self.host = host
     
     #----------------------------------------------------------------------
@@ -46,7 +50,6 @@ class WebsocketClient(object):
         """
         self.active = False
         self._disconnect()
-
 
     #----------------------------------------------------------------------
     def sendReq(self, req):  # type: (dict)->None
