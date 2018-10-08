@@ -3,7 +3,7 @@ import json
 import unittest
 
 from Promise import Promise
-from vnpy.restful.WebSocketClient import WebsocketClient
+from vnpy.network.WebSocketClient import WebsocketClient
 
 
 class TestWebsocketClient(WebsocketClient):

@@ -5,14 +5,14 @@ import traceback
 import unittest
 
 from Promise import Promise
-from vnpy.restful.RestfulClient import RestfulClient, requestsSessionProvider
+from vnpy.network.HttpClient import HttpClient, requestsSessionProvider
 
 
-class TestRestfulClient(RestfulClient):
+class TestHttpClient(HttpClient):
     
     def __init__(self):
         urlBase = 'https://httpbin.org'
-        super(TestRestfulClient, self).__init__()
+        super(TestHttpClient, self).__init__()
         self.init(urlBase)
         
         self.p = Promise()
@@ -29,7 +29,7 @@ class TestRestfulClient(RestfulClient):
 class RestfulClientTest(unittest.TestCase):
     
     def setUp(self):
-        self.c = TestRestfulClient()
+        self.c = TestHttpClient()
         self.c.start()
     
     def tearDown(self):
