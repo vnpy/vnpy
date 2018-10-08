@@ -190,7 +190,7 @@ class OkexApi(object):
         print('onOpen')
     
     #----------------------------------------------------------------------
-    def onMessageCallback(self, ws, evt):
+    def onMessageCallback(self, evt):
         """""" 
         data = self.readData(evt)
         if 'event' in data:
@@ -199,17 +199,17 @@ class OkexApi(object):
             self.onMessage(data[0])
         
     #----------------------------------------------------------------------
-    def onErrorCallback(self, ws, evt):
+    def onErrorCallback(self, evt):
         """"""
         self.onError(evt)
         
     #----------------------------------------------------------------------
-    def onCloseCallback(self, ws):
+    def onCloseCallback(self):
         """"""
         self.onClose()
         
     #----------------------------------------------------------------------
-    def onOpenCallback(self, ws):
+    def onOpenCallback(self):
         """"""
         if not self.heartbeatThread:
             self.heartbeatThread = Thread(target=self.heartbeat)
