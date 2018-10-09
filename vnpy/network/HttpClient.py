@@ -1,7 +1,6 @@
 # encoding: UTF-8
 
 
-########################################################################
 import sys
 from Queue import Empty, Queue
 from abc import abstractmethod
@@ -9,14 +8,14 @@ from multiprocessing.dummy import Pool
 
 import requests
 from enum import Enum
-########################################################################
 from typing import Any, Callable
 
 
 class RequestStatus(Enum):
     ready = 0  # 刚刚构建
-    finished = 1  # 请求成功 code == 200
-    error = 2  # 发生错误 网络错误、json解析错误，等等
+    success = 1  # 请求成功 code == 200
+    failed = 2
+    error = 3  # 发生错误 网络错误、json解析错误，等等
 
 
 ########################################################################
@@ -41,6 +40,18 @@ class Request(object):
     
     #----------------------------------------------------------------------
     @property
+    def success(self):
+        assert self.finished, "'success' property is only available after request is finished"
+        return self._status == RequestStatus.success
+    
+    #----------------------------------------------------------------------
+    @property
+    def failed(self):
+        assert self.finished, "'failed' property is only available after request is finished"
+        return self._status == RequestStatus.failed
+    
+    #----------------------------------------------------------------------
+    @property
     def finished(self):
         return self._status != RequestStatus.ready
     
@@ -54,7 +65,10 @@ class Request(object):
 class HttpClient(object):
     """
     HTTP 客户端。目前是为了对接各种RESTFulAPI而设计的。
-    一般情况下应该
+    
+    如果需要给请求加上签名，请重载beforeRequest函数。
+    如果需要处理非200的请求，请重载onFailed函数。
+    如果捕获Python内部错误，例如网络连接失败等等，请重载onError函数。
     """
     
     #----------------------------------------------------------------------
@@ -69,11 +83,11 @@ class HttpClient(object):
         
         self._queue = Queue()
         self._pool = None  # type: Pool
-
+    
     #----------------------------------------------------------------------
     def init(self, urlBase):
         self.urlBase = urlBase
-
+    
     #----------------------------------------------------------------------
     def setSessionProvider(self, sessionProvider):
         """
@@ -102,7 +116,7 @@ class HttpClient(object):
     
     #----------------------------------------------------------------------
     def addReq(self, method, path, callback, params=None, data=None,
-               extra=None):  # type: (str, str, Callable[[int, dict, Request], Any], dict, dict, Any)->Any
+               extra=None):  # type: (str, str, Callable[[dict, Request], Any], dict, dict, Any)->Request
         """
         发送一个请求
         :param method: GET, POST, PUT, DELETE, QUERY
@@ -113,7 +127,7 @@ class HttpClient(object):
         :param data: dict for body
         :return: 
         """
-
+        
         req = Request(extra=extra)
         self._queue.put((method, path, callback, params, data, req))
         return req
@@ -130,20 +144,31 @@ class HttpClient(object):
     
     #----------------------------------------------------------------------
     @abstractmethod
-    def beforeRequest(self, method, path, params, data):  # type: (str, str, dict, dict)->(str, dict, dict, dict)
+    def beforeRequest(self, method, path, params, data):  # type: (str, str, dict, dict)->(str, str, dict, dict, dict)
         """
         所有请求在发送之前都会经过这个函数
         签名之类的前奏可以在这里面实现
         @:return (method, path, params, body, headers) body可以是request中data参数能接收的任意类型，例如bytes,str,dict都可以。
         """
-        pass
+        return method, path, params, data, {}
+    
+    #----------------------------------------------------------------------
+    def onFailed(self, httpStatusCode, data, req):
+        """
+        请求失败处理函数（HttpStatusCode!=200）.
+        默认行为是打印到stderr
+        
+        @:param data 这个data是原始数据，并不是dict。而且有可能为null。
+        """
+        print("req {} failed with {}: \n"
+              "{}\n".format(req.id, httpStatusCode, data))
     
     #----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb, req):
         """
         Python内部错误处理：默认行为是仍给excepthook
         """
-        sys.stderr.write("on req : {}".format(req.id))
+        print("error in req : {}\n".format(req.id))
         sys.excepthook(exceptionType, exceptionValue, tb)
     
     #----------------------------------------------------------------------
@@ -151,21 +176,20 @@ class HttpClient(object):
                    session):  # type: (str, str, callable, dict, dict, Request, requests.Session)->None
         """处理请求"""
         try:
-            res = self.beforeRequest(method, path, params, data)
-            if res is None:
-                headers = {}
-            else:
-                method, path, params, data, headers = res
-
+            method, path, params, data, headers = self.beforeRequest(method, path, params, data)
+            
             url = self.urlBase + path
-
+            
             resp = session.request(method, url, headers=headers, params=params, data=data)
             
-            code = resp.status_code
-            jsonBody = resp.json()
-
-            req._status = RequestStatus.finished
-            callback(code, jsonBody, req)
+            httpStatusCode = resp.status_code
+            if httpStatusCode == 200:
+                jsonBody = resp.json()
+                callback(jsonBody, req)
+                req._status = RequestStatus.success
+            else:
+                req._status = RequestStatus.failed
+                self.onFailed(httpStatusCode, data, req)
         except:
             req._status = RequestStatus.error
             t, v, tb = sys.exc_info()
