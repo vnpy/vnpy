@@ -5,8 +5,8 @@ from __future__ import print_function
 import json
 from abc import abstractmethod, abstractproperty
 
-from vnpy.api.okexfuture.vnokexFuture import OkexFutureHttpClient
-from vnpy.network.HttpClient import Request
+from vnpy.api.okexfuture.vnokexFuture import OkexFutureRestClient
+from vnpy.network.RestClient import Request
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtGateway import *
 
@@ -351,7 +351,7 @@ class OkexFutureApi(ApiBase):
         self.gateway = gateway  # type: OkexFutureGateway
         
         self.localID = 0
-        self.client = OkexFutureHttpClient()
+        self.client = OkexFutureRestClient()
     
     #----------------------------------------------------------------------
     def onOrderSent(self, data, req):  # type: (dict, Request)->None

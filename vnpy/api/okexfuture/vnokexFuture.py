@@ -4,15 +4,15 @@ import urllib
 
 
 ########################################################################
-from vnpy.network.HttpClient import HttpClient, Request
+from vnpy.network.RestClient import RestClient, Request
 
 
 ########################################################################
-class OkexFutureHttpClient(HttpClient):
+class OkexFutureRestClient(RestClient):
     
     #----------------------------------------------------------------------
     def __init__(self):
-        super(OkexFutureHttpClient, self).__init__()
+        super(OkexFutureRestClient, self).__init__()
         self.apiKey = None
         self.apiSecret = None
     
@@ -20,7 +20,7 @@ class OkexFutureHttpClient(HttpClient):
     # noinspection PyMethodOverriding
     def init(self, apiKey, apiSecret):
         # type: (str, str) -> any
-        super(OkexFutureHttpClient, self).init('https://www.okex.com/api/v1')
+        super(OkexFutureRestClient, self).init('https://www.okex.com/api/v1')
         self.apiKey = apiKey
         self.apiSecret = apiSecret
 

@@ -6,18 +6,18 @@ import unittest
 from simplejson import JSONDecodeError
 
 from Promise import Promise
-from vnpy.network.HttpClient import HttpClient, Request
+from vnpy.network.RestClient import RestClient, Request
 
 
 class FailedError(RuntimeError):
     pass
 
 
-class TestHttpClient(HttpClient):
+class TestRestClient(RestClient):
 
     def __init__(self):
         urlBase = 'https://httpbin.org'
-        super(TestHttpClient, self).__init__()
+        super(TestRestClient, self).__init__()
         self.init(urlBase)
         
         self.p = Promise()
@@ -37,7 +37,7 @@ class TestHttpClient(HttpClient):
 class RestfulClientTest(unittest.TestCase):
     
     def setUp(self):
-        self.c = TestHttpClient()
+        self.c = TestRestClient()
         self.c.start()
     
     def tearDown(self):

@@ -70,9 +70,9 @@ class Request(object):
 
 
 ########################################################################
-class HttpClient(object):
+class RestClient(object):
     """
-    HTTP 客户端。目前是为了对接各种RESTFulAPI而设计的。
+    HTTP 客户端。目前是为了对接各种RESTfulAPI而设计的。
     
     如果需要给请求加上签名，请重载beforeRequest函数。
     如果需要处理非200的请求，请重载onFailed函数。
