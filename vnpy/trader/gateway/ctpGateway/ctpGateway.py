@@ -49,6 +49,7 @@ exchangeMap[EXCHANGE_SHFE] = 'SHFE'
 exchangeMap[EXCHANGE_CZCE] = 'CZCE'
 exchangeMap[EXCHANGE_DCE] = 'DCE'
 exchangeMap[EXCHANGE_SSE] = 'SSE'
+exchangeMap[EXCHANGE_SZSE] = 'SZSE'
 exchangeMap[EXCHANGE_INE] = 'INE'
 exchangeMap[EXCHANGE_UNKNOWN] = ''
 exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
@@ -66,6 +67,8 @@ productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
 productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
 productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
+productClassMapReverse[defineDict["THOST_FTDC_PC_ETFOption"]] = PRODUCT_OPTION
+productClassMapReverse[defineDict["THOST_FTDC_PC_Stock"]] = PRODUCT_EQUITY
 
 # 委托状态映射
 statusMap = {}
@@ -74,6 +77,12 @@ statusMap[STATUS_PARTTRADED] = defineDict["THOST_FTDC_OST_PartTradedQueueing"]
 statusMap[STATUS_NOTTRADED] = defineDict["THOST_FTDC_OST_NoTradeQueueing"]
 statusMap[STATUS_CANCELLED] = defineDict["THOST_FTDC_OST_Canceled"]
 statusMapReverse = {v:k for k,v in statusMap.items()}
+
+# 全局字典, key:symbol, value:exchange
+symbolExchangeDict = {}
+
+# 夜盘交易时间段分隔判断
+NIGHT_TRADING = datetime(1900, 1, 1, 20).time()
 
 
 ########################################################################
@@ -407,37 +416,40 @@ class CtpMdApi(MdApi):
         #tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec']/100)])
         # =》 Python 3
         tick.time = '.'.join([data['UpdateTime'], str(data['UpdateMillisec'])])
-        # 上期所和郑商所可以直接使用，大商所需要转换
-        tick.date = data['ActionDay']
-        # 大商所日期转换
-        if tick.exchange is EXCHANGE_DCE:
-            tick.date = datetime.now().strftime('%Y%m%d')
 
-        #tick.date = data['TradingDay']
+        # 取当前时间
+        dt = datetime.now()
 
-        # add by Incense Lee
-        tick.tradingDay = data['TradingDay']
-        if len(tick.tradingDay) == 8:
-            tradingDay = tick.tradingDay
-            tick.tradingDay = "{}-{}-{}".format(tradingDay[:4], tradingDay[4:6], tradingDay[6:])
-        # 先根据交易日期，生成时间
-        tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y%m%d %H:%M:%S.%f')
-        # 修正时间
+        # 不处理开盘前的tick数据
+        if dt.hour in [8,20] and dt.minute < 59:
+            return
+        if tick.exchange is EXCHANGE_CFFEX and dt.hour ==9 and dt.minute < 14:
+            return
+
+        # 日期，取系统时间的日期
+        tick.date = dt.strftime('%Y-%m-%d')
+        # 生成dateteime
+        tick.datetime = datetime.strptime(tick.date + ' ' + tick.time, '%Y-%m-%d %H:%M:%S.%f')
+        # 生成TradingDay
+
+        # 正常日盘时间
+        tick.tradingDay = tick.date
+
+        # 修正夜盘的tradingDay
         if tick.datetime.hour >= 20:
-            if tick.datetime.isoweekday() == 1:
-                # 交易日是星期一，实际时间应该是星期五
-                tick.datetime = tick.datetime - timedelta(days=3)
-                tick.date = tick.datetime.strftime('%Y-%m-%d')
-            else:
-                # 第二天
-                tick.datetime = tick.datetime - timedelta(days=1)
-                tick.date = tick.datetime.strftime('%Y-%m-%d')
-        elif tick.datetime.hour < 8 and tick.datetime.isoweekday() == 1:
-            # 如果交易日是星期一，并且时间是早上8点前 => 星期六
-            tick.datetime = tick.datetime + timedelta(days=2)
-            tick.date = tick.datetime.strftime('%Y-%m-%d')
-
-        tick.date = tick.datetime.strftime('%Y-%m-%d')
+            # 周一~周四晚上20点之后的tick，交易日属于第二天
+            if tick.datetime.isoweekday() in [1,2,3,4]:
+                trading_day = tick.datetime + timedelta(days=1)
+                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
+            # 周五晚上20点之后的tick，交易日属于下周一
+            elif tick.datetime.isoweekday() == 5:
+                trading_day = tick.datetime + timedelta(days=3)
+                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
+        elif tick.datetime.hour < 3:
+            # 周六凌晨的tick，交易日属于下周一
+            if tick.datetime.isoweekday() == 6:
+                trading_day = tick.datetime + timedelta(days=2)
+                tick.tradingDay = trading_day.strftime('%Y-%m-%d')
 
         tick.openPrice = data['OpenPrice']
         tick.highPrice = data['HighestPrice']
