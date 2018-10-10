@@ -174,16 +174,21 @@ class VnpyOrder():
     def __init__(self):
         """
         这个东西将VtOrderReq和VtOrderData还有Request三者绑定起来，以便查询
+        
         """
         self.vtRequest = None  # type: VtOrderReq  # 如果这个order是通过sendOrder产生的，则会有对应的vtRequest
         self.request = None  # type: Request  # 如果这个order是通过sendOrder产生的，request就是对应的网络请求
         self.order = None  # type: VtOrderData  # 对应的VtOrderData
+        
         self.remoteId = None  # type: str   # 当确定了这个order在交易所内部的id的时候，这个值才会有效
 
 
 ########################################################################
 class ApiBase(object):
     """
+    写在前面：现在不打算重构MainEngine才会有这个类的存在
+    所以这个类注定活不久。
+    
     每个Api实现发单等等操作的时候，有太多重复代码。
     于是我写了这个类，以期简化Api的实现。
     
@@ -208,13 +213,26 @@ class ApiBase(object):
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         self.gateway = gateway  # type: VnpyGateway
+
+        self._lastOrderId = 0
+
+        self._orders = {}  # type: dict[str, VnpyOrder]
+        self._cancelDict = {}  # type: dict[str, VtCancelOrderReq]
     
     #----------------------------------------------------------------------
     # todo: push this / make this standalone
     def generateVnpyOrder(self):
+        localId = str(self._lastOrderId)
+        self._lastOrderId += 1
+        
         order = VnpyOrder()
+
         order.order = VtOrderData()
+        order.order.orderID = localId
+        order.order.vtOrderID = ".".join(self.gateway.gatewayName, localId)
         order.order.exchange = self.gateway.exchange
+    
+        self._orders[localId] = order
         return order
     
     #----------------------------------------------------------------------
@@ -226,6 +244,18 @@ class ApiBase(object):
         order.order.price = price
         order.order.totalVolume = totalVolume
         order.order.direction = direction
+
+    #----------------------------------------------------------------------
+    def local2remote(self, localId):
+        """将localId（orderId）转化为remoteId"""
+        return self._orders[localId]
+
+    #----------------------------------------------------------------------
+    def getOrder(self, localId=None, remoteId=None):
+        """通过localId或者remoteId获取order"""
+        if remoteId:
+            raise NotImplementedError()
+        return self._orders[localId]
     
     #----------------------------------------------------------------------
     def sendOrder(self, vtRequest):  # type: (VtOrderReq)->str
@@ -249,6 +279,16 @@ class ApiBase(object):
         order.request.extra = order
         
         return order.order.vtOrderID
+
+    #----------------------------------------------------------------------
+    def cancelOrder(self, vtCancelRequest):  # type: (VtCancelOrderReq)->Request
+        localId = vtCancelRequest.orderID
+        
+        order = self.getOrder(localId)
+        if order.remoteId:
+            return self._cancelOrder(vtCancelRequest)
+        else:
+            self._cancelDict[localId] = vtCancelRequest
     
     #----------------------------------------------------------------------
     def _processOrderSent(self, request, remoteId):
@@ -258,12 +298,28 @@ class ApiBase(object):
         
         如果该下单请求失败，将remoteId设为None即可
         """
+        order = request.extra  # type: VnpyOrder
+        localId = order.order.orderID
         if remoteId:
-            order = request.extra  # type: VnpyOrder
             order.remoteId = remoteId  # None就是失败或者未返回
             self.gateway.onOrder(order.order)
+            order.order.status = constant.STATUS_NOTTRADED
             
             # todo: 撤单委托相关
+            if localId in self._cancelDict:
+                req = self._cancelDict[localId]
+                self.cancelOrder(req)
+                del self._cancelDict[localId]
+
+    #----------------------------------------------------------------------
+    def _processOrderCancel(self, req, success):
+        """
+        如果在_cancelOrder中发送了HTTP请求，则应该在收到响应的时候调用该函数，
+        如果取消订单成功，应该将success设置为True。如果取消订单失败，则应该讲success设置为False
+        """
+        order = req.extra # type: VnpyOrder
+        order.order.status = constant.STATUS_CANCELLED
+        pass
     
     #----------------------------------------------------------------------
     @abstractmethod
@@ -308,9 +364,27 @@ class OkexFutureApi(ApiBase):
         super(OkexFutureApi, self)._processOrderSent(req, remoteId)
 
     #----------------------------------------------------------------------
+    def onOrderCanceled(self, data, req):  # type: (dict, Request)->None
+        """
+        取消订单回执
+        :param data:
+        :param req:
+        :return:
+        """
+        success = data['result']
+        super(OkexFutureApi, self)._processOrderCancel(req, success)
+
+    #----------------------------------------------------------------------
     def _cancelOrder(self, vtCancelRequest):  # type: (VtCancelOrderReq)->Request
         localId = vtCancelRequest.orderID
-        pass
+        order = self.getOrder(localId)
+
+        data = {'symbol': order.order.symbol}
+        return self.client.addReq('POST',
+                                  '/future_cancel.do',
+                                  callback=self.onOrderCanceled,
+                                  data=data
+                                  )
     
     #----------------------------------------------------------------------
     def _sendOrder(self, vtRequest):  # type: (VtOrderReq)->Request
