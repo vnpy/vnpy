@@ -22,21 +22,22 @@ class RequestStatus(Enum):
 class Request(object):
     """
     表示一个内部的Request，用于状态查询
-    构造该类的时候注意，reqid字段的增长没上锁，所以在多线程环境中不能直接构造该类。
     """
-    _last_id = 0
     
     #----------------------------------------------------------------------
-    def __init__(self, extra=None):
-        Request._last_id += 1
-        self._id = Request._last_id
+    def __init__(self, method, path, callback, params, data, headers):
+        self.method = method  # type: str
+        self.path = path  # type: str
+        self.callback = callback  # type: callable
+        self.params = params  # type: dict #, bytes, str
+        self.data = data  # type: dict #, bytes, str
+        self.headers = headers  # type: dict
+        self.onFailed = None  # type: callable
+        self.skipDefaultOnFailed = None  # type: callable
+        self.extra = None  # type: Any
+        
+        self._response = None  # type: requests.Response
         self._status = RequestStatus.ready
-        self.extra = extra
-    
-    #----------------------------------------------------------------------
-    @property
-    def id(self):
-        return self._id
     
     #----------------------------------------------------------------------
     @property
@@ -60,6 +61,13 @@ class Request(object):
     def error(self):
         return self._status == RequestStatus.error
 
+    #----------------------------------------------------------------------
+    def __str__(self):
+        statusCode = 'not finished'
+        if self._response:
+            statusCode = self._response.status_code
+        return "{} {} : {} {}\n".format(self.method, self.path, self._status, statusCode)
+
 
 ########################################################################
 class HttpClient(object):
@@ -68,6 +76,7 @@ class HttpClient(object):
     
     如果需要给请求加上签名，请重载beforeRequest函数。
     如果需要处理非200的请求，请重载onFailed函数。
+    如果每一个请求的非200返回都需要单独处理，使用addReq函数的onFailed参数
     如果捕获Python内部错误，例如网络连接失败等等，请重载onError函数。
     """
     
@@ -80,7 +89,7 @@ class HttpClient(object):
         self.sessionProvider = requestsSessionProvider
         
         self._active = False
-        
+
         self._queue = Queue()
         self._pool = None  # type: Pool
     
@@ -115,21 +124,29 @@ class HttpClient(object):
         self._active = False
     
     #----------------------------------------------------------------------
-    def addReq(self, method, path, callback, params=None, data=None,
-               extra=None):  # type: (str, str, Callable[[dict, Request], Any], dict, dict, Any)->Request
+    def addReq(self, method, path, callback,
+               params=None, data=None, headers = None,
+               onFailed=None, skipDefaultOnFailed=True,
+               extra=None):  # type: (str, str, Callable[[dict, Request], Any], dict, dict, dict, Callable[[dict, Request], Any], bool, Any)->Request
         """
         发送一个请求
         :param method: GET, POST, PUT, DELETE, QUERY
         :param path: 
-        :param onSuccess: callback for success action(status code == 200) type: (dict, Request)
-        :param onFailed: callback for failed action(status code != 200)   type: (code, dict, Request)
+        :param callback: 请求成功后的回调(状态吗为2xx时认为请求成功)   type: (dict, Request)
         :param params: dict for query string
         :param data: dict for body
-        :return: 
+        :param headers: dict for headers
+        :param onFailed: 请求失败后的回调(状态吗不为2xx时认为请求失败)   type: (code, dict, Request)
+        :param skipDefaultOnFailed: 仅当onFailed参数存在时有效：忽略对虚函数onFailed的调用
+        :param extra: 返回值的extra字段会被设置为这个值。当然，你也可以在函数调用之后再设置这个字段。
+        :return: Request
         """
-        
-        req = Request(extra=extra)
-        self._queue.put((method, path, callback, params, data, req))
+
+        req = Request(method, path, callback, params, data, headers)
+        req.onFailed = onFailed
+        req.skipDefaultOnFailed = skipDefaultOnFailed
+        req.extra = extra
+        self._queue.put(req)
         return req
     
     #----------------------------------------------------------------------
@@ -137,20 +154,21 @@ class HttpClient(object):
         session = self.sessionProvider()
         while self._active:
             try:
-                method, path, callback, params, postdict, req = self._queue.get(timeout=1)
-                self.processReq(method, path, callback, params, postdict, req, session)
+                req = self._queue.get(timeout=1)
+                self.processReq(req, session)
             except Empty:
                 pass
     
     #----------------------------------------------------------------------
     @abstractmethod
-    def beforeRequest(self, method, path, params, data):  # type: (str, str, dict, dict)->(str, str, dict, dict, dict)
+    def beforeRequest(self, req):  # type: (Request)->Request
         """
         所有请求在发送之前都会经过这个函数
         签名之类的前奏可以在这里面实现
-        @:return (method, path, params, body, headers) body可以是request中data参数能接收的任意类型，例如bytes,str,dict都可以。
+        需要对request进行什么修改就做什么修改吧
+        @:return (req)
         """
-        return method, path, params, data, {}
+        return req
     
     #----------------------------------------------------------------------
     def onFailed(self, httpStatusCode, data, req):
@@ -160,40 +178,59 @@ class HttpClient(object):
         
         @:param data 这个data是原始数据，并不是dict。而且有可能为null。
         """
-        print("req {} failed with {}: \n"
-              "{}\n".format(req.id, httpStatusCode, data))
+        print("reuqest : {} {} failed with {}: \n"
+              "headers: {}\n"
+              "params: {}\n"
+              "data: {}\n"
+              "response:"
+              "{}\n"
+              .format(req.method, req.path, httpStatusCode,
+                      req.headers,
+                      req.params,
+                      req.data,
+                      data))
     
     #----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb, req):
         """
         Python内部错误处理：默认行为是仍给excepthook
         """
-        print("error in req : {}\n".format(req.id))
+        print("error in req : {}\n".format(req))
         sys.excepthook(exceptionType, exceptionValue, tb)
     
     #----------------------------------------------------------------------
-    def processReq(self, method, path, callback, params, data, req,
-                   session):  # type: (str, str, callable, dict, dict, Request, requests.Session)->None
+    def processReq(self, req, session):  # type: (Request, requests.Session)->None
         """处理请求"""
         try:
-            method, path, params, data, headers = self.beforeRequest(method, path, params, data)
-            
-            url = self.urlBase + path
-            
-            resp = session.request(method, url, headers=headers, params=params, data=data)
-            
-            httpStatusCode = resp.status_code
+            req = self.beforeRequest(req)
+    
+            url = self.makeFullUrl(req.path)
+    
+            response = session.request(req.method, url, headers=req.headers, params=req.params, data=req.data)
+            req._response = response
+    
+            httpStatusCode = response.status_code
             if httpStatusCode == 200:
-                jsonBody = resp.json()
-                callback(jsonBody, req)
+                jsonBody = response.json()
+                req.callback(jsonBody, req)
                 req._status = RequestStatus.success
             else:
                 req._status = RequestStatus.failed
-                self.onFailed(httpStatusCode, data, req)
+                
+                if req.onFailed:
+                    req.onFailed(httpStatusCode, response.raw, req)
+                
+                # 若没有onFailed或者没设置skipDefaultOnFailed，则调用默认的处理函数
+                if not req.onFailed or not req.skipDefaultOnFailed:
+                    self.onFailed(httpStatusCode, response.raw, req)
         except:
             req._status = RequestStatus.error
             t, v, tb = sys.exc_info()
             self.onError(t, v, tb, req)
+
+    def makeFullUrl(self, path):
+        url = self.urlBase + path
+        return url
 
 
 ########################################################################
