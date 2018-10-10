@@ -33,7 +33,7 @@ SYMBOL_LIST = ['ltc_btc', 'eth_btc', 'etc_btc', 'bch_btc', 'btc_usdt', 'eth_usdt
               'etc_eth','bt1_btc','bt2_btc','btg_btc','qtum_btc','hsr_btc','neo_btc','gas_btc',
               'qtum_usdt','hsr_usdt','neo_usdt','gas_usdt','bnb_usdt','eos_usdt']
 
-
+from vnpy.api.binance.vnbinance import symbolFromOtherExchangesToBinance
 class BinanceData(object):
 
     # ----------------------------------------------------------------------
@@ -74,6 +74,9 @@ class BinanceData(object):
             return False,ret_bars
 
         binance_symbol = symbol.upper().replace('_' , '')
+        #  转换一下
+        binance_symbol = symbolFromOtherExchangesToBinance(binance_symbol)
+
         binance_period = PERIOD_MAPPING.get(period)
 
         self.writeLog('{}开始下载binance:{} {}数据.'.format(datetime.now(), binance_symbol, binance_period))
@@ -139,12 +142,51 @@ class BinanceData(object):
             return ret_bars
 
         binance_symbol = symbol.upper().replace('_', '')
+        #  转换一下
+        binance_symbol = symbolFromOtherExchangesToBinance(binance_symbol)
+
         binance_period = PERIOD_MAPPING.get(period)
 
         self.writeLog('{}开始下载binance:{} {}数据.'.format(datetime.now(), binance_symbol, binance_period))
 
+        if isinstance(start_dt,datetime):
+            start_timestamp = int(start_dt.timestamp()*1e3)
+        else:
+            start_timestamp = None
         try:
-            bars = self.client.get_klines(symbol=binance_symbol, interval=binance_period)
+            bars = []
+            if start_timestamp is not None:
+                end_timestamp = int(datetime.now().timestamp()*1e3)
+                while start_timestamp <= end_timestamp:
+                    try:
+                        self.writeLog(u'从{} ~{} 下载 {}数据'
+                                      .format(datetime.fromtimestamp(start_timestamp/1e3),
+                                              datetime.fromtimestamp(end_timestamp/1e3), binance_symbol))
+                        bars_per_loop = self.client.get_klines(symbol=binance_symbol, interval=binance_period,
+                                                               startTime=start_timestamp,endTime=end_timestamp,limit=1000)
+                        if len(bars_per_loop)==0:
+                            self.writeLog(u'数据长度为0，结束')
+                            break
+
+                        # 更新开始时间，为这次取得最后一个值
+                        start_timestamp = bars_per_loop[-1][0]
+                        if len(bars)> 0:
+                            while bars[-1][0] >= bars_per_loop[0][0]:
+                                if len(bars_per_loop)==1:
+                                    bars_per_loop = []
+                                    start_timestamp = end_timestamp + 1
+                                    break
+                                bars_per_loop = bars_per_loop[1:]
+
+                        # 追加bars
+                        bars.extend(bars_per_loop)
+
+                    except Exception as ex:
+                        self.writeError(u'下载数据{} {} 异常:{},{}'.format(binance_symbol,binance_period,str(ex),traceback.format_exc()))
+                        break
+            else:
+                bars = self.client.get_klines(symbol=binance_symbol, interval=binance_period)
+
             for i, bar in enumerate(bars):
                 add_bar = {}
                 try:
@@ -175,8 +217,27 @@ class BinanceData(object):
 
 if __name__ == '__main__':
     binance_data = BinanceData()
-    bars = binance_data.download_bars(symbol='bnb_usdt', period='1day')
 
-    for bar in bars:
-        print(bar['datetime'])
 
+    # 下载最近500条日线数据
+    #bars = binance_data.download_bars(symbol='btc_usdt', period='1day')
+
+    #for bar in bars:
+    #    print(bar['datetime'])
+
+    # 导出到csv文件
+    #import pandas as pd
+    #df = pd.DataFrame(bars)
+    #df.set_index('datetime')
+    #df.to_csv('btc_usdt_1day.csv',index=True)
+
+    start_date = datetime(year=2017,month=1,day=1)
+    bars = binance_data.download_bars(symbol='btc_usdt',start_dt=start_date, period='1min')
+    #for bar in bars:
+    #    print('first bar time:{}'.format(bar['datetime']))
+    #    break
+    # 导出到csv文件
+    import pandas as pd
+    df = pd.DataFrame(bars)
+    df.set_index('datetime')
+    df.to_csv('binance_btc_usdt_{}_{}_1min.csv'.format(start_date.strftime('%Y%m%d'),datetime.now().strftime('%Y%m%d')),index=True)
