@@ -210,7 +210,7 @@ class HttpClient(object):
             req._response = response
     
             httpStatusCode = response.status_code
-            if httpStatusCode == 200:
+            if httpStatusCode/100 == 2:
                 jsonBody = response.json()
                 req.callback(jsonBody, req)
                 req._status = RequestStatus.success
