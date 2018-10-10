@@ -301,7 +301,10 @@ class SecMdApi(MdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['errorID']
-        err.errorMsg = error['errorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['errorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['errorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -318,7 +321,10 @@ class SecMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -347,7 +353,10 @@ class SecMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -382,7 +391,10 @@ class SecMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -723,7 +735,10 @@ class SecTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['errorID']
-        err.errorMsg = error['errorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['errorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['errorMsg']
         self.gateway.onError(err)
 
     #----------------------------------------------------------------------
@@ -745,7 +760,10 @@ class SecTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -772,7 +790,10 @@ class SecTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -910,7 +931,10 @@ class SecTdApi(TdApi):
             contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
             
-            contract.name = data['securityName'].decode('GBK')
+            try:
+                contract.name = data['securityName'].decode('GBK')
+            except AttributeError:
+                contract.name = data['securityName']
             
             # 合约数值
             contract.size = data['tradeUnit']
@@ -1078,7 +1102,10 @@ class SecTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -1105,7 +1132,10 @@ class SecTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -1130,7 +1160,10 @@ class SecTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['errorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -1223,7 +1256,10 @@ class SecTdApi(TdApi):
         contract.exchange = exchangeMapReverse.get(data['exchangeID'], EXCHANGE_SSE)
         contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
         
-        contract.name = data['contractName'].decode('GBK')
+        try:
+            contract.name = data['contractName'].decode('GBK')
+        except AttributeError:
+            contract.name = data['contractName']
         
         # 合约数值
         contract.size = data['contactUnit']

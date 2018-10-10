@@ -311,7 +311,10 @@ class XspeedMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
             
     #----------------------------------------------------------------------
@@ -332,7 +335,10 @@ class XspeedMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -341,7 +347,10 @@ class XspeedMdApi(MdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['nErrorID']
-        err.errorMsg = error['errorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['errorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['errorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -677,7 +686,10 @@ class XspeedTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -698,7 +710,10 @@ class XspeedTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -718,7 +733,10 @@ class XspeedTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -728,7 +746,10 @@ class XspeedTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -738,7 +759,10 @@ class XspeedTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['nErrorID']
-            err.errorMsg = error['errorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['errorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['errorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -1019,7 +1043,10 @@ class XspeedTdApi(TdApi):
         if data['VarietyName'] == contract.symbol:
             contract.name = data['VarietyName']
         else:
-            contract.name = data['VarietyName'].decode('GBK') + contract.symbol
+            try:
+                contract.name = data['VarietyName'].decode('GBK') + contract.symbol
+            except AttributeError:
+                contract.name = data['VarietyName'] + contract.symbol
         
         # 合约数值
         contract.size = int(data['contractMultiplier'])

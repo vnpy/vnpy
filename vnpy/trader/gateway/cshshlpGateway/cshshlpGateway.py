@@ -310,7 +310,10 @@ class CshshlpTdApi(CsHsHlp):
         error = VtErrorData()
         error.gatewayName = self.gatewayName
         error.errorID = errorNo
-        error.errorMsg = errorInfo.decode('GBK')
+        try:
+            error.errorMsg = errorInfo.decode('GBK')
+        except AttributeError:
+            error.errorMsg = errorInfo
         self.gateway.onError(error)
     
     #----------------------------------------------------------------------
@@ -387,7 +390,10 @@ class CshshlpTdApi(CsHsHlp):
             contract.symbol = d['option_code']
             contract.exchange = exchangeMapReverse.get(d['exchange_type'], EXCHANGE_UNKNOWN)
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
-            contract.name = d['option_name'].decode('GBK')        
+            try:
+                contract.name = d['option_name'].decode('GBK')        
+            except AttributeError:
+                contract.name = d['option_name']
             contract.size = int(float(d['amount_per_hand']))
             contract.priceTick = float(d['opt_price_step'])
             contract.strikePrice = float(d['exercise_price'])
@@ -628,21 +634,30 @@ class CshshlpTdApi(CsHsHlp):
         # 读取配置文件 
         i = self.loadConfig("Hsconfig.ini")
         if i:
-            self.writeLog(u'交易加载配置失败，原因：%s' %self.getErrorMsg().decode('GBK'))
+            try:
+                self.writeLog(u'交易加载配置失败，原因：%s' %self.getErrorMsg().decode('GBK'))
+            except AttributeError:
+                self.writeLog(u'交易加载配置失败，原因：%s' %self.getErrorMsg())
             return
         self.writeLog(u'交易加载配置成功')
         
         # 初始化
         i = self.init()
         if i:
-            self.writeLog(u'交易初始化失败，原因：%s' %self.getErrorMsg().decode('GBK'))
+            try:
+                self.writeLog(u'交易初始化失败，原因：%s' %self.getErrorMsg().decode('GBK'))
+            except AttributeError:
+                self.writeLog(u'交易初始化失败，原因：%s' %self.getErrorMsg())
             return
         self.writeLog(u'交易初始化成功')
         
         # 连接服务器
         i = self.connectServer()
         if i:
-            self.writeLog(u'交易服务器连接失败，原因：%s' %self.getErrorMsg().decode('GBK'))
+            try:
+                self.writeLog(u'交易服务器连接失败，原因：%s' %self.getErrorMsg().decode('GBK'))
+            except AttributeError:
+                self.writeLog(u'交易服务器连接失败，原因：%s' %self.getErrorMsg())
             return
         self.writeLog(u'交易服务器连接成功')
         
@@ -769,7 +784,10 @@ class CshshlpTdApi(CsHsHlp):
         
         l = self.subscribeData(FUNCTION_SUBSCRIBE)
         for d in l:
-            self.writeLog(u'委托推送：%s' %d['result_info'].decode('GBK'))
+            try:
+                self.writeLog(u'委托推送：%s' %d['result_info'].decode('GBK'))
+            except AttributeError:
+                self.writeLog(u'委托推送：%s' % d['result_info'])
         
     #----------------------------------------------------------------------
     def subscribeTrade(self):
@@ -785,7 +803,10 @@ class CshshlpTdApi(CsHsHlp):
         
         l = self.subscribeData(FUNCTION_SUBSCRIBE)
         for d in l:
-            self.writeLog(u'成交推送：%s' %d['result_info'].decode('GBK'))
+            try:
+                self.writeLog(u'成交推送：%s' %d['result_info'].decode('GBK'))
+            except AttributeError:
+                self.writeLog(u'成交推送：%s' % d['result_info'])
     
 
 ########################################################################
@@ -842,7 +863,10 @@ class CshshlpMdApi(MdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -864,7 +888,10 @@ class CshshlpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
 
     #---------------------------------------------------------------------- 
@@ -882,7 +909,10 @@ class CshshlpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------  

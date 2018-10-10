@@ -278,7 +278,10 @@ class CtpMdApi(MdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -300,7 +303,10 @@ class CtpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
 
     #---------------------------------------------------------------------- 
@@ -318,7 +324,10 @@ class CtpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------  
@@ -328,7 +337,10 @@ class CtpMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------  
@@ -529,7 +541,10 @@ class CtpTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -556,7 +571,10 @@ class CtpTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
             
             # 标识登录失败，防止用错误信息连续重复登录
@@ -577,7 +595,10 @@ class CtpTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -612,7 +633,10 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -631,7 +655,10 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -828,7 +855,10 @@ class CtpTdApi(TdApi):
         contract.symbol = data['InstrumentID']
         contract.exchange = exchangeMapReverse[data['ExchangeID']]
         contract.vtSymbol = contract.symbol #'.'.join([contract.symbol, contract.exchange])
-        contract.name = data['InstrumentName'].decode('GBK')
+        try:
+            contract.name = data['InstrumentName'].decode('GBK')
+        except AttributeError:
+            contract.name = data['InstrumentName']
 
         # 合约数值
         contract.size = data['VolumeMultiple']
@@ -1015,7 +1045,10 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -1111,7 +1144,10 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -1120,7 +1156,10 @@ class CtpTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------

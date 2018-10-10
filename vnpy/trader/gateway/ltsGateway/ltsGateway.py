@@ -250,7 +250,10 @@ class LtsMdApi(MdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------        
@@ -275,7 +278,10 @@ class LtsMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)    
     
     #----------------------------------------------------------------------        
@@ -296,7 +302,10 @@ class LtsMdApi(MdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
             
     #----------------------------------------------------------------------  
@@ -500,7 +509,10 @@ class LtsTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gateway
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -521,7 +533,10 @@ class LtsTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -546,7 +561,10 @@ class LtsTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -555,7 +573,10 @@ class LtsTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -564,7 +585,10 @@ class LtsTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -666,7 +690,10 @@ class LtsTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -675,7 +702,10 @@ class LtsTdApi(TdApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -892,7 +922,10 @@ class LtsQryApi(QryApi):
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = error['ErrorID']
-        err.errorMsg = error['ErrorMsg'].decode('gbk')
+        try:
+            err.errorMsg = error['ErrorMsg'].decode('gbk')
+        except AttributeError:
+            err.errorMsg = error['ErrorMsg']
         self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -919,7 +952,10 @@ class LtsQryApi(QryApi):
             err = VtErrorData()
             err.gatewayName = self.gateway
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
                 
     #----------------------------------------------------------------------
@@ -940,7 +976,10 @@ class LtsQryApi(QryApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
                         
     #----------------------------------------------------------------------  
@@ -962,7 +1001,10 @@ class LtsQryApi(QryApi):
         contract.symbol = data['InstrumentID']
         contract.exchange = exchangeMapReverse[data['ExchangeID']]
         contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
-        contract.name = data['InstrumentName'].decode('GBK')
+        try:
+            contract.name = data['InstrumentName'].decode('GBK')
+        except AttributeError:
+            contract.name = data['InstrumentName']
         
         # 合约数值
         contract.size = data['VolumeMultiple']

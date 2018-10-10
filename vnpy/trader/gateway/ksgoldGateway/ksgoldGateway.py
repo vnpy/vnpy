@@ -249,7 +249,10 @@ class KsgoldTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
             
             if error['ErrorID'] == -8:
@@ -273,7 +276,10 @@ class KsgoldTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -288,7 +294,10 @@ class KsgoldTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
     
     #----------------------------------------------------------------------
@@ -298,7 +307,10 @@ class KsgoldTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
        
     #----------------------------------------------------------------------
@@ -477,7 +489,10 @@ class KsgoldTdApi(TdApi):
             contract.productclass = PRODUCT_UNKNOWN
         
         contract.vtSymbol = contract.symbol 
-        contract.name = data['name'].decode('GBK')
+        try:
+            contract.name = data['name'].decode('GBK')
+        except AttributeError:
+            contract.name = data['name']
         
         # 合约数值
         contract.size = data['unit']
@@ -627,7 +642,10 @@ class KsgoldTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
         
     #----------------------------------------------------------------------
@@ -637,7 +655,10 @@ class KsgoldTdApi(TdApi):
             err = VtErrorData()
             err.gatewayName = self.gatewayName
             err.errorID = error['ErrorID']
-            err.errorMsg = error['ErrorMsg'].decode('gbk')
+            try:
+                err.errorMsg = error['ErrorMsg'].decode('gbk')
+            except AttributeError:
+                err.errorMsg = error['ErrorMsg']
             self.gateway.onError(err)
 
     #----------------------------------------------------------------------
