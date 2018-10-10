@@ -4,7 +4,7 @@ import urllib
 
 
 ########################################################################
-from vnpy.network.HttpClient import HttpClient
+from vnpy.network.HttpClient import HttpClient, Request
 
 
 ########################################################################
@@ -25,9 +25,9 @@ class OkexFutureHttpClient(HttpClient):
         self.apiSecret = apiSecret
 
 #----------------------------------------------------------------------
-    def beforeRequest(self, method, path, params, data):  # type: (str, str, dict, dict)->(str, str, dict, dict, dict)
-        args = params or {}
-        args.update(data or {})
+    def beforeRequest(self, req):  # type: (Request)->Request
+        args = req.params or {}
+        args.update(req.data or {})
         if 'sign' in args:
             args.pop('sign')
         if 'apiKey' not in args:
@@ -38,5 +38,6 @@ class OkexFutureHttpClient(HttpClient):
         sign = hashlib.md5(data.encode()).hexdigest().upper()
         data += "&sign=" + sign
 
-        return method, path, params, data, {'Content-Type': 'application/x-www-form-urlencoded'}
+        req.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        return req
 

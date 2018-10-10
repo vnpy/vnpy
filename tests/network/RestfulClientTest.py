@@ -6,7 +6,7 @@ import unittest
 from simplejson import JSONDecodeError
 
 from Promise import Promise
-from vnpy.network.HttpClient import HttpClient
+from vnpy.network.HttpClient import HttpClient, Request
 
 
 class FailedError(RuntimeError):
@@ -22,9 +22,10 @@ class TestHttpClient(HttpClient):
         
         self.p = Promise()
     
-    def beforeRequest(self, method, path, params, data):
-        data = json.dumps(data)
-        return method, path, params, data, {'Content-Type': 'application/json'}
+    def beforeRequest(self, req):  #type: (Request)->Request
+        req.data = json.dumps(req.data)
+        req.headers = {'Content-Type': 'application/json'}
+        return req
     
     def onError(self, exceptionType, exceptionValue, tb, req):
         self.p.set_exception(exceptionValue)
