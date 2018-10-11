@@ -86,6 +86,13 @@ class VnpyGateway(VtGateway):
         """
         pass
 
+class _Order(object):
+    _lastLocalId = 0
+    def __init__(self):
+        _Order._lastLocalId += 1
+        self.localId = str(_Order._lastLocalId)
+        self.remoteId = None
+        self.vtOrder = None # type: VtOrderData
 
 ########################################################################
 class OkexFutureGateway(VnpyGateway):
@@ -98,9 +105,10 @@ class OkexFutureGateway(VnpyGateway):
         self.apiKey = None  # type: str
         self.apiSecret = None  # type: str
         self.api = OkexFutureRestClient()
-        self.leverRate = 1.0
+        self.leverRate = 1
         self.symbols = []
     
+        self.orders =
     #----------------------------------------------------------------------
     @property
     def gatewayName(self):
@@ -142,9 +150,42 @@ class OkexFutureGateway(VnpyGateway):
         pass
     
     #----------------------------------------------------------------------
-    def sendOrder(self, orderReq):
+    def sendOrder(self, vtRequest): # type: (VtOrderReq)->str
         """发单"""
-        return self.api.sendOrder(orderReq)
+        myorder = _Order()
+        localId = myorder.localId
+        
+        vtOrder = VtOrderData()
+        vtOrder.orderID = localId
+        vtOrder.vtOrderID = ".".join([self.gatewayName, localId])
+        vtOrder.exchange = self.exchange
+        
+        vtOrder.symbol = vtRequest.symbol
+        vtOrder.vtSymbol = '.'.join([vtOrder.symbol, vtOrder.exchange])
+        vtOrder.price = vtRequest.price
+        vtOrder.totalVolume = vtRequest.volume
+        vtOrder.direction = vtRequest.direction
+        
+        myorder.vtOrder = vtOrder
+        
+        symbol, contractType = symbolsForUi[vtRequest.symbol]
+        orderType = orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
+        userMarketPrice = False
+        
+        if vtRequest.priceType == constant.PRICETYPE_MARKETPRICE:
+            userMarketPrice = True
+            
+        self.api.sendOrder(symbol=symbol,
+                           contractType=contractType,
+                           orderType=orderType,
+                           volume=vtRequest.volume,
+                           price=vtRequest.price,
+                           useMarketPrice=userMarketPrice,
+                           leverRate=self.leverRate,
+                           onSuccess=self.onOrderSent,
+                           extra=None)
+        
+        return myorder.localId
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
@@ -165,3 +206,9 @@ class OkexFutureGateway(VnpyGateway):
     def close(self):
         """关闭"""
         self.api.close()
+
+    def onOrderSent(self, remoteId, myorder): #type: (int, _Order)->None
+        myorder.remoteId = remoteId
+        myorder.vtOrder.status = constant.STATUS_NOTTRADED
+        self.onOrder(myorder.vtOrder)
+        
