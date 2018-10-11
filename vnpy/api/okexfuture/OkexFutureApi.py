@@ -149,8 +149,9 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'contract_typ': contractType,  # 合约类型：当周/下周/季度
             'amount': volume,
             'type': orderType,
-            'lever_rate': leverRate  # 杠杆倍数
         })
+        if leverRate:
+            data['lever_rate'] = leverRate  # 杠杆倍数
         
         request = self.addReq('POST',
                               '/future_trade.do',
