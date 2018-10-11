@@ -124,7 +124,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
     def sendOrder(self, symbol, contractType, orderType, volume,
                   onSuccess, onFailed=None,
                   price=None, useMarketPrice=False, leverRate=None,
-                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[int, Any], Any], Callable[[object], Any], float, bool, Union[int, None], Any)->Request
+                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[int, Any], Any], Callable[[Any], Any], float, bool, Union[int, None], Any)->Request
         """
         :param symbol: str
         :param contractType: OkexFutureContractType
@@ -136,7 +136,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
         :param useMarketPrice: bool
         :param leverRate: int | None
         :param extra: Any
-        :return:
+        :return: Request
         """
         
         data = {}
@@ -162,7 +162,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
     
     #----------------------------------------------------------------------
     def cancelOrder(self, symbol, contractType, orderId, onSuccess, onFailed=None,
-                    extra=None):  # type: (str, OkexFutureContractType, str, Callable[[object], Any], Callable[[object], Any], Any)->Request
+                    extra=None):  # type: (str, OkexFutureContractType, str, Callable[[object], Any], Callable[[Any], Any], Any)->Request
         """
         :param symbol: str
         :param contractType: OkexFutureContractType
