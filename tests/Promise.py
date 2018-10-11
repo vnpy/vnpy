@@ -33,6 +33,6 @@ class Promise(object):
     
     def set_exception(self, valueOrType, val=None, tb=None):
         if val is None:
-            self._queue.put((PromiseResultType.Exception, val))
+            self._queue.put((PromiseResultType.Exception, valueOrType))
         else:
             self._queue.put((PromiseResultType.Traceback, (valueOrType, val, tb)))
