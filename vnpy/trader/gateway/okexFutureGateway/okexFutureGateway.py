@@ -5,16 +5,15 @@ from __future__ import print_function
 import json
 from abc import abstractmethod, abstractproperty
 
-from vnpy.api.okexfuture.vnokexFuture import OkexFutureRestClient
-from vnpy.network.RestClient import Request
+from vnpy.api.okexfuture.OkexFutureApi import *
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtGateway import *
 
 orderTypeMap = {
-    (constant.DIRECTION_LONG, constant.OFFSET_OPEN): 1,
-    (constant.DIRECTION_SHORT, constant.OFFSET_OPEN): 2,
-    (constant.DIRECTION_LONG, constant.OFFSET_CLOSE): 3,
-    (constant.DIRECTION_SHORT, constant.OFFSET_CLOSE): 4,
+    (constant.DIRECTION_LONG, constant.OFFSET_OPEN): OkexFutureOrderType.OpenLong,
+    (constant.DIRECTION_SHORT, constant.OFFSET_OPEN): OkexFutureOrderType.OpenShort,
+    (constant.DIRECTION_LONG, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseLong,
+    (constant.DIRECTION_SHORT, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseShort,
 }
 orderTypeMapReverse = {v: k for k, v in orderTypeMap.items()}
 
@@ -23,9 +22,9 @@ contracts = (
 )
 
 contractTypeMap = {
-    'THISWEEK': 'this_week',
-    'NEXTWEEK': 'next_week',
-    'QUARTER': 'quarter',
+    'THISWEEK': OkexFutureContractType.ThisWeek,
+    'NEXTWEEK': OkexFutureContractType.NextWeek,
+    'QUARTER': OkexFutureContractType.Quarter,
 }
 
 # symbols for ui,
@@ -98,7 +97,7 @@ class OkexFutureGateway(VnpyGateway):
         super(OkexFutureGateway, self).__init__(eventEngine)
         self.apiKey = None  # type: str
         self.apiSecret = None  # type: str
-        self.api = OkexFutureApi(self)
+        self.api = OkexFutureRestClient()
         self.leverRate = 1.0
         self.symbols = []
     
@@ -166,249 +165,3 @@ class OkexFutureGateway(VnpyGateway):
     def close(self):
         """关闭"""
         self.api.close()
-
-
-########################################################################
-class VnpyOrder():
-    
-    def __init__(self):
-        """
-        这个东西将VtOrderReq和VtOrderData还有Request三者绑定起来，以便查询
-        
-        """
-        self.vtRequest = None  # type: VtOrderReq  # 如果这个order是通过sendOrder产生的，则会有对应的vtRequest
-        self.request = None  # type: Request  # 如果这个order是通过sendOrder产生的，request就是对应的网络请求
-        self.order = None  # type: VtOrderData  # 对应的VtOrderData
-        
-        self.remoteId = None  # type: str   # 当确定了这个order在交易所内部的id的时候，这个值才会有效
-
-
-########################################################################
-class ApiBase(object):
-    """
-    写在前面：现在不打算重构MainEngine才会有这个类的存在
-    所以这个类注定活不久。
-    
-    每个Api实现发单等等操作的时候，有太多重复代码。
-    于是我写了这个类，以期简化Api的实现。
-    
-    发单实现：
-    重写_sendOrder函数。
-    在_sendOrder的下单请求回执中获取API使用的orderId，并调用_processOrderSent函数即可
-    
-    例如：
-    def _sendOrder(self, vtRequest):
-       return self.httpClient.addReq(..., callback=self._onOrderSent)
-    
-    def _onOrderSent(self, data, req):
-        remoteId = None
-        if data['success'] is True:
-            remoteId = data['order_id']
-        self._processOrderSent(req, remoteId)
-    
-    撤单实现：
-    重写_cancelOrder函数。
-    """
-    
-    #----------------------------------------------------------------------
-    def __init__(self, gateway):
-        self.gateway = gateway  # type: VnpyGateway
-
-        self._lastOrderId = 0
-
-        self._orders = {}  # type: dict[str, VnpyOrder]
-        self._cancelDict = {}  # type: dict[str, VtCancelOrderReq]
-    
-    #----------------------------------------------------------------------
-    # todo: push this / make this standalone
-    def generateVnpyOrder(self):
-        localId = str(self._lastOrderId)
-        self._lastOrderId += 1
-        
-        order = VnpyOrder()
-
-        order.order = VtOrderData()
-        order.order.orderID = localId
-        order.order.vtOrderID = ".".join(self.gateway.gatewayName, localId)
-        order.order.exchange = self.gateway.exchange
-    
-        self._orders[localId] = order
-        return order
-    
-    #----------------------------------------------------------------------
-    @staticmethod
-    def fillVnpyOrder(order, symbol, price, totalVolume,
-                      direction):  # type: (VnpyOrder, str, float, float, str)->None
-        order.order.symbol = symbol
-        order.order.vtSymbol = '.'.join([order.order.symbol, order.order.exchange])
-        order.order.price = price
-        order.order.totalVolume = totalVolume
-        order.order.direction = direction
-
-    #----------------------------------------------------------------------
-    def local2remote(self, localId):
-        """将localId（orderId）转化为remoteId"""
-        return self._orders[localId]
-
-    #----------------------------------------------------------------------
-    def getOrder(self, localId=None, remoteId=None):
-        """通过localId或者remoteId获取order"""
-        if remoteId:
-            raise NotImplementedError()
-        return self._orders[localId]
-    
-    #----------------------------------------------------------------------
-    def sendOrder(self, vtRequest):  # type: (VtOrderReq)->str
-        """发单"""
-        
-        # 内部状态相关
-        order = self.generateVnpyOrder()
-        self.fillVnpyOrder(order,
-                           vtRequest.symbol,
-                           vtRequest.price,
-                           vtRequest.volume,
-                           vtRequest.direction)
-        order.vtRequest = vtRequest
-        
-        # 发送发单请求
-        order.request = self._sendOrder(vtRequest)
-        
-        # 增加反向引用
-        # 这个写法在逻辑上有漏洞：当请求返回特别快（理论上可能）的时候，返回回调中的extra仍为空
-        # 但是这种情况几乎不可能出现，在Python中就更不可能会出现。所以就这样写把，美观一些
-        order.request.extra = order
-        
-        return order.order.vtOrderID
-
-    #----------------------------------------------------------------------
-    def cancelOrder(self, vtCancelRequest):  # type: (VtCancelOrderReq)->Request
-        localId = vtCancelRequest.orderID
-        
-        order = self.getOrder(localId)
-        if order.remoteId:
-            return self._cancelOrder(vtCancelRequest)
-        else:
-            self._cancelDict[localId] = vtCancelRequest
-    
-    #----------------------------------------------------------------------
-    def _processOrderSent(self, request, remoteId):
-        """
-        如果在_sendOrder中发送了HTTP请求，则应该在收到响应的时候调用该函数，
-        并且将remoteId设置为交易所API使用的ID
-        
-        如果该下单请求失败，将remoteId设为None即可
-        """
-        order = request.extra  # type: VnpyOrder
-        localId = order.order.orderID
-        if remoteId:
-            order.remoteId = remoteId  # None就是失败或者未返回
-            self.gateway.onOrder(order.order)
-            order.order.status = constant.STATUS_NOTTRADED
-            
-            # todo: 撤单委托相关
-            if localId in self._cancelDict:
-                req = self._cancelDict[localId]
-                self.cancelOrder(req)
-                del self._cancelDict[localId]
-
-    #----------------------------------------------------------------------
-    def _processOrderCancel(self, req, success):
-        """
-        如果在_cancelOrder中发送了HTTP请求，则应该在收到响应的时候调用该函数，
-        如果取消订单成功，应该将success设置为True。如果取消订单失败，则应该讲success设置为False
-        """
-        order = req.extra # type: VnpyOrder
-        order.order.status = constant.STATUS_CANCELLED
-        pass
-    
-    #----------------------------------------------------------------------
-    @abstractmethod
-    def _sendOrder(self, vtRequest): # type: (VtOrderReq)->Request
-        """
-        这个函数实现下单请求。
-        :return: 如果发送了HTTP请求，就应该返回addReq的值。
-        """
-        pass
-
-    #----------------------------------------------------------------------
-    @abstractmethod
-    def _cancelOrder(self, vtCancelRequest):  # type: (VtCancelOrderReq)->Request
-        """
-        这个函数实现下单请求。
-        :return: 如果发送了HTTP请求，就应该返回addReq的值。
-        """
-        pass
-
-
-########################################################################
-class OkexFutureApi(ApiBase):
-    """OKEX的API实现"""
-    
-    #----------------------------------------------------------------------
-    def __init__(self, gateway):
-        """Constructor"""
-        super(OkexFutureApi, self).__init__()
-        self.gateway = gateway  # type: OkexFutureGateway
-        
-        self.localID = 0
-        self.client = OkexFutureRestClient()
-    
-    #----------------------------------------------------------------------
-    def onOrderSent(self, data, req):  # type: (dict, Request)->None
-        """
-        下单回执，一般用来保存sysId
-        """
-        remoteId = None
-        if data['result'] is True:
-            remoteId = data['order_id']
-        super(OkexFutureApi, self)._processOrderSent(req, remoteId)
-
-    #----------------------------------------------------------------------
-    def onOrderCanceled(self, data, req):  # type: (dict, Request)->None
-        """
-        取消订单回执
-        :param data:
-        :param req:
-        :return:
-        """
-        success = data['result']
-        super(OkexFutureApi, self)._processOrderCancel(req, success)
-
-    #----------------------------------------------------------------------
-    def _cancelOrder(self, vtCancelRequest):  # type: (VtCancelOrderReq)->Request
-        localId = vtCancelRequest.orderID
-        order = self.getOrder(localId)
-
-        data = {'symbol': order.order.symbol}
-        return self.client.addReq('POST',
-                                  '/future_cancel.do',
-                                  callback=self.onOrderCanceled,
-                                  data=data
-                                  )
-    
-    #----------------------------------------------------------------------
-    def _sendOrder(self, vtRequest):  # type: (VtOrderReq)->Request
-        """
-        单纯的发单
-        """
-        symbol, contractType = symbolsForUi[vtRequest.symbol]
-        orderType = orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
-        
-        data = {}
-        if vtRequest.priceType == constant.PRICETYPE_MARKETPRICE:
-            data['match_price'] = 1
-        else:
-            data['price'] = vtRequest.price
-        data.update({
-            'symbol': symbol,
-            'contract_typ': contractType,  # 合约类型：当周/下周/季度
-            'amount': vtRequest.volume,
-            'type': orderType,
-            'lever_rate': self.gateway.leverRate  # 杠杆倍数
-        })
-        
-        request = self.client.addReq('POST',
-                                     '/future_trade.do',
-                                     callback=self.onOrderSent,
-                                     data=data)
-        return request

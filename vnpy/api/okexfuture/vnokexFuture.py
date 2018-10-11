@@ -8,11 +8,11 @@ from vnpy.network.RestClient import RestClient, Request
 
 
 ########################################################################
-class OkexFutureRestClient(RestClient):
+class OkexFutureRestBase(RestClient):
     
     #----------------------------------------------------------------------
     def __init__(self):
-        super(OkexFutureRestClient, self).__init__()
+        super(OkexFutureRestBase, self).__init__()
         self.apiKey = None
         self.apiSecret = None
     
@@ -20,7 +20,7 @@ class OkexFutureRestClient(RestClient):
     # noinspection PyMethodOverriding
     def init(self, apiKey, apiSecret):
         # type: (str, str) -> any
-        super(OkexFutureRestClient, self).init('https://www.okex.com/api/v1')
+        super(OkexFutureRestBase, self).init('https://www.okex.com/api/v1')
         self.apiKey = apiKey
         self.apiSecret = apiSecret
 
