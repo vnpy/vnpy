@@ -8,6 +8,7 @@ class PromiseResultType(Enum):
     Result = 1
     Exception = 2
     Traceback = 3
+    
 
 
 class Promise(object):
@@ -36,3 +37,23 @@ class Promise(object):
             self._queue.put((PromiseResultType.Exception, valueOrType))
         else:
             self._queue.put((PromiseResultType.Traceback, (valueOrType, val, tb)))
+
+    def catch(self):
+        """
+        Usage :
+        with promise.catch():
+            raise Exception();
+        """
+        return _PromiseCatchContext(self)
+
+
+class _PromiseCatchContext(object):
+    
+    def __init__(self, promise):
+        self.promise = promise
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.promise.set_exception(exc_type, exc_val, exc_tb)
