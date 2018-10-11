@@ -62,6 +62,11 @@ class Request(object):
         return self._status == RequestStatus.error
 
     #----------------------------------------------------------------------
+    @property
+    def response(self): # type: ()->requests.Response
+        return self._response
+
+    #----------------------------------------------------------------------
     def __str__(self):
         statusCode = 'not finished'
         if self._response:
@@ -171,12 +176,10 @@ class RestClient(object):
         return req
     
     #----------------------------------------------------------------------
-    def onFailed(self, httpStatusCode, data, req):
+    def onFailed(self, httpStatusCode, req):  # type:(int, Request)->None
         """
         请求失败处理函数（HttpStatusCode!=200）.
         默认行为是打印到stderr
-        
-        @:param data 这个data是原始数据，并不是dict。而且有可能为null。
         """
         print("reuqest : {} {} failed with {}: \n"
               "headers: {}\n"
@@ -188,7 +191,7 @@ class RestClient(object):
                       req.headers,
                       req.params,
                       req.data,
-                      data))
+                      req._response.raw))
     
     #----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb, req):
@@ -222,7 +225,7 @@ class RestClient(object):
                 
                 # 若没有onFailed或者没设置skipDefaultOnFailed，则调用默认的处理函数
                 if not req.onFailed or not req.skipDefaultOnFailed:
-                    self.onFailed(httpStatusCode, response.raw, req)
+                    self.onFailed(httpStatusCode, req)
         except:
             req._status = RequestStatus.error
             t, v, tb = sys.exc_info()

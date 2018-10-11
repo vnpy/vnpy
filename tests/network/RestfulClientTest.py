@@ -30,7 +30,7 @@ class TestRestClient(RestClient):
     def onError(self, exceptionType, exceptionValue, tb, req):
         self.p.set_exception(exceptionValue)
 
-    def onFailed(self, httpStatusCode, data, req):
+    def onFailed(self, httpStatusCode, req):
         self.p.set_exception(FailedError("request failed"))
 
 
@@ -71,7 +71,7 @@ class RestfulClientTest(unittest.TestCase):
         def callback(data, req):
             pass
         
-        self.c.addReq('POST', '/status/201', callback)
+        self.c.addReq('POST', '/status/401', callback)
         with self.assertRaises(FailedError):
             self.c.p.get(3)
 
