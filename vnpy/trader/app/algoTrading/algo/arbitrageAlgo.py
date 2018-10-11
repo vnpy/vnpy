@@ -14,7 +14,7 @@ from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
 from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 
 
-STATUS_FINISHED = {STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED}
+STATUS_FINISHED = set([STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED])
 
 
 ########################################################################
