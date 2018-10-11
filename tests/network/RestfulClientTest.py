@@ -28,10 +28,11 @@ class TestRestClient(RestClient):
         return req
     
     def onError(self, exceptionType, exceptionValue, tb, req):
-        self.p.set_exception(exceptionValue)
+        self.p.set_exception(exceptionType, exceptionValue, tb)
 
     def onFailed(self, httpStatusCode, req):
-        self.p.set_exception(FailedError("request failed"))
+        with self.p.catch():
+            raise FailedError("request failed")
 
 
 class RestfulClientTest(unittest.TestCase):
