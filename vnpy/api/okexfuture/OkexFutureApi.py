@@ -246,7 +246,8 @@ class OkexFutureRestClient(OkexFutureRestBase):
             remoteId = data['order_id']
             extra.onSuccess(remoteId, extra.extra)
         else:
-            extra.onFailed(extra.extra)
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
     
     #----------------------------------------------------------------------
     @staticmethod
@@ -259,7 +260,8 @@ class OkexFutureRestClient(OkexFutureRestBase):
         if success:
             extra.onSuccess(extra.extra)
         else:
-            extra.onFailed(extra.extra)
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
     
     #----------------------------------------------------------------------
     @staticmethod
@@ -285,7 +287,8 @@ class OkexFutureRestClient(OkexFutureRestBase):
             
             extra.onSuccess(okexOrder, extra.extra)
         else:
-            extra.onFailed(extra.extra)
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
     
     #----------------------------------------------------------------------
     @staticmethod
@@ -305,7 +308,8 @@ class OkexFutureRestClient(OkexFutureRestBase):
                 uis.append(ui)
             extra.onSuccess(uis, extra.extra)
         else:
-            extra.onFailed(extra.extra)
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
     
     #----------------------------------------------------------------------
     @staticmethod
@@ -335,4 +339,5 @@ class OkexFutureRestClient(OkexFutureRestBase):
                 pos.holding.append(posDetail)
             extra.onSuccess(pos, extra.extra)
         else:
-            extra.onFailed(extra.extra)
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
