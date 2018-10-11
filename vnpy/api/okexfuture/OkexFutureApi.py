@@ -44,18 +44,19 @@ class OkexFutureOrderType(Enum):
 class OkexFutureOrder(object):
     
     def __init__(self):
-        self.symbol = None
         self.volume = None
+        self.contractName = None
+        self.createDate = None
+        self.tradedVolume = None
+        self.fee = None
+        self.leverRate = None
+        self.remoteId = None
         self.price = None
         self.priceAvg = None
         self.status = None
+        self.symbol = None
         self.orderType = None
         self.unitAmount = None
-        self.leverRate = None
-        self.remoteId = None
-        self.fee = None
-        self.tradedVolume = None
-        self.createDate = None
 
 
 class OkexFutureUserInfo(object):
@@ -271,19 +272,20 @@ class OkexFutureRestClient(OkexFutureRestBase):
         if success:
             order = data['orders'][0]
             okexOrder = OkexFutureOrder()
-            
-            okexOrder.symbol = order['symbol']
+
             okexOrder.volume = order['amount']
+            okexOrder.contractName = order['contract_name']
+            okexOrder.createDate = order['create_date']
+            okexOrder.tradedVolume = order['deal_amount']
+            okexOrder.fee = order['fee']
+            okexOrder.leverRate = order['lever_rate']
+            okexOrder.remoteId = order['order_id']
             okexOrder.price = order['price']
             okexOrder.priceAvg = order['price_avg']
             okexOrder.status = order['status']
             okexOrder.orderType = order['type']
             okexOrder.unitAmount = order['unit_amount']
-            okexOrder.leverRate = order['lever_rate']
-            okexOrder.remoteId = order['order_id']
-            okexOrder.fee = order['fee']
-            okexOrder.tradedVolume = order['deal_amount']
-            okexOrder.createDate = order['create_date']
+            okexOrder.symbol = order['symbol']
             
             extra.onSuccess(okexOrder, extra.extra)
         else:
