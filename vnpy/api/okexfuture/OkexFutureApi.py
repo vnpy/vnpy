@@ -206,6 +206,29 @@ class OkexFutureRestClient(OkexFutureRestBase):
                            callback=self.onOrder,
                            data=data,
                            extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+    #----------------------------------------------------------------------
+    # todos: complete this
+    def queryOrders(self, symbol, contractType, orderId, onSuccess, onFailed=None,
+                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[OkexFutureOrder, Any], Any], Callable[[Any], Any], Any)->Request
+        """
+        :param symbol: str
+        :param contractType: OkexFutureContractType
+        :param orderId: str
+        :param onSuccess: (OkexFutureOrder, extra:Any)->Any
+        :param onFailed: (extra: Any)->Any
+        :param extra: Any
+        :return: Request
+        """
+        data = {
+            'symbol': symbol,
+            'contractType': contractType,
+            'order_id': orderId
+        }
+        return self.addReq('POST',
+                           '/future_order_info.do',
+                           callback=self.onOrder,
+                           data=data,
+                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryUserInfo(self, onSuccess, onFailed=None,
