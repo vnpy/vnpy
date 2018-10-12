@@ -39,5 +39,6 @@ class OkexFutureRestBase(RestClient):
         data += "&sign=" + sign
 
         req.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        req.data = data
         return req
 
