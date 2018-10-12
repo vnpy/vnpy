@@ -6,6 +6,7 @@ from vnpy.api.okexfuture.vnokexFuture import OkexFutureRestBase
 from vnpy.network.RestClient import Request
 
 
+########################################################################
 class _OkexFutureCustomExtra(object):
     
     def __init__(self, onSuccess, onFailed, extra):
@@ -14,26 +15,20 @@ class _OkexFutureCustomExtra(object):
         self.extra = extra
 
 
+########################################################################
 class OkexFuturePriceType(Enum):
     Buy = 'buy'
     Sell = 'sell'
 
 
+########################################################################
 class OkexFutureContractType(Enum):
     ThisWeek = 'this_week'
     NextWeek = 'next_week'
     Quarter = 'quarter'
 
 
-class OkexFutureStatus(Enum):
-    NoTraded = '0'
-    PartialTraded = '1'
-    AllTraded = '2'
-    Canceled = '-1'
-    CancelProcessing = '4'
-    Canceling = '5'
-
-
+########################################################################
 class OkexFutureOrderType(Enum):
     OpenLong = '1'
     OpenShort = '2'
@@ -41,8 +36,16 @@ class OkexFutureOrderType(Enum):
     CloseShort = '4'
 
 
+########################################################################
+class OkexFutureOrderStatus(Enum):
+    NotFinished = '1'
+    Finished = '2'
+
+
+########################################################################
 class OkexFutureOrder(object):
     
+    #----------------------------------------------------------------------
     def __init__(self):
         self.volume = None
         self.contractName = None
@@ -59,8 +62,10 @@ class OkexFutureOrder(object):
         self.unitAmount = None
 
 
+########################################################################
 class OkexFutureUserInfo(object):
     
+    #----------------------------------------------------------------------
     def __init__(self):
         self.accountRights = None
         self.keepDeposit = None
@@ -69,15 +74,19 @@ class OkexFutureUserInfo(object):
         self.riskRate = None
 
 
+########################################################################
 class OkexFuturePosition(object):
     
+    #----------------------------------------------------------------------
     def __init__(self, ):
         self.forceLiquidatePrice = None
         self.holding = []  # type: List[OkexFuturePositionDetail]
 
 
+########################################################################
 class OkexFuturePositionDetail(object):
     
+    #----------------------------------------------------------------------
     def __init__(self, ):
         self.buyAmount = None
         self.buyAvailable = None
@@ -206,10 +215,12 @@ class OkexFutureRestClient(OkexFutureRestBase):
                            callback=self.onOrder,
                            data=data,
                            extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+
     #----------------------------------------------------------------------
-    # todos: complete this
-    def queryOrders(self, symbol, contractType, orderId, onSuccess, onFailed=None,
-                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[OkexFutureOrder, Any], Any], Callable[[Any], Any], Any)->Request
+    def queryOrders(self, symbol, contractType, status,
+                    onSuccess, onFailed=None,
+                    pageIndex=None, pageLength=50,
+                    extra=None):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus, Callable[[OkexFutureOrder, Any], Any], Callable[[Any], Any], int, int, Any)->Request
         """
         :param symbol: str
         :param contractType: OkexFutureContractType
@@ -222,8 +233,13 @@ class OkexFutureRestClient(OkexFutureRestBase):
         data = {
             'symbol': symbol,
             'contractType': contractType,
-            'order_id': orderId
+            'status': status,
+            'order_id': '-1',
+            'pageLength': 50
         }
+        if pageIndex:
+            data['page_index'] = pageIndex
+            
         return self.addReq('POST',
                            '/future_order_info.do',
                            callback=self.onOrder,
