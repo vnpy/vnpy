@@ -25,6 +25,7 @@ _contractTypeMap = {
     'NEXTWEEK': OkexFutureContractType.NextWeek,
     'QUARTER': OkexFutureContractType.Quarter,
 }
+_contractTypeMapReverse = {v: k for k, v in _contractTypeMap.items()}
 
 _remoteSymbols = {
     OkexFutureSymbol.BTC,
@@ -39,7 +40,8 @@ _remoteSymbols = {
 # values: API接口使用的symbol和contractType字段
 _symbolsForUi = {(remoteSymbol.upper() + '_' + upperContractType.upper()): (remoteSymbol, remoteContractType)
                  for remoteSymbol in _remoteSymbols
-                 for upperContractType, remoteContractType in _contractTypeMap.items()}  # type: dict[str, [str, str]]
+                 for upperContractType, remoteContractType in
+                 _contractTypeMap.items()}  # type: Dict[str, List[str, str]]
 _symbolsForUiReverse = {v: k for k, v in _symbolsForUi.items()}
 
 
@@ -58,11 +60,27 @@ def remoteOrderTypeToLocal(orderType):  # type: (str)->(str, str)
 
 
 #----------------------------------------------------------------------
+def localContractTypeToRemote(localContractType):
+    return _contractTypeMap[localContractType]
+
+
+#----------------------------------------------------------------------
+def remoteContractTypeToLocal(remoteContractType):
+    return _contractTypeMapReverse[remoteContractType]
+
+
+#----------------------------------------------------------------------
 def localSymbolToRemote(symbol):  # type: (str)->(OkexFutureSymbol, OkexFutureContractType)
     """
     :return: remoteSymbol, remoteContractType
     """
     return _symbolsForUi[symbol]
+
+
+#----------------------------------------------------------------------
+def remoteSymbolToLocal(remoteSymbol, localContractType):
+    return remoteSymbol.upper() + localContractType
+
 
 
 ########################################################################
@@ -128,7 +146,7 @@ class OkexFutureGateway(VnpyGateway):
     """OKEX期货交易接口"""
     
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine, *args, **kwargs):  # args, kwargs is needed for compatibility
+    def __init__(self, eventEngine, *_, **__):  # args, kwargs is needed for compatibility
         """Constructor"""
         super(OkexFutureGateway, self).__init__(eventEngine)
         self.apiKey = None  # type: str
@@ -243,7 +261,7 @@ class OkexFutureGateway(VnpyGateway):
     def cancelOrder(self, vtCancel):  # type: (VtCancelOrderReq)->None
         """撤单"""
         myorder = self._getOrderByLocalId(vtCancel.orderID)
-        symbol, contractType = self._contractTypeFromSymbol(vtCancel.symbol)
+        symbol, contractType = localSymbolToRemote(vtCancel.symbol)
         self.api.cancelOrder(symbol=symbol,
                              contractType=contractType,
                              orderId=myorder.remoteId,
@@ -254,26 +272,48 @@ class OkexFutureGateway(VnpyGateway):
     
     #----------------------------------------------------------------------
     def queryOrders(self, symbol, contractType,
-                    status):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus)->None
-        """订单查询"""
-        self.api.queryOrders(symbol, contractType=contractType, status=status,
+                    status):  # type: (str, str, OkexFutureOrderStatus)->None
+        """
+        :param symbol:
+        :param contractType: 这个参数可以传'THISWEEK', 'NEXTWEEK', 'QUARTER'，也可以传OkexFutureContractType
+        :param status: OkexFutureOrderStatus
+        :return:
+        """
+        
+        if contractType in _contractTypeMap:
+            localContractType = contractType
+            remoteContractType = localContractTypeToRemote(localContractType)
+        else:
+            remoteContractType = contractType
+            localContractType = remoteContractTypeToLocal(remoteContractType)
+
+        self.api.queryOrders(symbol=symbol,
+                             contractType=remoteContractType,
+                             status=status,
                              onSuccess=self._onQueryOrders,
-                             extra=contractType)
+                             extra=localContractType)
     
     #----------------------------------------------------------------------
     def qryAccount(self):
+        self.api.queryUserInfo(onSuccess=self._onQueryAccount)
         """查询账户资金"""
         pass
     
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
-        self.api.spotUserInfo()
+        for remoteSymbol in _remoteSymbols:
+            for localContractType, remoteContractType in _contractTypeMap.items():
+                self.api.queryPosition(remoteSymbol,
+                                       remoteContractType,
+                                       onSuccess=self._onQueryPosition,
+                                       extra=localContractType
+                                       )
     
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        self.api.close()
+        self.api.stop()
 
     #----------------------------------------------------------------------
     def _onOrderSent(self, remoteId, myorder):  #type: (str, _Order)->None
@@ -306,7 +346,7 @@ class OkexFutureGateway(VnpyGateway):
 
     #----------------------------------------------------------------------
     def _onQueryOrders(self, orders, extra):  # type: (List[OkexFutureOrder], Any)->None
-        contractType = extra
+        localContractType = extra
         for order in orders:
             remoteId = order.remoteId
         
@@ -322,7 +362,7 @@ class OkexFutureGateway(VnpyGateway):
             else:
                 # 本地无此订单的缓存（例如，用其他工具的下单）
                 # 缓存该订单，并推送
-                symbol = order.symbol + contractType
+                symbol = remoteSymbolToLocal(order.symbol, localContractType)
                 direction, offset = remoteOrderTypeToLocal(order.orderType)
                 myorder = self._genereteLocalOrder(symbol, order.price, order.volume, direction)
                 myorder.vtOrder.tradedVolume = order.tradedVolume
@@ -335,3 +375,45 @@ class OkexFutureGateway(VnpyGateway):
             if order.status == OkexFutureOrderStatus.Finished:
                 myorder.vtOrder.status = constant.STATUS_ALLTRADED
                 self._pushOrderAsTraded(myorder.vtOrder)
+
+    #----------------------------------------------------------------------
+    def _onQueryAccount(self, infos, extra):  # type: (List[OkexFutureUserInfo], Any)->None
+        for info in infos:
+            vtAccount = VtAccountData()
+            vtAccount.accountID = info.easySymbol
+            vtAccount.vtAccountID = self.gatewayName + '.' + vtAccount.accountID
+            vtAccount.balance = info.accountRights
+            vtAccount.margin = info.keepDeposit
+            vtAccount.closeProfit = info.profitReal
+            vtAccount.positionProfit = info.profitUnreal
+            self.onAccount(vtAccount)
+
+    #----------------------------------------------------------------------
+    def _onQueryPosition(self, posinfo, extra):  # type: (OkexFuturePosition, Any)->None
+        localContractType = extra
+        for info in posinfo.holding:
+            # 先生成多头持仓
+            pos = VtPositionData()
+            pos.gatewayName = self.gatewayName
+            pos.symbol = remoteSymbolToLocal(pos.symbol, localContractType)
+            pos.exchange = self.exchange
+            pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
+        
+            pos.direction = constant.DIRECTION_NET
+            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+            pos.position = float(info.buyAmount)
+        
+            self.onPosition(pos)
+        
+            # 再生存空头持仓
+            pos = VtPositionData()
+            pos.gatewayName = self.gatewayName
+            pos.symbol = remoteSymbolToLocal(pos.symbol, localContractType)
+            pos.exchange = self.exchange
+            pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
+        
+            pos.direction = constant.DIRECTION_SHORT
+            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction])
+            pos.position = float(info.sellAmount)
+        
+            self.onPosition(pos)

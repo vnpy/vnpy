@@ -75,6 +75,7 @@ class OkexFutureUserInfo(object):
     
     #----------------------------------------------------------------------
     def __init__(self):
+        self.easySymbol = None # 'etc', 'btc', 'eth', etc.
         self.accountRights = None
         self.keepDeposit = None
         self.profitReal = None
@@ -277,6 +278,14 @@ class OkexFutureRestClient(OkexFutureRestBase):
     def queryPosition(self, symbol, contractType,
                       onSuccess, onFailed=None,
                       extra=None):  # type: (str, OkexFutureContractType, Callable[[OkexFuturePosition, Any], Any], Callable[[int, Any], Any], Any)->Request
+        """
+        :param symbol: OkexFutureSymbol
+        :param contractType: OkexFutureContractType
+        :param onSuccess: (pos:OkexFuturePosition, extra: any)->Any
+        :param onFailed: (errorCode: int, extra: any)->Any
+        :param extra:
+        :return:
+        """
         data = {
             'symbol': symbol,
             'contractType': contractType
@@ -361,8 +370,9 @@ class OkexFutureRestClient(OkexFutureRestBase):
         if success:
             infos = data['info']
             uis = []
-            for symbol, info in infos.items():  # type: str, dict
+            for easySymbol, info in infos.items():  # type: str, dict
                 ui = OkexFutureUserInfo()
+                ui.easySymbol = easySymbol
                 ui.accountRights = info['account_rights']
                 ui.keepDeposit = info['keep_deposit']
                 ui.profitReal = info['profit_real']
@@ -411,7 +421,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
                     code = data['error_code']
                 extra.onFailed(code, extra.extra)
 
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------
     @staticmethod
     def errorCodeToString(code):
         assert code in errorCodeMap
