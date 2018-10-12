@@ -142,7 +142,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
     def sendOrder(self, symbol, contractType, orderType, volume,
                   onSuccess, onFailed=None,
                   price=None, useMarketPrice=False, leverRate=None,
-                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[int, Any], Any], Callable[[int, Any], Any], float, bool, Union[int, None], Any)->Request
+                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[str, Any], Any], Callable[[int, Any], Any], float, bool, Union[int, None], Any)->Request
         """
         :param symbol: str
         :param contractType: OkexFutureContractType
