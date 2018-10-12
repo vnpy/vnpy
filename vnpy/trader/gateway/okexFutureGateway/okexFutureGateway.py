@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import json
 from abc import abstractmethod, abstractproperty
+from datetime import datetime
 
 from typing import Dict
 
@@ -11,32 +12,57 @@ from vnpy.api.okexfuture.OkexFutureApi import *
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtGateway import *
 
-orderTypeMap = {
+_orderTypeMap = {
     (constant.DIRECTION_LONG, constant.OFFSET_OPEN): OkexFutureOrderType.OpenLong,
     (constant.DIRECTION_SHORT, constant.OFFSET_OPEN): OkexFutureOrderType.OpenShort,
     (constant.DIRECTION_LONG, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseLong,
     (constant.DIRECTION_SHORT, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseShort,
 }
-orderTypeMapReverse = {v: k for k, v in orderTypeMap.items()}
+_orderTypeMapReverse = {v: k for k, v in _orderTypeMap.items()}
 
-contracts = (
-    'btc_usd', 'ltc_usd', 'eth_usd', 'etc_usd', 'bch_usd',
-)
-
-contractTypeMap = {
+_contractTypeMap = {
     'THISWEEK': OkexFutureContractType.ThisWeek,
     'NEXTWEEK': OkexFutureContractType.NextWeek,
     'QUARTER': OkexFutureContractType.Quarter,
 }
 
+_remoteSymbols = {
+    OkexFutureSymbol.BTC,
+    OkexFutureSymbol.LTC,
+    OkexFutureSymbol.ETH,
+    OkexFutureSymbol.ETC,
+    OkexFutureSymbol.BCH,
+}
+
 # symbols for ui,
-# keys:给用户看的symbols
+# keys:给用户看的symbols : f"{internalSymbol}_{contractType}"
 # values: API接口使用的symbol和contractType字段
-symbolsForUi = {}  # type: dict[str, [str, str]]
-for s in contracts:
-    for vtContractType, contractType_ in contractTypeMap.items():
-        vtSymbol = s + '_' + vtContractType
-        symbolsForUi[vtSymbol] = (s, contractType_)
+_symbolsForUi = {(remoteSymbol.upper() + '_' + upperContractType.upper()): (remoteSymbol, remoteContractType)
+                 for remoteSymbol in _remoteSymbols
+                 for upperContractType, remoteContractType in _contractTypeMap.items()}  # type: dict[str, [str, str]]
+_symbolsForUiReverse = {v: k for k, v in _symbolsForUi.items()}
+
+
+#----------------------------------------------------------------------
+def localOrderTypeToRemote(direction, offset):  # type: (str, str)->str
+    return _orderTypeMap[(direction, offset)]
+
+
+#----------------------------------------------------------------------
+def remoteOrderTypeToLocal(orderType):  # type: (str)->(str, str)
+    """
+    :param orderType:
+    :return: direction, offset
+    """
+    return _orderTypeMapReverse[orderType]
+
+
+#----------------------------------------------------------------------
+def localSymbolToRemote(symbol):  # type: (str)->(OkexFutureSymbol, OkexFutureContractType)
+    """
+    :return: remoteSymbol, remoteContractType
+    """
+    return _symbolsForUi[symbol]
 
 
 ########################################################################
@@ -111,7 +137,9 @@ class OkexFutureGateway(VnpyGateway):
         self.leverRate = 1
         self.symbols = []
 
+        self.tradeID = 0
         self._orders = {}  # type: Dict[str, _Order]
+        self._remoteIds = {}  # type: Dict[str, _Order]
     #----------------------------------------------------------------------
     @property
     def gatewayName(self):
@@ -153,48 +181,58 @@ class OkexFutureGateway(VnpyGateway):
         pass
 
     #----------------------------------------------------------------------
-    @staticmethod
-    def _contractTypeFromSymbol(symbol):
-        return symbolsForUi[symbol]
+    def _getOrderByLocalId(self, localId):
+        return self._orders[localId]
 
     #----------------------------------------------------------------------
-    def _getOrder(self, localId):
-        return self._orders[localId]
-    
+    def _getOrderByRemoteId(self, remoteId):
+        return self._remoteIds[remoteId]
+
     #----------------------------------------------------------------------
-    def sendOrder(self, vtRequest): # type: (VtOrderReq)->str
-        """发单"""
+    def _saveRemoteId(self, remoteId, myorder):
+        myorder.remoteId = remoteId
+        self._remoteIds[remoteId] = myorder
+
+    #----------------------------------------------------------------------
+    def _genereteLocalOrder(self, symbol, price, volume, direction):
         myorder = _Order()
         localId = myorder.localId
-        
+        self._orders[localId] = myorder
         vtOrder = VtOrderData()
         vtOrder.orderID = localId
         vtOrder.vtOrderID = ".".join([self.gatewayName, localId])
         vtOrder.exchange = self.exchange
-        
-        vtOrder.symbol = vtRequest.symbol
+        vtOrder.symbol = symbol
         vtOrder.vtSymbol = '.'.join([vtOrder.symbol, vtOrder.exchange])
-        vtOrder.price = vtRequest.price
-        vtOrder.totalVolume = vtRequest.volume
-        vtOrder.direction = vtRequest.direction
-        
+        vtOrder.price = price
+        vtOrder.totalVolume = volume
+        vtOrder.direction = direction
         myorder.vtOrder = vtOrder
+        return myorder
 
-        symbol, contractType = self._contractTypeFromSymbol(vtRequest.symbol)
-        orderType = orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
+    #----------------------------------------------------------------------
+    def sendOrder(self, vtRequest): # type: (VtOrderReq)->str
+        """发单"""
+        myorder = self._genereteLocalOrder(vtRequest.symbol,
+                                           vtRequest.price,
+                                           vtRequest.volume,
+                                           vtRequest.direction)
+
+        remoteSymbol, remoteContractType = localSymbolToRemote(vtRequest.symbol)
+        orderType = _orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
         userMarketPrice = False
         
         if vtRequest.priceType == constant.PRICETYPE_MARKETPRICE:
             userMarketPrice = True
-            
-        self.api.sendOrder(symbol=symbol,
-                           contractType=contractType,
+
+        self.api.sendOrder(symbol=remoteSymbol,
+                           contractType=remoteContractType,
                            orderType=orderType,
                            volume=vtRequest.volume,
                            price=vtRequest.price,
                            useMarketPrice=userMarketPrice,
                            leverRate=self.leverRate,
-                           onSuccess=self.onOrderSent,
+                           onSuccess=self._onOrderSent,
                            extra=None,
                            )
         
@@ -203,18 +241,23 @@ class OkexFutureGateway(VnpyGateway):
     #----------------------------------------------------------------------
     def cancelOrder(self, vtCancel):  # type: (VtCancelOrderReq)->None
         """撤单"""
-        myorder = self._getOrder(vtCancel.orderID)
+        myorder = self._getOrderByLocalId(vtCancel.orderID)
         symbol, contractType = self._contractTypeFromSymbol(vtCancel.symbol)
         self.api.cancelOrder(symbol=symbol,
                              contractType=contractType,
                              orderId=myorder.remoteId,
-                             onSuccess=self.onOrderCanceled,
+                             onSuccess=self._onOrderCanceled,
                              extra=myorder,
                              )
         # cancelDict: 不存在的，没有localId就没有remoteId，没有remoteId何来cancel
     
     #----------------------------------------------------------------------
-    def queryOrder(self):
+    def queryOrders(self, symbol, contractType,
+                    status):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus)->None
+        """订单查询"""
+        self.api.queryOrders(symbol, contractType=contractType, status=status,
+                             onSuccess=self._onQueryOrders,
+                             extra=contractType)
     
     #----------------------------------------------------------------------
     def qryAccount(self):
@@ -232,15 +275,62 @@ class OkexFutureGateway(VnpyGateway):
         self.api.close()
 
     #----------------------------------------------------------------------
-    def onOrderSent(self, remoteId, myorder): #type: (int, _Order)->None
+    def _onOrderSent(self, remoteId, myorder):  #type: (str, _Order)->None
         myorder.remoteId = remoteId
         myorder.vtOrder.status = constant.STATUS_NOTTRADED
+        self._saveRemoteId(remoteId, myorder)
         self.onOrder(myorder.vtOrder)
-    
+
+    #----------------------------------------------------------------------
+    def _pushOrderAsTraded(self, order):
+        trade = VtTradeData()
+        trade.gatewayName = order.gatewayName
+        trade.symbol = order.symbol
+        trade.vtSymbol = order.vtSymbol
+        trade.orderID = order.orderID
+        trade.vtOrderID = order.vtOrderID
+        self.tradeID += 1
+        trade.tradeID = str(self.tradeID)
+        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+        trade.direction = order.direction
+        trade.price = order.price
+        trade.volume = order.tradedVolume
+        trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+        self.onTrade(trade)
+        
     #----------------------------------------------------------------------
     @staticmethod
-    def onOrderCanceled(myorder): #type: (_Order)->None
+    def _onOrderCanceled(myorder):  #type: (_Order)->None
         myorder.vtOrder.status = constant.STATUS_CANCELLED
+
+    #----------------------------------------------------------------------
+    def _onQueryOrders(self, orders, extra):  # type: (List[OkexFutureOrder], Any)->None
+        contractType = extra
+        for order in orders:
+            remoteId = order.remoteId
         
+            if remoteId in self._remoteIds:
+                # 如果订单已经缓存在本地，则尝试更新订单状态
+                myorder = self._getOrderByRemoteId(remoteId)
+            
+                # 有新交易才推送更新
+                if order.tradedVolume != myorder.vtOrder.tradedVolume:
+                    myorder.vtOrder.tradedVolume = order.tradedVolume
+                    myorder.vtOrder.status = constant.STATUS_PARTTRADED
+                    self.onOrder(myorder.vtOrder)
+            else:
+                # 本地无此订单的缓存（例如，用其他工具的下单）
+                # 缓存该订单，并推送
+                symbol = order.symbol + contractType
+                direction, offset = remoteOrderTypeToLocal(order.orderType)
+                myorder = self._genereteLocalOrder(symbol, order.price, order.volume, direction)
+                myorder.vtOrder.tradedVolume = order.tradedVolume
+                myorder.remoteId = order.remoteId
+                self._saveRemoteId(myorder.remoteId, myorder)
+                self.onOrder(myorder.vtOrder)
         
-    
+            # 如果该订单已经交易完成，推送交易完成消息
+            # todo: 这样写会导致同一个订单产生多次交易完成消息
+            if order.status == OkexFutureOrderStatus.Finished:
+                myorder.vtOrder.status = constant.STATUS_ALLTRADED
+                self._pushOrderAsTraded(myorder.vtOrder)
