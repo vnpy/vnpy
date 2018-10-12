@@ -203,12 +203,14 @@ class OkexFutureRestClient(OkexFutureRestBase):
     
     #----------------------------------------------------------------------
     def queryOrder(self, symbol, contractType, orderId, onSuccess, onFailed=None,
-                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[OkexFutureOrder, Any], Any], Callable[[int, Any], Any], Any)->Request
+                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[List[OkexFutureOrder], Any], Any], Callable[[int, Any], Any], Any)->Request
         """
+        @note onSuccess接收的第一个参数是列表，并且有可能为空
+        
         :param symbol: str
         :param contractType: OkexFutureContractType
         :param orderId: str
-        :param onSuccess: (OkexFutureOrder, extra:Any)->Any
+        :param onSuccess: (orders: List[OkexFutureOrder], extra:Any)->Any
         :param onFailed: (extra: Any)->Any
         :param extra: Any
         :return: Request
@@ -227,27 +229,29 @@ class OkexFutureRestClient(OkexFutureRestBase):
     #----------------------------------------------------------------------
     def queryOrders(self, symbol, contractType, status,
                     onSuccess, onFailed=None,
-                    pageIndex=None, pageLength=50,
-                    extra=None):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus, Callable[[OkexFutureOrder, Any], Any], Callable[[int, Any], Any], int, int, Any)->Request
+                    pageIndex=0, pageLength=50,
+                    extra=None):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus, Callable[[List[OkexFutureOrder], Any], Any], Callable[[int, Any], Any], int, int, Any)->Request
         """
+        @note onSuccess接收的第一个参数是列表，并且有可能为空
+        
         :param symbol: str
         :param contractType: OkexFutureContractType
-        :param orderId: str
-        :param onSuccess: (OkexFutureOrder, extra:Any)->Any
+        :param onSuccess: (List[OkexFutureOrder], extra:Any)->Any
         :param onFailed: (extra: Any)->Any
+        :param pageIndex: 页码
+        :param pageLength: 最大显示数量（最大值50）
         :param extra: Any
         :return: Request
         """
         data = {
             'symbol': symbol,
-            'contractType': contractType,
+            'contract_type': contractType,
             'status': status,
-            'order_id': '-1',
-            'pageLength': 50
+            'order_id': -1,
+            'current_page': pageIndex,
+            'page_length': pageLength
         }
-        if pageIndex:
-            data['page_index'] = pageIndex
-            
+
         return self.addReq('POST',
                            '/future_order_info.do',
                            callback=self.onOrder,
@@ -323,24 +327,25 @@ class OkexFutureRestClient(OkexFutureRestBase):
         success = data['result']
         extra = req.extra  # type: _OkexFutureCustomExtra
         if success:
-            order = data['orders'][0]
-            okexOrder = OkexFutureOrder()
-
-            okexOrder.volume = order['amount']
-            okexOrder.contractName = order['contract_name']
-            okexOrder.createDate = order['create_date']
-            okexOrder.tradedVolume = order['deal_amount']
-            okexOrder.fee = order['fee']
-            okexOrder.leverRate = order['lever_rate']
-            okexOrder.remoteId = order['order_id']
-            okexOrder.price = order['price']
-            okexOrder.priceAvg = order['price_avg']
-            okexOrder.status = order['status']
-            okexOrder.orderType = order['type']
-            okexOrder.unitAmount = order['unit_amount']
-            okexOrder.symbol = order['symbol']
-            
-            extra.onSuccess(okexOrder, extra.extra)
+            orders = []
+            for order in data['orders']:
+                okexOrder = OkexFutureOrder()
+        
+                okexOrder.volume = order['amount']
+                okexOrder.contractName = order['contract_name']
+                okexOrder.createDate = order['create_date']
+                okexOrder.tradedVolume = order['deal_amount']
+                okexOrder.fee = order['fee']
+                okexOrder.leverRate = order['lever_rate']
+                okexOrder.remoteId = order['order_id']
+                okexOrder.price = order['price']
+                okexOrder.priceAvg = order['price_avg']
+                okexOrder.status = order['status']
+                okexOrder.orderType = order['type']
+                okexOrder.unitAmount = order['unit_amount']
+                okexOrder.symbol = order['symbol']
+                orders.append(okexOrder)
+            extra.onSuccess(orders, extra.extra)
         else:
             if extra.onFailed:
                 code = 0
