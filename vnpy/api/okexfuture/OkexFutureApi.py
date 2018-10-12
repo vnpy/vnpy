@@ -413,7 +413,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
 
     #----------------------------------------------------------------------
     @staticmethod
-    def errorCode2String(code):
+    def errorCodeToString(code):
         assert code in errorCodeMap
         return errorCodeMap[code]
 
