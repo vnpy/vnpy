@@ -143,10 +143,10 @@ class VtOrderData(VtBaseData):
         # 代码编号相关
         self.symbol = EMPTY_STRING              # 合约代码
         self.exchange = EMPTY_STRING            # 交易所代码
-        self.vtSymbol = EMPTY_STRING            # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
+        self.vtSymbol = EMPTY_STRING            # 统一格式：f"{symbol}.{exchange}"
         
-        self.orderID = EMPTY_STRING             # 订单编号
-        self.vtOrderID = EMPTY_STRING           # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
+        self.orderID = EMPTY_STRING             # 订单编号 gateway内部自己生成的编号
+        self.vtOrderID = EMPTY_STRING           # 统一格式：f"{gatewayName}.{orderId}"
         
         # 报单相关
         self.direction = EMPTY_UNICODE          # 报单方向
