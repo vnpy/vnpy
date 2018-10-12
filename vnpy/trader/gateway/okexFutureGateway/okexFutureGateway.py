@@ -82,7 +82,6 @@ def remoteSymbolToLocal(remoteSymbol, localContractType):
     return remoteSymbol.upper() + localContractType
 
 
-
 ########################################################################
 class VnpyGateway(VtGateway):
     """
@@ -132,9 +131,13 @@ class VnpyGateway(VtGateway):
         """
         pass
 
+
+########################################################################
 class _Order(object):
     _lastLocalId = 0
-    def __init__(self):
+    
+    #----------------------------------------------------------------------
+    def __ini__(self):
         _Order._lastLocalId += 1
         self.localId = str(_Order._lastLocalId)
         self.remoteId = None
@@ -377,7 +380,7 @@ class OkexFutureGateway(VnpyGateway):
                 self._pushOrderAsTraded(myorder.vtOrder)
 
     #----------------------------------------------------------------------
-    def _onQueryAccount(self, infos, extra):  # type: (List[OkexFutureUserInfo], Any)->None
+    def _onQueryAccount(self, infos, _):  # type: (List[OkexFutureUserInfo], Any)->None
         for info in infos:
             vtAccount = VtAccountData()
             vtAccount.accountID = info.easySymbol
