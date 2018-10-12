@@ -127,6 +127,16 @@ class RestClient(object):
         :return:
         """
         self._active = False
+        
+    #----------------------------------------------------------------------
+    def join(self):
+        """
+        等待所有请求处理结束
+        如果要并确保RestClient的退出，请在调用stop之后紧接着调用join。
+        如果只是要确保所有的请求都处理完，直接调用join即可。
+        :return:
+        """
+        self._queue.join()
     
     #----------------------------------------------------------------------
     def addReq(self, method, path, callback,
@@ -160,7 +170,10 @@ class RestClient(object):
         while self._active:
             try:
                 req = self._queue.get(timeout=1)
-                self.processReq(req, session)
+                try:
+                    self._processReq(req, session)
+                finally:
+                    self._queue.task_done()
             except Empty:
                 pass
     
@@ -202,7 +215,7 @@ class RestClient(object):
         sys.excepthook(exceptionType, exceptionValue, tb)
     
     #----------------------------------------------------------------------
-    def processReq(self, req, session):  # type: (Request, requests.Session)->None
+    def _processReq(self, req, session):  # type: (Request, requests.Session)->None
         """处理请求"""
         try:
             req = self.beforeRequest(req)

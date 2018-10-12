@@ -1,8 +1,7 @@
 import unittest
 
 # noinspection PyUnresolvedReferences
-from tests.network.RestfulClientTest import *
-from tests.network.WebSocketClientTest import *
+from api.base import *
 
 if __name__ == "__main__":
     unittest.main()

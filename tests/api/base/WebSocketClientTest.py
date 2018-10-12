@@ -1,9 +1,8 @@
 # encoding: UTF-8
-import json
 import unittest
 
 from Promise import Promise
-from vnpy.network.WebSocketClient import WebsocketClient
+from vnpy.api.websocket import WebsocketClient
 
 
 class TestWebsocketClient(WebsocketClient):

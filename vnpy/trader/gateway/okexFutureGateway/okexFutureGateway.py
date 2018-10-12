@@ -5,6 +5,8 @@ from __future__ import print_function
 import json
 from abc import abstractmethod, abstractproperty
 
+from typing import Dict
+
 from vnpy.api.okexfuture.OkexFutureApi import *
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtGateway import *
@@ -94,6 +96,7 @@ class _Order(object):
         self.remoteId = None
         self.vtOrder = None # type: VtOrderData
 
+
 ########################################################################
 class OkexFutureGateway(VnpyGateway):
     """OKEX期货交易接口"""
@@ -107,8 +110,8 @@ class OkexFutureGateway(VnpyGateway):
         self.api = OkexFutureRestClient()
         self.leverRate = 1
         self.symbols = []
-    
-        self.orders =
+
+        self._orders = {}  # type: Dict[str, _Order]
     #----------------------------------------------------------------------
     @property
     def gatewayName(self):
@@ -148,6 +151,15 @@ class OkexFutureGateway(VnpyGateway):
     def subscribe(self, subscribeReq):
         """订阅行情"""
         pass
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _contractTypeFromSymbol(symbol):
+        return symbolsForUi[symbol]
+
+    #----------------------------------------------------------------------
+    def _getOrder(self, localId):
+        return self._orders[localId]
     
     #----------------------------------------------------------------------
     def sendOrder(self, vtRequest): # type: (VtOrderReq)->str
@@ -167,8 +179,8 @@ class OkexFutureGateway(VnpyGateway):
         vtOrder.direction = vtRequest.direction
         
         myorder.vtOrder = vtOrder
-        
-        symbol, contractType = symbolsForUi[vtRequest.symbol]
+
+        symbol, contractType = self._contractTypeFromSymbol(vtRequest.symbol)
         orderType = orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
         userMarketPrice = False
         
@@ -183,14 +195,26 @@ class OkexFutureGateway(VnpyGateway):
                            useMarketPrice=userMarketPrice,
                            leverRate=self.leverRate,
                            onSuccess=self.onOrderSent,
-                           extra=None)
+                           extra=None,
+                           )
         
         return myorder.localId
+
+    #----------------------------------------------------------------------
+    def cancelOrder(self, vtCancel):  # type: (VtCancelOrderReq)->None
+        """撤单"""
+        myorder = self._getOrder(vtCancel.orderID)
+        symbol, contractType = self._contractTypeFromSymbol(vtCancel.symbol)
+        self.api.cancelOrder(symbol=symbol,
+                             contractType=contractType,
+                             orderId=myorder.remoteId,
+                             onSuccess=self.onOrderCanceled,
+                             extra=myorder,
+                             )
+        # cancelDict: 不存在的，没有localId就没有remoteId，没有remoteId何来cancel
     
     #----------------------------------------------------------------------
-    def cancelOrder(self, cancelOrderReq):
-        """撤单"""
-        self.api.cancelOrder(cancelOrderReq)
+    def queryOrder(self):
     
     #----------------------------------------------------------------------
     def qryAccount(self):
@@ -207,8 +231,16 @@ class OkexFutureGateway(VnpyGateway):
         """关闭"""
         self.api.close()
 
+    #----------------------------------------------------------------------
     def onOrderSent(self, remoteId, myorder): #type: (int, _Order)->None
         myorder.remoteId = remoteId
         myorder.vtOrder.status = constant.STATUS_NOTTRADED
         self.onOrder(myorder.vtOrder)
+    
+    #----------------------------------------------------------------------
+    @staticmethod
+    def onOrderCanceled(myorder): #type: (_Order)->None
+        myorder.vtOrder.status = constant.STATUS_CANCELLED
         
+        
+    

@@ -6,7 +6,7 @@ import unittest
 from simplejson import JSONDecodeError
 
 from Promise import Promise
-from vnpy.network.RestClient import RestClient, Request
+from vnpy.api.rest.RestClient import RestClient, Request
 
 
 class FailedError(RuntimeError):
