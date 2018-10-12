@@ -87,6 +87,7 @@ EXCHANGE_HUOBI = 'HUOBI'         # 火币比特币交易所
 EXCHANGE_LBANK = 'LBANK'         # LBANK比特币交易所
 EXCHANGE_ZB = 'ZB'		 # 比特币中国比特币交易所
 EXCHANGE_OKEX = 'OKEX'		 # OKEX比特币交易所
+EXCHANGE_OKEXFUTURE = 'OKEXFUTURE'		 # OKEX比特币交易所-期货
 EXCHANGE_BINANCE = "BINANCE"     # 币安比特币交易所
 EXCHANGE_BITFINEX = "BITFINEX"   # Bitfinex比特币交易所
 EXCHANGE_BITMEX = 'BITMEX'       # BitMEX比特币交易所
