@@ -4,7 +4,7 @@ import urllib
 
 
 ########################################################################
-from vnpy.network.RestClient import RestClient, Request
+from vnpy.api.rest import RestClient, Request
 
 
 ########################################################################

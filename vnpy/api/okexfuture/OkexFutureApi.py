@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any, Callable, List, Union
 
 from vnpy.api.okexfuture.vnokexFuture import OkexFutureRestBase
-from vnpy.network.RestClient import Request
+from vnpy.api.rest import Request
 
 
 ########################################################################
