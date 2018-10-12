@@ -13,6 +13,15 @@ class _OkexFutureCustomExtra(object):
         self.onFailed = onFailed
         self.onSuccess = onSuccess
         self.extra = extra
+        
+        
+########################################################################
+class OkexFutureSymbol(Enum):
+    BTC = 'btc_usd'
+    LTC = 'ltc_usd'
+    ETH = 'eth_usd'
+    ETC = 'etc_usd'
+    BCH = 'bch_usd'
 
 
 ########################################################################
