@@ -140,6 +140,7 @@ class OkexFutureGateway(VnpyGateway):
         self.tradeID = 0
         self._orders = {}  # type: Dict[str, _Order]
         self._remoteIds = {}  # type: Dict[str, _Order]
+        
     #----------------------------------------------------------------------
     @property
     def gatewayName(self):
