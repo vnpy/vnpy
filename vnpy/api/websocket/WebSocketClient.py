@@ -43,7 +43,7 @@ class WebsocketClient(object):
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
         
-        self.onConnect()
+        self.onConnected()
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -79,7 +79,7 @@ class WebsocketClient(object):
     def _connect(self):
         """"""
         self._ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
-        self.onConnect()
+        self.onConnected()
     
     #----------------------------------------------------------------------
     def _disconnect(self):
@@ -104,6 +104,7 @@ class WebsocketClient(object):
             try:
                 stream = ws.recv()
                 if not stream:
+                    self.onDisconnected()
                     if self._active:
                         self._reconnect()
                     continue
@@ -128,9 +129,17 @@ class WebsocketClient(object):
         return self._get_ws().send('ping', websocket.ABNF.OPCODE_PING)
     
     #----------------------------------------------------------------------
-    @abstractmethod
-    def onConnect(self):
-        """连接回调"""
+    def onConnected(self):
+        """
+        连接成功回调
+        """
+        pass
+    
+    #----------------------------------------------------------------------
+    def onDisconnected(self):
+        """
+        连接断开回调
+        """
         pass
     
     #----------------------------------------------------------------------

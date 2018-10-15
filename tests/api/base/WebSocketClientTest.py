@@ -17,7 +17,7 @@ class TestWebsocketClient(WebsocketClient):
         self.p.set_result(packet)
         pass
     
-    def onConnect(self):
+    def onConnected(self):
         pass
     
     def onError(self, exceptionType, exceptionValue, tb):
