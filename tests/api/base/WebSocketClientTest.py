@@ -13,7 +13,7 @@ class TestWebsocketClient(WebsocketClient):
         self.init(host)
         self.p = Promise()
     
-    def onMessage(self, packet):
+    def onPacket(self, packet):
         self.p.set_result(packet)
         pass
     

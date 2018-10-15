@@ -109,7 +109,7 @@ class WebsocketClient(object):
                     continue
                     
                 data = json.loads(stream)
-                self.onMessage(data)
+                self.onPacket(data)
             except:
                 et, ev, tb = sys.exc_info()
                 self.onError(et, ev, tb)
@@ -135,7 +135,7 @@ class WebsocketClient(object):
     
     #----------------------------------------------------------------------
     @abstractmethod
-    def onMessage(self, packet):
+    def onPacket(self, packet):
         """
         数据回调。
         只有在数据为json包的时候才会触发这个回调
