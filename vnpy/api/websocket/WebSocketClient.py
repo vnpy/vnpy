@@ -55,7 +55,7 @@ class WebsocketClient(object):
         self._disconnect()
 
     #----------------------------------------------------------------------
-    def sendRequest(self, dictObj):  # type: (dict)->None
+    def sendPacket(self, dictObj):  # type: (dict)->None
         """发出请求:相当于sendText(json.dumps(dictObj))"""
         return self._get_ws().send(json.dumps(dictObj), opcode=websocket.ABNF.OPCODE_TEXT)
     
@@ -154,7 +154,6 @@ class WebsocketClient(object):
         pass
     
     #----------------------------------------------------------------------
-    @abstractmethod
     def onError(self, exceptionType, exceptionValue, tb):
         """Python错误回调"""
-        pass
+        return sys.excepthook(exceptionType, exceptionValue, tb)

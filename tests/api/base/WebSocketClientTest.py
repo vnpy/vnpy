@@ -38,7 +38,7 @@ class WebsocketClientTest(unittest.TestCase):
         req = {
             'name': 'val'
         }
-        self.c.sendRequest(req)
+        self.c.sendPacket(req)
         res = self.c.p.get(3)
         
         self.assertEqual(res, req)
