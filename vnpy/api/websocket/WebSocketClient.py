@@ -154,7 +154,6 @@ class WebsocketClient(object):
         pass
     
     #----------------------------------------------------------------------
-    @abstractmethod
     def onError(self, exceptionType, exceptionValue, tb):
         """Python错误回调"""
-        pass
+        return sys.excepthook(exceptionType, exceptionValue, tb)
