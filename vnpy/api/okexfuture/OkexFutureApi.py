@@ -172,11 +172,11 @@ class OkexFutureRestClient(OkexFutureRestBase):
         if leverRate:
             data['lever_rate'] = leverRate  # 杠杆倍数
         
-        request = self.addReq('POST',
+        request = self.addRequest('POST',
                               '/future_trade.do',
-                              callback=self.onOrderSent,
-                              data=data,
-                              extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                                  callback=self.onOrderSent,
+                                  data=data,
+                                  extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
         return request
     
     #----------------------------------------------------------------------
@@ -196,11 +196,11 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'contractType': contractType,
             'order_id': orderId
         }
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_cancel.do',
-                           callback=self.onOrderCanceled,
-                           data=data,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrderCanceled,
+                               data=data,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryOrder(self, symbol, contractType, orderId, onSuccess, onFailed=None,
@@ -221,11 +221,11 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'contractType': contractType,
             'order_id': orderId
         }
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_order_info.do',
-                           callback=self.onOrder,
-                           data=data,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrder,
+                               data=data,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
 
     #----------------------------------------------------------------------
     def queryOrders(self, symbol, contractType, status,
@@ -253,11 +253,11 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'page_length': pageLength
         }
 
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_order_info.do',
-                           callback=self.onOrder,
-                           data=data,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrder,
+                               data=data,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryUserInfo(self, onSuccess, onFailed=None,
@@ -269,10 +269,10 @@ class OkexFutureRestClient(OkexFutureRestBase):
         :param extra: Any
         :return: Request
         """
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_userinfo.do',
-                           callback=self.onOrder,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrder,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryPosition(self, symbol, contractType,
@@ -290,11 +290,11 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'symbol': symbol,
             'contractType': contractType
         }
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_position.do',
-                           data=data,
-                           callback=self.onPosition,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               data=data,
+                               callback=self.onPosition,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     @staticmethod

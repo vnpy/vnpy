@@ -9,7 +9,7 @@ import time
 from abc import abstractmethod
 from threading import Thread, Lock
 
-import vnpy.api.websocket
+import websocket
 
 
 class WebsocketClient(object):
@@ -55,18 +55,18 @@ class WebsocketClient(object):
         self._disconnect()
 
     #----------------------------------------------------------------------
-    def sendReq(self, req):  # type: (dict)->None
-        """发出请求"""
-        return self._get_ws().send(json.dumps(req), opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
+    def sendRequest(self, dictObj):  # type: (dict)->None
+        """发出请求:相当于sendText(json.dumps(dictObj))"""
+        return self._get_ws().send(json.dumps(dictObj), opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
-        """发出请求"""
+        """发送文本数据"""
         return self._get_ws().send(text, opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendData(self, data):  # type: (bytes)->None
-        """发出请求"""
+        """发送字节数据"""
         return self._get_ws().send_binary(data)
     
     #----------------------------------------------------------------------
@@ -78,7 +78,7 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def _connect(self):
         """"""
-        self._ws = vnpy.api.websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
+        self._ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
         self.onConnect()
     
     #----------------------------------------------------------------------
