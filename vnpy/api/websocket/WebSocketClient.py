@@ -57,12 +57,12 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def sendRequest(self, dictObj):  # type: (dict)->None
         """发出请求:相当于sendText(json.dumps(dictObj))"""
-        return self._get_ws().send(json.dumps(dictObj), opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
+        return self._get_ws().send(json.dumps(dictObj), opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
         """发送文本数据"""
-        return self._get_ws().send(text, opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
+        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendData(self, data):  # type: (bytes)->None
@@ -125,7 +125,7 @@ class WebsocketClient(object):
     
     #----------------------------------------------------------------------
     def _ping(self):
-        return self._get_ws().send('ping', vnpy.api.websocket.ABNF.OPCODE_PING)
+        return self._get_ws().send('ping', websocket.ABNF.OPCODE_PING)
     
     #----------------------------------------------------------------------
     @abstractmethod
