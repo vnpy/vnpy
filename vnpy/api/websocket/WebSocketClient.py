@@ -13,7 +13,23 @@ import websocket
 
 
 class WebSocketClient(object):
-    """Websocket API"""
+    """
+    Websocket API
+    
+    继承使用该类。
+    实例化之后，应调用start开始后台线程。调用start()函数会自动连接websocket。
+    若要终止后台线程，请调用stop()。 stop()函数会顺便断开websocket。
+    
+    可以重写以下函数：
+    onConnected
+    onDisconnected
+    onPacket
+    onError
+    
+    当然，为了不让用户随意自定义，用自己的init函数覆盖掉原本的init(host)也是个不错的选择。
+    
+    @note 继承使用该类
+    """
     
     #----------------------------------------------------------------------
     def __init__(self):
@@ -26,6 +42,15 @@ class WebSocketClient(object):
         self._workerThread = None  # type: Thread
         self._pingThread = None  # type: Thread
         self._active = False
+        
+        self.createConnection = websocket.create_connection
+
+    #----------------------------------------------------------------------
+    def setCreateConnection(self, func):
+        """
+        for internal usage
+        """
+        self.createConnection = func
 
     #----------------------------------------------------------------------
     def init(self, host):
@@ -78,7 +103,7 @@ class WebSocketClient(object):
     #----------------------------------------------------------------------
     def _connect(self):
         """"""
-        self._ws = websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
+        self._ws = self.createConnection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
         self.onConnected()
     
     #----------------------------------------------------------------------
