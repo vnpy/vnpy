@@ -1,10 +1,11 @@
 # encoding: UTF-8
 
 import time
+from datetime import datetime
 from logging import INFO
 
-from vnpy.trader.vtConstant import (EMPTY_STRING, EMPTY_UNICODE, 
-                                    EMPTY_FLOAT, EMPTY_INT)
+from vnpy.trader.language import constant
+from vnpy.trader.vtConstant import (EMPTY_FLOAT, EMPTY_INT, EMPTY_STRING, EMPTY_UNICODE)
 
 
 ########################################################################
@@ -105,7 +106,10 @@ class VtBarData(VtBaseData):
 
 ########################################################################
 class VtTradeData(VtBaseData):
-    """成交数据类"""
+    """
+    成交数据类
+    一般来说，一个VtOrderData可能对应多个VtTradeData：一个订单可能多次部分成交
+    """
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -116,8 +120,8 @@ class VtTradeData(VtBaseData):
         self.symbol = EMPTY_STRING              # 合约代码
         self.exchange = EMPTY_STRING            # 交易所代码
         self.vtSymbol = EMPTY_STRING            # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
-        
-        self.tradeID = EMPTY_STRING             # 成交编号
+
+        self.tradeID = EMPTY_STRING  # 成交编号 gateway内部自己生成的编号
         self.vtTradeID = EMPTY_STRING           # 成交在vt系统中的唯一编号，通常是 Gateway名.成交编号
         
         self.orderID = EMPTY_STRING             # 订单编号
@@ -129,7 +133,27 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
-   
+        
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromOrderData(order,
+                            tradeID,
+                            tradePrice,
+                            tradeVolume):  # type: (VtOrderData, str, float, float)->VtTradeData
+        trade = VtTradeData()
+        trade.gatewayName = order.gatewayName
+        trade.symbol = order.symbol
+        trade.vtSymbol = order.vtSymbol
+        trade.orderID = order.orderID
+        trade.vtOrderID = order.vtOrderID
+        trade.tradeID = tradeID
+        trade.vtTradeID = trade.gatewayName + '.' + tradeID
+        trade.direction = order.direction
+        trade.price = tradePrice
+        trade.volume = tradeVolume
+        trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+        return trade
+    
 
 ########################################################################
 class VtOrderData(VtBaseData):
@@ -143,10 +167,10 @@ class VtOrderData(VtBaseData):
         # 代码编号相关
         self.symbol = EMPTY_STRING              # 合约代码
         self.exchange = EMPTY_STRING            # 交易所代码
-        self.vtSymbol = EMPTY_STRING            # 统一格式：f"{symbol}.{exchange}"
+        self.vtSymbol = EMPTY_STRING  # 索引，统一格式：f"{symbol}.{exchange}"
         
         self.orderID = EMPTY_STRING             # 订单编号 gateway内部自己生成的编号
-        self.vtOrderID = EMPTY_STRING           # 统一格式：f"{gatewayName}.{orderId}"
+        self.vtOrderID = EMPTY_STRING  # 索引，统一格式：f"{gatewayName}.{orderId}"
         
         # 报单相关
         self.direction = EMPTY_UNICODE          # 报单方向
@@ -163,6 +187,33 @@ class VtOrderData(VtBaseData):
         self.frontID = EMPTY_INT                # 前置机编号
         self.sessionID = EMPTY_INT              # 连接编号
 
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway, orderId, symbol, exchange, price, volume, direction,
+                          offset=EMPTY_UNICODE,
+                          tradedVolume=EMPTY_INT,
+                          status=constant.STATUS_UNKNOWN,
+                          orderTime=EMPTY_UNICODE,
+                          cancelTime=EMPTY_UNICODE,
+                          ):  # type: (VtGateway, str, str, str, float, float, str, str, int, str, str, str)->VtOrderData
+        vtOrder = VtOrderData()
+        vtOrder.gatewayName = gateway.gatewayName
+        vtOrder.symbol = symbol
+        vtOrder.exchange = exchange
+        vtOrder.vtSymbol = symbol + '.' + exchange
+        vtOrder.orderID = orderId
+        vtOrder.vtOrderID = gateway.gatewayName + '.' + orderId
+
+        vtOrder.direction = direction
+        vtOrder.offset = offset
+        vtOrder.price = price
+        vtOrder.totalVolume = volume
+        vtOrder.tradedVolume = tradedVolume
+        vtOrder.status = status
+        vtOrder.orderTime = orderTime
+        vtOrder.cancelTime = cancelTime
+        return vtOrder
+    
     
 ########################################################################
 class VtPositionData(VtBaseData):
@@ -186,6 +237,29 @@ class VtPositionData(VtBaseData):
         self.vtPositionName = EMPTY_STRING      # 持仓在vt系统中的唯一代码，通常是vtSymbol.方向
         self.ydPosition = EMPTY_INT             # 昨持仓
         self.positionProfit = EMPTY_FLOAT       # 持仓盈亏
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway, exchange, symbol, direction, position,
+                          frozen=EMPTY_INT,
+                          price=EMPTY_FLOAT,
+                          yestordayPosition=EMPTY_INT,
+                          profit=EMPTY_FLOAT
+                          ):  # type: (VtGateway, str, str, str, float, int, float, int, float)->VtPositionData
+        vtPosition = VtPositionData()
+        vtPosition.gatewayName = gateway.gatewayName
+        vtPosition.symbol = symbol
+        vtPosition.exchange = exchange
+        vtPosition.vtSymbol = symbol + '.' + exchange
+    
+        vtPosition.direction = direction
+        vtPosition.position = position
+        vtPosition.frozen = frozen
+        vtPosition.price = price
+        vtPosition.vtPositionName = vtPosition.vtSymbol + '.' + direction
+        vtPosition.ydPosition = yestordayPosition
+        vtPosition.positionProfit = profit
+        return vtPosition
 
 
 ########################################################################
