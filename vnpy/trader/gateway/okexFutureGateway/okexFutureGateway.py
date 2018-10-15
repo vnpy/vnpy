@@ -99,11 +99,6 @@ class VnpyGateway(VtGateway):
         return 'VnpyGateway'
     
     #----------------------------------------------------------------------
-    @abstractproperty
-    def exchange(self):  # type: ()->str
-        return constant.EXCHANGE_UNKNOWN
-    
-    #----------------------------------------------------------------------
     def readConfig(self):
         """
         从json文件中读取设置，并将其内容返回为一个dict
@@ -168,7 +163,7 @@ class OkexFutureGateway(VnpyGateway):
         return 'OkexFutureGateway'
     
     #----------------------------------------------------------------------
-    @abstractproperty
+    @property
     def exchange(self):  # type: ()->str
         return constant.EXCHANGE_OKEXFUTURE
     
@@ -216,20 +211,18 @@ class OkexFutureGateway(VnpyGateway):
         self._remoteIds[remoteId] = myorder
 
     #----------------------------------------------------------------------
-    def _genereteLocalOrder(self, symbol, price, volume, direction):
+    def _genereteLocalOrder(self, symbol, price, volume, direction, offset):
         myorder = _Order()
         localId = myorder.localId
         self._orders[localId] = myorder
-        vtOrder = VtOrderData()
-        vtOrder.orderID = localId
-        vtOrder.vtOrderID = ".".join([self.gatewayName, localId])
-        vtOrder.exchange = self.exchange
-        vtOrder.symbol = symbol
-        vtOrder.vtSymbol = '.'.join([vtOrder.symbol, vtOrder.exchange])
-        vtOrder.price = price
-        vtOrder.totalVolume = volume
-        vtOrder.direction = direction
-        myorder.vtOrder = vtOrder
+        myorder.vtOrder = VtOrderData.createFromGateway(self,
+                                                self.exchange,
+                                                localId,
+                                                symbol,
+                                                price,
+                                                volume,
+                                                direction,
+                                                offset)
         return myorder
 
     #----------------------------------------------------------------------
@@ -238,7 +231,8 @@ class OkexFutureGateway(VnpyGateway):
         myorder = self._genereteLocalOrder(vtRequest.symbol,
                                            vtRequest.price,
                                            vtRequest.volume,
-                                           vtRequest.direction)
+                                           vtRequest.direction,
+                                           vtRequest.offset)
 
         remoteSymbol, remoteContractType = localSymbolToRemote(vtRequest.symbol)
         orderType = _orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
@@ -325,22 +319,22 @@ class OkexFutureGateway(VnpyGateway):
         self._saveRemoteId(remoteId, myorder)
         self.onOrder(myorder.vtOrder)
 
-    #----------------------------------------------------------------------
-    def _pushOrderAsTraded(self, order):
-        trade = VtTradeData()
-        trade.gatewayName = order.gatewayName
-        trade.symbol = order.symbol
-        trade.vtSymbol = order.vtSymbol
-        trade.orderID = order.orderID
-        trade.vtOrderID = order.vtOrderID
-        self.tradeID += 1
-        trade.tradeID = str(self.tradeID)
-        trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
-        trade.direction = order.direction
-        trade.price = order.price
-        trade.volume = order.tradedVolume
-        trade.tradeTime = datetime.now().strftime('%H:%M:%S')
-        self.onTrade(trade)
+    # #----------------------------------------------------------------------
+    # def _pushOrderAsTraded(self, order):
+    #     trade = VtTradeData()
+    #     trade.gatewayName = order.gatewayName
+    #     trade.symbol = order.symbol
+    #     trade.vtSymbol = order.vtSymbol
+    #     trade.orderID = order.orderID
+    #     trade.vtOrderID = order.vtOrderID
+    #     self.tradeID += 1
+    #     trade.tradeID = str(self.tradeID)
+    #     trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
+    #     trade.direction = order.direction
+    #     trade.price = order.price
+    #     trade.volume = order.tradedVolume
+    #     trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+    #     self.onTrade(trade)
         
     #----------------------------------------------------------------------
     @staticmethod
@@ -367,17 +361,17 @@ class OkexFutureGateway(VnpyGateway):
                 # 缓存该订单，并推送
                 symbol = remoteSymbolToLocal(order.symbol, localContractType)
                 direction, offset = remoteOrderTypeToLocal(order.orderType)
-                myorder = self._genereteLocalOrder(symbol, order.price, order.volume, direction)
+                myorder = self._genereteLocalOrder(symbol, order.price, order.volume, direction, offset)
                 myorder.vtOrder.tradedVolume = order.tradedVolume
                 myorder.remoteId = order.remoteId
                 self._saveRemoteId(myorder.remoteId, myorder)
                 self.onOrder(myorder.vtOrder)
         
-            # 如果该订单已经交易完成，推送交易完成消息
-            # todo: 这样写会导致同一个订单产生多次交易完成消息
-            if order.status == OkexFutureOrderStatus.Finished:
-                myorder.vtOrder.status = constant.STATUS_ALLTRADED
-                self._pushOrderAsTraded(myorder.vtOrder)
+            # # 如果该订单已经交易完成，推送交易完成消息
+            # # todo: 这样写会导致同一个订单产生多次交易完成消息
+            # if order.status == OkexFutureOrderStatus.Finished:
+            #     myorder.vtOrder.status = constant.STATUS_ALLTRADED
+            #     self._pushOrderAsTraded(myorder.vtOrder)
 
     #----------------------------------------------------------------------
     def _onQueryAccount(self, infos, _):  # type: (List[OkexFutureUserInfo], Any)->None
