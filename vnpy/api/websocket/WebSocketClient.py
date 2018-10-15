@@ -49,6 +49,7 @@ class WebSocketClient(object):
     def setCreateConnection(self, func):
         """
         for internal usage
+        :param func: a function like websocket.create_connection
         """
         self.createConnection = func
 

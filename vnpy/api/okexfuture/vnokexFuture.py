@@ -1,8 +1,10 @@
 # encoding: UTF-8
 import hashlib
 import urllib
+from abc import abstractmethod
 
 from vnpy.api.rest import Request, RestClient
+from vnpy.api.websocket import WebSocketClient
 
 
 #----------------------------------------------------------------------
@@ -48,3 +50,38 @@ class OkexFutureRestBase(RestClient):
         req.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         req.data = data
         return req
+
+
+########################################################################
+class OkexFutureWebSocketBase(WebSocketClient):
+    """
+    Okex期货websocket客户端
+    实例化后使用init设置apiKey和secretKey（apiSecret）
+    """
+    host = 'wss://real.okex.com:10440/websocket/okexapi'
+    
+    def __init__(self):
+        super(OkexFutureWebSocketBase, self).__init__()
+        self.apiKey = None
+        self.apiSecret = None
+    
+    #----------------------------------------------------------------------
+    # noinspection PyMethodOverriding
+    def init(self, apiKey, secretKey):
+        super(OkexFutureWebSocketBase, self).init(self.host)
+        
+        self.apiKey = apiKey
+        self.apiSecret = secretKey
+    
+    #----------------------------------------------------------------------
+    def sendPacket(self, dictObj, authenticate=False):
+        if authenticate:
+            data = urllib.urlencode(sorted(dictObj.items()))
+            signature = sign(data, self.apiSecret)
+            dictObj['sign'] = signature
+        return super(OkexFutureWebSocketBase, self).sendPacket(dictObj)
+    
+    #----------------------------------------------------------------------
+    @abstractmethod
+    def onPacket(self, packet):
+        pass
