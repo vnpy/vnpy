@@ -12,8 +12,20 @@ class _OkexFutureCustomExtra(object):
         self.onFailed = onFailed
         self.onSuccess = onSuccess
         self.extra = extra
-        
-        
+
+
+########################################################################
+class OkexFutureEasySymbol(object):
+    BTC = 'btc'
+    LTC = 'ltc'
+    ETH = 'eth'
+    ETC = 'etc'
+    BCH = 'bch'
+    EOS = 'eos'
+    XRP = 'xrp'
+    BTG = 'btg'
+
+    
 ########################################################################
 class OkexFutureSymbol(object):
     BTC = 'btc_usd'
@@ -428,15 +440,16 @@ class OkexFutureRestClient(OkexFutureRestBase):
         return restErrorCodeMap[code]
 
 
-#----------------------------------------------------------------------
-class OkexFutureWebSocketApi(OkexFutureWebSocketBase):
+########################################################################
+class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
     
-    def subscribe(self, packet):
-        pass
+    #----------------------------------------------------------------------
+    def subscribe(self, easySymbol, contractType):  # type: (OkexFutureEasySymbol, OkexFutureContractType)->None
+        self.sendPacket({
+            'event': 'addChannel',
+            'channel': 'ok_sub_futureusd_' + easySymbol + '_ticker_' + contractType
+        })
     
-    def onPacket(self, packet):
-        pass
-
 
 restErrorCodeMap = {
     0: '远程服务器并未给出错误代码',

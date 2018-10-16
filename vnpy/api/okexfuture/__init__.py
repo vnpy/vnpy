@@ -1,2 +1,2 @@
-from .OkexFutureApi import OkexFutureSymbol, OkexFutureContractType, OkexFutureOrder, OkexFutureOrderStatus, OkexFuturePosition, \
-    OkexFuturePositionDetail, OkexFuturePriceType, OkexFutureRestClient, OkexFutureUserInfo
+from .OkexFutureApi import OkexFutureRestClient, OkexFutureWebSocketClient, OkexFutureSymbol, OkexFutureContractType, OkexFutureOrder, OkexFutureOrderStatus, OkexFuturePosition, \
+    OkexFuturePositionDetail, OkexFuturePriceType, OkexFutureUserInfo
