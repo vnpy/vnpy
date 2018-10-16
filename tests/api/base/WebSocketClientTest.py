@@ -2,10 +2,10 @@
 import unittest
 
 from Promise import Promise
-from vnpy.api.websocket import WebsocketClient
+from vnpy.api.websocket import WebSocketClient
 
 
-class TestWebsocketClient(WebsocketClient):
+class TestWebsocketClient(WebSocketClient):
     
     def __init__(self):
         host = 'wss://echo.websocket.org'
@@ -13,11 +13,11 @@ class TestWebsocketClient(WebsocketClient):
         self.init(host)
         self.p = Promise()
     
-    def onMessage(self, packet):
+    def onPacket(self, packet):
         self.p.set_result(packet)
         pass
     
-    def onConnect(self):
+    def onConnected(self):
         pass
     
     def onError(self, exceptionType, exceptionValue, tb):
@@ -38,7 +38,7 @@ class WebsocketClientTest(unittest.TestCase):
         req = {
             'name': 'val'
         }
-        self.c.sendReq(req)
+        self.c.sendPacket(req)
         res = self.c.p.get(3)
         
         self.assertEqual(res, req)

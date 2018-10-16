@@ -9,11 +9,27 @@ import time
 from abc import abstractmethod
 from threading import Thread, Lock
 
-import vnpy.api.websocket
+import websocket
 
 
-class WebsocketClient(object):
-    """Websocket API"""
+class WebSocketClient(object):
+    """
+    Websocket API
+    
+    继承使用该类。
+    实例化之后，应调用start开始后台线程。调用start()函数会自动连接websocket。
+    若要终止后台线程，请调用stop()。 stop()函数会顺便断开websocket。
+    
+    可以重写以下函数：
+    onConnected
+    onDisconnected
+    onPacket
+    onError
+    
+    当然，为了不让用户随意自定义，用自己的init函数覆盖掉原本的init(host)也是个不错的选择。
+    
+    @note 继承使用该类
+    """
     
     #----------------------------------------------------------------------
     def __init__(self):
@@ -26,6 +42,15 @@ class WebsocketClient(object):
         self._workerThread = None  # type: Thread
         self._pingThread = None  # type: Thread
         self._active = False
+        
+        self.createConnection = websocket.create_connection
+
+    #----------------------------------------------------------------------
+    def setCreateConnection(self, func):
+        """
+        for internal usage
+        """
+        self.createConnection = func
 
     #----------------------------------------------------------------------
     def init(self, host):
@@ -43,7 +68,7 @@ class WebsocketClient(object):
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
         
-        self.onConnect()
+        self.onConnected()
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -55,18 +80,18 @@ class WebsocketClient(object):
         self._disconnect()
 
     #----------------------------------------------------------------------
-    def sendReq(self, req):  # type: (dict)->None
-        """发出请求"""
-        return self._get_ws().send(json.dumps(req), opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
+    def sendPacket(self, dictObj):  # type: (dict)->None
+        """发出请求:相当于sendText(json.dumps(dictObj))"""
+        return self._get_ws().send(json.dumps(dictObj), opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
-        """发出请求"""
-        return self._get_ws().send(text, opcode=vnpy.api.websocket.ABNF.OPCODE_TEXT)
+        """发送文本数据"""
+        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendData(self, data):  # type: (bytes)->None
-        """发出请求"""
+        """发送字节数据"""
         return self._get_ws().send_binary(data)
     
     #----------------------------------------------------------------------
@@ -78,8 +103,8 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def _connect(self):
         """"""
-        self._ws = vnpy.api.websocket.create_connection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
-        self.onConnect()
+        self._ws = self.createConnection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
+        self.onConnected()
     
     #----------------------------------------------------------------------
     def _disconnect(self):
@@ -104,12 +129,13 @@ class WebsocketClient(object):
             try:
                 stream = ws.recv()
                 if not stream:
+                    self.onDisconnected()
                     if self._active:
                         self._reconnect()
                     continue
                     
                 data = json.loads(stream)
-                self.onMessage(data)
+                self.onPacket(data)
             except:
                 et, ev, tb = sys.exc_info()
                 self.onError(et, ev, tb)
@@ -125,17 +151,25 @@ class WebsocketClient(object):
     
     #----------------------------------------------------------------------
     def _ping(self):
-        return self._get_ws().send('ping', vnpy.api.websocket.ABNF.OPCODE_PING)
+        return self._get_ws().send('ping', websocket.ABNF.OPCODE_PING)
     
     #----------------------------------------------------------------------
-    @abstractmethod
-    def onConnect(self):
-        """连接回调"""
+    def onConnected(self):
+        """
+        连接成功回调
+        """
+        pass
+    
+    #----------------------------------------------------------------------
+    def onDisconnected(self):
+        """
+        连接断开回调
+        """
         pass
     
     #----------------------------------------------------------------------
     @abstractmethod
-    def onMessage(self, packet):
+    def onPacket(self, packet):
         """
         数据回调。
         只有在数据为json包的时候才会触发这个回调
@@ -145,7 +179,6 @@ class WebsocketClient(object):
         pass
     
     #----------------------------------------------------------------------
-    @abstractmethod
     def onError(self, exceptionType, exceptionValue, tb):
         """Python错误回调"""
-        pass
+        return sys.excepthook(exceptionType, exceptionValue, tb)

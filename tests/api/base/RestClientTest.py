@@ -51,7 +51,7 @@ class RestfulClientTest(unittest.TestCase):
         def callback(data, req):
             self.c.p.set_result(data['args'])
         
-        self.c.addReq('GET', '/get', callback, params=args)
+        self.c.addRequest('GET', '/get', callback, params=args)
         res = self.c.p.get(3)
         
         self.assertEqual(args, res)
@@ -63,7 +63,7 @@ class RestfulClientTest(unittest.TestCase):
         def callback(data, req):
             self.c.p.set_result(data['json'])
         
-        self.c.addReq('POST', '/post', callback, data=body)
+        self.c.addRequest('POST', '/post', callback, data=body)
         res = self.c.p.get(3)
         
         self.assertEqual(body, res)
@@ -72,7 +72,7 @@ class RestfulClientTest(unittest.TestCase):
         def callback(data, req):
             pass
         
-        self.c.addReq('POST', '/status/401', callback)
+        self.c.addRequest('POST', '/status/401', callback)
         with self.assertRaises(FailedError):
             self.c.p.get(3)
 
@@ -80,7 +80,7 @@ class RestfulClientTest(unittest.TestCase):
         def callback(data, req):
             pass
         
-        self.c.addReq('GET', '/image/svg', callback)
+        self.c.addRequest('GET', '/image/svg', callback)
         with self.assertRaises(JSONDecodeError):
             self.c.p.get(3)
     

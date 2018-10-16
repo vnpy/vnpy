@@ -139,10 +139,10 @@ class RestClient(object):
         self._queue.join()
     
     #----------------------------------------------------------------------
-    def addReq(self, method, path, callback,
-               params=None, data=None, headers = None,
-               onFailed=None, skipDefaultOnFailed=True,
-               extra=None):  # type: (str, str, Callable[[dict, Request], Any], dict, dict, dict, Callable[[dict, Request], Any], bool, Any)->Request
+    def addRequest(self, method, path, callback,
+                   params=None, data=None, headers = None,
+                   onFailed=None, skipDefaultOnFailed=True,
+                   extra=None):  # type: (str, str, Callable[[dict, Request], Any], dict, dict, dict, Callable[[dict, Request], Any], bool, Any)->Request
         """
         发送一个请求
         :param method: GET, POST, PUT, DELETE, QUERY
@@ -171,7 +171,7 @@ class RestClient(object):
             try:
                 req = self._queue.get(timeout=1)
                 try:
-                    self._processReq(req, session)
+                    self._processRequest(req, session)
                 finally:
                     self._queue.task_done()
             except Empty:
@@ -215,8 +215,10 @@ class RestClient(object):
         sys.excepthook(exceptionType, exceptionValue, tb)
     
     #----------------------------------------------------------------------
-    def _processReq(self, req, session):  # type: (Request, requests.Session)->None
-        """处理请求"""
+    def _processRequest(self, req, session):  # type: (Request, requests.Session)->None
+        """
+        用于内部：将请求发送出去
+        """
         try:
             req = self.beforeRequest(req)
     
