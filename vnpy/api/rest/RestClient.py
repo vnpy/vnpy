@@ -3,7 +3,6 @@
 
 import sys
 from Queue import Empty, Queue
-from abc import abstractmethod
 from multiprocessing.dummy import Pool
 
 import requests
@@ -79,10 +78,10 @@ class RestClient(object):
     """
     HTTP 客户端。目前是为了对接各种RESTfulAPI而设计的。
     
-    如果需要给请求加上签名，请重载beforeRequest函数。
-    如果需要处理非200的请求，请重载onFailed函数。
+    如果需要给请求加上签名，请设置beforeRequest, 函数类型请参考defaultBeforeRequest。
+    如果需要处理非200的请求，请设置onFailed，函数类型请参考defaultOnFailed。
     如果每一个请求的非200返回都需要单独处理，使用addReq函数的onFailed参数
-    如果捕获Python内部错误，例如网络连接失败等等，请重载onError函数。
+    如果捕获Python内部错误，例如网络连接失败等等，请设置onError，函数类型请参考defaultOnError
     """
     
     #----------------------------------------------------------------------
@@ -92,6 +91,9 @@ class RestClient(object):
         """
         self.urlBase = None  # type: str
         self.sessionProvider = requestsSessionProvider
+        self.beforeRequest = self.defaultBeforeRequest  # 任何请求在发送之前都会经过这个函数，让其加工
+        self.onError = self.defaultOnError  # Python内部错误处理
+        self.onFailed = self.defaultOnFailed  # statusCode != 2xx 时触发
         
         self._active = False
 
@@ -178,8 +180,8 @@ class RestClient(object):
                 pass
     
     #----------------------------------------------------------------------
-    @abstractmethod
-    def beforeRequest(self, req):  # type: (Request)->Request
+    @staticmethod
+    def defaultBeforeRequest(req):  # type: (Request)->Request
         """
         所有请求在发送之前都会经过这个函数
         签名之类的前奏可以在这里面实现
@@ -189,7 +191,8 @@ class RestClient(object):
         return req
     
     #----------------------------------------------------------------------
-    def onFailed(self, httpStatusCode, req):  # type:(int, Request)->None
+    @staticmethod
+    def defaultOnFailed(httpStatusCode, req):  # type:(int, Request)->None
         """
         请求失败处理函数（HttpStatusCode!=200）.
         默认行为是打印到stderr
@@ -207,7 +210,8 @@ class RestClient(object):
                       req._response.raw))
     
     #----------------------------------------------------------------------
-    def onError(self, exceptionType, exceptionValue, tb, req):
+    @staticmethod
+    def defaultOnError(exceptionType, exceptionValue, tb, req):
         """
         Python内部错误处理：默认行为是仍给excepthook
         """

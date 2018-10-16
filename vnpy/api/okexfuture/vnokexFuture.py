@@ -1,7 +1,6 @@
 # encoding: UTF-8
 import hashlib
 import urllib
-from abc import abstractmethod
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebSocketClient
@@ -80,8 +79,3 @@ class OkexFutureWebSocketBase(WebSocketClient):
             signature = sign(data, self.apiSecret)
             dictObj['sign'] = signature
         return super(OkexFutureWebSocketBase, self).sendPacket(dictObj)
-    
-    #----------------------------------------------------------------------
-    @abstractmethod
-    def onPacket(self, packet):
-        pass
