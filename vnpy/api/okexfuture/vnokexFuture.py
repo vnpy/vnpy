@@ -61,13 +61,13 @@ class OkexFutureWebSocketBase(WebSocketClient):
     
     def __init__(self):
         super(OkexFutureWebSocketBase, self).__init__()
+        super(OkexFutureWebSocketBase, self).init(OkexFutureWebSocketBase.host)
         self.apiKey = None
         self.apiSecret = None
     
     #----------------------------------------------------------------------
     # noinspection PyMethodOverriding
     def init(self, apiKey, secretKey):
-        super(OkexFutureWebSocketBase, self).init(self.host)
         
         self.apiKey = apiKey
         self.apiSecret = secretKey
