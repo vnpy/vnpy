@@ -38,7 +38,7 @@ class WebSocketClient(object):
         self.host = None  # type: str
 
         self.onConnected = self.defaultOnConnected
-        self.onDisconnected = self.onDisconnected
+        self.onDisconnected = self.defaultOnDisconnected
         self.onPacket = self.defaultOnPacket
         self.onError = self.defaultOnError
 
@@ -143,6 +143,9 @@ class WebSocketClient(object):
                     
                 data = json.loads(stream)
                 self.onPacket(data)
+            except websocket.WebSocketConnectionClosedException:
+                if self._active:
+                    self._reconnect()
             except:
                 et, ev, tb = sys.exc_info()
                 self.onError(et, ev, tb)
