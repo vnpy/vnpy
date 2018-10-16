@@ -1,8 +1,9 @@
 # encoding: UTF-8
 
+from logging import INFO
+
 import time
 from datetime import datetime
-from logging import INFO
 
 from vnpy.trader.language import constant
 from vnpy.trader.vtConstant import (EMPTY_FLOAT, EMPTY_INT, EMPTY_STRING, EMPTY_UNICODE)
@@ -74,8 +75,37 @@ class VtTickData(VtBaseData):
         self.askVolume2 = EMPTY_INT
         self.askVolume3 = EMPTY_INT
         self.askVolume4 = EMPTY_INT
-        self.askVolume5 = EMPTY_INT         
+        self.askVolume5 = EMPTY_INT
 
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway, symbol, exchange,
+                          lastPrice, lastVolume,
+                          highPrice, lowPrice,
+                          openPrice=EMPTY_FLOAT,
+                          openInterest=EMPTY_INT,
+                          upperLimit=EMPTY_FLOAT,
+                          lowerLimit=EMPTY_FLOAT):
+        tick = VtTickData()
+        tick.gatewayName = gateway.gatewayName
+        tick.symbol = symbol
+        tick.exchange = exchange
+        tick.vtSymbol = symbol + '.' + exchange
+    
+        tick.lastPrice = lastPrice
+        tick.lastVolume = lastVolume
+        tick.openInterest = openInterest
+        tick.datetime = datetime.now()
+        tick.date = tick.datetime.strftime('%Y%m%d')
+        tick.time = tick.datetime.strftime('%H:%M:%S')
+    
+        tick.openPrice = openPrice
+        tick.highPrice = highPrice
+        tick.lowPrice = lowPrice
+        tick.upperLimit = upperLimit
+        tick.lowerLimit = lowerLimit
+        return tick
+    
     
 ########################################################################
 class VtBarData(VtBaseData):
