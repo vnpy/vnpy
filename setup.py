@@ -19,20 +19,9 @@ other financial markets.
 
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 import vnpy
-
-
-def getSubpackages(name):
-    """获取该模块下所有的子模块名称"""
-    splist = []
-
-    for dirpath, _dirnames, _filenames in os.walk(name):
-        if os.path.isfile(os.path.join(dirpath, '__init__.py')):
-            splist.append(".".join(dirpath.split(os.sep)))
-
-    return splist
 
 
 setup(
@@ -55,7 +44,7 @@ setup(
                  'Topic :: Office/Business :: Financial :: Investment',
                  'Programming Language :: Python :: Implementation :: CPython',
                  'License :: OSI Approved :: MIT License'],
-    packages=getSubpackages('vnpy'),
+    packages=find_packages(),
     package_data={'': ['*.json', '*.md', '*.ico',
                        '*.h', '*.cpp', '*.bash', '*.txt',
                        '*.dll', '*.lib', '*.so', '*.pyd',
