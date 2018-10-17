@@ -3,9 +3,8 @@
 from __future__ import print_function
 
 import json
-from abc import abstractmethod, abstractproperty
+from abc import abstractmethod
 
-from enum import Enum
 from typing import Dict
 
 from vnpy.api.okexfuture.OkexFutureApi import *
@@ -75,7 +74,8 @@ class OkexFutureGateway(VnpyGateway):
         self.restApi = OkexFutureRestClient()
 
         self.webSocket = OkexFutureWebSocketClient()
-        self.webSocket.onPacket = self._onWebsocketPacket
+        self.webSocket.onTick = self._onTick
+        self.webSocket.onUserTrade = self._onUserTrade
         
         self.leverRate = 1
         self.symbols = []
@@ -125,11 +125,15 @@ class OkexFutureGateway(VnpyGateway):
 
     #----------------------------------------------------------------------
     def _getOrderByLocalId(self, localId):
-        return self._orders[localId]
+        if localId in self._orders:
+            return self._orders[localId]
+        return None
 
     #----------------------------------------------------------------------
     def _getOrderByRemoteId(self, remoteId):
-        return self._remoteIds[remoteId]
+        if remoteId in self._remoteIds:
+            return self._remoteIds[remoteId]
+        return None
 
     #----------------------------------------------------------------------
     def _saveRemoteId(self, remoteId, myorder):
@@ -184,6 +188,8 @@ class OkexFutureGateway(VnpyGateway):
     def cancelOrder(self, vtCancel):  # type: (VtCancelOrderReq)->None
         """撤单"""
         myorder = self._getOrderByLocalId(vtCancel.orderID)
+        assert myorder is not None, u"理论上是无法取消一个不存在的本地单的"
+        
         symbol, contractType = localSymbolToRemote(vtCancel.symbol)
         self.restApi.cancelOrder(symbol=symbol,
                                  contractType=contractType,
@@ -256,10 +262,10 @@ class OkexFutureGateway(VnpyGateway):
         localContractType = extra
         for order in orders:
             remoteId = order.remoteId
-        
-            if remoteId in self._remoteIds:
+
+            myorder = self._getOrderByRemoteId(remoteId)
+            if myorder:
                 # 如果订单已经缓存在本地，则尝试更新订单状态
-                myorder = self._getOrderByRemoteId(remoteId)
             
                 # 有新交易才推送更新
                 if order.tradedVolume != myorder.vtOrder.tradedVolume:
@@ -316,36 +322,38 @@ class OkexFutureGateway(VnpyGateway):
             self.onPosition(pos)
 
     #----------------------------------------------------------------------
-    def _onWebsocketPacket(self, packets):  # type: (dict)->None
-    
-        for packet in packets:
-            print('packets:')
-            print(packets)
-            channelName = None
-            if 'channel' in packet:
-                channelName = packet['channel']
-            if not channelName or channelName == 'addChannel':
-                return
+    def _onTick(self, info):  # type: (OkexFutureTickInfo)->None
+        uiSymbol = remoteSymbolToLocal(info.symbol, remoteContractTypeToLocal(info.remoteContractType))
+        self.onTick(VtTickData.createFromGateway(
+            gateway=self,
+            symbol=uiSymbol,
+            exchange=self.exchange,
+            lastPrice=info.last,
+            lastVolume=info.vol,
+            highPrice=info.high,
+            lowPrice=info.low,
+            openInterest=info.holdAmount,
+            lowerLimit=info.limitLow,
+            upperLimit=info.limitHigh,
+        ))
 
-            packet = packet['data']
-            channel = parseChannel(channelName)  # type: ExtraSymbolChannel
+    def _onUserTrade(self, info):  # type: (OkexFutureUserTradeInfo)->None
+        tradeID = str(self.tradeID)
+        self.tradeID += 1
+        order = self._getOrderByRemoteId(info.remoteId)
+        if order:
+            self.onTrade(VtTradeData.createFromOrderData(
+                order=order.vtOrder,
+                tradeID=tradeID,
+                tradePrice=info.price,
+                tradeVolume=info.dealAmount  # todo: 这里应该填写的到底是order总共成交了的数量，还是该次trade成交的数量
+            ))
+        else:
+            # todo: 与order无关联的trade该如何处理？
+            # uiSymbol = remoteSymbolToLocal(info.symbol, remoteContractTypeToLocal(info.remoteContractType))
+            pass
+        return
         
-            if channel.type == ChannelType.Tick:
-                uiSymbol = remoteSymbolToLocal(channel.symbol, remoteContractTypeToLocal(channel.remoteContractType))
-                tick = VtTickData.createFromGateway(
-                    gateway=self,
-                    symbol=uiSymbol,
-                    exchange=self.exchange,
-                    lastPrice=float(packet['last']),
-                    lastVolume=float(packet['vol']),
-                    highPrice=float(packet['high']),
-                    lowPrice=float(packet['low']),
-                    openInterest=int(packet['hold_amount']),
-                    lowerLimit=float(packet['limitLow']),
-                    upperLimit=float(packet['limitHigh'])
-                )
-                self.onTick(tick)
-
 
 #----------------------------------------------------------------------
 def localOrderTypeToRemote(direction, offset):  # type: (str, str)->str
@@ -384,77 +392,6 @@ def remoteSymbolToLocal(remoteSymbol, localContractType):
     return remoteSymbol.upper() + '_' + localContractType
 
 
-#----------------------------------------------------------------------
-def remotePrefixToRemoteContractType(prefix):
-    return _prefixForRemoteContractType[prefix]
-
-
-#----------------------------------------------------------------------
-class ChannelType(Enum):
-    Login = 1
-    ForecastPrice = 2
-    Tick = 3
-    Depth = 4
-    Trade = 5
-    Index = 6
-
-
-########################################################################
-class Channel(object):
-    
-    #----------------------------------------------------------------------
-    def __init__(self, type):
-        self.type = type
-
-
-########################################################################
-class SymbolChannel(Channel):
-    
-    #----------------------------------------------------------------------
-    def __init__(self, type, symbol):
-        super(SymbolChannel, self).__init__(type)
-        self.symbol = symbol
-
-
-########################################################################
-class FutureSymbolChannel(SymbolChannel):
-    
-    #----------------------------------------------------------------------
-    def __init__(self, type, symbol, remoteContractType):
-        super(FutureSymbolChannel, self).__init__(type, symbol)
-        self.remoteContractType = remoteContractType
-
-
-########################################################################
-class ExtraSymbolChannel(FutureSymbolChannel):
-    
-    #----------------------------------------------------------------------
-    def __init__(self, type, symbol, remoteContractType, extra):
-        super(ExtraSymbolChannel, self).__init__(type, symbol, remoteContractType)
-        self.extra = extra
-
-
-#----------------------------------------------------------------------
-def parseChannel(channel):  # type: (str)->Channel
-    if channel == 'login':
-        return Channel(ChannelType.Login)
-    elif channel[4:12] == 'forecast':  # eg: 'btc_forecast_price'
-        return SymbolChannel(ChannelType.ForecastPrice, channel[:3])
-    sp = channel.split('_')
-    if sp[-1] == 'index':  # eg: 'ok_sub_futureusd_btc_index'
-        return SymbolChannel(ChannelType.Index, channel[17:20])
-
-    l = len(sp)
-    if len(sp) == 9:
-        _, _, _, easySymbol, crash, typeName, contractTypePrefix, _, depth = sp
-        return ExtraSymbolChannel(ChannelType.Depth, easySymbol + '_' + crash,
-                                  remotePrefixToRemoteContractType(contractTypePrefix),
-                                  depth)
-    _, _, _, easySymbol, crash, typeName, contractTypePrefix, _ = sp
-    return FutureSymbolChannel(ChannelType.Tick, easySymbol + '_' + crash,
-                               remotePrefixToRemoteContractType(contractTypePrefix))
-
-
 _orderTypeMap = {
     (constant.DIRECTION_LONG, constant.OFFSET_OPEN): OkexFutureOrderType.OpenLong,
     (constant.DIRECTION_SHORT, constant.OFFSET_OPEN): OkexFutureOrderType.OpenShort,
@@ -462,9 +399,6 @@ _orderTypeMap = {
     (constant.DIRECTION_SHORT, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseShort,
 }
 _orderTypeMapReverse = {v: k for k, v in _orderTypeMap.items()}
-
-_prefixForRemoteContractType = {v.split('_')[0]: v for k, v in OkexFutureContractType.__dict__.items() if
-                                not k.startswith('_')}
 
 _contractTypeMap = {
     k.upper(): v for k, v in OkexFutureContractType.__dict__.items() if not k.startswith('_')

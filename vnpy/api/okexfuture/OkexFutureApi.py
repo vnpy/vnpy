@@ -1,4 +1,5 @@
 # encoding: UTF-8
+from enum import Enum
 from typing import Any, Callable, List, Union
 
 from vnpy.api.okexfuture.vnokexFuture import OkexFutureRestBase, OkexFutureWebSocketBase
@@ -124,6 +125,68 @@ class OkexFuturePositionDetail(object):
         self.sellProfitReal = None
         self.symbol = None
         self.contractType = None
+
+
+########################################################################
+class OkexFutureTickInfo(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, symbol, remoteContractType, last, limitHigh, limitLow, vol, sell, buy, unitAmount, holdAmount,
+                 contractId, high, low):
+        self.symbol = symbol
+        self.remoteContractType = remoteContractType
+        self.last = last
+        self.limitHigh = limitHigh  # type: str  # 最高买入限制价格
+        self.limitLow = limitLow  # type: str  # 最低卖出限制价格
+        self.vol = vol  # type: float  # 24 小时成交量
+        self.sell = sell  # type: float  # 卖一价格
+        self.buy = buy  # type: float  #  买一价格
+        self.unitAmount = unitAmount  # type: float  # 合约价值
+        self.holdAmount = holdAmount  # type: float  # 当前持仓量
+        self.contractId = contractId  # type: long  # 合约ID
+        self.high = high  # type: float  # 24 小时最高价格
+        self.low = low  # type: float  # 24 小时最低价格
+
+
+########################################################################
+class OkexFutureTradeInfo(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, symbol, remoteContractType, index, price, volume, time, direction, coinVolume):
+        self.symbol = symbol
+        self.remoteContractType = remoteContractType
+        self.index = index
+        self.price = price
+        self.volume = volume
+        self.time = time
+        self.direction = direction
+        self.coinVolume = coinVolume
+
+
+########################################################################
+class OkexFutureUserTradeInfo(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, symbol, remoteContractType, amount,
+                 contractName, createdDate, createDateStr, dealAmount, fee,
+                 orderId, price, priceAvg, status, type, unitAmount, leverRate, systemType
+                 ):
+        self.symbol = symbol  # type: str  #  btcUsd   ltcUsd   ethUsd   etcUsd   bchUsd
+        self.remoteContractType = remoteContractType
+        self.amount = amount  # type: float  #  委托数量
+        self.contractName = contractName  # type: str  #  合约名称
+        self.createdDate = createdDate  # type: long  #  委托时间
+        self.createDateStr = createDateStr  # type: str  # 委托时间字符串
+        self.dealAmount = dealAmount  # type: float  #  成交数量
+        self.fee = fee  # type: float  #  手续费
+        self.remoteId = orderId  # type: long  #  订单ID
+        self.price = price  # type: float  #  订单价格
+        self.priceAvg = priceAvg  # type: float  #  平均价格
+        self.status = status  # type: int  #  订单状态(0等待成交 1部分成交 2全部成交 -1撤单 4撤单处理中)
+        self.type = type  # type: int  #  订单类型 1：开多 2：开空 3：平多 4：平空
+        self.unitAmount = unitAmount  # type: float  # 合约面值
+        self.leverRate = leverRate  # type: float  # 杠杆倍数  value:10/20  默认10
+        self.systemType = systemType  # type: int  # 订单类型 0:普通 1:交割 2:强平 4:全平 5:系统反单
 
 
 ########################################################################
@@ -442,7 +505,13 @@ class OkexFutureRestClient(OkexFutureRestBase):
 
 ########################################################################
 class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
-    
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        super(OkexFutureWebSocketClient, self).__init__()
+        self.onTick = self.defaultOnTick
+        self.onUserTrade = self.defaultOnUserTrade
+
     #----------------------------------------------------------------------
     def subscribe(self, easySymbol, contractType):  # type: (OkexFutureEasySymbol, OkexFutureContractType)->None
         self.sendPacket({
@@ -450,6 +519,72 @@ class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
             'channel': 'ok_sub_futureusd_' + easySymbol + '_ticker_' + contractType
         })
     
+    #----------------------------------------------------------------------
+    def defaultOnPacket(self, packets):
+        
+        for packet in packets:
+            print('packets:')
+            print(packets)
+            channelName = None
+            if 'channel' in packet:
+                channelName = packet['channel']
+            if not channelName or channelName == 'addChannel':
+                return
+            
+            packet = packet['data']
+            channel = parseChannel(channelName)  # type: ExtraSymbolChannel
+            
+            if channel.type == ChannelType.Tick:
+                self.onTick(OkexFutureTickInfo(
+                    symbol=channel.symbol,
+                    remoteContractType=channel.remoteContractType,
+                    last=packet['last'],  # float   # 最高买入限制价格
+                    limitHigh=packet['limitHigh'],  # str   # 最高买入限制价格
+                    limitLow=packet['limitLow'],  # str   # 最低卖出限制价格
+                    vol=packet['vol'],  # float   # 24 小时成交量
+                    sell=packet['sell'],  # float   # 卖一价格
+                    buy=packet['buy'],  # float   #  买一价格
+                    unitAmount=packet['unitAmount'],  # float   # 合约价值
+                    holdAmount=packet['hold_amount'],  # float   # 当前持仓量
+                    contractId=packet['contractId'],  # long   # 合约ID
+                    high=packet['high'],  # float   # 24 小时最高价格
+                    low=packet['low'],  # float   # 24 小时最低价格
+                ))
+            # elif channel.type == ChannelType.Trade:
+            #     trades = []
+            #     for tradeInfo in packet:
+            #         trades.append(OkexFutureTradeInfo(
+            #             channel.symbol, channel.remoteContractType, *tradeInfo
+            #         ))
+            #     self.onTrades(trades)
+            elif channel.type == ChannelType.UserTrade:
+                self.onUserTrade(OkexFutureUserTradeInfo(
+                    symbol=packet['symbol'],  # str  #  btc_usd   ltc_usd   eth_usd   etc_usd   bch_usd
+                    remoteContractType=packet['contract_type'],
+                    amount=packet['amount'],  # float  #  委托数量
+                    contractName=packet['contract_name'],  # str  #  合约名称
+                    createdDate=packet['created_date'],  # long  #  委托时间
+                    createDateStr=packet['create_date_str'],  # str  # 委托时间字符串
+                    dealAmount=packet['deal_amount'],  # float  #  成交数量
+                    fee=packet['fee'],  # float  #  手续费
+                    orderId=packet['order_id'],  # long  #  订单ID
+                    price=packet['price'],  # float  #  订单价格
+                    priceAvg=packet['price_avg'],  # float  #  平均价格
+                    status=packet['status'],  # int  #  订单状态(0等待成交 1部分成交 2全部成交 -1撤单 4撤单处理中)
+                    type=packet['type'],  # int  #  订单类型 1：开多 2：开空 3：平多 4：平空
+                    unitAmount=packet['unit_amount'],  # float  # 合约面值
+                    leverRate=packet['lever_rate'],  # float  # 杠杆倍数  value:10/20  默认10
+                    systemType=packet['system_type'],  # int  # 订单类型 0:普通 1:交割 2:强平 4:全平 5:系统反单
+                ))
+    
+    #----------------------------------------------------------------------
+    def defaultOnTick(self, tick):  # type: (OkexFutureTickInfo)->None
+        pass
+    
+    #----------------------------------------------------------------------
+    def defaultOnUserTrade(self, tick):  # type: (OkexFutureUserTradeInfo)->None
+        pass
+
 
 restErrorCodeMap = {
     0: '远程服务器并未给出错误代码',
@@ -597,3 +732,86 @@ webSocketErrorCodeMap = {
     1208: '没有该转账用户',
     1209: '当前api不可用',
 }
+
+
+########################################################################
+class ChannelType(Enum):
+    Login = 1
+    ForecastPrice = 2
+    Tick = 3
+    Depth = 4
+    Trade = 5
+    Index = 6
+    UserTrade = 7
+    UserInfo = 8
+
+
+########################################################################
+class Channel(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, type):
+        self.type = type
+
+
+########################################################################
+class SymbolChannel(Channel):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, type, symbol):
+        super(SymbolChannel, self).__init__(type)
+        self.symbol = symbol
+
+
+########################################################################
+class FutureSymbolChannel(SymbolChannel):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, type, symbol, remoteContractType):
+        super(FutureSymbolChannel, self).__init__(type, symbol)
+        self.remoteContractType = remoteContractType
+
+
+########################################################################
+class ExtraSymbolChannel(FutureSymbolChannel):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, type, symbol, remoteContractType, extra):
+        super(ExtraSymbolChannel, self).__init__(type, symbol, remoteContractType)
+        self.extra = extra
+
+
+#----------------------------------------------------------------------
+def parseChannel(channel):  # type: (str)->Channel
+    if channel == 'login':
+        return Channel(ChannelType.Login)
+    
+    # 还未提供订阅的channel都注释掉
+    # elif channel[4:12] == 'forecast':  # eg: 'btc_forecast_price'
+    #     return SymbolChannel(ChannelType.ForecastPrice, channel[:3])
+    
+    sp = channel.split('_')
+    if sp[-1] == 'trades':  # eg: 'ok_sub_futureusd_trades'
+        return Channel(ChannelType.UserTrade)
+    # if sp[-1] == 'userinfo':  # eg: 'ok_sub_futureusd_btc_userinfo'
+    #     return Channel(ChannelType.UserInfo)
+    # if sp[-1] == 'index':  # eg: 'ok_sub_futureusd_btc_index'
+    #     return SymbolChannel(ChannelType.Index, channel[17:20])
+    
+    # if len(sp) == 9:
+    #     _, _, _, easySymbol, crash, typeName, contractTypePrefix, _, depth = sp
+    #     return ExtraSymbolChannel(ChannelType.Depth, easySymbol + '_' + crash,
+    #                               remotePrefixToRemoteContractType(contractTypePrefix),
+    #                               depth)
+    _, _, _, easySymbol, crash, typeName, contractTypePrefix, _ = sp
+    return FutureSymbolChannel(ChannelType.Tick, easySymbol + '_' + crash,
+                               remotePrefixToRemoteContractType(contractTypePrefix))
+
+
+#----------------------------------------------------------------------
+def remotePrefixToRemoteContractType(prefix):
+    return _prefixForRemoteContractType[prefix]
+
+
+_prefixForRemoteContractType = {v.split('_')[0]: v for k, v in OkexFutureContractType.__dict__.items() if
+                                not k.startswith('_')}

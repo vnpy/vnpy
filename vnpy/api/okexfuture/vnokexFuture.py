@@ -7,8 +7,19 @@ from vnpy.api.websocket import WebSocketClient
 
 
 #----------------------------------------------------------------------
+def paramsToData(params):
+    return urllib.urlencode(sorted(params.items()))
+
+
+#----------------------------------------------------------------------
 def sign(dataWithApiKey, apiSecret):
     """
+    usage:
+    params = { ... , 'api_key': ...}
+    data = paramsToData(params)
+    signature = sign(data, apiSecret)
+    data += "&sign" + signature
+    
     :param dataWithApiKey: sorted urlencoded args with apiKey
     :return: param 'sign' for okex api
     """
@@ -42,7 +53,7 @@ class OkexFutureRestBase(RestClient):
             args.pop('sign')
         if 'apiKey' not in args:
             args['api_key'] = self.apiKey
-        data = urllib.urlencode(sorted(args.items()))
+        data = paramsToData(args)
         signature = sign(data, self.apiSecret)
         data += "&sign=" + signature
 
@@ -64,13 +75,17 @@ class OkexFutureWebSocketBase(WebSocketClient):
         super(OkexFutureWebSocketBase, self).init(OkexFutureWebSocketBase.host)
         self.apiKey = None
         self.apiSecret = None
+        self.autoLogin = True
+
+        self.onConnected = self._onConnected
     
     #----------------------------------------------------------------------
     # noinspection PyMethodOverriding
-    def init(self, apiKey, secretKey):
+    def init(self, apiKey, secretKey, autoLogin=True):
         
         self.apiKey = apiKey
         self.apiSecret = secretKey
+        self.autoLogin = autoLogin
     
     #----------------------------------------------------------------------
     def sendPacket(self, dictObj, authenticate=False):
@@ -79,3 +94,21 @@ class OkexFutureWebSocketBase(WebSocketClient):
             signature = sign(data, self.apiSecret)
             dictObj['sign'] = signature
         return super(OkexFutureWebSocketBase, self).sendPacket(dictObj)
+
+    #----------------------------------------------------------------------
+    def _login(self, ):
+        
+        params = {"api_key": self.apiKey, }
+        data = paramsToData(params)
+        signature = sign(data, self.apiSecret)
+        params['sign'] = signature
+        
+        self.sendPacket({
+            "event": "login",
+            "parameters": params
+        }, authenticate=False)
+
+    #----------------------------------------------------------------------
+    def _onConnected(self):
+        if self.autoLogin:
+            self._login()
