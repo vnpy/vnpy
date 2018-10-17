@@ -9,6 +9,7 @@ Release/
 *.cd
 *.o
 *.out
+*.so
 
 # Python编译文件
 *.pyc
