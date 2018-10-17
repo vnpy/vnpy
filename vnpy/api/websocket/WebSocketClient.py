@@ -75,8 +75,6 @@ class WebSocketClient(object):
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
         
-        self.onConnected()
-        
     #----------------------------------------------------------------------
     def stop(self):
         """
