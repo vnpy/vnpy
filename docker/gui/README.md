@@ -39,9 +39,31 @@ $ mongod --smallfiles --config /etc/mongodb.conf
 
 
 
+# Windows 支持
+
+Windows 使用 [Xming](http://www.straightrunning.com/XmingNotes/) 作为 X11 服务器，安装配置网络连接之后启动 docker 容器。
+
+
+
 # OS X 支持
 
-// TODO
+由于 OS X 没有自带 X11 服务器，需要手动安装后并配置允许网络客户端连接.
+
+* 安装 xquartz 作为 X11 服务器
+
+~~~sh
+$ brew cask install xquartz
+~~~
+
+* 打开 xquartz 并配置允许网络连接
+
+![xquartz config](xquartz_preferences.png)
+
+* 执行脚本启动 docker
+
+~~~sh
+$ ./run.sh
+~~~
 
 参考博客 ： [docker-for-mac-and-gui-applications](https://fredrikaverpil.github.io/2016/07/31/docker-for-mac-and-gui-applications/)
 
