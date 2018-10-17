@@ -520,6 +520,14 @@ class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
         })
     
     #----------------------------------------------------------------------
+    def subscribeUserTrade(self):
+        # todo: 没有测试条件
+        self.sendPacket({
+            'event': 'addChannel',
+            'channel': 'ok_sub_futureusd_trades'
+        })
+    
+    #----------------------------------------------------------------------
     def defaultOnPacket(self, packets):
         
         for packet in packets:
@@ -557,6 +565,8 @@ class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
             #             channel.symbol, channel.remoteContractType, *tradeInfo
             #         ))
             #     self.onTrades(trades)
+            
+            # todo: 没有测试条件
             elif channel.type == ChannelType.UserTrade:
                 self.onUserTrade(OkexFutureUserTradeInfo(
                     symbol=packet['symbol'],  # str  #  btc_usd   ltc_usd   eth_usd   etc_usd   bch_usd
