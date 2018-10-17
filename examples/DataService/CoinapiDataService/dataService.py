@@ -31,10 +31,11 @@ headers = {'X-CoinAPI-Key': APIKEY}
 #----------------------------------------------------------------------
 def generateVtBar(symbol, d):
     """生成K线"""
+    l = symbol.split('_')
     bar = VtBarData()
-    
-    bar.symbol = symbol
-    bar.vtSymbol = symbol
+    bar.symbol = l[-2] + l[-1]
+    bar.exchange = l[0]
+    bar.vtSymbol = '/'.join([bar.symbol, bar.exchange])
     bar.datetime = datetime.datetime.strptime(d['time_open'], '%Y-%m-%dT%H:%M:%S.%f0Z')
     bar.date = bar.datetime.strftime('%Y%m%d')
     bar.time = bar.datetime.strftime('%H:%M:%S')

@@ -111,7 +111,8 @@ class OkexApi(object):
         if not self.reconnecting:
             self.reconnecting = True
             
-            self.closeWebsocket()   # 首先关闭之前的连接
+            self.closeWebsocket()           # 首先关闭之前的连接
+            self.heartbeatReceived = True   # 将心跳状态设为正常
             self.initWebsocket()
         
             self.reconnecting = False
