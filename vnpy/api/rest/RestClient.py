@@ -3,7 +3,6 @@
 
 import sys
 from Queue import Empty, Queue
-from abc import abstractmethod
 from multiprocessing.dummy import Pool
 
 import requests
@@ -79,10 +78,10 @@ class RestClient(object):
     """
     HTTP 客户端。目前是为了对接各种RESTfulAPI而设计的。
     
-    如果需要给请求加上签名，请重载beforeRequest函数。
-    如果需要处理非200的请求，请重载onFailed函数。
+    如果需要给请求加上签名，请设置beforeRequest, 函数类型请参考defaultBeforeRequest。
+    如果需要处理非200的请求，请设置onFailed，函数类型请参考defaultOnFailed。
     如果每一个请求的非200返回都需要单独处理，使用addReq函数的onFailed参数
-    如果捕获Python内部错误，例如网络连接失败等等，请重载onError函数。
+    如果捕获Python内部错误，例如网络连接失败等等，请设置onError，函数类型请参考defaultOnError
     """
     
     #----------------------------------------------------------------------
@@ -92,6 +91,9 @@ class RestClient(object):
         """
         self.urlBase = None  # type: str
         self.sessionProvider = requestsSessionProvider
+        self.beforeRequest = self.defaultBeforeRequest  # 任何请求在发送之前都会经过这个函数，让其加工
+        self.onError = self.defaultOnError  # Python内部错误处理
+        self.onFailed = self.defaultOnFailed  # statusCode != 2xx 时触发
         
         self._active = False
 
@@ -157,39 +159,40 @@ class RestClient(object):
         :return: Request
         """
 
-        req = Request(method, path, callback, params, data, headers)
-        req.onFailed = onFailed
-        req.skipDefaultOnFailed = skipDefaultOnFailed
-        req.extra = extra
-        self._queue.put(req)
-        return req
+        request = Request(method, path, callback, params, data, headers)
+        request.onFailed = onFailed
+        request.skipDefaultOnFailed = skipDefaultOnFailed
+        request.extra = extra
+        self._queue.put(request)
+        return request
     
     #----------------------------------------------------------------------
     def _run(self):
         session = self.sessionProvider()
         while self._active:
             try:
-                req = self._queue.get(timeout=1)
+                request = self._queue.get(timeout=1)
                 try:
-                    self._processRequest(req, session)
+                    self._processRequest(request, session)
                 finally:
                     self._queue.task_done()
             except Empty:
                 pass
     
     #----------------------------------------------------------------------
-    @abstractmethod
-    def beforeRequest(self, req):  # type: (Request)->Request
+    @staticmethod
+    def defaultBeforeRequest(request):  # type: (Request)->Request
         """
         所有请求在发送之前都会经过这个函数
         签名之类的前奏可以在这里面实现
         需要对request进行什么修改就做什么修改吧
-        @:return (req)
+        @:return (request)
         """
-        return req
+        return request
     
     #----------------------------------------------------------------------
-    def onFailed(self, httpStatusCode, req):  # type:(int, Request)->None
+    @staticmethod
+    def defaultOnFailed(httpStatusCode, request):  # type:(int, Request)->None
         """
         请求失败处理函数（HttpStatusCode!=200）.
         默认行为是打印到stderr
@@ -200,51 +203,52 @@ class RestClient(object):
               "data: {}\n"
               "response:"
               "{}\n"
-              .format(req.method, req.path, httpStatusCode,
-                      req.headers,
-                      req.params,
-                      req.data,
-                      req._response.raw))
+              .format(request.method, request.path, httpStatusCode,
+                      request.headers,
+                      request.params,
+                      request.data,
+                      request._response.raw))
     
     #----------------------------------------------------------------------
-    def onError(self, exceptionType, exceptionValue, tb, req):
+    @staticmethod
+    def defaultOnError(exceptionType, exceptionValue, tb, request):
         """
         Python内部错误处理：默认行为是仍给excepthook
         """
-        print("error in req : {}\n".format(req))
+        print("error in request : {}\n".format(request))
         sys.excepthook(exceptionType, exceptionValue, tb)
     
     #----------------------------------------------------------------------
-    def _processRequest(self, req, session):  # type: (Request, requests.Session)->None
+    def _processRequest(self, request, session):  # type: (Request, requests.Session)->None
         """
         用于内部：将请求发送出去
         """
         try:
-            req = self.beforeRequest(req)
+            request = self.beforeRequest(request)
     
-            url = self.makeFullUrl(req.path)
+            url = self.makeFullUrl(request.path)
     
-            response = session.request(req.method, url, headers=req.headers, params=req.params, data=req.data)
-            req._response = response
+            response = session.request(request.method, url, headers=request.headers, params=request.params, data=request.data)
+            request._response = response
     
             httpStatusCode = response.status_code
             if httpStatusCode/100 == 2:
                 jsonBody = response.json()
-                req.callback(jsonBody, req)
-                req._status = RequestStatus.success
+                request.callback(jsonBody, request)
+                request._status = RequestStatus.success
             else:
-                req._status = RequestStatus.failed
+                request._status = RequestStatus.failed
                 
-                if req.onFailed:
-                    req.onFailed(httpStatusCode, response.raw, req)
+                if request.onFailed:
+                    request.onFailed(httpStatusCode, response.raw, request)
                 
                 # 若没有onFailed或者没设置skipDefaultOnFailed，则调用默认的处理函数
-                if not req.onFailed or not req.skipDefaultOnFailed:
-                    self.onFailed(httpStatusCode, req)
+                if not request.onFailed or not request.skipDefaultOnFailed:
+                    self.onFailed(httpStatusCode, request)
         except:
-            req._status = RequestStatus.error
+            request._status = RequestStatus.error
             t, v, tb = sys.exc_info()
-            self.onError(t, v, tb, req)
+            self.onError(t, v, tb, request)
 
     def makeFullUrl(self, path):
         url = self.urlBase + path

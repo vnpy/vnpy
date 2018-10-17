@@ -3,38 +3,46 @@
 
 ########################################################################
 import json
-import ssl
 import sys
-import time
-from abc import abstractmethod
-from threading import Thread, Lock
 
+import ssl
+import time
 import websocket
+from threading import Lock, Thread
 
 
 class WebSocketClient(object):
     """
     Websocket API
     
-    继承使用该类。
     实例化之后，应调用start开始后台线程。调用start()函数会自动连接websocket。
     若要终止后台线程，请调用stop()。 stop()函数会顺便断开websocket。
     
-    可以重写以下函数：
+    该类默认打包方式为json，若从服务器返回的数据不为json，则会触发onError。
+    
+    可以覆盖以下回调：
     onConnected
     onDisconnected
-    onPacket
+    onPacket        # 数据回调，只有在返回的数据帧为text并且内容为json时才会回调
     onError
     
     当然，为了不让用户随意自定义，用自己的init函数覆盖掉原本的init(host)也是个不错的选择。
     
-    @note 继承使用该类
+    关于ping：
+    在调用start()之后，该类每60s会自动发送一个ping帧至服务器。
     """
     
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.host = None  # type: str
+
+        self.onConnected = self.defaultOnConnected
+        self.onDisconnected = self.defaultOnDisconnected
+        self.onPacket = self.defaultOnPacket
+        self.onError = self.defaultOnError
+
+        self.createConnection = websocket.create_connection
         
         self._ws_lock = Lock()
         self._ws = None  # type: websocket.WebSocket
@@ -42,13 +50,12 @@ class WebSocketClient(object):
         self._workerThread = None  # type: Thread
         self._pingThread = None  # type: Thread
         self._active = False
-        
-        self.createConnection = websocket.create_connection
 
     #----------------------------------------------------------------------
     def setCreateConnection(self, func):
         """
         for internal usage
+        :param func: a function like websocket.create_connection
         """
         self.createConnection = func
 
@@ -67,8 +74,6 @@ class WebSocketClient(object):
         
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
-        
-        self.onConnected()
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -136,6 +141,9 @@ class WebSocketClient(object):
                     
                 data = json.loads(stream)
                 self.onPacket(data)
+            except websocket.WebSocketConnectionClosedException:
+                if self._active:
+                    self._reconnect()
             except:
                 et, ev, tb = sys.exc_info()
                 self.onError(et, ev, tb)
@@ -154,22 +162,24 @@ class WebSocketClient(object):
         return self._get_ws().send('ping', websocket.ABNF.OPCODE_PING)
     
     #----------------------------------------------------------------------
-    def onConnected(self):
+    @staticmethod
+    def defaultOnConnected():
         """
         连接成功回调
         """
         pass
     
     #----------------------------------------------------------------------
-    def onDisconnected(self):
+    @staticmethod
+    def defaultOnDisconnected():
         """
         连接断开回调
         """
         pass
     
     #----------------------------------------------------------------------
-    @abstractmethod
-    def onPacket(self, packet):
+    @staticmethod
+    def defaultOnPacket(packet):
         """
         数据回调。
         只有在数据为json包的时候才会触发这个回调
@@ -179,6 +189,7 @@ class WebSocketClient(object):
         pass
     
     #----------------------------------------------------------------------
-    def onError(self, exceptionType, exceptionValue, tb):
+    @staticmethod
+    def defaultOnError(exceptionType, exceptionValue, tb):
         """Python错误回调"""
         return sys.excepthook(exceptionType, exceptionValue, tb)
