@@ -163,7 +163,27 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway, symbol, exchange, tradeID, orderID, direction, tradePrice, tradeVolume):
+        trade = VtTradeData()
+        trade.gatewayName = gateway.gatewayName
+        trade.symbol = symbol
+        trade.exchange = exchange
+        trade.vtSymbol = symbol + '.' + exchange
+
+        trade.orderID = orderID
+        trade.vtOrderID = trade.gatewayName + '.' + trade.tradeID
         
+        trade.tradeID = tradeID
+        trade.vtTradeID = trade.gatewayName + '.' + tradeID
+        
+        trade.direction = direction
+        trade.price = tradePrice
+        trade.volume = tradeVolume
+        trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+        return trade
     #----------------------------------------------------------------------
     @staticmethod
     def createFromOrderData(order,
@@ -174,6 +194,7 @@ class VtTradeData(VtBaseData):
         trade.gatewayName = order.gatewayName
         trade.symbol = order.symbol
         trade.vtSymbol = order.vtSymbol
+        
         trade.orderID = order.orderID
         trade.vtOrderID = order.vtOrderID
         trade.tradeID = tradeID
