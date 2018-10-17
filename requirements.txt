@@ -13,3 +13,7 @@ gevent-websocket
 pyjwt
 ccxt
 pyqtgraph
+qtpy
+psutil
+ta-lib
+
