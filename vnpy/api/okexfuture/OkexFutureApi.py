@@ -75,6 +75,7 @@ class OkexFutureUserInfo(object):
     
     #----------------------------------------------------------------------
     def __init__(self):
+        self.easySymbol = None # 'etc', 'btc', 'eth', etc.
         self.accountRights = None
         self.keepDeposit = None
         self.profitReal = None
@@ -142,7 +143,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
     def sendOrder(self, symbol, contractType, orderType, volume,
                   onSuccess, onFailed=None,
                   price=None, useMarketPrice=False, leverRate=None,
-                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[int, Any], Any], Callable[[int, Any], Any], float, bool, Union[int, None], Any)->Request
+                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[str, Any], Any], Callable[[int, Any], Any], float, bool, Union[int, None], Any)->Request
         """
         :param symbol: str
         :param contractType: OkexFutureContractType
@@ -171,11 +172,11 @@ class OkexFutureRestClient(OkexFutureRestBase):
         if leverRate:
             data['lever_rate'] = leverRate  # 杠杆倍数
         
-        request = self.addReq('POST',
+        request = self.addRequest('POST',
                               '/future_trade.do',
-                              callback=self.onOrderSent,
-                              data=data,
-                              extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                                  callback=self.onOrderSent,
+                                  data=data,
+                                  extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
         return request
     
     #----------------------------------------------------------------------
@@ -195,20 +196,22 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'contractType': contractType,
             'order_id': orderId
         }
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_cancel.do',
-                           callback=self.onOrderCanceled,
-                           data=data,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrderCanceled,
+                               data=data,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryOrder(self, symbol, contractType, orderId, onSuccess, onFailed=None,
-                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[OkexFutureOrder, Any], Any], Callable[[int, Any], Any], Any)->Request
+                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[List[OkexFutureOrder], Any], Any], Callable[[int, Any], Any], Any)->Request
         """
+        @note onSuccess接收的第一个参数是列表，并且有可能为空
+        
         :param symbol: str
         :param contractType: OkexFutureContractType
         :param orderId: str
-        :param onSuccess: (OkexFutureOrder, extra:Any)->Any
+        :param onSuccess: (orders: List[OkexFutureOrder], extra:Any)->Any
         :param onFailed: (extra: Any)->Any
         :param extra: Any
         :return: Request
@@ -218,41 +221,43 @@ class OkexFutureRestClient(OkexFutureRestBase):
             'contractType': contractType,
             'order_id': orderId
         }
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_order_info.do',
-                           callback=self.onOrder,
-                           data=data,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrder,
+                               data=data,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
 
     #----------------------------------------------------------------------
     def queryOrders(self, symbol, contractType, status,
                     onSuccess, onFailed=None,
-                    pageIndex=None, pageLength=50,
-                    extra=None):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus, Callable[[OkexFutureOrder, Any], Any], Callable[[int, Any], Any], int, int, Any)->Request
+                    pageIndex=0, pageLength=50,
+                    extra=None):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus, Callable[[List[OkexFutureOrder], Any], Any], Callable[[int, Any], Any], int, int, Any)->Request
         """
+        @note onSuccess接收的第一个参数是列表，并且有可能为空
+        
         :param symbol: str
         :param contractType: OkexFutureContractType
-        :param orderId: str
-        :param onSuccess: (OkexFutureOrder, extra:Any)->Any
+        :param onSuccess: (List[OkexFutureOrder], extra:Any)->Any
         :param onFailed: (extra: Any)->Any
+        :param pageIndex: 页码
+        :param pageLength: 最大显示数量（最大值50）
         :param extra: Any
         :return: Request
         """
         data = {
             'symbol': symbol,
-            'contractType': contractType,
+            'contract_type': contractType,
             'status': status,
-            'order_id': '-1',
-            'pageLength': 50
+            'order_id': -1,
+            'current_page': pageIndex,
+            'page_length': pageLength
         }
-        if pageIndex:
-            data['page_index'] = pageIndex
-            
-        return self.addReq('POST',
+
+        return self.addRequest('POST',
                            '/future_order_info.do',
-                           callback=self.onOrder,
-                           data=data,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrder,
+                               data=data,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryUserInfo(self, onSuccess, onFailed=None,
@@ -264,24 +269,32 @@ class OkexFutureRestClient(OkexFutureRestBase):
         :param extra: Any
         :return: Request
         """
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_userinfo.do',
-                           callback=self.onOrder,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               callback=self.onOrder,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryPosition(self, symbol, contractType,
                       onSuccess, onFailed=None,
                       extra=None):  # type: (str, OkexFutureContractType, Callable[[OkexFuturePosition, Any], Any], Callable[[int, Any], Any], Any)->Request
+        """
+        :param symbol: OkexFutureSymbol
+        :param contractType: OkexFutureContractType
+        :param onSuccess: (pos:OkexFuturePosition, extra: any)->Any
+        :param onFailed: (errorCode: int, extra: any)->Any
+        :param extra:
+        :return:
+        """
         data = {
             'symbol': symbol,
             'contractType': contractType
         }
-        return self.addReq('POST',
+        return self.addRequest('POST',
                            '/future_position.do',
-                           data=data,
-                           callback=self.onPosition,
-                           extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               data=data,
+                               callback=self.onPosition,
+                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     @staticmethod
@@ -323,24 +336,25 @@ class OkexFutureRestClient(OkexFutureRestBase):
         success = data['result']
         extra = req.extra  # type: _OkexFutureCustomExtra
         if success:
-            order = data['orders'][0]
-            okexOrder = OkexFutureOrder()
-
-            okexOrder.volume = order['amount']
-            okexOrder.contractName = order['contract_name']
-            okexOrder.createDate = order['create_date']
-            okexOrder.tradedVolume = order['deal_amount']
-            okexOrder.fee = order['fee']
-            okexOrder.leverRate = order['lever_rate']
-            okexOrder.remoteId = order['order_id']
-            okexOrder.price = order['price']
-            okexOrder.priceAvg = order['price_avg']
-            okexOrder.status = order['status']
-            okexOrder.orderType = order['type']
-            okexOrder.unitAmount = order['unit_amount']
-            okexOrder.symbol = order['symbol']
-            
-            extra.onSuccess(okexOrder, extra.extra)
+            orders = []
+            for order in data['orders']:
+                okexOrder = OkexFutureOrder()
+        
+                okexOrder.volume = order['amount']
+                okexOrder.contractName = order['contract_name']
+                okexOrder.createDate = order['create_date']
+                okexOrder.tradedVolume = order['deal_amount']
+                okexOrder.fee = order['fee']
+                okexOrder.leverRate = order['lever_rate']
+                okexOrder.remoteId = order['order_id']
+                okexOrder.price = order['price']
+                okexOrder.priceAvg = order['price_avg']
+                okexOrder.status = order['status']
+                okexOrder.orderType = order['type']
+                okexOrder.unitAmount = order['unit_amount']
+                okexOrder.symbol = order['symbol']
+                orders.append(okexOrder)
+            extra.onSuccess(orders, extra.extra)
         else:
             if extra.onFailed:
                 code = 0
@@ -356,8 +370,9 @@ class OkexFutureRestClient(OkexFutureRestBase):
         if success:
             infos = data['info']
             uis = []
-            for symbol, info in infos.items():  # type: str, dict
+            for easySymbol, info in infos.items():  # type: str, dict
                 ui = OkexFutureUserInfo()
+                ui.easySymbol = easySymbol
                 ui.accountRights = info['account_rights']
                 ui.keepDeposit = info['keep_deposit']
                 ui.profitReal = info['profit_real']
@@ -406,9 +421,9 @@ class OkexFutureRestClient(OkexFutureRestBase):
                     code = data['error_code']
                 extra.onFailed(code, extra.extra)
 
-    #----------------------------------------------------------------------
+    #---------------------------------------------------------------------
     @staticmethod
-    def errorCode2String(code):
+    def errorCodeToString(code):
         assert code in errorCodeMap
         return errorCodeMap[code]
 

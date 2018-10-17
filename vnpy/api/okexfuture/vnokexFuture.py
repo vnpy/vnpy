@@ -2,13 +2,22 @@
 import hashlib
 import urllib
 
+from vnpy.api.rest import Request, RestClient
 
-########################################################################
-from vnpy.api.rest import RestClient, Request
+
+#----------------------------------------------------------------------
+def sign(dataWithApiKey, apiSecret):
+    """
+    :param dataWithApiKey: sorted urlencoded args with apiKey
+    :return: param 'sign' for okex api
+    """
+    dataWithSecret = dataWithApiKey + "&secret_key=" + apiSecret
+    return hashlib.md5(dataWithSecret.encode()).hexdigest().upper()
 
 
 ########################################################################
 class OkexFutureRestBase(RestClient):
+    host = 'https://www.okex.com/api/v1'
     
     #----------------------------------------------------------------------
     def __init__(self):
@@ -20,11 +29,11 @@ class OkexFutureRestBase(RestClient):
     # noinspection PyMethodOverriding
     def init(self, apiKey, apiSecret):
         # type: (str, str) -> any
-        super(OkexFutureRestBase, self).init('https://www.okex.com/api/v1')
+        super(OkexFutureRestBase, self).init(self.host)
         self.apiKey = apiKey
         self.apiSecret = apiSecret
 
-#----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def beforeRequest(self, req):  # type: (Request)->Request
         args = req.params or {}
         args.update(req.data or {})
@@ -33,11 +42,9 @@ class OkexFutureRestBase(RestClient):
         if 'apiKey' not in args:
             args['api_key'] = self.apiKey
         data = urllib.urlencode(sorted(args.items()))
-        data += "&secret_key=" + self.apiSecret
-        
-        sign = hashlib.md5(data.encode()).hexdigest().upper()
-        data += "&sign=" + sign
+        signature = sign(data, self.apiSecret)
+        data += "&sign=" + signature
 
         req.headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        req.data = data
         return req
-
