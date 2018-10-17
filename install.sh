@@ -1,4 +1,4 @@
-#!/bin/bash
+conda install#!/bin/bash
 
 function check_result() {
     if [ $? -ne 0 ]; then
@@ -31,12 +31,14 @@ check_result "build api.ib"
 popd
 
 #Install Python Modules
-pip install -r requirements.txt
+pip install -r requirements.txt --ignore-installed
+check_result "pip install requirements"
 
 #Install Ta-Lib
 conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
 conda config --set show_channel_urls yes
 conda install -c quantopian ta-lib=0.4.9
+check_result "conda install ta-lib"
 
 #Install vn.py
 python setup.py install

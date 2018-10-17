@@ -55,7 +55,8 @@ Windows 使用 [Xming](http://www.straightrunning.com/XmingNotes/) 作为 X11 �
 $ brew cask install xquartz
 ~~~
 
-* 打开 xquartz 并配置允许网络连接
+* 安装完之后重启系统
+* 开启 xquartz 后，左上角 偏好配置 -> 安全性设置 -> 允许网络连接
 
 ![xquartz config](xquartz_preferences.png)
 
@@ -65,9 +66,19 @@ $ brew cask install xquartz
 $ ./run.sh
 ~~~
 
+
+
 参考博客 ： [docker-for-mac-and-gui-applications](https://fredrikaverpil.github.io/2016/07/31/docker-for-mac-and-gui-applications/)
 
 
+
+# FAQ
+
+1. Q：Mac 电脑执行 install.sh 时出现段错误(Segmentation fault)
+
+   A：这是由于 Docker 内存不足导致的，需加大 Docker 内存配置到 4G 以上，如下图所示。
+
+![docker-preferences](docker-preferences.png )
 
 
 
