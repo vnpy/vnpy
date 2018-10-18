@@ -42,7 +42,7 @@ class WebSocketClient(object):
         self.onPacket = self.defaultOnPacket
         self.onError = self.defaultOnError
 
-        self.createConnection = websocket.create_connection
+        self._createConnection = websocket.create_connection
         
         self._ws_lock = Lock()
         self._ws = None  # type: websocket.WebSocket
@@ -57,7 +57,7 @@ class WebSocketClient(object):
         for internal usage
         :param func: a function like websocket.create_connection
         """
-        self.createConnection = func
+        self._createConnection = func
 
     #----------------------------------------------------------------------
     def init(self, host):
@@ -87,28 +87,29 @@ class WebSocketClient(object):
     #----------------------------------------------------------------------
     def sendPacket(self, dictObj):  # type: (dict)->None
         """发出请求:相当于sendText(json.dumps(dictObj))"""
-        return self._get_ws().send(json.dumps(dictObj), opcode=websocket.ABNF.OPCODE_TEXT)
+        return self._getWs().send(json.dumps(dictObj), opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
         """发送文本数据"""
-        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+        return self._getWs().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
-    def sendData(self, data):  # type: (bytes)->None
+    def sendBinary(self, data):  # type: (bytes)->None
         """发送字节数据"""
-        return self._get_ws().send_binary(data)
+        return self._getWs().send_binary(data)
     
     #----------------------------------------------------------------------
     def _reconnect(self):
         """重连"""
-        self._disconnect()
-        self._connect()
+        if self._active:
+            self._disconnect()
+            self._connect()
     
     #----------------------------------------------------------------------
     def _connect(self):
         """"""
-        self._ws = self.createConnection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
+        self._ws = self._createConnection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
         self.onConnected()
     
     #----------------------------------------------------------------------
@@ -122,36 +123,43 @@ class WebSocketClient(object):
                 self._ws = None
 
     #----------------------------------------------------------------------
-    def _get_ws(self):
+    def _getWs(self):
         with self._ws_lock:
             return self._ws
     
     #----------------------------------------------------------------------
     def _run(self):
-        """运行"""
-        ws = self._get_ws()
+        """
+        运行，直到stop()被调用
+        """
+
+        # todo: onDisconnect
         while self._active:
             try:
-                stream = ws.recv()
-                if not stream:
-                    self.onDisconnected()
-                    if self._active:
+                ws = self._getWs()
+                if ws:
+                    stream = ws.recv()
+                    if not stream:                             # recv在阻塞的时候ws被关闭
                         self._reconnect()
-                    continue
-                    
-                data = json.loads(stream)
-                self.onPacket(data)
-            except websocket.WebSocketConnectionClosedException:
-                if self._active:
-                    self._reconnect()
-            except:
+                        
+                    data = json.loads(stream)
+                    self.onPacket(data)
+            except websocket.WebSocketConnectionClosedException:  # 在调用recv之前ws就被关闭了
+                self._reconnect()
+            except:                                            # Python内部错误（onPacket内出错）
                 et, ev, tb = sys.exc_info()
                 self.onError(et, ev, tb)
-    
+                self._reconnect()
+
     #----------------------------------------------------------------------
     def _runPing(self):
         while self._active:
-            self._ping()
+            try:
+                self._ping()
+            except:
+                et, ev, tb = sys.exc_info()
+                # todo: just log this, notifying user is not necessary
+                self.onError(et, ev, tb)
             for i in range(60):
                 if not self._active:
                     break
@@ -159,7 +167,9 @@ class WebSocketClient(object):
     
     #----------------------------------------------------------------------
     def _ping(self):
-        return self._get_ws().send('ping', websocket.ABNF.OPCODE_PING)
+        ws = self._getWs()
+        if ws:
+            ws.send('ping', websocket.ABNF.OPCODE_PING)
     
     #----------------------------------------------------------------------
     @staticmethod

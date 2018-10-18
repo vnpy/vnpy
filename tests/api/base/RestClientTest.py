@@ -22,7 +22,7 @@ class TestRestClient(RestClient):
         
         self.p = Promise()
     
-    def beforeRequest(self, req):  #type: (Request)->Request
+    def sign(self, req):  #type: (Request)->Request
         req.data = json.dumps(req.data)
         req.headers = {'Content-Type': 'application/json'}
         return req

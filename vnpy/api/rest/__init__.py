@@ -1,1 +1,1 @@
-from .RestClient import Request, RequestStatus, RestClient, requestsSessionProvider
+from .RestClient import Request, RequestStatus, RestClient
