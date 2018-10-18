@@ -101,6 +101,7 @@ class OKCoinSpot:
         return httpPost(self.__url,CANCEL_ORDER_RESOURCE,params)
 
     #现货订单信息查询
+    # orderId=-1,是查询未完成订单，否则查询相应订单号得订单
     def orderinfo(self,symbol,orderId):
          ORDER_INFO_RESOURCE = "/api/v1/order_info.do"
          params = {

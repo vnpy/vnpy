@@ -5,7 +5,7 @@
 
 from OkcoinSpotAPI import OKCoinSpot
 from OkcoinFutureAPI import OKCoinFuture
-
+from datetime import datetime
 #初始化apikey，secretkey,url
 apikey = 'XXXX'
 secretkey = 'XXXXX'
@@ -23,8 +23,36 @@ okcoinFuture = OKCoinFuture(okcoinRESTURL,apikey,secretkey)
 #print (u' 现货深度 ')
 #print (okcoinSpot.depth('btc_usdt'))
 
-print (u' K线数据 ')
-print (okcoinSpot.kline(symbol='btc_usdt',type_='1day'))
+
+print('显示最后5条日线数据：')
+klines = okcoinSpot.kline(symbol='eth_usdt', type_='1day')
+for kl in klines[-5:]:
+    print('utc:{}, bjt:{} {}'.format(datetime.utcfromtimestamp(kl[0]/1e3),datetime.fromtimestamp(kl[0]/1e3),kl))
+
+print('显示最后5条12小时线数据：')
+klines = okcoinSpot.kline(symbol='eth_usdt', type_='12hour')
+for kl in klines[-5:]:
+    print('utc:{}, bjt:{} {}'.format(datetime.utcfromtimestamp(kl[0]/1e3),datetime.fromtimestamp(kl[0]/1e3),kl))
+
+print('显示最后5条6小时线数据：')
+klines = okcoinSpot.kline(symbol='eth_usdt', type_='6hour')
+for kl in klines[-5:]:
+    print('utc:{}, org:{} {}'.format(datetime.utcfromtimestamp(kl[0]/1e3),datetime.fromtimestamp(kl[0]/1e3),kl))
+
+print('显示最后5条1小时线数据：')
+klines = okcoinSpot.kline(symbol='eth_usdt', type_='1hour')
+for kl in klines[-5:]:
+    print('utc:{}, bjt:{} {}'.format(datetime.utcfromtimestamp(kl[0]/1e3),datetime.fromtimestamp(kl[0]/1e3),kl))
+
+print('显示最后5条30分钟线数据：')
+klines = okcoinSpot.kline(symbol='eth_usdt', type_='30min')
+for kl in klines[-5:]:
+    print('utc:{}, bjt:{} {}'.format(datetime.utcfromtimestamp(kl[0] / 1e3), datetime.fromtimestamp(kl[0] / 1e3), kl))
+
+print('显示最后5条5分钟线数据：')
+klines = okcoinSpot.kline(symbol='eth_usdt', type_='5min')
+for kl in klines[-5:]:
+    print('utc:{}, bjt:{} {}'.format(datetime.utcfromtimestamp(kl[0] / 1e3), datetime.fromtimestamp(kl[0] / 1e3), kl))
 
 
 #print (u' 现货历史交易信息 ')

@@ -15,8 +15,8 @@ import sys
 from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT,SPOT_REST_ERROR_DICT, FUTURES_ERROR_DICT
 
 # OKEX网站
-OKEX_USD_SPOT = 'wss://real.okex.com:10441/websocket'               # OKEX (币币交易）现货地址
-OKEX_USD_CONTRACT = 'wss://real.okex.com:10440/websocket/okexapi'   # OKEX 期货地址
+OKEX_USD_SPOT = 'wss://real.okex.com:10441/websocket?compress=true'     # OKEX (币币交易）现货地址
+OKEX_USD_CONTRACT = 'wss://real.okex.com:10440/websocket/okexapi?compress=true'   # OKEX 期货地址
 
 OKEX_CONTRACT_HOST = 'https://www.okex.com/api/v1/future_hold_amount.do?symbol=%s_usd&contract_type=%s'  # 合约持仓查询地址
 
@@ -123,6 +123,8 @@ class OkexApi(object):
         :param evt:
         :return:
         """
+        if isinstance(evt,bytes):
+            evt = evt.decode('utf-8')
         data = json.loads(evt)
         return data
 
@@ -168,7 +170,7 @@ class OkexApi(object):
         """
         print(u'vnokex.onClose')
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onOpen(self, ws):
         """
         接口打开事件
@@ -176,7 +178,22 @@ class OkexApi(object):
         :return:
         """
         print(u'vnokex.onOpen')
-        
+
+    # ----------------------------------------------------------------------
+    def inflate(self,data):
+        """解压数据流"""
+        decompress = zlib.decompressobj(
+            -zlib.MAX_WBITS  # see above
+        )
+        inflated = decompress.decompress(data)
+        inflated += decompress.flush()
+
+        #  bytes=>string
+        if isinstance(inflated,bytes):
+            inflated = inflated.decode('utf-8')
+
+        return inflated
+
     #----------------------------------------------------------------------
     def generateSign(self, params):
         """生成签名"""
@@ -492,6 +509,21 @@ class WsFuturesApi(object):
         if self.thread and self.thread.isAlive():
             self.ws.close()
             self.thread.join()
+
+    # ----------------------------------------------------------------------
+    def inflate(self, data):
+        """解压数据流"""
+        decompress = zlib.decompressobj(
+            -zlib.MAX_WBITS  # see above
+        )
+        inflated = decompress.decompress(data)
+        inflated += decompress.flush()
+
+        #  bytes=>string
+        if isinstance(inflated, bytes):
+            inflated = inflated.decode('utf-8')
+
+        return inflated
 
     # ----------------------------------------------------------------------
     def readData(self, evt):

@@ -16,6 +16,7 @@ from queue import Queue
 from threading import Thread
 from time import sleep
 import traceback
+import zlib         # 新增解压功能
 
 from vnpy.api.okex import WsSpotApi, WsFuturesApi, SPOT_SYMBOL_PAIRS, CONTRACT_SYMBOL, CONTRACT_TYPE, SPOT_CURRENCY
 from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT, SPOT_REST_ERROR_DICT, SPORT_WS_ERROR_DICT, FUTURES_ERROR_DICT
@@ -437,7 +438,8 @@ class OkexSpotApi(WsSpotApi):
         :return:
         """
         # str => json
-        ws_data = self.readData(evt)
+        decmp_evt = self.inflate(evt)
+        ws_data = self.readData(decmp_evt)
 
         if self.gateway.log_message:
             self.gateway.writeLog(u'SpotApi.onMessage:{}'.format(ws_data))
@@ -498,7 +500,8 @@ class OkexSpotApi(WsSpotApi):
         error = VtErrorData()
         error.gatewayName = self.gatewayName
         error.errorID = 0
-        error.errorMsg = str(evt)
+        decom_evt = self.inflate(evt)
+        error.errorMsg = str(decom_evt)
         self.gateway.onError(error)
 
     # ----------------------------------------------------------------------
@@ -921,7 +924,16 @@ class OkexSpotApi(WsSpotApi):
         tick.date, tick.time,tick.datetime = self.generateDateTime(data['timestamp'])
         # print "Depth", tick.date, tick.time
         tick.tradingDay = tick.date
+
         # 推送tick事件
+        if tick.lastPrice == 0 and tick.askPrice1 != 0 and tick.bidPrice1 != 0:
+            tick.lastPrice = (tick.askPrice1 + tick.bidPrice1) / 2
+
+        if tick.lastPrice == 0 or tick.askPrice1 == 0 or tick.bidPrice1 == 0:
+            print('onDepth drop tick {},lastprice:{},askprice1={},bidPrice1:{}'
+                  .format(tick.vtSymbol, tick.lastPrice, tick.askPrice1, tick.bidPrice1))
+            return
+
         newtick = copy(tick)
         self.gateway.onTick(newtick)
 
@@ -1558,7 +1570,9 @@ class OkexFuturesApi(WsFuturesApi):
         :return:
         """
         # str => json
-        ws_data = self.readData(evt)
+        decmp_evt = self.inflate(evt)
+        ws_data = self.readData(decmp_evt)
+        #ws_data = self.readData(evt)
 
         if self.gateway.log_message:
             self.gateway.writeLog(u'FutureApi.onMessage:{}'.format(ws_data))
@@ -1626,7 +1640,9 @@ class OkexFuturesApi(WsFuturesApi):
         """重载WsFutureApi.onError错误Event推送"""
         error = VtErrorData()
         error.gatewayName = self.gatewayName
-        error.errorMsg = str(evt)
+        #error.errorMsg = str(evt)
+        decom_evt = self.inflate(evt)
+        error.errorMsg = str(decom_evt)
         self.gateway.onError(error)
 
     # #----------------------------------------------------------------------
