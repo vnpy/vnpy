@@ -216,8 +216,8 @@ class BinanceData(object):
             return ret_bars
 
 if __name__ == '__main__':
-    binance_data = BinanceData()
 
+    binance_data = BinanceData()
 
     # 下载最近500条日线数据
     #bars = binance_data.download_bars(symbol='btc_usdt', period='1day')
@@ -239,5 +239,6 @@ if __name__ == '__main__':
     # 导出到csv文件
     import pandas as pd
     df = pd.DataFrame(bars)
-    df.set_index('datetime')
+    df = df.set_index('datetime')
+    df.index.name = 'index'
     df.to_csv('binance_btc_usdt_{}_{}_1min.csv'.format(start_date.strftime('%Y%m%d'),datetime.now().strftime('%Y%m%d')),index=True)
