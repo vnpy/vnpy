@@ -39,21 +39,37 @@
     apt-get -y install unzip
 
  5、boost得安装( 仅用于支持CTP的接口)[ root用户 ]
+
     wget http://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download
+
 	改名 mv download boost_1_66_0.tar.gz
+
 	解压 tar -xvzf boost_1_66_0.tar.gz
+
 	cd boost_1_66_0/
+
 	记得先创建好py35的虚拟环境
+
 	export CPLUS_INCLUDE_PATH=/home/trade/anaconda3/envs/py35/include/python3.5m
+
     修改 boost_1_66_0/tools/build/example/user-config.jam ：
+
     using python : 3.5 : /home/trade/anaconda3/envs/py35/bin/python3 : /home/trade/anaconda3/envs/py35/include/python3.5m : /home/trade/anaconda3/envs/py35/lib ;
+
     把user-config.jam复制到用户目录
+
     cp user-config.jam  /root/
+
     回到 boost_1_66_0/
+
     运行bootstrap.sh
+
 	./bootstrap.sh  --with-python=/home/trade/anaconda3/envs/py35/bin/python3 --with-python-version=3.5 --with-python-root=/home/trade/anaconda3/envs/py35
+
 	编译，安装
+
 	./b2 --buildtype=complete install 时间大概十几分钟
+
 	检查 /usr/local下，include/boost, lib/libboos_python3.so等是否存在
 
  6、安装talib [trade用户]
@@ -61,17 +77,27 @@
 
  7、下载vnpy  [trade用户]
   wget -c https://github.com/msincenselee/vnpy/archive/master.zip
+
   unzip master.zip
+
   cd vnpy-master
+
   安装 所有前置数据包
-    pip install -r requirements.txt
+
+  pip install -r requirements.txt
+
   安装pyqt
+
   conda install pyqt
 
  8、重新编译一次 CTP API(CentOS下无需重新编译）[trade用户]
+
   cd /home/trade/vnpy-master/api/ctp
+
   chmod a+x build.sh
+
   ./build.sh
+
   如果你全程不用trade用户得话，你需要修改 CMakefile.txt里面得路径哦,把/home/trade 修改为/root
 
 pip uninstall websocket; pip uninstall websocket-client; pip install websocket-client.
