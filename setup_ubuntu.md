@@ -97,7 +97,7 @@
 	检查 /usr/local下，include/boost, lib/libboos_python3.so等是否存在
 
  6、安装talib [trade用户]
-
+    source activate py35
     conda install -c quantopian ta-lib=0.4.9
 
  7、下载vnpy  [trade用户]
@@ -109,6 +109,7 @@
     cd vnpy-master
 
     安装 所有前置数据包
+    source activate py35
 
     pip install -r requirements.txt
 

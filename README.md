@@ -126,7 +126,7 @@ QQ/Wechat：28888502
     cd vnpy/api/ctp
     激活python环境
     source activate py35
-    sh build.sh
+    ./build.sh
     cd vnctptd/test
     修改tdtest.py，填写账号和ip等信息
     python tdtest.py 验证 ctp api是否正常。
