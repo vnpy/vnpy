@@ -67,4 +67,10 @@
   安装pyqt
   conda install pyqt
 
+ 8、重新编译一次 CTP API(CentOS下无需重新编译）[trade用户]
+  cd /home/trade/vnpy-master/api/ctp
+  chmod a+x build.sh
+  ./build.sh
+  如果你全程不用trade用户得话，你需要修改 CMakefile.txt里面得路径哦,把/home/trade 修改为/root
+
 pip uninstall websocket; pip uninstall websocket-client; pip install websocket-client.
