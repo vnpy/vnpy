@@ -23,6 +23,7 @@
  4、更新ubuntu得开发环境 [ root用户 ]
     apt-get -y install gcc
     apt-get -y install make
+    apt-get -y install cmake
     apt-get -y install libssl-dev
     apt-get -y install freetds-dev
     apt-get -y install python-dev
