@@ -3,25 +3,24 @@
 2、trade，用于安装anaconda，运行vnpy服务程序
 
 # 安装
- 1、[trade]下载 anaconda 3.6得64位安装包
+ 1、下载 anaconda 3.6得64位安装包[trade用户]
     1) wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.2.0-Linux-x86_64.sh
     2) sh Anaconda3-5.2.0-Linux-x86_64.sh
        安装过程，输入yes，同意安装目录 /home/trade/Anaconda3, 同意加入到trade这个用户得shell路径
     3) 退出当前trade用户，重新登录
     4) 更新一下 pip install --upgrade pip
 
- 2、 添加清华同方得源，到anaconda中. （如果服务器在海外，就免拉）
+ 2、 添加清华同方得源，到anaconda中. （如果服务器在海外，就免拉）[trade用户]
     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
     conda config --set show_channel_urls yes
 
- 3、创建python 3.5版本得环境。（为何不用3.6？我还没搞掂）
+ 3、创建python 3.5版本得环境。（为何不用3.6？我还没搞掂）[trade用户]
     conda create --name py35 python=3.5
 
     激活py35
     source activate py35
 
- 4、更新ubuntu得开发环境
-    使用root用户
+ 4、更新ubuntu得开发环境 [ root用户 ]
     apt-get -y install gcc
     apt-get -y install make
     apt-get -y install libssl-dev
@@ -38,7 +37,7 @@
     apt-get -y install build-essential
     apt-get -y install unzip
 
- 5、boost得安装( 仅用于支持CTP的接口)
+ 5、boost得安装( 仅用于支持CTP的接口)[ root用户 ]
     wget http://sourceforge.net/projects/boost/files/boost/1.66.0/boost_1_66_0.tar.gz/download
 	改名 mv download boost_1_66_0.tar.gz
 	解压 tar -xvzf boost_1_66_0.tar.gz
@@ -56,10 +55,10 @@
 	./b2 --buildtype=complete install 时间大概十几分钟
 	检查 /usr/local下，include/boost, lib/libboos_python3.so等是否存在
 
- 6、安装talib
+ 6、安装talib [trade用户]
  conda install -c quantopian ta-lib=0.4.9
 
- 7、下载vnpy
+ 7、下载vnpy  [trade用户]
   wget -c https://github.com/msincenselee/vnpy/archive/master.zip
   unzip master.zip
   cd vnpy-master
