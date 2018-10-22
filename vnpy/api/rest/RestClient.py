@@ -37,14 +37,25 @@ class Request(object):
         self.extra = None  # type: Any
 
         self.response = None  # type: requests.Response
-        self.status = RequestStatus.ready
+        self.status = RequestStatus.ready # type: RequestStatus
 
     #----------------------------------------------------------------------
     def __str__(self):
-        statusCode = 'not finished'
-        if self.response:
+        if self.response is None:
+            statusCode = 'terminated'
+        else:
             statusCode = self.response.status_code
-        return "{} {} : {} {}\n".format(self.method, self.path, self.status, statusCode)
+        return ("reuqest : {} {} {} because {}: \n"
+                "headers: {}\n"
+                "params: {}\n"
+                "data: {}\n"
+                "response:"
+                "{}\n"
+                .format(self.method, self.path, self.status.name, statusCode,
+                        self.headers,
+                        self.params,
+                        self.data,
+                        '' if self.response is None else self.response.text))
 
 
 ########################################################################
@@ -61,7 +72,6 @@ class RestClient(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """
-        :param urlBase: 路径前缀。 例如'https://www.bitmex.com/api/v1/'
         """
         self.urlBase = None  # type: str
         self._active = False
@@ -71,11 +81,14 @@ class RestClient(object):
     
     #----------------------------------------------------------------------
     def init(self, urlBase):
-        """初始化"""
+        """
+        初始化
+        :param urlBase: 路径前缀。 例如'https://www.bitmex.com/api/v1/'
+        """
         self.urlBase = urlBase
 
     #----------------------------------------------------------------------
-    def _genereateSession(self):
+    def _generateSession(self):
         """"""
         return requests.session()
     
@@ -107,10 +120,16 @@ class RestClient(object):
         self._queue.join()
     
     #----------------------------------------------------------------------
-    def addRequest(self, method, path, callback,
-                   params=None, data=None, headers = None,
-                   onFailed=None,
-                   extra=None):  # type: (str, str, Callable[[dict, Request], Any], dict, dict, dict, Callable[[dict, Request], Any], Any)->Request
+    def addRequest(self,
+                   method,          # type: str
+                   path,            # type: str
+                   callback,        # type: Callable[[dict, Request], Any]
+                   params=None,     # type: dict
+                   data=None,       # type: dict
+                   headers=None,    # type: dict
+                   onFailed=None,   # type: Callable[[dict, Request], Any]
+                   extra=None       # type: Any
+                   ):               # type: (...)->Request
         """
         发送一个请求
         :param method: GET, POST, PUT, DELETE, QUERY
@@ -132,7 +151,7 @@ class RestClient(object):
     
     #----------------------------------------------------------------------
     def _run(self):
-        session = self._genereateSession()
+        session = self._generateSession()
         while self._active:
             try:
                 request = self._queue.get(timeout=1)
@@ -159,17 +178,7 @@ class RestClient(object):
         请求失败处理函数（HttpStatusCode!=2xx）.
         默认行为是打印到stderr
         """
-        print("reuqest : {} {} failed with {}: \n"
-              "headers: {}\n"
-              "params: {}\n"
-              "data: {}\n"
-              "response:"
-              "{}\n"
-              .format(request.method, request.path, httpStatusCode,
-                      request.headers,
-                      request.params,
-                      request.data,
-                      request.response.raw))
+        sys.stderr.write(str(request))
     
     #----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb, request):
@@ -184,12 +193,17 @@ class RestClient(object):
         """
         用于内部：将请求发送出去
         """
+        # noinspection PyBroadException
         try:
             request = self.sign(request)
     
             url = self.makeFullUrl(request.path)
     
-            response = session.request(request.method, url, headers=request.headers, params=request.params, data=request.data)
+            response = session.request(request.method,
+                                       url,
+                                       headers=request.headers,
+                                       params=request.params,
+                                       data=request.data)
             request.response = response
     
             httpStatusCode = response.status_code

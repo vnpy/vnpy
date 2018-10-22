@@ -37,11 +37,6 @@ class WebSocketClient(object):
         """Constructor"""
         self.host = None  # type: str
 
-        self.onConnected = self.defaultOnConnected
-        self.onDisconnected = self.defaultOnDisconnected
-        self.onPacket = self.defaultOnPacket
-        self.onError = self.defaultOnError
-
         self._createConnection = websocket.create_connection
         
         self._ws_lock = Lock()
@@ -50,14 +45,6 @@ class WebSocketClient(object):
         self._workerThread = None  # type: Thread
         self._pingThread = None  # type: Thread
         self._active = False
-
-    #----------------------------------------------------------------------
-    def setCreateConnection(self, func):
-        """
-        for internal usage
-        :param func: a function like websocket.create_connection
-        """
-        self._createConnection = func
 
     #----------------------------------------------------------------------
     def init(self, host):
@@ -83,6 +70,14 @@ class WebSocketClient(object):
         """
         self._active = False
         self._disconnect()
+    
+    def join(self):
+        """
+        等待所有工作线程退出
+        正确调用方式：先stop()后join()
+        """
+        self._pingThread.join()
+        self._workerThread.join()
 
     #----------------------------------------------------------------------
     def sendPacket(self, dictObj):  # type: (dict)->None
@@ -141,8 +136,13 @@ class WebSocketClient(object):
                     stream = ws.recv()
                     if not stream:                             # recv在阻塞的时候ws被关闭
                         self._reconnect()
+                        continue
                         
-                    data = json.loads(stream)
+                    try:
+                        data = json.loads(stream)
+                    except ValueError as e:
+                        print('websocket unable to parse data: ' + stream)
+                        raise e
                     self.onPacket(data)
             except websocket.WebSocketConnectionClosedException:  # 在调用recv之前ws就被关闭了
                 self._reconnect()
@@ -173,7 +173,7 @@ class WebSocketClient(object):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def defaultOnConnected():
+    def onConnected():
         """
         连接成功回调
         """
@@ -181,7 +181,7 @@ class WebSocketClient(object):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def defaultOnDisconnected():
+    def onDisconnected():
         """
         连接断开回调
         """
@@ -189,7 +189,7 @@ class WebSocketClient(object):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def defaultOnPacket(packet):
+    def onPacket(packet):
         """
         数据回调。
         只有在数据为json包的时候才会触发这个回调
@@ -200,6 +200,6 @@ class WebSocketClient(object):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def defaultOnError(exceptionType, exceptionValue, tb):
+    def onError(exceptionType, exceptionValue, tb):
         """Python错误回调"""
         return sys.excepthook(exceptionType, exceptionValue, tb)
