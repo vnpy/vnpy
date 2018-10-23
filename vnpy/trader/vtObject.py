@@ -389,6 +389,37 @@ class VtContractData(VtBaseData):
         self.underlyingSymbol = EMPTY_STRING    # 标的物合约代码
         self.optionType = EMPTY_UNICODE         # 期权类型
         self.expiryDate = EMPTY_STRING          # 到期日
+        
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway,
+                          exchange,
+                          symbol,
+                          productClass,
+                          size,
+                          priceTick,
+                          name=None,
+                          strikePrice=EMPTY_FLOAT,
+                          underlyingSymbol=EMPTY_STRING,
+                          optionType=EMPTY_UNICODE,
+                          expiryDate=EMPTY_STRING
+                          ):
+        d = VtContractData()
+        d.gatewayName = gateway.gatewayName
+        d.symbol = symbol
+        d.exchange = exchange
+        d.vtSymbol = symbol + '.' + exchange
+        d.productClass = productClass
+        d.size = size
+        d.priceTick = priceTick
+        if name is None:
+            d.name = d.symbol
+        d.strikePrice = strikePrice
+        d.underlyingSymbol = underlyingSymbol
+        d.optionType = optionType
+        d.expiryDate = expiryDate
+        return d
+            
 
 
 ########################################################################

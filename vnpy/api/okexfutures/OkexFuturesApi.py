@@ -1,14 +1,24 @@
 # encoding: UTF-8
+"""
+# Okex Futures API V3 坑记：
+* https://www.okex.com/api/futures/v3/instruments   返回值中的trade_increment有时候会变成quote_increment
+* /api/futures/v3/order                             如果下单时不提供client_id，返回值将不会有client_id字段
+* websocket居然还没升级好就把API放出来了？！
+
+"""
+
 from enum import Enum
 from typing import Any, Callable, List, Union
 
-from vnpy.api.okexfuture.vnokexFuture import OkexFutureRestBase, OkexFutureWebSocketBase
+from vnpy.api.okexfutures.OkexFuturesBase import OkexFuturesRestBaseV1, OkexFuturesRestBaseV3, \
+    OkexFuturesWebSocketBase
 from vnpy.api.rest import Request
 
 
 ########################################################################
-class _OkexFutureCustomExtra(object):
+class _OkexFuturesCustomExtra(object):
     
+    #----------------------------------------------------------------------
     def __init__(self, onSuccess, onFailed, extra):
         self.onFailed = onFailed
         self.onSuccess = onSuccess
@@ -16,7 +26,7 @@ class _OkexFutureCustomExtra(object):
 
 
 ########################################################################
-class OkexFutureEasySymbol(object):
+class OkexFuturesEasySymbol(object):
     BTC = 'btc'
     LTC = 'ltc'
     ETH = 'eth'
@@ -28,7 +38,7 @@ class OkexFutureEasySymbol(object):
 
     
 ########################################################################
-class OkexFutureSymbol(object):
+class OkexFuturesSymbol(object):
     BTC = 'btc_usd'
     LTC = 'ltc_usd'
     ETH = 'eth_usd'
@@ -37,20 +47,20 @@ class OkexFutureSymbol(object):
 
 
 ########################################################################
-class OkexFuturePriceType(object):
+class OkexFuturesPriceType(object):
     Buy = 'buy'
     Sell = 'sell'
 
 
 ########################################################################
-class OkexFutureContractType(object):
+class OkexFuturesContractType(object):
     ThisWeek = 'this_week'
     NextWeek = 'next_week'
     Quarter = 'quarter'
 
 
 ########################################################################
-class OkexFutureOrderType(object):
+class OkexFuturesOrderType(object):
     OpenLong = '1'
     OpenShort = '2'
     CloseLong = '3'
@@ -58,13 +68,13 @@ class OkexFutureOrderType(object):
 
 
 ########################################################################
-class OkexFutureOrderStatus(object):
+class OkexFuturesOrderStatus(object):
     NotFinished = '1'
     Finished = '2'
 
 
 ########################################################################
-class OkexFutureOrder(object):
+class OkexFuturesOrder(object):
     
     #----------------------------------------------------------------------
     def __init__(self):
@@ -84,7 +94,7 @@ class OkexFutureOrder(object):
 
 
 ########################################################################
-class OkexFutureUserInfo(object):
+class OkexFuturesUserInfo(object):
     
     #----------------------------------------------------------------------
     def __init__(self):
@@ -97,16 +107,16 @@ class OkexFutureUserInfo(object):
 
 
 ########################################################################
-class OkexFuturePosition(object):
+class OkexFuturesPosition(object):
     
     #----------------------------------------------------------------------
     def __init__(self, ):
         self.forceLiquidatePrice = None
-        self.holding = []  # type: List[OkexFuturePositionDetail]
+        self.holding = []  # type: List[OkexFuturesPositionDetail]
 
 
 ########################################################################
-class OkexFuturePositionDetail(object):
+class OkexFuturesPositionDetail(object):
     
     #----------------------------------------------------------------------
     def __init__(self, ):
@@ -128,10 +138,11 @@ class OkexFuturePositionDetail(object):
 
 
 ########################################################################
-class OkexFutureTickInfo(object):
+class OkexFuturesTickInfo(object):
     
     #----------------------------------------------------------------------
-    def __init__(self, symbol, remoteContractType, last, limitHigh, limitLow, vol, sell, buy, unitAmount, holdAmount,
+    def __init__(self, symbol, remoteContractType, last, limitHigh, limitLow, vol, sell, buy,
+                 unitAmount, holdAmount,
                  contractId, high, low):
         self.symbol = symbol
         self.remoteContractType = remoteContractType
@@ -149,7 +160,7 @@ class OkexFutureTickInfo(object):
 
 
 ########################################################################
-class OkexFutureTradeInfo(object):
+class OkexFuturesTradeInfo(object):
     
     #----------------------------------------------------------------------
     def __init__(self, symbol, remoteContractType, index, price, volume, time, direction, coinVolume):
@@ -164,7 +175,7 @@ class OkexFutureTradeInfo(object):
 
 
 ########################################################################
-class OkexFutureUserTradeInfo(object):
+class OkexFuturesUserTradeInfo(object):
     
     #----------------------------------------------------------------------
     def __init__(self, symbol, remoteContractType, amount,
@@ -190,39 +201,362 @@ class OkexFutureUserTradeInfo(object):
 
 
 ########################################################################
-class OkexFutureRestClient(OkexFutureRestBase):
+class OkexFuturesContractsInfoV3(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self,
+                 instrumentId,
+                 underlyingIndex,
+                 quoteCurrency,
+                 quote_increment,
+                 contractVal,
+                 listing,
+                 delivery,
+                 tickSize,
+                 ):
+        self.symbol = instrumentId              # String    # 合约ID，如BTC-USD-180213
+        self.underlyingIndex = underlyingIndex  # String    # 交易货币币种，如：btc-usdt中的btc
+        self.quoteCurrency = quoteCurrency      # String    # 计价货币币种，如：btc-usdt中的usdt
+        self.quoteIncrement = quote_increment    # Number    # 下单数量精度
+        self.contractVal = contractVal          # Number    # 合约面值(美元)
+        self.listing = listing                  # Date      # 上线日期
+        self.delivery = delivery                # Date      # 交割日期
+        self.tickSize = tickSize                # Number    # 下单价格精度
+
+
+########################################################################
+class OkexFuturesAccountInfoV3(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, currency, balance, hold, available):
+        self.currency = currency                # String    # 币种
+        self.balance = balance                  # number    # 余额
+        self.hold = hold                        # number    # 冻结(不可用)
+        self.available = available              # number    # 可用于提现或资金划转的数量
+        
+
+########################################################################
+class OkexFuturesPositionInfoV3(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, marginMode, liquidationPrice, longQty, longAvailQty, longAvgCost,
+                 longSettlementPrice,
+                 realizedPnl, shortQty, shortAvailQty, shortAvgCost, shortSettlementPrice,
+                 instrumentId,
+                 leverage, createAt, updatAt,
+                 ):
+        self.marginMode = marginMode                        # String    # 账户类型：全仓 crossed
+        self.liquidationPrice = liquidationPrice            # Price     # 预估爆仓价
+        self.longQty = longQty                              # Number    # 多仓数量
+        self.longAvailQty = longAvailQty                    # Number    # 多仓可平仓数量
+        self.longAvgCost = longAvgCost                      # Price     # 开仓平均价
+        self.longSettlementPrice = longSettlementPrice      # Price     # 多仓结算基准价
+        self.realizedPnl = realizedPnl                      # Number    # 已实现盈余
+        self.shortQty = shortQty                            # Number    # 空仓数量
+        self.shortAvailQty = shortAvailQty                  # Number    # 空仓可平仓数量
+        self.shortAvgCost = shortAvgCost                    # Price     # 开仓平均价
+        self.shortSettlementPrice = shortSettlementPrice    # String    # 空仓结算基准价
+        self.symbol = instrumentId                          # Number    # 合约ID，如BTC-USD-180213
+        self.leverage = leverage                            # Date      # 杠杆倍数
+        self.createAt = createAt                            # Date      # 创建时间
+        self.updatAt = updatAt                              # Date      # 更新时间
+
+
+########################################################################
+class OkexFuturesOrderSentInfoV3(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, orderId, clientOid, errorCode, errorMessage):
+        self.orderId = orderId                # String   # 订单ID，下单失败时，此字段值为-1
+        self.clientOid = clientOid            # String   # 由您设置的订单ID来识别您的订单
+        self.errorCode = errorCode            # Number   # 错误码，下单成功时为0，下单失败时会显示相应错误码
+        self.errorMessage = errorMessage      # String   # 错误信息，下单成功时为空，下单失败时会显示错误信息
+
+
+########################################################################
+class OkexFuturesOrderDetailV3(object):
+    
+    #----------------------------------------------------------------------
+    def __init__(self, instrumentId, size, timestamp, filledQty, fee, orderId, price, priceAvg,
+                 status, orderType, contractVal, leverage, ):
+        self.symbol = instrumentId          # String    # 合约ID，如BTC-USD-180213
+        self.volume = size                  # Number    # 数量
+        self.timestamp = timestamp          # Date      # 委托时间
+        self.tradedVolume = filledQty       # Number    # 成交数量
+        self.fee = fee                      # Price     # 手续费
+        self.remoteId = orderId             # String    # 订单ID
+        self.price = price                  # Price     # 订单价格
+        self.priceAvg = priceAvg            # Price     # 平均价格
+        self.status = status                # Number    # 订单状态(0:等待成交 1:部分成交 2:已完成）
+        self.orderType = orderType          # Number    # 订单类型(1:开多 2:开空 3:开多 4:平空)
+        self.contractVal = contractVal      # Price     # 合约面值
+        self.leverage = leverage            # Number    # 杠杆倍数 value:10/20 默认10
+        
+    
+########################################################################
+class OkexFuturesRestClientV3(OkexFuturesRestBaseV3):
+    """
+    Okex新出了V3版本的API，这里用的是V3的版本
+    """
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        super(OkexFuturesRestClientV3, self).__init__()
+
+    #----------------------------------------------------------------------
+    def sendOrder(self,
+                  symbol,
+                  orderType,
+                  price,
+                  volume,
+                  leverRate,        # type: int     # 档杆倍数，10或者20
+                  onSuccess,        # type: Callable[[OkexFuturesOrderSentInfoV3, Any], Any]
+                  onFailed=None,    # type: Callable[[OkexFuturesOrderSentInfoV3, Any], Any]
+                  matchPrice=False, # type: bool    # 是否为市价单
+                  clientOid=None,    # type: str     # OkexAPI提供的的用户自定义字段
+                  extra=None
+                  ):
+        """ 下单 """
+        data = {
+            'client_oid': clientOid,
+            'instrument_id': symbol,
+            'type': orderType,
+            'size': volume,
+            'leverage': leverRate,
+            
+            'price': price,
+            'match_price': '0'
+        }
+        # if matchPrice:
+        #     data['match_price'] = '1'
+        # else:
+        #     data['price'] = price
+        
+        return self.addRequest('POST', '/api/futures/v3/order',
+                               callback=self._onOrderSent,
+                               data=data,
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra)
+                               )
+    
+    #----------------------------------------------------------------------
+    def cancelOrder(self,
+                    symbol,         # type: str
+                    remoteId,       # type: str
+                    onSuccess,      # type: Callable[[Any], Any]
+                    onFailed=None,  # type: Callable[[Any], Any]
+                    extra=None
+                    ):              # type: (...)->Request
+        """撤单"""
+        path = '/api/futures/v3/cancel_order/' + symbol + '/' + remoteId
+        return self.addRequest('POST', path,
+                               callback=self._onOrderCanceled,
+                               data={
+                                   'instrument_id' : symbol,
+                                   'order_id': remoteId
+                               },
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra)
+                               )
+    
+    #----------------------------------------------------------------------
+    def queryAccount(self,
+                     onSuccess, # type: Callable[[List[OkexFuturesAccountInfoV3], Any], Any]
+                     extra=None
+                     ):         # type: (...)->Request
+        """
+        查询全部账户资金
+        """
+        return self.addRequest('GET', '/api/account/v3/wallet',
+                               callback=self._onAccounts,
+                               extra=_OkexFuturesCustomExtra(onSuccess, None, extra)
+                               )
+
+    #----------------------------------------------------------------------
+    def queryOrders(self,
+                    symbol,
+                    status,             # type: OkexFuturesOrderStatus
+                    onSuccess,          # type: Callable[[List[OkexFuturesOrderDetailV3], Any], Any]
+                    onFailed=None,      # type: Callable[[Any], Any]
+                    startPage=0,        # type: int  # 取回的页数区间为：(start, end)
+                    endPage=2,          # type: int  # 取回的页数区间为：(start, end)
+                    numberPerPage=100,  # type: int
+                    extra=None
+                    ):                  # type: (...)->Request
+        """查询账户订单"""
+        path = '/api/futures/v3/orders/' + symbol
+        return self.addRequest("POST", path,
+                               data={
+                                   'status': status,
+                                   'instrument_id': symbol,
+                                   'from': startPage,
+                                   'to': endPage,
+                                   'limit': numberPerPage,
+                               },
+                               callback=self._onOrders,
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra)
+                               )
+    
+    #----------------------------------------------------------------------
+    def queryPositions(self,
+                       onSuccess,
+                       extra=None):
+        """ 获取全部持仓 """
+        return self.addRequest('GET', '/api/account/v3/position',
+                               callback=self._onPositions,
+                               extra=_OkexFuturesCustomExtra(onSuccess, None, extra)
+                               )
+
+    #----------------------------------------------------------------------
+    def queryContracts(self,
+                       onSuccess,   # type: Callable[[List[OkexFuturesContractsInfoV3], Any], Any]
+                       extra=None):
+        """ 获取全部合约信息 """
+        return self.addRequest('GET', '/api/futures/v3/instruments',
+                               callback=self._onContracts,
+                               extra=_OkexFuturesCustomExtra(onSuccess, None, extra)
+                               )
+    
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _onOrderSent(data, request):  #type: (dict, Request)->None
+        """下单回调"""
+        extra = request.extra  # type: _OkexFuturesCustomExtra
+        order = OkexFuturesOrderSentInfoV3(
+            data['order_id'],
+            data['client_oid'] if 'client_oid' in data else None,
+            data['error_code'],
+            data['error_message'],
+        )
+        if order.orderId != '-1':
+            extra.onSuccess(order, extra.extra)
+        else:
+            if extra.onFailed:
+                extra.onFailed(order, extra.extra)
+
+    #----------------------------------------------------------------------
+    def _onOrderCanceled(self, data, request):  #type: (dict, Request)->None
+        """撤单回调"""
+        extra = request.extra  # type: _OkexFuturesCustomExtra
+        result = data['result']
+        if result is True:
+            extra.onSuccess(extra.extra)
+        else:
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
+            
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _onAccounts(data, request):  #type: (dict, Request)->None
+        """账户资金回调"""
+        extra = request.extra  # type: _OkexFuturesCustomExtra
+        accs = []
+        for acc in data:
+            accs.append(OkexFuturesAccountInfoV3(
+                acc['currency'],
+                acc['balance'],
+                acc['hold'],
+                acc['available'],
+            ))
+        extra.onSuccess(accs, extra.extra)
+        
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _onOrders(data, request):  #type: (dict, Request)->None
+        """
+        查询订单回调
+        https://www.okex.com/docs/zh/#futures-list
+        """
+        extra = request.extra  # type: _OkexFuturesCustomExtra
+        if data['result'] is True:
+            os = []
+            for info in data['orders']:
+                os.append(OkexFuturesOrderDetailV3(
+                    info['instrument_id'],
+                    info['size'],
+                    info['timestamp'],
+                    info['filled_qty'],
+                    info['fee'],
+                    info['order_id'],
+                    info['price'],
+                    info['price_avg'],
+                    info['status'],
+                    info['type'],
+                    info['contract_val'],
+                    info['leverage'],
+                ))
+            extra.onSuccess(os, extra.extra)
+        else:
+            if extra.onFailed:
+                extra.onFailed(extra.extra)
+                
+        
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _onPositions(data, request):  #type: (dict, Request)->None
+        extra = request.extra  # type: _OkexFuturesCustomExtra
+        accs = []
+        for acc in data:
+            accs.append(OkexFuturesPositionInfoV3(
+                acc['margin_mode'],
+                acc['liquidation_price'],
+                acc['long_qty'],
+                acc['long_avail_qty'],
+                acc['long_avg_cost'],
+                acc['long_settlement_price'],
+                acc['realized_pnl'],
+                acc['short_qty'],
+                acc['short_avail_qty'],
+                acc['short_avg_cost'],
+                acc['short_settlement_price'],
+                acc['instrument_id'],
+                acc['leverage'],
+                acc['create_at'],
+                acc['updat_at'],
+            ))
+        extra.onSuccess(accs, extra.extra)
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _onContracts(data, request):  #type: (dict, Request)->None
+        """
+        合约信息回调
+        https://www.okex.com/docs/zh/#futures-contract_information
+        """
+        extra = request.extra  # type: _OkexFuturesCustomExtra
+        ins = []
+        for instrument in data:
+            ins.append(OkexFuturesContractsInfoV3(
+                instrument['instrument_id'],
+                instrument['underlying_index'],
+                instrument['quote_currency'],
+                instrument['quote_increment'] if 'quote_increment' in instrument else instrument['trade_increment'],
+                instrument['contract_val'],
+                instrument['listing'],
+                instrument['delivery'],
+                instrument['tick_size'],
+            ))
+        extra.onSuccess(ins, extra.extra)
+    
+
+########################################################################
+class OkexFuturesRestClientV1(OkexFuturesRestBaseV1):
+    """
+    这里用的是旧的v1版本的OkexAPI
+    """
     
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        super(OkexFutureRestClient, self).__init__()
-        
-        self.client = ()
-        
-        self._redirectedOnError = None  # type: Callable[[object, object, object, Request], Any]
-    
-    #----------------------------------------------------------------------
-    def setOnError(self, callback):  # type: (Callable[[object, object, object, Request], Any])->None
-        self._redirectedOnError = callback
-    
-    #----------------------------------------------------------------------
-    def onError(self, exceptionType, exceptionValue, tb, req):
-        if self._redirectedOnError:
-            self._redirectedOnError(exceptionType, exceptionValue, tb, req)
-    
-    #----------------------------------------------------------------------
-    def onFailed(self, httpStatusCode, req):
-        super(OkexFutureRestClient, self).onFailed(httpStatusCode, req)
+        super(OkexFuturesRestClientV1, self).__init__()
     
     #----------------------------------------------------------------------
     def sendOrder(self, symbol, contractType, orderType, volume,
                   onSuccess, onFailed=None,
                   price=None, useMarketPrice=False, leverRate=None,
-                  extra=None):  # type:(str, OkexFutureContractType, OkexFutureOrderType, float, Callable[[str, Any], Any], Callable[[int, Any], Any], float, bool, Union[int, None], Any)->Request
+                  extra=None):  # type:(str, OkexFuturesContractType, OkexFuturesOrderType, float, Callable[[str, Any], Any], Callable[[int, Any], Any], float, bool, Union[int, None], Any)->Request
         """
         :param symbol: str
-        :param contractType: OkexFutureContractType
-        :param orderType: OkexFutureOrderType
+        :param contractType: OkexFuturesContractType
+        :param orderType: OkexFuturesOrderType
         :param volume: float
         :param onSuccess: (orderId: int)->Any
         :param onFailed: ()->Any
@@ -251,15 +585,15 @@ class OkexFutureRestClient(OkexFutureRestBase):
                               '/future_trade.do',
                                   callback=self.onOrderSent,
                                   data=data,
-                                  extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                                  extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra))
         return request
     
     #----------------------------------------------------------------------
     def cancelOrder(self, symbol, contractType, orderId, onSuccess, onFailed=None,
-                    extra=None):  # type: (str, OkexFutureContractType, str, Callable[[object], Any], Callable[[int, Any], Any], Any)->Request
+                    extra=None):  # type: (str, OkexFuturesContractType, str, Callable[[object], Any], Callable[[int, Any], Any], Any)->Request
         """
         :param symbol: str
-        :param contractType: OkexFutureContractType
+        :param contractType: OkexFuturesContractType
         :param orderId: str
         :param onSuccess: ()->Any
         :param onFailed: ()->Any
@@ -275,18 +609,18 @@ class OkexFutureRestClient(OkexFutureRestBase):
                            '/future_cancel.do',
                                callback=self.onOrderCanceled,
                                data=data,
-                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryOrder(self, symbol, contractType, orderId, onSuccess, onFailed=None,
-                   extra=None):  # type: (str, OkexFutureContractType, str, Callable[[List[OkexFutureOrder], Any], Any], Callable[[int, Any], Any], Any)->Request
+                   extra=None):  # type: (str, OkexFuturesContractType, str, Callable[[List[OkexFuturesOrder], Any], Any], Callable[[int, Any], Any], Any)->Request
         """
         @note onSuccess接收的第一个参数是列表，并且有可能为空
         
         :param symbol: str
-        :param contractType: OkexFutureContractType
+        :param contractType: OkexFuturesContractType
         :param orderId: str
-        :param onSuccess: (orders: List[OkexFutureOrder], extra:Any)->Any
+        :param onSuccess: (orders: List[OkexFuturesOrder], extra:Any)->Any
         :param onFailed: (extra: Any)->Any
         :param extra: Any
         :return: Request
@@ -300,19 +634,19 @@ class OkexFutureRestClient(OkexFutureRestBase):
                            '/future_order_info.do',
                                callback=self.onOrder,
                                data=data,
-                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra))
 
     #----------------------------------------------------------------------
     def queryOrders(self, symbol, contractType, status,
                     onSuccess, onFailed=None,
                     pageIndex=0, pageLength=50,
-                    extra=None):  # type: (str, OkexFutureContractType, OkexFutureOrderStatus, Callable[[List[OkexFutureOrder], Any], Any], Callable[[int, Any], Any], int, int, Any)->Request
+                    extra=None):  # type: (str, OkexFuturesContractType, OkexFuturesOrderStatus, Callable[[List[OkexFuturesOrder], Any], Any], Callable[[int, Any], Any], int, int, Any)->Request
         """
         @note onSuccess接收的第一个参数是列表，并且有可能为空
         
         :param symbol: str
-        :param contractType: OkexFutureContractType
-        :param onSuccess: (List[OkexFutureOrder], extra:Any)->Any
+        :param contractType: OkexFuturesContractType
+        :param onSuccess: (List[OkexFuturesOrder], extra:Any)->Any
         :param onFailed: (extra: Any)->Any
         :param pageIndex: 页码
         :param pageLength: 最大显示数量（最大值50）
@@ -332,14 +666,14 @@ class OkexFutureRestClient(OkexFutureRestBase):
                            '/future_order_info.do',
                                callback=self.onOrder,
                                data=data,
-                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryUserInfo(self, onSuccess, onFailed=None,
-                      extra=None):  # type: (Callable[[List[OkexFutureUserInfo], Any], Any], Callable[[int, Any], Any], Any)->Request
+                      extra=None):  # type: (Callable[[List[OkexFuturesUserInfo], Any], Any], Callable[[int, Any], Any], Any)->Request
         """
         查询用户信息
-        :param onSuccess: (userInfos: List[OkexFutureUserInfo], extra: Any)->Any
+        :param onSuccess: (userInfos: List[OkexFuturesUserInfo], extra: Any)->Any
         :param onFailed: (extra: Any)->Any
         :param extra: Any
         :return: Request
@@ -347,16 +681,16 @@ class OkexFutureRestClient(OkexFutureRestBase):
         return self.addRequest('POST',
                            '/future_userinfo.do',
                                callback=self.onOrder,
-                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     def queryPosition(self, symbol, contractType,
                       onSuccess, onFailed=None,
-                      extra=None):  # type: (str, OkexFutureContractType, Callable[[OkexFuturePosition, Any], Any], Callable[[int, Any], Any], Any)->Request
+                      extra=None):  # type: (str, OkexFuturesContractType, Callable[[OkexFuturesPosition, Any], Any], Callable[[int, Any], Any], Any)->Request
         """
-        :param symbol: OkexFutureSymbol
-        :param contractType: OkexFutureContractType
-        :param onSuccess: (pos:OkexFuturePosition, extra: any)->Any
+        :param symbol: OkexFuturesSymbol
+        :param contractType: OkexFuturesContractType
+        :param onSuccess: (pos:OkexFuturesPosition, extra: any)->Any
         :param onFailed: (errorCode: int, extra: any)->Any
         :param extra:
         :return:
@@ -369,15 +703,15 @@ class OkexFutureRestClient(OkexFutureRestBase):
                            '/future_position.do',
                                data=data,
                                callback=self.onPosition,
-                               extra=_OkexFutureCustomExtra(onSuccess, onFailed, extra))
+                               extra=_OkexFuturesCustomExtra(onSuccess, onFailed, extra))
     
     #----------------------------------------------------------------------
     @staticmethod
-    def onOrderSent(data, req):  # type: (dict, Request)->None
+    def onOrderSent(data, request):  # type: (dict, Request)->None
         """
         下单回执，一般用来保存sysId
         """
-        extra = req.extra  # type: _OkexFutureCustomExtra
+        extra = request.extra  # type: _OkexFuturesCustomExtra
         if data['result'] is True:
             remoteId = data['order_id']
             extra.onSuccess(remoteId, extra.extra)
@@ -390,12 +724,12 @@ class OkexFutureRestClient(OkexFutureRestBase):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def onOrderCanceled(data, req):  # type: (dict, Request)->None
+    def onOrderCanceled(data, request):  # type: (dict, Request)->None
         """
         取消订单回执
         """
         success = data['result']
-        extra = req.extra  # type: _OkexFutureCustomExtra
+        extra = request.extra  # type: _OkexFuturesCustomExtra
         if success:
             extra.onSuccess(extra.extra)
         else:
@@ -407,13 +741,13 @@ class OkexFutureRestClient(OkexFutureRestBase):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def onOrder(data, req):  # type: (dict, Request)->None
+    def onOrder(data, request):  # type: (dict, Request)->None
         success = data['result']
-        extra = req.extra  # type: _OkexFutureCustomExtra
+        extra = request.extra  # type: _OkexFuturesCustomExtra
         if success:
             orders = []
             for order in data['orders']:
-                okexOrder = OkexFutureOrder()
+                okexOrder = OkexFuturesOrder()
         
                 okexOrder.volume = order['amount']
                 okexOrder.contractName = order['contract_name']
@@ -421,7 +755,7 @@ class OkexFutureRestClient(OkexFutureRestBase):
                 okexOrder.tradedVolume = order['deal_amount']
                 okexOrder.fee = order['fee']
                 okexOrder.leverRate = order['lever_rate']
-                okexOrder.remoteId = order['order_id']
+                okexOrder.remoteId = str(order['orderId'])
                 okexOrder.price = order['price']
                 okexOrder.priceAvg = order['price_avg']
                 okexOrder.status = order['status']
@@ -439,14 +773,14 @@ class OkexFutureRestClient(OkexFutureRestBase):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def onUserInfo(data, req):  # type: (dict, Request)->None
+    def onUserInfo(data, request):  # type: (dict, Request)->None
         success = data['result']
-        extra = req.extra  # type: _OkexFutureCustomExtra
+        extra = request.extra  # type: _OkexFuturesCustomExtra
         if success:
             infos = data['info']
             uis = []
             for easySymbol, info in infos.items():  # type: str, dict
-                ui = OkexFutureUserInfo()
+                ui = OkexFuturesUserInfo()
                 ui.easySymbol = easySymbol
                 ui.accountRights = info['account_rights']
                 ui.keepDeposit = info['keep_deposit']
@@ -464,14 +798,14 @@ class OkexFutureRestClient(OkexFutureRestBase):
     
     #----------------------------------------------------------------------
     @staticmethod
-    def onPosition(data, req):  # type: (dict, Request)->None
+    def onPosition(data, request):  # type: (dict, Request)->None
         success = data['result']
-        extra = req.extra  # type: _OkexFutureCustomExtra
+        extra = request.extra  # type: _OkexFuturesCustomExtra
         if success:
-            pos = OkexFuturePosition()
+            pos = OkexFuturesPosition()
             pos.forceLiquidatePrice = data['force_liqu_price']
             for item in data['holding']:
-                posDetail = OkexFuturePositionDetail()
+                posDetail = OkexFuturesPositionDetail()
                 posDetail.buyAmount = item['buy_amount']
                 posDetail.buyAvailable = item['buy_available']
                 posDetail.buyPriceAvg = item['buy_price_avg']
@@ -504,16 +838,16 @@ class OkexFutureRestClient(OkexFutureRestBase):
 
 
 ########################################################################
-class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
+class OkexFuturesWebSocketClient(OkexFuturesWebSocketBase):
 
     #----------------------------------------------------------------------
     def __init__(self):
-        super(OkexFutureWebSocketClient, self).__init__()
+        super(OkexFuturesWebSocketClient, self).__init__()
         self.onTick = self.defaultOnTick
         self.onUserTrade = self.defaultOnUserTrade
 
     #----------------------------------------------------------------------
-    def subscribe(self, easySymbol, contractType):  # type: (OkexFutureEasySymbol, OkexFutureContractType)->None
+    def subscribe(self, easySymbol, contractType):  # type: (OkexFuturesEasySymbol, OkexFuturesContractType)->None
         self.sendPacket({
             'event': 'addChannel',
             'channel': 'ok_sub_futureusd_' + easySymbol + '_ticker_' + contractType
@@ -521,18 +855,15 @@ class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
     
     #----------------------------------------------------------------------
     def subscribeUserTrade(self):
-        # todo: 没有测试条件
         self.sendPacket({
             'event': 'addChannel',
             'channel': 'ok_sub_futureusd_trades'
         })
     
     #----------------------------------------------------------------------
-    def defaultOnPacket(self, packets):
+    def onPacket(self, packets):
         
         for packet in packets:
-            print('packets:')
-            print(packets)
             channelName = None
             if 'channel' in packet:
                 channelName = packet['channel']
@@ -543,56 +874,55 @@ class OkexFutureWebSocketClient(OkexFutureWebSocketBase):
             channel = parseChannel(channelName)  # type: ExtraSymbolChannel
             
             if channel.type == ChannelType.Tick:
-                self.onTick(OkexFutureTickInfo(
+                self.onTick(OkexFuturesTickInfo(
                     symbol=channel.symbol,
                     remoteContractType=channel.remoteContractType,
-                    last=packet['last'],  # float   # 最高买入限制价格
-                    limitHigh=packet['limitHigh'],  # str   # 最高买入限制价格
-                    limitLow=packet['limitLow'],  # str   # 最低卖出限制价格
-                    vol=packet['vol'],  # float   # 24 小时成交量
-                    sell=packet['sell'],  # float   # 卖一价格
-                    buy=packet['buy'],  # float   #  买一价格
-                    unitAmount=packet['unitAmount'],  # float   # 合约价值
-                    holdAmount=packet['hold_amount'],  # float   # 当前持仓量
-                    contractId=packet['contractId'],  # long   # 合约ID
-                    high=packet['high'],  # float   # 24 小时最高价格
-                    low=packet['low'],  # float   # 24 小时最低价格
+                    last=packet['last'],
+                    limitHigh=packet['limitHigh'],
+                    limitLow=packet['limitLow'],
+                    vol=packet['vol'],
+                    sell=packet['sell'],
+                    buy=packet['buy'],
+                    unitAmount=packet['unitAmount'],
+                    holdAmount=packet['hold_amount'],
+                    contractId=packet['contractId'],
+                    high=packet['high'],
+                    low=packet['low'],
                 ))
             # elif channel.type == ChannelType.Trade:
             #     trades = []
             #     for tradeInfo in packet:
-            #         trades.append(OkexFutureTradeInfo(
+            #         trades.append(OkexFuturesTradeInfo(
             #             channel.symbol, channel.remoteContractType, *tradeInfo
             #         ))
             #     self.onTrades(trades)
             
-            # todo: 没有测试条件
             elif channel.type == ChannelType.UserTrade:
-                self.onUserTrade(OkexFutureUserTradeInfo(
-                    symbol=packet['symbol'],  # str  #  btc_usd   ltc_usd   eth_usd   etc_usd   bch_usd
+                self.onUserTrade(OkexFuturesUserTradeInfo(
+                    symbol=packet['symbol'],
                     remoteContractType=packet['contract_type'],
-                    amount=packet['amount'],  # float  #  委托数量
-                    contractName=packet['contract_name'],  # str  #  合约名称
-                    createdDate=packet['created_date'],  # long  #  委托时间
-                    createDateStr=packet['create_date_str'],  # str  # 委托时间字符串
-                    dealAmount=packet['deal_amount'],  # float  #  成交数量
-                    fee=packet['fee'],  # float  #  手续费
-                    orderId=packet['order_id'],  # long  #  订单ID
-                    price=packet['price'],  # float  #  订单价格
-                    priceAvg=packet['price_avg'],  # float  #  平均价格
-                    status=packet['status'],  # int  #  订单状态(0等待成交 1部分成交 2全部成交 -1撤单 4撤单处理中)
-                    type=packet['type'],  # int  #  订单类型 1：开多 2：开空 3：平多 4：平空
-                    unitAmount=packet['unit_amount'],  # float  # 合约面值
-                    leverRate=packet['lever_rate'],  # float  # 杠杆倍数  value:10/20  默认10
-                    systemType=packet['system_type'],  # int  # 订单类型 0:普通 1:交割 2:强平 4:全平 5:系统反单
+                    amount=packet['amount'],
+                    contractName=packet['contract_name'],
+                    createdDate=packet['created_date'],
+                    createDateStr=packet['create_date_str'],
+                    dealAmount=packet['deal_amount'],
+                    fee=packet['fee'],
+                    orderId=packet['order_id'],
+                    price=packet['price'],
+                    priceAvg=packet['price_avg'],
+                    status=packet['status'],
+                    type=packet['type'],
+                    unitAmount=packet['unit_amount'],
+                    leverRate=packet['lever_rate'],
+                    systemType=packet['system_type'],
                 ))
     
     #----------------------------------------------------------------------
-    def defaultOnTick(self, tick):  # type: (OkexFutureTickInfo)->None
+    def defaultOnTick(self, tick):  # type: (OkexFuturesTickInfo)->None
         pass
     
     #----------------------------------------------------------------------
-    def defaultOnUserTrade(self, tick):  # type: (OkexFutureUserTradeInfo)->None
+    def defaultOnUserTrade(self, tick):  # type: (OkexFuturesUserTradeInfo)->None
         pass
 
 
@@ -823,5 +1153,5 @@ def remotePrefixToRemoteContractType(prefix):
     return _prefixForRemoteContractType[prefix]
 
 
-_prefixForRemoteContractType = {v.split('_')[0]: v for k, v in OkexFutureContractType.__dict__.items() if
+_prefixForRemoteContractType = {v.split('_')[0]: v for k, v in OkexFuturesContractType.__dict__.items() if
                                 not k.startswith('_')}

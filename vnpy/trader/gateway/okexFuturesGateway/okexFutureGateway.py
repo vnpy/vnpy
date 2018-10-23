@@ -3,49 +3,12 @@
 from __future__ import print_function
 
 import json
-from abc import abstractmethod
 
 from typing import Dict
 
-from vnpy.api.okexfuture.OkexFutureApi import *
+from vnpy.api.okexfutures.OkexFuturesApi import *
 from vnpy.trader.vtFunction import getJsonPath
 from vnpy.trader.vtGateway import *
-
-
-########################################################################
-class VnpyGateway(VtGateway):
-    """
-    每个gateway有太多重复代码，难以拓展和维护。
-    于是我设计了这个类，将重复代码抽取出来，简化gateway的实现
-    """
-    
-    #----------------------------------------------------------------------
-    def readConfig(self):
-        """
-        从json文件中读取设置，并将其内容返回为一个dict
-        :一个一个return:
-        """
-        fileName = self.gatewayName + '_connect.json'
-        filePath = getJsonPath(fileName, __file__)
-        
-        try:
-            with open(filePath, 'rt') as f:
-                return json.load(f)
-        except IOError:
-            log = VtLogData()
-            log.gatewayName = self.gatewayName
-            log.logContent = u'读取连接配置出错，请检查'
-            # todo: pop a message box is better
-            self.onLog(log)
-            return
-    
-    #----------------------------------------------------------------------
-    @abstractmethod
-    def loadSetting(self):
-        """
-        载入设置，在connect的时候会被调用到。
-        """
-        pass
 
 
 ########################################################################
@@ -53,7 +16,7 @@ class _Order(object):
     _lastLocalId = 0
     
     #----------------------------------------------------------------------
-    def __ini__(self):
+    def __init__(self):
         _Order._lastLocalId += 1
         self.localId = str(_Order._lastLocalId)
         self.remoteId = None
@@ -61,19 +24,21 @@ class _Order(object):
 
 
 ########################################################################
-class OkexFutureGateway(VnpyGateway):
+class OkexFuturesGateway(VtGateway):
     """OKEX期货交易接口"""
     
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, *_, **__):  # args, kwargs is needed for compatibility
         """Constructor"""
-        super(OkexFutureGateway, self).__init__(eventEngine, 'OkexFutureGateway')
+        super(OkexFuturesGateway, self).__init__(eventEngine, 'OkexFuturesGateway')
+        self.exchange = constant.EXCHANGE_OKEXFUTURE
         self.apiKey = None  # type: str
         self.apiSecret = None  # type: str
+        self.apiPassphrase = None  # type: str
 
-        self.restApi = OkexFutureRestClient()
+        self.restApi = OkexFuturesRestClientV3()
 
-        self.webSocket = OkexFutureWebSocketClient()
+        self.webSocket = OkexFuturesWebSocketClient()
         self.webSocket.onTick = self._onTick
         self.webSocket.onUserTrade = self._onUserTrade
         
@@ -83,14 +48,30 @@ class OkexFutureGateway(VnpyGateway):
         self.tradeID = 0
         self._orders = {}  # type: Dict[str, _Order]
         self._remoteIds = {}  # type: Dict[str, _Order]
-        
+
     #----------------------------------------------------------------------
-    @property
-    def exchange(self):  # type: ()->str
-        return constant.EXCHANGE_OKEXFUTURE
+    def readConfig(self):
+        """
+        从json文件中读取设置，并将其内容返回为一个dict
+        :一个一个return:
+        """
+        fileName = self.gatewayName + '_connect.json'
+        filePath = getJsonPath(fileName, __file__)
+    
+        try:
+            with open(filePath, 'rt') as f:
+                return json.load(f)
+        except IOError:
+            log = VtLogData()
+            log.gatewayName = self.gatewayName
+            log.logContent = u'读取连接配置出错，请检查'
+            # todo: pop a message box is better
+            self.onLog(log)
+            return None
     
     #----------------------------------------------------------------------
     def loadSetting(self):
+        """载入设置"""
         setting = self.readConfig()
         if setting:
             """连接"""
@@ -100,6 +81,7 @@ class OkexFutureGateway(VnpyGateway):
                 # or check by validator
                 self.apiKey = str(setting['apiKey'])
                 self.apiSecret = str(setting['secretKey'])
+                self.apiPassphrase = str(setting['passphrase'])
                 self.leverRate = setting['leverRate']
                 self.symbols = setting['symbols']
             except KeyError:
@@ -111,12 +93,13 @@ class OkexFutureGateway(VnpyGateway):
     
     #----------------------------------------------------------------------
     def connect(self):
+        """连接"""
         self.loadSetting()
-        self.restApi.init(self.apiKey, self.apiSecret)
-        self.webSocket.init(self.apiKey, self.apiSecret)
+        self.restApi.init(self.apiKey, self.apiSecret, self.apiPassphrase)
+        self.webSocket.init(self.apiKey, self.apiSecret, self.apiPassphrase)
         self.restApi.start()
         self.webSocket.start()
-    
+        
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq): # type: (VtSubscribeReq)->None
         """订阅行情"""
@@ -125,63 +108,64 @@ class OkexFutureGateway(VnpyGateway):
 
     #----------------------------------------------------------------------
     def _getOrderByLocalId(self, localId):
+        """从本地Id获取对应的内部Order对象"""
         if localId in self._orders:
             return self._orders[localId]
         return None
 
     #----------------------------------------------------------------------
     def _getOrderByRemoteId(self, remoteId):
+        """从Api的OrderId获取对应的内部Order对象"""
         if remoteId in self._remoteIds:
             return self._remoteIds[remoteId]
         return None
 
     #----------------------------------------------------------------------
     def _saveRemoteId(self, remoteId, myorder):
+        """将remoteId和队友的"""
         myorder.remoteId = remoteId
         self._remoteIds[remoteId] = myorder
 
     #----------------------------------------------------------------------
-    def _genereteLocalOrder(self, symbol, price, volume, direction, offset):
+    def _generateLocalOrder(self, symbol, price, volume, direction, offset):
         myorder = _Order()
         localId = myorder.localId
         self._orders[localId] = myorder
         myorder.vtOrder = VtOrderData.createFromGateway(self,
-                                                self.exchange,
-                                                localId,
-                                                symbol,
-                                                price,
-                                                volume,
-                                                direction,
-                                                offset)
+                                                        self.exchange,
+                                                        localId,
+                                                        symbol,
+                                                        price,
+                                                        volume,
+                                                        direction,
+                                                        offset)
         return myorder
-
+    
     #----------------------------------------------------------------------
     def sendOrder(self, vtRequest): # type: (VtOrderReq)->str
         """发单"""
-        myorder = self._genereteLocalOrder(vtRequest.symbol,
+        myorder = self._generateLocalOrder(vtRequest.symbol,
                                            vtRequest.price,
                                            vtRequest.volume,
                                            vtRequest.direction,
                                            vtRequest.offset)
 
-        remoteSymbol, remoteContractType = localSymbolToRemote(vtRequest.symbol)
-        orderType = _orderTypeMap[(vtRequest.priceType, vtRequest.offset)]  # 开多、开空、平多、平空
+        orderType = _orderTypeMap[(vtRequest.direction, vtRequest.offset)]  # 开多、开空、平多、平空
         userMarketPrice = False
         
         if vtRequest.priceType == constant.PRICETYPE_MARKETPRICE:
             userMarketPrice = True
 
-        self.restApi.sendOrder(symbol=remoteSymbol,
-                               contractType=remoteContractType,
+        self.restApi.sendOrder(symbol=vtRequest.symbol,
                                orderType=orderType,
                                volume=vtRequest.volume,
                                price=vtRequest.price,
-                               useMarketPrice=userMarketPrice,
+                               matchPrice=userMarketPrice,
                                leverRate=self.leverRate,
                                onSuccess=self._onOrderSent,
-                               extra=None,
+                               onFailed=self._onSendOrderFailed,
+                               extra=myorder,
                                )
-        
         return myorder.localId
 
     #----------------------------------------------------------------------
@@ -190,54 +174,39 @@ class OkexFutureGateway(VnpyGateway):
         myorder = self._getOrderByLocalId(vtCancel.orderID)
         assert myorder is not None, u"理论上是无法取消一个不存在的本地单的"
         
-        symbol, contractType = localSymbolToRemote(vtCancel.symbol)
-        self.restApi.cancelOrder(symbol=symbol,
-                                 contractType=contractType,
-                                 orderId=myorder.remoteId,
+        self.restApi.cancelOrder(vtCancel.symbol,
+                                 myorder.remoteId,
                                  onSuccess=self._onOrderCanceled,
-                                 extra=myorder,
+                                 extra=myorder
                                  )
-        # cancelDict: 不存在的，没有localId就没有remoteId，没有remoteId何来cancel
     
     #----------------------------------------------------------------------
-    def queryOrders(self, symbol, contractType,
-                    status):  # type: (str, str, OkexFutureOrderStatus)->None
+    def queryContracts(self):
+        self.restApi.queryContracts(onSuccess=self._onQueryContracts)
+    
+    #----------------------------------------------------------------------
+    def queryOrders(self, symbol, status):  # type: (str, OkexFuturesOrderStatus)->None
         """
         :param symbol:
-        :param contractType: 这个参数可以传'THISWEEK', 'NEXTWEEK', 'QUARTER'，也可以传OkexFutureContractType
-        :param status: OkexFutureOrderStatus
+        :param status: OkexFuturesOrderStatus
         :return:
         """
         
-        if contractType in _contractTypeMap:
-            localContractType = contractType
-            remoteContractType = localContractTypeToRemote(localContractType)
-        else:
-            remoteContractType = contractType
-            localContractType = remoteContractTypeToLocal(remoteContractType)
-
         self.restApi.queryOrders(symbol=symbol,
-                                 contractType=remoteContractType,
                                  status=status,
                                  onSuccess=self._onQueryOrders,
-                                 extra=localContractType)
+                                 )
     
     #----------------------------------------------------------------------
     def qryAccount(self):
-        self.restApi.queryUserInfo(onSuccess=self._onQueryAccount)
+        self.restApi.queryAccount(onSuccess=self._onQueryAccount)
         """查询账户资金"""
         pass
     
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
-        for remoteSymbol in _remoteSymbols:
-            for localContractType, remoteContractType in _contractTypeMap.items():
-                self.restApi.queryPosition(remoteSymbol,
-                                           remoteContractType,
-                                           onSuccess=self._onQueryPosition,
-                                           extra=localContractType
-                                           )
+        self.restApi.queryPositions(onSuccess=self._onQueryPosition)
     
     #----------------------------------------------------------------------
     def close(self):
@@ -246,19 +215,40 @@ class OkexFutureGateway(VnpyGateway):
         self.webSocket.stop()
 
     #----------------------------------------------------------------------
-    def _onOrderSent(self, remoteId, myorder):  #type: (str, _Order)->None
-        myorder.remoteId = remoteId
+    def _onOrderSent(self, order, myorder):  #type: (OkexFuturesOrderSentInfoV3, _Order)->None
+        myorder.remoteId = order.orderId
         myorder.vtOrder.status = constant.STATUS_NOTTRADED
-        self._saveRemoteId(remoteId, myorder)
+        self._saveRemoteId(myorder.remoteId, myorder)
         self.onOrder(myorder.vtOrder)
 
     #----------------------------------------------------------------------
     @staticmethod
-    def _onOrderCanceled(myorder):  #type: (_Order)->None
+    def _onSendOrderFailed(order, myorder):  #type: (OkexFuturesOrderSentInfoV3, _Order)->None
+        myorder.vtOrder.status = constant.STATUS_REJECTED
+    
+    #----------------------------------------------------------------------
+    @staticmethod
+    def _onOrderCanceled(myorder): # type: (_Order)->Any
         myorder.vtOrder.status = constant.STATUS_CANCELLED
+        
+    #----------------------------------------------------------------------
+    def _onQueryContracts(self, contracts, extra): # type: (List[OkexFuturesContractsInfoV3], Any)->None
+        for contract in contracts:
+            vtContract = VtContractData.createFromGateway(
+                gateway=self,
+                exchange=self.exchange,
+                symbol=contract.symbol,
+                productClass=constant.PRODUCT_FUTURES,
+                priceTick=contract.tickSize,
+                size=contract.quoteIncrement,
+                name=contract.symbol,
+                expiryDate=contract.delivery,
+                underlyingSymbol=contract.underlyingIndex
+            )
+            self.onContract(vtContract)
 
     #----------------------------------------------------------------------
-    def _onQueryOrders(self, orders, extra):  # type: (List[OkexFutureOrder], Any)->None
+    def _onQueryOrders(self, orders, extra):  # type: (List[OkexFuturesOrderDetailV3], Any)->None
         localContractType = extra
         for order in orders:
             remoteId = order.remoteId
@@ -277,52 +267,53 @@ class OkexFutureGateway(VnpyGateway):
                 # 缓存该订单，并推送
                 symbol = remoteSymbolToLocal(order.symbol, localContractType)
                 direction, offset = remoteOrderTypeToLocal(order.orderType)
-                myorder = self._genereteLocalOrder(symbol, order.price, order.volume, direction, offset)
+                myorder = self._generateLocalOrder(symbol, order.price, order.volume, direction, offset)
                 myorder.vtOrder.tradedVolume = order.tradedVolume
                 myorder.remoteId = order.remoteId
                 self._saveRemoteId(myorder.remoteId, myorder)
                 self.onOrder(myorder.vtOrder)
-        
+                
     #----------------------------------------------------------------------
-    def _onQueryAccount(self, infos, _):  # type: (List[OkexFutureUserInfo], Any)->None
+    def _onQueryAccount(self, infos, _):  # type: (List[OkexFuturesAccountInfoV3], Any)->None
         for info in infos:
             vtAccount = VtAccountData()
-            vtAccount.accountID = info.easySymbol
+            vtAccount.accountID = info.currency
             vtAccount.vtAccountID = self.gatewayName + '.' + vtAccount.accountID
-            vtAccount.balance = info.accountRights
-            vtAccount.margin = info.keepDeposit
-            vtAccount.closeProfit = info.profitReal
-            vtAccount.positionProfit = info.profitUnreal
+            vtAccount.balance = info.balance
+            vtAccount.available = info.available
+            vtAccount.margin = info.hold  # todo: is this right?
             self.onAccount(vtAccount)
 
     #----------------------------------------------------------------------
-    def _onQueryPosition(self, posinfo, extra):  # type: (OkexFuturePosition, Any)->None
+    def _onQueryPosition(self, posex, extra):  # type: (List[OkexFuturesPositionInfoV3], Any)->None
         localContractType = extra
-        for info in posinfo.holding:
-            # 先生成多头持仓
-            pos = VtPositionData.createFromGateway(
+        for pos in posex:
+            # 多头持仓
+            posex = VtPositionData.createFromGateway(
                 gateway=self,
                 exchange=self.exchange,
-                symbol=remoteSymbolToLocal(info.symbol, localContractType),
+                symbol=remoteSymbolToLocal(pos.symbol, localContractType),
                 direction=constant.DIRECTION_NET,
-                position=float(info.buyAmount),
+                position=float(pos.longQty),
+                price=pos.longAvgCost,
             )
         
-            self.onPosition(pos)
+            self.onPosition(posex)
         
-            # 再生存空头持仓
-            pos = VtPositionData.createFromGateway(
+            # 空头持仓
+            posex = VtPositionData.createFromGateway(
                 gateway=self,
                 exchange=self.exchange,
-                symbol=remoteSymbolToLocal(info.symbol, localContractType),
+                symbol=remoteSymbolToLocal(pos.symbol, localContractType),
                 direction=constant.DIRECTION_SHORT,
-                position=float(info.sellAmount),
+                position=float(pos.shortQty),
+                price=pos.shortAvgCost,
             )
         
-            self.onPosition(pos)
+            self.onPosition(posex)
 
     #----------------------------------------------------------------------
-    def _onTick(self, info):  # type: (OkexFutureTickInfo)->None
+    def _onTick(self, info):  # type: (OkexFuturesTickInfo)->None
         uiSymbol = remoteSymbolToLocal(info.symbol, remoteContractTypeToLocal(info.remoteContractType))
         self.onTick(VtTickData.createFromGateway(
             gateway=self,
@@ -337,7 +328,7 @@ class OkexFutureGateway(VnpyGateway):
             upperLimit=info.limitHigh,
         ))
 
-    def _onUserTrade(self, info):  # type: (OkexFutureUserTradeInfo)->None
+    def _onUserTrade(self, info):  # type: (OkexFuturesUserTradeInfo)->None
         tradeID = str(self.tradeID)
         self.tradeID += 1
         order = self._getOrderByRemoteId(info.remoteId)
@@ -380,7 +371,7 @@ def remoteContractTypeToLocal(remoteContractType):
 
 
 #----------------------------------------------------------------------
-def localSymbolToRemote(symbol):  # type: (str)->(OkexFutureSymbol, OkexFutureContractType)
+def localSymbolToRemote(symbol):  # type: (str)->(OkexFuturesSymbol, OkexFuturesContractType)
     """
     :return: remoteSymbol, remoteContractType
     """
@@ -393,24 +384,24 @@ def remoteSymbolToLocal(remoteSymbol, localContractType):
 
 
 _orderTypeMap = {
-    (constant.DIRECTION_LONG, constant.OFFSET_OPEN): OkexFutureOrderType.OpenLong,
-    (constant.DIRECTION_SHORT, constant.OFFSET_OPEN): OkexFutureOrderType.OpenShort,
-    (constant.DIRECTION_LONG, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseLong,
-    (constant.DIRECTION_SHORT, constant.OFFSET_CLOSE): OkexFutureOrderType.CloseShort,
+    (constant.DIRECTION_LONG, constant.OFFSET_OPEN): OkexFuturesOrderType.OpenLong,
+    (constant.DIRECTION_SHORT, constant.OFFSET_OPEN): OkexFuturesOrderType.OpenShort,
+    (constant.DIRECTION_LONG, constant.OFFSET_CLOSE): OkexFuturesOrderType.CloseLong,
+    (constant.DIRECTION_SHORT, constant.OFFSET_CLOSE): OkexFuturesOrderType.CloseShort,
 }
 _orderTypeMapReverse = {v: k for k, v in _orderTypeMap.items()}
 
 _contractTypeMap = {
-    k.upper(): v for k, v in OkexFutureContractType.__dict__.items() if not k.startswith('_')
+    k.upper(): v for k, v in OkexFuturesContractType.__dict__.items() if not k.startswith('_')
 }
 _contractTypeMapReverse = {v: k for k, v in _contractTypeMap.items()}
 
 _easySymbols = {
-    v for k, v in OkexFutureEasySymbol.__dict__.items() if not k.startswith('_')
+    v for k, v in OkexFuturesEasySymbol.__dict__.items() if not k.startswith('_')
 }
 
 _remoteSymbols = {
-    v for k, v in OkexFutureSymbol.__dict__.items() if not k.startswith('_')
+    v for k, v in OkexFuturesSymbol.__dict__.items() if not k.startswith('_')
 }
 
 # symbols for ui,
