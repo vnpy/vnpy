@@ -8,7 +8,7 @@ import urllib
 import time
 
 from vnpy.api.rest import Request, RestClient
-from vnpy.api.websocket import WebSocketClient
+from vnpy.api.websocket import WebsocketClient
 
 
 #----------------------------------------------------------------------
@@ -35,6 +35,7 @@ def signV1(dataWithApiKey, apiSecret):
 #----------------------------------------------------------------------
 def signV3(dataToSign, apiSecret):
     return base64.b64encode( hmac.new(apiSecret, dataToSign.encode(), hashlib.sha256).digest())
+
 
 ########################################################################
 class OkexFuturesRestBaseV1(RestClient):
@@ -115,7 +116,7 @@ class OkexFuturesRestBaseV3(RestClient):
 
 
 ########################################################################
-class OkexFuturesWebSocketBase(WebSocketClient):
+class OkexFuturesWebSocketBase(WebsocketClient):
     """
     Okex期货websocket客户端
     实例化后使用init设置apiKey和secretKey（apiSecret）
