@@ -59,6 +59,8 @@ build/Makefile
 .gitignore
 temp/
 
-
-
+# setup.py install 临时文件
+dist
+*.egg
+*.egg-info
 

@@ -92,7 +92,7 @@ class BitmexGateway(VtGateway):
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        pass
+        self.wsApi.subscribeMarketData(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -274,15 +274,20 @@ class WebsocketApi(BitmexWebsocketApi):
         self.apiSecret = apiSecret
         
         for symbol in symbols:
-            tick = VtTickData()
-            tick.gatewayName = self.gatewayName
-            tick.symbol = symbol
-            tick.exchange = EXCHANGE_BITMEX
-            tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
-            self.tickDict[symbol] = tick
+            self.subscribeMarketData(symbol)
             
         self.start(testnet)
     
+    #----------------------------------------------------------------------
+    def subscribeMarketData(self, symbol):
+        """订阅行情"""
+        tick = VtTickData()
+        tick.gatewayName = self.gatewayName
+        tick.symbol = symbol
+        tick.exchange = EXCHANGE_BITMEX
+        tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
+        self.tickDict[symbol] = tick        
+        
     #----------------------------------------------------------------------
     def onConnect(self):
         """连接回调"""
