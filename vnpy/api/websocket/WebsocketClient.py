@@ -11,7 +11,7 @@ import websocket
 from threading import Lock, Thread
 
 
-class WebSocketClient(object):
+class WebsocketClient(object):
     """
     Websocket API
     
@@ -36,8 +36,6 @@ class WebSocketClient(object):
     def __init__(self):
         """Constructor"""
         self.host = None  # type: str
-
-        self._createConnection = websocket.create_connection
         
         self._ws_lock = Lock()
         self._ws = None  # type: websocket.WebSocket
@@ -70,7 +68,8 @@ class WebSocketClient(object):
         """
         self._active = False
         self._disconnect()
-    
+
+    #----------------------------------------------------------------------
     def join(self):
         """
         等待所有工作线程退出
@@ -100,6 +99,10 @@ class WebSocketClient(object):
         if self._active:
             self._disconnect()
             self._connect()
+
+    #----------------------------------------------------------------------
+    def _createConnection(self, *args, **kwargs):
+        return websocket.create_connection(*args, **kwargs)
     
     #----------------------------------------------------------------------
     def _connect(self):

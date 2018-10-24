@@ -88,7 +88,7 @@ class RestClient(object):
         self.urlBase = urlBase
 
     #----------------------------------------------------------------------
-    def _generateSession(self):
+    def _createSession(self):
         """"""
         return requests.session()
     
@@ -127,7 +127,7 @@ class RestClient(object):
                    params=None,     # type: dict
                    data=None,       # type: dict
                    headers=None,    # type: dict
-                   onFailed=None,   # type: Callable[[dict, Request], Any]
+                   onFailed=None,   # type: Callable[[int, Request], Any]
                    extra=None       # type: Any
                    ):               # type: (...)->Request
         """
@@ -151,7 +151,7 @@ class RestClient(object):
     
     #----------------------------------------------------------------------
     def _run(self):
-        session = self._generateSession()
+        session = self._createSession()
         while self._active:
             try:
                 request = self._queue.get(timeout=1)
