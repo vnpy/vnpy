@@ -118,8 +118,8 @@ class BitmexGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        self.restApi.close()
-        self.wsApi.close()
+        self.restApi.stop()
+        self.wsApi.stop()
     
     #----------------------------------------------------------------------
     def initQuery(self):
