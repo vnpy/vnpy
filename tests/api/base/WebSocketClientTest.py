@@ -2,10 +2,10 @@
 import unittest
 
 from Promise import Promise
-from vnpy.api.websocket import WebSocketClient
+from vnpy.api.websocket import WebsocketClient
 
 
-class TestWebsocketClient(WebSocketClient):
+class TestWebsocketClient(WebsocketClient):
     
     def __init__(self):
         host = 'wss://echo.websocket.org'

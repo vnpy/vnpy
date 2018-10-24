@@ -184,6 +184,7 @@ class VtTradeData(VtBaseData):
         trade.volume = tradeVolume
         trade.tradeTime = datetime.now().strftime('%H:%M:%S')
         return trade
+    
     #----------------------------------------------------------------------
     @staticmethod
     def createFromOrderData(order,
@@ -240,13 +241,19 @@ class VtOrderData(VtBaseData):
 
     #----------------------------------------------------------------------
     @staticmethod
-    def createFromGateway(gateway, orderId, symbol, exchange, price, volume, direction,
-                          offset=EMPTY_UNICODE,
-                          tradedVolume=EMPTY_INT,
-                          status=constant.STATUS_UNKNOWN,
-                          orderTime=EMPTY_UNICODE,
-                          cancelTime=EMPTY_UNICODE,
-                          ):  # type: (VtGateway, str, str, str, float, float, str, str, int, str, str, str)->VtOrderData
+    def createFromGateway(gateway,                          # type: VtGateway
+                          orderId,                          # type: str
+                          symbol,                           # type: str
+                          exchange,                         # type: str
+                          price,                            # type: float
+                          volume,                           # type: int
+                          direction,                        # type: str
+                          offset=EMPTY_UNICODE,             # type: str
+                          tradedVolume=EMPTY_INT,           # type: int
+                          status=constant.STATUS_UNKNOWN,   # type: str
+                          orderTime=EMPTY_UNICODE,          # type: str
+                          cancelTime=EMPTY_UNICODE,         # type: str
+                          ):                                # type: (...)->VtOrderData
         vtOrder = VtOrderData()
         vtOrder.gatewayName = gateway.gatewayName
         vtOrder.symbol = symbol
@@ -291,12 +298,16 @@ class VtPositionData(VtBaseData):
 
     #----------------------------------------------------------------------
     @staticmethod
-    def createFromGateway(gateway, exchange, symbol, direction, position,
-                          frozen=EMPTY_INT,
-                          price=EMPTY_FLOAT,
-                          yestordayPosition=EMPTY_INT,
-                          profit=EMPTY_FLOAT
-                          ):  # type: (VtGateway, str, str, str, float, int, float, int, float)->VtPositionData
+    def createFromGateway(gateway,                      # type: VtGateway
+                          exchange,                     # type: str
+                          symbol,                       # type: str
+                          direction,                    # type: str
+                          position,                     # type: int
+                          frozen=EMPTY_INT,             # type: int
+                          price=EMPTY_FLOAT,            # type: float
+                          yestordayPosition=EMPTY_INT,  # type: int
+                          profit=EMPTY_FLOAT            # type: float
+                          ):                            # type: (...)->VtPositionData
         vtPosition = VtPositionData()
         vtPosition.gatewayName = gateway.gatewayName
         vtPosition.symbol = symbol
@@ -421,7 +432,6 @@ class VtContractData(VtBaseData):
         return d
             
 
-
 ########################################################################
 class VtHistoryData(object):
     """K线时间序列数据"""
@@ -531,6 +541,3 @@ class VtSingleton(type):
             cls._instances[cls] = super(VtSingleton, cls).__call__(*args, **kwargs)
             
         return cls._instances[cls]
-    
-    
-    
