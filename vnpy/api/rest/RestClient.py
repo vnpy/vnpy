@@ -7,7 +7,7 @@ from multiprocessing.dummy import Pool
 
 import requests
 from enum import Enum
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 
 ########################################################################
@@ -151,16 +151,20 @@ class RestClient(object):
     
     #----------------------------------------------------------------------
     def _run(self):
-        session = self._createSession()
-        while self._active:
-            try:
-                request = self._queue.get(timeout=1)
+        try:
+            session = self._createSession()
+            while self._active:
                 try:
-                    self._processRequest(request, session)
-                finally:
-                    self._queue.task_done()
-            except Empty:
-                pass
+                    request = self._queue.get(timeout=1)
+                    try:
+                        self._processRequest(request, session)
+                    finally:
+                        self._queue.task_done()
+                except Empty:
+                    pass
+        except:
+            et, ev, tb = sys.exc_info()
+            self.onError(et, ev, tb, None)
     
     #----------------------------------------------------------------------
     def sign(self, request):  # type: (Request)->Request
@@ -181,9 +185,15 @@ class RestClient(object):
         sys.stderr.write(str(request))
     
     #----------------------------------------------------------------------
-    def onError(self, exceptionType, exceptionValue, tb, request):
+    def onError(self,
+                exceptionType,  # type: type
+                exceptionValue, # type: Exception
+                tb,
+                request         # type: Optional[Request]
+                ):
         """
         Python内部错误处理：默认行为是仍给excepthook
+        :param request 如果是在处理请求的时候出错，它的值就是对应的Request，否则为None
         """
         print("error in request : {}\n".format(request))
         sys.excepthook(exceptionType, exceptionValue, tb)
