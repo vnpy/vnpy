@@ -275,12 +275,12 @@ class BitmexRestApi(RestClient):
         self.addRequest('DELETE', '/order', self.onCancelOrder, params=params)
 
     #----------------------------------------------------------------------
-    def onSendOrder(self, data, reqid):
+    def onSendOrder(self, data, request):
         """"""
         pass
     
     #----------------------------------------------------------------------
-    def onCancelOrder(self, data, reqid):
+    def onCancelOrder(self, data, request):
         """"""
         pass
     
