@@ -51,7 +51,6 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def start(self):
         """启动"""
-        self._connect()
         
         self._active = True
         self._workerThread = Thread(target=self._run)
@@ -130,29 +129,35 @@ class WebsocketClient(object):
         """
         运行，直到stop()被调用
         """
+        try:
+            self._connect()
 
-        # todo: onDisconnect
-        while self._active:
-            try:
-                ws = self._getWs()
-                if ws:
-                    stream = ws.recv()
-                    if not stream:                             # recv在阻塞的时候ws被关闭
-                        self._reconnect()
-                        continue
-                        
-                    try:
-                        data = json.loads(stream)
-                    except ValueError as e:
-                        print('websocket unable to parse data: ' + stream)
-                        raise e
-                    self.onPacket(data)
-            except websocket.WebSocketConnectionClosedException:  # 在调用recv之前ws就被关闭了
-                self._reconnect()
-            except:                                            # Python内部错误（onPacket内出错）
-                et, ev, tb = sys.exc_info()
-                self.onError(et, ev, tb)
-                self._reconnect()
+            # todo: onDisconnect
+            while self._active:
+                try:
+                    ws = self._getWs()
+                    if ws:
+                        stream = ws.recv()
+                        if not stream:                             # recv在阻塞的时候ws被关闭
+                            self._reconnect()
+                            continue
+                            
+                        try:
+                            data = json.loads(stream)
+                        except ValueError as e:
+                            print('websocket unable to parse data: ' + stream)
+                            raise e
+                        self.onPacket(data)
+                except websocket.WebSocketConnectionClosedException:  # 在调用recv之前ws就被关闭了
+                    self._reconnect()
+                except:                                            # Python内部错误（onPacket内出错）
+                    et, ev, tb = sys.exc_info()
+                    self.onError(et, ev, tb)
+                    self._reconnect()
+        except:
+            et, ev, tb = sys.exc_info()
+            self.onError(et, ev, tb)
+            self._reconnect()
 
     #----------------------------------------------------------------------
     def _runPing(self):
