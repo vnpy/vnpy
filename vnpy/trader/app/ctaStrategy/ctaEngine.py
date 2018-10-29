@@ -229,10 +229,17 @@ class CtaEngine(AppEngine):
                     
                     if longTriggered or shortTriggered:
                         # 买入和卖出分别以涨停跌停价发单（模拟市价单）
+                        # 对于没有涨跌停价格的市场则使用5档报价
                         if so.direction==DIRECTION_LONG:
-                            price = tick.upperLimit
+                            if tick.upperLimit:
+                                price = tick.upperLimit
+                            else:
+                                price = tick.askPrice5
                         else:
-                            price = tick.lowerLimit
+                            if tick.lowerLimit:
+                                price = tick.lowerLimit
+                            else:
+                                price = tick.bidPrice5
                         
                         # 发出市价委托
                         vtOrderID = self.sendOrder(so.vtSymbol, so.orderType, 
