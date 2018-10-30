@@ -58,6 +58,7 @@ build/Makefile
 .python-version
 .gitignore
 temp/
+.venv
 
 # setup.py install 临时文件
 dist
