@@ -12,12 +12,14 @@ class TestWebsocketClient(WebsocketClient):
         super(TestWebsocketClient, self).__init__()
         self.init(host)
         self.p = Promise()
+        self.cp = Promise()
     
     def onPacket(self, packet):
         self.p.set_result(packet)
         pass
     
     def onConnected(self):
+        self.cp.set_result(True)
         pass
     
     def onError(self, exceptionType, exceptionValue, tb):
@@ -30,6 +32,7 @@ class WebsocketClientTest(unittest.TestCase):
     def setUp(self):
         self.c = TestWebsocketClient()
         self.c.start()
+        self.c.cp.get(3) # wait for connected
     
     def tearDown(self):
         self.c.stop()
@@ -42,3 +45,22 @@ class WebsocketClientTest(unittest.TestCase):
         res = self.c.p.get(3)
         
         self.assertEqual(res, req)
+
+    def test_parseError(self):
+        class CustomException(Exception): pass
+    
+        def onPacket(packet):
+            raise CustomException("Just a exception")
+    
+        self.c.onPacket = onPacket
+        req = {
+            'name': 'val'
+        }
+        self.c.sendPacket(req)
+    
+        with self.assertRaises(CustomException):
+            self.c.p.get(3)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -3,12 +3,14 @@
 
 ########################################################################
 import json
-import sys
-
 import ssl
+import sys
 import time
-import websocket
+import traceback
+from datetime import datetime
 from threading import Lock, Thread
+
+import websocket
 
 
 class WebsocketClient(object):
@@ -50,7 +52,11 @@ class WebsocketClient(object):
     
     #----------------------------------------------------------------------
     def start(self):
-        """启动"""
+        """
+        启动
+        :note 注意：启动之后不能立即发包，需要等待websocket连接成功。
+        websocket连接成功之后会响应onConnected函数
+        """
         
         self._active = True
         self._workerThread = Thread(target=self._run)
@@ -58,6 +64,10 @@ class WebsocketClient(object):
         
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
+
+        # for debugging:
+        self._lastSentText = None
+        self._lastReceivedText = None
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -80,7 +90,9 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def sendPacket(self, dictObj):  # type: (dict)->None
         """发出请求:相当于sendText(json.dumps(dictObj))"""
-        return self._getWs().send(json.dumps(dictObj), opcode=websocket.ABNF.OPCODE_TEXT)
+        text = json.dumps(dictObj)
+        self._recordLastSentText(text)
+        return self._getWs().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
     
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
@@ -137,15 +149,15 @@ class WebsocketClient(object):
                 try:
                     ws = self._getWs()
                     if ws:
-                        stream = ws.recv()
-                        if not stream:                             # recv在阻塞的时候ws被关闭
+                        text = ws.recv()
+                        if not text:  # recv在阻塞的时候ws被关闭
                             self._reconnect()
                             continue
-                            
+                        self._recordLastReceivedText(text)
                         try:
-                            data = json.loads(stream)
+                            data = json.loads(text)
                         except ValueError as e:
-                            print('websocket unable to parse data: ' + stream)
+                            print('websocket unable to parse data: ' + text)
                             raise e
                         self.onPacket(data)
                 except websocket.WebSocketConnectionClosedException:  # 在调用recv之前ws就被关闭了
@@ -207,7 +219,35 @@ class WebsocketClient(object):
         pass
     
     #----------------------------------------------------------------------
-    @staticmethod
-    def onError(exceptionType, exceptionValue, tb):
-        """Python错误回调"""
-        return sys.excepthook(exceptionType, exceptionValue, tb)
+    def onError(self, exceptionType, exceptionValue, tb):
+        """
+        Python错误回调
+        todo: 以后详细的错误信息最好记录在文件里，用uuid来联系/区分具体错误
+        """
+        sys.stderr.write("[{}]: Unhandled WebSocket Error:{}\n".format(
+            datetime.now().isoformat(),
+            exceptionType
+        ))
+        sys.stderr.write("LastSentText:\n{}\n".format(self._lastSentText))
+        sys.stderr.write("LastReceivedText:\n{}\n".format(self._lastReceivedText))
+        sys.stderr.write("Exception trace: \n")
+        sys.stderr.write("".join(traceback.format_exception(
+            exceptionType,
+            exceptionValue,
+            tb,
+        )))
+        # return sys.excepthook(exceptionType, exceptionValue, tb)
+
+    #----------------------------------------------------------------------
+    def _recordLastSentText(self, text):
+        """
+        用于Debug： 记录最后一次发送出去的text
+        """
+        self._lastSentText = text[:200]
+
+    #----------------------------------------------------------------------
+    def _recordLastReceivedText(self, text):
+        """
+        用于Debug： 记录最后一次发送出去的text
+        """
+        self._lastReceivedText = text[:200]

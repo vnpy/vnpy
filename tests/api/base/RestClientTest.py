@@ -6,7 +6,7 @@ import unittest
 from simplejson import JSONDecodeError
 
 from Promise import Promise
-from vnpy.api.rest.RestClient import RestClient, Request
+from vnpy.api.rest.RestClient import Request, RestClient
 
 
 class FailedError(RuntimeError):
@@ -26,7 +26,7 @@ class TestRestClient(RestClient):
         req.data = json.dumps(req.data)
         req.headers = {'Content-Type': 'application/json'}
         return req
-    
+
     def onError(self, exceptionType, exceptionValue, tb, req):
         self.p.set_exception(exceptionType, exceptionValue, tb)
 
@@ -83,4 +83,7 @@ class RestfulClientTest(unittest.TestCase):
         self.c.addRequest('GET', '/image/svg', callback)
         with self.assertRaises(JSONDecodeError):
             self.c.p.get(3)
-    
+
+
+if __name__ == '__main__':
+    unittest.main()
