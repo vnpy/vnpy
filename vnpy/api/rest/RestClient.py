@@ -2,7 +2,9 @@
 
 
 import sys
+import traceback
 from Queue import Empty, Queue
+from datetime import datetime
 from multiprocessing.dummy import Pool
 
 import requests
@@ -34,6 +36,7 @@ class Request(object):
         self.headers = headers  # type: dict
         
         self.onFailed = None  # type: callable
+        self.onError = None  # type: callable
         self.extra = None  # type: Any
 
         self.response = None  # type: requests.Response
@@ -95,7 +98,8 @@ class RestClient(object):
     #----------------------------------------------------------------------
     def start(self, n=3):
         """启动"""
-        assert not self._active
+        if self._active:
+            return
         
         self._active = True
         self._pool = Pool(n)
@@ -128,6 +132,7 @@ class RestClient(object):
                    data=None,       # type: dict
                    headers=None,    # type: dict
                    onFailed=None,   # type: Callable[[int, Request], Any]
+                   onError=None,    # type: Callable[[type, Exception, traceback, Request], Any]
                    extra=None       # type: Any
                    ):               # type: (...)->Request
         """
@@ -139,6 +144,7 @@ class RestClient(object):
         :param data: dict for body
         :param headers: dict for headers
         :param onFailed: 请求失败后的回调(状态吗不为2xx时认为请求失败)（如果指定该值，默认的onFailed将不会被调用） type: (code, dict, Request)
+        :param onError: 请求出现Python错误后的回调（如果指定该值，默认的onError将不会被调用） type: (etype, evalue, tb, Request)
         :param extra: 返回值的extra字段会被设置为这个值。当然，你也可以在函数调用之后再设置这个字段。
         :return: Request
         """
@@ -146,6 +152,7 @@ class RestClient(object):
         request = Request(method, path, params, data, headers, callback)
         request.extra = extra
         request.onFailed = onFailed
+        request.onError = onError
         self._queue.put(request)
         return request
     
@@ -195,8 +202,28 @@ class RestClient(object):
         Python内部错误处理：默认行为是仍给excepthook
         :param request 如果是在处理请求的时候出错，它的值就是对应的Request，否则为None
         """
-        print("error in request : {}\n".format(request))
+        sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb, request))
         sys.excepthook(exceptionType, exceptionValue, tb)
+    
+    #----------------------------------------------------------------------
+    def exceptionDetail(self,
+                        exceptionType,  # type: type
+                        exceptionValue, # type: Exception
+                        tb,
+                        request         # type: Optional[Request]
+                        ):
+        text = "[{}]: Unhandled RestClient Error:{}\n".format(
+            datetime.now().isoformat(),
+            exceptionType
+        )
+        text += "request:{}\n".format(request)
+        text += "Exception trace: \n"
+        text += "".join(traceback.format_exception(
+            exceptionType,
+            exceptionValue,
+            tb,
+        ))
+        return text
     
     #----------------------------------------------------------------------
     def _processRequest(self, request, session):  # type: (Request, requests.Session)->None
@@ -231,7 +258,10 @@ class RestClient(object):
         except:
             request.status = RequestStatus.error
             t, v, tb = sys.exc_info()
-            self.onError(t, v, tb, request)
+            if request.onError:
+                request.onError(t, v, tb, request)
+            else:
+                self.onError(t, v, tb, request)
 
     #----------------------------------------------------------------------
     def makeFullUrl(self, path):
@@ -243,3 +273,4 @@ class RestClient(object):
         """
         url = self.urlBase + path
         return url
+
