@@ -10,6 +10,7 @@ import os
 import json
 import hashlib
 import hmac
+import sys
 import time
 import traceback
 from datetime import datetime, timedelta
@@ -17,7 +18,9 @@ from copy import copy
 from math import pow
 from urllib import urlencode
 
-from vnpy.api.rest import RestClient
+from requests import ConnectionError
+
+from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
@@ -67,6 +70,8 @@ class BitmexGateway(VtGateway):
 
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
+        
+        self.exchange = constant.EXCHANGE_BITMEX
 
     #----------------------------------------------------------------------
     def connect(self):
@@ -172,7 +177,7 @@ class BitmexRestApi(RestClient):
         """Constructor"""
         super(BitmexRestApi, self).__init__()
 
-        self.gateway = gateway                  # gateway对象
+        self.gateway = gateway                  # type: BitmexGateway # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
         self.apiKey = ''
@@ -240,11 +245,11 @@ class BitmexRestApi(RestClient):
         self.gateway.onLog(log)
     
     #----------------------------------------------------------------------
-    def sendOrder(self, orderReq):
+    def sendOrder(self, orderReq):# type: (VtOrderReq)->str
         """"""
         self.orderId += 1
-        orderId = self.loginTime + self.orderId
-        vtOrderID = '.'.join([self.gatewayName, str(orderId)])
+        orderId = str(self.loginTime + self.orderId)
+        vtOrderID = '.'.join([self.gatewayName, orderId])
         
         data = {
             'symbol': orderReq.symbol,
@@ -258,8 +263,22 @@ class BitmexRestApi(RestClient):
         # 只有限价单才有price字段
         if orderReq.priceType == PRICETYPE_LIMITPRICE:
             data['price'] = orderReq.price
+            
+        vtOrder = VtOrderData.createFromGateway(
+            self.gateway,
+            orderId=orderId,
+            symbol=orderReq.symbol,
+            exchange=self.gateway.exchange,
+            price=orderReq.price,
+            volume=orderReq.volume,
+            direction=orderReq.direction,
+            offset=orderReq.offset,
+        )
         
-        self.addRequest('POST', '/order', self.onSendOrder, data=data)
+        self.addRequest('POST', '/order', callback=self.onSendOrder, data=data, extra=vtOrder,
+                        onFailed=self.onSendOrderFailed,
+                        onError=self.onSendOrderError,
+                        )
         return vtOrderID
     
     #----------------------------------------------------------------------
@@ -272,12 +291,46 @@ class BitmexRestApi(RestClient):
         else:
             params = {'orderID': orderID}
         
-        self.addRequest('DELETE', '/order', self.onCancelOrder, params=params)
-
+        self.addRequest('DELETE', '/order', callback=self.onCancelOrder, params=params,
+                        onError=self.onCancelOrderError,
+                        )
+        
+    #----------------------------------------------------------------------
+    def onSendOrderFailed(self, _, request):
+        """
+        下单失败回调：服务器明确告知下单失败
+        """
+        vtOrder = request.extra # type: VtOrderData
+        vtOrder.status = constant.STATUS_REJECTED
+        self.gateway.onOrder(vtOrder)
+        pass
+    
+    #----------------------------------------------------------------------
+    def onSendOrderError(self, exceptionType, exceptionValue, tb, request):
+        """
+        下单失败回调：连接错误
+        """
+        vtOrder = request.extra # type: VtOrderData
+        vtOrder.status = constant.STATUS_REJECTED
+        self.gateway.onOrder(vtOrder)
+        
+        # 意料之中的错误只有ConnectionError，若还有其他错误，最好还是记录一下，用原来的onError记录即可
+        if not issubclass(exceptionType, ConnectionError):
+            self.onError(exceptionType, exceptionValue, tb, request)
+        
     #----------------------------------------------------------------------
     def onSendOrder(self, data, request):
         """"""
         pass
+
+    #----------------------------------------------------------------------
+    def onCancelOrderError(self, exceptionType, exceptionValue, tb, request):
+        """
+        撤单失败回调：连接错误
+        """
+        # 意料之中的错误只有ConnectionError，若还有其他错误，最好还是记录一下，用原来的onError记录即可
+        if not issubclass(exceptionType, ConnectionError):
+            self.onError(exceptionType, exceptionValue, tb, request)
     
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, request):
@@ -307,8 +360,8 @@ class BitmexRestApi(RestClient):
         e.errorID = exceptionType
         e.errorMsg = exceptionValue
         self.gateway.onError(e)
-        
-        traceback.print_exc()
+
+        sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb, request))
 
 
 ########################################################################
@@ -517,9 +570,12 @@ class BitmexWebsocketApi(WebsocketClient):
         trade.orderID = orderID
         trade.vtOrderID = '.'.join([trade.gatewayName, trade.orderID])
         
-        
         trade.tradeID = tradeID
         trade.vtTradeID = '.'.join([trade.gatewayName, trade.tradeID])
+        
+        if 'side' not in d:
+            print('no side : \n', d)
+            return
         
         trade.direction = directionMapReverse[d['side']]
         trade.price = d['lastPx']
