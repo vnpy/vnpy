@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 import sys
 import traceback
+import zlib
 from collections import defaultdict
 
 from enum import Enum
@@ -141,6 +142,7 @@ class OkexFuturesGateway(VtGateway):
 
         self.webSocket = OkexFuturesWebSocketBase()
         self.webSocket.onPacket = self.onWebSocketPacket
+        self.webSocket.unpackData = self.webSocketUnpackData
         
         self.leverRate = 1
         self.symbols = []
@@ -611,6 +613,12 @@ class OkexFuturesGateway(VtGateway):
                 price=pos['short_avg_cost'],
             )
             self.onPosition(vtPos)
+            
+    #----------------------------------------------------------------------
+    @staticmethod
+    def webSocketUnpackData(data):
+        """重载websocket.unpackData"""
+        return json.loads(zlib.decompress(data, -zlib.MAX_WBITS))
     
     #----------------------------------------------------------------------
     def onWebSocketPacket(self, packets):

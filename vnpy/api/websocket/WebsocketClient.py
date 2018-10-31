@@ -155,7 +155,7 @@ class WebsocketClient(object):
                             continue
                         self._recordLastReceivedText(text)
                         try:
-                            data = json.loads(text)
+                            data = self.unpackData(text)
                         except ValueError as e:
                             print('websocket unable to parse data: ' + text)
                             raise e
@@ -170,6 +170,17 @@ class WebsocketClient(object):
             et, ev, tb = sys.exc_info()
             self.onError(et, ev, tb)
             self._reconnect()
+    
+    #----------------------------------------------------------------------
+    @staticmethod
+    def unpackData(data):
+        """
+        解密数据，默认使用json解密为dict
+        解密后的数据将会传入onPacket
+        如果需要使用不同的解密方式，就重载这个函数。
+        :param data 收到的数据，可能是text frame，也可能是binary frame, 目前并没有区分这两者
+        """
+        return json.loads(data)
 
     #----------------------------------------------------------------------
     def _runPing(self):
