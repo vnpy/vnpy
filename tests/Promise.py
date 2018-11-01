@@ -30,7 +30,7 @@ class Promise(object):
             raise res[1]
         else:
             et, ev, tb = res[1]
-            raise et, ev, tb
+            raise et(ev).with_traceback(tb)
     
     def set_exception(self, valueOrType, val=None, tb=None):
         if val is None:
