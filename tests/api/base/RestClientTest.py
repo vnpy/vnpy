@@ -1,12 +1,14 @@
 # encoding: UTF-8
 
 import json
+import sys
 import unittest
+import uuid
 
 from simplejson import JSONDecodeError
 
 from Promise import Promise
-from vnpy.api.rest.RestClient import RestClient, Request
+from vnpy.api.rest.RestClient import Request, RestClient
 
 
 class FailedError(RuntimeError):
@@ -26,7 +28,7 @@ class TestRestClient(RestClient):
         req.data = json.dumps(req.data)
         req.headers = {'Content-Type': 'application/json'}
         return req
-    
+
     def onError(self, exceptionType, exceptionValue, tb, req):
         self.p.set_exception(exceptionType, exceptionValue, tb)
 
@@ -83,4 +85,47 @@ class RestfulClientTest(unittest.TestCase):
         self.c.addRequest('GET', '/image/svg', callback)
         with self.assertRaises(JSONDecodeError):
             self.c.p.get(3)
+
+
+class RestfulClientErrorHandleTest(unittest.TestCase):
     
+    def setUp(self):
+        self.c = TestRestClient()
+        self.c.start()
+        
+        self.org_sys_hook = sys.excepthook
+        self.org_sys_stderr_write = sys.stderr.write
+
+        sys.excepthook = self.nop
+        sys.stderr.write = self.nop
+    
+    def tearDown(self):
+        self.c.stop()
+
+    @staticmethod
+    def nop(*args, **kwargs):
+        pass
+
+    def test_onError(self):
+        """这个测试保证onError内不会再抛异常"""
+        target = uuid.uuid4()
+        
+        def callback(data, req):
+            pass
+        
+        def onError(*args, **kwargs):
+            try:
+                super(TestRestClient, self.c).onError(*args, **kwargs)
+                self.c.p.set_result(target)
+            except:
+                self.c.p.set_result(False)
+        self.c.onError = onError
+    
+        self.c.addRequest('GET', '/image/svg', callback)
+
+        res = self.c.p.get(3)
+        self.assertEqual(target, res)
+
+
+if __name__ == '__main__':
+    unittest.main()

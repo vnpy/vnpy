@@ -121,7 +121,7 @@ class OkexFuturesWebSocketBase(WebsocketClient):
     Okex期货websocket客户端
     实例化后使用init设置apiKey和secretKey（apiSecret）
     """
-    host = 'wss://real.okex.com:10440/websocket/okexapi'
+    host = 'wss://real.okex.com:10440/websocket/okexapi?compress=true'
     
     def __init__(self):
         super(OkexFuturesWebSocketBase, self).__init__()
