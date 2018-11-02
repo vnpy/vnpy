@@ -469,7 +469,7 @@ class BitmexWebsocketApi(WebsocketClient):
         e.errorMsg = exceptionValue
         self.gateway.onError(e)
         
-        traceback.print_exc()
+        sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb))
     
     #----------------------------------------------------------------------
     def writeLog(self, content):
