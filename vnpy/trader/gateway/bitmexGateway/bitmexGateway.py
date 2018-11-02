@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import logging
 import os
 import json
 import hashlib
@@ -573,8 +574,9 @@ class BitmexWebsocketApi(WebsocketClient):
         trade.tradeID = tradeID
         trade.vtTradeID = '.'.join([trade.gatewayName, trade.tradeID])
         
-        if 'side' not in d:
-            print('no side : \n', d)
+        # bug check:
+        if d['side'] not in directionMapReverse:
+            logging.debug('trade wthout side : %s', d)
             return
         
         trade.direction = directionMapReverse[d['side']]
