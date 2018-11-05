@@ -413,7 +413,7 @@ class DataEngine(object):
         self.workingOrderDict = {}  # 可撤销委托
         self.tradeDict = {}
         self.accountDict = {}
-        self.positionDict= {}
+        self.positionDict = {}
         self.logList = []
         self.errorList = []
         
