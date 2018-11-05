@@ -30,9 +30,6 @@ rq.init(USERNAME, PASSWORD)
 
 FIELDS = ['open', 'high', 'low', 'close', 'volume']
 
-#print (rq.all_instruments(type='Future'))
-#print(rq.get_price('IF99', frequency='1m', fields=FIELDS))
-
 #----------------------------------------------------------------------
 def generateVtBar(row, symbol):
     """生成K线"""
