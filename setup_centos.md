@@ -12,6 +12,8 @@
     # 安装解压包支持
 	yum install bzip2.x86_64
 
+    yum install unzip
+
 	# 安装nodejs，支持request
 	wget -qO- https://rpm.nodesource.com/setup_8.x | bash -
 	yum -y install nodejs
