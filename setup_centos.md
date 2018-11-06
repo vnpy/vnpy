@@ -110,6 +110,8 @@
 
   cd /home/trade/vnpy-master/api/ctp
 
+  source activate py35
+
   chmod a+x build.sh
 
   ./build.sh
@@ -117,6 +119,8 @@
   如果你全程不用trade用户得话，你需要修改 CMakefile.txt里面得路径哦,把/home/trade 修改为/root
 
   9、数字货币方面[trade用户]
+
+   source activate py35
 
    pip uninstall websocket;
 
