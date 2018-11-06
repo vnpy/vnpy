@@ -129,4 +129,6 @@
 
    pip uninstall websocket-client;
 
-   pip install websocket-client.
+   pip install websocket-client
+
+   pip install service_identity
