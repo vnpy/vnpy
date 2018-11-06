@@ -3,32 +3,7 @@
 2、trade，用于安装anaconda，运行vnpy服务程序
 
 # 安装
- 1、下载 anaconda 3.6得64位安装包[trade用户]
-
-    1) wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.2.0-Linux-x86_64.sh
-
-    2) sh Anaconda3-5.2.0-Linux-x86_64.sh
-
-       安装过程，输入yes，同意安装目录 /home/trade/Anaconda3, 同意加入到trade这个用户得shell路径
-
-    3) 退出当前trade用户，重新登录
-
-    4) 更新一下 pip install --upgrade pip
-
- 2、 添加清华同方得源，到anaconda中. （如果服务器在海外，就免拉）[trade用户]
-
-    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-    conda config --set show_channel_urls yes
-
- 3、创建python 3.5版本得环境。（为何不用3.6？我还没搞掂）[trade用户]
-
-    conda create --name py35 python=3.5
-
-    激活py35
-
-    source activate py35
-
- 4、更新centos得开发环境 [ root用户 ]
+   1、更新centos得开发环境 [ root用户 ]
 
      # 1.1 安装系列开发环境：
     # cmake
@@ -50,6 +25,32 @@
 
     # 安装LibGL支持库
     yum install mesa-libGL.x86_64
+  2、下载 anaconda 3.6得64位安装包[trade用户]
+
+    1) wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.2.0-Linux-x86_64.sh
+
+    2) sh Anaconda3-5.2.0-Linux-x86_64.sh
+
+       安装过程，输入yes，同意安装目录 /home/trade/Anaconda3, 同意加入到trade这个用户得shell路径
+
+    3) 退出当前trade用户，重新登录
+
+    4) 更新一下 pip install --upgrade pip
+
+ 3、 添加清华同方得源，到anaconda中. （如果服务器在海外，就免拉）[trade用户]
+
+    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+    conda config --set show_channel_urls yes
+
+ 4、创建python 3.5版本得环境。（为何不用3.6？我还没搞掂）[trade用户]
+
+    conda create --name py35 python=3.5
+
+    激活py35
+
+    source activate py35
+
+
 
  5、boost得安装( 仅用于支持CTP的接口)[ root用户 ]
 
