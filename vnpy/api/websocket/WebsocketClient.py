@@ -191,6 +191,7 @@ class WebsocketClient(object):
                 et, ev, tb = sys.exc_info()
                 # todo: just log this, notifying user is not necessary
                 self.onError(et, ev, tb)
+                self._reconnect()
             for i in range(60):
                 if not self._active:
                     break
