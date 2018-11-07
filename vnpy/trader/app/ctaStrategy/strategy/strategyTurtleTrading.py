@@ -1,66 +1,51 @@
 # encoding: UTF-8
 
 """
-感谢Darwin Quant贡献的策略思路。
-知乎专栏原文：https://zhuanlan.zhihu.com/p/24448511
-
-策略逻辑：
-1. 布林通道（信号）
-2. CCI指标（过滤）
-3. ATR指标（止损）
-
-适合品种：螺纹钢
-适合周期：15分钟
-
-这里的策略是作者根据原文结合vn.py实现，对策略实现上做了一些修改，仅供参考。
-
+单标的海龟交易策略，实现了完整海龟策略中的信号部分。
 """
 
 from __future__ import division
 
 from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.vtConstant import EMPTY_STRING
+from vnpy.trader.vtConstant import DIRECTION_LONG, DIRECTION_SHORT
 from vnpy.trader.app.ctaStrategy.ctaTemplate import (CtaTemplate, 
                                                      BarGenerator, 
                                                      ArrayManager)
 
 
 ########################################################################
-class BollChannelStrategy(CtaTemplate):
-    """基于布林通道的交易策略"""
-    className = 'BollChannelStrategy'
+class TurtleTradingStrategy(CtaTemplate):
+    """海龟交易策略"""
+    className = 'TurtleTradingStrategy'
     author = u'用Python的交易员'
 
     # 策略参数
-    bollWindow = 18                     # 布林通道窗口数
-    bollDev = 3.4                       # 布林通道的偏差
-    cciWindow = 10                      # CCI窗口数
-    atrWindow = 30                      # ATR窗口数
-    slMultiplier = 5.2                  # 计算止损距离的乘数
+    entryWindow = 55                    # 入场通道窗口
+    exitWindow = 20                     # 出场通道窗口
+    atrWindow = 20                      # 计算ATR波动率的窗口
     initDays = 10                       # 初始化数据所用的天数
     fixedSize = 1                       # 每次交易的数量
 
     # 策略变量
-    bollUp = 0                          # 布林通道上轨
-    bollDown = 0                        # 布林通道下轨
-    cciValue = 0                        # CCI指标数值
-    atrValue = 0                        # ATR指标数值
+    entryUp = 0                         # 入场通道上轨
+    entryDown = 0                       # 入场通道下轨
+    exitUp = 0                          # 出场通道上轨
+    exitDown = 0                        # 出场通道下轨
+    atrVolatility = 0                   # ATR波动率
     
-    intraTradeHigh = 0                  # 持仓期内的最高点
-    intraTradeLow = 0                   # 持仓期内的最低点
-    longStop = 0                        # 多头止损
-    shortStop = 0                       # 空头止损
-
+    longEntry = 0                       # 多头入场价格
+    shortEntry = 0                      # 空头入场价格
+    longStop = 0                        # 多头止损价格
+    shortStop = 0                       # 空头止损价格
+    
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
                  'author',
                  'vtSymbol',
-                 'bollWindow',
-                 'bollDev',
-                 'cciWindow',
+                 'entryWindow',
+                 'exitWindow',
                  'atrWindow',
-                 'slMultiplier',
                  'initDays',
                  'fixedSize']    
 
@@ -68,28 +53,26 @@ class BollChannelStrategy(CtaTemplate):
     varList = ['inited',
                'trading',
                'pos',
-               'bollUp',
-               'bollDown',
-               'cciValue',
-               'atrValue',
-               'intraTradeHigh',
-               'intraTradeLow',
+               'entryUp',
+               'entryDown',
+               'exitUp',
+               'exitDown',
+               'longEntry',
+               'shortEntry',
                'longStop',
                'shortStop']  
     
     # 同步列表，保存了需要保存到数据库的变量名称
-    syncList = ['pos',
-                'intraTradeHigh',
-                'intraTradeLow']    
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(BollChannelStrategy, self).__init__(ctaEngine, setting)
+        super(TurtleTradingStrategy, self).__init__(ctaEngine, setting)
         
-        self.bg = BarGenerator(self.onBar, 15, self.onXminBar)        # 创建K线合成器对象
+        self.bg = BarGenerator(self.onBar)
         self.am = ArrayManager()
-            
+        
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -122,54 +105,44 @@ class BollChannelStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
-        self.bg.updateBar(bar)
-    
-    #----------------------------------------------------------------------
-    def onXminBar(self, bar):
-        """收到X分钟K线"""
-        # 全撤之前发出的委托
         self.cancelAll()
     
         # 保存K线数据
-        am = self.am
-        
-        am.updateBar(bar)
-        
-        if not am.inited:
+        self.am.updateBar(bar)
+        if not self.am.inited:
             return
         
         # 计算指标数值
-        self.bollUp, self.bollDown = am.boll(self.bollWindow, self.bollDev)
-        self.cciValue = am.cci(self.cciWindow)
-        self.atrValue = am.atr(self.atrWindow)
+        self.entryUp, self.entryDown = self.am.donchian(self.entryWindow)
+        self.exitUp, self.exitDown = self.am.donchian(self.exitWindow)
+        self.atrVolatility = self.am.atr(self.atrWindow)
         
         # 判断是否要进行交易
-    
-        # 当前无仓位，发送开仓委托
         if self.pos == 0:
-            self.intraTradeHigh = bar.high
-            self.intraTradeLow = bar.low            
+            self.longEntry = 0
+            self.shortEntry = 0
+            self.longStop = 0
+            self.shortStop = 0
             
-            if self.cciValue > 0:
-                self.buy(self.bollUp, self.fixedSize, True)
-                
-            elif self.cciValue < 0:
-                self.short(self.bollDown, self.fixedSize, True)
+            self.sendBuyOrders(self.entryUp)
+            self.sendShortOrders(self.entryDown)
     
-        # 持有多头仓位
         elif self.pos > 0:
-            self.intraTradeHigh = max(self.intraTradeHigh, bar.high)
-            self.intraTradeLow = bar.low
-            self.longStop = self.intraTradeHigh - self.atrValue * self.slMultiplier
+            # 加仓逻辑
+            self.sendBuyOrders(self.longEntry)
             
+            # 止损逻辑
+            self.longStop = self.longEntry - self.atrVolatility * 2
+            self.longStop = max(self.longStop, self.exitDown)
             self.sell(self.longStop, abs(self.pos), True)
     
-        # 持有空头仓位
         elif self.pos < 0:
-            self.intraTradeHigh = bar.high
-            self.intraTradeLow = min(self.intraTradeLow, bar.low)
-            self.shortStop = self.intraTradeLow + self.atrValue * self.slMultiplier
+            # 加仓逻辑
+            self.sendShortOrders(self.shortEntry)
             
+            # 止损逻辑
+            self.shortStop = self.shortEntry + self.atrVolatility * 2
+            self.shortStop = min(self.shortStop, self.exitUp)
             self.cover(self.shortStop, abs(self.pos), True)
             
         # 同步数据到数据库
@@ -186,6 +159,11 @@ class BollChannelStrategy(CtaTemplate):
     #----------------------------------------------------------------------
     def onTrade(self, trade):
         """成交推送"""
+        if trade.direction == DIRECTION_LONG:
+            self.longEntry = trade.price
+        else:
+            self.shortEntry = trade.price
+        
         # 发出状态更新事件
         self.putEvent()
 
@@ -194,3 +172,37 @@ class BollChannelStrategy(CtaTemplate):
         """停止单推送"""
         pass
     
+    #----------------------------------------------------------------------
+    def sendBuyOrders(self, price):
+        """发出一系列的买入停止单"""
+        t = self.pos / self.fixedSize
+        
+        if t < 1:
+            self.buy(price, self.fixedSize, True)
+
+        if t < 2:
+            self.buy(price + self.atrVolatility*0.5, self.fixedSize, True)
+                
+        if t < 3:
+            self.buy(price + self.atrVolatility, self.fixedSize, True)
+
+        if t < 4:
+            self.buy(price + self.atrVolatility*1.5, self.fixedSize, True)    
+    
+    #----------------------------------------------------------------------
+    def sendShortOrders(self, price):
+        """"""
+        t = self.pos / self.fixedSize
+        
+        if t > -1:
+            self.short(price, self.fixedSize, True)
+        
+        if t > -2:
+            self.short(price - self.atrVolatility*0.5, self.fixedSize, True)
+    
+        if t > -3:
+            self.short(price - self.atrVolatility, self.fixedSize, True)
+    
+        if t > -4:
+            self.short(price - self.atrVolatility*1.5, self.fixedSize, True)            
+        
