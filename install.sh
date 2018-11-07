@@ -1,21 +1,42 @@
 #!/bin/bash
 
 #Build ctp/lts/ib api
-pushd vnpy/api/ctp
-bash build.sh
-popd
 
-pushd vnpy/api/lts
-bash build.sh
-popd
+echo "是否要安装'CTP'接口? (Do you want to install 'CTP'?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/ctp
+	bash build.sh
+	popd
+fi
 
-pushd vnpy/api/xtp
-bash build.sh
-popd
+echo "是否要安装'LTS'接口? (Do you want to install 'LTS'?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/lts
+	bash build.sh
+	popd
+fi
 
-pushd vnpy/api/ib
-bash build.sh
-popd
+echo "是否要安装'XTP'接口? (Do you want to install 'XTP'?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/xtp
+	bash build.sh
+	popd
+fi
+
+echo "是否要安装'IB'接口? (Do you want to install 'IB'?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/ib
+	bash build.sh
+	popd
+fi
 
 #Install Python Modules
 pip install -r requirements.txt
