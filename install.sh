@@ -2,7 +2,7 @@
 
 #Build ctp/lts/ib api
 
-echo "是否要安装'CTP'接口? (Do you want to install 'CTP'?)"
+echo "是否要安装'CTP'接口? (Do you need 'CTP' interface?)"
 read -p "Enter [y]n: " var1
 var1=${var1:-y}
 if [ "$var1" = "y" ]; then
@@ -11,7 +11,7 @@ if [ "$var1" = "y" ]; then
 	popd
 fi
 
-echo "是否要安装'LTS'接口? (Do you want to install 'LTS'?)"
+echo "是否要安装'LTS'接口? (Do you need 'LTS' interface?)"
 read -p "Enter [y]n: " var1
 var1=${var1:-y}
 if [ "$var1" = "y" ]; then
@@ -20,7 +20,7 @@ if [ "$var1" = "y" ]; then
 	popd
 fi
 
-echo "是否要安装'XTP'接口? (Do you want to install 'XTP'?)"
+echo "是否要安装'XTP'接口? (Do you need 'XTP' interface?)"
 read -p "Enter [y]n: " var1
 var1=${var1:-y}
 if [ "$var1" = "y" ]; then
@@ -29,7 +29,7 @@ if [ "$var1" = "y" ]; then
 	popd
 fi
 
-echo "是否要安装'IB'接口? (Do you want to install 'IB'?)"
+echo "是否要安装'IB'接口? (Do you need 'IB' interface?)"
 read -p "Enter [y]n: " var1
 var1=${var1:-y}
 if [ "$var1" = "y" ]; then
