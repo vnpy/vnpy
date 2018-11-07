@@ -46,6 +46,10 @@ class WebsocketClient(object):
         self._pingThread = None  # type: Thread
         self._active = False
 
+        # for debugging:
+        self._lastSentText = None
+        self._lastReceivedText = None
+        
     #----------------------------------------------------------------------
     def init(self, host):
         self.host = host
@@ -64,10 +68,6 @@ class WebsocketClient(object):
         
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
-
-        # for debugging:
-        self._lastSentText = None
-        self._lastReceivedText = None
         
     #----------------------------------------------------------------------
     def stop(self):
@@ -263,11 +263,11 @@ class WebsocketClient(object):
         """
         用于Debug： 记录最后一次发送出去的text
         """
-        self._lastSentText = text[:200]
+        self._lastSentText = text[:500]
 
     #----------------------------------------------------------------------
     def _recordLastReceivedText(self, text):
         """
         用于Debug： 记录最后一次发送出去的text
         """
-        self._lastReceivedText = text[:200]
+        self._lastReceivedText = text[:500]
