@@ -104,6 +104,12 @@ def runParentProcess():
             (currentTime <= NIGHT_END)):
             recording = True
         
+        # 过滤周末时间段：周六全天，周五夜盘，周日日盘
+        if ((datetime.today().weekday() == 6) or 
+            (datetime.today().weekday() == 5 and currentTime > NIGHT_END) or 
+            (datetime.today().weekday() == 0 and currentTime < DAY_START)):
+            recording = False
+
         # 记录时间则需要启动子进程
         if recording and p is None:
             le.info(u'启动子进程')
