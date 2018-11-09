@@ -55,7 +55,7 @@ class MarketOpenings(object):
             self.morningStart = datetime.strptime(marketTimes["MORNING_START"], '%H:%M:%S').time()
             session[id] = self.morningStart
             id = 1
-        else
+        else:
             session[0] = time(0, 0)
             session[1] = time(0, 0)
             return
@@ -153,9 +153,9 @@ class MarketsOpHours(object):
         if self.markettimes.has_key(symbol) :
             if self.markettimes[symbol].isMarketOpen(curTime) ;
                 return True
-            else
+            else :
                 return False
-        else
+        else :
             if self.markettimes[exchange].isMarketOpen(curTime) : 
                 return True
 
