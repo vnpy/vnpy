@@ -106,10 +106,10 @@ class MarketOpenings(object):
             if session[0] == session[1] :
                 return True
             elif session[0] < session[1] :
-                if session[0] <= curTime <= session[1] :
+                if session[0] <= curTime < session[1] :
                     return True
             else:
-                if session[0] <= curTime or curTime <= session[1] :
+                if session[0] <= curTime or curTime < session[1] :
                     return True
         False                        
 
