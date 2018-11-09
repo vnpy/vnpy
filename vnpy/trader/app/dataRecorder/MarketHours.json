@@ -6,7 +6,7 @@
         "_note0": "you are encouraged to add/edit accurate market hours as you wish, (and please open source them!)",
         "_note": "you may add as many symbols as you want, after 'SymbolsIncluded'",
         "_note10": "it's better to define market hours based on symbols due to the different policies of exchanges",    
-        "_note1": "if you add symbols, the symbols must be the same as defined by the exchange",,
+        "_note1": "if you add symbols, the symbols must be the same as defined by the exchange",
         "_note2": "you may define the exchange name arbitrarily",
         "_note3": "the system checks on the symbols first, and if not found, checks on the exchange names",
         "_note4": "you may define or leave out any of these time points, if that makes sense",
