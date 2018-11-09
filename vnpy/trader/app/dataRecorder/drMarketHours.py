@@ -144,3 +144,19 @@ class MarketsOpHours(object):
         """
 
         self.markettimes.has_key(es) and self.markettimes[es].isMarketOpen(curTime)
+        
+    def isMarketOpen(self, symbol, exchange, curTime) :
+        """ 
+        checks if market is open at 'curTime'
+        """
+
+        if self.markettimes.has_key(symbol) :
+            if self.markettimes[symbol].isMarketOpen(curTime) ;
+                return True
+            else
+                return False
+        else
+            if self.markettimes[exchange].isMarketOpen(curTime) : 
+                return True
+
+        False
