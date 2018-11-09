@@ -235,7 +235,7 @@ class DrEngine(object):
         """Tick更新"""
         vtSymbol = tick.vtSymbol
         
-        if vtSymbol in self.tickSymbolSet and (self.marketHours.isMarketOpen(vtSymbol, tick.exchange, tick.time):
+        if vtSymbol in self.tickSymbolSet and self.marketHours.isMarketOpen(vtSymbol, tick.exchange, tick.time):
             self.insertData(TICK_DB_NAME, vtSymbol, tick)
             
             if vtSymbol in self.activeSymbolDict:
