@@ -58,6 +58,7 @@ class MarketOpenings(object):
         else:
             session[0] = time(0, 0)
             session[1] = time(0, 0)
+            self.sessions.append(session)            
             return
 
         if marketTimes.has_key("MORNING_BREAK"):
@@ -101,7 +102,6 @@ class MarketOpenings(object):
 
     def isMarketOpen(self, curTime):
         """ checks if market is open """
-
         for session in self.sessions :
             if session[0] == session[1] :
                 return True
@@ -111,7 +111,6 @@ class MarketOpenings(object):
             else:
                 if session[0] <= curTime or curTime <= session[1] :
                     return True
-
         False                        
 
 
@@ -125,6 +124,7 @@ class MarketsOpHours(object):
         """Constructor"""
         self.markettimes = {}
         self.loadSetting()
+        
 
     def loadSetting(self):
         """ load market operating times from file """
@@ -136,20 +136,20 @@ class MarketsOpHours(object):
                 if markets[ex].has_key("SymbolsIncluded") :
                     for symbol in markets[ex]["SymbolsIncluded"] :
                         self.markettimes[symbol] = mts
+                        
 
     def isMarketOpen(self, es, curTime) :
         """ 
         checks if market is open at 'curTime'
         'es' can be an exchange name or a symbol of a financial product
         """
-
         self.markettimes.has_key(es) and self.markettimes[es].isMarketOpen(curTime)
+        
         
     def isMarketOpen(self, symbol, exchange, curTime) :
         """ 
         checks if market is open at 'curTime'
         """
-
         if self.markettimes.has_key(symbol) :
             if self.markettimes[symbol].isMarketOpen(curTime) ;
                 return True
