@@ -1,0 +1,86 @@
+ 
+{
+    "24-Hour": 
+    {
+        "_note01": "these market hours are given as a format reference only, with no suggestion of accuracy",
+        "_note0": "you are encouraged to add/edit accurate market hours as you wish, (and please open source them!)",
+        "_note": "you may add as many symbols as you want, after 'SymbolsIncluded'",
+        "_note10": "it's better to define market hours based on symbols due to the different policies of exchanges",    
+        "_note1": "if you add symbols, the symbols must be the same as defined by the exchange",
+        "_note2": "you may define the exchange name arbitrarily",
+        "_note3": "the system checks on the symbols first, and if not found, checks on the exchange names",
+        "_note4": "you may define or leave out any of these time points, if that makes sense",
+        "_note5":  "but you must define 'MORNING_START' for non-24-hour sessions",
+        "_note6": "if you leave out 'MORNING_START', then the system assumes it being a 24-hour session",
+        "_note7": "the order of these time points can be arbitrary",
+        "_note8": "the format of the time points must be 'HH:MM:SS'",
+        "_note9": "'NIGHT_END' does not equal the end of a day bar, which is defined elsewhere.",
+
+        "SymbolsIncluded": ["testa", "testb", "testc"],
+        "MORNING_START": "09:00:00",
+        "NIGHT_END": "09:00:00"
+    },
+
+    "DCE":  
+    {
+        "SymbolsIncluded": ["P1901", "y1901"],  
+        "MORNING_START": "09:00:00",
+        "MORNING_BREAK": "10:15:00",
+        "MORNING_RESTART": "10:30:00",
+        "MORNING_END": "11:30:00",
+        "AFTERNOON_START": "13:30:00",
+        "AFTERNOON_END": "15:00:00",
+        "NIGHT_START": "21:00:00",
+        "NIGHT_END": "23:30:00"
+    },
+
+    "CZCE": 
+    {
+        "SymbolsIncluded": ["SR901", "CF901"],
+        "MORNING_START": "09:00:00",
+        "MORNING_BREAK": "10:15:00",
+        "MORNING_RESTART": "10:30:00",
+        "MORNING_END": "11:30:00",
+        "AFTERNOON_START": "13:30:00",
+        "AFTERNOON_END": "15:00:00",
+        "NIGHT_START": "21:00:00",
+        "NIGHT_END": "23:30:00"
+    },
+   
+    "SHFE": 
+    {
+        "SymbolsIncluded": ["au1901", "ag1901"],
+        "MORNING_START": "09:00:00",
+        "MORNING_BREAK": "10:15:00",
+        "MORNING_RESTART": "10:30:00",
+        "MORNING_END": "11:30:00",
+        "AFTERNOON_START": "13:30:00",
+        "AFTERNOON_END": "15:00:00",
+        "NIGHT_START": "21:00:00",
+        "NIGHT_END": "02:30:00"
+    },
+
+    "SHFE1": 
+    {
+        "SymbolsIncluded": ["cu1901","zn1901"],
+        "MORNING_START": "09:00:00",
+        "MORNING_BREAK": "10:15:00",
+        "MORNING_RESTART": "10:30:00",
+        "MORNING_END": "11:30:00",
+        "AFTERNOON_START": "13:30:00",
+        "AFTERNOON_END": "15:00:00",
+        "NIGHT_START": "21:00:00",
+        "NIGHT_END": "01:00:00"
+    },
+
+    "CFFEX": 
+    {
+        "SymbolsIncluded": ["IF1901", "IH1901"],
+        "MORNING_START": "09:00:00",
+        "MORNING_BREAK": "10:15:00",
+        "MORNING_RESTART": "10:30:00",
+        "MORNING_END": "11:30:00",
+        "AFTERNOON_START": "13:30:00",
+        "AFTERNOON_END": "15:00:00"
+    }
+}
