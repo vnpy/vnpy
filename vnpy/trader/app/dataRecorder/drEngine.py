@@ -25,6 +25,7 @@ from vnpy.trader.app.ctaStrategy.ctaTemplate import BarGenerator
 
 from .drBase import *
 from .language import text
+from .drMarketHours import *
 
 
 ########################################################################
@@ -67,6 +68,8 @@ class DrEngine(object):
         
         # 载入设置，订阅行情
         self.loadSetting()
+
+        self.marketHours = MarketsOpHours()
         
         # 启动数据插入线程
         self.start()
@@ -231,7 +234,8 @@ class DrEngine(object):
         """Tick更新"""
         vtSymbol = tick.vtSymbol
         
-        if vtSymbol in self.tickSymbolSet:
+        if vtSymbol in self.tickSymbolSet and (self.marketHours.isMarketOpen(vtSymbol, tick.time) or
+            self.marketHours.isMarketOpen(tick.exchange, tick.time)) :
             self.insertData(TICK_DB_NAME, vtSymbol, tick)
             
             if vtSymbol in self.activeSymbolDict:
