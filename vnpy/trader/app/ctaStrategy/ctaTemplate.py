@@ -363,7 +363,9 @@ class BarGenerator(object):
         
     #----------------------------------------------------------------------
     def updateTick(self, tick):
-        """TICK更新"""
+        """TICK更新
+            1分钟K线更新
+        """
         newMinute = False   # 默认不是新的一分钟
         
         # 尚未创建对象
@@ -412,46 +414,49 @@ class BarGenerator(object):
 
     #----------------------------------------------------------------------
     def updateBar(self, bar):
-        """1分钟K线更新"""
-        # 尚未创建对象
-        if not self.xminBar:
-            self.xminBar = VtBarData()
+        """x分钟K线更新"""
+        if self.xmin > 1 :
+            # 尚未创建对象
+            if not self.xminBar:
+                self.xminBar = VtBarData()
+                
+                self.xminBar.vtSymbol = bar.vtSymbol
+                self.xminBar.symbol = bar.symbol
+                self.xminBar.exchange = bar.exchange
             
-            self.xminBar.vtSymbol = bar.vtSymbol
-            self.xminBar.symbol = bar.symbol
-            self.xminBar.exchange = bar.exchange
-        
-            self.xminBar.open = bar.open
-            self.xminBar.high = bar.high
-            self.xminBar.low = bar.low            
-            
-            self.xminBar.datetime = bar.datetime    # 以第一根分钟K线的开始时间戳作为X分钟线的时间戳
-        # 累加老K线
-        else:
-            self.xminBar.high = max(self.xminBar.high, bar.high)
-            self.xminBar.low = min(self.xminBar.low, bar.low)
-    
-        # 通用部分
-        self.xminBar.close = bar.close        
-        self.xminBar.openInterest = bar.openInterest
-        self.xminBar.volume += int(bar.volume)                
-            
-        # X分钟已经走完
-        if not (bar.datetime.minute + 1) % self.xmin:   # 可以用X整除
-            # 生成上一X分钟K线的时间戳
-            self.xminBar.datetime = self.xminBar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
-            self.xminBar.date = self.xminBar.datetime.strftime('%Y%m%d')
-            self.xminBar.time = self.xminBar.datetime.strftime('%H:%M:%S.%f')
-            
-            # 推送
-            self.onXminBar(self.xminBar)
-            
-            # 清空老K线缓存对象
-            self.xminBar = None
+                self.xminBar.open = bar.open
+                self.xminBar.high = bar.high
+                self.xminBar.low = bar.low            
+                
+                self.xminBar.datetime = bar.datetime    # 以第一根分钟K线的开始时间戳作为X分钟线的时间戳
+            # 累加老K线
+            else:
+                self.xminBar.high = max(self.xminBar.high, bar.high)
+                self.xminBar.low = min(self.xminBar.low, bar.low)
+
+            # 通用部分
+            self.xminBar.close = bar.close        
+            self.xminBar.openInterest = bar.openInterest
+            self.xminBar.volume += int(bar.volume)                
+
+            # X分钟已经走完
+            if not (bar.datetime.minute + 1) % self.xmin:   # 可以用X整除
+                # 生成上一X分钟K线的时间戳
+                self.xminBar.datetime = self.xminBar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
+                self.xminBar.date = self.xminBar.datetime.strftime('%Y%m%d')
+                self.xminBar.time = self.xminBar.datetime.strftime('%H:%M:%S.%f')
+                
+                # 推送
+                self.onXminBar(self.xminBar)
+                
+                # 清空老K线缓存对象
+                self.xminBar = None
 
     #----------------------------------------------------------------------
     def generate(self):
         """手动强制立即完成K线合成"""
+        self.updateTick(self.lastTick)
+        self.updateBar(self.bar)
         self.onBar(self.bar)
         self.bar = None
 
