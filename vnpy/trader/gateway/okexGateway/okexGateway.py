@@ -412,7 +412,7 @@ class OkexSpotApi(WsSpotApi):
         :param symbol_pairs: set[]
         :return:
         """
-        if isinstance(symbol_pairs ,list):
+        if isinstance(symbol_pairs,list):
             self.use_symbol_pairs = set(symbol_pairs)
 
         elif isinstance(symbol_pairs, set):
@@ -500,8 +500,11 @@ class OkexSpotApi(WsSpotApi):
         error = VtErrorData()
         error.gatewayName = self.gatewayName
         error.errorID = 0
-        decom_evt = self.inflate(evt)
-        error.errorMsg = str(decom_evt)
+        if isinstance(evt,bytes):
+            decom_evt = self.inflate(evt)
+            error.errorMsg = str(decom_evt)
+        else:
+            error.errorMsg = str(evt)
         self.gateway.onError(error)
 
     # ----------------------------------------------------------------------
@@ -1640,9 +1643,11 @@ class OkexFuturesApi(WsFuturesApi):
         """重载WsFutureApi.onError错误Event推送"""
         error = VtErrorData()
         error.gatewayName = self.gatewayName
-        #error.errorMsg = str(evt)
-        decom_evt = self.inflate(evt)
-        error.errorMsg = str(decom_evt)
+        if isinstance(evt,bytes):
+            decom_evt = self.inflate(evt)
+            error.errorMsg = str(decom_evt)
+        else:
+            error.errorMsg = str(evt)
         self.gateway.onError(error)
 
     # #----------------------------------------------------------------------
@@ -2142,7 +2147,6 @@ h_this_week_usd'}
                     del tick_bids_depth[price1]
                 else:
                     tick_bids_depth[price1] = float(vol1)
-            volume_rate = 100 if symbol.startswith('btc') else 10
 
             try:
                 # 根据bidPrice价格排序
@@ -2150,15 +2154,11 @@ h_this_week_usd'}
 
                 # 取后五个
                 tick.bidPrice1, tick.bidVolume1 = arr[-1]
-                tick.bidVolume1 = (tick.bidVolume1 / tick.bidPrice1) * volume_rate
                 tick.bidPrice2, tick.bidVolume2 = arr[-2]
-                tick.bidVolume2 = (tick.bidVolume2 / tick.bidPrice2) * volume_rate
                 tick.bidPrice3, tick.bidVolume3 = arr[-3]
-                tick.bidVolume3 = (tick.bidVolume3 / tick.bidPrice3) * volume_rate
                 tick.bidPrice4, tick.bidVolume4 = arr[-4]
-                tick.bidVolume4 = (tick.bidVolume4 / tick.bidPrice4) * volume_rate
                 tick.bidPrice5, tick.bidVolume5 = arr[-5]
-                tick.bidVolume5 = (tick.bidVolume5 / tick.bidPrice5) * volume_rate
+
             except Exception as ex:
                 self.writeLog(u'ContractApi.onDepth exception:{},{}'.format(str(ex), traceback.format_exc()))
 
@@ -2173,15 +2173,10 @@ h_this_week_usd'}
                 arr = sorted(tick_asks_depth.items(),  key=lambda x: x[0])
                 # 取前五个
                 tick.askPrice1, tick.askVolume1 = arr[0]
-                tick.askVolume1 = (tick.askVolume1 / tick.askPrice1) * volume_rate
                 tick.askPrice2, tick.askVolume2 = arr[1]
-                tick.askVolume2 = (tick.askVolume2 / tick.askPrice2) * volume_rate
                 tick.askPrice3, tick.askVolume3 = arr[2]
-                tick.askVolume3 = (tick.askVolume3 / tick.askPrice3) * volume_rate
                 tick.askPrice4, tick.askVolume4 = arr[3]
-                tick.askVolume4 = (tick.askVolume4 / tick.askPrice4) * volume_rate
                 tick.askPrice5, tick.askVolume5 = arr[4]
-                tick.askVolume5 = (tick.askVolume5 / tick.askPrice5) * volume_rate
 
             except Exception as ex:
                 self.writeLog(u'ContractApi.onDepth exception:{},{}'.format(str(ex), traceback.format_exc()))
@@ -2477,7 +2472,7 @@ h_this_week_usd'}
 
                 # 更新持仓信息
                 pos = VtPositionData()
-                pos.gatewayName = self.gatewayName + u'_Future'
+                pos.gatewayName = self.gatewayName #+ u'_Future'
                 pos.symbol = u'{}.{}_Future'.format(symbol, EXCHANGE_OKEX)
                 pos.vtSymbol = u'{}.{}_Future'.format(symbol, EXCHANGE_OKEX)
                 pos.position = account.balance
@@ -2499,7 +2494,7 @@ h_this_week_usd'}
 
                 #if t_balance > 0 or t_rights > 0:
                 account = VtAccountData()
-                account.gatewayName = self.gatewayName + u'_Future'
+                account.gatewayName = self.gatewayName #+ u'_Future'
                 account.accountID = u'[逐仓]{}'.format(symbol)
                 account.vtAccountID = account.accountID
                 account.balance = t_rights
@@ -2507,7 +2502,7 @@ h_this_week_usd'}
 
                 # 更新持仓信息
                 pos = VtPositionData()
-                pos.gatewayName = self.gatewayName + u'_Future'
+                pos.gatewayName = self.gatewayName #+ u'_Future'
                 pos.symbol = u'{}.{}_Future'.format(symbol,EXCHANGE_OKEX)
                 pos.vtSymbol = u'{}.{}_Future'.format(symbol,EXCHANGE_OKEX)
                 pos.position = t_rights
@@ -2541,13 +2536,10 @@ h_this_week_usd'}
         result = resp.get('result', False)
         holdings = resp.get('holding', [])
 
-        # 100美金（btc）；10美金（其他）/每份合约
-        volume_rate = 100 if symbol.startswith('btc') else 10
-
         if result and len(holdings) > 0:
             for holding in holdings:
                 pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
+                pos.gatewayName = self.gatewayName #+ u'_Future'
                 contract_symbol = holding.get('symbol', '{}_usd'.format(symbol)) + ':' + contractType + ':' + str(
                     holding.get('lever_rate', leverage))
                 # 如果此合约不在已订阅清单中，重新订阅
@@ -2569,9 +2561,11 @@ h_this_week_usd'}
                     if price == 0.0:
                         continue
 
-                    pos.position = volume_rate * holding.get('buy_amount') / price
+                    # 20181110 ，改回用多少份合约
+                    pos.position = holding.get('buy_amount')
+
                     if holding.get('buy_available') > 0:
-                        pos.frozen = pos.position - (volume_rate * holding.get('buy_available') / price)
+                        pos.frozen = pos.position - holding.get('buy_available',0)
                     else:
                         pos.frozen = 0
 
@@ -2585,9 +2579,11 @@ h_this_week_usd'}
                     price = tick.lastPrice if tick is not None else sell_pos.price
                     if price == 0:
                         continue
-                    sell_pos.position = volume_rate * holding.get('sell_amount') / price
+
+                    # 20181110 改回用多少份合约
+                    sell_pos.position =holding.get('sell_amount')
                     if holding.get('sell_available', 0) > 0:
-                        sell_pos.frozen = sell_pos.position - volume_rate * holding.get('sell_available') / price
+                        sell_pos.frozen = sell_pos.position -  holding.get('sell_available')
                     else:
                         sell_pos.frozen = 0
                     sell_pos.positionProfit = holding.get('sell_profit_real', 0.0)
@@ -2610,13 +2606,10 @@ h_this_week_usd'}
         result = resp.get('result', False)
         holdings = resp.get('holding', [])
 
-        # 100美金（btc）；10美金（其他）/每份合约
-        volume_rate = 100 if symbol.startswith('btc') else 10
-
         if result and len(holdings) > 0:
             for holding in holdings:
                 pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
+                pos.gatewayName = self.gatewayName #+ u'_Future'
                 contract_symbol = holding.get('symbol', '{}_usd'.format(symbol)) + ':' + contractType + ':' + str(
                     holding.get('lever_rate', 10))
                 # 如果此合约不在已订阅清单中，重新订阅
@@ -2628,7 +2621,7 @@ h_this_week_usd'}
                 pos.symbol = '.'.join([contract_symbol, EXCHANGE_OKEX])
                 pos.vtSymbol = pos.symbol
                 tick = self.tickDict.get(contract_symbol, None)
-
+                pos.gatewayName = self.gatewayName #+ u'_Future'
                 if holding.get('buy_amount', 0) > 0:
                     # 持有多仓
                     pos.direction = DIRECTION_LONG
@@ -2638,12 +2631,12 @@ h_this_week_usd'}
                     if price == 0.0:
                         continue
 
-                    pos.position = volume_rate * holding.get('buy_amount') / price
+                    pos.position =holding.get('buy_amount')
                     if holding.get('buy_available') > 0:
-                        pos.frozen = pos.position - (volume_rate * holding.get('buy_available') / price)
+                        pos.frozen = pos.position -  holding.get('buy_available',0)
                     else:
                         pos.frozen = 0
-                    pos.positionProfit = holding.get('buy_profit_real', 0.0)
+                    pos.positionProfit = holding.get('profit_real', 0.0)
                     self.gateway.onPosition(pos)
                 if holding.get('sell_amount', 0) > 0:
                     sell_pos = copy(pos)
@@ -2653,12 +2646,12 @@ h_this_week_usd'}
                     price = tick.lastPrice if tick is not None else sell_pos.price
                     if price == 0:
                         continue
-                    sell_pos.position = volume_rate * holding.get('sell_amount') / price
+                    sell_pos.position =holding.get('sell_amount')
                     if holding.get('sell_available', 0) > 0:
-                        sell_pos.frozen = sell_pos.position - volume_rate * holding.get('sell_available') / price
+                        sell_pos.frozen = sell_pos.position - holding.get('sell_available',0)
                     else:
                         sell_pos.frozen = 0
-                    sell_pos.positionProfit = holding.get('sell_profit_real', 0.0)
+                    sell_pos.positionProfit = holding.get('profit_real', 0.0)
                     self.gateway.onPosition(sell_pos)
     # ----------------------------------------------------------------------
     """ 所有委托查询回报 ws_data
@@ -2736,18 +2729,17 @@ h_this_week_usd'}
                 order.orderID = self.orderIdDict[orderId]                # 更新orderId为本地的序列号
                 order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
 
-                order.price = order_data['price']
-                volume_rate = 100 if order.symbol.startswith('btc') else 10
-                order.totalVolume = order_data['amount'] * volume_rate
-                order.direction, offset = priceContractOffsetTypeMap[str(order_data['type'])]
+                order.price = order_data.get('price')
+                #volume_rate = 100 if order.symbol.startswith('btc') else 10
+                order.totalVolume = order_data.get('amount')
+                order.direction, offset = priceContractOffsetTypeMap.get(str(order_data.get('type')))
                 order.orderTime = datetime.now().strftime("%H:%M:%S.%f")
                 self.orderDict[orderId] = order
                 self.gateway.writeLog(u'新增本地orderDict缓存,okex orderId:{},order.orderid:{}'.format(orderId, order.orderID))
             else:
                 order = self.orderDict[orderId]
-                volume_rate = 100 if order.symbol.startswith('btc') else 10
 
-            order.tradedVolume = order_data['deal_amount'] * volume_rate
+            order.tradedVolume = order_data['deal_amount']
             order.status = statusMap[int(order_data['status'])]
             # 推送期货委托单到vtGatway.OnOrder中
             self.gateway.onOrder(copy(order))
@@ -2838,22 +2830,21 @@ user_id': 6548935, u'contract_id': 201802160040063L, u'price': 24.555, u'create_
             order.orderID = localNo
             order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
             order.price = float(data['price'])
-            volume_rate = 100 if order.symbol.startswith('btc') else 10
-            order.totalVolume = float(data['amount'])* volume_rate
+            order.totalVolume = float(data['amount'])
             order.direction, order.offset = priceContractOffsetTypeMap[str(data['type'])]
-            order.tradedVolume = float(data['deal_amount']) * volume_rate
+            order.tradedVolume = float(data['deal_amount'])
             order.status = statusMap[data['status']]
             self.orderDict[orderId] = order
             self.gateway.writeLog(u'新增order,orderid:{},symbol:{},data:{}'.format(order.orderID,order.symbol,data))
         else:
             # 更新成交数量/状态
             order = self.orderDict[orderId]
-            volume_rate = 100 if order.symbol.startswith('btc') else 10
+
             self.gateway.writeLog(u'orderid:{},tradedVolume:{}=>{},status:{}=>{}'
                                   .format(order.orderID,
-                                          order.tradedVolume, float(data['deal_amount']*volume_rate),
+                                          order.tradedVolume, float(data['deal_amount']),
                                           order.status, statusMap[data['status']]))
-            order.tradedVolume = float(data['deal_amount']) * volume_rate
+            order.tradedVolume = float(data['deal_amount'])
             order.status = statusMap[data['status']]
 
         # 发出期货委托事件
@@ -2876,8 +2867,7 @@ user_id': 6548935, u'contract_id': 201802160040063L, u'price': 24.555, u'create_
             trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
 
             trade.price = float(data['price'])
-            volume_rate = 100 if trade.symbol.startswith('btc') else 10
-            trade.volume = float(now_volume) * volume_rate
+            trade.volume = float(now_volume)
 
             trade.direction, trade.offset = priceContractOffsetTypeMap[str(data['type'])]
 
@@ -3142,7 +3132,7 @@ d', u'balance': 4.96199982}, u'channel': u'ok_sub_futureusd_userinfo'}
 
                     # print dic_inf
                     pos = VtPositionData()
-                    pos.gatewayName = self.gatewayName
+                    pos.gatewayName = self.gatewayName #+ u'_Future'
 
                     if int(inf["position"]) == 1:
                         pos.direction = DIRECTION_LONG
@@ -3166,11 +3156,9 @@ d', u'balance': 4.96199982}, u'channel': u'ok_sub_futureusd_userinfo'}
                     if price == 0.0:
                         continue
 
-                    volume_rate = 100 if symbol.startswith('btc') else 10
-                    pos.frozen = volume_rate * float(inf.get("hold_amount",0.0)) - float(inf.get('eveningup',0.0)) / price
-                    pos.position = volume_rate * float(inf.get("hold_amount",0.0)) / price
+                    pos.frozen = float(inf.get("hold_amount",0.0)) - float(inf.get('eveningup',0.0))
+                    pos.position = float(inf.get("hold_amount",0.0))
                     pos.positionProfit = float(inf.get("profitreal",0.0))
-
                     # print inf , pos.symbol
                     self.gateway.onPosition(pos)
             else:
@@ -3182,7 +3170,7 @@ d', u'balance': 4.96199982}, u'channel': u'ok_sub_futureusd_userinfo'}
 
                 #
                 pos = VtPositionData()
-                pos.gatewayName = self.gatewayName
+                pos.gatewayName = self.gatewayName #+ u'_Future'
 
                 # 持仓合约的方向
                 pos.direction = DIRECTION_LONG if int(inf.get("position",0)) == 1 else DIRECTION_SHORT
@@ -3198,9 +3186,9 @@ d', u'balance': 4.96199982}, u'channel': u'ok_sub_futureusd_userinfo'}
                 if price == 0.0:
                     continue
                 # 计算持仓量/冻结量： 100(或10) * hold_amount/ 价格
-                volume_rate = 100 if symbol.startswith('btc') else 10
-                pos.frozen = volume_rate * (float(inf.get('hold_amount',0.0)) - float(inf.get('eveningup',0.0)))/price
-                pos.position = volume_rate * float(inf.get('hold_amount',0.0)) / price
+
+                pos.frozen = (float(inf.get('hold_amount',0.0)) - float(inf.get('eveningup',0.0)))
+                pos.position =  float(inf.get('hold_amount',0.0))
                 pos.positionProfit = float(inf.get('realized',0.0))
 
                 # print inf , pos.symbol
@@ -3244,13 +3232,22 @@ d', u'balance': 4.96199982}, u'channel': u'ok_sub_futureusd_userinfo'}
         order.orderTime = dt.strftime("%H:%M:%S.%f")
         self.localOrderDict[vtOrderID] = order
 
-        self.writeLog(u'futureSendOrder 发送:symbol:{},合约类型:{},交易类型:{},价格:{},委托量:{}'.
-                      format(symbol + "_usd", contract_type , type_ , str(req.price), str(req.volume)))
+        # 100美金（btc）；10美金（其他）/每份合约
+        volume_rate = 100 if symbol.startswith('btc') else 10
+        # 预计冻结的币量
+        frozend_quote = (volume_rate/order.price) * req.volume
+        # 计算杠杆后的币量
+        order_amount = frozend_quote * int(leverage)
+
+        self.writeLog(u'futureSendOrder 发送:symbol:{},合约类型:{},交易类型:{},价格:{},合约委托数:{},预计冻结{}:{},期货总额:{}'.
+                      format(symbol + "_usd", contract_type , type_ , str(req.price), str(req.volume),
+                             frozend_quote,symbol,order_amount,symbol))
         try:
-            volume_rate = 100 if symbol.startswith('btc') else 10
-            orginal_volume = req.volume
-            req.volume = 1 if round((req.volume * req.price)/volume_rate) == 0 else round((req.volume * req.price)/volume_rate)
-            self.writeLog(u'转换为ok合约数:{}=>{}'.format(orginal_volume, req.volume))
+
+            #orginal_volume = req.volume
+            #amount = round((req.volume * req.price)/volume_rate)
+            #req.volume = 1 if amount== 0 else amount
+            #self.writeLog(u'转换为ok合约数:{}=>{}'.format(orginal_volume, req.volume))
             self.futureTrade(symbol + "_usd", contract_type, type_, str(req.price), str(req.volume),
                              _lever_rate=self._use_leverage)
 
