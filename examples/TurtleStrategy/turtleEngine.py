@@ -203,12 +203,22 @@ class DailyResult(object):
             close = self.closeDict[vtSymbol]
             size = SIZE_DICT[vtSymbol]
             
+            slippage = SLIPPAGE_DICT[vtSymbol]
+            variableCommission = VARIABLE_COMMISSION_DICT[vtSymbol]
+            fixedCommission = FIXED_COMMISSION_DICT[vtSymbol]
+            
             for trade in l:
                 if trade.direction == DIRECTION_LONG:
                     side = 1
                 else:
                     side = -1
+                
+                commissionCost = (trade.volume * fixedCommission + 
+                                  trade.volume * trade.price * variableCommission)
+                slippageCost = trade.volume * slippage
+                    
                 pnl = (close - trade.price) * trade.volume * side * size
+                pnl -= (commissionCost + slippageCost)
                 self.tradingPnl += pnl
     
     #----------------------------------------------------------------------

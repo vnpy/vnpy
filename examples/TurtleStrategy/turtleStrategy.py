@@ -253,7 +253,6 @@ class TurtleSignal(object):
             tradePrice = min(self.bar.open, price)
         
         return tradePrice
-        
 
 
 ########################################################################
