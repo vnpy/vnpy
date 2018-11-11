@@ -15,6 +15,13 @@ from turtleStrategy import TurtlePortfolio
 DAILY_DB_NAME = 'VnTrader_Daily_Db'
 
 
+SIZE_DICT = {}
+PRICETICK_DICT = {}
+VARIABLE_COMMISSION_DICT = {}
+FIXED_COMMISSION_DICT = {}
+SLIPPAGE_DICT = {}
+
+
 
 ########################################################################
 class BacktestingEngine(object):
@@ -50,20 +57,21 @@ class BacktestingEngine(object):
         self.endDt = endDt
     
     #----------------------------------------------------------------------
-    def initPortfolio(self, filename):
+    def initPortfolio(self, filename, portfolioValue=10000000):
         """"""
         with open(filename) as f:
             r = DictReader(f)
             for d in r:
                 self.vtSymbolList.append(d['vtSymbol'])
-                self.sizeDict[d['vtSymbol']] = int(d['size'])
-                self.priceTickDict[d['priceTick']] = float(d['priceTick'])
-                self.variableCommissionDict[d['vtSymbol']] = float(d['variableCommission'])
-                self.fixedCommissionDict[d['vtSymbol']] = float(d['fixedCommission'])
-                self.slippageDict[d['vtSymbol']] = float(d['slippage'])
+                
+                SIZE_DICT[d['vtSymbol']] = int(d['size'])
+                PRICETICK_DICT[d['vtSymbol']] = float(d['priceTick'])
+                VARIABLE_COMMISSION_DICT[d['vtSymbol']] = float(d['variableCommission'])
+                FIXED_COMMISSION_DICT[d['vtSymbol']] = float(d['fixedCommission'])
+                SLIPPAGE_DICT[d['vtSymbol']] = float(d['slippage'])
             
         self.portfolio = TurtlePortfolio(self)
-        self.portfolio.init(self.vtSymbolList)
+        self.portfolio.init(portfolioValue, self.vtSymbolList, SIZE_DICT)
     
     #----------------------------------------------------------------------
     def loadData(self):
@@ -117,6 +125,11 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, direction, offset, price, volume):
         """"""
+        # 对价格四舍五入
+        priceTick = PRICETICK_DICT[vtSymbol]
+        price = int(round(price/priceTick, 0)) * priceTick
+        
+        # 记录成交数据
         trade = TradeData(vtSymbol, direction, offset, price, volume)
         l = self.tradeDict.setdefault(self.currentDt, [])        
         l.append(trade)
@@ -188,13 +201,14 @@ class DailyResult(object):
         """计算当日交易盈亏"""
         for vtSymbol, l in self.tradeDict.items():
             close = self.closeDict[vtSymbol]
+            size = SIZE_DICT[vtSymbol]
             
             for trade in l:
                 if trade.direction == DIRECTION_LONG:
                     side = 1
                 else:
                     side = -1
-                pnl = (close - trade.price) * trade.volume * side
+                pnl = (close - trade.price) * trade.volume * side * size
                 self.tradingPnl += pnl
     
     #----------------------------------------------------------------------
@@ -203,7 +217,9 @@ class DailyResult(object):
         for vtSymbol, pos in self.posDict.items():
             previousClose = self.previousCloseDict.get(vtSymbol, 0)
             close = self.closeDict[vtSymbol]
-            pnl = (close - previousClose) * pos
+            size = SIZE_DICT[vtSymbol]
+            
+            pnl = (close - previousClose) * pos * size
             self.holdingPnl += pnl
 
     #----------------------------------------------------------------------

@@ -267,15 +267,23 @@ class TurtlePortfolio(object):
         
         self.signalDict = defaultdict(list)
         
-        self.posDict = {}       # 每个品种的持仓情况
-        self.totalLong = 0      # 总的多头持仓
-        self.totalShort = 0     # 总的空头持仓
+        self.posDict = {}           # 每个品种的持仓情况
+        self.totalLong = 0          # 总的多头持仓
+        self.totalShort = 0         # 总的空头持仓
         
-        self.tradingDict = {}   # 交易中的信号字典
+        self.tradingDict = {}       # 交易中的信号字典
+        
+        self.sizeDict = {}          # 合约大小字典
+        self.unitDict = {}          # 按照波动幅度计算的委托量单位字典
+        
+        self.portfolioValue = 0     # 组合市值
     
     #----------------------------------------------------------------------
-    def init(self, vtSymbolList):
+    def init(self, portfolioValue, vtSymbolList, sizeDict):
         """"""
+        self.portfolioValue = portfolioValue
+        self.sizeDict = sizeDict
+        
         for vtSymbol in vtSymbolList:
             signal1 = TurtleSignal(self, vtSymbol, 20, 10, 20, True)
             signal2 = TurtleSignal(self, vtSymbol, 55, 20, 20, False)
@@ -297,6 +305,16 @@ class TurtlePortfolio(object):
         """对交易信号进行过滤，符合条件的才发单执行"""
         pos = self.posDict[signal.vtSymbol]
         
+        # 如果当前无仓位，则重新根据波动幅度计算委托量单位
+        if not pos:
+            size = self.sizeDict[signal.vtSymbol]
+            riskValue = self.portfolioValue * 0.01
+            unit = riskValue / (signal.atrVolatility * size)
+            unit = int(round(unit, 0))
+            self.unitDict[signal.vtSymbol] = unit
+        else:
+            unit = self.unitDict[signal.vtSymbol]
+            
         # 开仓
         if offset == OFFSET_OPEN:
             # 检查上一次是否为盈利
@@ -348,10 +366,10 @@ class TurtlePortfolio(object):
         else:
             self.tradingDict.pop(signal.vtSymbol)
         
-        self.sendOrder(signal.vtSymbol, direction, offset, price, volume)
+        self.sendOrder(signal.vtSymbol, direction, offset, price, volume, unit)
     
     #----------------------------------------------------------------------
-    def sendOrder(self, vtSymbol, direction, offset, price, volume):
+    def sendOrder(self, vtSymbol, direction, offset, price, volume, unit):
         """"""
         # 计算合约持仓
         if direction == DIRECTION_LONG:
@@ -370,5 +388,5 @@ class TurtlePortfolio(object):
                 self.totalShort += pos
         
         # 向回测引擎中发单记录
-        self.engine.sendOrder(vtSymbol, direction, offset, price, volume)
+        self.engine.sendOrder(vtSymbol, direction, offset, price, volume*unit)
     
