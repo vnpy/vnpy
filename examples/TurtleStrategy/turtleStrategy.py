@@ -78,10 +78,12 @@ class TurtleSignal(object):
         self.pos = 0                    # 信号持仓
         self.result = None              # 当前的交易
         self.resultList = []            # 交易列表
+        self.bar = None                 # 最新K线
     
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """"""
+        self.bar = bar
         self.am.updateBar(bar)
         if not self.am.inited:
             return
@@ -175,6 +177,8 @@ class TurtleSignal(object):
     #----------------------------------------------------------------------
     def buy(self, price, volume):
         """买入开仓"""
+        price = self.calculateTradePrice(DIRECTION_LONG, price)
+        
         self.open(price, volume)
         self.newSignal(DIRECTION_LONG, OFFSET_OPEN, price, volume)
         
@@ -184,13 +188,17 @@ class TurtleSignal(object):
     #----------------------------------------------------------------------
     def sell(self, price):
         """卖出平仓"""
+        price = self.calculateTradePrice(DIRECTION_SHORT, price)
         volume = abs(self.pos)
+        
         self.close(price)
         self.newSignal(DIRECTION_SHORT, OFFSET_CLOSE, price, volume)
     
     #----------------------------------------------------------------------
     def short(self, price, volume):
         """卖出开仓"""
+        price = self.calculateTradePrice(DIRECTION_SHORT, price)
+        
         self.open(price, -volume)
         self.newSignal(DIRECTION_SHORT, OFFSET_OPEN, price, volume)
         
@@ -200,7 +208,9 @@ class TurtleSignal(object):
     #----------------------------------------------------------------------
     def cover(self, price):
         """买入平仓"""
+        price = self.calculateTradePrice(DIRECTION_LONG, price)
         volume = abs(self.pos)
+        
         self.close(price)
         self.newSignal(DIRECTION_LONG, OFFSET_CLOSE, price, volume)
 
@@ -223,13 +233,26 @@ class TurtleSignal(object):
         self.result = None
 
     #----------------------------------------------------------------------
-    def lastPnl(self):
-        """上一笔交易的盈亏"""
+    def getLastPnl(self):
+        """获取上一笔交易的盈亏"""
         if not self.resultList:
             return 0
         
         result = self.resultList[-1]
         return result.pnl
+    
+    #----------------------------------------------------------------------
+    def calculateTradePrice(self, direction, price):
+        """计算成交价格"""
+        # 买入时，停止单成交的最优价格不能低于当前K线开盘价
+        if direction == DIRECTION_LONG:
+            tradePrice = max(self.bar.open, price)
+        # 卖出时，停止单成交的最优价格不能高于当前K线开盘价
+        else:
+            tradePrice = min(self.bar.open, price)
+        
+        return tradePrice
+        
 
 
 ########################################################################
@@ -275,7 +298,7 @@ class TurtlePortfolio(object):
         if offset == OFFSET_OPEN:
             # 检查上一次是否为盈利
             if signal.profitCheck:
-                pnl = signal.lastPnl()
+                pnl = signal.getLastPnl()
                 if pnl > 0:
                     return
                 
