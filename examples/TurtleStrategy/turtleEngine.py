@@ -72,6 +72,9 @@ class BacktestingEngine(object):
             
         self.portfolio = TurtlePortfolio(self)
         self.portfolio.init(portfolioValue, self.vtSymbolList, SIZE_DICT)
+        
+        self.writeLog(u'投资组合的合约代码%s' %(self.vtSymbolList))
+        self.writeLog(u'投资组合的初始价值%s' %(portfolioValue))
     
     #----------------------------------------------------------------------
     def loadData(self):
@@ -100,6 +103,8 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def runBacktesting(self):
         """"""
+        self.writeLog(u'开始回放K线数据')
+        
         for dt, barDict in self.dataDict.items():
             self.currentDt = dt
             
@@ -115,12 +120,18 @@ class BacktestingEngine(object):
             
             self.resultList.append(result)
             self.result = result
+        
+        self.writeLog(u'K线数据回放结束')
     
     #----------------------------------------------------------------------
     def calculateResult(self):
         """"""
+        self.writeLog(u'开始统计回测结果')
+        
         for result in self.resultList:
             result.calculatePnl()
+        
+        self.writeLog(u'回测结果统计结束')
     
     #----------------------------------------------------------------------
     def sendOrder(self, vtSymbol, direction, offset, price, volume):
@@ -139,7 +150,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """"""
-        print '%s:%s' %(datetime.now().strftime('%H:%M:%S.%f'), content)
+        print '%s:\t%s' %(datetime.now().strftime('%H:%M:%S.%f'), content)
     
     
 ########################################################################

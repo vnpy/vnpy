@@ -75,7 +75,7 @@ class TurtleSignal(object):
         self.shortEntry4 = 0
         self.shortStop = 0              # 空头止损位
         
-        self.unit = 0                    # 信号持仓
+        self.unit = 0                   # 信号持仓
         self.result = None              # 当前的交易
         self.resultList = []            # 交易列表
         self.bar = None                 # 最新K线
