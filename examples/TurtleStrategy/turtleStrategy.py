@@ -7,8 +7,8 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
 from vnpy.trader.vtUtility import ArrayManager
 
 
-MAX_PRODUCT_POS = 4
-MAX_DIRECTION_POS = 10
+MAX_PRODUCT_POS = 4         # 单品种最大持仓
+MAX_DIRECTION_POS = 10      # 单方向最大持仓
 
 
 ########################################################################
@@ -156,6 +156,7 @@ class TurtleSignal(object):
         self.entryUp, self.entryDown = self.am.donchian(self.entryWindow)
         self.exitUp, self.exitDown = self.am.donchian(self.exitWindow)
         
+        # 有持仓后，ATR波动率和入场位等都不再变化
         if not self.pos:
             self.atrVolatility = self.am.atr(self.atrWindow)
             

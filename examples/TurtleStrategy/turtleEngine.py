@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from csv import DictReader
 from datetime import datetime
 
 from pymongo import MongoClient
@@ -23,7 +24,14 @@ class BacktestingEngine(object):
     def __init__(self):
         """Constructor"""
         self.portfolio = None
+        
+        # 合约配置信息
         self.vtSymbolList = []
+        self.sizeDict = {}                  # 合约大小字典
+        self.priceTickDict = {}             # 最小价格变动字典
+        self.variableCommissionDict = {}    # 变动手续费字典
+        self.fixedCommissionDict = {}       # 固定手续费字典
+        self.slippageDict = {}              # 滑点成本字典
         
         self.startDt = None
         self.endDt = None
@@ -42,12 +50,20 @@ class BacktestingEngine(object):
         self.endDt = endDt
     
     #----------------------------------------------------------------------
-    def initPortfolio(self, vtSymbolList):
+    def initPortfolio(self, filename):
         """"""
-        self.vtSymbolList = vtSymbolList
-        
+        with open(filename) as f:
+            r = DictReader(f)
+            for d in r:
+                self.vtSymbolList.append(d['vtSymbol'])
+                self.sizeDict[d['vtSymbol']] = int(d['size'])
+                self.priceTickDict[d['priceTick']] = float(d['priceTick'])
+                self.variableCommissionDict[d['vtSymbol']] = float(d['variableCommission'])
+                self.fixedCommissionDict[d['vtSymbol']] = float(d['fixedCommission'])
+                self.slippageDict[d['vtSymbol']] = float(d['slippage'])
+            
         self.portfolio = TurtlePortfolio(self)
-        self.portfolio.init(vtSymbolList)
+        self.portfolio.init(self.vtSymbolList)
     
     #----------------------------------------------------------------------
     def loadData(self):
@@ -111,8 +127,8 @@ class BacktestingEngine(object):
     def writeLog(self, content):
         """"""
         print '%s:%s' %(datetime.now().strftime('%H:%M:%S.%f'), content)
-        
-
+    
+    
 ########################################################################
 class TradeData(object):
     """"""
