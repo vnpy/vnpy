@@ -55,7 +55,7 @@ class TurtleSignal(object):
         self.atrWindow = atrWindow      # 计算ATR周期数
         self.profitCheck = profitCheck  # 是否检查上一笔盈利
         
-        self.am = ArrayManager()        # K线容器
+        self.am = ArrayManager(60)      # K线容器
         
         self.atrVolatility = 0          # ATR波动率
         self.entryUp = 0                # 入场通道
@@ -79,7 +79,7 @@ class TurtleSignal(object):
         self.result = None              # 当前的交易
         self.resultList = []            # 交易列表
         self.bar = None                 # 最新K线
-    
+        
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """"""
@@ -137,7 +137,7 @@ class TurtleSignal(object):
                 return
             
         # 没有仓位或者持有空头仓位的时候，可以做空（加仓）
-        elif self.pos <= 0:
+        if self.pos <= 0:
             if bar.low <= self.shortEntry1 and self.pos > -1:
                 self.short(self.shortEntry1, 1)
             
@@ -269,6 +269,8 @@ class TurtlePortfolio(object):
         self.posDict = {}       # 每个品种的持仓情况
         self.totalLong = 0      # 总的多头持仓
         self.totalShort = 0     # 总的空头持仓
+        
+        self.tradingDict = {}   # 交易中的信号字典
     
     #----------------------------------------------------------------------
     def init(self, vtSymbolList):
@@ -332,6 +334,18 @@ class TurtlePortfolio(object):
                     return
                 
                 volume = min(volume, abs(pos))
+        
+        # 获取当前交易中的信号，如果不是本信号，则忽略
+        currentSignal = self.tradingDict.get(signal.vtSymbol, None)
+        if currentSignal and currentSignal is not signal:
+            return
+            
+        # 开仓则缓存该信号的交易状态
+        if offset == OFFSET_OPEN:
+            self.tradingDict[signal.vtSymbol] = signal
+        # 平仓则清除该信号
+        else:
+            self.tradingDict.pop(signal.vtSymbol)
         
         self.sendOrder(signal.vtSymbol, direction, offset, price, volume)
     
