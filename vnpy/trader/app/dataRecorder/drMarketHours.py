@@ -12,7 +12,7 @@ class MarketOpenings(object):
     def __init__(self, marketName, marketTimes):
         """ Constructor
         marketName is a string,
-        marketTimes is a dict in the following format:
+        marketTimes is a dict in the following format: 
         {
             "SymbolsIncluded": ["P1901", "y1901"],  
             "MORNING_START": "09:00:00",
@@ -64,7 +64,8 @@ class MarketOpenings(object):
         if "MORNING_BREAK" in marketTimes:
             self.morningBreak = datetime.strptime(marketTimes["MORNING_BREAK"], '%H:%M:%S').time()
             session[id] = self.morningBreak
-            self.sessions.append(session[id])
+            self.sessions.append(session)
+            session = [0, 0]
             id = 0
 
         if "MORNING_RESTART" in marketTimes and id == 0:
@@ -75,7 +76,8 @@ class MarketOpenings(object):
         if "MORNING_END" in marketTimes and id == 1:
             self.morningEnd = datetime.strptime(marketTimes["MORNING_END"], '%H:%M:%S').time()
             session[id] = self.morningEnd
-            self.sessions.append(session[id])
+            self.sessions.append(session)
+            session = [0, 0]
             id = 0
 
         if "AFTERNOON_START" in marketTimes and id == 0:
@@ -86,7 +88,8 @@ class MarketOpenings(object):
         if "AFTERNOON_END" in marketTimes and id == 1:
             self.aftEnd = datetime.strptime(marketTimes["AFTERNOON_END"], '%H:%M:%S').time()
             session[id] = self.aftEnd
-            self.sessions.append(session[id])
+            self.sessions.append(session)
+            session = [0, 0]
             id = 0
 
         if "NIGHT_START" in marketTimes and id == 0:
@@ -97,7 +100,7 @@ class MarketOpenings(object):
         if "NIGHT_END" in marketTimes and id == 0:
             self.nightEnd = datetime.strptime(marketTimes["NIGHT_END"], '%H:%M:%S').time()
             session[id] = self.nightEnd
-            self.sessions.append(session[id])
+            self.sessions.append(session)
 
 
     def isMarketOpen(self, curTime):
@@ -144,14 +147,14 @@ class MarketsOpHours(object):
         """ 
         checks if market is open at 'curTime'
         """
-
+        cTime = datetime.strptime(curTime, '%H:%M:%S.%f').time()
         if symbol in self.markettimes :
-            if self.markettimes[symbol].isMarketOpen(curTime) :
+            if self.markettimes[symbol].isMarketOpen(cTime) :
                 return True
             else :
                 return False
         else :
-            if self.markettimes[exchange].isMarketOpen(curTime) : 
+            if self.markettimes[exchange].isMarketOpen(cTime) : 
                 return True
 
         False
