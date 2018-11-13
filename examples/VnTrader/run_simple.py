@@ -2,11 +2,12 @@
 
 # 重载sys模块，设置默认字符串编码方式为utf8
 import sys
+
 try:
     reload(sys)  # Python 2
-    sys.setdefaultencoding('utf8')
+    sys.setdefaultencoding("utf8")
 except NameError:
-    pass         # Python 3
+    pass  # Python 3
 
 # 判断操作系统
 import platform
@@ -23,7 +24,7 @@ from vnpy.trader.uiMainWindow import MainWindow
 from vnpy.trader.gateway import ctpGateway
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
+from vnpy.trader.app import riskManager, ctaStrategy, spreadTrading
 
 
 # ----------------------------------------------------------------------
@@ -54,5 +55,5 @@ def main():
     sys.exit(qApp.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

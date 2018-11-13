@@ -9,4 +9,4 @@ from __future__ import unicode_literals
 
 from .data_api import DataApi
 
-__all__ = ['DataApi']
+__all__ = ["DataApi"]

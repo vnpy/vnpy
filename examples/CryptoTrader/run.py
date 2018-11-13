@@ -2,15 +2,17 @@
 
 # 重载sys模块，设置默认字符串编码方式为utf8
 try:
-    reload         # Python 2
+    reload  # Python 2
 except NameError:  # Python 3
     from importlib import reload
 import sys
+
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding("utf8")
 
 # 判断操作系统
 import platform
+
 system = platform.system()
 
 # vn.trader模块
@@ -19,19 +21,26 @@ from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiQt import createQApp
 
 # 加载底层接口
-from vnpy.trader.gateway import (huobiGateway, okexGateway,
-                                 binanceGateway, bitfinexGateway,
-                                 bitmexGateway, fcoinGateway,
-                                 bigoneGateway, lbankGateway,
-                                 coinbaseGateway, ccxtGateway)
+from vnpy.trader.gateway import (
+    huobiGateway,
+    okexGateway,
+    binanceGateway,
+    bitfinexGateway,
+    bitmexGateway,
+    fcoinGateway,
+    bigoneGateway,
+    lbankGateway,
+    coinbaseGateway,
+    ccxtGateway,
+)
 
 # 加载上层应用
-from vnpy.trader.app import (algoTrading)
+from vnpy.trader.app import algoTrading
 
 # 当前目录组件
 from uiCryptoWindow import MainWindow
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 def main():
     """主程序入口"""
     # 创建Qt应用对象
@@ -54,10 +63,10 @@ def main():
     me.addGateway(okexGateway)
     me.addGateway(binanceGateway)
     me.addGateway(bitfinexGateway)
-    
+
     # 添加上层应用
     me.addApp(algoTrading)
-    
+
     # 创建主窗口
     mw = MainWindow(me, ee)
     mw.showMaximized()
@@ -66,5 +75,5 @@ def main():
     sys.exit(qApp.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

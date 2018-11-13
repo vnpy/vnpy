@@ -9,4 +9,4 @@ from __future__ import unicode_literals
 
 from .trade_api import TradeApi
 
-__all__ = ['TradeApi']
+__all__ = ["TradeApi"]

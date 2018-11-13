@@ -3,8 +3,8 @@
 from .omEngine import OmEngine
 from .uiOmWidget import OmManager
 
-appName = 'OptionMaster'
-appDisplayName = u'OptionMaster'
+appName = "OptionMaster"
+appDisplayName = u"OptionMaster"
 appEngine = OmEngine
 appWidget = OmManager
-appIco = 'om.ico'
+appIco = "om.ico"

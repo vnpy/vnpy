@@ -12,10 +12,10 @@ from vnpy.trader.uiMainWindow import MainWindow
 from vnpy.trader.gateway import futuGateway
 
 # 加载上层应用
-from vnpy.trader.app import riskManager#, ctaStrategy
+from vnpy.trader.app import riskManager  # , ctaStrategy
 
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 def main():
     """主程序入口"""
     # 创建Qt应用对象
@@ -29,11 +29,11 @@ def main():
 
     # 添加交易接口
     me.addGateway(futuGateway)
-    
+
     # 添加上层应用
     me.addApp(riskManager)
-    #me.addApp(ctaStrategy)
-    
+    # me.addApp(ctaStrategy)
+
     # 创建主窗口
     mw = MainWindow(me, ee)
     mw.showMaximized()
@@ -42,5 +42,5 @@ def main():
     sys.exit(qApp.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -7,5 +7,5 @@
 from dataService import *
 
 
-if __name__ == '__main__':
-    downMinuteBarBySymbol('BINANCE_SPOT_BTC_USDT', '1MIN', '20180725', '20180726')
+if __name__ == "__main__":
+    downMinuteBarBySymbol("BINANCE_SPOT_BTC_USDT", "1MIN", "20180725", "20180726")

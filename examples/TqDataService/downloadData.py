@@ -9,9 +9,19 @@
 from dataService import *
 
 
-
-if __name__ == '__main__':
-    symbols = ["CFFEX.IF1710", "CFFEX.IF1711", "CFFEX.IF1712", "CFFEX.IF1803",
-                "CFFEX.IH1710", "CFFEX.IH1711", "CFFEX.IH1712", "CFFEX.IH1803",
-                "CFFEX.IC1710", "CFFEX.IC1711", "CFFEX.IC1712", "CFFEX.IC1803"]
+if __name__ == "__main__":
+    symbols = [
+        "CFFEX.IF1710",
+        "CFFEX.IF1711",
+        "CFFEX.IF1712",
+        "CFFEX.IF1803",
+        "CFFEX.IH1710",
+        "CFFEX.IH1711",
+        "CFFEX.IH1712",
+        "CFFEX.IH1803",
+        "CFFEX.IC1710",
+        "CFFEX.IC1711",
+        "CFFEX.IC1712",
+        "CFFEX.IC1803",
+    ]
     downloadAllMinuteBar(1000, symbols)

@@ -19,31 +19,33 @@ from sortedcontainers import SortedDict
 class TqApi(object):
     """天勤行情接口"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self):
-        """Constructor"""        
-        self.data = {}          # 数据存储
-        
-        self.client = None      # websocket客户端
-        self.requests = []      # 请求缓存
-        
-        self.quote_callback_func = None     # tick回调函数
+        """Constructor"""
+        self.data = {}  # 数据存储
+
+        self.client = None  # websocket客户端
+        self.requests = []  # 请求缓存
+
+        self.quote_callback_func = None  # tick回调函数
         self.quote_ins_list = []
-        self.chart_subscribes = {}       # k线回调函数
-        
-    #----------------------------------------------------------------------
-    def connect(self):        
+        self.chart_subscribes = {}  # k线回调函数
+
+    # ----------------------------------------------------------------------
+    def connect(self):
         """
         建立行情连接。
         """
         self.start()
-        
+
         # 启动tornado的IO线程
-        loop_thread = threading.Thread(target=lambda: tornado.ioloop.IOLoop.current().start())
+        loop_thread = threading.Thread(
+            target=lambda: tornado.ioloop.IOLoop.current().start()
+        )
         loop_thread.setDaemon(True)
         loop_thread.start()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def subscribe_quote(self, ins_list, callback_func=None):
         """
         订阅实时行情.
@@ -63,14 +65,13 @@ class TqApi(object):
             self.quote_callback_func = callback_func
             self.quote_ins_list = ins_list
 
-        req = {
-            "aid": "subscribe_quote",
-            "ins_list": ",".join(ins_list),
-        }
+        req = {"aid": "subscribe_quote", "ins_list": ",".join(ins_list)}
         self.send_json(req)
 
-    #----------------------------------------------------------------------
-    def subscribe_chart(self, ins_id, duration_seconds, data_length=200, callback_func=None):
+    # ----------------------------------------------------------------------
+    def subscribe_chart(
+        self, ins_id, duration_seconds, data_length=200, callback_func=None
+    ):
         """
         订阅历史行情序列.
         订阅指定合约及周期的历史行情序列（K线数据序列或Tick数据序列），这些序列数据会持续推送
@@ -85,7 +86,7 @@ class TqApi(object):
             订阅 CFFEX.IF1709 的tick线： subscribe_chart("CFFEX.IF1709", 0)
         """
         chart_id = self._generate_chart_id(ins_id, duration_seconds)
-        
+
         # 限制最大数据长度
         if data_length > 8964:
             data_length = 8964
@@ -101,7 +102,7 @@ class TqApi(object):
         self.chart_subscribes[chart_id] = req
         self.chart_subscribes[chart_id]["callback"] = callback_func
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_quote(self, ins_id):
         """
         获取报价数据
@@ -133,7 +134,7 @@ class TqApi(object):
         """
         return self.data.setdefault("quotes", {}).get(ins_id, None)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_tick_serial(self, ins_id):
         """
         获取tick序列数据
@@ -158,9 +159,11 @@ class TqApi(object):
             }
         }
         """
-        return self.data.setdefault("ticks", {}).setdefault(ins_id, {}).get("data", None)
+        return (
+            self.data.setdefault("ticks", {}).setdefault(ins_id, {}).get("data", None)
+        )
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def get_kline_serial(self, ins_id, duration_seconds):
         """
         获取k线序列数据
@@ -184,14 +187,21 @@ class TqApi(object):
         }
         """
         dur_id = "%d" % (duration_seconds * 1000000000)
-        return self.data.setdefault("klines", {}).setdefault(ins_id, {}).setdefault(dur_id, {}).get("data", None)
+        return (
+            self.data.setdefault("klines", {})
+            .setdefault(ins_id, {})
+            .setdefault(dur_id, {})
+            .get("data", None)
+        )
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     @tornado.gen.coroutine
     def start(self):
         """启动websocket客户端"""
-        self.client = yield tornado.websocket.websocket_connect(url="ws://127.0.0.1:7777/")
-        
+        self.client = yield tornado.websocket.websocket_connect(
+            url="ws://127.0.0.1:7777/"
+        )
+
         # 发出所有缓存的请求
         for req in self.requests:
             self.client.write_message(req)
@@ -202,11 +212,11 @@ class TqApi(object):
             msg = yield self.client.read_message()
             self.on_receive_msg(msg)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def send_json(self, obj):
         """发送JSON内容"""
         s = json.dumps(obj)
-        
+
         # 如果已经创建了客户端则直接发出请求
         if self.client:
             self.client.write_message(s)
@@ -214,15 +224,15 @@ class TqApi(object):
         else:
             self.requests.append(s)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def on_receive_msg(self, msg):
         """收到数据推送"""
         pack = json.loads(msg)
-        
-        if 'data' in pack:
+
+        if "data" in pack:
             l = pack["data"]
         else:
-            print(u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack))
+            print(u"on_receive_msg收到的数据中没有data字段，数据内容%s" % str(pack))
             return
 
         for data in l:
@@ -235,7 +245,7 @@ class TqApi(object):
                         for ins_id in section.keys():
                             if ins_id in self.quote_ins_list:
                                 self.quote_callback_func(ins_id)
-                
+
                 elif selector == "ticks":
                     for ins_id in section.keys():
                         chart_id = self._generate_chart_id(ins_id, 0)
@@ -262,7 +272,7 @@ class TqApi(object):
                                 if callback_func:
                                     callback_func(ins_id, dur_seconds)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _merge_obj(self, result, obj):
         """合并对象"""
         for key, value in obj.items():
@@ -274,7 +284,7 @@ class TqApi(object):
             else:
                 result[key] = value
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _generate_chart_id(self, ins_id, duration_seconds):
         """生成图表编号"""
         chart_id = "VN_%s_%d" % (ins_id, duration_seconds)

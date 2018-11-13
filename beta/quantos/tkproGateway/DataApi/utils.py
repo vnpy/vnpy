@@ -5,9 +5,9 @@ from __future__ import unicode_literals
 
 from builtins import *
 from collections import namedtuple
-import datetime  as dt
-import pandas    as pd
-import numpy     as np
+import datetime as dt
+import pandas as pd
+import numpy as np
 
 long_nan = 9223372036854775807
 
@@ -27,15 +27,21 @@ def to_nan(x):
 
 
 def _to_date(row):
-    date = int(row['DATE'])
+    date = int(row["DATE"])
     return pd.datetime(year=date // 10000, month=date // 100 % 100, day=date % 100)
 
 
 def _to_datetime(row):
-    date = int(row['DATE'])
-    time = int(row['TIME']) // 1000
-    return pd.datetime(year=date // 10000, month=date / 100 % 100, day=date % 100,
-                       hour=time // 10000, minute=time // 100 % 100, second=time % 100)
+    date = int(row["DATE"])
+    time = int(row["TIME"]) // 1000
+    return pd.datetime(
+        year=date // 10000,
+        month=date / 100 % 100,
+        day=date % 100,
+        hour=time // 10000,
+        minute=time // 100 % 100,
+        second=time % 100,
+    )
 
 
 def _to_dataframe(cloumset, index_func=None, index_column=None):
@@ -48,16 +54,16 @@ def _to_dataframe(cloumset, index_func=None, index_column=None):
     elif index_column:
         df.index = df[index_column]
         del df.index.name
-    
+
     return df
 
 
 def _error_to_str(error):
     if error:
-        if 'message' in error:
-            return str(error['error']) + "," + error['message']
+        if "message" in error:
+            return str(error["error"]) + "," + error["message"]
         else:
-            return str(error['error']) + ","
+            return str(error["error"]) + ","
     else:
         return ","
 
@@ -69,7 +75,7 @@ def to_obj(class_name, data):
             for d in data:
                 result.append(namedtuple(class_name, list(d.keys()))(*list(d.values())))
             return result
-        
+
         elif type(data) == dict:
             result = namedtuple(class_name, list(data.keys()))(*list(data.values()))
             return result
@@ -106,32 +112,34 @@ def extract_result(cr, data_format="", index_column=None, class_name=""):
     """
         format supports pandas, obj.
     """
-    
-    err = _error_to_str(cr['error']) if 'error' in cr else None
-    if 'result' in cr:
+
+    err = _error_to_str(cr["error"]) if "error" in cr else None
+    if "result" in cr:
         if data_format == "pandas":
             if index_column:
-                return (_to_dataframe(cr['result'], None, index_column), err)
+                return (_to_dataframe(cr["result"], None, index_column), err)
             # if 'TIME' in cr['result']:
             #     return (_to_dataframe(cr['result'], _to_datetime), err)
             # elif 'DATE' in cr['result']:
             #     return (_to_dataframe(cr['result'], _to_date), err)
             else:
-                return (_to_dataframe(cr['result']), err)
-        
-        elif data_format == "obj" and cr['result'] and class_name:
-            r = cr['result']
+                return (_to_dataframe(cr["result"]), err)
+
+        elif data_format == "obj" and cr["result"] and class_name:
+            r = cr["result"]
             if type(r) == list or type(r) == tuple:
                 result = []
                 for d in r:
-                    result.append(namedtuple(class_name, list(d.keys()))(*list(d.values())))
+                    result.append(
+                        namedtuple(class_name, list(d.keys()))(*list(d.values()))
+                    )
             elif type(r) == dict:
                 result = namedtuple(class_name, list(r.keys()))(*list(r.values()))
             else:
                 result = r
-            
+
             return (result, err)
         else:
-            return (cr['result'], err)
+            return (cr["result"], err)
     else:
         return (None, err)

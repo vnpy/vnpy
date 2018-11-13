@@ -3,29 +3,13 @@
 structDict = {}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#心跳包
+# 心跳包
 DFITCTimeOutField = {}
 DFITCTimeOutField["lRequestID"] = "long"
-structDict['DFITCTimeOutField'] = DFITCTimeOutField
+structDict["DFITCTimeOutField"] = DFITCTimeOutField
 
 
-
-#请求报单数据类型(基本报单)
+# 请求报单数据类型(基本报单)
 DFITCInsertOrderField = {}
 DFITCInsertOrderField["accountID"] = "string"
 DFITCInsertOrderField["localOrderID"] = "long"
@@ -44,22 +28,20 @@ DFITCInsertOrderField["reservedType2"] = "int"
 DFITCInsertOrderField["lRequestID"] = "long"
 DFITCInsertOrderField["customCategory"] = "string"
 DFITCInsertOrderField["profitLossPrice"] = "float"
-structDict['DFITCInsertOrderField'] = DFITCInsertOrderField
+structDict["DFITCInsertOrderField"] = DFITCInsertOrderField
 
 
-
-#撤单数据类型
+# 撤单数据类型
 DFITCCancelOrderField = {}
 DFITCCancelOrderField["accountID"] = "string"
 DFITCCancelOrderField["spdOrderID"] = "long"
 DFITCCancelOrderField["localOrderID"] = "long"
 DFITCCancelOrderField["instrumentID"] = "string"
 DFITCCancelOrderField["lRequestID"] = "long"
-structDict['DFITCCancelOrderField'] = DFITCCancelOrderField
+structDict["DFITCCancelOrderField"] = DFITCCancelOrderField
 
 
-
-#委托响应类型
+# 委托响应类型
 DFITCOrderRspDataRtnField = {}
 DFITCOrderRspDataRtnField["localOrderID"] = "long"
 DFITCOrderRspDataRtnField["spdOrderID"] = "long"
@@ -84,59 +66,52 @@ DFITCOrderRspDataRtnField["insertType"] = "int"
 DFITCOrderRspDataRtnField["orderType"] = "int"
 DFITCOrderRspDataRtnField["orderProperty"] = "char"
 DFITCOrderRspDataRtnField["clientID"] = "string"
-structDict['DFITCOrderRspDataRtnField'] = DFITCOrderRspDataRtnField
+structDict["DFITCOrderRspDataRtnField"] = DFITCOrderRspDataRtnField
 
 
-
-
-#查询资金数据类型
+# 查询资金数据类型
 DFITCCapitalField = {}
 DFITCCapitalField["lRequestID"] = "long"
 DFITCCapitalField["accountID"] = "string"
-structDict['DFITCCapitalField'] = DFITCCapitalField
+structDict["DFITCCapitalField"] = DFITCCapitalField
 
 
-
-#查询持仓数据类型
+# 查询持仓数据类型
 DFITCPositionField = {}
 DFITCPositionField["lRequestID"] = "long"
 DFITCPositionField["accountID"] = "string"
 DFITCPositionField["instrumentID"] = "string"
 DFITCPositionField["instrumentType"] = "int"
-structDict['DFITCPositionField'] = DFITCPositionField
+structDict["DFITCPositionField"] = DFITCPositionField
 
 
-
-#交易所合约
+# 交易所合约
 DFITCExchangeInstrumentField = {}
 DFITCExchangeInstrumentField["lRequestID"] = "long"
 DFITCExchangeInstrumentField["accountID"] = "string"
 DFITCExchangeInstrumentField["exchangeID"] = "string"
 DFITCExchangeInstrumentField["instrumentType"] = "int"
-structDict['DFITCExchangeInstrumentField'] = DFITCExchangeInstrumentField
+structDict["DFITCExchangeInstrumentField"] = DFITCExchangeInstrumentField
 
 
-
-#用户登录数据类型
+# 用户登录数据类型
 DFITCUserLoginField = {}
 DFITCUserLoginField["lRequestID"] = "long"
 DFITCUserLoginField["accountID"] = "string"
 DFITCUserLoginField["passwd"] = "string"
 DFITCUserLoginField["companyID"] = "short"
-structDict['DFITCUserLoginField'] = DFITCUserLoginField
+structDict["DFITCUserLoginField"] = DFITCUserLoginField
 
 
-
-#用户退出类型
+# 用户退出类型
 DFITCUserLogoutField = {}
 DFITCUserLogoutField["lRequestID"] = "long"
 DFITCUserLogoutField["accountID"] = "string"
 DFITCUserLogoutField["sessionID"] = "long"
-structDict['DFITCUserLogoutField'] = DFITCUserLogoutField
+structDict["DFITCUserLogoutField"] = DFITCUserLogoutField
 
 
-
-#委托回报
+# 委托回报
 DFITCOrderRtnField = {}
 DFITCOrderRtnField["localOrderID"] = "long"
 DFITCOrderRtnField["spdOrderID"] = "long"
@@ -164,11 +139,10 @@ DFITCOrderRtnField["orderProperty"] = "char"
 DFITCOrderRtnField["minMatchAmount"] = "long"
 DFITCOrderRtnField["clientID"] = "string"
 DFITCOrderRtnField["statusMsg"] = "string"
-structDict['DFITCOrderRtnField'] = DFITCOrderRtnField
+structDict["DFITCOrderRtnField"] = DFITCOrderRtnField
 
 
-
-#成交回报
+# 成交回报
 DFITCMatchRtnField = {}
 DFITCMatchRtnField["localOrderID"] = "long"
 DFITCMatchRtnField["OrderSysID"] = "string"
@@ -198,11 +172,10 @@ DFITCMatchRtnField["turnover"] = "float"
 DFITCMatchRtnField["orderType"] = "int"
 DFITCMatchRtnField["insertType"] = "int"
 DFITCMatchRtnField["clientID"] = "string"
-structDict['DFITCMatchRtnField'] = DFITCMatchRtnField
+structDict["DFITCMatchRtnField"] = DFITCMatchRtnField
 
 
-
-#撤单回报
+# 撤单回报
 DFITCOrderCanceledRtnField = {}
 DFITCOrderCanceledRtnField["localOrderID"] = "long"
 DFITCOrderCanceledRtnField["OrderSysID"] = "string"
@@ -229,11 +202,10 @@ DFITCOrderCanceledRtnField["insertType"] = "int"
 DFITCOrderCanceledRtnField["clientID"] = "string"
 DFITCOrderCanceledRtnField["statusMsg"] = "string"
 DFITCOrderCanceledRtnField["orderProperty"] = "char"
-structDict['DFITCOrderCanceledRtnField'] = DFITCOrderCanceledRtnField
+structDict["DFITCOrderCanceledRtnField"] = DFITCOrderCanceledRtnField
 
 
-
-#错误信息
+# 错误信息
 DFITCErrorRtnField = {}
 DFITCErrorRtnField["requestID"] = "long"
 DFITCErrorRtnField["sessionID"] = "long"
@@ -243,11 +215,10 @@ DFITCErrorRtnField["spdOrderID"] = "long"
 DFITCErrorRtnField["localOrderID"] = "long"
 DFITCErrorRtnField["errorMsg"] = "string"
 DFITCErrorRtnField["instrumentID"] = "string"
-structDict['DFITCErrorRtnField'] = DFITCErrorRtnField
+structDict["DFITCErrorRtnField"] = DFITCErrorRtnField
 
 
-
-#返回资金信息
+# 返回资金信息
 DFITCCapitalInfoRtnField = {}
 DFITCCapitalInfoRtnField["requestID"] = "long"
 DFITCCapitalInfoRtnField["accountID"] = "string"
@@ -268,11 +239,10 @@ DFITCCapitalInfoRtnField["optMarketValue"] = "float"
 DFITCCapitalInfoRtnField["floatProfitLoss"] = "float"
 DFITCCapitalInfoRtnField["totFundOut"] = "float"
 DFITCCapitalInfoRtnField["totFundIn"] = "float"
-structDict['DFITCCapitalInfoRtnField'] = DFITCCapitalInfoRtnField
+structDict["DFITCCapitalInfoRtnField"] = DFITCCapitalInfoRtnField
 
 
-
-#返回持仓信息
+# 返回持仓信息
 DFITCPositionInfoRtnField = {}
 DFITCPositionInfoRtnField["lRequestID"] = "long"
 DFITCPositionInfoRtnField["accountID"] = "string"
@@ -298,11 +268,10 @@ DFITCPositionInfoRtnField["clientID"] = "string"
 DFITCPositionInfoRtnField["preSettlementPrice"] = "float"
 DFITCPositionInfoRtnField["instrumentType"] = "int"
 DFITCPositionInfoRtnField["yesterdayTradingAmount"] = "long"
-structDict['DFITCPositionInfoRtnField'] = DFITCPositionInfoRtnField
+structDict["DFITCPositionInfoRtnField"] = DFITCPositionInfoRtnField
 
 
-
-#用户登录返回信息
+# 用户登录返回信息
 DFITCUserLoginInfoRtnField = {}
 DFITCUserLoginInfoRtnField["lRequestID"] = "long"
 DFITCUserLoginInfoRtnField["accountID"] = "string"
@@ -316,53 +285,47 @@ DFITCUserLoginInfoRtnField["SHFETime"] = "string"
 DFITCUserLoginInfoRtnField["CFFEXTime"] = "string"
 DFITCUserLoginInfoRtnField["CZCETime"] = "string"
 DFITCUserLoginInfoRtnField["INETime"] = "string"
-structDict['DFITCUserLoginInfoRtnField'] = DFITCUserLoginInfoRtnField
+structDict["DFITCUserLoginInfoRtnField"] = DFITCUserLoginInfoRtnField
 
 
-
-#用户退出返回信息
+# 用户退出返回信息
 DFITCUserLogoutInfoRtnField = {}
 DFITCUserLogoutInfoRtnField["lRequestID"] = "long"
 DFITCUserLogoutInfoRtnField["accountID"] = "string"
 DFITCUserLogoutInfoRtnField["logoutResult"] = "int"
 DFITCUserLogoutInfoRtnField["nErrorID"] = "int"
 DFITCUserLogoutInfoRtnField["errorMsg"] = "string"
-structDict['DFITCUserLogoutInfoRtnField'] = DFITCUserLogoutInfoRtnField
+structDict["DFITCUserLogoutInfoRtnField"] = DFITCUserLogoutInfoRtnField
 
 
-
-#套利合约查询
+# 套利合约查询
 DFITCAbiInstrumentField = {}
 DFITCAbiInstrumentField["lRequestID"] = "long"
 DFITCAbiInstrumentField["accountID"] = "string"
 DFITCAbiInstrumentField["exchangeID"] = "string"
-structDict['DFITCAbiInstrumentField'] = DFITCAbiInstrumentField
+structDict["DFITCAbiInstrumentField"] = DFITCAbiInstrumentField
 
 
-
-#套利合约返回信息
+# 套利合约返回信息
 DFITCAbiInstrumentRtnField = {}
 DFITCAbiInstrumentRtnField["lRequestID"] = "long"
 DFITCAbiInstrumentRtnField["exchangeID"] = "string"
 DFITCAbiInstrumentRtnField["InstrumentID"] = "string"
 DFITCAbiInstrumentRtnField["instrumentName"] = "string"
-structDict['DFITCAbiInstrumentRtnField'] = DFITCAbiInstrumentRtnField
+structDict["DFITCAbiInstrumentRtnField"] = DFITCAbiInstrumentRtnField
 
 
-
-#指定的合约
+# 指定的合约
 DFITCSpecificInstrumentField = {}
 DFITCSpecificInstrumentField["lRequestID"] = "long"
 DFITCSpecificInstrumentField["accountID"] = "string"
 DFITCSpecificInstrumentField["InstrumentID"] = "string"
 DFITCSpecificInstrumentField["exchangeID"] = "string"
 DFITCSpecificInstrumentField["instrumentType"] = "int"
-structDict['DFITCSpecificInstrumentField'] = DFITCSpecificInstrumentField
+structDict["DFITCSpecificInstrumentField"] = DFITCSpecificInstrumentField
 
 
-
-
-#指定的合约信息
+# 指定的合约信息
 DFITCSpecificInstrumentFieldEX = {}
 DFITCSpecificInstrumentFieldEX["lRequestID"] = "long"
 DFITCSpecificInstrumentFieldEX["accountID"] = "string"
@@ -370,19 +333,17 @@ DFITCSpecificInstrumentFieldEX["FunctionID"] = "string"
 DFITCSpecificInstrumentFieldEX["InstrumentID"] = "string"
 DFITCSpecificInstrumentFieldEX["exchangeID"] = "string"
 DFITCSpecificInstrumentFieldEX["instrumentType"] = "int"
-structDict['DFITCSpecificInstrumentFieldEX'] = DFITCSpecificInstrumentFieldEX
+structDict["DFITCSpecificInstrumentFieldEX"] = DFITCSpecificInstrumentFieldEX
 
 
-
-#行情订阅返回信息
+# 行情订阅返回信息
 DFITCActiveContractField = {}
 DFITCActiveContractField["lRequestID"] = "long"
 DFITCActiveContractField["activeContract"] = "string"
-structDict['DFITCActiveContractField'] = DFITCActiveContractField
+structDict["DFITCActiveContractField"] = DFITCActiveContractField
 
 
-
-#交易所合约返回信息
+# 交易所合约返回信息
 DFITCExchangeInstrumentRtnField = {}
 DFITCExchangeInstrumentRtnField["lRequestID"] = "long"
 DFITCExchangeInstrumentRtnField["exchangeID"] = "string"
@@ -408,11 +369,10 @@ DFITCExchangeInstrumentRtnField["strikePrice"] = "float"
 DFITCExchangeInstrumentRtnField["exchangeRiskDegree"] = "float"
 DFITCExchangeInstrumentRtnField["minMargin"] = "float"
 DFITCExchangeInstrumentRtnField["tradeSize"] = "long"
-structDict['DFITCExchangeInstrumentRtnField'] = DFITCExchangeInstrumentRtnField
+structDict["DFITCExchangeInstrumentRtnField"] = DFITCExchangeInstrumentRtnField
 
 
-
-#委托查询数据结构
+# 委托查询数据结构
 DFITCOrderField = {}
 DFITCOrderField["lRequestID"] = "long"
 DFITCOrderField["accountID"] = "string"
@@ -423,11 +383,10 @@ DFITCOrderField["orderType"] = "int"
 DFITCOrderField["spdOrderID"] = "long"
 DFITCOrderField["localOrderID"] = "long"
 DFITCOrderField["instrumentID"] = "string"
-structDict['DFITCOrderField'] = DFITCOrderField
+structDict["DFITCOrderField"] = DFITCOrderField
 
 
-
-#成交查询数据结构
+# 成交查询数据结构
 DFITCMatchField = {}
 DFITCMatchField["lRequestID"] = "long"
 DFITCMatchField["accountID"] = "string"
@@ -436,11 +395,10 @@ DFITCMatchField["customCategory"] = "string"
 DFITCMatchField["orderType"] = "int"
 DFITCMatchField["spdOrderID"] = "long"
 DFITCMatchField["instrumentID"] = "string"
-structDict['DFITCMatchField'] = DFITCMatchField
+structDict["DFITCMatchField"] = DFITCMatchField
 
 
-
-#委托查询响应数据结构
+# 委托查询响应数据结构
 DFITCOrderCommRtnField = {}
 DFITCOrderCommRtnField["lRequestID"] = "long"
 DFITCOrderCommRtnField["spdOrderID"] = "long"
@@ -472,11 +430,10 @@ DFITCOrderCommRtnField["localOrderID"] = "long"
 DFITCOrderCommRtnField["profitLossPrice"] = "float"
 DFITCOrderCommRtnField["orderType"] = "int"
 DFITCOrderCommRtnField["orderProperty"] = "char"
-structDict['DFITCOrderCommRtnField'] = DFITCOrderCommRtnField
+structDict["DFITCOrderCommRtnField"] = DFITCOrderCommRtnField
 
 
-
-#成交查询数据响应
+# 成交查询数据响应
 DFITCMatchedRtnField = {}
 DFITCMatchedRtnField["lRequestID"] = "long"
 DFITCMatchedRtnField["spdOrderID"] = "long"
@@ -501,11 +458,10 @@ DFITCMatchedRtnField["customCategory"] = "string"
 DFITCMatchedRtnField["fee"] = "float"
 DFITCMatchedRtnField["orderType"] = "int"
 DFITCMatchedRtnField["OrderSysID"] = "string"
-structDict['DFITCMatchedRtnField'] = DFITCMatchedRtnField
+structDict["DFITCMatchedRtnField"] = DFITCMatchedRtnField
 
 
-
-#返回合约信息数据结构
+# 返回合约信息数据结构
 DFITCInstrumentRtnField = {}
 DFITCInstrumentRtnField["lRequestID"] = "long"
 DFITCInstrumentRtnField["instrumentID"] = "string"
@@ -534,11 +490,10 @@ DFITCInstrumentRtnField["settlementPrice"] = "float"
 DFITCInstrumentRtnField["preOpenInterest"] = "long"
 DFITCInstrumentRtnField["optExecRatio"] = "float"
 DFITCInstrumentRtnField["optExecRatioPerVol"] = "float"
-structDict['DFITCInstrumentRtnField'] = DFITCInstrumentRtnField
+structDict["DFITCInstrumentRtnField"] = DFITCInstrumentRtnField
 
 
-
-#深度行情
+# 深度行情
 DFITCDepthMarketDataField = {}
 DFITCDepthMarketDataField["tradingDay"] = "string"
 DFITCDepthMarketDataField["instrumentID"] = "string"
@@ -584,10 +539,10 @@ DFITCDepthMarketDataField["AskPrice5"] = "float"
 DFITCDepthMarketDataField["AskVolume5"] = "int"
 DFITCDepthMarketDataField["AveragePrice"] = "float"
 DFITCDepthMarketDataField["XSpeedTime"] = "string"
-structDict['DFITCDepthMarketDataField'] = DFITCDepthMarketDataField
+structDict["DFITCDepthMarketDataField"] = DFITCDepthMarketDataField
 
 
-#********************************期权扩展行情************************************
+# ********************************期权扩展行情************************************
 
 
 DFITCMarketDataFieldEx = {}
@@ -597,10 +552,9 @@ DFITCMarketDataFieldEx["UpdateTime"] = "string"
 DFITCMarketDataFieldEx["UpdateMillisec"] = "int"
 DFITCMarketDataFieldEx["instrumentID"] = "string"
 DFITCMarketDataFieldEx["ExtMarketData"] = "string"
-structDict['DFITCMarketDataFieldEx'] = DFITCMarketDataFieldEx
+structDict["DFITCMarketDataFieldEx"] = DFITCMarketDataFieldEx
 
-#********************************************************************************
-
+# ********************************************************************************
 
 
 DFITCCustomMarketDataField = {}
@@ -611,20 +565,19 @@ DFITCCustomMarketDataField["bidPrice1"] = "float"
 DFITCCustomMarketDataField["askVolume1"] = "int"
 DFITCCustomMarketDataField["askPrice1"] = "float"
 DFITCCustomMarketDataField["lastPrice"] = "float"
-structDict['DFITCCustomMarketDataField'] = DFITCCustomMarketDataField
+structDict["DFITCCustomMarketDataField"] = DFITCCustomMarketDataField
 
 
-#查询持仓明细
+# 查询持仓明细
 DFITCPositionDetailField = {}
 DFITCPositionDetailField["lRequestID"] = "long"
 DFITCPositionDetailField["accountID"] = "string"
 DFITCPositionDetailField["instrumentID"] = "string"
 DFITCPositionDetailField["instrumentType"] = "int"
-structDict['DFITCPositionDetailField'] = DFITCPositionDetailField
+structDict["DFITCPositionDetailField"] = DFITCPositionDetailField
 
 
-
-#查询持仓明细响应
+# 查询持仓明细响应
 DFITCPositionDetailRtnField = {}
 DFITCPositionDetailRtnField["lRequestID"] = "long"
 DFITCPositionDetailRtnField["accountID"] = "string"
@@ -648,21 +601,19 @@ DFITCPositionDetailRtnField["customCategory"] = "string"
 DFITCPositionDetailRtnField["closeOrderVol"] = "long"
 DFITCPositionDetailRtnField["closeMatchVol"] = "long"
 DFITCPositionDetailRtnField["positionDateType"] = "int"
-structDict['DFITCPositionDetailRtnField'] = DFITCPositionDetailRtnField
+structDict["DFITCPositionDetailRtnField"] = DFITCPositionDetailRtnField
 
 
-
-#用户事件通知信息
+# 用户事件通知信息
 DFITCTradingNoticeInfoField = {}
 DFITCTradingNoticeInfoField["accountID"] = "string"
 DFITCTradingNoticeInfoField["SendTime"] = "string"
 DFITCTradingNoticeInfoField["FieldContent"] = "string"
 DFITCTradingNoticeInfoField["noticeType"] = "short"
-structDict['DFITCTradingNoticeInfoField'] = DFITCTradingNoticeInfoField
+structDict["DFITCTradingNoticeInfoField"] = DFITCTradingNoticeInfoField
 
 
-
-#合约交易状态通知信息
+# 合约交易状态通知信息
 DFITCInstrumentStatusField = {}
 DFITCInstrumentStatusField["ExchangeID"] = "string"
 DFITCInstrumentStatusField["InstrumentID"] = "string"
@@ -670,57 +621,51 @@ DFITCInstrumentStatusField["InstrumentStatus"] = "int"
 DFITCInstrumentStatusField["TradingSegmentSN"] = "int"
 DFITCInstrumentStatusField["EnterTime"] = "string"
 DFITCInstrumentStatusField["EnterReason"] = "short"
-structDict['DFITCInstrumentStatusField'] = DFITCInstrumentStatusField
+structDict["DFITCInstrumentStatusField"] = DFITCInstrumentStatusField
 
 
-
-#用户密码修改
+# 用户密码修改
 DFITCResetPwdField = {}
 DFITCResetPwdField["lRequestID"] = "long"
 DFITCResetPwdField["accountID"] = "string"
 DFITCResetPwdField["oldpasswd"] = "string"
 DFITCResetPwdField["newpasswd"] = "string"
-structDict['DFITCResetPwdField'] = DFITCResetPwdField
+structDict["DFITCResetPwdField"] = DFITCResetPwdField
 
 
-
-#用户密码修改返回信息
+# 用户密码修改返回信息
 DFITCResetPwdRspField = {}
 DFITCResetPwdRspField["lRequestID"] = "long"
 DFITCResetPwdRspField["accountID"] = "string"
 DFITCResetPwdRspField["execState"] = "int"
-structDict['DFITCResetPwdRspField'] = DFITCResetPwdRspField
+structDict["DFITCResetPwdRspField"] = DFITCResetPwdRspField
 
 
-
-#账单确认
+# 账单确认
 DFITCBillConfirmField = {}
 DFITCBillConfirmField["lRequestID"] = "long"
 DFITCBillConfirmField["accountID"] = "string"
 DFITCBillConfirmField["date"] = "string"
 DFITCBillConfirmField["confirmFlag"] = "int"
-structDict['DFITCBillConfirmField'] = DFITCBillConfirmField
+structDict["DFITCBillConfirmField"] = DFITCBillConfirmField
 
 
-
-#账单确认响应
+# 账单确认响应
 DFITCBillConfirmRspField = {}
 DFITCBillConfirmRspField["lRequestID"] = "long"
 DFITCBillConfirmRspField["accountID"] = "string"
 DFITCBillConfirmRspField["execState"] = "int"
-structDict['DFITCBillConfirmRspField'] = DFITCBillConfirmRspField
+structDict["DFITCBillConfirmRspField"] = DFITCBillConfirmRspField
 
 
-
-#交易编码查询
+# 交易编码查询
 DFITCQryTradeCodeField = {}
 DFITCQryTradeCodeField["lRequestID"] = "long"
 DFITCQryTradeCodeField["accountID"] = "string"
-structDict['DFITCQryTradeCodeField'] = DFITCQryTradeCodeField
+structDict["DFITCQryTradeCodeField"] = DFITCQryTradeCodeField
 
 
-
-#交易编码查询响应
+# 交易编码查询响应
 DFITCQryTradeCodeRtnField = {}
 DFITCQryTradeCodeRtnField["lRequestID"] = "long"
 DFITCQryTradeCodeRtnField["accountID"] = "string"
@@ -728,121 +673,114 @@ DFITCQryTradeCodeRtnField["exchangeCode"] = "string"
 DFITCQryTradeCodeRtnField["clientID"] = "string"
 DFITCQryTradeCodeRtnField["clientStatus"] = "int"
 DFITCQryTradeCodeRtnField["clientIDType"] = "int"
-structDict['DFITCQryTradeCodeRtnField'] = DFITCQryTradeCodeRtnField
+structDict["DFITCQryTradeCodeRtnField"] = DFITCQryTradeCodeRtnField
 
 
-
-#浮盈浮亏是否计算到权益中
+# 浮盈浮亏是否计算到权益中
 DFITCEquityComputModeRtnField = {}
 DFITCEquityComputModeRtnField["capConMode"] = "long"
 DFITCEquityComputModeRtnField["priceNote"] = "int"
-structDict['DFITCEquityComputModeRtnField'] = DFITCEquityComputModeRtnField
+structDict["DFITCEquityComputModeRtnField"] = DFITCEquityComputModeRtnField
 
 
-
-#查询账单
+# 查询账单
 DFITCQryBillField = {}
 DFITCQryBillField["lRequestID"] = "long"
 DFITCQryBillField["accountID"] = "string"
 DFITCQryBillField["date"] = "string"
-structDict['DFITCQryBillField'] = DFITCQryBillField
+structDict["DFITCQryBillField"] = DFITCQryBillField
 
 
-
-#查询账单响应
+# 查询账单响应
 DFITCQryBillRtnField = {}
 DFITCQryBillRtnField["lRequestID"] = "long"
 DFITCQryBillRtnField["accountID"] = "string"
 DFITCQryBillRtnField["message"] = "string"
-structDict['DFITCQryBillRtnField'] = DFITCQryBillRtnField
+structDict["DFITCQryBillRtnField"] = DFITCQryBillRtnField
 
 
-
-#厂商ID确认请求
+# 厂商ID确认请求
 DFITCProductField = {}
 DFITCProductField["productID"] = "string"
 DFITCProductField["vendorID"] = "string"
-structDict['DFITCProductField'] = DFITCProductField
+structDict["DFITCProductField"] = DFITCProductField
 
 
-
-#厂商ID确认响应
+# 厂商ID确认响应
 DFITCProductRtnField = {}
 DFITCProductRtnField["productID"] = "string"
 DFITCProductRtnField["vendorID"] = "string"
 DFITCProductRtnField["productOnlineCount"] = "long"
 DFITCProductRtnField["brokerInfoName"] = "string"
 DFITCProductRtnField["frontID"] = "int"
-structDict['DFITCProductRtnField'] = DFITCProductRtnField
+structDict["DFITCProductRtnField"] = DFITCProductRtnField
 
 
-#查询交易日请求
+# 查询交易日请求
 DFITCTradingDayField = {}
 DFITCTradingDayField["lRequestID"] = "long"
-structDict['DFITCTradingDayField'] = DFITCTradingDayField
+structDict["DFITCTradingDayField"] = DFITCTradingDayField
 
 
-
-#交易日请求响应
+# 交易日请求响应
 DFITCTradingDayRtnField = {}
 DFITCTradingDayRtnField["lRequestID"] = "long"
 DFITCTradingDayRtnField["date"] = "string"
-structDict['DFITCTradingDayRtnField'] = DFITCTradingDayRtnField
+structDict["DFITCTradingDayRtnField"] = DFITCTradingDayRtnField
 
 
-
-#询价通知订阅请求
+# 询价通知订阅请求
 DFITCQuoteSubscribeField = {}
 DFITCQuoteSubscribeField["lRequestID"] = "long"
 DFITCQuoteSubscribeField["accountID"] = "string"
 DFITCQuoteSubscribeField["exchangeID"] = "string"
-structDict['DFITCQuoteSubscribeField'] = DFITCQuoteSubscribeField
+structDict["DFITCQuoteSubscribeField"] = DFITCQuoteSubscribeField
 
 
-#询价通知订阅响应
+# 询价通知订阅响应
 DFITCQuoteSubscribeRspField = {}
 DFITCQuoteSubscribeRspField["lRequestID"] = "long"
 DFITCQuoteSubscribeRspField["subscribeFlag"] = "int"
 DFITCQuoteSubscribeRspField["exchangeID"] = "string"
-structDict['DFITCQuoteSubscribeRspField'] = DFITCQuoteSubscribeRspField
+structDict["DFITCQuoteSubscribeRspField"] = DFITCQuoteSubscribeRspField
 
 
-#询价通知退订请求
+# 询价通知退订请求
 DFITCQuoteUnSubscribeField = {}
 DFITCQuoteUnSubscribeField["lRequestID"] = "long"
 DFITCQuoteUnSubscribeField["accountID"] = "string"
 DFITCQuoteUnSubscribeField["exchangeID"] = "string"
-structDict['DFITCQuoteUnSubscribeField'] = DFITCQuoteUnSubscribeField
+structDict["DFITCQuoteUnSubscribeField"] = DFITCQuoteUnSubscribeField
 
 
-#询价通知退订响应
+# 询价通知退订响应
 DFITCQuoteUnSubscribeRspField = {}
 DFITCQuoteUnSubscribeRspField["lRequestID"] = "long"
 DFITCQuoteUnSubscribeRspField["subscribeFlag"] = "int"
 DFITCQuoteUnSubscribeRspField["exchangeID"] = "string"
-structDict['DFITCQuoteUnSubscribeRspField'] = DFITCQuoteUnSubscribeRspField
+structDict["DFITCQuoteUnSubscribeRspField"] = DFITCQuoteUnSubscribeRspField
 
 
-#询价通知订阅回报
+# 询价通知订阅回报
 DFITCQuoteSubscribeRtnField = {}
 DFITCQuoteSubscribeRtnField["quoteID"] = "string"
 DFITCQuoteSubscribeRtnField["exchangeID"] = "string"
 DFITCQuoteSubscribeRtnField["instrumentID"] = "string"
 DFITCQuoteSubscribeRtnField["source"] = "short"
 DFITCQuoteSubscribeRtnField["quoteTime"] = "string"
-structDict['DFITCQuoteSubscribeRtnField'] = DFITCQuoteSubscribeRtnField
+structDict["DFITCQuoteSubscribeRtnField"] = DFITCQuoteSubscribeRtnField
 
 
-#询价通知查询请求
+# 询价通知查询请求
 DFITCQryQuoteNoticeField = {}
 DFITCQryQuoteNoticeField["accountID"] = "string"
 DFITCQryQuoteNoticeField["lRequestID"] = "long"
 DFITCQryQuoteNoticeField["exchangeID"] = "string"
 DFITCQryQuoteNoticeField["instrumentID"] = "string"
-structDict['DFITCQryQuoteNoticeField'] = DFITCQryQuoteNoticeField
+structDict["DFITCQryQuoteNoticeField"] = DFITCQryQuoteNoticeField
 
 
-#询价通知查询响应
+# 询价通知查询响应
 DFITCQryQuoteNoticeRtnField = {}
 DFITCQryQuoteNoticeRtnField["lRequestID"] = "long"
 DFITCQryQuoteNoticeRtnField["quoteID"] = "string"
@@ -850,10 +788,10 @@ DFITCQryQuoteNoticeRtnField["exchangeID"] = "string"
 DFITCQryQuoteNoticeRtnField["instrumentID"] = "string"
 DFITCQryQuoteNoticeRtnField["source"] = "short"
 DFITCQryQuoteNoticeRtnField["quoteTime"] = "string"
-structDict['DFITCQryQuoteNoticeRtnField'] = DFITCQryQuoteNoticeRtnField
+structDict["DFITCQryQuoteNoticeRtnField"] = DFITCQryQuoteNoticeRtnField
 
 
-#做市商报单请求
+# 做市商报单请求
 DFITCQuoteInsertField = {}
 DFITCQuoteInsertField["accountID"] = "string"
 DFITCQuoteInsertField["lRequestID"] = "long"
@@ -872,12 +810,10 @@ DFITCQuoteInsertField["bSpeculator"] = "int"
 DFITCQuoteInsertField["sSpeculator"] = "int"
 DFITCQuoteInsertField["stayTime"] = "int"
 DFITCQuoteInsertField["customCategory"] = "string"
-structDict['DFITCQuoteInsertField'] = DFITCQuoteInsertField
+structDict["DFITCQuoteInsertField"] = DFITCQuoteInsertField
 
 
-
-
-#做市商报单响应
+# 做市商报单响应
 DFITCQuoteRspField = {}
 DFITCQuoteRspField["localOrderID"] = "long"
 DFITCQuoteRspField["spdOrderID"] = "long"
@@ -892,11 +828,10 @@ DFITCQuoteRspField["accountID"] = "string"
 DFITCQuoteRspField["quoteID"] = "string"
 DFITCQuoteRspField["sessionID"] = "long"
 DFITCQuoteRspField["clientID"] = "string"
-structDict['DFITCQuoteRspField'] = DFITCQuoteRspField
+structDict["DFITCQuoteRspField"] = DFITCQuoteRspField
 
 
-
-#做市商报单回报
+# 做市商报单回报
 DFITCQuoteRtnField = {}
 DFITCQuoteRtnField["exchangeID"] = "string"
 DFITCQuoteRtnField["clientID"] = "string"
@@ -921,12 +856,10 @@ DFITCQuoteRtnField["sessionID"] = "long"
 DFITCQuoteRtnField["quoteID"] = "string"
 DFITCQuoteRtnField["errorMsg"] = "string"
 DFITCQuoteRtnField["customCategory"] = "string"
-structDict['DFITCQuoteRtnField'] = DFITCQuoteRtnField
+structDict["DFITCQuoteRtnField"] = DFITCQuoteRtnField
 
 
-
-
-#做市商撤单回报
+# 做市商撤单回报
 DFITCQuoteCanceledRtnField = {}
 DFITCQuoteCanceledRtnField["exchangeID"] = "string"
 DFITCQuoteCanceledRtnField["clientID"] = "string"
@@ -949,12 +882,10 @@ DFITCQuoteCanceledRtnField["buySellType"] = "short"
 DFITCQuoteCanceledRtnField["quoteID"] = "string"
 DFITCQuoteCanceledRtnField["canceledTime"] = "string"
 DFITCQuoteCanceledRtnField["customCategory"] = "string"
-structDict['DFITCQuoteCanceledRtnField'] = DFITCQuoteCanceledRtnField
+structDict["DFITCQuoteCanceledRtnField"] = DFITCQuoteCanceledRtnField
 
 
-
-
-#做市商成交回报
+# 做市商成交回报
 DFITCQuoteMatchRtnField = {}
 DFITCQuoteMatchRtnField["exchangeID"] = "string"
 DFITCQuoteMatchRtnField["clientID"] = "string"
@@ -989,43 +920,42 @@ DFITCQuoteMatchRtnField["sessionID"] = "long"
 DFITCQuoteMatchRtnField["largeMarginDirect"] = "string"
 DFITCQuoteMatchRtnField["quoteID"] = "string"
 DFITCQuoteMatchRtnField["customCategory"] = "string"
-structDict['DFITCQuoteMatchRtnField'] = DFITCQuoteMatchRtnField
+structDict["DFITCQuoteMatchRtnField"] = DFITCQuoteMatchRtnField
 
 
-
-#批量撤单请求
+# 批量撤单请求
 DFITCCancelAllOrderField = {}
 DFITCCancelAllOrderField["lRequestID"] = "long"
 DFITCCancelAllOrderField["accountID"] = "string"
 DFITCCancelAllOrderField["exchangeID"] = "string"
-structDict['DFITCCancelAllOrderField'] = DFITCCancelAllOrderField
+structDict["DFITCCancelAllOrderField"] = DFITCCancelAllOrderField
 
 
-#批量撤单响应
+# 批量撤单响应
 DFITCCancelAllOrderRspField = {}
 DFITCCancelAllOrderRspField["lRequestID"] = "long"
 DFITCCancelAllOrderRspField["accountID"] = "string"
 DFITCCancelAllOrderRspField["orderStatus"] = "short"
-structDict['DFITCCancelAllOrderRspField'] = DFITCCancelAllOrderRspField
+structDict["DFITCCancelAllOrderRspField"] = DFITCCancelAllOrderRspField
 
 
-#询价请求
+# 询价请求
 DFITCForQuoteField = {}
 DFITCForQuoteField["lRequestID"] = "long"
 DFITCForQuoteField["accountID"] = "string"
 DFITCForQuoteField["instrumentID"] = "string"
-structDict['DFITCForQuoteField'] = DFITCForQuoteField
+structDict["DFITCForQuoteField"] = DFITCForQuoteField
 
 
-#询价请求响应
+# 询价请求响应
 DFITCForQuoteRspField = {}
 DFITCForQuoteRspField["lRequestID"] = "long"
 DFITCForQuoteRspField["spdOrderID"] = "long"
 DFITCForQuoteRspField["commTime"] = "string"
-structDict['DFITCForQuoteRspField'] = DFITCForQuoteRspField
+structDict["DFITCForQuoteRspField"] = DFITCForQuoteRspField
 
 
-#询价回报
+# 询价回报
 DFITCForQuoteRtnField = {}
 DFITCForQuoteRtnField["spdOrderID"] = "long"
 DFITCForQuoteRtnField["sessionID"] = "long"
@@ -1033,10 +963,10 @@ DFITCForQuoteRtnField["instrumentID"] = "string"
 DFITCForQuoteRtnField["exchangeID"] = "string"
 DFITCForQuoteRtnField["accountID"] = "string"
 DFITCForQuoteRtnField["orderStatus"] = "short"
-structDict['DFITCForQuoteRtnField'] = DFITCForQuoteRtnField
+structDict["DFITCForQuoteRtnField"] = DFITCForQuoteRtnField
 
 
-#做市商报价委托查询
+# 做市商报价委托查询
 DFITCQuoteOrderField = {}
 DFITCQuoteOrderField["lRequestID"] = "long"
 DFITCQuoteOrderField["exchangeID"] = "string"
@@ -1045,10 +975,10 @@ DFITCQuoteOrderField["instrumentID"] = "string"
 DFITCQuoteOrderField["localOrderID"] = "long"
 DFITCQuoteOrderField["spdOrderID"] = "long"
 DFITCQuoteOrderField["orderStatus"] = "short"
-structDict['DFITCQuoteOrderField'] = DFITCQuoteOrderField
+structDict["DFITCQuoteOrderField"] = DFITCQuoteOrderField
 
 
-#做市商报价查询响应
+# 做市商报价查询响应
 DFITCQuoteOrderRtnField = {}
 DFITCQuoteOrderRtnField["lRequestID"] = "long"
 DFITCQuoteOrderRtnField["spdOrderID"] = "long"
@@ -1077,18 +1007,18 @@ DFITCQuoteOrderRtnField["operStation"] = "string"
 DFITCQuoteOrderRtnField["sessionID"] = "long"
 DFITCQuoteOrderRtnField["quoteID"] = "string"
 DFITCQuoteOrderRtnField["customCategory"] = "string"
-structDict['DFITCQuoteOrderRtnField'] = DFITCQuoteOrderRtnField
+structDict["DFITCQuoteOrderRtnField"] = DFITCQuoteOrderRtnField
 
 
-#查询转账银行
+# 查询转账银行
 DFITCQryTransferBankField = {}
 DFITCQryTransferBankField["accountID"] = "string"
 DFITCQryTransferBankField["bankID"] = "string"
 DFITCQryTransferBankField["lRequestID"] = "long"
-structDict['DFITCQryTransferBankField'] = DFITCQryTransferBankField
+structDict["DFITCQryTransferBankField"] = DFITCQryTransferBankField
 
 
-#转帐银行响应
+# 转帐银行响应
 DFITCTransferBankRspField = {}
 DFITCTransferBankRspField["accountID"] = "string"
 DFITCTransferBankRspField["bankID"] = "string"
@@ -1096,19 +1026,19 @@ DFITCTransferBankRspField["bankAccount"] = "string"
 DFITCTransferBankRspField["currency"] = "string"
 DFITCTransferBankRspField["registDate"] = "string"
 DFITCTransferBankRspField["lRequestID"] = "long"
-structDict['DFITCTransferBankRspField'] = DFITCTransferBankRspField
+structDict["DFITCTransferBankRspField"] = DFITCTransferBankRspField
 
 
-#查询转账流水
+# 查询转账流水
 DFITCQryTransferSerialField = {}
 DFITCQryTransferSerialField["accountID"] = "string"
 DFITCQryTransferSerialField["bankID"] = "string"
 DFITCQryTransferSerialField["bankAccount"] = "string"
 DFITCQryTransferSerialField["lRequestID"] = "long"
-structDict['DFITCQryTransferSerialField'] = DFITCQryTransferSerialField
+structDict["DFITCQryTransferSerialField"] = DFITCQryTransferSerialField
 
 
-#转账流水响应
+# 转账流水响应
 DFITCTransferSerialRspField = {}
 DFITCTransferSerialRspField["accountID"] = "string"
 DFITCTransferSerialRspField["bankID"] = "string"
@@ -1123,10 +1053,10 @@ DFITCTransferSerialRspField["reqTransferTime"] = "string"
 DFITCTransferSerialRspField["dealTransferTime"] = "string"
 DFITCTransferSerialRspField["procResult"] = "int"
 DFITCTransferSerialRspField["lRequestID"] = "long"
-structDict['DFITCTransferSerialRspField'] = DFITCTransferSerialRspField
+structDict["DFITCTransferSerialRspField"] = DFITCTransferSerialRspField
 
 
-#资金转账请求信息
+# 资金转账请求信息
 DFITCReqTransferField = {}
 DFITCReqTransferField["bankID"] = "string"
 DFITCReqTransferField["bankAccount"] = "string"
@@ -1136,10 +1066,10 @@ DFITCReqTransferField["password"] = "string"
 DFITCReqTransferField["currency"] = "string"
 DFITCReqTransferField["tradeAmount"] = "float"
 DFITCReqTransferField["lRequestID"] = "long"
-structDict['DFITCReqTransferField'] = DFITCReqTransferField
+structDict["DFITCReqTransferField"] = DFITCReqTransferField
 
 
-#资金转账响应信息
+# 资金转账响应信息
 DFITCTransferRspField = {}
 DFITCTransferRspField["bankID"] = "string"
 DFITCTransferRspField["bankAccount"] = "string"
@@ -1147,10 +1077,10 @@ DFITCTransferRspField["accountID"] = "string"
 DFITCTransferRspField["tradeAmount"] = "float"
 DFITCTransferRspField["applyNumber"] = "int"
 DFITCTransferRspField["lRequestID"] = "long"
-structDict['DFITCTransferRspField'] = DFITCTransferRspField
+structDict["DFITCTransferRspField"] = DFITCTransferRspField
 
 
-#资金转账通知信息
+# 资金转账通知信息
 DFITCTransferRtnField = {}
 DFITCTransferRtnField["accountID"] = "string"
 DFITCTransferRtnField["bankID"] = "string"
@@ -1160,10 +1090,10 @@ DFITCTransferRtnField["tradeAmount"] = "float"
 DFITCTransferRtnField["bankSerialNum"] = "int"
 DFITCTransferRtnField["applyNumber"] = "int"
 DFITCTransferRtnField["sessionID"] = "long"
-structDict['DFITCTransferRtnField'] = DFITCTransferRtnField
+structDict["DFITCTransferRtnField"] = DFITCTransferRtnField
 
 
-#银行或主席发起出金冲正通知
+# 银行或主席发起出金冲正通知
 DFITCRepealRtnField = {}
 DFITCRepealRtnField["accountID"] = "string"
 DFITCRepealRtnField["bankID"] = "string"
@@ -1172,50 +1102,50 @@ DFITCRepealRtnField["type"] = "int"
 DFITCRepealRtnField["tradeAmount"] = "float"
 DFITCRepealRtnField["bankSerialNum"] = "int"
 DFITCRepealRtnField["repealSerial"] = "int"
-structDict['DFITCRepealRtnField'] = DFITCRepealRtnField
+structDict["DFITCRepealRtnField"] = DFITCRepealRtnField
 
 
-#交易状态查询请求
+# 交易状态查询请求
 DFITCQryExchangeStatusField = {}
 DFITCQryExchangeStatusField["lRequestID"] = "long"
 DFITCQryExchangeStatusField["exchangeID"] = "string"
-structDict['DFITCQryExchangeStatusField'] = DFITCQryExchangeStatusField
+structDict["DFITCQryExchangeStatusField"] = DFITCQryExchangeStatusField
 
 
-#交易所状态查询响应
+# 交易所状态查询响应
 DFITCExchangeStatusRspField = {}
 DFITCExchangeStatusRspField["lRequestID"] = "long"
 DFITCExchangeStatusRspField["exchangeStatus"] = "int"
 DFITCExchangeStatusRspField["exchangeID"] = "string"
-structDict['DFITCExchangeStatusRspField'] = DFITCExchangeStatusRspField
+structDict["DFITCExchangeStatusRspField"] = DFITCExchangeStatusRspField
 
 
-#交易所状态通知
+# 交易所状态通知
 DFITCExchangeStatusRtnField = {}
 DFITCExchangeStatusRtnField["exchangeID"] = "string"
 DFITCExchangeStatusRtnField["instrumentID"] = "string"
 DFITCExchangeStatusRtnField["exchangeStatus"] = "int"
-structDict['DFITCExchangeStatusRtnField'] = DFITCExchangeStatusRtnField
+structDict["DFITCExchangeStatusRtnField"] = DFITCExchangeStatusRtnField
 
 
-#行情查询请求
+# 行情查询请求
 DFITCQryDepthMarketDataField = {}
 DFITCQryDepthMarketDataField["lRequestID"] = "long"
 DFITCQryDepthMarketDataField["instrumentID"] = "string"
 DFITCQryDepthMarketDataField["exchangeID"] = "string"
-structDict['DFITCQryDepthMarketDataField'] = DFITCQryDepthMarketDataField
+structDict["DFITCQryDepthMarketDataField"] = DFITCQryDepthMarketDataField
 
 
-#查询询价请求
+# 查询询价请求
 DFITCQryForQuoteField = {}
 DFITCQryForQuoteField["lRequestID"] = "long"
 DFITCQryForQuoteField["accountID"] = "string"
 DFITCQryForQuoteField["instrumentID"] = "string"
 DFITCQryForQuoteField["exchangeID"] = "string"
-structDict['DFITCQryForQuoteField'] = DFITCQryForQuoteField
+structDict["DFITCQryForQuoteField"] = DFITCQryForQuoteField
 
 
-#查询询价响应
+# 查询询价响应
 DFITCQryForQuoteRtnField = {}
 DFITCQryForQuoteRtnField["lRequestID"] = "long"
 DFITCQryForQuoteRtnField["accountID"] = "string"
@@ -1224,7 +1154,4 @@ DFITCQryForQuoteRtnField["instrumentID"] = "string"
 DFITCQryForQuoteRtnField["exchangeID"] = "string"
 DFITCQryForQuoteRtnField["SuspendTime"] = "string"
 DFITCQryForQuoteRtnField["orderStatus"] = "short"
-structDict['DFITCQryForQuoteRtnField'] = DFITCQryForQuoteRtnField
-
-
-
+structDict["DFITCQryForQuoteRtnField"] = DFITCQryForQuoteRtnField
