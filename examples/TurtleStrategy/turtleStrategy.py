@@ -104,6 +104,7 @@ class TurtleSignal(object):
         # 优先检查平仓
         if self.unit > 0:
             longExit = max(self.longStop, self.exitDown)
+            
             if bar.low <= longExit:
                 self.sell(longExit)
                 return
@@ -112,7 +113,7 @@ class TurtleSignal(object):
             if bar.high >= shortExit:
                 self.cover(shortExit)
                 return
-
+        
         # 没有仓位或者持有多头仓位的时候，可以做多（加仓）
         if self.unit >= 0:
             trade = False
@@ -164,12 +165,14 @@ class TurtleSignal(object):
             self.longEntry2 = self.entryUp + self.atrVolatility * 0.5
             self.longEntry3 = self.entryUp + self.atrVolatility * 1
             self.longEntry4 = self.entryUp + self.atrVolatility * 1.5
+            self.longStop = 0
             
             self.shortEntry1 = self.entryDown
             self.shortEntry2 = self.entryDown - self.atrVolatility * 0.5
             self.shortEntry3 = self.entryDown - self.atrVolatility * 1
             self.shortEntry4 = self.entryDown - self.atrVolatility * 1.5
-    
+            self.shortStop = 0
+        
     #----------------------------------------------------------------------
     def newSignal(self, direction, offset, price, volume):
         """"""
@@ -391,5 +394,6 @@ class TurtlePortfolio(object):
                 self.totalShort += unit
         
         # 向回测引擎中发单记录
+        #self.engine.sendOrder(vtSymbol, direction, offset, price, volume)
         self.engine.sendOrder(vtSymbol, direction, offset, price, volume*multiplier)
     

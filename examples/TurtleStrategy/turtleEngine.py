@@ -108,18 +108,18 @@ class BacktestingEngine(object):
         for dt, barDict in self.dataDict.items():
             self.currentDt = dt
             
-            result = DailyResult(dt)
-            result.updatePos(self.portfolio.posDict)
+            previousResult = self.result
+            
+            self.result = DailyResult(dt)
+            self.result.updatePos(self.portfolio.posDict)
+            self.resultList.append(self.result)
+            
+            if previousResult:
+                self.result.updatePreviousClose(previousResult.closeDict)
             
             for bar in barDict.values():
                 self.portfolio.onBar(bar)
-                result.updateBar(bar)
-            
-            if self.result:
-                result.updatePreviousClose(self.result.closeDict)
-            
-            self.resultList.append(result)
-            self.result = result
+                self.result.updateBar(bar)
         
         self.writeLog(u'K线数据回放结束')
     

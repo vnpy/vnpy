@@ -115,7 +115,9 @@ class TurtleTradingStrategy(CtaTemplate):
         # 计算指标数值
         self.entryUp, self.entryDown = self.am.donchian(self.entryWindow)
         self.exitUp, self.exitDown = self.am.donchian(self.exitWindow)
-        self.atrVolatility = self.am.atr(self.atrWindow)
+        
+        if not self.pos:
+            self.atrVolatility = self.am.atr(self.atrWindow)
         
         # 判断是否要进行交易
         if self.pos == 0:
@@ -132,19 +134,17 @@ class TurtleTradingStrategy(CtaTemplate):
             self.sendBuyOrders(self.longEntry)
             
             # 止损逻辑
-            self.longStop = self.longEntry - self.atrVolatility * 2
-            self.longStop = max(self.longStop, self.exitDown)
-            self.sell(self.longStop, abs(self.pos), True)
+            sellPrice = max(self.longStop, self.exitDown)
+            self.sell(sellPrice, abs(self.pos), True)
     
         elif self.pos < 0:
             # 加仓逻辑
             self.sendShortOrders(self.shortEntry)
             
             # 止损逻辑
-            self.shortStop = self.shortEntry + self.atrVolatility * 2
-            self.shortStop = min(self.shortStop, self.exitUp)
-            self.cover(self.shortStop, abs(self.pos), True)
-            
+            coverPrice = min(self.shortStop, self.exitUp)
+            self.cover(coverPrice, abs(self.pos), True)
+        
         # 同步数据到数据库
         self.saveSyncData()        
     
@@ -161,8 +161,10 @@ class TurtleTradingStrategy(CtaTemplate):
         """成交推送"""
         if trade.direction == DIRECTION_LONG:
             self.longEntry = trade.price
+            self.longStop = self.longEntry - self.atrVolatility * 2
         else:
             self.shortEntry = trade.price
+            self.shortStop = self.shortEntry + self.atrVolatility * 2
         
         # 发出状态更新事件
         self.putEvent()
