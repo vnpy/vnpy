@@ -3,8 +3,8 @@
 from .rsEngine import RsEngine
 from .uiRsWidget import RsEngineManager
 
-appName = 'RpcService'
-appDisplayName = u'RPC服务'
+appName = "RpcService"
+appDisplayName = u"RPC服务"
 appEngine = RsEngine
 appWidget = RsEngineManager
-appIco = 'rs.ico'
+appIco = "rs.ico"

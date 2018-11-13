@@ -3,8 +3,8 @@
 from .rtdEngine import RtdEngine
 from .uiRtdWidget import RtdManager
 
-appName = 'RtdService'
-appDisplayName = u'RTD服务'
+appName = "RtdService"
+appDisplayName = u"RTD服务"
 appEngine = RtdEngine
 appWidget = RtdManager
-appIco = 'rtd.ico'
+appIco = "rtd.ico"

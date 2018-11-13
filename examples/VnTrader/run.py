@@ -2,20 +2,22 @@
 
 # 重载sys模块，设置默认字符串编码方式为utf8
 try:
-    reload         # Python 2
+    reload  # Python 2
 except NameError:  # Python 3
     from importlib import reload
 
 import sys
+
 reload(sys)
 
 try:
-    sys.setdefaultencoding('utf8')
+    sys.setdefaultencoding("utf8")
 except AttributeError:
     pass
 
 # 判断操作系统
 import platform
+
 system = platform.system()
 
 # vn.trader模块
@@ -25,20 +27,18 @@ from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import (ctpGateway, ibGateway)
+from vnpy.trader.gateway import ctpGateway, ibGateway
 
-if system == 'Linux':
+if system == "Linux":
     from vnpy.trader.gateway import xtpGateway
-elif system == 'Windows':
-    from vnpy.trader.gateway import (femasGateway, xspeedGateway,
-                                     secGateway)
+elif system == "Windows":
+    from vnpy.trader.gateway import femasGateway, xspeedGateway, secGateway
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, 
-                             spreadTrading, algoTrading)
+from vnpy.trader.app import riskManager, ctaStrategy, spreadTrading, algoTrading
 
 
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 def main():
     """主程序入口"""
     # 创建Qt应用对象
@@ -54,12 +54,12 @@ def main():
     me.addGateway(ctpGateway)
     me.addGateway(ibGateway)
 
-    if system == 'Windows':
+    if system == "Windows":
         me.addGateway(femasGateway)
         me.addGateway(xspeedGateway)
         me.addGateway(secGateway)
 
-    if system == 'Linux':
+    if system == "Linux":
         me.addGateway(xtpGateway)
 
     # 添加上层应用
@@ -76,5 +76,5 @@ def main():
     sys.exit(qApp.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

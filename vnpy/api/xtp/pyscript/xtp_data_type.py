@@ -41,7 +41,6 @@ typedefDict["XTP_LOG_LEVEL"] = "enum"
 typedefDict["XTP_PROTOCOL_TYPE"] = "enum"
 
 
-
 #########################################################################
 ###@brief XTP_EXCHANGE_TYPE是交易所类型
 #########################################################################
@@ -57,7 +56,6 @@ typedefDict["XTP_MARKET_TYPE"] = "enum"
 ###@brief XTP_PRICE_TYPE是价格类型
 #########################################################################
 typedefDict["XTP_PRICE_TYPE"] = "enum"
-
 
 
 #########################################################################
@@ -136,11 +134,11 @@ typedefDict["XTP_TBT_TYPE"] = "enum"
 typedefDict["TXTPTradeTypeType"] = "char"
 
 ###普通成交
-XTP_TRDT_COMMON = '0'
+XTP_TRDT_COMMON = "0"
 ###现金替代
-XTP_TRDT_CASH = '1'
+XTP_TRDT_CASH = "1"
 ###一级市场成交
-XTP_TRDT_PRIMARY = '2'
+XTP_TRDT_PRIMARY = "2"
 
 
 #########################################################################
@@ -149,17 +147,14 @@ XTP_TRDT_PRIMARY = '2'
 typedefDict["TXTPOrderTypeType"] = "char"
 
 ###正常
-XTP_ORDT_Normal = '0'
+XTP_ORDT_Normal = "0"
 ###报价衍生
-XTP_ORDT_DeriveFromQuote = '1'
+XTP_ORDT_DeriveFromQuote = "1"
 ###组合衍生
-XTP_ORDT_DeriveFromCombination = '2'
+XTP_ORDT_DeriveFromCombination = "2"
 ###组合报单
-XTP_ORDT_Combination = '3'
+XTP_ORDT_Combination = "3"
 ###条件单
-XTP_ORDT_ConditionalOrder = '4'
+XTP_ORDT_ConditionalOrder = "4"
 ###互换单
-XTP_ORDT_Swap = '5'
-
-
-
+XTP_ORDT_Swap = "5"

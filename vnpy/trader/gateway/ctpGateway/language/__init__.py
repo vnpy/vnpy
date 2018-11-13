@@ -12,5 +12,5 @@ from .chinese import text
 from vnpy.trader.vtGlobal import globalSetting
 
 # 打开配置文件，读取语言配置
-if globalSetting['language'] == 'english':
+if globalSetting["language"] == "english":
     from .english import text

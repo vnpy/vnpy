@@ -25,8 +25,8 @@ class Request(object):
     """
     表示一个内部的Request，用于状态查询
     """
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def __init__(self, method, path, params, data, headers, callback):
         self.method = method  # type: str
         self.path = path  # type: str
@@ -34,45 +34,51 @@ class Request(object):
         self.params = params  # type: dict #, bytes, str
         self.data = data  # type: dict #, bytes, str
         self.headers = headers  # type: dict
-        
+
         self.onFailed = None  # type: callable
         self.onError = None  # type: callable
         self.extra = None  # type: Any
 
         self.response = None  # type: requests.Response
-        self.status = RequestStatus.ready # type: RequestStatus
+        self.status = RequestStatus.ready  # type: RequestStatus
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __str__(self):
         if self.response is None:
-            statusCode = 'terminated'
+            statusCode = "terminated"
         else:
             statusCode = self.response.status_code
-        return ("reuqest : {} {} {} because {}: \n"
-                "headers: {}\n"
-                "params: {}\n"
-                "data: {}\n"
-                "response:"
-                "{}\n"
-                .format(self.method, self.path, self.status.name, statusCode,
-                        self.headers,
-                        self.params,
-                        self.data,
-                        '' if self.response is None else self.response.text))
+        return (
+            "reuqest : {} {} {} because {}: \n"
+            "headers: {}\n"
+            "params: {}\n"
+            "data: {}\n"
+            "response:"
+            "{}\n".format(
+                self.method,
+                self.path,
+                self.status.name,
+                statusCode,
+                self.headers,
+                self.params,
+                self.data,
+                "" if self.response is None else self.response.text,
+            )
+        )
 
 
 ########################################################################
 class RestClient(object):
     """
     HTTP 客户端。目前是为了对接各种RESTfulAPI而设计的。
-    
+
     如果需要给请求加上签名，请设置beforeRequest, 函数类型请参考defaultBeforeRequest。
     如果需要处理非2xx的请求，请设置onFailed，函数类型请参考defaultOnFailed。
     如果每一个请求的非2xx返回都需要单独处理，使用addReq函数的onFailed参数
     如果捕获Python内部错误，例如网络连接失败等等，请设置onError，函数类型请参考defaultOnError
     """
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def __init__(self):
         """
         """
@@ -81,8 +87,8 @@ class RestClient(object):
 
         self._queue = Queue()
         self._pool = None  # type: Pool
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def init(self, urlBase):
         """
         初始化
@@ -90,30 +96,30 @@ class RestClient(object):
         """
         self.urlBase = urlBase
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def _createSession(self):
         """"""
         return requests.session()
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def start(self, n=3):
         """启动"""
         if self._active:
             return
-        
+
         self._active = True
         self._pool = Pool(n)
         self._pool.apply_async(self._run)
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def stop(self):
         """
         强制停止运行，未发出的请求都会被暂停（仍处于队列中）
         :return:
         """
         self._active = False
-        
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def join(self):
         """
         等待所有请求处理结束
@@ -122,23 +128,24 @@ class RestClient(object):
         :return:
         """
         self._queue.join()
-    
-    #----------------------------------------------------------------------
-    def addRequest(self,
-                   method,          # type: str
-                   path,            # type: str
-                   callback,        # type: Callable[[dict, Request], Any]
-                   params=None,     # type: dict
-                   data=None,       # type: dict
-                   headers=None,    # type: dict
-                   onFailed=None,   # type: Callable[[int, Request], Any]
-                   onError=None,    # type: Callable[[type, Exception, traceback, Request], Any]
-                   extra=None       # type: Any
-                   ):               # type: (...)->Request
+
+    # ----------------------------------------------------------------------
+    def addRequest(
+        self,
+        method,  # type: str
+        path,  # type: str
+        callback,  # type: Callable[[dict, Request], Any]
+        params=None,  # type: dict
+        data=None,  # type: dict
+        headers=None,  # type: dict
+        onFailed=None,  # type: Callable[[int, Request], Any]
+        onError=None,  # type: Callable[[type, Exception, traceback, Request], Any]
+        extra=None,  # type: Any
+    ):  # type: (...)->Request
         """
         发送一个请求
         :param method: GET, POST, PUT, DELETE, QUERY
-        :param path: 
+        :param path:
         :param callback: 请求成功后的回调(状态吗为2xx时认为请求成功)   type: (dict, Request)
         :param params: dict for query string
         :param data: dict for body
@@ -155,8 +162,8 @@ class RestClient(object):
         request.onError = onError
         self._queue.put(request)
         return request
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def _run(self):
         try:
             session = self._createSession()
@@ -172,8 +179,8 @@ class RestClient(object):
         except:
             et, ev, tb = sys.exc_info()
             self.onError(et, ev, tb, None)
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def sign(self, request):  # type: (Request)->Request
         """
         所有请求在发送之前都会经过这个函数
@@ -182,75 +189,78 @@ class RestClient(object):
         @:return (request)
         """
         return request
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def onFailed(self, httpStatusCode, request):  # type:(int, Request)->None
         """
         请求失败处理函数（HttpStatusCode!=2xx）.
         默认行为是打印到stderr
         """
         sys.stderr.write(str(request))
-    
-    #----------------------------------------------------------------------
-    def onError(self,
-                exceptionType,  # type: type
-                exceptionValue, # type: Exception
-                tb,
-                request         # type: Optional[Request]
-                ):
+
+    # ----------------------------------------------------------------------
+    def onError(
+        self,
+        exceptionType,  # type: type
+        exceptionValue,  # type: Exception
+        tb,
+        request,  # type: Optional[Request]
+    ):
         """
         Python内部错误处理：默认行为是仍给excepthook
         :param request 如果是在处理请求的时候出错，它的值就是对应的Request，否则为None
         """
-        sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb, request))
+        sys.stderr.write(
+            self.exceptionDetail(exceptionType, exceptionValue, tb, request)
+        )
         sys.excepthook(exceptionType, exceptionValue, tb)
-    
-    #----------------------------------------------------------------------
-    def exceptionDetail(self,
-                        exceptionType,  # type: type
-                        exceptionValue, # type: Exception
-                        tb,
-                        request         # type: Optional[Request]
-                        ):
+
+    # ----------------------------------------------------------------------
+    def exceptionDetail(
+        self,
+        exceptionType,  # type: type
+        exceptionValue,  # type: Exception
+        tb,
+        request,  # type: Optional[Request]
+    ):
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
-            datetime.now().isoformat(),
-            exceptionType
+            datetime.now().isoformat(), exceptionType
         )
         text += "request:{}\n".format(request)
         text += "Exception trace: \n"
-        text += "".join(traceback.format_exception(
-            exceptionType,
-            exceptionValue,
-            tb,
-        ))
+        text += "".join(traceback.format_exception(exceptionType, exceptionValue, tb))
         return text
-    
-    #----------------------------------------------------------------------
-    def _processRequest(self, request, session):  # type: (Request, requests.Session)->None
+
+    # ----------------------------------------------------------------------
+    def _processRequest(
+        self, request, session
+    ):  # type: (Request, requests.Session)->None
         """
         用于内部：将请求发送出去
         """
         # noinspection PyBroadException
         try:
             request = self.sign(request)
-    
+
             url = self.makeFullUrl(request.path)
-    
-            response = session.request(request.method,
-                                       url,
-                                       headers=request.headers,
-                                       params=request.params,
-                                       data=request.data)
+
+            response = session.request(
+                request.method,
+                url,
+                headers=request.headers,
+                params=request.params,
+                data=request.data,
+            )
             request.response = response
-    
+
             httpStatusCode = response.status_code
-            if httpStatusCode / 100 == 2:                               # 2xx都算成功，尽管交易所都用200
+            if httpStatusCode / 100 == 2:  # 2xx都算成功，尽管交易所都用200
                 jsonBody = response.json()
                 request.callback(jsonBody, request)
                 request.status = RequestStatus.success
             else:
                 request.status = RequestStatus.failed
-                
+
                 if request.onFailed:
                     request.onFailed(httpStatusCode, request)
                 else:
@@ -263,7 +273,7 @@ class RestClient(object):
             else:
                 self.onError(t, v, tb, request)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def makeFullUrl(self, path):
         """
         将相对路径补充成绝对路径：
@@ -273,4 +283,3 @@ class RestClient(object):
         """
         url = self.urlBase + path
         return url
-

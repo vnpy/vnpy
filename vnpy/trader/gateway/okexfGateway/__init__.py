@@ -5,7 +5,7 @@ from vnpy.trader import vtConstant
 from .okexfGateway import OkexfGateway
 
 gatewayClass = OkexfGateway
-gatewayName = 'OKEXF'
-gatewayDisplayName = 'OKEXF'
+gatewayName = "OKEXF"
+gatewayDisplayName = "OKEXF"
 gatewayType = vtConstant.GATEWAYTYPE_BTC
 gatewayQryEnabled = True

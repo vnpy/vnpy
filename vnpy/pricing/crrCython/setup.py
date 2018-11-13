@@ -5,7 +5,7 @@ import numpy
 
 
 setup(
-  name = 'crrCython',
-  ext_modules = cythonize("crrCython.pyx"),
-  include_dirs = [numpy.get_include()]
+    name="crrCython",
+    ext_modules=cythonize("crrCython.pyx"),
+    include_dirs=[numpy.get_include()],
 )

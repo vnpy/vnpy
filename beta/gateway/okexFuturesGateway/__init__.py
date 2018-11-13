@@ -5,7 +5,7 @@ from vnpy.trader import vtConstant
 from .okexFuturesGateway import OkexFuturesGateway
 
 gatewayClass = OkexFuturesGateway
-gatewayName = 'OKEXFUTURES'
-gatewayDisplayName = 'OKEXFUTURES'
+gatewayName = "OKEXFUTURES"
+gatewayDisplayName = "OKEXFUTURES"
 gatewayType = vtConstant.GATEWAYTYPE_BTC
 gatewayQryEnabled = True
