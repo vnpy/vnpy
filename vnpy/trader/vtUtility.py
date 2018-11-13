@@ -151,11 +151,11 @@ class ArrayManager(object):
         if not self.inited and self.count >= self.size:
             self.inited = True
         
-        self.openArray[0:self.size-1] = self.openArray[1:self.size]
-        self.highArray[0:self.size-1] = self.highArray[1:self.size]
-        self.lowArray[0:self.size-1] = self.lowArray[1:self.size]
-        self.closeArray[0:self.size-1] = self.closeArray[1:self.size]
-        self.volumeArray[0:self.size-1] = self.volumeArray[1:self.size]
+        self.openArray[:-1] = self.openArray[1:]
+        self.highArray[:-1] = self.highArray[1:]
+        self.lowArray[:-1] = self.lowArray[1:]
+        self.closeArray[:-1] = self.closeArray[1:]
+        self.volumeArray[:-1] = self.volumeArray[1:]
     
         self.openArray[-1] = bar.open
         self.highArray[-1] = bar.high
