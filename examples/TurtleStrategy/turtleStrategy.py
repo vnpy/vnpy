@@ -394,6 +394,5 @@ class TurtlePortfolio(object):
                 self.totalShort += unit
         
         # 向回测引擎中发单记录
-        #self.engine.sendOrder(vtSymbol, direction, offset, price, volume)
         self.engine.sendOrder(vtSymbol, direction, offset, price, volume*multiplier)
     

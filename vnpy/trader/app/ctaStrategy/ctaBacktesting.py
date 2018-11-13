@@ -1347,6 +1347,7 @@ class HistoryDataServer(RpcServer):
         self.historyDict[(dbName, symbol, start, end)] = history
         print(u'从数据库加载：%s %s %s %s' %(dbName, symbol, start, end))
         return history
+
     
 #----------------------------------------------------------------------
 def runHistoryDataServer():
@@ -1360,6 +1361,7 @@ def runHistoryDataServer():
     print(u'按任意键退出')
     hds.stop()
     raw_input()
+
 
 #----------------------------------------------------------------------
 def formatNumber(n):
