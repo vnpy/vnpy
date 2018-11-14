@@ -15,14 +15,14 @@ class MarketOpenings(object):
         marketTimes is a dict in the following format: 
         {
             "SymbolsIncluded": ["P1901", "y1901"],  
-            "MORNING_START": "09:00:00",
-            "MORNING_BREAK": "10:15:00",
-            "MORNING_RESTART": "10:30:00",
-            "MORNING_END": "11:30:00",
-            "AFTERNOON_START": "13:30:00",
-            "AFTERNOON_END": "15:00:00",
-            "NIGHT_START": "21:00:00",
-            "NIGHT_END": "02:30:00"
+            "MORNING_START": "09:00",
+            "MORNING_BREAK": "10:15",
+            "MORNING_RESTART": "10:30",
+            "MORNING_END": "11:30",
+            "AFTERNOON_START": "13:30",
+            "AFTERNOON_END": "15:00",
+            "NIGHT_START": "21:00",
+            "NIGHT_END": "02:30"
         }
         you may add as many symbols as you want, after 'SymbolsIncluded',
         it's better to define market hours based on symbols due to the different policies of exchanges,
@@ -33,7 +33,7 @@ class MarketOpenings(object):
         but you must define 'MORNING_START' for non-24-hour sessions,
         if you leave out 'MORNING_START', then the system assumes it being a 24-hour session,
         the order of these time points can be arbitrary,
-        the format of the time points must be 'HH:MM:SS',
+        the format of the time points must be 'HH:MM',
         'NIGHT_END' does not equal the end of a day bar, which is defined elsewhere,
         """
 
@@ -52,7 +52,7 @@ class MarketOpenings(object):
         session = [0, 0]
         id = 0
         if "MORNING_START" in marketTimes:
-            self.morningStart = datetime.strptime(marketTimes["MORNING_START"], '%H:%M:%S').time()
+            self.morningStart = datetime.strptime(marketTimes["MORNING_START"], '%H:%M').time()
             session[id] = self.morningStart
             id = 1
         else :
@@ -62,43 +62,43 @@ class MarketOpenings(object):
             return
 
         if "MORNING_BREAK" in marketTimes:
-            self.morningBreak = datetime.strptime(marketTimes["MORNING_BREAK"], '%H:%M:%S').time()
+            self.morningBreak = datetime.strptime(marketTimes["MORNING_BREAK"], '%H:%M').time()
             session[id] = self.morningBreak
             self.sessions.append(session)
             session = [0, 0]
             id = 0
 
         if "MORNING_RESTART" in marketTimes and id == 0:
-            self.morningRestart = datetime.strptime(marketTimes["MORNING_RESTART"], '%H:%M:%S').time()
+            self.morningRestart = datetime.strptime(marketTimes["MORNING_RESTART"], '%H:%M').time()
             session[id] = self.morningRestart
             id = 1
 
         if "MORNING_END" in marketTimes and id == 1:
-            self.morningEnd = datetime.strptime(marketTimes["MORNING_END"], '%H:%M:%S').time()
+            self.morningEnd = datetime.strptime(marketTimes["MORNING_END"], '%H:%M').time()
             session[id] = self.morningEnd
             self.sessions.append(session)
             session = [0, 0]
             id = 0
 
         if "AFTERNOON_START" in marketTimes and id == 0:
-            self.aftStart = datetime.strptime(marketTimes["AFTERNOON_START"], '%H:%M:%S').time()
+            self.aftStart = datetime.strptime(marketTimes["AFTERNOON_START"], '%H:%M').time()
             session[id] = self.aftStart
             id = 1
 
         if "AFTERNOON_END" in marketTimes and id == 1:
-            self.aftEnd = datetime.strptime(marketTimes["AFTERNOON_END"], '%H:%M:%S').time()
+            self.aftEnd = datetime.strptime(marketTimes["AFTERNOON_END"], '%H:%M').time()
             session[id] = self.aftEnd
             self.sessions.append(session)
             session = [0, 0]
             id = 0
 
         if "NIGHT_START" in marketTimes and id == 0:
-            self.nightStart = datetime.strptime(marketTimes["NIGHT_START"], '%H:%M:%S').time()
+            self.nightStart = datetime.strptime(marketTimes["NIGHT_START"], '%H:%M').time()
             session[id] = self.nightStart
             id = 1
 
-        if "NIGHT_END" in marketTimes and id == 0:
-            self.nightEnd = datetime.strptime(marketTimes["NIGHT_END"], '%H:%M:%S').time()
+        if "NIGHT_END" in marketTimes and id == 1:
+            self.nightEnd = datetime.strptime(marketTimes["NIGHT_END"], '%H:%M').time()
             session[id] = self.nightEnd
             self.sessions.append(session)
 
@@ -110,13 +110,13 @@ class MarketOpenings(object):
             if session[0] == session[1] :
                 return True
             elif session[0] < session[1] :
-                if session[0] <= curTime < session[1] :
+                if session[0] <= curTime <= session[1] :
                     return True
             else:
-                if session[0] <= curTime or curTime < session[1] :
+                if session[0] <= curTime or curTime <= session[1] :
                     return True
 
-        False                        
+        return False                        
 
 
 class MarketsOpHours(object):
@@ -135,7 +135,7 @@ class MarketsOpHours(object):
         """ load market operating times from file """
         with open(self.settingFilePath) as f:
             markets = json.load(f)
-            for ex in markets:
+             for ex in markets:
                 mts = MarketOpenings(ex, markets[ex])
                 self.markettimes[ex] = mts
                 if "SymbolsIncluded" in markets[ex] :
@@ -147,7 +147,7 @@ class MarketsOpHours(object):
         """ 
         checks if market is open at 'curTime'
         """
-        cTime = datetime.strptime(curTime, '%H:%M:%S.%f').time()
+        cTime = datetime.strptime(curTime, '%H:%M:%S.%f').replace(second=0, microsecond=0).time()
         if symbol in self.markettimes :
             if self.markettimes[symbol].isMarketOpen(cTime) :
                 return True
@@ -157,4 +157,4 @@ class MarketsOpHours(object):
             if self.markettimes[exchange].isMarketOpen(cTime) : 
                 return True
 
-        False
+        return False
