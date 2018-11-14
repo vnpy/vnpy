@@ -135,7 +135,7 @@ class MarketsOpHours(object):
         """ load market operating times from file """
         with open(self.settingFilePath) as f:
             markets = json.load(f)
-             for ex in markets:
+            for ex in markets:
                 mts = MarketOpenings(ex, markets[ex])
                 self.markettimes[ex] = mts
                 if "SymbolsIncluded" in markets[ex] :
