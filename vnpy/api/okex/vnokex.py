@@ -141,23 +141,25 @@ class OkexApi(object):
             self.thread.join()
 
     #----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
+    def onMessage(self, *args):
         """
         信息推送事件
         :param ws:  接口
         :param evt: 事件
         :return:
         """
+        evt = args[-1]
         print(u'vnokex.onMessage:{}'.format(evt))
         
     #----------------------------------------------------------------------
-    def onError(self, ws, evt):
+    def onError(self, *args):
         """
         接口错误推送事件
         :param ws:
         :param evt:
         :return:
         """
+        evt = args[-1]
         print(u'vnokex.onApiError:{}'.format(evt))
 
         

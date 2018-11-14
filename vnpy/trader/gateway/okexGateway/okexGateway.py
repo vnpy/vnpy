@@ -430,17 +430,21 @@ class OkexSpotApi(WsSpotApi):
     '''
 
     # ----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
+    def onMessage(self, *args):
         """
         响应信息处理，包括心跳响应、请求响应、数据推送
         :param ws: websocket接口
         :param evt: 消息体
         :return:
         """
-        # str => json
-        decmp_evt = self.inflate(evt)
-        ws_data = self.readData(decmp_evt)
-
+        evt = args[-1]
+        if isinstance(evt,bytes):
+            # bytes = > str => json
+            decmp_evt = self.inflate(evt)
+            ws_data = self.readData(decmp_evt)
+        else:
+            # str => json
+            ws_data = self.readData(evt)
         if self.gateway.log_message:
             self.gateway.writeLog(u'SpotApi.onMessage:{}'.format(ws_data))
 
@@ -495,8 +499,12 @@ class OkexSpotApi(WsSpotApi):
                     self.gateway.writeError(u'Spot unkown msg:{}'.format(data))
 
     # ----------------------------------------------------------------------
-    def onError(self, ws, evt):
+    def onError(self, *args):
         """Api方法重载,错误推送"""
+        evt = None
+        if len(args) == 2:
+            evt = args[-1]
+
         error = VtErrorData()
         error.gatewayName = self.gatewayName
         error.errorID = 0
@@ -1565,17 +1573,21 @@ class OkexFuturesApi(WsFuturesApi):
         self._use_leverage = __leverage
 
     # ----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
+    def onMessage(self, *args):
         """
         信息推送的处理
         :param ws:
         :param evt:
         :return:
         """
-        # str => json
-        decmp_evt = self.inflate(evt)
-        ws_data = self.readData(decmp_evt)
-        #ws_data = self.readData(evt)
+        evt = args[-1]
+        if isinstance(evt,bytes):
+            # bytes => str => json
+            decmp_evt = self.inflate(evt)
+            ws_data = self.readData(decmp_evt)
+        else:
+            # str => json
+            ws_data = self.readData(evt)
 
         if self.gateway.log_message:
             self.gateway.writeLog(u'FutureApi.onMessage:{}'.format(ws_data))
@@ -1639,8 +1651,9 @@ class OkexFuturesApi(WsFuturesApi):
                     self.writeLog(u'unkonw msg:{}'.format(data))
 
     # ----------------------------------------------------------------------
-    def onError(self, ws, evt):
+    def onError(self,*args):
         """重载WsFutureApi.onError错误Event推送"""
+        evt = args[-1]
         error = VtErrorData()
         error.gatewayName = self.gatewayName
         if isinstance(evt,bytes):
