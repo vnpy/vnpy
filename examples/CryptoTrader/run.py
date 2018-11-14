@@ -9,17 +9,13 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-# 判断操作系统
-import platform
-system = platform.system()
-
 # vn.trader模块
 from vnpy.event import EventEngine
 from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiQt import createQApp
 
 # 加载底层接口
-from vnpy.trader.gateway import (huobiGateway, okexGateway,
+from vnpy.trader.gateway import (huobiGateway, okexGateway, okexfGateway,
                                  binanceGateway, bitfinexGateway,
                                  bitmexGateway, fcoinGateway,
                                  bigoneGateway, lbankGateway,
@@ -44,6 +40,7 @@ def main():
     me = MainEngine(ee)
 
     # 添加交易接口
+    me.addGateway(okexfGateway)
     me.addGateway(ccxtGateway)
     me.addGateway(coinbaseGateway)
     me.addGateway(lbankGateway)

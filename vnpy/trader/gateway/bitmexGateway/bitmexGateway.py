@@ -1,23 +1,38 @@
 # encoding: UTF-8
 
 '''
-vnpy.api.bitmex的gateway接入
 '''
+
+
 from __future__ import print_function
 
+import logging
 import os
 import json
 import hashlib
 import hmac
+import sys
 import time
 import traceback
 from datetime import datetime, timedelta
 from copy import copy
 from math import pow
+from urllib import urlencode
 
-from vnpy.api.bitmex import BitmexRestApi, BitmexWebsocketApi
+from requests import ConnectionError
+
+from vnpy.api.rest import RestClient, Request
+from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath, getTempPath
+
+
+REST_HOST = 'https://www.bitmex.com/api/v1'
+WEBSOCKET_HOST = 'wss://www.bitmex.com/realtime'
+
+TESTNET_REST_HOST = 'https://testnet.bitmex.com/api/v1'
+TESTNET_WEBSOCKET_HOST = 'wss://testnet.bitmex.com/realtime'
+
 
 # 委托状态类型映射
 statusMapReverse = {}
@@ -49,19 +64,21 @@ class BitmexGateway(VtGateway):
         """Constructor"""
         super(BitmexGateway, self).__init__(eventEngine, gatewayName)
 
-        self.restApi = RestApi(self)
-        self.wsApi = WebsocketApi(self)
+        self.restApi = BitmexRestApi(self)
+        self.wsApi = BitmexWebsocketApi(self)
 
         self.qryEnabled = False         # 是否要启动循环查询
 
         self.fileName = self.gatewayName + '_connect.json'
         self.filePath = getJsonPath(self.fileName, __file__)
+        
+        self.exchange = constant.EXCHANGE_BITMEX
 
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -71,11 +88,13 @@ class BitmexGateway(VtGateway):
 
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             apiKey = str(setting['apiKey'])
             apiSecret = str(setting['apiSecret'])
             sessionCount = int(setting['sessionCount'])
             symbols = setting['symbols']
+            testnet = setting.get('testnet',False)
         except KeyError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -84,13 +103,13 @@ class BitmexGateway(VtGateway):
             return
 
         # 创建行情和交易接口对象
-        self.restApi.connect(apiKey, apiSecret, sessionCount)
-        self.wsApi.connect(apiKey, apiSecret, symbols)
+        self.restApi.connect(apiKey, apiSecret, sessionCount, testnet)
+        self.wsApi.connect(apiKey, apiSecret, symbols, testnet)
 
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
-        pass
+        self.wsApi.subscribeMarketData(subscribeReq.symbol)
 
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
@@ -105,8 +124,8 @@ class BitmexGateway(VtGateway):
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
-        self.restApi.close()
-        self.wsApi.close()
+        self.restApi.stop()
+        self.wsApi.stop()
     
     #----------------------------------------------------------------------
     def initQuery(self):
@@ -151,24 +170,69 @@ class BitmexGateway(VtGateway):
 
 
 ########################################################################
-class RestApi(BitmexRestApi):
+class BitmexRestApi(RestClient):
     """REST API实现"""
 
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
-        super(RestApi, self).__init__()
+        super(BitmexRestApi, self).__init__()
 
-        self.gateway = gateway                  # gateway对象
+        self.gateway = gateway                  # type: BitmexGateway # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
         
-        self.orderId = 1000000
-        self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
+        self.apiKey = ''
+        self.apiSecret = ''
         
+        self.orderId = 1000000
+        self.loginTime = 0
+    
     #----------------------------------------------------------------------
-    def connect(self, apiKey, apiSecret, sessionCount):
+    def sign(self, request):
+        """BitMEX的签名方案"""
+        # 生成签名
+        expires = int(time.time() + 5)
+        
+        if request.params:
+            query = urlencode(request.params)
+            path = request.path + '?' + query
+        else:
+            path = request.path
+        
+        if request.data:
+            request.data = urlencode(request.data)
+        else:
+            request.data = ''
+        
+        msg = request.method + '/api/v1' + path + str(expires) + request.data
+        signature = hmac.new(self.apiSecret, msg,
+                             digestmod=hashlib.sha256).hexdigest()
+        
+        # 添加表头
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'api-key': self.apiKey,
+            'api-expires': str(expires),
+            'api-signature': signature
+        }
+        
+        request.headers = headers
+        return request
+    
+    #----------------------------------------------------------------------
+    def connect(self, apiKey, apiSecret, sessionCount, testnet):
         """连接服务器"""
-        self.init(apiKey, apiSecret)
+        self.apiKey = apiKey
+        self.apiSecret = apiSecret
+        
+        self.loginTime = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
+        
+        if not testnet:
+            self.init(REST_HOST)
+        else:
+            self.init(TESTNET_REST_HOST)
+            
         self.start(sessionCount)
         
         self.writeLog(u'REST API启动成功')
@@ -182,13 +246,13 @@ class RestApi(BitmexRestApi):
         self.gateway.onLog(log)
     
     #----------------------------------------------------------------------
-    def sendOrder(self, orderReq):
+    def sendOrder(self, orderReq):# type: (VtOrderReq)->str
         """"""
         self.orderId += 1
-        orderId = self.date + self.orderId
-        vtOrderID = '.'.join([self.gatewayName, str(orderId)])
+        orderId = str(self.loginTime + self.orderId)
+        vtOrderID = '.'.join([self.gatewayName, orderId])
         
-        req = {
+        data = {
             'symbol': orderReq.symbol,
             'side': directionMap[orderReq.direction],
             'ordType': priceTypeMap[orderReq.priceType],            
@@ -196,48 +260,119 @@ class RestApi(BitmexRestApi):
             'orderQty': orderReq.volume,
             'clOrdID': str(orderId)
         }
-        self.addReq('POST', '/order', self.onSendOrder, postdict=req)
         
+        # 只有限价单才有price字段
+        if orderReq.priceType == PRICETYPE_LIMITPRICE:
+            data['price'] = orderReq.price
+            
+        vtOrder = VtOrderData.createFromGateway(
+            self.gateway,
+            orderId=orderId,
+            symbol=orderReq.symbol,
+            exchange=self.gateway.exchange,
+            price=orderReq.price,
+            volume=orderReq.volume,
+            direction=orderReq.direction,
+            offset=orderReq.offset,
+        )
+        
+        self.addRequest('POST', '/order', callback=self.onSendOrder, data=data, extra=vtOrder,
+                        onFailed=self.onSendOrderFailed,
+                        onError=self.onSendOrderError,
+                        )
         return vtOrderID
     
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """"""
         orderID = cancelOrderReq.orderID
-        if orderID.isdigit():
-            req = {'clOrdID': orderID}
-        else:
-            req = {'orderID': orderID}
         
-        self.addReq('DELETE', '/order', self.onCancelOrder, params=req)
+        if orderID.isdigit():
+            params = {'clOrdID': orderID}
+        else:
+            params = {'orderID': orderID}
+        
+        self.addRequest('DELETE', '/order', callback=self.onCancelOrder, params=params,
+                        onError=self.onCancelOrderError,
+                        )
+        
+    #----------------------------------------------------------------------
+    def onSendOrderFailed(self, _, request):
+        """
+        下单失败回调：服务器明确告知下单失败
+        """
+        vtOrder = request.extra # type: VtOrderData
+        vtOrder.status = constant.STATUS_REJECTED
+        self.gateway.onOrder(vtOrder)
+        pass
+    
+    #----------------------------------------------------------------------
+    def onSendOrderError(self, exceptionType, exceptionValue, tb, request):
+        """
+        下单失败回调：连接错误
+        """
+        vtOrder = request.extra # type: VtOrderData
+        vtOrder.status = constant.STATUS_REJECTED
+        self.gateway.onOrder(vtOrder)
+        
+        # 意料之中的错误只有ConnectionError，若还有其他错误，最好还是记录一下，用原来的onError记录即可
+        if not issubclass(exceptionType, ConnectionError):
+            self.onError(exceptionType, exceptionValue, tb, request)
+        
+    #----------------------------------------------------------------------
+    def onSendOrder(self, data, request):
+        """"""
+        pass
 
     #----------------------------------------------------------------------
-    def onSendOrder(self, data, reqid):
+    def onCancelOrderError(self, exceptionType, exceptionValue, tb, request):
+        """
+        撤单失败回调：连接错误
+        """
+        # 意料之中的错误只有ConnectionError，若还有其他错误，最好还是记录一下，用原来的onError记录即可
+        if not issubclass(exceptionType, ConnectionError):
+            self.onError(exceptionType, exceptionValue, tb, request)
+    
+    #----------------------------------------------------------------------
+    def onCancelOrder(self, data, request):
         """"""
         pass
     
     #----------------------------------------------------------------------
-    def onCancelOrder(self, data, reqid):
-        """"""
-        pass
-    
-    #----------------------------------------------------------------------
-    def onError(self, code, error):
-        """"""
+    def onFailed(self, httpStatusCode, request):  # type:(int, Request)->None
+        """
+        请求失败处理函数（HttpStatusCode!=2xx）.
+        默认行为是打印到stderr
+        """
         e = VtErrorData()
-        e.errorID = code
-        e.errorID = error
+        e.gatewayName = self.gatewayName
+        e.errorID = httpStatusCode
+        e.errorMsg = request.response.text
         self.gateway.onError(e)
-        
+        print(request.response.text)
+    
+    #----------------------------------------------------------------------
+    def onError(self, exceptionType, exceptionValue, tb, request):
+        """
+        Python内部错误处理：默认行为是仍给excepthook
+        """
+        e = VtErrorData()
+        e.gatewayName = self.gatewayName
+        e.errorID = exceptionType
+        e.errorMsg = exceptionValue
+        self.gateway.onError(e)
+
+        sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb, request))
+
 
 ########################################################################
-class WebsocketApi(BitmexWebsocketApi):
+class BitmexWebsocketApi(WebsocketClient):
     """"""
 
     #----------------------------------------------------------------------
     def __init__(self, gateway):
         """Constructor"""
-        super(WebsocketApi, self).__init__()
+        super(BitmexWebsocketApi, self).__init__()
         
         self.gateway = gateway
         self.gatewayName = gateway.gatewayName
@@ -261,60 +396,81 @@ class WebsocketApi(BitmexWebsocketApi):
         self.tradeSet = set()
         
     #----------------------------------------------------------------------
-    def connect(self, apiKey, apiSecret, symbols):
+    def connect(self, apiKey, apiSecret, symbols, testnet):
         """"""
         self.apiKey = apiKey
         self.apiSecret = apiSecret
         
-        for symbol in symbols:
-            tick = VtTickData()
-            tick.gatewayName = self.gatewayName
-            tick.symbol = symbol
-            tick.exchange = EXCHANGE_BITMEX
-            tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
-            self.tickDict[symbol] = tick
-            
+        if not testnet:
+            self.init(WEBSOCKET_HOST)
+        else:
+            self.init(TESTNET_WEBSOCKET_HOST)
+        
         self.start()
+        
+        for symbol in symbols:
+            self.subscribeMarketData(symbol)        
     
     #----------------------------------------------------------------------
-    def onConnect(self):
+    def subscribeMarketData(self, symbol):
+        """订阅行情"""
+        tick = VtTickData()
+        tick.gatewayName = self.gatewayName
+        tick.symbol = symbol
+        tick.exchange = EXCHANGE_BITMEX
+        tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
+        self.tickDict[symbol] = tick        
+        
+    #----------------------------------------------------------------------
+    def onConnected(self):
         """连接回调"""
         self.writeLog(u'Websocket API连接成功')
         self.authenticate()
     
     #----------------------------------------------------------------------
-    def onData(self, data):
+    def onDisconnected(self):
+        """连接回调"""
+        self.writeLog(u'Websocket API连接断开')
+        self.authenticate()    
+    
+    #----------------------------------------------------------------------
+    def onPacket(self, packet):
         """数据回调"""
-        if 'request' in data:
-            req = data['request']
-            success = data['success']
+        if 'error' in packet:
+            self.writeLog(u'Websocket API报错：%s' %packet['error'])
+            
+            if 'not valid' in packet['error']:
+                self.active = False
+            
+        elif 'request' in packet:
+            req = packet['request']
+            success = packet['success']
             
             if success:
                 if req['op'] == 'authKey':
                     self.writeLog(u'Websocket API验证授权成功')
                     self.subscribe()
             
-        elif 'table' in data:
-            name = data['table']
+        elif 'table' in packet:
+            name = packet['table']
             callback = self.callbackDict[name]
             
-            if isinstance(data['data'], list):
-                for d in data['data']:
+            if isinstance(packet['data'], list):
+                for d in packet['data']:
                     callback(d)
             else:
-                callback(data['data'])
-            
-            #if data['action'] == 'update' and data['table'] != 'instrument':
-                #callback(data['data'])
-            #elif data['action'] == 'partial':
-                #for d in data['data']:
-                    #callback(d)
-
+                callback(packet['data'])
     
     #----------------------------------------------------------------------
-    def onError(self, msg):
-        """错误回调"""
-        self.writeLog(msg)
+    def onError(self, exceptionType, exceptionValue, tb):
+        """Python错误回调"""
+        e = VtErrorData()
+        e.gatewayName = self.gatewayName
+        e.errorID = exceptionType
+        e.errorMsg = exceptionValue
+        self.gateway.onError(e)
+        
+        sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb))
     
     #----------------------------------------------------------------------
     def writeLog(self, content):
@@ -337,7 +493,7 @@ class WebsocketApi(BitmexWebsocketApi):
             'op': 'authKey', 
             'args': [self.apiKey, expires, signature]
         }
-        self.sendReq(req)
+        self.sendPacket(req)
 
     #----------------------------------------------------------------------
     def subscribe(self):
@@ -346,7 +502,7 @@ class WebsocketApi(BitmexWebsocketApi):
             'op': 'subscribe',
             'args': ['instrument', 'trade', 'orderBook10', 'execution', 'order', 'position', 'margin']
         }
-        self.sendReq(req)
+        self.sendPacket(req)
     
     #----------------------------------------------------------------------
     def onTick(self, d):
@@ -363,6 +519,7 @@ class WebsocketApi(BitmexWebsocketApi):
         tick.date = date.replace('-', '')
         tick.time = time.replace('Z', '')
         
+        tick = copy(tick)
         self.gateway.onTick(tick)
 
     #----------------------------------------------------------------------
@@ -387,6 +544,7 @@ class WebsocketApi(BitmexWebsocketApi):
         tick.date = date.replace('-', '')
         tick.time = time.replace('Z', '')
         
+        tick = copy(tick)
         self.gateway.onTick(tick)
     
     #----------------------------------------------------------------------
@@ -413,9 +571,13 @@ class WebsocketApi(BitmexWebsocketApi):
         trade.orderID = orderID
         trade.vtOrderID = '.'.join([trade.gatewayName, trade.orderID])
         
-        
         trade.tradeID = tradeID
         trade.vtTradeID = '.'.join([trade.gatewayName, trade.tradeID])
+        
+        # bug check:
+        if d['side'] not in directionMapReverse:
+            logging.debug('trade wthout side : %s', d)
+            return
         
         trade.direction = directionMapReverse[d['side']]
         trade.price = d['lastPx']
@@ -518,7 +680,7 @@ class WebsocketApi(BitmexWebsocketApi):
         contract.name = contract.vtSymbol
         contract.productClass = PRODUCT_FUTURES
         contract.priceTick = d['tickSize']
-        contract.size = d['multiplier']
+        contract.size = d['lotSize']
         
         self.gateway.onContract(contract)        
 

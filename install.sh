@@ -1,20 +1,33 @@
 #!/bin/bash
 
+function check_result() {
+    if [ $? -ne 0 ]; then
+        echo " "
+        echo "do command failed for $1 !!!"
+        echo " "
+        exit 1
+    fi
+}
+
 #Build ctp/lts/ib api
 pushd vnpy/api/ctp
 bash build.sh
+check_result "build api.ctp"
 popd
 
 pushd vnpy/api/lts
 bash build.sh
+check_result "build api.lts"
 popd
 
 pushd vnpy/api/xtp
 bash build.sh
+check_result "build api.xtp"
 popd
 
 pushd vnpy/api/ib
 bash build.sh
+check_result "build api.ib"
 popd
 
 #Install Python Modules

@@ -8,7 +8,7 @@ import json
 import traceback
 
 import requests
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread
 from multiprocessing.dummy import Pool
 from time import time
