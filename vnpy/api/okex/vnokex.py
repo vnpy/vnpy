@@ -9,7 +9,8 @@ import traceback
 import websocket
 import requests
 import sys
-
+import ssl
+from datetime import datetime
 # API文档 https://github.com/okcoin-okex/OKEx.com-api-docs
 
 from vnpy.api.okex.okexData import SPOT_TRADE_SIZE_DICT,SPOT_REST_ERROR_DICT, FUTURES_ERROR_DICT
@@ -78,16 +79,20 @@ class OkexApi(object):
         """重新连接"""
         # 首先关闭之前的连接
         self.close()
-        
-        # 再执行重连任务
-        self.ws = websocket.WebSocketApp(self.host, 
-                                         on_message=self.onMessage,
-                                         on_error=self.onError,
-                                         on_close=self.onClose,
-                                         on_open=self.onOpen)        
-    
-        self.thread = Thread(target=self.ws.run_forever)
-        self.thread.start()
+        try:
+            # 再执行重连任务
+            self.ws = websocket.WebSocketApp(self.host,
+                                             on_message=self.onMessage,
+                                             on_error=self.onError,
+                                             on_close=self.onClose,
+                                             on_open=self.onOpen)
+
+            kwargs = {'sslopt': {'cert_reqs': ssl.CERT_NONE}}
+            self.thread = Thread(target=self.ws.run_forever, kwargs=kwargs)
+            self.thread.start()
+        except Exception as ex:
+            print(u'{} OkexApi reconnect exception :{},{}'.format(datetime.now(), str(ex), traceback.format_exc()),
+                  file=sys.stderr)
     
     #----------------------------------------------------------------------
     def connect(self, apiKey, secretKey, trace=False):
@@ -102,20 +107,23 @@ class OkexApi(object):
         self.host = OKEX_USD_SPOT
         self.apiKey = apiKey
         self.secretKey = secretKey
+        try:
+            # 是否开启日志
+            websocket.enableTrace(trace)
 
-        # 是否开启日志
-        websocket.enableTrace(trace)
+            # 创建websocket，绑定本地回调函数 onMessage/onError/onClose/onOpen
+            self.ws = websocket.WebSocketApp(self.host,
+                                                 on_message=self.onMessage,
+                                                 on_error=self.onError,
+                                                 on_close=self.onClose,
+                                                 on_open=self.onOpen)
 
-        # 创建websocket，绑定本地回调函数 onMessage/onError/onClose/onOpen
-        self.ws = websocket.WebSocketApp(self.host, 
-                                             on_message=self.onMessage,
-                                             on_error=self.onError,
-                                             on_close=self.onClose,
-                                             on_open=self.onOpen)        
-            
-        self.thread = Thread(target=self.ws.run_forever)
-        self.thread.start()
-
+            kwargs = {'sslopt': {'cert_reqs': ssl.CERT_NONE}}
+            self.thread = Thread(target=self.ws.run_forever, kwargs=kwargs)
+            self.thread.start()
+        except Exception as ex:
+            print(u'{} OkexApi connect exception :{},{}'.format(datetime.now(), str(ex), traceback.format_exc()),
+                  file=sys.stderr)
     #----------------------------------------------------------------------
     def readData(self, evt):
         """
@@ -141,14 +149,13 @@ class OkexApi(object):
             self.thread.join()
 
     #----------------------------------------------------------------------
-    def onMessage(self, *args):
+    def onMessage(self, ws, evt):
         """
         信息推送事件
         :param ws:  接口
         :param evt: 事件
         :return:
         """
-        evt = args[-1]
         print(u'vnokex.onMessage:{}'.format(evt))
         
     #----------------------------------------------------------------------
@@ -159,7 +166,9 @@ class OkexApi(object):
         :param evt:
         :return:
         """
-        evt = args[-1]
+        evt = None
+        if len(args) == 2:
+            evt = args[-1]
         print(u'vnokex.onApiError:{}'.format(evt))
 
         
@@ -444,17 +453,19 @@ class WsFuturesApi(object):
         self.apiKey = apiKey
         self.secretKey = secretKey
         self.trace = trace
+        try:
+            websocket.enableTrace(trace)
 
-        websocket.enableTrace(trace)
-
-        self.ws = websocket.WebSocketApp(self.host,
-                                         on_message=self.onMessage,
-                                         on_error=self.onError,
-                                         on_close=self.onClose,
-                                         on_open=self.onOpen)
-
-        self.thread = Thread(target=self.ws.run_forever, args=(None, None, 60, 30))
-        self.thread.start()
+            self.ws = websocket.WebSocketApp(self.host,
+                                             on_message=self.onMessage,
+                                             on_error=self.onError,
+                                             on_close=self.onClose,
+                                             on_open=self.onOpen)
+            kwargs = {'sslopt': {'cert_reqs': ssl.CERT_NONE}}
+            self.thread = Thread(target=self.ws.run_forever, kwargs=kwargs)
+            self.thread.start()
+        except Exception as ex:
+            print(u'{} wsFuturesApi connect exception :{},{}'.format(datetime.now(), str(ex),traceback.format_exc()), file=sys.stderr)
 
     # ----------------------------------------------------------------------
     def http_get_request(self, url, params, add_to_headers=None, TIMEOUT=5):
@@ -473,7 +484,7 @@ class WsFuturesApi(object):
             else:
                 return {"status": "fail"}
         except Exception as e:
-            print(u'httpGet failed :{}'.format(str(e)), file=sys.stderr)
+            print(u'httpGet failed :{},trace:{}'.format(str(e),traceback.format_exc()), file=sys.stderr)
             return {"status": "fail", "msg": e}
 
     # ----------------------------------------------------------------------
@@ -543,14 +554,17 @@ class WsFuturesApi(object):
         return data
 
     # ----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
+    def onMessage(self, *args):
         """信息推送"""
-        print(evt)
+        if len(args)>0:
+            print(args[-1])
 
     # ----------------------------------------------------------------------
-    def onError(self, ws, evt):
+    def onError(self, *args):
         """错误推送"""
-        print('OkexContractApi.onError:{}'.format(evt))
+        if len(args) > 0:
+
+            print('OkexContractApi.onError:{}'.format(evt[-1]))
 
     # ----------------------------------------------------------------------
     def onClose(self, ws):
