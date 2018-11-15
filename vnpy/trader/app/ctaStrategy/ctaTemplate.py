@@ -455,8 +455,6 @@ class BarGenerator(object):
     #----------------------------------------------------------------------
     def generate(self):
         """手动强制立即完成K线合成"""
-        self.updateTick(self.lastTick)
-        self.updateBar(self.bar)
         self.onBar(self.bar)
         self.bar = None
 
