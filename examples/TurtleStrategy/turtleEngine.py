@@ -306,7 +306,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出信息"""
-        print content
+        print(content)
 
     #----------------------------------------------------------------------
     def getTradeData(self, vtSymbol=''):
