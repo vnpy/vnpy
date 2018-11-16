@@ -21,7 +21,7 @@ from vnpy.event import Event
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtFunction import todayDate, getJsonPath
 from vnpy.trader.vtObject import VtSubscribeReq, VtLogData, VtBarData, VtTickData
-from vnpy.trader.app.ctaStrategy.ctaTemplate import BarGenerator
+from vnpy.trader.vtUtility import BarGenerator
 
 from .drBase import *
 from .language import text

@@ -7,6 +7,7 @@ from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE,
                                     STATUS_ALLTRADED, STATUS_CANCELLED,
                                     STATUS_REJECTED)
+
 from vnpy.trader.uiQt import QtGui
 
 from vnpy.trader.app.algoTrading.algoTemplate import AlgoTemplate
@@ -157,7 +158,7 @@ class ArbitrageAlgo(AlgoTemplate):
                                             tick.bidPrice5,
                                             volume)
         elif self.netPos < 0:
-            self.passiveOrderID = self.buy(self.activeVtSymbol,
+            self.passiveOrderID = self.buy(self.passiveVtSymbol,
                                            tick.askPrice5,
                                            volume)
 

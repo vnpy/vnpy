@@ -229,10 +229,17 @@ class CtaEngine(AppEngine):
                     
                     if longTriggered or shortTriggered:
                         # 买入和卖出分别以涨停跌停价发单（模拟市价单）
+                        # 对于没有涨跌停价格的市场则使用5档报价
                         if so.direction==DIRECTION_LONG:
-                            price = tick.upperLimit
+                            if tick.upperLimit:
+                                price = tick.upperLimit
+                            else:
+                                price = tick.askPrice5
                         else:
-                            price = tick.lowerLimit
+                            if tick.lowerLimit:
+                                price = tick.lowerLimit
+                            else:
+                                price = tick.bidPrice5
                         
                         # 发出市价委托
                         vtOrderID = self.sendOrder(so.vtSymbol, so.orderType, 
@@ -256,7 +263,6 @@ class CtaEngine(AppEngine):
     def processTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
-        
         tick = copy(tick)
         
         # 收到tick行情后，先处理本地停止单（检查是否要立即发出）
@@ -276,7 +282,8 @@ class CtaEngine(AppEngine):
             # 逐个推送到策略实例中
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
-                self.callStrategyFunc(strategy, strategy.onTick, tick)
+                if strategy.inited:
+                    self.callStrategyFunc(strategy, strategy.onTick, tick)
     
     #----------------------------------------------------------------------
     def processOrderEvent(self, event):

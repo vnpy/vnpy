@@ -113,9 +113,6 @@ class MainEngine(object):
         
         if gateway:
             gateway.connect()
-            
-            # 接口连接后自动执行数据库连接的任务
-            self.dbConnect()        
    
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
@@ -416,7 +413,7 @@ class DataEngine(object):
         self.workingOrderDict = {}  # 可撤销委托
         self.tradeDict = {}
         self.accountDict = {}
-        self.positionDict= {}
+        self.positionDict = {}
         self.logList = []
         self.errorList = []
         

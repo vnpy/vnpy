@@ -14,7 +14,6 @@ import multiprocessing
 import copy
 
 import pymongo
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -892,6 +891,9 @@ class BacktestingEngine(object):
         self.tradeCount = 0
         self.tradeDict.clear()
         
+        # 清空逐日统计相关
+        self.dailyResultDict.clear()
+        
     #----------------------------------------------------------------------
     def runOptimization(self, strategyClass, optimizationSetting):
         """优化参数"""
@@ -911,13 +913,13 @@ class BacktestingEngine(object):
             self.output('setting: %s' %str(setting))
             self.initStrategy(strategyClass, setting)
             self.runBacktesting()
-            df = self.calculateDailyResult()
-            df, d = self.calculateDailyStatistics(df)            
+            self.calculateDailyResult()
+            d, result = self.calculateDailyStatistics()            
             try:
-                targetValue = d[targetName]
+                targetValue = result[targetName]
             except KeyError:
                 targetValue = 0
-            resultList.append(([str(setting)], targetValue, d))
+            resultList.append(([str(setting)], targetValue, result))
         
         # 显示结果
         resultList.sort(reverse=True, key=lambda result:result[1])
@@ -952,6 +954,7 @@ class BacktestingEngine(object):
         resultList.sort(reverse=True, key=lambda result:result[1])
         return resultList
 
+    #----------------------------------------------------------------------
     def outputOptimizeResult(self, resultList):
         self.output('-' * 30)
         self.output(u'优化结果：')
@@ -994,66 +997,71 @@ class BacktestingEngine(object):
             
             dailyResult.calculatePnl(openPosition, self.size, self.rate, self.slippage )
             openPosition = dailyResult.closePosition
-            
-        # 生成DataFrame
-        resultDict = {k:[] for k in dailyResult.__dict__.keys()}
-        for dailyResult in self.dailyResultDict.values():
-            for k, v in dailyResult.__dict__.items():
-                resultDict[k].append(v)
-                
-        resultDf = pd.DataFrame.from_dict(resultDict)
-        
-        # 计算衍生数据
-        resultDf = resultDf.set_index('date')
-        
-        return resultDf
     
     #----------------------------------------------------------------------
-    def calculateDailyStatistics(self, df):
+    def calculateDailyStatistics(self, annualDays=240):
         """计算按日统计的结果"""
-        df['balance'] = df['netPnl'].cumsum() + self.capital
-        df['return'] = (np.log(df['balance']) - np.log(df['balance'].shift(1))).fillna(0)
-        df['highlevel'] = df['balance'].rolling(min_periods=1,window=len(df),center=False).max()
-        df['drawdown'] = df['balance'] - df['highlevel']        
-        df['ddPercent'] = df['drawdown'] / df['highlevel'] * 100
+        dateList = self.dailyResultDict.keys()
+        resultList = self.dailyResultDict.values()
         
-        # 计算统计结果
-        startDate = df.index[0]
-        endDate = df.index[-1]
-
-        totalDays = len(df)
-        profitDays = len(df[df['netPnl']>0])
-        lossDays = len(df[df['netPnl']<0])
+        startDate = dateList[0]
+        endDate = dateList[-1]  
+        totalDays = len(dateList)
         
-        endBalance = df['balance'].iloc[-1]
-        maxDrawdown = df['drawdown'].min()
-        maxDdPercent = df['ddPercent'].min()
+        profitDays = 0
+        lossDays = 0
+        endBalance = self.capital
+        highlevel = self.capital
+        totalNetPnl = 0
+        totalTurnover = 0
+        totalCommission = 0
+        totalSlippage = 0
+        totalTradeCount = 0
         
-        totalNetPnl = df['netPnl'].sum()
-        dailyNetPnl = totalNetPnl / totalDays
+        netPnlList = []
+        balanceList = []
+        highlevelList = []
+        drawdownList = []
+        ddPercentList = []
+        returnList = []
         
-        totalCommission = df['commission'].sum()
-        dailyCommission = totalCommission / totalDays
+        for result in resultList:
+            if result.netPnl > 0:
+                profitDays += 1
+            elif result.netPnl < 0:
+                lossDays += 1
+            netPnlList.append(result.netPnl)
+            
+            prevBalance = endBalance
+            endBalance += result.netPnl
+            balanceList.append(endBalance)
+            returnList.append(endBalance/prevBalance - 1)
+            
+            highlevel = max(highlevel, endBalance)
+            highlevelList.append(highlevel)
+            
+            drawdown = endBalance - highlevel
+            drawdownList.append(drawdown)
+            ddPercentList.append(drawdown/highlevel*100)
+            
+            totalTurnover += result.turnover
+            totalCommission += result.commission
+            totalSlippage += result.slippage
+            totalTradeCount += result.tradeCount
+            totalNetPnl += result.netPnl
         
-        totalSlippage = df['slippage'].sum()
-        dailySlippage = totalSlippage / totalDays
-        
-        totalTurnover = df['turnover'].sum()
-        dailyTurnover = totalTurnover / totalDays
-        
-        totalTradeCount = df['tradeCount'].sum()
-        dailyTradeCount = totalTradeCount / totalDays
-        
-        totalReturn = (endBalance/self.capital - 1) * 100
-        annualizedReturn = totalReturn / totalDays * 240
-        dailyReturn = df['return'].mean() * 100
-        returnStd = df['return'].std() * 100
+        maxDrawdown = min(drawdownList)
+        maxDdPercent = min(ddPercentList)
+        totalReturn = (endBalance / self.capital - 1) * 100
+        dailyReturn = np.mean(returnList) * 100
+        annualizedReturn = dailyReturn * annualDays
+        returnStd = np.std(returnList) * 100
         
         if returnStd:
-            sharpeRatio = dailyReturn / returnStd * np.sqrt(240)
+            sharpeRatio = dailyReturn / returnStd * np.sqrt(annualDays)
         else:
             sharpeRatio = 0
-            
+        
         # 返回结果
         result = {
             'startDate': startDate,
@@ -1065,30 +1073,39 @@ class BacktestingEngine(object):
             'maxDrawdown': maxDrawdown,
             'maxDdPercent': maxDdPercent,
             'totalNetPnl': totalNetPnl,
-            'dailyNetPnl': dailyNetPnl,
+            'dailyNetPnl': totalNetPnl/totalDays,
             'totalCommission': totalCommission,
-            'dailyCommission': dailyCommission,
+            'dailyCommission': totalCommission/totalDays,
             'totalSlippage': totalSlippage,
-            'dailySlippage': dailySlippage,
+            'dailySlippage': totalSlippage/totalDays,
             'totalTurnover': totalTurnover,
-            'dailyTurnover': dailyTurnover,
+            'dailyTurnover': totalTurnover/totalDays,
             'totalTradeCount': totalTradeCount,
-            'dailyTradeCount': dailyTradeCount,
+            'dailyTradeCount': totalTradeCount/totalDays,
             'totalReturn': totalReturn,
             'annualizedReturn': annualizedReturn,
             'dailyReturn': dailyReturn,
             'returnStd': returnStd,
             'sharpeRatio': sharpeRatio
-        }
+            }
         
-        return df, result
+        d = {}
+        d['balance'] = balanceList
+        d['return'] = returnList
+        d['highLevel'] = highlevelList
+        d['drawdown'] = drawdownList
+        d['ddPercent'] = ddPercentList
+        d['date'] = dateList
+        d['netPnl'] = netPnlList
+        
+        return d, result
     
     #----------------------------------------------------------------------
-    def showDailyResult(self, df=None, result=None):
+    def showDailyResult(self, d=None, result=None):
         """显示按日统计的交易结果"""
-        if df is None:
-            df = self.calculateDailyResult()
-            df, result = self.calculateDailyStatistics(df)
+        if d is None:
+            self.calculateDailyResult()
+            d, result = self.calculateDailyStatistics()
             
         # 输出统计结果
         self.output('-' * 30)
@@ -1128,23 +1145,23 @@ class BacktestingEngine(object):
         
         pBalance = plt.subplot(4, 1, 1)
         pBalance.set_title('Balance')
-        df['balance'].plot(legend=True)
+        plt.plot(d['date'], d['balance'])
         
         pDrawdown = plt.subplot(4, 1, 2)
         pDrawdown.set_title('Drawdown')
-        pDrawdown.fill_between(range(len(df)), df['drawdown'].values)
+        pDrawdown.fill_between(range(len(d['drawdown'])), d['drawdown'])
         
         pPnl = plt.subplot(4, 1, 3)
         pPnl.set_title('Daily Pnl') 
-        df['netPnl'].plot(kind='bar', legend=False, grid=False, xticks=[])
+        plt.bar(range(len(d['drawdown'])), d['netPnl'])
 
         pKDE = plt.subplot(4, 1, 4)
         pKDE.set_title('Daily Pnl Distribution')
-        df['netPnl'].hist(bins=50)
+        plt.hist(d['netPnl'], bins=50)
         
         plt.show()
-       
-        
+    
+
 ########################################################################
 class TradingResult(object):
     """每笔交易的结果"""
@@ -1330,6 +1347,7 @@ class HistoryDataServer(RpcServer):
         self.historyDict[(dbName, symbol, start, end)] = history
         print(u'从数据库加载：%s %s %s %s' %(dbName, symbol, start, end))
         return history
+
     
 #----------------------------------------------------------------------
 def runHistoryDataServer():
@@ -1343,6 +1361,7 @@ def runHistoryDataServer():
     print(u'按任意键退出')
     hds.stop()
     raw_input()
+
 
 #----------------------------------------------------------------------
 def formatNumber(n):
@@ -1370,11 +1389,11 @@ def optimize(strategyClass, setting, targetName,
     engine.initStrategy(strategyClass, setting)
     engine.runBacktesting()
     
-    df = engine.calculateDailyResult()
-    df, d = engine.calculateDailyStatistics(df)
+    engine.calculateDailyResult()
+    d, result = engine.calculateDailyStatistics()            
     try:
-        targetValue = d[targetName]
+        targetValue = result[targetName]
     except KeyError:
-        targetValue = 0            
-    return (str(setting), targetValue, d)    
+        targetValue = 0       
+    return (str(setting), targetValue, result)    
     

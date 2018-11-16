@@ -376,9 +376,33 @@ class CtpMdApi(MdApi):
         tick.askVolume1 = data['AskVolume1']
         
         # 大商所日期转换
-        if tick.exchange is EXCHANGE_DCE:
+        if tick.exchange == EXCHANGE_DCE:
             tick.date = datetime.now().strftime('%Y%m%d')
-        
+
+        # 上交所，SEE，股票期权相关
+        if tick.exchange == EXCHANGE_SSE:
+            tick.bidPrice2 = data['BidPrice2']
+            tick.bidVolume2 = data['BidVolume2']
+            tick.askPrice2 = data['AskPrice2']
+            tick.askVolume2 = data['AskVolume2']
+
+            tick.bidPrice3 = data['BidPrice3']
+            tick.bidVolume3 = data['BidVolume3']
+            tick.askPrice3 = data['AskPrice3']
+            tick.askVolume3 = data['AskVolume3']
+
+            tick.bidPrice4 = data['BidPrice4']
+            tick.bidVolume4 = data['BidVolume4']
+            tick.askPrice4 = data['AskPrice4']
+            tick.askVolume4 = data['AskVolume4']
+
+            tick.bidPrice5 = data['BidPrice5']
+            tick.bidVolume5 = data['BidVolume5']
+            tick.askPrice5 = data['AskPrice5']
+            tick.askVolume5 = data['AskVolume5']
+
+            tick.date = data['TradingDay']
+
         self.gateway.onTick(tick)
         
     #---------------------------------------------------------------------- 
