@@ -18,12 +18,14 @@ def print_list(l):
         print(d)
 
 #----------------------------------------------------------------------
+
+
 def print_dict(d):
     """按照键值打印一个字典"""
-    for key,value in d.items():
+    for key, value in d.items():
         print(key + ':' + str(value))
-        
-        
+
+
 #----------------------------------------------------------------------
 def simple_log(func):
     """简单装饰器用于输出函数名"""
@@ -69,32 +71,31 @@ class TestHlp(CsHsHlp):
         for i in data[0].keys():
             print "key=%s,value=%s"%(i,data[0][i])
         '''
-        
+
         for dd in data:
-            print(dd)        
-        
+            print(dd)
+
         self.data = data
 
-    
     def setNessaryParam(self):
         '''
         设置必要的参数
         '''
         self.beginParam()
-        self.setValue("fund_account",self.fund_account)
-        self.setValue("option_fund_account",self.option_fund_account)
-        self.setValue("password",self.password)
-        self.setValue("password_type",self.password_type)
-        self.setValue("identity_type",self.identity_type)
-        self.setValue("op_entrust_way",self.op_entrust_way)
-        self.setValue("op_station",self.op_station)
-        self.setValue('client_id',self.client_id)
-        self.setValue('sysnode_id',self.sysnode_id)
-        self.setValue('asset_prop',self.asset_prop)
-        self.setValue('branch_no',self.branch_no)
-        self.setValue('op_branch_n',self.op_branch_no)
-        self.setValue('user_token',self.user_token)
-        self.setValue('request_num',self.request_num)
+        self.setValue("fund_account", self.fund_account)
+        self.setValue("option_fund_account", self.option_fund_account)
+        self.setValue("password", self.password)
+        self.setValue("password_type", self.password_type)
+        self.setValue("identity_type", self.identity_type)
+        self.setValue("op_entrust_way", self.op_entrust_way)
+        self.setValue("op_station", self.op_station)
+        self.setValue('client_id', self.client_id)
+        self.setValue('sysnode_id', self.sysnode_id)
+        self.setValue('asset_prop', self.asset_prop)
+        self.setValue('branch_no', self.branch_no)
+        self.setValue('op_branch_n', self.op_branch_no)
+        self.setValue('user_token', self.user_token)
+        self.setValue('request_num', self.request_num)
 
     def init_api(self):
         '''
@@ -103,9 +104,9 @@ class TestHlp(CsHsHlp):
         i = self.loadConfig("Hsconfig.ini")
         if i:
             print(u'加载配置失败：', i)
-            return i            
+            return i
         print(u'加载配置成功')
-        
+
         # 初始化
         i = self.init()
         if i:
@@ -123,13 +124,12 @@ class TestHlp(CsHsHlp):
         return int(0)
 
 
-
 #----------------------------------------------------------------------
 def test():
     """测试用"""
     # 测试账户
     # account = {'id':'9008067077', 'psw':'123123'}
-    account ={'id':'9899012708','psw':'111111'}
+    account = {'id': '9899012708', 'psw': '111111'}
     # account ={'id':'9899012971','psw':'111111'}
     api = TestHlp()
 
@@ -173,7 +173,6 @@ def test():
     else:
         print('error in set the value')
 
-    
     #------------------------------------------
     # 订阅  620001  成交回报  33011
     # 订阅  620001  委托回写  33012
@@ -187,7 +186,6 @@ def test():
     print(i)
     sleep(1)
 
-
     print(u'订阅 33012')
     api.beginParam()
     acc_info = '~' .join([api.branch_no, api.fund_account])
@@ -197,16 +195,15 @@ def test():
     print(i)
     sleep(1)
 
-    
     print(u'配置参数，进行下单')
     # 配置
     api.setNessaryParam()
     # 下单参数 338011
-    api.setValue('exchange_type','1')
-    api.setValue('option_code','10000844')
-    api.setValue('entrust_amount','1')
-    api.setValue('opt_entrust_price','0.08')
-    api.setValue('entrust_bs','1')
+    api.setValue('exchange_type', '1')
+    api.setValue('option_code', '10000844')
+    api.setValue('entrust_amount', '1')
+    api.setValue('opt_entrust_price', '0.08')
+    api.setValue('entrust_bs', '1')
     api.setValue("entrust_oc", "O")
     api.setValue("batch_no", "0")
     api.setValue('entrust_prop', '0')
@@ -214,29 +211,28 @@ def test():
     i = api.bizCallAndCommit(338011)
     print(u'尝试下单返回', i)
     sleep(3)
-    
-    
+
     print(u'查询持仓')
-     # 查询持仓
+    # 查询持仓
     # api.beginParam()
     api.setNessaryParam()
     i = api.bizCallAndCommit(338023)
     sleep(3)
-    print(u'查询持仓返回',i)
+    print(u'查询持仓返回', i)
     if(len(api.data)):
         for dd in api.data:
             print("-----------------------")
             for i in dd.keys():
-                print("key=%s,value=%s"%(i,api.data[0][i]))
+                print("key=%s,value=%s" % (i, api.data[0][i]))
 
-    # --------------------------------------------------------------------------   
+    # --------------------------------------------------------------------------
     # 测试撤单 338012,先下单，间隔后撤单
     api.setNessaryParam()
-    api.setValue('exchange_type','1')
-    api.setValue('option_code','10000844')
-    api.setValue('entrust_amount','1')
-    api.setValue('opt_entrust_price','0.09')
-    api.setValue('entrust_bs','1')
+    api.setValue('exchange_type', '1')
+    api.setValue('option_code', '10000844')
+    api.setValue('entrust_amount', '1')
+    api.setValue('opt_entrust_price', '0.09')
+    api.setValue('entrust_bs', '1')
     api.setValue("entrust_oc", "O")
     api.setValue("batch_no", "0")
     api.setValue('entrust_prop', '0')
@@ -251,10 +247,10 @@ def test():
         for tt in api.data:
             e_no = tt['entrust_no']
             api.order[e_no] = tt
-        
+
     print(api.order)
     api.setNessaryParam()
-    api.setValue('exchange_type','1')
+    api.setValue('exchange_type', '1')
     for kk in api.order.keys():
         api.setValue('entrust_no', kk)
         i = api.bizCallAndCommit(338012)
@@ -263,11 +259,10 @@ def test():
         #pop or del
     print(api.data)
 
-    
     #-----------------------------------
     # 期权委托查询   1.查询指定委托   2.查询所有可撤订单
     api.setNessaryParam()
-    
+
     for kk in api.order.keys():
 
         api.setValue('locate_entrust_no', kk)
@@ -275,17 +270,15 @@ def test():
         print(u'查询指定订单', kk)
         sleep(1)
     print(api.data)
-    
+
     api.setNessaryParam()
     api.setValue('query_kind', '1')
     i = api.bizCallAndCommit(338020)
     sleep(1)
     print(api.data)
-    
 
-    
     raw_input()
+
 
 if __name__ == '__main__':
     test()
-

@@ -4,6 +4,7 @@ __author__ = 'CHENXY'
 
 from lts_data_type import *
 
+
 def main():
     """主函数"""
     fcpp = open('SecurityFtdcUserApiStruct.h', 'r')
@@ -26,7 +27,7 @@ def main():
         # 结构体申明
         elif 'struct' in line:
             content = line.split(' ')
-            name = content[1].replace('\n','')
+            name = content[1].replace('\n', '')
             py_line = '%s = {}\n' % name
 
         # 结构体变量

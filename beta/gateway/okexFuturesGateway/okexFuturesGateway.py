@@ -77,18 +77,18 @@ class OkexFuturesOrderStatus(object):
 ########################################################################
 class Order(object):
     _lastLocalId = 0
-    
+
     #----------------------------------------------------------------------
     def __init__(self):
         Order._lastLocalId += 1
         self.localId = str(Order._lastLocalId)
         self.remoteId = None
-        self.vtOrder = None # type: VtOrderData
+        self.vtOrder = None  # type: VtOrderData
 
 
 ########################################################################
 class Symbol(object):
-    
+
     #----------------------------------------------------------------------
     def __init__(self):
         self.v3 = None  # type: str             # BTC_USD_1891201
@@ -116,7 +116,7 @@ class ChannelType(Enum):
 
 ########################################################################
 class Channel(object):
-    
+
     #----------------------------------------------------------------------
     def __init__(self, type_, symbol=None, remoteContractType=None, extra_=None):
         self.type = type_
@@ -128,7 +128,7 @@ class Channel(object):
 ########################################################################
 class OkexFuturesGateway(VtGateway):
     """OKEX期货交易接口"""
-    
+
     #----------------------------------------------------------------------
     def __init__(self, eventEngine, gatewayName='OKEXFUTURES'):
         """Constructor"""
@@ -143,7 +143,7 @@ class OkexFuturesGateway(VtGateway):
         self.webSocket = OkexFuturesWebSocketBase()
         self.webSocket.onPacket = self.onWebSocketPacket
         self.webSocket.unpackData = self.webSocketUnpackData
-        
+
         self.leverRate = 1
         self.symbols = []
 
@@ -163,7 +163,7 @@ class OkexFuturesGateway(VtGateway):
         """
         fileName = self.gatewayName + '_connect.json'
         filePath = getJsonPath(fileName, __file__)
-    
+
         try:
             with open(filePath, 'rt') as f:
                 return json.load(f)
@@ -174,7 +174,7 @@ class OkexFuturesGateway(VtGateway):
             # todo: pop a message box is better
             self.onLog(log)
             return None
-    
+
     #----------------------------------------------------------------------
     def loadSetting(self):
         """载入设置"""
@@ -196,7 +196,7 @@ class OkexFuturesGateway(VtGateway):
                 log.logContent = u'连接配置缺少字段，请检查'
                 self.onLog(log)
                 return
-    
+
     #----------------------------------------------------------------------
     def connect(self):
         """连接"""
@@ -207,9 +207,9 @@ class OkexFuturesGateway(VtGateway):
         self.webSocket.start()
 
         self.queryContracts()
-        
+
     #----------------------------------------------------------------------
-    def subscribe(self, subscribeReq): # type: (VtSubscribeReq)->None
+    def subscribe(self, subscribeReq):  # type: (VtSubscribeReq)->None
         """订阅行情"""
         s = self.parseSymbol(subscribeReq.symbol)
         remoteSymbol = s.v1Symbol.lower()
@@ -281,9 +281,9 @@ class OkexFuturesGateway(VtGateway):
     #----------------------------------------------------------------------
     def parseSymbol(self, symbol):
         return self._symbolDict[symbol]
-    
+
     #----------------------------------------------------------------------
-    def sendOrder(self, vtRequest): # type: (VtOrderReq)->str
+    def sendOrder(self, vtRequest):  # type: (VtOrderReq)->str
         """发单"""
         symbol = self.parseSymbol(vtRequest.symbol).v3
         myorder = self._generateLocalOrder(symbol,
@@ -339,7 +339,7 @@ class OkexFuturesGateway(VtGateway):
         return self.restClient.addRequest('GET', '/api/futures/v3/instruments',
                                           callback=self._onQueryContracts,
                                           )
-    
+
     #----------------------------------------------------------------------
     def queryOrders(self, symbol, status):  # type: (str, OkexFuturesOrderStatus)->None
         """
@@ -359,7 +359,7 @@ class OkexFuturesGateway(VtGateway):
                                    },
                                    callback=self._onQueryOrders,
                                    )
-    
+
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金
@@ -373,13 +373,13 @@ class OkexFuturesGateway(VtGateway):
     def _onQryAccounts(self, data, _):
         if 'info' not in data:
             raise ApiError("unable to parse account data")
-    
+
         for easySymbol, detail in data['info'].items():  # type: str, dict
             acc = VtAccountData()
             acc.gatewayName = self.gatewayName
             acc.accountID = easySymbol
             acc.vtAccountID = acc.gatewayName + '.' + acc.accountID
-            
+
             acc.balance = detail.get('equity', 0)
             acc.available = detail['total_avail_balance']
             if 'contracts' in detail:
@@ -398,14 +398,14 @@ class OkexFuturesGateway(VtGateway):
             acc.positionProfit = data.get('unrealized_pnl', 0)
             acc.closeProfit = data.get('realized_pnl', 0)
             self.onAccount(acc)
-    
+
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
         return self.restClient.addRequest('GET', '/api/futures/v3/position',
                                           callback=self._onQueryPosition,
                                           )
-    
+
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
@@ -413,7 +413,7 @@ class OkexFuturesGateway(VtGateway):
         self.webSocket.stop()
 
     #----------------------------------------------------------------------
-    def _onOrderSent(self, data, request):  #type: (dict, Request)->None
+    def _onOrderSent(self, data, request):  # type: (dict, Request)->None
         """下单回调"""
         # errorCode = data['error_code'],
         # errorMessage = data['error_message'],
@@ -432,9 +432,9 @@ class OkexFuturesGateway(VtGateway):
         myorder = request.extra  # type: Order
         myorder.vtOrder.status = constant.STATUS_REJECTED
         self.onOrder(myorder.vtOrder)
-    
+
     #----------------------------------------------------------------------
-    def _onOrderCanceled(self, data, request):  #type: (dict, Request)->None
+    def _onOrderCanceled(self, data, request):  # type: (dict, Request)->None
         myorder = request.extra  # type: Order
         result = data['result']
         if result is True:
@@ -449,23 +449,23 @@ class OkexFuturesGateway(VtGateway):
     def _onCancelOrderFailed(self, _, request):  # type:(int, Request)->None
         myorder = request.extra  # type: Order
         self._writeError(u'Failed to cancel order {}'.format(myorder.localId))
-        
+
     #----------------------------------------------------------------------
-    def _onQueryContracts(self, data, _):  #type: (dict, Request)->None
-    
+    def _onQueryContracts(self, data, _):  # type: (dict, Request)->None
+
         # 首先建立THISWEEK, NEXTWEEK, QUARTER和相应Contract的映射
         symbols = set()
         for contract in data:
             symbol = contract['instrument_id']
             symbols.add(symbol)
-    
+
         # 一般来说，一个币种对有三种到期日期不同的symbol。
         # 将这三种symbol按顺序排列，就能依次得到ThisWeek, NextWeek和Quarter三种symbol
         s2 = defaultdict(list)
         for symbol in sorted(symbols):
             easySymbol = symbol[:3]
             s2[easySymbol].append(symbol)
-    
+
         # 按顺序取出排列好的symbols，对应上ThisWeek, NextWeek和Quarter
         # 然后记录下来他们的几种symbols形式和相应的一些常量：
         # v1Symbol: BTC_USD_THISWEEK
@@ -473,14 +473,14 @@ class OkexFuturesGateway(VtGateway):
         # easySymbol: btc, eth, ...
         # remoteContractType: this_week, next_week, ...
         # localContractType: THISWEEK, NEXTWEEK, ...
-    
+
         symbolDict = {}
         for easySymbol, sortedSymbols in s2.items():
             if len(sortedSymbols) == 3:
                 for contractType, v3symbol in zip(_contractTypeMap.keys(), sortedSymbols):
                     uiSymbol = '{}_USD_{}'.format(easySymbol, contractType)  # ETC_USD_THISWEEK
                     remoteContractName = '{}{}'.format(easySymbol, v3symbol[-4:])  # ETC1201
-                
+
                     s = Symbol()
                     s.v1Symbol = '{}_{}'.format(easySymbol.lower(), "usd")
                     s.v3 = v3symbol
@@ -488,32 +488,32 @@ class OkexFuturesGateway(VtGateway):
                     s.remoteContractType = _contractTypeMap[contractType]
                     s.localContractTYpe = contractType
                     s.uiSymbol = uiSymbol
-                
+
                     # normal map
                     symbolDict[uiSymbol.upper()] = s
                     symbolDict[uiSymbol.lower()] = s
                     symbolDict[uiSymbol] = s
                     symbolDict[v3symbol] = s
-                    
+
                     # switch between '-' and '_'
                     symbolDict[uiSymbol.upper().replace('_', '-')] = s
                     symbolDict[uiSymbol.lower().replace('_', '-')] = s
                     symbolDict[uiSymbol.replace('_', '-')] = s
                     symbolDict[v3symbol.replace('-', '_')] = s
-                    
+
                     # BTCUSD181228 BTCUSDTHISWEEK, btcusdthisweek
                     symbolDict[v3symbol.upper().replace('-', '')] = s
                     symbolDict[uiSymbol.upper().replace('_', '')] = s
                     symbolDict[uiSymbol.lower().replace('_', '')] = s
-                    
+
                     symbolDict[remoteContractName.upper()] = s
                     symbolDict[remoteContractName.lower()] = s
-        
+
         # unicode and str
         for k, v in symbolDict.items():
             self._symbolDict[str(k)] = v
             self._symbolDict[unicode(k)] = v
-    
+
         # 其次响应onContract，也是该函数的本职工作
         for contract in data:
             symbol = contract['instrument_id']
@@ -531,7 +531,7 @@ class OkexFuturesGateway(VtGateway):
                 underlyingSymbol=contract['underlying_index'],
             )
             self.onContract(vtContract)
-    
+
         # 最后订阅symbols，还有查询其他东西
         for symbol in self.symbols:
             s = self.parseSymbol(symbol)
@@ -539,11 +539,11 @@ class OkexFuturesGateway(VtGateway):
             req = VtSubscribeReq()
             req.symbol = s.v3
             self.subscribe(req)
-        
+
         # 查询账户啊，持仓啊，委托单啊之类的东西
         self.qryAccount()
         self.qryPosition()
-        
+
         # 查询所有未成交的委托
         # v3 API尚未支持该操作
         # for symbol in symbols:
@@ -551,16 +551,16 @@ class OkexFuturesGateway(VtGateway):
         #     self.queryOrders(symbol, OkexFuturesOrderStatus.NotTraded)
 
     #----------------------------------------------------------------------
-    def _onQueryOrders(self, data, _):  #type: (dict, Request)->None
+    def _onQueryOrders(self, data, _):  # type: (dict, Request)->None
         if data['result'] is True:
             for info in data['orders']:
                 remoteId = info['order_id']
                 tradedVolume = info['filled_qty']
-            
+
                 myorder = self._getOrderByRemoteId(remoteId)
                 if myorder:
                     # 如果订单已经缓存在本地，则尝试更新订单状态
-                
+
                     # 有新交易才推送更新
                     if tradedVolume != myorder.vtOrder.tradedVolume:
                         myorder.vtOrder.tradedVolume = tradedVolume
@@ -580,9 +580,9 @@ class OkexFuturesGateway(VtGateway):
                     myorder.remoteId = remoteId
                     self._saveRemoteId(myorder.remoteId, myorder)
                     self.onOrder(myorder.vtOrder)
-                
+
     #----------------------------------------------------------------------
-    def _onQueryPosition(self, data, _):  #type: (dict, Request)->None
+    def _onQueryPosition(self, data, _):  # type: (dict, Request)->None
         if 'holding' in data:
             posex = data['holding']
         elif 'position' in data:
@@ -591,7 +591,7 @@ class OkexFuturesGateway(VtGateway):
             raise ApiError("Failed to parse position data")
         for pos in posex:
             symbol = self.parseSymbol(pos['instrument_id']).uiSymbol
-            
+
             # 多头持仓
             vtPos = VtPositionData.createFromGateway(
                 gateway=self,
@@ -602,7 +602,7 @@ class OkexFuturesGateway(VtGateway):
                 price=pos['long_avg_cost'],
             )
             self.onPosition(vtPos)
-    
+
             # 多头持仓
             vtPos = VtPositionData.createFromGateway(
                 gateway=self,
@@ -613,13 +613,13 @@ class OkexFuturesGateway(VtGateway):
                 price=pos['short_avg_cost'],
             )
             self.onPosition(vtPos)
-            
+
     #----------------------------------------------------------------------
     @staticmethod
     def webSocketUnpackData(data):
         """重载websocket.unpackData"""
         return json.loads(zlib.decompress(data, -zlib.MAX_WBITS))
-    
+
     #----------------------------------------------------------------------
     def onWebSocketPacket(self, packets):
         for packet in packets:
@@ -628,7 +628,7 @@ class OkexFuturesGateway(VtGateway):
                 channelName = packet['channel']
             if not channelName or channelName == 'addChannel':
                 return
-        
+
             data = packet['data']
             channel = parseChannel(channelName)  # type: Channel
             if not channel:
@@ -665,13 +665,13 @@ class OkexFuturesGateway(VtGateway):
                         self._lastTicker.time = self._lastTicker.datetime.strftime('%H:%M:%S')
                         self.onTick(self._lastTicker)
                 elif channel.type == ChannelType.Depth:
-                    
+
                     asks = data['asks']
                     bids = data['bids']
                     if self._lastTicker is not None:
                         timestamp = float(data['timestamp'])
-                        ts = datetime.utcfromtimestamp(timestamp/1000) + self._utcOffset
-                        
+                        ts = datetime.utcfromtimestamp(timestamp / 1000) + self._utcOffset
+
                         self._lastTicker.askPrice1 = asks[0][0]
                         self._lastTicker.askPrice2 = asks[1][0]
                         self._lastTicker.askPrice3 = asks[2][0]
@@ -682,7 +682,7 @@ class OkexFuturesGateway(VtGateway):
                         self._lastTicker.askVolume3 = asks[2][1]
                         self._lastTicker.askVolume4 = asks[3][1]
                         self._lastTicker.askVolume5 = asks[4][1]
-        
+
                         self._lastTicker.bidPrice1 = bids[0][0]
                         self._lastTicker.bidPrice2 = bids[1][0]
                         self._lastTicker.bidPrice3 = bids[2][0]
@@ -732,7 +732,7 @@ class OkexFuturesGateway(VtGateway):
                             order=order.vtOrder,
                             tradeID=tradeID,
                             tradePrice=data['price'],
-                        
+
                             # todo: 这里应该填写的到底是order总共成交了的数量，还是该次trade成交的数量
                             tradeVolume=data['deal_amount'],
                         ))
@@ -762,8 +762,8 @@ class OkexFuturesGateway(VtGateway):
     def setQryEnabled(self, _):
         """dummy function"""
         pass
-    
-    
+
+
 #----------------------------------------------------------------------
 def localOrderTypeToRemote(direction, offset):  # type: (str, str)->str
     return _orderTypeMap[(direction, offset)]
@@ -810,11 +810,11 @@ def remotePrefixToRemoteContractType(prefix):
 def parseChannel(channel):  # type: (str)->Channel
     if channel == 'login':
         return Channel(ChannelType.Login)
-    
+
     # 还未提供订阅的channel都注释掉
     # elif channel[4:12] == 'forecast':  # eg: 'btc_forecast_price'
     #     return SymbolChannel(ChannelType.ForecastPrice, channel[:3])
-    
+
     sp = channel.split('_')
     if sp[-1] == 'trades':  # eg: 'ok_sub_futureusd_trades'
         return Channel(ChannelType.UserTrade)
@@ -824,10 +824,10 @@ def parseChannel(channel):  # type: (str)->Channel
     #     return SymbolChannel(ChannelType.Index, channel[17:20])
     if sp[-1] == 'positions':  # eg: 'ok_sub_futureusd_positions'
         return Channel(ChannelType.Position)
-    
+
     if sp[-1] == 'userinfo':  # eg: 'ok_sub_futureusd_positions'
         return Channel(ChannelType.UserInfo)
-    
+
     lsp = len(sp)
     if sp[-1] == 'quarter':
         if lsp == 7:
@@ -852,8 +852,8 @@ def parseChannel(channel):  # type: (str)->Channel
             return Channel(ChannelType.Depth, easySymbol + '_' + crash,
                            remotePrefixToRemoteContractType(typeName_contractTypePrefix[5:]),
                            depth)
-    
-    
+
+
 #----------------------------------------------------------------------
 def _tryGetValue(dict, *keys):
     """尝试从字典中获取某些键中的一个"""
@@ -891,8 +891,7 @@ _remoteSymbols = {
 # symbols for ui,
 # keys:给用户看的symbols : f"{internalSymbol}_{contractType}"
 # values: API接口使用的symbol和contractType字段
-_symbolsForUi = {(remoteSymbol.upper() + '_' + upperContractType.upper())
-                 : (remoteSymbol, remoteContractType)
+_symbolsForUi = {(remoteSymbol.upper() + '_' + upperContractType.upper()): (remoteSymbol, remoteContractType)
                  for remoteSymbol in _remoteSymbols
                  for upperContractType, remoteContractType in
                  _contractTypeMap.items()
@@ -900,8 +899,7 @@ _symbolsForUi = {(remoteSymbol.upper() + '_' + upperContractType.upper())
 _symbolsForUiReverse = {v: k for k, v in _symbolsForUi.items()}
 
 _channel_for_subscribe = {
-    'ok_sub_futureusd_' + easySymbol + '_ticker_' + remoteContractType
-    : (easySymbol, remoteContractType)
+    'ok_sub_futureusd_' + easySymbol + '_ticker_' + remoteContractType: (easySymbol, remoteContractType)
     for easySymbol in _easySymbols
     for remoteContractType in _contractTypeMap.values()
 }

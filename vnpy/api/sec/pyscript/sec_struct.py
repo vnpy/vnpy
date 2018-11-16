@@ -2,33 +2,8 @@
 from collections import OrderedDict
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #重传方式
 RESUME_TYPE = OrderedDict()
-
-
-
-
 
 
 #ERR-错误信息
@@ -79,7 +54,7 @@ DFITCSECReqUserLogoutField['requestID'] = 'long'
 DFITCSECReqUserLogoutField['accountID'] = 'string'
 
 
-#SEC-登出响应 
+#SEC-登出响应
 DFITCSECRspUserLogoutField = OrderedDict()
 
 DFITCSECRspUserLogoutField['requestID'] = 'long'
@@ -1709,7 +1684,6 @@ DFITCFASLRspEntrustCrdtOrderField['spdOrderID'] = 'int'
 DFITCFASLRspEntrustCrdtOrderField['localOrderID'] = 'long'
 
 
-
 #FASL-信用委托撤单请求
 DFITCFASLReqWithdrawOrderField = OrderedDict()
 
@@ -1726,7 +1700,6 @@ DFITCFASLRspWithdrawOrderField['requestID'] = 'long'
 DFITCFASLRspWithdrawOrderField['accountID'] = 'string'
 DFITCFASLRspWithdrawOrderField['localOrderID'] = 'long'
 DFITCFASLRspWithdrawOrderField['spdOrderID'] = 'int'
-
 
 
 #FASL-融资融券交易请求
@@ -2064,7 +2037,6 @@ DFITCFASLRspQryUnderlyingContractField['status'] = 'int'
 DFITCFASLRspQryUnderlyingContractField['accountType'] = 'int'
 
 
-
 #QUOTE-指定的合约
 DFITCSECSpecificInstrumentField = OrderedDict()
 
@@ -2105,7 +2077,6 @@ DFITCStaticDataField['upperLimitPrice'] = 'float'
 DFITCStaticDataField['lowerLimitPrice'] = 'float'
 
 
-
 #共有动态的
 DFITCSharedDataField = OrderedDict()
 
@@ -2142,7 +2113,6 @@ DFITCSOPDepthMarketDataField = OrderedDict()
 
 
 DFITCStockDepthMarketDataField = OrderedDict()
-
 
 
 #STOCK-证券静态信息查询请求
@@ -2225,6 +2195,3 @@ DFITCSOPRspQryGroupPositionField['securityOptionID1'] = 'string'
 DFITCSOPRspQryGroupPositionField['securityOptionID2'] = 'string'
 DFITCSOPRspQryGroupPositionField['securityOptionID3'] = 'string'
 DFITCSOPRspQryGroupPositionField['securityOptionID4'] = 'string'
-
-
-

@@ -52,7 +52,7 @@ class StopOrder(object):
         self.offset = EMPTY_UNICODE
         self.price = EMPTY_FLOAT
         self.volume = EMPTY_INT
-        
+
         self.strategy = None             # 下停止单的策略对象
-        self.stopOrderID = EMPTY_STRING  # 停止单的本地编号 
+        self.stopOrderID = EMPTY_STRING  # 停止单的本地编号
         self.status = EMPTY_STRING       # 停止单状态

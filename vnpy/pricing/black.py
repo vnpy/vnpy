@@ -53,44 +53,56 @@ def calculatePrice(f, k, r, t, v, cp):
     return price
 
 #----------------------------------------------------------------------
+
+
 def calculateDelta(f, k, r, t, v, cp):
     """计算Delta值"""
-    price1 = calculatePrice(f*STEP_UP, k, r, t, v, cp)
-    price2 = calculatePrice(f*STEP_DOWN, k, r, t, v, cp)
+    price1 = calculatePrice(f * STEP_UP, k, r, t, v, cp)
+    price2 = calculatePrice(f * STEP_DOWN, k, r, t, v, cp)
     delta = (price1 - price2) / (f * STEP_DIFF) * (f * 0.01)
     return delta
 
 #----------------------------------------------------------------------
+
+
 def calculateGamma(f, k, r, t, v, cp):
     """计算Gamma值"""
-    delta1 = calculateDelta(f*STEP_UP, k, r, t, v, cp)
-    delta2 = calculateDelta(f*STEP_DOWN, k, r, t, v, cp)
+    delta1 = calculateDelta(f * STEP_UP, k, r, t, v, cp)
+    delta2 = calculateDelta(f * STEP_DOWN, k, r, t, v, cp)
     gamma = (delta1 - delta2) / (f * STEP_DIFF) * pow(f, 2) * 0.0001
     return gamma
 
 #----------------------------------------------------------------------
+
+
 def calculateTheta(f, k, r, t, v, cp):
     """计算Theta值"""
-    price1 = calculatePrice(f, k, r, t*STEP_UP, v, cp)
-    price2 = calculatePrice(f, k, r, t*STEP_DOWN, v, cp)
+    price1 = calculatePrice(f, k, r, t * STEP_UP, v, cp)
+    price2 = calculatePrice(f, k, r, t * STEP_DOWN, v, cp)
     theta = -(price1 - price2) / (t * STEP_DIFF * 240)
     return theta
 
 #----------------------------------------------------------------------
+
+
 def calculateVega(f, k, r, t, v, cp):
     """计算Vega值"""
     vega = calculateOriginalVega(f, k, r, t, v, cp) / 100
     return vega
 
 #----------------------------------------------------------------------
+
+
 def calculateOriginalVega(f, k, r, t, v, cp):
-    """计算原始vega值"""    
-    price1 = calculatePrice(f, k, r, t, v*STEP_UP, cp)
-    price2 = calculatePrice(f, k, r, t, v*STEP_DOWN, cp)
+    """计算原始vega值"""
+    price1 = calculatePrice(f, k, r, t, v * STEP_UP, cp)
+    price2 = calculatePrice(f, k, r, t, v * STEP_DOWN, cp)
     vega = (price1 - price2) / (v * STEP_DIFF)
     return vega
 
 #----------------------------------------------------------------------
+
+
 def calculateGreeks(f, k, r, t, v, cp):
     """计算期权的价格和希腊值"""
     price = calculatePrice(f, k, r, t, v, cp)
@@ -101,53 +113,54 @@ def calculateGreeks(f, k, r, t, v, cp):
     return price, delta, gamma, theta, vega
 
 #----------------------------------------------------------------------
+
+
 def calculateImpv(price, f, k, r, t, cp):
     """计算隐含波动率"""
     # 检查期权价格必须为正数
     if price <= 0:
         return 0
-    
+
     # 检查期权价格是否满足最小价值（即到期行权价值）
     meet = False
-    
+
     if cp == 1 and (price > (f - k) * exp(-r * t)):
         meet = True
     elif cp == -1 and (price > k - f):
         meet = True
-    
+
     # 若不满足最小价值，则直接返回0
     if not meet:
         return 0
-    
+
     # 采用Newton Raphson方法计算隐含波动率
     v = 0.3     # 初始波动率猜测
-    
+
     for i in range(50):
         # 计算当前猜测波动率对应的期权价格和vega值
         p = calculatePrice(f, k, r, t, v, cp)
-        
+
         vega = calculateOriginalVega(f, k, r, t, v, cp)
-        
+
         # 如果vega过小接近0，则直接返回
         if not vega:
             break
-        
+
         # 计算误差
         dx = (price - p) / vega
-        
+
         # 检查误差是否满足要求，若满足则跳出循环
         if abs(dx) < DX_TARGET:
             break
-        
+
         # 计算新一轮猜测的波动率
         v += dx
-        
+
     # 检查波动率计算结果非负
     if v <= 0:
         return 0
-    
+
     # 保留4位小数
     v = round(v, 4)
-    
+
     return v
-    

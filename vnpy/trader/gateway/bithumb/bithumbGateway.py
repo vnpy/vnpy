@@ -454,7 +454,7 @@ class RestApi(BithumbRestApi):
         infos = defaultdict(dict)  # type: dict[str, dict[str, str]]
         for key, val in datas.items():  # type: str, str
             split_position = key.rfind('_')
-            infoType, symbol = key[:split_position], key[split_position+1:]
+            infoType, symbol = key[:split_position], key[split_position + 1:]
             infos[symbol.upper()][infoType] = val
 
         for symbol in infos.keys():
@@ -629,7 +629,6 @@ class RestApi(BithumbRestApi):
     #----------------------------------------------------------------------
     def hasSysID(self, sysID):
         return sysID in self.sysLocalDict
-
 
 
 if __name__ == '__main__':

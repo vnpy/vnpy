@@ -467,7 +467,6 @@ defineDict["DFITC_SP_BESTPRICE"] = '7'
 defineDict["DFITC_SP_BESTPRICE_TO_LIMIT"] = '8'
 
 
-
 #/////////////////////////////////////////////////////////
 #DFITCInsertType:委托类别
 #/////////////////////////////////////////////////////////
@@ -550,19 +549,19 @@ typedefDict["DFITCStanAddrType"] = "string"
 #DFITCCapControlModeType:资金控制方式数据类型
 #/////////////////////////////////////////////////////////
 typedefDict["DFITCCapControlModeType"] = "long"
-#盯市盈亏可用 
+#盯市盈亏可用
 defineDict["DFITC_PPL_USABLE"] = 2
-#平仓资金T+1可用 
+#平仓资金T+1可用
 defineDict[""] = 4
-#平仓保证金可取 
+#平仓保证金可取
 defineDict[""] = 8
-#本日盈亏可取 
+#本日盈亏可取
 defineDict[""] = 16
-#取后权益大于本日总入金 
+#取后权益大于本日总入金
 defineDict[""] = 32
-#平仓盈亏可取 
+#平仓盈亏可取
 defineDict[""] = 128
-#权利金收入可取 
+#权利金收入可取
 defineDict[""] = 256
 
 
@@ -590,9 +589,9 @@ defineDict["DFITC_OFGAL"] = 8
 typedefDict["DFITCFilesFlagType"] = "int"
 #成交明细打印
 defineDict["DFITC_PRINT_MATCHDETAIL"] = 4
-#持仓盈亏打印 
+#持仓盈亏打印
 defineDict["DFITC_PRINT_OPGAL"] = 8
-#平仓盈亏打印 
+#平仓盈亏打印
 defineDict["DFITC_PRINT_OFGAL"] = 16
 #资金出入打印
 defineDict["DFITC_PRINT_ACCESSFUNDS"] = 32
@@ -901,7 +900,6 @@ defineDict["DFITC_PROC_WAIT_RTN"] = 2
 typedefDict["DFITCApplyNumberType"] = "int"
 
 
-
 #//////////////////////////////////////////////////////////////////////
 #DFITCImpliedVolatilityType:隐含波动率类型
 #//////////////////////////////////////////////////////////////////////
@@ -921,7 +919,6 @@ typedefDict["DFITCFunctionIDType"] = "string"
 #DFITCExtMarketDataType:行情扩展功能号
 #/////////////////////////////////////////////////////////
 typedefDict["DFITCExtMarketDataType"] = "string"
-
 
 
 #//////////////////////////////////////////////////////////////////////
@@ -950,5 +947,3 @@ defineDict["DFITC_IS_CLOSED"] = 6
 typedefDict["DFITCPositionDateType"] = "int"
 defineDict["DFITC_PSD_TODAY"] = 1
 defineDict["DFITC_PSD_HISTORY"] = 2
-
-

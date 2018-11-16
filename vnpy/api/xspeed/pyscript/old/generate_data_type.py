@@ -43,7 +43,7 @@ def process_typedef(line):
     """处理类型申明"""
     content = line.split(' ')
     type_ = type_dict[content[1]]
-    
+
     if content[1] != 'unsigned':
         keyword = content[-1]
     else:
@@ -67,7 +67,7 @@ def process_define(line):
     content = line.split(' ')
     constant = content[1]
 
-    if len(content)>2:
+    if len(content) > 2:
         value = content[-1]
         py_line = 'defineDict["%s"] = %s' % (constant, value)
     else:
@@ -79,7 +79,7 @@ def process_define(line):
 def main():
     """主函数"""
     try:
-        fcpp = open('KSUserApiDataTypeEx.h','r')
+        fcpp = open('KSUserApiDataTypeEx.h', 'r')
         fpy = open('ksgold_data_type.py', 'w')
 
         fpy.write('# encoding: UTF-8\n')
@@ -92,7 +92,7 @@ def main():
             py_line = process_line(line)
             if py_line:
                 fpy.write(py_line.decode('gbk').encode('utf-8'))
-                print(n) 
+                print(n)
 
         fcpp.close()
         fpy.close()
@@ -105,4 +105,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

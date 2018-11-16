@@ -6,6 +6,7 @@ __author__ = 'CHENXY'
 from ksgold_data_type import *
 import re
 
+
 def main():
     """主函数"""
     fcpp = open('KSUserApiStructEx.h', 'r')
@@ -28,13 +29,13 @@ def main():
         # 结构体申明
         elif 'struct' in line:
             content = line.split(' ')
-            name = content[1].replace('\n','')
+            name = content[1].replace('\n', '')
             py_line = '%s = {}\n' % name
 
         # 结构体变量
         elif '\t' in line and '///' not in line:
             #content = line.split('\t')
-            
+
             if ' ;' in line:
                 line = line.replace(' ;', ';')
 

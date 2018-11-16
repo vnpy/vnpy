@@ -63,7 +63,7 @@ def process_define(line):
     content = line.split(' ')
     constant = content[1]
 
-    if len(content)>2:
+    if len(content) > 2:
         value = content[-1]
         py_line = 'defineDict["%s"] = %s' % (constant, value)
     else:
@@ -101,7 +101,7 @@ def main():
     #     print u'data_type.py生成过程出错: %s' %str(e)
     #     print py_line
 
-    fcpp = open('SgitFtdcUserApiDataType.h','r')
+    fcpp = open('SgitFtdcUserApiDataType.h', 'r')
     fpy = open('sgit_data_type.py', 'w')
 
     fpy.write('# encoding: UTF-8\n')
@@ -124,6 +124,7 @@ def main():
 
     fcpp.close()
     fpy.close()
+
 
 if __name__ == '__main__':
     main()

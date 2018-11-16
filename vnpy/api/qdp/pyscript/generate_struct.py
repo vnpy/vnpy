@@ -4,6 +4,7 @@ __author__ = 'CHENXY'
 
 from qdp_data_type import *
 
+
 def main():
     """主函数"""
     fcpp = open('QdpFtdcUserApiStruct.h', 'r')
@@ -15,7 +16,7 @@ def main():
     fpy.write('\n')
 
     for no, line in enumerate(fcpp):
-        
+
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]
@@ -27,7 +28,7 @@ def main():
         # 结构体申明
         elif 'struct ' in line:
             content = line.split(' ')
-            name = content[1].replace('\n','')
+            name = content[1].replace('\n', '')
             py_line = '%s = {}\n' % name
 
         # 结构体变量

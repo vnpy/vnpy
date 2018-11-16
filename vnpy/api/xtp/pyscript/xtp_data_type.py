@@ -41,7 +41,6 @@ typedefDict["XTP_LOG_LEVEL"] = "enum"
 typedefDict["XTP_PROTOCOL_TYPE"] = "enum"
 
 
-
 #########################################################################
 ###@brief XTP_EXCHANGE_TYPE是交易所类型
 #########################################################################
@@ -57,7 +56,6 @@ typedefDict["XTP_MARKET_TYPE"] = "enum"
 ###@brief XTP_PRICE_TYPE是价格类型
 #########################################################################
 typedefDict["XTP_PRICE_TYPE"] = "enum"
-
 
 
 #########################################################################
@@ -160,6 +158,3 @@ XTP_ORDT_Combination = '3'
 XTP_ORDT_ConditionalOrder = '4'
 ###互换单
 XTP_ORDT_Swap = '5'
-
-
-

@@ -1,6 +1,12 @@
 # encoding: UTF-8
 
 # 重载sys模块，设置默认字符串编码方式为utf8
+from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
+from vnpy.trader.gateway import ctpGateway
+from vnpy.trader.uiMainWindow import MainWindow
+from vnpy.trader.uiQt import createQApp
+from vnpy.trader.vtEngine import MainEngine
+from vnpy.event import EventEngine
 import sys
 try:
     reload(sys)  # Python 2
@@ -14,16 +20,10 @@ import platform
 system = platform.system()
 
 # vn.trader模块
-from vnpy.event import EventEngine
-from vnpy.trader.vtEngine import MainEngine
-from vnpy.trader.uiQt import createQApp
-from vnpy.trader.uiMainWindow import MainWindow
 
 # 加载底层接口
-from vnpy.trader.gateway import ctpGateway
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, spreadTrading)
 
 
 # ----------------------------------------------------------------------

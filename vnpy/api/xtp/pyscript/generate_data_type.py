@@ -26,10 +26,10 @@ def process_line(line):
     elif '#define' in line:
         py_line = process_define(line)
     # 类型定义
-    elif 'typedef' in line:                     
+    elif 'typedef' in line:
         py_line = process_typedef(line)
     # 空行
-    elif line == '\n':          
+    elif line == '\n':
         py_line = line
     # 其他忽略
     else:
@@ -38,6 +38,8 @@ def process_line(line):
     return py_line
 
 #----------------------------------------------------------------------
+
+
 def process_enum(line):
     """处理枚举"""
     content = line.replace('\n', '')
@@ -50,13 +52,17 @@ def process_enum(line):
     return py_line
 
 #----------------------------------------------------------------------
+
+
 def process_comment(line):
     """处理注释"""
     py_line = line.replace('/', '#')
-    
+
     return py_line
 
 #----------------------------------------------------------------------
+
+
 def process_typedef(line):
     """处理类型定义"""
     content = line.split(' ')
@@ -83,24 +89,28 @@ def process_typedef(line):
     return py_line
 
 #----------------------------------------------------------------------
+
+
 def process_define(line):
     """处理常量"""
     content = line.split(' ')
     constant = content[1]
 
-    if len(content)>2:
+    if len(content) > 2:
         value = content[-1]
         #py_line = 'defineDict["%s"] = %s' % (constant, value)
-        py_line = '%s = %s' %(constant, value)
+        py_line = '%s = %s' % (constant, value)
     else:
         py_line = ''
-        
+
     py_line = py_line.replace('*/', '')
     py_line = py_line.replace('/*', '')
 
     return py_line
 
 #----------------------------------------------------------------------
+
+
 def replaceTabs(f):
     """把Tab用4个空格替代"""
     l = []
@@ -110,9 +120,11 @@ def replaceTabs(f):
     return l
 
 #----------------------------------------------------------------------
+
+
 def main():
     """主函数"""
-    fcpp = open('xtp_api_data_type.h','r')
+    fcpp = open('xtp_api_data_type.h', 'r')
     fpy = open('xtp_data_type.py', 'w')
 
     fpy.write('# encoding: UTF-8\n')
@@ -134,5 +146,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

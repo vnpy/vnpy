@@ -18,15 +18,15 @@ class RtdClient(RpcClient):
     def __init__(self, reqAddress, subAddress):
         """Constructor"""
         super(RtdClient, self).__init__(reqAddress, subAddress)
-        
+
         self.useJson()
-        
+
     #----------------------------------------------------------------------
     def callback(self, topic, data):
         """回调函数实现"""
         name = '_'.join([topic, data["key"]])
         DATA_DICT[name] = data
-        
+
         # 检查存在的RTD对象
         rtdList = RTD_DICT.get(name, None)
         if rtdList:
@@ -42,7 +42,7 @@ class RtdData(RTD):
     def __init__(self, name, field):
         """Constructor"""
         super(RtdData, self).__init__(value=0)
-        
+
         self.name = name
         self.field = field
 
@@ -58,7 +58,7 @@ class RtdData(RTD):
         l = RTD_DICT.get(self.name, None)
         if not l:
             return
-        
+
         if self in l:
             l.remove(self)
 
@@ -68,7 +68,7 @@ class RtdData(RTD):
         data = DATA_DICT.get(self.name, None)
         if not data:
             return
-        
+
         newValue = data[self.field]
         if newValue != self.value:
             self.value = newValue

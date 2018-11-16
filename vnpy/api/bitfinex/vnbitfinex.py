@@ -27,33 +27,33 @@ class BitfinexApi(object):
         self.ws = None
         self.thread = None
         self.active = False
-        
+
         self.restQueue = Queue()
         self.restThread = None
-    
+
     #----------------------------------------------------------------------
     def start(self):
         """"""
         self.ws = websocket.create_connection(WEBSOCKET_V2_URL,
                                               sslopt={'cert_reqs': ssl.CERT_NONE})
-        
+
         self.active = True
         self.thread = Thread(target=self.run)
         self.thread.start()
-        
+
         self.restThread = Thread(target=self.runRest)
         self.restThread.start()
-        
+
         self.onConnect()
-    
+
     #----------------------------------------------------------------------
     def reconnect(self):
         """"""
         self.ws = websocket.create_connection(WEBSOCKET_V2_URL,
-                                              sslopt={'cert_reqs': ssl.CERT_NONE})   
-        
+                                              sslopt={'cert_reqs': ssl.CERT_NONE})
+
         self.onConnect()
-        
+
     #----------------------------------------------------------------------
     def run(self):
         """"""
@@ -62,47 +62,47 @@ class BitfinexApi(object):
                 stream = self.ws.recv()
                 data = json.loads(stream)
                 self.onData(data)
-            except:
+            except BaseException:
                 msg = traceback.format_exc()
                 self.onError(msg)
                 self.reconnect()
-    
+
     #----------------------------------------------------------------------
     def close(self):
         """"""
         self.active = False
-        
+
         if self.thread:
             self.thread.join()
-        
+
         if self.restThread:
             self.thread.join()
-    
+
     #----------------------------------------------------------------------
     def onConnect(self):
         """"""
         print('connected')
-    
+
     #----------------------------------------------------------------------
     def onData(self, data):
         """"""
         print(data)
-    
+
     #----------------------------------------------------------------------
     def onError(self, msg):
         """"""
         print(msg)
-    
+
     #----------------------------------------------------------------------
     def sendReq(self, req):
         """"""
-        self.ws.send(json.dumps(req))  
-        
+        self.ws.send(json.dumps(req))
+
     #----------------------------------------------------------------------
     def sendRestReq(self, path, callback):
         """"""
         self.restQueue.put((path, callback))
-    
+
     #----------------------------------------------------------------------
     def runRest(self):
         """"""
@@ -112,7 +112,7 @@ class BitfinexApi(object):
                 self.httpGet(path, callback)
             except Empty:
                 pass
-    
+
     #----------------------------------------------------------------------
     def httpGet(self, path, callback):
         """"""
@@ -121,16 +121,15 @@ class BitfinexApi(object):
         callback(resp.json())
 
 
-
 if __name__ == '__main__':
     api = BitfinexApi()
     api.start()
-    
+
     d = {
         'event': 'subscribe',
         'channel': 'book',
         'symbol': 'BTCUSD'
     }
     api.sendReq(d)
-    
+
     input()

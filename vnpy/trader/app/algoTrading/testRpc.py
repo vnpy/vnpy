@@ -40,9 +40,9 @@ if __name__ == '__main__':
     }
     algoName = tc.addAlgo(setting)
     print(u'启动算法，实例名', algoName)
-    
+
     sleep(5)
     tc.stopAlgo(algoName)
     print(u'停止算法')
-    
+
     input()

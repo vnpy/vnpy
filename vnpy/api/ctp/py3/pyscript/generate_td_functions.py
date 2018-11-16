@@ -6,7 +6,6 @@ __author__ = 'CHENXY'
 from ctp_struct import structDict
 
 
-
 def processCallBack(line):
     orignalLine = line
     line = line.replace('\tvirtual void ', '')      # 删除行首的无效内容
@@ -34,7 +33,7 @@ def processCallBack(line):
 
     createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine)
     createProcess(cbName, cbArgsTypeList, cbArgsValueList)
-    
+
     # 生成.h文件中的process部分
     process_line = 'void process' + cbName[2:] + '(Task task);\n'
     fheaderprocess.write(process_line)
@@ -53,21 +52,21 @@ def processCallBack(line):
         on_line = ''
     fheaderon.write(on_line)
     fheaderon.write('\n')
-    
+
     # 生成封装部分
     createWrap(cbName)
-    
+
 
 #----------------------------------------------------------------------
 def createWrap(cbName):
     """在Python封装段代码中进行处理"""
     # 生成.h文件中的on部分
     if 'OnRspError' in cbName:
-        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'    
-        override_line = '("on' + cbName[2:] + '")(error, id, last);\n' 
+        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'
+        override_line = '("on' + cbName[2:] + '")(error, id, last);\n'
     elif 'OnRsp' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
-        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n' 
+        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n'
     elif 'OnRtn' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
         override_line = '("on' + cbName[2:] + '")(data);\n'
@@ -76,13 +75,13 @@ def createWrap(cbName):
         override_line = '("on' + cbName[2:] + '")(data, error);\n'
     else:
         on_line = ''
-        
+
     if on_line is not '':
         fwrap.write(on_line)
         fwrap.write('{\n')
         fwrap.write('\ttry\n')
         fwrap.write('\t{\n')
-        fwrap.write('\t\tthis->get_override'+override_line)
+        fwrap.write('\t\tthis->get_override' + override_line)
         fwrap.write('\t}\n')
         fwrap.write('\tcatch (error_already_set const &)\n')
         fwrap.write('\t{\n')
@@ -90,8 +89,7 @@ def createWrap(cbName):
         fwrap.write('\t}\n')
         fwrap.write('};\n')
         fwrap.write('\n')
-    
-    
+
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
     # 从回调函数生成任务对象，并放入队列
@@ -145,7 +143,7 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("\t\t" + type_ + " empty_data = " + type_ + "();\n")
             ftask.write("\t\tmemset(&empty_data, 0, sizeof(empty_data));\n")
             ftask.write("\t\ttask.task_data = empty_data;\n")
-            ftask.write("\t}\n")            
+            ftask.write("\t}\n")
 
     ftask.write("\tthis->task_queue.push(task);\n")
     ftask.write("};\n")
@@ -162,14 +160,14 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
     for i, type_ in enumerate(cbArgsTypeList):
         if 'RspInfoField' in type_:
-            fprocess.write("\t"+ type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
-            fprocess.write("\t"+ "dict error;\n")
+            fprocess.write("\t" + type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
+            fprocess.write("\t" + "dict error;\n")
 
             struct = structDict[type_]
             for key in struct.keys():
                 print(key)
                 if struct[key] == "string":
-                    fprocess.write("\t"+ 'error["' + key + '"] = boost::locale::conv::to_utf<char>(task_error.' + key + ', std::string("GB2312"));\n')
+                    fprocess.write("\t" + 'error["' + key + '"] = boost::locale::conv::to_utf<char>(task_error.' + key + ', std::string("GB2312"));\n')
                 else:
                     fprocess.write("\t" + 'error["' + key + '"] = task_error.' + key + ';\n')
 
@@ -178,14 +176,14 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             onArgsList.append('error')
 
         elif type_ in structDict:
-            fprocess.write("\t"+ type_ + ' task_data = any_cast<' + type_ + '>(task.task_data);\n')
-            fprocess.write("\t"+ "dict data;\n")
+            fprocess.write("\t" + type_ + ' task_data = any_cast<' + type_ + '>(task.task_data);\n')
+            fprocess.write("\t" + "dict data;\n")
 
             struct = structDict[type_]
             for key in struct.keys():
                 print(key)
                 if struct[key] == "string":
-                    fprocess.write("\t"+ 'data["' + key + '"] = boost::locale::conv::to_utf<char>(task_data.' + key + ', std::string("GB2312"));\n')
+                    fprocess.write("\t" + 'data["' + key + '"] = boost::locale::conv::to_utf<char>(task_data.' + key + ', std::string("GB2312"));\n')
                 else:
                     fprocess.write("\t" + 'data["' + key + '"] = task_data.' + key + ';\n')
 
@@ -200,7 +198,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             onArgsList.append('task.task_id')
 
     onArgs = ', '.join(onArgsList)
-    fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs +');\n')
+    fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs + ');\n')
 
     fprocess.write("};\n")
     fprocess.write("\n")
@@ -227,9 +225,9 @@ def processFunction(line):
             fcArgsTypeList.append(content[0])           # 参数类型列表
             fcArgsValueList.append(content[1])          # 参数数据列表
 
-    if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
+    if len(fcArgsTypeList) > 0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
-        
+
     # 生成.h文件中的主动函数部分
     if 'Req' in fcName:
         req_line = 'int req' + fcName[3:] + '(dict req, int nRequestID);\n'
@@ -243,7 +241,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('int TdApi::req' + fcName[3:] + '(dict req, int nRequestID)\n')
     ffunction.write('{\n')
-    ffunction.write('\t' + type_ +' myreq = ' + type_ + '();\n')
+    ffunction.write('\t' + type_ + ' myreq = ' + type_ + '();\n')
     ffunction.write('\tmemset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
@@ -266,8 +264,6 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('};\n')
     ffunction.write('\n')
-
-
 
 
 #########################################################

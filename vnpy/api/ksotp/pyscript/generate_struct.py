@@ -5,6 +5,7 @@ __author__ = 'CHENXY'
 
 from ksotp_data_type import *
 
+
 def main():
     """主函数"""
     fcpp = open('KSOTPUserApiStruct.h', 'r')
@@ -28,14 +29,14 @@ def main():
         # 结构体申明
         elif 'struct' in line:
             content = line.split(' ')
-            name = content[1].replace('\n','')
+            name = content[1].replace('\n', '')
             py_line = '%s = {}\n' % name
 
         # 结构体变量
         elif '\t' in line:
             content = line.split('\t')
             typedef = content[1]
-            
+
             try:
                 type_ = typedefDict[typedef]
             except KeyError:

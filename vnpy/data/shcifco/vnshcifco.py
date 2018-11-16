@@ -26,30 +26,30 @@ class ShcifcoApi(object):
 
         self.service = 'shcifco/dataapi'
         self.domain = 'http://' + ':'.join([self.ip, self.port])
-    
+
     #----------------------------------------------------------------------
     def getData(self, path, params):
         """下载数据"""
         url = '/'.join([self.domain, self.service, path])
         params['token'] = self.token
         r = requests.get(url=url, params=params)
-        
+
         if r.status_code != HTTP_OK:
-            print(u'http请求失败，状态代码%s' %r.status_code)
+            print(u'http请求失败，状态代码%s' % r.status_code)
             return None
         else:
             return r.text
-    
+
     #----------------------------------------------------------------------
     def getLastTick(self, symbol):
         """获取最新Tick"""
         path = 'lasttick'
         params = {'ids': symbol}
-        
+
         data = self.getData(path, params)
         if not data or data == ';':
             return None
-        
+
         data = data.split(';')[0]
         l = data.split(',')
         d = {
@@ -63,31 +63,31 @@ class ShcifcoApi(object):
             'openInterest': int(float(l[7]))
         }
         return d
-    
+
     #----------------------------------------------------------------------
     def getLastPrice(self, symbol):
         """获取最新成交价"""
         path = 'lastprice'
         params = {'ids': symbol}
-        
+
         data = self.getData(path, params)
         if not data:
             return None
-        
+
         data = data.split(';')[0]
         price = float(data)
         return price
-    
+
     #----------------------------------------------------------------------
     def getLastBar(self, symbol):
         """获取最新的一分钟K线数据"""
         path = 'lastbar'
         params = {'id': symbol}
-        
+
         data = self.getData(path, params)
         if not data:
             return None
-        
+
         data = data.split(';')[0]
         l = data.split(',')
         d = {
@@ -101,12 +101,12 @@ class ShcifcoApi(object):
             'openInterest': int(float(l[7]))
         }
         return d
-    
+
     #----------------------------------------------------------------------
     def getHisBar(self, symbol, num, date='', period=''):
         """获取历史K线数据"""
         path = 'hisminbar'
-        
+
         # 默认参数
         params = {
             'id': symbol,
@@ -117,19 +117,19 @@ class ShcifcoApi(object):
             params['tradingday'] = date
         if period:
             params['period'] = period
-        
+
         data = self.getData(path, params)
         if not data:
             return None
-        
-        barList = []        
+
+        barList = []
         l = data.split(';')
-        
+
         for barStr in l:
             # 过滤某些空数据
             if ',' not in barStr:
                 continue
-            
+
             barData = barStr.split(',')
             d = {
                 'symbol': barData[0],
@@ -144,6 +144,5 @@ class ShcifcoApi(object):
                 'date': barData[9]  # natural day
             }
             barList.append(d)
-            
-        return barList
 
+        return barList

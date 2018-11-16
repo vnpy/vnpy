@@ -6,7 +6,6 @@ from string import join
 from sgit_struct import structDict
 
 
-
 def processCallBack(line):
     orignalLine = line
     line = line.replace('\tvirtual void ', '')      # 删除行首的无效内容
@@ -82,7 +81,7 @@ def createWrap(cbName):
         fwrap.write('{\n')
         fwrap.write('\ttry\n')
         fwrap.write('\t{\n')
-        fwrap.write('\t\tthis->get_override'+override_line)
+        fwrap.write('\t\tthis->get_override' + override_line)
         fwrap.write('\t}\n')
         fwrap.write('\tcatch (error_already_set const &)\n')
         fwrap.write('\t{\n')
@@ -90,7 +89,6 @@ def createWrap(cbName):
         fwrap.write('\t}\n')
         fwrap.write('};\n')
         fwrap.write('\n')
-
 
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
@@ -162,24 +160,24 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
     for i, type_ in enumerate(cbArgsTypeList):
         if 'RspInfoField' in type_:
-            fprocess.write("\t"+ type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
-            fprocess.write("\t"+ "dict error;\n")
+            fprocess.write("\t" + type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
+            fprocess.write("\t" + "dict error;\n")
 
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("\t"+ 'error["' + key + '"] = task_error.' + key + ';\n')
+                fprocess.write("\t" + 'error["' + key + '"] = task_error.' + key + ';\n')
 
             fprocess.write("\n")
 
             onArgsList.append('error')
 
         elif type_ in structDict:
-            fprocess.write("\t"+ type_ + ' task_data = any_cast<' + type_ + '>(task.task_data);\n')
-            fprocess.write("\t"+ "dict data;\n")
+            fprocess.write("\t" + type_ + ' task_data = any_cast<' + type_ + '>(task.task_data);\n')
+            fprocess.write("\t" + "dict data;\n")
 
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("\t"+ 'data["' + key + '"] = task_data.' + key + ';\n')
+                fprocess.write("\t" + 'data["' + key + '"] = task_data.' + key + ';\n')
 
             fprocess.write("\n")
 
@@ -192,7 +190,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             onArgsList.append('task.task_id')
 
     onArgs = join(onArgsList, ', ')
-    fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs +');\n')
+    fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs + ');\n')
 
     fprocess.write("};\n")
     fprocess.write("\n")
@@ -219,7 +217,7 @@ def processFunction(line):
             fcArgsTypeList.append(content[0])           # 参数类型列表
             fcArgsValueList.append(content[1])          # 参数数据列表
 
-    if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
+    if len(fcArgsTypeList) > 0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
 
     # 生成.h文件中的主动函数部分
@@ -235,7 +233,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('int TdApi::req' + fcName[3:] + '(dict req, int nRequestID)\n')
     ffunction.write('{\n')
-    ffunction.write('\t' + type_ +' myreq = ' + type_ + '();\n')
+    ffunction.write('\t' + type_ + ' myreq = ' + type_ + '();\n')
     ffunction.write('\tmemset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
@@ -258,8 +256,6 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('};\n')
     ffunction.write('\n')
-
-
 
 
 #########################################################

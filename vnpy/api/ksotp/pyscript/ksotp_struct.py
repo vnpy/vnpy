@@ -3,15 +3,6 @@
 structDict = {}
 
 
-
-
-
-
-
-
-
-
-
 #响应信息
 CKSOTPRspInfoField = {}
 #错误代码
@@ -860,7 +851,7 @@ CKSOTPExecOrderVolumeField["ExecVolume"] = "int"
 CKSOTPExecOrderVolumeField["ActionVolume"] = "int"
 #已申请执行量
 CKSOTPExecOrderVolumeField["ExecedVolume"] = "int"
-#已申请放弃量 
+#已申请放弃量
 CKSOTPExecOrderVolumeField["ActionedVolume"] = "int"
 #买卖标志
 CKSOTPExecOrderVolumeField["Direction"] = "string"
@@ -1464,7 +1455,7 @@ CKSOTPReqTransferField["TradeDate"] = "string"
 CKSOTPReqTransferField["TradeTime"] = "string"
 #银行流水号
 CKSOTPReqTransferField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CKSOTPReqTransferField["TradingDay"] = "string"
 #银期平台消息流水号
 CKSOTPReqTransferField["PlateSerial"] = "int"
@@ -1555,7 +1546,7 @@ CKSOTPRspTransferField["TradeDate"] = "string"
 CKSOTPRspTransferField["TradeTime"] = "string"
 #银行流水号
 CKSOTPRspTransferField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CKSOTPRspTransferField["TradingDay"] = "string"
 #银期平台消息流水号
 CKSOTPRspTransferField["PlateSerial"] = "int"
@@ -1674,7 +1665,7 @@ CKSOTPReqQueryAccountField["TradeDate"] = "string"
 CKSOTPReqQueryAccountField["TradeTime"] = "string"
 #银行流水号
 CKSOTPReqQueryAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CKSOTPReqQueryAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CKSOTPReqQueryAccountField["PlateSerial"] = "int"
@@ -1751,7 +1742,7 @@ CKSOTPRspQueryAccountField["TradeDate"] = "string"
 CKSOTPRspQueryAccountField["TradeTime"] = "string"
 #银行流水号
 CKSOTPRspQueryAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CKSOTPRspQueryAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CKSOTPRspQueryAccountField["PlateSerial"] = "int"
@@ -1845,7 +1836,7 @@ CKSOTPNotifyQueryAccountField["TradeDate"] = "string"
 CKSOTPNotifyQueryAccountField["TradeTime"] = "string"
 #银行流水号
 CKSOTPNotifyQueryAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CKSOTPNotifyQueryAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CKSOTPNotifyQueryAccountField["PlateSerial"] = "int"
@@ -2698,6 +2689,3 @@ CKSOTPRspQryFundOutCreditApplyField["ConfirmTime"] = "string"
 structDict['CKSOTPRspQryFundOutCreditApplyField'] = CKSOTPRspQryFundOutCreditApplyField
 
 structDict['CKSOTPRspQryFundOutCreditApplyField'] = CKSOTPRspQryFundOutCreditApplyField
-
-
-

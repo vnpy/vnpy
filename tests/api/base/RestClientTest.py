@@ -21,10 +21,10 @@ class TestRestClient(RestClient):
         urlBase = 'https://httpbin.org'
         super(TestRestClient, self).__init__()
         self.init(urlBase)
-        
+
         self.p = Promise()
-    
-    def sign(self, req):  #type: (Request)->Request
+
+    def sign(self, req):  # type: (Request)->Request
         req.data = json.dumps(req.data)
         req.headers = {'Content-Type': 'application/json'}
         return req
@@ -38,42 +38,42 @@ class TestRestClient(RestClient):
 
 
 class RestfulClientTest(unittest.TestCase):
-    
+
     def setUp(self):
         self.c = TestRestClient()
         self.c.start()
-    
+
     def tearDown(self):
         self.c.stop()
-    
+
     def test_addReq_get(self):
         args = {'user': 'username',
                 'pw': 'password'}
 
         def callback(data, req):
             self.c.p.set_result(data['args'])
-        
+
         self.c.addRequest('GET', '/get', callback, params=args)
         res = self.c.p.get(3)
-        
+
         self.assertEqual(args, res)
-    
+
     def test_addReq_post(self):
         body = {'user': 'username',
                 'pw': 'password'}
-        
+
         def callback(data, req):
             self.c.p.set_result(data['json'])
-        
+
         self.c.addRequest('POST', '/post', callback, data=body)
         res = self.c.p.get(3)
-        
+
         self.assertEqual(body, res)
-        
+
     def test_addReq_onFailed(self):
         def callback(data, req):
             pass
-        
+
         self.c.addRequest('POST', '/status/401', callback)
         with self.assertRaises(FailedError):
             self.c.p.get(3)
@@ -81,24 +81,24 @@ class RestfulClientTest(unittest.TestCase):
     def test_addReq_jsonParseError(self):
         def callback(data, req):
             pass
-        
+
         self.c.addRequest('GET', '/image/svg', callback)
         with self.assertRaises(JSONDecodeError):
             self.c.p.get(3)
 
 
 class RestfulClientErrorHandleTest(unittest.TestCase):
-    
+
     def setUp(self):
         self.c = TestRestClient()
         self.c.start()
-        
+
         self.org_sys_hook = sys.excepthook
         self.org_sys_stderr_write = sys.stderr.write
 
         sys.excepthook = self.nop
         sys.stderr.write = self.nop
-    
+
     def tearDown(self):
         self.c.stop()
 
@@ -109,18 +109,18 @@ class RestfulClientErrorHandleTest(unittest.TestCase):
     def test_onError(self):
         """这个测试保证onError内不会再抛异常"""
         target = uuid.uuid4()
-        
+
         def callback(data, req):
             pass
-        
+
         def onError(*args, **kwargs):
             try:
                 super(TestRestClient, self.c).onError(*args, **kwargs)
                 self.c.p.set_result(target)
-            except:
+            except BaseException:
                 self.c.p.set_result(False)
         self.c.onError = onError
-    
+
         self.c.addRequest('GET', '/image/svg', callback)
 
         res = self.c.p.get(3)

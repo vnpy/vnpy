@@ -16,28 +16,30 @@ from tornado import websocket
 from sortedcontainers import SortedDict
 
 ########################################################################
+
+
 class TqApi(object):
     """天勤行情接口"""
 
     #----------------------------------------------------------------------
     def __init__(self):
-        """Constructor"""        
+        """Constructor"""
         self.data = {}          # 数据存储
-        
+
         self.client = None      # websocket客户端
         self.requests = []      # 请求缓存
-        
+
         self.quote_callback_func = None     # tick回调函数
         self.quote_ins_list = []
         self.chart_subscribes = {}       # k线回调函数
-        
+
     #----------------------------------------------------------------------
-    def connect(self):        
+    def connect(self):
         """
         建立行情连接。
         """
         self.start()
-        
+
         # 启动tornado的IO线程
         loop_thread = threading.Thread(target=lambda: tornado.ioloop.IOLoop.current().start())
         loop_thread.setDaemon(True)
@@ -85,7 +87,7 @@ class TqApi(object):
             订阅 CFFEX.IF1709 的tick线： subscribe_chart("CFFEX.IF1709", 0)
         """
         chart_id = self._generate_chart_id(ins_id, duration_seconds)
-        
+
         # 限制最大数据长度
         if data_length > 8964:
             data_length = 8964
@@ -191,7 +193,7 @@ class TqApi(object):
     def start(self):
         """启动websocket客户端"""
         self.client = yield tornado.websocket.websocket_connect(url="ws://127.0.0.1:7777/")
-        
+
         # 发出所有缓存的请求
         for req in self.requests:
             self.client.write_message(req)
@@ -206,7 +208,7 @@ class TqApi(object):
     def send_json(self, obj):
         """发送JSON内容"""
         s = json.dumps(obj)
-        
+
         # 如果已经创建了客户端则直接发出请求
         if self.client:
             self.client.write_message(s)
@@ -218,11 +220,11 @@ class TqApi(object):
     def on_receive_msg(self, msg):
         """收到数据推送"""
         pack = json.loads(msg)
-        
+
         if 'data' in pack:
             l = pack["data"]
         else:
-            print(u'on_receive_msg收到的数据中没有data字段，数据内容%s' %str(pack))
+            print(u'on_receive_msg收到的数据中没有data字段，数据内容%s' % str(pack))
             return
 
         for data in l:
@@ -235,7 +237,7 @@ class TqApi(object):
                         for ins_id in section.keys():
                             if ins_id in self.quote_ins_list:
                                 self.quote_callback_func(ins_id)
-                
+
                 elif selector == "ticks":
                     for ins_id in section.keys():
                         chart_id = self._generate_chart_id(ins_id, 0)

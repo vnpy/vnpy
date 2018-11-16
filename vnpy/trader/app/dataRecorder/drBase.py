@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT
 '''
 本文件中包含的数据格式和CTA模块通用，用户有必要可以自行添加格式。
 '''
@@ -16,4 +17,3 @@ MINUTE_DB_NAME = 'VnTrader_1Min_Db'
 EVENT_DATARECORDER_LOG = 'eDataRecorderLog'     # 行情记录日志更新事件
 
 # CTA引擎中涉及的数据类定义
-from vnpy.trader.vtConstant import EMPTY_UNICODE, EMPTY_STRING, EMPTY_FLOAT, EMPTY_INT

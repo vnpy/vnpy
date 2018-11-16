@@ -149,16 +149,13 @@ if __name__ == '__main__':
     rest.init(apiKey=API_KEY, apiSecret=API_SECRET)
     rest.start(1)
 
-
     def onBtcTick(jsonObj, reqid):
         print('on_btc_tick : \n{}'.format(jsonObj))
         pass
 
-
     def onAccountInfo(jsonObj, reqid):
         print('on_account_info : \n{}'.format(jsonObj))
         pass
-
 
     rest.addReq('POST', '/public/ticker/BTC', onBtcTick)
     rest.addReq('POST', '/info/account', onAccountInfo, postdict={'currency': 'BTC'})

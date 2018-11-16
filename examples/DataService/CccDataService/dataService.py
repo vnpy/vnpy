@@ -31,31 +31,33 @@ def generateVtBar(vtSymbol, d):
     bar = VtBarData()
     bar.vtSymbol = vtSymbol
     bar.symbol, bar.exchange = bar.vtSymbol.split('.')
-    
+
     bar.datetime = datetime.datetime.fromtimestamp(d['time'])
     bar.date = bar.datetime.strftime('%Y%m%d')
     bar.time = bar.datetime.strftime('%H:%M:%S')
-    
+
     bar.open = d['open']
     bar.high = d['high']
     bar.low = d['low']
     bar.close = d['close']
     bar.volume = d['volumeto']
-    
+
     return bar
 
 #----------------------------------------------------------------------
+
+
 def downloadMinuteBarBySymbol(vtSymbol, end):
     """下载某一合约的分钟线数据"""
     end = datetime.datetime.strptime(end, '%Y%m%d')
     startTime = time.time()
-    
-    cl = db[vtSymbol]                                                 
-    cl.ensure_index([('datetime', ASCENDING)], unique=True)         
-    
+
+    cl = db[vtSymbol]
+    cl.ensure_index([('datetime', ASCENDING)], unique=True)
+
     symbol, exchange = vtSymbol.split('.')
     fsym, tsym = symbol.split('/')
-    
+
     url = 'https://min-api.cryptocompare.com/data/histominute'
     params = {
         'fsym': fsym,
@@ -64,36 +66,37 @@ def downloadMinuteBarBySymbol(vtSymbol, end):
         'toTs': int(time.mktime(end.timetuple()))
     }
     resp = requests.get(url, headers={}, params=params)
-    
+
     if resp.status_code != 200:
-        print(u'%s数据下载失败' %vtSymbol)
+        print(u'%s数据下载失败' % vtSymbol)
         return
-    
+
     j = resp.json()
     l = j['Data']
-    
+
     for d in l:
         bar = generateVtBar(vtSymbol, d)
         d = bar.__dict__
         flt = {'datetime': bar.datetime}
         cl.replace_one(flt, d, True)
-        
+
     endTime = time.time()
     cost = (endTime - startTime) * 1000
-    
-    
-    print(u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(vtSymbol, 
-                                                    datetime.datetime.fromtimestamp(l[0]['time']),
-                                                    datetime.datetime.fromtimestamp(l[-1]['time']), 
-                                                    cost))
+
+    print(u'合约%s数据下载完成%s - %s，耗时%s毫秒' % (vtSymbol,
+                                         datetime.datetime.fromtimestamp(l[0]['time']),
+                                         datetime.datetime.fromtimestamp(l[-1]['time']),
+                                         cost))
 
 #----------------------------------------------------------------------
+
+
 def downloadAllMinuteBar(end):
     """下载所有配置中的合约的分钟线数据"""
     print('-' * 50)
     print(u'开始下载合约分钟线数据')
     print('-' * 50)
-    
+
     for symbol in SYMBOLS:
         downloadMinuteBarBySymbol(symbol, end)
         time.sleep(1)
@@ -101,6 +104,3 @@ def downloadAllMinuteBar(end):
     print('-' * 50)
     print(u'合约分钟线数据下载完成')
     print('-' * 50)
-
-
-    

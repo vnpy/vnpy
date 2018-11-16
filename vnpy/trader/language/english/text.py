@@ -67,7 +67,6 @@ SEARCH = u'Search'
 CONTRACT_SEARCH = u'Contract Search'
 
 
-
 BID_1 = u'Bid1'
 BID_2 = u'Bid2'
 BID_3 = u'Bid3'

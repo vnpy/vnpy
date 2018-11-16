@@ -42,7 +42,7 @@ def main():
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]
-            
+
         if '    //' in line:
             py_line = '#' + line[2:]
 
@@ -50,11 +50,10 @@ def main():
         elif '    ///' in line:
             py_line = '#' + line[4:]
 
-
         # 结构体申明
         elif 'struct ' in line:
             content = line.split(' ')
-            name = content[2].replace('\n','')
+            name = content[2].replace('\n', '')
             name = name.replace('\r', '')
             py_line = '%s = {}\n' % name
 
@@ -63,7 +62,7 @@ def main():
             line = line.replace('\t', ' ')
             content = line.split(' ')
             content = [k for k in content if k]
-            
+
             typedef = content[0].replace('\t', '')
             typedef = typedef.replace('()', '')
             typedef = typedef.replace('\r', '')
@@ -77,13 +76,13 @@ def main():
             if '[' in variable:
                 k = variable.index('[')
                 variable = variable[0:k]
-            
+
             py_line = '%s["%s"] = "%s"\n' % (name, variable, type_)
 
         # 结构体结束
         elif '}' in line:
             py_line = "structDict['%s'] = %s\n\n" % (name, name)
-            
+
             otherName = line.split(' ')[1]
             otherName = otherName.replace(';', '')
             otherName = otherName.replace('\n', '')

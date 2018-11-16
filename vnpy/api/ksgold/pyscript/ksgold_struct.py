@@ -3,18 +3,6 @@
 structDict = {}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 #用户登录请求
 CThostFtdcReqUserLoginField = {}
 CThostFtdcReqUserLoginField["accountID"] = "string"
@@ -45,9 +33,6 @@ CThostFtdcUserLogoutField["traderID"] = "string"
 structDict['CThostFtdcUserLogoutField'] = CThostFtdcUserLogoutField
 
 
-
-
-
 #合约
 CThostFtdcInstrumentField = {}
 CThostFtdcInstrumentField["exchangeID"] = "string"
@@ -66,7 +51,6 @@ CThostFtdcInstrumentField["varietyID"] = "string"
 CThostFtdcInstrumentField["varietyType"] = "string"
 CThostFtdcInstrumentField["marketType"] = "string"
 structDict['CThostFtdcInstrumentField'] = CThostFtdcInstrumentField
-
 
 
 CThostFtdcQryTradingAccountField = {}
@@ -115,8 +99,6 @@ CThostFtdcInvestorPositionField["todayOffsetLong"] = "int"
 CThostFtdcInvestorPositionField["lastLong"] = "int"
 CThostFtdcInvestorPositionField["lastShort"] = "int"
 structDict['CThostFtdcInvestorPositionField'] = CThostFtdcInvestorPositionField
-
-
 
 
 #响应信息
@@ -174,7 +156,6 @@ CThostFtdcDepthMarketDataField["UpDownRate"] = "float"
 structDict['CThostFtdcDepthMarketDataField'] = CThostFtdcDepthMarketDataField
 
 
-
 #输入报单
 CThostFtdcInputOrderField = {}
 CThostFtdcInputOrderField["seatID"] = "string"
@@ -224,7 +205,6 @@ CThostFtdcOrderRtnField["cancelQty"] = "int"
 structDict['CThostFtdcOrderRtnField'] = CThostFtdcOrderRtnField
 
 
-
 #输入报单操作(cancel order)
 CThostFtdcInputOrderActionField = {}
 CThostFtdcInputOrderActionField["localOrderNo"] = "string"
@@ -272,7 +252,6 @@ CThostFtdcQryInstrumentField["ProductID"] = "string"
 structDict['CThostFtdcQryInstrumentField'] = CThostFtdcQryInstrumentField
 
 
-
 #查询成交
 CThostFtdcQryTradeField = {}
 CThostFtdcQryTradeField["matchNo"] = "string"
@@ -280,7 +259,6 @@ CThostFtdcQryTradeField["instID"] = "string"
 CThostFtdcQryTradeField["marketID"] = "string"
 CThostFtdcQryTradeField["localOrderNo"] = "string"
 structDict['CThostFtdcQryTradeField'] = CThostFtdcQryTradeField
-
 
 
 #查询报单
@@ -291,9 +269,6 @@ CThostFtdcQryOrderField["localOrderNo"] = "string"
 structDict['CThostFtdcQryOrderField'] = CThostFtdcQryOrderField
 
 
-
-
-
 #查询投资者持仓
 CThostFtdcQryInvestorPositionField = {}
 CThostFtdcQryInvestorPositionField["marketID"] = "string"
@@ -301,12 +276,10 @@ CThostFtdcQryInvestorPositionField["instID"] = "string"
 structDict['CThostFtdcQryInvestorPositionField'] = CThostFtdcQryInvestorPositionField
 
 
-
 #查询库存
 CThostFtdcQryStorageField = {}
 CThostFtdcQryStorageField["varietyID"] = "string"
 structDict['CThostFtdcQryStorageField'] = CThostFtdcQryStorageField
-
 
 
 CThostFtdcStorageField = {}
@@ -331,7 +304,6 @@ CThostFtdcStorageField["impawnFrozen"] = "float"
 structDict['CThostFtdcStorageField'] = CThostFtdcStorageField
 
 
-
 CThostFtdcMarketStatusField = {}
 CThostFtdcMarketStatusField["MktStatus"] = "string"
 CThostFtdcMarketStatusField["marketID"] = "string"
@@ -342,6 +314,3 @@ CThostFtdcSpecificInstrumentField = {}
 #合约代码
 CThostFtdcSpecificInstrumentField["InstrumentID"] = "string"
 structDict['CThostFtdcSpecificInstrumentField'] = CThostFtdcSpecificInstrumentField
-
-
-

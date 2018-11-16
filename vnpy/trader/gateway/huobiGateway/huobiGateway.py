@@ -185,7 +185,7 @@ class HuobiDataApi(DataApi):
             url = 'wss://api.huobi.pro/ws'
         else:
             url = 'wss://api.hadax.com/ws'
-            
+
         self.symbols = symbols
 
         self.connectionStatus = super(HuobiDataApi, self).connect(url)
@@ -193,15 +193,15 @@ class HuobiDataApi(DataApi):
 
         if self.connectionStatus:
             self.writeLog(u'行情服务器连接成功')
-            
+
             for symbol in self.symbols:
                 self.subscribe(symbol)
             # 订阅所有之前订阅过的行情
             #for req in self.subscribeDict.values():
             #    self.subscribe(req)
-            
 
     #----------------------------------------------------------------------
+
     def subscribe(self, symbol):
         """订阅合约"""
         #self.subscribeDict[subscribeReq.symbol] = subscribeReq
@@ -250,21 +250,21 @@ class HuobiDataApi(DataApi):
         if not tick:
             return
 
-        tick.datetime = datetime.fromtimestamp(data['ts']/1000)
+        tick.datetime = datetime.fromtimestamp(data['ts'] / 1000)
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S.%f')
 
         bids = data['tick']['bids']
         for n in range(5):
             l = bids[n]
-            tick.__setattr__('bidPrice' + str(n+1), float(l[0]))
-            tick.__setattr__('bidVolume' + str(n+1), float(l[1]))
+            tick.__setattr__('bidPrice' + str(n + 1), float(l[0]))
+            tick.__setattr__('bidVolume' + str(n + 1), float(l[1]))
 
         asks = data['tick']['asks']
         for n in range(5):
             l = asks[n]
-            tick.__setattr__('askPrice' + str(n+1), float(l[0]))
-            tick.__setattr__('askVolume' + str(n+1), float(l[1]))
+            tick.__setattr__('askPrice' + str(n + 1), float(l[0]))
+            tick.__setattr__('askVolume' + str(n + 1), float(l[1]))
 
         #print '-' * 50
         #for d in data['tick']['asks']:
@@ -304,7 +304,7 @@ class HuobiDataApi(DataApi):
         if not tick:
             return
 
-        tick.datetime = datetime.fromtimestamp(data['ts']/1000)
+        tick.datetime = datetime.fromtimestamp(data['ts'] / 1000)
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S.%f')
 
@@ -377,7 +377,7 @@ class HuobiTradeApi(TradeApi):
         """查询委托"""
         if not self.accountid:
             return
-        
+
         now = datetime.now()
         oneday = timedelta(1)
         todayDate = now.strftime('%Y-%m-%d')
@@ -385,7 +385,7 @@ class HuobiTradeApi(TradeApi):
 
         statesAll = 'pre-submitted,submitting,submitted,partial-filled,partial-canceled,filled,canceled'
         statesActive = 'submitted,partial-filled'
-        
+
         for symbol in self.symbols:
             self.getOrders(symbol, statesAll, startDate=todayDate)         # 查询今日所有状态的委托
             self.getOrders(symbol, statesActive, endDate=yesterdayDate)    # 查询昨日往前所有未结束的委托
@@ -395,10 +395,10 @@ class HuobiTradeApi(TradeApi):
         """查询成交"""
         if not self.accountid:
             return
-        
+
         now = datetime.now()
         todayDate = now.strftime('%Y-%m-%d')
-        
+
         for symbol in self.symbols:
             self.getMatchResults(symbol, startDate=todayDate, size=50)     # 只查询今日最新50笔成交
 
@@ -453,7 +453,7 @@ class HuobiTradeApi(TradeApi):
         # 忽略请求超时错误
         if '429' in msg or 'api-signature-not-valid' in msg:
             return
-        
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = 'Trade'
@@ -489,8 +489,8 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onGetTimestamp(self, data, reqid):
         """查询时间回调"""
-        event = Event(EVENT_LOG+'Time')
-        event.dict_['data'] = datetime.fromtimestamp(data/1000)
+        event = Event(EVENT_LOG + 'Time')
+        event.dict_['data'] = datetime.fromtimestamp(data / 1000)
         self.gateway.eventEngine.put(event)
 
     #----------------------------------------------------------------------
@@ -499,13 +499,13 @@ class HuobiTradeApi(TradeApi):
         for d in data:
             if str(d['type']) == 'spot':
                 self.accountid = str(d['id'])
-                self.writeLog(u'交易账户%s查询成功' %self.accountid)
+                self.writeLog(u'交易账户%s查询成功' % self.accountid)
 
     #----------------------------------------------------------------------
     def onGetAccountBalance(self, data, reqid):
         """查询余额回调"""
         accountDict = {}
-        
+
         for d in data['list']:
             currency = d['currency']
             account = accountDict.get(currency, None)
@@ -515,9 +515,9 @@ class HuobiTradeApi(TradeApi):
                 account.gatewayName = self.gatewayName
                 account.accountID = d['currency']
                 account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
-                
+
                 accountDict[currency] = account
-                
+
             account.balance += float(d['balance'])
             if d['type'] == 'fozen':
                 account.available = account.balance - float(d['balance'])
@@ -582,7 +582,7 @@ class HuobiTradeApi(TradeApi):
 
                 order.price = float(d['price'])
                 order.totalVolume = float(d['amount'])
-                order.orderTime = datetime.fromtimestamp(d['created-at']/1000).strftime('%H:%M:%S')
+                order.orderTime = datetime.fromtimestamp(d['created-at'] / 1000).strftime('%H:%M:%S')
 
                 if 'buy' in d['type']:
                     order.direction = DIRECTION_LONG
@@ -594,14 +594,14 @@ class HuobiTradeApi(TradeApi):
 
             # 数据更新，只有当成交数量或者委托状态变化时，才执行推送
             if d['canceled-at']:
-                order.cancelTime = datetime.fromtimestamp(d['canceled-at']/1000).strftime('%H:%M:%S')
+                order.cancelTime = datetime.fromtimestamp(d['canceled-at'] / 1000).strftime('%H:%M:%S')
 
             newTradedVolume = float(d['field-amount'])
             newStatus = statusMapReverse.get(d['state'], STATUS_UNKNOWN)
 
             if newTradedVolume != order.tradedVolume or newStatus != order.status:
                 updated = True
-            
+
             order.tradedVolume = newTradedVolume
             order.status = newStatus
 
@@ -612,9 +612,9 @@ class HuobiTradeApi(TradeApi):
             ## 计算查询下标（即最早的未全成或撤委托）
             #if order.status not in [STATUS_ALLTRADED, STATUS_CANCELLED]:
                 #if not qryOrderID:
-                    #qryOrderID = orderID
+                #qryOrderID = orderID
                 #else:
-                    #qryOrderID = min(qryOrderID, orderID)
+                #qryOrderID = min(qryOrderID, orderID)
 
         ## 更新查询下标
         #if qryOrderID:
@@ -664,7 +664,7 @@ class HuobiTradeApi(TradeApi):
             trade.price = float(d['price'])
             trade.volume = float(d['filled-amount'])
 
-            dt = datetime.fromtimestamp(d['created-at']/1000)
+            dt = datetime.fromtimestamp(d['created-at'] / 1000)
             trade.tradeTime = dt.strftime('%H:%M:%S')
 
             self.gateway.onTrade(trade)
@@ -681,11 +681,11 @@ class HuobiTradeApi(TradeApi):
         #order.status = statusMapReverse.get(data['state'], STATUS_UNKNOWN)
 
         #if data['canceled-at']:
-            #order.cancelTime = datetime.fromtimestamp(data['canceled-at']/1000).strftime('%H:%M:%S')
+        #order.cancelTime = datetime.fromtimestamp(data['canceled-at']/1000).strftime('%H:%M:%S')
 
         ## 完成的委托则从集合中移除
         #if order.status in [STATUS_ALLTRADED, STATUS_CANCELLED]:
-            #self.activeOrderSet.remove(orderID)
+        #self.activeOrderSet.remove(orderID)
 
         #self.gateway.onOrder(order)
         pass
@@ -712,7 +712,7 @@ class HuobiTradeApi(TradeApi):
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
         """撤单回调"""
-        self.writeLog(u'委托撤单成功：%s' %data)
+        self.writeLog(u'委托撤单成功：%s' % data)
 
     #----------------------------------------------------------------------
     def onBatchCancel(self, data, reqid):

@@ -41,7 +41,7 @@ def main():
         elif 'struct ' in line:
             print(line)
             content = line.split(' ')
-            name = content[1].replace('\n','')
+            name = content[1].replace('\n', '')
             name = name.replace('\r', '')
             py_line = '%s = {}\n' % name
 
@@ -50,7 +50,7 @@ def main():
             line = line.replace('\t', ' ')
             content = line.split(' ')
             content = [k for k in content if k]
-            
+
             typedef = content[0].replace('\t', '')
             typedef = typedef.replace('()', '')
             typedef = typedef.replace('\r', '')
@@ -64,7 +64,7 @@ def main():
             if '[' in variable:
                 k = variable.index('[')
                 variable = variable[0:k]
-            
+
             py_line = '%s["%s"] = "%s"\n' % (name, variable, type_)
 
         # 结构体结束
@@ -83,6 +83,7 @@ def main():
 
     fpy.write("structDict['%s'] = %s\n\n" % ('XTPQueryOrderRsp', 'XTPOrderInfo'))
     fpy.write("structDict['%s'] = %s\n\n" % ('XTPQueryTradeRsp', 'XTPTradeReport'))
+
 
 if __name__ == '__main__':
     main()

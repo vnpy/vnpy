@@ -123,7 +123,7 @@ class RpcServer(RpcObject):
 
         # 工作线程相关
         self.__active = False                             # 服务器的工作状态
-        self.__thread = threading.Thread(target=self.run) # 服务器的工作线程
+        self.__thread = threading.Thread(target=self.run)  # 服务器的工作线程
 
     #----------------------------------------------------------------------
     def start(self):

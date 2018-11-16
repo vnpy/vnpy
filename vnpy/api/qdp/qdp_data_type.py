@@ -8,10 +8,9 @@ typedefDict = {}
 #@company QuantDo
 #@file QdpFtdcUserApiDataType.h
 #@brief 定义了客户端接口使用的业务数据类型
-#@history 
+#@history
 #
 #//////////////////////////////////////////////////////////////////////
-
 
 
 #//////////////////////////////////////////////////////////////////////
@@ -817,4 +816,3 @@ defineDict["QDP_FTDC_PD_Sell"] = '1'
 defineDict["QDP_FTDC_PD_Unknown"] = '2'
 
 typedefDict["TQdpFtdcPayDirectionType"] = "char"
-

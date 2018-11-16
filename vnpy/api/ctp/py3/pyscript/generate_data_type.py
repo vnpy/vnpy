@@ -64,7 +64,7 @@ def process_define(line):
     content = line.split(' ')
     constant = content[1]
 
-    if len(content)>2:
+    if len(content) > 2:
         value = content[-1]
         py_line = 'defineDict["%s"] = %s' % (constant, value)
     else:
@@ -76,7 +76,7 @@ def process_define(line):
 def main():
     """主函数"""
     try:
-        fcpp = open('ThostFtdcUserApiDataType.h','r')
+        fcpp = open('ThostFtdcUserApiDataType.h', 'r')
         fpy = open('ctp_data_type.py', 'w')
 
         fpy.write('# encoding: UTF-8\n')
@@ -94,10 +94,9 @@ def main():
         fpy.close()
 
         print(u'data_type.py生成过程完成')
-    except:
+    except BaseException:
         print(u'data_type.py生成过程出错')
 
 
 if __name__ == '__main__':
     main()
-

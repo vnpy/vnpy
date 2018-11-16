@@ -6,7 +6,6 @@ from string import join
 from ksotp_struct import structDict
 
 
-
 def processCallBack(line):
     orignalLine = line
     line = line.replace('\tvirtual void ', '')      # 删除行首的无效内容
@@ -72,21 +71,21 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("\t}\n")
             ftask.write("\telse\n")
             ftask.write("\t{\n")
-            ftask.write("\t\t%s empty_error = %s();\n" %(type_, type_))
+            ftask.write("\t\t%s empty_error = %s();\n" % (type_, type_))
             ftask.write("\t\tmemset(&empty_error, 0, sizeof(empty_error));\n")
             ftask.write("\t\ttask.task_error = empty_error;\n")
             ftask.write("\t}\n")
         else:
             # 这里主要针对金仕达接口，对传入的主数据的对象指针也进行空指针检查
             ftask.write("\n")
-            ftask.write("\tif (%s) \n" %cbArgsValueList[i].replace('*', ''))
+            ftask.write("\tif (%s) \n" % cbArgsValueList[i].replace('*', ''))
 
             ftask.write("\t{\n")
             ftask.write("\t\ttask.task_data = " + cbArgsValueList[i] + ";\n")
             ftask.write("\t}\n")
             ftask.write("\telse\n")
             ftask.write("\t{\n")
-            ftask.write("\t\t%s empty_data = %s();\n" %(type_, type_))
+            ftask.write("\t\t%s empty_data = %s();\n" % (type_, type_))
             ftask.write("\t\tmemset(&empty_data, 0, sizeof(empty_data));\n")
             ftask.write("\t\ttask.task_data = empty_data;\n")
             ftask.write("\t}\n")
@@ -109,24 +108,24 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
     for i, type_ in enumerate(cbArgsTypeList):
         if 'RspInfoField' in type_:
-            fprocess.write("\t"+ type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
-            fprocess.write("\t"+ "dict error;\n")
+            fprocess.write("\t" + type_ + ' task_error = any_cast<' + type_ + '>(task.task_error);\n')
+            fprocess.write("\t" + "dict error;\n")
 
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("\t"+ 'error["' + key + '"] = task_error.' + key + ';\n')
+                fprocess.write("\t" + 'error["' + key + '"] = task_error.' + key + ';\n')
 
             fprocess.write("\n")
 
             onArgsList.append('error')
 
         elif type_ in structDict:
-            fprocess.write("\t"+ type_ + ' task_data = any_cast<' + type_ + '>(task.task_data);\n')
-            fprocess.write("\t"+ "dict data;\n")
+            fprocess.write("\t" + type_ + ' task_data = any_cast<' + type_ + '>(task.task_data);\n')
+            fprocess.write("\t" + "dict data;\n")
 
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("\t"+ 'data["' + key + '"] = task_data.' + key + ';\n')
+                fprocess.write("\t" + 'data["' + key + '"] = task_data.' + key + ';\n')
 
             fprocess.write("\n")
 
@@ -139,7 +138,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             onArgsList.append('task.task_id')
 
     onArgs = join(onArgsList, ', ')
-    fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs +');\n')
+    fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs + ');\n')
 
     fprocess.write("};\n")
     fprocess.write("\n")
@@ -166,7 +165,7 @@ def processFunction(line):
             fcArgsTypeList.append(content[0])           # 参数类型列表
             fcArgsValueList.append(content[1])          # 参数数据列表
 
-    if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
+    if len(fcArgsTypeList) > 0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
 
 
@@ -176,7 +175,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write(fcName + '\n')
     ffunction.write('{\n')
-    ffunction.write('\t' + type_ +' myreq = ' + type_ + '();\n')
+    ffunction.write('\t' + type_ + ' myreq = ' + type_ + '();\n')
     ffunction.write('\tmemset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
@@ -193,8 +192,6 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('};\n')
     ffunction.write('\n')
-
-
 
 
 #########################################################

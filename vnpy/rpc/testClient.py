@@ -30,6 +30,6 @@ if __name__ == '__main__':
     tc.subscribeTopic('')
     tc.start()
 
-    while 1:
+    while True:
         print(tc.add(1, 3))
         sleep(2)

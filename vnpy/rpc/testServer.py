@@ -21,7 +21,7 @@ class TestServer(RpcServer):
     #----------------------------------------------------------------------
     def add(self, a, b):
         """测试函数"""
-        print('receiving: %s, %s' % (a,b))
+        print('receiving: %s, %s' % (a, b))
         return a + b
 
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     ts = TestServer(repAddress, pubAddress)
     ts.start()
 
-    while 1:
+    while True:
         content = 'current server time is %s' % time()
         print(content)
         ts.publish('test', content)

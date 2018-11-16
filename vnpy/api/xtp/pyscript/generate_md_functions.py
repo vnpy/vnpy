@@ -10,6 +10,8 @@ from xtp_struct_common import structDict as structDict2
 structDict.update(structDict2)
 
 #----------------------------------------------------------------------
+
+
 def replaceTabs(f):
     """把Tab用4个空格替代"""
     l = []
@@ -27,7 +29,7 @@ def processCallBack(line):
     content = line.split('(')
     cbName = content[0]                             # 回调函数名称
     cbName = cbName.strip()
-    
+
     cbArgs = content[1]                             # 回调函数参数
     if cbArgs[-1] == ' ':
         cbArgs = cbArgs.replace(') ', '')
@@ -47,7 +49,7 @@ def processCallBack(line):
 
     createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine)
     createProcess(cbName, cbArgsTypeList, cbArgsValueList)
-    
+
     # 生成.h文件中的process部分
     process_line = 'void process' + cbName[2:] + '(Task *task);\n'
     fheaderprocess.write(process_line)
@@ -55,69 +57,69 @@ def processCallBack(line):
 
     # 生成.h文件中的on部分
     #if 'OnRspError' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last) {};\n'
+    #on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last) {};\n'
     #elif 'OnRsp' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last) {};\n'
+    #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last) {};\n'
     #elif 'OnRtn' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'
+    #on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'
     #elif 'OnErrRtn' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error) {};\n'
+    #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error) {};\n'
     #else:
-        #on_line = ''
-        
+    #on_line = ''
+
     if line.count('*') == 1:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'       
+        on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'
     elif line.count('*') == 2:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last) {};\n' 
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last) {};\n'
     elif line.count('*') == 0:
         on_line = 'virtual void on' + cbName[2:] + '() {};\n'
     else:
-        on_line = ''   
-        
+        on_line = ''
+
     fheaderon.write(on_line)
     fheaderon.write('\n')
-    
+
     # 生成封装部分
     createWrap(cbName, line)
-    
+
 
 #----------------------------------------------------------------------
 def createWrap(cbName, line):
     """在Python封装段代码中进行处理"""
     # 生成.h文件中的on部分
     #if 'OnRspError' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'    
-        #override_line = '("on' + cbName[2:] + '")(error, id, last);\n' 
+    #on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'
+    #override_line = '("on' + cbName[2:] + '")(error, id, last);\n'
     #elif 'OnRsp' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
-        #override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n' 
+    #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
+    #override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n'
     #elif 'OnRtn' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
-        #override_line = '("on' + cbName[2:] + '")(data);\n'
+    #on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
+    #override_line = '("on' + cbName[2:] + '")(data);\n'
     #elif 'OnErrRtn' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error)\n'
-        #override_line = '("on' + cbName[2:] + '")(data, error);\n'
+    #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error)\n'
+    #override_line = '("on' + cbName[2:] + '")(data, error);\n'
     #else:
-        #on_line = ''
-        
+    #on_line = ''
+
     if line.count('*') == 1:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'    
-        override_line = '("on' + cbName[2:] + '")(data);\n'    
+        on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
+        override_line = '("on' + cbName[2:] + '")(data);\n'
     elif line.count('*') == 2:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last)\n'
-        override_line = '("on' + cbName[2:] + '")(data, error, last);\n'  
+        override_line = '("on' + cbName[2:] + '")(data, error, last);\n'
     elif line.count('*') == 0:
         on_line = 'virtual void on' + cbName[2:] + '()\n'
         override_line = '("on' + cbName[2:] + '")();\n'
     else:
         on_line = ''
-        
+
     if on_line is not '':
         fwrap.write(on_line)
         fwrap.write('{\n')
         fwrap.write('    try\n')
         fwrap.write('    {\n')
-        fwrap.write('        this->get_override'+override_line)
+        fwrap.write('        this->get_override' + override_line)
         fwrap.write('    }\n')
         fwrap.write('    catch (error_already_set const &)\n')
         fwrap.write('    {\n')
@@ -125,8 +127,7 @@ def createWrap(cbName, line):
         fwrap.write('    }\n')
         fwrap.write('};\n')
         fwrap.write('\n')
-    
-    
+
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
     # 从回调函数生成任务对象，并放入队列
@@ -165,16 +166,16 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("        " + '*task_error = ' + cbArgsValueList[i] + ';\n')
             ftask.write("        task->task_error = task_error;\n")
             ftask.write("    }\n")
-            ftask.write("\n")    
+            ftask.write("\n")
         else:
             ftask.write("\n")
             ftask.write("    if (" + cbArgsValueList[i][1:] + ")\n")
             ftask.write("    {\n")
-            
+
             ftask.write("        " + type_ + ' *task_data = new ' + type_ + '();\n')
             ftask.write("        " + '*task_data = ' + cbArgsValueList[i] + ';\n')
             ftask.write("        task->task_data = task_data;\n")
-            ftask.write("    }\n")        
+            ftask.write("    }\n")
 
     ftask.write("    this->task_queue.push(task);\n")
     ftask.write("};\n")
@@ -191,14 +192,14 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
 
     for i, type_ in enumerate(cbArgsTypeList):
         if 'XTPRI' in type_:
-            fprocess.write("    "+ "dict error;\n")
+            fprocess.write("    " + "dict error;\n")
             fprocess.write("    if (task->task_error)\n")
             fprocess.write("    {\n")
-            fprocess.write("        "+ type_ + ' *task_error = (' + type_ + '*) task->task_error;\n')
-            
+            fprocess.write("        " + type_ + ' *task_error = (' + type_ + '*) task->task_error;\n')
+
             struct = structDict[type_]
             for key in struct.keys():
-                fprocess.write("        "+ 'error["' + key + '"] = task_error->' + key + ';\n')
+                fprocess.write("        " + 'error["' + key + '"] = task_error->' + key + ';\n')
 
             fprocess.write("        delete task->task_error;\n")
             fprocess.write("    }\n")
@@ -207,17 +208,17 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             onArgsList.append('error')
 
         elif type_ in structDict:
-            fprocess.write("    "+ "dict data;\n")
+            fprocess.write("    " + "dict data;\n")
             fprocess.write("    if (task->task_data)\n")
             fprocess.write("    {\n")
-            fprocess.write("        "+ type_ + ' *task_data = (' + type_ + '*) task->task_data;\n')
-            
+            fprocess.write("        " + type_ + ' *task_data = (' + type_ + '*) task->task_data;\n')
+
             struct = structDict[type_]
             for key, value in struct.items():
                 if value != 'enum':
-                    fprocess.write("        "+ 'data["' + key + '"] = task_data->' + key + ';\n')
+                    fprocess.write("        " + 'data["' + key + '"] = task_data->' + key + ';\n')
                 else:
-                    fprocess.write("        "+ 'data["' + key + '"] = (int)task_data->' + key + ';\n')
+                    fprocess.write("        " + 'data["' + key + '"] = (int)task_data->' + key + ';\n')
 
             fprocess.write("        delete task->task_data;\n")
             fprocess.write("    }\n")
@@ -232,7 +233,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             onArgsList.append('task->task_id')
 
     onArgs = join(onArgsList, ', ')
-    fprocess.write('    this->' + cbName.replace('On', 'on') + '(' + onArgs +');\n')
+    fprocess.write('    this->' + cbName.replace('On', 'on') + '(' + onArgs + ');\n')
     fprocess.write('    delete task;\n')
 
     fprocess.write("};\n")
@@ -260,9 +261,9 @@ def processFunction(line):
             fcArgsTypeList.append(content[0])           # 参数类型列表
             fcArgsValueList.append(content[1])          # 参数数据列表
 
-    if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
+    if len(fcArgsTypeList) > 0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
-        
+
     # 生成.h文件中的主动函数部分
     if 'Req' in fcName:
         req_line = 'int req' + fcName[3:] + '(dict req, int nRequestID);\n'
@@ -276,7 +277,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('int QuoteApi::req' + fcName[3:] + '(dict req, int nRequestID)\n')
     ffunction.write('{\n')
-    ffunction.write('    ' + type_ +' myreq = ' + type_ + '();\n')
+    ffunction.write('    ' + type_ + ' myreq = ' + type_ + '();\n')
     ffunction.write('    memset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
@@ -295,8 +296,6 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 
     ffunction.write('};\n')
     ffunction.write('\n')
-
-
 
 
 #########################################################

@@ -9,16 +9,6 @@ structDict = {}
 #//////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
-
-
-
-
-
-
 #响应信息
 CSecurityFtdcRspInfoField = {}
 #错误代码
@@ -2721,8 +2711,3 @@ CSecurityFtdcMDUserInfoField["MaxStockCount"] = "int"
 #期权最大订阅数量
 CSecurityFtdcMDUserInfoField["MaxOptionsCount"] = "int"
 structDict['CSecurityFtdcMDUserInfoField'] = CSecurityFtdcMDUserInfoField
-
-
-
-
-

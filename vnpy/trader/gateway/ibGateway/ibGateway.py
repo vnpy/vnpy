@@ -24,13 +24,12 @@ from vnpy.trader.vtFunction import getJsonPath
 from .language import text
 
 
-
 # 以下为一些VT类型和CTP类型的映射字典
 # 价格类型映射
 priceTypeMap = {}
 priceTypeMap[PRICETYPE_LIMITPRICE] = 'LMT'
 priceTypeMap[PRICETYPE_MARKETPRICE] = 'MKT'
-priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()} 
+priceTypeMapReverse = {v: k for k, v in priceTypeMap.items()}
 
 # 方向类型映射
 directionMap = {}
@@ -50,14 +49,14 @@ exchangeMap[EXCHANGE_GLOBEX] = 'GLOBEX'
 exchangeMap[EXCHANGE_IDEALPRO] = 'IDEALPRO'
 exchangeMap[EXCHANGE_HKEX] = 'HKEX'
 exchangeMap[EXCHANGE_HKFE] = 'HKFE'
-exchangeMapReverse = {v:k for k,v in exchangeMap.items()}
+exchangeMapReverse = {v: k for k, v in exchangeMap.items()}
 
 # 报单状态映射
 orderStatusMap = {}
 orderStatusMap[STATUS_NOTTRADED] = 'Submitted'
 orderStatusMap[STATUS_ALLTRADED] = 'Filled'
 orderStatusMap[STATUS_CANCELLED] = 'Cancelled'
-orderStatusMapReverse = {v:k for k,v in orderStatusMap.items()}
+orderStatusMapReverse = {v: k for k, v in orderStatusMap.items()}
 orderStatusMapReverse['PendingSubmit'] = STATUS_UNKNOWN     # 这里未来视乎需求可以拓展vt订单的状态类型
 orderStatusMapReverse['PendingCancel'] = STATUS_UNKNOWN
 orderStatusMapReverse['PreSubmitted'] = STATUS_UNKNOWN
@@ -71,20 +70,20 @@ productClassMap[PRODUCT_OPTION] = 'OPT'
 productClassMap[PRODUCT_FOREX] = 'CASH'
 productClassMap[PRODUCT_INDEX] = 'IND'
 productClassMap[PRODUCT_SPOT] = 'CMDTY'
-productClassMapReverse = {v:k for k,v in productClassMap.items()}
+productClassMapReverse = {v: k for k, v in productClassMap.items()}
 
 # 期权类型映射
 optionTypeMap = {}
 optionTypeMap[OPTION_CALL] = 'CALL'
 optionTypeMap[OPTION_PUT] = 'PUT'
-optionTypeMap = {v:k for k,v in optionTypeMap.items()}
+optionTypeMap = {v: k for k, v in optionTypeMap.items()}
 
 # 货币类型映射
 currencyMap = {}
 currencyMap[CURRENCY_USD] = 'USD'
 currencyMap[CURRENCY_CNY] = 'CNY'
 currencyMap[CURRENCY_HKD] = 'HKD'
-currencyMap = {v:k for k,v in currencyMap.items()}
+currencyMap = {v: k for k, v in currencyMap.items()}
 
 # Tick数据的Field和名称映射
 tickFieldMap = {}
@@ -118,31 +117,31 @@ class IbGateway(VtGateway):
     def __init__(self, eventEngine, gatewayName='IB'):
         """Constructor"""
         super(IbGateway, self).__init__(eventEngine, gatewayName)
-        
+
         self.host = EMPTY_STRING        # 连接地址
         self.port = EMPTY_INT           # 连接端口
         self.clientId = EMPTY_INT       # 用户编号
-        self.accountCode = EMPTY_STRING # 账户编号
-        
-        self.tickerId = 0               # 订阅行情时的代码编号    
+        self.accountCode = EMPTY_STRING  # 账户编号
+
+        self.tickerId = 0               # 订阅行情时的代码编号
         self.tickDict = {}              # tick快照字典，key为tickerId，value为VtTickData对象
         self.tickProductDict = {}       # tick对应的产品类型字典，key为tickerId，value为产品类型
-        
-        self.orderId  = 0               # 订单编号
+
+        self.orderId = 0               # 订单编号
         self.orderDict = {}             # 报单字典，key为orderId，value为VtOrderData对象
-        
+
         self.accountDict = {}           # 账户字典
-        
+
         self.contractDict = {}          # 合约字典
-        
-        self.subscribeReqDict = {}      # 用来保存订阅请求的字典 
-        
+
+        self.subscribeReqDict = {}      # 用来保存订阅请求的字典
+
         self.connected = False          # 连接状态
-        
+
         self.api = IbWrapper(self)      # API接口
-        
+
         self.fileName = self.gatewayName + '_connect.json'
-        self.filePath = getJsonPath(self.fileName, __file__)             
+        self.filePath = getJsonPath(self.fileName, __file__)
 
     #----------------------------------------------------------------------
     def connect(self):
@@ -156,7 +155,7 @@ class IbGateway(VtGateway):
             log.logContent = text.LOADING_ERROR
             self.onLog(log)
             return
-        
+
         # 解析json文件
         setting = json.load(f)
         f.close()
@@ -170,14 +169,14 @@ class IbGateway(VtGateway):
             log.gatewayName = self.gatewayName
             log.logContent = text.CONFIG_KEY_MISSING
             self.onLog(log)
-            return            
-        
+            return
+
         # 发起连接
         self.api.eConnect(self.host, self.port, self.clientId, False)
-        
+
         # 查询服务器时间
         self.api.reqCurrentTime()
-    
+
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq):
         """订阅行情"""
@@ -185,7 +184,7 @@ class IbGateway(VtGateway):
         if not self.connected:
             self.subscribeReqDict[subscribeReq.symbol] = subscribeReq
             return
-        
+
         contract = Contract()
         contract.localSymbol = str(subscribeReq.symbol)
         contract.exchange = exchangeMap.get(subscribeReq.exchange, '')
@@ -197,8 +196,8 @@ class IbGateway(VtGateway):
 
         # 获取合约详细信息
         self.tickerId += 1
-        self.api.reqContractDetails(self.tickerId, contract)        
-        
+        self.api.reqContractDetails(self.tickerId, contract)
+
         # 创建合约对象并保存到字典中
         ct = VtContractData()
         ct.gatewayName = self.gatewayName
@@ -207,18 +206,18 @@ class IbGateway(VtGateway):
         ct.vtSymbol = '.'.join([ct.symbol, ct.exchange])
         ct.productClass = subscribeReq.productClass
         self.contractDict[ct.vtSymbol] = ct
-        
+
         # 订阅行情
-        self.tickerId += 1   
+        self.tickerId += 1
         self.api.reqMktData(self.tickerId, contract, '', False, TagValueList())
-        
+
         # 创建Tick对象并保存到字典中
         tick = VtTickData()
         tick.symbol = subscribeReq.symbol
         tick.exchange = subscribeReq.exchange
         tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
         tick.gatewayName = self.gatewayName
-        self.tickDict[self.tickerId] = tick   
+        self.tickDict[self.tickerId] = tick
         self.tickProductDict[self.tickerId] = subscribeReq.productClass
 
     #----------------------------------------------------------------------
@@ -227,7 +226,7 @@ class IbGateway(VtGateway):
         # 增加报单号1，最后再次进行查询
         # 这里双重设计的目的是为了防止某些情况下，连续发单时，nextOrderId的回调推送速度慢导致没有更新
         self.orderId += 1
-        
+
         # 创建合约对象
         contract = Contract()
         contract.localSymbol = str(orderReq.symbol)
@@ -239,7 +238,7 @@ class IbGateway(VtGateway):
         contract.right = optionTypeMap.get(orderReq.optionType, '')
         contract.lastTradeDateOrContractMonth = str(orderReq.lastTradeDateOrContractMonth)
         contract.multiplier = str(orderReq.multiplier)
-        
+
         # 创建委托对象
         order = Order()
         order.orderId = self.orderId
@@ -248,38 +247,38 @@ class IbGateway(VtGateway):
         order.lmtPrice = orderReq.price
         order.totalQuantity = orderReq.volume
         order.orderType = priceTypeMap.get(orderReq.priceType, '')
-        
+
         # 发送委托
         self.api.placeOrder(self.orderId, contract, order)
-        
+
         # 查询下一个有效编号
         self.api.reqIds(1)
-        
+
         # 返回委托编号
         vtOrderID = '.'.join([self.gatewayName, str(self.orderId)])
         return vtOrderID
-    
+
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """撤单"""
         self.api.cancelOrder(int(cancelOrderReq.orderID))
-    
+
     #----------------------------------------------------------------------
     def qryAccount(self):
         """查询账户资金"""
         log = VtLogData()
-        log.gatewayName = self.gatewayName        
+        log.gatewayName = self.gatewayName
         log.logContent = text.NONEED_TO_QRYACCOUNT
-        self.onLog(log) 
-    
+        self.onLog(log)
+
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
         log = VtLogData()
-        log.gatewayName = self.gatewayName        
+        log.gatewayName = self.gatewayName
         log.logContent = text.NONEED_TO_QRYPOSITION
-        self.onLog(log) 
-    
+        self.onLog(log)
+
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
@@ -294,12 +293,12 @@ class IbWrapper(IbApi):
     def __init__(self, gateway):
         """Constructor"""
         super(IbWrapper, self).__init__()
-        
+
         self.apiStatus = False               # 连接状态
-        
+
         self.gateway = gateway                      # gateway对象
         self.gatewayName = gateway.gatewayName      # gateway对象名称
-        
+
         self.tickDict = gateway.tickDict            # tick快照字典，key为tickerId，value为VtTickData对象
         self.orderDict = gateway.orderDict          # order字典
         self.accountDict = gateway.accountDict      # account字典
@@ -311,7 +310,7 @@ class IbWrapper(IbApi):
     def nextValidId(self, orderId):
         """"""
         self.gateway.orderId = orderId
-        
+
     #----------------------------------------------------------------------
     def currentTime(self, time):
         """连接成功后推送当前时间"""
@@ -320,21 +319,21 @@ class IbWrapper(IbApi):
 
         self.apiStatus = True
         self.gateway.connected = True
-        
+
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = text.API_CONNECTED.format(time=t)
-        self.gateway.onLog(log) 
-        
+        self.gateway.onLog(log)
+
         for symbol, req in self.subscribeReqDict.items():
             del self.subscribeReqDict[symbol]
-            self.gateway.subscribe(req)        
-        
+            self.gateway.subscribe(req)
+
     #----------------------------------------------------------------------
     def connectAck(self):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def error(self, id_, errorCode, errorString):
         """错误推送"""
@@ -343,17 +342,17 @@ class IbWrapper(IbApi):
         err.errorID = errorCode
         err.errorMsg = errorString.decode('GBK')
         self.gateway.onError(err)
-        
+
     #----------------------------------------------------------------------
     def accountSummary(self, reqId, account, tag, value, curency):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def accountSummaryEnd(self, reqId):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
     def tickPrice(self, tickerId, field, price, canAutoExecute):
         """行情价格相关推送"""
@@ -364,7 +363,7 @@ class IbWrapper(IbApi):
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
             tick.__setattr__(key, price)
-            
+
             # IB的外汇行情没有成交价和时间，通过本地计算生成，同时立即推送
             p = self.tickProductDict[tickerId]
             if p == PRODUCT_FOREX or p == PRODUCT_SPOT:
@@ -372,23 +371,23 @@ class IbWrapper(IbApi):
                 dt = datetime.now()
                 tick.time = dt.strftime('%H:%M:%S.%f')
                 tick.date = dt.strftime('%Y%m%d')
-            
+
                 # 行情数据更新
                 newtick = copy(tick)
                 self.gateway.onTick(newtick)
         else:
             print(field)
-        
+
     #----------------------------------------------------------------------
     def tickSize(self, tickerId, field, size):
         """行情数量相关推送"""
         if field in tickFieldMap:
             tick = self.tickDict[tickerId]
             key = tickFieldMap[field]
-            tick.__setattr__(key, size)   
+            tick.__setattr__(key, size)
         else:
             print(field)
-        
+
     #----------------------------------------------------------------------
     def tickOptionComputation(self, tickerId, tickType, impliedVol, delta, optPrice, pvDividend, gamma, vega, theta, undPrice):
         """"""
@@ -398,7 +397,7 @@ class IbWrapper(IbApi):
     def tickGeneric(self, tickerId, tickType, value):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def tickString(self, tickerId, tickType, value):
         """行情补充信息相关推送"""
@@ -411,18 +410,18 @@ class IbWrapper(IbApi):
             tick.date = dt.strftime('%Y%m%d')
 
             newtick = copy(tick)
-            self.gateway.onTick(newtick)              
-        
+            self.gateway.onTick(newtick)
+
     #----------------------------------------------------------------------
     def tickEFP(self, tickerId, tickType, basisPoints, formattedBasisPoints, totalDividends, holdDays, futureLastTradeDate, dividendImpact, dividendsToLastTradeDate):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld):
         """委托状态更新"""
         orderId = str(orderId)
-        
+
         if orderId in self.orderDict:
             od = self.orderDict[orderId]
         else:
@@ -431,18 +430,18 @@ class IbWrapper(IbApi):
             od.vtOrderID = '.'.join([self.gatewayName, orderId])
             od.gatewayName = self.gatewayName
             self.orderDict[orderId] = od
-        
+
         od.status = orderStatusMapReverse.get(status, STATUS_UNKNOWN)
         od.tradedVolume = filled
-        
+
         newod = copy(od)
         self.gateway.onOrder(newod)
-        
+
     #----------------------------------------------------------------------
     def openOrder(self, orderId, contract, order, orderState):
         """下达委托推送"""
         orderId = str(orderId)  # orderId是整数
-        
+
         if orderId in self.orderDict:
             od = self.orderDict[orderId]
         else:
@@ -451,45 +450,45 @@ class IbWrapper(IbApi):
             od.vtOrderID = '.'.join([self.gatewayName, orderId])
             od.symbol = contract.localSymbol
             od.exchange = exchangeMapReverse.get(contract.exchange, '')
-            od.vtSymbol = '.'.join([od.symbol, od.exchange])  
+            od.vtSymbol = '.'.join([od.symbol, od.exchange])
             od.gatewayName = self.gatewayName
             self.orderDict[orderId] = od
-        
+
         od.direction = directionMapReverse.get(order.action, '')
         od.price = order.lmtPrice
         od.totalVolume = order.totalQuantity
-        
+
         newod = copy(od)
         self.gateway.onOrder(newod)
-        
+
     #----------------------------------------------------------------------
     def openOrderEnd(self):
         """"""
         pass
-          
+
     #----------------------------------------------------------------------
     def winError(self, str_, lastError):
         """"""
         pass
- 
+
     #----------------------------------------------------------------------
     def connectionClosed(self):
         """断线"""
         self.apiStatus = False
         self.gateway.connected = False
-    
+
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = text.API_DISCONNECTED
-        self.gateway.onLog(log) 
-        
+        self.gateway.onLog(log)
+
     #----------------------------------------------------------------------
     def updateAccountValue(self, key, val, currency, accountName):
         """更新账户数据"""
         # 仅逐个字段更新数据，这里对于没有currency的推送忽略
         if currency:
             name = '.'.join([accountName, currency])
-            
+
             if name in self.accountDict:
                 account = self.accountDict[name]
             else:
@@ -498,16 +497,16 @@ class IbWrapper(IbApi):
                 account.vtAccountID = name
                 account.gatewayName = self.gatewayName
                 self.accountDict[name] = account
-            
+
             if key in accountKeyMap:
                 k = accountKeyMap[key]
                 account.__setattr__(k, float(val))
-        
+
     #----------------------------------------------------------------------
     def updatePortfolio(self, contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName):
         """持仓更新"""
         pos = VtPositionData()
-    
+
         pos.symbol = contract.localSymbol
         pos.exchange = exchangeMapReverse.get(contract.exchange, contract.exchange)
         pos.vtSymbol = '.'.join([pos.symbol, pos.exchange])
@@ -516,9 +515,9 @@ class IbWrapper(IbApi):
         pos.price = averageCost
         pos.vtPositionName = pos.vtSymbol
         pos.gatewayName = self.gatewayName
-    
+
         self.gateway.onPosition(pos)
-        
+
     #----------------------------------------------------------------------
     def updateAccountTime(self, timeStamp):
         """更新账户时间"""
@@ -526,12 +525,12 @@ class IbWrapper(IbApi):
         for account in self.accountDict.values():
             newaccount = copy(account)
             self.gateway.onAccount(newaccount)
-        
+
     #----------------------------------------------------------------------
     def accountDownloadEnd(self, accountName):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
     def contractDetails(self, reqId, contractDetails):
         """合约查询回报"""
@@ -539,21 +538,21 @@ class IbWrapper(IbApi):
         exchange = exchangeMapReverse.get(contractDetails.summary.exchange, EXCHANGE_UNKNOWN)
         vtSymbol = '.'.join([symbol, exchange])
         ct = self.contractDict.get(vtSymbol, None)
-        
+
         if not ct:
             return
-        
+
         ct.name = contractDetails.longName.decode('UTF-8')
-        ct.priceTick = contractDetails.minTick        
+        ct.priceTick = contractDetails.minTick
 
         # 推送
         self.gateway.onContract(ct)
-        
+
     #----------------------------------------------------------------------
     def bondContractDetails(self, reqId, contractDetails):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def contractDetailsEnd(self, reqId):
         """"""
@@ -563,23 +562,23 @@ class IbWrapper(IbApi):
     def execDetails(self, reqId, contract, execution):
         """成交推送"""
         trade = VtTradeData()
-        trade.gatewayName = self.gatewayName     
+        trade.gatewayName = self.gatewayName
         trade.tradeID = execution.execId
         trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
-    
+
         trade.symbol = contract.localSymbol
         trade.exchange = exchangeMapReverse.get(contract.exchange, '')
-        trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])  
-    
+        trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
+
         trade.orderID = str(execution.orderId)
         trade.vtOrderID = '.'.join([self.gatewayName, trade.orderID])
         trade.direction = directionMapReverse.get(execution.side, '')
         trade.price = execution.price
         trade.volume = execution.shares
-        trade.tradeTime = execution.time  
-    
+        trade.tradeTime = execution.time
+
         self.gateway.onTrade(trade)
-        
+
     #----------------------------------------------------------------------
     def execDetailsEnd(self, reqId):
         """"""
@@ -604,31 +603,31 @@ class IbWrapper(IbApi):
     def managedAccounts(self, accountsList):
         """推送管理账户的信息"""
         l = accountsList.split(',')
-        
+
         # 请求账户数据主推更新
         for account in l:
-            self.reqAccountUpdates(True, account)    
-        
+            self.reqAccountUpdates(True, account)
+
     #----------------------------------------------------------------------
     def receiveFA(self, pFaDataType, cxml):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def historicalData(self, reqId, date, open_, high, low, close, volume, barCount, WAP, hasGaps):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def scannerParameters(self, xml):
         """"""
         pass
-          
+
     #----------------------------------------------------------------------
     def scannerData(self, reqId, rank, contractDetails, distance, benchmark, projection, legsStr):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def scannerDataEnd(self, reqId):
         """"""
@@ -638,17 +637,17 @@ class IbWrapper(IbApi):
     def realtimeBar(self, reqId, time, open_, high, low, close, volume, wap, count):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def fundamentalData(self, reqId, data):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
     def deltaNeutralValidation(self, reqId, underComp):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def tickSnapshotEnd(self, reqId):
         """"""
@@ -658,27 +657,27 @@ class IbWrapper(IbApi):
     def marketDataType(self, reqId, marketDataType):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
     def commissionReport(self, commissionReport):
         """"""
         pass
-          
+
     #----------------------------------------------------------------------
     def position(self, account, contract, position, avgCost):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def positionEnd(self):
         """"""
-        pass 
-        
+        pass
+
     #----------------------------------------------------------------------
     def verifyMessageAPI(self, apiData):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def verifyCompleted(self, isSuccessful, errorText):
         """"""
@@ -688,12 +687,12 @@ class IbWrapper(IbApi):
     def displayGroupList(self, reqId, groups):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
     def displayGroupUpdated(self, reqId, contractInfo):
         """"""
-        pass   
-        
+        pass
+
     #----------------------------------------------------------------------
     def verifyAndAuthMessageAPI(self, apiData, xyzChallange):
         """"""
@@ -703,24 +702,24 @@ class IbWrapper(IbApi):
     def verifyAndAuthCompleted(self, isSuccessful, errorText):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
     def positionMulti(self, reqId, account, modelCode, contract, pos, avgCost):
         """"""
         pass
-         
+
     #----------------------------------------------------------------------
-    def positionMultiEnd(self, reqId):	
+    def positionMultiEnd(self, reqId):
         """"""
         pass
-          
+
     #----------------------------------------------------------------------
     def accountUpdateMulti(self, reqId, account, modelCode, key, value, currency):
         """"""
         pass
 
     #----------------------------------------------------------------------
-    def accountUpdateMultiEnd(self, reqId):	
+    def accountUpdateMultiEnd(self, reqId):
         """"""
         pass
 
@@ -733,9 +732,8 @@ class IbWrapper(IbApi):
     def securityDefinitionOptionalParameterEnd(self, reqId):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def softDollarTiers(self, reqId, tiers):
         """"""
         pass
-        
