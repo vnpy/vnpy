@@ -109,7 +109,7 @@ class FcoinGateway(VtGateway):
         """关闭"""
         self.restApi.close()
         self.wsApi.close()
-    
+
     #----------------------------------------------------------------------
     def initQuery(self):
         """初始化连续查询"""
@@ -121,7 +121,7 @@ class FcoinGateway(VtGateway):
                                     self.restApi.qryOrderCanceled,
                                     self.restApi.qryOrderFilled,
                                     self.restApi.qryOrderPartialCanceled]
-            
+
             self.qryCount = 0           # 查询触发倒计时
             self.qryTrigger = 3         # 查询触发点
             self.qryNextFunction = 0    # 上次运行的查询函数索引
@@ -168,26 +168,26 @@ class RestApi(FcoinRestApi):
 
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
-        
+
         self.localID = 0
         self.tradeID = 0
-        
+
         self.orderDict = {}         # sysID:order
         self.localSysDict = {}      # localID:sysID
         self.reqOrderDict = {}      # reqID:order
         self.cancelDict = {}        # localID:req
-        
+
     #----------------------------------------------------------------------
     def connect(self, apiKey, apiSecret, symbols):
         """连接服务器"""
         self.init(apiKey, apiSecret)
         self.start()
-        
+
         self.symbols = symbols
         self.writeLog(u'REST API启动成功')
-        
+
         self.qryContract()
-    
+
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
@@ -195,17 +195,17 @@ class RestApi(FcoinRestApi):
         log.gatewayName = self.gatewayName
         log.logContent = content
         self.gateway.onLog(log)
-    
+
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """"""
         #orderReq.price = 300.0
         #orderReq.volume = 0.01
-        
+
         self.localID += 1
         orderID = str(self.localID)
         vtOrderID = '.'.join([self.gatewayName, orderID])
-        
+
         req = {
             'symbol': orderReq.symbol,
             'side': directionMap[orderReq.direction],
@@ -213,9 +213,9 @@ class RestApi(FcoinRestApi):
             'price': orderReq.price,
             'amount': orderReq.volume
         }
-        
+
         reqid = self.addReq('POST', '/orders', self.onSendOrder, postdict=req)
-        
+
         # 缓存委托数据对象
         order = VtOrderData()
         order.gatewayName = self.gatewayName
@@ -228,16 +228,16 @@ class RestApi(FcoinRestApi):
         order.totalVolume = orderReq.volume
         order.direction = orderReq.direction
         order.status = STATUS_UNKNOWN
-        
+
         self.reqOrderDict[reqid] = order
-        
+
         return vtOrderID
-    
+
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq):
         """"""
         localID = cancelOrderReq.orderID
-        
+
         if localID in self.localSysDict:
             sysID = self.localSysDict[localID]
             path = '/orders/%s/submit-cancel' %sysID
@@ -260,80 +260,80 @@ class RestApi(FcoinRestApi):
                 'limit': 50
             }
             self.addReq('GET', '/orders', self.onQryOrder, params=req)
-    
+
     #----------------------------------------------------------------------
     def qryOrderSubmitted(self):
         """"""
         self.qryOrder('submitted')
-    
+
     #----------------------------------------------------------------------
     def qryOrderPartialFilled(self):
         """"""
         self.qryOrder('partial_filled')
-    
+
     #----------------------------------------------------------------------
     def qryOrderPartialCanceled(self):
         """"""
         self.qryOrder('partial_canceled')
-    
+
     #----------------------------------------------------------------------
     def qryOrderFilled(self):
         """"""
         self.qryOrder('filled')
-        
+
     #----------------------------------------------------------------------
     def qryOrderCanceled(self):
         """"""
         self.qryOrder('canceled')
-        
+
     #----------------------------------------------------------------------
     def qryPosition(self):
         """"""
         self.addReq('GET', '/accounts/balance', self.onQryPosition)
-        
+
     #----------------------------------------------------------------------
     def onSendOrder(self, data, reqid):
         """"""
         if 'msg' in data:
             self.writeLog(data['msg'])
             return
-        
+
         if 'data' in data:
             order = self.reqOrderDict[reqid]
             localID = order.orderID
             sysID = data['data']
-            
+
             self.localSysDict[localID] = sysID
             self.orderDict[sysID] = order
-            
+
             self.gateway.onOrder(order)
-            
+
             # 发出等待的撤单委托
             if localID in self.cancelDict:
                 req = self.cancelDict[localID]
                 self.cancelOrder(req)
                 del self.cancelDict[localID]
-    
+
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
         """"""
-        pass    
-    
+        pass
+
     #----------------------------------------------------------------------
     def onError(self, code, error):
         """"""
         msg = u'发生异常，错误代码：%s，错误信息：%s' %(code, error)
         self.writeLog(msg)
-        
+
     #----------------------------------------------------------------------
     def onQryOrder(self, data, reqid):
         """"""
         data['data'].reverse()
-        
+
         for d in data['data']:
             orderUpdated = False
             tradeUpdated = False
-            
+
             # 获取委托对象
             sysID = d['id']
             if sysID in self.orderDict:
@@ -341,66 +341,66 @@ class RestApi(FcoinRestApi):
             else:
                 order = VtOrderData()
                 order.gatewayName = self.gatewayName
-                
+
                 order.symbol = d['symbol']
                 order.exchange = EXCHANGE_FCOIN
                 order.vtSymbol = '.'.join([order.symbol, order.exchange])
-                
+
                 self.localID += 1
                 localID = str(self.localID)
                 self.localSysDict[localID] = sysID
-                
+
                 order.orderID = localID
                 order.vtOrderID = '.'.join([order.gatewayName, order.orderID])
-                
+
                 order.direction = directionMapReverse[d['side']]
                 order.price = float(d['price'])
                 order.totalVolume = float(d['amount'])
-                
+
                 dt = datetime.fromtimestamp(d['created_at']/1000)
                 order.orderTime = dt.strftime('%H:%M:%S')
-                
+
                 self.orderDict[sysID] = order
                 orderUpdated = True
-        
+
             # 检查是否委托有变化
             newTradedVolume = float(d['filled_amount'])
             newStatus = statusMapReverse[d['state']]
-            
+
             if newTradedVolume != float(order.tradedVolume) or newStatus != order.status:
                 orderUpdated = True
-                
+
             if newTradedVolume != float(order.tradedVolume):
                 tradeUpdated = True
                 newVolume = newTradedVolume - order.tradedVolume
-            
+
             order.tradedVolume = newTradedVolume
             order.status = newStatus
-            
+
             # 若有更新才推送
             if orderUpdated:
-                self.gateway.onOrder(order)        
-            
+                self.gateway.onOrder(order)
+
             if tradeUpdated:
                 # 推送成交
                 trade = VtTradeData()
                 trade.gatewayName = order.gatewayName
-                
+
                 trade.symbol = order.symbol
                 trade.vtSymbol = order.vtSymbol
-                
+
                 trade.orderID = order.orderID
                 trade.vtOrderID = order.vtOrderID
-                
+
                 self.tradeID += 1
                 trade.tradeID = str(self.tradeID)
                 trade.vtTradeID = '.'.join([self.gatewayName, trade.tradeID])
-                
+
                 trade.direction = order.direction
                 trade.price = order.price
                 trade.volume = newTradedVolume
                 trade.tradeTime = datetime.now().strftime('%H:%M:%S')
-                
+
                 self.gateway.onTrade(trade)
 
     #----------------------------------------------------------------------
@@ -409,21 +409,21 @@ class RestApi(FcoinRestApi):
         for d in data['data']:
             account = VtAccountData()
             account.gatewayName = self.gatewayName
-            
+
             account.accountID = d['currency']
             account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
             account.balance = float(d['balance'])
             account.available = account.balance - float(d['frozen'])
-            
-            self.gateway.onAccount(account)            
-    
+
+            self.gateway.onAccount(account)
+
     #----------------------------------------------------------------------
     def onQryContract(self, data, reqid):
         """"""
         for d in data['data']:
             contract = VtContractData()
             contract.gatewayName = self.gatewayName
-            
+
             contract.symbol = d['name']
             contract.exchange = EXCHANGE_FCOIN
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
@@ -431,11 +431,11 @@ class RestApi(FcoinRestApi):
             contract.productClass = PRODUCT_SPOT
             contract.priceTick = pow(10, -int(d['price_decimal']))
             contract.size = 1
-            
-            self.gateway.onContract(contract)   
-        
+
+            self.gateway.onContract(contract)
+
         self.writeLog(u'合约信息查询完成')
-    
+
 
 ########################################################################
 class WebsocketApi(FcoinWebsocketApi):
@@ -445,30 +445,30 @@ class WebsocketApi(FcoinWebsocketApi):
     def __init__(self, gateway):
         """Constructor"""
         super(WebsocketApi, self).__init__()
-        
+
         self.gateway = gateway
         self.gatewayName = gateway.gatewayName
-        
+
         self.apiKey = ''
         self.apiSecret = ''
         self.symbols = []
-        
+
         self.tickDict = {}
-        
+
     #----------------------------------------------------------------------
     def connect(self, apiKey, apiSecret, symbols):
         """"""
         self.apiKey = apiKey
         self.apiSecret = apiSecret
         self.symbols = symbols
-        
+
         self.start()
-    
+
     #----------------------------------------------------------------------
     def onConnect(self):
         """连接回调"""
         self.writeLog(u'Websocket API连接成功')
-        
+
     #----------------------------------------------------------------------
     def subscribe(self):
         """"""
@@ -476,21 +476,21 @@ class WebsocketApi(FcoinWebsocketApi):
         for symbol in self.symbols:
             l.append('ticker.' + symbol)
             l.append('depth.L20.' + symbol)
-            
+
             tick = VtTickData()
             tick.gatewayName = self.gatewayName
             tick.symbol = symbol
             tick.exchange = EXCHANGE_FCOIN
             tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
             self.tickDict[symbol] = tick
-            
+
         req = {
             'cmd': 'sub',
             'args': l,
             'id': 1
         }
         self.sendReq(req)
-    
+
     #----------------------------------------------------------------------
     def onData(self, data):
         """数据回调"""
@@ -501,33 +501,33 @@ class WebsocketApi(FcoinWebsocketApi):
             self.onTick(data)
         elif 'depth' in type_:
             self.onDepth(data)
-            
+
     #----------------------------------------------------------------------
     def onError(self, msg):
         """错误回调"""
         self.writeLog(msg)
-    
+
     #----------------------------------------------------------------------
     def writeLog(self, content):
         """发出日志"""
         log = VtLogData()
         log.gatewayName = self.gatewayName
         log.logContent = content
-        self.gateway.onLog(log)    
-    
+        self.gateway.onLog(log)
+
     #----------------------------------------------------------------------
     def onTick(self, d):
         """"""
         symbol = d['type'].split('.')[-1]
         tick = self.tickDict[symbol]
-        
+
         ticker = d['ticker']
         tick.openPrice = ticker[6]
         tick.highPrice = ticker[7]
         tick.lowPrice = ticker[8]
         tick.lastPrice = ticker[0]
         tick.volume = ticker[9]
-        
+
         if tick.askPrice1:
             self.gateway.onTick(copy(tick))
 
@@ -535,41 +535,41 @@ class WebsocketApi(FcoinWebsocketApi):
     def onDepth(self, d):
         """"""
         symbol = d['type'].split('.')[-1]
-        tick = self.tickDict[symbol]  
-        
+        tick = self.tickDict[symbol]
+
         bids = d['bids']
         asks = d['asks']
-        
+
         tick.bidPrice1 = bids[0]
         tick.bidPrice2 = bids[2]
         tick.bidPrice3 = bids[4]
         tick.bidPrice4 = bids[6]
         tick.bidPrice5 = bids[8]
-        
+
         tick.askPrice1 = asks[0]
         tick.askPrice2 = asks[2]
         tick.askPrice3 = asks[4]
         tick.askPrice4 = asks[6]
-        tick.askPrice5 = asks[8]  
-        
+        tick.askPrice5 = asks[8]
+
         tick.bidVolume1 = bids[1]
         tick.bidVolume2 = bids[3]
         tick.bidVolume3 = bids[5]
         tick.bidVolume4 = bids[7]
         tick.bidVolume5 = bids[9]
-        
+
         tick.askVolume1 = asks[1]
         tick.askVolume2 = asks[3]
         tick.askVolume3 = asks[5]
         tick.askVolume4 = asks[7]
-        tick.askVolume5 = asks[9]        
-        
+        tick.askVolume5 = asks[9]
+
         tick.datetime = datetime.fromtimestamp(d['ts']/1000)
         tick.date = tick.datetime.strftime('%Y%m%d')
         tick.time = tick.datetime.strftime('%H:%M:%S')
-        
+
         if tick.lastPrice:
-            self.gateway.onTick(copy(tick))        
+            self.gateway.onTick(copy(tick))
 
 
 #----------------------------------------------------------------------
@@ -580,4 +580,3 @@ def printDict(d):
     l.sort()
     for k in l:
         print(k, d[k])
-    

@@ -1225,6 +1225,3 @@ DFITCQryForQuoteRtnField["exchangeID"] = "string"
 DFITCQryForQuoteRtnField["SuspendTime"] = "string"
 DFITCQryForQuoteRtnField["orderStatus"] = "short"
 structDict['DFITCQryForQuoteRtnField'] = DFITCQryForQuoteRtnField
-
-
-

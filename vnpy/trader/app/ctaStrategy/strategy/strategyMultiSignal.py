@@ -9,9 +9,9 @@ MA（5分钟）：快速大于慢速为多头、低于慢速为空头
 
 from vnpy.trader.vtObject import VtBarData
 from vnpy.trader.vtConstant import EMPTY_STRING
-from vnpy.trader.app.ctaStrategy.ctaTemplate import (TargetPosTemplate, 
+from vnpy.trader.app.ctaStrategy.ctaTemplate import (TargetPosTemplate,
                                                      CtaSignal,
-                                                     BarGenerator, 
+                                                     BarGenerator,
                                                      ArrayManager)
 
 
@@ -23,30 +23,30 @@ class RsiSignal(CtaSignal):
     def __init__(self):
         """Constructor"""
         super(RsiSignal, self).__init__()
-        
+
         self.rsiWindow = 14
         self.rsiLevel = 20
         self.rsiLong = 50 + self.rsiLevel
         self.rsiShort = 50 - self.rsiLevel
-        
+
         self.bg = BarGenerator(self.onBar)
         self.am = ArrayManager()
-        
+
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """Tick更新"""
         self.bg.updateTick(tick)
-        
+
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """K线更新"""
         self.am.updateBar(bar)
-        
+
         if not self.am.inited:
             self.setSignalPos(0)
-            
+
         rsiValue = self.am.rsi(self.rsiWindow)
-        
+
         if rsiValue >= self.rsiLong:
             self.setSignalPos(1)
         elif rsiValue <= self.rsiShort:
@@ -63,81 +63,81 @@ class CciSignal(CtaSignal):
     def __init__(self):
         """Constructor"""
         super(CciSignal, self).__init__()
-        
+
         self.cciWindow = 30
         self.cciLevel = 10
         self.cciLong = self.cciLevel
         self.cciShort = -self.cciLevel
-        
+
         self.bg = BarGenerator(self.onBar)
-        self.am = ArrayManager()        
-        
+        self.am = ArrayManager()
+
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """Tick更新"""
         self.bg.updateTick(tick)
-        
+
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """K线更新"""
         self.am.updateBar(bar)
-        
+
         if not self.am.inited:
             self.setSignalPos(0)
-            
+
         cciValue = self.am.cci(self.cciWindow)
-        
+
         if cciValue >= self.cciLong:
             self.setSignalPos(1)
         elif cciValue<= self.cciShort:
-            self.setSignalPos(-1)    
+            self.setSignalPos(-1)
         else:
             self.setSignalPos(0)
-    
+
 
 ########################################################################
 class MaSignal(CtaSignal):
     """双均线信号"""
-    
+
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         super(MaSignal, self).__init__()
-        
+
         self.fastWindow = 5
         self.slowWindow = 20
-        
+
         self.bg = BarGenerator(self.onBar, 5, self.onFiveBar)
-        self.am = ArrayManager()        
-        
+        self.am = ArrayManager()
+
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """Tick更新"""
         self.bg.updateTick(tick)
-        
+
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """K线更新"""
         self.bg.updateBar(bar)
-    
+
     #----------------------------------------------------------------------
     def onFiveBar(self, bar):
         """5分钟K线更新"""
         self.am.updateBar(bar)
-        
+
         if not self.am.inited:
             self.setSignalPos(0)
-            
+
         fastMa = self.am.sma(self.fastWindow)
         slowMa = self.am.sma(self.slowWindow)
-        
+
         if fastMa > slowMa:
             self.setSignalPos(1)
         elif fastMa < slowMa:
             self.setSignalPos(-1)
         else:
             self.setSignalPos(0)
-    
+
 
 ########################################################################
 class MultiSignalStrategy(TargetPosTemplate):
@@ -151,12 +151,12 @@ class MultiSignalStrategy(TargetPosTemplate):
 
     # 策略变量
     signalPos = {}          # 信号仓位
-    
+
     # 参数列表，保存了参数的名称
     paramList = ['name',
                  'className',
                  'author',
-                 'vtSymbol']    
+                 'vtSymbol']
 
     # 变量列表，保存了变量的名称
     varList = ['inited',
@@ -176,13 +176,13 @@ class MultiSignalStrategy(TargetPosTemplate):
         self.rsiSignal = RsiSignal()
         self.cciSignal = CciSignal()
         self.maSignal = MaSignal()
-        
+
         self.signalPos = {
             "rsi": 0,
             "cci": 0,
             "ma": 0
         }
-        
+
     #----------------------------------------------------------------------
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
@@ -211,37 +211,37 @@ class MultiSignalStrategy(TargetPosTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         super(MultiSignalStrategy, self).onTick(tick)
-        
+
         self.rsiSignal.onTick(tick)
         self.cciSignal.onTick(tick)
         self.maSignal.onTick(tick)
-        
+
         self.calculateTargetPos()
-        
+
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
         super(MultiSignalStrategy, self).onBar(bar)
-        
+
         self.rsiSignal.onBar(bar)
         self.cciSignal.onBar(bar)
         self.maSignal.onBar(bar)
-        
+
         self.calculateTargetPos()
-        
+
     #----------------------------------------------------------------------
     def calculateTargetPos(self):
         """计算目标仓位"""
         self.signalPos['rsi'] = self.rsiSignal.getSignalPos()
         self.signalPos['cci'] = self.cciSignal.getSignalPos()
         self.signalPos['ma'] = self.maSignal.getSignalPos()
-        
+
         targetPos = 0
         for v in self.signalPos.values():
             targetPos += v
-            
+
         self.setTargetPos(targetPos)
-        
+
     #----------------------------------------------------------------------
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""

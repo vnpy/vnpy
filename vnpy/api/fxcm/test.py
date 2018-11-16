@@ -7,7 +7,7 @@ from time import sleep
 from .vnfxcm import FxcmApi
 
 url = 'https://api-demo.fxcm.com:443'
-port = 443    
+port = 443
 token = '48055b5d9afac0a300143ac067ce04cd2430a434'
 proxy = 'https://localhost:1080'
 

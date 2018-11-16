@@ -25,7 +25,7 @@ def createQApp():
     """创建PyQt应用对象"""
     # 创建Qt应用对象
     qApp = QtWidgets.QApplication([])
-    
+
     # 设置Qt的皮肤
     if globalSetting['darkStyle']:
         try:
@@ -33,17 +33,17 @@ def createQApp():
             qApp.setStyleSheet(qdarkstyle.load_stylesheet_from_environment())
         except ImportError:
             pass
-        
+
     # 设置Windows底部任务栏图标
     if 'Windows' in platform.uname():
         import ctypes
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')  
-    
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('vn.trader')
+
     # 设置Qt字体
     qApp.setFont(BASIC_FONT)
-    
+
     # 设置Qt图标
     qApp.setWindowIcon(QtGui.QIcon(loadIconPath('vnpy.ico')))
-    
+
     # 返回创建好的QApp对象
     return qApp

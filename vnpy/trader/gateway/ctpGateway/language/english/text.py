@@ -10,7 +10,7 @@ DATA_SERVER_LOGOUT = u'Data server logout completed.'
 
 TRADING_SERVER_CONNECTED = u'Trading server connected.'
 TRADING_SERVER_DISCONNECTED = u'Trading server disconnected.'
-TRADING_SERVER_AUTHENTICATED = u'Trading server authenticated.' 
+TRADING_SERVER_AUTHENTICATED = u'Trading server authenticated.'
 TRADING_SERVER_LOGIN = u'Trading server login completed.'
 TRADING_SERVER_LOGOUT = u'Trading server logout completed.'
 

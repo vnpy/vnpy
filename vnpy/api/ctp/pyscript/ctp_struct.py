@@ -7,7 +7,7 @@ structDict = {}
 #@company 上海期货信息技术有限公司
 #@file ThostFtdcUserApiStruct.h
 #@brief 定义了客户端接口使用的业务数据结构
-#@history 
+#@history
 
 #//////////////////////////////////////////////////////////////////////
 
@@ -6780,7 +6780,7 @@ CThostFtdcReqOpenAccountField["TradeDate"] = "string"
 CThostFtdcReqOpenAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqOpenAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqOpenAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqOpenAccountField["PlateSerial"] = "int"
@@ -6873,7 +6873,7 @@ CThostFtdcReqCancelAccountField["TradeDate"] = "string"
 CThostFtdcReqCancelAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqCancelAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqCancelAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqCancelAccountField["PlateSerial"] = "int"
@@ -6966,7 +6966,7 @@ CThostFtdcReqChangeAccountField["TradeDate"] = "string"
 CThostFtdcReqChangeAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqChangeAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqChangeAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqChangeAccountField["PlateSerial"] = "int"
@@ -7051,7 +7051,7 @@ CThostFtdcReqTransferField["TradeDate"] = "string"
 CThostFtdcReqTransferField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqTransferField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqTransferField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqTransferField["PlateSerial"] = "int"
@@ -7142,7 +7142,7 @@ CThostFtdcRspTransferField["TradeDate"] = "string"
 CThostFtdcRspTransferField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspTransferField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspTransferField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspTransferField["PlateSerial"] = "int"
@@ -7251,7 +7251,7 @@ CThostFtdcReqRepealField["TradeDate"] = "string"
 CThostFtdcReqRepealField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqRepealField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqRepealField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqRepealField["PlateSerial"] = "int"
@@ -7356,7 +7356,7 @@ CThostFtdcRspRepealField["TradeDate"] = "string"
 CThostFtdcRspRepealField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspRepealField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspRepealField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspRepealField["PlateSerial"] = "int"
@@ -7451,7 +7451,7 @@ CThostFtdcReqQueryAccountField["TradeDate"] = "string"
 CThostFtdcReqQueryAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqQueryAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqQueryAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqQueryAccountField["PlateSerial"] = "int"
@@ -7528,7 +7528,7 @@ CThostFtdcRspQueryAccountField["TradeDate"] = "string"
 CThostFtdcRspQueryAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspQueryAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspQueryAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspQueryAccountField["PlateSerial"] = "int"
@@ -7609,7 +7609,7 @@ CThostFtdcFutureSignIOField["TradeDate"] = "string"
 CThostFtdcFutureSignIOField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcFutureSignIOField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcFutureSignIOField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcFutureSignIOField["PlateSerial"] = "int"
@@ -7656,7 +7656,7 @@ CThostFtdcRspFutureSignInField["TradeDate"] = "string"
 CThostFtdcRspFutureSignInField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspFutureSignInField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspFutureSignInField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspFutureSignInField["PlateSerial"] = "int"
@@ -7711,7 +7711,7 @@ CThostFtdcReqFutureSignOutField["TradeDate"] = "string"
 CThostFtdcReqFutureSignOutField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqFutureSignOutField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqFutureSignOutField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqFutureSignOutField["PlateSerial"] = "int"
@@ -7758,7 +7758,7 @@ CThostFtdcRspFutureSignOutField["TradeDate"] = "string"
 CThostFtdcRspFutureSignOutField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspFutureSignOutField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspFutureSignOutField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspFutureSignOutField["PlateSerial"] = "int"
@@ -7809,7 +7809,7 @@ CThostFtdcReqQueryTradeResultBySerialField["TradeDate"] = "string"
 CThostFtdcReqQueryTradeResultBySerialField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqQueryTradeResultBySerialField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqQueryTradeResultBySerialField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqQueryTradeResultBySerialField["PlateSerial"] = "int"
@@ -7866,7 +7866,7 @@ CThostFtdcRspQueryTradeResultBySerialField["TradeDate"] = "string"
 CThostFtdcRspQueryTradeResultBySerialField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspQueryTradeResultBySerialField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspQueryTradeResultBySerialField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspQueryTradeResultBySerialField["PlateSerial"] = "int"
@@ -7923,7 +7923,7 @@ CThostFtdcReqDayEndFileReadyField["TradeDate"] = "string"
 CThostFtdcReqDayEndFileReadyField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqDayEndFileReadyField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqDayEndFileReadyField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqDayEndFileReadyField["PlateSerial"] = "int"
@@ -7965,7 +7965,7 @@ CThostFtdcVerifyFuturePasswordField["TradeDate"] = "string"
 CThostFtdcVerifyFuturePasswordField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcVerifyFuturePasswordField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcVerifyFuturePasswordField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcVerifyFuturePasswordField["PlateSerial"] = "int"
@@ -8059,7 +8059,7 @@ CThostFtdcReqSyncKeyField["TradeDate"] = "string"
 CThostFtdcReqSyncKeyField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcReqSyncKeyField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcReqSyncKeyField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcReqSyncKeyField["PlateSerial"] = "int"
@@ -8104,7 +8104,7 @@ CThostFtdcRspSyncKeyField["TradeDate"] = "string"
 CThostFtdcRspSyncKeyField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcRspSyncKeyField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcRspSyncKeyField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcRspSyncKeyField["PlateSerial"] = "int"
@@ -8153,7 +8153,7 @@ CThostFtdcNotifyQueryAccountField["TradeDate"] = "string"
 CThostFtdcNotifyQueryAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcNotifyQueryAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcNotifyQueryAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcNotifyQueryAccountField["PlateSerial"] = "int"
@@ -8312,7 +8312,7 @@ CThostFtdcNotifyFutureSignInField["TradeDate"] = "string"
 CThostFtdcNotifyFutureSignInField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcNotifyFutureSignInField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcNotifyFutureSignInField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcNotifyFutureSignInField["PlateSerial"] = "int"
@@ -8367,7 +8367,7 @@ CThostFtdcNotifyFutureSignOutField["TradeDate"] = "string"
 CThostFtdcNotifyFutureSignOutField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcNotifyFutureSignOutField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcNotifyFutureSignOutField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcNotifyFutureSignOutField["PlateSerial"] = "int"
@@ -8418,7 +8418,7 @@ CThostFtdcNotifySyncKeyField["TradeDate"] = "string"
 CThostFtdcNotifySyncKeyField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcNotifySyncKeyField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcNotifySyncKeyField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcNotifySyncKeyField["PlateSerial"] = "int"
@@ -8521,7 +8521,7 @@ CThostFtdcOpenAccountField["TradeDate"] = "string"
 CThostFtdcOpenAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcOpenAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcOpenAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcOpenAccountField["PlateSerial"] = "int"
@@ -8618,7 +8618,7 @@ CThostFtdcCancelAccountField["TradeDate"] = "string"
 CThostFtdcCancelAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcCancelAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcCancelAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcCancelAccountField["PlateSerial"] = "int"
@@ -8715,7 +8715,7 @@ CThostFtdcChangeAccountField["TradeDate"] = "string"
 CThostFtdcChangeAccountField["TradeTime"] = "string"
 #银行流水号
 CThostFtdcChangeAccountField["BankSerial"] = "string"
-#交易系统日期 
+#交易系统日期
 CThostFtdcChangeAccountField["TradingDay"] = "string"
 #银期平台消息流水号
 CThostFtdcChangeAccountField["PlateSerial"] = "int"
@@ -8938,8 +8938,3 @@ CThostFtdcDBFRecordField["DBFFdName4"] = "string"
 #DBF字段内容类型
 CThostFtdcDBFRecordField["DBFFdContent4"] = "string"
 structDict['CThostFtdcDBFRecordField'] = CThostFtdcDBFRecordField
-
-
-
-
-

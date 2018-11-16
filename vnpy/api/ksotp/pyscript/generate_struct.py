@@ -35,7 +35,7 @@ def main():
         elif '\t' in line:
             content = line.split('\t')
             typedef = content[1]
-            
+
             try:
                 type_ = typedefDict[typedef]
             except KeyError:

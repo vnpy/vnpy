@@ -2178,4 +2178,3 @@ defineDict["SECURITY_FTDC_OT_Normal"] = '0'
 defineDict["SECURITY_FTDC_OT_Options"] = '1'
 
 typedefDict["TSecurityFtdcOfferTypeType"] = "string"
-

@@ -38,7 +38,7 @@ def generateExchange(symbol):
 def generateVtBar(row):
     """生成K线"""
     bar = VtBarData()
-    
+
     bar.symbol = row['code']
     bar.exchange = generateExchange(bar.symbol)
     bar.vtSymbol = '.'.join([bar.symbol, bar.exchange])
@@ -50,7 +50,7 @@ def generateVtBar(row):
     bar.datetime = row.name
     bar.date = bar.datetime.strftime("%Y%m%d")
     bar.time = bar.datetime.strftime("%H:%M:%S")
-    
+
     return bar
 
 #----------------------------------------------------------------------
@@ -60,37 +60,33 @@ def downMinuteBarBySymbol(symbol):
 
     cl = db[symbol]
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
-    
+
     df = ts.bar(symbol, freq='1min')
     df = df.sort_index()
-    
+
     for ix, row in df.iterrows():
         bar = generateVtBar(row)
         d = bar.__dict__
         flt = {'datetime': bar.datetime}
-        cl.replace_one(flt, d, True)            
+        cl.replace_one(flt, d, True)
 
     end = time()
     cost = (end - start) * 1000
 
     print(u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(symbol, df.index[0], df.index[-1], cost))
 
-    
+
 #----------------------------------------------------------------------
 def downloadAllMinuteBar():
     """下载所有配置中的合约的分钟线数据"""
     print('-' * 50)
     print(u'开始下载合约分钟线数据')
     print('-' * 50)
-    
+
     # 添加下载任务
     for symbol in SYMBOLS:
         downMinuteBarBySymbol(str(symbol))
-    
+
     print('-' * 50)
     print(u'合约分钟线数据下载完成')
     print('-' * 50)
-    
-
-
-    

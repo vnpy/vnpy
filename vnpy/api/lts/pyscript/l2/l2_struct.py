@@ -782,9 +782,3 @@ CSecurityFtdcL2TradeField["OrderKind"] = "string"
 #功能码
 CSecurityFtdcL2TradeField["FunctionCode"] = "string"
 structDict['CSecurityFtdcL2TradeField'] = CSecurityFtdcL2TradeField
-
-
-
-
-
-

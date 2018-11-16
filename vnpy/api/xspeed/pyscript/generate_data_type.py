@@ -8,7 +8,7 @@ type_dict = {
     'int': 'int',
     'char': 'string',
     'double': 'float',
-    'long': 'long', 
+    'long': 'long',
     'short': 'short'
 }
 
@@ -43,7 +43,7 @@ def process_typedef(line):
     """处理类型申明"""
     content = line.split(' ')
     type_ = type_dict[content[1]]
-    
+
     if content[1] != 'unsigned':
         keyword = content[-1]
     else:
@@ -98,7 +98,7 @@ def main():
             py_line = process_line(line)
             if py_line:
                 fpy.write(py_line.decode('gbk').encode('utf-8'))
-                print(n) 
+                print(n)
 
         fcpp.close()
         fpy.close()
@@ -111,4 +111,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -4875,5 +4875,3 @@ typedefDict["TThostFtdcModifyFlagType"] = "string"
 typedefDict["TThostFtdcLoginType"] = "int"
 
 #///////////////////////////////////////////////////////////////////////
-
-

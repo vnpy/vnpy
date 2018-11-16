@@ -27,7 +27,7 @@ def processCallBack(line):
     content = line.split('(')
     cbName = content[0]                             # 回调函数名称
     cbName = cbName.strip()
-    
+
     cbArgs = content[1]                             # 回调函数参数
     if cbArgs[-1] == ' ':
         cbArgs = cbArgs.replace(') ', '')
@@ -47,7 +47,7 @@ def processCallBack(line):
 
     createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine)
     createProcess(cbName, cbArgsTypeList, cbArgsValueList)
-    
+
     # 生成.h文件中的process部分
     process_line = 'void process' + cbName[2:] + '(Task *task);\n'
     fheaderprocess.write(process_line)
@@ -64,33 +64,33 @@ def processCallBack(line):
         #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error) {};\n'
     #else:
         #on_line = ''
-        
+
     if line.count('*') == 1:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'       
+        on_line = 'virtual void on' + cbName[2:] + '(dict data) {};\n'
     elif line.count('*') == 2:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last) {};\n' 
+        on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last) {};\n'
     elif line.count('*') == 0:
         on_line = 'virtual void on' + cbName[2:] + '() {};\n'
     else:
-        on_line = ''   
-        
+        on_line = ''
+
     fheaderon.write(on_line)
     fheaderon.write('\n')
-    
+
     # 生成封装部分
     createWrap(cbName, line)
-    
+
 
 #----------------------------------------------------------------------
 def createWrap(cbName, line):
     """在Python封装段代码中进行处理"""
     # 生成.h文件中的on部分
     #if 'OnRspError' in cbName:
-        #on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'    
-        #override_line = '("on' + cbName[2:] + '")(error, id, last);\n' 
+        #on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'
+        #override_line = '("on' + cbName[2:] + '")(error, id, last);\n'
     #elif 'OnRsp' in cbName:
         #on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
-        #override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n' 
+        #override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n'
     #elif 'OnRtn' in cbName:
         #on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
         #override_line = '("on' + cbName[2:] + '")(data);\n'
@@ -99,19 +99,19 @@ def createWrap(cbName, line):
         #override_line = '("on' + cbName[2:] + '")(data, error);\n'
     #else:
         #on_line = ''
-        
+
     if line.count('*') == 1:
-        on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'    
-        override_line = '("on' + cbName[2:] + '")(data);\n'    
+        on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
+        override_line = '("on' + cbName[2:] + '")(data);\n'
     elif line.count('*') == 2:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, bool last)\n'
-        override_line = '("on' + cbName[2:] + '")(data, error, last);\n'  
+        override_line = '("on' + cbName[2:] + '")(data, error, last);\n'
     elif line.count('*') == 0:
         on_line = 'virtual void on' + cbName[2:] + '()\n'
         override_line = '("on' + cbName[2:] + '")();\n'
     else:
         on_line = ''
-        
+
     if on_line is not '':
         fwrap.write(on_line)
         fwrap.write('{\n')
@@ -125,8 +125,8 @@ def createWrap(cbName, line):
         fwrap.write('    }\n')
         fwrap.write('};\n')
         fwrap.write('\n')
-    
-    
+
+
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
     # 从回调函数生成任务对象，并放入队列
@@ -165,16 +165,16 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("        " + '*task_error = ' + cbArgsValueList[i] + ';\n')
             ftask.write("        task->task_error = task_error;\n")
             ftask.write("    }\n")
-            ftask.write("\n")    
+            ftask.write("\n")
         else:
             ftask.write("\n")
             ftask.write("    if (" + cbArgsValueList[i][1:] + ")\n")
             ftask.write("    {\n")
-            
+
             ftask.write("        " + type_ + ' *task_data = new ' + type_ + '();\n')
             ftask.write("        " + '*task_data = ' + cbArgsValueList[i] + ';\n')
             ftask.write("        task->task_data = task_data;\n")
-            ftask.write("    }\n")        
+            ftask.write("    }\n")
 
     ftask.write("    this->task_queue.push(task);\n")
     ftask.write("};\n")
@@ -195,7 +195,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             fprocess.write("    if (task->task_error)\n")
             fprocess.write("    {\n")
             fprocess.write("        "+ type_ + ' *task_error = (' + type_ + '*) task->task_error;\n')
-            
+
             struct = structDict[type_]
             for key in struct.keys():
                 fprocess.write("        "+ 'error["' + key + '"] = task_error->' + key + ';\n')
@@ -211,7 +211,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
             fprocess.write("    if (task->task_data)\n")
             fprocess.write("    {\n")
             fprocess.write("        "+ type_ + ' *task_data = (' + type_ + '*) task->task_data;\n')
-            
+
             struct = structDict[type_]
             for key, value in struct.items():
                 if value != 'enum':
@@ -262,7 +262,7 @@ def processFunction(line):
 
     if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
-        
+
     # 生成.h文件中的主动函数部分
     if 'Req' in fcName:
         req_line = 'int req' + fcName[3:] + '(dict req, int nRequestID);\n'

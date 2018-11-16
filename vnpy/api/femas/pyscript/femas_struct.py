@@ -7,7 +7,7 @@ structDict = {}
 #@company CFFEX
 #@file USTPFtdcUserApiStruct.h
 #@brief 定义了客户端接口使用的业务数据结构
-#@history 
+#@history
 #//////////////////////////////////////////////////////////////////////
 
 
@@ -1056,7 +1056,3 @@ CUstpFtdcSpecificInstrumentField = {}
 #合约代码
 CUstpFtdcSpecificInstrumentField["InstrumentID"] = "string"
 structDict['CUstpFtdcSpecificInstrumentField'] = CUstpFtdcSpecificInstrumentField
-
-
-
-

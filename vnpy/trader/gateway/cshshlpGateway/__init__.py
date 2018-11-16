@@ -9,4 +9,3 @@ gatewayName = 'CSHSHLP'
 gatewayDisplayName = u'中信期权'
 gatewayType = vtConstant.GATEWAYTYPE_EQUITY
 gatewayQryEnabled = True
-

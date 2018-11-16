@@ -30,7 +30,7 @@ class DualThrustStrategy(CtaTemplate):
     dayOpen = 0
     dayHigh = 0
     dayLow = 0
-    
+
     range = 0
     longEntry = 0
     shortEntry = 0
@@ -45,7 +45,7 @@ class DualThrustStrategy(CtaTemplate):
                  'author',
                  'vtSymbol',
                  'k1',
-                 'k2']    
+                 'k2']
 
     # 变量列表，保存了变量的名称
     varList = ['inited',
@@ -54,16 +54,16 @@ class DualThrustStrategy(CtaTemplate):
                'range',
                'longEntry',
                'shortEntry',
-               'exitTime'] 
-    
+               'exitTime']
+
     # 同步列表，保存了需要保存到数据库的变量名称
-    syncList = ['pos']    
+    syncList = ['pos']
 
     #----------------------------------------------------------------------
     def __init__(self, ctaEngine, setting):
         """Constructor"""
-        super(DualThrustStrategy, self).__init__(ctaEngine, setting) 
-        
+        super(DualThrustStrategy, self).__init__(ctaEngine, setting)
+
         self.bg = BarGenerator(self.onBar)
         self.barList = []
 
@@ -71,7 +71,7 @@ class DualThrustStrategy(CtaTemplate):
     def onInit(self):
         """初始化策略（必须由用户继承实现）"""
         self.writeCtaLog(u'%s策略初始化' %self.name)
-    
+
         # 载入历史数据，并采用回放计算的方式初始化策略数值
         initData = self.loadBar(self.initDays)
         for bar in initData:
@@ -95,7 +95,7 @@ class DualThrustStrategy(CtaTemplate):
     def onTick(self, tick):
         """收到行情TICK推送（必须由用户继承实现）"""
         self.bg.updateTick(tick)
-        
+
     #----------------------------------------------------------------------
     def onBar(self, bar):
         """收到Bar推送（必须由用户继承实现）"""
@@ -104,21 +104,21 @@ class DualThrustStrategy(CtaTemplate):
 
         # 计算指标数值
         self.barList.append(bar)
-        
+
         if len(self.barList) <= 2:
             return
         else:
             self.barList.pop(0)
         lastBar = self.barList[-2]
-        
+
         # 新的一天
         if lastBar.datetime.date() != bar.datetime.date():
             # 如果已经初始化
             if self.dayHigh:
                 self.range = self.dayHigh - self.dayLow
                 self.longEntry = bar.open + self.k1 * self.range
-                self.shortEntry = bar.open - self.k2 * self.range           
-                
+                self.shortEntry = bar.open - self.k2 * self.range
+
             self.dayOpen = bar.open
             self.dayHigh = bar.high
             self.dayLow = bar.low
@@ -141,36 +141,36 @@ class DualThrustStrategy(CtaTemplate):
                 else:
                     if not self.shortEntered:
                         self.short(self.shortEntry, self.fixedSize, stop=True)
-    
+
             # 持有多头仓位
             elif self.pos > 0:
                 self.longEntered = True
 
                 # 多头止损单
                 self.sell(self.shortEntry, self.fixedSize, stop=True)
-                
+
                 # 空头开仓单
                 if not self.shortEntered:
                     self.short(self.shortEntry, self.fixedSize, stop=True)
-                
+
             # 持有空头仓位
             elif self.pos < 0:
                 self.shortEntered = True
 
                 # 空头止损单
                 self.cover(self.longEntry, self.fixedSize, stop=True)
-                
+
                 # 多头开仓单
                 if not self.longEntered:
                     self.buy(self.longEntry, self.fixedSize, stop=True)
-            
+
         # 收盘平仓
         else:
             if self.pos > 0:
                 self.sell(bar.close * 0.99, abs(self.pos))
             elif self.pos < 0:
                 self.cover(bar.close * 1.01, abs(self.pos))
- 
+
         # 发出状态更新事件
         self.putEvent()
 

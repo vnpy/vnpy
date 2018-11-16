@@ -34,7 +34,7 @@ def main():
         # 结构体变量
         elif '\t' in line and '///' not in line:
             #content = line.split('\t')
-            
+
             if ' ;' in line:
                 line = line.replace(' ;', ';')
 

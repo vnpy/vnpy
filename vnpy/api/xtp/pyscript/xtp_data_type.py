@@ -160,6 +160,3 @@ XTP_ORDT_Combination = '3'
 XTP_ORDT_ConditionalOrder = '4'
 ###互换单
 XTP_ORDT_Swap = '5'
-
-
-

@@ -185,7 +185,7 @@ class HuobiDataApi(DataApi):
             url = 'wss://api.huobi.pro/ws'
         else:
             url = 'wss://api.hadax.com/ws'
-            
+
         self.symbols = symbols
 
         self.connectionStatus = super(HuobiDataApi, self).connect(url)
@@ -193,13 +193,13 @@ class HuobiDataApi(DataApi):
 
         if self.connectionStatus:
             self.writeLog(u'行情服务器连接成功')
-            
+
             for symbol in self.symbols:
                 self.subscribe(symbol)
             # 订阅所有之前订阅过的行情
             #for req in self.subscribeDict.values():
             #    self.subscribe(req)
-            
+
 
     #----------------------------------------------------------------------
     def subscribe(self, symbol):
@@ -377,7 +377,7 @@ class HuobiTradeApi(TradeApi):
         """查询委托"""
         if not self.accountid:
             return
-        
+
         now = datetime.now()
         oneday = timedelta(1)
         todayDate = now.strftime('%Y-%m-%d')
@@ -385,7 +385,7 @@ class HuobiTradeApi(TradeApi):
 
         statesAll = 'pre-submitted,submitting,submitted,partial-filled,partial-canceled,filled,canceled'
         statesActive = 'submitted,partial-filled'
-        
+
         for symbol in self.symbols:
             self.getOrders(symbol, statesAll, startDate=todayDate)         # 查询今日所有状态的委托
             self.getOrders(symbol, statesActive, endDate=yesterdayDate)    # 查询昨日往前所有未结束的委托
@@ -395,10 +395,10 @@ class HuobiTradeApi(TradeApi):
         """查询成交"""
         if not self.accountid:
             return
-        
+
         now = datetime.now()
         todayDate = now.strftime('%Y-%m-%d')
-        
+
         for symbol in self.symbols:
             self.getMatchResults(symbol, startDate=todayDate, size=50)     # 只查询今日最新50笔成交
 
@@ -453,7 +453,7 @@ class HuobiTradeApi(TradeApi):
         # 忽略请求超时错误
         if '429' in msg or 'api-signature-not-valid' in msg:
             return
-        
+
         err = VtErrorData()
         err.gatewayName = self.gatewayName
         err.errorID = 'Trade'
@@ -505,7 +505,7 @@ class HuobiTradeApi(TradeApi):
     def onGetAccountBalance(self, data, reqid):
         """查询余额回调"""
         accountDict = {}
-        
+
         for d in data['list']:
             currency = d['currency']
             account = accountDict.get(currency, None)
@@ -515,9 +515,9 @@ class HuobiTradeApi(TradeApi):
                 account.gatewayName = self.gatewayName
                 account.accountID = d['currency']
                 account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
-                
+
                 accountDict[currency] = account
-                
+
             account.balance += float(d['balance'])
             if d['type'] == 'fozen':
                 account.available = account.balance - float(d['balance'])
@@ -601,7 +601,7 @@ class HuobiTradeApi(TradeApi):
 
             if newTradedVolume != order.tradedVolume or newStatus != order.status:
                 updated = True
-            
+
             order.tradedVolume = newTradedVolume
             order.status = newStatus
 

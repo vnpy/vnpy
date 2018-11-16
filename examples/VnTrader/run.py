@@ -34,7 +34,7 @@ elif system == 'Windows':
                                      secGateway)
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, 
+from vnpy.trader.app import (riskManager, ctaStrategy,
                              spreadTrading, algoTrading)
 
 

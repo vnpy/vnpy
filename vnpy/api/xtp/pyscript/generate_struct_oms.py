@@ -50,7 +50,7 @@ def main():
             line = line.replace('\t', ' ')
             content = line.split(' ')
             content = [k for k in content if k]
-            
+
             typedef = content[0].replace('\t', '')
             typedef = typedef.replace('()', '')
             typedef = typedef.replace('\r', '')
@@ -64,7 +64,7 @@ def main():
             if '[' in variable:
                 k = variable.index('[')
                 variable = variable[0:k]
-            
+
             py_line = '%s["%s"] = "%s"\n' % (name, variable, type_)
 
         # 结构体结束

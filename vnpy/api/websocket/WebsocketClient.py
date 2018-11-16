@@ -16,32 +16,32 @@ import websocket
 class WebsocketClient(object):
     """
     Websocket API
-    
+
     实例化之后，应调用start开始后台线程。调用start()函数会自动连接websocket。
     若要终止后台线程，请调用stop()。 stop()函数会顺便断开websocket。
-    
+
     该类默认打包方式为json，若从服务器返回的数据不为json，则会触发onError。
-    
+
     可以覆盖以下回调：
     onConnected
     onDisconnected
     onPacket        # 数据回调，只有在返回的数据帧为text并且内容为json时才会回调
     onError
-    
+
     当然，为了不让用户随意自定义，用自己的init函数覆盖掉原本的init(host)也是个不错的选择。
-    
+
     关于ping：
     在调用start()之后，该类每60s会自动发送一个ping帧至服务器。
     """
-    
+
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
         self.host = None  # type: str
-        
+
         self._ws_lock = Lock()
         self._ws = None  # type: websocket.WebSocket
-        
+
         self._workerThread = None  # type: Thread
         self._pingThread = None  # type: Thread
         self._active = False
@@ -49,11 +49,11 @@ class WebsocketClient(object):
         # for debugging:
         self._lastSentText = None
         self._lastReceivedText = None
-        
+
     #----------------------------------------------------------------------
     def init(self, host):
         self.host = host
-    
+
     #----------------------------------------------------------------------
     def start(self):
         """
@@ -61,14 +61,14 @@ class WebsocketClient(object):
         :note 注意：启动之后不能立即发包，需要等待websocket连接成功。
         websocket连接成功之后会响应onConnected函数
         """
-        
+
         self._active = True
         self._workerThread = Thread(target=self._run)
         self._workerThread.start()
-        
+
         self._pingThread = Thread(target=self._runPing)
         self._pingThread.start()
-        
+
     #----------------------------------------------------------------------
     def stop(self):
         """
@@ -93,17 +93,17 @@ class WebsocketClient(object):
         text = json.dumps(dictObj)
         self._recordLastSentText(text)
         return self._getWs().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
-    
+
     #----------------------------------------------------------------------
     def sendText(self, text):  # type: (str)->None
         """发送文本数据"""
         return self._getWs().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
-    
+
     #----------------------------------------------------------------------
     def sendBinary(self, data):  # type: (bytes)->None
         """发送字节数据"""
         return self._getWs().send_binary(data)
-    
+
     #----------------------------------------------------------------------
     def _reconnect(self):
         """重连"""
@@ -114,13 +114,13 @@ class WebsocketClient(object):
     #----------------------------------------------------------------------
     def _createConnection(self, *args, **kwargs):
         return websocket.create_connection(*args, **kwargs)
-    
+
     #----------------------------------------------------------------------
     def _connect(self):
         """"""
         self._ws = self._createConnection(self.host, sslopt={'cert_reqs': ssl.CERT_NONE})
         self.onConnected()
-    
+
     #----------------------------------------------------------------------
     def _disconnect(self):
         """
@@ -135,7 +135,7 @@ class WebsocketClient(object):
     def _getWs(self):
         with self._ws_lock:
             return self._ws
-    
+
     #----------------------------------------------------------------------
     def _run(self):
         """
@@ -170,7 +170,7 @@ class WebsocketClient(object):
             et, ev, tb = sys.exc_info()
             self.onError(et, ev, tb)
             self._reconnect()
-    
+
     #----------------------------------------------------------------------
     @staticmethod
     def unpackData(data):
@@ -196,13 +196,13 @@ class WebsocketClient(object):
                 if not self._active:
                     break
                 time.sleep(1)
-    
+
     #----------------------------------------------------------------------
     def _ping(self):
         ws = self._getWs()
         if ws:
             ws.send('ping', websocket.ABNF.OPCODE_PING)
-    
+
     #----------------------------------------------------------------------
     @staticmethod
     def onConnected():
@@ -210,7 +210,7 @@ class WebsocketClient(object):
         连接成功回调
         """
         pass
-    
+
     #----------------------------------------------------------------------
     @staticmethod
     def onDisconnected():
@@ -218,7 +218,7 @@ class WebsocketClient(object):
         连接断开回调
         """
         pass
-    
+
     #----------------------------------------------------------------------
     @staticmethod
     def onPacket(packet):
@@ -229,7 +229,7 @@ class WebsocketClient(object):
         @:return:
         """
         pass
-    
+
     #----------------------------------------------------------------------
     def onError(self, exceptionType, exceptionValue, tb):
         """
@@ -237,7 +237,7 @@ class WebsocketClient(object):
         todo: 以后详细的错误信息最好记录在文件里，用uuid来联系/区分具体错误
         """
         sys.stderr.write(self.exceptionDetail(exceptionType, exceptionValue, tb))
-        
+
         # 丢给默认的错误处理函数（所以如果不重载onError，一般的结果是程序会崩溃）
         return sys.excepthook(exceptionType, exceptionValue, tb)
 

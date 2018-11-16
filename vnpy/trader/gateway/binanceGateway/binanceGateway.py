@@ -115,7 +115,7 @@ class BinanceGateway(VtGateway):
     def close(self):
         """关闭"""
         self.api.close()
-    
+
     #----------------------------------------------------------------------
     def queryAccount(self):
         """"""
@@ -174,7 +174,7 @@ class GatewayApi(BinanceApi):
 
         self.gateway = gateway                  # gateway对象
         self.gatewayName = gateway.gatewayName  # gateway对象名称
-        
+
         self.date = datetime.now().strftime('%y%m%d%H%M%S')
         self.orderId = 0
 
@@ -186,7 +186,7 @@ class GatewayApi(BinanceApi):
         self.init(apiKey, secretKey)
         self.start()
         self.writeLog(u'交易API启动成功')
-        
+
         l = []
         for symbol in symbols:
             symbol = symbol.lower()
@@ -194,13 +194,13 @@ class GatewayApi(BinanceApi):
             l.append(symbol+'@depth5')
         self.initDataStream(l)
         self.writeLog(u'行情推送订阅成功')
-        
+
         self.startStream()
-        
+
         # 初始化查询
         self.queryExchangeInfo()
         self.queryAccount()
-        
+
         for symbol in symbols:
             self.queryOpenOrders(symbol.upper())
 
@@ -220,103 +220,103 @@ class GatewayApi(BinanceApi):
         err.errorID = data['code']
         err.errorMsg = data['msg']
         self.gateway.onError(err)
-        
+
     #----------------------------------------------------------------------
     def onQueryExchangeInfo(self, data, reqid):
         """"""
         for d in data['symbols']:
             contract = VtContractData()
             contract.gatewayName = self.gatewayName
-            
+
             contract.symbol = d['symbol']
             contract.exchange = EXCHANGE_BINANCE
             contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
             contract.name = contract.vtSymbol
             contract.productClass = PRODUCT_SPOT
             contract.size = 1
-            
+
             for f in d['filters']:
                 if f['filterType'] == 'PRICE_FILTER':
                     contract.priceTick = float(f['tickSize'])
-            
+
             self.gateway.onContract(contract)
-            
+
     #----------------------------------------------------------------------
     def onNewOrder(self, data, reqid):
         """"""
-        pass              
+        pass
 
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, reqid):
         """"""
         pass
-        
+
     #----------------------------------------------------------------------
     def onQueryOpenOrders(self, data, reqid):
         """"""
         for d in data:
             order = VtOrderData()
             order.gatewayName = self.gatewayName
-            
+
             order.symbol = d['symbol']
             order.exchange = EXCHANGE_BINANCE
             order.vtSymbol = '.'.join([order.symbol, order.exchange])
-            
+
             order.orderID = d['clientOrderId']
             order.vtOrderID = '.'.join([order.gatewayName, order.orderID])
-            
+
             order.direction = directionMapReverse[d['side']]
             order.price = float(d['price'])
             order.totalVolume = float(d['origQty'])
             order.tradedVolume = float(d['executedQty'])
             date, order.orderTime = self.generateDateTime(d['time'])
             order.status = statusMapReverse[d['status']]
-            
+
             self.gateway.onOrder(order)
-        
+
     #----------------------------------------------------------------------
     def onQueryAllOrders(self, data, reqid):
         """"""
-        pass         
-        
+        pass
+
     #----------------------------------------------------------------------
     def onQueryAccount(self, data, reqid):
         """"""
         for d in data['balances']:
             free = float(d['free'])
             locked = float(d['locked'])
-            
+
             account = VtAccountData()
             account.gatewayName = self.gatewayName
-            
+
             account.accountID = d['asset']
             account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
             account.balance = free + locked
             account.available = free
-            
+
             self.gateway.onAccount(account)
-        
+
     #----------------------------------------------------------------------
     def onQueryMyTrades(self, data, reqid):
         """"""
-        pass         
-        
+        pass
+
     #----------------------------------------------------------------------
     def onStartStream(self, data, reqid):
         """"""
         key = data['listenKey']
         self.initUserStream(key)
         self.writeLog(u'交易推送订阅成功')
-    
+
     #----------------------------------------------------------------------
     def onKeepaliveStream(self, data, reqid):
         """"""
         self.writeLog(u'交易推送刷新成功')
-    
+
     #----------------------------------------------------------------------
     def onCloseStream(self, data, reqid):
         """"""
-        self.writeLog(u'交易推送关闭')            
+        self.writeLog(u'交易推送关闭')
 
     #----------------------------------------------------------------------
     def onUserData(self, data):
@@ -325,22 +325,22 @@ class GatewayApi(BinanceApi):
             self.onPushAccount(data)
         elif data['e'] == 'executionReport':
             self.onPushOrder(data)
-    
+
     #----------------------------------------------------------------------
     def onPushAccount(self, data):
         """"""
         for d in data['B']:
             free = float(d['f'])
             locked = float(d['l'])
-            
+
             account = VtAccountData()
             account.gatewayName = self.gatewayName
-            
+
             account.accountID = d['a']
             account.vtAccountID = '.'.join([account.gatewayName, account.accountID])
             account.balance = free + locked
             account.available = free
-            
+
             self.gateway.onAccount(account)
 
     #----------------------------------------------------------------------
@@ -349,31 +349,31 @@ class GatewayApi(BinanceApi):
         # 委托更新
         order = VtOrderData()
         order.gatewayName = self.gatewayName
-        
+
         order.symbol = d['s']
         order.exchange = EXCHANGE_BINANCE
         order.vtSymbol = '.'.join([order.symbol, order.exchange])
-        
+
         if d['C'] != 'null':
             order.orderID = d['C']  # 撤单原始委托号
         else:
             order.orderID = d['c']
         order.vtOrderID = '.'.join([order.gatewayName, order.orderID])
-        
+
         order.direction = directionMapReverse[d['S']]
         order.price = float(d['p'])
         order.totalVolume = float(d['q'])
         order.tradedVolume = float(d['z'])
         date, order.orderTime = self.generateDateTime(d['T'])
-        order.status = statusMapReverse[d['X']]      
-        
+        order.status = statusMapReverse[d['X']]
+
         self.gateway.onOrder(order)
-        
+
         # 成交更新
         if float(d['l']):
             trade = VtTradeData()
             trade.gatewayName = self.gatewayName
-            
+
             trade.symbol = order.symbol
             trade.exchange = order.exchange
             trade.vtSymbol = order.vtSymbol
@@ -385,16 +385,16 @@ class GatewayApi(BinanceApi):
             trade.price = float(d['L'])
             trade.volume = float(d['l'])
             date, trade.tradeTime = self.generateDateTime(d['E'])
-            
+
             self.gateway.onTrade(trade)
-    
+
     #----------------------------------------------------------------------
     def onMarketData(self, data):
         """"""
         name = data['stream']
         symbol, channel = name.split('@')
         symbol = symbol.upper()
-        
+
         if symbol in self.tickDict:
             tick = self.tickDict[symbol]
         else:
@@ -403,12 +403,12 @@ class GatewayApi(BinanceApi):
             tick.symbol = symbol
             tick.exchange = EXCHANGE_BINANCE
             tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
-            
+
             self.tickDict[symbol] = tick
-        
+
         data = data['data']
         if channel == 'ticker':
-            tick.volume = float(data['v'])            
+            tick.volume = float(data['v'])
             tick.openPrice = float(data['o'])
             tick.highPrice = float(data['h'])
             tick.lowPrice = float(data['l'])
@@ -420,57 +420,57 @@ class GatewayApi(BinanceApi):
             tick.askPrice3, tick.askVolume3, buf = data['asks'][2]
             tick.askPrice4, tick.askVolume4, buf = data['asks'][3]
             tick.askPrice5, tick.askVolume5, buf = data['asks'][4]
-            
+
             tick.bidPrice1, tick.bidVolume1, buf = data['bids'][0]
             tick.bidPrice2, tick.bidVolume2, buf = data['bids'][1]
             tick.bidPrice3, tick.bidVolume3, buf = data['bids'][2]
             tick.bidPrice4, tick.bidVolume4, buf = data['bids'][3]
-            tick.bidPrice5, tick.bidVolume5, buf = data['bids'][4]    
-            
+            tick.bidPrice5, tick.bidVolume5, buf = data['bids'][4]
+
             tick.askPrice1 = float(tick.askPrice1)
             tick.askPrice2 = float(tick.askPrice2)
             tick.askPrice3 = float(tick.askPrice3)
             tick.askPrice4 = float(tick.askPrice4)
             tick.askPrice5 = float(tick.askPrice5)
-            
+
             tick.bidPrice1 = float(tick.bidPrice1)
             tick.bidPrice2 = float(tick.bidPrice2)
             tick.bidPrice3 = float(tick.bidPrice3)
             tick.bidPrice4 = float(tick.bidPrice4)
-            tick.bidPrice5 = float(tick.bidPrice5)          
-            
+            tick.bidPrice5 = float(tick.bidPrice5)
+
             tick.askVolume1 = float(tick.askVolume1)
             tick.askVolume2 = float(tick.askVolume2)
             tick.askVolume3 = float(tick.askVolume3)
             tick.askVolume4 = float(tick.askVolume4)
             tick.askVolume5 = float(tick.askVolume5)
-            
+
             tick.bidVolume1 = float(tick.bidVolume1)
             tick.bidVolume2 = float(tick.bidVolume2)
             tick.bidVolume3 = float(tick.bidVolume3)
             tick.bidVolume4 = float(tick.bidVolume4)
-            tick.bidVolume5 = float(tick.bidVolume5) 
-        
+            tick.bidVolume5 = float(tick.bidVolume5)
+
         self.gateway.onTick(copy(tick))
-    
+
     #----------------------------------------------------------------------
     def onDataStreamError(self, msg):
         """"""
         self.writeLog(msg)
-    
+
     #----------------------------------------------------------------------
     def onUserStreamError(self, msg):
         """"""
         self.writeLog(msg)
-        
+
     #----------------------------------------------------------------------
     def generateDateTime(self, s):
         """生成时间"""
         dt = datetime.fromtimestamp(float(s)/1e3)
         time = dt.strftime("%H:%M:%S.%f")
         date = dt.strftime("%Y%m%d")
-        return date, time    
-    
+        return date, time
+
     #----------------------------------------------------------------------
     def sendOrder(self, orderReq):
         """"""
@@ -479,12 +479,12 @@ class GatewayApi(BinanceApi):
         vtOrderID = '.'.join([self.gatewayName, orderId])
         side = directionMap.get(orderReq.direction, '')
         type_ = priceTypeMap.get(orderReq.priceType, PRICETYPE_LIMITPRICE)
-        
-        self.newOrder(orderReq.symbol, side, type_, orderReq.price, 
+
+        self.newOrder(orderReq.symbol, side, type_, orderReq.price,
                       orderReq.volume, 'GTC', newClientOrderId=orderId)
-        
+
         return vtOrderID
-    
+
     #----------------------------------------------------------------------
     def cancel(self, cancelOrderReq):
         """"""

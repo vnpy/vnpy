@@ -208,5 +208,3 @@ typedefDict["TSecurityFtdcOrderKindType"] = "string"
 #TFtdcFunctionCodeType是一个功能码类型
 #//////////////////////////////////////////////////////////////////////
 typedefDict["TSecurityFtdcFunctionCodeType"] = "string"
-
-

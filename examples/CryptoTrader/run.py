@@ -51,10 +51,10 @@ def main():
     me.addGateway(okexGateway)
     me.addGateway(binanceGateway)
     me.addGateway(bitfinexGateway)
-    
+
     # 添加上层应用
     me.addApp(algoTrading)
-    
+
     # 创建主窗口
     mw = MainWindow(me, ee)
     mw.showMaximized()

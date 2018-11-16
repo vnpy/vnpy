@@ -8,8 +8,8 @@ typedefDict = {}
 #@company 上海期货信息技术有限公司
 #@file ThostFtdcUserApiDataType.h
 #@brief 定义了客户端接口使用的业务数据类型
-#@history 
-#20060106	赵鸿昊		创建该文件
+#@history
+#20060106       赵鸿昊             创建该文件
 #//////////////////////////////////////////////////////////////////////
 
 
@@ -6453,4 +6453,3 @@ defineDict["THOST_FTDC_IVLV_SecondLevel"] = '2'
 defineDict["THOST_FTDC_IVLV_ThirdLevel"] = '3'
 
 typedefDict["TThostFtdcLevelTypeType"] = "char"
-

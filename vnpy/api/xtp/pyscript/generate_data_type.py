@@ -26,10 +26,10 @@ def process_line(line):
     elif '#define' in line:
         py_line = process_define(line)
     # 类型定义
-    elif 'typedef' in line:                     
+    elif 'typedef' in line:
         py_line = process_typedef(line)
     # 空行
-    elif line == '\n':          
+    elif line == '\n':
         py_line = line
     # 其他忽略
     else:
@@ -53,7 +53,7 @@ def process_enum(line):
 def process_comment(line):
     """处理注释"""
     py_line = line.replace('/', '#')
-    
+
     return py_line
 
 #----------------------------------------------------------------------
@@ -94,7 +94,7 @@ def process_define(line):
         py_line = '%s = %s' %(constant, value)
     else:
         py_line = ''
-        
+
     py_line = py_line.replace('*/', '')
     py_line = py_line.replace('/*', '')
 
@@ -134,5 +134,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

@@ -2073,4 +2073,3 @@ defineDict["SECURITY_FTDC_CD_CloseSell"] = '@'
 defineDict["SECURITY_FTDC_CD_CloseCover"] = '#'
 
 typedefDict["TSecurityFtdcCloseDirectionType"] = "string"
-

@@ -43,7 +43,7 @@ DX_TARGET = 0.00001
 #----------------------------------------------------------------------
 def generateTree(f, k, r, t, v, cp, n):
     """生成二叉树"""
-    dt = t / n 
+    dt = t / n
     u = exp(v * sqrt(dt))
     d = 1 / u
     a = 1                       # 针对期货期权a应当设为1
@@ -54,7 +54,7 @@ def generateTree(f, k, r, t, v, cp, n):
     p = (a - d) / (u - d)
     p1 = p / a
     p2 = (1 - p) / a
-    
+
     # 计算标的树
     uTree[0, 0] = f
 
@@ -74,7 +74,7 @@ def generateTree(f, k, r, t, v, cp, n):
 
     # 返回期权树和标的物树结果
     return oTree, uTree
-    
+
 #----------------------------------------------------------------------
 def calculatePrice(f, k, r, t, v, cp, n=15):
     """计算期权价格"""
@@ -113,7 +113,7 @@ def calculateVega(f, k, r, t, v, cp, n=15):
 
 #----------------------------------------------------------------------
 def calculateOriginalVega(f, k, r, t, v, cp, n=15):
-    """计算原始vega值"""    
+    """计算原始vega值"""
     price1 = calculatePrice(f, k, r, t, v*STEP_UP, cp, n)
     price2 = calculatePrice(f, k, r, t, v*STEP_DOWN, cp, n)
     vega = (price1 - price2) / (v * STEP_DIFF)
@@ -135,47 +135,47 @@ def calculateImpv(price, f, k, r, t, cp, n=15):
     # 检查期权价格必须为正数
     if price <= 0:
         return 0
-    
+
     # 检查期权价格是否满足最小价值（即到期行权价值）
     meet = False
-    
+
     if cp == 1 and price > (f - k):
         meet = True
     elif cp == -1 and price > (k - f):
         meet = True
-    
+
     # 若不满足最小价值，则直接返回0
     if not meet:
         return 0
-    
+
     # 采用Newton Raphson方法计算隐含波动率
     v = 0.3     # 初始波动率猜测
-    
+
     for i in range(50):
         # 计算当前猜测波动率对应的期权价格和vega值
         p = calculatePrice(f, k, r, t, v, cp, n)
-        
+
         vega = calculateOriginalVega(f, k, r, t, v, cp, n)
-        
+
         # 如果vega过小接近0，则直接返回
         if not vega:
             break
-        
+
         # 计算误差
         dx = (price - p) / vega
-        
+
         # 检查误差是否满足要求，若满足则跳出循环
         if abs(dx) < DX_TARGET:
             break
-        
+
         # 计算新一轮猜测的波动率
         v += dx
-        
+
     # 检查波动率计算结果非负
     if v <= 0:
         return 0
-    
+
     # 保留4位小数
     v = round(v, 4)
-    
+
     return v

@@ -14,14 +14,14 @@ from vnpy.trader.app.algoTrading.uiAlgoWidget import AlgoWidget, QtWidgets
 ########################################################################
 class TwapAlgo(AlgoTemplate):
     """TWAP算法"""
-    
+
     templateName = u'TWAP 时间加权平均'
 
     #----------------------------------------------------------------------
     def __init__(self, engine, setting, algoName):
         """Constructor"""
         super(TwapAlgo, self).__init__(engine, setting, algoName)
-        
+
         # 参数，强制类型转换，保证从CSV加载的配置正确
         self.vtSymbol = str(setting['vtSymbol'])            # 合约代码
         self.direction = text_type(setting['direction'])    # 买卖
@@ -31,62 +31,62 @@ class TwapAlgo(AlgoTemplate):
         self.interval = int(setting['interval'])            # 执行间隔
         self.minVolume = float(setting['minVolume'])        # 最小委托数量
         self.priceLevel = int(setting['priceLevel'])        # 使用第几档价格委托
-        
+
         # 变量
         self.orderSize = self.totalVolume / (self.time / self.interval)
         self.orderSize = self.roundValue(self.orderSize, self.minVolume)
         if self.minVolume >= 1:
             self.orderSize = int(self.orderSize)
-            
+
         self.timerCount = 0
         self.timerTotal = 0
         self.tradedVolume = 0
-        
+
         self.subscribe(self.vtSymbol)
         self.paramEvent()
         self.varEvent()
-    
+
     #----------------------------------------------------------------------
     def onTick(self, tick):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onTrade(self, trade):
         """"""
         self.tradedVolume += trade.volume
-        
+
         if self.tradedVolume >= self.totalVolume:
             self.stop()
         else:
             self.varEvent()
-    
+
     #----------------------------------------------------------------------
     def onOrder(self, order):
         """"""
         pass
-    
+
     #----------------------------------------------------------------------
     def onTimer(self):
         """"""
         self.timerCount += 1
         self.timerTotal += 1
-        
+
         # 总时间结束，停止算法
         if self.timerTotal >= self.time:
             self.stop()
             return
-        
+
         # 每到间隔发一次委托
         if self.timerCount >= self.interval:
             self.timerCount = 0
-            
+
             tick = self.getTick(self.vtSymbol)
             if not tick:
                 return
-            
+
             size = min(self.orderSize, self.totalVolume-self.tradedVolume)
-            
+
             # 买入
             if self.direction == DIRECTION_LONG:
                 # 市场买1价小于目标买价
@@ -104,7 +104,7 @@ class TwapAlgo(AlgoTemplate):
                         price = min(price, self.targetPrice)  # 如果深度价格为0，则使用目标价
                     else:
                         price = self.targetPrice
-                    
+
                     # 发出委托
                     self.buy(self.vtSymbol, price, size)
                     self.writeLog(u'委托买入%s，数量%s，价格%s' %(self.vtSymbol, self.orderSize, price))
@@ -125,25 +125,25 @@ class TwapAlgo(AlgoTemplate):
                         price = max(price, self.targetPrice)
                     else:
                         price = self.targetPrice
-                    
+
                     # 发出委托
                     self.sell(self.vtSymbol, price, size)
                     self.writeLog(u'委托卖出%s，数量%s，价格%s' %(self.vtSymbol, self.orderSize, price))
-        
+
         # 委托后等待到间隔一半的时间撤单
         elif self.timerCount == round(self.interval/2, 0):
             result = self.cancelAll()
             if result:
                 self.writeLog(u'撤销之前的委托')
-            
+
         self.varEvent()
-    
+
     #----------------------------------------------------------------------
     def onStop(self):
         """"""
         self.writeLog(u'运行时间已到，停止算法')
         self.varEvent()
-    
+
     #----------------------------------------------------------------------
     def varEvent(self):
         """更新变量"""
@@ -155,7 +155,7 @@ class TwapAlgo(AlgoTemplate):
         d[u'累计读秒'] = self.timerTotal
         d['active'] = self.active
         self.putVarEvent(d)
-    
+
     #----------------------------------------------------------------------
     def paramEvent(self):
         """更新参数"""
@@ -173,59 +173,59 @@ class TwapAlgo(AlgoTemplate):
 ########################################################################
 class TwapWidget(AlgoWidget):
     """"""
-    
+
     #----------------------------------------------------------------------
     def __init__(self, algoEngine, parent=None):
         """Constructor"""
         super(TwapWidget, self).__init__(algoEngine, parent)
-        
+
         self.templateName = TwapAlgo.templateName
-        
+
     #----------------------------------------------------------------------
     def initAlgoLayout(self):
         """"""
         self.lineSymbol = QtWidgets.QLineEdit()
-        
+
         self.comboDirection = QtWidgets.QComboBox()
         self.comboDirection.addItem(DIRECTION_LONG)
         self.comboDirection.addItem(DIRECTION_SHORT)
         self.comboDirection.setCurrentIndex(0)
-        
+
         self.spinPrice = QtWidgets.QDoubleSpinBox()
         self.spinPrice.setMinimum(0)
         self.spinPrice.setMaximum(1000000000)
         self.spinPrice.setDecimals(8)
-        
+
         self.spinVolume = QtWidgets.QDoubleSpinBox()
         self.spinVolume.setMinimum(0)
         self.spinVolume.setMaximum(1000000000)
         self.spinVolume.setDecimals(6)
-        
+
         self.spinTime = QtWidgets.QSpinBox()
         self.spinTime.setMinimum(30)
         self.spinTime.setMaximum(86400)
-        
+
         self.spinInterval = QtWidgets.QSpinBox()
         self.spinInterval.setMinimum(10)
         self.spinInterval.setMaximum(3600)
-        
+
         self.spinMinVolume = QtWidgets.QDoubleSpinBox()
         self.spinMinVolume.setMinimum(0)
         self.spinMinVolume.setMaximum(10000)
         self.spinMinVolume.setDecimals(6)
         self.spinMinVolume.setValue(1)
-        
+
         self.spinPriceLevel = QtWidgets.QSpinBox()
         self.spinPriceLevel.setMinimum(1)
         self.spinPriceLevel.setMaximum(5)
         self.spinPriceLevel.setValue(1)
-        
+
         buttonStart = QtWidgets.QPushButton(u'启动')
         buttonStart.clicked.connect(self.addAlgo)
         buttonStart.setMinimumHeight(100)
-        
+
         Label = QtWidgets.QLabel
-        
+
         grid = QtWidgets.QGridLayout()
         grid.addWidget(Label(u'交易代码'), 0, 0)
         grid.addWidget(self.lineSymbol, 0, 1)
@@ -245,7 +245,7 @@ class TwapWidget(AlgoWidget):
         grid.addWidget(self.spinMinVolume, 7, 1)
 
         return grid
-    
+
     #----------------------------------------------------------------------
     def getAlgoSetting(self):
         """"""
@@ -259,7 +259,5 @@ class TwapWidget(AlgoWidget):
         setting['interval'] = int(self.spinInterval.value())
         setting['priceLevel'] = int(self.spinPriceLevel.value())
         setting['minVolume'] = float(self.spinMinVolume.value())
-        
+
         return setting
-    
-    

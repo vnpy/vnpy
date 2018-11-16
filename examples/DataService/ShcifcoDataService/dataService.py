@@ -33,7 +33,7 @@ db = mc[MINUTE_DB_NAME]                                         # 数据库
 def generateVtBar(d):
     """生成K线"""
     bar = VtBarData()
-    
+
     bar.symbol = d['symbol']
     bar.vtSymbol = d['symbol']
     bar.date = d['date']
@@ -44,29 +44,29 @@ def generateVtBar(d):
     bar.close = d['close']
     bar.volume = d['volume']
     bar.openInterest = d['openInterest']
-    bar.datetime = datetime.datetime.strptime(' '.join([bar.date, bar.time]), '%Y%m%d %H:%M')    
-    
+    bar.datetime = datetime.datetime.strptime(' '.join([bar.date, bar.time]), '%Y%m%d %H:%M')
+
     return bar
 
 #----------------------------------------------------------------------
 def downMinuteBarBySymbol(symbol, num):
     """下载某一合约的分钟线数据"""
     start = time.time()
-    
+
     cl = db[symbol]                                                 # 集合
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
-    
+
     l = api.getHisBar(symbol, num, period=PERIOD_1MIN)
     if not l:
         print(u'%s数据下载失败' %symbol)
         return
-    
+
     for d in l:
         bar = generateVtBar(d)
         d = bar.__dict__
         flt = {'datetime': bar.datetime}
         cl.replace_one(flt, d, True)
-        
+
     end = time.time()
     cost = (end - start) * 1000
 
@@ -79,7 +79,7 @@ def downloadAllMinuteBar(num):
     print('-' * 50)
     print(u'开始下载合约分钟线数据')
     print('-' * 50)
-    
+
     for symbol in SYMBOLS:
         downMinuteBarBySymbol(symbol, num)
         time.sleep(1)
@@ -87,6 +87,3 @@ def downloadAllMinuteBar(num):
     print('-' * 50)
     print(u'合约分钟线数据下载完成')
     print('-' * 50)
-
-
-    

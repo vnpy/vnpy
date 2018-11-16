@@ -17,7 +17,7 @@ def loadStrategyModule(moduleName):
     """使用importlib动态载入模块"""
     try:
         module = importlib.import_module(moduleName)
-        
+
         # 遍历模块下的对象，只有名称中包含'Strategy'的才是策略类
         for k in dir(module):
             if 'Strategy' in k:
@@ -26,7 +26,7 @@ def loadStrategyModule(moduleName):
     except:
         print ('-' * 20)
         print ('Failed to import strategy file %s:' %moduleName)
-        traceback.print_exc()    
+        traceback.print_exc()
 
 
 # 遍历strategy目录下的文件

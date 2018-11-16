@@ -8,7 +8,7 @@ class DemoStrategy(OmStrategyTemplate):
     """演示策略"""
     className = 'DemoStrategy'
     author = u'用Python的交易员'
-    
+
     temp = 123
 
     # 参数列表，保存了参数的名称
@@ -56,16 +56,14 @@ class DemoStrategy(OmStrategyTemplate):
         """成交推送"""
         self.writeLog(u'%s策略收到成交推送' %self.name)
         self.putEvent()
-        
+
     #----------------------------------------------------------------------
     def onOrder(self, order):
         """委托推送"""
         self.writeLog(u'%s策略收到委托推送' %self.name)
         self.putEvent()
-    
+
     #----------------------------------------------------------------------
     def onTimer(self):
         """定时推送"""
-        self.writeLog(u'%s策略收到定时推送，自定义参数%s' %(self.name, self.temp))    
-
-    
+        self.writeLog(u'%s策略收到定时推送，自定义参数%s' %(self.name, self.temp))

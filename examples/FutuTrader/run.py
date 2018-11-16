@@ -29,11 +29,11 @@ def main():
 
     # 添加交易接口
     me.addGateway(futuGateway)
-    
+
     # 添加上层应用
     me.addApp(riskManager)
     me.addApp(ctaStrategy)
-    
+
     # 创建主窗口
     mw = MainWindow(me, ee)
     mw.showMaximized()

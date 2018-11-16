@@ -15,7 +15,7 @@ def main():
     fpy.write('\n')
 
     for no, line in enumerate(fcpp):
-        
+
         # 结构体申明注释
         if '///' in line and '\t' not in line:
             py_line = '#' + line[3:]

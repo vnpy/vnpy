@@ -342,6 +342,3 @@ CThostFtdcSpecificInstrumentField = {}
 #合约代码
 CThostFtdcSpecificInstrumentField["InstrumentID"] = "string"
 structDict['CThostFtdcSpecificInstrumentField'] = CThostFtdcSpecificInstrumentField
-
-
-

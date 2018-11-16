@@ -31,10 +31,10 @@ def runChildProcess():
     le.setLogLevel(le.LEVEL_INFO)
     le.addConsoleHandler()
     le.info(u'启动行情记录运行子进程')
-    
+
     ee = EventEngine2()
     le.info(u'事件引擎创建成功')
-    
+
     me = MainEngine(ee)
     me.addGateway(ctpGateway)
     me.addApp(dataRecorder)
@@ -58,12 +58,12 @@ def runParentProcess():
     le.setLogLevel(le.LEVEL_INFO)
     le.addConsoleHandler()
     le.info(u'启动行情记录守护父进程')
-    
+
     DAY_START = time(8, 57)         # 日盘启动和停止时间
     DAY_END = time(15, 18)
     NIGHT_START = time(20, 57)      # 夜盘启动和停止时间
     NIGHT_END = time(2, 33)
-    
+
     p = None        # 子进程句柄
 
     while True:
@@ -75,10 +75,10 @@ def runParentProcess():
             (currentTime >= NIGHT_START) or
             (currentTime <= NIGHT_END)):
             recording = True
-            
+
         # 过滤周末时间段：周六全天，周五夜盘，周日日盘
-        if ((datetime.today().weekday() == 6) or 
-            (datetime.today().weekday() == 5 and currentTime > NIGHT_END) or 
+        if ((datetime.today().weekday() == 6) or
+            (datetime.today().weekday() == 5 and currentTime > NIGHT_END) or
             (datetime.today().weekday() == 0 and currentTime < DAY_START)):
             recording = False
 

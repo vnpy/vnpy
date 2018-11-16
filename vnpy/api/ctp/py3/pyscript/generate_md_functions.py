@@ -33,7 +33,7 @@ def processCallBack(line):
 
     createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine)
     createProcess(cbName, cbArgsTypeList, cbArgsValueList)
-    
+
     # 生成.h文件中的process部分
     process_line = 'void process' + cbName[2:] + '(Task task);\n'
     fheaderprocess.write(process_line)
@@ -52,21 +52,21 @@ def processCallBack(line):
         on_line = ''
     fheaderon.write(on_line)
     fheaderon.write('\n')
-    
+
     # 生成封装部分
     createWrap(cbName)
-    
+
 
 #----------------------------------------------------------------------
 def createWrap(cbName):
     """在Python封装段代码中进行处理"""
     # 生成.h文件中的on部分
     if 'OnRspError' in cbName:
-        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'    
-        override_line = '("on' + cbName[2:] + '")(error, id, last);\n' 
+        on_line = 'virtual void on' + cbName[2:] + '(dict error, int id, bool last)\n'
+        override_line = '("on' + cbName[2:] + '")(error, id, last);\n'
     elif 'OnRsp' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data, dict error, int id, bool last)\n'
-        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n' 
+        override_line = '("on' + cbName[2:] + '")(data, error, id, last);\n'
     elif 'OnRtn' in cbName:
         on_line = 'virtual void on' + cbName[2:] + '(dict data)\n'
         override_line = '("on' + cbName[2:] + '")(data);\n'
@@ -75,7 +75,7 @@ def createWrap(cbName):
         override_line = '("on' + cbName[2:] + '")(data, error);\n'
     else:
         on_line = ''
-        
+
     if on_line is not '':
         fwrap.write(on_line)
         fwrap.write('{\n')
@@ -89,8 +89,8 @@ def createWrap(cbName):
         fwrap.write('\t}\n')
         fwrap.write('};\n')
         fwrap.write('\n')
-    
-    
+
+
 
 def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
     # 从回调函数生成任务对象，并放入队列
@@ -144,7 +144,7 @@ def createTask(cbName, cbArgsTypeList, cbArgsValueList, orignalLine):
             ftask.write("\t\t" + type_ + " empty_data = " + type_ + "();\n")
             ftask.write("\t\tmemset(&empty_data, 0, sizeof(empty_data));\n")
             ftask.write("\t\ttask.task_data = empty_data;\n")
-            ftask.write("\t}\n")            
+            ftask.write("\t}\n")
 
     ftask.write("\tthis->task_queue.push(task);\n")
     ftask.write("};\n")
@@ -226,7 +226,7 @@ def processFunction(line):
 
     if len(fcArgsTypeList)>0 and fcArgsTypeList[0] in structDict:
         createFunction(fcName, fcArgsTypeList, fcArgsValueList)
-        
+
     # 生成.h文件中的主动函数部分
     if 'Req' in fcName:
         req_line = 'int req' + fcName[3:] + '(dict req, int nRequestID);\n'

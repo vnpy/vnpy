@@ -1346,4 +1346,3 @@ typedefDict["TKSOTPFOCreditStatusType"] = "string"
 #TKSOTPInstrumentCodeType是一个合约标识码类型
 #//////////////////////////////////////////////////////////////////////
 typedefDict["TKSOTPInstrumentCodeType"] = "string"
-

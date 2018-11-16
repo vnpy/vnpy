@@ -24,18 +24,18 @@ class OmCell(QtWidgets.QTableWidgetItem):
     def __init__(self, text=None, background=None, foreground=None, data=None):
         """Constructor"""
         super(OmCell, self).__init__()
-        
+
         self.data = data
         self.background = None
-        
+
         if text:
             self.setText(text)
-            
+
         if foreground:
             self.setForeground(foreground)
-            
+
         if background:
             self.setBackground(background)
             self.background = background
-        
+
         self.setTextAlignment(QtCore.Qt.AlignCenter)

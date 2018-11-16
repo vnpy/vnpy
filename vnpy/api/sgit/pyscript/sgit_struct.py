@@ -4,15 +4,15 @@ structDict = {}
 
 #////////////////////////////////////////////////////////////////////////
 
-#@system 
+#@system
 
-#@company 
+#@company
 
 #@file SgitFtdcUserApiStruct.h
 
 #@brief 定义了客户端接口使用的业务数据结构
 
-#@history 
+#@history
 
 
 
@@ -11322,7 +11322,7 @@ CThostFtdcReqOpenAccountField["TradeTime"] = "string"
 
 CThostFtdcReqOpenAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqOpenAccountField["TradingDay"] = "string"
 
@@ -11508,7 +11508,7 @@ CThostFtdcReqCancelAccountField["TradeTime"] = "string"
 
 CThostFtdcReqCancelAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqCancelAccountField["TradingDay"] = "string"
 
@@ -11694,7 +11694,7 @@ CThostFtdcReqChangeAccountField["TradeTime"] = "string"
 
 CThostFtdcReqChangeAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqChangeAccountField["TradingDay"] = "string"
 
@@ -11864,7 +11864,7 @@ CThostFtdcReqTransferField["TradeTime"] = "string"
 
 CThostFtdcReqTransferField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqTransferField["TradingDay"] = "string"
 
@@ -12046,7 +12046,7 @@ CThostFtdcRspTransferField["TradeTime"] = "string"
 
 CThostFtdcRspTransferField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspTransferField["TradingDay"] = "string"
 
@@ -12264,7 +12264,7 @@ CThostFtdcReqRepealField["TradeTime"] = "string"
 
 CThostFtdcReqRepealField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqRepealField["TradingDay"] = "string"
 
@@ -12474,7 +12474,7 @@ CThostFtdcRspRepealField["TradeTime"] = "string"
 
 CThostFtdcRspRepealField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspRepealField["TradingDay"] = "string"
 
@@ -12664,7 +12664,7 @@ CThostFtdcReqQueryAccountField["TradeTime"] = "string"
 
 CThostFtdcReqQueryAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqQueryAccountField["TradingDay"] = "string"
 
@@ -12818,7 +12818,7 @@ CThostFtdcRspQueryAccountField["TradeTime"] = "string"
 
 CThostFtdcRspQueryAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspQueryAccountField["TradingDay"] = "string"
 
@@ -12980,7 +12980,7 @@ CThostFtdcFutureSignIOField["TradeTime"] = "string"
 
 CThostFtdcFutureSignIOField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcFutureSignIOField["TradingDay"] = "string"
 
@@ -13074,7 +13074,7 @@ CThostFtdcRspFutureSignInField["TradeTime"] = "string"
 
 CThostFtdcRspFutureSignInField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspFutureSignInField["TradingDay"] = "string"
 
@@ -13184,7 +13184,7 @@ CThostFtdcReqFutureSignOutField["TradeTime"] = "string"
 
 CThostFtdcReqFutureSignOutField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqFutureSignOutField["TradingDay"] = "string"
 
@@ -13278,7 +13278,7 @@ CThostFtdcRspFutureSignOutField["TradeTime"] = "string"
 
 CThostFtdcRspFutureSignOutField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspFutureSignOutField["TradingDay"] = "string"
 
@@ -13380,7 +13380,7 @@ CThostFtdcReqQueryTradeResultBySerialField["TradeTime"] = "string"
 
 CThostFtdcReqQueryTradeResultBySerialField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqQueryTradeResultBySerialField["TradingDay"] = "string"
 
@@ -13494,7 +13494,7 @@ CThostFtdcRspQueryTradeResultBySerialField["TradeTime"] = "string"
 
 CThostFtdcRspQueryTradeResultBySerialField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspQueryTradeResultBySerialField["TradingDay"] = "string"
 
@@ -13608,7 +13608,7 @@ CThostFtdcReqDayEndFileReadyField["TradeTime"] = "string"
 
 CThostFtdcReqDayEndFileReadyField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqDayEndFileReadyField["TradingDay"] = "string"
 
@@ -13692,7 +13692,7 @@ CThostFtdcVerifyFuturePasswordField["TradeTime"] = "string"
 
 CThostFtdcVerifyFuturePasswordField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcVerifyFuturePasswordField["TradingDay"] = "string"
 
@@ -13880,7 +13880,7 @@ CThostFtdcReqSyncKeyField["TradeTime"] = "string"
 
 CThostFtdcReqSyncKeyField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcReqSyncKeyField["TradingDay"] = "string"
 
@@ -13970,7 +13970,7 @@ CThostFtdcRspSyncKeyField["TradeTime"] = "string"
 
 CThostFtdcRspSyncKeyField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcRspSyncKeyField["TradingDay"] = "string"
 
@@ -14068,7 +14068,7 @@ CThostFtdcNotifyQueryAccountField["TradeTime"] = "string"
 
 CThostFtdcNotifyQueryAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcNotifyQueryAccountField["TradingDay"] = "string"
 
@@ -14386,7 +14386,7 @@ CThostFtdcNotifyFutureSignInField["TradeTime"] = "string"
 
 CThostFtdcNotifyFutureSignInField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcNotifyFutureSignInField["TradingDay"] = "string"
 
@@ -14496,7 +14496,7 @@ CThostFtdcNotifyFutureSignOutField["TradeTime"] = "string"
 
 CThostFtdcNotifyFutureSignOutField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcNotifyFutureSignOutField["TradingDay"] = "string"
 
@@ -14598,7 +14598,7 @@ CThostFtdcNotifySyncKeyField["TradeTime"] = "string"
 
 CThostFtdcNotifySyncKeyField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcNotifySyncKeyField["TradingDay"] = "string"
 
@@ -14804,7 +14804,7 @@ CThostFtdcOpenAccountField["TradeTime"] = "string"
 
 CThostFtdcOpenAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcOpenAccountField["TradingDay"] = "string"
 
@@ -14998,7 +14998,7 @@ CThostFtdcCancelAccountField["TradeTime"] = "string"
 
 CThostFtdcCancelAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcCancelAccountField["TradingDay"] = "string"
 
@@ -15192,7 +15192,7 @@ CThostFtdcChangeAccountField["TradeTime"] = "string"
 
 CThostFtdcChangeAccountField["BankSerial"] = "string"
 
-#交易系统日期 
+#交易系统日期
 
 CThostFtdcChangeAccountField["TradingDay"] = "string"
 
@@ -15666,9 +15666,3 @@ structDict['CThostDeferDeliveryQuot'] = CThostDeferDeliveryQuot
 
 
 structDict['CThostDeferDeliveryQuot'] = CThostDeferDeliveryQuot
-
-
-
-
-
-

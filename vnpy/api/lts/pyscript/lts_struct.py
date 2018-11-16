@@ -2721,8 +2721,3 @@ CSecurityFtdcMDUserInfoField["MaxStockCount"] = "int"
 #期权最大订阅数量
 CSecurityFtdcMDUserInfoField["MaxOptionsCount"] = "int"
 structDict['CSecurityFtdcMDUserInfoField'] = CSecurityFtdcMDUserInfoField
-
-
-
-
-

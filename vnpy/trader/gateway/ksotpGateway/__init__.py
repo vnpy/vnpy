@@ -9,4 +9,3 @@ gatewayName = 'KSOTP'
 gatewayDisplayName = u'金仕达期权'
 gatewayType = vtConstant.GATEWAYTYPE_EQUITY
 gatewayQryEnabled = True
-

@@ -79,7 +79,7 @@ DFITCSECReqUserLogoutField['requestID'] = 'long'
 DFITCSECReqUserLogoutField['accountID'] = 'string'
 
 
-#SEC-登出响应 
+#SEC-登出响应
 DFITCSECRspUserLogoutField = OrderedDict()
 
 DFITCSECRspUserLogoutField['requestID'] = 'long'
@@ -2225,6 +2225,3 @@ DFITCSOPRspQryGroupPositionField['securityOptionID1'] = 'string'
 DFITCSOPRspQryGroupPositionField['securityOptionID2'] = 'string'
 DFITCSOPRspQryGroupPositionField['securityOptionID3'] = 'string'
 DFITCSOPRspQryGroupPositionField['securityOptionID4'] = 'string'
-
-
-

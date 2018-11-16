@@ -33,7 +33,7 @@ class RmEngine(object):
         """Constructor"""
         self.mainEngine = mainEngine
         self.eventEngine = eventEngine
-        
+
         # 绑定自身到主引擎的风控引擎引用上
         mainEngine.rmEngine = self
 
@@ -59,7 +59,7 @@ class RmEngine(object):
 
         # 活动合约相关
         self.workingOrderLimit = EMPTY_INT  # 活动合约最大限制
-        
+
         # 保证金相关
         self.marginRatioDict = {}           # 保证金占账户净值比例字典
         self.marginRatioLimit = EMPTY_FLOAT # 最大比例限制
@@ -86,7 +86,7 @@ class RmEngine(object):
             self.workingOrderLimit = d['workingOrderLimit']
 
             self.orderCancelLimit = d['orderCancelLimit']
-            
+
             self.marginRatioLimit = d['marginRatioLimit']
 
     #----------------------------------------------------------------------
@@ -108,7 +108,7 @@ class RmEngine(object):
             d['workingOrderLimit'] = self.workingOrderLimit
 
             d['orderCancelLimit'] = self.orderCancelLimit
-            
+
             d['marginRatioLimit'] = self.marginRatioLimit
 
             # 写入json
@@ -122,7 +122,7 @@ class RmEngine(object):
         self.eventEngine.register(EVENT_TIMER, self.updateTimer)
         self.eventEngine.register(EVENT_ORDER, self.updateOrder)
         self.eventEngine.register(EVENT_ACCOUNT, self.updateAccount)
-        
+
     #----------------------------------------------------------------------
     def updateOrder(self, event):
         """更新成交数据"""
@@ -130,7 +130,7 @@ class RmEngine(object):
         order = event.dict_['data']
         if order.status != STATUS_CANCELLED:
             return
-        
+
         if order.symbol not in self.orderCancelDict:
             self.orderCancelDict[order.symbol] = 1
         else:
@@ -156,12 +156,12 @@ class RmEngine(object):
     def updateAccount(self, event):
         """账户资金更新"""
         account = event.dict_['data']
-        
+
         # 计算保证金占比
         ratio = 0
         if account.balance:
             ratio = account.margin / account.balance
-        
+
         # 更新到字典中
         self.marginRatioDict[account.gatewayName] = ratio
 
@@ -193,7 +193,7 @@ class RmEngine(object):
         if orderReq.volume <= 0:
             self.writeRiskLog(u'委托数量必须大于0')
             return False
-        
+
         if orderReq.volume > self.orderSizeLimit:
             self.writeRiskLog(u'单笔委托数量%s，超过限制%s'
                               %(orderReq.volume, self.orderSizeLimit))
@@ -223,13 +223,13 @@ class RmEngine(object):
             self.writeRiskLog(u'当日%s撤单次数%s，超过限制%s'
                               %(orderReq.symbol, self.orderCancelDict[orderReq.symbol], self.orderCancelLimit))
             return False
-        
+
         # 检查保证金比例（只针对开仓委托）
         if orderReq.offset == OFFSET_OPEN and gatewayName in self.marginRatioDict and self.marginRatioDict[gatewayName] >= self.marginRatioLimit:
             self.writeRiskLog(u'%s接口保证金占比%s，超过限制%s'
                               %(gatewayName, self.marginRatioDict[gatewayName], self.marginRatioLimit))
             return False
-        
+
         # 对于通过风控的委托，增加流控计数
         self.orderFlowCount += 1
 
@@ -291,9 +291,8 @@ class RmEngine(object):
             self.writeRiskLog(u'风险管理功能启动')
         else:
             self.writeRiskLog(u'风险管理功能停止')
-            
+
     #----------------------------------------------------------------------
     def stop(self):
         """停止"""
         self.saveSetting()
-        

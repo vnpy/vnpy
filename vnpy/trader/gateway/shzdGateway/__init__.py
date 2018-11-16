@@ -9,4 +9,3 @@ gatewayName = 'SHZD'
 gatewayDisplayName = u'直达'
 gatewayType = vtConstant.GATEWAYTYPE_INTERNATIONAL
 gatewayQryEnabled = True
-

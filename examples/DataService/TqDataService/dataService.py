@@ -32,7 +32,7 @@ taskList = []   # 下载任务列表
 def generateVtBar(symbol, d):
     """生成K线"""
     bar = VtBarData()
-    
+
     bar.symbol = symbol
     bar.vtSymbol = symbol
     bar.open = d['open']
@@ -44,32 +44,32 @@ def generateVtBar(symbol, d):
     bar.datetime = datetime.fromtimestamp(d['datetime']/1000000000)
     bar.date = bar.datetime.strftime("%Y%m%d")
     bar.time = bar.datetime.strftime("%H:%M:%S")
-    
+
     return bar
 
 #----------------------------------------------------------------------
 def onChart(symbol, seconds):
-    """K线更新处理函数"""    
+    """K线更新处理函数"""
     # 避免重复记录已经完成的任务
     if symbol not in taskList:
-        return 
-    
+        return
+
     serial = api.get_kline_serial(symbol, seconds)
-    
+
     cl = db[symbol]                                                 # 集合
     cl.ensure_index([('datetime', ASCENDING)], unique=True)         # 添加索引
-    
+
     l = serial.values()
     for d in l:
         bar = generateVtBar(symbol, d)
         d = bar.__dict__
         flt = {'datetime': bar.datetime}
         cl.replace_one(flt, d, True)
-    
+
     start = datetime.fromtimestamp(l[0]['datetime']/1000000000)
     end = datetime.fromtimestamp(l[-1]['datetime']/1000000000)
     print(u'合约%s下载完成%s - %s' %(symbol, start, end))
-    
+
     # 移除已经完成的任务
     if symbol in taskList:
         taskList.remove(symbol)
@@ -78,20 +78,20 @@ def onChart(symbol, seconds):
 def downMinuteBarBySymbol(symbol, num):
     """下载某一合约的分钟线数据"""
     api.subscribe_chart(symbol, 60, num, onChart)
-    
+
 #----------------------------------------------------------------------
 def downloadAllMinuteBar(num, symbols):
     """下载所有配置中的合约的分钟线数据"""
     print('-' * 50)
     print(u'开始下载合约分钟线数据')
     print('-' * 50)
-    
+
     # 添加下载任务
     taskList.extend(symbols)
-    
+
     for symbol in symbols:
         downMinuteBarBySymbol(str(symbol), num)
-    
+
     while True:
         sleep(2)
 
@@ -100,8 +100,4 @@ def downloadAllMinuteBar(num, symbols):
             print('-' * 50)
             print(u'合约分钟线数据下载完成')
             print('-' * 50)
-            return       
-    
-
-
-    
+            return

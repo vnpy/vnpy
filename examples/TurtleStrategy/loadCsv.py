@@ -13,11 +13,11 @@ from turtleEngine import DAILY_DB_NAME
 def loadCsv(filename):
     """"""
     symbol = filename.split('.')[0]
-    
+
     mc = MongoClient()
     db = mc[DAILY_DB_NAME]
     collection = db[symbol]
-    
+
     with open(filename) as f:
         r = DictReader(f)
         for d in r:
@@ -29,9 +29,9 @@ def loadCsv(filename):
             bar.low = float(d['low'])
             bar.close = float(d['close'])
             bar.volume= int(d['volume'])
-        
+
             collection.insert(bar.__dict__)
-    
+
 if __name__ == '__main__':
     loadCsv('000300.csv')
     loadCsv('000905.csv')

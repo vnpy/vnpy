@@ -7,7 +7,7 @@ structDict = {}
 #@company 上海量投网络科技有限公司
 #@file QdpFtdcUserApiStruct.h
 #@brief 定义了客户端接口使用的业务数据结构
-#@history 
+#@history
 #//////////////////////////////////////////////////////////////////////
 
 
@@ -1884,8 +1884,3 @@ CQdpFtdcQmdInstrumentStateField["InstrumentID"] = "string"
 #合约交易状态
 CQdpFtdcQmdInstrumentStateField["InstrumentStatus"] = "char"
 structDict['CQdpFtdcQmdInstrumentStateField'] = CQdpFtdcQmdInstrumentStateField
-
-
-
-
-

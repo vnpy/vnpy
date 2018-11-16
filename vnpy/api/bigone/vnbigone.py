@@ -35,38 +35,38 @@ class BigoneRestApi(object):
         """Constructor"""
         self.apiKey = ''
         self.apiSecret = ''
-        
+
         self.active = False
         self.reqid = 0
         self.queue = Queue()
         self.pool = None
         self.sessionDict = {}   # 会话对象字典
-        
+
     #----------------------------------------------------------------------
     def init(self, apiKey, apiSecret):
         """初始化"""
         self.apiKey = str(apiKey)
         self.apiSecret = str(apiSecret)
-        
+
     #----------------------------------------------------------------------
     def start(self, n=10):
         """启动"""
         if self.active:
             return
-        
+
         self.active = True
         self.pool = Pool(n)
         self.pool.map_async(self.run, range(n))
-    
+
     #----------------------------------------------------------------------
     def close(self):
         """关闭"""
         self.active = False
-        
+
         if self.pool:
             self.pool.close()
             self.pool.join()
-    
+
     #----------------------------------------------------------------------
     def addReq(self, method, path, callback, params=None, postdict=None):
         """添加请求"""
@@ -74,13 +74,13 @@ class BigoneRestApi(object):
         req = (method, path, callback, params, postdict, self.reqid)
         self.queue.put(req)
         return self.reqid
-    
+
     #----------------------------------------------------------------------
     def processReq(self, req, i):
         """处理请求"""
         method, path, callback, params, postdict, reqid = req
         url = REST_HOST + path
-        
+
         header = {}
         header['Authorization'] = 'Bearer ' + self.generateSignature()
 
@@ -89,22 +89,22 @@ class BigoneRestApi(object):
             session = self.sessionDict[i]
             resp = session.request(method, url, headers=header, params=params, json=postdict)
             #resp = requests.request(method, url, headers=header, params=params, data=postdict)
-            
+
             code = resp.status_code
             d = resp.json()
-            
+
             if code == 200:
                 callback(d, reqid)
             else:
-                self.onError(code, str(d))    
+                self.onError(code, str(d))
         except Exception as e:
             self.onError(type(e), e.message)
-    
+
     #----------------------------------------------------------------------
     def run(self, i):
         """连续运行"""
         self.sessionDict[i] = requests.Session()
-        
+
         while self.active:
             try:
                 req = self.queue.get(timeout=1)
@@ -118,37 +118,37 @@ class BigoneRestApi(object):
         payload = '{"type":"OpenAPI","sub":"%s","nonce":%s}' %(self.apiKey, time()*1000000000)
         signature = self.jws.encode(payload, self.apiSecret)
         return signature
-    
+
     #----------------------------------------------------------------------
     def onError(self, code, error):
         """错误回调"""
         print('on error')
         print(code, error)
-    
+
     #----------------------------------------------------------------------
     def onData(self, data, reqid):
         """通用回调"""
         print('on data')
         print(data, reqid)
 
-    
+
 
 
 if __name__ == '__main__':
     from datetime import datetime
     from time import sleep
-    
+
     API_KEY = ''
     API_SECRET = ''
-    
+
     # REST测试
     rest = BigoneRestApi()
     rest.init(API_KEY, API_SECRET)
     rest.start(1)
-    
+
     #rest.addReq('GET', '/markets/EOS-BTC/depth', rest.onData)
-    
+
     rest.addReq('GET', '/viewer/orders', rest.onData)
-    
+
 
     input()
