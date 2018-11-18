@@ -83,6 +83,7 @@ EXCHANGE_HUOBI = 'HUOBI'         # 火币比特币交易所
 EXCHANGE_LBANK = 'LBANK'         # LBANK比特币交易所
 EXCHANGE_ZB = 'ZB'		 # 比特币中国比特币交易所
 EXCHANGE_OKEX = 'OKEX'		 # OKEX比特币交易所
+EXCHANGE_OKEXFUTURE = 'OKEXFUTURE'		 # OKEX比特币交易所-期货
 EXCHANGE_BINANCE = "BINANCE"     # 币安比特币交易所
 EXCHANGE_BITFINEX = "BITFINEX"   # Bitfinex比特币交易所
 EXCHANGE_BITMEX = 'BITMEX'       # BitMEX比特币交易所
@@ -107,3 +108,14 @@ GATEWAYTYPE_FUTURES = 'futures'                 # 期货、期权、贵金属
 GATEWAYTYPE_INTERNATIONAL = 'international'     # 外盘
 GATEWAYTYPE_BTC = 'btc'                         # 比特币
 GATEWAYTYPE_DATA = 'data'                       # 数据（非交易）
+
+
+# K线周期类型
+INTERVAL_1M = u'1-Minute'
+INTERVAL_5M = u'5-Minute'
+INTERVAL_15M = u'15-Minute'
+INTERVAL_30M = u'30-Minute'
+INTERVAL_1H = u'1-Hour'
+INTERVAL_4H = u'4-Hour'
+INTERVAL_DAILY = u'Daily'
+INTERVAL_WEEKLY = u'Weekly'

@@ -6,6 +6,7 @@ import ssl
 import hashlib
 import json
 import traceback
+import zlib
 from threading import Thread
 from time import sleep
 
@@ -111,7 +112,8 @@ class OkexApi(object):
         if not self.reconnecting:
             self.reconnecting = True
             
-            self.closeWebsocket()   # 首先关闭之前的连接
+            self.closeWebsocket()           # 首先关闭之前的连接
+            self.heartbeatReceived = True   # 将心跳状态设为正常
             self.initWebsocket()
         
             self.reconnecting = False
@@ -144,7 +146,13 @@ class OkexApi(object):
     #----------------------------------------------------------------------
     def readData(self, evt):
         """解码推送收到的数据"""
-        data = json.loads(evt)
+        # 先解压
+        decompress = zlib.decompressobj(-zlib.MAX_WBITS)
+        inflated = decompress.decompress(evt)
+        inflated += decompress.flush()
+        
+        # 再转换为json
+        data = json.loads(inflated)
         return data
 
     #----------------------------------------------------------------------

@@ -188,19 +188,39 @@ class MainWindow(QtWidgets.QMainWindow):
             action.setIcon(icon)
             
         return action
-    
+
+    #----------------------------------------------------------------------
+    def openApp(self, appModule):
+        """打开一个app，这个app必须是MainEngine.addApp添加过的"""
+        name = appModule.appName
+        return self.openAppByName(name)
+
+    #----------------------------------------------------------------------
+    def openAppByName(self, appName):
+        detail = [i for i in self.appDetailList if i['appName'] == appName][0]
+        return self.openAppByDetail(detail)
+
+    #----------------------------------------------------------------------
+    def openAppByDetail(self, appDetail):
+        """打开一个app
+        :return 返回app的窗口
+        """
+        appName = appDetail['appName']
+        try:
+            self.widgetDict[appName].show()
+        except KeyError:
+            appEngine = self.mainEngine.getApp(appName)
+            self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
+            self.widgetDict[appName].show()
+        return self.widgetDict[appName]
+
     #----------------------------------------------------------------------
     def createOpenAppFunction(self, appDetail):
         """创建打开应用UI的函数"""
+    
         def openAppFunction():
-            appName = appDetail['appName']
-            try:
-                self.widgetDict[appName].show()
-            except KeyError:
-                appEngine = self.mainEngine.getApp(appName)
-                self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
-                self.widgetDict[appName].show()
-                
+            return self.openAppByDetail(appDetail)
+    
         return openAppFunction
         
     #----------------------------------------------------------------------

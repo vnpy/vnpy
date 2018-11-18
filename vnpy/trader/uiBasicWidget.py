@@ -490,6 +490,12 @@ class LogMonitor(BasicMonitor):
         self.initTable()
         self.registerEvent()
 
+    #----------------------------------------------------------------------
+    def updateData(self, data):
+        """"""
+        super(LogMonitor, self).updateData(data)
+        self.resizeRowToContents(0)                 # 调整行高
+
 
 ########################################################################
 class ErrorMonitor(BasicMonitor):

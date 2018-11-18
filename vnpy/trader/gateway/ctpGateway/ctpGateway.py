@@ -108,7 +108,7 @@ class CtpGateway(VtGateway):
     def connect(self):
         """连接"""
         try:
-            f = file(self.filePath)
+            f = open(self.filePath)
         except IOError:
             log = VtLogData()
             log.gatewayName = self.gatewayName
@@ -118,6 +118,7 @@ class CtpGateway(VtGateway):
         
         # 解析json文件
         setting = json.load(f)
+        f.close()
         try:
             userID = str(setting['userID'])
             password = str(setting['password'])
@@ -375,9 +376,33 @@ class CtpMdApi(MdApi):
         tick.askVolume1 = data['AskVolume1']
         
         # 大商所日期转换
-        if tick.exchange is EXCHANGE_DCE:
+        if tick.exchange == EXCHANGE_DCE:
             tick.date = datetime.now().strftime('%Y%m%d')
-        
+
+        # 上交所，SEE，股票期权相关
+        if tick.exchange == EXCHANGE_SSE:
+            tick.bidPrice2 = data['BidPrice2']
+            tick.bidVolume2 = data['BidVolume2']
+            tick.askPrice2 = data['AskPrice2']
+            tick.askVolume2 = data['AskVolume2']
+
+            tick.bidPrice3 = data['BidPrice3']
+            tick.bidVolume3 = data['BidVolume3']
+            tick.askPrice3 = data['AskPrice3']
+            tick.askVolume3 = data['AskVolume3']
+
+            tick.bidPrice4 = data['BidPrice4']
+            tick.bidVolume4 = data['BidVolume4']
+            tick.askPrice4 = data['AskPrice4']
+            tick.askVolume4 = data['AskVolume4']
+
+            tick.bidPrice5 = data['BidPrice5']
+            tick.bidVolume5 = data['BidVolume5']
+            tick.askPrice5 = data['AskPrice5']
+            tick.askVolume5 = data['AskVolume5']
+
+            tick.date = data['TradingDay']
+
         self.gateway.onTick(tick)
         
     #---------------------------------------------------------------------- 
@@ -733,6 +758,8 @@ class CtpTdApi(TdApi):
             pos.ydPosition = data['Position'] - data['TodayPosition']
             
         # 计算成本
+        if pos.symbol not in self.symbolSizeDict:
+            return
         size = self.symbolSizeDict[pos.symbol]
         cost = pos.price * pos.position * size
         
@@ -1431,7 +1458,7 @@ class CtpTdApi(TdApi):
         
         req['InstrumentID'] = orderReq.symbol
         req['LimitPrice'] = orderReq.price
-        req['VolumeTotalOriginal'] = orderReq.volume
+        req['VolumeTotalOriginal'] = int(orderReq.volume)
         
         # 下面如果由于传入的类型本接口不支持，则会返回空字符串
         req['OrderPriceType'] = priceTypeMap.get(orderReq.priceType, '')
@@ -1459,7 +1486,7 @@ class CtpTdApi(TdApi):
         if orderReq.priceType == PRICETYPE_FOK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
             req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
-            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_CV']        
+            req['VolumeCondition'] = int(defineDict['THOST_FTDC_VC_CV'])
         
         self.reqOrderInsert(req, self.reqID)
         

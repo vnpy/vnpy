@@ -1,10 +1,12 @@
 # encoding: UTF-8
 
-import time
 from logging import INFO
 
-from vnpy.trader.vtConstant import (EMPTY_STRING, EMPTY_UNICODE, 
-                                    EMPTY_FLOAT, EMPTY_INT)
+import time
+from datetime import datetime
+
+from vnpy.trader.language import constant
+from vnpy.trader.vtConstant import (EMPTY_FLOAT, EMPTY_INT, EMPTY_STRING, EMPTY_UNICODE)
 
 
 ########################################################################
@@ -73,8 +75,37 @@ class VtTickData(VtBaseData):
         self.askVolume2 = EMPTY_INT
         self.askVolume3 = EMPTY_INT
         self.askVolume4 = EMPTY_INT
-        self.askVolume5 = EMPTY_INT         
+        self.askVolume5 = EMPTY_INT
 
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway, symbol, exchange,
+                          lastPrice, lastVolume,
+                          highPrice, lowPrice,
+                          openPrice=EMPTY_FLOAT,
+                          openInterest=EMPTY_INT,
+                          upperLimit=EMPTY_FLOAT,
+                          lowerLimit=EMPTY_FLOAT):
+        tick = VtTickData()
+        tick.gatewayName = gateway.gatewayName
+        tick.symbol = symbol
+        tick.exchange = exchange
+        tick.vtSymbol = symbol + '.' + exchange
+    
+        tick.lastPrice = lastPrice
+        tick.lastVolume = lastVolume
+        tick.openInterest = openInterest
+        tick.datetime = datetime.now()
+        tick.date = tick.datetime.strftime('%Y%m%d')
+        tick.time = tick.datetime.strftime('%H:%M:%S')
+    
+        tick.openPrice = openPrice
+        tick.highPrice = highPrice
+        tick.lowPrice = lowPrice
+        tick.upperLimit = upperLimit
+        tick.lowerLimit = lowerLimit
+        return tick
+    
     
 ########################################################################
 class VtBarData(VtBaseData):
@@ -99,12 +130,16 @@ class VtBarData(VtBaseData):
         self.datetime = None                # python的datetime时间对象
         
         self.volume = EMPTY_INT             # 成交量
-        self.openInterest = EMPTY_INT       # 持仓量    
+        self.openInterest = EMPTY_INT       # 持仓量  
+        self.interval = EMPTY_UNICODE       # K线周期
     
 
 ########################################################################
 class VtTradeData(VtBaseData):
-    """成交数据类"""
+    """
+    成交数据类
+    一般来说，一个VtOrderData可能对应多个VtTradeData：一个订单可能多次部分成交
+    """
 
     #----------------------------------------------------------------------
     def __init__(self):
@@ -115,8 +150,8 @@ class VtTradeData(VtBaseData):
         self.symbol = EMPTY_STRING              # 合约代码
         self.exchange = EMPTY_STRING            # 交易所代码
         self.vtSymbol = EMPTY_STRING            # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
-        
-        self.tradeID = EMPTY_STRING             # 成交编号
+
+        self.tradeID = EMPTY_STRING  # 成交编号 gateway内部自己生成的编号
         self.vtTradeID = EMPTY_STRING           # 成交在vt系统中的唯一编号，通常是 Gateway名.成交编号
         
         self.orderID = EMPTY_STRING             # 订单编号
@@ -128,7 +163,49 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT                # 成交价格
         self.volume = EMPTY_INT                 # 成交数量
         self.tradeTime = EMPTY_STRING           # 成交时间
-   
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway, symbol, exchange, tradeID, orderID, direction, tradePrice, tradeVolume):
+        trade = VtTradeData()
+        trade.gatewayName = gateway.gatewayName
+        trade.symbol = symbol
+        trade.exchange = exchange
+        trade.vtSymbol = symbol + '.' + exchange
+
+        trade.orderID = orderID
+        trade.vtOrderID = trade.gatewayName + '.' + trade.tradeID
+        
+        trade.tradeID = tradeID
+        trade.vtTradeID = trade.gatewayName + '.' + tradeID
+        
+        trade.direction = direction
+        trade.price = tradePrice
+        trade.volume = tradeVolume
+        trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+        return trade
+    
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromOrderData(order,
+                            tradeID,
+                            tradePrice,
+                            tradeVolume):  # type: (VtOrderData, str, float, float)->VtTradeData
+        trade = VtTradeData()
+        trade.gatewayName = order.gatewayName
+        trade.symbol = order.symbol
+        trade.vtSymbol = order.vtSymbol
+        
+        trade.orderID = order.orderID
+        trade.vtOrderID = order.vtOrderID
+        trade.tradeID = tradeID
+        trade.vtTradeID = trade.gatewayName + '.' + tradeID
+        trade.direction = order.direction
+        trade.price = tradePrice
+        trade.volume = tradeVolume
+        trade.tradeTime = datetime.now().strftime('%H:%M:%S')
+        return trade
+    
 
 ########################################################################
 class VtOrderData(VtBaseData):
@@ -142,10 +219,10 @@ class VtOrderData(VtBaseData):
         # 代码编号相关
         self.symbol = EMPTY_STRING              # 合约代码
         self.exchange = EMPTY_STRING            # 交易所代码
-        self.vtSymbol = EMPTY_STRING            # 合约在vt系统中的唯一代码，通常是 合约代码.交易所代码
+        self.vtSymbol = EMPTY_STRING  # 索引，统一格式：f"{symbol}.{exchange}"
         
-        self.orderID = EMPTY_STRING             # 订单编号
-        self.vtOrderID = EMPTY_STRING           # 订单在vt系统中的唯一编号，通常是 Gateway名.订单编号
+        self.orderID = EMPTY_STRING             # 订单编号 gateway内部自己生成的编号
+        self.vtOrderID = EMPTY_STRING  # 索引，统一格式：f"{gatewayName}.{orderId}"
         
         # 报单相关
         self.direction = EMPTY_UNICODE          # 报单方向
@@ -162,6 +239,39 @@ class VtOrderData(VtBaseData):
         self.frontID = EMPTY_INT                # 前置机编号
         self.sessionID = EMPTY_INT              # 连接编号
 
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway,                          # type: VtGateway
+                          orderId,                          # type: str
+                          symbol,                           # type: str
+                          exchange,                         # type: str
+                          price,                            # type: float
+                          volume,                           # type: int
+                          direction,                        # type: str
+                          offset=EMPTY_UNICODE,             # type: str
+                          tradedVolume=EMPTY_INT,           # type: int
+                          status=constant.STATUS_UNKNOWN,   # type: str
+                          orderTime=EMPTY_UNICODE,          # type: str
+                          cancelTime=EMPTY_UNICODE,         # type: str
+                          ):                                # type: (...)->VtOrderData
+        vtOrder = VtOrderData()
+        vtOrder.gatewayName = gateway.gatewayName
+        vtOrder.symbol = symbol
+        vtOrder.exchange = exchange
+        vtOrder.vtSymbol = symbol + '.' + exchange
+        vtOrder.orderID = orderId
+        vtOrder.vtOrderID = gateway.gatewayName + '.' + orderId
+
+        vtOrder.direction = direction
+        vtOrder.offset = offset
+        vtOrder.price = price
+        vtOrder.totalVolume = volume
+        vtOrder.tradedVolume = tradedVolume
+        vtOrder.status = status
+        vtOrder.orderTime = orderTime
+        vtOrder.cancelTime = cancelTime
+        return vtOrder
+    
     
 ########################################################################
 class VtPositionData(VtBaseData):
@@ -185,6 +295,33 @@ class VtPositionData(VtBaseData):
         self.vtPositionName = EMPTY_STRING      # 持仓在vt系统中的唯一代码，通常是vtSymbol.方向
         self.ydPosition = EMPTY_INT             # 昨持仓
         self.positionProfit = EMPTY_FLOAT       # 持仓盈亏
+
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway,                      # type: VtGateway
+                          exchange,                     # type: str
+                          symbol,                       # type: str
+                          direction,                    # type: str
+                          position,                     # type: int
+                          frozen=EMPTY_INT,             # type: int
+                          price=EMPTY_FLOAT,            # type: float
+                          yestordayPosition=EMPTY_INT,  # type: int
+                          profit=EMPTY_FLOAT            # type: float
+                          ):                            # type: (...)->VtPositionData
+        vtPosition = VtPositionData()
+        vtPosition.gatewayName = gateway.gatewayName
+        vtPosition.symbol = symbol
+        vtPosition.exchange = exchange
+        vtPosition.vtSymbol = symbol + '.' + exchange
+    
+        vtPosition.direction = direction
+        vtPosition.position = position
+        vtPosition.frozen = frozen
+        vtPosition.price = price
+        vtPosition.vtPositionName = vtPosition.vtSymbol + '.' + direction
+        vtPosition.ydPosition = yestordayPosition
+        vtPosition.positionProfit = profit
+        return vtPosition
 
 
 ########################################################################
@@ -263,7 +400,53 @@ class VtContractData(VtBaseData):
         self.underlyingSymbol = EMPTY_STRING    # 标的物合约代码
         self.optionType = EMPTY_UNICODE         # 期权类型
         self.expiryDate = EMPTY_STRING          # 到期日
+        
+    #----------------------------------------------------------------------
+    @staticmethod
+    def createFromGateway(gateway,
+                          exchange,
+                          symbol,
+                          productClass,
+                          size,
+                          priceTick,
+                          name=None,
+                          strikePrice=EMPTY_FLOAT,
+                          underlyingSymbol=EMPTY_STRING,
+                          optionType=EMPTY_UNICODE,
+                          expiryDate=EMPTY_STRING
+                          ):
+        d = VtContractData()
+        d.gatewayName = gateway.gatewayName
+        d.symbol = symbol
+        d.exchange = exchange
+        d.vtSymbol = symbol + '.' + exchange
+        d.productClass = productClass
+        d.size = size
+        d.priceTick = priceTick
+        if name is None:
+            d.name = d.symbol
+        d.strikePrice = strikePrice
+        d.underlyingSymbol = underlyingSymbol
+        d.optionType = optionType
+        d.expiryDate = expiryDate
+        return d
+            
 
+########################################################################
+class VtHistoryData(object):
+    """K线时间序列数据"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.vtSymbol = EMPTY_STRING    # vt系统代码
+        self.symbol = EMPTY_STRING      # 代码
+        self.exchange = EMPTY_STRING    # 交易所
+        
+        self.interval = EMPTY_UNICODE   # K线时间周期
+        self.queryID = EMPTY_STRING     # 查询号
+        self.barList = []               # VtBarData列表
+    
 
 ########################################################################
 class VtSubscribeReq(object):
@@ -328,6 +511,22 @@ class VtCancelOrderReq(object):
 
 
 ########################################################################
+class VtHistoryReq(object):
+    """查询历史数据时传入的对象类"""
+
+    #----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.symbol = EMPTY_STRING              # 代码
+        self.exchange = EMPTY_STRING            # 交易所
+        self.vtSymbol = EMPTY_STRING            # VT合约代码
+        
+        self.interval = EMPTY_UNICODE           # K线周期
+        self.start = None                       # 起始时间datetime对象
+        self.end = None                         # 结束时间datetime对象
+    
+
+########################################################################
 class VtSingleton(type):
     """
     单例，应用方式:静态变量 __metaclass__ = Singleton
@@ -342,6 +541,3 @@ class VtSingleton(type):
             cls._instances[cls] = super(VtSingleton, cls).__call__(*args, **kwargs)
             
         return cls._instances[cls]
-    
-    
-    

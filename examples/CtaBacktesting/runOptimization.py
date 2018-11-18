@@ -48,6 +48,7 @@ if __name__ == '__main__':
     #engine.runOptimization(AtrRsiStrategy, setting)            
     
     # 多进程优化，耗时：89秒
-    engine.runParallelOptimization(AtrRsiStrategy, setting)
+    result = engine.runParallelOptimization(AtrRsiStrategy, setting)
+    engine.outputOptimizeResult(result)
     
     print(u'耗时：%s' %(time.time()-start))

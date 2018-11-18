@@ -1,7 +1,15 @@
 #!/bin/bash
 
-#Build ctp/lts/ib api
+function check_result() {
+    if [ $? -ne 0 ]; then
+        echo " "
+        echo "do command failed for $1 !!!"
+        echo " "
+        exit 1
+    fi
+}
 
+#Build ctp/lts/ib api
 echo "是否要安装'CTP'接口? (Do you need 'CTP' interface?)"
 read -p "Enter [y]n: " var1
 var1=${var1:-y}

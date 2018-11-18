@@ -109,6 +109,13 @@ class VtGateway(object):
         self.eventEngine.put(event1)        
     
     #----------------------------------------------------------------------
+    def onHistory(self, history):
+        """历史数据推送"""
+        event = Event(EVENT_HISTORY)
+        event.dict_['data'] = history
+        self.eventEngine.put(event)
+    
+    #----------------------------------------------------------------------
     def connect(self):
         """连接"""
         pass
@@ -136,6 +143,11 @@ class VtGateway(object):
     #----------------------------------------------------------------------
     def qryPosition(self):
         """查询持仓"""
+        pass
+    
+    #----------------------------------------------------------------------
+    def qryHistory(self, historyReq):
+        """查询历史"""
         pass
     
     #----------------------------------------------------------------------
