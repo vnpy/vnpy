@@ -601,7 +601,7 @@ class DayBar(XBar) :
                     self.bar.high = bar.high
                     self.bar.low = bar.low            
                     
-                    self.bar.datetime = bar.datetime.strftime('%Y%m%d:%H:%M')    # 以第一根分钟K线的开始时间戳作为day线的时间戳
+                    self.bar.datetime = bar.datetime.replace(second=0, microsecond=0)    # 以第一根分钟K线的开始时间戳作为day线的时间戳
                     self.bar.date = bar.datetime.strftime('%Y%m%d')
             # 累加老K线
             else:
