@@ -24,6 +24,11 @@ class BarGenerator(object):
 
     How to use it:
 
+        To instantiate the class, call the constructor BarGenerator(onMinBar=None, onTick=None, onSecBar=None, onDayBar=None).  
+    The optional args are to specify a callback function at a certain time frame.  If it's called simply as BarGenerator(onBar),
+    then by default, the the callback specified is on the 1-minute bars.  If a callback function is specified at the instatiation,
+    then there is no need to call the additional functions to specify the callback.  Otherwise, operations will be redundant.
+
         To register your callback on the tick level, call addOnTickCallback to pass in the callback function.
 
         To require the generation of second bars or to register you callback on the second bars, call requireSecondBar 
@@ -61,7 +66,7 @@ class BarGenerator(object):
     """
 
     #----------------------------------------------------------------------
-    def __init__(self, onMinBar=None, onSecBar=None, onDayBar=None) : 
+    def __init__(self, onMinBar=None, onTick=None, onSecBar=None, onDayBar=None) : 
         """Constructor"""
 
         self.secBar = None
@@ -80,6 +85,9 @@ class BarGenerator(object):
             self.secBar._addResampleCB(self.minBar.updateFromSecond)
 
         self.onTickList = []
+        if onTick :
+            self.addOnTickCallback(onTick)
+
         self.xsecBarDict = {}
         self.xminBarDict = {}
 
