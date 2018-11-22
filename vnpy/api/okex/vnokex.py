@@ -149,13 +149,16 @@ class OkexApi(object):
             self.thread.join()
 
     #----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
+    def onMessage(self, *args):
         """
         信息推送事件
         :param ws:  接口
         :param evt: 事件
         :return:
         """
+        evt = None
+        if len(args) == 2:
+            evt = args[-1]
         print(u'vnokex.onMessage:{}'.format(evt))
         
     #----------------------------------------------------------------------
@@ -572,7 +575,7 @@ class WsFuturesApi(object):
         print('OkexContractApi.onClose')
 
     # ----------------------------------------------------------------------
-    def onOpen(self, ws):
+    def onOpen(self, *args):
         """接口打开"""
         print('OkexContractApi.onOpen')
 

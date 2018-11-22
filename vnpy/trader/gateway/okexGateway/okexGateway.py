@@ -103,10 +103,11 @@ class OkexGateway(VtGateway):
 
         # 解析json文件
         setting = json.load(f)
+        trace = False
         try:
             self.apiKey = str(setting['apiKey'])
             self.secretKey = str(setting['secretKey'])
-            trace = setting['trace']
+            trace = setting.get('trace',False)
             self.leverage = setting.get('leverage', 1)
             spot_connect = setting['spot_connect']
             futures_connect = setting['futures_connect']
@@ -430,13 +431,16 @@ class OkexSpotApi(WsSpotApi):
     '''
 
     # ----------------------------------------------------------------------
-    def onMessage(self, ws, evt):
+    def onMessage(self, *args):
         """
         响应信息处理，包括心跳响应、请求响应、数据推送
         :param ws: websocket接口
         :param evt: 消息体
         :return:
         """
+        if len(args)==0:
+            return
+        evt = args[-1]
         # str => json
         decmp_evt = self.inflate(evt)
         ws_data = self.readData(decmp_evt)
@@ -613,7 +617,7 @@ class OkexSpotApi(WsSpotApi):
         #        self.spotOrderInfo(symbol_pair, orderId)
 
     # ----------------------------------------------------------------------
-    def onOpen(self, ws):
+    def onOpen(self, *args):
         """
         ws连接成功事件回调函数
         :param ws:
@@ -2529,20 +2533,19 @@ h_this_week_usd'}
                 pos.direction = DIRECTION_NET
                 self.gateway.onPosition(pos)
 
-            for contract in t_contracts:
-                # 保证金
-                account.margin += contract.get('bond',0.0)
-                # 平仓盈亏
-                account.closeProfit += contract.get('profit',0.0)
-                # 持仓盈亏
-                account.positionProfit += contract.get('unprofit',0.0)
+                for contract in t_contracts:
+                    # 保证金
+                    account.margin += contract.get('bond',0.0)
+                    # 平仓盈亏
+                    account.closeProfit += contract.get('profit',0.0)
+                    # 持仓盈亏
+                    account.positionProfit += contract.get('unprofit',0.0)
 
+                    if account.balance > 0 or account.available > 0:
+                        for contractType in CONTRACT_TYPE:
+                            self.query_future_position_4fix(symbol=symbol, contractType=contractType)
 
-                if account.balance > 0 or account.available > 0:
-                    for contractType in CONTRACT_TYPE:
-                        self.query_future_position_4fix(symbol=symbol, contractType=contractType)
-
-                self.gateway.onAccount(account)
+                    self.gateway.onAccount(account)
 
     def query_future_position(self, symbol, contractType, leverage):
         """全仓模式下，查询持仓信息"""
