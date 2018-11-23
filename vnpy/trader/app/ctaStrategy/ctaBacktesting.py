@@ -315,7 +315,7 @@ class BacktestingEngine(object):
             if d:
                 self.output(u'有待测试参数不在策略参数列表内')
                 self.output(' '.join(d))
-                assert d == False
+                assert d == []
             
         self.strategy = strategyClass(self, setting)
         self.strategy.name = self.strategy.className
