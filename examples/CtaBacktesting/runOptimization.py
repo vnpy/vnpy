@@ -36,7 +36,7 @@ if __name__ == '__main__':
     setting = OptimizationSetting()                 # 新建一个优化任务设置对象
     setting.setOptimizeTarget('capital')            # 设置优化排序的目标是策略净盈利
     setting.addParameter('atrLength', 12, 20, 2)    # 增加第一个优化参数atrLength，起始12，结束20，步进2
-    setting.addParameter('atrMaLength', 20, 30, 5)        # 增加第二个优化参数atrMa，起始20，结束30，步进5
+    setting.addParameter('atrMaLength', 20, 30, 5)        # 增加第二个优化参数atrMaLength，起始20，结束30，步进5
     setting.addParameter('rsiLength', 5)            # 增加一个固定数值的参数
     
     # 性能测试环境：I7-3770，主频3.4G, 8核心，内存16G，Windows 7 专业版
