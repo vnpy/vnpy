@@ -298,6 +298,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         def connect():
+            r = False
             try:
                 r = self.mainEngine.connect(gatewayName)
             except:

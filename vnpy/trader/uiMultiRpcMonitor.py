@@ -1,21 +1,19 @@
 # encoding: UTF-8
 
-'''
-多RPC监控界面组件
-Author: IncenseLee
 
-设计思路：
-1、单一RPC监控组件，包括：
-    1）连接
-    2）服务端状态监控（是否运行，gw名称，连接状态；操作：停止服务端，停止gw连接，启动gw连接）
-    3）服务端策略状态监控（策略名称，ValueMonitor，信号。操作：启动策略，停止策略，初始化策略，强制初始化策略，特殊操作。。）
-    4）服务器端Warning\Error\Nofification\Critical Log
-2、多RPC监控容器，包括：
-    1）从本地VT_Setting读取服务端连接信息。进行初始化和连接。
-    2）订阅相应Event
-    
-'''
-
+#多RPC监控界面组件
+#Author: IncenseLee
+#
+#设计思路：
+#1、单一RPC监控组件，包括：
+#    1）连接
+#    2）服务端状态监控（是否运行，gw名称，连接状态；操作：停止服务端，停止gw连接，启动gw连接）
+#    3）服务端策略状态监控（策略名称，ValueMonitor，信号。操作：启动策略，停止策略，初始化策略，强制初始化策略，特殊操作。。）
+#    4）服务器端Warning\Error\Nofification\Critical Log
+#2、多RPC监控容器，包括：
+#    1）从本地VT_Setting读取服务端连接信息。进行初始化和连接。
+#    2）订阅相应Event
+#
 
 import os
 import sys
@@ -90,12 +88,15 @@ class StrategyMonitorWidget(QtWidgets.QGroupBox):
         btnStopStrategy.clicked.connect(self.stop_strategy)
         btnForceInitStrategy = QtWidgets.QPushButton(u'ForceInit')
         btnForceInitStrategy.clicked.connect(self.force_init_strategy)
+        btnDispatchOutStrategy = QtWidgets.QPushButton(u'Dispatch Out')
+        btnDispatchOutStrategy.clicked.connect(self.remove_strategy)
 
         hbox1 = QtWidgets.QHBoxLayout()
         hbox1.addWidget(btnInitStrategy)
         hbox1.addWidget(btnStartStrategy)
         hbox1.addWidget(btnStopStrategy)
         hbox1.addWidget(btnForceInitStrategy)
+        #hbox1.addWidget(btnDispatchOutStrategy)
         hbox1.addStretch()
 
         # 策略的运行数据表
@@ -128,6 +129,14 @@ class StrategyMonitorWidget(QtWidgets.QGroupBox):
         if self.mainEngine:
             self.mainEngine.initStrategy(self.name, force=True)
 
+    def remove_strategy(self):
+        if self.mainEngine and hasattr(self.mainEngine,'removeStrategy'):
+            print('call removeStrategy({})'.format(self.name))
+            self.mainEngine.removeStrategy(self.name)
+        else:
+            print('cant not call removeStrategy',file=sys.stderr)
+
+
 class CtaEngineMonitorWidget(QtWidgets.QWidget):
     """RPC 服务端CTA引擎监控组件
     {策略名称，ValueMonitor；操作：启动策略，停止策略，初始化策略，强制初始化策略，特殊操作。。）}
@@ -146,23 +155,27 @@ class CtaEngineMonitorWidget(QtWidgets.QWidget):
 
         self.initUi()
         self.initVarMonitors = False
+        self.monitor_vbox = None
 
     def setMainEngine(self,mainEngine):
         self.mainEngine = mainEngine
 
     def initUi(self):
-        btnLoadStrategies = QtWidgets.QPushButton(u'Load All Strategies')
+
         btnStartStrategies = QtWidgets.QPushButton(u'Start All Strategies')
         btnStopStrategies = QtWidgets.QPushButton(u'Stop All Strategies')
+        btnAddStrategy =  QtWidgets.QPushButton(u'Add Strategy')
 
-        btnLoadStrategies.clicked.connect(self.load_all_strategies)
+
         btnStartStrategies.clicked.connect(self.start_all_strategies)
         btnStopStrategies.clicked.connect(self.stop_all_strategies)
+        btnAddStrategy.clicked.connect(self.add_new_strategy)
 
         hbox1 = QtWidgets.QHBoxLayout()
-        hbox1.addWidget(btnLoadStrategies)
+
         hbox1.addWidget(btnStartStrategies)
         hbox1.addWidget(btnStopStrategies)
+        #hbox1.addWidget(btnAddStrategy)
         hbox1.addStretch()
 
         self.vbox = QtWidgets.QVBoxLayout()
@@ -171,15 +184,65 @@ class CtaEngineMonitorWidget(QtWidgets.QWidget):
 
         self.setLayout(self.vbox)
 
-    def load_all_strategies(self):
-        if self.mainEngine:
-           pass
 
     def start_all_strategies(self):
-        pass
+        """
+        启动调度服务器内所有运行中的策略
+        :return:
+        """
+        if self.mainEngine and hasattr(self.mainEngine, 'startStrategy'):
+            for strategy_name in self.strategy_monitors.keys():
+                try:
+                    self.mainEngine.startStrategy(strategy_name)
+                except Exception as ex:
+                    print(u'调用启动{}策略时发生异常:{},{}'.format(strategy_name, str(ex), traceback.format_exc()))
+                    continue
 
     def stop_all_strategies(self):
-        pass
+        """
+        停止调度服务器内所有运行中的策略
+        :return:
+        """
+        if self.mainEngine and hasattr(self.mainEngine,'stopStrategy'):
+            for strategy_name in self.strategy_monitors.keys():
+                try:
+                    self.mainEngine.stopStrategy(strategy_name)
+                except Exception as ex:
+                    print(u'调用停止{}策略时发生异常:{},{}'.format(strategy_name,str(ex), traceback.format_exc()))
+                    continue
+
+    def add_new_strategy(self):
+        """
+        添加新的cta策略配置到运行中的调度服务器
+        :return:
+        """
+        value, ok = QtWidgets.QInputDialog.getMultiLineText(self, "输入CTA策略设置", "ditc结构", "{\n\n\n}")
+        if not ok:
+            return
+
+        if len(value) == 0:
+            return
+
+        cta_setting = None
+        try:
+            cta_setting = json.loads(value)
+        except Exception as ex:
+            print(u'{}{}'.format(str(ex),traceback.format_exc()),file=sys.stderr)
+            return
+
+        if not isinstance(cta_setting, dict):
+            print(u'输入得不是dict结构',file=sys.stderr)
+            return
+
+        if cta_setting.get('name',None) == None or cta_setting.get('className',None) == None:
+            print(u'输入设置里面缺少name/className', file=sys.stderr)
+            return
+
+        if self.mainEngine and hasattr(self.mainEngine, 'addStrategy'):
+            print('call addStrategy({})'.format(cta_setting))
+            self.mainEngine.addStrategy(cta_setting)
+        else:
+            print('cant not call addStrategy:{}'.format(cta_setting), file=sys.stderr)
 
     def updateStatus(self, status_dict):
         """更新状态数据"""
@@ -188,16 +251,16 @@ class CtaEngineMonitorWidget(QtWidgets.QWidget):
 
         if not self.initVarMonitors:
             w = QtWidgets.QWidget()
-            vbox = QtWidgets.QVBoxLayout()
-            for k, v in status_dict.items():
+            self.monitor_vbox = QtWidgets.QVBoxLayout()
+
+            strategy_names = status_dict.keys()
+            sorted_strategy_names = sorted(strategy_names)
+            for k in sorted_strategy_names:
                 monitor = StrategyMonitorWidget(name=k, mainEngine=self.mainEngine, parent=self)
-                #height = 65
-                #monitor.setFixedHeight(height)
-
                 self.strategy_monitors[k] = monitor
-                vbox.addWidget(monitor)
+                self.monitor_vbox.addWidget(monitor)
 
-            w.setLayout(vbox)
+            w.setLayout(self.monitor_vbox)
             self.scrollArea.setWidget(w)
             self.initVarMonitors = True
 
@@ -205,6 +268,13 @@ class CtaEngineMonitorWidget(QtWidgets.QWidget):
             if k in self.strategy_monitors:
                 monitor = self.strategy_monitors[k]
                 monitor.updateStatus(v)
+            else:
+                monitor = StrategyMonitorWidget(name=k, mainEngine=self.mainEngine, parent=self)
+                self.strategy_monitors[k] = monitor
+                if self.monitor_vbox is not None:
+                    self.monitor_vbox.addWidget(monitor)
+                monitor.updateStatus(v)
+
 
 class ServerInfoWidget(QtWidgets.QWidget):
     """服务器信息显示组件
@@ -250,12 +320,11 @@ class AccountMonitorWidget(QtWidgets.QWidget):
 
 ########################################################################
 class RpcServerMonitor(QtWidgets.QWidget):
-    """RPC服务端监控容器组件
-    1）连接服务端，gw名称，
-    2）连接状态；操作：停止服务端，停止gw连接，启动gw连接）
-    3）CtaEngineMonitorWidget
-    4）RpcEventLogMonitor Warning\Error\Nofification\Critical Log
-    """
+    #RPC服务端监控容器组件
+    #1）连接服务端，gw名称，
+    #2）连接状态；操作：停止服务端，停止gw连接，启动gw连接）
+    #3）CtaEngineMonitorWidget
+    #4）RpcEventLogMonitor Warning\Error\Nofification\Critical Log
 
     signal = QtCore.Signal(type(Event()))
 
@@ -274,7 +343,7 @@ class RpcServerMonitor(QtWidgets.QWidget):
         self.rpc_client = None
         self.mainEngine = None
 
-        self.server_info_monitor= None
+        self.server_info_monitor = None
 
         self.initUi()
     # ----------------------------------------------------------------------
@@ -429,7 +498,6 @@ class RpcServerMonitor(QtWidgets.QWidget):
             self.updateCritical(event)
             return
 
-
     def updateStatus(self,event):
         """更新Status"""
         status_dict = event.dict_['data']
@@ -553,15 +621,16 @@ class MultiRpcServerManager(QtWidgets.QMainWindow):
         except Exception as ex:
             traceback.print_exc()
             QtWidgets.QMessageBox.warning(self, 'Exception',u'Load vt_Setting.json Exception', QtWidgets.QMessageBox.Cancel,
-                                          QtWidgets.QMessageBox.NoButton, QtGui.QMessageBox.NoButton)
+                                          QtWidgets.QMessageBox.NoButton)
 
             return
 
 
     def closeEvent(self, event):
         """关闭窗口时的事件"""
+        self.mdi.closeAllSubWindows()
+        event.accept()
         sys.exit(0)
-
 
 def main():
 

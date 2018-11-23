@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-print('load vtEngine.py')
+print(u'启动load vtEngine.py')
 
 import shelve
 from collections import OrderedDict

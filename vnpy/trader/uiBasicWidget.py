@@ -1182,14 +1182,18 @@ class TradingWidget(QtWidgets.QFrame):
             pos = cell.data
             symbol = pos.symbol
 
+            # 拆分 合约.交易所接口
             symbol_split_list = symbol.split('.')
-            if len(symbol_split_list)==2:
-                exchange_name = symbol_split_list[-1]
-                if exchange_name in [EXCHANGE_OKEX,EXCHANGE_BINANCE,EXCHANGE_HUOBI,EXCHANGE_GATEIO]:
-                    symbol = symbol_split_list[0]
 
+            if len(symbol_split_list)==2:
+                # 交易所
+                exchange_name = symbol_split_list[-1]
+
+                # 数字货币类交易所
+                if exchange_name in [EXCHANGE_OKEX,EXCHANGE_BINANCE,EXCHANGE_HUOBI,EXCHANGE_GATEIO]:
                     symbol_pair_list = symbol.split('_')
                     if len(symbol_pair_list) ==1:
+                        # 获取合约
                         if symbol.lower() == 'usdt':
                             return
                         symbol = symbol_pair_list[0] + '_' + 'usdt'+'.'+symbol_split_list[-1]
