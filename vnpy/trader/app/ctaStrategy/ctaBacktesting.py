@@ -314,7 +314,7 @@ class BacktestingEngine(object):
             d = [c for c in list(setting.keys()) if c not in strategyClass.paramList]
             if d:
                 self.output(u'有待测试参数不在策略参数列表内')
-                print(d)
+                self.output(' '.join(d))
                 assert d == False
             
         self.strategy = strategyClass(self, setting)
