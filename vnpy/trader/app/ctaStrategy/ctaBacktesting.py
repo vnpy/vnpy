@@ -310,6 +310,13 @@ class BacktestingEngine(object):
         初始化策略
         setting是策略的参数设置，如果使用类中写好的默认设置则可以不传该参数
         """
+        if setting:
+            d = [c for c in list(setting.keys()) if c not in strategyClass.paramList]
+            if d:
+                print(u'有待测试参数不在策略参数列表内')
+                print(d)
+                assert d == False
+            
         self.strategy = strategyClass(self, setting)
         self.strategy.name = self.strategy.className
     
