@@ -56,8 +56,14 @@ class BarGenerator(object):
     It's necessary to set resampleDay to False, for instance, if you also plan to load day bars from DB.  If you set it to False,
     then you need to call setMinBarResample and/or setDayBarResample afterwards to turn resampling on for live execution.
 
-        After registering all callbacks, you need to call updateTick of this class from one of your tick processing functions.
-    And all the bar generations and callbacks start from there.
+        After registering all callbacks, you need to call an entry function in this class to get things going.  Generally, 
+    tick data are the most fundamental data a trader deals with.  In that case, you need to call updateTick of this class 
+    from one of your tick processing functions.  In cases where you are not dealing with tick data but with 1-minute bars
+    (in backtesting for instance) as the most fundamental data, then instead of calling updateTick as the entry function, 
+    you need to call updateWithMinuteBar as the entry function from your 1-minute-bar processing function, and make sure 
+    that you do not register that function as a callback!  Likewise, if you are dealing with 1-second bars, the entry function 
+    is updateWithSecondBar.  For day bars, the entry function is updateWithDayBar.  After one of the entry functions is called, 
+    all the bar generations and callbacks will start from there.
 
         ** As a special note about a procedure change from the previous version, calling updateBar of this class is no longer needed
     for normal operations because all bars are automatically updated.  Calling it from an already registered callback function 
@@ -204,6 +210,18 @@ class BarGenerator(object):
         else :
             if self.minBar :
                 self.minBar.updateFromTick(tick)
+
+    def updateWithSecondBar(self, bar) :
+        if self.secBar :
+            self.secBar.updateAllOnBar(bar)
+
+    def updateWithMinuteBar(self, bar) :
+        if self.minBar :
+            self.minBar.updateAllOnBar(bar)
+
+    def updateWithDayBar(self, bar) :
+        if self.dayBar :
+            self.dayBar.updateAllOnBar(bar)
 
 
     def updateSubMinBars(self, bar) :
