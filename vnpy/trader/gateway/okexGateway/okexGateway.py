@@ -21,6 +21,7 @@ from time import sleep
 from vnpy.api.okex import OkexSpotApi, OKEX_SPOT_HOST
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getJsonPath
+from vnpy.trader import vtConstant
 
 # 价格类型映射
 # 买卖类型： 限价单（buy/sell） 市价单（buy_market/sell_market）
@@ -45,13 +46,15 @@ class OkexGateway(VtGateway):
     """OKEX交易接口"""
     
     #----------------------------------------------------------------------
-    def __init__(self, eventEngine, gatewayName='OKEX'):
+    def __init__(self, eventEngine=None, gatewayName='OKEX'):
         """Constructor"""
         super(OkexGateway, self).__init__(eventEngine, gatewayName)
-        
+        self.gatewayType = vtConstant.GATEWAYTYPE_BTC
+        self.gatewayQryEnabled = True
+        self.gatewayDisplayName = gatewayName
+
         self.spotApi = SpotApi(self)     
-        # self.api_contract = Api_contract(self)
-        
+
         self.leverage = 0
         self.connected = False
         
@@ -232,7 +235,7 @@ class SpotApi(OkexSpotApi):
             contract.gatewayName = self.gatewayName
             contract.symbol = symbol
             contract.exchange = EXCHANGE_OKEX
-            contract.vtSymbol = '.'.join([contract.symbol, contract.exchange])
+            contract.vtSymbol = '.'.join([contract.symbol, contract.gatewayName])
             contract.name = symbol
             contract.size = 0.00001
             contract.priceTick = 0.00001
@@ -281,9 +284,9 @@ class SpotApi(OkexSpotApi):
             tick = VtTickData()
             tick.symbol = symbol
             tick.exchange = EXCHANGE_OKEX
-            tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
             tick.gatewayName = self.gatewayName
-            
+            tick.vtSymbol = '.'.join([tick.symbol, tick.gatewayName])
+
             self.tickDict[symbol] = tick
         else:
             tick = self.tickDict[symbol]
@@ -309,8 +312,8 @@ class SpotApi(OkexSpotApi):
             tick = VtTickData()
             tick.symbol = symbol
             tick.exchange = EXCHANGE_OKEX
-            tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
             tick.gatewayName = self.gatewayName
+            tick.vtSymbol = '.'.join([tick.symbol, tick.gatewayName])
 
             self.tickDict[symbol] = tick
         else:
@@ -431,7 +434,7 @@ class SpotApi(OkexSpotApi):
                 
                 order.symbol = d['symbol']
                 order.exchange = EXCHANGE_OKEX
-                order.vtSymbol = '.'.join([order.symbol, order.exchange])
+                order.vtSymbol = '.'.join([order.symbol, order.gatewayName])
     
                 order.orderID = localNo
                 order.vtOrderID = '.'.join([self.gatewayName, order.orderID])
@@ -477,7 +480,7 @@ class SpotApi(OkexSpotApi):
             order.gatewayName = self.gatewayName
             order.symbol = rawData['symbol']
             order.exchange = EXCHANGE_OKEX
-            order.vtSymbol = '.'.join([order.symbol, order.exchange])
+            order.vtSymbol = '.'.join([order.symbol, order.gatewayName])
             order.orderID = localNo
             order.vtOrderID = '.'.join([self.gatewayName, localNo])
             order.direction, priceType = priceTypeMap[rawData['tradeType']]

@@ -21,6 +21,8 @@ from vnpy.trader.gateway import (huobiGateway, okexGateway, okexfGateway,
                                  bigoneGateway, lbankGateway,
                                  coinbaseGateway, ccxtGateway)
 
+from vnpy.trader.gateway.okexGateway import OkexGateway
+
 # 加载上层应用
 from vnpy.trader.app import (algoTrading)
 
@@ -51,7 +53,13 @@ def main():
     me.addGateway(okexGateway)
     me.addGateway(binanceGateway)
     me.addGateway(bitfinexGateway)
-    
+
+    # 同交易所多帐号
+    okex1 = OkexGateway(gatewayName='OKEX1')
+    okex2 = OkexGateway(gatewayName='OKEX2')
+    me.addMultiGateway(okex1)
+    me.addMultiGateway(okex2)
+
     # 添加上层应用
     me.addApp(algoTrading)
     

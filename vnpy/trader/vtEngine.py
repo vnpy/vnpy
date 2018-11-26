@@ -78,6 +78,27 @@ class MainEngine(object):
         self.gatewayDetailList.append(d)
         
     #----------------------------------------------------------------------
+    def addMultiGateway(self, gatewayModule):
+        """添加底层接口"""
+        gatewayName = gatewayModule.gatewayName
+        gatewayModule.eventEngine = self.eventEngine
+
+        # 创建接口实例
+        self.gatewayDict[gatewayName] = gatewayModule
+
+        # 设置接口轮询
+        if gatewayModule.gatewayQryEnabled:
+            self.gatewayDict[gatewayName].setQryEnabled(gatewayModule.gatewayQryEnabled)
+
+        # 保存接口详细信息
+        d = {
+            'gatewayName': gatewayModule.gatewayName,
+            'gatewayDisplayName': gatewayModule.gatewayDisplayName,
+            'gatewayType': gatewayModule.gatewayType
+        }
+        self.gatewayDetailList.append(d)
+
+    # ----------------------------------------------------------------------
     def addApp(self, appModule):
         """添加上层应用"""
         appName = appModule.appName
