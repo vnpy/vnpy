@@ -2,7 +2,7 @@
 
 import numpy as np
 import talib
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from vnpy.trader.vtObject import VtBarData
 
@@ -429,7 +429,7 @@ class XSecondBar(XBar) :
     def update(self, bar) :
         """x-second K线更新"""
 
-        if self.bar and bar.datetime.second - self.lastBar.datetime.second > self.xsec :
+        if self.bar and bar.datetime - self.lastBar.datetime > timedelta(seconds=self.xsec) :
             # 生成上一X分钟K线的时间戳
             self.finalizeBar()
 
@@ -586,7 +586,7 @@ class XMinuteBar(XBar) :
     def update(self, bar) :
         """x分钟K线更新"""
         # 尚未创建对象
-        if self.bar and bar.datetime.minute - self.lastBar.datetime.minute > xmin :
+        if self.bar and bar.datetime - self.lastBar.datetime > timedelta(minutes=self.xmin) :
             # 生成上一X分钟K线的时间戳
             self.finalizeBar()
 
