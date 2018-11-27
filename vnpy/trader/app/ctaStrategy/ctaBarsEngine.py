@@ -49,7 +49,7 @@ class BarGenerator(object):
         To require the generation of day bars or to register you callback on the day bars, call requireDayBar to pass 
     in the callback function.  This function also ensures the generation of day bars, and 1-minute bars, as day bars are 
     based on 1-minute bars.  Day bars can be different for different markets.  To make sure to call setDayBarTimes to specify 
-    startTime, endTime, auxStartTime, auxEndTime.  The default times are 21:00, 15:00, 9:00, 18:00 (not used).
+    startTime, endTime, auxStartTime, auxEndTime.  The default times are 21:00, 15:00, 9:00, 15:01 (not used).
 
         If you load data from DB at onInit, you can call fillSecondBars, fillMinuteBars, or fillDayBars with the data.  
     The arguments resampleMinDay or resampleDay are to ensure bars in the longer time-frame are resampled or not.
@@ -64,6 +64,8 @@ class BarGenerator(object):
     that you do not register that function as a callback!  Likewise, if you are dealing with 1-second bars, the entry function 
     is updateWithSecondBar.  For day bars, the entry function is updateWithDayBar.  After one of the entry functions is called, 
     all the bar generations and callbacks will start from there.
+
+        Additionally, 
 
         ** As a special note about a procedure change from the previous version, calling updateBar of this class is no longer needed
     for normal operations because all bars are automatically updated.  Calling it from an already registered callback function 
@@ -211,6 +213,7 @@ class BarGenerator(object):
             if self.minBar :
                 self.minBar.updateFromTick(tick)
 
+
     def updateWithSecondBar(self, bar) :
         if self.secBar :
             self.secBar.updateAllOnBar(bar)
@@ -245,6 +248,22 @@ class BarGenerator(object):
         self.updateXMinDayBars(bar)
 
 
+    def getLastMinuteBar(self) :
+        if self.minBar :
+            return self.minBar.lastBar
+        return None
+
+    def getLastSecondBar(self) :
+        if self.secBar :
+            return self.secBar.lastBar
+        return None
+
+    def getLastDayBar(self) :
+        if self.dayBar :
+            return self.dayBar.lastBar
+        return None
+
+
     #----------------------------------------------------------------------
     def generate(self):
         """手动强制立即完成K线合成"""
@@ -276,11 +295,23 @@ class BarGenerator(object):
             self.dayBar.callAllCBsOnBar(bar)
 
 
+    def fillDayBarsWithMinute(self, bars) :
+        if not self.dayBar :
+            self.dayBar = DayBar()
+        skipMorning = False
+        if bars and bars[0].datetime.replace(second=0, microsecond=0).time() == self.dayBar.auxStartTime :
+            skipMorning = True  # the first is not truely at startTime, skip it for day bar generation
+        for bar in bars :
+            if not skipMorning :
+                self.dayBar.update(bar)
+            skipMorning = False
+
 
 class XBar(object) :
     """ bar template class """
 
     def __init__(self, onBar) : 
+        self.lastBar = None
         self.bar = None             # 1分钟K线对象
         self.resampleSelf = True
         self.resampleCBList = []
@@ -296,15 +327,18 @@ class XBar(object) :
 
     def resampleBars(self) :
         for update in self.resampleCBList :
+            # print("resampleBars: ", update)
             update(self.bar)
 
     def callAllCBs(self) :
         for cb in self.onBarList :
+            # print("callAllBCs: ", cb)
             cb(self.bar)
 
     def updateAll(self) :
         self.resampleBars()
         self.callAllCBs()
+        self.lastBar = self.bar
 
     def resampleBarsOnBar(self, bar) :
         for update in self.resampleCBList :
@@ -315,8 +349,10 @@ class XBar(object) :
             cb(bar)
 
     def updateAllOnBar(self, bar) :
+        self.bar = bar
         self.resampleBarsOnBar(bar)
         self.callAllCBsOnBar(bar)
+        self.lastBar = self.bar
 
     def setResampling(self, bol=True) :
         self.resampleSelf = bol
@@ -392,6 +428,11 @@ class XSecondBar(XBar) :
 
     def update(self, bar) :
         """x-second K线更新"""
+
+        if self.bar and bar.datetime.second - self.lastBar.datetime.second > self.xsec :
+            # 生成上一X分钟K线的时间戳
+            self.finalizeBar()
+
         # 尚未创建对象
         if not self.bar:
             self.bar = VtBarData()
@@ -418,15 +459,19 @@ class XSecondBar(XBar) :
         # X seconds 已经走完
         if not (bar.datetime.minute * 60 + bar.datetime.second + 1) % self.xsec:   # 可以用X整除
             # 生成上一Xsecond K线的时间戳
-            self.bar.datetime = self.bar.datetime.replace(microsecond=0)  # 将秒和微秒设为0
-            self.bar.date = self.bar.datetime.strftime('%Y%m%d')
-            self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
-            
-            # 推送
-            self.updateAll()
-            
-            # 清空老K线缓存对象
-            self.bar = None
+            self.finalizeBar()
+
+
+    def finalizeBar(self) :
+        self.bar.datetime = self.bar.datetime.replace(microsecond=0)  # 将秒和微秒设为0
+        self.bar.date = self.bar.datetime.strftime('%Y%m%d')
+        self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
+        
+        # 推送
+        self.updateAll()
+        
+        # 清空老K线缓存对象
+        self.bar = None
 
 
 class MinuteBar(XBar) :
@@ -447,6 +492,7 @@ class MinuteBar(XBar) :
         # 新的一分钟
         elif self.bar.datetime.minute != tick.datetime.minute:
             # 生成上一分钟K线的时间戳
+            # print("updateFromTick: ", tick.datetime.minute)
             self.finalizeBar()
             
             # 创建新的K线对象
@@ -489,6 +535,7 @@ class MinuteBar(XBar) :
             # 新的一分钟
             elif self.bar.datetime.minute != bar.datetime.minute:
                 # 生成上一分钟K线的时间戳
+                # print("updateFromSecond: ", bar.datetime.minute)
                 self.finalizeBar()
                 
                 # 创建新的K线对象
@@ -535,9 +582,14 @@ class XMinuteBar(XBar) :
             print("xmin is recommended among 2, 3, 5, 10, 15, 30")
         self.xmin = xmin            # X的值
 
+
     def update(self, bar) :
         """x分钟K线更新"""
         # 尚未创建对象
+        if self.bar and bar.datetime.minute - self.lastBar.datetime.minute > xmin :
+            # 生成上一X分钟K线的时间戳
+            self.finalizeBar()
+
         if not self.bar:
             self.bar = VtBarData()
             
@@ -563,13 +615,16 @@ class XMinuteBar(XBar) :
         # X分钟已经走完
         if not (bar.datetime.minute + 1) % self.xmin:   # 可以用X整除
             # 生成上一X分钟K线的时间戳
+            self.finalizeBar()
+
+
+    def finalizeBar(self) :
+            # 生成上一X分钟K线的时间戳
             self.bar.datetime = self.bar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
             self.bar.date = self.bar.datetime.strftime('%Y%m%d')
             self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
-            
             # 推送
             self.updateAll()
-            
             # 清空老K线缓存对象
             self.bar = None
 
@@ -577,7 +632,7 @@ class XMinuteBar(XBar) :
 class DayBar(XBar) :
     """
     DayBar: default startTime at 21:00, endTime at "15:00"
-    default auxStartTime at 9:00, auxEndTime at 15:01 (meaningless now)
+    default auxStartTime at 9:00, auxEndTime at 15:01 (not used now)
     """
 
     def __init__(self, onDayBar=None) :
@@ -618,7 +673,7 @@ class DayBar(XBar) :
                 if (barTime == self.startTime or barTime == self.auxStartTime):
                     self.bar = VtBarData()
                     
-                    print("A bar started ", bar.vtSymbol, " ", bar.datetime)
+                    print("A day bar started ", bar.vtSymbol, " ", bar.datetime)
                     self.bar.vtSymbol = bar.vtSymbol
                     self.bar.symbol = bar.symbol
                     self.bar.exchange = bar.exchange
@@ -829,4 +884,3 @@ class ArrayManager(object):
         if array:
             return up, down
         return up[-1], down[-1]
-
