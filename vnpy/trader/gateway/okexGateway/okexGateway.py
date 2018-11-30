@@ -103,11 +103,10 @@ class OkexGateway(VtGateway):
 
         # 解析json文件
         setting = json.load(f)
-        trace = False
         try:
             self.apiKey = str(setting['apiKey'])
             self.secretKey = str(setting['secretKey'])
-            trace = setting.get('trace',False)
+            trace = setting['trace']
             self.leverage = setting.get('leverage', 1)
             spot_connect = setting['spot_connect']
             futures_connect = setting['futures_connect']
@@ -617,7 +616,7 @@ class OkexSpotApi(WsSpotApi):
         #        self.spotOrderInfo(symbol_pair, orderId)
 
     # ----------------------------------------------------------------------
-    def onOpen(self, *args):
+    def onOpen(self, ws):
         """
         ws连接成功事件回调函数
         :param ws:
@@ -2533,19 +2532,20 @@ h_this_week_usd'}
                 pos.direction = DIRECTION_NET
                 self.gateway.onPosition(pos)
 
-                for contract in t_contracts:
-                    # 保证金
-                    account.margin += contract.get('bond',0.0)
-                    # 平仓盈亏
-                    account.closeProfit += contract.get('profit',0.0)
-                    # 持仓盈亏
-                    account.positionProfit += contract.get('unprofit',0.0)
+            for contract in t_contracts:
+                # 保证金
+                account.margin += contract.get('bond',0.0)
+                # 平仓盈亏
+                account.closeProfit += contract.get('profit',0.0)
+                # 持仓盈亏
+                account.positionProfit += contract.get('unprofit',0.0)
 
-                    if account.balance > 0 or account.available > 0:
-                        for contractType in CONTRACT_TYPE:
-                            self.query_future_position_4fix(symbol=symbol, contractType=contractType)
 
-                    self.gateway.onAccount(account)
+                if account.balance > 0 or account.available > 0:
+                    for contractType in CONTRACT_TYPE:
+                        self.query_future_position_4fix(symbol=symbol, contractType=contractType)
+
+                self.gateway.onAccount(account)
 
     def query_future_position(self, symbol, contractType, leverage):
         """全仓模式下，查询持仓信息"""
@@ -2736,7 +2736,6 @@ h_this_week_usd'}
                     self.localNoDict[localNo] = orderId
                     self.writeLog(u'onFutureOrderInfo update orderid: local:{}<=>okex:{}'.format(localNo, orderId))
 
-
             # order新增或更新在orderDict
             if orderId not in self.orderDict:
                 order = VtOrderData()
@@ -2754,7 +2753,7 @@ h_this_week_usd'}
                 order.price = order_data.get('price')
                 #volume_rate = 100 if order.symbol.startswith('btc') else 10
                 order.totalVolume = order_data.get('amount')
-                order.direction, offset = priceContractOffsetTypeMap.get(str(order_data.get('type')))
+                order.direction, order.offset = priceContractOffsetTypeMap.get(str(order_data.get('type')))
                 order.orderTime = datetime.now().strftime("%H:%M:%S.%f")
                 self.orderDict[orderId] = order
                 self.gateway.writeLog(u'新增本地orderDict缓存,okex orderId:{},order.orderid:{}'.format(orderId, order.orderID))
