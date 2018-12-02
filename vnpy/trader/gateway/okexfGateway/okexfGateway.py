@@ -388,6 +388,9 @@ class OkexfRestApi(RestClient):
     #----------------------------------------------------------------------
     def onQueryPosition(self, data, request):
         """"""
+        if not data['holding']:
+            return
+        
         for d in data['holding'][0]:
             longPosition = VtPositionData()
             longPosition.gatewayName = self.gatewayName
