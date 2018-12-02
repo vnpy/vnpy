@@ -454,7 +454,7 @@ class OkexfRestApi(RestClient):
         """
         order = request.extra
         order.status = STATUS_REJECTED
-        self.gateway.onOrder(vtOrder)
+        self.gateway.onOrder(order)
     
     #----------------------------------------------------------------------
     def onSendOrder(self, data, request):
