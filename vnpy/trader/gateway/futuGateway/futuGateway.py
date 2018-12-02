@@ -353,7 +353,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryTrade(self):
         """查询成交"""
-        code, data = self.tradeCtx.deal_list_query(self.env)
+        code, data = self.tradeCtx.deal_list_query("", trd_env=self.env)
         
         if code:
             self.writeError(code, u'查询成交失败：%s' %data)
