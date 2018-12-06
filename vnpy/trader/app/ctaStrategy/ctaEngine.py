@@ -683,17 +683,15 @@ class CtaEngine(AppEngine):
     def initRqData(self):
         """初始化RQData客户端"""
         # 检查是否填写了RQData配置
-        username = globalSetting.get('rqUsername')
-        password = globalSetting.get('rqPassword')
+        username = globalSetting.get('rqUsername', None)
+        password = globalSetting.get('rqPassword', None)
         if not username or not password:
-            print globalSetting
             return
         
         # 加载RQData
         try:
             import rqdatac as rq
         except ImportError:
-            print 'import fail'
             return
         
         # 登录RQData
@@ -706,7 +704,6 @@ class CtaEngine(AppEngine):
             for ix, row in df.iterrows():
                 self.rqSymbolSet.add(row['order_book_id'])
         except RuntimeError:
-            print 'download fail'
             pass
     
     #----------------------------------------------------------------------
