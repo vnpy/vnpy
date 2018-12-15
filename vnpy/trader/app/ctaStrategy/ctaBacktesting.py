@@ -1984,6 +1984,8 @@ class BacktestingEngine(object):
                 bar.volume = float(row['volume']) if len(row['volume'])>0 else 0
                 if '-' in row['index']:
                     barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
+                elif '-' in row['datetime']:
+                    barEndTime = datetime.strptime(row['datetime'], '%Y-%m-%d %H:%M:%S')
                 else:
                     barEndTime = datetime.strptime(row['datetime'], '%Y%m%d%H%M%S')
 
@@ -2011,17 +2013,12 @@ class BacktestingEngine(object):
                     else:
                         bar.tradingDay = bar.date
 
-                if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
+                if self.dataStartDate <= bar.datetime <= self.dataEndDate:
                     if last_tradingDay != bar.tradingDay:
                         if last_tradingDay is not None:
                             self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
                                                  self.maxCapital,self.totalCommission,benchmark=bar.close)
                         last_tradingDay = bar.tradingDay
-
-                    # Simulate latest tick and send it to Strategy
-                    simTick = self.__barToTick(bar)
-                    # self.tick = simTick
-                    self.strategy.curTick = simTick
 
                     # Check the order triggers and deliver the bar to the Strategy
                     if self.useBreakoutMode is False:
@@ -3839,7 +3836,7 @@ class BacktestingEngine(object):
 
         # 计算Sharp
         if not self.dailyList:
-            return
+            return {}, [], []
 
         capitalNetList = []
         capitalList = []
