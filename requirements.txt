@@ -3,7 +3,6 @@ websocket-client
 msgpack-python
 qdarkstyle
 SortedContainers
-futuquant
 wmi
 future
 flask-socketio
@@ -16,4 +15,4 @@ pyqtgraph
 qtpy
 psutil
 ta-lib
-
+futu-api

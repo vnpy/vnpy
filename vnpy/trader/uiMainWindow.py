@@ -36,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle('VnTrader')
+        self.setWindowTitle('VN Trader')
         self.initCentral()
         self.initMenu()
         self.initStatusBar()

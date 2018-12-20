@@ -11,11 +11,11 @@ from time import sleep
 from datetime import datetime
 from copy import copy
 
-from futuquant import (OpenQuoteContext, OpenHKTradeContext, OpenUSTradeContext,
-                       RET_ERROR, RET_OK, 
-                       TrdEnv, TrdSide, OrderType, OrderStatus, ModifyOrderOp,
-                       StockQuoteHandlerBase, OrderBookHandlerBase,
-                       TradeOrderHandlerBase, TradeDealHandlerBase)
+from futu import (OpenQuoteContext, OpenHKTradeContext, OpenUSTradeContext,
+                  RET_ERROR, RET_OK, 
+                  TrdEnv, TrdSide, OrderType, OrderStatus, ModifyOrderOp,
+                  StockQuoteHandlerBase, OrderBookHandlerBase,
+                  TradeOrderHandlerBase, TradeDealHandlerBase)
 
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
