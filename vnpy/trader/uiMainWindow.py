@@ -335,7 +335,7 @@ class AboutWidget(QtWidgets.QDialog):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(vtText.ABOUT + 'VnTrader')
+        self.setWindowTitle(vtText.ABOUT + 'VN Trader')
 
         text = u"""
             Developed by Traders, for Traders.

@@ -93,15 +93,11 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
     * RpcService，RPC跨进程调用服务，基于MainEngineProxy组件，用户可以如同开发单一进程应用搬开发多进程架构的复杂交易应用
 
-    * RtdService，EXCEL RTD服务组件，通过pyxll模块提供EXCEL表格系统对VnTrader系统内所有数据的访问和功能调用（未完成）
+    * RtdService，EXCEL RTD服务组件，通过pyxll模块提供EXCEL表格系统对VN Trader系统内所有数据的访问
 
 5. 数据相关的API接口（vnpy.data），用于构建和更新历史行情数据库，目前包括：
 
   * 上海中期历史行情服务（shcifco）
-
-  * 通联数据API下载服务（datayes）
-
-  * 天勤行情数据接口（tq）
 
 6. 关于vn.py项目的应用演示（examples），对于新手而言可以从这里开始学习vn.py项目的使用方式
 
@@ -152,9 +148,9 @@ sudo /home/vnpy/anaconda2/bin/conda install -c quantopian ta-lib=0.4.9
 
 1. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
 
-2. 找到vn.py应用示例目录examples，打开examples\VnTrader\CTP_connect.json，修改账号、密码、服务器等为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+2. 找到vn.py应用示例目录examples，打开examples\VN Trader\CTP_connect.json，修改账号、密码、服务器等为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
 
-3. 找到VnTrader的启动入口run.py，并双击运行（若无法双击，则在当前目录按住Shift点鼠标右键，打开cmd输入python run.py运行），run.py内容如下：
+3. 找到VN Trader的启动入口run.py，并双击运行（若无法双击，则在当前目录按住Shift点鼠标右键，打开cmd输入python run.py运行），run.py内容如下：
 
 ```
 # encoding: UTF-8
