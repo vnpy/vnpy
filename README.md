@@ -87,6 +87,8 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
     * AlgoTrading，算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、BestLimit、Iceberg、Arbitrage等等，支持数据库配置保存、CSV文件加载启动以及RPC跨进程算法交易服务
 
+    * TradeCopy，复制交易模块，用户可以通过发布者Provider进程来对外提供交易策略信号（手动、策略均可），订阅者Subscriber进程根据收到的信号自动执行同步交易，简洁快速得实现一拖多账户交易功能
+
     * RiskManager，前端风控模块，负责在交易系统将任何交易请求发出到柜台前的一系列标准检查操作，支持用户自定义风控规则的扩展
 
     * DataRecorder，实盘行情记录，支持Tick和K线数据的落地，用于策略开发回测以及实盘运行初始化
@@ -97,13 +99,17 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
 5. 数据相关的API接口（vnpy.data），用于构建和更新历史行情数据库，目前包括：
 
-  * 上海中期历史行情服务（shcifco）
+    * 上海中期历史行情服务（shcifco）
 
 6. 关于vn.py项目的应用演示（examples），对于新手而言可以从这里开始学习vn.py项目的使用方式
 
-8. vn.py项目的Docker镜像（docker），目前尚未完成
+8. vn.py项目的Docker镜像（docker）：
 
-9. [官方论坛](http://www.vnpie.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
+    * web docker，在Docker中启动基于Web交易的交易服务器WebTrader，在浏览器中实现CTA策略的运维操作
+
+    * vnc docker，内嵌了完整的vn.py图形化运行环境（Linux），并通过VNC Server对外提供虚拟桌面访问
+
+9. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
 
 10. 官方交流QQ群262656087，管理较严格（定期清除长期潜水的成员）
 
