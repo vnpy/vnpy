@@ -35,7 +35,7 @@ class StDataEngine(object):
         
         # 腿、价差相关字典
         self.legDict = {}                   # vtSymbol:StLeg
-        self.spreadDict = {}                # name:StSpread
+        self.spreadDict = OrderedDict()     # name:StSpread
         self.vtSymbolSpreadDict = {}        # vtSymbol:StSpread
         
         self.registerEvent()

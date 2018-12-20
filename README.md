@@ -87,27 +87,29 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
     * AlgoTrading，算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、BestLimit、Iceberg、Arbitrage等等，支持数据库配置保存、CSV文件加载启动以及RPC跨进程算法交易服务
 
+    * TradeCopy，复制交易模块，用户可以通过发布者Provider进程来对外提供交易策略信号（手动、策略均可），订阅者Subscriber进程根据收到的信号自动执行同步交易，简洁快速得实现一拖多账户交易功能
+
     * RiskManager，前端风控模块，负责在交易系统将任何交易请求发出到柜台前的一系列标准检查操作，支持用户自定义风控规则的扩展
 
     * DataRecorder，实盘行情记录，支持Tick和K线数据的落地，用于策略开发回测以及实盘运行初始化
 
     * RpcService，RPC跨进程调用服务，基于MainEngineProxy组件，用户可以如同开发单一进程应用搬开发多进程架构的复杂交易应用
 
-    * RtdService，EXCEL RTD服务组件，通过pyxll模块提供EXCEL表格系统对VnTrader系统内所有数据的访问和功能调用（未完成）
+    * RtdService，EXCEL RTD服务组件，通过pyxll模块提供EXCEL表格系统对VN Trader系统内所有数据的访问
 
 5. 数据相关的API接口（vnpy.data），用于构建和更新历史行情数据库，目前包括：
 
-  * 上海中期历史行情服务（shcifco）
-
-  * 通联数据API下载服务（datayes）
-
-  * 天勤行情数据接口（tq）
+    * 上海中期历史行情服务（shcifco）
 
 6. 关于vn.py项目的应用演示（examples），对于新手而言可以从这里开始学习vn.py项目的使用方式
 
-8. vn.py项目的Docker镜像（docker），目前尚未完成
+8. vn.py项目的Docker镜像（docker）：
 
-9. [官方论坛](http://www.vnpie.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
+    * web docker，在Docker中启动基于Web交易的交易服务器WebTrader，在浏览器中实现CTA策略的运维操作
+
+    * vnc docker，内嵌了完整的vn.py图形化运行环境（Linux），并通过VNC Server对外提供虚拟桌面访问
+
+9. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
 
 10. 官方交流QQ群262656087，管理较严格（定期清除长期潜水的成员）
 
@@ -152,9 +154,9 @@ sudo /home/vnpy/anaconda2/bin/conda install -c quantopian ta-lib=0.4.9
 
 1. 在[SimNow](http://simnow.com.cn/)注册CTP仿真账号，记下你的**账号、密码、经纪商编号**，然后下载快期查询你的**交易和行情服务器地址**
 
-2. 找到vn.py应用示例目录examples，打开examples\VnTrader\CTP_connect.json，修改账号、密码、服务器等为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
+2. 找到vn.py应用示例目录examples，打开examples\VN Trader\CTP_connect.json，修改账号、密码、服务器等为上一步注册完成后你的信息（注意使用专门的编程编辑器，如Sublime Text等，防止json编码出错）
 
-3. 找到VnTrader的启动入口run.py，并双击运行（若无法双击，则在当前目录按住Shift点鼠标右键，打开cmd输入python run.py运行），run.py内容如下：
+3. 找到VN Trader的启动入口run.py，并双击运行（若无法双击，则在当前目录按住Shift点鼠标右键，打开cmd输入python run.py运行），run.py内容如下：
 
 ```
 # encoding: UTF-8

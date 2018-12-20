@@ -388,6 +388,9 @@ class OkexfRestApi(RestClient):
     #----------------------------------------------------------------------
     def onQueryPosition(self, data, request):
         """"""
+        if not data['holding']:
+            return
+        
         for d in data['holding'][0]:
             longPosition = VtPositionData()
             longPosition.gatewayName = self.gatewayName
@@ -454,7 +457,7 @@ class OkexfRestApi(RestClient):
         """
         order = request.extra
         order.status = STATUS_REJECTED
-        self.gateway.onOrder(vtOrder)
+        self.gateway.onOrder(order)
     
     #----------------------------------------------------------------------
     def onSendOrder(self, data, request):
