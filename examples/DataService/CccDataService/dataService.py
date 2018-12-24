@@ -10,7 +10,7 @@ import requests
 from pymongo import MongoClient, ASCENDING
 
 from vnpy.trader.vtObject import VtBarData
-from vnpy.trader.app.ctaStrategy.ctaBase import MINUTE_DB_NAME
+from vnpy.trader.app.ctaStrategy.ctaBase import MINUTE_DB_NAME, DAILY_DB_NAME
 
 
 # 加载配置
@@ -23,7 +23,7 @@ SYMBOLS = setting['SYMBOLS']
 
 mc = MongoClient(MONGO_HOST, MONGO_PORT)                        # Mongo连接
 db = mc[MINUTE_DB_NAME]                                         # 数据库
-
+dbDaily = mc[DAILY_DB_NAME]
 
 #----------------------------------------------------------------------
 def generateVtBar(vtSymbol, d):
@@ -86,6 +86,49 @@ def downloadMinuteBarBySymbol(vtSymbol, end):
                                                     datetime.datetime.fromtimestamp(l[0]['time']),
                                                     datetime.datetime.fromtimestamp(l[-1]['time']), 
                                                     cost))
+
+#----------------------------------------------------------------------
+def downloadDailyBarBySymbol(vtSymbol):
+    """下载某一合约的分钟线数据"""
+    startTime = time.time()
+    
+    cl = dbDaily[vtSymbol]                                                 
+    cl.ensure_index([('datetime', ASCENDING)], unique=True)         
+    
+    symbol, exchange = vtSymbol.split('.')
+    fsym, tsym = symbol.split('/')
+    
+    url = 'https://min-api.cryptocompare.com/data/histoday'
+    params = {
+        'fsym': fsym,
+        'tsym': tsym,
+        'e': exchange,
+        'limit': 2000
+    }
+    resp = requests.get(url, headers={}, params=params)
+    
+    if resp.status_code != 200:
+        print(u'%s数据下载失败' %vtSymbol)
+        return
+    
+    j = resp.json()
+    l = j['Data']
+    
+    for d in l:
+        bar = generateVtBar(vtSymbol, d)
+        d = bar.__dict__
+        flt = {'datetime': bar.datetime}
+        cl.replace_one(flt, d, True)
+        
+    endTime = time.time()
+    cost = (endTime - startTime) * 1000
+    
+    
+    print(u'合约%s数据下载完成%s - %s，耗时%s毫秒' %(vtSymbol, 
+                                                    datetime.datetime.fromtimestamp(l[0]['time']),
+                                                    datetime.datetime.fromtimestamp(l[-1]['time']), 
+                                                    cost))
+
 
 #----------------------------------------------------------------------
 def downloadAllMinuteBar(end):
