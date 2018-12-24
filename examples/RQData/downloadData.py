@@ -8,7 +8,8 @@ from dataService import *
 
 
 if __name__ == '__main__':
-    downloadMinuteBarBySymbol('CU99')
-    downloadDailyBarBySymbol('IF99')
-    downloadDailyBarBySymbol('TA99')
-    downloadDailyBarBySymbol('I99')
+    #downloadMinuteBarBySymbol('CU99')
+    #downloadDailyBarBySymbol('IF99')
+    #downloadDailyBarBySymbol('TA99')
+    #downloadDailyBarBySymbol('I99')
+    downloadTickBySymbol('IF1901', '2018-12-21')

@@ -4,10 +4,12 @@ from collections import defaultdict
 
 from vnpy.event import Event
 from vnpy.rpc import RpcClient, RpcServer
-from vnpy.trader.vtEvent import EVENT_POSITION, EVENT_TRADE, EVENT_TIMER
+from vnpy.trader.vtEvent import (EVENT_POSITION, EVENT_TRADE, 
+                                 EVENT_TIMER, EVENT_ORDER)
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE, PRICETYPE_LIMITPRICE,
-                                    OFFSET_CLOSEYESTERDAY, OFFSET_CLOSETODAY)
+                                    OFFSET_CLOSEYESTERDAY, OFFSET_CLOSETODAY,
+                                    STATUS_REJECTED)
 from vnpy.trader.vtObject import VtOrderReq, VtCancelOrderReq, VtLogData, VtSubscribeReq
 
 
@@ -45,12 +47,13 @@ class TcEngine(object):
         self.mode = self.MODE_PROVIDER
         self.interval = interval
         
-        self.server = RpcServer(repAddress, pubAddress)
-        self.server.usePickle()
-        self.server.register(self.getPos)
-        self.server.start()
+        if not self.server:
+            self.server = RpcServer(repAddress, pubAddress)
+            self.server.usePickle()
+            self.server.register(self.getPos)
+            self.server.start()
         
-        self.writeLog(u'启动发布者模式')
+        self.writeLog(u'启动发布者模式（如需修改通讯地址请重启程序）')
     
     #----------------------------------------------------------------------
     def startSubscriber(self, reqAddress, subAddress, copyRatio):
@@ -58,13 +61,13 @@ class TcEngine(object):
         self.mode = self.MODE_SUBSCRIBER
         self.copyRatio = copyRatio
         
-        self.client = TcClient(self, reqAddress, subAddress)
-        self.client.usePickle()
-        self.client.subscribeTopic('')
-        self.client.start()
+        if not self.client:
+            self.client = TcClient(self, reqAddress, subAddress)
+            self.client.usePickle()
+            self.client.subscribeTopic('')
+            self.client.start()
         
-        self.writeLog(u'启动订阅者模式，运行时请不要执行其他交易操作')
-        
+        self.writeLog(u'启动订阅者模式，运行时请不要执行其他交易操作')        
         self.initTarget()
     
     #----------------------------------------------------------------------
@@ -86,6 +89,7 @@ class TcEngine(object):
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
     
     #----------------------------------------------------------------------
     def checkAndTrade(self, vtSymbol):
@@ -129,6 +133,14 @@ class TcEngine(object):
         """"""
         position = event.dict_['data']
         self.posDict[position.vtPositionName] = position.position        
+    
+    #----------------------------------------------------------------------
+    def processOrderEvent(self, event):
+        """"""
+        order = event.dict_['data']
+        if order.status == STATUS_REJECTED:
+            self.writeLog(u'监控到委托拒单，停止运行')
+            self.stop()
     
     #----------------------------------------------------------------------
     def publishPos(self, vtPositionName):
@@ -195,8 +207,8 @@ class TcEngine(object):
                         req.price = tick.upperLimit
                     else:
                         req.price = tick.askPrice1
-                elif DIRECTION_SHROT in vtPositionName:
-                    req.direction = DIRECTION_SHROT
+                elif DIRECTION_SHORT in vtPositionName:
+                    req.direction = DIRECTION_SHORT
                     if tick.lowerLimit:
                         req.price = tick.lowerLimit
                     else:
@@ -209,13 +221,13 @@ class TcEngine(object):
                 req.offset = OFFSET_CLOSE
                 
                 if DIRECTION_LONG in vtPositionName:
-                    req.direction = DIRECTION_SHROT
+                    req.direction = DIRECTION_SHORT
                     if tick.upperLimit:
                         req.price = tick.upperLimit
                     else:
                         req.price = tick.askPrice1
                 
-                elif DIRECTION_SHROT in vtPositionName:
+                elif DIRECTION_SHORT in vtPositionName:
                     req.direction = DIRECTION_LONG
                     if tick.lowerLimit:
                         req.price = tick.lowerLimit
