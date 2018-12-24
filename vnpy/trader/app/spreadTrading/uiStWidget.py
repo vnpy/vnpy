@@ -462,9 +462,10 @@ class StAlgoManager(QtWidgets.QTableWidget):
         algoEngine = self.algoEngine
         
         l = self.algoEngine.getAllAlgoParams()
-        self.setRowCount(len(l))
         
-        for row, d in enumerate(l):            
+        for d in l:            
+            self.insertRow(0)
+            
             cellSpreadName = QtWidgets.QTableWidgetItem(d['spreadName'])
             cellAlgoName = QtWidgets.QTableWidgetItem(d['algoName'])
             cellNetPos = QtWidgets.QTableWidgetItem('0')
@@ -477,17 +478,17 @@ class StAlgoManager(QtWidgets.QTableWidget):
             comboMode = StModeComboBox(algoEngine, d['spreadName'], d['mode'])
             buttonActive = StActiveButton(algoEngine, d['spreadName'])
             
-            self.setItem(row, 0, cellSpreadName)
-            self.setItem(row, 1, cellAlgoName)
-            self.setItem(row, 2, cellNetPos)
-            self.setCellWidget(row, 3, spinBuyPrice)
-            self.setCellWidget(row, 4, spinSellPrice)
-            self.setCellWidget(row, 5, spinCoverPrice)
-            self.setCellWidget(row, 6, spinShortPrice)
-            self.setCellWidget(row, 7, spinMaxOrderSize)
-            self.setCellWidget(row, 8, spinMaxPosSize)
-            self.setCellWidget(row, 9, comboMode)
-            self.setCellWidget(row, 10, buttonActive)
+            self.setItem(0, 0, cellSpreadName)
+            self.setItem(0, 1, cellAlgoName)
+            self.setItem(0, 2, cellNetPos)
+            self.setCellWidget(0, 3, spinBuyPrice)
+            self.setCellWidget(0, 4, spinSellPrice)
+            self.setCellWidget(0, 5, spinCoverPrice)
+            self.setCellWidget(0, 6, spinShortPrice)
+            self.setCellWidget(0, 7, spinMaxOrderSize)
+            self.setCellWidget(0, 8, spinMaxPosSize)
+            self.setCellWidget(0, 9, comboMode)
+            self.setCellWidget(0, 10, buttonActive)
             
             buttonActive.signalActive.connect(spinBuyPrice.algoActiveChanged)
             buttonActive.signalActive.connect(spinSellPrice.algoActiveChanged)
