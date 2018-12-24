@@ -4,10 +4,12 @@ from collections import defaultdict
 
 from vnpy.event import Event
 from vnpy.rpc import RpcClient, RpcServer
-from vnpy.trader.vtEvent import EVENT_POSITION, EVENT_TRADE, EVENT_TIMER
+from vnpy.trader.vtEvent import (EVENT_POSITION, EVENT_TRADE, 
+                                 EVENT_TIMER, EVENT_ORDER)
 from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
                                     OFFSET_OPEN, OFFSET_CLOSE, PRICETYPE_LIMITPRICE,
-                                    OFFSET_CLOSEYESTERDAY, OFFSET_CLOSETODAY)
+                                    OFFSET_CLOSEYESTERDAY, OFFSET_CLOSETODAY,
+                                    STATUS_REJECTED)
 from vnpy.trader.vtObject import VtOrderReq, VtCancelOrderReq, VtLogData, VtSubscribeReq
 
 
@@ -86,6 +88,7 @@ class TcEngine(object):
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
         self.eventEngine.register(EVENT_TRADE, self.processTradeEvent)
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
+        self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
     
     #----------------------------------------------------------------------
     def checkAndTrade(self, vtSymbol):
@@ -129,6 +132,14 @@ class TcEngine(object):
         """"""
         position = event.dict_['data']
         self.posDict[position.vtPositionName] = position.position        
+    
+    #----------------------------------------------------------------------
+    def processOrderEvent(self, event):
+        """"""
+        order = event.dict_['data']
+        if order.status == STATUS_REJECTED:
+            self.writeLog(u'监控到委托拒单，停止运行')
+            self.stop()
     
     #----------------------------------------------------------------------
     def publishPos(self, vtPositionName):
