@@ -47,12 +47,13 @@ class TcEngine(object):
         self.mode = self.MODE_PROVIDER
         self.interval = interval
         
-        self.server = RpcServer(repAddress, pubAddress)
-        self.server.usePickle()
-        self.server.register(self.getPos)
-        self.server.start()
+        if not self.server:
+            self.server = RpcServer(repAddress, pubAddress)
+            self.server.usePickle()
+            self.server.register(self.getPos)
+            self.server.start()
         
-        self.writeLog(u'启动发布者模式')
+        self.writeLog(u'启动发布者模式（如需修改通讯地址请重启程序）')
     
     #----------------------------------------------------------------------
     def startSubscriber(self, reqAddress, subAddress, copyRatio):
@@ -60,13 +61,13 @@ class TcEngine(object):
         self.mode = self.MODE_SUBSCRIBER
         self.copyRatio = copyRatio
         
-        self.client = TcClient(self, reqAddress, subAddress)
-        self.client.usePickle()
-        self.client.subscribeTopic('')
-        self.client.start()
+        if not self.client:
+            self.client = TcClient(self, reqAddress, subAddress)
+            self.client.usePickle()
+            self.client.subscribeTopic('')
+            self.client.start()
         
-        self.writeLog(u'启动订阅者模式，运行时请不要执行其他交易操作')
-        
+        self.writeLog(u'启动订阅者模式，运行时请不要执行其他交易操作')        
         self.initTarget()
     
     #----------------------------------------------------------------------
