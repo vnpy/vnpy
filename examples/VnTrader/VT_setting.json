@@ -16,5 +16,8 @@
 
 	"tdPenalty": ["IF", "IH", "IC"],
 
-	"maxDecimal": 4
+	"maxDecimal": 4,
+
+	"rqUsername": "",
+	"rqPassword": ""
 }
