@@ -195,8 +195,8 @@ class TcEngine(object):
                         req.price = tick.upperLimit
                     else:
                         req.price = tick.askPrice1
-                elif DIRECTION_SHROT in vtPositionName:
-                    req.direction = DIRECTION_SHROT
+                elif DIRECTION_SHORT in vtPositionName:
+                    req.direction = DIRECTION_SHORT
                     if tick.lowerLimit:
                         req.price = tick.lowerLimit
                     else:
@@ -209,13 +209,13 @@ class TcEngine(object):
                 req.offset = OFFSET_CLOSE
                 
                 if DIRECTION_LONG in vtPositionName:
-                    req.direction = DIRECTION_SHROT
+                    req.direction = DIRECTION_SHORT
                     if tick.upperLimit:
                         req.price = tick.upperLimit
                     else:
                         req.price = tick.askPrice1
                 
-                elif DIRECTION_SHROT in vtPositionName:
+                elif DIRECTION_SHORT in vtPositionName:
                     req.direction = DIRECTION_LONG
                     if tick.lowerLimit:
                         req.price = tick.lowerLimit
