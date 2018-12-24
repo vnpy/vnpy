@@ -95,6 +95,7 @@ EXCHANGE_FCOIN = 'FCOIN'         # FCoin比特币交易所
 EXCHANGE_BIGONE = 'BIGONE'       # BigOne比特币交易所
 EXCHANGE_COINBASE = 'COINBASE'   # Coinbase交易所
 EXCHANGE_BITHUMB = 'BITHUMB'     # Bithumb比特币交易所
+EXCHANGE_CHAINCE = 'CHAINCE'     # Chaince交易所
 
 # 货币类型
 CURRENCY_USD = 'USD'            # 美元

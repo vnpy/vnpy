@@ -68,6 +68,8 @@ vn.py是基于Python的开源量化交易程序开发框架，起源于国内私
 
         - CCXT (ccxt)
 
+        - 畅思 (chaince)
+
 
 2. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心
 
@@ -172,7 +174,7 @@ from vnpy.trader.uiMainWindow import MainWindow
 from vnpy.trader.gateway import ctpGateway, ibGateway
 
 # 加载上层应用
-from vnpy.trader.app import (riskManager, ctaStrategy, 
+from vnpy.trader.app import (riskManager, ctaStrategy,
                              spreadTrading, algoTrading)
 
 
