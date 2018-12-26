@@ -498,9 +498,9 @@ class HuobiWebsocketApiBase(WebsocketClient):
         print("data : {}".format(packet))
     
     #----------------------------------------------------------------------
-    def onError(self, packet):  # type: (dict)->None
+    def onErrorMsg(self, packet):  # type: (dict)->None
         """"""
-        print("error : {}".format(packet))
+        self.gateway.writeLog(packet['err-msg']))
 
 
 ########################################################################
