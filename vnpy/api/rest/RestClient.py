@@ -48,6 +48,7 @@ class Request(object):
             statusCode = 'terminated'
         else:
             statusCode = self.response.status_code
+        # todo: encoding error
         return ("reuqest : {} {} {} because {}: \n"
                 "headers: {}\n"
                 "params: {}\n"
