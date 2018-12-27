@@ -13,14 +13,15 @@ import json
 import re
 import urllib
 import zlib
+from copy import copy
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getTempPath, getJsonPath
 
-#REST_HOST = 'https://api.huobipro.com'
-REST_HOST = 'https://api.huobi.pro/v1'
+REST_HOST = 'https://api.huobipro.com'
+#REST_HOST = 'https://api.huobi.pro/v1'
 WEBSOCKET_MARKET_HOST = 'wss://api.huobi.pro/ws'        # Global站行情
 WEBSOCKET_TRADE_HOST = 'wss://api.huobi.pro/ws/v1'     # 资产和订单
 
@@ -181,7 +182,18 @@ class HuobiGateway(VtGateway):
     def setQryEnabled(self, qryEnabled):
         """设置是否要启动循环查询"""
         self.qryEnabled = qryEnabled
-
+    
+    #----------------------------------------------------------------------
+    def writeLog(self, msg):
+        """"""
+        log = VtLogData()
+        log.logContent = msg
+        log.gatewayName = self.gatewayName
+        
+        event = Event(EVENT_LOG)
+        event.dict_['data'] = log
+        self.eventEngine.put(event)
+        
 
 
 ########################################################################
@@ -238,8 +250,11 @@ class HuobiRestApi(RestClient):
         
         host, path = _split_url(REST_HOST)
         self.init(REST_HOST)
+        
         self.signHost = host
         self.start(sessionCount)
+        
+        self.queryContract()
     
     #----------------------------------------------------------------------
     def queryAccount(self):
@@ -318,15 +333,17 @@ class HuobiRestApi(RestClient):
     #----------------------------------------------------------------------
     def onQueryAccount(self, data, request):  # type: (dict, Request)->None
         """"""
-        for d in data:
+        for d in data['data']:
             if str(d['type']) == 'spot':
                 self.accountid = str(d['id'])
                 self.gateway.writeLog(u'交易账户%s查询成功' %self.accountid)        
+        
+        self.queryAccountBalance()
     
     #----------------------------------------------------------------------
     def onQueryAccountBalance(self, data, request):  # type: (dict, Request)->None
         """"""
-        for d in data['list']:
+        for d in data['data']['list']:
             currency = d['currency']
             account = self.accountDict.get(currency, None)
 
@@ -346,11 +363,16 @@ class HuobiRestApi(RestClient):
             account.balance = account.margin + account.available
 
         for account in self.accountDict.values():
-            self.gateway.onAccount(account)        
+            self.gateway.onAccount(account)   
+        
+        self.gateway.writeLog(u'账户资金信息查询成功')
+        self.queryOrder()
     
     #----------------------------------------------------------------------
     def onQueryOrder(self, data, request):  # type: (dict, Request)->None
         """"""
+        print(data)
+        
         data.reverse()
 
         for d in data:
@@ -390,11 +412,13 @@ class HuobiRestApi(RestClient):
 
             self.orderDict[orderID] = order
             self.gateway.onOrder(order)
+        
+        self.gateway.writeLog(u'委托信息查询成功')
 
     #----------------------------------------------------------------------
     def onQueryContract(self, data, request):  # type: (dict, Request)->None
         """"""
-        for d in data:
+        for d in data['data']:
             contract = VtContractData()
             contract.gatewayName = self.gatewayName
 
@@ -409,7 +433,7 @@ class HuobiRestApi(RestClient):
 
             self.gateway.onContract(contract)
 
-        self.gateway.writeLog(u'交易代码查询成功')
+        self.gateway.writeLog(u'合约信息查询成功')
         self.queryAccount()        
 
     #----------------------------------------------------------------------
@@ -478,6 +502,11 @@ class HuobiWebsocketApiBase(WebsocketClient):
         pass
     
     #----------------------------------------------------------------------
+    @staticmethod
+    def unpackData(data):
+        return json.loads(zlib.decompress(data, 31))    
+    
+    #----------------------------------------------------------------------
     def onPacket(self, packet):
         """"""
         if 'ping' in packet:
@@ -485,10 +514,10 @@ class HuobiWebsocketApiBase(WebsocketClient):
             return
         
         if 'err-msg' in packet:
-            return self.onError(packet)
+            return self.onErrorMsg(packet)
         
         if "op" in packet and packet["op"] == "auth":
-            return self.onLogin(packet)
+            return self.onLogin()
         
         self.onData(packet)
     
@@ -500,7 +529,7 @@ class HuobiWebsocketApiBase(WebsocketClient):
     #----------------------------------------------------------------------
     def onErrorMsg(self, packet):  # type: (dict)->None
         """"""
-        self.gateway.writeLog(packet['err-msg']))
+        self.gateway.writeLog(packet['err-msg'])
 
 
 ########################################################################
@@ -557,6 +586,8 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
     #----------------------------------------------------------------------
     def onLogin(self):
         """"""
+        self.gateway.writeLog(u'交易Websocket服务器登录成功')
+        
         self.subscribeTopic()
         
     #----------------------------------------------------------------------
@@ -772,12 +803,12 @@ class HuobiMarketWebsocketApi(HuobiWebsocketApiBase):
     #----------------------------------------------------------------------
     def onData(self, packet):  # type: (dict)->None
         """"""
-        if 'ch' in data:
-            if 'depth.step' in data['ch']:
-                self.onMarketDepth(data)
-            elif 'detail' in data['ch']:
-                self.onMarketDetail(data)
-        elif 'err-code' in data:
+        if 'ch' in packet:
+            if 'depth.step' in packet['ch']:
+                self.onMarketDepth(packet)
+            elif 'detail' in packet['ch']:
+                self.onMarketDetail(packet)
+        elif 'err-code' in packet:
             self.gateway.writeLog(u'错误代码：%s, 信息：%s' %(data['err-code'], data['err-msg']))
         
     #----------------------------------------------------------------------
