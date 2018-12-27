@@ -26,6 +26,18 @@ WEBSOCKET_MARKET_HOST = 'wss://api.huobi.pro/ws'        # Global站行情
 WEBSOCKET_TRADE_HOST = 'wss://api.huobi.pro/ws/v1'     # 资产和订单
 
 
+# 委托状态类型映射
+statusMapReverse = {}
+statusMapReverse['pre-submitted'] = STATUS_UNKNOWN
+statusMapReverse['submitting'] = STATUS_UNKNOWN
+statusMapReverse['submitted'] = STATUS_NOTTRADED
+statusMapReverse['partial-filled'] = STATUS_PARTTRADED
+statusMapReverse['partial-canceled'] = STATUS_CANCELLED
+statusMapReverse['filled'] = STATUS_ALLTRADED
+statusMapReverse['canceled'] = STATUS_CANCELLED
+
+
+
 #----------------------------------------------------------------------
 def _split_url(url):
     """
@@ -226,6 +238,7 @@ class HuobiRestApi(RestClient):
         
         self.accountid = ''     # 
         self.cancelReqDict = {}
+        self.orderBufDict = {}
         
     #----------------------------------------------------------------------
     def sign(self, request):
@@ -242,6 +255,9 @@ class HuobiRestApi(RestClient):
    
         if request.method == "POST":
             request.headers['Content-Type'] = 'application/json'
+   
+            if request.data:
+                request.data = json.dumps(request.data)
    
         return request
     
@@ -316,6 +332,25 @@ class HuobiRestApi(RestClient):
         path = '/v1/order/orders/place'
         self.addRequest('POST', path, self.onSendOrder, 
                         data=params, extra=localID)
+        
+        # 缓存委托
+        order = VtOrderData()
+        order.gatewayName = self.gatewayName
+
+        order.orderID = localID
+        order.vtOrderID = '.'.join([order.gatewayName, order.orderID])
+
+        order.symbol = orderReq.symbol
+        order.exchange = EXCHANGE_HUOBI
+        order.vtSymbol = '.'.join([order.symbol, order.exchange])
+
+        order.price = orderReq.price
+        order.totalVolume = orderReq.volume
+        order.direction = orderReq.direction
+        order.offset = OFFSET_NONE
+        order.status = STATUS_UNKNOWN
+        
+        self.orderBufDict[localID] = order
 
         # 返回订单号
         return vtOrderID
@@ -323,7 +358,7 @@ class HuobiRestApi(RestClient):
     #----------------------------------------------------------------------
     def cancelOrder(self, cancelReq):
         """"""
-        localID = cancelOrderReq.orderID
+        localID = cancelReq.orderID
         orderID = self.localOrderDict.get(localID, None)
 
         if orderID:
@@ -333,7 +368,7 @@ class HuobiRestApi(RestClient):
             if localID in self.cancelReqDict:
                 del self.cancelReqDict[localID]
         else:
-            self.cancelReqDict[localID] = cancelOrderReq        
+            self.cancelReqDict[localID] = cancelReq        
     
     #----------------------------------------------------------------------
     def onQueryAccount(self, data, request):  # type: (dict, Request)->None
@@ -397,8 +432,8 @@ class HuobiRestApi(RestClient):
             orderID = d['id']
             strOrderID = str(orderID)
 
-            self.localID += 1
-            localID = str(self.localID)
+            self.gateway.localID += 1
+            localID = str(self.gateway.localID)
 
             self.orderLocalDict[strOrderID] = localID
             self.localOrderDict[localID] = strOrderID
@@ -428,7 +463,7 @@ class HuobiRestApi(RestClient):
             if d['canceled-at']:
                 order.cancelTime = datetime.fromtimestamp(d['canceled-at']/1000).strftime('%H:%M:%S')
 
-            self.orderDict[orderID] = order
+            self.orderDict[strOrderID] = order
             self.gateway.onOrder(order)
 
     #----------------------------------------------------------------------
@@ -462,17 +497,24 @@ class HuobiRestApi(RestClient):
     #----------------------------------------------------------------------
     def onSendOrder(self, data, request):  # type: (dict, Request)->None
         """"""
-        print('on send order', data)
+        localID = request.extra
+        order = self.orderBufDict[localID]
         
         status = data.get('status', None)
+        
         if status == 'error':
             msg = u'错误代码：%s, 错误信息：%s' %(data['err-code'], data['err-msg'])
             self.gateway.writeLog(msg)
-            return        
+                
+            order.status = STATUS_REJECTED
+            self.gateway.onOrder(order)
+            return
         
-        localID = request.extra
-        orderID = data
-        self.localOrderDict[localID] = orderID
+        orderID = data['data']
+        strOrderID = str(orderID)
+        
+        self.localOrderDict[localID] = strOrderID
+        self.orderDict[strOrderID] = order
         
         req = self.cancelReqDict.get(localID, None)
         if req:
@@ -551,7 +593,6 @@ class HuobiWebsocketApiBase(WebsocketClient):
             return
         
         if 'err-msg' in packet:
-            print(packet)
             return self.onErrorMsg(packet)
         
         if "op" in packet and packet["op"] == "auth":
@@ -664,7 +705,7 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
     #----------------------------------------------------------------------
     def onOrder(self, data):
         """"""
-        orderID = data['id']
+        orderID = data['order-id']
         strOrderID = str(orderID)
         order = self.orderDict.get(strOrderID, None)
         
@@ -690,102 +731,40 @@ class HuobiTradeWebsocketApi(HuobiWebsocketApiBase):
             
             dt = datetime.fromtimestamp(data['created-at']/1000)
             order.orderTime = dt.strftime('%H:%M:%S')
+            
+            if 'buy' in data['order-type']:
+                order.direction = DIRECTION_LONG
+            else:
+                order.direction = DIRECTION_SHORT
+            order.offset = OFFSET_NONE          
+            
+            self.orderDict[strOrderID] = order
         
         order.tradedVolume += float(data['filled-amount'])
         order.status = statusMapReverse.get(data['order-state'], STATUS_UNKNOWN)        
-        
         self.gateway.onOrder(order)
         
-        
-        trade = VtTradeData()
-        trade.gatewayName = self.gatewayName
-
-        trade.tradeID = data['seq-id']
-        trade.vtTradeID = '.'.join([trade.tradeID, trade.gatewayName])
-
-        trade.symbol = data['symbol']
-        trade.exchange = EXCHANGE_HUOBI
-        trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
-        trade.direction = order.direction
-        trade.offset = order.offset
-        trade.orderID = order.orderID
-        trade.vtOrderID = order.vtOrderID
-        
-        trade.price = float(data['price'])
-        trade.volume = float(data['filled-amount'])
-
-        dt = datetime.now()
-        trade.tradeTime = dt.strftime('%H:%M:%S')
-
-        self.gateway.onTrade(trade)
-    
-    #----------------------------------------------------------------------
-    def onOrderOld(self, data):
-        """"""
-        orderID = data['id']
-        strOrderID = str(orderID)
-       
-        newTrade = False 
-        order = self.orderDict.get(strOrderID, None)
-        
-        if not order:
-            self.gateway.localID += 1
-            localID = str(self.gateway.localID)
-
-            self.orderLocalDict[strOrderID] = localID
-            self.localOrderDict[localID] = strOrderID
-
-            order = VtOrderData()
-            order.gatewayName = self.gatewayName
-    
-            order.orderID = localID
-            order.vtOrderID = '.'.join([order.gatewayName, order.orderID])
-    
-            order.symbol = data['symbol']
-            order.exchange = EXCHANGE_HUOBI
-            order.vtSymbol = '.'.join([order.symbol, order.exchange])
-    
-            order.price = float(data['order-price'])
-            order.totalVolume = float(data['order-amount'])
-            
-            dt = datetime.fromtimestamp(data['created-at']/1000)
-            order.orderTime = dt.strftime('%H:%M:%S')
-        else:
-            oldTradedVolume = order.tradedVolume
-            if oldTradedVolume != float(data['filled-amount']):
-                newTrade = True
-        
-        order.tradedVolume = float(data['filled-amount'])
-        order.status = statusMapReverse.get(data['order-state'], STATUS_UNKNOWN)        
-        
-        self.gateway.onOrder(order)
-        
-        if newTrade:
+        if float(data['filled-amount']):
             trade = VtTradeData()
             trade.gatewayName = self.gatewayName
-
-            trade.tradeID = data['seq-id']
+    
+            trade.tradeID = str(data['seq-id'])
             trade.vtTradeID = '.'.join([trade.tradeID, trade.gatewayName])
-
+    
             trade.symbol = data['symbol']
             trade.exchange = EXCHANGE_HUOBI
             trade.vtSymbol = '.'.join([trade.symbol, trade.exchange])
-
-            if 'buy' in data['order-type']:
-                trade.direction = DIRECTION_LONG
-            else:
-                trade.direction = DIRECTION_SHORT
-            trade.offset = OFFSET_NONE
-
+            trade.direction = order.direction
+            trade.offset = order.offset
             trade.orderID = order.orderID
             trade.vtOrderID = order.vtOrderID
             
             trade.price = float(data['price'])
-            trade.volume = order.tradedVolume - oldTradedVolume
-
-            dt = datetime.fromtimestamp(d['created-at']/1000)
+            trade.volume = float(data['filled-amount'])
+    
+            dt = datetime.now()
             trade.tradeTime = dt.strftime('%H:%M:%S')
-
+    
             self.gateway.onTrade(trade)
 
 
@@ -906,3 +885,15 @@ class HuobiMarketWebsocketApi(HuobiWebsocketApiBase):
         if tick.bidPrice1:
             newtick = copy(tick)
             self.gateway.onTick(newtick)
+
+
+
+#----------------------------------------------------------------------
+def printDict(d):
+    """"""
+    print('-' * 30)
+    l = d.keys()
+    l.sort()
+    for k in l:
+        print(type(k), k, d[k])
+    
