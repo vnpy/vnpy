@@ -309,12 +309,13 @@ class HuobiRestApi(RestClient):
             'amount': str(orderReq.volume),
             'symbol': orderReq.symbol,
             'type': type_,
-            'price': orderReq.price,
+            'price': str(orderReq.price),
             'source': 'api'
         }
         
+        path = '/v1/order/orders/place'
         self.addRequest('POST', path, self.onSendOrder, 
-                        params=params, extra=localID)
+                        data=params, extra=localID)
 
         # 返回订单号
         return vtOrderID
@@ -340,13 +341,21 @@ class HuobiRestApi(RestClient):
         for d in data['data']:
             if str(d['type']) == 'spot':
                 self.accountid = str(d['id'])
-                self.gateway.writeLog(u'交易账户%s查询成功' %self.accountid)        
+                self.gateway.writeLog(u'账户代码%s查询成功' %self.accountid)        
         
         self.queryAccountBalance()
     
     #----------------------------------------------------------------------
     def onQueryAccountBalance(self, data, request):  # type: (dict, Request)->None
         """"""
+        status = data.get('status', None)
+        if status == 'error':
+            msg = u'错误代码：%s, 错误信息：%s' %(data['err-code'], data['err-msg'])
+            self.gateway.writeLog(msg)
+            return
+        
+        self.gateway.writeLog(u'资金信息查询成功')
+        
         for d in data['data']['list']:
             currency = d['currency']
             account = self.accountDict.get(currency, None)
@@ -369,17 +378,22 @@ class HuobiRestApi(RestClient):
         for account in self.accountDict.values():
             self.gateway.onAccount(account)   
         
-        self.gateway.writeLog(u'账户资金信息查询成功')
         self.queryOrder()
     
     #----------------------------------------------------------------------
     def onQueryOrder(self, data, request):  # type: (dict, Request)->None
         """"""
-        print(data)
+        status = data.get('status', None)
+        if status == 'error':
+            msg = u'错误代码：%s, 错误信息：%s' %(data['err-code'], data['err-msg'])
+            self.gateway.writeLog(msg)
+            return
         
-        data.reverse()
-
-        for d in data:
+        symbol = request.params['symbol']
+        self.gateway.writeLog(u'%s委托信息查询成功' %symbol)
+        
+        data['data'].reverse()
+        for d in data['data']:
             orderID = d['id']
             strOrderID = str(orderID)
 
@@ -416,12 +430,18 @@ class HuobiRestApi(RestClient):
 
             self.orderDict[orderID] = order
             self.gateway.onOrder(order)
-        
-        self.gateway.writeLog(u'委托信息查询成功')
 
     #----------------------------------------------------------------------
     def onQueryContract(self, data, request):  # type: (dict, Request)->None
         """"""
+        status = data.get('status', None)
+        if status == 'error':
+            msg = u'错误代码：%s, 错误信息：%s' %(data['err-code'], data['err-msg'])
+            self.gateway.writeLog(msg)
+            return
+        
+        self.gateway.writeLog(u'合约信息查询成功')
+        
         for d in data['data']:
             contract = VtContractData()
             contract.gatewayName = self.gatewayName
@@ -436,13 +456,20 @@ class HuobiRestApi(RestClient):
             contract.productClass = PRODUCT_SPOT
 
             self.gateway.onContract(contract)
-
-        self.gateway.writeLog(u'合约信息查询成功')
+            
         self.queryAccount()        
 
     #----------------------------------------------------------------------
     def onSendOrder(self, data, request):  # type: (dict, Request)->None
         """"""
+        print('on send order', data)
+        
+        status = data.get('status', None)
+        if status == 'error':
+            msg = u'错误代码：%s, 错误信息：%s' %(data['err-code'], data['err-msg'])
+            self.gateway.writeLog(msg)
+            return        
+        
         localID = request.extra
         orderID = data
         self.localOrderDict[localID] = orderID
@@ -454,6 +481,12 @@ class HuobiRestApi(RestClient):
     #----------------------------------------------------------------------
     def onCancelOrder(self, data, request):  # type: (dict, Request)->None
         """"""
+        status = data.get('status', None)
+        if status == 'error':
+            msg = u'错误代码：%s, 错误信息：%s' %(data['err-code'], data['err-msg'])
+            self.gateway.writeLog(msg)
+            return
+        
         self.gateway.writeLog(u'委托撤单成功：%s' %data)
 
 
@@ -518,6 +551,7 @@ class HuobiWebsocketApiBase(WebsocketClient):
             return
         
         if 'err-msg' in packet:
+            print(packet)
             return self.onErrorMsg(packet)
         
         if "op" in packet and packet["op"] == "auth":
@@ -533,6 +567,10 @@ class HuobiWebsocketApiBase(WebsocketClient):
     #----------------------------------------------------------------------
     def onErrorMsg(self, packet):  # type: (dict)->None
         """"""
+        msg = packet['err-msg']
+        if msg == u'invalid pong':
+            return
+        
         self.gateway.writeLog(packet['err-msg'])
 
 
