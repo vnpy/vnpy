@@ -38,14 +38,21 @@ def _split_url(url):
 
 
 #----------------------------------------------------------------------
-def createSignature(apiKey, method, host, path, secretKey):
-    """创建签名"""
-    sortedParams = (
+def createSignature(apiKey, method, host, path, secretKey, getParams=None):
+    """
+    创建签名
+    :param getParams: dict 使用GET方法时附带的额外参数(urlparams)
+    :return:
+    """
+    sortedParams = [
         ("AccessKeyId", apiKey),
         ("SignatureMethod", 'HmacSHA256'),
         ("SignatureVersion", "2"),
         ("Timestamp", datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S'))
-    )
+    ]
+    if getParams:
+        sortedParams.extend(getParams.items())
+        sortedParams = list(sorted(sortedParams))
     encodeParams = urllib.urlencode(sortedParams)
     
     payload = [method, host, path, encodeParams]
@@ -225,16 +232,13 @@ class HuobiRestApi(RestClient):
         request.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36"
         }
-        
-        additionalParams = createSignature(self.apiKey,
+        paramsWithSignature = createSignature(self.apiKey,
                                            request.method,
                                            self.signHost,
                                            request.path,
-                                           self.apiSecret)
-        if not request.params:
-            request.params = additionalParams
-        else:
-            request.params.update(additionalParams)
+                                           self.apiSecret,
+                                           request.params)
+        request.params = paramsWithSignature
    
         if request.method == "POST":
             request.headers['Content-Type'] = 'application/json'
