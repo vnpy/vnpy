@@ -197,6 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #----------------------------------------------------------------------
     def openAppByName(self, appName):
+        """"""
         detail = [i for i in self.appDetailList if i['appName'] == appName][0]
         return self.openAppByDetail(detail)
 
