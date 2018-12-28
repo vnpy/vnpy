@@ -1,8 +1,5 @@
 {
-	"exchange": "hadax",
-	"accessKey": "请在火币申请",
-	"secretKey": "请在火币申请",
-	"symbols": ["aaceth"],
-	"proxyHost": "127.0.0.1",
-	"proxyPort": 1080
+	"accessKey": "",
+	"secretKey": "",
+	"symbols": ["btcusdt","ethusdt","ethbtc"]
 }
