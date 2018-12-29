@@ -70,7 +70,7 @@ class StopAlgo(AlgoTemplate):
                 
             func = self.sell
             
-        self.vtOrderID = func(self.vtSymbol, price, self.volume, offset=self.offset)
+        self.vtOrderID = func(self.vtSymbol, price, self.totalVolume, offset=self.offset)
         
         msg = u'停止单已触发，代码：%s，方向：%s, 价格：%s，数量：%s，开平：%s' %(self.vtSymbol,
                                                                                 self.direction,

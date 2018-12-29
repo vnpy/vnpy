@@ -11,11 +11,11 @@ from time import sleep
 from datetime import datetime
 from copy import copy
 
-from futuquant import (OpenQuoteContext, OpenHKTradeContext, OpenUSTradeContext,
-                       RET_ERROR, RET_OK, 
-                       TrdEnv, TrdSide, OrderType, OrderStatus, ModifyOrderOp,
-                       StockQuoteHandlerBase, OrderBookHandlerBase,
-                       TradeOrderHandlerBase, TradeDealHandlerBase)
+from futu import (OpenQuoteContext, OpenHKTradeContext, OpenUSTradeContext,
+                  RET_ERROR, RET_OK, 
+                  TrdEnv, TrdSide, OrderType, OrderStatus, ModifyOrderOp,
+                  StockQuoteHandlerBase, OrderBookHandlerBase,
+                  TradeOrderHandlerBase, TradeDealHandlerBase)
 
 from vnpy.trader.vtGateway import *
 from vnpy.trader.vtConstant import GATEWAYTYPE_INTERNATIONAL
@@ -353,7 +353,7 @@ class FutuGateway(VtGateway):
     #----------------------------------------------------------------------
     def qryTrade(self):
         """查询成交"""
-        code, data = self.tradeCtx.deal_list_query(self.env)
+        code, data = self.tradeCtx.deal_list_query("", trd_env=self.env)
         
         if code:
             self.writeError(code, u'查询成交失败：%s' %data)

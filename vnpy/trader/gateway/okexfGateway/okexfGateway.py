@@ -388,28 +388,30 @@ class OkexfRestApi(RestClient):
     #----------------------------------------------------------------------
     def onQueryPosition(self, data, request):
         """"""
-        for holding in data['holding']:
-            for d in holding:
-                longPosition = VtPositionData()
-                longPosition.gatewayName = self.gatewayName
-                longPosition.symbol = d['instrument_id']
-                longPosition.exchange = 'OKEX'
-                longPosition.vtSymbol = '.'.join([longPosition.symbol, longPosition.exchange])
-                longPosition.direction = DIRECTION_LONG
-                longPosition.vtPositionName = '.'.join([longPosition.vtSymbol, longPosition.direction])
-                longPosition.position = int(d['long_qty'])
-                longPosition.frozen = longPosition.position - int(d['long_avail_qty'])
-                longPosition.price = float(d['long_avg_cost'])
-                
-                shortPosition = copy(longPosition)
-                shortPosition.direction = DIRECTION_SHORT
-                shortPosition.vtPositionName = '.'.join([shortPosition.vtSymbol, shortPosition.direction])
-                shortPosition.position = int(d['short_qty'])
-                shortPosition.frozen = shortPosition.position - int(d['short_avail_qty'])
-                shortPosition.price = float(d['short_avg_cost'])
-                
-                self.gateway.onPosition(longPosition)
-                self.gateway.onPosition(shortPosition)
+        if not data['holding']:
+            return
+        
+        for d in data['holding'][0]:
+            longPosition = VtPositionData()
+            longPosition.gatewayName = self.gatewayName
+            longPosition.symbol = d['instrument_id']
+            longPosition.exchange = 'OKEX'
+            longPosition.vtSymbol = '.'.join([longPosition.symbol, longPosition.exchange])
+            longPosition.direction = DIRECTION_LONG
+            longPosition.vtPositionName = '.'.join([longPosition.vtSymbol, longPosition.direction])
+            longPosition.position = int(d['long_qty'])
+            longPosition.frozen = longPosition.position - int(d['long_avail_qty'])
+            longPosition.price = float(d['long_avg_cost'])
+            
+            shortPosition = copy(longPosition)
+            shortPosition.direction = DIRECTION_SHORT
+            shortPosition.vtPositionName = '.'.join([shortPosition.vtSymbol, shortPosition.direction])
+            shortPosition.position = int(d['short_qty'])
+            shortPosition.frozen = shortPosition.position - int(d['short_avail_qty'])
+            shortPosition.price = float(d['short_avg_cost'])
+            
+            self.gateway.onPosition(longPosition)
+            self.gateway.onPosition(shortPosition)
     
     #----------------------------------------------------------------------
     def onQueryOrder(self, data, request):
@@ -455,7 +457,7 @@ class OkexfRestApi(RestClient):
         """
         order = request.extra
         order.status = STATUS_REJECTED
-        self.gateway.onOrder(vtOrder)
+        self.gateway.onOrder(order)
     
     #----------------------------------------------------------------------
     def onSendOrder(self, data, request):
@@ -684,8 +686,8 @@ class OkexfWebsocketApi(WebsocketClient):
         
         for n, buf in enumerate(data['asks']):
             price, volume = buf[:2]
-            tick.__setattr__('askPrice%s' %(n+1), float(price))
-            tick.__setattr__('askVolume%s' %(n+1), int(volume))
+            tick.__setattr__('askPrice%s' %(5-n), float(price))
+            tick.__setattr__('askVolume%s' %(5-n), int(volume))
         
         dt = datetime.fromtimestamp(data['timestamp']/1000)
         tick.date = dt.strftime('%Y%m%d')

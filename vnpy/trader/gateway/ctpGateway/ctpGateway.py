@@ -379,7 +379,7 @@ class CtpMdApi(MdApi):
         if tick.exchange == EXCHANGE_DCE:
             tick.date = datetime.now().strftime('%Y%m%d')
 
-        # 上交所，SEE，股票期权相关
+        # 上交所，SSE，股票期权相关
         if tick.exchange == EXCHANGE_SSE:
             tick.bidPrice2 = data['BidPrice2']
             tick.bidVolume2 = data['BidVolume2']

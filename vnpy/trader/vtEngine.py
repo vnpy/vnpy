@@ -113,6 +113,8 @@ class MainEngine(object):
         
         if gateway:
             gateway.connect()
+        
+        self.dbConnect()
    
     #----------------------------------------------------------------------
     def subscribe(self, subscribeReq, gatewayName):
@@ -196,7 +198,7 @@ class MainEngine(object):
             # 读取MongoDB的设置
             try:
                 # 设置MongoDB操作的超时时间为0.5秒
-                self.dbClient = MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'], connectTimeoutMS=500)
+                self.dbClient = MongoClient(globalSetting['mongoHost'], globalSetting['mongoPort'], serverSelectionTimeoutMS=10)
                 
                 # 调用server_info查询服务器状态，防止服务器异常并未连接成功
                 self.dbClient.server_info()
@@ -208,6 +210,7 @@ class MainEngine(object):
                     self.eventEngine.register(EVENT_LOG, self.dbLogging)
                     
             except ConnectionFailure:
+                self.dbClient = None
                 self.writeLog(text.DATABASE_CONNECTING_FAILED)
     
     #----------------------------------------------------------------------

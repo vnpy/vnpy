@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
-        self.setWindowTitle('VnTrader')
+        self.setWindowTitle('VN Crypto')
         self.initCentral()
         self.initMenu()
         self.initStatusBar()
@@ -309,7 +309,7 @@ class AboutWidget(QtWidgets.QDialog):
     #----------------------------------------------------------------------
     def initUi(self):
         """"""
-        self.setWindowTitle(vtText.ABOUT + 'VnTrader')
+        self.setWindowTitle(vtText.ABOUT + 'VN Crypto')
 
         text = u"""
             Developed by Traders, for Traders.
