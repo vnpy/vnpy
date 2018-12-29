@@ -270,9 +270,4 @@ class WebsocketClient(object):
         """
         用于Debug： 记录最后一次发送出去的text
         """
-        try:
-            # 尝试解包，解不了就算
-            text = str(self.unpackData(text))
-        except:
-            pass
         self._lastReceivedText = text[:1000]
