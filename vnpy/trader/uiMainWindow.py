@@ -197,6 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #----------------------------------------------------------------------
     def openAppByName(self, appName):
+        """"""
         detail = [i for i in self.appDetailList if i['appName'] == appName][0]
         return self.openAppByDetail(detail)
 
@@ -206,13 +207,15 @@ class MainWindow(QtWidgets.QMainWindow):
         :return 返回app的窗口
         """
         appName = appDetail['appName']
-        try:
-            self.widgetDict[appName].show()
-        except KeyError:
-            appEngine = self.mainEngine.getApp(appName)
-            self.widgetDict[appName] = appDetail['appWidget'](appEngine, self.eventEngine)
-            self.widgetDict[appName].show()
-        return self.widgetDict[appName]
+        if appName not in self.widgetDict:
+            self.widgetDict[appName] = appDetail['appWidget'](self.mainEngine.getApp(appName),
+                                                              self.eventEngine)
+        app = self.widgetDict[appName]  # type: QtWidgets.QWidget
+        app.show()
+        app.resize(app.size())  # 修正最大化后的空白
+        app.raise_()            # 移到前台
+        app.activateWindow()    # 移到前台并获取焦点
+        return app
 
     #----------------------------------------------------------------------
     def createOpenAppFunction(self, appDetail):

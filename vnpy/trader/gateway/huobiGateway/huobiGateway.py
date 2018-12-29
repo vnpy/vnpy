@@ -14,6 +14,7 @@ import re
 import urllib
 import zlib
 from copy import copy
+from datetime import datetime
 
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
@@ -21,9 +22,8 @@ from vnpy.trader.vtGateway import *
 from vnpy.trader.vtFunction import getTempPath, getJsonPath
 
 REST_HOST = 'https://api.huobipro.com'
-#REST_HOST = 'https://api.huobi.pro/v1'
-WEBSOCKET_MARKET_HOST = 'wss://api.huobi.pro/ws'        # Global站行情
-WEBSOCKET_TRADE_HOST = 'wss://api.huobi.pro/ws/v1'     # 资产和订单
+WEBSOCKET_MARKET_HOST = 'wss://api.huobi.pro/ws'       # 行情
+WEBSOCKET_TRADE_HOST = 'wss://api.huobi.pro/ws/v1'     # 资金和委托
 
 
 # 委托状态类型映射
