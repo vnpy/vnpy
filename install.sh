@@ -10,25 +10,41 @@ function check_result() {
 }
 
 #Build ctp/lts/ib api
-pushd vnpy/api/ctp
-bash build.sh
-check_result "build api.ctp"
-popd
+echo "是否要安装'CTP'接口? (Do you need 'CTP' interface?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/ctp
+	bash build.sh
+	popd
+fi
 
-pushd vnpy/api/lts
-bash build.sh
-check_result "build api.lts"
-popd
+echo "是否要安装'LTS'接口? (Do you need 'LTS' interface?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/lts
+	bash build.sh
+	popd
+fi
 
-pushd vnpy/api/xtp
-bash build.sh
-check_result "build api.xtp"
-popd
+echo "是否要安装'XTP'接口? (Do you need 'XTP' interface?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/xtp
+	bash build.sh
+	popd
+fi
 
-pushd vnpy/api/ib
-bash build.sh
-check_result "build api.ib"
-popd
+echo "是否要安装'IB'接口? (Do you need 'IB' interface?)"
+read -p "Enter [y]n: " var1
+var1=${var1:-y}
+if [ "$var1" = "y" ]; then
+	pushd vnpy/api/ib
+	bash build.sh
+	popd
+fi
 
 #Install Python Modules
 pip install -r requirements.txt

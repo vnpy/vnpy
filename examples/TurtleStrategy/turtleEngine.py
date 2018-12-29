@@ -1,5 +1,7 @@
 # encoding: UTF-8
 
+from __future__ import print_function
+
 from csv import DictReader
 from datetime import datetime
 from collections import OrderedDict, defaultdict
@@ -306,7 +308,7 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def output(self, content):
         """输出信息"""
-        print content
+        print(content)
     
     #----------------------------------------------------------------------
     def getTradeData(self, vtSymbol=''):
