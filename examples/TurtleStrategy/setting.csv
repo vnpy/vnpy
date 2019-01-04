@@ -1,5 +1,0 @@
-vtSymbol,size,priceTick,variableCommission,fixedCommission,slippage
-IF99,300,0.2,0.00003,0,0.2
-I99,100,0.5,0.00006,0,0.5
-CU99,5,10,0.00005,0,10
-TA99,5,2,0,12,2

@@ -1,3 +1,0 @@
-templateName,settingName,vtSymbol,direction,targetPrice,totalVolume,time,interval,priceLevel,minVolume
-TWAP,BUY_BTC_TWAP,BTCUSD.BITFINEX,多,4000,10,200,10,3,1
-TWAP,SELL_BTC_TWAP,BTCUSD.BITFINEX,空,9000,10,200,10,3,1
