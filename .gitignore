@@ -1,10 +1,10 @@
+# Python
+*.pyc
+
 # IDE
 .vscode
 .idea
 
-# Python
-.pyc
-.pyo
-
+# Temp
 build
 dist
