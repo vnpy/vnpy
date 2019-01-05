@@ -1,0 +1,10 @@
+# IDE
+.vscode
+.idea
+
+# Python
+.pyc
+.pyo
+
+build
+dist
