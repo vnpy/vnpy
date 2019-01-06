@@ -139,7 +139,7 @@ bad-names=foo,
           tata
 
 # Naming style matching correct class attribute names.
-class-attribute-naming-style=camelCase
+class-attribute-naming-style=snake_case
 
 # Regular expression matching correct class attribute names. Overrides class-
 # attribute-naming-style.
