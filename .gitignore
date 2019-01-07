@@ -4,6 +4,8 @@
 # IDE
 .vscode
 .idea
+*.wpr
+*.wpu
 
 # Temp
 build

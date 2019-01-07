@@ -1,3 +1,7 @@
+"""
+Event-driven framework of vn.py framework.
+"""
+
 from queue import Queue, Empty
 from threading import Thread, Timer
 from collections import defaultdict
