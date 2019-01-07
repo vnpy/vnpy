@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.7"
+install:
+  - pip install -r requirements.txt
+  - pip install -r requirements-travis.txt
+  - pip install -r requirements-dev.txt
+# command to run tests
+script:
+  - yapf --style .style.yapf
+  - pylint --rcfile=.pylintrc vnpy
+  - python tests/test_all.py
