@@ -4,7 +4,9 @@ from vnpy.trader.ui import MainWindow, create_qapp
 
 from vnpy.trader.ui.widget import TickMonitor
 
-if __name__ == "__main__":
+
+def main():
+    """"""
     qapp = create_qapp()
 
     event_engine = EventEngine()
@@ -17,3 +19,7 @@ if __name__ == "__main__":
     monitor.show()
 
     qapp.exec()
+
+
+if __name__ == "__main__":
+    main()
