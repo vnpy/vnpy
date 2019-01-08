@@ -1,8 +1,6 @@
 [style]
 based_on_style = google
-split_before_logical_operator = true
 spaces_before_comment=2, 4
-
 SPLIT_ARGUMENTS_WHEN_COMMA_TERMINATED = true
 SPLIT_ALL_COMMA_SEPARATED_VALUES = true
 SPLIT_BEFORE_BITWISE_OPERATOR = true
