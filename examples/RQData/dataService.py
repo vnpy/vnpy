@@ -27,7 +27,7 @@ dbTick = mc[TICK_DB_NAME]
 
 USERNAME = setting['rqUsername']
 PASSWORD = setting['rqPassword']
-rq.init(USERNAME, PASSWORD)
+rq.init(USERNAME, PASSWORD, ('rqdatad-pro.ricequant.com', 16011))
 
 FIELDS = ['open', 'high', 'low', 'close', 'volume']
 
