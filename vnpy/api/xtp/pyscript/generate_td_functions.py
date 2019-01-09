@@ -294,6 +294,7 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
     ffunction.write('    memset(&myreq, 0, sizeof(myreq));\n')
 
     for key, value in struct.items():
+        line = ''
         if value == 'string':
             line = '    getString(req, "' + key + '", myreq.' + key + ');\n'
         elif value == 'char':
