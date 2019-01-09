@@ -691,7 +691,7 @@ class OkexfWebsocketApi(WebsocketClient):
         
         dt = datetime.fromtimestamp(data['timestamp']/1000)
         tick.date = dt.strftime('%Y%m%d')
-        tick.time = dt.strftime('%H:%M:%S')
+        tick.time = dt.strftime('%H:%M:%S.%f')
         
         tick = copy(tick)
         self.gateway.onTick(tick)
