@@ -6,7 +6,15 @@ from datetime import datetime
 
 from vnpy.event import EventEngine, Event
 
-from .event import EVENT_LOG
+from .event import (
+    EVENT_LOG,
+    EVENT_TICK,
+    EVENT_ORDER,
+    EVENT_TRADE,
+    EVENT_POSITION,
+    EVENT_ACCOUNT,
+    EVENT_CONTRACT
+)
 from .object import LogData, SubscribeRequest, OrderRequest, CancelRequest
 from .utility import Singleton, get_temp_path, check_order_active
 from .setting import SETTINGS
@@ -31,7 +39,7 @@ class MainEngine:
 
         self.init_engines()
 
-    def init_engines:
+    def init_engines(self):
         """
         Init all engines.
         """
@@ -40,20 +48,21 @@ class MainEngine:
 
         # OMS Engine
         self.engines["oms"] = OmsEngine(self, self.event_engine)
-        
+
         oms_engine = self.engines["oms"]
         self.get_tick = oms_engine.get_tick
         self.get_order = oms_engine.get_order
         self.get_position = oms_engine.get_position
         self.get_account = oms_engine.get_account
         self.get_contract = oms_engine.get_contract
-        self.get_all_ticks = oms.get_all_ticks
-        self.get_all_orders = oms.get_all_orders
-        self.get_all_trades = oms.get_all_trades
-        self.get_all_positions = oms.get_all_positions
-        self.get_all_accounts = oms.get_all_accounts
-        self.get_all_active_orders = oms.get_all_active_orders
-        
+        self.get_contract = oms_engine.get_contract
+        self.get_all_ticks = oms_engine.get_all_ticks
+        self.get_all_orders = oms_engine.get_all_orders
+        self.get_all_trades = oms_engine.get_all_trades
+        self.get_all_positions = oms_engine.get_all_positions
+        self.get_all_accounts = oms_engine.get_all_accounts
+        self.get_all_active_orders = oms_engine.get_all_active_orders
+
     def write_log(self, msg: str):
         """
         Put log event with specific message.
@@ -172,7 +181,7 @@ class LogEngine:
         file_handler = logging.FileHandler(file_path, mode='w', encoding='utf8')
         file_handler.setLevel(self.level)
         file_handler.setFormatter(self.formatter)
-        self.logger.StreamHandler(file_handler)
+        self.logger.addHandler(file_handler)
 
     def register_event(self):
         """"""
@@ -232,7 +241,7 @@ class OmsEngine:
         # Otherwise, pop inactive order from in dict
         elif order.vt_orderid in self.active_orders:
             self.active_orders.pop(order.vt_orderid)
-    
+
     def process_trade_event(self, event: Event):
         """"""
         trade = event.data
@@ -251,8 +260,8 @@ class OmsEngine:
     def process_contract_event(self, event: Event):
         """"""
         contract = event.data
-        self.contracts[contract.vt_symbol]] = contract
-    
+        self.contracts[contract.vt_symbol] = contract
+
     def get_tick(self, vt_symbol):
         """
         Get latest market tick data by vt_symbol.
@@ -264,7 +273,7 @@ class OmsEngine:
         Get latest order data by vt_orderid.
         """
         return self.orders.get(vt_orderid, None)
-    
+
     def get_trade(self, vt_tradeid):
         """
         Get trade data by vt_tradeid.
@@ -288,7 +297,7 @@ class OmsEngine:
         Get contract data by vt_symbol.
         """
         return self.contracts.get(vt_symbol, None)
-    
+
     def get_all_ticks(self):
         """
         Get all tick data.
@@ -324,8 +333,8 @@ class OmsEngine:
         Get all contract data.
         """
         return list(self.contracts.values())
-    
-    def get_all_active_orders(self, vt_symbol: str=''):
+
+    def get_all_active_orders(self, vt_symbol: str = ''):
         """
         Get all active orders by vt_symbol.
 
@@ -334,5 +343,8 @@ class OmsEngine:
         if not vt_symbol:
             return list(self.active_orders.values())
         else:
-            active_orders = [order for order in self.active_orders.values() if order.vt_symbol == vt_symbol]
+            active_orders = [
+                order for order in self.active_orders.values()
+                if order.vt_symbol == vt_symbol
+            ]
             return active_orders
