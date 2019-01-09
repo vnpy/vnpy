@@ -27,8 +27,8 @@ class TickData(BaseData):
     symbol: str
     exchange: str
     datetime: datetime
-    volume: float = 0
 
+    volume: float = 0
     last_price: float = 0
     last_volume: float = 0
 

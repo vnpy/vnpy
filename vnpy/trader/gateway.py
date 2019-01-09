@@ -6,18 +6,37 @@ from abc import ABC, abstractmethod
 
 from vnpy.event import EventEngine, Event
 
-from .event import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_ACCOUNT,
-                    EVENT_POSITION, EVENT_LOG, EVENT_CONTRACT)
-from .object import (TickData, OrderData, TradeData, AccountData, PositionData,
-                     LogData, ContractData, SubscribeRequest, OrderRequest,
-                     CancelRequest)
+from .event import (
+    EVENT_TICK,
+    EVENT_ORDER,
+    EVENT_TRADE,
+    EVENT_ACCOUNT,
+    EVENT_POSITION,
+    EVENT_LOG,
+    EVENT_CONTRACT
+)
+from .object import (
+    TickData,
+    OrderData,
+    TradeData,
+    AccountData,
+    PositionData,
+    LogData,
+    ContractData,
+    SubscribeRequest,
+    OrderRequest,
+    CancelRequest
+)
 
 
-class Gateway(ABC):
+class BaseGateway(ABC):
     """
     Abstract gateway class for creating gateways connection 
     to different trading systems.
     """
+
+    # Fields required in setting dict for connect function.
+    default_setting = {}
 
     def __init__(self, event_engine: EventEngine, gateway_name: str):
         """"""
@@ -84,7 +103,7 @@ class Gateway(ABC):
         self.on_event(EVENT_CONTRACT, contract)
 
     @abstractmethod
-    def connect(self):
+    def connect(self, setting: dict):
         """
         Start gateway connection.
         """
@@ -131,3 +150,9 @@ class Gateway(ABC):
         Query holding positions.
         """
         pass
+
+    def get_default_setting(self):
+        """
+        Return default setting dict.
+        """
+        return self.default_setting

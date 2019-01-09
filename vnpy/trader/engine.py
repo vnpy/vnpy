@@ -3,6 +3,7 @@
 
 import logging
 from datetime import datetime
+from abc import ABC
 
 from vnpy.event import EventEngine, Event
 
@@ -18,6 +19,24 @@ from .event import (
 from .object import LogData, SubscribeRequest, OrderRequest, CancelRequest
 from .utility import Singleton, get_temp_path, check_order_active
 from .setting import SETTINGS
+from .gateway import BaseGateway
+
+
+class BaseEngine(ABC):
+    """
+    Abstract class for implementing an function engine.
+    """
+
+    def __init__(
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str
+    ):
+        """"""
+        self.main_engine = main_engine
+        self.event_engine = event_engine
+        self.engine_name = engine_name
 
 
 class MainEngine:
@@ -39,29 +58,26 @@ class MainEngine:
 
         self.init_engines()
 
+    def add_engine(self, engine_class: BaseEngine):
+        """
+        Add function engine.
+        """
+        engine = engine_class(self, self.event_engine)
+        self.engines[engine.engine_name] = engine
+
+    def add_gateway(self, gateway_class: BaseGateway):
+        """
+        Add gateway.
+        """
+        gateway = gateway_class(self.event_engine)
+        self.gateways[gateway.gateway_name] = engine
+
     def init_engines(self):
         """
         Init all engines.
         """
-        # Log Engine
-        self.engines["log"] = LogEngine(self, self.event_engine)
-
-        # OMS Engine
-        self.engines["oms"] = OmsEngine(self, self.event_engine)
-
-        oms_engine = self.engines["oms"]
-        self.get_tick = oms_engine.get_tick
-        self.get_order = oms_engine.get_order
-        self.get_position = oms_engine.get_position
-        self.get_account = oms_engine.get_account
-        self.get_contract = oms_engine.get_contract
-        self.get_contract = oms_engine.get_contract
-        self.get_all_ticks = oms_engine.get_all_ticks
-        self.get_all_orders = oms_engine.get_all_orders
-        self.get_all_trades = oms_engine.get_all_trades
-        self.get_all_positions = oms_engine.get_all_positions
-        self.get_all_accounts = oms_engine.get_all_accounts
-        self.get_all_active_orders = oms_engine.get_all_active_orders
+        self.add_engine(LogEngine)
+        self.add_engine(OmsEngine)
 
     def write_log(self, msg: str):
         """
@@ -79,6 +95,14 @@ class MainEngine:
         if not gateway:
             self.write_log(f"找不到底层接口：{gateway_name}")
         return gateway
+
+    def get_default_setting(self, gateway_name: str):
+        """
+        Get default setting dict of a specific gateway.
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            return gateway.get_default_setting()
 
     def connect(self, gateway_name: str):
         """
@@ -102,7 +126,9 @@ class MainEngine:
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.send_order(req)
+            return gateway.send_order(req)
+        else:
+            return ""
 
     def cancel_order(self, req: CancelRequest, gateway_name: str):
         """
@@ -123,7 +149,7 @@ class MainEngine:
         self.event_engine.stop()
 
 
-class LogEngine:
+class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
     """
@@ -132,8 +158,7 @@ class LogEngine:
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        self.main_engine = main_engine
-        self.event_engine = event_engine
+        super(LogEngine, self).__init__(main_engine, event_engine, "log")
 
         if not SETTINGS["log.active"]:
             return
@@ -195,15 +220,14 @@ class LogEngine:
         self.logger.log(log.level, log.msg)
 
 
-class OmsEngine:
+class OmsEngine(BaseEngine):
     """
     Provides order management system function for VN Trader.
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        self.main_engine = main_engine
-        self.event_engine = event_engine
+        super(OmsEngine, self).__init__(main_engine, event_engine, oms)
 
         self.ticks = {}
         self.orders = {}
@@ -214,7 +238,23 @@ class OmsEngine:
 
         self.active_orders = {}
 
+        self.add_function()
         self.register_event()
+
+    def add_function(self):
+        """Add query function to main engine."""
+        self.main_engine.get_tick = self.get_tick
+        self.main_engine.get_order = self.get_order
+        self.main_engine.get_position = self.get_position
+        self.main_engine.get_account = self.get_account
+        self.main_engine.get_contract = self.get_contract
+        self.main_engine.get_contract = self.get_contract
+        self.main_engine.get_all_ticks = self.get_all_ticks
+        self.main_engine.get_all_orders = self.get_all_orders
+        self.main_engine.get_all_trades = self.get_all_trades
+        self.main_engine.get_all_positions = self.get_all_positions
+        self.main_engine.get_all_accounts = self.get_all_accounts
+        self.main_engine.get_all_active_orders = self.get_all_active_orders
 
     def register_event(self):
         """"""
