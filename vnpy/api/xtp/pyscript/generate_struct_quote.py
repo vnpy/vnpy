@@ -54,7 +54,10 @@ def main():
         # 结构体申明
         elif 'struct ' in line:
             content = line.split(' ')
-            name = content[2].replace('\n','')
+            if 'typedef' in line:
+                name = content[2].replace('\n','')
+            else:
+                name = content[1].replace('\n', '')
             name = name.replace('\r', '')
             py_line = '%s = {}\n' % name
 
