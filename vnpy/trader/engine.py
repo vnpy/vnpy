@@ -4,6 +4,7 @@
 import logging
 from datetime import datetime
 from abc import ABC
+from typing import Any
 
 from vnpy.event import EventEngine, Event
 
@@ -20,23 +21,6 @@ from .object import LogData, SubscribeRequest, OrderRequest, CancelRequest
 from .utility import Singleton, get_temp_path, check_order_active
 from .setting import SETTINGS
 from .gateway import BaseGateway
-
-
-class BaseEngine(ABC):
-    """
-    Abstract class for implementing an function engine.
-    """
-
-    def __init__(
-            self,
-            main_engine: MainEngine,
-            event_engine: EventEngine,
-            engine_name: str
-    ):
-        """"""
-        self.main_engine = main_engine
-        self.event_engine = event_engine
-        self.engine_name = engine_name
 
 
 class MainEngine:
@@ -58,7 +42,7 @@ class MainEngine:
 
         self.init_engines()
 
-    def add_engine(self, engine_class: BaseEngine):
+    def add_engine(self, engine_class: Any):
         """
         Add function engine.
         """
@@ -149,6 +133,23 @@ class MainEngine:
         self.event_engine.stop()
 
 
+class BaseEngine(ABC):
+    """
+    Abstract class for implementing an function engine.
+    """
+
+    def __init__(
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str
+    ):
+        """"""
+        self.main_engine = main_engine
+        self.event_engine = event_engine
+        self.engine_name = engine_name
+
+
 class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
@@ -227,7 +228,7 @@ class OmsEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(OmsEngine, self).__init__(main_engine, event_engine, oms)
+        super(OmsEngine, self).__init__(main_engine, event_engine, "oms")
 
         self.ticks = {}
         self.orders = {}

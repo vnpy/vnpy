@@ -15,9 +15,6 @@ def main():
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
 
-    monitor = TickMonitor(main_engine, event_engine)
-    monitor.show()
-
     qapp.exec()
 
 

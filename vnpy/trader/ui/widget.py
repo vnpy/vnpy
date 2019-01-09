@@ -581,5 +581,10 @@ class AccountMonitor(BaseMonitor):
             'display': '可用',
             'cell': BaseCell,
             'update': True
+        },
+        'gateway_name': {
+            'display': '接口',
+            'cell': BaseCell,
+            'update': False
         }
     }
