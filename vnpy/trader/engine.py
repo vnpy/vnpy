@@ -18,7 +18,7 @@ from .event import (
     EVENT_CONTRACT
 )
 from .object import LogData, SubscribeRequest, OrderRequest, CancelRequest
-from .utility import Singleton, get_temp_path, check_order_active
+from .utility import Singleton, get_temp_path
 from .setting import SETTINGS
 from .gateway import BaseGateway
 
@@ -54,7 +54,7 @@ class MainEngine:
         Add gateway.
         """
         gateway = gateway_class(self.event_engine)
-        self.gateways[gateway.gateway_name] = engine
+        self.gateways[gateway.gateway_name] = gateway
 
     def init_engines(self):
         """
@@ -78,6 +78,7 @@ class MainEngine:
         gateway = self.gateways.get(gateway_name, None)
         if not gateway:
             self.write_log(f"找不到底层接口：{gateway_name}")
+            return None
         return gateway
 
     def get_default_setting(self, gateway_name: str):
@@ -87,14 +88,21 @@ class MainEngine:
         gateway = self.get_gateway(gateway_name)
         if gateway:
             return gateway.get_default_setting()
+        return None
 
-    def connect(self, gateway_name: str):
+    def get_all_gateway_names(self):
+        """
+        Get all names of gatewasy added in main engine.
+        """
+        return list(self.gateways.keys())
+
+    def connect(self, setting: dict, gateway_name: str):
         """
         Start connection of a specific gateway.
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.connect()
+            gateway.connect(setting)
 
     def subscribe(self, req: SubscribeRequest, gateway_name: str):
         """
@@ -120,7 +128,7 @@ class MainEngine:
         """
         gateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.send_order(req)
+            gateway.cancel_order(req)
 
     def close(self):
         """
@@ -277,7 +285,7 @@ class OmsEngine(BaseEngine):
         self.orders[order.vt_orderid] = order
 
         # If order is active, then update data in dict.
-        if check_order_active(order.status):
+        if order.check_active():
             self.active_orders[order.vt_orderid] = order
         # Otherwise, pop inactive order from in dict
         elif order.vt_orderid in self.active_orders:

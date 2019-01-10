@@ -1,8 +1,11 @@
 from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
+from vnpy.gateway.ib import IbGateway
 
-from vnpy.trader.ui.widget import TickMonitor
+import os
+import logging
+import time
 
 
 def main():
@@ -10,7 +13,9 @@ def main():
     qapp = create_qapp()
 
     event_engine = EventEngine()
+
     main_engine = MainEngine(event_engine)
+    main_engine.add_gateway(IbGateway)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

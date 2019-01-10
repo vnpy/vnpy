@@ -1,2 +1,2 @@
-pyqt
+PyQt5
 qdarkstyle

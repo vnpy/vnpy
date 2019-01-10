@@ -7,6 +7,7 @@ from PyQt5 import QtWidgets, QtGui
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS
+from ..utility import get_icon_path
 
 
 def create_qapp():
@@ -19,9 +20,7 @@ def create_qapp():
     font = QtGui.QFont(SETTINGS["font.family"], SETTINGS["font.size"])
     qapp.setFont(font)
 
-    ui_path = Path(__file__).parent
-    icon_path = ui_path.joinpath("ico", "vnpy.ico")
-    icon = QtGui.QIcon(str(icon_path))
+    icon = QtGui.QIcon(get_icon_path(__file__, "vnpy.ico"))
     qapp.setWindowIcon(icon)
 
     if 'Windows' in platform.uname():

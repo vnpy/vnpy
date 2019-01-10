@@ -40,14 +40,10 @@ def get_temp_path(filename: str):
     return temp_path.joinpath(filename)
 
 
-ACTIVE_STATUSES = set([STATUS_SUBMITTING, STATUS_NOTTRADED, STATUS_PARTTRADED])
-
-
-def check_order_active(status: str):
+def get_icon_path(file_path: str, ico_name: str):
     """
-    Check if order is active by status.
+    Get path for icon file with ico name.
     """
-    if status in ACTIVE_STATUSES:
-        return True
-    else:
-        return False
+    ui_path = Path(file_path).parent
+    icon_path = ui_path.joinpath("ico", ico_name)
+    return str(icon_path)
