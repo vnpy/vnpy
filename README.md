@@ -1,57 +1,56 @@
-### “当你想放弃时，想想你为什么开始。”
+# “当你想放弃时，想想你为什么开始。”
 
-#Fork版本主要改进如下：
-1、增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件
-2、增加自动断线重连功能，在开盘前启动，收盘后重连CTP
-3、修改回测引擎，提供实时计算净值
-4、修改CtaTemplate，增加了未执行订单的跟踪
-5、提供非GUI界面启动的主程序。
+###Fork版本主要改进如下
+- 1、增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件
+- 2、增加自动断线重连功能，在开盘前启动，收盘后重连CTP
+- 3、修改回测引擎，提供实时计算净值
+- 4、修改CtaTemplate，增加了未执行订单的跟踪
+- 5、提供非GUI界面启动的主程序。examples/service
+- 6、支持数据货币
+- 7、升级至py3版本
 
-#启动模式：
-可视化：python vtMain.py
-命令行：python noUiMain.py
+###启动模式：
+- 可视化：python vtMain.py
+- 命令行：python noUiMain.py
 
-# 重要更新日志
-1、2018年1月，升级至py3版本
 
-2、linux下安装步骤
-    1)root身份安装cmake/bzip/openssl/nodejs/python-dev等
+# linux下安装步骤
+  -  1)root身份安装cmake/bzip/openssl/nodejs/python-dev等
 
-    2)用户身份安装anaconda3.6 64bit，创建虚拟环境py35
+  - 2)用户身份安装anaconda3.6 64bit，创建虚拟环境py35
 
-    3)root安装编译boost
+  -  3)root安装编译boost
 
-    4)激活py35环境下，安装requirement.txt里面的包
+  -  4)激活py35环境下，安装requirement.txt里面的包
 
-    5)编译ctp api(for boost & py3.5)
+  -  5)编译ctp api(for boost & py3.5)
 
-    6)vnpy/trader目录下,python vtmain.py 试试看
+  -  6)vnpy/trader目录下,python vtmain.py 试试看
 
-3、Windows下安装步骤
+# Windows下安装步骤
 
-    1)minconda 安装 清华https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ 下载windows下x86_64最新版本
-      安装时，记得勾选，添加minconda到系统环境路径
+  -  1)minconda 安装 清华https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ 下载windows下x86_64最新版本
+  -    安装时，记得勾选，添加minconda到系统环境路径
 
-    2)重启后，命令行窗口:
-    conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-    conda config --set show_channel_urls yes
-    conda create --name py35 python=3.5
+  -  2)重启后，命令行窗口:
+    - conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+    - conda config --set show_channel_urls yes
+    - conda create --name py35 python=3.5
 
-    3)激活py35
-    activate py35
+  -  3)激活py35
+    - activate py35
 
-    4)安装 pyqt
-    conda install pyqt
+  - 4)安装 pyqt
+   - conda install pyqt
 
-    5) 安装其他包
-    cd c:\vnpy
-    pip install -r requirements.txt
+  -  5) 安装其他包
+    - cd c:\vnpy
+    - pip install -r requirements.txt
 
-    6）安装Talib，见下8
+  - 6）安装Talib，见下8
 
 大佳
 QQ/Wechat：28888502
-
 
 --------------------------------------------------------------------------------------------
 ###FAQ：
