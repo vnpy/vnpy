@@ -507,6 +507,24 @@ class OrderMonitor(BaseMonitor):
         }
     }
 
+    def init_ui(self):
+        """
+        Connect signal.
+        """
+        super(OrderMonitor, self).init_ui()
+
+        self.setToolTip("双击单元格撤单")
+        self.itemDoubleClicked.connect(self.cancel_order)
+
+    def cancel_order(self, cell):
+        """
+        Cancel order if cell double clicked.
+        """
+        order = cell.get_data()
+        req = order.create_cancel_request()
+        self.main_engine.cancel_order(req, order.gateway_name)
+
+
 class PositionMonitor(BaseMonitor):
     """
     Monitor for position data.
