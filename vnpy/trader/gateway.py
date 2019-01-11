@@ -103,6 +103,13 @@ class BaseGateway(ABC):
         """
         self.on_event(EVENT_CONTRACT, contract)
 
+    def write_log(self, msg: str):
+        """
+        Write a log event from gateway.
+        """
+        log = LogData(msg=msg, gateway_name=self.gateway_name)
+        self.on_log(log)
+
     @abstractmethod
     def connect(self, setting: dict):
         """

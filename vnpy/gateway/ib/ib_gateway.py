@@ -209,18 +209,14 @@ class IbApi(EWrapper):
         Callback when connection is established.
         """
         self.status = True
-
-        log = LogData(msg="IB TWS连接成功", gateway_name=self.gateway_name)
-        self.gateway.on_log(log)
+        self.gateway.write_log("IB TWS连接成功")
 
     def connectionClosed(self):
         """
         Callback when connection is closed.
         """
         self.status = False
-
-        log = LogData(msg="IB TWS连接断开", gateway_name=self.gateway_name)
-        self.gateway.on_log(log)
+        self.gateway.write_log("IB TWS连接断开")
 
     def nextValidId(self, orderId: int):
         """
@@ -238,22 +234,18 @@ class IbApi(EWrapper):
 
         dt = datetime.fromtimestamp(time)
         time_string = dt.strftime("%Y-%m-%d %H:%M:%S.%f")
-        log = LogData(
-            msg=f"服务器时间: {time_string}",
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_log(log)
+
+        msg = f"服务器时间: {time_string}"
+        self.gateway.write_log(msg)
 
     def error(self, reqId: TickerId, errorCode: int, errorString: str):
         """
         Callback of error caused by specific request.
         """
         super(IbApi, self).error(reqId, errorCode, errorString)
-        log = LogData(
-            msg=f"信息通知，代码：{errorCode}，内容: {errorString}",
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_log(log)
+
+        msg = f"信息通知，代码：{errorCode}，内容: {errorString}"
+        self.gateway.write_log(msg)
 
     def tickPrice(
             self,
@@ -394,7 +386,7 @@ class IbApi(EWrapper):
         if not currency or key not in ACCOUNTFIELD_IB2VT:
             return
 
-        accountid = f'{accountName}.{currency}'
+        accountid = f"{accountName}.{currency}"
         account = self.accounts.get(accountid, None)
         if not account:
             account = AccountData(
@@ -462,6 +454,9 @@ class IbApi(EWrapper):
         ib_exchange = contractDetails.contract.exchange
         ib_size = contractDetails.contract.multiplier
         ib_product = contractDetails.contract.secType
+
+        if not ib_size:
+            ib_size = 1
 
         contract = ContractData(
             symbol=ib_symbol,
@@ -543,6 +538,10 @@ class IbApi(EWrapper):
         if not self.status:
             return
 
+        if req.exchange not in EXCHANGE_VT2IB:
+            self.gateway.write_log(f"不支持的交易所{req.exchange}")
+            return
+
         ib_contract = Contract()
         ib_contract.conId = str(req.symbol)
         ib_contract.exchange = EXCHANGE_VT2IB[req.exchange]
@@ -569,7 +568,15 @@ class IbApi(EWrapper):
         Send a new order.
         """
         if not self.status:
-            return ''
+            return ""
+
+        if req.exchange not in EXCHANGE_VT2IB:
+            self.gateway.write_log(f"不支持的交易所：{req.exchange}")
+            return ""
+
+        if req.price_type not in PRICETYPE_VT2IB:
+            self.gateway.write_log(f"不支持的价格类型：{req.price_type}")
+            return ""
 
         self.orderid += 1
 
