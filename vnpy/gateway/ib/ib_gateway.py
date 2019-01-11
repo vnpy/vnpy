@@ -25,7 +25,6 @@ from vnpy.trader.object import (
     ContractData,
     PositionData,
     AccountData,
-    LogData,
     SubscribeRequest,
     OrderRequest,
     CancelRequest
@@ -45,7 +44,7 @@ from vnpy.trader.constant import (
     EXCHANGE_NYMEX,
     EXCHANGE_GLOBEX,
     EXCHANGE_IDEALPRO,
-    EXCHANGE_HKEX,
+    EXCHANGE_SEHK,
     EXCHANGE_HKFE,
     EXCHANGE_CME,
     EXCHANGE_ICE,
@@ -77,7 +76,7 @@ EXCHANGE_VT2IB = {
     EXCHANGE_IDEALPRO: "IDEALPRO",
     EXCHANGE_CME: "CME",
     EXCHANGE_ICE: "ICE",
-    EXCHANGE_HKEX: "SEHK",
+    EXCHANGE_SEHK: "SEHK",
     EXCHANGE_HKFE: "HKFE"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}

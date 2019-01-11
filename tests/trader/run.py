@@ -2,6 +2,7 @@ from vnpy.event import EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.gateway.ib import IbGateway
+from vnpy.gateway.futu import FutuGateway
 
 import os
 import logging
@@ -16,6 +17,7 @@ def main():
 
     main_engine = MainEngine(event_engine)
     main_engine.add_gateway(IbGateway)
+    main_engine.add_gateway(FutuGateway)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
