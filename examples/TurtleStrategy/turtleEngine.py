@@ -299,7 +299,7 @@ class BacktestingEngine(object):
         price = int(round(price/priceTick, 0)) * priceTick
         
         # 记录成交数据
-        trade = TradeData(vtSymbol, direction, offset, price, volume)
+        trade = TradeData(self.currentDt , vtSymbol, direction, offset, price, volume)
         l = self.tradeDict.setdefault(self.currentDt, [])        
         l.append(trade)
         
