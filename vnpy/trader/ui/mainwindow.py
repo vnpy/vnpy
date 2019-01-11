@@ -17,7 +17,9 @@ from .widget import (
     AccountMonitor,
     LogMonitor,
     ConnectDialog,
-    TradingWidget
+    TradingWidget,
+    ActiveOrderMonitor,
+    ContractManager
 )
 
 
@@ -48,10 +50,13 @@ class MainWindow(QtWidgets.QMainWindow):
         trading_widget, trading_dock = self.create_dock(TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea)
         tick_widget, tick_dock = self.create_dock(TickMonitor, "行情", QtCore.Qt.RightDockWidgetArea)
         order_widget, order_dock = self.create_dock(OrderMonitor, "委托", QtCore.Qt.RightDockWidgetArea)
+        active_widget, active_dock = self.create_dock(ActiveOrderMonitor, "活动", QtCore.Qt.RightDockWidgetArea)
         trade_widget, trade_dock = self.create_dock(TradeMonitor, "成交", QtCore.Qt.RightDockWidgetArea)
         log_widget, log_dock = self.create_dock(LogMonitor, "日志", QtCore.Qt.BottomDockWidgetArea)
         account_widget, account_dock = self.create_dock(AccountMonitor, "资金", QtCore.Qt.BottomDockWidgetArea)
         position_widget, position_dock = self.create_dock(PositionMonitor, "持仓", QtCore.Qt.BottomDockWidgetArea)
+
+        self.tabifyDockWidget(active_dock, order_dock)
 
     def init_menu(self):
         """"""
@@ -61,6 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         app_menu = bar.addMenu("功能")
         help_menu = bar.addMenu("帮助")
 
+        # System menu
         gateway_names = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
             func = partial(self.connect, name)
@@ -71,6 +77,16 @@ class MainWindow(QtWidgets.QMainWindow):
             action.setIcon(icon)
 
             sys_menu.addAction(action)
+
+        # App menu
+
+        # Help menu
+        contract_action = QtWidgets.QAction("查询合约", self)
+        contract_action.triggered.connect(self.open_contract)
+        contract_icon = QtGui.QIcon(get_icon_path(__file__, "contract.ico"))
+        contract_action.setIcon(contract_icon)
+
+        help_menu.addAction(contract_action)
 
     def create_dock(
             self,
@@ -121,3 +137,13 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def open_contract(self):
+        """
+        Open contract manager.
+        """
+        widget = self.widgets.get("contract", None)
+        if not widget:
+            widget = ContractManager(self.main_engine, self.event_engine)
+            self.widgets["contract"] = widget
+        widget.show()

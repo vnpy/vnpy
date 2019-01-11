@@ -263,6 +263,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_all_trades = self.get_all_trades
         self.main_engine.get_all_positions = self.get_all_positions
         self.main_engine.get_all_accounts = self.get_all_accounts
+        self.main_engine.get_all_contracts = self.get_all_contracts
         self.main_engine.get_all_active_orders = self.get_all_active_orders
 
     def register_event(self):
@@ -285,7 +286,7 @@ class OmsEngine(BaseEngine):
         self.orders[order.vt_orderid] = order
 
         # If order is active, then update data in dict.
-        if order.check_active():
+        if order.is_active():
             self.active_orders[order.vt_orderid] = order
         # Otherwise, pop inactive order from in dict
         elif order.vt_orderid in self.active_orders:

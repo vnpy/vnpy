@@ -959,3 +959,105 @@ class TradingWidget(QtWidgets.QWidget):
         for order in order_list:
             req = order.create_cancel_request()
             self.main_engine.cancel_order(req, order.gateway_name)
+
+
+class ActiveOrderMonitor(OrderMonitor):
+    """
+    Monitor which shows active order only.
+    """
+
+    def process_event(self, event):
+        """
+        Hides the row if order is not active.
+        """
+        super(ActiveOrderMonitor, self).process_event(event)
+
+        order = event.data
+        row_cells = self.cells[order.vt_orderid]
+        row = self.row(row_cells["volume"])
+        
+        if order.is_active():
+            self.showRow(row)
+        else:
+            self.hideRow(row)
+
+
+class ContractManager(QtWidgets.QWidget):
+    """
+    Query contract data available to trade in system.
+    """
+
+    headers = {
+        "vt_symbol": "本地代码",
+        "symbol": "代码",
+        "exchange": "交易所",
+        "name": "名称",
+        "product": "合约分类",
+        "size": "合约乘数",
+        "pricetick": "价格跳动",
+        "gateway_name": "交易接口"
+    }
+
+    def __init__(self, main_engine, event_engine):
+        super(ContractManager, self).__init__()
+
+        self.main_engine = main_engine
+        self.event_engine = event_engine
+
+        self.init_ui()
+    
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("合约查询")
+        self.resize(1000, 600)
+
+        self.filter_line = QtWidgets.QLineEdit()
+        self.filter_line.setPlaceholderText("输入合约代码或者交易所，留空则查询所有合约")
+
+        self.button_show = QtWidgets.QPushButton("查询")
+        self.button_show.clicked.connect(self.show_contracts)
+
+        labels = []
+        for name, display in self.headers.items():
+            label = f"{display}\n{name}"
+            labels.append(label)
+
+        self.contract_table = QtWidgets.QTableWidget()
+        self.contract_table.setColumnCount(len(self.headers))
+        self.contract_table.setHorizontalHeaderLabels(labels)
+        self.contract_table.verticalHeader().setVisible(False)
+        self.contract_table.setEditTriggers(self.contract_table.NoEditTriggers)
+        self.contract_table.setAlternatingRowColors(True)
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(self.filter_line)
+        hbox.addWidget(self.button_show)
+        
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addLayout(hbox)
+        vbox.addWidget(self.contract_table)
+
+        self.setLayout(vbox)
+    
+    def show_contracts(self):
+        """
+        Show contracts by symbol
+        """
+        flt = str(self.filter_line.text())
+
+        all_contracts = self.main_engine.get_all_contracts()
+        if flt:
+            contracts = [contract for contract in all_contracts if flt in contract.vt_symbol]
+        else:
+            contracts = all_contracts
+
+        self.contract_table.clearContents()
+        self.contract_table.setRowCount(len(contracts))
+
+        for row, contract in enumerate(contracts):
+            for column, name in enumerate(self.headers.keys()):
+                cell = BaseCell(getattr(contract, name), contract)
+                self.contract_table.setItem(row, column, cell)
+
+        self.contract_table.resizeColumnsToContents()
+

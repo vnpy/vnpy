@@ -114,7 +114,7 @@ class OrderData(BaseData):
         self.vt_symbol = f"{self.symbol}.{self.exchange}"
         self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
 
-    def check_active(self):
+    def is_active(self):
         """
         Check if the order is active.
         """
