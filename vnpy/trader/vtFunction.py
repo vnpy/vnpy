@@ -9,6 +9,7 @@ import decimal
 import json
 from datetime import datetime
 import importlib
+import re
 
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 8
@@ -28,6 +29,43 @@ def floatToStr(float_str):
         return float_str
     else:
         return float_str
+
+def getShortSymbol(symbol):
+    """取得合约的短号"""
+    # 套利合约
+    if symbol.find(' ') != -1:
+        # 排除SP SPC SPD
+        s = symbol.split(' ')
+        if len(s) < 2:
+            return symbol
+        symbol = s[1]
+
+        # 只提取leg1合约
+        if symbol.find('&') != -1:
+            s = symbol.split('&')
+            if len(s) < 2:
+                return symbol
+            symbol = s[0]
+
+    p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+    shortSymbol = p.match(symbol)
+
+    if shortSymbol is None:
+        return symbol
+
+    return shortSymbol.group(1)
+
+def getFullSymbol(symbol):
+    """获取全路径得合约名称"""
+    short_symbol = getShortSymbol(symbol)
+    if short_symbol == symbol:
+        return symbol
+
+    symbol_month = symbol.replace(short_symbol, '')
+    if len(symbol_month) == 3:
+        return '{0}1{1}'.format(short_symbol, symbol_month)
+    else:
+        return symbol
 
 # -----------------------------------------
 def systemSymbolToVnSymbol(symbol):
@@ -251,7 +289,6 @@ def save_text_to_excel(file_name, sheet_name, text):
         import traceback
         print(u'save_text_to_excel exception:{}'.format(str(ex)), traceback.format_exc(),file=sys.stderr)
         return False
-
 
 def save_images_to_excel(file_name, sheet_name, image_names):
     """

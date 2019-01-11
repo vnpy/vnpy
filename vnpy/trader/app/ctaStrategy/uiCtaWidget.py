@@ -49,7 +49,11 @@ class CtaValueMonitor(QtWidgets.QTableWidget):
             # 新增数据
             col = 0
             for k, v in data.items():
-                cell = QtWidgets.QTableWidgetItem(v)
+                #if isinstance(v,dict):
+                #    item = u'{}'.format(v)
+                #else:
+                #    item = v
+                cell = QtWidgets.QTableWidgetItem(str(v))
                 self.keyCellDict[k] = cell
                 self.setItem(0, col, cell)
                 col += 1
@@ -285,9 +289,12 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def updateCtaLog(self, event):
         """更新CTA相关日志"""
-        log = event.dict_['data']
-        content = '\t'.join([log.logTime, log.logContent])
-        self.ctaLogMonitor.append(content)
+        try:
+            log = event.dict_['data']
+            content = '{}\t{}'.format(log.logTime, log.logContent)
+            self.ctaLogMonitor.append(content)
+        except Exception as ex:
+            print(u'update exception:{},{}'.format(str(ex),traceback.format_exc()))
     
     #----------------------------------------------------------------------
     def registerEvent(self):

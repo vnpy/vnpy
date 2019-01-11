@@ -77,7 +77,7 @@ class BasicMonitor(object):
             #        v = v.decode('gbk')
             #    except:
             #        v = v.decode('utf8')
-            s.append('%s: %s' % (value['chinese'], v))
+            s.append('%s: %s' % (value['chinese'], str(v)))
         if self.logger is not None:
            self.logger.info(' '.join(s))
 

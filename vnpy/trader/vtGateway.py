@@ -212,3 +212,16 @@ class VtGateway(object):
         if self.logger:
             self.logger.error(content)
 
+
+    # ----------------------------------------------------------------------
+    def printDict(self,d):
+        """返回dict的字符串类型"""
+        if not isinstance(d,dict):
+            return EMPTY_STRING
+
+        l = d.keys()
+        l = sorted(l)
+        str = EMPTY_STRING
+        for k in l:
+            str +=u'{}:{}\n'.format(k, d[k])
+        return str

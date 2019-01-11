@@ -63,16 +63,21 @@ class CtaPolicy(object):
         """
         self.writeCtaLog(u'将数据从json_data中恢复')
 
-        if 'create_time' in json_data:
+        self.create_time = datetime.now()
+        create_time = json_data.get('create_time',None)
+
+        if len(create_time) > 0:
             try:
-                self.create_time = datetime.strptime(json_data['create_time'], '%Y-%m-%d %H:%M:%S')
+                self.create_time = datetime.strptime(create_time, '%Y-%m-%d %H:%M:%S')
             except Exception as ex:
                 self.writeCtaError(u'解释create_time异常:{}'.format(str(ex)))
                 self.create_time = datetime.now()
 
-        if 'save_time' in json_data:
+        self.create_time = datetime.now()
+        save_time = json_data.get('save_time',None)
+        if len(save_time)> 0:
             try:
-                self.save_time = datetime.strptime(json_data['save_time'], '%Y-%m-%d %H:%M:%S')
+                self.save_time = datetime.strptime(save_time, '%Y-%m-%d %H:%M:%S')
             except Exception as ex:
                 self.writeCtaError(u'解释save_time异常:{}'.format(str(ex)))
                 self.save_time = datetime.now()
@@ -90,12 +95,12 @@ class CtaPolicy(object):
                 with open(json_file, 'r', encoding='utf8') as f:
                     # 解析json文件
                     json_data = json.load(f)
-            except IOError as ex:
+            except Exception as ex:
                 self.writeCtaError(u'读取Policy文件{}出错,ex:{}'.format(json_file,str(ex)))
                 json_data = {}
 
-        # 从持久化文件恢复数据
-        self.fromJson(json_data)
+            # 从持久化文件恢复数据
+            self.fromJson(json_data)
 
     def save(self):
         """
@@ -106,13 +111,22 @@ class CtaPolicy(object):
             os.path.join(self.get_data_folder(), u'{}_Policy.json'.format(self.strategy.name)))
 
         try:
-            json_data = self.toJson()
-
+            # 修改为：回测时不保存
             if self.strategy and self.strategy.backtesting:
-                json_data['save_time'] = self.strategy.curDateTime.strftime('%Y-%m-%d %H:%M:%S')
-            else:
-                json_data['save_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                return
 
+            #json_data = self.toJson()
+            #if self.strategy and self.strategy.backtesting:
+            #    dt = getattr(self.strategy,'curDateTime')
+            #    if dt is not None:
+            #        json_data['save_time'] = self.strategy.curDateTime.strftime('%Y-%m-%d %H:%M:%S')
+            #    else:
+            #        json_data['save_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            #else:
+            #    json_data['save_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            json_data = self.toJson()
+            json_data['save_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with open(json_file, 'w') as f:
                 data = json.dumps(json_data, indent=4)
                 f.write(data)
@@ -125,6 +139,9 @@ class CtaPolicy(object):
         导出历史
         :return:
         """
+        if getattr(self.strategy,'curDateTime') is None:
+            return
+
         export_dir =  os.path.abspath(os.path.join(
             self.get_data_folder(),
              'export_csv',
@@ -285,16 +302,21 @@ class TurtlePolicy(CtaPolicy):
         :param json_data:
         :return:
         """
-        if 'create_time' in json_data:
+        self.create_time = datetime.now()
+        create_time = json_data.get('create_time', None)
+
+        if len(create_time) > 0:
             try:
-                self.create_time = datetime.strptime(json_data['create_time'], '%Y-%m-%d %H:%M:%S')
+                self.create_time = datetime.strptime(create_time, '%Y-%m-%d %H:%M:%S')
             except Exception as ex:
                 self.writeCtaError(u'解释create_time异常:{}'.format(str(ex)))
                 self.create_time = datetime.now()
 
-        if 'save_time' in json_data:
+        self.create_time = datetime.now()
+        save_time = json_data.get('save_time', None)
+        if len(save_time) > 0:
             try:
-                self.save_time = datetime.strptime(json_data['save_time'], '%Y-%m-%d %H:%M:%S')
+                self.save_time = datetime.strptime(save_time, '%Y-%m-%d %H:%M:%S')
             except Exception as ex:
                 self.writeCtaError(u'解释save_time异常:{}'.format(str(ex)))
                 self.save_time = datetime.now()
@@ -485,16 +507,21 @@ class TrendPolicy(CtaPolicy):
         :param json_data:
         :return:
         """
-        if 'create_time' in json_data:
+        self.create_time = datetime.now()
+        create_time = json_data.get('create_time', None)
+
+        if len(create_time) > 0:
             try:
-                self.create_time = datetime.strptime(json_data['create_time'], '%Y-%m-%d %H:%M:%S')
+                self.create_time = datetime.strptime(create_time, '%Y-%m-%d %H:%M:%S')
             except Exception as ex:
                 self.writeCtaError(u'解释create_time异常:{}'.format(str(ex)))
                 self.create_time = datetime.now()
 
-        if 'save_time' in json_data:
+        self.create_time = datetime.now()
+        save_time = json_data.get('save_time', None)
+        if len(save_time) > 0:
             try:
-                self.save_time = datetime.strptime(json_data['save_time'], '%Y-%m-%d %H:%M:%S')
+                self.save_time = datetime.strptime(save_time, '%Y-%m-%d %H:%M:%S')
             except Exception as ex:
                 self.writeCtaError(u'解释save_time异常:{}'.format(str(ex)))
                 self.save_time = datetime.now()

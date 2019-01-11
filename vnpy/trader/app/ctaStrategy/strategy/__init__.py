@@ -5,7 +5,7 @@
 如果重复，工作目录的strategy优先。
 '''
 
-import os
+import os,sys
 import importlib
 
 import traceback
@@ -32,6 +32,27 @@ def loadStrategyModule(moduleName):
         print('-' * 20)
         print('Failed to import strategy file %s:' % moduleName)
         print('Exception:{},{}'.format(str(ex),traceback.format_exc()))
+
+# ----------------------------------------------------------------------
+def reloadStrategyModule(moduleName):
+    """使用importlib动态重新载入模块"""
+    try:
+        print('reloading {}'.format(moduleName))
+        module = importlib.import_module(moduleName)
+        module = importlib.reload(module)
+
+        # 遍历模块下的对象，只有名称中包含'Strategy'的才是策略类
+        for k in dir(module):
+            if 'Strategy' in k:
+                print('reloading: add {} into STRATEGY_CLASS'.format(k))
+                v = module.__getattribute__(k)
+                if k in STRATEGY_CLASS:
+                    print('Replace strategy {} with {}'.format(k, moduleName))
+                STRATEGY_CLASS[k] = v
+    except Exception as ex:
+        print('-' * 20)
+        print('Failed to reload strategy file %s:' % moduleName,file=sys.stderr)
+        print('Exception:{},{}'.format(str(ex), traceback.format_exc()), file=sys.stderr)
 
     # 获取目录路径
 path = os.path.abspath(os.path.dirname(__file__))

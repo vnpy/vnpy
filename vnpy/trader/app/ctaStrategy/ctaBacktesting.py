@@ -1920,7 +1920,7 @@ class BacktestingEngine(object):
             self.writeCtaLog(u'请指定回测数据文件')
             return
 
-        if not self.dataStartDate:
+        if not self.strategyStartDate:
             self.writeCtaLog(u'回测开始日期未设置。')
             return
 
@@ -1942,8 +1942,8 @@ class BacktestingEngine(object):
 
         #self.output(u'开始回测')
 
-        #self.strategy.inited = True
         self.strategy.onInit()
+        self.strategy.trading = False
         self.output(u'策略初始化完成')
 
         self.output(u'开始回放数据')
@@ -2013,18 +2013,24 @@ class BacktestingEngine(object):
                     else:
                         bar.tradingDay = bar.date
 
-                if self.dataStartDate <= bar.datetime <= self.dataEndDate:
+                if self.strategyStartDate <= bar.datetime <= self.dataEndDate:
                     if last_tradingDay != bar.tradingDay:
                         if last_tradingDay is not None:
                             self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
                                                  self.maxCapital,self.totalCommission,benchmark=bar.close)
                         last_tradingDay = bar.tradingDay
 
-                    # Check the order triggers and deliver the bar to the Strategy
-                    if self.useBreakoutMode is False:
-                        self.newBar(bar)
-                    else:
-                        self.newBarForBreakout(bar)
+                if self.dataStartDate >= bar.datetime:
+                    continue
+
+                if bar.datetime > self.dataEndDate:
+                    continue
+
+                # Check the order triggers and deliver the bar to the Strategy
+                if self.useBreakoutMode is False:
+                    self.newBar(bar)
+                else:
+                    self.newBarForBreakout(bar)
 
                 if not self.strategy.trading and self.strategyStartDate < bar.datetime:
                     self.strategy.trading = True
@@ -2046,7 +2052,7 @@ class BacktestingEngine(object):
         added by IncenseLee
         """
         self.capital = self.initCapital  # 更新设置期初资金
-        if not self.dataStartDate:
+        if not self.strategyStartDate:
             self.writeCtaLog(u'回测开始日期未设置。')
             return
 
@@ -2068,9 +2074,9 @@ class BacktestingEngine(object):
         self.strategy.onInit()
         self.output(u'策略初始化完成')
 
-        self.strategy.trading = True
-        self.strategy.onStart()
-        self.output(u'策略启动完成')
+        #self.strategy.trading = True
+        #self.strategy.onStart()
+        #self.output(u'策略启动完成')
 
         self.output(u'开始载入数据')
 
@@ -2140,8 +2146,7 @@ class BacktestingEngine(object):
             #                 .format(bar.date+' '+bar.time, bar.open, bar.high,
             #                         bar.low, bar.close, bar.volume, bar.tradingDay, self.lineH2.m1_bars_count))
 
-            # if not (bar.datetime < self.dataStartDate or bar.datetime >= self.dataEndDate):
-            if True:
+            if self.strategyStartDate <= bar.datetime <= self.dataEndDate:
                 if last_tradingDay == 0:
                     last_tradingDay = bar.tradingDay
                 elif last_tradingDay != bar.tradingDay:
@@ -2149,16 +2154,21 @@ class BacktestingEngine(object):
                         self.savingDailyData(last_tradingDay, self.capital, self.maxCapital, self.totalCommission)
                     last_tradingDay = bar.tradingDay
 
-                # Simulate latest tick and send it to Strategy
-                simTick = self.__barToTick(bar)
-                # self.tick = simTick
-                self.strategy.curTick = simTick
+            # Simulate latest tick and send it to Strategy
+            #simTick = self.__barToTick(bar)
+            # self.tick = simTick
+            #self.strategy.curTick = simTick
 
-                # Check the order triggers and deliver the bar to the Strategy
-                if self.useBreakoutMode is False:
-                    self.newBar(bar)
-                else:
-                    self.newBarForBreakout(bar)
+            # Check the order triggers and deliver the bar to the Strategy
+            if self.useBreakoutMode is False:
+                self.newBar(bar)
+            else:
+                self.newBarForBreakout(bar)
+
+            if not self.strategy.trading and self.strategyStartDate < bar.datetime:
+                self.strategy.trading = True
+                self.strategy.onStart()
+                self.output(u'策略启动完成')
 
             if self.netCapital < 0:
                 self.writeCtaError(u'净值低于0，回测停止')
@@ -2378,8 +2388,10 @@ class BacktestingEngine(object):
         if not self.strategy.name:
             self.strategy.name = self.strategy.className
 
-        self.strategy.onInit()
-        self.strategy.onStart()
+        if setting.get('auto_init',False):
+            self.strategy.onInit()
+        if setting.get('auto_start',False):
+            self.strategy.onStart()
 
     # ---------------------------------------------------------------------
     def saveStrategyData(self):
@@ -3851,7 +3863,7 @@ class BacktestingEngine(object):
 
         return d, capitalNetList, capitalList
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def showBacktestingResult(self):
         """显示回测结果"""
         if self.calculateMode != self.REALTIME_MODE:

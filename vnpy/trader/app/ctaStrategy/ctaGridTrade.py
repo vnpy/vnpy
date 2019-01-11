@@ -942,6 +942,9 @@ class CtaGridTrade(object):
         :param direction: 
         :return: 
         """""
+        # 回测模式不保存
+        if self.strategy and getattr(self.strategy,'backtesting',False):
+            return
 
         # 更新开仓均价
         self.recount_avg_open_price()
@@ -2260,6 +2263,9 @@ class CtaLegacyGridTrade(object):
         :param direction: 
         :return: 
         """""
+        # 回测模式不保存
+        if self.strategy and getattr(self.strategy, 'backtesting', False):
+            return
 
         # 更新开仓均价
         self.recount_avg_open_price()
@@ -2756,6 +2762,10 @@ class ArbitrageTrade(object):
         """
         if not self.strategy:
             self.writeCtaError(u'策略对象为空，不能保存')
+            return
+
+        # 回测模式不保存
+        if self.strategy and getattr(self.strategy, 'backtesting', False):
             return
 
         json_file = os.path.abspath(

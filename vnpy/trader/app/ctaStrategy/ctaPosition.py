@@ -45,7 +45,7 @@ class CtaPosition:
 
         if direction == DIRECTION_LONG:     # 加多仓
             if (max(self.pos, self.longPos) + vol) > self.maxPos:
-                self.writeCtaError(u'异常，超出仓位。净:{0},多:{1},加多:{2},最大:{3}'
+                self.writeCtaError(u'异常，超出仓位。净:{},多:{},加多:{},最大:{}'
                                  .format(self.pos, self.longPos, vol, self.maxPos))
 
                 # 只告警
@@ -62,7 +62,7 @@ class CtaPosition:
 
         if direction == DIRECTION_SHORT:    # 加空仓
             if (min(self.pos, self.shortPos) - vol) < (0 - self.maxPos):
-                self.writeCtaError(u'异常，超出仓位。净:{0},空:{1},加空:{2},最大:{3}'
+                self.writeCtaError(u'异常，超出仓位。净:{},空:{},加空:{},最大:{}'
                                  .format(self.pos, self.shortPos, vol, self.maxPos))
                 #return False
 
@@ -91,7 +91,7 @@ class CtaPosition:
 
         if direction == DIRECTION_LONG:     # 平空仓 Cover
             if self.shortPos + vol > 0:
-                self.writeCtaError(u'异常，超出仓位。净:{0},空:{1},平仓:{2}'.format(self.pos, self.shortPos, vol))
+                self.writeCtaError(u'异常，超出仓位。净:{},空:{},平仓:{}'.format(self.pos, self.shortPos, vol))
                 #self.strategy.pos = self.pos
                 #return False
 
@@ -105,7 +105,7 @@ class CtaPosition:
 
         if direction == DIRECTION_SHORT:    # 平多仓
             if self.longPos - vol < 0:
-                self.writeCtaError(u'异常，超出仓位。净:{0},多:{1},平仓:{2}'.format(self.pos, self.longPos, vol))
+                self.writeCtaError(u'异常，超出仓位。净:{},多:{},平仓:{}'.format(self.pos, self.longPos, vol))
                 #self.strategy.pos = self.pos
                 #return False
 

@@ -38,8 +38,9 @@ from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.setup_logger import setup_logger
 from vnpy.trader.vtFunction import todayDate, getJsonPath
 from vnpy.trader.util_mail import sendmail
+from vnpy.trader.vtGlobal import globalSetting
 # 加载 strategy目录下所有的策略
-from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS
+from vnpy.trader.app.ctaStrategy.strategy import STRATEGY_CLASS,reloadStrategyModule
 try:
     from vnpy.trader.util_wechat import *
 except:
@@ -463,7 +464,15 @@ class CtaEngine(object):
         tick = event.dict_['data']
         tick = copy.copy(tick)
         # 移除待订阅的合约清单
-        if tick.vtSymbol in self.pendingSubcribeSymbols:
+        if '.' in tick.vtSymbol:
+            symbol = tick.vtSymbol.split('.')[0]
+        else:
+            symbol = tick.vtSymbol
+        if symbol in self.pendingSubcribeSymbols :
+            self.writeCtaLog(u'已成功订阅{0}，从待订阅清单中移除'.format(symbol))
+            del self.pendingSubcribeSymbols[symbol]
+
+        if tick.vtSymbol in self.pendingSubcribeSymbols :
             self.writeCtaLog(u'已成功订阅{0}，从待订阅清单中移除'.format(tick.vtSymbol))
             del self.pendingSubcribeSymbols[tick.vtSymbol]
 
@@ -500,6 +509,10 @@ class CtaEngine(object):
         order = event.dict_['data']
 
         # order.vtOrderID 在gateway中，已经格式化为 gatewayName.vtOrderID
+        self.writeCtaLog(u'{}vt报单,orderID:{}'.format(order.vtOrderID,order.orderID))
+        self.writeCtaLog(u'symbol{},totalVol:{},tradedVol:{},offset:{},price:{},direction:{},status:{}'
+                .format( order.vtSymbol, order.totalVolume, order.tradedVolume,
+                        order.offset, order.price, order.direction, order.status))
 
         # 2.判断order是否在策略的映射字典中
         if order.vtOrderID in self.orderStrategyDict:
@@ -534,6 +547,24 @@ class CtaEngine(object):
             # else:
             #    strategy.pos -= trade.volume
 
+            # 根据策略名称，写入 data\straetgy_name_trade.csv文件
+            strategy_name = getattr(strategy,'name',None)
+            trade_fields = ['symbol','exchange','vtSymbol','tradeID','vtTradeID','orderID','vtOrderID','direction','offset','price','volume','tradeTime']
+            trade_dict = OrderedDict()
+            try:
+                for k in trade_fields:
+                    if k == 'tradeTime':
+                        trade_dict[k] = datetime.now().strftime('%Y-%m-%d')+' '+ getattr(trade, k, EMPTY_STRING)
+                    else:
+                        trade_dict[k] = getattr(trade,k,EMPTY_STRING)
+
+                if strategy_name is not None:
+                    trade_file = os.path.abspath(os.path.join(self.get_data_path(),'{}_trade.csv'.format(strategy_name)))
+                    self.append_data(file_name=trade_file,dict_data=trade_dict)
+            except Exception as ex:
+                self.writeCtaError(u'写入交易记录csv出错：{},{}'.format(str(ex),traceback.format_exc()))
+
+            # 推送到策略onTrade事件
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
 
         # 更新持仓缓存数据
@@ -686,7 +717,38 @@ class CtaEngine(object):
 
         return l
 
-        # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    #  保存记录相关
+    def append_data(self, file_name, dict_data, field_names=None):
+        """
+        添加数据到csv文件中
+        :param file_name:  csv的文件全路径
+        :param dict_data:  OrderedDict
+        :return:
+        """
+        if not isinstance(dict_data, dict):
+            self.writeCtaError(u'append_data，输入数据不是dict')
+            return
+
+        dict_fieldnames = list(dict_data.keys()) if field_names is None else field_names
+
+        if not isinstance(dict_fieldnames, list):
+            self.writeCtaError(u'append_data，输入字段不是list')
+            return
+        try:
+            if not os.path.exists(file_name):
+                self.writeCtaLog(u'create csv file:{}'.format(file_name))
+                with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    self.writeCtaLog(u'write csv header:{}'.format(dict_fieldnames))
+                    writer.writeheader()
+                    writer.writerow(dict_data)
+            else:
+                with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel',extrasaction='ignore')
+                    writer.writerow(dict_data)
+        except Exception as ex:
+            self.writeCtaError(u'append_data exception:{}'.format(str(ex)))
 
     # 日志相关
     def writeCtaLog(self, content, strategy_name=None):
@@ -741,8 +803,11 @@ class CtaEngine(object):
                 self.createLogger(strategy_name=strategy_name)
                 try:
                     self.strategy_loggers[strategy_name].error(content)
+
                 except Exception as ex:
-                    pass
+                    print('{}'.format(datetime.now()), file=sys.stderr)
+                    print('could not create cta logger for {},excption:{},trace:{}'.format(strategy_name,str(ex),traceback.format_exc()))
+                    print(content, file=sys.stderr)
 
         self.mainEngine.writeError(content)
 
@@ -832,6 +897,24 @@ class CtaEngine(object):
             print(u'Warning, can not find {0} in contracts'.format(symbol))
             self.writeCtaLog(u'交易合约{}无法找到，添加到待订阅列表'.format(symbol))
             self.pendingSubcribeSymbols[symbol] = strategy
+            try:
+                req = VtSubscribeReq()
+                req.symbol = symbol
+
+                self.mainEngine.subscribe(req,None)
+
+            except Exception as ex:
+                self.writeCtaError(u'重新订阅{}异常:{},{}'.format(symbol, str(ex), traceback.format_exc()))
+                return
+
+        if strategy is not None:
+            if symbol not in self.tickStrategyDict:
+                self.tickStrategyDict.update({symbol:[strategy]})
+            else:
+                strategies = self.tickStrategyDict.get(symbol,[])
+                if strategy not in strategies:
+                    strategies.append(strategy)
+                    self.tickStrategyDict.update({symbol: strategies})
 
     def checkUnsubscribedSymbols(self, event):
         """持仓更新信息时，检查未提交的合约"""
@@ -844,12 +927,21 @@ class CtaEngine(object):
                 #    continue
                 dt = datetime.now()
                 # 若为中金所的合约，白天才提交订阅请求
-                if s in MARKET_ZJ and not (9 < dt.hour < 16):
+                if s in MARKET_DAY_ONLY and not (9 < dt.hour < 16):
                     continue
 
                 self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))
                 strategy = self.pendingSubcribeSymbols[symbol]
                 self.subscribe(strategy=strategy, symbol=symbol)
+            else:
+                try:
+                    req = VtSubscribeReq()
+                    req.symbol = symbol
+                    self.mainEngine.subscribe(req, None)
+
+                except Exception as ex:
+                    self.writeCtaError(u'重新订阅{}异常:{},{}'.format(symbol, str(ex), traceback.format_exc()))
+                    return
 
     # ----------------------------------------------------------------------
     # 策略相关（加载/初始化/启动/停止)
@@ -874,7 +966,7 @@ class CtaEngine(object):
 
         return RUNING
 
-    def loadStrategy(self, setting, is_dispatch=False):
+    def loadStrategy(self, setting, is_dispatch=False,reload_module_name=EMPTY_STRING):
         """
         载入策略
         :param setting: 策略设置参数
@@ -888,6 +980,11 @@ class CtaEngine(object):
             self.writeCtaLog(u'载入策略出错：%s' % e)
             self.mainEngine.writeCritical(u'载入策略出错：%s' % e)
             return False
+
+        # 运行时，强制重新加载策略class
+        if len(reload_module_name)>0:
+            moduleName = 'vnpy.trader.app.ctaStrategy.strategy.' + reload_module_name
+            reloadStrategyModule(moduleName)
 
         # 获取策略类
         strategyClass = STRATEGY_CLASS.get(className, None)
@@ -1016,25 +1113,35 @@ class CtaEngine(object):
                 # strategy.inited = True
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' % name)
+            return True
+
         else:
             self.writeCtaError(u'策略实例不存在：%s' % name)
+            return False
 
     def startStrategy(self, name):
         """启动策略"""
         # 1.判断策略名称是否存在字典中
         if name in self.strategyDict:
 
-            # 2.提取策略
-            strategy = self.strategyDict[name]
+            try:
+                # 2.提取策略
+                strategy = self.strategyDict[name]
 
-            # 3.判断策略是否运行
-            if strategy.inited and not strategy.trading:
-                # 4.设置运行状态
-                strategy.trading = True
-                # 5.启动策略
-                self.callStrategyFunc(strategy, strategy.onStart)
+                # 3.判断策略是否运行
+                if strategy.inited and not strategy.trading:
+                    # 4.设置运行状态
+                    strategy.trading = True
+                    # 5.启动策略
+                    self.callStrategyFunc(strategy, strategy.onStart)
+            except Exception as ex:
+                self.writeCtaError(u'start Strategy:{} Exception:{},{}'.format(name,str(ex),traceback.format_exc()))
+                return False
+            return True
+
         else:
             self.writeCtaError(u'策略实例不存在：%s' % name)
+            return False
 
     def stopStrategy(self, name):
         """停止策略运行"""
@@ -1059,8 +1166,85 @@ class CtaEngine(object):
                 for stopOrderID, so in self.workingStopOrderDict.items():
                     if so.strategy is strategy:
                         self.cancelStopOrder(stopOrderID)
+
+            return True
         else:
             self.writeCtaError(u'策略实例不存在：%s' % name)
+            return False
+
+    def reloadStrategy(self,strategy_name,strategy_setting=None):
+        """
+        重新加载策略
+        :param strategy_name:策略实例名
+        :param strategy_setting: 新的策略设置
+        :return:
+        """
+        if strategy_setting:
+            if strategy_name != strategy_setting.get('name',None):
+                msg = u'重新加载策略，配置参数name:{}与{}不一致'.format(strategy_setting.get('name',None),strategy_name)
+                self.writeCtaError(msg)
+                return False,msg
+
+            # 更新配置
+            self.writeCtaLog(u'使用新的配置:{}'.format(strategy_setting))
+            self.settingDict.update({strategy_name:strategy_setting})
+            self.saveSetting()
+
+        else:
+            self.writeCtaLog(u'重新加载{}中的{}配置'.format(self.settingfilePath,strategy_name))
+            with open(self.settingfilePath,'r',encoding='UTF-8') as f:
+                settings = json.load(f)
+                for setting in settings:
+                    if strategy_name == setting.get('name', None):
+                        strategy_setting = copy.copy(setting)
+                        self.writeCtaLog(u'配置:{}'.format(strategy_setting))
+                        self.settingDict.update({strategy_name: strategy_setting})
+
+        if strategy_setting is None:
+            msg = u'{}文件没有{}的配置'.format(self.settingfilePath,strategy_name)
+            self.writeCtaError(msg)
+            return False,msg
+
+        self.writeCtaLog(u'开始移除运行中的策略{}'.format(strategy_name))
+        try:
+            strategy = self.strategyDict.get(strategy_name,None)
+            if strategy:
+                # 1、将运行dict的策略移除.
+                self.strategyDict[strategy_name] = None
+                self.writeCtaLog(u'将运行dict的策略{}关联移除'.format(strategy_name))
+                self.strategyDict.pop(strategy_name, None)
+
+                strategy.trading = False
+
+                # 2、撤销所有委托单
+                if hasattr(strategy, 'cancelAllOrders'):
+                    self.writeCtaLog(u'撤销所有委托单')
+                    strategy.cancelAllOrders()
+
+                # 3、移除行情订阅信息
+                self.writeCtaLog(u'将策略{}从合约-策略列表中移除'.format(strategy.name))
+                for vtSymbol in list(self.tickStrategyDict.keys()):
+                    symbol_strategy_list = self.tickStrategyDict.get(vtSymbol,[])
+                    if strategy in symbol_strategy_list:
+                        self.writeCtaLog(u'移除策略{}的{}订阅'.format(strategy_name, vtSymbol))
+                        symbol_strategy_list.remove(strategy)
+
+                strategy = None
+
+        except Exception as ex:
+            errMsg = u'移除策略异常:{},{}'.format(str(ex), traceback.format_exc())
+            self.writeCtaCritical(errMsg)
+            traceback.print_exc()
+            return False, errMsg
+
+        try:
+            self.writeCtaLog(u'重新加载策略:{}'.format(strategy_name))
+            self.loadStrategy(setting=strategy_setting,reload_module_name=strategy_setting.get('strategy_module',EMPTY_STRING))
+            return True,u'重新加载策略:{}成功'.format(strategy_name)
+        except Exception as ex:
+            errMsg = u'加载策略{}异常:{},{}'.format(strategy_name,str(ex), traceback.format_exc())
+            self.writeCtaCritical(errMsg)
+            return False, errMsg
 
     def removeStrategy(self, strategy_name):
         """
@@ -1068,8 +1252,10 @@ class CtaEngine(object):
         :param strategy_name: 策略实例名
         :return: True/False，errMsg
         """
+        self.writeCtaLog(u'开始移除策略{}'.format(strategy_name))
         # 移除策略设置,下次启动不再执行该设置
         if strategy_name in self.settingDict:
+            self.writeCtaLog(u'移除CTA_Setting中策略{}配置'.format(strategy_name))
             self.settingDict.pop(strategy_name, None)
 
         try:
@@ -1089,15 +1275,15 @@ class CtaEngine(object):
             # 3、将策略的持仓，登记在dispatch_long_pos/dispatch_short_pos,移除json文件
             if strategy.inited and strategy.position is not None and (
                     strategy.position.longPos != 0 or strategy.position.shortPos != 0):
+                pos_list = self.getStategyPos(name=strategy.name,strategy=strategy)
                 strategy.inited = False
-                pos_list = strategy.getPositions()
                 self.writeCtaLog(u'被移除策略{}的持仓情况:{}'.format(strategy.name, pos_list))
                 if len(pos_list) > 0:
                     for pos in pos_list:
                         # 添加多头持仓
-                        if pos['direction'] == DIRECTION_LONG and pos['volume'] > 0:
-                            symbol = pos['vtSymbol']
-
+                        if pos['direction'] in [DIRECTION_LONG,'long'] and pos['volume'] > 0:
+                            symbol = pos['symbol']
+                            # 这里有bug，盘前调度，超时时间一定要设置到开盘时间
                             d = {
                                 'strategy_group': self.strategy_group,
                                 'strategy': strategy.name,
@@ -1119,9 +1305,9 @@ class CtaEngine(object):
                             self.mainEngine.dbInsert(MATRIX_DB_NAME, POSITION_DISPATCH_HISTORY_COLL_NAME, h)
 
                         # 添加空头持仓
-                        if pos['direction'] == DIRECTION_SHORT and pos['volume'] > 0:
-                            symbol = pos['vtSymbol']
-
+                        if pos['direction'] in [DIRECTION_SHORT,'short'] and pos['volume'] > 0:
+                            symbol = pos['symbol']
+                            # 这里有bug，盘前调度，超时时间一定要设置到开盘时间
                             d = {
                                 'strategy_group': self.strategy_group,
                                 'strategy': strategy.name,
@@ -1180,6 +1366,10 @@ class CtaEngine(object):
             self.writeCtaCritical(errMsg)
             traceback.print_exc()
             return False, errMsg
+
+    def getStrategyNames(self):
+        """返回策略实例名称"""
+        return list(self.strategyDict.keys())
 
     def get_data_path(self):
         """
@@ -1502,6 +1692,7 @@ class CtaEngine(object):
                      'result': False, 'datetime': datetime.now()}
                 self.mainEngine.dbInsert(MATRIX_DB_NAME, POSITION_DISPATCH_HISTORY_COLL_NAME, h)
 
+                # 这里有bug，盘前调度，超时时间一定要设置到开盘时间
                 d = {
                     'strategy_group': self.strategy_group,
                     'strategy': 'onOrder_dispatch_close_pos',
@@ -1526,6 +1717,7 @@ class CtaEngine(object):
                                                                      'retry': old_order['retry']+1}
 
             else:
+                # 这里有bug，盘前调度，超时时间一定要设置到开盘时间
                 d = {
                     'strategy_group': self.strategy_group,
                     'strategy': 'onOrder_dispatch_close_pos',
@@ -1655,9 +1847,42 @@ class CtaEngine(object):
         """保存策略配置"""
         try:
             with open(self.settingfilePath, 'w') as f:
-                l = list(self.settingDict.values())
-                jsonL = json.dumps(l, indent=4)
+                # 策略名称，排序
+                keys = list(self.settingDict.keys())
+                sorted_keys = sorted(keys)
+
+                # 保存列表
+                save_list = []
+
+                for strategy_name in sorted_keys:
+                    # 策略配置
+                    setting_dict = self.settingDict.get(strategy_name,None)
+                    if setting_dict is None:
+                        self.writeCtaError(u'保存策略配置时，找不到配置dict中name={}的策略配置'.format(strategy_name))
+                        continue
+                    sorted_setting_dict = OrderedDict()
+
+                    # 配置参数排序
+                    setting_keys = list(setting_dict.keys())
+                    sorted_setting_keys = sorted(setting_keys)
+
+                    # 先保存name,comment
+                    sorted_setting_dict['name'] = strategy_name
+                    if 'comment' in setting_dict:
+                        sorted_setting_dict['comment'] = setting_dict['comment']
+
+                    # 其他参数，逐一
+                    for setting_key in sorted_setting_keys:
+                        if setting_key in ['name','comment']:
+                            continue
+                        sorted_setting_dict[setting_key] = setting_dict[setting_key]
+
+                    save_list.append(sorted_setting_dict)
+
+                # 导出json格式的string，保存文件
+                jsonL = json.dumps(save_list, indent=4,ensure_ascii=False)
                 f.write(jsonL)
+
         except Exception as ex:
             self.writeCtaCritical(u'保存策略配置异常:{},{}'.format(str(ex),traceback.format_exc()))
 
@@ -1715,59 +1940,66 @@ class CtaEngine(object):
             self.writeCtaLog(u'策略实例不存在：' + name)    
             return None
 
-    def getStategyPos(self, name):
+    def getStategyPos(self, name,strategy=None):
         """
         获取策略的持仓字典
         :param name:策略名
         :return:
         """
-        if name in self.strategyDict:
+        # 兼容处理，如果strategy是None，通过name获取
+        if strategy is None:
+            if name not in self.strategyDict:
+                self.writeCtaLog(u'getStategyPos 策略实例不存在：' + name)
+                return []
             # 获取策略实例
             strategy = self.strategyDict[name]
-            pos_list = []
 
-            if strategy.inited:
-                # 有 ctaPosition属性
-                if hasattr(strategy, 'position'):
-                    # 多仓
+        pos_list = []
+
+        if strategy.inited:
+            if hasattr(strategy,'getPositions'):
+                pos_list=strategy.getPositions()
+                for pos in pos_list:
+                    pos.update({'symbol':pos.get('vtSymbol')})
+                return pos_list
+            # 有 ctaPosition属性
+            if hasattr(strategy, 'position'):
+                # 多仓
+                long_pos = {}
+                long_pos['symbol'] = strategy.vtSymbol
+                long_pos['direction'] = 'long'
+                long_pos['volume'] = strategy.position.longPos
+                if long_pos['volume'] > 0:
+                    pos_list.append(long_pos)
+
+                # 空仓
+                short_pos = {}
+                short_pos['symbol'] = strategy.vtSymbol
+                short_pos['direction'] = 'short'
+                short_pos['volume'] = abs(strategy.position.shortPos)
+                if short_pos['volume'] > 0:
+                    pos_list.append(short_pos)
+
+            # 模板缺省pos属性
+            elif hasattr(strategy, 'pos'):
+                if strategy.pos > 0:
                     long_pos = {}
                     long_pos['symbol'] = strategy.vtSymbol
                     long_pos['direction'] = 'long'
-                    long_pos['volume'] = strategy.position.longPos
+                    long_pos['volume'] = strategy.pos
+                    #long_pos['datetime'] = datetime.now()
                     if long_pos['volume'] > 0:
                         pos_list.append(long_pos)
-
-                    # 空仓
+                elif strategy.pos < 0:
                     short_pos = {}
                     short_pos['symbol'] = strategy.vtSymbol
                     short_pos['direction'] = 'short'
-                    short_pos['volume'] = abs(strategy.position.shortPos)
+                    short_pos['volume'] = abs(strategy.pos)
+                    #short_pos['datetime'] = datetime.now()
                     if short_pos['volume'] > 0:
                         pos_list.append(short_pos)
 
-                # 模板缺省pos属性
-                elif hasattr(strategy, 'pos'):
-                    if strategy.pos > 0:
-                        long_pos = {}
-                        long_pos['symbol'] = strategy.vtSymbol
-                        long_pos['direction'] = 'long'
-                        long_pos['volume'] = strategy.pos
-                        #long_pos['datetime'] = datetime.now()
-                        if long_pos['volume'] > 0:
-                            pos_list.append(long_pos)
-                    elif strategy.pos < 0:
-                        short_pos = {}
-                        short_pos['symbol'] = strategy.vtSymbol
-                        short_pos['direction'] = 'short'
-                        short_pos['volume'] = abs(strategy.pos)
-                        #short_pos['datetime'] = datetime.now()
-                        if short_pos['volume'] > 0:
-                            pos_list.append(short_pos)
-
-            return pos_list
-        else:
-            self.writeCtaLog(u'getStategyPos 策略实例不存在：' + name)
-            return []
+        return pos_list
 
     def updateStrategySetting(self,strategy_name,setting_key,setting_value):
         """
@@ -1839,9 +2071,7 @@ class CtaEngine(object):
             self.writeCtaError(content)
             self.mainEngine.writeCritical(content)
 
-            if hasattr(strategy,'backtesting') and hasattr(strategy,'wechat_source'):
-                if not strategy.backtesting and len(strategy.wechat_source)>0:
-                    self.sendAlertToWechat(content=content,target=strategy.wechat_source)
+            self.sendAlertToWechat(content=content,target=globalSetting.get('gateway_name',None))
 
     # ----------------------------------------------------------------------
     # 仓位持久化相关
@@ -1881,20 +2111,32 @@ class CtaEngine(object):
         if not priceTick:
             return price
 
-        newPrice = round(price / priceTick, 0) * priceTick
+        if price > 0:
+            # 根据最小跳动取整
+            newPrice = price - price % priceTick
+        else:
+            # 兼容套利品种的负数价格
+            newPrice = round(price / priceTick, 0) * priceTick
 
+        # 数字货币，对浮点的长度有要求，需要砍除多余
         if isinstance(priceTick,float):
             price_exponent = decimal.Decimal(str(newPrice))
             tick_exponent = decimal.Decimal(str(priceTick))
             if abs(price_exponent.as_tuple().exponent) > abs(tick_exponent.as_tuple().exponent):
                 newPrice = round(newPrice, ndigits=abs(tick_exponent.as_tuple().exponent))
                 newPrice = float(str(newPrice))
+
+        if price!=newPrice:
+            self.writeCtaLog(u'roundToPriceTick:{}=>{} by {}'.format(price,newPrice,priceTick))
+
         return newPrice
 
     def roundToVolumeTick(self,volumeTick,volume):
         if volumeTick == 0:
             return volume
-        newVolume = round(volume / volumeTick, 0) * volumeTick
+        # 取整
+        newVolume = volume - volume % volumeTick
+
         if isinstance(volumeTick,float):
             v_exponent = decimal.Decimal(str(newVolume))
             vt_exponent = decimal.Decimal(str(volumeTick))
@@ -1902,6 +2144,8 @@ class CtaEngine(object):
                 newVolume = round(newVolume, ndigits=abs(vt_exponent.as_tuple().exponent))
                 newVolume = float(str(newVolume))
 
+        if volume !=newVolume:
+            self.writeCtaLog(u'roundToVolumeTick:{}=>{} by {}'.format(volume,newVolume,volumeTick))
         return newVolume
 
     def getShortSymbol(self, symbol):

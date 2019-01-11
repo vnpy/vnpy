@@ -74,6 +74,7 @@ QQ/Wechat：28888502
     wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-4.3.1-Linux-x86_64.sh
     chmod a+x Anaconda3-4.3.1-Linux-x86_64.sh
     ./Anaconda3-4.3.1-Linux-x86_64.sh
+    .
 
     # 配置为国内的镜像
     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/

@@ -96,7 +96,12 @@ class CtaTemplate(object):
     def onOrder(self, order):
         """收到委托变化推送（必须由用户继承实现）"""
         raise NotImplementedError
-    
+        # ----------------------------------------------------------------------
+
+    def onStopOrder(self, orderRef):
+        """停止单更新"""
+        self.writeCtaLog(u'停止单触发，orderRef:{}'.format(orderRef))
+
     # ----------------------------------------------------------------------
     def onTrade(self, trade):
         """收到成交推送（必须由用户继承实现）"""
@@ -302,7 +307,6 @@ class CtaTemplate(object):
             try:
                 self.ctaEngine.writeCtaCritical(content,strategy_name=self.name)
             except Exception as ex:
-
                 self.ctaEngine.writeCtaCritical(content)
         else:
 
@@ -380,6 +384,7 @@ class CtaTemplate(object):
             return
         try:
             if not os.path.exists(file_name):
+                # 写入表头
                 self.writeCtaLog(u'create csv file:{}'.format(file_name))
                 with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
                     writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
@@ -387,9 +392,11 @@ class CtaTemplate(object):
                     writer.writeheader()
                     writer.writerow(dict_data)
             else:
+                # 写入数据
                 with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
-                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel')
+                    writer = csv.DictWriter(f=csvWriteFile, fieldnames=dict_fieldnames, dialect='excel',extrasaction='ignore')
                     writer.writerow(dict_data)
+
         except Exception as ex:
             self.writeCtaError(u'append_data exception:{}'.format(str(ex)))
 
@@ -453,15 +460,16 @@ class MatrixTemplate(CtaTemplate):
         """
         if not self.position:
             return []
-        l = []
+        pos_list = []
         if self.position.longPos > 0:
-            l.append({'vtSymbol': self.vtSymbol, 'direction': DIRECTION_LONG, 'volume': self.position.longPos})
+            pos_list.append({'vtSymbol': self.vtSymbol, 'direction': 'long', 'volume': self.position.longPos})
 
         if abs(self.position.shortPos) > 0:
-            l.append({'vtSymbol': self.vtSymbol, 'direction': DIRECTION_SHORT, 'volume': abs(self.position.shortPos)})
+            pos_list.append({'vtSymbol': self.vtSymbol, 'direction': 'short', 'volume': abs(self.position.shortPos)})
 
-        self.writeCtaLog(u'当前持仓:{}'.format(l))
-        return l
+        if len(pos_list)>0:
+            self.writeCtaLog(u'当前持仓:{}'.format(pos_list))
+        return pos_list
 
     def timeWindow(self, dt):
         """交易与平仓窗口"""

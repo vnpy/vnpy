@@ -33,15 +33,25 @@ ATRRATE_JUMP = 1
 STOPORDERPREFIX = 'CtaStopOrder.'
 
 # 各类商品所在市场
-NIGHT_MARKET_SQ1 = {'AU': 0, 'AG': 0}
-NIGHT_MARKET_SQ2 = {'CU': 0, 'PB': 0, 'AL': 0, 'ZN': 0, 'FU': 0, 'BU': 0, 'WR': 0}
-NIGHT_MARKET_SQ3 = {'RU': 0, 'RB': 0, 'HC': 0}
+# 上期所夜盘，9:00~10:15, 10:30~11:30, 13:30~15:00,  21:00 ~2:30
+NIGHT_MARKET_SQ1 = {'AU': 0, 'AG': 0,'SC':0}
+# 上期所夜盘，9:00~10:15, 10:30~11:30, 13:30~15:00,  21:00 ~1:00
+NIGHT_MARKET_SQ2 = {'CU': 0, 'PB': 0, 'AL': 0, 'ZN': 0, 'FU': 0, 'BU': 0, 'WR': 0,'NI':0}
+# 上期所夜盘，9:00~10:15, 10:30~11:30, 13:30~15:00,  21:00 ~23:00
+NIGHT_MARKET_SQ3 = {'RU': 0, 'RB': 0, 'HC': 0,'SP':0}
+# 郑商所夜盘，9:00~10:15, 10:30~11:30, 13:30~15:00, 21:00 ~23:30
 NIGHT_MARKET_ZZ = {'TA': 0, 'JR': 0, 'OI': 0, 'RO': 0, 'PM': 0, 'WT': 0, 'WS': 0, 'WH': 0, 'CF': 0, 'SR': 0, 'FG': 0,
-                   'ME': 0, 'MA': 0, 'RS': 0, 'RM': 0, 'TC': 0, 'RI': 0, 'ER': 0}
+                   'ME': 0, 'MA': 0, 'RS': 0, 'RM': 0, 'TC': 0, 'RI': 0, 'ER': 0,'ZC':0}
+# 郑商所夜盘，9:00~10:15, 10:30~11:30, 13:30~15:00, 21:00 ~23:30
 NIGHT_MARKET_DL = {'V': 0, 'L': 0, 'BB': 0, 'I': 0, 'FB': 0, 'C': 0, 'PP': 0, 'A': 0, 'B': 0, 'M': 0, 'Y': 0, 'P': 0,
                    'JM': 0, 'J': 0}
+# 中金日盘，9:15 ~11:30, 13:00~15:15
 MARKET_ZJ = {'IC': 0, 'IF': 0, 'IH': 0, 'T': 0, 'TF': 0}
 
+
+# 只有日盘得合约
+MARKET_DAY_ONLY = {'IC': 0, 'IF': 0, 'IH': 0, 'T': 0, 'TF': 0,'PP':0,'JD':0,'BB':0,'C':0,'CS':0,'FB':0,'L':0,'V':0,
+                   'JR':0, 'LR':0,'PM':0,'RI':0,'RS':0,'SM':0,'WH':0,'AP':0}
 # 数据库名称
 SETTING_DB_NAME = 'VnTrader_Setting_Db'
 POSITION_DB_NAME = 'VnTrader_Position_Db'
@@ -76,7 +86,6 @@ class StopOrder(object):
         self.stopOrderID = EMPTY_STRING  # 停止单的本地编号 
         self.status = EMPTY_STRING       # 停止单状态
 
-
 ########################################################################
 class CtaBarData(object):
     """K线数据"""
@@ -101,7 +110,7 @@ class CtaBarData(object):
         self.volume = EMPTY_INT             # 成交量
         self.dayVolume = EMPTY_INT          # 当日累计成交量（ctp是提供这个的）
         self.openInterest = EMPTY_INT       # 持仓量
-        self.color = COLOR_EQUAL          # k 线颜色,COLOR_RED，COLOR_BLUE,COLOR_EQUAL
+        self.color = COLOR_EQUAL           # k 线颜色,COLOR_RED，COLOR_BLUE,COLOR_EQUAL
 
         self.traded = False
         self.tradeStatus = EMPTY_STRING     # 当前bar的交易情况: CTAORDER_BUY 、CTAORDER_SELL、
