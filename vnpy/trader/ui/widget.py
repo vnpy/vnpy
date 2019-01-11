@@ -1061,3 +1061,38 @@ class ContractManager(QtWidgets.QWidget):
 
         self.contract_table.resizeColumnsToContents()
 
+
+class AboutDialog(QtWidgets.QDialog):
+    """
+    About VN Trader.
+    """
+
+    def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
+        """"""
+        super(AboutDialog, self).__init__()
+
+        self.main_engine = main_engine
+        self.event_engine = event_engine
+
+        self.init_ui()
+    
+    def init_ui(self):
+        """"""
+        self.setWindowTitle(f"关于VN Trader")
+
+        text = """
+            Developed by Traders, for Traders.
+            License：MIT
+            
+            Website：www.vnpy.com
+            Github：www.github.com/vnpy/vnpy
+
+            """
+
+        label = QtWidgets.QLabel()
+        label.setText(text)
+        label.setMinimumWidth(500)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(label)
+        self.setLayout(vbox)

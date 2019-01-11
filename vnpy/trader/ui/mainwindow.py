@@ -3,6 +3,7 @@ Implements main window of VN Trader.
 """
 
 from functools import partial
+from typing import Callable
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
@@ -19,7 +20,8 @@ from .widget import (
     ConnectDialog,
     TradingWidget,
     ActiveOrderMonitor,
-    ContractManager
+    ContractManager,
+    AboutDialog
 )
 
 
@@ -70,23 +72,48 @@ class MainWindow(QtWidgets.QMainWindow):
         gateway_names = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
             func = partial(self.connect, name)
-            icon = QtGui.QIcon(get_icon_path(__file__, "connect.ico"))
+            self.add_menu_action(sys_menu, f"连接{name}", "connect.ico", func)
 
-            action = QtWidgets.QAction(f"连接{name}", self)
-            action.triggered.connect(func)
-            action.setIcon(icon)
+        sys_menu.addSeparator()
 
-            sys_menu.addAction(action)
+        self.add_menu_action(sys_menu, "退出", "exit.ico", self.close)
 
         # App menu
 
         # Help menu
-        contract_action = QtWidgets.QAction("查询合约", self)
-        contract_action.triggered.connect(self.open_contract)
-        contract_icon = QtGui.QIcon(get_icon_path(__file__, "contract.ico"))
-        contract_action.setIcon(contract_icon)
+        self.add_menu_action(
+            help_menu,
+            "查询合约",
+            "contract.ico",
+            partial(self.open_widget,
+                    ContractManager,
+                    "contract")
+        )
 
-        help_menu.addAction(contract_action)
+        self.add_menu_action(
+            help_menu,
+            "关于",
+            "about.ico",
+            partial(self.open_widget,
+                    AboutDialog,
+                    "about")
+        )
+
+    def add_menu_action(
+            self,
+            menu: QtWidgets.QMenu,
+            action_name: str,
+            icon_name: str,
+            func: Callable
+    ):
+        """"""
+        icon = QtGui.QIcon(get_icon_path(__file__, icon_name))
+
+        action = QtWidgets.QAction(action_name, self)
+        action.triggered.connect(func)
+        action.setIcon(icon)
+
+        menu.addAction(action)
 
     def create_dock(
             self,
@@ -138,12 +165,16 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
-    def open_contract(self):
+    def open_widget(self, widget_class: QtWidgets.QWidget, name: str):
         """
         Open contract manager.
         """
-        widget = self.widgets.get("contract", None)
+        widget = self.widgets.get(name, None)
         if not widget:
-            widget = ContractManager(self.main_engine, self.event_engine)
-            self.widgets["contract"] = widget
-        widget.show()
+            widget = widget_class(self.main_engine, self.event_engine)
+            self.widgets[name] = widget
+
+        if isinstance(widget, QtWidgets.QDialog):
+            widget.exec()
+        else:
+            widget.show()
