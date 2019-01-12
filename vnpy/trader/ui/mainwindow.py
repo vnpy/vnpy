@@ -36,6 +36,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine = main_engine
         self.event_engine = event_engine
 
+        self.path = get_trader_path()
+        self.window_title = f"VN Trader [{self.path}]"
+
         self.connect_dialogs = {}
         self.widgets = {}
 
@@ -43,12 +46,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_ui(self):
         """"""
-        path = get_trader_path()
-        title = f"VN Trader [{path}]"
-        self.setWindowTitle(title)
-
+        self.setWindowTitle(self.window_title)
         self.init_dock()
         self.init_menu()
+        self.load_window_setting("custom")
 
     def init_dock(self):
         """"""
@@ -62,6 +63,8 @@ class MainWindow(QtWidgets.QMainWindow):
         position_widget, position_dock = self.create_dock(PositionMonitor, "持仓", QtCore.Qt.BottomDockWidgetArea)
 
         self.tabifyDockWidget(active_dock, order_dock)
+
+        self.save_window_setting("default")
 
     def init_menu(self):
         """"""
@@ -91,6 +94,13 @@ class MainWindow(QtWidgets.QMainWindow):
             partial(self.open_widget,
                     ContractManager,
                     "contract")
+        )
+
+        self.add_menu_action(
+            help_menu,
+            "还原窗口",
+            "restore.ico",
+            self.restore_window_setting
         )
 
         self.add_menu_action(
@@ -161,6 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if reply == QtWidgets.QMessageBox.Yes:
             for widget in self.widgets.values():
                 widget.close()
+            self.save_window_setting("custom")
 
             self.main_engine.close()
 
@@ -181,3 +192,30 @@ class MainWindow(QtWidgets.QMainWindow):
             widget.exec()
         else:
             widget.show()
+
+    def save_window_setting(self, name: str):
+        """
+        Save current window size and state by trader path and setting name.
+        """
+        settings = QtCore.QSettings(self.window_title, name)
+        settings.setValue('state', self.saveState())
+        settings.setValue('geometry', self.saveGeometry())
+
+    def load_window_setting(self, name: str):
+        """
+        Load previous window size and state by trader path and setting name.
+        """
+        settings = QtCore.QSettings(self.window_title, name)
+        state = settings.value('state')
+        geometry = settings.value('geometry')
+
+        if isinstance(state, QtCore.QByteArray):
+            self.restoreState(state)
+            self.restoreGeometry(geometry)
+
+    def restore_window_setting(self):
+        """
+        Restore window to default setting.
+        """
+        self.load_window_setting("default")
+        self.showMaximized()
