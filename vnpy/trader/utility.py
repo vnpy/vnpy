@@ -28,17 +28,25 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-def get_temp_path(filename: str):
+def get_trader_path():
     """
-    Get path for temp file with filename.
+    Get path where trader is running in.
     """
     home_path = Path.home()
-    temp_path = home_path.joinpath('.vntrader')
+    return home_path
+
+
+def get_temp_path(file_name: str):
+    """
+    Get path for temp file with file_name.
+    """
+    trader_path = get_trader_path()
+    temp_path = trader_path.joinpath('.vntrader')
 
     if not temp_path.exists():
         temp_path.mkdir()
 
-    return temp_path.joinpath(filename)
+    return temp_path.joinpath(file_name)
 
 
 def get_icon_path(file_path: str, ico_name: str):

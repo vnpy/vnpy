@@ -9,7 +9,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from vnpy.event import EventEngine
 from ..engine import MainEngine
-from ..utility import get_icon_path
+from ..utility import get_icon_path, get_trader_path
 from .widget import (
     TickMonitor,
     OrderMonitor,
@@ -43,7 +43,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_ui(self):
         """"""
-        self.setWindowTitle("VN Trader")
+        path = get_trader_path()
+        title = f"VN Trader [{path}]"
+        self.setWindowTitle(title)
+
         self.init_dock()
         self.init_menu()
 
