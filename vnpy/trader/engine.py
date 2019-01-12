@@ -5,6 +5,10 @@ import logging
 from datetime import datetime
 from abc import ABC
 from typing import Any
+from threading import Thread
+from queue import Queue, Empty
+import smtplib
+from email.message import EmailMessage
 
 from vnpy.event import EventEngine, Event
 
@@ -62,6 +66,7 @@ class MainEngine:
         """
         self.add_engine(LogEngine)
         self.add_engine(OmsEngine)
+        self.add_engine(EmailEngine)
 
     def write_log(self, msg: str):
         """
@@ -135,6 +140,9 @@ class MainEngine:
         Make sure every gateway and app is closed properly before
         programme exit.
         """
+        for engine in self.engines.values():
+            engine.close()
+
         for gateway in self.gateways.values():
             gateway.close()
 
@@ -156,6 +164,10 @@ class BaseEngine(ABC):
         self.main_engine = main_engine
         self.event_engine = event_engine
         self.engine_name = engine_name
+
+    def close(self):
+        """"""
+        pass
 
 
 class LogEngine(BaseEngine):
@@ -398,3 +410,66 @@ class OmsEngine(BaseEngine):
                 if order.vt_symbol == vt_symbol
             ]
             return active_orders
+
+
+class EmailEngine(BaseEngine):
+    """
+    Provides email sending function for VN Trader.
+    """
+
+    def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
+        """"""
+        super(EmailEngine, self).__init__(main_engine, event_engine, "email")
+
+        self.thread = Thread(target=self.run)
+        self.queue = Queue()
+        self.active = False
+
+        self.main_engine.send_email = self.send_email
+
+    def send_email(self, subject: str, content: str, receiver: str = ""):
+        """"""
+        # Start email engine when sending first email.
+        if not self.active:
+            self.start()
+
+        # Use default receiver if not specified.
+        if not receiver:
+            receiver = SETTINGS["email.receiver"]
+
+        msg = EmailMessage()
+        msg["From"] = SETTINGS["email.sender"]
+        msg["To"] = SETTINGS["email.receiver"]
+        msg["Subject"] = subject
+        msg.set_content(content)
+
+        self.queue.put(msg)
+
+    def run(self):
+        """"""
+        while self.active:
+            try:
+                msg = self.queue.get(block=True, timeout=1)
+
+                with smtplib.SMTP_SSL(SETTINGS["email.server"],
+                                      SETTINGS["email.port"]) as smtp:
+                    smtp.login(
+                        SETTINGS["email.username"],
+                        SETTINGS["email.password"]
+                    )
+                    smtp.send_message(msg)
+            except Empty:
+                pass
+
+    def start(self):
+        """"""
+        self.active = True
+        self.thread.start()
+
+    def close(self):
+        """"""
+        if not self.active:
+            return
+
+        self.active = False
+        self.thread.join()

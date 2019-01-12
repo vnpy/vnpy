@@ -105,6 +105,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.add_menu_action(
             help_menu,
+            "测试邮件",
+            "email.ico",
+            self.send_test_email
+        )
+
+        self.add_menu_action(
+            help_menu,
             "关于",
             "about.ico",
             partial(self.open_widget,
@@ -219,3 +226,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self.load_window_setting("default")
         self.showMaximized()
+
+    def send_test_email(self):
+        """
+        Sending a test email.
+        """
+        self.main_engine.send_email("VN Trader", "testing")

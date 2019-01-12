@@ -310,6 +310,11 @@ class TickMonitor(BaseMonitor):
             "cell": BaseCell,
             "update": False
         },
+        "exchange": {
+            "display": "交易所",
+            "cell": BaseCell,
+            "update": False
+        },
         "last_price": {
             "display": "最新价",
             "cell": BaseCell,
@@ -419,6 +424,11 @@ class TradeMonitor(BaseMonitor):
             "cell": BaseCell,
             "update": False
         },
+        "exchange": {
+            "display": "交易所",
+            "cell": BaseCell,
+            "update": False
+        },
         "direction": {
             "display": "方向",
             "cell": DirectionCell,
@@ -463,6 +473,11 @@ class OrderMonitor(BaseMonitor):
         },
         "symbol": {
             "display": "代码",
+            "cell": BaseCell,
+            "update": False
+        },
+        "exchange": {
+            "display": "交易所",
             "cell": BaseCell,
             "update": False
         },
@@ -537,6 +552,11 @@ class PositionMonitor(BaseMonitor):
     headers = {
         "symbol": {
             "display": "代码",
+            "cell": BaseCell,
+            "update": False
+        },
+        "exchange": {
+            "display": "交易所",
             "cell": BaseCell,
             "update": False
         },
