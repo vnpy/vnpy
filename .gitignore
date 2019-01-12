@@ -2,11 +2,13 @@
 *.pyc
 
 # IDE
-.vscode
-.idea
+.vscode/
+.idea/
 *.wpr
 *.wpu
+.vs/
 
 # Temp
 build
 dist
+
