@@ -92,11 +92,13 @@ class FutuGateway(BaseGateway):
     """"""
 
     default_setting = {
-        "password": "123123",
-        "market": "HK",
-        "env": "REAL",
+        "password": "",
         "host": "127.0.0.1",
-        "port": 11111
+        "port": 11111,
+        "market": ["HK",
+                   "US"],
+        "env": [TrdEnv.REAL,
+                TrdEnv.SIMULATE]
     }
 
     def __init__(self, event_engine):
@@ -257,7 +259,7 @@ class FutuGateway(BaseGateway):
 
         futu_symbol = convert_symbol_vt2futu(req.symbol, req.exchange)
         code, data = self.trade_ctx.place_order(
-            eq.price,
+            req.price,
             req.volume,
             futu_symbol,
             side,
@@ -395,7 +397,7 @@ class FutuGateway(BaseGateway):
             tick = TickData(
                 symbol=symbol,
                 exchange=exchange,
-                datatime=datetime.now(),
+                datetime=datetime.now(),
                 gateway_name=self.gateway_name
             )
             self.ticks[code] = tick
@@ -439,10 +441,10 @@ class FutuGateway(BaseGateway):
             ask_data = data["Ask"][i]
             n = i + 1
 
-            d["bid_price%s" % n] = bidData[0]
-            d["bid_volume%s" % n] = bidData[1]
-            d["ask_price%s" % n] = askData[0]
-            d["ask_volume%s" % n] = askData[1]
+            d["bid_price%s" % n] = bid_data[0]
+            d["bid_volume%s" % n] = bid_data[1]
+            d["ask_price%s" % n] = ask_data[0]
+            d["ask_volume%s" % n] = ask_data[1]
 
         if tick.datetime:
             self.on_tick(copy(tick))
