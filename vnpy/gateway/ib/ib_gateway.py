@@ -197,6 +197,7 @@ class IbApi(EWrapper):
         self.ticks = {}
         self.orders = {}
         self.accounts = {}
+        self.contracts = {}
 
         self.tick_exchange = {}
 
@@ -264,6 +265,11 @@ class IbApi(EWrapper):
         tick = self.ticks[reqId]
         name = TICKFIELD_IB2VT[tickType]
         setattr(tick, name, price)
+
+        # Update name into tick data.
+        contract = self.contracts.get(tick.vt_symbol, None)
+        if contract:
+            tick.name = contract.name
 
         # Forex and spot product of IDEALPRO has no tick time and last price.
         # We need to calculate locally.
@@ -467,7 +473,10 @@ class IbApi(EWrapper):
             pricetick=contractDetails.minTick,
             gateway_name=self.gateway_name
         )
+
         self.gateway.on_contract(contract)
+
+        self.contracts[contract.vt_symbol] = contract
 
     def execDetails(self, reqId: int, contract: Contract, execution: Execution):
         """

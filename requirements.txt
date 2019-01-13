@@ -1,3 +1,4 @@
 PyQt5
 qdarkstyle
 futu-api
+websocket-client

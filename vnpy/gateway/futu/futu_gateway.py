@@ -116,6 +116,8 @@ class FutuGateway(BaseGateway):
 
         self.ticks = {}
         self.trades = set()
+        self.contracts = {}
+
         self.thread = Thread(target=self.query_data)
 
         # For query function.
@@ -311,6 +313,7 @@ class FutuGateway(BaseGateway):
                     gateway_name=self.gateway_name
                 )
                 self.on_contract(contract)
+                self.contracts[contract.vt_symbol] = contract
 
         self.write_log("合约信息查询成功")
 
@@ -401,6 +404,11 @@ class FutuGateway(BaseGateway):
                 gateway_name=self.gateway_name
             )
             self.ticks[code] = tick
+
+        contract = self.contracts.get(tick.vt_symbol, None)
+        if contract:
+            tick.name = contract.name
+
         return tick
 
     def process_quote(self, data):

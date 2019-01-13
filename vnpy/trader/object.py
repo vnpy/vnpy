@@ -32,6 +32,7 @@ class TickData(BaseData):
     exchange: str
     datetime: datetime
 
+    name: str = ""
     volume: float = 0
     last_price: float = 0
     last_volume: float = 0

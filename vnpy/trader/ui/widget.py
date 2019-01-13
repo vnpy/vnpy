@@ -315,6 +315,11 @@ class TickMonitor(BaseMonitor):
             "cell": BaseCell,
             "update": False
         },
+        "name": {
+            "display": "名称",
+            "cell": BaseCell,
+            "update": True
+        },
         "last_price": {
             "display": "最新价",
             "cell": BaseCell,
