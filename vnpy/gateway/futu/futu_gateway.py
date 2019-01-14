@@ -108,7 +108,7 @@ class FutuGateway(BaseGateway):
         self.trade_ctx = None
 
         self.host = ""
-        self.ip = 0
+        self.ip = 0  # pylint: disable=C0103
         self.market = ""
         self.password = ""
         self.env = TrdEnv.SIMULATE
