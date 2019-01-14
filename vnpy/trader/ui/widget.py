@@ -8,15 +8,44 @@ from typing import Any
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from vnpy.event import EventEngine, Event
-from ..constant import (DIRECTION_LONG, DIRECTION_SHORT, DIRECTION_NET,
-                        OFFSET_OPEN, OFFSET_CLOSE, OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY,
-                        PRICETYPE_LIMIT, PRICETYPE_MARKET, PRICETYPE_FAK, PRICETYPE_FOK,
-                        EXCHANGE_CFFEX, EXCHANGE_SHFE, EXCHANGE_DCE, EXCHANGE_CZCE, EXCHANGE_SSE,
-                        EXCHANGE_SZSE, EXCHANGE_SGE, EXCHANGE_SEHK, EXCHANGE_HKFE, EXCHANGE_SMART,
-                        EXCHANGE_ICE, EXCHANGE_CME, EXCHANGE_NYMEX, EXCHANGE_GLOBEX, EXCHANGE_IDEALPRO)
+from ..constant import (
+    DIRECTION_LONG,
+    DIRECTION_SHORT,
+    DIRECTION_NET,
+    OFFSET_OPEN,
+    OFFSET_CLOSE,
+    OFFSET_CLOSETODAY,
+    OFFSET_CLOSEYESTERDAY,
+    PRICETYPE_LIMIT,
+    PRICETYPE_MARKET,
+    PRICETYPE_FAK,
+    PRICETYPE_FOK,
+    EXCHANGE_CFFEX,
+    EXCHANGE_SHFE,
+    EXCHANGE_DCE,
+    EXCHANGE_CZCE,
+    EXCHANGE_SSE,
+    EXCHANGE_SZSE,
+    EXCHANGE_SGE,
+    EXCHANGE_SEHK,
+    EXCHANGE_HKFE,
+    EXCHANGE_SMART,
+    EXCHANGE_ICE,
+    EXCHANGE_CME,
+    EXCHANGE_NYMEX,
+    EXCHANGE_GLOBEX,
+    EXCHANGE_IDEALPRO
+)
 from ..engine import MainEngine
-from ..event import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_ACCOUNT,
-                     EVENT_POSITION, EVENT_CONTRACT, EVENT_LOG)
+from ..event import (
+    EVENT_TICK,
+    EVENT_ORDER,
+    EVENT_TRADE,
+    EVENT_ACCOUNT,
+    EVENT_POSITION,
+    EVENT_CONTRACT,
+    EVENT_LOG
+)
 from ..object import SubscribeRequest, OrderRequest, CancelRequest
 from ..utility import load_setting, save_setting
 
@@ -269,7 +298,8 @@ class BaseMonitor(QtWidgets.QTableWidget):
         Resize all columns according to contents.
         """
         self.horizontalHeader().resizeSections(
-            QtWidgets.QHeaderView.ResizeToContents)
+            QtWidgets.QHeaderView.ResizeToContents
+        )
 
     def save_csv(self):
         """
@@ -639,7 +669,7 @@ class ConnectDialog(QtWidgets.QDialog):
     """
     Start connection of a certain gateway.
     """
-    
+
     def __init__(self, main_engine: MainEngine, gateway_name: str):
         """"""
         super(ConnectDialog, self).__init__()
@@ -651,17 +681,19 @@ class ConnectDialog(QtWidgets.QDialog):
         self.widgets = {}
 
         self.init_ui()
-    
+
     def init_ui(self):
         """"""
         self.setWindowTitle(f"连接{self.gateway_name}")
 
         # Default setting provides field name, field data type and field default value.
-        default_setting = self.main_engine.get_default_setting(self.gateway_name)
+        default_setting = self.main_engine.get_default_setting(
+            self.gateway_name
+        )
 
         # Saved setting provides field data used last time.
         loaded_setting = load_setting(self.file_name)
-        
+
         # Initialize line edits and form layout based on setting.
         form = QtWidgets.QFormLayout()
 
@@ -704,13 +736,12 @@ class ConnectDialog(QtWidgets.QDialog):
             else:
                 field_value = field_type(widget.text())
             setting[field_name] = field_value
-        
+
         self.main_engine.connect(setting, self.gateway_name)
-        
+
         save_setting(self.file_name, setting)
 
         self.accept()
-    
 
 
 class TradingWidget(QtWidgets.QWidget):
@@ -731,29 +762,31 @@ class TradingWidget(QtWidgets.QWidget):
 
         self.init_ui()
         self.register_event()
-    
+
     def init_ui(self):
         """"""
         self.setFixedWidth(300)
 
         # Trading function area
         self.exchange_combo = QtWidgets.QComboBox()
-        self.exchange_combo.addItems([
-            EXCHANGE_CFFEX,
-            EXCHANGE_SHFE,
-            EXCHANGE_DCE,
-            EXCHANGE_CZCE,
-            EXCHANGE_SSE,
-            EXCHANGE_SZSE,
-            EXCHANGE_SEHK,
-            EXCHANGE_HKFE,
-            EXCHANGE_SMART,
-            EXCHANGE_ICE,
-            EXCHANGE_CME,
-            EXCHANGE_NYMEX,
-            EXCHANGE_GLOBEX,
-            EXCHANGE_IDEALPRO
-        ])
+        self.exchange_combo.addItems(
+            [
+                EXCHANGE_CFFEX,
+                EXCHANGE_SHFE,
+                EXCHANGE_DCE,
+                EXCHANGE_CZCE,
+                EXCHANGE_SSE,
+                EXCHANGE_SZSE,
+                EXCHANGE_SEHK,
+                EXCHANGE_HKFE,
+                EXCHANGE_SMART,
+                EXCHANGE_ICE,
+                EXCHANGE_CME,
+                EXCHANGE_NYMEX,
+                EXCHANGE_GLOBEX,
+                EXCHANGE_IDEALPRO
+            ]
+        )
 
         self.symbol_line = QtWidgets.QLineEdit()
         self.symbol_line.returnPressed.connect(self.set_vt_symbol)
@@ -762,30 +795,29 @@ class TradingWidget(QtWidgets.QWidget):
         self.name_line.setReadOnly(True)
 
         self.direction_combo = QtWidgets.QComboBox()
-        self.direction_combo.addItems([
-            DIRECTION_LONG,
-            DIRECTION_SHORT
-        ])
+        self.direction_combo.addItems([DIRECTION_LONG, DIRECTION_SHORT])
 
         self.offset_combo = QtWidgets.QComboBox()
-        self.offset_combo.addItems([
-            OFFSET_OPEN,
-            OFFSET_CLOSE,
-            OFFSET_CLOSETODAY,
-            OFFSET_CLOSEYESTERDAY
-        ])
+        self.offset_combo.addItems(
+            [
+                OFFSET_OPEN,
+                OFFSET_CLOSE,
+                OFFSET_CLOSETODAY,
+                OFFSET_CLOSEYESTERDAY
+            ]
+        )
 
         self.pricetype_combo = QtWidgets.QComboBox()
-        self.pricetype_combo.addItems([
-            PRICETYPE_LIMIT,
-            PRICETYPE_MARKET,
-            PRICETYPE_FAK,
-            PRICETYPE_FOK
-        ])
+        self.pricetype_combo.addItems(
+            [PRICETYPE_LIMIT,
+             PRICETYPE_MARKET,
+             PRICETYPE_FAK,
+             PRICETYPE_FOK]
+        )
 
         double_validator = QtGui.QDoubleValidator()
         double_validator.setBottom(0)
-        
+
         self.price_line = QtWidgets.QLineEdit()
         self.price_line.setValidator(double_validator)
 
@@ -817,18 +849,33 @@ class TradingWidget(QtWidgets.QWidget):
         # Market depth display area
         bid_color = "rgb(255,174,201)"
         ask_color = "rgb(160,255,160)"
-        
+
         self.bp1_label = self.create_label(bid_color)
         self.bp2_label = self.create_label(bid_color)
         self.bp3_label = self.create_label(bid_color)
         self.bp4_label = self.create_label(bid_color)
         self.bp5_label = self.create_label(bid_color)
 
-        self.bv1_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv2_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv3_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv4_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv5_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv1_label = self.create_label(
+            bid_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.bv2_label = self.create_label(
+            bid_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.bv3_label = self.create_label(
+            bid_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.bv4_label = self.create_label(
+            bid_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.bv5_label = self.create_label(
+            bid_color,
+            alignment=QtCore.Qt.AlignRight
+        )
 
         self.ap1_label = self.create_label(ask_color)
         self.ap2_label = self.create_label(ask_color)
@@ -836,11 +883,26 @@ class TradingWidget(QtWidgets.QWidget):
         self.ap4_label = self.create_label(ask_color)
         self.ap5_label = self.create_label(ask_color)
 
-        self.av1_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av2_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av3_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av4_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av5_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av1_label = self.create_label(
+            ask_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.av2_label = self.create_label(
+            ask_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.av3_label = self.create_label(
+            ask_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.av4_label = self.create_label(
+            ask_color,
+            alignment=QtCore.Qt.AlignRight
+        )
+        self.av5_label = self.create_label(
+            ask_color,
+            alignment=QtCore.Qt.AlignRight
+        )
 
         self.lp_label = self.create_label()
         self.return_label = self.create_label(alignment=QtCore.Qt.AlignRight)
@@ -857,14 +919,18 @@ class TradingWidget(QtWidgets.QWidget):
         form2.addRow(self.bp3_label, self.bv3_label)
         form2.addRow(self.bp4_label, self.bv4_label)
         form2.addRow(self.bp5_label, self.bv5_label)
-        
+
         # Overall layout
         vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(form1)
         vbox.addLayout(form2)
         self.setLayout(vbox)
-    
-    def create_label(self, color: str = "", alignment: int = QtCore.Qt.AlignLeft):
+
+    def create_label(
+            self,
+            color: str = "",
+            alignment: int = QtCore.Qt.AlignLeft
+    ):
         """
         Create label with certain font color.
         """
@@ -873,12 +939,12 @@ class TradingWidget(QtWidgets.QWidget):
             label.setStyleSheet(f"color:{color}")
         label.setAlignment(alignment)
         return label
-        
+
     def register_event(self):
         """"""
         self.signal_tick.connect(self.process_tick_event)
         self.event_engine.register(EVENT_TICK, self.signal_tick.emit)
-    
+
     def process_tick_event(self, event: Event):
         """"""
         tick = event.data
@@ -894,8 +960,8 @@ class TradingWidget(QtWidgets.QWidget):
         if tick.pre_close:
             r = (tick.last_price / tick.pre_close - 1) * 100
             self.return_label.setText(f"{r:.2f}%")
-        
-        if tick.bid_price_2:    
+
+        if tick.bid_price_2:
             self.bp2_label.setText(str(tick.bid_price_2))
             self.bv2_label.setText(str(tick.bid_volume_2))
             self.ap2_label.setText(str(tick.ask_price_2))
@@ -942,12 +1008,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.clear_label_text()
 
         # Subscribe tick data
-        req = SubscribeRequest(
-            symbol=symbol,
-            exchange=exchange
-        )
+        req = SubscribeRequest(symbol=symbol, exchange=exchange)
         gateway_name = (self.gateway_combo.currentText())
-        
+
         self.main_engine.subscribe(req, gateway_name)
 
     def clear_label_text(self):
@@ -987,21 +1050,15 @@ class TradingWidget(QtWidgets.QWidget):
         """
         symbol = str(self.symbol_line.text())
         if not symbol:
-            QtWidgets.QMessageBox.critical(
-                "委托失败",
-                "请输入合约代码"
-            )
+            QtWidgets.QMessageBox.critical("委托失败", "请输入合约代码")
             return
 
         volume_text = str(self.volume_line.text())
         if not volume_text:
-            QtWidgets.QMessageBox.critical(
-                "委托失败",
-                "请输入委托数量"
-            )
+            QtWidgets.QMessageBox.critical("委托失败", "请输入委托数量")
             return
         volume = float(volume_text)
-        
+
         price_text = str(self.price_line.text())
         if not price_text:
             price = 0
@@ -1021,7 +1078,7 @@ class TradingWidget(QtWidgets.QWidget):
         gateway_name = str(self.gateway_combo.currentText())
 
         self.main_engine.send_order(req, gateway_name)
-    
+
     def cancel_all(self):
         """
         Cancel all active orders.
@@ -1046,7 +1103,7 @@ class ActiveOrderMonitor(OrderMonitor):
         order = event.data
         row_cells = self.cells[order.vt_orderid]
         row = self.row(row_cells["volume"])
-        
+
         if order.is_active():
             self.showRow(row)
         else:
@@ -1076,7 +1133,7 @@ class ContractManager(QtWidgets.QWidget):
         self.event_engine = event_engine
 
         self.init_ui()
-    
+
     def init_ui(self):
         """"""
         self.setWindowTitle("合约查询")
@@ -1103,13 +1160,13 @@ class ContractManager(QtWidgets.QWidget):
         hbox = QtWidgets.QHBoxLayout()
         hbox.addWidget(self.filter_line)
         hbox.addWidget(self.button_show)
-        
+
         vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox)
         vbox.addWidget(self.contract_table)
 
         self.setLayout(vbox)
-    
+
     def show_contracts(self):
         """
         Show contracts by symbol
@@ -1118,7 +1175,10 @@ class ContractManager(QtWidgets.QWidget):
 
         all_contracts = self.main_engine.get_all_contracts()
         if flt:
-            contracts = [contract for contract in all_contracts if flt in contract.vt_symbol]
+            contracts = [
+                contract for contract in all_contracts
+                if flt in contract.vt_symbol
+            ]
         else:
             contracts = all_contracts
 
@@ -1146,7 +1206,7 @@ class AboutDialog(QtWidgets.QDialog):
         self.event_engine = event_engine
 
         self.init_ui()
-    
+
     def init_ui(self):
         """"""
         self.setWindowTitle(f"关于VN Trader")
