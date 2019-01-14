@@ -1,4 +1,6 @@
-# encoding: UTF-8
+"""
+Websocket Client
+"""
 
 import json
 import ssl
@@ -11,7 +13,7 @@ from threading import Lock, Thread
 import websocket
 
 
-class WebsocketClient(object):
+class WebsocketClient:
     """
     Websocket API
     

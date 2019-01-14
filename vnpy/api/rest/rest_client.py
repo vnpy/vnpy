@@ -1,4 +1,6 @@
-# encoding: UTF-8
+"""
+Rest Client
+"""
 
 import sys
 import traceback
@@ -18,7 +20,7 @@ class RequestStatus(Enum):
     error = 3   # 发生错误 网络错误、json解析错误，等等
 
 
-class Request(object):
+class Request:
     """
     表示一个内部的Request，用于状态查询
     """
@@ -63,7 +65,7 @@ class Request(object):
         )
 
 
-class RestClient(object):
+class RestClient:
     """
     HTTP 客户端。目前是为了对接各种RESTfulAPI而设计的。
     
