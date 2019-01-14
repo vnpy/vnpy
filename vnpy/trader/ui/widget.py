@@ -5,7 +5,7 @@ Basic widgets for VN Trader.
 import csv
 from typing import Any
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PySide2 import QtWidgets, QtGui, QtCore
 
 from vnpy.event import EventEngine, Event
 from ..constant import (
@@ -183,7 +183,7 @@ class BaseMonitor(QtWidgets.QTableWidget):
     sorting = False
     headers = {}
 
-    signal = QtCore.pyqtSignal(Event)
+    signal = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
@@ -749,7 +749,7 @@ class TradingWidget(QtWidgets.QWidget):
     General manual trading widget.
     """
 
-    signal_tick = QtCore.pyqtSignal(Event)
+    signal_tick = QtCore.Signal(Event)
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""

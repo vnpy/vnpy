@@ -5,7 +5,7 @@ Implements main window of VN Trader.
 from functools import partial
 from typing import Callable
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PySide2 import QtWidgets, QtCore, QtGui
 
 from vnpy.event import EventEngine
 from ..engine import MainEngine

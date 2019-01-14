@@ -1,10 +1,14 @@
-name: vnpy2
+name: vnpy2-test
+channels:
+  - conda-forge
+  - defaults
 dependencies:
   - python=3.7
+  - qdarkstyle
+  - websocket-client
+  - pylint
+  - yapf
   - pip:
-    - PyQt5
-    - qdarkstyle
+    - pyside2
     - futu-api
-    - websocket-client
-    - pylint
-    - https://github.com/google/yapf/archive/master.zip
+

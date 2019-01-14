@@ -3,7 +3,7 @@ import ctypes
 from pathlib import Path
 
 import qdarkstyle
-from PyQt5 import QtWidgets, QtGui
+from PySide2 import QtWidgets, QtGui
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS
@@ -15,7 +15,7 @@ def create_qapp():
     Create Qt Application.
     """
     qapp = QtWidgets.QApplication([])
-    qapp.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    qapp.setStyleSheet(qdarkstyle.load_stylesheet_pyside2())
 
     font = QtGui.QFont(SETTINGS["font.family"], SETTINGS["font.size"])
     qapp.setFont(font)
