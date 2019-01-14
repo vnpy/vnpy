@@ -1,0 +1,10 @@
+name: vnpy2
+dependencies:
+  - python=3.7
+  - pip:
+    - PyQt5
+    - qdarkstyle
+    - futu-api
+    - websocket-client
+    - pylint
+    - https://github.com/google/yapf/archive/master.zip

@@ -17,5 +17,8 @@ vnpy 2.0
   [提交PR]:https://help.github.com/articles/creating-a-pull-request/
   [创建 Issue]:http://pylint.pycqa.org/en/latest/tutorial.html
 
+## 使用 conda 安装 vnpy2 运行环境
+---
 
+首先确认已经安装了 anaconda/miniconda ，然后启动进入已经激活了 anaconda/miniconda 的命令行界面，进入代码库 2.0 分支的目录中，执行 `conda env create -f conda-environment.yml`，会自动安装名字为 vnpy2 的 conda 虚拟空间，执行`conda activate vnpy2`激活进入 vnpy2 空间。
 
