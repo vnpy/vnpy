@@ -1,4 +1,3 @@
-# encoding: UTF-8
 """
 Please install futu-api before use.
 """
