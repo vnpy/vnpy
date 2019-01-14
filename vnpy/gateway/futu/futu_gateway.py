@@ -309,7 +309,7 @@ class FutuGateway(BaseGateway):
                     exchange=exchange,
                     name=row["name"],
                     product=product,
-                    size=int(row["lot_size"]),
+                    size=1,
                     pricetick=0.001,
                     gateway_name=self.gateway_name
                 )
