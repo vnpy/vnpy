@@ -73,7 +73,7 @@ class BaseGateway(ABC):
         Order event of a specific vt_orderid is also pushed.
         """
         self.on_event(EVENT_ORDER, order)
-        self.on_event(EVENT_ORDER + order.vt_orderid, order)
+        self.on_event(EVENT_ORDER + order.vt_order_id, order)
 
     def on_position(self, position: PositionData):
         """

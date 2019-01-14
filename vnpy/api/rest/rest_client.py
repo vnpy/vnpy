@@ -12,10 +12,13 @@ from typing import Any, Callable, Optional
 
 
 class RequestStatus(Enum):
-    ready = 0   # 刚刚构建
-    success = 1 # 请求成功 code == 2xx
+    # 刚刚构建
+    ready = 0
+    # 请求成功 code == 2xx
+    success = 1
     failed = 2
-    error = 3   # 发生错误 网络错误、json解析错误，等等
+    # 发生错误 网络错误、json解析错误，等等
+    error = 3
 
 
 class Request(object):
@@ -40,9 +43,9 @@ class Request(object):
 
     def __str__(self):
         if self.response is None:
-            statusCode = 'terminated'
+            status_code = 'terminated'
         else:
-            statusCode = self.response.status_code
+            status_code = self.response.status_code
         # todo: encoding error
         return (
             "reuqest : {} {} {} because {}: \n"
@@ -54,7 +57,7 @@ class Request(object):
                 self.method,
                 self.path,
                 self.status.name,
-                statusCode,
+                status_code,
                 self.headers,
                 self.params,
                 self.data,

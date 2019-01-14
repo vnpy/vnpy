@@ -29,78 +29,49 @@ from vnpy.trader.object import (
     OrderRequest,
     CancelRequest
 )
-from vnpy.trader.constant import (
-    PRODUCT_EQUITY,
-    PRODUCT_FOREX,
-    PRODUCT_SPOT,
-    PRODUCT_FUTURES,
-    PRODUCT_OPTION,
-    PRICETYPE_LIMIT,
-    PRICETYPE_MARKET,
-    DIRECTION_LONG,
-    DIRECTION_SHORT,
-    DIRECTION_NET,
-    EXCHANGE_SMART,
-    EXCHANGE_NYMEX,
-    EXCHANGE_GLOBEX,
-    EXCHANGE_IDEALPRO,
-    EXCHANGE_SEHK,
-    EXCHANGE_HKFE,
-    EXCHANGE_CME,
-    EXCHANGE_ICE,
-    CURRENCY_CNY,
-    CURRENCY_HKD,
-    CURRENCY_USD,
-    STATUS_SUBMITTING,
-    STATUS_NOTTRADED,
-    STATUS_PARTTRADED,
-    STATUS_ALLTRADED,
-    STATUS_CANCELLED,
-    STATUS_REJECTED,
-    OPTION_CALL,
-    OPTION_PUT
-)
 
-PRICETYPE_VT2IB = {PRICETYPE_LIMIT: "LMT", PRICETYPE_MARKET: "MKT"}
-PRICETYPE_IB2VT = {v: k for k, v in PRICETYPE_VT2IB.items()}
+from vnpy.trader.constant import Product, Direction, Status, Exchange, Option, Currency, PriceType
 
-DIRECTION_VT2IB = {DIRECTION_LONG: "BUY", DIRECTION_SHORT: "SELL"}
+PRICETYPE_VT2IB = {PriceType.LIMIT: "LMT", PriceType.MARKET: "MKT"}
+PriceType.IB2VT = {v: k for k, v in PriceType.VT2IB.items()}
+
+DIRECTION_VT2IB = {Direction.LONG: "BUY", Direction.SHORT: "SELL"}
 DIRECTION_IB2VT = {v: k for k, v in DIRECTION_VT2IB.items()}
-DIRECTION_IB2VT["BOT"] = DIRECTION_LONG
-DIRECTION_IB2VT["SLD"] = DIRECTION_SHORT
+DIRECTION_IB2VT["BOT"] = Direction.LONG
+DIRECTION_IB2VT["SLD"] = Direction.SHORT
 
 EXCHANGE_VT2IB = {
-    EXCHANGE_SMART: "SMART",
-    EXCHANGE_NYMEX: "NYMEX",
-    EXCHANGE_GLOBEX: "GLOBEX",
-    EXCHANGE_IDEALPRO: "IDEALPRO",
-    EXCHANGE_CME: "CME",
-    EXCHANGE_ICE: "ICE",
-    EXCHANGE_SEHK: "SEHK",
-    EXCHANGE_HKFE: "HKFE"
+    Exchange.SMART: "SMART",
+    Exchange.NYMEX: "NYMEX",
+    Exchange.GLOBEX: "GLOBEX",
+    Exchange.IDEALPRO: "IDEALPRO",
+    Exchange.CME: "CME",
+    Exchange.ICE: "ICE",
+    Exchange.SEHK: "SEHK",
+    Exchange.HKFE: "HKFE"
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
 STATUS_IB2VT = {
-    "Submitted": STATUS_NOTTRADED,
-    "Filled": STATUS_ALLTRADED,
-    "Cancelled": STATUS_CANCELLED,
-    "PendingSubmit": STATUS_SUBMITTING,
-    "PreSubmitted": STATUS_NOTTRADED
+    "Submitted": Status.NOTTRADED,
+    "Filled": Status.ALLTRADED,
+    "Cancelled": Status.CANCELLED,
+    "PendingSubmit": Status.SUBMITTING,
+    "PreSubmitted": Status.NOTTRADED
 }
 
 PRODUCT_VT2IB = {
-    PRODUCT_EQUITY: "STK",
-    PRODUCT_FOREX: "CASH",
-    PRODUCT_SPOT: "CMDTY",
-    PRODUCT_OPTION: "OPT",
-    PRODUCT_FUTURES: "FUT"
+    Product.EQUITY: "STK",
+    Product.FOREX: "CASH",
+    Product.SPOT: "CMDTY",
+    Product.OPTION: "OPT",
+    Product.FUTURES: "FUT"
 }
 PRODUCT_IB2VT = {v: k for k, v in PRODUCT_VT2IB.items()}
 
-OPTION_VT2IB = {OPTION_CALL: "CALL", OPTION_PUT: "PUT"}
+OPTION_VT2IB = {Option.CALL: "CALL", Option.PUT: "PUT"}
 
-CURRENCY_VT2IB = {CURRENCY_USD: "USD", CURRENCY_CNY: "CNY", CURRENCY_HKD: "HKD"}
+CURRENCY_VT2IB = {Currency.USD: "USD", Currency.CNY: "CNY", Currency.HKD: "HKD"}
 
 TICKFIELD_IB2VT = {
     0: "bid_volume_1",
@@ -274,7 +245,7 @@ class IbApi(EWrapper):
         # Forex and spot product of IDEALPRO has no tick time and last price.
         # We need to calculate locally.
         exchange = self.tick_exchange[reqId]
-        if exchange == EXCHANGE_IDEALPRO:
+        if exchange == Exchange.IDEALPRO:
             tick.last_price = (tick.bid_price_1 + tick.ask_price_1) / 2
             tick.datetime = datetime.now()
         self.gateway.on_tick(copy(tick))
@@ -381,17 +352,17 @@ class IbApi(EWrapper):
             key: str,
             val: str,
             currency: str,
-            accountName: str
+            account_name: str
     ):
         """
         Callback of account update.
         """
-        super(IbApi, self).updateAccountValue(key, val, currency, accountName)
+        super(IbApi, self).updateAccountValue(key, val, currency, account_name)
 
         if not currency or key not in ACCOUNTFIELD_IB2VT:
             return
 
-        accountid = f"{accountName}.{currency}"
+        accountid = f"{account_name}.{currency}"
         account = self.accounts.get(accountid, None)
         if not account:
             account = AccountData(
@@ -433,7 +404,7 @@ class IbApi(EWrapper):
             symbol=contract.conId,
             exchange=EXCHANGE_IB2VT.get(contract.exchange,
                                         contract.exchange),
-            direction=DIRECTION_NET,
+            direction=Direction.NET,
             volume=position,
             price=averageCost,
             pnl=unrealizedPNL,

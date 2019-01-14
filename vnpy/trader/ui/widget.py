@@ -6,14 +6,10 @@ import csv
 from typing import Any
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+from six import text_type
 
 from vnpy.event import EventEngine, Event
-from ..constant import (DIRECTION_LONG, DIRECTION_SHORT, DIRECTION_NET,
-                        OFFSET_OPEN, OFFSET_CLOSE, OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY,
-                        PRICETYPE_LIMIT, PRICETYPE_MARKET, PRICETYPE_FAK, PRICETYPE_FOK,
-                        EXCHANGE_CFFEX, EXCHANGE_SHFE, EXCHANGE_DCE, EXCHANGE_CZCE, EXCHANGE_SSE,
-                        EXCHANGE_SZSE, EXCHANGE_SGE, EXCHANGE_SEHK, EXCHANGE_HKFE, EXCHANGE_SMART,
-                        EXCHANGE_ICE, EXCHANGE_CME, EXCHANGE_NYMEX, EXCHANGE_GLOBEX, EXCHANGE_IDEALPRO)
+from vnpy.trader.constant import Exchange, Direction, Offset, PriceType
 from ..engine import MainEngine
 from ..event import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_ACCOUNT,
                      EVENT_POSITION, EVENT_CONTRACT, EVENT_LOG)
@@ -67,7 +63,7 @@ class DirectionCell(BaseCell):
         """
         super(DirectionCell, self).set_content(content, data)
 
-        if content == DIRECTION_SHORT:
+        if content == Direction.SHORT:
             self.setForeground(COLOR_SHORT)
         else:
             self.setForeground(COLOR_LONG)
@@ -710,7 +706,7 @@ class ConnectDialog(QtWidgets.QDialog):
         save_setting(self.file_name, setting)
 
         self.accept()
-    
+
 
 
 class TradingWidget(QtWidgets.QWidget):
@@ -739,20 +735,20 @@ class TradingWidget(QtWidgets.QWidget):
         # Trading function area
         self.exchange_combo = QtWidgets.QComboBox()
         self.exchange_combo.addItems([
-            EXCHANGE_CFFEX,
-            EXCHANGE_SHFE,
-            EXCHANGE_DCE,
-            EXCHANGE_CZCE,
-            EXCHANGE_SSE,
-            EXCHANGE_SZSE,
-            EXCHANGE_SEHK,
-            EXCHANGE_HKFE,
-            EXCHANGE_SMART,
-            EXCHANGE_ICE,
-            EXCHANGE_CME,
-            EXCHANGE_NYMEX,
-            EXCHANGE_GLOBEX,
-            EXCHANGE_IDEALPRO
+            Exchange.CFFEX,
+            Exchange.SHFE,
+            Exchange.DCE,
+            Exchange.CZCE,
+            Exchange.SSE,
+            Exchange.SZSE,
+            Exchange.SEHK,
+            Exchange.HKFE,
+            Exchange.SMART,
+            Exchange.ICE,
+            Exchange.CME,
+            Exchange.NYMEX,
+            Exchange.GLOBEX,
+            Exchange.IDEALPRO
         ])
 
         self.symbol_line = QtWidgets.QLineEdit()
@@ -763,24 +759,24 @@ class TradingWidget(QtWidgets.QWidget):
 
         self.direction_combo = QtWidgets.QComboBox()
         self.direction_combo.addItems([
-            DIRECTION_LONG,
-            DIRECTION_SHORT
+            Direction.LONG,
+            Direction.SHORT
         ])
 
         self.offset_combo = QtWidgets.QComboBox()
         self.offset_combo.addItems([
-            OFFSET_OPEN,
-            OFFSET_CLOSE,
-            OFFSET_CLOSETODAY,
-            OFFSET_CLOSEYESTERDAY
+            Offset.OPEN,
+            Offset.CLOSE,
+            Offset.CLOSETODAY,
+            Offset.CLOSEYESTERDAY
         ])
 
         self.pricetype_combo = QtWidgets.QComboBox()
         self.pricetype_combo.addItems([
-            PRICETYPE_LIMIT,
-            PRICETYPE_MARKET,
-            PRICETYPE_FAK,
-            PRICETYPE_FOK
+            PriceType.LIMIT,
+            PriceType.MARKET,
+            PriceType.FAK,
+            PriceType.FOK
         ])
 
         double_validator = QtGui.QDoubleValidator()
