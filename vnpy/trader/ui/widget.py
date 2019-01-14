@@ -281,8 +281,9 @@ class BaseMonitor(QtWidgets.QTableWidget):
         if not path:
             return
 
-        with open(path, "wb") as f:
-            writer = csv.writer(f)
+        with open(path, "w") as f:
+            writer = csv.writer(f, lineterminator='\n')
+
             writer.writerow(self.headers.keys())
 
             for row in range(self.rowCount()):
@@ -290,10 +291,16 @@ class BaseMonitor(QtWidgets.QTableWidget):
                 for column in range(self.columnCount()):
                     item = self.item(row, column)
                     if item:
-                        row_data.append(text_type(item.text()))
+                        row_data.append(str(item.text()))
                     else:
                         row_data.append("")
                 writer.writerow(row_data)
+    
+    def contextMenuEvent(self, event):
+        """
+        Show menu with right click.
+        """
+        self.menu.popup(QtGui.QCursor.pos())    
 
 
 class TickMonitor(BaseMonitor):
@@ -936,8 +943,14 @@ class TradingWidget(QtWidgets.QWidget):
         contract = self.main_engine.get_contract(vt_symbol)
         if not contract:
             self.name_line.setText("")
+            gateway_name = (self.gateway_combo.currentText())
         else:
             self.name_line.setText(contract.name)
+            gateway_name = contract.gateway_name
+
+            # Update gateway combo box.
+            ix = self.gateway_combo.findText(gateway_name)
+            self.gateway_combo.setCurrentIndex(ix)
 
         self.clear_label_text()
 
@@ -946,8 +959,7 @@ class TradingWidget(QtWidgets.QWidget):
             symbol=symbol,
             exchange=exchange
         )
-        gateway_name = (self.gateway_combo.currentText())
-        
+
         self.main_engine.subscribe(req, gateway_name)
 
     def clear_label_text(self):

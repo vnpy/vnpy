@@ -77,6 +77,7 @@ DIRECTION_FUTU2VT = {v: k for k, v in DIRECTION_VT2FUTU.items()}
 
 STATUS_FUTU2VT = {
     OrderStatus.NONE: STATUS_SUBMITTING,
+    OrderStatus.SUBMITTING: STATUS_SUBMITTING,
     OrderStatus.SUBMITTED: STATUS_NOTTRADED,
     OrderStatus.FILLED_PART: STATUS_PARTTRADED,
     OrderStatus.FILLED_ALL: STATUS_ALLTRADED,
@@ -449,10 +450,10 @@ class FutuGateway(BaseGateway):
             ask_data = data["Ask"][i]
             n = i + 1
 
-            d["bid_price%s" % n] = bid_data[0]
-            d["bid_volume%s" % n] = bid_data[1]
-            d["ask_price%s" % n] = ask_data[0]
-            d["ask_volume%s" % n] = ask_data[1]
+            d["bid_price_%s" % n] = bid_data[0]
+            d["bid_volume_%s" % n] = bid_data[1]
+            d["ask_price_%s" % n] = ask_data[0]
+            d["ask_volume_%s" % n] = ask_data[1]
 
         if tick.datetime:
             self.on_tick(copy(tick))
@@ -490,7 +491,7 @@ class FutuGateway(BaseGateway):
             tradeid = str(row["deal_id"])
             if tradeid in self.trades:
                 continue
-            self.trades.add(tradeID)
+            self.trades.add(tradeid)
 
             symbol, exchange = convert_symbol_futu2vt(row["code"])
             trade = TradeData(
