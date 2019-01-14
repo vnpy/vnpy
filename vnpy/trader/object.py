@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
-from .constant import (STATUS_SUBMITTING, STATUS_NOTTRADED, STATUS_PARTTRADED)
+from .constant import Status
 
-ACTIVE_STATUSES = set([STATUS_SUBMITTING, STATUS_NOTTRADED, STATUS_PARTTRADED])
+ACTIVE_STATUSES = {Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED}
 
 
 @dataclass
@@ -81,7 +81,7 @@ class BarData(BaseData):
     symbol: str
     exchange: str
     datetime: datetime
-    inteval: str
+    interval: str
 
     volume: float = 0
     open_price: float = 0
@@ -102,20 +102,20 @@ class OrderData(BaseData):
     """
     symbol: str
     exchange: str
-    orderid: str
+    order_id: str
 
     direction: str = ""
     offset: str = ""
     price: float = 0
     volume: float = 0
     traded: float = 0
-    status: str = ""
+    status: Status = Status.UNDEFINED
     time: str = ""
 
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange}"
-        self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
+        self.vt_order_id = f"{self.gateway_name}.{self.order_id}"
 
     def is_active(self):
         """
@@ -131,7 +131,7 @@ class OrderData(BaseData):
         Create cancel request object from order.
         """
         req = CancelRequest(
-            orderid=self.orderid,
+            orderid=self.order_id,
             symbol=self.symbol,
             exchange=self.exchange
         )
@@ -146,8 +146,8 @@ class TradeData(BaseData):
     """
     symbol: str
     exchange: str
-    orderid: str
-    tradeid: str
+    order_id: str
+    trade_id: str
 
     direction: str = ""
     offset: str = ""
@@ -158,14 +158,14 @@ class TradeData(BaseData):
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange}"
-        self.vt_orderid = f"{self.gateway_name}.{self.orderid}"
-        self.vt_tradeid = f"{self.gateway_name}.{self.tradeid}"
+        self.vt_order_id = f"{self.gateway_name}.{self.order_id}"
+        self.vt_trade_id = f"{self.gateway_name}.{self.trade_id}"
 
 
 @dataclass
 class PositionData(BaseData):
     """
-    Positon data is used for tracking each individual position holding.
+    Position data is used for tracking each individual position holding.
     """
     symbol: str
     exchange: str
@@ -188,7 +188,7 @@ class AccountData(BaseData):
     Account data contains information about balance, frozen and
     available.
     """
-    accountid: str
+    account_id: str
 
     balance: float = 0
     frozen: float = 0
@@ -196,7 +196,7 @@ class AccountData(BaseData):
     def __post_init__(self):
         """"""
         self.available = self.balance - self.frozen
-        self.vt_accountid = f"{self.gateway_name}.{self.accountid}"
+        self.vt_account_id = f"{self.gateway_name}.{self.account_id}"
 
 
 @dataclass
@@ -222,10 +222,10 @@ class ContractData(BaseData):
     name: str
     product: str
     size: int
-    pricetick: float
+    price_tick: float
 
     option_strike: float = 0
-    option_underlying: str = '' # vt_symbol of underlying contract
+    option_underlying: str = ''  # vt_symbol of underlying contract
     option_type: str = ''
     option_expiry: datetime = None
 
@@ -270,7 +270,7 @@ class CancelRequest:
     """
     Request sending to specific gateway for canceling an existing order.
     """
-    orderid: str
+    order_id: str
     symbol: str = ''
     exchange: str = ''
 

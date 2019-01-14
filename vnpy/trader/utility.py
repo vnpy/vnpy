@@ -5,8 +5,6 @@ General utility functions.
 import shelve
 from pathlib import Path
 
-from .constant import (STATUS_NOTTRADED, STATUS_PARTTRADED, STATUS_SUBMITTING)
-
 
 class Singleton(type):
     """

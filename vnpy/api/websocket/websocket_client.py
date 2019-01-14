@@ -11,7 +11,7 @@ from threading import Lock, Thread
 import websocket
 
 
-class WebsocketClient(object):
+class WebSocketClient(object):
     """
     Websocket API
     

@@ -3,7 +3,7 @@ Event-driven framework of vn.py framework.
 """
 
 from queue import Queue, Empty
-from threading import Thread, Timer
+from threading import Thread
 from collections import defaultdict
 from time import sleep
 from typing import Any, Callable
