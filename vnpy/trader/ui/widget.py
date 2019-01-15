@@ -4,16 +4,12 @@ Basic widgets for VN Trader.
 
 import csv
 from typing import Any
+from enum import Enum
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from vnpy.event import EventEngine, Event
-from ..constant import (DIRECTION_LONG, DIRECTION_SHORT, DIRECTION_NET,
-                        OFFSET_OPEN, OFFSET_CLOSE, OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY,
-                        PRICETYPE_LIMIT, PRICETYPE_MARKET, PRICETYPE_FAK, PRICETYPE_FOK,
-                        EXCHANGE_CFFEX, EXCHANGE_SHFE, EXCHANGE_DCE, EXCHANGE_CZCE, EXCHANGE_SSE,
-                        EXCHANGE_SZSE, EXCHANGE_SGE, EXCHANGE_SEHK, EXCHANGE_HKFE, EXCHANGE_SMART,
-                        EXCHANGE_ICE, EXCHANGE_CME, EXCHANGE_NYMEX, EXCHANGE_GLOBEX, EXCHANGE_IDEALPRO)
+from ..constant import Direction, Offset, PriceType, Exchange
 from ..engine import MainEngine
 from ..event import (EVENT_TICK, EVENT_ORDER, EVENT_TRADE, EVENT_ACCOUNT,
                      EVENT_POSITION, EVENT_CONTRACT, EVENT_LOG)
@@ -52,7 +48,24 @@ class BaseCell(QtWidgets.QTableWidgetItem):
         return self._data
 
 
-class DirectionCell(BaseCell):
+class EnumCell(BaseCell):
+    """
+    Cell used for showing enum data.
+    """
+
+    def __init__(self, content: str, data: Any):
+        """"""
+        super(EnumCell, self).__init__(content, data)
+
+    def set_content(self, content: Any, data: Any):
+        """
+        Set text using enum.constant.value.
+        """
+        if content:
+            super(EnumCell, self).set_content(content.value, data)
+        
+
+class DirectionCell(EnumCell):
     """
     Cell used for showing direction data.
     """
@@ -67,7 +80,7 @@ class DirectionCell(BaseCell):
         """
         super(DirectionCell, self).set_content(content, data)
 
-        if content == DIRECTION_SHORT:
+        if content is Direction.SHORT:
             self.setForeground(COLOR_SHORT)
         else:
             self.setForeground(COLOR_LONG)
@@ -319,7 +332,7 @@ class TickMonitor(BaseMonitor):
         },
         "exchange": {
             "display": "交易所",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": False
         },
         "name": {
@@ -438,7 +451,7 @@ class TradeMonitor(BaseMonitor):
         },
         "exchange": {
             "display": "交易所",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": False
         },
         "direction": {
@@ -448,7 +461,7 @@ class TradeMonitor(BaseMonitor):
         },
         "offset": {
             "display": "开平",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": False
         },
         "price": {
@@ -490,7 +503,7 @@ class OrderMonitor(BaseMonitor):
         },
         "exchange": {
             "display": "交易所",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": False
         },
         "direction": {
@@ -500,7 +513,7 @@ class OrderMonitor(BaseMonitor):
         },
         "offset": {
             "display": "开平",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": False
         },
         "price": {
@@ -520,7 +533,7 @@ class OrderMonitor(BaseMonitor):
         },
         "status": {
             "display": "状态",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": True
         },
         "time": {
@@ -569,7 +582,7 @@ class PositionMonitor(BaseMonitor):
         },
         "exchange": {
             "display": "交易所",
-            "cell": BaseCell,
+            "cell": EnumCell,
             "update": False
         },
         "direction": {
@@ -726,6 +739,10 @@ class TradingWidget(QtWidgets.QWidget):
     """
 
     signal_tick = QtCore.pyqtSignal(Event)
+    exchange_map = {exchange.value:exchange for exchange in Exchange}
+    direction_map = {direction.value:direction for direction in Direction}
+    offset_map = {offset.value:offset for offset in Offset}
+    price_type_map = {price_type.value:price_type for price_type in PriceType}
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
@@ -745,22 +762,7 @@ class TradingWidget(QtWidgets.QWidget):
 
         # Trading function area
         self.exchange_combo = QtWidgets.QComboBox()
-        self.exchange_combo.addItems([
-            EXCHANGE_CFFEX,
-            EXCHANGE_SHFE,
-            EXCHANGE_DCE,
-            EXCHANGE_CZCE,
-            EXCHANGE_SSE,
-            EXCHANGE_SZSE,
-            EXCHANGE_SEHK,
-            EXCHANGE_HKFE,
-            EXCHANGE_SMART,
-            EXCHANGE_ICE,
-            EXCHANGE_CME,
-            EXCHANGE_NYMEX,
-            EXCHANGE_GLOBEX,
-            EXCHANGE_IDEALPRO
-        ])
+        self.exchange_combo.addItems([exchange.value for exchange in Exchange])
 
         self.symbol_line = QtWidgets.QLineEdit()
         self.symbol_line.returnPressed.connect(self.set_vt_symbol)
@@ -770,25 +772,15 @@ class TradingWidget(QtWidgets.QWidget):
 
         self.direction_combo = QtWidgets.QComboBox()
         self.direction_combo.addItems([
-            DIRECTION_LONG,
-            DIRECTION_SHORT
+            Direction.LONG.value,
+            Direction.SHORT.value
         ])
 
         self.offset_combo = QtWidgets.QComboBox()
-        self.offset_combo.addItems([
-            OFFSET_OPEN,
-            OFFSET_CLOSE,
-            OFFSET_CLOSETODAY,
-            OFFSET_CLOSEYESTERDAY
-        ])
+        self.offset_combo.addItems([offset.value for offset in Offset])
 
-        self.pricetype_combo = QtWidgets.QComboBox()
-        self.pricetype_combo.addItems([
-            PRICETYPE_LIMIT,
-            PRICETYPE_MARKET,
-            PRICETYPE_FAK,
-            PRICETYPE_FOK
-        ])
+        self.price_type_combo = QtWidgets.QComboBox()
+        self.price_type_combo.addItems([price_type.value for price_type in PriceType])
 
         double_validator = QtGui.QDoubleValidator()
         double_validator.setBottom(0)
@@ -814,7 +806,7 @@ class TradingWidget(QtWidgets.QWidget):
         form1.addRow("名称", self.name_line)
         form1.addRow("方向", self.direction_combo)
         form1.addRow("开平", self.offset_combo)
-        form1.addRow("类型", self.pricetype_combo)
+        form1.addRow("类型", self.price_type_combo)
         form1.addRow("价格", self.price_line)
         form1.addRow("数量", self.volume_line)
         form1.addRow("接口", self.gateway_combo)
@@ -932,8 +924,8 @@ class TradingWidget(QtWidgets.QWidget):
             return
 
         # Generate vt_symbol from symbol and exchange
-        exchange = str(self.exchange_combo.currentText())
-        vt_symbol = f"{symbol}.{exchange}"
+        exchange_value = str(self.exchange_combo.currentText())
+        vt_symbol = f"{symbol}.{exchange_value}"
 
         if vt_symbol == self.vt_symbol:
             return
@@ -957,7 +949,7 @@ class TradingWidget(QtWidgets.QWidget):
         # Subscribe tick data
         req = SubscribeRequest(
             symbol=symbol,
-            exchange=exchange
+            exchange=self.exchange_map[exchange_value]
         )
 
         self.main_engine.subscribe(req, gateway_name)
@@ -1020,14 +1012,19 @@ class TradingWidget(QtWidgets.QWidget):
         else:
             price = float(price_text)
 
+        exchange = self.exchange_map[str(self.exchange_combo.currentText())]
+        direction = self.direction_map[str(self.direction_combo.currentText())]
+        price_type = self.price_type_map[str(self.price_type_combo.currentText())]
+        offset = self.offset_map[str(self.offset_combo.currentText())]
+
         req = OrderRequest(
             symbol=symbol,
-            exchange=str(self.exchange_combo.currentText()),
-            direction=str(self.direction_combo.currentText()),
-            price_type=str(self.pricetype_combo.currentText()),
+            exchange=exchange,
+            direction=direction,
+            price_type=price_type,
             volume=volume,
             price=price,
-            offset=str(self.offset_combo.currentText())
+            offset=offset
         )
 
         gateway_name = str(self.gateway_combo.currentText())
@@ -1139,7 +1136,11 @@ class ContractManager(QtWidgets.QWidget):
 
         for row, contract in enumerate(contracts):
             for column, name in enumerate(self.headers.keys()):
-                cell = BaseCell(getattr(contract, name), contract)
+                value = getattr(contract, name)
+                if isinstance(value, Enum):
+                    cell = EnumCell(value, contract)
+                else:
+                    cell = BaseCell(value, contract)
                 self.contract_table.setItem(row, column, cell)
 
         self.contract_table.resizeColumnsToContents()

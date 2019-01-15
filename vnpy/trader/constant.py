@@ -2,67 +2,106 @@
 General constant string used in VN Trader.
 """
 
-DIRECTION_LONG = "多"
-DIRECTION_SHORT = "空"
-DIRECTION_NET = "净"
+from enum import Enum
 
-OFFSET_OPEN = "开"
-OFFSET_CLOSE = "平"
-OFFSET_CLOSETODAY = "平今"
-OFFSET_CLOSEYESTERDAY = "平昨"
 
-STATUS_SUBMITTING = "提交中"
-STATUS_NOTTRADED = "未成交"
-STATUS_PARTTRADED = "部分成交"
-STATUS_ALLTRADED = "全部成交"
-STATUS_CANCELLED = "已撤销"
-STATUS_REJECTED = "拒单"
+class Direction(Enum):
+    """
+    Direction of order/trade/position.
+    """
+    LONG = "多"
+    SHORT = "空"
+    NET = "净"
 
-PRODUCT_EQUITY = "股票"
-PRODUCT_FUTURES = "期货"
-PRODUCT_OPTION = "期权"
-PRODUCT_INDEX = "指数"
-PRODUCT_FOREX = "外汇"
-PRODUCT_SPOT = "现货"
-PRODUCT_ETF = "ETF"
-PRODUCT_BOND = "债券"
-PRODUCT_WARRANT = "权证"
 
-PRICETYPE_LIMIT = "限价"
-PRICETYPE_MARKET = "市价"
-PRICETYPE_FAK = "FAK"
-PRICETYPE_FOK = "FOK"
+class Offset(Enum):
+    """
+    Offset of order/trade.
+    """
+    OPEN = "开"
+    CLOSE = "平"
+    CLOSETODAY = "平今"
+    CLOSEYESTERDAY = "平昨"
 
-OPTION_CALL = "看涨期权"
-OPTION_PUT = "看跌期权"
 
-EXCHANGE_SSE = "SSE"
-EXCHANGE_SZSE = "SZSE"
-EXCHANGE_CFFEX = "CFFEX"
-EXCHANGE_SHFE = "SHFE"
-EXCHANGE_CZCE = "CZCE"
-EXCHANGE_DCE = "DCE"
-EXCHANGE_INE = "INE"
-EXCHANGE_SGE = "SGE"
+class Status(Enum):
+    """
+    Order status.
+    """
+    SUBMITTING = "提交中"
+    NOTTRADED = "未成交"
+    PARTTRADED = "部分成交"
+    ALLTRADED = "全部成交"
+    CANCELLED = "已撤销"
+    REJECTED = "拒单"
 
-EXCHANGE_SMART = "SMART"
-EXCHANGE_NYMEX = "NYMEX"
-EXCHANGE_GLOBEX = "GLOBEX"
-EXCHANGE_IDEALPRO = "IDEALPRO"
-EXCHANGE_CME = "CME"
-EXCHANGE_ICE = "ICE"
-EXCHANGE_SEHK = "SEHK"
-EXCHANGE_HKFE = "HKFE"
 
-CURRENCY_USD = "USD"
-CURRENCY_HKD = "HKD"
-CURRENCY_CNY = "CNY"
+class Product(Enum):
+    """
+    Product class.
+    """
+    EQUITY = "股票"
+    FUTURES = "期货"
+    OPTION = "期权"
+    INDEX = "指数"
+    FOREX = "外汇"
+    SPOT = "现货"
+    ETF = "ETF"
+    BOND = "债券"
+    WARRANT = "权证"
 
-INTERVAL_1M = "1分钟"
-INTERVAL_5M = "5分钟"
-INTERVAL_15M = "15分钟"
-INTERVAL_30M = "30分钟"
-INTERVAL_1H = "1小时"
-INTERVAL_4H = "4小时"
-INTERVAL_DAILY = "日线"
-INTERVAL_WEEKLY = "周线"
+
+class PriceType(Enum):
+    """
+    Order price type.
+    """
+    LIMIT = "限价"
+    MARKET = "市价"
+    FAK = "FAK"
+    FOK = "FOK"
+
+
+class OptionType(Enum):
+    """
+    Option type.
+    """
+    CALL = "看涨期权"
+    PUT = "看跌期权"
+
+
+class Exchange(Enum):
+    """
+    Exchange.
+    """
+    CFFEX = "CFFEX"
+    SHFE = "SHFE"
+    CZCE = "CZCE"
+    DCE = "DCE"
+    INE = "INE"
+    SSE = "SSE"
+    SZSE = "SZSE"
+    SGE = "SGE"
+    SMART = "SMART"
+    NYMEX = "NYMEX"
+    GLOBEX = "GLOBEX"
+    IDEALPRO = "IDEALPRO"
+    CME = "CME"
+    ICE = "ICE"
+    SEHK = "SEHK"
+    HKFE = "HKFE"
+
+
+class Currency(Enum):
+    """
+    Currency.
+    """
+    USD = "USD"
+    HKD = "HKD"
+    CNY = "CNY"
+
+
+class Interval(Enum):
+    MINUTE = "1分钟"
+    HOUR = "1小时"
+    DAILY = "日线"
+    WEEKLY = "周线"

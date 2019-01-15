@@ -26,24 +26,7 @@ from futu import (
 )
 
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.constant import (
-    PRODUCT_EQUITY,
-    PRODUCT_INDEX,
-    PRODUCT_ETF,
-    PRODUCT_WARRANT,
-    PRODUCT_BOND,
-    DIRECTION_LONG,
-    DIRECTION_SHORT,
-    STATUS_SUBMITTING,
-    STATUS_NOTTRADED,
-    STATUS_PARTTRADED,
-    STATUS_ALLTRADED,
-    STATUS_CANCELLED,
-    STATUS_REJECTED,
-    EXCHANGE_SEHK,
-    EXCHANGE_HKFE,
-    EXCHANGE_SMART
-)
+from vnpy.trader.constant import Product, Direction, Status, Exchange
 from vnpy.trader.object import (
     TickData,
     OrderData,
@@ -58,34 +41,34 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TIMER
 
 EXCHANGE_VT2FUTU = {
-    EXCHANGE_SMART: "US",
-    EXCHANGE_SEHK: "HK",
-    EXCHANGE_HKFE: "HK_FUTURE"
+    Exchange.SMART: "US",
+    Exchange.SEHK: "HK",
+    Exchange.HKFE: "HK_FUTURE"
 }
 EXCHANGE_FUTU2VT = {v: k for k, v in EXCHANGE_VT2FUTU.items()}
 
 PRODUCT_VT2FUTU = {
-    PRODUCT_EQUITY: "STOCK",
-    PRODUCT_INDEX: "IDX",
-    PRODUCT_ETF: "ETF",
-    PRODUCT_WARRANT: "WARRANT",
-    PRODUCT_BOND: "BOND"
+    Product.EQUITY: "STOCK",
+    Product.INDEX: "IDX",
+    Product.ETF: "ETF",
+    Product.WARRANT: "WARRANT",
+    Product.BOND: "BOND"
 }
 
-DIRECTION_VT2FUTU = {DIRECTION_LONG: TrdSide.BUY, DIRECTION_SHORT: TrdSide.SELL}
+DIRECTION_VT2FUTU = {Direction.LONG: TrdSide.BUY, Direction.SHORT: TrdSide.SELL}
 DIRECTION_FUTU2VT = {v: k for k, v in DIRECTION_VT2FUTU.items()}
 
 STATUS_FUTU2VT = {
-    OrderStatus.NONE: STATUS_SUBMITTING,
-    OrderStatus.SUBMITTING: STATUS_SUBMITTING,
-    OrderStatus.SUBMITTED: STATUS_NOTTRADED,
-    OrderStatus.FILLED_PART: STATUS_PARTTRADED,
-    OrderStatus.FILLED_ALL: STATUS_ALLTRADED,
-    OrderStatus.CANCELLED_ALL: STATUS_CANCELLED,
-    OrderStatus.CANCELLED_PART: STATUS_CANCELLED,
-    OrderStatus.SUBMIT_FAILED: STATUS_REJECTED,
-    OrderStatus.FAILED: STATUS_REJECTED,
-    OrderStatus.DISABLED: STATUS_CANCELLED,
+    OrderStatus.NONE: Status.SUBMITTING,
+    OrderStatus.SUBMITTING: Status.SUBMITTING,
+    OrderStatus.SUBMITTED: Status.NOTTRADED,
+    OrderStatus.FILLED_PART: Status.PARTTRADED,
+    OrderStatus.FILLED_ALL: Status.ALLTRADED,
+    OrderStatus.CANCELLED_ALL: Status.CANCELLED,
+    OrderStatus.CANCELLED_PART: Status.CANCELLED,
+    OrderStatus.SUBMIT_FAILED: Status.REJECTED,
+    OrderStatus.FAILED: Status.REJECTED,
+    OrderStatus.DISABLED: Status.CANCELLED,
 }
 
 
@@ -110,7 +93,7 @@ class FutuGateway(BaseGateway):
         self.trade_ctx = None
 
         self.host = ""
-        self.ip = 0
+        self.port = 0
         self.market = ""
         self.password = ""
         self.env = TrdEnv.SIMULATE
@@ -255,7 +238,7 @@ class FutuGateway(BaseGateway):
         price_type = OrderType.NORMAL # Only limit order is supported.
 
         # Set price adjustment mode to inside adjustment.
-        if req.direction == DIRECTION_LONG:
+        if req.direction is Direction.LONG:
             adjust_limit = 0.05
         else:
             adjust_limit = -0.05
@@ -351,7 +334,7 @@ class FutuGateway(BaseGateway):
             pos = PositionData(
                 symbol=symbol,
                 exchange=exchange,
-                direction=DIRECTION_LONG,
+                direction=Direction.LONG,
                 volume=float(row["qty"]),
                 frozen=(float(row["qty"]) - float(row["can_sell_qty"])),
                 price=float(row["pl_val"]),
