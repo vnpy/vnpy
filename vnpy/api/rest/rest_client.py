@@ -12,18 +12,19 @@ from typing import Any, Callable, Optional
 
 
 class RequestStatus(Enum):
-    ready = 0   # 刚刚构建
-    success = 1 # 请求成功 code == 2xx
-    failed = 2
-    error = 3   # 发生错误 网络错误、json解析错误，等等
+    ready = 0   # Request created
+    success = 1 # Request successful (status code 2xx)
+    failed = 2  # Request failed (status code not 2xx)
+    error = 3   # Exception raised
 
 
 class Request(object):
     """
-    表示一个内部的Request，用于状态查询
+    Request object for status check.
     """
 
     def __init__(self, method, path, params, data, headers, callback):
+        """"""
         self.method = method     # type: str
         self.path = path         # type: str
         self.callback = callback # type: callable
@@ -31,18 +32,18 @@ class Request(object):
         self.data = data         # type: dict #, bytes, str
         self.headers = headers   # type: dict
 
-        self.onFailed = None # type: callable
-        self.onError = None  # type: callable
-        self.extra = None    # type: Any
+        self.on_failed = None # type: callable
+        self.on_error = None  # type: callable
+        self.extra = None     # type: Any
 
         self.response = None              # type: requests.Response
         self.status = RequestStatus.ready # type: RequestStatus
 
     def __str__(self):
         if self.response is None:
-            statusCode = 'terminated'
+            status_code = 'terminated'
         else:
-            statusCode = self.response.status_code
+            status_code = self.response.status_code
         # todo: encoding error
         return (
             "reuqest : {} {} {} because {}: \n"
@@ -54,7 +55,7 @@ class Request(object):
                 self.method,
                 self.path,
                 self.status.name,
-                statusCode,
+                status_code,
                 self.headers,
                 self.params,
                 self.data,
@@ -65,36 +66,38 @@ class Request(object):
 
 class RestClient(object):
     """
-    HTTP 客户端。目前是为了对接各种RESTfulAPI而设计的。
+    HTTP Client designed for all sorts of trading RESTFul API.
     
-    如果需要给请求加上签名，请设置beforeRequest, 函数类型请参考defaultBeforeRequest。
-    如果需要处理非2xx的请求，请设置onFailed，函数类型请参考defaultOnFailed。
-    如果每一个请求的非2xx返回都需要单独处理，使用addReq函数的onFailed参数
-    如果捕获Python内部错误，例如网络连接失败等等，请设置onError，函数类型请参考defaultOnError
+    * Reimplement before_request function to add signature function.
+    * Reimplement on_failed function to handle Non-2xx responses.
+    * Use on_failed parameter in add_req function for individual Non-2xx response handling.
+    * Reimplement on_error function to handle exception msg.
     """
 
     def __init__(self):
         """
         """
-        self.urlBase = None # type: str
+        self.url_base = None # type: str
         self._active = False
 
         self._queue = Queue()
         self._pool = None # type: Pool
 
-    def init(self, urlBase):
+    def init(self, url_base):
         """
-        初始化
-        :param urlBase: 路径前缀。 例如'https://www.bitmex.com/api/v1/'
+        Init rest client with url_base which is the API root address.
+        e.g. 'https://www.bitmex.com/api/v1/'
         """
-        self.urlBase = urlBase
+        self.url_base = url_base
 
-    def _createSession(self):
+    def _create_session(self):
         """"""
         return requests.session()
 
     def start(self, n=3):
-        """启动"""
+        """
+        Start rest client with session count n.
+        """
         if self._active:
             return
 
@@ -104,139 +107,134 @@ class RestClient(object):
 
     def stop(self):
         """
-        强制停止运行，未发出的请求都会被暂停（仍处于队列中）
-        :return:
+        Stop rest client immediately.
         """
         self._active = False
 
     def join(self):
         """
-        等待所有请求处理结束
-        如果要并确保RestClient的退出，请在调用stop之后紧接着调用join。
-        如果只是要确保所有的请求都处理完，直接调用join即可。
-        :return:
+        Wait till all requests are processed.
         """
         self._queue.join()
 
 
-    def addRequest(self,
-                   method,          # type: str
-                   path,            # type: str
-                   callback,        # type: Callable[[dict, Request], Any]
-                   params=None,     # type: dict
-                   data=None,       # type: dict
-                   headers=None,    # type: dict
-                   onFailed=None,   # type: Callable[[int, Request], Any]
-                   onError=None,    # type: Callable[[type, Exception, traceback, Request], Any]
-                   extra=None       # type: Any
-                   ):               # type: (...)->Request
+    def add_request(
+        self,
+        method,          # type: str
+        path,            # type: str
+        callback,        # type: Callable[[dict, Request], Any]
+        params=None,     # type: dict
+        data=None,       # type: dict
+        headers=None,    # type: dict
+        on_failed=None,  # type: Callable[[int, Request], Any]
+        on_error=None,   # type: Callable[[type, Exception, traceback, Request], Any]
+        extra=None       # type: Any
+    ):                   # type: (...)->Request
         """
-        发送一个请求
+        Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
         :param path: 
-        :param callback: 请求成功后的回调(状态吗为2xx时认为请求成功)   type: (dict, Request)
+        :param callback: callback function if 2xx status, type: (dict, Request)
         :param params: dict for query string
         :param data: dict for body
         :param headers: dict for headers
-        :param onFailed: 请求失败后的回调(状态吗不为2xx时认为请求失败)（如果指定该值，默认的onFailed将不会被调用） type: (code, dict, Request)
-        :param onError: 请求出现Python错误后的回调（如果指定该值，默认的onError将不会被调用） type: (etype, evalue, tb, Request)
-        :param extra: 返回值的extra字段会被设置为这个值。当然，你也可以在函数调用之后再设置这个字段。
+        :param on_failed: callback function if Non-2xx status, type, type: (code, dict, Request)
+        :param on_error: callback function when catching Python exception, type: (etype, evalue, tb, Request)
+        :param extra: Any extra data which can be used when handling callback
         :return: Request
         """
-
         request = Request(method, path, params, data, headers, callback)
         request.extra = extra
-        request.onFailed = onFailed
-        request.onError = onError
+        request.on_failed = on_failed
+        request.on_error = on_error
         self._queue.put(request)
         return request
 
     def _run(self):
         try:
-            session = self._createSession()
+            session = self._create_session()
             while self._active:
                 try:
                     request = self._queue.get(timeout=1)
                     try:
-                        self._processRequest(request, session)
+                        self._process_request(request, session)
                     finally:
                         self._queue.task_done()
                 except Empty:
                     pass
         except:
             et, ev, tb = sys.exc_info()
-            self.onError(et, ev, tb, None)
+            self.on_error(et, ev, tb, None)
 
     def sign(self, request): # type: (Request)->Request
         """
-        所有请求在发送之前都会经过这个函数
-        签名之类的前奏可以在这里面实现
-        需要对request进行什么修改就做什么修改吧
+        This function is called before sending any request out.
+        Please implement signature method here.
         @:return (request)
         """
         return request
 
-    def onFailed(self, httpStatusCode, request): # type:(int, Request)->None
+    def on_failed(self, status_code, request): # type:(int, Request)->None
         """
-        请求失败处理函数（HttpStatusCode!=2xx）.
-        默认行为是打印到stderr
+        Default on_failed handler for Non-2xx response.
         """
         sys.stderr.write(str(request))
 
 
-    def onError(self,
-                exceptionType,  # type: type
-                exceptionValue, # type: Exception
-                tb,
-                request         # type: Optional[Request]
-                ):
+    def on_error(
+        self,
+        exception_type,  # type: type
+        exception_value, # type: Exception
+        tb,
+        request         # type: Optional[Request]
+    ):
         """
-        Python内部错误处理：默认行为是仍给excepthook
-        :param request 如果是在处理请求的时候出错，它的值就是对应的Request，否则为None
+        Default on_error handler for Python exception.
         """
         sys.stderr.write(
-            self.exceptionDetail(exceptionType,
-                                 exceptionValue,
-                                 tb,
-                                 request)
+            self.exception_detail(exception_type,
+                                  exception_value,
+                                  tb,
+                                  request)
         )
-        sys.excepthook(exceptionType, exceptionValue, tb)
+        sys.excepthook(exception_type, exception_value, tb)
 
 
-    def exceptionDetail(self,
-                        exceptionType,  # type: type
-                        exceptionValue, # type: Exception
-                        tb,
-                        request         # type: Optional[Request]
-                        ):
+    def exception_detail(
+        self,
+        exception_type,  # type: type
+        exception_value, # type: Exception
+        tb,
+        request         # type: Optional[Request]
+    ):
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
             datetime.now().isoformat(),
-            exceptionType
+            exception_type
         )
         text += "request:{}\n".format(request)
         text += "Exception trace: \n"
         text += "".join(
             traceback.format_exception(
-                exceptionType,
-                exceptionValue,
+                exception_type,
+                exception_value,
                 tb,
             )
         )
         return text
 
-    def _processRequest(
+    def _process_request(
             self,
             request,
             session
-    ):                   # type: (Request, requests.Session)->None
+    ):                    # type: (Request, requests.Session)->None
         """
-        用于内部：将请求发送出去
+        Sending request to server and get result.
         """
-                         # noinspection PyBroadException
+                          # noinspection PyBroadException
         try:
             request = self.sign(request)
 
-            url = self.makeFullUrl(request.path)
+            url = self.make_full_url(request.path)
 
             response = session.request(
                 request.method,
@@ -247,32 +245,30 @@ class RestClient(object):
             )
             request.response = response
 
-            httpStatusCode = response.status_code
-            if httpStatusCode / 100 == 2: # 2xx都算成功，尽管交易所都用200
+            status_code = response.status_code
+            if status_code / 100 == 2: # 2xx都算成功，尽管交易所都用200
                 jsonBody = response.json()
                 request.callback(jsonBody, request)
                 request.status = RequestStatus.success
             else:
                 request.status = RequestStatus.failed
 
-                if request.onFailed:
-                    request.onFailed(httpStatusCode, request)
+                if request.on_failed:
+                    request.on_failed(status_code, request)
                 else:
-                    self.onFailed(httpStatusCode, request)
+                    self.on_failed(status_code, request)
         except:
             request.status = RequestStatus.error
             t, v, tb = sys.exc_info()
-            if request.onError:
-                request.onError(t, v, tb, request)
+            if request.on_error:
+                request.on_error(t, v, tb, request)
             else:
-                self.onError(t, v, tb, request)
+                self.on_error(t, v, tb, request)
 
-    def makeFullUrl(self, path):
+    def make_full_url(self, path):
         """
-        将相对路径补充成绝对路径：
-        eg: makeFullUrl('/get') == 'http://xxxxx/get'
-        :param path:
-        :return:
+        Make relative api path into full url.
+        eg: make_full_url('/get') == 'http://xxxxx/get'
         """
-        url = self.urlBase + path
+        url = self.url_base + path
         return url
