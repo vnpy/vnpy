@@ -261,8 +261,9 @@ class FutuGateway(BaseGateway):
         for ix, row in data.iterrows():
             orderid = str(row["order_id"])
 
-        vt_orderid = f"{self.gateway_name}.{orderid}"
-        return vt_orderid
+        order = req.create_order_data(orderid, self.gateway_name)
+        self.gateway.on_order(order)
+        return order.vt_orderid
 
     def cancel_order(self, req):
         """"""

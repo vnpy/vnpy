@@ -18,6 +18,7 @@ class Offset(Enum):
     """
     Offset of order/trade.
     """
+    NONE = ""
     OPEN = "开"
     CLOSE = "平"
     CLOSETODAY = "平今"
@@ -73,6 +74,7 @@ class Exchange(Enum):
     """
     Exchange.
     """
+    # Chinese
     CFFEX = "CFFEX"
     SHFE = "SHFE"
     CZCE = "CZCE"
@@ -81,6 +83,8 @@ class Exchange(Enum):
     SSE = "SSE"
     SZSE = "SZSE"
     SGE = "SGE"
+
+    # Global
     SMART = "SMART"
     NYMEX = "NYMEX"
     GLOBEX = "GLOBEX"
@@ -89,6 +93,9 @@ class Exchange(Enum):
     ICE = "ICE"
     SEHK = "SEHK"
     HKFE = "HKFE"
+
+    # CryptoCurrency
+    BITMEX = "BITMEX"
 
 
 class Currency(Enum):

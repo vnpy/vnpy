@@ -94,12 +94,18 @@ class RestClient(object):
         self._queue = Queue()
         self._pool = None # type: Pool
 
-    def init(self, url_base: str):
+        self.proxies = None
+
+    def init(self, url_base: str, proxy_host: str = "", proxy_port: int = 0):
         """
         Init rest client with url_base which is the API root address.
         e.g. 'https://www.bitmex.com/api/v1/'
         """
         self.url_base = url_base
+
+        if proxy_host and proxy_port:
+            proxy = f"{proxy_host}:{proxy_port}"
+            self.proxies = {"http": proxy, "https": proxy}
 
     def _create_session(self):
         """"""
@@ -153,10 +159,17 @@ class RestClient(object):
         :param extra: Any extra data which can be used when handling callback
         :return: Request
         """
-        request = Request(method, path, params, data, headers, callback)
-        request.extra = extra
-        request.on_failed = on_failed
-        request.on_error = on_error
+        request = Request(
+            method,
+            path,
+            params,
+            data,
+            headers,
+            callback,
+            extra,
+            on_failed,
+            on_error
+        )
         self._queue.put(request)
         return request
 
@@ -249,7 +262,8 @@ class RestClient(object):
                 url,
                 headers=request.headers,
                 params=request.params,
-                data=request.data
+                data=request.data,
+                proxies=self.proxies
             )
             request.response = response
 

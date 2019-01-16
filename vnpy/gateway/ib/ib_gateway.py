@@ -581,8 +581,9 @@ class IbApi(EWrapper):
         self.client.placeOrder(self.orderid, ib_contract, ib_order)
         self.client.reqIds(1)
 
-        vt_orderid = f"{self.gateway_name}.{self.orderid}"
-        return vt_orderid
+        order = req.create_order_data(str(self.orderid), self.gateway_name)
+        self.gateway.on_order(order)
+        return order.vt_orderid
 
     def cancel_order(self, req: CancelRequest):
         """

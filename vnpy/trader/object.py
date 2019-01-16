@@ -105,7 +105,7 @@ class OrderData(BaseData):
     orderid: str
 
     direction: Direction = ""
-    offset: Offset = None
+    offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
     traded: float = 0
@@ -150,7 +150,7 @@ class TradeData(BaseData):
     tradeid: str
     direction: Direction = ""
 
-    offset: Offset = None
+    offset: Offset = Offset.NONE
     price: float = 0
     volume: float = 0
     time: str = ""
@@ -258,11 +258,27 @@ class OrderRequest:
     volume: float
     exchange: Exchange
     price: float = 0
-    offset: Offset = ''
+    offset: Offset = Offset.NONE
 
     def __post_init__(self):
         """"""
         self.vt_symbol = f"{self.symbol}.{self.exchange.value}"
+
+    def create_order_data(self, orderid: str, gateway_name: str):
+        """
+        Create order data from request.
+        """
+        order = OrderData(
+            symbol=self.symbol,
+            exchange=self.exchange,
+            orderid=orderid,
+            direction=self.direction,
+            offset=self.offset,
+            price=self.price,
+            volume=self.volume,
+            gateway_name=gateway_name
+        )
+        return order
 
 
 @dataclass

@@ -739,11 +739,7 @@ class TradingWidget(QtWidgets.QWidget):
     """
 
     signal_tick = QtCore.pyqtSignal(Event)
-    exchange_map = {exchange.value:exchange for exchange in Exchange}
-    direction_map = {direction.value:direction for direction in Direction}
-    offset_map = {offset.value:offset for offset in Offset}
-    price_type_map = {price_type.value:price_type for price_type in PriceType}
-
+    
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
         super(TradingWidget, self).__init__()
@@ -949,7 +945,7 @@ class TradingWidget(QtWidgets.QWidget):
         # Subscribe tick data
         req = SubscribeRequest(
             symbol=symbol,
-            exchange=self.exchange_map[exchange_value]
+            exchange=Exchange(exchange_value)
         )
 
         self.main_engine.subscribe(req, gateway_name)
@@ -1012,19 +1008,14 @@ class TradingWidget(QtWidgets.QWidget):
         else:
             price = float(price_text)
 
-        exchange = self.exchange_map[str(self.exchange_combo.currentText())]
-        direction = self.direction_map[str(self.direction_combo.currentText())]
-        price_type = self.price_type_map[str(self.price_type_combo.currentText())]
-        offset = self.offset_map[str(self.offset_combo.currentText())]
-
         req = OrderRequest(
             symbol=symbol,
-            exchange=exchange,
-            direction=direction,
-            price_type=price_type,
+            exchange=Exchange(str(self.exchange_combo.currentText())),
+            direction=Direction(str(self.direction_combo.currentText())),
+            price_type=PriceType(str(self.price_type_combo.currentText())),
             volume=volume,
             price=price,
-            offset=offset
+            offset=Offset(str(self.offset_combo.currentText()))
         )
 
         gateway_name = str(self.gateway_combo.currentText())

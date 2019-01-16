@@ -43,13 +43,20 @@ class WebsocketClient(object):
         self._ping_thread = None
         self._active = False
 
+        self.proxy_host = None
+        self.proxy_port = None
+
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
 
-    def init(self, host: str):
+    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0):
         """"""
         self.host = host
+
+        if proxy_host and proxy_port:
+            self.proxy_host = proxy_host
+            self.proxy_port = proxy_port
 
     def start(self):
         """
@@ -116,7 +123,9 @@ class WebsocketClient(object):
         """"""
         self._ws = self._create_connection(
             self.host,
-            sslopt={'cert_reqs': ssl.CERT_NONE}
+            sslopt={'cert_reqs': ssl.CERT_NONE},
+            http_proxy_host=self.proxy_host,
+            http_proxy_port=self.proxy_port
         )
         self.on_connected()
 
@@ -219,13 +228,13 @@ class WebsocketClient(object):
         pass
 
     @staticmethod
-    def on_packet(packet):
+    def on_packet(packet: dict):
         """
         Callback when receiving data from server.
         """
         pass
 
-    def on_error(self, exception_type, exception_value, tb):
+    def on_error(self, exception_type: type, exception_value: Exception, tb):
         """
         Callback when exception raised.
         """
@@ -236,7 +245,12 @@ class WebsocketClient(object):
         )
         return sys.excepthook(exception_type, exception_value, tb)
 
-    def exception_detail(self, exception_type, exception_value, tb):
+    def exception_detail(
+            self,
+            exception_type: type,
+            exception_value: Exception,
+            tb
+    ):
         """
         Print detailed exception information.
         """
@@ -256,13 +270,13 @@ class WebsocketClient(object):
         )
         return text
 
-    def _record_last_sent_text(self, text):
+    def _record_last_sent_text(self, text: str):
         """
         Record last sent text for debug purpose.
         """
         self._last_sent_text = text[:1000]
 
-    def _record_last_received_text(self, text):
+    def _record_last_received_text(self, text: str):
         """
         Record last received text for debug purpose.
         """
