@@ -23,28 +23,39 @@ class Request(object):
     Request object for status check.
     """
 
-    def __init__(self, method, path, params, data, headers, callback):
+    def __init__(
+            self,
+            method: str,
+            path: str,
+            params: dict,
+            data: dict,
+            headers: dict,
+            callback: Callable,
+            on_failed: Callable = None,
+            on_error: Callable = None,
+            extra: Any = None
+    ):
         """"""
-        self.method = method     # type: str
-        self.path = path         # type: str
-        self.callback = callback # type: callable
-        self.params = params     # type: dict #, bytes, str
-        self.data = data         # type: dict #, bytes, str
-        self.headers = headers   # type: dict
+        self.method = method
+        self.path = path
+        self.callback = callback
+        self.params = params
+        self.data = data
+        self.headers = headers
 
-        self.on_failed = None # type: callable
-        self.on_error = None  # type: callable
-        self.extra = None     # type: Any
+        self.on_failed = on_failed
+        self.on_error = on_error
+        self.extra = extra
 
-        self.response = None              # type: requests.Response
-        self.status = RequestStatus.ready # type: RequestStatus
+        self.response = None
+        self.status = RequestStatus.ready
 
     def __str__(self):
         if self.response is None:
             status_code = 'terminated'
         else:
             status_code = self.response.status_code
-        # todo: encoding error
+
         return (
             "reuqest : {} {} {} because {}: \n"
             "headers: {}\n"
@@ -83,7 +94,7 @@ class RestClient(object):
         self._queue = Queue()
         self._pool = None # type: Pool
 
-    def init(self, url_base):
+    def init(self, url_base: str):
         """
         Init rest client with url_base which is the API root address.
         e.g. 'https://www.bitmex.com/api/v1/'
@@ -94,7 +105,7 @@ class RestClient(object):
         """"""
         return requests.session()
 
-    def start(self, n=3):
+    def start(self, n: int = 3):
         """
         Start rest client with session count n.
         """
@@ -117,19 +128,18 @@ class RestClient(object):
         """
         self._queue.join()
 
-
     def add_request(
-        self,
-        method,          # type: str
-        path,            # type: str
-        callback,        # type: Callable[[dict, Request], Any]
-        params=None,     # type: dict
-        data=None,       # type: dict
-        headers=None,    # type: dict
-        on_failed=None,  # type: Callable[[int, Request], Any]
-        on_error=None,   # type: Callable[[type, Exception, traceback, Request], Any]
-        extra=None       # type: Any
-    ):                   # type: (...)->Request
+            self,
+            method: str,
+            path: str,
+            callback: Callable,
+            params: dict = None,
+            data: dict = None,
+            headers: dict = None,
+            on_failed: Callable = None,
+            on_error: Callable = None,
+            extra: Any = None
+    ):
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
@@ -166,7 +176,7 @@ class RestClient(object):
             et, ev, tb = sys.exc_info()
             self.on_error(et, ev, tb, None)
 
-    def sign(self, request): # type: (Request)->Request
+    def sign(self, request: Request):
         """
         This function is called before sending any request out.
         Please implement signature method here.
@@ -174,19 +184,18 @@ class RestClient(object):
         """
         return request
 
-    def on_failed(self, status_code, request): # type:(int, Request)->None
+    def on_failed(self, status_code: int, request: Request):
         """
         Default on_failed handler for Non-2xx response.
         """
         sys.stderr.write(str(request))
 
-
     def on_error(
-        self,
-        exception_type,  # type: type
-        exception_value, # type: Exception
-        tb,
-        request         # type: Optional[Request]
+            self,
+            exception_type: type,
+            exception_value: Exception,
+            tb,
+            request: Request
     ):
         """
         Default on_error handler for Python exception.
@@ -199,13 +208,12 @@ class RestClient(object):
         )
         sys.excepthook(exception_type, exception_value, tb)
 
-
     def exception_detail(
-        self,
-        exception_type,  # type: type
-        exception_value, # type: Exception
-        tb,
-        request         # type: Optional[Request]
+            self,
+            exception_type: type,
+            exception_value: Exception,
+            tb,
+            request: Request
     ):
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
             datetime.now().isoformat(),
@@ -224,13 +232,13 @@ class RestClient(object):
 
     def _process_request(
             self,
-            request,
-            session
-    ):                    # type: (Request, requests.Session)->None
+            request: Request,
+            session: requests.session
+    ):                                # type: (Request, requests.Session)->None
         """
         Sending request to server and get result.
         """
-                          # noinspection PyBroadException
+                                      # noinspection PyBroadException
         try:
             request = self.sign(request)
 
@@ -265,7 +273,7 @@ class RestClient(object):
             else:
                 self.on_error(t, v, tb, request)
 
-    def make_full_url(self, path):
+    def make_full_url(self, path: str):
         """
         Make relative api path into full url.
         eg: make_full_url('/get') == 'http://xxxxx/get'
