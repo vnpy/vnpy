@@ -474,6 +474,11 @@ class TradeMonitor(BaseMonitor):
             "cell": BaseCell,
             "update": False
         },
+        "time": {
+            "display": "时间",
+            "cell": BaseCell,
+            "update": False
+        },
         "gateway_name": {
             "display": "接口",
             "cell": BaseCell,

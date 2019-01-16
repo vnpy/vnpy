@@ -162,7 +162,7 @@ class BitmexRestApi(RestClient):
         msg = request.method + "/api/v1" + path + str(expires) + request.data
         signature = hmac.new(
             self.secret,
-            msg,
+            msg.encode(),
             digestmod=hashlib.sha256
         ).hexdigest()
 
@@ -191,7 +191,7 @@ class BitmexRestApi(RestClient):
         Initialize connection to REST server.
         """
         self.key = key
-        self.secret = secret
+        self.secret = secret.encode()
 
         self.connect_time = int(
             datetime.now().strftime("%y%m%d%H%M%S")
@@ -216,7 +216,7 @@ class BitmexRestApi(RestClient):
             "side": DIRECTION_VT2BITMEX[req.direction],
             "ordType": PRICETYPE_VT2BITMEX[req.price_type],
             "price": req.price,
-            "orderQty": req.volume,
+            "orderQty": int(req.volume),
             "clOrdID": orderid
         }
 
@@ -243,7 +243,7 @@ class BitmexRestApi(RestClient):
         """"""
         orderid = req.orderid
 
-        if orderID.isdigit():
+        if orderid.isdigit():
             params = {"clOrdID": orderid}
         else:
             params = {"orderID": orderid}
@@ -256,13 +256,16 @@ class BitmexRestApi(RestClient):
             on_error=self.on_cancel_order_error,
         )
 
-    def on_send_order_failed(self, _, request: Request):
+    def on_send_order_failed(self, status_code: str, request: Request):
         """
         Callback when sending order failed on server.
         """
         order = request.extra
         order.status = Status.REJECTED
         self.gateway.on_order(order)
+
+        msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
+        self.gateway.write_log(msg)
 
     def on_send_order_error(
             self,
@@ -483,7 +486,10 @@ class BitmexWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = d["price"]
-        tick.datetime = datetime.strptime(d["timestamp"], "%Y-%m-%d %H:%M:%SZ")
+        tick.datetime = datetime.strptime(
+            d["timestamp"],
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, d):
@@ -503,12 +509,16 @@ class BitmexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.strptime(d["timestamp"], "%Y-%m-%d %H:%M:%SZ")
+        tick.datetime = datetime.strptime(
+            d["timestamp"],
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, d):
         """"""
-        if not d["lastQty"]:
+        # Filter trade update with no trade volume and side (funding)
+        if not d["lastQty"] or not d["side"]:
             return
 
         tradeid = d["execID"]
@@ -529,8 +539,7 @@ class BitmexWebsocketApi(WebsocketClient):
             direction=DIRECTION_BITMEX2VT[d["side"]],
             price=d["lastPx"],
             volume=d["lastQty"],
-            time=d["timestamp"][0:10].replace("-",
-                                              ""),
+            time=d["timestamp"][11:19],
             gateway_name=self.gateway_name
         )
 
@@ -549,7 +558,7 @@ class BitmexWebsocketApi(WebsocketClient):
             else:
                 orderid = sysid
 
-            time = d["timestamp"][0:10].replace("-", ""),
+            time = d["timestamp"][11:19]
 
             order = OrderData(
                 symbol=d["symbol"],
@@ -558,13 +567,13 @@ class BitmexWebsocketApi(WebsocketClient):
                 direction=DIRECTION_BITMEX2VT[d["side"]],
                 price=d["price"],
                 volume=d["orderQty"],
-                time=time,
+                time=d["timestamp"][11:19],
                 gateway_name=self.gateway_name
             )
             self.orders[sysid] = order
 
-        order.traded = d.get("cumQty", order.tradedVolume)
-        order.status = STATUS_BITMEX2VT.get(d["ordStatus"], STATUS_UNKNOWN)
+        order.traded = d.get("cumQty", order.traded)
+        order.status = STATUS_BITMEX2VT.get(d["ordStatus"], order.status)
 
         self.gateway.on_order(copy(order))
 
@@ -572,9 +581,9 @@ class BitmexWebsocketApi(WebsocketClient):
         """"""
         position = PositionData(
             symbol=d["symbol"],
-            exchange=EXCHANGE_BITMEX,
-            direction=DIRECTION_NET,
-            position=d["currentQty"],
+            exchange=Exchange.BITMEX,
+            direction=Direction.NET,
+            volume=d["currentQty"],
             gateway_name=self.gateway_name
         )
 

@@ -81,7 +81,7 @@ class RestClient(object):
     
     * Reimplement before_request function to add signature function.
     * Reimplement on_failed function to handle Non-2xx responses.
-    * Use on_failed parameter in add_req function for individual Non-2xx response handling.
+    * Use on_failed parameter in add_request function for individual Non-2xx response handling.
     * Reimplement on_error function to handle exception msg.
     """
 
@@ -166,9 +166,9 @@ class RestClient(object):
             data,
             headers,
             callback,
-            extra,
             on_failed,
-            on_error
+            on_error,
+            extra
         )
         self._queue.put(request)
         return request
