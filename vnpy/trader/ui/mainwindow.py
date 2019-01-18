@@ -4,6 +4,7 @@ Implements main window of VN Trader.
 
 from functools import partial
 from typing import Callable
+from importlib import import_module
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
@@ -85,6 +86,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_menu_action(sys_menu, "退出", "exit.ico", self.close)
 
         # App menu
+        all_apps = self.main_engine.get_all_apps()
+        for app in all_apps:
+            try:
+                ui_module = import_module(app.app_module + ".ui")
+                widget_class = getattr(ui_module, app.widget_name)
+            except ImportError:
+                continue
+
+            func = partial(self.open_widget, widget_class, app.app_name)
+            icon_path = str(app.app_path.joinpath("ui", app.icon_name))
+            self.add_menu_action(
+                app_menu,
+                f"打开{app.display_name}",
+                icon_path,
+                func
+            )
 
         # Help menu
         self.add_menu_action(
@@ -205,16 +222,16 @@ class MainWindow(QtWidgets.QMainWindow):
         Save current window size and state by trader path and setting name.
         """
         settings = QtCore.QSettings(self.window_title, name)
-        settings.setValue('state', self.saveState())
-        settings.setValue('geometry', self.saveGeometry())
+        settings.setValue("state", self.saveState())
+        settings.setValue("geometry", self.saveGeometry())
 
     def load_window_setting(self, name: str):
         """
         Load previous window size and state by trader path and setting name.
         """
         settings = QtCore.QSettings(self.window_title, name)
-        state = settings.value('state')
-        geometry = settings.value('geometry')
+        state = settings.value("state")
+        geometry = settings.value("geometry")
 
         if isinstance(state, QtCore.QByteArray):
             self.restoreState(state)

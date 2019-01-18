@@ -5,6 +5,8 @@ from vnpy.gateway.ib import IbGateway
 from vnpy.gateway.futu import FutuGateway
 from vnpy.gateway.bitmex import BitmexGateway
 
+from vnpy.app.cta_strategy import CtaStrategyApp
+
 import os
 import logging
 import time
@@ -20,6 +22,8 @@ def main():
     main_engine.add_gateway(IbGateway)
     main_engine.add_gateway(FutuGateway)
     main_engine.add_gateway(BitmexGateway)
+
+    main_engine.add_app(CtaStrategyApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

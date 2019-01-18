@@ -3,7 +3,7 @@ import ctypes
 from pathlib import Path
 
 import qdarkstyle
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS
