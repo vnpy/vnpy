@@ -182,21 +182,21 @@ class IbApi(EWrapper):
         self.client = IbClient(self)
         self.thread = Thread(target=self.client.run)
 
-    def connectAck(self):
+    def connectAck(self): # pylint: disable=invalid-name
         """
         Callback when connection is established.
         """
         self.status = True
         self.gateway.write_log("IB TWS连接成功")
 
-    def connectionClosed(self):
+    def connectionClosed(self): # pylint: disable=invalid-name
         """
         Callback when connection is closed.
         """
         self.status = False
         self.gateway.write_log("IB TWS连接断开")
 
-    def nextValidId(self, orderId: int):
+    def nextValidId(self, orderId: int): # pylint: disable=invalid-name
         """
         Callback of next valid orderid.
         """
@@ -204,7 +204,7 @@ class IbApi(EWrapper):
 
         self.orderid = orderId
 
-    def currentTime(self, time: int):
+    def currentTime(self, time: int): # pylint: disable=invalid-name
         """
         Callback of current server time of IB.
         """
@@ -216,7 +216,7 @@ class IbApi(EWrapper):
         msg = f"服务器时间: {time_string}"
         self.gateway.write_log(msg)
 
-    def error(self, reqId: TickerId, errorCode: int, errorString: str):
+    def error(self, reqId: TickerId, errorCode: int, errorString: str): # pylint: disable=invalid-name
         """
         Callback of error caused by specific request.
         """
@@ -225,7 +225,7 @@ class IbApi(EWrapper):
         msg = f"信息通知，代码：{errorCode}，内容: {errorString}"
         self.gateway.write_log(msg)
 
-    def tickPrice(
+    def tickPrice(  # pylint: disable=invalid-name
             self,
             reqId: TickerId,
             tickType: TickType,
@@ -257,7 +257,7 @@ class IbApi(EWrapper):
             tick.datetime = datetime.now()
         self.gateway.on_tick(copy(tick))
 
-    def tickSize(self, reqId: TickerId, tickType: TickType, size: int):
+    def tickSize(self, reqId: TickerId, tickType: TickType, size: int): # pylint: disable=invalid-name
         """
         Callback of tick volume update.
         """
@@ -272,7 +272,7 @@ class IbApi(EWrapper):
 
         self.gateway.on_tick(copy(tick))
 
-    def tickString(self, reqId: TickerId, tickType: TickType, value: str):
+    def tickString(self, reqId: TickerId, tickType: TickType, value: str): # pylint: disable=invalid-name
         """
         Callback of tick string update.
         """
@@ -286,7 +286,7 @@ class IbApi(EWrapper):
 
         self.gateway.on_tick(copy(tick))
 
-    def orderStatus(
+    def orderStatus(  # pylint: disable=invalid-name
             self,
             orderId: OrderId,
             status: str,
@@ -325,7 +325,7 @@ class IbApi(EWrapper):
 
         self.gateway.on_order(copy(order))
 
-    def openOrder(
+    def openOrder(  # pylint: disable=invalid-name
             self,
             orderId: OrderId,
             ib_contract: Contract,
@@ -354,7 +354,7 @@ class IbApi(EWrapper):
         self.orders[orderid] = order
         self.gateway.on_order(copy(order))
 
-    def updateAccountValue(
+    def updateAccountValue(  # pylint: disable=invalid-name
             self,
             key: str,
             val: str,
@@ -381,7 +381,7 @@ class IbApi(EWrapper):
         name = ACCOUNTFIELD_IB2VT[key]
         setattr(account, name, float(val))
 
-    def updatePortfolio(
+    def updatePortfolio(  # pylint: disable=invalid-name
             self,
             contract: Contract,
             position: float,
@@ -419,7 +419,7 @@ class IbApi(EWrapper):
         )
         self.gateway.on_position(pos)
 
-    def updateAccountTime(self, timeStamp: str):
+    def updateAccountTime(self, timeStamp: str): # pylint: disable=invalid-name
         """
         Callback of account update time.
         """
@@ -427,7 +427,7 @@ class IbApi(EWrapper):
         for account in self.accounts.values():
             self.gateway.on_account(copy(account))
 
-    def contractDetails(self, reqId: int, contractDetails: ContractDetails):
+    def contractDetails(self, reqId: int, contractDetails: ContractDetails): # pylint: disable=invalid-name
         """
         Callback of contract data update.
         """
@@ -456,7 +456,7 @@ class IbApi(EWrapper):
 
         self.contracts[contract.vt_symbol] = contract
 
-    def execDetails(self, reqId: int, contract: Contract, execution: Execution):
+    def execDetails(self, reqId: int, contract: Contract, execution: Execution): # pylint: disable=invalid-name
         """
         Callback of trade data update.
         """
@@ -479,7 +479,7 @@ class IbApi(EWrapper):
 
         self.gateway.on_trade(trade)
 
-    def managedAccounts(self, accountsList: str):
+    def managedAccounts(self, accountsList: str): # pylint: disable=invalid-name
         """
         Callback of all sub accountid.
         """

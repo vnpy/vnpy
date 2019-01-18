@@ -262,7 +262,7 @@ class FutuGateway(BaseGateway):
             orderid = str(row["order_id"])
 
         order = req.create_order_data(orderid, self.gateway_name)
-        self.gateway.on_order(order)
+        self.on_order(order)
         return order.vt_orderid
 
     def cancel_order(self, req):
