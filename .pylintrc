@@ -121,7 +121,7 @@ never-returning-functions=sys.exit
 
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style.
-argument-rgx=[a-z][a-z0-9_]*
+argument-rgx=^[a-z][a-z0-9_]*$
 
 # Naming style matching correct attribute names.
 attr-naming-style=snake_case
