@@ -3,10 +3,10 @@ python:
   - "3.7-dev"
 install:
   - pip install -r requirements.txt
-  - pip install -r travis/requirements.txt
+  - pip install -r tools/ci/requirements.txt
   - pip install -r requirements-dev.txt
 # command to run tests
 script:
-  - python travis/format_check.py
+  - python tools/ci/format_check.py
   - pylint --rcfile=.pylintrc vnpy
   - python tests/test_all.py
