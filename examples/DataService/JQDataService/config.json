@@ -1,0 +1,7 @@
+{
+	"MONGO_HOST": "localhost",
+	"MONGO_PORT": 27017,
+	"JQ_USERNAME": "请前往申请：https://www.joinquant.com/data",
+	"JQ_PASSWORD": "",
+	"SYMBOLS": ["000016.XSHG", "000300.XSHG"]
+}
