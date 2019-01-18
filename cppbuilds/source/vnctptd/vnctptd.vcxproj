@@ -18,6 +18,23 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="class_generators.h" />
+    <ClInclude Include="dispatcher.h" />
+    <ClInclude Include="property_helper.h" />
+    <ClInclude Include="wrappers.h" />
+    <ClInclude Include="wrapper_helper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="classes_1.cpp" />
+    <ClCompile Include="classes_2.cpp" />
+    <ClCompile Include="classes_3.cpp" />
+    <ClCompile Include="classes_4.cpp" />
+    <ClCompile Include="classes_5.cpp" />
+    <ClCompile Include="classes_6.cpp" />
+    <ClCompile Include="classes_7.cpp" />
+    <ClCompile Include="vnctptd.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{B7ED1C80-1915-4D8E-AA2C-19BE497EF056}</ProjectGuid>
@@ -92,6 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ctp/thostmduserapi.lib;ctp/thosttraderapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -104,6 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>ctp/thostmduserapi.lib;ctp/thosttraderapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -141,9 +160,6 @@
       <AdditionalDependencies>ctp/thostmduserapi.lib;ctp/thosttraderapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="vnctptd.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -653,6 +653,8 @@ public:
 
 	///期货发起查询银行余额请求
 	virtual int ReqQueryBankAccountMoneyByFuture(CThostFtdcReqQueryAccountField *pReqQueryAccount, int nRequestID) = 0;
+protected:
+	~CThostFtdcTraderApi(){};
 };
 
 #endif
