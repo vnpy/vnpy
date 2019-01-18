@@ -46,6 +46,7 @@ api.RegisterFront("tcp://180.168.146.187:10030")
 print("Init() ...")
 api.Init()
 
+print("Join() ...")
 while True:
     pass
 
