@@ -679,7 +679,7 @@ class ConnectDialog(QtWidgets.QDialog):
 
         self.main_engine = main_engine
         self.gateway_name = gateway_name
-        self.file_name = f"Connect{gateway_name}.vt"
+        self.filename = f"Connect{gateway_name}.vt"
 
         self.widgets = {}
 
@@ -695,7 +695,7 @@ class ConnectDialog(QtWidgets.QDialog):
         )
 
         # Saved setting provides field data used last time.
-        loaded_setting = load_setting(self.file_name)
+        loaded_setting = load_setting(self.filename)
 
         # Initialize line edits and form layout based on setting.
         form = QtWidgets.QFormLayout()
@@ -742,7 +742,7 @@ class ConnectDialog(QtWidgets.QDialog):
 
         self.main_engine.connect(setting, self.gateway_name)
 
-        save_setting(self.file_name, setting)
+        save_setting(self.filename, setting)
 
         self.accept()
 

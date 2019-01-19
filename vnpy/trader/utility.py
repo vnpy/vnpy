@@ -34,9 +34,9 @@ def get_trader_path():
     return home_path
 
 
-def get_temp_path(file_name: str):
+def get_temp_path(filename: str):
     """
-    Get path for temp file with file_name.
+    Get path for temp file with filename.
     """
     trader_path = get_trader_path()
     temp_path = trader_path.joinpath('.vntrader')
@@ -44,35 +44,43 @@ def get_temp_path(file_name: str):
     if not temp_path.exists():
         temp_path.mkdir()
 
-    return temp_path.joinpath(file_name)
+    return temp_path.joinpath(filename)
 
 
-def get_icon_path(file_path: str, ico_name: str):
+def get_icon_path(filepath: str, ico_name: str):
     """
     Get path for icon file with ico name.
     """
-    ui_path = Path(file_path).parent
+    ui_path = Path(filepath).parent
     icon_path = ui_path.joinpath("ico", ico_name)
     return str(icon_path)
 
 
-def load_setting(file_name: str):
+def load_setting(filename: str):
     """
     Load setting from shelve file in temp path.
     """
-    file_path = get_temp_path(file_name)
-    f = shelve.open(str(file_path))
+    filepath = get_temp_path(filename)
+    f = shelve.open(str(filepath))
     setting = dict(f)
     f.close()
     return setting
 
 
-def save_setting(file_name: str, setting: dict):
+def save_setting(filename: str, setting: dict):
     """
     Save setting into shelve file in temp path.
     """
-    file_path = get_temp_path(file_name)
-    f = shelve.open(str(file_path))
+    filepath = get_temp_path(filename)
+    f = shelve.open(str(filepath))
     for k, v in setting.items():
         f[k] = v
     f.close()
+
+
+def round_to_pricetick(price: float, pricetick: float):
+    """
+    Round price to price tick value.
+    """
+    rounded = round(price / pricetick, 0) * pricetick
+    return rounded

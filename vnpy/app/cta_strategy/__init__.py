@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from vnpy.trader.app import BaseApp
-from .cta_engine import CtaEngine
+from .engine import CtaEngine
 
 
 class CtaStrategyApp(BaseApp):

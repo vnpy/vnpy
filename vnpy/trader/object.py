@@ -253,10 +253,10 @@ class OrderRequest:
     Request sending to specific gateway for creating a new order.
     """
     symbol: str
+    exchange: Exchange
     direction: Direction
     price_type: str
     volume: float
-    exchange: Exchange
     price: float = 0
     offset: Offset = Offset.NONE
 
