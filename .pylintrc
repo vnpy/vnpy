@@ -121,9 +121,10 @@ never-returning-functions=sys.exit
 
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style.
-argument-rgx=^[a-z][a-z0-9_]*$
+argument-rgx=^[_a-z][a-z0-9_]*$
 
 # Naming style matching correct attribute names.
+# self.xxxx
 attr-naming-style=snake_case
 
 # Regular expression matching correct attribute names. Overrides attr-naming-
@@ -139,11 +140,13 @@ bad-names=foo,
           tata
 
 # Naming style matching correct class attribute names.
-class-attribute-naming-style=snake_case
+#class-attribute-naming-style=
 
 # Regular expression matching correct class attribute names. Overrides class-
 # attribute-naming-style.
-#class-attribute-rgx=
+# ClassA.XXXX
+# except that dataclass should be snake_case
+class-attribute-rgx=^([A-Z][A-Z_]+|[_a-z][a-z0-9_]+)$
 
 # Naming style matching correct class names.
 class-naming-style=PascalCase
@@ -157,7 +160,8 @@ class-naming-style=PascalCase
 
 # Regular expression matching correct constant names. Overrides const-naming-
 # style.
-const-rgx=(([A-Z_][A-Za-z0-9_]*)|(__.*__))$
+const-rgx=^([A-Z][A-Z0-9_]+|[a-z][a-z0-9_]+|__\w+__)$
+
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
@@ -182,11 +186,11 @@ good-names=i,
 include-naming-hint=yes
 
 # Naming style matching correct inline iteration names.
-inlinevar-naming-style=any
+#inlinevar-naming-style=any
 
 # Regular expression matching correct inline iteration names. Overrides
 # inlinevar-naming-style.
-#inlinevar-rgx=
+inlinevar-rgx=^[a-z][a-z0-9_]*$
 
 # Naming style matching correct method names.
 method-naming-style=snake_case
