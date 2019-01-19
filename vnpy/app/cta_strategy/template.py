@@ -26,6 +26,7 @@ class CtaTemplate(ABC):
         self.engine = engine
 
         self.vt_symbol = setting["vt_symbol"]
+
         for name in self.parameters:
             if name in setting:
                 setattr(self, name, setting[name])

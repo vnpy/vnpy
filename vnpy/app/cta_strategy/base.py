@@ -8,6 +8,7 @@ from typing import Any
 
 from vnpy.trader.constant import Direction, Offset
 
+APP_NAME = "CtaStrategy"
 STOPORDER_PREFIX = "STOP."
 
 

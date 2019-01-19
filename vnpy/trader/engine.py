@@ -93,8 +93,16 @@ class MainEngine:
         gateway = self.gateways.get(gateway_name, None)
         if not gateway:
             self.write_log(f"找不到底层接口：{gateway_name}")
-            return None
         return gateway
+
+    def get_engine(self, engine_name: str):
+        """
+        Return engine object by name.
+        """
+        engine = self.engines.get(engine_name, None)
+        if not engine:
+            self.write_log(f"找不到引擎：{engine_name}")
+        return engine
 
     def get_default_setting(self, gateway_name: str):
         """

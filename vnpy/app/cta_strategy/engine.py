@@ -19,6 +19,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.constant import Direction, Offset, Exchange, PriceType
+from vnpy.trader.utility import get_temp_path
 
 from .template import CtaTemplate
 from .base import (
@@ -60,9 +61,13 @@ class CtaEngine(BaseEngine):
         self._stop_order_count = 0 # for generating stop_orderid
         self._stop_orders = {}     # stop_orderid: stop_order
 
+    def init_engine(self):
+        """
+        """
         self.load_strategy_class()
         self.load_setting()
         self.register_event()
+        self.write_log("CTA策略引擎初始化成功")
 
     def close(self):
         """"""
@@ -410,6 +415,7 @@ class CtaEngine(BaseEngine):
         for name in strategy.parameters:
             setattr(strategy, name, setting[name])
 
+        self.update_setting(setting)
         self.put_strategy_event(strategy)
 
     def remove_strategy(self, name):
@@ -440,7 +446,7 @@ class CtaEngine(BaseEngine):
         Load strategy class from source code.
         """
         path1 = Path(__file__).parent.joinpath("strategies")
-        self.load_strategy_class_from_folder(path1, __module__)
+        self.load_strategy_class_from_folder(path1, __name__)
 
         path2 = Path.cwd().joinpath("strategies")
         self.load_strategy_class_from_folder(path2)
@@ -513,7 +519,8 @@ class CtaEngine(BaseEngine):
         """
         Load setting file.
         """
-        self.setting_file = shelve.open(self.filename)
+        filepath = get_temp_path(self.filename)
+        self.setting_file = shelve.open(filename)
         for setting in list(self.setting_file.values()):
             self.add_strategy(setting)
 
@@ -561,6 +568,7 @@ class CtaEngine(BaseEngine):
 
         data = {
             "name": name,
+            "class_name": strategy.__class__.__name__,
             "inited": strategy._inited,
             "trading": strategy._trading,
             "pos": strategy._pos,
