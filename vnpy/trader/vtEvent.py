@@ -38,6 +38,10 @@ EVENT_NOTIFICATION = 'eNotification'    # 全局通知
 EVENT_SIGNAL = 'eSignal'                # 信号通知
 EVENT_STATUS = 'eStatus'                # 服务状态
 
+# 股票使用
+EVENT_BAR = 'eBar'                      # 1分钟Bar 行情
+EVENT_BARDICT = 'eBarDict_'             # BarDict事件+策略实例名称
+
 # CTA模块相关
 EVENT_CTA_LOG = 'eCtaLog'               # CTA相关的日志事件
 EVENT_CTA_STRATEGY = 'eCtaStrategy.'    # CTA策略状态变化事件

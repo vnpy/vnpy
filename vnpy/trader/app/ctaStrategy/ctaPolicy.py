@@ -253,9 +253,13 @@ class TurtlePolicy(CtaPolicy):
     def __init__(self, strategy):
         super(TurtlePolicy, self).__init__(strategy)
 
-        self.tns_open_price = 0  # 首次开仓价格
-        self.last_open_price = 0  # 最后一次加仓价格
-        self.stop_price = 0  # 止损价
+        self.allow_add_pos = False  # 是否加仓
+        self.add_pos_on_pips = EMPTY_INT  # 价格超过开仓价多少点时加仓
+
+        self.tns_open_price = 0         # 首次开仓价格
+        self.last_open_price = 0        # 最后一次加仓价格
+        self.stop_price = 0             # 止损价
+        self.exit_on_last_rtn_pips = 0  # 最高价/最低价回撤多少跳动
         self.high_price_in_long = 0  # 多趋势时，最高价
         self.low_price_in_short = 0  # 空趋势时，最低价
         self.last_under_open_price = 0  # 低于首次开仓价的补仓价格
@@ -279,12 +283,15 @@ class TurtlePolicy(CtaPolicy):
         j['tns_open_date'] = self.tns_open_date
         j['tns_open_price'] = self.tns_open_price if self.tns_open_price is not None else 0
 
+        j['allow_add_pos'] = self.allow_add_pos
+        j['add_pos_on_pips'] = self.add_pos_on_pips
+        j['exit_on_last_rtn_pips'] = self.exit_on_last_rtn_pips
+
         j['last_open_price'] = self.last_open_price if self.last_open_price is not None else 0
         j['stop_price'] = self.stop_price if self.stop_price is not None else 0
         j['high_price_in_long'] = self.high_price_in_long if self.high_price_in_long is not None else 0
         j['low_price_in_short'] = self.low_price_in_short if self.low_price_in_short is not None else 0
-        j[
-            'add_pos_count_under_first_price'] = self.add_pos_count_under_first_price if self.add_pos_count_under_first_price is not None else 0
+        j['add_pos_count_under_first_price'] = self.add_pos_count_under_first_price if self.add_pos_count_under_first_price is not None else 0
         j['last_under_open_price'] = self.last_under_open_price if self.last_under_open_price is not None else 0
 
         j['max_pos'] = self.max_pos if self.max_pos is not None else 0
@@ -412,6 +419,9 @@ class TurtlePolicy(CtaPolicy):
                 self.writeCtaError(u'解释last_risk_level异常:{}'.format(str(ex)))
                 self.last_risk_level = 0
 
+        self.allow_add_pos=json_data.get('allow_add_pos',False)
+        self.add_pos_on_pips = json_data.get('add_pos_on_pips',1)
+        self.exit_on_last_rtn_pips = json_data.get('exit_on_last_rtn_pips',0)
 
     def clean(self):
         """
@@ -432,6 +442,9 @@ class TurtlePolicy(CtaPolicy):
         self.tns_has_opened = False
         self.last_risk_level = 0
         self.tns_count = 0
+        self.allow_add_pos = False
+        self.add_pos_on_pips = 1
+        self.exit_on_last_rtn_pips = 0
 
 class TrendPolicy(CtaPolicy):
     """

@@ -1,4 +1,4 @@
-# “当你想放弃时，想想你为什么开始。”
+# “当你想放弃时，想想你为什么开始。埃隆·马斯克”
 
 ###Fork版本主要改进如下
 - 1、增加CtaLineBar，CtaPosition，CtaPolicy,UtlSinaClient等基础组件

@@ -23,9 +23,9 @@ from vnpy.trader.uiMainWindow import *
 # 加载底层接口
 from vnpy.trader.gateway import ctpGateway
 # 初始化的接口模块，以及其指定的名称,CTP是模块，value，是该模块下的多个连接配置文件,如 CTP_JR_connect.json    'CTP_Prod', 'CTP_JR', , 'CTP_JK', 'CTP_02'
-init_gateway_names = {'CTP': ['CTP','CTP_001','CTP_002']}
+init_gateway_names = {'CTP': ['CTP','CTP01','CTP02']}
 
-from vnpy.trader.app import (ctaStrategy, riskManager, spreadTrading)  #,dataRecorder
+from vnpy.trader.app import (ctaStrategy, riskManager, spreadTrading,dataRecorder)  #,
 
 # 文件路径名
 path = os.path.abspath(os.path.dirname(__file__))
@@ -60,7 +60,7 @@ def main():
     mainEngine.addApp(ctaStrategy)
     mainEngine.addApp(riskManager)
     mainEngine.addApp(spreadTrading)
-    #mainEngine.addApp(dataRecorder)
+    mainEngine.addApp(dataRecorder)
 
     mainWindow = MainWindow(mainEngine, ee)
     mainWindow.showMaximized()

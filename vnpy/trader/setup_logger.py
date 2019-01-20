@@ -244,7 +244,8 @@ class MultiprocessHandler(logging.FileHandler):
         if not self.suffix:
             raise ValueError(u"指定的日期间隔单位无效: %s" % self.when)
         #拼接文件路径 格式化字符串
-        self.filefmt = "%s_%s.log" % (self.prefix,self.suffix)
+        #self.filefmt = "%s_%s.log" % (self.prefix,self.suffix)
+        self.filefmt = u'{}_{}.log'.format(self.prefix, self.suffix)
         #使用当前时间，格式化文件格式化字符串
         self.filePath = datetime.now().strftime(self.filefmt)
         #获得文件夹路径

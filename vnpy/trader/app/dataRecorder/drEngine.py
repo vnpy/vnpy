@@ -14,12 +14,15 @@ from datetime import datetime, timedelta
 from queue import Queue
 from threading import Thread
 
+
 from vnpy.trader.vtEvent import *
+from vnpy.trader.vtObject import VtTickData
 from vnpy.trader.vtGateway import VtSubscribeReq, VtLogData
-from vnpy.trader.vtFunction import todayDate,getJsonPath
-
+from vnpy.trader.vtFunction import todayDate,getJsonPath,getShortSymbol
+from vnpy.trader.app.ctaStrategy.ctaRenkoBar import CtaRenkoBar
 from .drBase import *
-
+from vnpy.trader.setup_logger import setup_logger
+from vnpy.trader.data_source import DataSource
 ########################################################################
 class DrEngine(object):
     """数据记录引擎"""
@@ -44,15 +47,39 @@ class DrEngine(object):
         
         # K线对象字典
         self.barDict = {}
-        
+
+        # Renko K线对象字典
+        self.renkoDict = {}
+
         # 负责执行数据库插入的单独线程相关
         self.active = False                     # 工作状态
         self.queue = Queue()                    # 队列
         self.thread = Thread(target=self.run)   # 线程
 
+        self.logger = None
+        self.createLogger()
         # 载入设置，订阅行情
         self.loadSetting()
-        
+
+    def createLogger(self):
+        """
+        创建日志记录
+        :return:
+        """
+        currentFolder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+        if os.path.isdir(currentFolder):
+            # 如果工作目录下，存在data子目录，就使用data子目录
+            path = currentFolder
+        else:
+            # 否则，使用缺省保存目录 vnpy/trader/app/ctaStrategy/data
+            path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'logs'))
+
+        if self.logger is None:
+            filename = os.path.abspath(os.path.join(path, 'drEngine'))
+
+            print(u'create logger:{}'.format(filename))
+            self.logger = setup_logger(filename=filename, name='drEngine', debug=True)
+
     #----------------------------------------------------------------------
     def loadSetting(self):
         """载入设置"""
@@ -111,7 +138,43 @@ class DrEngine(object):
                     
                     bar = DrBarData() 
                     self.barDict[vtSymbol] = bar
-                    
+
+            if 'renko' in drSetting:
+                l = drSetting.get('renko')
+                req_set = set()
+                for setting in l:
+                    # 获取合约，合约短号，renko的高度（多少个跳）
+                    vtSymbol = setting.get('vtSymbol',None)
+                    if vtSymbol is None:
+                        continue
+                    short_symbol = getShortSymbol(vtSymbol).upper()
+                    height = setting.get('height',5)
+                    minDiff = setting.get('minDiff',1)
+
+
+
+                    # 获取vtSymbol的多个renkobar列表，添加新的CtaRenkoBar
+                    renko_list = self.renkoDict.get(vtSymbol,[])
+
+                    bar_setting = {'name':'{}_{}'.format(vtSymbol,height),
+                                   'shortSymbol':short_symbol,
+                                   'vtSymbol':vtSymbol,
+                                   'minDiff':minDiff,
+                                   'height':minDiff*height}
+                    renko_bar = CtaRenkoBar(strategy=None,onBarFunc=self.onRenkoBar,setting=bar_setting)
+                    renko_list.append(renko_bar)
+                    self.renkoDict.update({vtSymbol:renko_list})
+
+                    req = VtSubscribeReq()
+                    req.symbol = vtSymbol
+                    req_set.add((req,setting.get('gateway',None)))
+                # 更新合约的历史数据
+                self.add_gap_ticks()
+
+                # 订阅行情
+                for req,gw in req_set:
+                    self.mainEngine.subscribe(req,gw)
+
             if 'active' in drSetting:
                 d = drSetting['active']
                 
@@ -125,7 +188,7 @@ class DrEngine(object):
             # 注册事件监听
             self.registerEvent()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def procecssTickEvent(self, event):
         """处理行情推送"""
         tick = event.dict_['data']
@@ -137,7 +200,7 @@ class DrEngine(object):
         for key in d.keys():
             if key != 'datetime':
                 d[key] = tick.__getattribute__(key)
-        drTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y%m%d %H:%M:%S.%f')            
+        drTick.datetime = datetime.strptime(' '.join([tick.date, tick.time]), '%Y-%m-%d %H:%M:%S.%f')
         
         # 更新Tick数据
         if vtSymbol in self.tickDict:
@@ -190,6 +253,111 @@ class DrEngine(object):
                 bar.close = drTick.lastPrice            
 
     #----------------------------------------------------------------------
+
+        # 更新Renko数据
+        for renko_bar in self.renkoDict.get(vtSymbol,[]):
+           renko_bar.onTick(copy.copy(tick))
+
+    def add_gap_ticks(self):
+        """
+        补充缺失的分时数据
+        :return:
+        """
+        ds = DataSource()
+        for vtSymbol in self.renkoDict.keys():
+            renkobar_list = self.renkoDict.get(vtSymbol,[])
+            cache_bars = None
+            cache_start_date = None
+            cache_end_date = None
+            for renko_bar in renkobar_list:
+                # 通过mongo获取最新一个Renko bar的数据日期close时间
+                last_renko_dt = self.get_last_datetime(renko_bar.name)
+
+                # 根据日期+vtSymbol，像datasource获取分钟数据，以close价格，转化为tick，推送到renko_bar中
+                if last_renko_dt is not None:
+                    start_date =last_renko_dt.strftime('%Y-%m-%d')
+                else:
+                    start_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
+
+                end_date = (datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')
+                self.writeDrLog(u'从datasource获取{}数据,开始日期:{}'.format(vtSymbol,start_date))
+                if cache_bars is None or cache_start_date!=start_date or cache_end_date!=end_date:
+                    fields = ['open', 'close', 'high', 'low', 'volume', 'open_interest', 'limit_up', 'limit_down',
+                              'trading_date']
+                    cache_bars = ds.get_price(order_book_id=vtSymbol,start_date=start_date,end_date=end_date,
+                                              frequency='1m', fields=fields)
+                    cache_start_date = start_date
+                    cache_end_date = end_date
+                    if cache_bars is not None:
+                        total = len(cache_bars)
+                        self.writeDrLog(u'一共获取{}条{} 1分钟数据'.format(total,vtSymbol))
+
+                if cache_bars is not None:
+                    self.writeDrLog(u'推送分时数据tick:{}到:{}'.format(vtSymbol,renko_bar.name))
+                    for idx in cache_bars.index:
+                        row = cache_bars.loc[idx]
+                        tick = VtTickData()
+                        tick.vtSymbol = vtSymbol
+                        tick.symbol = vtSymbol
+                        last_bar_dt = datetime.strptime(str(idx), '%Y-%m-%d %H:%M:00')
+                        tick.datetime = last_bar_dt - timedelta(minutes=1)
+                        tick.date = tick.datetime.strftime('%Y-%m-%d')
+                        tick.time = tick.datetime.strftime('%H:%M:00')
+
+                        if tick.datetime.hour >= 21:
+                            if tick.datetime.isoweekday() == 5:
+                                # 星期五=》星期一
+                                tick.tradingDay = (tick.datetime + timedelta(days=3)).strftime('%Y-%m-%d')
+                            else:
+                                # 第二天
+                                tick.tradingDay = (tick.datetime + timedelta(days=1)).strftime('%Y-%m-%d')
+                        elif tick.datetime.hour < 8 and tick.datetime.isoweekday() == 6:
+                            # 星期六=>星期一
+                            tick.tradingDay = (tick.datetime + timedelta(days=2)).strftime('%Y-%m-%d')
+                        else:
+                            tick.tradingDay = tick.date
+                        tick.upperLimit = float(row['limit_up'])
+                        tick.lowerLimit = float(row['limit_down'])
+                        tick.lastPrice = float(row['close'])
+                        tick.askPrice1 = float(row['close'])
+                        tick.bidPrice1 = float(row['close'])
+                        tick.volume = int(row['volume'])
+                        tick.askVolume1 = tick.volume
+                        tick.bidVolume1 = tick.volume
+
+                        if last_renko_dt is not None and tick.datetime <= last_renko_dt:
+                            continue
+                        renko_bar.onTick(tick)
+
+    def get_last_datetime(self,renko_name):
+        """
+         通过mongo获取最新一个bar的数据日期
+        :param renko_name:
+        :return:
+        """
+        qryData = self.mainEngine.dbQueryBySort(dbName=RENKO_DB_NAME,
+                                                collectionName=renko_name,
+                                                d={},
+                                                sortName='datetime',
+                                                sortType=-1,
+                                                limitNum=1)
+
+        last_renko_open_dt =None
+        last_renko_close_dt=None
+        for d in qryData:
+            last_renko_open_dt = d.get('datetime',None)
+            if last_renko_open_dt is not None:
+                last_renko_close_dt = last_renko_open_dt + timedelta(seconds=d.get('seconds',0))
+
+            break
+        return last_renko_close_dt
+
+    def onRenkoBar(self,bar,bar_name):
+        newBar = copy.copy(bar)
+        self.insertData(RENKO_DB_NAME, bar_name, newBar)
+        self.writeDrLog(u'new Renko Bar:{},dt:{},open:{},close:{},high:{},low:{}'
+                        .format(bar_name,bar.datetime,bar.open,bar.close, bar.high, bar.low))
+
     def registerEvent(self):
         """注册事件监听"""
         self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
@@ -206,7 +374,7 @@ class DrEngine(object):
             try:
                 dbName, collectionName, d = self.queue.get(block=True, timeout=1)
                 self.mainEngine.dbInsert(dbName, collectionName, d)
-            except Empty:
+            except Exception as ex:
                 pass
     #----------------------------------------------------------------------
     def start(self):
@@ -228,5 +396,7 @@ class DrEngine(object):
         log.logContent = content
         event = Event(type_=EVENT_DATARECORDER_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)   
-    
+        self.eventEngine.put(event)
+
+        if self.logger:
+            self.logger.info(content)

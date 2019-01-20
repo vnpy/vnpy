@@ -1,0 +1,31 @@
+[
+ {
+        "name": "Strategy_TripleMa_01_RB_Min5",
+        "comment": "螺纹05合约三均线策略",
+        "auto_init": true,
+        "auto_start": true,
+        "className": "Strategy_TripleMa_v01",
+        "inputSS": 1,
+        "minDiff": 1,
+        "mode": "tick",
+        "shortSymbol": "RB",
+        "strategy_module": "Strategy_TripleMa_v01",
+        "symbol": "RB1905",
+        "vtSymbol": "rb1905"
+    },
+       {
+        "name": "Strategy_TripleMa_02_HC_Min5",
+        "comment": "热卷05合约三均线策略",
+        "auto_init": true,
+        "auto_start": true,
+        "className": "Strategy_TripleMa_v02",
+        "inputSS": 1,
+        "minDiff": 1,
+        "mode": "tick",
+        "shortSymbol": "HC",
+        "strategy_module": "Strategy_TripleMa_v02",
+        "symbol": "HC1905",
+        "vtSymbol": "hc1905"
+    }
+
+]

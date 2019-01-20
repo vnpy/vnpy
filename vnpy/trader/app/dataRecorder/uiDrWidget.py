@@ -29,7 +29,7 @@ class TableCell(QtWidgets.QTableWidgetItem):
         if text == '0' or text == '0.0':
             self.setText('')
         else:
-            self.setText(text)
+            self.setText(str(text))
 
 
 ########################################################################
@@ -60,7 +60,7 @@ class DrEngineManager(QtWidgets.QWidget):
         self.tickTable.setColumnCount(2)
         self.tickTable.verticalHeader().setVisible(False)
         self.tickTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.tickTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        #self.tickTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
         self.tickTable.setAlternatingRowColors(True)
         self.tickTable.setHorizontalHeaderLabels([u'合约代码', u'接口'])
         
@@ -69,16 +69,25 @@ class DrEngineManager(QtWidgets.QWidget):
         self.barTable.setColumnCount(2)
         self.barTable.verticalHeader().setVisible(False)
         self.barTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.barTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        #self.barTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
         self.barTable.setAlternatingRowColors(True)        
         self.barTable.setHorizontalHeaderLabels([u'合约代码', u'接口'])
+
+        renkoLabel = QtWidgets.QLabel(u'RenkoBar')
+        self.renkoTable = QtWidgets.QTableWidget()
+        self.renkoTable.setColumnCount(2)
+        self.renkoTable.verticalHeader().setVisible(False)
+        self.renkoTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        # self.renkoTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.renkoTable.setAlternatingRowColors(True)
+        self.renkoTable.setHorizontalHeaderLabels([u'合约代码', u'高度'])
 
         activeLabel = QtWidgets.QLabel(u'主力合约')
         self.activeTable = QtWidgets.QTableWidget()
         self.activeTable.setColumnCount(2)
         self.activeTable.verticalHeader().setVisible(False)
         self.activeTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.activeTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+        #self.activeTable.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
         self.activeTable.setAlternatingRowColors(True)        
         self.activeTable.setHorizontalHeaderLabels([u'主力代码', u'合约代码'])
 
@@ -92,10 +101,13 @@ class DrEngineManager(QtWidgets.QWidget):
         
         grid.addWidget(tickLabel, 0, 0)
         grid.addWidget(barLabel, 0, 1)
-        grid.addWidget(activeLabel, 0, 2)
+        grid.addWidget(renkoLabel, 0, 2)
+        grid.addWidget(activeLabel, 0, 3)
+
         grid.addWidget(self.tickTable, 1, 0)
         grid.addWidget(self.barTable, 1, 1)
-        grid.addWidget(self.activeTable, 1, 2)        
+        grid.addWidget(self.renkoTable, 1, 2)
+        grid.addWidget(self.activeTable, 1, 3)
         
         vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(grid)
@@ -118,7 +130,7 @@ class DrEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def updateSetting(self):
         """显示引擎行情记录配置"""
-        with open(self.drEngine.settingFileName) as f:
+        with open(self.drEngine.settingFilePath) as f:
             drSetting = json.load(f)
     
             if 'tick' in drSetting:
@@ -135,8 +147,15 @@ class DrEngineManager(QtWidgets.QWidget):
                 for setting in l:
                     self.barTable.insertRow(0)
                     self.barTable.setItem(0, 0, TableCell(setting[0]))
-                    self.barTable.setItem(0, 1, TableCell(setting[1])) 
-    
+                    self.barTable.setItem(0, 1, TableCell(setting[1]))
+
+            if 'renko' in drSetting:
+                l = drSetting['renko']
+
+                for setting in l:
+                    self.renkoTable.insertRow(0)
+                    self.renkoTable.setItem(0, 0, TableCell(setting.get('vtSymbol','')))
+                    self.renkoTable.setItem(0, 1, TableCell(setting.get('height',0)))
             if 'active' in drSetting:
                 d = drSetting['active']
     

@@ -1432,6 +1432,7 @@ class CtaEngine(object):
             return
 
         for expired_pos in expired_pos_list:
+            self.writeCtaLog(u'执行仓位处理:{}'.format(expired_pos))
             if expired_pos['volume'] == 0:
                 self.writeCtaError(u'clear_dispatch_pos，pos 为空：{},删除'.format(expired_pos))
                 flt = {'_id': expired_pos['_id']}
@@ -1509,7 +1510,7 @@ class CtaEngine(object):
                 else:
                     if curPos.longYd >= expired_pos['volume']:
                         sell_longYd = expired_pos['volume']
-                    if curPos.longYd == 0:
+                    elif curPos.longYd == 0:
                         sell_longToday = expired_pos['volume']
                     else:
                         sell_longYd = curPos.longYd

@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-import time,os,sys
+import time,os,sys,copy
 from datetime import datetime
 
 from vnpy.trader.vtEvent import *
@@ -23,6 +23,9 @@ class VtGateway(object):
         self.accountID = 'AccountID'
         self.createLogger()
 
+        # 所有订阅onBar的都会添加
+        self.klines = {}
+
     # ----------------------------------------------------------------------
     def onTick(self, tick):
         """市场行情推送"""
@@ -35,7 +38,14 @@ class VtGateway(object):
         event2 = Event(type_=EVENT_TICK+tick.vtSymbol)
         event2.dict_['data'] = tick
         self.eventEngine.put(event2)
-    
+
+    def onBar(self,bar,type=EVENT_BAR):
+        """市场行情推送"""
+        # bar, 或者 barDict
+        event = Event(type_=type)
+        event.dict_['data'] = bar
+        self.eventEngine.put(event)
+
     # ----------------------------------------------------------------------
     def onTrade(self, trade):
         """成交信息推送"""

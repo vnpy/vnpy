@@ -305,7 +305,7 @@ def start():
     # 往任务表增加定时计划
     operate_crontab("add")
     # 执行启动
-    _start()
+    #_start()
     print(u'启动{}服务执行完毕'.format(base_path))
 
 def _stop():
