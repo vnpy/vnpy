@@ -2,6 +2,7 @@ from pathlib import Path
 
 from vnpy.trader.app import BaseApp
 from .engine import CtaEngine
+from .template import CtaTemplate
 from .base import APP_NAME
 
 

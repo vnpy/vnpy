@@ -47,31 +47,32 @@ class CtaEngine(BaseEngine):
                              event_engine,
                              "CtaStrategy")
 
-        self._engine_type = EngineType.LIVE # live trading engine
-        self.setting_file = None            # setting file object
+        self.engine_type = EngineType.LIVE # live trading engine
+        self.setting_file = None           # setting file object
 
-        self._strategy_classes = {} # class_name: stategy_class
-        self._strategies = {}       # name: strategy
+        self.classes = {}    # class_name: stategy_class
+        self.strategies = {} # strategy_name: strategy
 
-        self._symbol_strategy_map = defaultdict(list) # vt_symbol: strategy list
-        self._orderid_strategy_map = {}               # vt_orderid: strategy
+        self.symbol_strategy_map = defaultdict(list) # vt_symbol: strategy list
+        self.orderid_strategy_map = {}               # vt_orderid: strategy
+        self.strategy_orderid_map = defaultdict(
+            set
+        )                                            # strategy_name: orderid list
 
-        self._active_orderids = defaultdict(set) # name: active orderid list
-
-        self._stop_order_count = 0 # for generating stop_orderid
-        self._stop_orders = {}     # stop_orderid: stop_order
+        self.stop_order_count = 0 # for generating stop_orderid
+        self.stop_orders = {}     # stop_orderid: stop_order
 
     def init_engine(self):
         """
         """
         self.load_strategy_class()
-        self.load_setting()
+        self.load_strategy_setting()
         self.register_event()
         self.write_log("CTA策略引擎初始化成功")
 
     def close(self):
         """"""
-        self.save_setting()
+        self.save_strategy_setting()
 
     def register_event(self):
         """"""
@@ -83,26 +84,26 @@ class CtaEngine(BaseEngine):
         """"""
         tick = event.data
 
-        strategies = self._symbol_strategy_map[tick.vt_symbol]
+        strategies = self.symbol_strategy_map[tick.vt_symbol]
         if not strategies:
             return
 
         self.check_stop_order(tick)
 
         for strategy in strategies:
-            if strategy._inited:
+            if strategy.inited:
                 self.call_strategy_func(strategy, strategy.on_tick, tick)
 
     def process_order_event(self, event: Event):
         """"""
         order = event.data
 
-        strategy = self._orderid_strategy_map.get(order.vt_orderid, None)
+        strategy = self.orderid_strategy_map.get(order.vt_orderid, None)
         if not strategy:
             return
 
         # Remove vt_orderid if order is no longer active.
-        vt_orderids = self._active_orderids[strategy.name]
+        vt_orderids = self.strategy_orderid_map[strategy.name]
         if order.vt_orderid in vt_orderids and not order.is_active():
             vt_orderids.remove(order.vt_orderid)
 
@@ -112,20 +113,20 @@ class CtaEngine(BaseEngine):
         """"""
         trade = event.data
 
-        strategy = self._orderid_strategy_map.get(trade.vt_orderid, None)
+        strategy = self.orderid_strategy_map.get(trade.vt_orderid, None)
         if not strategy:
             return
 
         if trade.direction == Direction.LONG:
-            strategy._pos += trade.volume
+            strategy.pos += trade.volume
         else:
-            strategy._pos -= trade.volume
+            strategy.pos -= trade.volume
 
         self.call_strategy_func(strategy, strategy.on_trade, trade)
 
     def check_stop_order(self, tick: TickData):
         """"""
-        for stop_order in self._stop_orders.values():
+        for stop_order in self.stop_orders.values():
             if stop_order.vt_symbol != tick.vt_symbol:
                 continue
 
@@ -165,9 +166,9 @@ class CtaEngine(BaseEngine):
                 # Update stop order status if placed successfully
                 if vt_orderid:
                     # Remove from relation map.
-                    self._stop_orders.pop(stop_order.stop_orderid)
+                    self.stop_orders.pop(stop_order.stop_orderid)
 
-                    vt_orderids = self._active_orderids[strategy.name]
+                    vt_orderids = self.strategy_orderid_map[strategy.name]
                     if stop_orderid in vt_orderids:
                         vt_orderids.remove(stop_orderid)
 
@@ -214,9 +215,9 @@ class CtaEngine(BaseEngine):
         )
 
         # Save relationship between orderid and strategy.
-        self._orderid_strategy_map[vt_orderid] = strategy
+        self.orderid_strategy_map[vt_orderid] = strategy
 
-        vt_orderids = self._active_orderids[strategy.name]
+        vt_orderids = self.strategy_orderid_map[strategy.name]
         vt_orderids.add(vt_orderid)
 
         return vt_orderid
@@ -231,9 +232,9 @@ class CtaEngine(BaseEngine):
         """
         Send a new order.
         """
-        self._stop_order_count += 1
+        self.stop_order_count += 1
         direction, offset = ORDER_CTA2VT[order_type]
-        stop_orderid = f"{STOPORDER_PREFIX}.{self._stop_order_count}"
+        stop_orderid = f"{STOPORDER_PREFIX}.{self.stop_order_count}"
 
         stop_order = StopOrder(
             vt_symbol=strategy.vt_symbol,
@@ -245,9 +246,9 @@ class CtaEngine(BaseEngine):
             strategy=strategy
         )
 
-        self._stop_orders[stop_orderid] = stop_order
+        self.stop_orders[stop_orderid] = stop_order
 
-        vt_orderids = self._active_orderids[strategy.name]
+        vt_orderids = self.strategy_orderid_map[strategy.name]
         vt_orderids.add(stop_orderid)
 
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
@@ -270,15 +271,15 @@ class CtaEngine(BaseEngine):
         """
         Cancel a local stop order.
         """
-        stop_order = self._stop_orders.get(stop_orderid, None)
+        stop_order = self.stop_orders.get(stop_orderid, None)
         if not stop_order:
             return
         strategy = stop_order.strategy
 
         # Remove from relation map.
-        self._stop_orders.pop(stop_orderid)
+        self.stop_orders.pop(stop_orderid)
 
-        vt_orderids = self._active_orderids[strategy.name]
+        vt_orderids = self.strategy_orderid_map[strategy.name]
         if stop_orderid in vt_orderids:
             vt_orderids.remove(stop_orderid)
 
@@ -314,7 +315,7 @@ class CtaEngine(BaseEngine):
         """
         Cancel all active orders of a strategy.
         """
-        vt_orderids = self._active_orderids[strategy.name]
+        vt_orderids = self.strategy_orderid_map[strategy.name]
         if not vt_orderids:
             return
 
@@ -323,7 +324,7 @@ class CtaEngine(BaseEngine):
 
     def get_engine_type(self):
         """"""
-        return self._engine_type
+        return self.engine_type
 
     def call_strategy_func(
             self,
@@ -340,116 +341,120 @@ class CtaEngine(BaseEngine):
             else:
                 func()
         except Exception:
-            strategy._trading = False
-            strategy._inited = False
+            strategy.trading = False
+            strategy.inited = False
 
             msg = f"触发异常已停止\n{traceback.format_exc()}"
             self.write_log(msg, strategy)
 
-    def add_strategy(self, setting):
+    def add_strategy(
+            self,
+            class_name: str,
+            strategy_name: str,
+            vt_symbol: str,
+            setting: dict
+    ):
         """
         Add a new strategy.
         """
-        name = setting["name"]
-        if name in self._strategies:
-            self.write_log(f"创建策略失败，存在重名{name}")
+        if strategy_name in self.strategies:
+            self.write_log(f"创建策略失败，存在重名{strategy_name}")
             return
 
-        class_name = setting["class_name"]
-        strategy_class = self._strategy_classes[class_name]
+        strategy_class = self.classes[class_name]
 
-        strategy = strategy_class(self, setting)
-        self._strategies[name] = strategy
+        strategy = strategy_class(self, strategy_name, vt_symbol, setting)
+        self.strategies[strategy_name] = strategy
 
         # Add vt_symbol to strategy map.
-        strategies = self._symbol_strategy_map[strategy.vt_symbol]
+        strategies = self.symbol_strategy_map[vt_symbol]
         strategies.append(strategy)
 
         # Update to setting file.
-        self.update_setting(setting)
+        self.update_strategy_setting(strategy_name, setting)
 
-        self.put_strategy_event()
+        self.put_strategy_event(strategy)
 
-    def init_strategy(self, name):
+    def init_strategy(self, strategy_name: str):
         """
         Init a strategy.
         """
-        strategy = self._strategies[name]
+        strategy = self.strategies[strategy_name]
         self.call_strategy_func(strategy, strategy.on_init)
-        strategy._inited = True
+        strategy.inited = True
 
         # Subscribe market data
         contract = self.main_engine.get_contract(strategy.vt_symbol)
         if not contract:
             self.write_log(f"行情订阅失败，找不到合约{strategy.vt_symbol}", strategy)
 
-        self.put_strategy_event()
+        self.put_strategy_event(strategy)
 
-    def start_strategy(self, name):
+    def start_strategy(self, strategy_name: str):
         """
         Start a strategy.
         """
-        strategy = self._strategies[name]
+        strategy = self.strategies[strategy_name]
         self.call_strategy_func(strategy, strategy.on_start)
-        strategy._trading = True
+        strategy.trading = True
 
-        self.put_strategy_event()
+        self.put_strategy_event(strategy)
 
-    def stop_strategy(self, name):
+    def stop_strategy(self, strategy_name: str):
         """
         Stop a strategy.
         """
-        strategy = self._strategies[name]
+        strategy = self.strategies[strategy_name]
         self.call_strategy_func(strategy, strategy.on_start)
-        strategy._trading = False
+        strategy.trading = False
 
-        self.put_strategy_event()
+        self.put_strategy_event(strategy)
 
-    def edit_strategy(self, setting):
+    def edit_strategy(self, strategy_name: str, setting: dict):
         """
         Edit parameters of a strategy.
         """
-        name = setting["name"]
-        strategy = self._strategies[name]
+        strategy = self.strategies[strategy_name]
+        strategy.update_setting(setting)
 
-        for name in strategy.parameters:
-            setattr(strategy, name, setting[name])
-
-        self.update_setting(setting)
+        self.update_strategy_setting(strategy_name, setting)
         self.put_strategy_event(strategy)
 
-    def remove_strategy(self, name):
+    def remove_strategy(self, strategy_name: str):
         """
         Remove a strategy.
         """
         # Remove setting
-        self.remove_setting(name)
+        self.remove_strategy_setting(strategy_name)
 
         # Remove from symbol strategy map
-        strategy = self._strategies[name]
-        strategies = self._symbol_strategy_map[strategy.vt_symbol]
+        strategy = self.strategies[strategy_name]
+        strategies = self.symbol_strategy_map[strategy.vt_symbol]
         strategies.remove(strategy)
 
         # Remove from active orderid map
-        if name in self._active_orderids:
-            vt_orderids = self._active_orderids.pop(name)
+        if strategy_name in self.strategy_orderid_map:
+            vt_orderids = self.strategy_orderid_map.pop(strategy_name)
 
             # Remove vt_orderid strategy map
             for vt_orderid in vt_orderids:
-                self._orderid_strategy_map.pop(vt_orderid)
+                self.orderid_strategy_map.pop(vt_orderid)
 
         # Remove from strategies
-        self._strategies.pop(name)
+        self.strategies.pop(strategy_name)
 
     def load_strategy_class(self):
         """
         Load strategy class from source code.
         """
         path1 = Path(__file__).parent.joinpath("strategies")
-        self.load_strategy_class_from_folder(path1, __name__)
+        self.load_strategy_class_from_folder(
+            path1,
+            "vnpy.app.cta_strategy.strategies"
+        )
 
         path2 = Path.cwd().joinpath("strategies")
-        self.load_strategy_class_from_folder(path2)
+        self.load_strategy_class_from_folder(path2, "strategies")
 
     def load_strategy_class_from_folder(
             self,
@@ -460,8 +465,12 @@ class CtaEngine(BaseEngine):
         Load strategy class from certain folder.
         """
         for dirpath, dirnames, filenames in os.walk(path):
-            for name in filenames:
-                module_name = ".".join([module_name, name.replace(".py", "")])
+            for filename in filenames:
+                module_name = ".".join(
+                    [module_name,
+                     filename.replace(".py",
+                                      "")]
+                )
                 self.load_strategy_class_from_module(module_name)
 
     def load_strategy_class_from_module(self, module_name: str):
@@ -473,8 +482,8 @@ class CtaEngine(BaseEngine):
 
             for name in dir(module):
                 value = getattr(module, name)
-                if isinstance(value, CtaTemplate):
-                    self._strategy_classes[value.__name__] = value
+                if issubclass(value, CtaTemplate) and value is not CtaTemplate:
+                    self.classes[value.__name__] = value
         except:
             msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
             self.write_log(msg)
@@ -483,13 +492,13 @@ class CtaEngine(BaseEngine):
         """
         Return names of strategy classes loaded.
         """
-        return list(self._strategy_classes.keys())
+        return list(self.classes.keys())
 
     def get_strategy_class_parameters(self, class_name: str):
         """
-        Get default parameters of a strategy.
+        Get default parameters of a strategy class.
         """
-        strategy_class = self._strategy_classes[class_name]
+        strategy_class = self.classes[class_name]
 
         parameters = {}
         for name in strategy_class.parameters:
@@ -497,51 +506,67 @@ class CtaEngine(BaseEngine):
 
         return parameters
 
+    def get_strategy_parameters(self, strategy_name):
+        """
+        Get parameters of a strategy.
+        """
+        strategy = self.strategies[strategy_name]
+        return strategy.get_parameters()
+
     def init_all_strategies(self):
         """
         """
-        for name in self._strategies.keys():
-            self.init_strategy(name)
+        for strategy_name in self.strategies.keys():
+            self.init_strategy(strategy_name)
 
     def start_all_strategies(self):
         """
         """
-        for name in self._strategies.keys():
-            self.start_strategy(name)
+        for strategy_name in self.strategies.keys():
+            self.start_strategy(strategy_name)
 
     def stop_all_strategies(self):
         """
         """
-        for name in self._strategies.keys():
-            self.stop_strategy(name)
+        for strategy_name in self.strategies.keys():
+            self.stop_strategy(strategy_name)
 
-    def load_setting(self):
+    def load_strategy_setting(self):
         """
         Load setting file.
         """
-        filepath = get_temp_path(self.filename)
-        self.setting_file = shelve.open(filename)
-        for setting in list(self.setting_file.values()):
-            self.add_strategy(setting)
+        filepath = str(get_temp_path(self.filename))
+        self.setting_file = shelve.open(filepath)
 
-    def update_setting(self, setting: dict):
+        for tp in list(self.setting_file.values()):
+            class_name, strategy_name, vt_symbol, setting = tp
+            self.add_strategy(class_name, strategy_name, vt_symbol, setting)
+
+    def update_strategy_setting(self, strategy_name: str, setting: dict):
         """
         Update setting file.
         """
-        self.setting_file[new_setting["name"]] = new_setting
+        strategy = self.strategies[strategy_name]
+
+        self.setting_file[strategy_name] = (
+            strategy.__class__.__name__,
+            strategy_name,
+            strategy.vt_symbol,
+            setting
+        )
         self.setting_file.sync()
 
-    def remove_setting(self, name: str):
+    def remove_strategy_setting(self, strategy_name: str):
         """
         Update setting file.
         """
-        if name not in self.setting_file:
+        if strategy_name not in self.setting_file:
             return
 
-        self.setting_file.pop(name)
+        self.setting_file.pop(strategy_name)
         self.setting_file.sync()
 
-    def save_setting(self):
+    def save_strategy_setting(self):
         """
         Save and close setting file.
         """
@@ -558,25 +583,7 @@ class CtaEngine(BaseEngine):
         """
         Put an event to update strategy status.
         """
-        parameters = {}
-        for name in strategy.parameters:
-            parameters[name] = getattr(strategy, name)
-
-        variables = {}
-        for name in strategy.variables:
-            variables[name] = getattr(strategy, name)
-
-        data = {
-            "name": name,
-            "class_name": strategy.__class__.__name__,
-            "inited": strategy._inited,
-            "trading": strategy._trading,
-            "pos": strategy._pos,
-            "author": strategy.author,
-            "vt_symbol": strategy.vt_symbol,
-            "parameters": parameters,
-            "variables": variables
-        }
+        data = strategy.get_data()
         event = Event(EVENT_CTA_STRATEGY, data)
         self.event_engine.put(event)
 
@@ -585,7 +592,7 @@ class CtaEngine(BaseEngine):
         Create cta engine log event.
         """
         if strategy:
-            msg = f"{strategy.name}: {msg}"
+            msg = f"{strategy.strategy_name}: {msg}"
 
         log = LogData(msg=msg, gateway_name="CtaStrategy")
         event = Event(type=EVENT_CTA_LOG, data=log)

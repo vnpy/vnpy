@@ -164,6 +164,17 @@ class TimeCell(BaseCell):
         self._data = data
 
 
+class MsgCell(BaseCell):
+    """
+    Cell used for showing msg data.
+    """
+
+    def __init__(self, content: str, data: Any):
+        """"""
+        super(MsgCell, self).__init__(content, data)
+        self.setTextAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+
+
 class BaseMonitor(QtWidgets.QTableWidget):
     """
     Monitor data update in VN Trader.
@@ -422,7 +433,7 @@ class LogMonitor(BaseMonitor):
         },
         "msg": {
             "display": "信息",
-            "cell": BaseCell,
+            "cell": MsgCell,
             "update": False
         },
         "gateway_name": {

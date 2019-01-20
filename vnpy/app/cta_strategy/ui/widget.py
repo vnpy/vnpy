@@ -3,7 +3,7 @@ from typing import Any
 from vnpy.event import EventEngine, Event
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.ui import QtGui, QtWidgets, QtCore
-from vnpy.trader.ui.widget import BaseMonitor, BaseCell, EnumCell, DirectionCell
+from vnpy.trader.ui.widget import BaseMonitor, BaseCell, EnumCell, TimeCell, MsgCell
 
 from ..engine import CtaEngine
 from ..base import APP_NAME, EVENT_CTA_LOG, EVENT_CTA_STOPORDER, EVENT_CTA_STRATEGY
@@ -21,12 +21,12 @@ class CtaManager(QtWidgets.QWidget):
         self.event_engine = event_engine
         self.cta_engine = main_engine.get_engine(APP_NAME)
 
-        self.cta_engine.init_engine()
-
         self.managers = {}
 
         self.init_ui()
         self.register_event()
+        self.cta_engine.init_engine()
+        self.update_class_combo()
 
     def init_ui(self):
         """"""
@@ -34,9 +34,6 @@ class CtaManager(QtWidgets.QWidget):
 
         # Create widgets
         self.class_combo = QtWidgets.QComboBox()
-        self.class_combo.addItems(
-            self.cta_engine.get_all_strategy_class_names()
-        )
 
         add_button = QtWidgets.QPushButton("添加策略")
         add_button.clicked.connect(self.add_strategy)
@@ -51,6 +48,7 @@ class CtaManager(QtWidgets.QWidget):
         stop_button.clicked.connect(self.cta_engine.stop_all_strategies)
 
         self.scroll_layout = QtWidgets.QVBoxLayout()
+        self.scroll_layout.addStretch()
 
         scroll_widget = QtWidgets.QWidget()
         scroll_widget.setLayout(self.scroll_layout)
@@ -61,15 +59,12 @@ class CtaManager(QtWidgets.QWidget):
 
         bottom_height = 300
 
-        self.log_monitor = QtWidgets.QTextEdit()
-        self.log_monitor.setReadOnly(True)
-        self.log_monitor.setMaximumHeight(bottom_height)
+        self.log_monitor = LogMonitor(self.main_engine, self.event_engine)
 
         self.stop_order_monitor = StopOrderMonitor(
             self.main_engine,
             self.event_engine
         )
-        self.stop_order_monitor.setMaximumHeight(bottom_height)
 
         # Set layout
         hbox1 = QtWidgets.QHBoxLayout()
@@ -80,54 +75,50 @@ class CtaManager(QtWidgets.QWidget):
         hbox1.addWidget(start_button)
         hbox1.addWidget(stop_button)
 
-        hbox2 = QtWidgets.QHBoxLayout()
-        hbox2.addWidget(self.log_monitor)
-        hbox2.addWidget(self.stop_order_monitor)
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(scroll_area, 0, 0, 2, 1)
+        grid.addWidget(self.stop_order_monitor, 0, 1)
+        grid.addWidget(self.log_monitor, 1, 1)
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addLayout(hbox1)
-        vbox.addWidget(scroll_area)
-        vbox.addLayout(hbox2)
+        vbox.addLayout(grid)
 
         self.setLayout(vbox)
 
+    def update_class_combo(self):
+        """"""
+        self.class_combo.addItems(
+            self.cta_engine.get_all_strategy_class_names()
+        )
+
     def register_event(self):
         """"""
-        self.signal_log.connect(self.process_log_event)
         self.signal_strategy.connect(self.process_strategy_event)
 
-        self.event_engine.register(EVENT_CTA_LOG, self.signal_log.emit)
         self.event_engine.register(
             EVENT_CTA_STRATEGY,
             self.signal_strategy.emit
         )
-
-    def process_log_event(self, event):
-        """
-        Update log output.
-        """
-        log = event.data
-        time = log.time.strftime("%H:%M:S")
-        msg = f"{time}:\t{log.msg}"
-        self.log_monitor.append(msg)
 
     def process_strategy_event(self, event):
         """
         Update strategy status onto its monitor.
         """
         data = event.data
-        name = data["name"]
+        strategy_name = data["strategy_name"]
 
-        if name in self.managers:
-            manager = self.managers[name]
+        if strategy_name in self.managers:
+            manager = self.managers[strategy_name]
             manager.update_data(data)
         else:
             manager = StrategyManager(self, self.cta_engine, data)
             self.scroll_layout.insertWidget(0, manager)
+            self.managers[strategy_name] = manager
 
-    def remove_strategy(self, name):
+    def remove_strategy(self, strategy_name):
         """"""
-        manager = self.managers[name]
+        manager = self.managers[strategy_name]
         manager.deleteLater()
 
     def add_strategy(self):
@@ -137,20 +128,27 @@ class CtaManager(QtWidgets.QWidget):
             return
 
         parameters = self.cta_engine.get_strategy_class_parameters(class_name)
-
         editor = SettingEditor(parameters, class_name=class_name)
         n = editor.exec_()
 
         if n == editor.Accepted:
             setting = editor.get_setting()
-            self.cta_engine.add_strategy(setting)
+            vt_symbol = setting.pop("vt_symbol")
+            strategy_name = setting.pop("strategy_name")
+
+            self.cta_engine.add_strategy(
+                class_name,
+                strategy_name,
+                vt_symbol,
+                setting
+            )
 
     def show(self):
         """"""
         self.showMaximized()
 
 
-class StrategyManager(QtWidgets.QWidget):
+class StrategyManager(QtWidgets.QFrame):
     """
     Manager for a strategy
     """
@@ -162,16 +160,22 @@ class StrategyManager(QtWidgets.QWidget):
             data: dict
     ):
         """"""
+        super(StrategyManager, self).__init__()
+
         self.cta_manager = cta_manager
         self.cta_engine = cta_engine
 
-        self.name = data["name"]
+        self.strategy_name = data["strategy_name"]
         self._data = data
 
         self.init_ui()
 
     def init_ui(self):
         """"""
+        self.setMaximumHeight(200)
+        self.setFrameShape(self.Box)
+        self.setLineWidth(1)
+
         init_button = QtWidgets.QPushButton("初始化")
         init_button.clicked.connect(self.init_strategy)
 
@@ -187,27 +191,19 @@ class StrategyManager(QtWidgets.QWidget):
         remove_button = QtWidgets.QPushButton("移除")
         remove_button.clicked.connect(self.remove_strategy)
 
-        self.name_label = QtWidgets.QLabel(f"策略名:{self._data['name']}")
-        self.class_label = QtWidgets.QLabel(f"策略类:{self._data['class_name']}")
-        self.symbol_label = QtWidgets.QLabel(f"代码:{self._data['vt_symbol']}")
-        self.author_label = QtWidgets.QLabel(f"作者:{self._data['author']}")
-        self.inited_label = QtWidgets.QLabel(f"inited:{self._data['inited']}")
-        self.trading_label = QtWidgets.QLabel(
-            f"trading:{self._data['trading']}"
-        )
-        self.pos_label = QtWidgets.QLabel(f"pos:{self._data['pos']}")
+        strategy_name = self._data["strategy_name"]
+        vt_symbol = self._data["vt_symbol"]
+        class_name = self._data["class_name"]
+        author = self._data["author"]
+
+        label_text = f"{strategy_name}  -  {vt_symbol}  ({class_name} by {author})"
+        label = QtWidgets.QLabel(label_text)
+        label.setAlignment(QtCore.Qt.AlignCenter)
 
         self.parameters_monitor = DataMonitor(self._data["parameters"])
         self.variables_monitor = DataMonitor(self._data["variables"])
 
         hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(self.name_label)
-        hbox.addWidget(self.class_label)
-        hbox.addWidget(self.symbol_label)
-        hbox.addWidget(self.author_label)
-        hbox.addWidget(self.inited_label)
-        hbox.addWidget(self.trading_label)
-        hbox.addWidget(self.pos_label)
         hbox.addWidget(init_button)
         hbox.addWidget(start_button)
         hbox.addWidget(stop_button)
@@ -215,6 +211,7 @@ class StrategyManager(QtWidgets.QWidget):
         hbox.addWidget(remove_button)
 
         vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(label)
         vbox.addLayout(hbox)
         vbox.addWidget(self.parameters_monitor)
         vbox.addWidget(self.variables_monitor)
@@ -224,33 +221,39 @@ class StrategyManager(QtWidgets.QWidget):
         """"""
         self._data = data
 
-        self.inited_label.setText(f"inited:{data['inited']}")
-        self.trading_label.setText(f"trading:{data['trading']}")
-        self.pos_label.setText(f"pos:{data['pos']}")
-
         self.parameters_monitor.update_data(data["parameters"])
         self.variables_monitor.update_data(data["variables"])
 
     def init_strategy(self):
         """"""
-        self.cta_engine.init_strategy(self.name)
+        self.cta_engine.init_strategy(self.strategy_name)
 
     def start_strategy(self):
         """"""
-        self.cta_engine.start_strategy(self.name)
+        self.cta_engine.start_strategy(self.strategy_name)
 
     def stop_strategy(self):
         """"""
-        self.cta_engine.stop_strategy(self.name)
+        self.cta_engine.stop_strategy(self.strategy_name)
 
     def edit_strategy(self):
         """"""
-        pass
+        vt_symbol = self._data["vt_symbol"]
+        class_name = self._data["class_name"]
+        strategy_name = self._data["strategy_name"]
+
+        parameters = self.cta_engine.get_strategy_parameters(strategy_name)
+        editor = SettingEditor(parameters, strategy_name=strategy_name)
+        n = editor.exec_()
+
+        if n == editor.Accepted:
+            setting = editor.get_setting()
+            self.cta_engine.edit_strategy(strategy_name, setting)
 
     def remove_strategy(self):
         """"""
-        self.cta_engine.remove_strategy(self.name)
-        self.cta_manager.remove_strategy(self.name)
+        self.cta_engine.remove_strategy(self.strategy_name)
+        self.cta_manager.remove_strategy(self.strategy_name)
 
 
 class DataMonitor(QtWidgets.QTableWidget):
@@ -270,16 +273,22 @@ class DataMonitor(QtWidgets.QTableWidget):
     def init_ui(self):
         """"""
         labels = list(self._data.keys())
-        self.setColumnCount(labels)
+        self.setColumnCount(len(labels))
         self.setHorizontalHeaderLabels(labels)
 
         self.setRowCount(1)
+        self.verticalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
 
-        for column, name in enumerate(self._data.items()):
+        for column, name in enumerate(self._data.keys()):
             value = self._data[name]
+
             cell = QtWidgets.QTableWidgetItem(str(value))
+            cell.setTextAlignment(QtCore.Qt.AlignCenter)
+
             self.setItem(0, column, cell)
             self.cells[name] = cell
 
@@ -304,7 +313,7 @@ class StrategyCell(BaseCell):
         Set text using enum.constant.value.
         """
         if content:
-            super(StrategyCell, self).set_content(content.name, data)
+            super(StrategyCell, self).set_content(content.strategy_name, data)
 
 
 class StopOrderMonitor(BaseMonitor):
@@ -358,6 +367,56 @@ class StopOrderMonitor(BaseMonitor):
         }
     }
 
+    def init_ui(self):
+        """
+        Stretch columns.
+        """
+        super(StopOrderMonitor, self).init_ui()
+
+        self.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
+
+
+class LogMonitor(BaseMonitor):
+    """
+    Monitor for log data.
+    """
+    event_type = EVENT_CTA_LOG
+    data_key = ""
+    sorting = False
+
+    headers = {
+        "time": {
+            "display": "时间",
+            "cell": TimeCell,
+            "update": False
+        },
+        "msg": {
+            "display": "信息",
+            "cell": MsgCell,
+            "update": False
+        }
+    }
+
+    def init_ui(self):
+        """
+        Stretch last column.
+        """
+        super(LogMonitor, self).init_ui()
+
+        self.horizontalHeader().setSectionResizeMode(
+            1,
+            QtWidgets.QHeaderView.Stretch
+        )
+
+    def insert_new_row(self, data):
+        """
+        Insert a new row at the top of table.
+        """
+        super(LogMonitor, self).insert_new_row(data)
+        self.resizeRowToContents(0)
+
 
 class SettingEditor(QtWidgets.QDialog):
     """
@@ -400,12 +459,19 @@ class SettingEditor(QtWidgets.QDialog):
             type_ = type(value)
 
             edit = QtWidgets.QLineEdit(str(value))
+            if type_ is int:
+                validator = QtGui.QIntValidator()
+                edit.setValidator(validator)
+            elif type_ is float:
+                validator = QtGui.QDoubleValidator()
+                edit.setValidator(validator)
+
             form.addRow(f"{name} {type_}", edit)
 
             self.edits[name] = (edit, type_)
 
         button = QtWidgets.QPushButton(button_text)
-        button.clicked.connect(self.accpet)
+        button.clicked.connect(self.accept)
         form.addRow(button)
 
         self.setLayout(form)
