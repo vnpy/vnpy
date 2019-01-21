@@ -172,7 +172,7 @@ class MsgCell(BaseCell):
     def __init__(self, content: str, data: Any):
         """"""
         super(MsgCell, self).__init__(content, data)
-        self.setTextAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
 
 class BaseMonitor(QtWidgets.QTableWidget):
