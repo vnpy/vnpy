@@ -46,6 +46,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast")
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fno-exceptions -fno-rtti -Wno-missing-braces")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
 endif()
