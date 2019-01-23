@@ -4,7 +4,7 @@
 
 所有的封装都是使用脚本生成的，使用的脚本为autocxxpy
 
-若要看如何构建，请看Build.md
+若要看如何构建，请看[build.md](./doc/build.md)
 
 ---
 
