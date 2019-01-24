@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Set
 
-from .cxxparser import CXXFileParser, CXXParseResult, Class, LiteralVariable, Method, Variable
+from .cxxparser import CXXParser, CXXParseResult, Class, LiteralVariable, Method, Variable
 from .type import array_base, base_types, is_array_type
 
 
@@ -201,7 +201,7 @@ class PreProcessor:
                                            default=val,
                                            literal=definition)
                 if definition.startswith("'") and definition.endswith("'"):
-                    val = CXXFileParser.character_literal_to_int(definition[1:-1])
+                    val = CXXParser.character_literal_to_int(definition[1:-1])
                     t = 'unsigned'
                     valid = True
                     if len(definition) >= 6:
