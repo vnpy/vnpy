@@ -192,10 +192,7 @@ class CtaTemplate(ABC):
         return self.cta_engine.get_engine_type()
 
     def load_bar(
-        self,
-        days: int,
-        interval: Interval = Interval.MINUTE,
-        callback=None,
+        self, days: int, interval: Interval = Interval.MINUTE, callback=None
     ):
         """
         Load historical bar data for initializing strategy.

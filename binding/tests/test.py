@@ -26,6 +26,7 @@ api = CThostFtdcTraderApi.CreateFtdcTraderApi("flow2")
 print("creating ctp spi")
 
 
+# pylint: disable=invalid-name
 class Spi(CThostFtdcTraderSpi):
     def OnFrontConnected(self) -> None:
         print("OnFrontConnected!")
@@ -64,6 +65,7 @@ class Spi(CThostFtdcTraderSpi):
         self, pRspInfo: CThostFtdcRspInfoField, nRequestID: int, bIsLast: bool
     ) -> None:
         print("OnRspError!")
+# pylint: enable=invalid-name
 
 
 spi = Spi()

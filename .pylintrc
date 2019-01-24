@@ -66,6 +66,7 @@ disable=
     missing-docstring,
     unused-argument,
     no-self-use,
+    no-member,  # dataclass is not well supported by pylint
 
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -159,7 +160,7 @@ class-naming-style=PascalCase
 
 # Regular expression matching correct constant names. Overrides const-naming-
 # style.
-const-rgx=^([A-Z][A-Z0-9_]+|[a-z][a-z0-9_]+|__\w+__)$
+const-rgx=^_?([A-Z][A-Z0-9_]+|[a-z][a-z0-9_]+|__\w+__)$
 
 
 # Minimum line length for functions/classes that require docstrings, shorter

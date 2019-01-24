@@ -4,7 +4,6 @@ import ast
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Dict, List, Optional, Set
 
 from .cxxparser import (
@@ -16,12 +15,6 @@ from .cxxparser import (
     Variable,
 )
 from .type import array_base, base_types, is_array_type
-
-
-class CallbackType(Enum):
-    NotCallback = 0  # not a callback
-    Direct = 1
-    Async = 2
 
 
 """

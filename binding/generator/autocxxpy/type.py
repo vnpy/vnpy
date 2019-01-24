@@ -35,11 +35,11 @@ def is_pointer_type(t: str):
     return "*" in t
 
 
-_remove_pointer_re = re.compile("[ \t]*\\*[ \t]*")
+_REMOVE_POINTER_RE = re.compile("[ \t]*\\*[ \t]*")
 
 
 def pointer_base(t: str):
-    return _remove_pointer_re.sub("", t)
+    return _REMOVE_POINTER_RE.sub("", t)
 
 
 def is_reference_type(t: str):

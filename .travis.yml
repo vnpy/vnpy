@@ -7,6 +7,5 @@ install:
   - pip install -r requirements-dev.txt
 # command to run tests
 script:
-  - python tools/ci/check_format.py
-  - pylint --rcfile=.pylintrc vnpy
+  - python tools/ci/check_all.py
   - python tests/test_all.py
