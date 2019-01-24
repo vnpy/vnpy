@@ -121,7 +121,7 @@ never-returning-functions=sys.exit
 
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style.
-argument-rgx=^[_a-z][a-z0-9_]*$
+argument-rgx=^_?[a-z][a-z0-9_]*$
 
 # Naming style matching correct attribute names.
 # self.xxxx
@@ -146,7 +146,7 @@ bad-names=foo,
 # attribute-naming-style.
 # ClassA.XXXX
 # except that dataclass should be snake_case
-class-attribute-rgx=^([A-Z][A-Z_]+|[_a-z][a-z0-9_]+)$
+class-attribute-rgx=^_?([A-Z][A-Z_]+|[a-z][a-z0-9_]+)$
 
 # Naming style matching correct class names.
 class-naming-style=PascalCase
