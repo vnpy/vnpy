@@ -3,9 +3,8 @@
 from abc import ABC
 from typing import Any
 
-from vnpy.trader.object import TickData, OrderData, TradeData, BarData
 from vnpy.trader.constant import Interval
-
+from vnpy.trader.object import BarData, OrderData, TickData, TradeData
 from .base import CtaOrderType, StopOrder
 
 
@@ -17,11 +16,11 @@ class CtaTemplate(ABC):
     variables = []
 
     def __init__(
-            self,
-            cta_engine: Any,
-            strategy_name: str,
-            vt_symbol: str,
-            setting: dict
+        self,
+        cta_engine: Any,
+        strategy_name: str,
+        vt_symbol: str,
+        setting: dict,
     ):
         """"""
         self.cta_engine = cta_engine
@@ -84,7 +83,7 @@ class CtaTemplate(ABC):
             "class_name": self.__class__.__name__,
             "author": self.author,
             "parameters": self.get_parameters(),
-            "variables": self.get_variables()
+            "variables": self.get_variables(),
         }
         return strategy_data
 
@@ -155,16 +154,18 @@ class CtaTemplate(ABC):
         return self.send_order(CtaOrderType.COVER, price, volume, stop)
 
     def send_order(
-            self,
-            order_type: CtaOrderType,
-            price: float,
-            volume: float,
-            stop: bool = False
+        self,
+        order_type: CtaOrderType,
+        price: float,
+        volume: float,
+        stop: bool = False,
     ):
         """
         Send a new order.
         """
-        return self.cta_engine.send_order(self, order_type, price, volume, stop)
+        return self.cta_engine.send_order(
+            self, order_type, price, volume, stop
+        )
 
     def cancel_order(self, vt_orderid: str):
         """
@@ -191,14 +192,16 @@ class CtaTemplate(ABC):
         return self.cta_engine.get_engine_type()
 
     def load_bar(
-            self,
-            days: int,
-            interval: Interval = Interval.MINUTE,
-            callback=self.on_bar
+        self,
+        days: int,
+        interval: Interval = Interval.MINUTE,
+        callback=None,
     ):
         """
         Load historical bar data for initializing strategy.
         """
+        if callback is None:
+            callback = self.on_bar
         self.cta_engine.load_bar(self.vt_symbol, days, interval, callback)
 
     def load_tick(self, days: int):

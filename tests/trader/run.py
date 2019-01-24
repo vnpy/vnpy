@@ -1,15 +1,10 @@
+from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.event import EventEngine
+from vnpy.gateway.bitmex import BitmexGateway
+from vnpy.gateway.futu import FutuGateway
+from vnpy.gateway.ib import IbGateway
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
-from vnpy.gateway.ib import IbGateway
-from vnpy.gateway.futu import FutuGateway
-from vnpy.gateway.bitmex import BitmexGateway
-
-from vnpy.app.cta_strategy import CtaStrategyApp
-
-import os
-import logging
-import time
 
 
 def main():

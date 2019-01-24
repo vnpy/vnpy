@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 
 import ast
 import re
@@ -7,7 +7,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Set
 
-from .cxxparser import CXXFileParser, CXXParseResult, Class, LiteralVariable, Method, Variable
+from .cxxparser import (
+    CXXFileParser,
+    CXXParseResult,
+    Class,
+    LiteralVariable,
+    Method,
+    Variable,
+)
 from .type import array_base, base_types, is_array_type
 
 
@@ -43,18 +50,21 @@ unsuportted:
 
 """
 cpp_digit_re = re.compile(
-    "(0b[01]+|0[0-7]+|0[Xx][0-9a-fA-F]+|[0-9']*[0-9]+)((ull)|(ULL)|(llu)|(LLU)|(ul)|(UL)|(ll)|(LL)|[UuLl])?$")
+    "(0b[01]+|0[0-7]+|0[Xx][0-9a-fA-F]+|[0-9']*[0-9]+)((ull)|(ULL)|(llu)|(LLU)|(ul)|(UL)|(ll)|(LL)|[UuLl])?$"
+)
 
 cpp_digit_suffix_types = {
-    'u': 'unsigned int',
-    'l': 'long',
-    'ul': 'usngined long',
-    'll': 'long long',
-    'ull': 'unsigned long long',
-    'llu': 'unsigned long long',
-    'f': 'float'
+    "u": "unsigned int",
+    "l": "long",
+    "ul": "usngined long",
+    "ll": "long long",
+    "ull": "unsigned long long",
+    "llu": "unsigned long long",
+    "f": "float",
 }
-cpp_digit_suffix_types.update({k.upper(): v for k, v in cpp_digit_suffix_types.items()})
+cpp_digit_suffix_types.update(
+    {k.upper(): v for k, v in cpp_digit_suffix_types.items()}
+)
 
 
 @dataclass
@@ -65,13 +75,13 @@ class PreprocessedMethod(Method):
 @dataclass
 class PreprocessedClass(Class):
     functions: Dict[str, List[PreprocessedMethod]] = field(
-        default_factory=(lambda: defaultdict(list)))
+        default_factory=(lambda: defaultdict(list))
+    )
     need_wrap: bool = False  # if need_wrap is true, wrap this to dict
     is_pure_virtual: bool = False  # generator will not assign python constructor for pure virtual
 
 
 class PreProcessorResult:
-
     def __init__(self):
         super().__init__()
         self.dict_classes: Set[str] = set()
@@ -80,11 +90,10 @@ class PreProcessorResult:
 
 
 class PreProcessor:
-
     def __init__(self, parse_result: CXXParseResult):
         self.parser_result = parse_result
 
-    def process(self)->PreProcessorResult:
+    def process(self) -> PreProcessorResult:
         result = PreProcessorResult()
 
         # all pod struct to dict
@@ -141,7 +150,9 @@ class PreProcessor:
 
     def _to_basic_type_combination(self, t: str):
         try:
-            return self._to_basic_type_combination(self.parser_result.typedefs[t])
+            return self._to_basic_type_combination(
+                self.parser_result.typedefs[t]
+            )
         except KeyError:
             return t
 
@@ -153,8 +164,10 @@ class PreProcessor:
             return True
 
         # array of basic type, such as int[], char[]
-        if is_array_type(basic_combination) \
-                and array_base(basic_combination) in base_types:
+        if (
+            is_array_type(basic_combination)
+            and array_base(basic_combination) in base_types
+        ):
             return True
 
         print(basic_combination)
@@ -179,10 +192,12 @@ class PreProcessor:
             digit = m.group(1)
             suffix = m.group(2)
             val = ast.literal_eval(digit.replace("'", ""))
-            t = 'int'
+            t = "int"
             if suffix:
                 t = cpp_digit_suffix_types[suffix]
-            return LiteralVariable(name='', type=t, default=val, literal=literal)
+            return LiteralVariable(
+                name="", type=t, default=val, literal=literal
+            )
         return None
 
     @staticmethod
@@ -196,22 +211,28 @@ class PreProcessor:
                 val = None
                 if definition.startswith('"') and definition.endswith('"'):
                     val = ast.literal_eval(definition)
-                    return LiteralVariable(name='',
-                                           type='const char *',
-                                           default=val,
-                                           literal=definition)
+                    return LiteralVariable(
+                        name="",
+                        type="const char *",
+                        default=val,
+                        literal=definition,
+                    )
                 if definition.startswith("'") and definition.endswith("'"):
-                    val = CXXFileParser.character_literal_to_int(definition[1:-1])
-                    t = 'unsigned'
+                    val = CXXFileParser.character_literal_to_int(
+                        definition[1:-1]
+                    )
+                    t = "unsigned int"
                     valid = True
                     if len(definition) >= 6:
-                        t = 'unsigned long long'
+                        t = "unsigned long long"
                         valid = False
-                    return LiteralVariable(name='',
-                                           type='int',
-                                           default=val,
-                                           literal=definition,
-                                           literal_valid=valid)
+                    return LiteralVariable(
+                        name="",
+                        type=t,
+                        default=val,
+                        literal=definition,
+                        literal_valid=valid,
+                    )
         except SyntaxError:
             pass
         return None

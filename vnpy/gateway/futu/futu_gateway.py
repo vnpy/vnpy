@@ -3,47 +3,44 @@
 Please install futu-api before use.
 """
 
+from copy import copy
+from datetime import datetime
 from threading import Thread
 from time import sleep
-from datetime import datetime
-from copy import copy
 
 from futu import (
-    OpenQuoteContext,
+    ModifyOrderOp,
     OpenHKTradeContext,
+    OpenQuoteContext,
     OpenUSTradeContext,
+    OrderBookHandlerBase,
+    OrderStatus,
+    OrderType,
     RET_ERROR,
     RET_OK,
+    StockQuoteHandlerBase,
+    TradeDealHandlerBase,
+    TradeOrderHandlerBase,
     TrdEnv,
     TrdSide,
-    OrderType,
-    OrderStatus,
-    ModifyOrderOp,
-    StockQuoteHandlerBase,
-    OrderBookHandlerBase,
-    TradeOrderHandlerBase,
-    TradeDealHandlerBase
 )
 
-from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.constant import Product, Direction, Status, Exchange
-from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
-    ContractData,
-    PositionData,
-    AccountData,
-    SubscribeRequest,
-    OrderRequest,
-    CancelRequest
-)
+from vnpy.trader.constant import Direction, Exchange, Product, Status
 from vnpy.trader.event import EVENT_TIMER
+from vnpy.trader.gateway import BaseGateway
+from vnpy.trader.object import (
+    AccountData,
+    ContractData,
+    OrderData,
+    PositionData,
+    TickData,
+    TradeData,
+)
 
 EXCHANGE_VT2FUTU = {
     Exchange.SMART: "US",
     Exchange.SEHK: "HK",
-    Exchange.HKFE: "HK_FUTURE"
+    Exchange.HKFE: "HK_FUTURE",
 }
 EXCHANGE_FUTU2VT = {v: k for k, v in EXCHANGE_VT2FUTU.items()}
 
@@ -52,10 +49,13 @@ PRODUCT_VT2FUTU = {
     Product.INDEX: "IDX",
     Product.ETF: "ETF",
     Product.WARRANT: "WARRANT",
-    Product.BOND: "BOND"
+    Product.BOND: "BOND",
 }
 
-DIRECTION_VT2FUTU = {Direction.LONG: TrdSide.BUY, Direction.SHORT: TrdSide.SELL}
+DIRECTION_VT2FUTU = {
+    Direction.LONG: TrdSide.BUY,
+    Direction.SHORT: TrdSide.SELL,
+}
 DIRECTION_FUTU2VT = {v: k for k, v in DIRECTION_VT2FUTU.items()}
 
 STATUS_FUTU2VT = {
@@ -79,10 +79,8 @@ class FutuGateway(BaseGateway):
         "password": "",
         "host": "127.0.0.1",
         "port": 11111,
-        "market": ["HK",
-                   "US"],
-        "env": [TrdEnv.REAL,
-                TrdEnv.SIMULATE]
+        "market": ["HK", "US"],
+        "env": [TrdEnv.REAL, TrdEnv.SIMULATE],
     }
 
     def __init__(self, event_engine):
@@ -126,7 +124,7 @@ class FutuGateway(BaseGateway):
         """
         Query all data necessary.
         """
-        sleep(2.0) # Wait 2 seconds till connection completed.
+        sleep(2.0)  # Wait 2 seconds till connection completed.
 
         self.query_contract()
         self.query_trade()
@@ -157,7 +155,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(QuoteHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(QuoteHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_quote(content)
@@ -167,7 +167,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(OrderBookHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(OrderBookHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_orderbook(content)
@@ -194,7 +196,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(OrderHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(OrderHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_order(content)
@@ -204,7 +208,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(DealHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(DealHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_deal(content)
@@ -235,7 +241,7 @@ class FutuGateway(BaseGateway):
     def send_order(self, req):
         """"""
         side = DIRECTION_VT2FUTU[req.direction]
-        price_type = OrderType.NORMAL # Only limit order is supported.
+        price_type = OrderType.NORMAL  # Only limit order is supported.
 
         # Set price adjustment mode to inside adjustment.
         if req.direction is Direction.LONG:
@@ -251,7 +257,7 @@ class FutuGateway(BaseGateway):
             side,
             price_type,
             trd_env=self.env,
-            adjust_limit=adjust_limit
+            adjust_limit=adjust_limit,
         )
 
         if code:
@@ -268,11 +274,8 @@ class FutuGateway(BaseGateway):
     def cancel_order(self, req):
         """"""
         code, data = self.trade_ctx.modify_order(
-            ModifyOrderOp.CANCEL,
-            req.orderid,
-            0,
-            0,
-            trd_env=self.env)
+            ModifyOrderOp.CANCEL, req.orderid, 0, 0, trd_env=self.env
+        )
 
         if code:
             self.write_log(f"撤单失败：{data}")
@@ -280,7 +283,9 @@ class FutuGateway(BaseGateway):
     def query_contract(self):
         """"""
         for product, futu_product in PRODUCT_VT2FUTU.items():
-            code, data = self.quote_ctx.get_stock_basicinfo(self.market, futu_product)
+            code, data = self.quote_ctx.get_stock_basicinfo(
+                self.market, futu_product
+            )
 
             if code:
                 self.write_log(f"查询合约信息失败：{data}")
@@ -295,7 +300,7 @@ class FutuGateway(BaseGateway):
                     product=product,
                     size=1,
                     pricetick=0.001,
-                    gateway_name=self.gateway_name
+                    gateway_name=self.gateway_name,
                 )
                 self.on_contract(contract)
                 self.contracts[contract.vt_symbol] = contract
@@ -315,16 +320,18 @@ class FutuGateway(BaseGateway):
                 accountid=f"{self.gateway_name}_{self.market}",
                 balance=float(row["total_assets"]),
                 frozen=(
-                    float(row["total_assets"]) -
-                    float(row["avl_withdrawal_cash"])
+                    float(row["total_assets"])
+                    - float(row["avl_withdrawal_cash"])
                 ),
-                gateway_name=self.gateway_name
+                gateway_name=self.gateway_name,
             )
             self.on_account(account)
 
     def query_position(self):
         """"""
-        code, data = self.trade_ctx.position_list_query(trd_env=self.env, acc_id=0)
+        code, data = self.trade_ctx.position_list_query(
+            trd_env=self.env, acc_id=0
+        )
 
         if code:
             self.write_log(f"查询持仓失败：{data}")
@@ -340,7 +347,7 @@ class FutuGateway(BaseGateway):
                 frozen=(float(row["qty"]) - float(row["can_sell_qty"])),
                 price=float(row["pl_val"]),
                 pnl=float(row["cost_price"]),
-                gateway_name=self.gateway_name
+                gateway_name=self.gateway_name,
             )
 
             self.on_position(pos)
@@ -386,7 +393,7 @@ class FutuGateway(BaseGateway):
                 symbol=symbol,
                 exchange=exchange,
                 datetime=datetime.now(),
-                gateway_name=self.gateway_name
+                gateway_name=self.gateway_name,
             )
             self.ticks[code] = tick
 
@@ -406,8 +413,7 @@ class FutuGateway(BaseGateway):
             date = row["data_date"].replace("-", "")
             time = row["data_time"]
             tick.datetime = datetime.strptime(
-                f"{date} {time}",
-                "%Y%m%d %H:%M:%S"
+                f"{date} {time}", "%Y%m%d %H:%M:%S"
             )
             tick.open_price = row["open_price"]
             tick.high_price = row["high_price"]
@@ -462,7 +468,7 @@ class FutuGateway(BaseGateway):
                 traded=float(row["dealt_qty"]),
                 status=STATUS_FUTU2VT[row["order_status"]],
                 time=row["create_time"].split(" ")[-1],
-                gateway_name=self.gateway_name
+                gateway_name=self.gateway_name,
             )
 
             self.on_order(order)
@@ -487,7 +493,7 @@ class FutuGateway(BaseGateway):
                 price=float(row["price"]),
                 volume=float(row["qty"]),
                 time=row["create_time"].split(" ")[-1],
-                gateway_name=self.gateway_name
+                gateway_name=self.gateway_name,
             )
 
             self.on_trade(trade)

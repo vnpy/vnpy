@@ -1,17 +1,10 @@
 """"""
 
-from peewee import (
-    SqliteDatabase,
-    Model,
-    CharField,
-    DateTimeField,
-    FloatField,
-    IntegerField
-)
+from peewee import CharField, DateTimeField, FloatField, Model, SqliteDatabase
 
-from .utility import get_temp_path
-from .object import BarData, TickData
 from .constant import Exchange, Interval
+from .object import BarData, TickData
+from .utility import get_temp_path
 
 DB_NAME = "database.vt"
 DB = SqliteDatabase(str(get_temp_path(DB_NAME)))
@@ -23,6 +16,7 @@ class DbBarData(Model):
 
     Index is defined unique with vt_symbol, interval and datetime.
     """
+
     symbol = CharField()
     exchange = CharField()
     datetime = DateTimeField()
@@ -39,7 +33,7 @@ class DbBarData(Model):
 
     class Meta:
         database = DB
-        indexes = ((('vt_symbol', 'interval', 'datetime'), True),)
+        indexes = ((("vt_symbol", "interval", "datetime"), True),)
 
     @staticmethod
     def from_bar(bar: BarData):
@@ -72,11 +66,11 @@ class DbBarData(Model):
             datetime=self.datetime,
             interval=Interval(self.interval),
             volume=self.volume,
-            open_price=open_price,
-            high_price=high_price,
-            low_price=low_price,
-            close_price=close_price,
-            gateway_name=self.gateway_name
+            open_price=self.open_price,
+            high_price=self.high_price,
+            low_price=self.low_price,
+            close_price=self.close_price,
+            gateway_name=self.gateway_name,
         )
         return bar
 
@@ -87,6 +81,7 @@ class DbTickData(Model):
 
     Index is defined unique with vt_symbol, interval and datetime.
     """
+
     symbol = CharField()
     exchange = CharField()
     datetime = DateTimeField()
@@ -132,7 +127,7 @@ class DbTickData(Model):
 
     class Meta:
         database = DB
-        indexes = ((('vt_symbol', 'datetime'), True),)
+        indexes = ((("vt_symbol", "datetime"), True),)
 
     @staticmethod
     def from_tick(tick: TickData):
@@ -208,7 +203,7 @@ class DbTickData(Model):
             ask_price_1=self.ask_price_1,
             bid_volume_1=self.bid_volume_1,
             ask_volume_1=self.ask_volume_1,
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
 
         if self.bid_price_2:

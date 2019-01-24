@@ -5,28 +5,27 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from vnpy.event import EventEngine, Event
-
+from vnpy.event import Event, EventEngine
 from .event import (
-    EVENT_TICK,
-    EVENT_ORDER,
-    EVENT_TRADE,
     EVENT_ACCOUNT,
-    EVENT_POSITION,
+    EVENT_CONTRACT,
     EVENT_LOG,
-    EVENT_CONTRACT
+    EVENT_ORDER,
+    EVENT_POSITION,
+    EVENT_TICK,
+    EVENT_TRADE,
 )
 from .object import (
-    TickData,
-    OrderData,
-    TradeData,
     AccountData,
-    PositionData,
-    LogData,
+    CancelRequest,
     ContractData,
-    SubscribeRequest,
+    LogData,
+    OrderData,
     OrderRequest,
-    CancelRequest
+    PositionData,
+    SubscribeRequest,
+    TickData,
+    TradeData,
 )
 
 

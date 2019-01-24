@@ -13,13 +13,15 @@ def clear_dir(path: str):
 
 
 def main():
-    options: GeneratorOptions = CtpAdaptor("../source/ctp/api/ThostFtdcMdApi.h",
-                                           "../source/ctp/api/ThostFtdcTraderApi.h").parse()
+    options: GeneratorOptions = CtpAdaptor(
+        "../source/ctp/api/ThostFtdcMdApi.h",
+        "../source/ctp/api/ThostFtdcTraderApi.h",
+    ).parse()
 
-    options.includes.append('api/ThostFtdcTraderApi.h')
-    options.includes.append('api/ThostFtdcMdApi.h')
+    options.includes.append("api/ThostFtdcTraderApi.h")
+    options.includes.append("api/ThostFtdcMdApi.h")
     options.split_in_files = True
-    options.module_name = 'vnctp'
+    options.module_name = "vnctp"
     options.max_classes_in_one_file = 100
 
     saved_files = Generator(options=options).generate()
@@ -34,5 +36,5 @@ def main():
             f.write(data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

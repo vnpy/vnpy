@@ -2,30 +2,29 @@
 """
 
 import logging
-from datetime import datetime
-from abc import ABC
-from typing import Any
-from threading import Thread
-from queue import Queue, Empty
 import smtplib
+from abc import ABC
+from datetime import datetime
 from email.message import EmailMessage
+from queue import Empty, Queue
+from threading import Thread
+from typing import Any
 
-from vnpy.event import EventEngine, Event
-
-from .event import (
-    EVENT_LOG,
-    EVENT_TICK,
-    EVENT_ORDER,
-    EVENT_TRADE,
-    EVENT_POSITION,
-    EVENT_ACCOUNT,
-    EVENT_CONTRACT
-)
-from .object import LogData, SubscribeRequest, OrderRequest, CancelRequest
-from .utility import Singleton, get_temp_path
-from .setting import SETTINGS
-from .gateway import BaseGateway
+from vnpy.event import Event, EventEngine
 from .app import BaseApp
+from .event import (
+    EVENT_ACCOUNT,
+    EVENT_CONTRACT,
+    EVENT_LOG,
+    EVENT_ORDER,
+    EVENT_POSITION,
+    EVENT_TICK,
+    EVENT_TRADE,
+)
+from .gateway import BaseGateway
+from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
+from .setting import SETTINGS
+from .utility import Singleton, get_temp_path
 
 
 class MainEngine:
@@ -180,10 +179,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-            self,
-            main_engine: MainEngine,
-            event_engine: EventEngine,
-            engine_name: str
+        self,
+        main_engine: MainEngine,
+        event_engine: EventEngine,
+        engine_name: str,
     ):
         """"""
         self.main_engine = main_engine
@@ -249,7 +248,9 @@ class LogEngine(BaseEngine):
         filename = f"vt_{today_date}.log"
         file_path = get_temp_path(filename)
 
-        file_handler = logging.FileHandler(file_path, mode='w', encoding='utf8')
+        file_handler = logging.FileHandler(
+            file_path, mode="w", encoding="utf8"
+        )
         file_handler.setLevel(self.level)
         file_handler.setFormatter(self.formatter)
         self.logger.addHandler(file_handler)
@@ -421,7 +422,7 @@ class OmsEngine(BaseEngine):
         """
         return list(self.contracts.values())
 
-    def get_all_active_orders(self, vt_symbol: str = ''):
+    def get_all_active_orders(self, vt_symbol: str = ""):
         """
         Get all active orders by vt_symbol.
 
@@ -431,7 +432,8 @@ class OmsEngine(BaseEngine):
             return list(self.active_orders.values())
         else:
             active_orders = [
-                order for order in self.active_orders.values()
+                order
+                for order in self.active_orders.values()
                 if order.vt_symbol == vt_symbol
             ]
             return active_orders
@@ -476,11 +478,11 @@ class EmailEngine(BaseEngine):
             try:
                 msg = self.queue.get(block=True, timeout=1)
 
-                with smtplib.SMTP_SSL(SETTINGS["email.server"],
-                                      SETTINGS["email.port"]) as smtp:
+                with smtplib.SMTP_SSL(
+                    SETTINGS["email.server"], SETTINGS["email.port"]
+                ) as smtp:
                     smtp.login(
-                        SETTINGS["email.username"],
-                        SETTINGS["email.password"]
+                        SETTINGS["email.username"], SETTINGS["email.password"]
                     )
                     smtp.send_message(msg)
             except Empty:
