@@ -13,5 +13,5 @@ vnpy.binding使用CMake作为构建系统，正常地使用CMake去构建即可�
 ## 简单教程
 针对不同操作系统有不同的构建方式，请查看对应的文件。
 
-* Windows : Build.Windows.md
-* Linux   : Build.Linux.md
+* Windows : [build.windows.md](./build.windows.md)
+* Linux   : [build.linux.md](./build.linux.md)

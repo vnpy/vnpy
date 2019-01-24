@@ -1,0 +1,20 @@
+todo:
+    tests:
+        app:
+            * ctp test
+
+future plan:
+    cxx_analysis:
+        * namespaces
+
+
+not supported:
+    * namespace is currently not supported
+    * c++11 strong typed enums(treat as traditional enum)
+    * constructor is not supported
+    * default arguments are not supported
+
+hacks:
+    * treat any virtual function as callback
+    * if argument for a async callback is pointer or reference, its value will be copied, modifying its value will have no effect
+    *
