@@ -30,18 +30,25 @@ class EngineType(Enum):
     BACKTESTING = "回测"
 
 
+class BacktestingMode(Enum):
+    BAR = 1
+    TICK = 2
+
+
 @dataclass
 class StopOrder:
     vt_symbol: str
     order_type: CtaOrderType
-    direction: Direction
-    offset: Offset
     price: float
     volume: float
     stop_orderid: str
-    strategy: Any
+    strategy_name: str
     status: StopOrderStatus = StopOrderStatus.WAITING
     vt_orderid: str = ""
+
+    def __post_init__(self):
+        """"""
+        self.direction, self.offset = ORDER_CTA2VT[self.order_type]
 
 
 EVENT_CTA_LOG = 'eCtaLog'

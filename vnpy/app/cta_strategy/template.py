@@ -1,9 +1,10 @@
 """"""
 
 from abc import ABC
+from typing import Any
 
-from vnpy.trader.engine import BaseEngine
 from vnpy.trader.object import TickData, OrderData, TradeData, BarData
+from vnpy.trader.constant import Interval
 
 from .base import CtaOrderType, StopOrder
 
@@ -17,7 +18,7 @@ class CtaTemplate(ABC):
 
     def __init__(
             self,
-            cta_engine: BaseEngine,
+            cta_engine: Any,
             strategy_name: str,
             vt_symbol: str,
             setting: dict
@@ -165,7 +166,7 @@ class CtaTemplate(ABC):
         """
         return self.cta_engine.send_order(self, order_type, price, volume, stop)
 
-    def cancel_order(self, vt_orderid):
+    def cancel_order(self, vt_orderid: str):
         """
         Cancel an existing order.
         """
@@ -177,7 +178,7 @@ class CtaTemplate(ABC):
         """
         self.cta_engine.cancel_all(self)
 
-    def write_log(self, msg):
+    def write_log(self, msg: str):
         """
         Write a log message.
         """
@@ -188,6 +189,23 @@ class CtaTemplate(ABC):
         Return whether the cta_engine is backtesting or live trading.
         """
         return self.cta_engine.get_engine_type()
+
+    def load_bar(
+            self,
+            days: int,
+            interval: Interval = Interval.MINUTE,
+            callback=self.on_bar
+    ):
+        """
+        Load historical bar data for initializing strategy.
+        """
+        self.cta_engine.load_bar(self.vt_symbol, days, interval, callback)
+
+    def load_tick(self, days: int):
+        """
+        Load historical tick data for initializing strategy.
+        """
+        self.cta_engine.load_tick(self.vt_symbol, days, self.on_tick)
 
     def put_event(self):
         """

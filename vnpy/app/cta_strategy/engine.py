@@ -18,7 +18,7 @@ from vnpy.trader.object import (
     TickData
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.constant import Direction, Offset, Exchange, PriceType
+from vnpy.trader.constant import Direction, Offset, Exchange, PriceType, Interval
 from vnpy.trader.utility import get_temp_path
 
 from .template import CtaTemplate
@@ -37,6 +37,7 @@ from .base import (
 
 class CtaEngine(BaseEngine):
     """"""
+    engine_type = EngineType.LIVE # live trading engine
 
     filename = "CtaStrategy.vt"
 
@@ -47,8 +48,7 @@ class CtaEngine(BaseEngine):
                              event_engine,
                              "CtaStrategy")
 
-        self.engine_type = EngineType.LIVE # live trading engine
-        self.setting_file = None           # setting file object
+        self.setting_file = None # setting file object
 
         self.classes = {}    # class_name: stategy_class
         self.strategies = {} # strategy_name: strategy
@@ -140,7 +140,7 @@ class CtaEngine(BaseEngine):
             )
 
             if long_triggered or short_triggered:
-                strategy = stop_order.strategy
+                strategy = self.strategies[stop_order.strategy_name]
 
                 # To get excuted immediately after stop order is
                 # triggered, use limit price if available, otherwise
@@ -243,7 +243,7 @@ class CtaEngine(BaseEngine):
             price=price,
             volume=volume,
             stop_orderid=stop_orderid,
-            strategy=strategy
+            strategy_name=strategy.strategy_name
         )
 
         self.stop_orders[stop_orderid] = stop_order
@@ -274,7 +274,7 @@ class CtaEngine(BaseEngine):
         stop_order = self.stop_orders.get(stop_orderid, None)
         if not stop_order:
             return
-        strategy = stop_order.strategy
+        strategy = self.strategies[stop_order.strategy_name]
 
         # Remove from relation map.
         self.stop_orders.pop(stop_orderid)
@@ -325,6 +325,20 @@ class CtaEngine(BaseEngine):
     def get_engine_type(self):
         """"""
         return self.engine_type
+
+    def load_bar(
+            self,
+            vt_symbol: str,
+            days: int,
+            interval: Interval,
+            callback: Callable
+    ):
+        """"""
+        pass
+
+    def load_tick(self, vt_symbol: str, days: int, callback: Callable):
+        """"""
+        pass
 
     def call_strategy_func(
             self,
@@ -570,7 +584,8 @@ class CtaEngine(BaseEngine):
         """
         Save and close setting file.
         """
-        self.setting_file.close()
+        if self.setting_file:
+            self.setting_file.close()
 
     def put_stop_order_event(self, stop_order: StopOrder):
         """
