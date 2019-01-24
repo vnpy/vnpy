@@ -3,8 +3,8 @@ python:
   - "3.7-dev"
 install:
   - pip install -r requirements.txt
-  - pip install -r tools/ci/requirements.txt
   - pip install -r requirements-dev.txt
+  - pip install -r tools/ci/requirements.txt
 # command to run tests
 script:
   - python tools/ci/check_all.py
