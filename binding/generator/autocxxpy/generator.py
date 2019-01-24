@@ -207,7 +207,7 @@ class Generator:
             hint_code += enum_code
 
         self._save_template(
-            template_filename="hint.py",
+            template_filename="hint.py.in",
             output_filename=f"{self.options.module_name}.pyi",
             hint_code=hint_code
         )
