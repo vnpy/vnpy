@@ -65,6 +65,8 @@ class Spi(CThostFtdcTraderSpi):
         self, pRspInfo: CThostFtdcRspInfoField, nRequestID: int, bIsLast: bool
     ) -> None:
         print("OnRspError!")
+
+
 # pylint: enable=invalid-name
 
 

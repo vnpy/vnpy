@@ -18,7 +18,9 @@ def check_flake8():
 def check_pylint():
     passed = True
     try:
-        subprocess.check_call(["pylint", "-j", "0", "vnpy", "binding", "tests"])
+        subprocess.check_call(
+            ["pylint", "-j", "0", "vnpy", "binding", "tests"]
+        )
     except subprocess.SubprocessError:
         passed = False
     return passed
