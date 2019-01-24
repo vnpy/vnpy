@@ -8,6 +8,7 @@
 * [Visual Studio 2017][VS2017] with C++ Desktop Development
 
 > 在安装CMake的时候必须勾选将CMake加入PATH
+> 在安装Visual Studio的时候必须勾选使用C++的桌面开发(Desktop Development with C++)
 
 ## 编译步骤
 
