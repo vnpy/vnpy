@@ -7,6 +7,8 @@
 * [CMake][CMake]
 * [Visual Studio 2017][VS2017] with C++ Desktop Development
 
+> 在安装CMake的时候必须勾选将CMake加入PATH
+
 ## 编译步骤
 
 确保你安装好了Python3，CMake还有Visual Studio和C++编译环境，下载好[vnpy]并解压。  
