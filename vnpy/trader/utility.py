@@ -14,14 +14,15 @@ class Singleton(type):
         __metaclass__ = Singleton
         
     """
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
         """"""
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton,
-                                        cls).__call__(*args,
-                                                      **kwargs)
+            cls._instances[cls] = super(Singleton, cls).__call__(
+                *args, **kwargs
+            )
 
         return cls._instances[cls]
 
@@ -39,7 +40,7 @@ def get_temp_path(filename: str):
     Get path for temp file with filename.
     """
     trader_path = get_trader_path()
-    temp_path = trader_path.joinpath('.vntrader')
+    temp_path = trader_path.joinpath(".vntrader")
 
     if not temp_path.exists():
         temp_path.mkdir()

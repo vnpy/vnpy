@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
-from .constant import Status, Exchange, Offset, Direction, Interval, Status
+from .constant import Direction, Exchange, Interval, Offset, Status
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -17,6 +17,7 @@ class BaseData:
     Any data object needs a gateway_name as source or 
     destination and should inherit base data.
     """
+
     gateway_name: str
 
 
@@ -28,6 +29,7 @@ class TickData(BaseData):
         * orderbook snapshot
         * intraday market statistics.
     """
+
     symbol: str
     exchange: Exchange
     datetime: datetime
@@ -78,10 +80,11 @@ class BarData(BaseData):
     """
     Candlestick bar data of a certain trading period.
     """
+
     symbol: str
     exchange: Exchange
     datetime: datetime
-    inteval: Interval
+    interval: Interval
 
     volume: float = 0
     open_price: float = 0
@@ -100,6 +103,7 @@ class OrderData(BaseData):
     Order data contains information for tracking lastest status 
     of a specific order.
     """
+
     symbol: str
     exchange: Exchange
     orderid: str
@@ -131,9 +135,7 @@ class OrderData(BaseData):
         Create cancel request object from order.
         """
         req = CancelRequest(
-            orderid=self.orderid,
-            symbol=self.symbol,
-            exchange=self.exchange
+            orderid=self.orderid, symbol=self.symbol, exchange=self.exchange
         )
         return req
 
@@ -144,6 +146,7 @@ class TradeData(BaseData):
     Trade data contains information of a fill of an order. One order
     can have several trade fills.
     """
+
     symbol: str
     exchange: Exchange
     orderid: str
@@ -167,6 +170,7 @@ class PositionData(BaseData):
     """
     Positon data is used for tracking each individual position holding.
     """
+
     symbol: str
     exchange: Exchange
     direction: Direction
@@ -188,6 +192,7 @@ class AccountData(BaseData):
     Account data contains information about balance, frozen and
     available.
     """
+
     accountid: str
 
     balance: float = 0
@@ -204,6 +209,7 @@ class LogData(BaseData):
     """
     Log data is used for recording log messages on GUI or in log files.
     """
+
     msg: str
     level: int = INFO
 
@@ -217,6 +223,7 @@ class ContractData(BaseData):
     """
     Contract data contains basic information about each contract traded.
     """
+
     symbol: str
     exchange: Exchange
     name: str
@@ -225,8 +232,8 @@ class ContractData(BaseData):
     pricetick: float
 
     option_strike: float = 0
-    option_underlying: str = '' # vt_symbol of underlying contract
-    option_type: str = ''
+    option_underlying: str = ""  # vt_symbol of underlying contract
+    option_type: str = ""
     option_expiry: datetime = None
 
     def __post_init__(self):
@@ -239,6 +246,7 @@ class SubscribeRequest:
     """
     Request sending to specific gateway for subscribing tick data update.
     """
+
     symbol: str
     exchange: Exchange
 
@@ -252,6 +260,7 @@ class OrderRequest:
     """
     Request sending to specific gateway for creating a new order.
     """
+
     symbol: str
     exchange: Exchange
     direction: Direction
@@ -276,7 +285,7 @@ class OrderRequest:
             offset=self.offset,
             price=self.price,
             volume=self.volume,
-            gateway_name=gateway_name
+            gateway_name=gateway_name,
         )
         return order
 
@@ -286,6 +295,7 @@ class CancelRequest:
     """
     Request sending to specific gateway for canceling an existing order.
     """
+
     orderid: str
     symbol: str
     exchange: Exchange

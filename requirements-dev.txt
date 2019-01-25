@@ -1,2 +1,3 @@
 pylint
-https://github.com/google/yapf/archive/master.zip
+black
+flake8

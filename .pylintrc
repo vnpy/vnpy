@@ -3,7 +3,7 @@
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code.
-extension-pkg-whitelist=PyQt5
+extension-pkg-whitelist=PyQt5,vnctp
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
@@ -66,7 +66,7 @@ disable=
     missing-docstring,
     unused-argument,
     no-self-use,
-    bare-except,
+    no-member,  # dataclass is not well supported by pylint
 
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -121,7 +121,7 @@ never-returning-functions=sys.exit
 
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style.
-argument-rgx=^[_a-z][a-z0-9_]*$
+argument-rgx=^_?[a-z][a-z0-9_]*$
 
 # Naming style matching correct attribute names.
 # self.xxxx
@@ -146,7 +146,7 @@ bad-names=foo,
 # attribute-naming-style.
 # ClassA.XXXX
 # except that dataclass should be snake_case
-class-attribute-rgx=^([A-Z][A-Z_]+|[_a-z][a-z0-9_]+)$
+class-attribute-rgx=^_?([A-Z][A-Z_]+|[a-z][a-z0-9_]+)$
 
 # Naming style matching correct class names.
 class-naming-style=PascalCase
@@ -160,7 +160,7 @@ class-naming-style=PascalCase
 
 # Regular expression matching correct constant names. Overrides const-naming-
 # style.
-const-rgx=^([A-Z][A-Z0-9_]+|[a-z][a-z0-9_]+|__\w+__)$
+const-rgx=^_?([A-Z][A-Z0-9_]+|[a-z][a-z0-9_]+|__\w+__)$
 
 
 # Minimum line length for functions/classes that require docstrings, shorter

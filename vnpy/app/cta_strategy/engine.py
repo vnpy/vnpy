@@ -1,66 +1,61 @@
 """"""
 
-import os
 import importlib
-import traceback
+import os
 import shelve
-from typing import Callable, Any
+import traceback
 from collections import defaultdict
 from pathlib import Path
+from typing import Any, Callable
 
-from vnpy.event import EventEngine, Event
+from vnpy.event import Event, EventEngine
+from vnpy.trader.constant import Direction, Interval, PriceType
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.object import (
-    OrderRequest,
-    CancelRequest,
-    SubscribeRequest,
-    LogData,
-    TickData
-)
-from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.constant import Direction, Offset, Exchange, PriceType, Interval
+from vnpy.trader.event import EVENT_ORDER, EVENT_TICK, EVENT_TRADE
+from vnpy.trader.object import LogData, OrderRequest, TickData
 from vnpy.trader.utility import get_temp_path
-
-from .template import CtaTemplate
 from .base import (
-    STOPORDER_PREFIX,
     CtaOrderType,
-    EngineType,
-    StopOrderStatus,
-    StopOrder,
-    ORDER_CTA2VT,
     EVENT_CTA_LOG,
+    EVENT_CTA_STOPORDER,
     EVENT_CTA_STRATEGY,
-    EVENT_CTA_STOPORDER
+    EngineType,
+    ORDER_CTA2VT,
+    STOPORDER_PREFIX,
+    StopOrder,
+    StopOrderStatus,
 )
+from .template import CtaTemplate
 
 
 class CtaEngine(BaseEngine):
     """"""
-    engine_type = EngineType.LIVE # live trading engine
+
+    engine_type = EngineType.LIVE  # live trading engine
 
     filename = "CtaStrategy.vt"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(CtaEngine,
-              self).__init__(main_engine,
-                             event_engine,
-                             "CtaStrategy")
+        super(CtaEngine, self).__init__(
+            main_engine, event_engine, "CtaStrategy"
+        )
 
-        self.setting_file = None # setting file object
+        self.setting_file = None  # setting file object
 
-        self.classes = {}    # class_name: stategy_class
-        self.strategies = {} # strategy_name: strategy
+        self.classes = {}  # class_name: stategy_class
+        self.strategies = {}  # strategy_name: strategy
 
-        self.symbol_strategy_map = defaultdict(list) # vt_symbol: strategy list
-        self.orderid_strategy_map = {}               # vt_orderid: strategy
+        self.symbol_strategy_map = defaultdict(
+            list
+        )  # vt_symbol: strategy list
+        self.orderid_strategy_map = {}  # vt_orderid: strategy
         self.strategy_orderid_map = defaultdict(
             set
-        )                                            # strategy_name: orderid list
+        )  # strategy_name: orderid list
 
-        self.stop_order_count = 0 # for generating stop_orderid
-        self.stop_orders = {}     # stop_orderid: stop_order
+        self.stop_order_count = 0  # for generating stop_orderid
+        self.stop_orders = {}  # stop_orderid: stop_order
 
     def init_engine(self):
         """
@@ -157,10 +152,7 @@ class CtaEngine(BaseEngine):
                         price = tick.bid_price_5
 
                 vt_orderid = self.send_limit_order(
-                    strategy,
-                    stop_order.order_type,
-                    price,
-                    stop_order.volume
+                    strategy, stop_order.order_type, price, stop_order.volume
                 )
 
                 # Update stop order status if placed successfully
@@ -177,17 +169,15 @@ class CtaEngine(BaseEngine):
                     stop_order.vt_orderid = vt_orderid
 
                     self.call_strategy_func(
-                        strategy,
-                        strategy.on_stop_order,
-                        stop_order
+                        strategy, strategy.on_stop_order, stop_order
                     )
 
     def send_limit_order(
-            self,
-            strategy: CtaTemplate,
-            order_type: CtaOrderType,
-            price: float,
-            volume: float
+        self,
+        strategy: CtaTemplate,
+        order_type: CtaOrderType,
+        price: float,
+        volume: float,
     ):
         """
         Send a new order.
@@ -207,11 +197,10 @@ class CtaEngine(BaseEngine):
             offset=offset,
             price_type=PriceType.LIMIT,
             price=price,
-            volume=volume
+            volume=volume,
         )
         vt_orderid = self.main_engine.send_limit_order(
-            req,
-            contract.gateway_name
+            req, contract.gateway_name
         )
 
         # Save relationship between orderid and strategy.
@@ -223,11 +212,11 @@ class CtaEngine(BaseEngine):
         return vt_orderid
 
     def send_stop_order(
-            self,
-            strategy: CtaTemplate,
-            order_type: CtaOrderType,
-            price: float,
-            volume: float
+        self,
+        strategy: CtaTemplate,
+        order_type: CtaOrderType,
+        price: float,
+        volume: float,
     ):
         """
         Send a new order.
@@ -243,7 +232,7 @@ class CtaEngine(BaseEngine):
             price=price,
             volume=volume,
             stop_orderid=stop_orderid,
-            strategy_name=strategy.strategy_name
+            strategy_name=strategy.strategy_name,
         )
 
         self.stop_orders[stop_orderid] = stop_order
@@ -289,12 +278,12 @@ class CtaEngine(BaseEngine):
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
 
     def send_order(
-            self,
-            strategy: CtaTemplate,
-            order_type: CtaOrderType,
-            price: float,
-            volume: float,
-            stop: bool
+        self,
+        strategy: CtaTemplate,
+        order_type: CtaOrderType,
+        price: float,
+        volume: float,
+        stop: bool,
     ):
         """
         """
@@ -327,11 +316,7 @@ class CtaEngine(BaseEngine):
         return self.engine_type
 
     def load_bar(
-            self,
-            vt_symbol: str,
-            days: int,
-            interval: Interval,
-            callback: Callable
+        self, vt_symbol: str, days: int, interval: Interval, callback: Callable
     ):
         """"""
         pass
@@ -341,10 +326,7 @@ class CtaEngine(BaseEngine):
         pass
 
     def call_strategy_func(
-            self,
-            strategy: CtaTemplate,
-            func: Callable,
-            params: Any = None
+        self, strategy: CtaTemplate, func: Callable, params: Any = None
     ):
         """
         Call function of a strategy and catch any exception raised.
@@ -362,11 +344,11 @@ class CtaEngine(BaseEngine):
             self.write_log(msg, strategy)
 
     def add_strategy(
-            self,
-            class_name: str,
-            strategy_name: str,
-            vt_symbol: str,
-            setting: dict
+        self,
+        class_name: str,
+        strategy_name: str,
+        vt_symbol: str,
+        setting: dict,
     ):
         """
         Add a new strategy.
@@ -463,17 +445,14 @@ class CtaEngine(BaseEngine):
         """
         path1 = Path(__file__).parent.joinpath("strategies")
         self.load_strategy_class_from_folder(
-            path1,
-            "vnpy.app.cta_strategy.strategies"
+            path1, "vnpy.app.cta_strategy.strategies"
         )
 
         path2 = Path.cwd().joinpath("strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
 
     def load_strategy_class_from_folder(
-            self,
-            path: Path,
-            module_name: str = ""
+        self, path: Path, module_name: str = ""
     ):
         """
         Load strategy class from certain folder.
@@ -481,9 +460,7 @@ class CtaEngine(BaseEngine):
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
                 module_name = ".".join(
-                    [module_name,
-                     filename.replace(".py",
-                                      "")]
+                    [module_name, filename.replace(".py", "")]
                 )
                 self.load_strategy_class_from_module(module_name)
 
@@ -498,7 +475,7 @@ class CtaEngine(BaseEngine):
                 value = getattr(module, name)
                 if issubclass(value, CtaTemplate) and value is not CtaTemplate:
                     self.classes[value.__name__] = value
-        except:
+        except:  # noqa
             msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
             self.write_log(msg)
 
@@ -566,7 +543,7 @@ class CtaEngine(BaseEngine):
             strategy.__class__.__name__,
             strategy_name,
             strategy.vt_symbol,
-            setting
+            setting,
         )
         self.setting_file.sync()
 
