@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from .clang.cindex import (
     Config,
@@ -169,15 +169,25 @@ class CXXParseResult(Namespace):
 
 
 class CXXFileParser:
-    def __init__(self, file_path: Optional[str], unsaved_files=None):
+    def __init__(
+        self,
+        file_path: Optional[str],
+        unsaved_files: Sequence[Sequence[str]] = None,
+        args: List[str] = None,
+    ):
+        if args is None:
+            args = []
         self.unsaved_files = unsaved_files
         self.file_path = file_path
+        self.args = args
+        if "-std=c++11" not in self.args:
+            self.args.append("-std=c++11")
 
     def parse(self) -> CXXParseResult:
         idx = Index.create()
         rs = idx.parse(
             self.file_path,
-            args="-std=c++11 ".split(" "),
+            args=self.args,
             unsaved_files=self.unsaved_files,
             options=(
                 TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
@@ -422,13 +432,25 @@ class CXXFileParser:
 
 
 class CXXParser(CXXFileParser):
-    def __init__(self, files: List[str]):
+    def __init__(
+        self,
+        files: Sequence[str],
+        include_paths: Sequence[str] = None,
+        args: List[str] = None,
+    ):
+        if args is None:
+            args = []
+        if include_paths:
+            for include_path in include_paths:
+                args.append("-I" + include_path)
         dummy_code = ""
         for file in files:
             dummy_code += f'#include "{file}"\n'
 
         dummy_name = "dummy.cpp"
-        super().__init__(dummy_name, unsaved_files=[[dummy_name, dummy_code]])
+        super().__init__(
+            dummy_name, unsaved_files=[[dummy_name, dummy_code]], args=args
+        )
 
 
 Config.set_library_path("")
