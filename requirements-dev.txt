@@ -1,3 +1,4 @@
+-r requirements.txt
 pylint
 black
 flake8
