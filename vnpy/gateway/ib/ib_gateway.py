@@ -27,7 +27,7 @@ from vnpy.trader.object import (
     AccountData,
     SubscribeRequest,
     OrderRequest,
-    CancelRequest
+    CancelRequest,
 )
 from vnpy.trader.constant import (
     Product,
@@ -36,7 +36,7 @@ from vnpy.trader.constant import (
     Exchange,
     Currency,
     Status,
-    OptionType
+    OptionType,
 )
 
 PRICETYPE_VT2IB = {PriceType.LIMIT: "LMT", PriceType.MARKET: "MKT"}
@@ -55,7 +55,7 @@ EXCHANGE_VT2IB = {
     Exchange.CME: "CME",
     Exchange.ICE: "ICE",
     Exchange.SEHK: "SEHK",
-    Exchange.HKFE: "HKFE"
+    Exchange.HKFE: "HKFE",
 }
 EXCHANGE_IB2VT = {v: k for k, v in EXCHANGE_VT2IB.items()}
 
@@ -64,7 +64,7 @@ STATUS_IB2VT = {
     "Filled": Status.ALLTRADED,
     "Cancelled": Status.CANCELLED,
     "PendingSubmit": Status.SUBMITTING,
-    "PreSubmitted": Status.NOTTRADED
+    "PreSubmitted": Status.NOTTRADED,
 }
 
 PRODUCT_VT2IB = {
@@ -72,7 +72,7 @@ PRODUCT_VT2IB = {
     Product.FOREX: "CASH",
     Product.SPOT: "CMDTY",
     Product.OPTION: "OPT",
-    Product.FUTURES: "FUT"
+    Product.FUTURES: "FUT",
 }
 PRODUCT_IB2VT = {v: k for k, v in PRODUCT_VT2IB.items()}
 
@@ -91,7 +91,7 @@ TICKFIELD_IB2VT = {
     7: "low_price",
     8: "volume",
     9: "pre_close",
-    14: "open_price"
+    14: "open_price",
 }
 
 ACCOUNTFIELD_IB2VT = {
@@ -182,21 +182,21 @@ class IbApi(EWrapper):
         self.client = IbClient(self)
         self.thread = Thread(target=self.client.run)
 
-    def connectAck(self): # pylint: disable=invalid-name
+    def connectAck(self):  # pylint: disable=invalid-name
         """
         Callback when connection is established.
         """
         self.status = True
         self.gateway.write_log("IB TWS连接成功")
 
-    def connectionClosed(self): # pylint: disable=invalid-name
+    def connectionClosed(self):  # pylint: disable=invalid-name
         """
         Callback when connection is closed.
         """
         self.status = False
         self.gateway.write_log("IB TWS连接断开")
 
-    def nextValidId(self, orderId: int): # pylint: disable=invalid-name
+    def nextValidId(self, orderId: int):  # pylint: disable=invalid-name
         """
         Callback of next valid orderid.
         """
@@ -204,7 +204,7 @@ class IbApi(EWrapper):
 
         self.orderid = orderId
 
-    def currentTime(self, time: int): # pylint: disable=invalid-name
+    def currentTime(self, time: int):  # pylint: disable=invalid-name
         """
         Callback of current server time of IB.
         """
@@ -216,7 +216,9 @@ class IbApi(EWrapper):
         msg = f"服务器时间: {time_string}"
         self.gateway.write_log(msg)
 
-    def error(self, reqId: TickerId, errorCode: int, errorString: str): # pylint: disable=invalid-name
+    def error(
+        self, reqId: TickerId, errorCode: int, errorString: str
+    ):  # pylint: disable=invalid-name
         """
         Callback of error caused by specific request.
         """
@@ -226,11 +228,7 @@ class IbApi(EWrapper):
         self.gateway.write_log(msg)
 
     def tickPrice(  # pylint: disable=invalid-name
-            self,
-            reqId: TickerId,
-            tickType: TickType,
-            price: float,
-            attrib: TickAttrib
+        self, reqId: TickerId, tickType: TickType, price: float, attrib: TickAttrib
     ):
         """
         Callback of tick price update.
@@ -257,7 +255,9 @@ class IbApi(EWrapper):
             tick.datetime = datetime.now()
         self.gateway.on_tick(copy(tick))
 
-    def tickSize(self, reqId: TickerId, tickType: TickType, size: int): # pylint: disable=invalid-name
+    def tickSize(
+        self, reqId: TickerId, tickType: TickType, size: int
+    ):  # pylint: disable=invalid-name
         """
         Callback of tick volume update.
         """
@@ -272,7 +272,9 @@ class IbApi(EWrapper):
 
         self.gateway.on_tick(copy(tick))
 
-    def tickString(self, reqId: TickerId, tickType: TickType, value: str): # pylint: disable=invalid-name
+    def tickString(
+        self, reqId: TickerId, tickType: TickType, value: str
+    ):  # pylint: disable=invalid-name
         """
         Callback of tick string update.
         """
@@ -287,36 +289,35 @@ class IbApi(EWrapper):
         self.gateway.on_tick(copy(tick))
 
     def orderStatus(  # pylint: disable=invalid-name
-            self,
-            orderId: OrderId,
-            status: str,
-            filled: float,
-            remaining: float,
-            avgFillPrice: float,
-            permId: int,
-            parentId: int,
-            lastFillPrice: float,
-            clientId: int,
-            whyHeld: str,
-            mktCapPrice: float
+        self,
+        orderId: OrderId,
+        status: str,
+        filled: float,
+        remaining: float,
+        avgFillPrice: float,
+        permId: int,
+        parentId: int,
+        lastFillPrice: float,
+        clientId: int,
+        whyHeld: str,
+        mktCapPrice: float,
     ):
         """
         Callback of order status update.
         """
-        super(IbApi,
-              self).orderStatus(
-                  orderId,
-                  status,
-                  filled,
-                  remaining,
-                  avgFillPrice,
-                  permId,
-                  parentId,
-                  lastFillPrice,
-                  clientId,
-                  whyHeld,
-                  mktCapPrice
-              )
+        super(IbApi, self).orderStatus(
+            orderId,
+            status,
+            filled,
+            remaining,
+            avgFillPrice,
+            permId,
+            parentId,
+            lastFillPrice,
+            clientId,
+            whyHeld,
+            mktCapPrice,
+        )
 
         orderid = str(orderId)
         order = self.orders.get(orderid, None)
@@ -326,11 +327,11 @@ class IbApi(EWrapper):
         self.gateway.on_order(copy(order))
 
     def openOrder(  # pylint: disable=invalid-name
-            self,
-            orderId: OrderId,
-            ib_contract: Contract,
-            ib_order: Order,
-            orderState: OrderState
+        self,
+        orderId: OrderId,
+        ib_contract: Contract,
+        ib_order: Order,
+        orderState: OrderState,
     ):
         """
         Callback when opening new order.
@@ -340,26 +341,19 @@ class IbApi(EWrapper):
         orderid = str(orderId)
         order = OrderData(
             symbol=ib_contract.conId,
-            exchange=EXCHANGE_IB2VT.get(
-                ib_contract.exchange,
-                ib_contract.exchange
-            ),
+            exchange=EXCHANGE_IB2VT.get(ib_contract.exchange, ib_contract.exchange),
             orderid=orderid,
             direction=DIRECTION_IB2VT[ib_order.action],
             price=ib_order.lmtPrice,
             volume=ib_order.totalQuantity,
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
 
         self.orders[orderid] = order
         self.gateway.on_order(copy(order))
 
     def updateAccountValue(  # pylint: disable=invalid-name
-            self,
-            key: str,
-            val: str,
-            currency: str,
-            accountName: str
+        self, key: str, val: str, currency: str, accountName: str
     ):
         """
         Callback of account update.
@@ -372,54 +366,49 @@ class IbApi(EWrapper):
         accountid = f"{accountName}.{currency}"
         account = self.accounts.get(accountid, None)
         if not account:
-            account = AccountData(
-                accountid=accountid,
-                gateway_name=self.gateway_name
-            )
+            account = AccountData(accountid=accountid, gateway_name=self.gateway_name)
             self.accounts[accountid] = account
 
         name = ACCOUNTFIELD_IB2VT[key]
         setattr(account, name, float(val))
 
     def updatePortfolio(  # pylint: disable=invalid-name
-            self,
-            contract: Contract,
-            position: float,
-            marketPrice: float,
-            marketValue: float,
-            averageCost: float,
-            unrealizedPNL: float,
-            realizedPNL: float,
-            accountName: str
+        self,
+        contract: Contract,
+        position: float,
+        marketPrice: float,
+        marketValue: float,
+        averageCost: float,
+        unrealizedPNL: float,
+        realizedPNL: float,
+        accountName: str,
     ):
         """
         Callback of position update.
         """
-        super(IbApi,
-              self).updatePortfolio(
-                  contract,
-                  position,
-                  marketPrice,
-                  marketValue,
-                  averageCost,
-                  unrealizedPNL,
-                  realizedPNL,
-                  accountName
-              )
+        super(IbApi, self).updatePortfolio(
+            contract,
+            position,
+            marketPrice,
+            marketValue,
+            averageCost,
+            unrealizedPNL,
+            realizedPNL,
+            accountName,
+        )
 
         pos = PositionData(
             symbol=contract.conId,
-            exchange=EXCHANGE_IB2VT.get(contract.exchange,
-                                        contract.exchange),
+            exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
             direction=DIRECTION_NET,
             volume=position,
             price=averageCost,
             pnl=unrealizedPNL,
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
         self.gateway.on_position(pos)
 
-    def updateAccountTime(self, timeStamp: str): # pylint: disable=invalid-name
+    def updateAccountTime(self, timeStamp: str):  # pylint: disable=invalid-name
         """
         Callback of account update time.
         """
@@ -427,7 +416,9 @@ class IbApi(EWrapper):
         for account in self.accounts.values():
             self.gateway.on_account(copy(account))
 
-    def contractDetails(self, reqId: int, contractDetails: ContractDetails): # pylint: disable=invalid-name
+    def contractDetails(
+        self, reqId: int, contractDetails: ContractDetails
+    ):  # pylint: disable=invalid-name
         """
         Callback of contract data update.
         """
@@ -443,20 +434,21 @@ class IbApi(EWrapper):
 
         contract = ContractData(
             symbol=ib_symbol,
-            exchange=EXCHANGE_IB2VT.get(ib_exchange,
-                                        ib_exchange),
+            exchange=EXCHANGE_IB2VT.get(ib_exchange, ib_exchange),
             name=contractDetails.longName,
             product=PRODUCT_IB2VT[ib_product],
             size=ib_size,
             pricetick=contractDetails.minTick,
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
 
         self.gateway.on_contract(contract)
 
         self.contracts[contract.vt_symbol] = contract
 
-    def execDetails(self, reqId: int, contract: Contract, execution: Execution): # pylint: disable=invalid-name
+    def execDetails(
+        self, reqId: int, contract: Contract, execution: Execution
+    ):  # pylint: disable=invalid-name
         """
         Callback of trade data update.
         """
@@ -465,21 +457,19 @@ class IbApi(EWrapper):
         today_date = datetime.now().strftime("%Y%m%d")
         trade = TradeData(
             symbol=contract.conId,
-            exchange=EXCHANGE_IB2VT.get(contract.exchange,
-                                        contract.exchange),
+            exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
             orderid=str(execution.orderId),
             tradeid=str(execution.execId),
             direction=DIRECTION_IB2VT[execution.side],
             price=execution.price,
             volume=execution.shares,
-            time=datetime.strptime(execution.time,
-                                   "%Y%m%d  %H:%M:%S"),
-            gateway_name=self.gateway_name
+            time=datetime.strptime(execution.time, "%Y%m%d  %H:%M:%S"),
+            gateway_name=self.gateway_name,
         )
 
         self.gateway.on_trade(trade)
 
-    def managedAccounts(self, accountsList: str): # pylint: disable=invalid-name
+    def managedAccounts(self, accountsList: str):  # pylint: disable=invalid-name
         """
         Callback of all sub accountid.
         """
@@ -497,11 +487,7 @@ class IbApi(EWrapper):
 
         self.clientid = setting["clientid"]
 
-        self.client.connect(
-            setting["host"],
-            setting["port"],
-            setting["clientid"]
-        )
+        self.client.connect(setting["host"], setting["port"], setting["clientid"])
 
         self.thread.start()
 
@@ -544,7 +530,7 @@ class IbApi(EWrapper):
             symbol=req.symbol,
             exchange=req.exchange,
             datetime=datetime.now(),
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
         self.ticks[self.reqid] = tick
         self.tick_exchange[self.reqid] = req.exchange

@@ -51,17 +51,13 @@ class StopOrder:
         self.direction, self.offset = ORDER_CTA2VT[self.order_type]
 
 
-EVENT_CTA_LOG = 'eCtaLog'
-EVENT_CTA_STRATEGY = 'eCtaStrategy'
-EVENT_CTA_STOPORDER = 'eCtaStopOrder'
+EVENT_CTA_LOG = "eCtaLog"
+EVENT_CTA_STRATEGY = "eCtaStrategy"
+EVENT_CTA_STOPORDER = "eCtaStopOrder"
 
 ORDER_CTA2VT = {
-    CtaOrderType.BUY: (Direction.LONG,
-                       Offset.OPEN),
-    CtaOrderType.SELL: (Direction.SHORT,
-                        Offset.CLOSE),
-    CtaOrderType.SHORT: (Direction.SHORT,
-                         Offset.OPEN),
-    CtaOrderType.COVER: (Direction.LONG,
-                         Offset.CLOSE),
+    CtaOrderType.BUY: (Direction.LONG, Offset.OPEN),
+    CtaOrderType.SELL: (Direction.SHORT, Offset.CLOSE),
+    CtaOrderType.SHORT: (Direction.SHORT, Offset.OPEN),
+    CtaOrderType.COVER: (Direction.LONG, Offset.CLOSE),
 }

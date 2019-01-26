@@ -14,7 +14,7 @@ from .event import (
     EVENT_ACCOUNT,
     EVENT_POSITION,
     EVENT_LOG,
-    EVENT_CONTRACT
+    EVENT_CONTRACT,
 )
 from .object import (
     TickData,
@@ -26,7 +26,7 @@ from .object import (
     ContractData,
     SubscribeRequest,
     OrderRequest,
-    CancelRequest
+    CancelRequest,
 )
 
 

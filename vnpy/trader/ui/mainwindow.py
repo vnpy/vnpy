@@ -22,7 +22,7 @@ from .widget import (
     TradingWidget,
     ActiveOrderMonitor,
     ContractManager,
-    AboutDialog
+    AboutDialog,
 )
 
 
@@ -54,14 +54,30 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_dock(self):
         """"""
-        trading_widget, trading_dock = self.create_dock(TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea)
-        tick_widget, tick_dock = self.create_dock(TickMonitor, "行情", QtCore.Qt.RightDockWidgetArea)
-        order_widget, order_dock = self.create_dock(OrderMonitor, "委托", QtCore.Qt.RightDockWidgetArea)
-        active_widget, active_dock = self.create_dock(ActiveOrderMonitor, "活动", QtCore.Qt.RightDockWidgetArea)
-        trade_widget, trade_dock = self.create_dock(TradeMonitor, "成交", QtCore.Qt.RightDockWidgetArea)
-        log_widget, log_dock = self.create_dock(LogMonitor, "日志", QtCore.Qt.BottomDockWidgetArea)
-        account_widget, account_dock = self.create_dock(AccountMonitor, "资金", QtCore.Qt.BottomDockWidgetArea)
-        position_widget, position_dock = self.create_dock(PositionMonitor, "持仓", QtCore.Qt.BottomDockWidgetArea)
+        trading_widget, trading_dock = self.create_dock(
+            TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea
+        )
+        tick_widget, tick_dock = self.create_dock(
+            TickMonitor, "行情", QtCore.Qt.RightDockWidgetArea
+        )
+        order_widget, order_dock = self.create_dock(
+            OrderMonitor, "委托", QtCore.Qt.RightDockWidgetArea
+        )
+        active_widget, active_dock = self.create_dock(
+            ActiveOrderMonitor, "活动", QtCore.Qt.RightDockWidgetArea
+        )
+        trade_widget, trade_dock = self.create_dock(
+            TradeMonitor, "成交", QtCore.Qt.RightDockWidgetArea
+        )
+        log_widget, log_dock = self.create_dock(
+            LogMonitor, "日志", QtCore.Qt.BottomDockWidgetArea
+        )
+        account_widget, account_dock = self.create_dock(
+            AccountMonitor, "资金", QtCore.Qt.BottomDockWidgetArea
+        )
+        position_widget, position_dock = self.create_dock(
+            PositionMonitor, "持仓", QtCore.Qt.BottomDockWidgetArea
+        )
 
         self.tabifyDockWidget(active_dock, order_dock)
 
@@ -96,52 +112,31 @@ class MainWindow(QtWidgets.QMainWindow):
 
             func = partial(self.open_widget, widget_class, app.app_name)
             icon_path = str(app.app_path.joinpath("ui", app.icon_name))
-            self.add_menu_action(
-                app_menu,
-                f"打开{app.display_name}",
-                icon_path,
-                func
-            )
+            self.add_menu_action(app_menu, f"打开{app.display_name}", icon_path, func)
 
         # Help menu
         self.add_menu_action(
             help_menu,
             "查询合约",
             "contract.ico",
-            partial(self.open_widget,
-                    ContractManager,
-                    "contract")
+            partial(self.open_widget, ContractManager, "contract"),
         )
 
         self.add_menu_action(
-            help_menu,
-            "还原窗口",
-            "restore.ico",
-            self.restore_window_setting
+            help_menu, "还原窗口", "restore.ico", self.restore_window_setting
         )
 
-        self.add_menu_action(
-            help_menu,
-            "测试邮件",
-            "email.ico",
-            self.send_test_email
-        )
+        self.add_menu_action(help_menu, "测试邮件", "email.ico", self.send_test_email)
 
         self.add_menu_action(
             help_menu,
             "关于",
             "about.ico",
-            partial(self.open_widget,
-                    AboutDialog,
-                    "about")
+            partial(self.open_widget, AboutDialog, "about"),
         )
 
     def add_menu_action(
-            self,
-            menu: QtWidgets.QMenu,
-            action_name: str,
-            icon_name: str,
-            func: Callable
+        self, menu: QtWidgets.QMenu, action_name: str, icon_name: str, func: Callable
     ):
         """"""
         icon = QtGui.QIcon(get_icon_path(__file__, icon_name))
@@ -152,12 +147,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu.addAction(action)
 
-    def create_dock(
-            self,
-            widget_class: QtWidgets.QWidget,
-            name: str,
-            area: int
-    ):
+    def create_dock(self, widget_class: QtWidgets.QWidget, name: str, area: int):
         """
         Initialize a dock widget.
         """
@@ -189,7 +179,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "退出",
             "确认退出？",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
+            QtWidgets.QMessageBox.No,
         )
 
         if reply == QtWidgets.QMessageBox.Yes:

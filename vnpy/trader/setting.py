@@ -16,5 +16,5 @@ SETTINGS = {
     "email.username": "",
     "email.password": "",
     "email.sender": "",
-    "email.receiver": ""
+    "email.receiver": "",
 }

@@ -12,10 +12,10 @@ from typing import Any, Callable, Optional
 
 
 class RequestStatus(Enum):
-    ready = 0   # Request created
-    success = 1 # Request successful (status code 2xx)
+    ready = 0  # Request created
+    success = 1  # Request successful (status code 2xx)
     failed = 2  # Request failed (status code not 2xx)
-    error = 3   # Exception raised
+    error = 3  # Exception raised
 
 
 class Request(object):
@@ -24,16 +24,16 @@ class Request(object):
     """
 
     def __init__(
-            self,
-            method: str,
-            path: str,
-            params: dict,
-            data: dict,
-            headers: dict,
-            callback: Callable,
-            on_failed: Callable = None,
-            on_error: Callable = None,
-            extra: Any = None
+        self,
+        method: str,
+        path: str,
+        params: dict,
+        data: dict,
+        headers: dict,
+        callback: Callable,
+        on_failed: Callable = None,
+        on_error: Callable = None,
+        extra: Any = None,
     ):
         """"""
         self.method = method
@@ -52,7 +52,7 @@ class Request(object):
 
     def __str__(self):
         if self.response is None:
-            status_code = 'terminated'
+            status_code = "terminated"
         else:
             status_code = self.response.status_code
 
@@ -70,7 +70,7 @@ class Request(object):
                 self.headers,
                 self.params,
                 self.data,
-                '' if self.response is None else self.response.text
+                "" if self.response is None else self.response.text,
             )
         )
 
@@ -88,11 +88,11 @@ class RestClient(object):
     def __init__(self):
         """
         """
-        self.url_base = None # type: str
+        self.url_base = None  # type: str
         self._active = False
 
         self._queue = Queue()
-        self._pool = None # type: Pool
+        self._pool = None  # type: Pool
 
         self.proxies = None
 
@@ -135,16 +135,16 @@ class RestClient(object):
         self._queue.join()
 
     def add_request(
-            self,
-            method: str,
-            path: str,
-            callback: Callable,
-            params: dict = None,
-            data: dict = None,
-            headers: dict = None,
-            on_failed: Callable = None,
-            on_error: Callable = None,
-            extra: Any = None
+        self,
+        method: str,
+        path: str,
+        callback: Callable,
+        params: dict = None,
+        data: dict = None,
+        headers: dict = None,
+        on_failed: Callable = None,
+        on_error: Callable = None,
+        extra: Any = None,
     ):
         """
         Add a new request.
@@ -160,15 +160,7 @@ class RestClient(object):
         :return: Request
         """
         request = Request(
-            method,
-            path,
-            params,
-            data,
-            headers,
-            callback,
-            on_failed,
-            on_error,
-            extra
+            method, path, params, data, headers, callback, on_failed, on_error, extra
         )
         self._queue.put(request)
         return request
@@ -204,54 +196,34 @@ class RestClient(object):
         sys.stderr.write(str(request))
 
     def on_error(
-            self,
-            exception_type: type,
-            exception_value: Exception,
-            tb,
-            request: Request
+        self, exception_type: type, exception_value: Exception, tb, request: Request
     ):
         """
         Default on_error handler for Python exception.
         """
         sys.stderr.write(
-            self.exception_detail(exception_type,
-                                  exception_value,
-                                  tb,
-                                  request)
+            self.exception_detail(exception_type, exception_value, tb, request)
         )
         sys.excepthook(exception_type, exception_value, tb)
 
     def exception_detail(
-            self,
-            exception_type: type,
-            exception_value: Exception,
-            tb,
-            request: Request
+        self, exception_type: type, exception_value: Exception, tb, request: Request
     ):
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
-            datetime.now().isoformat(),
-            exception_type
+            datetime.now().isoformat(), exception_type
         )
         text += "request:{}\n".format(request)
         text += "Exception trace: \n"
-        text += "".join(
-            traceback.format_exception(
-                exception_type,
-                exception_value,
-                tb,
-            )
-        )
+        text += "".join(traceback.format_exception(exception_type, exception_value, tb))
         return text
 
     def _process_request(
-            self,
-            request: Request,
-            session: requests.session
-    ):                                # type: (Request, requests.Session)->None
+        self, request: Request, session: requests.session
+    ):  # type: (Request, requests.Session)->None
         """
         Sending request to server and get result.
         """
-                                      # noinspection PyBroadException
+        # noinspection PyBroadException
         try:
             request = self.sign(request)
 
@@ -263,12 +235,12 @@ class RestClient(object):
                 headers=request.headers,
                 params=request.params,
                 data=request.data,
-                proxies=self.proxies
+                proxies=self.proxies,
             )
             request.response = response
 
             status_code = response.status_code
-            if status_code / 100 == 2: # 2xx都算成功，尽管交易所都用200
+            if status_code / 100 == 2:  # 2xx都算成功，尽管交易所都用200
                 jsonBody = response.json()
                 request.callback(jsonBody, request)
                 request.status = RequestStatus.success

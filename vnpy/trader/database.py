@@ -6,7 +6,7 @@ from peewee import (
     CharField,
     DateTimeField,
     FloatField,
-    IntegerField
+    IntegerField,
 )
 
 from .utility import get_temp_path
@@ -23,6 +23,7 @@ class DbBarData(Model):
 
     Index is defined unique with vt_symbol, interval and datetime.
     """
+
     symbol = CharField()
     exchange = CharField()
     datetime = DateTimeField()
@@ -39,7 +40,7 @@ class DbBarData(Model):
 
     class Meta:
         database = DB
-        indexes = ((('vt_symbol', 'interval', 'datetime'), True),)
+        indexes = ((("vt_symbol", "interval", "datetime"), True),)
 
     @staticmethod
     def from_bar(bar: BarData):
@@ -76,7 +77,7 @@ class DbBarData(Model):
             high_price=high_price,
             low_price=low_price,
             close_price=close_price,
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
         return bar
 
@@ -87,6 +88,7 @@ class DbTickData(Model):
 
     Index is defined unique with vt_symbol, interval and datetime.
     """
+
     symbol = CharField()
     exchange = CharField()
     datetime = DateTimeField()
@@ -132,7 +134,7 @@ class DbTickData(Model):
 
     class Meta:
         database = DB
-        indexes = ((('vt_symbol', 'datetime'), True),)
+        indexes = ((("vt_symbol", "datetime"), True),)
 
     @staticmethod
     def from_tick(tick: TickData):
@@ -208,7 +210,7 @@ class DbTickData(Model):
             ask_price_1=self.ask_price_1,
             bid_volume_1=self.bid_volume_1,
             ask_volume_1=self.ask_volume_1,
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
 
         if self.bid_price_2:

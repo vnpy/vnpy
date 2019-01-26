@@ -123,9 +123,9 @@ class WebsocketClient(object):
         """"""
         self._ws = self._create_connection(
             self.host,
-            sslopt={'cert_reqs': ssl.CERT_NONE},
+            sslopt={"cert_reqs": ssl.CERT_NONE},
             http_proxy_host=self.proxy_host,
-            http_proxy_port=self.proxy_port
+            http_proxy_port=self.proxy_port,
         )
         self.on_connected()
 
@@ -166,7 +166,7 @@ class WebsocketClient(object):
                         try:
                             data = self.unpack_data(text)
                         except ValueError as e:
-                            print('websocket unable to parse data: ' + text)
+                            print("websocket unable to parse data: " + text)
                             raise e
 
                         self.on_packet(data)
@@ -211,7 +211,7 @@ class WebsocketClient(object):
         """"""
         ws = self._get_ws()
         if ws:
-            ws.send('ping', websocket.ABNF.OPCODE_PING)
+            ws.send("ping", websocket.ABNF.OPCODE_PING)
 
     @staticmethod
     def on_connected():
@@ -238,36 +238,20 @@ class WebsocketClient(object):
         """
         Callback when exception raised.
         """
-        sys.stderr.write(
-            self.exception_detail(exception_type,
-                                  exception_value,
-                                  tb)
-        )
+        sys.stderr.write(self.exception_detail(exception_type, exception_value, tb))
         return sys.excepthook(exception_type, exception_value, tb)
 
-    def exception_detail(
-            self,
-            exception_type: type,
-            exception_value: Exception,
-            tb
-    ):
+    def exception_detail(self, exception_type: type, exception_value: Exception, tb):
         """
         Print detailed exception information.
         """
         text = "[{}]: Unhandled WebSocket Error:{}\n".format(
-            datetime.now().isoformat(),
-            exception_type
+            datetime.now().isoformat(), exception_type
         )
         text += "LastSentText:\n{}\n".format(self._last_sent_text)
         text += "LastReceivedText:\n{}\n".format(self._last_received_text)
         text += "Exception trace: \n"
-        text += "".join(
-            traceback.format_exception(
-                exception_type,
-                exception_value,
-                tb,
-            )
-        )
+        text += "".join(traceback.format_exception(exception_type, exception_value, tb))
         return text
 
     def _record_last_sent_text(self, text: str):

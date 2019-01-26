@@ -14,13 +14,8 @@ from ..utility import get_icon_path
 
 def excepthook(exctype, value, tb):
     """异常捕捉钩子"""
-    msg = ''.join(traceback.format_exception(exctype, value, tb))
-    QtWidgets.QMessageBox.critical(
-        None,
-        u'Exception',
-        msg,
-        QtWidgets.QMessageBox.Ok
-    )
+    msg = "".join(traceback.format_exception(exctype, value, tb))
+    QtWidgets.QMessageBox.critical(None, u"Exception", msg, QtWidgets.QMessageBox.Ok)
 
 
 def create_qapp():
@@ -38,9 +33,7 @@ def create_qapp():
     icon = QtGui.QIcon(get_icon_path(__file__, "vnpy.ico"))
     qapp.setWindowIcon(icon)
 
-    if 'Windows' in platform.uname():
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-            'VN Trader'
-        )
+    if "Windows" in platform.uname():
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("VN Trader")
 
     return qapp

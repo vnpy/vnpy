@@ -8,6 +8,7 @@ from .base import APP_NAME
 
 class CtaStrategyApp(BaseApp):
     """"""
+
     app_name = APP_NAME
     app_module = __module__
     app_path = Path(__file__).parent
