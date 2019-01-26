@@ -2,13 +2,13 @@
 
 import sys
 import traceback
-from queue import Empty, Queue
 from datetime import datetime
+from enum import Enum
 from multiprocessing.dummy import Pool
+from queue import Empty, Queue
+from typing import Any, Callable
 
 import requests
-from enum import Enum
-from typing import Any, Callable, Optional
 
 
 class RequestStatus(Enum):
@@ -160,7 +160,15 @@ class RestClient(object):
         :return: Request
         """
         request = Request(
-            method, path, params, data, headers, callback, on_failed, on_error, extra
+            method,
+            path,
+            params,
+            data,
+            headers,
+            callback,
+            on_failed,
+            on_error,
+            extra,
         )
         self._queue.put(request)
         return request
@@ -177,7 +185,7 @@ class RestClient(object):
                         self._queue.task_done()
                 except Empty:
                     pass
-        except:
+        except:  # noqa
             et, ev, tb = sys.exc_info()
             self.on_error(et, ev, tb, None)
 
@@ -196,7 +204,11 @@ class RestClient(object):
         sys.stderr.write(str(request))
 
     def on_error(
-        self, exception_type: type, exception_value: Exception, tb, request: Request
+        self,
+        exception_type: type,
+        exception_value: Exception,
+        tb,
+        request: Request,
     ):
         """
         Default on_error handler for Python exception.
@@ -207,14 +219,20 @@ class RestClient(object):
         sys.excepthook(exception_type, exception_value, tb)
 
     def exception_detail(
-        self, exception_type: type, exception_value: Exception, tb, request: Request
+        self,
+        exception_type: type,
+        exception_value: Exception,
+        tb,
+        request: Request,
     ):
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
             datetime.now().isoformat(), exception_type
         )
         text += "request:{}\n".format(request)
         text += "Exception trace: \n"
-        text += "".join(traceback.format_exception(exception_type, exception_value, tb))
+        text += "".join(
+            traceback.format_exception(exception_type, exception_value, tb)
+        )
         return text
 
     def _process_request(
@@ -251,7 +269,7 @@ class RestClient(object):
                     request.on_failed(status_code, request)
                 else:
                     self.on_failed(status_code, request)
-        except:
+        except:  # noqa
             request.status = RequestStatus.error
             t, v, tb = sys.exc_info()
             if request.on_error:

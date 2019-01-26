@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
-from .constant import Status, Exchange, Offset, Direction, Interval, Status
+from .constant import Direction, Exchange, Interval, Offset, Status
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -84,7 +84,7 @@ class BarData(BaseData):
     symbol: str
     exchange: Exchange
     datetime: datetime
-    inteval: Interval
+    interval: Interval
 
     volume: float = 0
     open_price: float = 0

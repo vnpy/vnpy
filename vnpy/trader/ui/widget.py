@@ -3,24 +3,23 @@ Basic widgets for VN Trader.
 """
 
 import csv
-from typing import Any
 from enum import Enum
+from typing import Any
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-from vnpy.event import EventEngine, Event
-from ..constant import Direction, Offset, PriceType, Exchange
+from vnpy.event import Event, EventEngine
+from ..constant import Direction, Exchange, Offset, PriceType
 from ..engine import MainEngine
 from ..event import (
-    EVENT_TICK,
-    EVENT_ORDER,
-    EVENT_TRADE,
     EVENT_ACCOUNT,
+    EVENT_LOG,
+    EVENT_ORDER,
     EVENT_POSITION,
     EVENT_CONTRACT,
     EVENT_LOG,
 )
-from ..object import SubscribeRequest, OrderRequest, CancelRequest
+from ..object import OrderRequest, SubscribeRequest
 from ..utility import load_setting, save_setting
 
 COLOR_LONG = QtGui.QColor("red")
@@ -762,7 +761,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.clear_label_text()
 
         # Subscribe tick data
-        req = SubscribeRequest(symbol=symbol, exchange=Exchange(exchange_value))
+        req = SubscribeRequest(
+            symbol=symbol, exchange=Exchange(exchange_value)
+        )
 
         self.main_engine.subscribe(req, gateway_name)
 

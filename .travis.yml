@@ -1,12 +1,11 @@
 language: python
 python:
-  - "3.7-dev"
+  - "3.6"
 install:
   - pip install -r requirements.txt
-  - pip install -r tools/ci/requirements.txt
   - pip install -r requirements-dev.txt
+  - pip install -r tools/ci/requirements.txt
 # command to run tests
 script:
-  - python tools/ci/format_check.py
-  - pylint --rcfile=.pylintrc vnpy
+  - python tools/ci/check_all.py
   - python tests/test_all.py

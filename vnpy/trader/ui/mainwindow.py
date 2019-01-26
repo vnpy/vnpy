@@ -3,27 +3,22 @@ Implements main window of VN Trader.
 """
 
 from functools import partial
-from typing import Callable
 from importlib import import_module
+from typing import Callable
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from vnpy.event import EventEngine
-from ..engine import MainEngine
-from ..utility import get_icon_path, get_trader_path
 from .widget import (
-    TickMonitor,
-    OrderMonitor,
-    TradeMonitor,
-    PositionMonitor,
+    AboutDialog,
     AccountMonitor,
-    LogMonitor,
-    ConnectDialog,
-    TradingWidget,
     ActiveOrderMonitor,
+    ConnectDialog,
     ContractManager,
     AboutDialog,
 )
+from ..engine import MainEngine
+from ..utility import get_icon_path, get_trader_path
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -112,7 +107,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             func = partial(self.open_widget, widget_class, app.app_name)
             icon_path = str(app.app_path.joinpath("ui", app.icon_name))
-            self.add_menu_action(app_menu, f"打开{app.display_name}", icon_path, func)
+            self.add_menu_action(
+                app_menu, f"打开{app.display_name}", icon_path, func
+            )
 
         # Help menu
         self.add_menu_action(
@@ -126,7 +123,9 @@ class MainWindow(QtWidgets.QMainWindow):
             help_menu, "还原窗口", "restore.ico", self.restore_window_setting
         )
 
-        self.add_menu_action(help_menu, "测试邮件", "email.ico", self.send_test_email)
+        self.add_menu_action(
+            help_menu, "测试邮件", "email.ico", self.send_test_email
+        )
 
         self.add_menu_action(
             help_menu,
@@ -136,7 +135,11 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def add_menu_action(
-        self, menu: QtWidgets.QMenu, action_name: str, icon_name: str, func: Callable
+        self,
+        menu: QtWidgets.QMenu,
+        action_name: str,
+        icon_name: str,
+        func: Callable,
     ):
         """"""
         icon = QtGui.QIcon(get_icon_path(__file__, icon_name))
@@ -147,7 +150,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu.addAction(action)
 
-    def create_dock(self, widget_class: QtWidgets.QWidget, name: str, area: int):
+    def create_dock(
+        self, widget_class: QtWidgets.QWidget, name: str, area: int
+    ):
         """
         Initialize a dock widget.
         """

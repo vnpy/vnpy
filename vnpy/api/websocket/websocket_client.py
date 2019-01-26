@@ -4,9 +4,9 @@ import json
 import ssl
 import sys
 import traceback
-from time import sleep
 from datetime import datetime
 from threading import Lock, Thread
+from time import sleep
 
 import websocket
 
@@ -175,11 +175,11 @@ class WebsocketClient(object):
                     self._reconnect()
 
                 # other internal exception raised in on_packet
-                except:
+                except:  # noqa
                     et, ev, tb = sys.exc_info()
                     self.on_error(et, ev, tb)
                     self._reconnect()
-        except:
+        except:  # noqa
             et, ev, tb = sys.exc_info()
             self.on_error(et, ev, tb)
             self._reconnect()
@@ -198,7 +198,7 @@ class WebsocketClient(object):
         while self._active:
             try:
                 self._ping()
-            except:
+            except:  # noqa
                 et, ev, tb = sys.exc_info()
                 self.on_error(et, ev, tb)
                 self._reconnect()
@@ -238,10 +238,14 @@ class WebsocketClient(object):
         """
         Callback when exception raised.
         """
-        sys.stderr.write(self.exception_detail(exception_type, exception_value, tb))
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb)
+        )
         return sys.excepthook(exception_type, exception_value, tb)
 
-    def exception_detail(self, exception_type: type, exception_value: Exception, tb):
+    def exception_detail(
+        self, exception_type: type, exception_value: Exception, tb
+    ):
         """
         Print detailed exception information.
         """
@@ -251,7 +255,9 @@ class WebsocketClient(object):
         text += "LastSentText:\n{}\n".format(self._last_sent_text)
         text += "LastReceivedText:\n{}\n".format(self._last_received_text)
         text += "Exception trace: \n"
-        text += "".join(traceback.format_exception(exception_type, exception_value, tb))
+        text += "".join(
+            traceback.format_exception(exception_type, exception_value, tb)
+        )
         return text
 
     def _record_last_sent_text(self, text: str):

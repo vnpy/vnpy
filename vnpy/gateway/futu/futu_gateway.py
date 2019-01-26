@@ -3,42 +3,40 @@
 Please install futu-api before use.
 """
 
+from copy import copy
+from datetime import datetime
 from threading import Thread
 from time import sleep
-from datetime import datetime
-from copy import copy
 
 from futu import (
-    OpenQuoteContext,
+    ModifyOrderOp,
     OpenHKTradeContext,
+    OpenQuoteContext,
     OpenUSTradeContext,
+    OrderBookHandlerBase,
+    OrderStatus,
+    OrderType,
     RET_ERROR,
     RET_OK,
-    TrdEnv,
-    TrdSide,
-    OrderType,
-    OrderStatus,
-    ModifyOrderOp,
     StockQuoteHandlerBase,
-    OrderBookHandlerBase,
+    TradeDealHandlerBase,
     TradeOrderHandlerBase,
     TradeDealHandlerBase,
 )
 
+from vnpy.trader.constant import Direction, Exchange, Product, Status
+from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.constant import Product, Direction, Status, Exchange
 from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
+    AccountData,
     ContractData,
+    OrderData,
     PositionData,
     AccountData,
     SubscribeRequest,
     OrderRequest,
     CancelRequest,
 )
-from vnpy.trader.event import EVENT_TIMER
 
 EXCHANGE_VT2FUTU = {
     Exchange.SMART: "US",
@@ -55,7 +53,10 @@ PRODUCT_VT2FUTU = {
     Product.BOND: "BOND",
 }
 
-DIRECTION_VT2FUTU = {Direction.LONG: TrdSide.BUY, Direction.SHORT: TrdSide.SELL}
+DIRECTION_VT2FUTU = {
+    Direction.LONG: TrdSide.BUY,
+    Direction.SHORT: TrdSide.SELL,
+}
 DIRECTION_FUTU2VT = {v: k for k, v in DIRECTION_VT2FUTU.items()}
 
 STATUS_FUTU2VT = {
@@ -155,7 +156,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(QuoteHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(QuoteHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_quote(content)
@@ -165,7 +168,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(OrderBookHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(OrderBookHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_orderbook(content)
@@ -192,7 +197,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(OrderHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(OrderHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_order(content)
@@ -202,7 +209,9 @@ class FutuGateway(BaseGateway):
             gateway = self
 
             def on_recv_rsp(self, rsp_str):
-                ret_code, content = super(DealHandler, self).on_recv_rsp(rsp_str)
+                ret_code, content = super(DealHandler, self).on_recv_rsp(
+                    rsp_str
+                )
                 if ret_code != RET_OK:
                     return RET_ERROR, content
                 self.gateway.process_deal(content)
@@ -275,7 +284,9 @@ class FutuGateway(BaseGateway):
     def query_contract(self):
         """"""
         for product, futu_product in PRODUCT_VT2FUTU.items():
-            code, data = self.quote_ctx.get_stock_basicinfo(self.market, futu_product)
+            code, data = self.quote_ctx.get_stock_basicinfo(
+                self.market, futu_product
+            )
 
             if code:
                 self.write_log(f"查询合约信息失败：{data}")
@@ -316,7 +327,9 @@ class FutuGateway(BaseGateway):
 
     def query_position(self):
         """"""
-        code, data = self.trade_ctx.position_list_query(trd_env=self.env, acc_id=0)
+        code, data = self.trade_ctx.position_list_query(
+            trd_env=self.env, acc_id=0
+        )
 
         if code:
             self.write_log(f"查询持仓失败：{data}")

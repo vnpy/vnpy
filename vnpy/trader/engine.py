@@ -2,30 +2,29 @@
 """
 
 import logging
-from datetime import datetime
-from abc import ABC
-from typing import Any
-from threading import Thread
-from queue import Queue, Empty
 import smtplib
+from abc import ABC
+from datetime import datetime
 from email.message import EmailMessage
+from queue import Empty, Queue
+from threading import Thread
+from typing import Any
 
-from vnpy.event import EventEngine, Event
-
+from vnpy.event import Event, EventEngine
+from .app import BaseApp
 from .event import (
+    EVENT_ACCOUNT,
+    EVENT_CONTRACT,
     EVENT_LOG,
-    EVENT_TICK,
     EVENT_ORDER,
-    EVENT_TRADE,
     EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
 )
-from .object import LogData, SubscribeRequest, OrderRequest, CancelRequest
-from .utility import Singleton, get_temp_path
-from .setting import SETTINGS
 from .gateway import BaseGateway
-from .app import BaseApp
+from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
+from .setting import SETTINGS
+from .utility import Singleton, get_temp_path
 
 
 class MainEngine:

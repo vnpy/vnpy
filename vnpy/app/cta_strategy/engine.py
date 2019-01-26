@@ -1,14 +1,15 @@
 """"""
 
-import os
 import importlib
-import traceback
+import os
 import shelve
-from typing import Callable, Any
+import traceback
 from collections import defaultdict
 from pathlib import Path
+from typing import Any, Callable
 
-from vnpy.event import EventEngine, Event
+from vnpy.event import Event, EventEngine
+from vnpy.trader.constant import Direction, Interval, PriceType
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
@@ -20,19 +21,14 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.constant import Direction, Offset, Exchange, PriceType, Interval
 from vnpy.trader.utility import get_temp_path
-
-from .template import CtaTemplate
 from .base import (
-    STOPORDER_PREFIX,
     CtaOrderType,
-    EngineType,
-    StopOrderStatus,
-    StopOrder,
-    ORDER_CTA2VT,
     EVENT_CTA_LOG,
+    EVENT_CTA_STOPORDER,
     EVENT_CTA_STRATEGY,
     EVENT_CTA_STOPORDER,
 )
+from .template import CtaTemplate
 
 
 class CtaEngine(BaseEngine):
@@ -462,7 +458,7 @@ class CtaEngine(BaseEngine):
                 value = getattr(module, name)
                 if issubclass(value, CtaTemplate) and value is not CtaTemplate:
                     self.classes[value.__name__] = value
-        except:
+        except:  # noqa
             msg = f"策略文件{module_name}加载失败，触发异常：\n{traceback.format_exc()}"
             self.write_log(msg)
 

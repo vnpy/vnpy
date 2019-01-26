@@ -2,7 +2,6 @@ from vnpy.app.cta_strategy import CtaTemplate
 
 
 class DoubleMaStrategy(CtaTemplate):
-
     author = "用Python的交易员"
 
     fast_window = 10

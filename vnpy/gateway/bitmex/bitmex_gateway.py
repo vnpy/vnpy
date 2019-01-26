@@ -4,36 +4,35 @@
 
 from __future__ import print_function
 
-import logging
-import os
-import json
 import hashlib
 import hmac
 import sys
 import time
-import traceback
-from datetime import datetime, timedelta
 from copy import copy
-from math import pow
+from datetime import datetime
 from urllib.parse import urlencode
 
 from requests import ConnectionError
 
-from vnpy.api.rest import RestClient, Request
+from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
+from vnpy.trader.constant import (
+    Direction,
+    Exchange,
+    PriceType,
+    Product,
+    Status,
+)
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    SubscribeRequest,
-    OrderRequest,
+    AccountData,
     CancelRequest,
-    TickData,
+    ContractData,
     OrderData,
-    TradeData,
     PositionData,
     AccountData,
     ContractData,
 )
-from vnpy.trader.constant import Direction, Status, PriceType, Exchange, Product
 
 REST_HOST = "https://www.bitmex.com/api/v1"
 WEBSOCKET_HOST = "wss://www.bitmex.com/realtime"
@@ -282,7 +281,7 @@ class BitmexRestApi(RestClient):
         Callback when cancelling order failed on server.
         """
         # Record exception if not ConnectionError
-        if not issubclass(exception_type, Connection_error):
+        if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data, request):
@@ -515,7 +514,7 @@ class BitmexWebsocketApi(WebsocketClient):
             else:
                 orderid = sysid
 
-            time = d["timestamp"][11:19]
+            # time = d["timestamp"][11:19]
 
             order = OrderData(
                 symbol=d["symbol"],

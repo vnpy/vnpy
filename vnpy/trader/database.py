@@ -9,9 +9,9 @@ from peewee import (
     IntegerField,
 )
 
-from .utility import get_temp_path
-from .object import BarData, TickData
 from .constant import Exchange, Interval
+from .object import BarData, TickData
+from .utility import get_temp_path
 
 DB_NAME = "database.vt"
 DB = SqliteDatabase(str(get_temp_path(DB_NAME)))

@@ -1,23 +1,22 @@
-from typing import Any, Callable
-from datetime import datetime, date
 from collections import defaultdict
+from datetime import date, datetime
+from typing import Callable
 
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas import DataFrame
 
-from vnpy.trader.constant import Interval, Status, Direction, Exchange
-from vnpy.trader.utility import round_to_pricetick
-from vnpy.trader.database import DbTickData, DbBarData
-from vnpy.trader.object import TradeData, OrderData
-
+from vnpy.trader.constant import Direction, Exchange, Interval, Status
+from vnpy.trader.database import DbBarData, DbTickData
+from vnpy.trader.object import OrderData, TradeData
 from .base import (
-    STOPORDER_PREFIX,
+    BacktestingMode,
     CtaOrderType,
-    StopOrderStatus,
     EngineType,
+    ORDER_CTA2VT,
+    STOPORDER_PREFIX,
     StopOrder,
+    StopOrderStatus,
     BacktestingMode,
     ORDER_CTA2VT,
 )
@@ -109,12 +108,12 @@ class BacktestingEngine:
         mode: BacktestingMode = None,
     ):
         """"""
-        self.mode = mode
-        self.vt_symbol = vt_symbol
-        self.rate = rate
-        self.slippage = slippage
-        self.size = size
-        self.pricetick = pricetick
+        self.mode = mode  # 1
+        self.vt_symbol = vt_symbol  # 2
+        self.rate = rate  # 3
+        self.slippage = slippage  # 4
+        self.size = size  #
+        self.pricetick = pricetick  #
 
         self.symbol, exchange_str = self.vt_symbol.split(".")
         self.exchange = Exchange(exchange_str)

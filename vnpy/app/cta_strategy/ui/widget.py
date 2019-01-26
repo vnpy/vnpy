@@ -1,12 +1,22 @@
 from typing import Any
 
-from vnpy.event import EventEngine, Event
-from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.ui import QtGui, QtWidgets, QtCore
-from vnpy.trader.ui.widget import BaseMonitor, BaseCell, EnumCell, TimeCell, MsgCell
-
+from vnpy.event import Event, EventEngine
+from vnpy.trader.engine import MainEngine
+from vnpy.trader.ui import QtCore, QtGui, QtWidgets
+from vnpy.trader.ui.widget import (
+    BaseCell,
+    BaseMonitor,
+    EnumCell,
+    MsgCell,
+    TimeCell,
+)
+from ..base import (
+    APP_NAME,
+    EVENT_CTA_LOG,
+    EVENT_CTA_STOPORDER,
+    EVENT_CTA_STRATEGY,
+)
 from ..engine import CtaEngine
-from ..base import APP_NAME, EVENT_CTA_LOG, EVENT_CTA_STOPORDER, EVENT_CTA_STRATEGY
 
 
 class CtaManager(QtWidgets.QWidget):
@@ -58,11 +68,13 @@ class CtaManager(QtWidgets.QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(scroll_widget)
 
-        bottom_height = 300
+        # bottom_height = 300
 
         self.log_monitor = LogMonitor(self.main_engine, self.event_engine)
 
-        self.stop_order_monitor = StopOrderMonitor(self.main_engine, self.event_engine)
+        self.stop_order_monitor = StopOrderMonitor(
+            self.main_engine, self.event_engine
+        )
 
         # Set layout
         hbox1 = QtWidgets.QHBoxLayout()
@@ -86,13 +98,17 @@ class CtaManager(QtWidgets.QWidget):
 
     def update_class_combo(self):
         """"""
-        self.class_combo.addItems(self.cta_engine.get_all_strategy_class_names())
+        self.class_combo.addItems(
+            self.cta_engine.get_all_strategy_class_names()
+        )
 
     def register_event(self):
         """"""
         self.signal_strategy.connect(self.process_strategy_event)
 
-        self.event_engine.register(EVENT_CTA_STRATEGY, self.signal_strategy.emit)
+        self.event_engine.register(
+            EVENT_CTA_STRATEGY, self.signal_strategy.emit
+        )
 
     def process_strategy_event(self, event):
         """
@@ -129,7 +145,9 @@ class CtaManager(QtWidgets.QWidget):
             vt_symbol = setting.pop("vt_symbol")
             strategy_name = setting.pop("strategy_name")
 
-            self.cta_engine.add_strategy(class_name, strategy_name, vt_symbol, setting)
+            self.cta_engine.add_strategy(
+                class_name, strategy_name, vt_symbol, setting
+            )
 
     def show(self):
         """"""
@@ -141,7 +159,9 @@ class StrategyManager(QtWidgets.QFrame):
     Manager for a strategy
     """
 
-    def __init__(self, cta_manager: CtaManager, cta_engine: CtaEngine, data: dict):
+    def __init__(
+        self, cta_manager: CtaManager, cta_engine: CtaEngine, data: dict
+    ):
         """"""
         super(StrategyManager, self).__init__()
 
@@ -179,7 +199,9 @@ class StrategyManager(QtWidgets.QFrame):
         class_name = self._data["class_name"]
         author = self._data["author"]
 
-        label_text = f"{strategy_name}  -  {vt_symbol}  ({class_name} by {author})"
+        label_text = (
+            f"{strategy_name}  -  {vt_symbol}  ({class_name} by {author})"
+        )
         label = QtWidgets.QLabel(label_text)
         label.setAlignment(QtCore.Qt.AlignCenter)
 
@@ -221,8 +243,8 @@ class StrategyManager(QtWidgets.QFrame):
 
     def edit_strategy(self):
         """"""
-        vt_symbol = self._data["vt_symbol"]
-        class_name = self._data["class_name"]
+        # vt_symbol = self._data["vt_symbol"]
+        # class_name = self._data["class_name"]
         strategy_name = self._data["strategy_name"]
 
         parameters = self.cta_engine.get_strategy_parameters(strategy_name)
@@ -260,7 +282,9 @@ class DataMonitor(QtWidgets.QTableWidget):
         self.setHorizontalHeaderLabels(labels)
 
         self.setRowCount(1)
-        self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.verticalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
 
@@ -307,7 +331,11 @@ class StopOrderMonitor(BaseMonitor):
     sorting = True
 
     headers = {
-        "stop_orderid": {"display": "停止委托号", "cell": BaseCell, "update": False},
+        "stop_orderid": {
+            "display": "停止委托号",
+            "cell": BaseCell,
+            "update": False,
+        },
         "vt_orderid": {"display": "限价委托号", "cell": BaseCell, "update": True},
         "vt_symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "order_type": {"display": "类型", "cell": EnumCell, "update": False},
@@ -323,7 +351,9 @@ class StopOrderMonitor(BaseMonitor):
         """
         super(StopOrderMonitor, self).init_ui()
 
-        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
 
 
 class LogMonitor(BaseMonitor):
@@ -346,7 +376,9 @@ class LogMonitor(BaseMonitor):
         """
         super(LogMonitor, self).init_ui()
 
-        self.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(
+            1, QtWidgets.QHeaderView.Stretch
+        )
 
     def insert_new_row(self, data):
         """
@@ -361,7 +393,9 @@ class SettingEditor(QtWidgets.QDialog):
     For creating new strategy and editing strategy parameters.
     """
 
-    def __init__(self, parameters: dict, strategy_name: str = "", class_name: str = ""):
+    def __init__(
+        self, parameters: dict, strategy_name: str = "", class_name: str = ""
+    ):
         """"""
         super(SettingEditor, self).__init__()
 

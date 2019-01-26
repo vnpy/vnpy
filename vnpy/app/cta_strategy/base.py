@@ -2,9 +2,8 @@
 Defines constants and objects used in CtaStrategy App.
 """
 
-from enum import Enum
 from dataclasses import dataclass
-from typing import Any
+from enum import Enum
 
 from vnpy.trader.constant import Direction, Offset
 

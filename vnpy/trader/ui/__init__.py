@@ -1,11 +1,10 @@
-import platform
 import ctypes
-import traceback
+import platform
 import sys
-from pathlib import Path
+import traceback
 
 import qdarkstyle
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtGui, QtWidgets
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS
@@ -15,7 +14,9 @@ from ..utility import get_icon_path
 def excepthook(exctype, value, tb):
     """异常捕捉钩子"""
     msg = "".join(traceback.format_exception(exctype, value, tb))
-    QtWidgets.QMessageBox.critical(None, u"Exception", msg, QtWidgets.QMessageBox.Ok)
+    QtWidgets.QMessageBox.critical(
+        None, "Exception", msg, QtWidgets.QMessageBox.Ok
+    )
 
 
 def create_qapp():
@@ -34,6 +35,8 @@ def create_qapp():
     qapp.setWindowIcon(icon)
 
     if "Windows" in platform.uname():
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("VN Trader")
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            "VN Trader"
+        )
 
     return qapp

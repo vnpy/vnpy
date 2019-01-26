@@ -1,30 +1,38 @@
 """
 Please install ibapi from Interactive Brokers github page.
 """
-from datetime import datetime
 from copy import copy
-from threading import Thread
+from datetime import datetime
 from queue import Empty
+from threading import Thread
 
-from ibapi.wrapper import EWrapper
-from ibapi.client import EClient
-from ibapi.contract import Contract, ContractDetails
-from ibapi.order import Order
-from ibapi.common import TickerId, OrderId, TickAttrib, MAX_MSG_LEN
-from ibapi.ticktype import TickType
-from ibapi.order_state import OrderState
-from ibapi.execution import Execution
-from ibapi.utils import BadMessage
 from ibapi import comm
+from ibapi.client import EClient
+from ibapi.common import MAX_MSG_LEN, OrderId, TickAttrib, TickerId
+from ibapi.contract import Contract, ContractDetails
+from ibapi.execution import Execution
+from ibapi.order import Order
+from ibapi.order_state import OrderState
+from ibapi.ticktype import TickType
+from ibapi.wrapper import EWrapper
 
+from vnpy.trader.constant import (
+    Currency,
+    Direction,
+    Exchange,
+    OptionType,
+    PriceType,
+    Product,
+    Status,
+)
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
-    ContractData,
-    PositionData,
     AccountData,
+    CancelRequest,
+    ContractData,
+    OrderData,
+    OrderRequest,
+    PositionData,
     SubscribeRequest,
     OrderRequest,
     CancelRequest,
@@ -78,7 +86,11 @@ PRODUCT_IB2VT = {v: k for k, v in PRODUCT_VT2IB.items()}
 
 OPTION_VT2IB = {OptionType.CALL: "CALL", OptionType.PUT: "PUT"}
 
-CURRENCY_VT2IB = {Currency.USD: "USD", Currency.CNY: "CNY", Currency.HKD: "HKD"}
+CURRENCY_VT2IB = {
+    Currency.USD: "USD",
+    Currency.CNY: "CNY",
+    Currency.HKD: "HKD",
+}
 
 TICKFIELD_IB2VT = {
     0: "bid_volume_1",
@@ -336,7 +348,9 @@ class IbApi(EWrapper):
         """
         Callback when opening new order.
         """
-        super(IbApi, self).openOrder(orderId, ib_contract, ib_order, orderState)
+        super(IbApi, self).openOrder(
+            orderId, ib_contract, ib_order, orderState
+        )
 
         orderid = str(orderId)
         order = OrderData(
@@ -454,7 +468,7 @@ class IbApi(EWrapper):
         """
         super(IbApi, self).execDetails(reqId, contract, execution)
 
-        today_date = datetime.now().strftime("%Y%m%d")
+        # today_date = datetime.now().strftime("%Y%m%d")
         trade = TradeData(
             symbol=contract.conId,
             exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
@@ -491,7 +505,8 @@ class IbApi(EWrapper):
 
         self.thread.start()
 
-        n = self.client.reqCurrentTime()
+        # n = self.client.reqCurrentTime()
+        self.client.reqCurrentTime()
 
     def close(self):
         """
@@ -596,7 +611,9 @@ class IbClient(EClient):
 
                 if len(text) > MAX_MSG_LEN:
                     errorMsg = "%s:%d:%s" % (BAD_LENGTH.msg(), len(text), text)
-                    self.wrapper.error(NO_VALID_ID, BAD_LENGTH.code(), errorMsg)
+                    self.wrapper.error(
+                        NO_VALID_ID, BAD_LENGTH.code(), errorMsg
+                    )
                     self.disconnect()
                     break
 
