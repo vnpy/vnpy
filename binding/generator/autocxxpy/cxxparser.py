@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from .clang.cindex import (
     Config,
@@ -168,16 +168,26 @@ class CXXParseResult(Namespace):
     macros: Dict[str, str] = field(default_factory=dict)
 
 
-class CXXFileParser:
-    def __init__(self, file_path: Optional[str], unsaved_files=None):
+class CXXParser:
+    def __init__(
+        self,
+        file_path: Optional[str],
+        unsaved_files: Sequence[Sequence[str]] = None,
+        args: List[str] = None,
+    ):
+        if args is None:
+            args = []
         self.unsaved_files = unsaved_files
         self.file_path = file_path
+        self.args = args
+        if "-std=c++11" not in self.args:
+            self.args.append("-std=c++11")
 
     def parse(self) -> CXXParseResult:
         idx = Index.create()
         rs = idx.parse(
             self.file_path,
-            args="-std=c++11 ".split(" "),
+            args=self.args,
             unsaved_files=self.unsaved_files,
             options=(
                 TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
@@ -189,27 +199,27 @@ class CXXFileParser:
         # todo: parse namespace
         for c in rs.cursor.walk_preorder():
             if c.kind == CursorKind.FUNCTION_DECL:
-                func = CXXFileParser._process_function(c)
+                func = CXXParser._process_function(c)
                 result.functions[func.name] = func
             elif c.kind == CursorKind.ENUM_DECL:
-                e = CXXFileParser._process_enum(c)
+                e = CXXParser._process_enum(c)
                 result.enums[e.name] = e
             elif (
                 c.kind == CursorKind.CLASS_DECL
                 or c.kind == CursorKind.STRUCT_DECL
             ):
-                class_ = CXXFileParser._process_class(c)
+                class_ = CXXParser._process_class(c)
                 cname = class_.name
                 result.classes[cname] = class_
             elif c.kind == CursorKind.VAR_DECL:
-                name, value = CXXFileParser._process_variable(c)
+                name, value = CXXParser._process_variable(c)
                 if value:
                     result.variables[name] = value
             elif c.kind == CursorKind.TYPEDEF_DECL:
-                name, target = CXXFileParser._process_typedef(c)
+                name, target = CXXParser._process_typedef(c)
                 result.typedefs[name] = target
             elif c.kind == CursorKind.MACRO_DEFINITION:
-                name, definition = CXXFileParser._process_macro_definition(c)
+                name, definition = CXXParser._process_macro_definition(c)
                 result.macros[name] = definition
             elif (
                 False
@@ -226,7 +236,7 @@ class CXXFileParser:
                 # ignore any body
                 pass
             elif (
-                CXXFileParser._is_literal_cursor(c)
+                CXXParser._is_literal_cursor(c)
                 or c.kind == CursorKind.MACRO_INSTANTIATION
                 or c.kind == CursorKind.INCLUSION_DIRECTIVE
             ):
@@ -297,12 +307,12 @@ class CXXFileParser:
         class_ = Class(name=c.displayname)
         for ac in c.get_children():
             if ac.kind == CursorKind.CONSTRUCTOR:
-                func = CXXFileParser._process_method(ac, class_)
+                func = CXXParser._process_method(ac, class_)
                 if func.is_virtual:
                     class_.is_polymorphic = True
                 class_.constructors = func
             elif ac.kind == CursorKind.DESTRUCTOR:
-                func = CXXFileParser._process_method(ac, class_)
+                func = CXXParser._process_method(ac, class_)
                 if func.is_virtual:
                     class_.is_polymorphic = True
                 class_.destructor = func
@@ -310,7 +320,7 @@ class CXXFileParser:
                 v = Variable(ac.spelling, ac.type.spelling)
                 class_.variables[v.name] = v
             elif ac.kind == CursorKind.CXX_METHOD:
-                func = CXXFileParser._process_method(ac, class_)
+                func = CXXParser._process_method(ac, class_)
                 if func.is_virtual:
                     class_.is_polymorphic = True
                 class_.functions[func.name].append(func)
@@ -339,8 +349,8 @@ class CXXFileParser:
         length = len(children)
         if length == 1:
             child = children[0]
-            if CXXFileParser._is_literal_cursor(child):
-                value = CXXFileParser._process_literal(child)
+            if CXXParser._is_literal_cursor(child):
+                value = CXXParser._process_literal(child)
                 return c.spelling, value
         logger.warning(
             "unable to process variable : %s %s", c.spelling, c.extent
@@ -368,7 +378,7 @@ class CXXFileParser:
 
     @staticmethod
     def _get_source(token: Token, encoding="utf-8"):
-        return CXXFileParser._get_source_from_file(
+        return CXXParser._get_source_from_file(
             token.location.file.name,
             token.extent.start.offset,
             token.extent.end.offset,
@@ -390,7 +400,7 @@ class CXXFileParser:
 
     @staticmethod
     def _is_literal_cursor(c: Cursor):
-        return c.kind in CXXFileParser.LITERAL_KINDS
+        return c.kind in CXXParser.LITERAL_KINDS
         # return str(c)[-9:-1] == 'LITERAL'
 
     @staticmethod
@@ -403,7 +413,7 @@ class CXXFileParser:
             elif c.kind == CursorKind.STRING_LITERAL:
                 return str(spelling)
             elif c.kind == CursorKind.CHARACTER_LITERAL:
-                return CXXFileParser.character_literal_to_int(spelling)
+                return CXXParser.character_literal_to_int(spelling)
             elif c.kind == CursorKind.FLOATING_LITERAL:
                 return float(spelling)
         logger.warning(
@@ -421,14 +431,26 @@ class CXXFileParser:
     pass
 
 
-class CXXParser(CXXFileParser):
-    def __init__(self, files: List[str]):
+class CXXFileParser(CXXParser):
+    def __init__(
+        self,
+        files: Sequence[str],
+        include_paths: Sequence[str] = None,
+        args: List[str] = None,
+    ):
+        if args is None:
+            args = []
+        if include_paths:
+            for include_path in include_paths:
+                args.append("-I" + include_path)
         dummy_code = ""
         for file in files:
             dummy_code += f'#include "{file}"\n'
 
         dummy_name = "dummy.cpp"
-        super().__init__(dummy_name, unsaved_files=[[dummy_name, dummy_code]])
+        super().__init__(
+            dummy_name, unsaved_files=[[dummy_name, dummy_code]], args=args
+        )
 
 
 Config.set_library_path("")

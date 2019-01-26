@@ -10,15 +10,21 @@
 > 在安装CMake的时候必须勾选将CMake加入PATH
 > 在安装Visual Studio的时候必须勾选使用C++的桌面开发(Desktop Development with C++)
 
-## 编译步骤
+## 一键编译
+
+打开开始菜单-Visual Studio 2017-x64 Native Tools Command Prompt for VS 2017
+将vnpy/binding/build.bat拖入弹出的控制台，回车运行即可。
+
+
+## 手动编译
 
 确保你安装好了Python3，CMake还有Visual Studio和C++编译环境，下载好[vnpy]并解压。  
 打开开始菜单-Visual Studio 2017-x64 Native Tools Command Prompt for VS 2017  
-在弹出的控制台中运行以下命令：（假设你解压到C:\vnpy下）
+在弹出的控制台中运行以下命令（将vnpy解压目录改为你将vnpy解压到的目录）：
 ```bat
-cd C:\vnpy
-mkdir binding/build
-cd binding/build
+cd vnpy解压目录
+mkdir binding\build
+cd binding\build
 cmake -G "Visual Studio 15 2017 Win64" ..
 msbuild vnpy_binding.sln /p:Configuration=Release /p:Platform=x64
 ```

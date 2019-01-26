@@ -1,7 +1,7 @@
 import logging
 import os
 
-from autocxxpy.cxxparser import CXXParser, CXXParseResult
+from autocxxpy.cxxparser import CXXFileParser, CXXParseResult
 from autocxxpy.generator import GeneratorOptions
 from autocxxpy.preprocessor import PreProcessorResult, PreProcessor
 
@@ -19,7 +19,7 @@ class CtpAdaptor:
         self.md_header = md_header
 
     def parse(self) -> GeneratorOptions:
-        r0: CXXParseResult = CXXParser(
+        r0: CXXParseResult = CXXFileParser(
             [self.md_header, self.td_header]
         ).parse()
         r1: PreProcessorResult = PreProcessor(r0).process()
