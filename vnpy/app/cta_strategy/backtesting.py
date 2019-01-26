@@ -1,6 +1,8 @@
 from collections import defaultdict
 from datetime import date, datetime
 from typing import Callable
+from itertools import product
+import multiprocessing
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -45,6 +47,7 @@ class BacktestingEngine:
         self.capital = 1_000_000
         self.mode = BacktestingMode.BAR
 
+        self.strategy_class = None
         self.strategy = None
         self.tick = None
         self.bar = None
@@ -126,6 +129,7 @@ class BacktestingEngine:
 
     def add_strategy(self, strategy_class: type, setting: dict):
         """"""
+        self.strategy_class = strategy_class
         self.strategy = strategy_class(
             self, strategy_class.__name__, self.vt_symbol, setting
         )
@@ -372,6 +376,58 @@ class BacktestingEngine:
         df["net_pnl"].hist(bins=50)
 
         plt.show()
+    
+    def run_optimization(self, optimization_setting: OptimizationSetting):
+        """"""
+        # Get optimization setting and target
+        settings = optimization_setting.generate_setting()
+        target_name = optimization_setting.target_name
+
+        if not settings:
+            self.output("优化参数组合为空，请检查")
+            return
+        
+        if not target_name:
+            self.output("优化目标为设置，请检查")
+            return
+
+        # Use multiprocessing pool for running backtesting with different setting
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+
+        results = []
+        for setting in settings:
+            result = (pool.apply_async(optimize, (
+                target_name, 
+                self.strategy_class, 
+                setting, 
+                self.vt_symbol, 
+                self.interval,
+                self.start,
+                self.rate,
+                self.slippage,
+                self.size,
+                self.pricetick,
+                self.capital,
+                self.end,
+                self.mode
+                )))
+            results.append(result)
+
+        pool.close()
+        pool.join()
+
+        # Sort results and output
+        result_values = [result.get() for result in results]
+        result_values.sort(reverse=True, key=lambda result:result[1])
+
+        for value in result_values:
+            msg = f"参数：{value[0]}, 目标：{value[1]}"
+            self.output(msg)
+
+        return result_values
+
+        return resultList
+
 
     def update_daily_close(self, price: float):
         """"""
@@ -788,3 +844,65 @@ class OptimizationSetting:
             value += step
 
         self.params[name] = value_list
+    
+    def set_target(self, target: str):
+        """"""
+        self.target = target
+
+    def generate_setting(self):
+        """"""
+        keys = self.params.keys()
+        values = self.params.values()
+        products = list(product(*values))
+
+        settings = []
+        for product in products:
+            setting = dict(zip(keys, product))
+            settings.append(setting)
+        
+        return settings
+
+
+
+def optimize(
+    target_name: str,
+    strategy_class: CtaTemplate, 
+    setting: dict,
+    vt_symbol: str,
+    interval: Interval,
+    start: datetime,
+    rate: float,
+    slippage: float,
+    size: float,
+    pricetick: float,
+    capital: int,
+    end: datetime,
+    mode: BacktestingMode,
+):
+    """
+    Function for running in multiprocessing.pool
+    """
+    engine = BacktestingEngine()
+    engine.set_parameters(
+        vt_symbol=vt_symbol,
+        interval=interval,
+        start=start
+        rate=rate,
+        slippage=slippage,
+        size=size,
+        pricetick=pricetick,
+        capital=capital,
+        end=end,
+        mode=mode
+        )
+    
+    engine.add_strategy(strategy_class, setting)
+    engine.load_data()
+    engine.run_backtesting()
+    engine.calculate_result()
+    statistics = engine.calculate_statistics()
+    
+    target_value = result[target_name]
+    return (str(setting), target_value, statistics)
+
+

@@ -25,13 +25,15 @@ from vnpy.trader.constant import (
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    AccountData,
-    CancelRequest,
-    ContractData,
+    TickData,
     OrderData,
+    TradeData,
     PositionData,
     AccountData,
     ContractData,
+    OrderRequest,
+    CancelRequest,
+    SubscribeRequest,
 )
 
 REST_HOST = "https://www.bitmex.com/api/v1"

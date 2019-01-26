@@ -23,6 +23,9 @@ from vnpy.trader.constant import Direction, Offset, Exchange, PriceType, Interva
 from vnpy.trader.utility import get_temp_path
 from .base import (
     CtaOrderType,
+    EngineType,
+    StopOrder,
+    StopOrderStatus,
     EVENT_CTA_LOG,
     EVENT_CTA_STOPORDER,
     EVENT_CTA_STRATEGY,

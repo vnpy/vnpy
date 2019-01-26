@@ -18,6 +18,8 @@ from ..event import (
     EVENT_POSITION,
     EVENT_CONTRACT,
     EVENT_LOG,
+    EVENT_TICK,
+    EVENT_TRADE
 )
 from ..object import OrderRequest, SubscribeRequest
 from ..utility import load_setting, save_setting

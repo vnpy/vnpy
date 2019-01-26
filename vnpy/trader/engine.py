@@ -20,6 +20,8 @@ from .event import (
     EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
+    EVENT_TICK,
+    EVENT_TRADE,
 )
 from .gateway import BaseGateway
 from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
@@ -179,7 +181,10 @@ class BaseEngine(ABC):
     """
 
     def __init__(
-        self, main_engine: MainEngine, event_engine: EventEngine, engine_name: str
+        self,
+        main_engine: MainEngine,
+        event_engine: EventEngine,
+        engine_name: str,
     ):
         """"""
         self.main_engine = main_engine
@@ -207,7 +212,9 @@ class LogEngine(BaseEngine):
 
         self.level = SETTINGS["log.level"]
         self.logger = logging.getLogger("VN Trader")
-        self.formatter = logging.Formatter("%(asctime)s  %(levelname)s: %(message)s")
+        self.formatter = logging.Formatter(
+            "%(asctime)s  %(levelname)s: %(message)s"
+        )
 
         self.add_null_handler()
 
@@ -243,7 +250,9 @@ class LogEngine(BaseEngine):
         filename = f"vt_{today_date}.log"
         file_path = get_temp_path(filename)
 
-        file_handler = logging.FileHandler(file_path, mode="w", encoding="utf8")
+        file_handler = logging.FileHandler(
+            file_path, mode="w", encoding="utf8"
+        )
         file_handler.setLevel(self.level)
         file_handler.setFormatter(self.formatter)
         self.logger.addHandler(file_handler)
@@ -474,7 +483,9 @@ class EmailEngine(BaseEngine):
                 with smtplib.SMTP_SSL(
                     SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
-                    smtp.login(SETTINGS["email.username"], SETTINGS["email.password"])
+                    smtp.login(
+                        SETTINGS["email.username"], SETTINGS["email.password"]
+                    )
                     smtp.send_message(msg)
             except Empty:
                 pass

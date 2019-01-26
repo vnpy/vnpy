@@ -10,6 +10,8 @@ from time import sleep
 
 from futu import (
     ModifyOrderOp,
+    TrdSide,
+    TrdEnv,
     OpenHKTradeContext,
     OpenQuoteContext,
     OpenUSTradeContext,
@@ -21,7 +23,7 @@ from futu import (
     StockQuoteHandlerBase,
     TradeDealHandlerBase,
     TradeOrderHandlerBase,
-    TradeDealHandlerBase,
+    TradeDealHandlerBase
 )
 
 from vnpy.trader.constant import Direction, Exchange, Product, Status
