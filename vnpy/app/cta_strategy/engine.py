@@ -118,6 +118,7 @@ class CtaEngine(BaseEngine):
             strategy.pos -= trade.volume
 
         self.call_strategy_func(strategy, strategy.on_trade, trade)
+        self.put_strategy_event(strategy)
 
     def check_stop_order(self, tick: TickData):
         """"""
@@ -393,7 +394,7 @@ class CtaEngine(BaseEngine):
         Stop a strategy.
         """
         strategy = self.strategies[strategy_name]
-        self.call_strategy_func(strategy, strategy.on_start)
+        self.call_strategy_func(strategy, strategy.on_stop)
         strategy.trading = False
 
         self.put_strategy_event(strategy)

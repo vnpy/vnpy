@@ -4,7 +4,7 @@ import sys
 import traceback
 
 import qdarkstyle
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 
 from .mainwindow import MainWindow
 from ..setting import SETTINGS

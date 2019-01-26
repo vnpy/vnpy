@@ -104,11 +104,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # App menu
         all_apps = self.main_engine.get_all_apps()
         for app in all_apps:
-            try:
-                ui_module = import_module(app.app_module + ".ui")
-                widget_class = getattr(ui_module, app.widget_name)
-            except ImportError:
-                continue
+            ui_module = import_module(app.app_module + ".ui")
+            widget_class = getattr(ui_module, app.widget_name)
 
             func = partial(self.open_widget, widget_class, app.app_name)
             icon_path = str(app.app_path.joinpath("ui", app.icon_name))

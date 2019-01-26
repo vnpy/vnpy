@@ -99,9 +99,21 @@ class CtaTemplate(ABC):
         """
         pass
 
+    def on_stop(self):
+        """
+        Callback when strategy is stopped.
+        """
+        pass
+
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
+        """
+        pass
+
+    def on_bar(self, bar: BarData):
+        """
+        Callback of new bar data update.
         """
         pass
 
@@ -120,12 +132,6 @@ class CtaTemplate(ABC):
     def on_stop_order(self, stop_order: StopOrder):
         """
         Callback of stop order update.
-        """
-        pass
-
-    def on_bar(self, bar: BarData):
-        """
-        Callback of new bar data update.
         """
         pass
 
