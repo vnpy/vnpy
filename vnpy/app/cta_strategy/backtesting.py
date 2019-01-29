@@ -12,6 +12,8 @@ from pandas import DataFrame
 from vnpy.trader.constant import Direction, Exchange, Interval, Status
 from vnpy.trader.database import DbBarData, DbTickData
 from vnpy.trader.object import OrderData, TradeData
+from vnpy.trader.utility import round_to_pricetick
+
 from .base import (
     BacktestingMode,
     CtaOrderType,
@@ -698,6 +700,7 @@ class BacktestingEngine:
         stop: bool = False,
     ):
         """"""
+        price = round_to_pricetick(price, self.pricetick)
         if stop:
             return self.send_stop_order(order_type, price, volume)
         else:
@@ -846,18 +849,19 @@ class DailyResult:
     ):
         """"""
         # Holding pnl is the pnl from holding position at day start
-        self.start_pos = self.end_pos = start_pos
+        self.start_pos = start_pos
+        self.end_pos = start_pos
         self.holding_pnl = self.start_pos * (self.close_price - self.pre_close) * size
 
         # Trading pnl is the pnl from new trade during the day
         self.trade_count = len(self.trades)
 
-        pos_change = 0
         for trade in self.trades:
             if trade.direction == Direction.LONG:
-                pos_change += trade.volume
+                pos_change = trade.volume
             else:
-                pos_change -= trade.volume
+                pos_change = -trade.volume
+
             turnover = trade.price * trade.volume * size
 
             self.trading_pnl += pos_change * (self.close_price - trade.price) * size
