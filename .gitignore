@@ -11,3 +11,4 @@
 # Temp
 build
 dist
+*.local
