@@ -1,13 +1,6 @@
 """"""
 
-from peewee import (
-    SqliteDatabase,
-    Model,
-    CharField,
-    DateTimeField,
-    FloatField,
-    IntegerField,
-)
+from peewee import SqliteDatabase, Model, CharField, DateTimeField, FloatField
 
 from .constant import Exchange, Interval
 from .object import BarData, TickData
@@ -73,10 +66,10 @@ class DbBarData(Model):
             datetime=self.datetime,
             interval=Interval(self.interval),
             volume=self.volume,
-            open_price=open_price,
-            high_price=high_price,
-            low_price=low_price,
-            close_price=close_price,
+            open_price=self.open_price,
+            high_price=self.high_price,
+            low_price=self.low_price,
+            close_price=self.close_price,
             gateway_name=self.gateway_name,
         )
         return bar

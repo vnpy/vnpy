@@ -7,3 +7,4 @@ numpy
 pandas
 matplotlib
 seaborn
+jupyter

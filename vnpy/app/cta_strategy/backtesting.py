@@ -4,6 +4,7 @@ from typing import Callable
 from itertools import product
 import multiprocessing
 
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas import DataFrame
@@ -25,6 +26,60 @@ from .base import (
 from .template import CtaTemplate
 
 sns.set_style("whitegrid")
+
+
+
+class OptimizationSetting:
+    """
+    Setting for runnning optimization.
+    """
+
+    def __init__(self):
+        """"""
+        self.params = {}
+        self.target = ""
+
+    def add_parameter(
+        self, name: str, start: float, end: float = None, step: float = None
+    ):
+        """"""
+        if not end and not step:
+            self.params[name] = [start]
+            return
+
+        if start >= end:
+            print("参数优化起始点必须小于终止点")
+            return
+
+        if step <= 0:
+            print("参数优化步进必须大于0")
+            return
+
+        value = start
+        value_list = []
+
+        while value <= end:
+            value_list.append(value)
+            value += step
+
+        self.params[name] = value_list
+    
+    def set_target(self, target: str):
+        """"""
+        self.target = target
+
+    def generate_setting(self):
+        """"""
+        keys = self.params.keys()
+        values = self.params.values()
+        products = list(product(*values))
+
+        settings = []
+        for product in products:
+            setting = dict(zip(keys, product))
+            settings.append(setting)
+        
+        return settings
 
 
 class BacktestingEngine:
@@ -108,21 +163,26 @@ class BacktestingEngine:
         pricetick: float,
         capital: int = 0,
         end: datetime = None,
-        mode: BacktestingMode = None,
+        mode: BacktestingMode = BacktestingMode.BAR,
     ):
         """"""
         self.mode = mode  # 1
         self.vt_symbol = vt_symbol  # 2
+        self.interval = interval
         self.rate = rate  # 3
         self.slippage = slippage  # 4
         self.size = size  #
         self.pricetick = pricetick  #
+        self.start = start
 
         self.symbol, exchange_str = self.vt_symbol.split(".")
         self.exchange = Exchange(exchange_str)
 
         if capital:
             self.capital = capital
+        
+        if end:
+            self.end = end
 
         if mode:
             self.mode = mode
@@ -162,7 +222,7 @@ class BacktestingEngine:
 
         self.history_data = list(s)
 
-        self.output("历史数据加载完成")
+        self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
     def run_backtesting(self):
         """"""
@@ -209,7 +269,7 @@ class BacktestingEngine:
         for trade in self.trades.values():
             d = trade.datetime.date()
             daily_result = self.daily_results[d]
-            d.add_trade(trade)
+            daily_result.add_trade(trade)
 
         # Calculate daily result by iteration.
         pre_close = 0
@@ -228,7 +288,7 @@ class BacktestingEngine:
 
         for daily_result in self.daily_results.values():
             for key, value in daily_result.__dict__.items():
-                results[key] = value
+                results[key].append(value)
 
         self.daily_df = DataFrame.from_dict(results).set_index("date")
 
@@ -258,8 +318,8 @@ class BacktestingEngine:
         end_date = df.index[-1]
 
         total_days = len(df)
-        profit_days = len(df[df["netPnl"] > 0])
-        loss_days = len(df[df["netPnl"] < 0])
+        profit_days = len(df[df["net_pnl"] > 0])
+        loss_days = len(df[df["net_pnl"] < 0])
 
         end_balance = df["balance"].iloc[-1]
         max_drawdown = df["drawdown"].min()
@@ -418,16 +478,13 @@ class BacktestingEngine:
 
         # Sort results and output
         result_values = [result.get() for result in results]
-        result_values.sort(reverse=True, key=lambda result:result[1])
+        result_values.sort(reverse=True, key=lambda result: result[1])
 
         for value in result_values:
             msg = f"参数：{value[0]}, 目标：{value[1]}"
             self.output(msg)
 
         return result_values
-
-        return resultList
-
 
     def update_daily_close(self, price: float):
         """"""
@@ -476,7 +533,7 @@ class BacktestingEngine:
             long_best_price = long_cross_price
             short_best_price = short_cross_price
 
-        for order in self.active_limit_orders.values():
+        for order in list(self.active_limit_orders.values()):
             # Push order update with status "not traded" (pending).
             if order.status == Status.SUBMITTING:
                 order.status = Status.NOTTRADED
@@ -549,7 +606,7 @@ class BacktestingEngine:
             long_best_price = long_cross_price
             short_best_price = short_cross_price
 
-        for stop_order in self.active_stop_orders.values():
+        for stop_order in list(self.active_stop_orders.values()):
             # Check whether stop order can be triggered.
             long_cross = (
                 stop_order.direction == Direction.LONG
@@ -610,6 +667,8 @@ class BacktestingEngine:
             # Update stop order.
             stop_order.vt_orderid = order.vt_orderid
             stop_order.status = StopOrderStatus.TRIGGERED
+
+            self.active_stop_orders.pop(stop_order.stop_orderid)
 
             # Push update to strategy.
             self.strategy.on_stop_order(stop_order)
@@ -715,10 +774,12 @@ class BacktestingEngine:
         """
         Cancel all orders, both limit and stop.
         """
-        for vt_orderid in self.active_limit_orders.keys():
+        vt_orderids = list(self.active_limit_orders.keys())
+        for vt_orderid in vt_orderids:
             self.cancel_limit_order(vt_orderid)
 
-        for vt_orderid in self.active_stop_orders.keys():
+        stop_orderids = list(self.active_stop_orders.keys())
+        for vt_orderid in stop_orderids:
             self.cancel_stop_order(vt_orderid)
 
     def write_log(self, msg: str, strategy: CtaTemplate = None):
@@ -734,7 +795,7 @@ class BacktestingEngine:
         """
         return self.engine_type
 
-    def put_put_strategy_event(self, strategy: CtaTemplate):
+    def put_strategy_event(self, strategy: CtaTemplate):
         """
         Put an event to update strategy status.
         """
@@ -810,60 +871,6 @@ class DailyResult:
         self.net_pnl = self.total_pnl - self.commission - self.slippage
 
 
-class OptimizationSetting:
-    """
-    Setting for runnning optimization.
-    """
-
-    def __init__(self):
-        """"""
-        self.params = {}
-        self.target = ""
-
-    def add_parameter(
-        self, name: str, start: float, end: float = None, step: float = None
-    ):
-        """"""
-        if not end and not step:
-            self.params[name] = [start]
-            return
-
-        if start >= end:
-            print("参数优化起始点必须小于终止点")
-            return
-
-        if step <= 0:
-            print("参数优化步进必须大于0")
-            return
-
-        value = start
-        value_list = []
-
-        while value <= end:
-            value_list.append(value)
-            value += step
-
-        self.params[name] = value_list
-    
-    def set_target(self, target: str):
-        """"""
-        self.target = target
-
-    def generate_setting(self):
-        """"""
-        keys = self.params.keys()
-        values = self.params.values()
-        products = list(product(*values))
-
-        settings = []
-        for product in products:
-            setting = dict(zip(keys, product))
-            settings.append(setting)
-        
-        return settings
-
-
-
 def optimize(
     target_name: str,
     strategy_class: CtaTemplate, 
@@ -886,7 +893,7 @@ def optimize(
     engine.set_parameters(
         vt_symbol=vt_symbol,
         interval=interval,
-        start=start
+        start=start,
         rate=rate,
         slippage=slippage,
         size=size,

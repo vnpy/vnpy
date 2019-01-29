@@ -169,9 +169,13 @@ class CtaTemplate(ABC):
         """
         Send a new order.
         """
-        return self.cta_engine.send_order(
-            self, order_type, price, volume, stop
-        )
+        if self.trading:
+            vt_orderid = self.cta_engine.send_order(
+                self, order_type, price, volume, stop
+            )
+        else:
+            vt_orderid = ""
+        return vt_orderid
 
     def cancel_order(self, vt_orderid: str):
         """

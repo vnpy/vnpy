@@ -8,14 +8,14 @@ from enum import Enum
 from vnpy.trader.constant import Direction, Offset
 
 APP_NAME = "CtaStrategy"
-STOPORDER_PREFIX = "STOP."
+STOPORDER_PREFIX = "STOP"
 
 
 class CtaOrderType(Enum):
     BUY = "买开"
-    SELL = "买开"
-    SHORT = "买开"
-    COVER = "买开"
+    SELL = "卖平"
+    SHORT = "卖开"
+    COVER = "买平"
 
 
 class StopOrderStatus(Enum):

@@ -16,15 +16,6 @@ from ibapi.order_state import OrderState
 from ibapi.ticktype import TickType
 from ibapi.wrapper import EWrapper
 
-from vnpy.trader.constant import (
-    Currency,
-    Direction,
-    Exchange,
-    OptionType,
-    PriceType,
-    Product,
-    Status,
-)
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     AccountData,
@@ -414,7 +405,7 @@ class IbApi(EWrapper):
         pos = PositionData(
             symbol=contract.conId,
             exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
-            direction=DIRECTION_NET,
+            direction=Direction.NET,
             volume=position,
             price=averageCost,
             pnl=unrealizedPNL,
@@ -430,9 +421,7 @@ class IbApi(EWrapper):
         for account in self.accounts.values():
             self.gateway.on_account(copy(account))
 
-    def contractDetails(
-        self, reqId: int, contractDetails: ContractDetails
-    ):  # pylint: disable=invalid-name
+    def contractDetails(self, reqId: int, contractDetails: ContractDetails):  # pylint: disable=invalid-name
         """
         Callback of contract data update.
         """

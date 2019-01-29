@@ -224,10 +224,10 @@ class ArrayManager(object):
         self.close_array[:-1] = self.close_array[1:]
         self.volume_array[:-1] = self.volume_array[1:]
 
-        self.open_array[-1] = bar.open
-        self.high_array[-1] = bar.high
-        self.low_array[-1] = bar.low
-        self.close_array[-1] = bar.close
+        self.open_array[-1] = bar.open_price
+        self.high_array[-1] = bar.high_price
+        self.low_array[-1] = bar.low_price
+        self.close_array[-1] = bar.close_price
         self.volume_array[-1] = bar.volume
 
     @property
