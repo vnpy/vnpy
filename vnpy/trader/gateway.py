@@ -8,8 +8,8 @@ from typing import Any
 from vnpy.event import Event, EventEngine
 from .event import (
     EVENT_TICK,
-    EVENT_TRADE,
     EVENT_ORDER,
+    EVENT_TRADE,
     EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_CONTRACT,

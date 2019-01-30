@@ -1,10 +1,10 @@
 """"""
-
 from abc import ABC
 from typing import Any, Callable
 
 from vnpy.trader.constant import Interval
-from vnpy.trader.object import BarData, OrderData, TickData, TradeData
+from vnpy.trader.object import BarData, TickData, OrderData, TradeData
+
 from .base import CtaOrderType, StopOrder
 
 

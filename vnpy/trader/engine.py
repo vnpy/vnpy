@@ -13,13 +13,13 @@ from typing import Any
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
 from .event import (
+    EVENT_TICK,
+    EVENT_ORDER,
+    EVENT_TRADE,
+    EVENT_POSITION,
     EVENT_ACCOUNT,
     EVENT_CONTRACT,
-    EVENT_LOG,
-    EVENT_ORDER,
-    EVENT_POSITION,
-    EVENT_TICK,
-    EVENT_TRADE,
+    EVENT_LOG
 )
 from .gateway import BaseGateway
 from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest

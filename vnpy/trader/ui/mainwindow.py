@@ -10,7 +10,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from vnpy.event import EventEngine
 from .widget import (
-    AboutDialog,
     TickMonitor,
     OrderMonitor,
     TradeMonitor,
@@ -21,6 +20,7 @@ from .widget import (
     ConnectDialog,
     ContractManager,
     TradingWidget,
+    AboutDialog,
 )
 from ..engine import MainEngine
 from ..utility import get_icon_path, get_trader_path

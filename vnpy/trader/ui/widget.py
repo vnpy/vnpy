@@ -12,12 +12,12 @@ from vnpy.event import Event, EventEngine
 from ..constant import Direction, Exchange, Offset, PriceType
 from ..engine import MainEngine
 from ..event import (
-    EVENT_ACCOUNT,
+    EVENT_TICK,
+    EVENT_TRADE,
     EVENT_ORDER,
     EVENT_POSITION,
-    EVENT_LOG,
-    EVENT_TICK,
-    EVENT_TRADE
+    EVENT_ACCOUNT,
+    EVENT_LOG
 )
 from ..object import OrderRequest, SubscribeRequest
 from ..utility import load_setting, save_setting

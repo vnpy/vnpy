@@ -6,7 +6,6 @@ from vnpy.app.cta_strategy import (
     BarData,
     TradeData,
     OrderData,
-    StopOrder,
     BarGenerator,
     ArrayManager,
 )
@@ -161,4 +160,3 @@ class TurtleSignalStrategy(CtaTemplate):
 
         if t > -4:
             self.short(price - self.atr_value * 1.5, self.fixed_size, True)
-

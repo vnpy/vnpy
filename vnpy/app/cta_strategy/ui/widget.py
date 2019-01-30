@@ -5,16 +5,16 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtGui, QtWidgets
 from vnpy.trader.ui.widget import (
     BaseCell,
-    BaseMonitor,
     EnumCell,
     MsgCell,
     TimeCell,
+    BaseMonitor
 )
 from ..base import (
     APP_NAME,
     EVENT_CTA_LOG,
     EVENT_CTA_STOPORDER,
-    EVENT_CTA_STRATEGY,
+    EVENT_CTA_STRATEGY
 )
 from ..engine import CtaEngine
 

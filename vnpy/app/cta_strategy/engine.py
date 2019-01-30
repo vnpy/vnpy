@@ -19,14 +19,15 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.constant import Direction, PriceType, Interval
 from vnpy.trader.utility import get_temp_path
+
 from .base import (
+    EVENT_CTA_LOG,
+    EVENT_CTA_STRATEGY,
+    EVENT_CTA_STOPORDER,
     CtaOrderType,
     EngineType,
     StopOrder,
     StopOrderStatus,
-    EVENT_CTA_LOG,
-    EVENT_CTA_STRATEGY,
-    EVENT_CTA_STOPORDER,
     ORDER_CTA2VT,
     STOPORDER_PREFIX
 )
@@ -42,16 +43,19 @@ class CtaEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
-        super(CtaEngine, self).__init__(main_engine, event_engine, "CtaStrategy")
+        super(CtaEngine, self).__init__(
+            main_engine, event_engine, "CtaStrategy")
 
         self.setting_file = None  # setting file object
 
         self.classes = {}  # class_name: stategy_class
         self.strategies = {}  # strategy_name: strategy
 
-        self.symbol_strategy_map = defaultdict(list)  # vt_symbol: strategy list
+        self.symbol_strategy_map = defaultdict(
+            list)  # vt_symbol: strategy list
         self.orderid_strategy_map = {}  # vt_orderid: strategy
-        self.strategy_orderid_map = defaultdict(set)  # strategy_name: orderid list
+        self.strategy_orderid_map = defaultdict(
+            set)  # strategy_name: orderid list
 
         self.stop_order_count = 0  # for generating stop_orderid
         self.stop_orders = {}  # stop_orderid: stop_order
@@ -197,7 +201,8 @@ class CtaEngine(BaseEngine):
             price=price,
             volume=volume,
         )
-        vt_orderid = self.main_engine.send_limit_order(req, contract.gateway_name)
+        vt_orderid = self.main_engine.send_limit_order(
+            req, contract.gateway_name)
 
         # Save relationship between orderid and strategy.
         self.orderid_strategy_map[vt_orderid] = strategy
@@ -374,7 +379,8 @@ class CtaEngine(BaseEngine):
         # Subscribe market data
         contract = self.main_engine.get_contract(strategy.vt_symbol)
         if contract:
-            req = SubscribeRequest(symbol=contract.symbol, exchange=contract.exchange)
+            req = SubscribeRequest(
+                symbol=contract.symbol, exchange=contract.exchange)
             self.main_engine.subscribe(req, contract.gateway_name)
         else:
             self.write_log(f"行情订阅失败，找不到合约{strategy.vt_symbol}", strategy)
@@ -439,7 +445,8 @@ class CtaEngine(BaseEngine):
         Load strategy class from source code.
         """
         path1 = Path(__file__).parent.joinpath("strategies")
-        self.load_strategy_class_from_folder(path1, "vnpy.app.cta_strategy.strategies")
+        self.load_strategy_class_from_folder(
+            path1, "vnpy.app.cta_strategy.strategies")
 
         path2 = Path.cwd().joinpath("strategies")
         self.load_strategy_class_from_folder(path2, "strategies")
@@ -450,7 +457,8 @@ class CtaEngine(BaseEngine):
         """
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
-                module_name = ".".join([module_name, filename.replace(".py", "")])
+                module_name = ".".join(
+                    [module_name, filename.replace(".py", "")])
                 self.load_strategy_class_from_module(module_name)
 
     def load_strategy_class_from_module(self, module_name: str):

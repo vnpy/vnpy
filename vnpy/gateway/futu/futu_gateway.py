@@ -30,10 +30,10 @@ from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
+    OrderData,
     TradeData,
     AccountData,
     ContractData,
-    OrderData,
     PositionData,
     SubscribeRequest,
     OrderRequest,

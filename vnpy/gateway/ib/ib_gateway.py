@@ -19,14 +19,14 @@ from ibapi.errors import BAD_LENGTH
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    AccountData,
-    CancelRequest,
-    ContractData,
     TickData,
     OrderData,
     TradeData,
-    OrderRequest,
     PositionData,
+    AccountData,
+    ContractData,
+    OrderRequest,
+    CancelRequest,
     SubscribeRequest
 )
 from vnpy.trader.constant import (
@@ -347,7 +347,8 @@ class IbApi(EWrapper):
         orderid = str(orderId)
         order = OrderData(
             symbol=ib_contract.conId,
-            exchange=EXCHANGE_IB2VT.get(ib_contract.exchange, ib_contract.exchange),
+            exchange=EXCHANGE_IB2VT.get(
+                ib_contract.exchange, ib_contract.exchange),
             orderid=orderid,
             direction=DIRECTION_IB2VT[ib_order.action],
             price=ib_order.lmtPrice,
@@ -372,7 +373,8 @@ class IbApi(EWrapper):
         accountid = f"{accountName}.{currency}"
         account = self.accounts.get(accountid, None)
         if not account:
-            account = AccountData(accountid=accountid, gateway_name=self.gateway_name)
+            account = AccountData(accountid=accountid,
+                                  gateway_name=self.gateway_name)
             self.accounts[accountid] = account
 
         name = ACCOUNTFIELD_IB2VT[key]
@@ -491,7 +493,8 @@ class IbApi(EWrapper):
 
         self.clientid = setting["clientid"]
 
-        self.client.connect(setting["host"], setting["port"], setting["clientid"])
+        self.client.connect(
+            setting["host"], setting["port"], setting["clientid"])
 
         self.thread.start()
 
@@ -592,7 +595,7 @@ class IbClient(EClient):
     def run(self):
         """
         Reimplement the original run message loop of eclient.
-        
+
         Remove all unnecessary try...catch... and allow exceptions to interrupt loop.
         """
         while not self.done and self.isConnected():
