@@ -14,7 +14,7 @@ import websocket
 class WebsocketClient(object):
     """
     Websocket API
-    
+
     After creating the client object, use start() to run worker and ping threads.
     The worker thread connects websocket automatically.
 
@@ -28,7 +28,7 @@ class WebsocketClient(object):
     * on_disconnected
     * on_packet
     * on_error
-    
+
     After start() is called, the ping thread will ping server every 60 seconds.
     """
 
@@ -76,7 +76,7 @@ class WebsocketClient(object):
     def stop(self):
         """
         Stop the client.
-        
+
         This function cannot be called from worker thread or callback function.
         """
         self._active = False

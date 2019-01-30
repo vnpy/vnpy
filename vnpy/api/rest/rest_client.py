@@ -78,7 +78,7 @@ class Request(object):
 class RestClient(object):
     """
     HTTP Client designed for all sorts of trading RESTFul API.
-    
+
     * Reimplement before_request function to add signature function.
     * Reimplement on_failed function to handle Non-2xx responses.
     * Use on_failed parameter in add_request function for individual Non-2xx response handling.

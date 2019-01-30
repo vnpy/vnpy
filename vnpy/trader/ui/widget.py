@@ -304,7 +304,8 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         Save table data into a csv file
         """
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "保存数据", "", "CSV(*.csv)")
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, "保存数据", "", "CSV(*.csv)")
 
         if not path:
             return
@@ -499,7 +500,8 @@ class ConnectDialog(QtWidgets.QDialog):
         self.setWindowTitle(f"连接{self.gateway_name}")
 
         # Default setting provides field name, field data type and field default value.
-        default_setting = self.main_engine.get_default_setting(self.gateway_name)
+        default_setting = self.main_engine.get_default_setting(
+            self.gateway_name)
 
         # Saved setting provides field data used last time.
         loaded_setting = load_setting(self.filename)
@@ -588,13 +590,15 @@ class TradingWidget(QtWidgets.QWidget):
         self.name_line.setReadOnly(True)
 
         self.direction_combo = QtWidgets.QComboBox()
-        self.direction_combo.addItems([Direction.LONG.value, Direction.SHORT.value])
+        self.direction_combo.addItems(
+            [Direction.LONG.value, Direction.SHORT.value])
 
         self.offset_combo = QtWidgets.QComboBox()
         self.offset_combo.addItems([offset.value for offset in Offset])
 
         self.price_type_combo = QtWidgets.QComboBox()
-        self.price_type_combo.addItems([price_type.value for price_type in PriceType])
+        self.price_type_combo.addItems(
+            [price_type.value for price_type in PriceType])
 
         double_validator = QtGui.QDoubleValidator()
         double_validator.setBottom(0)
@@ -637,11 +641,16 @@ class TradingWidget(QtWidgets.QWidget):
         self.bp4_label = self.create_label(bid_color)
         self.bp5_label = self.create_label(bid_color)
 
-        self.bv1_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv2_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv3_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv4_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
-        self.bv5_label = self.create_label(bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv1_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv2_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv3_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv4_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
+        self.bv5_label = self.create_label(
+            bid_color, alignment=QtCore.Qt.AlignRight)
 
         self.ap1_label = self.create_label(ask_color)
         self.ap2_label = self.create_label(ask_color)
@@ -649,11 +658,16 @@ class TradingWidget(QtWidgets.QWidget):
         self.ap4_label = self.create_label(ask_color)
         self.ap5_label = self.create_label(ask_color)
 
-        self.av1_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av2_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av3_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av4_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
-        self.av5_label = self.create_label(ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av1_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av2_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av3_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av4_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
+        self.av5_label = self.create_label(
+            ask_color, alignment=QtCore.Qt.AlignRight)
 
         self.lp_label = self.create_label()
         self.return_label = self.create_label(alignment=QtCore.Qt.AlignRight)

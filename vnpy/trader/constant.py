@@ -9,7 +9,6 @@ class Direction(Enum):
     """
     Direction of order/trade/position.
     """
-
     LONG = "多"
     SHORT = "空"
     NET = "净"
@@ -19,7 +18,6 @@ class Offset(Enum):
     """
     Offset of order/trade.
     """
-
     NONE = ""
     OPEN = "开"
     CLOSE = "平"
@@ -31,7 +29,6 @@ class Status(Enum):
     """
     Order status.
     """
-
     SUBMITTING = "提交中"
     NOTTRADED = "未成交"
     PARTTRADED = "部分成交"
@@ -44,7 +41,6 @@ class Product(Enum):
     """
     Product class.
     """
-
     EQUITY = "股票"
     FUTURES = "期货"
     OPTION = "期权"
@@ -60,7 +56,6 @@ class PriceType(Enum):
     """
     Order price type.
     """
-
     LIMIT = "限价"
     MARKET = "市价"
     FAK = "FAK"
@@ -71,7 +66,6 @@ class OptionType(Enum):
     """
     Option type.
     """
-
     CALL = "看涨期权"
     PUT = "看跌期权"
 
@@ -80,7 +74,6 @@ class Exchange(Enum):
     """
     Exchange.
     """
-
     # Chinese
     CFFEX = "CFFEX"
     SHFE = "SHFE"
@@ -109,13 +102,15 @@ class Currency(Enum):
     """
     Currency.
     """
-
     USD = "USD"
     HKD = "HKD"
     CNY = "CNY"
 
 
 class Interval(Enum):
+    """
+    Interval of bar data.
+    """
     MINUTE = "1m"
     HOUR = "1h"
     DAILY = "d"

@@ -62,7 +62,7 @@ class OptimizationSetting:
             value += step
 
         self.params[name] = value_list
-    
+
     def set_target(self, target: str):
         """"""
         self.target = target
@@ -77,7 +77,7 @@ class OptimizationSetting:
         for p in products:
             setting = dict(zip(keys, p))
             settings.append(setting)
-        
+
         return settings
 
 
@@ -179,7 +179,7 @@ class BacktestingEngine:
 
         if capital:
             self.capital = capital
-        
+
         if end:
             self.end = end
 
@@ -201,10 +201,10 @@ class BacktestingEngine:
             s = (
                 DbBarData.select()
                 .where(
-                    (DbBarData.vt_symbol == self.vt_symbol)
-                    & (DbBarData.interval == self.interval)
-                    & (DbBarData.datetime >= self.start)
-                    & (DbBarData.datetime <= self.end)
+                    (DbBarData.vt_symbol == self.vt_symbol) &
+                    (DbBarData.interval == self.interval) &
+                    (DbBarData.datetime >= self.start) &
+                    (DbBarData.datetime <= self.end)
                 )
                 .order_by(DbBarData.datetime)
             )
@@ -212,9 +212,9 @@ class BacktestingEngine:
             s = (
                 DbTickData.select()
                 .where(
-                    (DbTickData.vt_symbol == self.vt_symbol)
-                    & (DbTickData.datetime >= self.start)
-                    & (DbTickData.datetime <= self.end)
+                    (DbTickData.vt_symbol == self.vt_symbol) &
+                    (DbTickData.datetime >= self.start) &
+                    (DbTickData.datetime <= self.end)
                 )
                 .order_by(DbTickData.datetime)
             )
@@ -307,7 +307,8 @@ class BacktestingEngine:
             0
         )
         df["highlevel"] = (
-            df["balance"].rolling(min_periods=1, window=len(df), center=False).max()
+            df["balance"].rolling(
+                min_periods=1, window=len(df), center=False).max()
         )
         df["drawdown"] = df["balance"] - df["highlevel"]
         df["ddpercent"] = df["drawdown"] / df["highlevel"] * 100
@@ -435,7 +436,7 @@ class BacktestingEngine:
         df["net_pnl"].hist(bins=50)
 
         plt.show()
-    
+
     def run_optimization(self, optimization_setting: OptimizationSetting):
         """"""
         # Get optimization setting and target
@@ -445,7 +446,7 @@ class BacktestingEngine:
         if not settings:
             self.output("优化参数组合为空，请检查")
             return
-        
+
         if not target_name:
             self.output("优化目标为设置，请检查")
             return
@@ -456,10 +457,10 @@ class BacktestingEngine:
         results = []
         for setting in settings:
             result = (pool.apply_async(optimize, (
-                target_name, 
-                self.strategy_class, 
-                setting, 
-                self.vt_symbol, 
+                target_name,
+                self.strategy_class,
+                setting,
+                self.vt_symbol,
                 self.interval,
                 self.start,
                 self.rate,
@@ -540,15 +541,15 @@ class BacktestingEngine:
 
             # Check whether limit orders can be filled.
             long_cross = (
-                order.direction == Direction.LONG
-                and order.price >= long_cross_price
-                and long_cross_price > 0
+                order.direction == Direction.LONG and
+                order.price >= long_cross_price and
+                long_cross_price > 0
             )
 
             short_cross = (
-                order.direction == Direction.SHORT
-                and order.price <= short_cross_price
-                and short_cross_price > 0
+                order.direction == Direction.SHORT and
+                order.price <= short_cross_price and
+                short_cross_price > 0
             )
 
             if not long_cross and not short_cross:
@@ -608,13 +609,13 @@ class BacktestingEngine:
         for stop_order in list(self.active_stop_orders.values()):
             # Check whether stop order can be triggered.
             long_cross = (
-                stop_order.direction == Direction.LONG
-                and stop_order.price <= long_cross_price
+                stop_order.direction == Direction.LONG and
+                stop_order.price <= long_cross_price
             )
 
             short_cross = (
-                stop_order.direction == Direction.SHORT
-                and stop_order.price >= short_cross_price
+                stop_order.direction == Direction.SHORT and
+                stop_order.price >= short_cross_price
             )
 
             if not long_cross and not short_cross:
@@ -848,7 +849,8 @@ class DailyResult:
         # Holding pnl is the pnl from holding position at day start
         self.start_pos = start_pos
         self.end_pos = start_pos
-        self.holding_pnl = self.start_pos * (self.close_price - self.pre_close) * size
+        self.holding_pnl = self.start_pos * \
+            (self.close_price - self.pre_close) * size
 
         # Trading pnl is the pnl from new trade during the day
         self.trade_count = len(self.trades)
@@ -861,7 +863,8 @@ class DailyResult:
 
             turnover = trade.price * trade.volume * size
 
-            self.trading_pnl += pos_change * (self.close_price - trade.price) * size
+            self.trading_pnl += pos_change * \
+                (self.close_price - trade.price) * size
             self.end_pos += pos_change
             self.turnover += turnover
             self.commission += turnover * rate
@@ -874,7 +877,7 @@ class DailyResult:
 
 def optimize(
     target_name: str,
-    strategy_class: CtaTemplate, 
+    strategy_class: CtaTemplate,
     setting: dict,
     vt_symbol: str,
     interval: Interval,
@@ -903,12 +906,12 @@ def optimize(
         end=end,
         mode=mode
     )
-    
+
     engine.add_strategy(strategy_class, setting)
     engine.load_data()
     engine.run_backtesting()
     engine.calculate_result()
     statistics = engine.calculate_statistics()
-    
+
     target_value = statistics[target_name]
     return (str(setting), target_value, statistics)

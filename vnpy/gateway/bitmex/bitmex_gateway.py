@@ -86,7 +86,8 @@ class BitmexGateway(BaseGateway):
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
-        self.rest_api.connect(key, secret, session, server, proxy_host, proxy_port)
+        self.rest_api.connect(key, secret, session,
+                              server, proxy_host, proxy_port)
 
         self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
 
@@ -407,7 +408,8 @@ class BitmexWebsocketApi(WebsocketClient):
         msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
         self.gateway.write_log(msg)
 
-        sys.stderr.write(self.exception_detail(exception_type, exception_value, tb))
+        sys.stderr.write(self.exception_detail(
+            exception_type, exception_value, tb))
 
     def authenticate(self):
         """
@@ -450,7 +452,8 @@ class BitmexWebsocketApi(WebsocketClient):
             return
 
         tick.last_price = d["price"]
-        tick.datetime = datetime.strptime(d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = datetime.strptime(
+            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
         self.gateway.on_tick(copy(tick))
 
     def on_depth(self, d):
@@ -470,7 +473,8 @@ class BitmexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.strptime(d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = datetime.strptime(
+            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, d):
@@ -552,7 +556,8 @@ class BitmexWebsocketApi(WebsocketClient):
         accountid = str(d["account"])
         account = self.accounts.get(accountid, None)
         if not account:
-            account = AccountData(accountid=accountid, gateway_name=self.gateway_name)
+            account = AccountData(accountid=accountid,
+                                  gateway_name=self.gateway_name)
             self.accounts[accountid] = account
 
         account.balance = d.get("marginBalance", account.balance)

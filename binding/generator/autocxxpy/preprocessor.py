@@ -71,7 +71,8 @@ class PreprocessedClass(Class):
         default_factory=(lambda: defaultdict(list))
     )
     need_wrap: bool = False  # if need_wrap is true, wrap this to dict
-    is_pure_virtual: bool = False  # generator will not assign python constructor for pure virtual
+    # generator will not assign python constructor for pure virtual
+    is_pure_virtual: bool = False
 
 
 class PreProcessorResult:
@@ -158,8 +159,8 @@ class PreProcessor:
 
         # array of basic type, such as int[], char[]
         if (
-            is_array_type(basic_combination)
-            and array_base(basic_combination) in base_types
+            is_array_type(basic_combination) and
+            array_base(basic_combination) in base_types
         ):
             return True
 

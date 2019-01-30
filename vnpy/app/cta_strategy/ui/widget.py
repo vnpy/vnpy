@@ -68,8 +68,6 @@ class CtaManager(QtWidgets.QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setWidget(scroll_widget)
 
-        # bottom_height = 300
-
         self.log_monitor = LogMonitor(self.main_engine, self.event_engine)
 
         self.stop_order_monitor = StopOrderMonitor(

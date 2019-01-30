@@ -154,9 +154,9 @@ class Method(Function):
                 "virtual" if self.is_virtual else "",
                 "static" if self.is_static else "",
                 self.parent.name,
-            )
-            + super().full_signature
-            + (" = 0" if self.is_pure_virtual else "")
+            ) +
+            super().full_signature +
+            (" = 0" if self.is_pure_virtual else "")
         )
 
     def __str__(self):
@@ -190,9 +190,9 @@ class CXXParser:
             args=self.args,
             unsaved_files=self.unsaved_files,
             options=(
-                TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
-                | TranslationUnit.PARSE_SKIP_FUNCTION_BODIES
-                | TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION
+                TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD |
+                TranslationUnit.PARSE_SKIP_FUNCTION_BODIES |
+                TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION
             ),
         )
         result = CXXParseResult()
@@ -205,8 +205,8 @@ class CXXParser:
                 e = CXXParser._process_enum(c)
                 result.enums[e.name] = e
             elif (
-                c.kind == CursorKind.CLASS_DECL
-                or c.kind == CursorKind.STRUCT_DECL
+                c.kind == CursorKind.CLASS_DECL or
+                c.kind == CursorKind.STRUCT_DECL
             ):
                 class_ = CXXParser._process_class(c)
                 cname = class_.name
@@ -222,30 +222,30 @@ class CXXParser:
                 name, definition = CXXParser._process_macro_definition(c)
                 result.macros[name] = definition
             elif (
-                False
-                or c.kind == CursorKind.ENUM_CONSTANT_DECL
-                or c.kind == CursorKind.CXX_METHOD
-                or c.kind == CursorKind.CXX_FINAL_ATTR
-                or c.kind == CursorKind.DESTRUCTOR
-                or c.kind == CursorKind.PARM_DECL
-                or c.kind == CursorKind.CXX_ACCESS_SPEC_DECL
-                or c.kind == CursorKind.FIELD_DECL
+                False or
+                c.kind == CursorKind.ENUM_CONSTANT_DECL or
+                c.kind == CursorKind.CXX_METHOD or
+                c.kind == CursorKind.CXX_FINAL_ATTR or
+                c.kind == CursorKind.DESTRUCTOR or
+                c.kind == CursorKind.PARM_DECL or
+                c.kind == CursorKind.CXX_ACCESS_SPEC_DECL or
+                c.kind == CursorKind.FIELD_DECL
             ):
                 pass
             elif c.kind == CursorKind.COMPOUND_STMT:
                 # ignore any body
                 pass
             elif (
-                CXXParser._is_literal_cursor(c)
-                or c.kind == CursorKind.MACRO_INSTANTIATION
-                or c.kind == CursorKind.INCLUSION_DIRECTIVE
+                CXXParser._is_literal_cursor(c) or
+                c.kind == CursorKind.MACRO_INSTANTIATION or
+                c.kind == CursorKind.INCLUSION_DIRECTIVE
             ):
                 # just not need to process
                 pass
             elif (
-                c.kind == CursorKind.TYPE_REF
-                or c.kind == CursorKind.UNEXPOSED_EXPR
-                or c.kind == CursorKind.TRANSLATION_UNIT
+                c.kind == CursorKind.TYPE_REF or
+                c.kind == CursorKind.UNEXPOSED_EXPR or
+                c.kind == CursorKind.TRANSLATION_UNIT
             ):
                 # i don't know what those are
                 pass

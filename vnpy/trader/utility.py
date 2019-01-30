@@ -15,10 +15,10 @@ from .object import BarData, TickData
 class Singleton(type):
     """
     Singleton metaclass, 
-    
+
     class A:
         __metaclass__ = Singleton
-        
+
     """
 
     _instances = {}

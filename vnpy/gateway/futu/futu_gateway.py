@@ -322,7 +322,8 @@ class FutuGateway(BaseGateway):
             account = AccountData(
                 accountid=f"{self.gateway_name}_{self.market}",
                 balance=float(row["total_assets"]),
-                frozen=(float(row["total_assets"]) - float(row["avl_withdrawal_cash"])),
+                frozen=(float(row["total_assets"]) -
+                        float(row["avl_withdrawal_cash"])),
                 gateway_name=self.gateway_name,
             )
             self.on_account(account)
@@ -412,7 +413,8 @@ class FutuGateway(BaseGateway):
 
             date = row["data_date"].replace("-", "")
             time = row["data_time"]
-            tick.datetime = datetime.strptime(f"{date} {time}", "%Y%m%d %H:%M:%S")
+            tick.datetime = datetime.strptime(
+                f"{date} {time}", "%Y%m%d %H:%M:%S")
             tick.open_price = row["open_price"]
             tick.high_price = row["high_price"]
             tick.low_price = row["low_price"]

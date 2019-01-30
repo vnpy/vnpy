@@ -6,3 +6,6 @@ ignore =
 
     W293 blank line contains whitespace
     W291 trailing whitespace
+
+[pycodestyle]
+max_line_length = 79
