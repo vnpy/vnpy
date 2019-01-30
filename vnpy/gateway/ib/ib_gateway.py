@@ -8,25 +8,26 @@ from threading import Thread
 
 from ibapi import comm
 from ibapi.client import EClient
-from ibapi.common import MAX_MSG_LEN, OrderId, TickAttrib, TickerId
+from ibapi.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
 from ibapi.contract import Contract, ContractDetails
 from ibapi.execution import Execution
 from ibapi.order import Order
 from ibapi.order_state import OrderState
 from ibapi.ticktype import TickType
 from ibapi.wrapper import EWrapper
+from ibapi.errors import BAD_LENGTH
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     AccountData,
     CancelRequest,
     ContractData,
+    TickData,
     OrderData,
+    TradeData,
     OrderRequest,
     PositionData,
-    SubscribeRequest,
-    OrderRequest,
-    CancelRequest,
+    SubscribeRequest
 )
 from vnpy.trader.constant import (
     Product,

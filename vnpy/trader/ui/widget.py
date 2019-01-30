@@ -13,10 +13,8 @@ from ..constant import Direction, Exchange, Offset, PriceType
 from ..engine import MainEngine
 from ..event import (
     EVENT_ACCOUNT,
-    EVENT_LOG,
     EVENT_ORDER,
     EVENT_POSITION,
-    EVENT_CONTRACT,
     EVENT_LOG,
     EVENT_TICK,
     EVENT_TRADE

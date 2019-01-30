@@ -22,13 +22,10 @@ from .base import (
     STOPORDER_PREFIX,
     StopOrder,
     StopOrderStatus,
-    BacktestingMode,
-    ORDER_CTA2VT,
 )
 from .template import CtaTemplate
 
 sns.set_style("whitegrid")
-
 
 
 class OptimizationSetting:
@@ -77,8 +74,8 @@ class OptimizationSetting:
         products = list(product(*values))
 
         settings = []
-        for product in products:
-            setting = dict(zip(keys, product))
+        for p in products:
+            setting = dict(zip(keys, p))
             settings.append(setting)
         
         return settings
@@ -419,7 +416,7 @@ class BacktestingEngine:
         if not df:
             df = self.daily_df
 
-        fig = plt.figure(figsize=(10, 16))
+        plt.figure(figsize=(10, 16))
 
         balance_plot = plt.subplot(4, 1, 1)
         balance_plot.set_title("Balance")
@@ -472,7 +469,7 @@ class BacktestingEngine:
                 self.capital,
                 self.end,
                 self.mode
-                )))
+            )))
             results.append(result)
 
         pool.close()
@@ -746,7 +743,7 @@ class BacktestingEngine:
 
         return order.vt_orderid
 
-    def cancel_order(self, vt_orderid: str):
+    def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
         Cancel order by vt_orderid.
         """
@@ -755,7 +752,7 @@ class BacktestingEngine:
         else:
             self.cancel_limit_order(vt_orderid)
 
-    def cancel_stop_order(self, vt_orderid: str):
+    def cancel_stop_order(self, strategy: CtaTemplate, vt_orderid: str):
         """"""
         if vt_orderid not in self.active_stop_orders:
             return
@@ -764,7 +761,7 @@ class BacktestingEngine:
         stop_order.status = StopOrderStatus.CANCELLED
         self.strategy.on_stop_order(stop_order)
 
-    def cancel_limit_order(self, vt_orderid: str):
+    def cancel_limit_order(self, strategy: CtaTemplate, vt_orderid: str):
         """"""
         if vt_orderid not in self.active_limit_orders:
             return
@@ -779,11 +776,11 @@ class BacktestingEngine:
         """
         vt_orderids = list(self.active_limit_orders.keys())
         for vt_orderid in vt_orderids:
-            self.cancel_limit_order(vt_orderid)
+            self.cancel_limit_order(strategy, vt_orderid)
 
         stop_orderids = list(self.active_stop_orders.keys())
         for vt_orderid in stop_orderids:
-            self.cancel_stop_order(vt_orderid)
+            self.cancel_stop_order(strategy, vt_orderid)
 
     def write_log(self, msg: str, strategy: CtaTemplate = None):
         """
@@ -905,7 +902,7 @@ def optimize(
         capital=capital,
         end=end,
         mode=mode
-        )
+    )
     
     engine.add_strategy(strategy_class, setting)
     engine.load_data()
@@ -913,7 +910,5 @@ def optimize(
     engine.calculate_result()
     statistics = engine.calculate_statistics()
     
-    target_value = result[target_name]
+    target_value = statistics[target_name]
     return (str(setting), target_value, statistics)
-
-

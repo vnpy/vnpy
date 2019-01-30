@@ -22,22 +22,22 @@ from futu import (
     RET_OK,
     StockQuoteHandlerBase,
     TradeDealHandlerBase,
-    TradeOrderHandlerBase,
-    TradeDealHandlerBase
+    TradeOrderHandlerBase
 )
 
 from vnpy.trader.constant import Direction, Exchange, Product, Status
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
+    TickData,
+    TradeData,
     AccountData,
     ContractData,
     OrderData,
     PositionData,
-    AccountData,
     SubscribeRequest,
     OrderRequest,
-    CancelRequest,
+    CancelRequest
 )
 
 EXCHANGE_VT2FUTU = {
@@ -232,7 +232,7 @@ class FutuGateway(BaseGateway):
         self.trade_ctx.start()
         self.write_log("交易接口连接成功")
 
-    def subscribe(self, req):
+    def subscribe(self, req: SubscribeRequest):
         """"""
         for data_type in ["QUOTE", "ORDER_BOOK"]:
             futu_symbol = convert_symbol_vt2futu(req.symbol, req.exchange)
@@ -241,7 +241,7 @@ class FutuGateway(BaseGateway):
             if code:
                 self.write_log(f"订阅行情失败：{data}")
 
-    def send_order(self, req):
+    def send_order(self, req: OrderRequest):
         """"""
         side = DIRECTION_VT2FUTU[req.direction]
         price_type = OrderType.NORMAL  # Only limit order is supported.
@@ -274,7 +274,7 @@ class FutuGateway(BaseGateway):
         self.on_order(order)
         return order.vt_orderid
 
-    def cancel_order(self, req):
+    def cancel_order(self, req: CancelRequest):
         """"""
         code, data = self.trade_ctx.modify_order(
             ModifyOrderOp.CANCEL, req.orderid, 0, 0, trd_env=self.env

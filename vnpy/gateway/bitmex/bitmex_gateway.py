@@ -94,11 +94,11 @@ class BitmexGateway(BaseGateway):
         """"""
         self.ws_api.subscribe(req)
 
-    def send_order(self, req):
+    def send_order(self, req: OrderRequest):
         """"""
         return self.rest_api.send_order(req)
 
-    def cancel_order(self, req):
+    def cancel_order(self, req: CancelRequest):
         """"""
         self.rest_api.cancel_order(req)
 
@@ -197,7 +197,7 @@ class BitmexRestApi(RestClient):
 
         self.gateway.write_log("REST API启动成功")
 
-    def send_order(self, req: SubscribeRequest):
+    def send_order(self, req: OrderRequest):
         """"""
         self.order_count += 1
         orderid = str(self.connect_time + self.order_count)

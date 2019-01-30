@@ -181,7 +181,7 @@ class CtaTemplate(ABC):
         """
         Cancel an existing order.
         """
-        self.cta_engine.cancel_order(vt_orderid)
+        self.cta_engine.cancel_order(self, vt_orderid)
 
     def cancel_all(self):
         """

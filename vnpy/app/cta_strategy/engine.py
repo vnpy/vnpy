@@ -9,17 +9,15 @@ from pathlib import Path
 from typing import Any, Callable
 
 from vnpy.event import Event, EventEngine
-from vnpy.trader.constant import Direction, Interval, PriceType
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
-    CancelRequest,
     SubscribeRequest,
     LogData,
     TickData,
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.constant import Direction, Offset, Exchange, PriceType, Interval
+from vnpy.trader.constant import Direction, PriceType, Interval
 from vnpy.trader.utility import get_temp_path
 from .base import (
     CtaOrderType,
@@ -27,9 +25,10 @@ from .base import (
     StopOrder,
     StopOrderStatus,
     EVENT_CTA_LOG,
-    EVENT_CTA_STOPORDER,
     EVENT_CTA_STRATEGY,
     EVENT_CTA_STOPORDER,
+    ORDER_CTA2VT,
+    STOPORDER_PREFIX
 )
 from .template import CtaTemplate
 
@@ -127,10 +126,10 @@ class CtaEngine(BaseEngine):
                 continue
 
             long_triggered = (
-                so.direction == Direction.LONG and tick.last_price >= stop_order.price
+                stop_order.direction == Direction.LONG and tick.last_price >= stop_order.price
             )
             short_triggered = (
-                so.direction == Direction.SHORT and tick.last_price <= stop_order.price
+                stop_order.direction == Direction.SHORT and tick.last_price <= stop_order.price
             )
 
             if long_triggered or short_triggered:
@@ -139,7 +138,7 @@ class CtaEngine(BaseEngine):
                 # To get excuted immediately after stop order is
                 # triggered, use limit price if available, otherwise
                 # use ask_price_5 or bid_price_5
-                if so.direction == Direction.LONG:
+                if stop_order.direction == Direction.LONG:
                     if tick.limit_up:
                         price = tick.limit_up
                     else:
@@ -160,8 +159,8 @@ class CtaEngine(BaseEngine):
                     self.stop_orders.pop(stop_order.stop_orderid)
 
                     vt_orderids = self.strategy_orderid_map[strategy.name]
-                    if stop_orderid in vt_orderids:
-                        vt_orderids.remove(stop_orderid)
+                    if stop_order.stop_orderid in vt_orderids:
+                        vt_orderids.remove(stop_order.stop_orderid)
 
                     # Change stop order status to cancelled and update to strategy.
                     stop_order.status = StopOrderStatus.TRIGGERED
@@ -241,7 +240,7 @@ class CtaEngine(BaseEngine):
 
         return stop_orderid
 
-    def cancel_limit_order(self, vt_orderid: str):
+    def cancel_limit_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
         Cancel existing order by vt_orderid.
         """
@@ -253,7 +252,7 @@ class CtaEngine(BaseEngine):
         req = order.create_cancel_request()
         self.main_engine.cancel_limit_order(req, order.gateway_name)
 
-    def cancel_stop_order(self, stop_orderid: str):
+    def cancel_stop_order(self, strategy: CtaTemplate, stop_orderid: str):
         """
         Cancel a local stop order.
         """
@@ -289,13 +288,13 @@ class CtaEngine(BaseEngine):
         else:
             return self.send_limit_order(strategy, order_type, price, volume)
 
-    def cancel_order(self, vt_orderid: str):
+    def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
         """
         if vt_orderid.startswith(STOPORDER_PREFIX):
-            self.cancel_stop_order(vt_orderid)
+            self.cancel_stop_order(strategy, vt_orderid)
         else:
-            self.cancel_limit_order(vt_orderid)
+            self.cancel_limit_order(strategy, vt_orderid)
 
     def cancel_all(self, strategy: CtaTemplate):
         """
@@ -306,7 +305,7 @@ class CtaEngine(BaseEngine):
             return
 
         for vt_orderid in vt_orderids:
-            self.cancel_limit_order(vt_orderid)
+            self.cancel_limit_order(strategy, vt_orderid)
 
     def get_engine_type(self):
         """"""
@@ -374,7 +373,10 @@ class CtaEngine(BaseEngine):
 
         # Subscribe market data
         contract = self.main_engine.get_contract(strategy.vt_symbol)
-        if not contract:
+        if contract:
+            req = SubscribeRequest(symbol=contract.symbol, exchange=contract.exchange)
+            self.main_engine.subscribe(req, contract.gateway_name)
+        else:
             self.write_log(f"行情订阅失败，找不到合约{strategy.vt_symbol}", strategy)
 
         self.put_strategy_event(strategy)

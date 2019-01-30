@@ -18,8 +18,6 @@ from .event import (
     EVENT_LOG,
     EVENT_ORDER,
     EVENT_POSITION,
-    EVENT_ACCOUNT,
-    EVENT_CONTRACT,
     EVENT_TICK,
     EVENT_TRADE,
 )
