@@ -1,9 +1,0 @@
-[tool.black]
-line-length = 79
-py36 = true
-exclude ='''
-clang[\\/]
-|templates[\\/]
-|\.pyi
-|generated_files[\\/]
-'''

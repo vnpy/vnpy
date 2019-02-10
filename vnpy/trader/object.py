@@ -179,6 +179,7 @@ class PositionData(BaseData):
     frozen: float = 0
     price: float = 0
     pnl: float = 0
+    yd_volume: float = 0
 
     def __post_init__(self):
         """"""
