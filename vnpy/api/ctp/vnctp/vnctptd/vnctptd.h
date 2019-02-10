@@ -19,123 +19,117 @@ using namespace pybind11;
 #define ONRSPUSERLOGOUT 5
 #define ONRSPUSERPASSWORDUPDATE 6
 #define ONRSPTRADINGACCOUNTPASSWORDUPDATE 7
-#define ONRSPUSERAUTHMETHOD 8
-#define ONRSPGENUSERCAPTCHA 9
-#define ONRSPGENUSERTEXT 10
-#define ONRSPORDERINSERT 11
-#define ONRSPPARKEDORDERINSERT 12
-#define ONRSPPARKEDORDERACTION 13
-#define ONRSPORDERACTION 14
-#define ONRSPQUERYMAXORDERVOLUME 15
-#define ONRSPSETTLEMENTINFOCONFIRM 16
-#define ONRSPREMOVEPARKEDORDER 17
-#define ONRSPREMOVEPARKEDORDERACTION 18
-#define ONRSPEXECORDERINSERT 19
-#define ONRSPEXECORDERACTION 20
-#define ONRSPFORQUOTEINSERT 21
-#define ONRSPQUOTEINSERT 22
-#define ONRSPQUOTEACTION 23
-#define ONRSPBATCHORDERACTION 24
-#define ONRSPOPTIONSELFCLOSEINSERT 25
-#define ONRSPOPTIONSELFCLOSEACTION 26
-#define ONRSPCOMBACTIONINSERT 27
-#define ONRSPQRYORDER 28
-#define ONRSPQRYTRADE 29
-#define ONRSPQRYINVESTORPOSITION 30
-#define ONRSPQRYTRADINGACCOUNT 31
-#define ONRSPQRYINVESTOR 32
-#define ONRSPQRYTRADINGCODE 33
-#define ONRSPQRYINSTRUMENTMARGINRATE 34
-#define ONRSPQRYINSTRUMENTCOMMISSIONRATE 35
-#define ONRSPQRYEXCHANGE 36
-#define ONRSPQRYPRODUCT 37
-#define ONRSPQRYINSTRUMENT 38
-#define ONRSPQRYDEPTHMARKETDATA 39
-#define ONRSPQRYSETTLEMENTINFO 40
-#define ONRSPQRYTRANSFERBANK 41
-#define ONRSPQRYINVESTORPOSITIONDETAIL 42
-#define ONRSPQRYNOTICE 43
-#define ONRSPQRYSETTLEMENTINFOCONFIRM 44
-#define ONRSPQRYINVESTORPOSITIONCOMBINEDETAIL 45
-#define ONRSPQRYCFMMCTRADINGACCOUNTKEY 46
-#define ONRSPQRYEWARRANTOFFSET 47
-#define ONRSPQRYINVESTORPRODUCTGROUPMARGIN 48
-#define ONRSPQRYEXCHANGEMARGINRATE 49
-#define ONRSPQRYEXCHANGEMARGINRATEADJUST 50
-#define ONRSPQRYEXCHANGERATE 51
-#define ONRSPQRYSECAGENTACIDMAP 52
-#define ONRSPQRYPRODUCTEXCHRATE 53
-#define ONRSPQRYPRODUCTGROUP 54
-#define ONRSPQRYMMINSTRUMENTCOMMISSIONRATE 55
-#define ONRSPQRYMMOPTIONINSTRCOMMRATE 56
-#define ONRSPQRYINSTRUMENTORDERCOMMRATE 57
-#define ONRSPQRYSECAGENTTRADINGACCOUNT 58
-#define ONRSPQRYSECAGENTCHECKMODE 59
-#define ONRSPQRYSECAGENTTRADEINFO 60
-#define ONRSPQRYOPTIONINSTRTRADECOST 61
-#define ONRSPQRYOPTIONINSTRCOMMRATE 62
-#define ONRSPQRYEXECORDER 63
-#define ONRSPQRYFORQUOTE 64
-#define ONRSPQRYQUOTE 65
-#define ONRSPQRYOPTIONSELFCLOSE 66
-#define ONRSPQRYINVESTUNIT 67
-#define ONRSPQRYCOMBINSTRUMENTGUARD 68
-#define ONRSPQRYCOMBACTION 69
-#define ONRSPQRYTRANSFERSERIAL 70
-#define ONRSPQRYACCOUNTREGISTER 71
-#define ONRSPERROR 72
-#define ONRTNORDER 73
-#define ONRTNTRADE 74
-#define ONERRRTNORDERINSERT 75
-#define ONERRRTNORDERACTION 76
-#define ONRTNINSTRUMENTSTATUS 77
-#define ONRTNBULLETIN 78
-#define ONRTNTRADINGNOTICE 79
-#define ONRTNERRORCONDITIONALORDER 80
-#define ONRTNEXECORDER 81
-#define ONERRRTNEXECORDERINSERT 82
-#define ONERRRTNEXECORDERACTION 83
-#define ONERRRTNFORQUOTEINSERT 84
-#define ONRTNQUOTE 85
-#define ONERRRTNQUOTEINSERT 86
-#define ONERRRTNQUOTEACTION 87
-#define ONRTNFORQUOTERSP 88
-#define ONRTNCFMMCTRADINGACCOUNTTOKEN 89
-#define ONERRRTNBATCHORDERACTION 90
-#define ONRTNOPTIONSELFCLOSE 91
-#define ONERRRTNOPTIONSELFCLOSEINSERT 92
-#define ONERRRTNOPTIONSELFCLOSEACTION 93
-#define ONRTNCOMBACTION 94
-#define ONERRRTNCOMBACTIONINSERT 95
-#define ONRSPQRYCONTRACTBANK 96
-#define ONRSPQRYPARKEDORDER 97
-#define ONRSPQRYPARKEDORDERACTION 98
-#define ONRSPQRYTRADINGNOTICE 99
-#define ONRSPQRYBROKERTRADINGPARAMS 100
-#define ONRSPQRYBROKERTRADINGALGOS 101
-#define ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN 102
-#define ONRTNFROMBANKTOFUTUREBYBANK 103
-#define ONRTNFROMFUTURETOBANKBYBANK 104
-#define ONRTNREPEALFROMBANKTOFUTUREBYBANK 105
-#define ONRTNREPEALFROMFUTURETOBANKBYBANK 106
-#define ONRTNFROMBANKTOFUTUREBYFUTURE 107
-#define ONRTNFROMFUTURETOBANKBYFUTURE 108
-#define ONRTNREPEALFROMBANKTOFUTUREBYFUTUREMANUAL 109
-#define ONRTNREPEALFROMFUTURETOBANKBYFUTUREMANUAL 110
-#define ONRTNQUERYBANKBALANCEBYFUTURE 111
-#define ONERRRTNBANKTOFUTUREBYFUTURE 112
-#define ONERRRTNFUTURETOBANKBYFUTURE 113
-#define ONERRRTNREPEALBANKTOFUTUREBYFUTUREMANUAL 114
-#define ONERRRTNREPEALFUTURETOBANKBYFUTUREMANUAL 115
-#define ONERRRTNQUERYBANKBALANCEBYFUTURE 116
-#define ONRTNREPEALFROMBANKTOFUTUREBYFUTURE 117
-#define ONRTNREPEALFROMFUTURETOBANKBYFUTURE 118
-#define ONRSPFROMBANKTOFUTUREBYFUTURE 119
-#define ONRSPFROMFUTURETOBANKBYFUTURE 120
-#define ONRSPQUERYBANKACCOUNTMONEYBYFUTURE 121
-#define ONRTNOPENACCOUNTBYBANK 122
-#define ONRTNCANCELACCOUNTBYBANK 123
-#define ONRTNCHANGEACCOUNTBYBANK 124
+#define ONRSPORDERINSERT 8
+#define ONRSPPARKEDORDERINSERT 9
+#define ONRSPPARKEDORDERACTION 10
+#define ONRSPORDERACTION 11
+#define ONRSPQUERYMAXORDERVOLUME 12
+#define ONRSPSETTLEMENTINFOCONFIRM 13
+#define ONRSPREMOVEPARKEDORDER 14
+#define ONRSPREMOVEPARKEDORDERACTION 15
+#define ONRSPEXECORDERINSERT 16
+#define ONRSPEXECORDERACTION 17
+#define ONRSPFORQUOTEINSERT 18
+#define ONRSPQUOTEINSERT 19
+#define ONRSPQUOTEACTION 20
+#define ONRSPBATCHORDERACTION 21
+#define ONRSPOPTIONSELFCLOSEINSERT 22
+#define ONRSPOPTIONSELFCLOSEACTION 23
+#define ONRSPCOMBACTIONINSERT 24
+#define ONRSPQRYORDER 25
+#define ONRSPQRYTRADE 26
+#define ONRSPQRYINVESTORPOSITION 27
+#define ONRSPQRYTRADINGACCOUNT 28
+#define ONRSPQRYINVESTOR 29
+#define ONRSPQRYTRADINGCODE 30
+#define ONRSPQRYINSTRUMENTMARGINRATE 31
+#define ONRSPQRYINSTRUMENTCOMMISSIONRATE 32
+#define ONRSPQRYEXCHANGE 33
+#define ONRSPQRYPRODUCT 34
+#define ONRSPQRYINSTRUMENT 35
+#define ONRSPQRYDEPTHMARKETDATA 36
+#define ONRSPQRYSETTLEMENTINFO 37
+#define ONRSPQRYTRANSFERBANK 38
+#define ONRSPQRYINVESTORPOSITIONDETAIL 39
+#define ONRSPQRYNOTICE 40
+#define ONRSPQRYSETTLEMENTINFOCONFIRM 41
+#define ONRSPQRYINVESTORPOSITIONCOMBINEDETAIL 42
+#define ONRSPQRYCFMMCTRADINGACCOUNTKEY 43
+#define ONRSPQRYEWARRANTOFFSET 44
+#define ONRSPQRYINVESTORPRODUCTGROUPMARGIN 45
+#define ONRSPQRYEXCHANGEMARGINRATE 46
+#define ONRSPQRYEXCHANGEMARGINRATEADJUST 47
+#define ONRSPQRYEXCHANGERATE 48
+#define ONRSPQRYSECAGENTACIDMAP 49
+#define ONRSPQRYPRODUCTEXCHRATE 50
+#define ONRSPQRYPRODUCTGROUP 51
+#define ONRSPQRYMMINSTRUMENTCOMMISSIONRATE 52
+#define ONRSPQRYMMOPTIONINSTRCOMMRATE 53
+#define ONRSPQRYINSTRUMENTORDERCOMMRATE 54
+#define ONRSPQRYOPTIONINSTRTRADECOST 55
+#define ONRSPQRYOPTIONINSTRCOMMRATE 56
+#define ONRSPQRYEXECORDER 57
+#define ONRSPQRYFORQUOTE 58
+#define ONRSPQRYQUOTE 59
+#define ONRSPQRYOPTIONSELFCLOSE 60
+#define ONRSPQRYINVESTUNIT 61
+#define ONRSPQRYCOMBINSTRUMENTGUARD 62
+#define ONRSPQRYCOMBACTION 63
+#define ONRSPQRYTRANSFERSERIAL 64
+#define ONRSPQRYACCOUNTREGISTER 65
+#define ONRSPERROR 66
+#define ONRTNORDER 67
+#define ONRTNTRADE 68
+#define ONERRRTNORDERINSERT 69
+#define ONERRRTNORDERACTION 70
+#define ONRTNINSTRUMENTSTATUS 71
+#define ONRTNBULLETIN 72
+#define ONRTNTRADINGNOTICE 73
+#define ONRTNERRORCONDITIONALORDER 74
+#define ONRTNEXECORDER 75
+#define ONERRRTNEXECORDERINSERT 76
+#define ONERRRTNEXECORDERACTION 77
+#define ONERRRTNFORQUOTEINSERT 78
+#define ONRTNQUOTE 79
+#define ONERRRTNQUOTEINSERT 80
+#define ONERRRTNQUOTEACTION 81
+#define ONRTNFORQUOTERSP 82
+#define ONRTNCFMMCTRADINGACCOUNTTOKEN 83
+#define ONERRRTNBATCHORDERACTION 84
+#define ONRTNOPTIONSELFCLOSE 85
+#define ONERRRTNOPTIONSELFCLOSEINSERT 86
+#define ONERRRTNOPTIONSELFCLOSEACTION 87
+#define ONRTNCOMBACTION 88
+#define ONERRRTNCOMBACTIONINSERT 89
+#define ONRSPQRYCONTRACTBANK 90
+#define ONRSPQRYPARKEDORDER 91
+#define ONRSPQRYPARKEDORDERACTION 92
+#define ONRSPQRYTRADINGNOTICE 93
+#define ONRSPQRYBROKERTRADINGPARAMS 94
+#define ONRSPQRYBROKERTRADINGALGOS 95
+#define ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN 96
+#define ONRTNFROMBANKTOFUTUREBYBANK 97
+#define ONRTNFROMFUTURETOBANKBYBANK 98
+#define ONRTNREPEALFROMBANKTOFUTUREBYBANK 99
+#define ONRTNREPEALFROMFUTURETOBANKBYBANK 100
+#define ONRTNFROMBANKTOFUTUREBYFUTURE 101
+#define ONRTNFROMFUTURETOBANKBYFUTURE 102
+#define ONRTNREPEALFROMBANKTOFUTUREBYFUTUREMANUAL 103
+#define ONRTNREPEALFROMFUTURETOBANKBYFUTUREMANUAL 104
+#define ONRTNQUERYBANKBALANCEBYFUTURE 105
+#define ONERRRTNBANKTOFUTUREBYFUTURE 106
+#define ONERRRTNFUTURETOBANKBYFUTURE 107
+#define ONERRRTNREPEALBANKTOFUTUREBYFUTUREMANUAL 108
+#define ONERRRTNREPEALFUTURETOBANKBYFUTUREMANUAL 109
+#define ONERRRTNQUERYBANKBALANCEBYFUTURE 110
+#define ONRTNREPEALFROMBANKTOFUTUREBYFUTURE 111
+#define ONRTNREPEALFROMFUTURETOBANKBYFUTURE 112
+#define ONRSPFROMBANKTOFUTUREBYFUTURE 113
+#define ONRSPFROMFUTURETOBANKBYFUTURE 114
+#define ONRSPQUERYBANKACCOUNTMONEYBYFUTURE 115
+#define ONRTNOPENACCOUNTBYBANK 116
+#define ONRTNCANCELACCOUNTBYBANK 117
+#define ONRTNCHANGEACCOUNTBYBANK 118
 
 
 ///-------------------------------------------------------------------------------------
@@ -200,15 +194,6 @@ public:
 
 	///资金账户口令更新请求响应
 	virtual void OnRspTradingAccountPasswordUpdate(CThostFtdcTradingAccountPasswordUpdateField *pTradingAccountPasswordUpdate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///查询用户当前支持的认证模式的回复
-	virtual void OnRspUserAuthMethod(CThostFtdcRspUserAuthMethodField *pRspUserAuthMethod, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///获取图形验证码请求的回复
-	virtual void OnRspGenUserCaptcha(CThostFtdcRspGenUserCaptchaField *pRspGenUserCaptcha, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///获取短信验证码请求的回复
-	virtual void OnRspGenUserText(CThostFtdcRspGenUserTextField *pRspGenUserText, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///报单录入请求响应
 	virtual void OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
@@ -350,15 +335,6 @@ public:
 
 	///请求查询报单手续费响应
 	virtual void OnRspQryInstrumentOrderCommRate(CThostFtdcInstrumentOrderCommRateField *pInstrumentOrderCommRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///请求查询资金账户响应
-	virtual void OnRspQrySecAgentTradingAccount(CThostFtdcTradingAccountField *pTradingAccount, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///请求查询二级代理商资金校验模式响应
-	virtual void OnRspQrySecAgentCheckMode(CThostFtdcSecAgentCheckModeField *pSecAgentCheckMode, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
-
-	///请求查询二级代理商信息响应
-	virtual void OnRspQrySecAgentTradeInfo(CThostFtdcSecAgentTradeInfoField *pSecAgentTradeInfo, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
 
 	///请求查询期权交易成本响应
 	virtual void OnRspQryOptionInstrTradeCost(CThostFtdcOptionInstrTradeCostField *pOptionInstrTradeCost, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) ;
@@ -574,12 +550,6 @@ public:
 
 	void processRspTradingAccountPasswordUpdate(Task *task);
 
-	void processRspUserAuthMethod(Task *task);
-
-	void processRspGenUserCaptcha(Task *task);
-
-	void processRspGenUserText(Task *task);
-
 	void processRspOrderInsert(Task *task);
 
 	void processRspParkedOrderInsert(Task *task);
@@ -673,12 +643,6 @@ public:
 	void processRspQryMMOptionInstrCommRate(Task *task);
 
 	void processRspQryInstrumentOrderCommRate(Task *task);
-
-	void processRspQrySecAgentTradingAccount(Task *task);
-
-	void processRspQrySecAgentCheckMode(Task *task);
-
-	void processRspQrySecAgentTradeInfo(Task *task);
 
 	void processRspQryOptionInstrTradeCost(Task *task);
 
@@ -833,12 +797,6 @@ public:
 
 	virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int reqid, bool last) {};
 
-	virtual void onRspUserAuthMethod(dict data, dict error, int reqid, bool last) {};
-
-	virtual void onRspGenUserCaptcha(dict data, dict error, int reqid, bool last) {};
-
-	virtual void onRspGenUserText(dict data, dict error, int reqid, bool last) {};
-
 	virtual void onRspOrderInsert(dict data, dict error, int reqid, bool last) {};
 
 	virtual void onRspParkedOrderInsert(dict data, dict error, int reqid, bool last) {};
@@ -932,12 +890,6 @@ public:
 	virtual void onRspQryMMOptionInstrCommRate(dict data, dict error, int reqid, bool last) {};
 
 	virtual void onRspQryInstrumentOrderCommRate(dict data, dict error, int reqid, bool last) {};
-
-	virtual void onRspQrySecAgentTradingAccount(dict data, dict error, int reqid, bool last) {};
-
-	virtual void onRspQrySecAgentCheckMode(dict data, dict error, int reqid, bool last) {};
-
-	virtual void onRspQrySecAgentTradeInfo(dict data, dict error, int reqid, bool last) {};
 
 	virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int reqid, bool last) {};
 
@@ -1099,17 +1051,9 @@ public:
 
 	int reqTradingAccountPasswordUpdate(dict req, int reqid);
 
-	int reqUserAuthMethod(dict req, int reqid);
+	int reqUserLogin2(dict req, int reqid);
 
-	int reqGenUserCaptcha(dict req, int reqid);
-
-	int reqGenUserText(dict req, int reqid);
-
-	int reqUserLoginWithCaptcha(dict req, int reqid);
-
-	int reqUserLoginWithText(dict req, int reqid);
-
-	int reqUserLoginWithOTP(dict req, int reqid);
+	int reqUserPasswordUpdate2(dict req, int reqid);
 
 	int reqOrderInsert(dict req, int reqid);
 
@@ -1204,12 +1148,6 @@ public:
 	int reqQryMMOptionInstrCommRate(dict req, int reqid);
 
 	int reqQryInstrumentOrderCommRate(dict req, int reqid);
-
-	int reqQrySecAgentTradingAccount(dict req, int reqid);
-
-	int reqQrySecAgentCheckMode(dict req, int reqid);
-
-	int reqQrySecAgentTradeInfo(dict req, int reqid);
 
 	int reqQryOptionInstrTradeCost(dict req, int reqid);
 

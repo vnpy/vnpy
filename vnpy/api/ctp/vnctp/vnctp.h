@@ -6,6 +6,7 @@
 #include <thread>
 #include <mutex>
 #include <iostream>
+#include <codecvt>
 
 #include "pybind11/pybind11.h"
 
@@ -65,7 +66,14 @@ void getInt(dict d, const char *key, int *value)
 	if (d.contains(key))		//检查字典中是否存在该键值
 	{
 		object o = d[key];		//获取该键值
-		*value = o.cast<int>();
+		try
+		{
+			*value = o.cast<int>();
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
 	}
 };
 
@@ -76,7 +84,14 @@ void getDouble(dict d, const char *key, double *value)
 	if (d.contains(key))
 	{
 		object o = d[key];
-		*value = o.cast<double>();
+		try
+		{
+			*value = o.cast<double>();
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
 	}
 };
 
@@ -87,7 +102,15 @@ void getChar(dict d, const char *key, char *value)
 	if (d.contains(key))
 	{
 		object o = d[key];
-		*value = o.cast<char>();
+
+		try
+		{
+			*value = o.cast<char>();
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
 	}
 };
 
@@ -98,15 +121,48 @@ void getString(dict d, const char *key, char *value)
 	if (d.contains(key))
 	{
 		object o = d[key];
-		string s = o.cast<string>();
-		const char *buf = s.c_str();
+		try
+		{
+			string s = o.cast<string>();
+			const char *buf = s.c_str();
 
 #ifdef _MSC_VER //WIN32
-		strcpy_s(value, strlen(buf) + 1, buf);
+			strcpy_s(value, strlen(buf) + 1, buf);
 #elif __GNUC__
-		strncpy(value, buffer, strlen(buffer) + 1);
+			strncpy(value, buffer, strlen(buffer) + 1);
 #endif
+		}
+		catch (const error_already_set &e)
+		{
+			cout << e.what() << endl;
+		}
 	}
 };
+
+//将GBK编码的字符串转换为UTF8
+string toUtf(string strGb2312)
+{
+	std::vector<wchar_t> buff(strGb2312.size());
+#ifdef _MSC_VER
+	std::locale loc("zh-CN");
+#else
+	std::locale loc("zh_CN.GB18030");
+#endif
+	wchar_t* pwszNext = nullptr;
+	const char* pszNext = nullptr;
+	mbstate_t state = {};
+	int res = std::use_facet<std::codecvt<wchar_t, char, mbstate_t> >
+		(loc).in(state,
+			strGb2312.data(), strGb2312.data() + strGb2312.size(), pszNext,
+			buff.data(), buff.data() + buff.size(), pwszNext);
+
+	if (std::codecvt_base::ok == res)
+	{
+		std::wstring_convert<std::codecvt_utf8<wchar_t>> cutf8;
+		return cutf8.to_bytes(std::wstring(buff.data(), pwszNext));
+	}
+
+	return "";
+}
 
 

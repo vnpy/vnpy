@@ -82,7 +82,7 @@ public:
 	///@return 创建出的UserApi
 	///modify for udp marketdata
 	static CThostFtdcMdApi *CreateFtdcMdApi(const char *pszFlowPath = "", const bool bIsUsingUdp=false, const bool bIsMulticast=false);
-
+	
 	///获取API的版本信息
 	///@retrun 获取到的版本号
 	static const char *GetApiVersion();

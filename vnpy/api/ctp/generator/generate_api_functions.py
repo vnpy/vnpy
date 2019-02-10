@@ -215,8 +215,11 @@ class ApiGenerator:
                         f.write(f"\t\t{type_} *task_error = ({type_}*)task->task_error;\n")
                         
                         struct_fields = self.structs[type_]
-                        for struct_field in struct_fields.keys():
-                            f.write(f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
+                        for struct_field, struct_type in struct_fields.items():
+                            if struct_type == "string":
+                                f.write(f"\t\terror[\"{struct_field}\"] = toUtf(task_error->{struct_field});\n")
+                            else:
+                                f.write(f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
                         
                         f.write("\t\tdelete task->task_error;\n")
                         f.write("\t}\n")
@@ -229,8 +232,11 @@ class ApiGenerator:
                         f.write(f"\t\t{type_} *task_data = ({type_}*)task->task_data;\n")
                         
                         struct_fields = self.structs[type_]
-                        for struct_field in struct_fields.keys():
-                            f.write(f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
+                        for struct_field, struct_type in struct_fields.items():
+                            if struct_type == "string":
+                                f.write(f"\t\tdata[\"{struct_field}\"] = toUtf(task_data->{struct_field});\n")
+                            else:
+                                f.write(f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
                         
                         f.write("\t\tdelete task->task_data;\n")
                         f.write("\t}\n")                        
@@ -294,7 +300,14 @@ class ApiGenerator:
                 
                 f.write(f"void {on_name}({args_str}) override\n")
                 f.write("{\n")
-                f.write(f"\tPYBIND11_OVERLOAD_PURE({bind_args_str});\n")
+                f.write("\ttry\n")
+                f.write("\t{\n")
+                f.write(f"\t\tPYBIND11_OVERLOAD_PURE({bind_args_str});\n")
+                f.write("\t}\n")
+                f.write("\tcatch (const error_already_set &e)\n")
+                f.write("\t{\n")
+                f.write(f"\t\tcout << e.what() << endl;\n")
+                f.write("\t}\n")                
                 f.write("};\n\n")
                 
     

@@ -453,6 +453,7 @@ class PositionMonitor(BaseMonitor):
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
         "volume": {"display": "数量", "cell": BaseCell, "update": True},
+        "yd_volume": {"display": "昨仓", "cell": BaseCell, "update": True},
         "frozen": {"display": "冻结", "cell": BaseCell, "update": True},
         "price": {"display": "均价", "cell": BaseCell, "update": False},
         "pnl": {"display": "盈亏", "cell": PnlCell, "update": True},
@@ -548,11 +549,11 @@ class ConnectDialog(QtWidgets.QDialog):
             else:
                 field_value = field_type(widget.text())
             setting[field_name] = field_value
-
-        self.main_engine.connect(setting, self.gateway_name)
-
+        
         save_setting(self.filename, setting)
-
+        
+        self.main_engine.connect(setting, self.gateway_name)
+        
         self.accept()
 
 
