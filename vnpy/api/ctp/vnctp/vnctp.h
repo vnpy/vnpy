@@ -140,29 +140,28 @@ void getString(dict d, const char *key, char *value)
 };
 
 //将GBK编码的字符串转换为UTF8
-string toUtf(string strGb2312)
+inline std::string toUtf(const std::string &gb2312)
 {
-	std::vector<wchar_t> buff(strGb2312.size());
 #ifdef _MSC_VER
-	std::locale loc("zh-CN");
+    const static std::locale loc("zh-CN");
 #else
-	std::locale loc("zh_CN.GB18030");
+    const static std::locale loc("zh_CN.GB18030");
 #endif
-	wchar_t* pwszNext = nullptr;
-	const char* pszNext = nullptr;
-	mbstate_t state = {};
-	int res = std::use_facet<std::codecvt<wchar_t, char, mbstate_t> >
-		(loc).in(state,
-			strGb2312.data(), strGb2312.data() + strGb2312.size(), pszNext,
-			buff.data(), buff.data() + buff.size(), pwszNext);
 
-	if (std::codecvt_base::ok == res)
-	{
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> cutf8;
-		return cutf8.to_bytes(std::wstring(buff.data(), pwszNext));
-	}
+    std::vector<wchar_t> wstr(gb2312.size());
+    wchar_t* wstrEnd = nullptr;
+    const char* gbEnd = nullptr;
+    std::mbstate_t state = {};
+    int res = std::use_facet<std::codecvt<wchar_t, char, mbstate_t> >
+        (loc).in(state,
+            gb2312.data(), gb2312.data() + gb2312.size(), gbEnd,
+            wstr.data(), wstr.data() + wstr.size(), wstrEnd);
 
-	return "";
+    if (std::codecvt_base::ok == res)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> cutf8;
+        return cutf8.to_bytes(std::wstring(wstr.data(), wstrEnd));
+    }
+
+    return std::string();
 }
-
-
