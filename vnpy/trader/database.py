@@ -45,7 +45,7 @@ class DbBarData(Model):
         db_bar.symbol = bar.symbol
         db_bar.exchange = bar.exchange.value
         db_bar.datetime = bar.datetime
-        db_bar.interval = bar.interval
+        db_bar.interval = bar.interval.value
         db_bar.volume = bar.volume
         db_bar.open_price = bar.open_price
         db_bar.high_price = bar.high_price

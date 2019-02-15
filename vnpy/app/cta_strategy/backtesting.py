@@ -365,10 +365,10 @@ class BacktestingEngine:
 
         self.output(f"总收益率：\t{total_return:,.2f}%")
         self.output(f"年化收益：\t{annual_return:,.2f}%")
-        self.output(f"最大回撤: \t{max_drawdown:,.2f}%")
+        self.output(f"最大回撤: \t{max_drawdown:,.2f}")
         self.output(f"百分比最大回撤: {max_ddpercent:,.2f}%")
 
-        self.output(f"总盈亏：\t{total_net_pnl:,.2f}%")
+        self.output(f"总盈亏：\t{total_net_pnl:,.2f}")
         self.output(f"总手续费：\t{total_commission:,.2f}")
         self.output(f"总滑点：\t{total_slippage:,.2f}")
         self.output(f"总成交金额：\t{total_turnover:,.2f}")
@@ -846,6 +846,8 @@ class DailyResult:
         slippage: float,
     ):
         """"""
+        self.pre_close = pre_close
+
         # Holding pnl is the pnl from holding position at day start
         self.start_pos = start_pos
         self.end_pos = start_pos
