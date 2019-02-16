@@ -233,7 +233,9 @@ class CtaTemplate(ABC):
         """
         self.cta_engine.send_email(msg, self)
 
-    def save_variables(self):
+    def sync_data(self):
         """
+        Sync strategy variables value into disk storage.
         """
-        self.cta_engine.save_strategy_variables(self)
+        if self.trading:
+            self.cta_engine.sync_strategy_data(self)

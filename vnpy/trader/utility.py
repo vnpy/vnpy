@@ -11,7 +11,6 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
-from .constant import interval
 
 
 class Singleton(type):
