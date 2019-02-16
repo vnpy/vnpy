@@ -3,6 +3,7 @@ General utility functions.
 """
 
 import shelve
+import json
 from pathlib import Path
 from typing import Callable
 
@@ -10,6 +11,7 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
+from .constant import interval
 
 
 class Singleton(type):
@@ -85,6 +87,30 @@ def save_setting(filename: str, setting: dict):
     f.close()
 
 
+def load_json(filename: str):
+    """
+    Load data from json file in temp path.
+    """
+    filepath = get_temp_path(filename)
+
+    if filepath.exists():
+        with open(filepath, mode='r') as f:
+            data = json.load(f)
+        return data
+    else:
+        save_json(filename, {})
+        return {}
+
+
+def save_json(filename: str, data: dict):
+    """
+    Save data into json file in temp path.
+    """
+    filepath = get_temp_path(filename)
+    with open(filepath, mode='w+') as f:
+        json.dump(data, f, indent=4)
+
+
 def round_to_pricetick(price: float, pricetick: float):
     """
     Round price to price tick value.
@@ -120,7 +146,6 @@ class BarGenerator:
         new_minute = False
 
         if not self.bar:
-            self.bar = BarData()
             new_minute = True
         elif self.bar.datetime.minute != tick.datetime.minute:
             self.bar.datetime = self.bar.datetime.replace(
@@ -128,23 +153,24 @@ class BarGenerator:
             )
             self.on_bar(self.bar)
 
-            self.bar = BarData()
             new_minute = True
 
         if new_minute:
-            self.bar.vt_symbol = tick.vt_symbol
-            self.bar.symbol = tick.symbol
-            self.bar.exchange = tick.exchange
-
-            self.bar.open = tick.last_price
-            self.bar.high = tick.last_price
-            self.bar.low = tick.last_price
+            self.bar = BarData(
+                symbol=tick.symbol,
+                exchange=tick.exchange,
+                datetime=tick.datetime,
+                gateway_name=tick.gateway_name,
+                open_price=tick.last_price,
+                high_price=tick.last_price,
+                low_price=tick.last_price,
+                close_price=tick.last_price,
+            )
         else:
-            self.bar.high = max(self.bar.high, tick.last_price)
-            self.bar.low = min(self.bar.low, tick.last_price)
-
-        self.bar.close = tick.last_price
-        self.bar.datetime = tick.datetime
+            self.bar.high_price = max(self.bar.high_price, tick.last_price)
+            self.bar.low_price = min(self.bar.low_price, tick.last_price)
+            self.bar.close_price = tick.last_price
+            self.bar.datetime = tick.datetime
 
         if self.last_tick:
             volume_change = tick.volume - self.last_tick.volume
@@ -157,22 +183,22 @@ class BarGenerator:
         Update 1 minute bar into generator
         """
         if not self.xmin_bar:
-            self.xmin_bar = BarData()
-
-            self.xmin_bar.vt_symbol = bar.vt_symbol
-            self.xmin_bar.symbol = bar.symbol
-            self.xmin_bar.exchange = bar.exchange
-
-            self.xmin_bar.open = bar.open
-            self.xmin_bar.high = bar.high
-            self.xmin_bar.low = bar.low
-
-            self.xmin_bar.datetime = bar.datetime
+            self.xmin_bar = BarData(
+                symbol=bar.symbol,
+                exchange=bar.exchange,
+                datetime=bar.datetime,
+                gateway_name=bar.gateway_name,
+                open_price=bar.open_price,
+                high_price=bar.high_price,
+                low_price=bar.low_price
+            )
         else:
-            self.xmin_bar.high = max(self.xmin_bar.high, bar.high)
-            self.xmin_bar.low = min(self.xmin_bar.low, bar.low)
+            self.xmin_bar.high_price = max(
+                self.xmin_bar.high_price, bar.high_price)
+            self.xmin_bar.low_price = min(
+                self.xmin_bar.low_price, bar.low_price)
 
-        self.xmin_bar.close = bar.close
+        self.xmin_bar.close_price = bar.close_price
         self.xmin_bar.volume += int(bar.volume)
 
         if not (bar.datetime.minute + 1) % self.xmin:
