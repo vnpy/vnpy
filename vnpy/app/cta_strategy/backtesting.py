@@ -165,13 +165,13 @@ class BacktestingEngine:
         mode: BacktestingMode = BacktestingMode.BAR,
     ):
         """"""
-        self.mode = mode  # 1
-        self.vt_symbol = vt_symbol  # 2
+        self.mode = mode
+        self.vt_symbol = vt_symbol
         self.interval = interval
-        self.rate = rate  # 3
-        self.slippage = slippage  # 4
-        self.size = size  #
-        self.pricetick = pricetick  #
+        self.rate = rate
+        self.slippage = slippage
+        self.size = size
+        self.pricetick = pricetick
         self.start = start
 
         self.symbol, exchange_str = self.vt_symbol.split(".")
@@ -789,6 +789,12 @@ class BacktestingEngine:
         """
         msg = f"{self.datetime}\t{msg}"
         self.logs.append(msg)
+    
+    def send_email(self, msg: str, strategy: CtaTemplate = None):
+        """
+        Send email to default receiver.
+        """
+        pass
 
     def get_engine_type(self):
         """

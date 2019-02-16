@@ -226,3 +226,14 @@ class CtaTemplate(ABC):
         Put an strategy data event for ui update.
         """
         self.cta_engine.put_strategy_event(self)
+
+    def send_email(self, msg):
+        """
+        Send email to default receiver.
+        """
+        self.cta_engine.send_email(msg, self)
+
+    def save_variables(self):
+        """
+        """
+        self.cta_engine.save_strategy_variables(self)

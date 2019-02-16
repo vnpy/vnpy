@@ -1,6 +1,9 @@
 # Python
 *.pyc
 
+# Jupyter
+.ipynb_checkpoints
+
 # IDE
 .vscode
 .idea

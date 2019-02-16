@@ -7,6 +7,7 @@ import traceback
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable
+from datetime import datetime, timedelta
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -19,6 +20,7 @@ from vnpy.trader.object import (
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.constant import Direction, PriceType, Interval
 from vnpy.trader.utility import get_temp_path
+from vnpy.trader.database import DbTickData, DbBarData
 
 from .base import (
     EVENT_CTA_LOG,
@@ -46,19 +48,19 @@ class CtaEngine(BaseEngine):
         super(CtaEngine, self).__init__(
             main_engine, event_engine, "CtaStrategy")
 
-        self.setting_file = None  # setting file object
+        self.setting_file = None    # setting file object
 
-        self.classes = {}  # class_name: stategy_class
-        self.strategies = {}  # strategy_name: strategy
+        self.classes = {}           # class_name: stategy_class
+        self.strategies = {}        # strategy_name: strategy
 
         self.symbol_strategy_map = defaultdict(
-            list)  # vt_symbol: strategy list
+            list)                   # vt_symbol: strategy list
         self.orderid_strategy_map = {}  # vt_orderid: strategy
         self.strategy_orderid_map = defaultdict(
-            set)  # strategy_name: orderid list
+            set)                    # strategy_name: orderid list
 
-        self.stop_order_count = 0  # for generating stop_orderid
-        self.stop_orders = {}  # stop_orderid: stop_order
+        self.stop_order_count = 0   # for generating stop_orderid
+        self.stop_orders = {}       # stop_orderid: stop_order
 
     def init_engine(self):
         """
@@ -320,11 +322,40 @@ class CtaEngine(BaseEngine):
         self, vt_symbol: str, days: int, interval: Interval, callback: Callable
     ):
         """"""
-        pass
+        end = datetime.now()
+        start = end - timedelta(days)
+
+        s = (
+            DbBarData.select()
+            .where(
+                (DbBarData.vt_symbol == vt_symbol) &
+                (DbBarData.interval == interval) &
+                (DbBarData.datetime >= start) &
+                (DbBarData.datetime <= end)
+            )
+            .order_by(DbBarData.datetime)
+        )
+
+        for bar in s:
+            callback(bar)
 
     def load_tick(self, vt_symbol: str, days: int, callback: Callable):
         """"""
-        pass
+        end = datetime.now()
+        start = end - timedelta(days)
+
+        s = (
+            DbTickData.select()
+            .where(
+                (DbBarData.vt_symbol == vt_symbol) &
+                (DbBarData.datetime >= start) &
+                (DbBarData.datetime <= end)
+            )
+            .order_by(DbBarData.datetime)
+        )
+
+        for tick in s:
+            callback(tick)
 
     def call_strategy_func(
         self, strategy: CtaTemplate, func: Callable, params: Any = None
@@ -586,3 +617,14 @@ class CtaEngine(BaseEngine):
         log = LogData(msg=msg, gateway_name="CtaStrategy")
         event = Event(type=EVENT_CTA_LOG, data=log)
         self.event_engine.put(event)
+
+    def send_email(self, msg: str, strategy: CtaTemplate = None):
+        """
+        Send email to default receiver.
+        """
+        if strategy:
+            subject = f"{strategy.name}"
+        else:
+            subject = "CTA策略引擎"
+
+        self.main_engine.send_email(subject, msg)
