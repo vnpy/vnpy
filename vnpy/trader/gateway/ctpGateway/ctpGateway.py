@@ -730,61 +730,59 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        if 'InstrumentID' not in data.keys():
-            return
-        
-        # 获取持仓缓存对象
-        posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
-        if posName in self.posDict:
-            pos = self.posDict[posName]
-        else:
-            pos = VtPositionData()
-            self.posDict[posName] = pos
+        if 'InstrumentID'  in data.keys() and data['InstrumentID']:
+            # 获取持仓缓存对象
+            posName = '.'.join([data['InstrumentID'], data['PosiDirection']])
+            if posName in self.posDict:
+                pos = self.posDict[posName]
+            else:
+                pos = VtPositionData()
+                self.posDict[posName] = pos
+                
+                pos.gatewayName = self.gatewayName
+                pos.symbol = data['InstrumentID']
+                pos.vtSymbol = pos.symbol
+                pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
+                pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
             
-            pos.gatewayName = self.gatewayName
-            pos.symbol = data['InstrumentID']
-            pos.vtSymbol = pos.symbol
-            pos.direction = posiDirectionMapReverse.get(data['PosiDirection'], '')
-            pos.vtPositionName = '.'.join([pos.vtSymbol, pos.direction]) 
-        
-        exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
-        
-        # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
-        if exchange == EXCHANGE_SHFE:
-            if data['YdPosition'] and not data['TodayPosition']:
-                pos.ydPosition = data['Position']
-        # 否则基于总持仓和今持仓来计算昨仓数据
-        else:
-            pos.ydPosition = data['Position'] - data['TodayPosition']
+            exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
             
-        # 计算成本
-        if pos.symbol not in self.symbolSizeDict:
-            return
-        size = self.symbolSizeDict[pos.symbol]
-        cost = pos.price * pos.position * size
-        
-        # 汇总总仓
-        pos.position += data['Position']
-        pos.positionProfit += data['PositionProfit']
-        
-        # 计算持仓均价
-        if pos.position and size:    
-            pos.price = (cost + data['PositionCost']) / (pos.position * size)
-        
-        # 读取冻结
-        if pos.direction is DIRECTION_LONG: 
-            pos.frozen += data['LongFrozen']
-        else:
-            pos.frozen += data['ShortFrozen']
-        
-        # 查询回报结束
-        if last:
-            # 遍历推送
-            for pos in self.posDict.values():
-                self.gateway.onPosition(pos)
+            # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
+            if exchange == EXCHANGE_SHFE:
+                if data['YdPosition'] and not data['TodayPosition']:
+                    pos.ydPosition = data['Position']
+            # 否则基于总持仓和今持仓来计算昨仓数据
+            else:
+                pos.ydPosition = data['Position'] - data['TodayPosition']
+                
+            # 计算成本
+            if pos.symbol not in self.symbolSizeDict:
+                return
+            size = self.symbolSizeDict[pos.symbol]
+            cost = pos.price * pos.position * size
             
-            # 清空缓存
-            self.posDict.clear()
+            # 汇总总仓
+            pos.position += data['Position']
+            pos.positionProfit += data['PositionProfit']
+            
+            # 计算持仓均价
+            if pos.position and size:    
+                pos.price = (cost + data['PositionCost']) / (pos.position * size)
+            
+            # 读取冻结
+            if pos.direction is DIRECTION_LONG: 
+                pos.frozen += data['LongFrozen']
+            else:
+                pos.frozen += data['ShortFrozen']
+            
+            # 查询回报结束
+            if last:
+                # 遍历推送
+                for pos in list(self.posDict.values()):
+                    self.gateway.onPosition(pos)
+                
+                # 清空缓存
+                self.posDict.clear()
         
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
