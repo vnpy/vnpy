@@ -27,7 +27,7 @@ from vnpy.trader.object import (
     CancelRequest,
     SubscribeRequest,
 )
-from vnpy.trader.utility import get_temp_path
+from vnpy.trader.utility import get_folder_path
 from vnpy.trader.event import EVENT_TIMER
 
 
@@ -305,8 +305,8 @@ class CtpMdApi(MdApi):
         
         # If not connected, then start connection first.
         if not self.connect_status:
-            path = get_temp_path(f"{self.gateway_name}_md_" )
-            self.createFtdcMdApi(str(path))
+            path = get_folder_path(self.gateway_name.lower())
+            self.createFtdcMdApi(str(path) + "\\Md")
             
             self.registerFront(address)
             self.init()
@@ -1076,8 +1076,8 @@ class CtpTdApi(TdApi):
         self.product_info = product_info
         
         if not self.connect_status:
-            path = get_temp_path(f"{self.gateway_name}_td_")
-            self.createFtdcTraderApi(str(path))
+            path = get_folder_path(self.gateway_name.lower())
+            self.createFtdcTraderApi(str(path) + "\\Td")
             
             self.subscribePrivateTopic(0)
             self.subscribePublicTopic(0)

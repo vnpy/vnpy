@@ -20,7 +20,7 @@ from ..event import (
     EVENT_LOG
 )
 from ..object import OrderRequest, SubscribeRequest
-from ..utility import load_setting, save_setting
+from ..utility import load_json, save_json
 
 COLOR_LONG = QtGui.QColor("red")
 COLOR_SHORT = QtGui.QColor("green")
@@ -490,7 +490,7 @@ class ConnectDialog(QtWidgets.QDialog):
 
         self.main_engine = main_engine
         self.gateway_name = gateway_name
-        self.filename = f"Connect{gateway_name}.vt"
+        self.filename = f"connect_{gateway_name.lower()}.json"
 
         self.widgets = {}
 
@@ -505,7 +505,7 @@ class ConnectDialog(QtWidgets.QDialog):
             self.gateway_name)
 
         # Saved setting provides field data used last time.
-        loaded_setting = load_setting(self.filename)
+        loaded_setting = load_json(self.filename)
 
         # Initialize line edits and form layout based on setting.
         form = QtWidgets.QFormLayout()
@@ -550,7 +550,7 @@ class ConnectDialog(QtWidgets.QDialog):
                 field_value = field_type(widget.text())
             setting[field_name] = field_value
         
-        save_setting(self.filename, setting)
+        save_json(self.filename, setting)
         
         self.main_engine.connect(setting, self.gateway_name)
         

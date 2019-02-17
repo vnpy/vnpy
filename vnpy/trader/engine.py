@@ -24,7 +24,7 @@ from .event import (
 from .gateway import BaseGateway
 from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
 from .setting import SETTINGS
-from .utility import Singleton, get_temp_path
+from .utility import Singleton, get_folder_path
 
 
 class MainEngine:
@@ -246,7 +246,8 @@ class LogEngine(BaseEngine):
         """
         today_date = datetime.now().strftime("%Y%m%d")
         filename = f"vt_{today_date}.log"
-        file_path = get_temp_path(filename)
+        log_path = get_folder_path("log")
+        file_path = log_path.joinpath(filename)
 
         file_handler = logging.FileHandler(
             file_path, mode="w", encoding="utf8"

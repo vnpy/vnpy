@@ -12,7 +12,12 @@ from ..utility import get_icon_path
 
 
 def excepthook(exctype, value, tb):
-    """异常捕捉钩子"""
+    """
+    Raise exception under debug mode, otherwise 
+    show exception detail with QMessageBox.
+    """
+    sys.__excepthook__(exctype, value, tb)
+
     msg = "".join(traceback.format_exception(exctype, value, tb))
     QtWidgets.QMessageBox.critical(
         None, "Exception", msg, QtWidgets.QMessageBox.Ok

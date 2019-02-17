@@ -4,10 +4,10 @@ from peewee import SqliteDatabase, Model, CharField, DateTimeField, FloatField
 
 from .constant import Exchange, Interval
 from .object import BarData, TickData
-from .utility import get_temp_path
+from .utility import get_file_path
 
-DB_NAME = "database.vt"
-DB = SqliteDatabase(str(get_temp_path(DB_NAME)))
+DB_NAME = "database.db"
+DB = SqliteDatabase(str(get_file_path(DB_NAME)))
 
 
 class DbBarData(Model):

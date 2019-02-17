@@ -5,7 +5,7 @@ class DoubleMaStrategy(CtaTemplate):
     author = "用Python的交易员"
 
     fast_window = 10
-    slow_window = 20.10
+    slow_window = 20
 
     fast_ma = 0.0
     slow_ma = 0.0

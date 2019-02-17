@@ -2,7 +2,6 @@
 
 import importlib
 import os
-import shelve
 import traceback
 from collections import defaultdict
 from pathlib import Path
@@ -21,7 +20,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.constant import Direction, PriceType, Interval
-from vnpy.trader.utility import get_temp_path, load_json, save_json
+from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.database import DbTickData, DbBarData
 
 from .base import (
@@ -43,7 +42,7 @@ class CtaEngine(BaseEngine):
 
     engine_type = EngineType.LIVE  # live trading engine
 
-    setting_filename = "cta_strategy_setting.vt"
+    setting_filename = "cta_strategy_setting.json"
     data_filename = "cta_strategy_data.json"
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
@@ -52,6 +51,7 @@ class CtaEngine(BaseEngine):
             main_engine, event_engine, "CtaStrategy")
 
         self.setting_file = None    # setting file object
+        self.strategy_setting = {}  # strategy_name: dict
         self.strategy_data = {}     # strategy_name: dict
 
         self.classes = {}           # class_name: stategy_class
@@ -80,7 +80,7 @@ class CtaEngine(BaseEngine):
 
     def close(self):
         """"""
-        self.save_strategy_setting()
+        pass
 
     def register_event(self):
         """"""
@@ -410,7 +410,7 @@ class CtaEngine(BaseEngine):
     def init_strategy(self, strategy_name: str):
         """
         Init a strategy.
-        """
+        """ 
         self.init_queue.put(strategy_name)
 
         if not self.init_thread:
@@ -612,12 +612,15 @@ class CtaEngine(BaseEngine):
         """
         Load setting file.
         """
-        filepath = str(get_temp_path(self.setting_filename))
-        self.setting_file = shelve.open(filepath)
+        self.strategy_setting = load_json(self.setting_filename)
 
-        for tp in list(self.setting_file.values()):
-            class_name, strategy_name, vt_symbol, setting = tp
-            self.add_strategy(class_name, strategy_name, vt_symbol, setting)
+        for strategy_name, strategy_config in self.strategy_setting.items():
+            self.add_strategy(
+                strategy_config["class_name"], 
+                strategy_name,
+                strategy_config["vt_symbol"], 
+                strategy_config["setting"]
+            )
 
     def update_strategy_setting(self, strategy_name: str, setting: dict):
         """
@@ -625,13 +628,12 @@ class CtaEngine(BaseEngine):
         """
         strategy = self.strategies[strategy_name]
 
-        self.setting_file[strategy_name] = (
-            strategy.__class__.__name__,
-            strategy_name,
-            strategy.vt_symbol,
-            setting,
-        )
-        self.setting_file.sync()
+        self.strategy_setting[strategy_name] = {
+            "class_name": strategy.__class__.__name__,
+            "vt_symbol": strategy.vt_symbol,
+            "setting": setting,
+        }
+        save_json(self.setting_filename, self.strategy_setting)
 
     def remove_strategy_setting(self, strategy_name: str):
         """
@@ -640,15 +642,8 @@ class CtaEngine(BaseEngine):
         if strategy_name not in self.setting_file:
             return
 
-        self.setting_file.pop(strategy_name)
-        self.setting_file.sync()
-
-    def save_strategy_setting(self):
-        """
-        Save and close setting file.
-        """
-        if self.setting_file:
-            self.setting_file.close()
+        self.strategy_setting.pop(strategy_name)
+        save_json(self.setting_filename, self.strategy_setting)
 
     def put_stop_order_event(self, stop_order: StopOrder):
         """
