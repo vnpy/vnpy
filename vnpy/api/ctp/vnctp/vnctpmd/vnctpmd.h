@@ -145,23 +145,23 @@ public:
 
 	virtual void onHeartBeatWarning(int reqid) {};
 
-	virtual void onRspUserLogin(dict data, dict error, int reqid, bool last) {};
+	virtual void onRspUserLogin(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRspUserLogout(dict data, dict error, int reqid, bool last) {};
+	virtual void onRspUserLogout(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRspError(dict error, int reqid, bool last) {};
+	virtual void onRspError(const dict &error, int reqid, bool last) {};
 
-	virtual void onRspSubMarketData(dict data, dict error, int reqid, bool last) {};
+	virtual void onRspSubMarketData(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRspUnSubMarketData(dict data, dict error, int reqid, bool last) {};
+	virtual void onRspUnSubMarketData(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRspSubForQuoteRsp(dict data, dict error, int reqid, bool last) {};
+	virtual void onRspSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRspUnSubForQuoteRsp(dict data, dict error, int reqid, bool last) {};
+	virtual void onRspUnSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) {};
 
-	virtual void onRtnDepthMarketData(dict data) {};
+	virtual void onRtnDepthMarketData(const dict &data) {};
 
-	virtual void onRtnForQuoteRsp(dict data) {};
+	virtual void onRtnForQuoteRsp(const dict &data) {};
 
 	//-------------------------------------------------------------------------------------
 	//req:主动函数的请求字典
@@ -189,7 +189,7 @@ public:
 
 	int unSubscribeForQuoteRsp(string instrumentID);
 
-	int reqUserLogin(dict req, int reqid);
+	int reqUserLogin(const dict &req, int reqid);
 
-	int reqUserLogout(dict req, int reqid);
+	int reqUserLogout(const dict &req, int reqid);
 };

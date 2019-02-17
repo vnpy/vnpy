@@ -18,151 +18,120 @@ using namespace pybind11;
 //任务结构体
 struct Task
 {
-	int task_name;		//回调函数名称对应的常量
-	void *task_data;	//数据指针
-	void *task_error;	//错误指针
-	int task_id;		//请求id
-	bool task_last;		//是否为最后返回
+    int task_name;		//回调函数名称对应的常量
+    void *task_data;	//数据指针
+    void *task_error;	//错误指针
+    int task_id;		//请求id
+    bool task_last;		//是否为最后返回
 };
 
 
 class TaskQueue
 {
 private:
-	queue<Task> queue_;						//标准库队列
-	mutex mutex_;							//互斥锁
-	condition_variable cond_;				//条件变量
+    queue<Task> queue_;						//标准库队列
+    mutex mutex_;							//互斥锁
+    condition_variable cond_;				//条件变量
 
 public:
 
-	//存入新的任务
-	void push(const Task &task)
-	{
-		unique_lock<mutex > mlock(mutex_);
-		queue_.push(task);					//向队列中存入数据
-		mlock.unlock();						//释放锁
-		cond_.notify_one();					//通知正在阻塞等待的线程
-	}
+    //存入新的任务
+    void push(const Task &task)
+    {
+        unique_lock<mutex > mlock(mutex_);
+        queue_.push(task);					//向队列中存入数据
+        mlock.unlock();						//释放锁
+        cond_.notify_one();					//通知正在阻塞等待的线程
+    }
 
-	//取出老的任务
-	Task pop()
-	{
-		unique_lock<mutex> mlock(mutex_);
-		while (queue_.empty())				//当队列为空时
-		{
-			cond_.wait(mlock);				//等待条件变量通知
-		}
-		Task task = queue_.front();			//获取队列中的最后一个任务
-		queue_.pop();						//删除该任务
-		return task;						//返回该任务
-	}
+    //取出老的任务
+    Task pop()
+    {
+        unique_lock<mutex> mlock(mutex_);
+        while (queue_.empty())				//当队列为空时
+        {
+            cond_.wait(mlock);				//等待条件变量通知
+        }
+        Task task = queue_.front();			//获取队列中的最后一个任务
+        queue_.pop();						//删除该任务
+        return task;						//返回该任务
+    }
 
 };
 
 
 //从字典中获取某个建值对应的整数，并赋值到请求结构体对象的值上
-void getInt(dict d, const char *key, int *value)
+void getInt(const dict &d, const char *key, int *value)
 {
-	if (d.contains(key))		//检查字典中是否存在该键值
-	{
-		object o = d[key];		//获取该键值
-		try
-		{
-			*value = o.cast<int>();
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	}
+    if (d.contains(key))		//检查字典中是否存在该键值
+    {
+        object o = d[key];		//获取该键值
+        *value = o.cast<int>();
+    }
 };
 
 
 //从字典中获取某个建值对应的浮点数，并赋值到请求结构体对象的值上
-void getDouble(dict d, const char *key, double *value)
+void getDouble(const dict &d, const char *key, double *value)
 {
-	if (d.contains(key))
-	{
-		object o = d[key];
-		try
-		{
-			*value = o.cast<double>();
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	}
+    if (d.contains(key))
+    {
+        object o = d[key];
+        *value = o.cast<double>();
+    }
 };
 
 
 //从字典中获取某个建值对应的字符，并赋值到请求结构体对象的值上
-void getChar(dict d, const char *key, char *value)
+void getChar(const dict &d, const char *key, char *value)
 {
-	if (d.contains(key))
-	{
-		object o = d[key];
-
-		try
-		{
-			*value = o.cast<char>();
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	}
+    if (d.contains(key))
+    {
+        object o = d[key];
+        *value = o.cast<char>();
+    }
 };
 
 
-//从字典中获取某个建值对应的字符串，并赋值到请求结构体对象的值上
-void getString(dict d, const char *key, char *value)
-{
-	if (d.contains(key))
-	{
-		object o = d[key];
-		try
-		{
-			string s = o.cast<string>();
-			const char *buf = s.c_str();
+template <size_t size>
+using string_literal = char[size];
 
-#ifdef _MSC_VER //WIN32
-			strcpy_s(value, strlen(buf) + 1, buf);
-#elif __GNUC__
-			strncpy(value, buffer, strlen(buffer) + 1);
-#endif
-		}
-		catch (const error_already_set &e)
-		{
-			cout << e.what() << endl;
-		}
-	}
+//从字典中获取某个建值对应的字符串，并赋值到请求结构体对象的值上
+template <size_t size>
+void getString(const pybind11::dict &d, const char *key, string_literal<size> &value)
+{
+    if (d.contains(key))
+    {
+        object o = d[key];
+        std::string s = o.cast<std::string>();
+        const char *buf = s.c_str();
+        strcpy(value, buf);
+    }
 };
 
 //将GBK编码的字符串转换为UTF8
-string toUtf(string strGb2312)
+inline std::string toUtf(const std::string &gb2312)
 {
-	std::vector<wchar_t> buff(strGb2312.size());
 #ifdef _MSC_VER
-	std::locale loc("zh-CN");
+    const static std::locale loc("zh-CN");
 #else
-	std::locale loc("zh_CN.GB18030");
+    const static std::locale loc("zh_CN.GB18030");
 #endif
-	wchar_t* pwszNext = nullptr;
-	const char* pszNext = nullptr;
-	mbstate_t state = {};
-	int res = std::use_facet<std::codecvt<wchar_t, char, mbstate_t> >
-		(loc).in(state,
-			strGb2312.data(), strGb2312.data() + strGb2312.size(), pszNext,
-			buff.data(), buff.data() + buff.size(), pwszNext);
 
-	if (std::codecvt_base::ok == res)
-	{
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> cutf8;
-		return cutf8.to_bytes(std::wstring(buff.data(), pwszNext));
-	}
+    std::vector<wchar_t> wstr(gb2312.size());
+    wchar_t* wstrEnd = nullptr;
+    const char* gbEnd = nullptr;
+    std::mbstate_t state = {};
+    int res = std::use_facet<std::codecvt<wchar_t, char, mbstate_t> >
+        (loc).in(state,
+            gb2312.data(), gb2312.data() + gb2312.size(), gbEnd,
+            wstr.data(), wstr.data() + wstr.size(), wstrEnd);
 
-	return "";
+    if (std::codecvt_base::ok == res)
+    {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> cutf8;
+        return cutf8.to_bytes(std::wstring(wstr.data(), wstrEnd));
+    }
+
+    return std::string();
 }
-
-

@@ -122,9 +122,9 @@ class ApiGenerator:
                     elif type_ == "bool":
                         l.append("bool last")
                     elif type_ == "CThostFtdcRspInfoField":
-                        l.append("dict error")
+                        l.append("const dict &error")
                     else:
-                        l.append("dict data")
+                        l.append("const dict &data")
                 
                 args_str = ", ".join(l)
                 line = f"virtual void {name}({args_str}) {{}};\n\n"
@@ -137,7 +137,7 @@ class ApiGenerator:
         with open(filename, "w") as f:
             for name in self.functions.keys():
                 name = name.replace("Req", "req")
-                line = f"int {name}(dict req, int reqid);\n\n"
+                line = f"int {name}(const dict &req, int reqid);\n\n"
                 f.write(line)      
     
     def generate_source_task(self):
@@ -254,7 +254,7 @@ class ApiGenerator:
                 req_name = name.replace("Req", "req")
                 type_ = list(d.values())[0]
                 
-                f.write(f"int {self.class_name}::{req_name}(dict req, int reqid)\n")
+                f.write(f"int {self.class_name}::{req_name}(const dict &req, int reqid)\n")
                 f.write("{\n")
                 f.write(f"\t{type_} myreq = {type_}();\n")
                 f.write("\tmemset(&myreq, 0, sizeof(myreq));\n")
@@ -289,10 +289,10 @@ class ApiGenerator:
                         args.append("bool last")
                         bind_args.append("last")
                     elif type_ == "CThostFtdcRspInfoField":
-                        args.append("dict error")
+                        args.append("const dict &error")
                         bind_args.append("error")
                     else:
-                        args.append("dict data")
+                        args.append("const dict &data")
                         bind_args.append("data")
                 
                 args_str = ", ".join(args)
@@ -302,7 +302,7 @@ class ApiGenerator:
                 f.write("{\n")
                 f.write("\ttry\n")
                 f.write("\t{\n")
-                f.write(f"\t\tPYBIND11_OVERLOAD_PURE({bind_args_str});\n")
+                f.write(f"\t\tPYBIND11_OVERLOAD({bind_args_str});\n")
                 f.write("\t}\n")
                 f.write("\tcatch (const error_already_set &e)\n")
                 f.write("\t{\n")

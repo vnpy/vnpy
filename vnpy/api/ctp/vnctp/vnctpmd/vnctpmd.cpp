@@ -613,7 +613,7 @@ int MdApi::unSubscribeForQuoteRsp(string instrumentID)
 	return i;
 };
 
-int MdApi::reqUserLogin(dict req, int reqid)
+int MdApi::reqUserLogin(const dict &req, int reqid)
 {
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -632,7 +632,7 @@ int MdApi::reqUserLogin(dict req, int reqid)
 	return i;
 };
 
-int MdApi::reqUserLogout(dict req, int reqid)
+int MdApi::reqUserLogout(const dict &req, int reqid)
 {
 	CThostFtdcUserLogoutField myreq = CThostFtdcUserLogoutField();
 	memset(&myreq, 0, sizeof(myreq));
@@ -656,7 +656,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onFrontConnected);
+			PYBIND11_OVERLOAD(void, MdApi, onFrontConnected);
 		}
 		catch (const error_already_set &e)
 		{
@@ -668,7 +668,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onFrontDisconnected, reqid);
+			PYBIND11_OVERLOAD(void, MdApi, onFrontDisconnected, reqid);
 		}
 		catch (const error_already_set &e)
 		{
@@ -680,7 +680,7 @@ public:
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onHeartBeatWarning, reqid);
+			PYBIND11_OVERLOAD(void, MdApi, onHeartBeatWarning, reqid);
 		}
 		catch (const error_already_set &e)
 		{
@@ -688,11 +688,11 @@ public:
 		}
 	};
 
-	void onRspUserLogin(dict data, dict error, int reqid, bool last) override
+	void onRspUserLogin(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspUserLogin, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspUserLogin, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -700,11 +700,11 @@ public:
 		}
 	};
 
-	void onRspUserLogout(dict data, dict error, int reqid, bool last) override
+	void onRspUserLogout(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspUserLogout, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspUserLogout, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -712,11 +712,11 @@ public:
 		}
 	};
 
-	void onRspError(dict error, int reqid, bool last) override
+	void onRspError(const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspError, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspError, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -724,11 +724,11 @@ public:
 		}
 	};
 
-	void onRspSubMarketData(dict data, dict error, int reqid, bool last) override
+	void onRspSubMarketData(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspSubMarketData, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSubMarketData, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -736,11 +736,11 @@ public:
 		}
 	};
 
-	void onRspUnSubMarketData(dict data, dict error, int reqid, bool last) override
+	void onRspUnSubMarketData(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspUnSubMarketData, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspUnSubMarketData, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -748,11 +748,11 @@ public:
 		}
 	};
 
-	void onRspSubForQuoteRsp(dict data, dict error, int reqid, bool last) override
+	void onRspSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspSubForQuoteRsp, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspSubForQuoteRsp, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -760,11 +760,11 @@ public:
 		}
 	};
 
-	void onRspUnSubForQuoteRsp(dict data, dict error, int reqid, bool last) override
+	void onRspUnSubForQuoteRsp(const dict &data, const dict &error, int reqid, bool last) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRspUnSubForQuoteRsp, data, error, reqid, last);
+			PYBIND11_OVERLOAD(void, MdApi, onRspUnSubForQuoteRsp, data, error, reqid, last);
 		}
 		catch (const error_already_set &e)
 		{
@@ -772,11 +772,11 @@ public:
 		}
 	};
 
-	void onRtnDepthMarketData(dict data) override
+	void onRtnDepthMarketData(const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRtnDepthMarketData, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnDepthMarketData, data);
 		}
 		catch (const error_already_set &e)
 		{
@@ -784,11 +784,11 @@ public:
 		}
 	};
 
-	void onRtnForQuoteRsp(dict data) override
+	void onRtnForQuoteRsp(const dict &data) override
 	{
 		try
 		{
-			PYBIND11_OVERLOAD_PURE(void, MdApi, onRtnForQuoteRsp, data);
+			PYBIND11_OVERLOAD(void, MdApi, onRtnForQuoteRsp, data);
 		}
 		catch (const error_already_set &e)
 		{
