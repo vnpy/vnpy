@@ -8,6 +8,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable
 from datetime import datetime, timedelta
+from threading import Thread
+from queue import Queue, Empty
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
@@ -63,6 +65,9 @@ class CtaEngine(BaseEngine):
 
         self.stop_order_count = 0   # for generating stop_orderid
         self.stop_orders = {}       # stop_orderid: stop_order
+
+        self.init_thread = None
+        self.init_queue = Queue()
 
     def init_engine(self):
         """
@@ -406,30 +411,52 @@ class CtaEngine(BaseEngine):
         """
         Init a strategy.
         """
-        strategy = self.strategies[strategy_name]
+        self.init_queue.put(strategy_name)
 
-        # Call on_init function of strategy
-        self.call_strategy_func(strategy, strategy.on_init)
+        if not self.init_thread:
+            self.init_thread = Thread(target=self._init_strategy)
+            self.init_thread.start()
 
-        # Restore strategy data(variables)
-        data = self.strategy_data.get(strategy_name, None)
-        if data:
-            for name in strategy.variables:
-                value = data.get(name, None)
-                if value:
-                    setattr(strategy, name, value)
+    def _init_strategy(self):
+        """
+        Init strategies in queue.
+        """
+        while not self.init_queue.empty():
+            strategy_name = self.init_queue.get()
+            strategy = self.strategies[strategy_name]
 
-        # Subscribe market data
-        contract = self.main_engine.get_contract(strategy.vt_symbol)
-        if contract:
-            req = SubscribeRequest(
-                symbol=contract.symbol, exchange=contract.exchange)
-            self.main_engine.subscribe(req, contract.gateway_name)
-        else:
-            self.write_log(f"行情订阅失败，找不到合约{strategy.vt_symbol}", strategy)
+            if strategy.inited:
+                self.write_log(f"{strategy_name}已经完成初始化，禁止重复操作")
+                continue
 
-        strategy.inited = True
-        self.put_strategy_event(strategy)
+            self.write_log(f"{strategy_name}开始执行初始化")
+
+            # Call on_init function of strategy
+            self.call_strategy_func(strategy, strategy.on_init)
+
+            # Restore strategy data(variables)
+            data = self.strategy_data.get(strategy_name, None)
+            if data:
+                for name in strategy.variables:
+                    value = data.get(name, None)
+                    if value:
+                        setattr(strategy, name, value)
+
+            # Subscribe market data
+            contract = self.main_engine.get_contract(strategy.vt_symbol)
+            if contract:
+                req = SubscribeRequest(
+                    symbol=contract.symbol, exchange=contract.exchange)
+                self.main_engine.subscribe(req, contract.gateway_name)
+            else:
+                self.write_log(f"行情订阅失败，找不到合约{strategy.vt_symbol}", strategy)
+
+            # Put event to update init completed status.
+            strategy.inited = True
+            self.put_strategy_event(strategy)
+            self.write_log(f"{strategy_name}初始化完成")
+        
+        self.init_thread = None
 
     def start_strategy(self, strategy_name: str):
         """
