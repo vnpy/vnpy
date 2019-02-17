@@ -359,7 +359,7 @@ class BasicMonitor(QtWidgets.QTableWidget):
                     self.setItem(0, n, cell)
 
             # 调整列宽
-            self.resizeColumns()
+            #self.resizeColumns()
 
             # 重新打开排序
             if self.sorting:
@@ -1111,39 +1111,50 @@ class TradingWidget(QtWidgets.QFrame):
     #----------------------------------------------------------------------
     def sendOrder(self):
         """发单"""
-        symbol = str(self.lineSymbol.text())
-        vtSymbol = symbol
-        exchange = self.comboExchange.currentText()
-        currency = self.comboCurrency.currentText()
-        productClass = self.comboProductClass.currentText()
-        gatewayName = self.comboGateway.currentText()
-
-        # 查询合约
-        if exchange:
-            vtSymbol = '.'.join([symbol, exchange])
-            contract = self.mainEngine.getContract(vtSymbol)
-        else:
+        try:
+            symbol = str(self.lineSymbol.text())
             vtSymbol = symbol
-            contract = self.mainEngine.getContract(symbol)
-        
-        if contract:
-            if not gatewayName:
-                gatewayName = contract.gatewayName
-            exchange = contract.exchange    # 保证有交易所代码
-            
-        req = VtOrderReq()
-        req.symbol = symbol
-        req.vtSymbol = vtSymbol
-        req.exchange = exchange
-        req.price = self.spinPrice.value()
-        req.volume = self.spinVolume.value()
-        req.direction = self.comboDirection.currentText()
-        req.priceType = self.comboPriceType.currentText()
-        req.offset = self.comboOffset.currentText()
-        req.currency = currency
-        req.productClass = productClass
-        
-        self.mainEngine.sendOrder(req, gatewayName)
+            exchange = self.comboExchange.currentText()
+            currency = self.comboCurrency.currentText()
+            productClass = self.comboProductClass.currentText()
+            gatewayName = self.comboGateway.currentText()
+
+            # 查询合约
+            if exchange:
+                vtSymbol = '.'.join([symbol, exchange])
+                contract = self.mainEngine.getContract(vtSymbol)
+            else:
+                vtSymbol = symbol
+                contract = self.mainEngine.getContract(symbol)
+
+            if contract:
+                if not gatewayName:
+                    gatewayName = contract.gatewayName
+                exchange = contract.exchange    # 保证有交易所代码
+
+            if gatewayName not in self.mainEngine.connected_gw_names:
+                if len(self.mainEngine.connected_gw_names) == 1:
+                    gatewayName = self.mainEngine.connected_gw_names[0]
+                else:
+                    self.mainEngine.writeError(u'没有连接网关:{}'.format(gatewayName))
+                    return
+
+            req = VtOrderReq()
+            req.symbol = symbol
+            req.vtSymbol = vtSymbol
+            req.exchange = exchange
+            req.price = self.spinPrice.value()
+            req.volume = self.spinVolume.value()
+            req.direction = self.comboDirection.currentText()
+            req.priceType = self.comboPriceType.currentText()
+            req.offset = self.comboOffset.currentText()
+            req.currency = currency
+            req.productClass = productClass
+
+            self.mainEngine.sendOrder(req, gatewayName)
+        except Exception as ex:
+            self.mainEngine.writeError(
+                u'tradingWg.sendOrder exception:{},{}'.format(str(ex), traceback.format_exc()))
 
     def canelOrder(self):
         """撤单"""
@@ -1290,7 +1301,8 @@ class ContractMonitor(BasicMonitor):
         l = self.mainEngine.getAllContracts()
         d = {'.'.join([contract.exchange, contract.symbol]):contract for contract in l}
         l2 = d.keys()
-        l2.sort(reverse=True)
+        #l2.sort(reverse=True)
+        l2 = sorted(l2, reverse=True)
 
         self.setRowCount(len(l2))
         row = 0
