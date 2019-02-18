@@ -570,7 +570,8 @@ int MdApi::join()
 int MdApi::exit()
 {
 	this->active = false;
-	//this->task_thread.join();
+    this->task_queue.terminate();
+    this->task_thread.join();
 
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
@@ -808,8 +809,6 @@ public:
 
 PYBIND11_MODULE(vnctpmd, m)
 {
-	PyEval_InitThreads();	//导入时运行，保证先创建GIL
-
 	class_<MdApi, PyMdApi> mdapi(m, "MdApi");
 	mdapi
 		.def(init<>())

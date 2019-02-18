@@ -8,3 +8,6 @@ pandas
 matplotlib
 seaborn
 jupyter
+#ta-lib
+#https://download.lfd.uci.edu/pythonlibs/r5uhg2lo/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+
