@@ -25,6 +25,8 @@ struct Task
     bool task_last;		//是否为最后返回
 };
 
+class TerminatedError : std::exception
+{};
 
 class TaskQueue
 {
@@ -32,6 +34,8 @@ private:
     queue<Task> queue_;						//标准库队列
     mutex mutex_;							//互斥锁
     condition_variable cond_;				//条件变量
+
+    bool _terminate = false;
 
 public:
 
@@ -48,15 +52,21 @@ public:
     Task pop()
     {
         unique_lock<mutex> mlock(mutex_);
-        while (queue_.empty())				//当队列为空时
-        {
-            cond_.wait(mlock);				//等待条件变量通知
-        }
+        cond_.wait(mlock, [&]() {
+            return !queue_.empty() || _terminate;
+        });				//等待条件变量通知
+        if (_terminate)
+            throw TerminatedError();
         Task task = queue_.front();			//获取队列中的最后一个任务
         queue_.pop();						//删除该任务
         return task;						//返回该任务
     }
 
+    void terminate()
+    {
+        _terminate = true;
+        cond_.notify_all();					//通知正在阻塞等待的线程
+    }
 };
 
 
