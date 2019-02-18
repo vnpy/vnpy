@@ -154,8 +154,7 @@ public:
 	{
 		if (this->active)
 		{
-			this->active = false;
-			this->task_thread.join();
+			this->exit();
 		}
 	};
 

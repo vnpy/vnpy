@@ -23,7 +23,7 @@
     <ProjectGuid>{016732E6-5789-4F7C-9A1C-C46A249080CF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vnctptd</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -94,8 +94,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
-    <IncludePath>C:\Python37\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\ctp;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Python37\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Miniconda3\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\ctp;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Miniconda3\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
