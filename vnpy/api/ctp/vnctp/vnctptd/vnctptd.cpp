@@ -7921,7 +7921,8 @@ int TdApi::join()
 int TdApi::exit()
 {
 	this->active = false;
-	//this->task_thread.join();
+    this->task_queue.terminate();
+    this->task_thread.join();
 
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
@@ -10631,8 +10632,6 @@ public:
 
 PYBIND11_MODULE(vnctptd, m)
 {
-	PyEval_InitThreads();	//导入时运行，保证先创建GIL
-
 	class_<TdApi, PyTdApi> TdApi(m, "TdApi");
 	TdApi
 		.def(init<>())
