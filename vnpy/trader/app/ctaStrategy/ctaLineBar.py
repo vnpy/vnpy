@@ -3539,8 +3539,11 @@ class CtaLineBar(object):
         :param:direction，多：检查是否有顶背离，空，检查是否有底背离
         :return:
         """
-        if len(self.lineSkTop) < 2 or len(self.lineSkButtom) < 2 or self._rt_SK is None or self._rt_SD is None:
+        if len(self.lineSkTop) < 2 or len(self.lineSkButtom) < 2 :
             return False
+        if runtime:
+            if self._rt_SK is None or self._rt_SD is None:
+                return False
 
         t1 = self.lineSkTop[-1]
         t2 = self.get_2nd_item(self.lineSkTop[:-1])

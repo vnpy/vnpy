@@ -30,6 +30,7 @@ import re
 import csv
 import copy
 import decimal
+from copy import copy
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
@@ -567,7 +568,10 @@ class CtaEngine(object):
             # 推送到策略onTrade事件
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
 
-        # 更新持仓缓存数据
+            # 保存策略持仓到数据库
+            self.saveSyncData(strategy)
+
+            # 更新持仓缓存数据
         if trade.vtSymbol in self.tickStrategyDict:
             posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
             if not posBuffer:
@@ -1111,6 +1115,7 @@ class CtaEngine(object):
                 self.callStrategyFunc(strategy, strategy.onInit, force)
                 # strategy.onInit(force=force)
                 # strategy.inited = True
+                self.loadSyncData(strategy)         # 初始化完成后加载同步数据
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' % name)
             return True
@@ -1902,10 +1907,9 @@ class CtaEngine(object):
                     except Exception as ex:
                         self.writeCtaCritical(u'加载策略配置{}:异常{}，{}'.format(setting, str(ex), traceback.format_exc()))
                         traceback.print_exc()
-            self.loadPosition()
+
         except Exception as ex:
             self.writeCtaCritical(u'加载策略配置异常:{},{}'.format(str(ex),traceback.format_exc()))
-
 
     # ----------------------------------------------------------------------
     # 策略运行监控相关
@@ -2104,6 +2108,38 @@ class CtaEngine(object):
                     strategy.pos = d['pos']
         except:
             self.writeCtaLog(u'loadPosition Exception from Mongodb')
+
+    # ----------------------------------------------------------------------
+    def saveSyncData(self, strategy):
+        """保存策略的持仓情况到数据库"""
+        flt = {'name': strategy.name,
+               'vtSymbol': strategy.vtSymbol}
+
+        d = copy(flt)
+        for key in strategy.syncList:
+            d[key] = strategy.__getattribute__(key)
+
+        self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
+                                 d, flt, True)
+
+        content = u'策略%s同步数据保存成功，当前持仓%s' % (strategy.name, strategy.pos)
+        self.writeCtaLog(content)
+
+    # ----------------------------------------------------------------------
+    def loadSyncData(self, strategy):
+        """从数据库载入策略的持仓情况"""
+        flt = {'name': strategy.name,
+               'vtSymbol': strategy.vtSymbol}
+        syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
+
+        if not syncData:
+            return
+
+        d = syncData[0]
+
+        for key in strategy.syncList:
+            if key in d:
+                strategy.__setattr__(key, d[key])
 
     # ----------------------------------------------------------------------
     # 公共方法相关

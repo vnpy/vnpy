@@ -40,7 +40,7 @@ class HistoryDataEngine(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        host, port = loadMongoSetting()
+        host, port,_ = loadMongoSetting()
         
         self.dbClient = pymongo.MongoClient(host, port)
         self.datayesClient = DatayesClient()
@@ -329,7 +329,7 @@ def loadMcCsv(fileName, dbName, symbol):
     print( u'开始读取CSV文件%s中的数据插入到%s的%s中' %(fileName, dbName, symbol))
     
     # 锁定集合，并创建索引
-    host, port = loadMongoSetting()
+    host, port,_ = loadMongoSetting()
     
     client = pymongo.MongoClient(host, port)    
     collection = client[dbName][symbol]
