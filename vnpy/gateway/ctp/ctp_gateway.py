@@ -2,7 +2,6 @@
 """
 """
 
-from copy import copy
 from datetime import datetime
 
 from vnpy.api.ctp import *
@@ -212,11 +211,7 @@ class CtpMdApi(MdApi):
         self.connect_status = False
         self.login_status = False
         self.gateway.write_log(f"行情连接断开，原因{reason}")
-    
-    def onHeartBeatWarning(self, n: int):
-        """"""
-        pass
-    
+
     def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
         """
         Callback when user is logged in.
@@ -230,10 +225,6 @@ class CtpMdApi(MdApi):
         else:
             self.gateway.write_error("行情登录失败", error)
     
-    def onRspUserLogout(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
     def onRspError(self, error: dict, reqid: int, last: bool):
         """
         Callback when error occured.
@@ -246,19 +237,7 @@ class CtpMdApi(MdApi):
             return
         
         self.gateway.write_error("行情订阅失败", error)
-    
-    def onRspUnSubMarketData(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspSubForQuoteRsp(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspUnSubForQuoteRsp(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
+
     def onRtnDepthMarketData(self, data: dict):
         """
         Callback of tick data update.
@@ -274,7 +253,7 @@ class CtpMdApi(MdApi):
             symbol=symbol,
             exchange=exchange,
             datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
-            name = symbol_name_map[symbol],
+            name=symbol_name_map[symbol],
             volume=data["Volume"],
             last_price=data["LastPrice"],
             limit_up=data["UpperLimitPrice"],
@@ -289,11 +268,7 @@ class CtpMdApi(MdApi):
             ask_volume_1=data["AskVolume1"],
             gateway_name=self.gateway_name
         )
-        self.gateway.on_tick(tick)
-    
-    def onRtnForQuoteRsp(self, data: dict):    
-        """"""
-        pass        
+        self.gateway.on_tick(tick)  
 
     def connect(self, address: str, userid: str, password: str, brokerid: int):
         """
@@ -341,9 +316,6 @@ class CtpMdApi(MdApi):
         """
         if self.connect_status:
             self.exit()
-
-
-
 
 
 class CtpTdApi(TdApi):
@@ -394,10 +366,6 @@ class CtpTdApi(TdApi):
         self.login_status = False
         self.gateway.write_log(f"交易连接断开，原因{reason}")        
     
-    def onHeartBeatWarning(self, n: int):
-        """"""
-        pass
-    
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
@@ -427,30 +395,6 @@ class CtpTdApi(TdApi):
             
             self.gateway.write_error("交易登录失败", error)
     
-    def onRspUserLogout(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspUserPasswordUpdate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspTradingAccountPasswordUpdate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspUserAuthMethod(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspGenUserCaptcha(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspGenUserText(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         order_ref = data["OrderRef"]
@@ -474,14 +418,6 @@ class CtpTdApi(TdApi):
         
         self.gateway.write_error("交易委托失败", error)
     
-    def onRspParkedOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspParkedOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
     def onRspOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         self.gateway.write_error("交易撤单失败", error)
@@ -498,58 +434,6 @@ class CtpTdApi(TdApi):
         
         self.reqid += 1
         self.reqQryInstrument({}, self.reqid)
-            
-    def onRspRemoveParkedOrder(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspRemoveParkedOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspExecOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspExecOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspForQuoteInsert(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQuoteInsert(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQuoteAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspBatchOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspOptionSelfCloseInsert(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspOptionSelfCloseAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspCombActionInsert(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryOrder(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryTrade(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
     
     def onRspQryInvestorPosition(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
@@ -612,39 +496,19 @@ class CtpTdApi(TdApi):
         
         self.gateway.on_account(account)
     
-    def onRspQryInvestor(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryTradingCode(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInstrumentMarginRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInstrumentCommissionRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryExchange(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryProduct(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
     def onRspQryInstrument(self, data: dict, error: dict, reqid: int, last: bool):
         """
         Callback of instrument query.
         """
+        product = PRODUCT_CTP2VT.get(data["ProductClass"], None)
+        if not product:
+            return
+
         contract = ContractData(
             symbol=data["InstrumentID"],
             exchange=EXCHANGE_CTP2VT[data["ExchangeID"]],
             name=data["InstrumentName"],
-            product=PRODUCT_CTP2VT[data["ProductClass"]],
+            product=product,
             size=data["VolumeMultiple"],
             pricetick=data["PriceTick"],
             option_underlying=data["UnderlyingInstrID"],
@@ -670,142 +534,6 @@ class CtpTdApi(TdApi):
             for data in self.trade_data:
                 self.onRtnTrade(data)
             self.trade_data.clear()
-    
-    def onRspQryDepthMarketData(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQrySettlementInfo(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryTransferBank(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInvestorPositionDetail(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryNotice(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQrySettlementInfoConfirm(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInvestorPositionCombineDetail(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryCFMMCTradingAccountKey(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryEWarrantOffset(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInvestorProductGroupMargin(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryExchangeMarginRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryExchangeMarginRateAdjust(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryExchangeRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQrySecAgentACIDMap(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryProductExchRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryProductGroup(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryMMInstrumentCommissionRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryMMOptionInstrCommRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInstrumentOrderCommRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQrySecAgentTradingAccount(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQrySecAgentCheckMode(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQrySecAgentTradeInfo(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryOptionInstrTradeCost(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryOptionInstrCommRate(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryExecOrder(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryForQuote(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryQuote(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryOptionSelfClose(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryInvestUnit(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryCombInstrumentGuard(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryCombAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryTransferSerial(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryAccountregister(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspError(self, error: dict, reqid: int, last: bool):
-        """"""
-        pass
     
     def onRtnOrder(self, data: dict):
         """
@@ -865,206 +593,6 @@ class CtpTdApi(TdApi):
         )
         self.gateway.on_trade(trade)        
     
-    def onErrRtnOrderInsert(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnOrderAction(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRtnInstrumentStatus(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnBulletin(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnTradingNotice(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnErrorConditionalOrder(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnExecOrder(self, data: dict):
-        """"""
-        pass
-    
-    def onErrRtnExecOrderInsert(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnExecOrderAction(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnForQuoteInsert(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRtnQuote(self, data: dict):
-        """"""
-        pass
-    
-    def onErrRtnQuoteInsert(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnQuoteAction(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRtnForQuoteRsp(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnCFMMCTradingAccountToken(self, data: dict):
-        """"""
-        pass
-    
-    def onErrRtnBatchOrderAction(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRtnOptionSelfClose(self, data: dict):
-        """"""
-        pass
-    
-    def onErrRtnOptionSelfCloseInsert(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnOptionSelfCloseAction(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRtnCombAction(self, data: dict):
-        """"""
-        pass
-    
-    def onErrRtnCombActionInsert(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRspQryContractBank(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryParkedOrder(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryParkedOrderAction(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryTradingNotice(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryBrokerTradingParams(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQryBrokerTradingAlgos(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQueryCFMMCTradingAccountToken(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRtnFromBankToFutureByBank(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnFromFutureToBankByBank(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnRepealFromBankToFutureByBank(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnRepealFromFutureToBankByBank(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnFromBankToFutureByFuture(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnFromFutureToBankByFuture(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnRepealFromBankToFutureByFutureManual(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnRepealFromFutureToBankByFutureManual(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnQueryBankBalanceByFuture(self, data: dict):
-        """"""
-        pass
-    
-    def onErrRtnBankToFutureByFuture(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnFutureToBankByFuture(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnRepealBankToFutureByFutureManual(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnRepealFutureToBankByFutureManual(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onErrRtnQueryBankBalanceByFuture(self, data: dict, error: dict):
-        """"""
-        pass
-    
-    def onRtnRepealFromBankToFutureByFuture(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnRepealFromFutureToBankByFuture(self, data: dict):
-        """"""
-        pass
-    
-    def onRspFromBankToFutureByFuture(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspFromFutureToBankByFuture(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRspQueryBankAccountMoneyByFuture(self, data: dict, error: dict, reqid: int, last: bool):
-        """"""
-        pass
-    
-    def onRtnOpenAccountByBank(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnCancelAccountByBank(self, data: dict):
-        """"""
-        pass
-    
-    def onRtnChangeAccountByBank(self, data: dict):
-        """"""
-        pass
-    
     def connect(self, address: str, userid: str, password: str, brokerid: int, auth_code: str, product_info: str):
         """
         Start connection to server.
@@ -1107,11 +635,11 @@ class CtpTdApi(TdApi):
         """
         if self.login_failed:
             return
-        
+
         req = {
             "UserID": self.userid,
             "Password": self.password,
-            "BrokerID": self.brokerid,
+            "BrokerID": self.brokerid
         }
         
         self.reqid += 1

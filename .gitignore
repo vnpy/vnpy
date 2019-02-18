@@ -10,6 +10,7 @@
 *.wpr
 *.wpu
 .vs
+x64
 
 # Temp
 build
