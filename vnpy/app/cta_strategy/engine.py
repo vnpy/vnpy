@@ -403,7 +403,7 @@ class CtaEngine(BaseEngine):
         # Query data from RQData by default, if not found, load from database.
         data = self.query_bar_from_rq(vt_symbol, interval, start, end)
         if not data:
-            data = (
+            s = (
                 DbBarData.select()
                 .where(
                     (DbBarData.vt_symbol == vt_symbol) &
@@ -413,6 +413,7 @@ class CtaEngine(BaseEngine):
                 )
                 .order_by(DbBarData.datetime)
             )
+            data = [db_bar.to_bar() for db_bar in s]
 
         for bar in data:
             callback(bar)
