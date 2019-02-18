@@ -193,7 +193,7 @@ class CtaTemplate(ABC):
         """
         Write a log message.
         """
-        self.cta_engine.write_log(self, msg)
+        self.cta_engine.write_log(msg, self)
 
     def get_engine_type(self):
         """
