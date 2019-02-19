@@ -300,56 +300,81 @@ class BacktestingEngine:
 
         if not df:
             df = self.daily_df
-
-        # Calculate balance related time series data
-        df["balance"] = df["net_pnl"].cumsum() + self.capital
-        df["return"] = np.log(df["balance"] / df["balance"].shift(1)).fillna(0)
-        df["highlevel"] = (
-            df["balance"].rolling(
-                min_periods=1, window=len(df), center=False).max()
-        )
-        df["drawdown"] = df["balance"] - df["highlevel"]
-        df["ddpercent"] = df["drawdown"] / df["highlevel"] * 100
-
-        # Calculate statistics value
-        start_date = df.index[0]
-        end_date = df.index[-1]
-
-        total_days = len(df)
-        profit_days = len(df[df["net_pnl"] > 0])
-        loss_days = len(df[df["net_pnl"] < 0])
-
-        end_balance = df["balance"].iloc[-1]
-        max_drawdown = df["drawdown"].min()
-        max_ddpercent = df["ddpercent"].min()
-
-        total_net_pnl = df["net_pnl"].sum()
-        daily_net_pnl = total_net_pnl / total_days
-
-        total_commission = df["commission"].sum()
-        daily_commission = total_commission / total_days
-
-        total_slippage = df["slippage"].sum()
-        daily_slippage = total_slippage / total_days
-
-        total_turnover = df["turnover"].sum()
-        daily_turnover = total_turnover / total_days
-
-        total_trade_count = df["trade_count"].sum()
-        daily_trade_count = total_trade_count / total_days
-
-        total_return = (end_balance / self.capital - 1) * 100
-        annual_return = total_return / total_days * 240
-        daily_return = df["return"].mean() * 100
-        return_std = df["return"].std() * 100
-
-        if return_std:
-            sharpe_ratio = daily_return / return_std * np.sqrt(240)
-        else:
+        
+        if df is None:
+            # Set all statistics to 0 if no trade.
+            start_date = ""
+            end_date = ""
+            total_days = 0
+            profit_days = 0
+            loss_days = 0
+            end_balance = 0
+            max_drawdown = 0
+            max_ddpercent = 0
+            total_net_pnl = 0
+            daily_net_pnl = 0
+            total_commission = 0
+            daily_commission = 0
+            total_slippage = 0
+            daily_slippage = 0
+            total_turnover = 0
+            daily_turnover = 0
+            total_trade_count = 0
+            daily_trade_count = 0
+            total_return = 0
+            annual_return = 0
+            daily_return = 0
+            return_std = 0
             sharpe_ratio = 0
+        else:
+            # Calculate balance related time series data
+            df["balance"] = df["net_pnl"].cumsum() + self.capital
+            df["return"] = np.log(df["balance"] / df["balance"].shift(1)).fillna(0)
+            df["highlevel"] = (
+                df["balance"].rolling(
+                    min_periods=1, window=len(df), center=False).max()
+            )
+            df["drawdown"] = df["balance"] - df["highlevel"]
+            df["ddpercent"] = df["drawdown"] / df["highlevel"] * 100
+
+            # Calculate statistics value
+            start_date = df.index[0]
+            end_date = df.index[-1]
+
+            total_days = len(df)
+            profit_days = len(df[df["net_pnl"] > 0])
+            loss_days = len(df[df["net_pnl"] < 0])
+
+            end_balance = df["balance"].iloc[-1]
+            max_drawdown = df["drawdown"].min()
+            max_ddpercent = df["ddpercent"].min()
+
+            total_net_pnl = df["net_pnl"].sum()
+            daily_net_pnl = total_net_pnl / total_days
+
+            total_commission = df["commission"].sum()
+            daily_commission = total_commission / total_days
+
+            total_slippage = df["slippage"].sum()
+            daily_slippage = total_slippage / total_days
+
+            total_turnover = df["turnover"].sum()
+            daily_turnover = total_turnover / total_days
+
+            total_trade_count = df["trade_count"].sum()
+            daily_trade_count = total_trade_count / total_days
+
+            total_return = (end_balance / self.capital - 1) * 100
+            annual_return = total_return / total_days * 240
+            daily_return = df["return"].mean() * 100
+            return_std = df["return"].std() * 100
+
+            if return_std:
+                sharpe_ratio = daily_return / return_std * np.sqrt(240)
+            else:
+                sharpe_ratio = 0
 
         # Output
-        # 输出统计结果
         self.output("-" * 30)
         self.output(f"首个交易日：\t{start_date}")
         self.output(f"最后交易日：\t{end_date}")
@@ -414,6 +439,9 @@ class BacktestingEngine:
         """"""
         if not df:
             df = self.daily_df
+        
+        if df is None:
+            return
 
         plt.figure(figsize=(10, 16))
 
