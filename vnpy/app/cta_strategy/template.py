@@ -239,3 +239,138 @@ class CtaTemplate(ABC):
         """
         if self.trading:
             self.cta_engine.sync_strategy_data(self)
+
+
+
+class CtaSignal(ABC):
+    """"""
+
+    def __init__(self):
+        """"""
+        self.signal_pos = 0      
+    
+    def on_tick(self, tick: TickData):
+        """
+        Callback of new tick data update.
+        """
+        pass
+
+    def on_bar(self, bar: BarData):
+        """
+        Callback of new bar data update.
+        """
+        pass
+
+
+    def set_signal_pos(self, pos):
+        """"""
+        self.signal_pos = pos
+        
+    def get_signal_pos(self):
+        """"""
+        return self.signal_pos
+    
+
+
+class TargetPosTemplate(CtaTemplate):
+    """"""
+   
+    author = '量衍投资'
+    
+    tick_add = 1             
+    last_tick = None        
+    last_bar = None          
+    target_pos = 0   
+    orderList = []          
+
+    variables = ['target_pos']
+
+    def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
+        """"""
+        super(TargetPosTemplate, self).__init__(
+            cta_engine, strategy_name, vt_symbol, setting
+        )    
+
+    def on_tick(self, tick:TickData):
+        """
+        Callback of new tick data update.
+        """
+        self.last_tick = tick
+        
+        if self.trading:
+            self.trade()
+        
+    def on_bar(self, bar: BarData):
+        """
+        Callback of new bar data update.
+        """
+        self.last_bar = bar
+    
+    def on_order(self, order: OrderData):
+        """
+        Callback of new order data update.
+        """
+        if order.status == Status.ALLTRADED or order.status == Status.CANCELLED:            
+            if order.vt_orderid in self.orderList:
+                self.orderList.remove(order.vt_orderid)
+    
+    def set_target_pos(self, target_pos):
+        """"""
+        self.target_pos = target_pos       
+        self.trade()
+        
+    def trade(self):
+        """"""
+        self.cancel_all()
+        
+        pos_change = self.target_pos - self.pos
+        if not pos_change:
+            return
+        
+        long_price = 0
+        short_price = 0
+        
+        if self.last_tick:
+            if pos_change > 0:
+                long_price = self.last_tick.ask_price_1 + self.tick_add
+                if self.last_tick.limit_up:
+                    long_price = min(long_price, self.last_tick.limit_up)         
+            else:
+                short_price = self.last_tick.bid_price_1 - self.tick_add
+                if self.last_tick.limit_down:
+                    short_price = max(short_price, self.last_tick.limit_down)      
+        
+        else:
+            if pos_change > 0:
+                long_price = self.last_bar.close_price + self.tick_add
+            else:
+                short_price = self.last_bar.close_price - self.tick_add
+        
+        if self.get_engine_type() == EngineType.BACKTESTING:
+            if pos_change > 0:
+                vt_orderid = self.buy(long_price, abs(pos_change))
+            else:
+                vt_orderid = self.short(short_price, abs(pos_change))
+            self.orderList.append(vt_orderid)
+        
+        else:
+            if self.orderList:
+                return
+            
+            if pos_change > 0:
+                if self.pos < 0:
+                    if pos_change < abs(self.pos):
+                        vt_orderid = self.cover(long_price, pos_change)
+                    else:
+                        vt_orderid = self.cover(long_price, abs(self.pos))
+                else:
+                    vt_orderid = self.buy(long_price, abs(pos_change))
+            else:
+                if self.pos > 0:
+                    if abs(pos_change) < self.pos:
+                        vt_orderid = self.sell(short_price, abs(pos_change))
+                    else:
+                        vt_orderid = self.sell(short_price, abs(self.pos))
+                else:
+                    vt_orderid = self.short(short_price, abs(pos_change))
+            self.orderList.append(vt_orderid)
