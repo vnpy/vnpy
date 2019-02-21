@@ -24,7 +24,7 @@ def excepthook(exctype, value, tb):
     )
 
 
-def create_qapp():
+def create_qapp(app_name: str = "VN Trader"):
     """
     Create Qt Application.
     """
@@ -41,7 +41,7 @@ def create_qapp():
 
     if "Windows" in platform.uname():
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-            "VN Trader"
+            app_name
         )
 
     return qapp
