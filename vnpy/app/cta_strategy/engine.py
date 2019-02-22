@@ -278,7 +278,7 @@ class CtaEngine(BaseEngine):
             price=price,
             volume=volume,
         )
-        vt_orderid = self.main_engine.send_limit_order(
+        vt_orderid = self.main_engine.send_order(
             req, contract.gateway_name)
 
         # Save relationship between orderid and strategy.
