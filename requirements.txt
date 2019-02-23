@@ -1,4 +1,5 @@
-PyQt5
+PyQt5<5.12
+dataclasses; python<=3.6
 qdarkstyle
 futu-api
 websocket-client
@@ -9,5 +10,3 @@ matplotlib
 seaborn
 jupyter
 ta-lib; platform_system=="Unix"
-https://download.lfd.uci.edu/pythonlibs/r5uhg2lo/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl; platform_system=="Windows"
-

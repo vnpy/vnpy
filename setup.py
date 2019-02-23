@@ -49,5 +49,8 @@ s = setup(
         '*.json', '*.md', '*.ico',
         '*.dll', '*.so',
     ]},
+    install_requires=[
+        ""
+    ],
     ext_modules=[vnctptd, vnctpmd],
 )
