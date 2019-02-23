@@ -201,10 +201,10 @@ class BacktestingEngine:
             s = (
                 DbBarData.select()
                 .where(
-                    (DbBarData.vt_symbol == self.vt_symbol) &
-                    (DbBarData.interval == self.interval) &
-                    (DbBarData.datetime >= self.start) &
-                    (DbBarData.datetime <= self.end)
+                    (DbBarData.vt_symbol == self.vt_symbol) 
+                    & (DbBarData.interval == self.interval) 
+                    & (DbBarData.datetime >= self.start) 
+                    & (DbBarData.datetime <= self.end)
                 )
                 .order_by(DbBarData.datetime)
             )
@@ -213,9 +213,9 @@ class BacktestingEngine:
             s = (
                 DbTickData.select()
                 .where(
-                    (DbTickData.vt_symbol == self.vt_symbol) &
-                    (DbTickData.datetime >= self.start) &
-                    (DbTickData.datetime <= self.end)
+                    (DbTickData.vt_symbol == self.vt_symbol) 
+                    & (DbTickData.datetime >= self.start) 
+                    & (DbTickData.datetime <= self.end)
                 )
                 .order_by(DbTickData.datetime)
             )
@@ -567,15 +567,15 @@ class BacktestingEngine:
 
             # Check whether limit orders can be filled.
             long_cross = (
-                order.direction == Direction.LONG and
-                order.price >= long_cross_price and
-                long_cross_price > 0
+                order.direction == Direction.LONG 
+                and order.price >= long_cross_price 
+                and long_cross_price > 0
             )
 
             short_cross = (
-                order.direction == Direction.SHORT and
-                order.price <= short_cross_price and
-                short_cross_price > 0
+                order.direction == Direction.SHORT 
+                and order.price <= short_cross_price 
+                and short_cross_price > 0
             )
 
             if not long_cross and not short_cross:
@@ -635,13 +635,13 @@ class BacktestingEngine:
         for stop_order in list(self.active_stop_orders.values()):
             # Check whether stop order can be triggered.
             long_cross = (
-                stop_order.direction == Direction.LONG and
-                stop_order.price <= long_cross_price
+                stop_order.direction == Direction.LONG 
+                and stop_order.price <= long_cross_price
             )
 
             short_cross = (
-                stop_order.direction == Direction.SHORT and
-                stop_order.price >= short_cross_price
+                stop_order.direction == Direction.SHORT 
+                and stop_order.price >= short_cross_price
             )
 
             if not long_cross and not short_cross:

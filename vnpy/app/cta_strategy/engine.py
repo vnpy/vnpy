@@ -405,10 +405,10 @@ class CtaEngine(BaseEngine):
             s = (
                 DbBarData.select()
                 .where(
-                    (DbBarData.vt_symbol == vt_symbol) &
-                    (DbBarData.interval == interval) &
-                    (DbBarData.datetime >= start) &
-                    (DbBarData.datetime <= end)
+                    (DbBarData.vt_symbol == vt_symbol)
+                    & (DbBarData.interval == interval)
+                    & (DbBarData.datetime >= start)
+                    & (DbBarData.datetime <= end)
                 )
                 .order_by(DbBarData.datetime)
             )
@@ -425,9 +425,9 @@ class CtaEngine(BaseEngine):
         s = (
             DbTickData.select()
             .where(
-                (DbBarData.vt_symbol == vt_symbol) &
-                (DbBarData.datetime >= start) &
-                (DbBarData.datetime <= end)
+                (DbBarData.vt_symbol == vt_symbol)
+                & (DbBarData.datetime >= start)
+                & (DbBarData.datetime <= end)
             )
             .order_by(DbBarData.datetime)
         )
