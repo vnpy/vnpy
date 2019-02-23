@@ -54,7 +54,6 @@ class CtaEngine(BaseEngine):
         super(CtaEngine, self).__init__(
             main_engine, event_engine, "CtaStrategy")
 
-        self.setting_file = None    # setting file object
         self.strategy_setting = {}  # strategy_name: dict
         self.strategy_data = {}     # strategy_name: dict
 
@@ -278,7 +277,7 @@ class CtaEngine(BaseEngine):
             price=price,
             volume=volume,
         )
-        vt_orderid = self.main_engine.send_limit_order(
+        vt_orderid = self.main_engine.send_order(
             req, contract.gateway_name)
 
         # Save relationship between orderid and strategy.
@@ -406,10 +405,10 @@ class CtaEngine(BaseEngine):
             s = (
                 DbBarData.select()
                 .where(
-                    (DbBarData.vt_symbol == vt_symbol) &
-                    (DbBarData.interval == interval) &
-                    (DbBarData.datetime >= start) &
-                    (DbBarData.datetime <= end)
+                    (DbBarData.vt_symbol == vt_symbol)
+                    & (DbBarData.interval == interval)
+                    & (DbBarData.datetime >= start)
+                    & (DbBarData.datetime <= end)
                 )
                 .order_by(DbBarData.datetime)
             )
@@ -426,9 +425,9 @@ class CtaEngine(BaseEngine):
         s = (
             DbTickData.select()
             .where(
-                (DbBarData.vt_symbol == vt_symbol) &
-                (DbBarData.datetime >= start) &
-                (DbBarData.datetime <= end)
+                (DbBarData.vt_symbol == vt_symbol)
+                & (DbBarData.datetime >= start)
+                & (DbBarData.datetime <= end)
             )
             .order_by(DbBarData.datetime)
         )
@@ -710,7 +709,7 @@ class CtaEngine(BaseEngine):
         """
         Update setting file.
         """
-        if strategy_name not in self.setting_file:
+        if strategy_name not in self.strategy_setting:
             return
 
         self.strategy_setting.pop(strategy_name)

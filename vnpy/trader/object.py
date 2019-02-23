@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
-from .constant import Direction, Exchange, Interval, Offset, Status
+from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -228,13 +228,13 @@ class ContractData(BaseData):
     symbol: str
     exchange: Exchange
     name: str
-    product: str
+    product: Product
     size: int
     pricetick: float
 
     option_strike: float = 0
     option_underlying: str = ""  # vt_symbol of underlying contract
-    option_type: str = ""
+    option_type: OptionType = None
     option_expiry: datetime = None
 
     def __post_init__(self):

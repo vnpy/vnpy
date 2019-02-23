@@ -1,7 +1,6 @@
 from vnpy.app.cta_strategy import (
     CtaTemplate,
     StopOrder,
-    Direction,
     TickData,
     BarData,
     TradeData,
@@ -13,19 +12,19 @@ from vnpy.app.cta_strategy import (
 
 class DoubleMaStrategy(CtaTemplate):
     author = '用Python的交易员'
-    
-    fast_window = 10     
-    slow_window = 20     
 
-    fast_ma0 = 0.0   
-    fast_ma1 = 0.0   
+    fast_window = 10
+    slow_window = 20
+
+    fast_ma0 = 0.0
+    fast_ma1 = 0.0
 
     slow_ma0 = 0.0
     slow_ma1 = 0.0
-    
-    parameters = [ 'fast_window', 'slow_window']    
-    variables = ['fast_ma0','fast_ma1','slow_ma0','slow_ma1']  
-    
+
+    parameters = ['fast_window', 'slow_window']
+    variables = ['fast_ma0', 'fast_ma1', 'slow_ma0', 'slow_ma1']
+
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
         super(DoubleMaStrategy, self).__init__(
@@ -34,7 +33,7 @@ class DoubleMaStrategy(CtaTemplate):
 
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()
-        
+
     def on_init(self):
         """
         Callback when strategy is inited.
@@ -62,28 +61,28 @@ class DoubleMaStrategy(CtaTemplate):
         Callback of new tick data update.
         """
         self.bg.update_tick(tick)
-        
+
     def on_bar(self, bar: BarData):
         """
         Callback of new bar data update.
         """
 
-        am = self.am        
+        am = self.am
         am.update_bar(bar)
         if not am.inited:
             return
-        
+
         fast_ma = am.sma(self.fast_window, array=True)
         self.fast_ma0 = fast_ma[-1]
         self.fast_ma1 = fast_ma[-2]
-        
+
         slow_ma = am.sma(self.slow_window, array=True)
         self.slow_ma0 = slow_ma[-1]
         self.slow_ma1 = slow_ma[-2]
 
-        cross_over = self.fast_ma0>self.slow_ma0 and self.fast_ma1<self.slow_ma1     
-        cross_below = self.fast_ma0<self.slow_ma0 and self.fast_ma1>self.slow_ma1    
-        
+        cross_over = self.fast_ma0 > self.slow_ma0 and self.fast_ma1 < self.slow_ma1
+        cross_below = self.fast_ma0 < self.slow_ma0 and self.fast_ma1 > self.slow_ma1
+
         if cross_over:
             if self.pos == 0:
                 self.buy(bar.close_price, 1)
@@ -97,7 +96,7 @@ class DoubleMaStrategy(CtaTemplate):
             elif self.pos > 0:
                 self.sell(bar.close_price, 1)
                 self.short(bar.close_price, 1)
-                
+
         self.put_event()
 
     def on_order(self, order: OrderData):

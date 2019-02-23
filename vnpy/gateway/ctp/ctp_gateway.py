@@ -4,7 +4,39 @@
 
 from datetime import datetime
 
-from vnpy.api.ctp import *
+from vnpy.api.ctp import (
+    MdApi,
+    TdApi,
+    THOST_FTDC_OAS_Submitted,
+    THOST_FTDC_OAS_Accepted,
+    THOST_FTDC_OAS_Rejected,
+    THOST_FTDC_OST_NoTradeQueueing,
+    THOST_FTDC_OST_PartTradedQueueing,
+    THOST_FTDC_OST_AllTraded,
+    THOST_FTDC_OST_Canceled,
+    THOST_FTDC_D_Buy, 
+    THOST_FTDC_D_Sell,
+    THOST_FTDC_PD_Long,
+    THOST_FTDC_PD_Short,
+    THOST_FTDC_OPT_LimitPrice,
+    THOST_FTDC_OPT_AnyPrice,
+    THOST_FTDC_OF_Open,
+    THOST_FTDC_OFEN_Close,
+    THOST_FTDC_OFEN_CloseYesterday,
+    THOST_FTDC_OFEN_CloseToday,
+    THOST_FTDC_PC_Futures,
+    THOST_FTDC_PC_Options,
+    THOST_FTDC_CP_CallOptions,
+    THOST_FTDC_CP_PutOptions,
+    THOST_FTDC_HF_Speculation,
+    THOST_FTDC_CC_Immediately,
+    THOST_FTDC_FCC_NotForceClose,
+    THOST_FTDC_TC_GFD,
+    THOST_FTDC_VC_AV,
+    THOST_FTDC_TC_IOC,
+    THOST_FTDC_VC_CV,
+    THOST_FTDC_AF_Delete
+)
 from vnpy.trader.constant import (
     Direction,
     Offset,
@@ -83,6 +115,7 @@ OPTIONTYPE_CTP2VT = {
 symbol_exchange_map = {}
 symbol_name_map = {}
 symbol_size_map = {}
+
 
 class CtpGateway(BaseGateway):
     """
@@ -489,7 +522,7 @@ class CtpTdApi(TdApi):
         account = AccountData(
             accountid=data["AccountID"],
             balance=data["Balance"],
-            frozen=data["FrozenMargin"]+data["FrozenCash"]+data["FrozenCommission"],
+            frozen=data["FrozenMargin"] + data["FrozenCash"] + data["FrozenCommission"],
             gateway_name=self.gateway_name
         )
         account.available = data["Available"]
@@ -735,6 +768,3 @@ class CtpTdApi(TdApi):
         """"""
         if self.connect_status:
             self.exit()
-        
-    
-    
