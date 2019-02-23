@@ -54,7 +54,6 @@ class CtaEngine(BaseEngine):
         super(CtaEngine, self).__init__(
             main_engine, event_engine, "CtaStrategy")
 
-        self.setting_file = None    # setting file object
         self.strategy_setting = {}  # strategy_name: dict
         self.strategy_data = {}     # strategy_name: dict
 
@@ -710,7 +709,7 @@ class CtaEngine(BaseEngine):
         """
         Update setting file.
         """
-        if strategy_name not in self.setting_file:
+        if strategy_name not in self.strategy_setting:
             return
 
         self.strategy_setting.pop(strategy_name)
