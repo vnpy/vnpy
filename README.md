@@ -78,7 +78,7 @@ vn.py是基于Python的开源量化交易系统开发框架，起源于国内私
     A股交易工具
     http://www.quicklib.net/
     
-
+[A股交易工具] http://www.quicklib.net
 
     * 经过开源社区大量用户实盘检验，做到开箱即用的各类量化策略交易应用（包括逻辑层和界面层）：
     
