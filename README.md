@@ -253,16 +253,14 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 5. 在$my_feature_branch上修改并将修改push到你的fork上
 
-6. 创建从你的fork的$my_feature_branch分支到主项目的**dev**分支的[Pull Request] -  [在此](https://github.com/vnpy/vnpy/compare?expand=1)点击**compare across forks**，选择需要的fork和branch创建PR
+6. 创建从你的fork的$my_feature_branch分支到主项目的**dev**分支的[Pull Request] -  
+[在此]https://github.com/wdgwz/vnpy/compare?expand=1点击**compare across forks**，选择需要的fork和branch创建PR
 
 7. 等待review, 需要继续改进，或者被Merge!
+ 
+ 
 
----
-### 项目捐赠
-
-过去4年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
-
-先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
+先强调一下：**vn.py是开源项目，可以永久免费使用 ！！！**
 
  
 
