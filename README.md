@@ -10,16 +10,28 @@ http://www.vnpy.cn/
 
 ### 简介
 
-vn.py  (http://www.vnpy.cn) 是基于Python的开源量化交易系统开发框架，起源于国内私募基金的自主交易系统。2015年1月项目正式发布，在开源社区4年持续不断的贡献下，已经从早期的交易API接口封装，一步步成长为一套全功能量化交易平台。随着业内关注度的上升，用户群体也日渐多样化，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、专业个人投资者等等。
-vn.py纯Python架构不适合搭建多账户系统，如需要多账户，建议采用资管系统来实现，因为Python适合数据处理，但不适合多账户的并发。
+vn.py (http://www.vnpy.cn) 是基于Python的开源量化交易系统开发框架，起源于中国国内私募基金的自主交易系统。2015年1月项目正式在Github发布，在开源社区数年持续不断的贡献下，已经从早期的交易API接口封装，一步步成长为一套多市场多接口的量化交易平台。随着量化交易行业业内关注度的上升，用户群体也日渐多样化，包括：高校研究机构、专业个人投资者、私募基金、期货资管、证券自营和资管等等。
+vn.py由于属于纯Python架构不适合搭建多账户系统，因为Python适合数据处理，但不适合多账户的并发。如需要多账户，消除原始VN.PY性能架构缺陷，建议采用资管系统来实现。
 期货资管系统推荐酷操盘手系列 http://www.kucps.com/  虽然是商业化产品，但是是可以获得免费使用的。
+
+### 对新手的建议：
+1.Python 适合用于快速开发，解释性语言导致了运行效率比较低，但是开发速度相对于其他语言却很高。当然Python做数据分析的效率比较高，但是做底层会下降一个数量级的原因，所以尽可能建议用成熟的资管系统去实现多账户。目前虚拟币市场比较混乱，厂商的API水平参差不齐，而A股禁止使用资管系统，外盘相对而言波动小是一个更成熟的市场，国内的期货的API是最成熟和完善的，那么期货的资管也很丰富，包括了信管家、融航、酷操盘手等。
+
+2.因为搭建整个量化平台需要涉及很多，包括数据处理，策略开发，底层搭建，而这些工作在私募基金是由一个团队去完成的，如果是一个爱好者自己做怎么的也得3-5年吧。所以给出的建议是，尽可能的将精力放在策略开发上，对底层和框架可以拿来主义。
+
+3.对一些人工智能库该怎么用，对大多数程序员来说也只是学会调用，能做到调参的已经是比较高的水平了。若想真正做到精通人工智能算法，对程序员也不是一个简单的工作，更不要说一般爱好者了，人工智能算法需要的是优秀的算法工程师 ， 要熟练的掌握高等数学、线性代数、概率统计、离散数学、组合数学、矩阵论等课程，数据结构 （链表、矩阵、树、图）等各种典型的数据结构以及常用的查找和排序算法（比如二分查找、冒泡排序、快速排序、希尔排序等，并熟悉各自算法的时间复杂度）。对于通用型的算法思想，比如递归、递推、贪心、分治、动态规划等算法策略要熟记于心并能灵活运用。总之成为一名优秀的算法工程师，离不开深厚的数学功底。。
+所以所以对个人而言，一上来不要追求人工智能去开发策略。
+
+2.vn.py python框架也在不断进化，vn.py目前最大的问题是性能问题，相信未来还有更好的框架出现，建议爱好者将精力方在策略开发上，策略相比平台则是更保值的东西。
+
+
 ---
 
 ### 项目简介
 
 1. 全功能量化交易平台（vnpy.trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
 
-    * 覆盖国内外所有交易品种（股票、期货、期权、外汇、外盘、CFD、数字货币）的交易接口：
+    * 覆盖国内外所有交易品种（期货、股票、外汇、期权、外盘、数字货币、CFD）等交易接口API：
 
         * 国内市场
 
@@ -44,23 +56,24 @@ vn.py纯Python架构不适合搭建多账户系统，如需要多账户，建议
 
 
         * 数字货币
-
-            * OKEX(okexGateway)
+            * 币安(binanceGateway)
+	    * FCoin (fcoinGateway)
+            * BigOne (bigoneGateway)
+	    * OKEX(okexGateway)
             * OKEX合约(okexfGateway)
             * 火币(huobiGateway)
-            * 币安(binanceGateway)
             * BitMEX (bitmexGateway)
             * Bitfinex (bitfinexGateway)
             * Coinbase Pro (coinbaseGateway)
-            * FCoin (fcoinGateway)
-            * BigOne (bigoneGateway)
             * LBank(lbankGateway)
             * CCXT (ccxtGateway)
+
+
 	    
 ### 其他量化交易网站，和支持VN.PY扩展功能
  
     
- [酷操盘手资管软件、酷操盘手跟单软件系列]  http://www.kucps.com/
+[酷操盘手资管软件、酷操盘手跟单软件系列]  http://www.kucps.com/
          
 [行情数据免费下载]  http://www.mdshare.cn/
 
@@ -83,12 +96,14 @@ vn.py纯Python架构不适合搭建多账户系统，如需要多账户，建议
         * TradeCopy：复制交易模块，用户可以通过发布者Provider进程来对外提供交易策略信号（手动、策略均可），订阅者Subscriber进程根据收到的信号自动执行同步交易，简洁快速得实现一拖多账户交易功能
 
         * RiskManager：事前风控模块，负责在交易系统将任何交易请求发出到柜台前的一系列标准检查操作，支持用户自定义风控规则的扩展
+	
+	* RpcService：RPC跨进程调用服务，基于MainEngineProxy组件，用户可以如同开发单一进程应用搬开发多进程架构的复杂交易应用
+
+        * RtdService：EXCEL RTD服务组件，通过pyxll模块提供EXCEL表格系统对VN Trader系统内所有数据的访问
 
         * DataRecorder：实盘行情记录，支持Tick和K线数据的落地，用于策略开发回测以及实盘运行初始化
 
-        * RpcService：RPC跨进程调用服务，基于MainEngineProxy组件，用户可以如同开发单一进程应用搬开发多进程架构的复杂交易应用
 
-        * RtdService：EXCEL RTD服务组件，通过pyxll模块提供EXCEL表格系统对VN Trader系统内所有数据的访问
 
 2. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现
 
@@ -132,9 +147,9 @@ vn.py纯Python架构不适合搭建多账户系统，如需要多账户，建议
 ### 项目安装
 
 在[这里]  https://github.com/wdgwz/vnpy/releases 下载最新版本，解压后:
-
-* Windows：双击运行install.bat自动安装
 * Ubuntu：在Terminal中运行bash install.sh自动安装
+* Windows：双击运行install.bat自动安装
+
 
 **关于TA-Lib安装**
 
@@ -164,10 +179,11 @@ import sys
 reload(sys)
 
 # vn.trader模块
-from vnpy.event import EventEngine
-from vnpy.trader.vtEngine import MainEngine
 from vnpy.trader.uiQt import createQApp
 from vnpy.trader.uiMainWindow import MainWindow
+from vnpy.event import EventEngine
+from vnpy.trader.vtEngine import MainEngine
+
 
 # 加载底层接口
 from vnpy.trader.gateway import ctpGateway, ibGateway
@@ -223,12 +239,12 @@ if __name__ == '__main__':
 https://github.com/wdgwz/vnpy/wiki
 
 ### 开发工具推荐
+* [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
-* [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（作者就是用它写的vn.py）
+* [WingIDE](http://wingware.com/)：非常好用的Python集成开发环境（好用度超过Pycharm）
 
 * [Visual Studio Code](https://code.visualstudio.com/)：针对编程的文本编辑器，方便阅读项目中的Python、C++、Markdown文件
 
-* [Visual Studio 2013](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)：这个就不多说了（作者编译API封装用的是2013版本）
 
 
 ---
@@ -268,3 +284,4 @@ VNPY原始作者：陈晓优
 ---
 ### License
 MIT
+该协议规定：只要你标记原始作者姓名，可以用于任何场合而没有任何限制
