@@ -14,7 +14,7 @@ vn.py是基于Python的开源量化交易系统开发框架，起源于国内私
 
 ---
 
-### 项目结构
+### 项目简介
 
 1. 全功能量化交易平台（vnpy.trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
 
@@ -23,61 +23,56 @@ vn.py是基于Python的开源量化交易系统开发框架，起源于国内私
         * 国内市场
 
             * CTP(ctpGateway)
-
             * 飞马(femasGateway)
-
-            * 中泰证券XTP(xtpGateway)
-
-            * 中信证券期权(cshshlpGateway)
-
             * 金仕达黄金(ksgoldGateway)
-
             * 金仕达期权(ksotpGateway)
-
+	    * 中信证券期权(cshshlpGateway)
             * 飞鼠(sgitGateway)
-
-            * 飞创(xspeedGateway)
-
-            * 飞创证券(secGateway)
-
-            * QDP(qdpGateway)
-
+            * 中泰证券XTP(xtpGateway)
             * Wind行情(windGateway)
-
+            * 飞创(xspeedGateway)
+            * 飞创证券(secGateway)
+            * QDP(qdpGateway)
+	    
         * 海外市场
 
             * 富途证券(futuGateway)
-
             * 上海直达期货(shzdGateway)
-
             * Interactive Brokers(ibGateway)
-
             * 福汇(fxcmGateway)
 
 
         * 数字货币
 
             * OKEX(okexGateway)
-
             * OKEX合约(okexfGateway)
-
             * 火币(huobiGateway)
-
             * 币安(binanceGateway)
-
             * BitMEX (bitmexGateway)
-
             * Bitfinex (bitfinexGateway)
-
             * Coinbase Pro (coinbaseGateway)
-
             * FCoin (fcoinGateway)
-
             * BigOne (bigoneGateway)
-
             * LBank(lbankGateway)
-
             * CCXT (ccxtGateway)
+	    
+### 其他量化交易网站，和支持VN.PY扩展功能
+    酷操盘手系列
+    http://www.kucps.com/
+    
+    行情数据免费下载
+    http://www.mdshare.cn/
+    
+    量化资源导航
+    http://www.pythonpai.cn/
+    
+    量化交易社区
+    http://www.pythonpai.com
+    
+    A股交易工具
+    http://www.quicklib.net/
+    
+
 
     * 经过开源社区大量用户实盘检验，做到开箱即用的各类量化策略交易应用（包括逻辑层和界面层）：
     
