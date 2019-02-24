@@ -114,7 +114,7 @@ vn.py是基于Python的开源量化交易系统开发框架，起源于国内私
 
     * vnc docker，内嵌了完整的vn.py图形化运行环境（Linux），并通过VNC Server对外提供虚拟桌面访问
 
-9. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
+9. [社区论坛] http://www.vnpy.cn ，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
 
 10. 官方交流QQ群262656087，管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金
 
@@ -132,12 +132,12 @@ vn.py是基于Python的开源量化交易系统开发框架，起源于国内私
 
 **Ubuntu**
 
-请参考项目wiki中的[教程](https://github.com/vnpy/vnpy/wiki/Ubuntu%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85)。
+请参考项目wiki中的[教程] https://github.com/wdgwz/vnpy/wiki/Ubuntu%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85
 
 ---
 ### 项目安装
 
-在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后:
+在[这里]  https://github.com/wdgwz/vnpy/releases 下载最新版本，解压后:
 
 * Windows：双击运行install.bat自动安装
 * Ubuntu：在Terminal中运行bash install.sh自动安装
@@ -224,9 +224,9 @@ if __name__ == '__main__':
 
 ### 用户文档
 
-项目的最新文档请查看[Github Wiki](https://github.com/vnpy/vnpy/wiki)，知乎专栏和官网文档已经落后于项目开发版本，建议只作为额外的参考资料。
+项目的最新文档请查看[Github Wiki]()，知乎专栏和官网文档已经落后于项目开发版本，建议只作为额外的参考资料。
 
----
+https://github.com/wdgwz/vnpy/wiki
 
 ### 开发工具推荐
 
@@ -242,9 +242,9 @@ if __name__ == '__main__':
 
 vn.py使用github托管其源代码，如果希望贡献代码请使用github的PR(Pull Request)的流程:
 
-1. [创建 Issue](https://github.com/vnpy/vnpy/issues/new) - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
+1. [创建 Issue]   https://github.com/wdgwz/vnpy/issues/new - 对于较大的改动(如新功能，大型重构等)最好先开issue讨论一下，较小的improvement(如文档改进，bugfix等)直接发PR即可
 
-2. Fork [vn.py](https://github.com/vnpy/vnpy) - 点击右上角**Fork**按钮
+2. Fork [vn.py] https://github.com/wdgwz/vnpy - 点击右上角**Fork**按钮
 
 3. Clone你自己的fork: ```git clone https://github.com/$userid/vnpy.git```
 	* 如果你的fork已经过时，需要手动sync：[https://help.github.com/articles/syncing-a-fork/](https://help.github.com/articles/syncing-a-fork/)
@@ -264,18 +264,12 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
 
-捐赠方式：支付宝3216630132@qq.com（*晓优）
-
-长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
+ 
 
 
 ---
 ### 其他内容
 
-* [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
-* [社区行为准侧](https://github.com/vnpy/vnpy/blob/dev/docs/CODE_OF_CONDUCT.md)
-* [Issue模板](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
-* [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
 
 ---
