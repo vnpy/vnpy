@@ -5,7 +5,7 @@ import numpy as np
 import talib
 
 from vnpy.trader.vtObject import VtBarData
-
+from vnpy.trader.app.ctaStrategy.ctaBase import CtaBarData
 
 ########################################################################
 class BarGenerator(object):
@@ -34,20 +34,24 @@ class BarGenerator(object):
         
         # 尚未创建对象
         if not self.bar:
-            self.bar = VtBarData()
+            #self.bar = VtBarData()
+            self.bar = CtaBarData()
+
             newMinute = True
         # 新的一分钟
         elif self.bar.datetime.minute != tick.datetime.minute:
             # 生成上一分钟K线的时间戳
             self.bar.datetime = self.bar.datetime.replace(second=0, microsecond=0)  # 将秒和微秒设为0
-            self.bar.date = self.bar.datetime.strftime('%Y%m%d')
-            self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
-            
+            self.bar.date = self.bar.datetime.strftime('%Y-%m-%d')
+            self.bar.time = self.bar.datetime.strftime('%H:%M:%S')
+            self.bar.tradingDay = self.bar.date
             # 推送已经结束的上一分钟K线
             self.onBar(self.bar)
+            print(u'BarGenerate:Onbar:{},{},o:{},h:{},l:{},c:{}'.format(self.bar.vtSymbol,self.bar.datetime,self.bar.open,self.bar.high,self.bar.low,self.bar.close))
             
             # 创建新的K线对象
-            self.bar = VtBarData()
+            #self.bar = VtBarData()
+            self.bar = CtaBarData()
             newMinute = True
             
         # 初始化新一分钟的K线数据
@@ -59,6 +63,7 @@ class BarGenerator(object):
             self.bar.open = tick.lastPrice
             self.bar.high = tick.lastPrice
             self.bar.low = tick.lastPrice
+
         # 累加更新老一分钟的K线数据
         else:                                   
             self.bar.high = max(self.bar.high, tick.lastPrice)

@@ -1358,7 +1358,7 @@ class ContractMonitor(BasicMonitor):
 class ContractManager(QtWidgets.QWidget):
     """合约管理组件"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, mainEngine, parent=None):
         """Constructor"""
         super(ContractManager, self).__init__(parent=parent)
@@ -1367,7 +1367,7 @@ class ContractManager(QtWidgets.QWidget):
 
         self.initUi()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(vtText.CONTRACT_SEARCH)
@@ -1425,7 +1425,6 @@ class WorkingOrderMonitor(OrderMonitor):
                     cell = cellDict['status']
                     row = self.row(cell)
                     self.hideRow(row)
-
 
 ########################################################################
 class SettingEditor(QtWidgets.QWidget):
