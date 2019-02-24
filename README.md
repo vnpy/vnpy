@@ -3,7 +3,10 @@
 
 ![vn.py-logo](http://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png)
 
- https://pic2.zhimg.com/80/v2-c6e03a3dbbc163c07dd8876378b1d951_hd.jpg
+
+
+![vn.py-site]( https://pic2.zhimg.com/80/v2-c6e03a3dbbc163c07dd8876378b1d951_hd.jpg)
+
 ### 简介
 
 vn.py是基于Python的开源量化交易系统开发框架，起源于国内私募基金的自主交易系统。2015年1月项目正式发布，在开源社区4年持续不断的贡献下，已经从早期的交易API接口封装，一步步成长为一套全功能量化交易平台。随着业内关注度的上升，用户群体也日渐多样化，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、专业个人投资者等等。
