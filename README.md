@@ -59,15 +59,21 @@ vn.py是基于Python的开源量化交易系统开发框架，起源于国内私
 ### 其他量化交易网站，和支持VN.PY扩展功能
     酷操盘手系列
     http://www.kucps.com/
+    ![酷操盘手系列](http://www.kucps.com/)
     
     行情数据免费下载
     http://www.mdshare.cn/
     
+    ![行情数据免费下载](http://www.mdshare.cn/)
+
+    
     量化资源导航
-    http://www.pythonpai.cn/
+    ![量化资源导航](http://www.pythonpai.cn/)
     
     量化交易社区
-    http://www.pythonpai.com
+    
+    
+    ![量化交易社区](http://www.pythonpai.com)
     
     A股交易工具
     http://www.quicklib.net/
