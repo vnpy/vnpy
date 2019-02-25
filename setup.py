@@ -38,6 +38,11 @@ vnctptd = Extension('vnpy.api.ctp.vnctptd',
                     language="cpp",
                     )
 
+if platform.uname().system == "Windows":
+    ext_modules = [] # use built in pyd
+else:
+    ext_modules = [vnctptd, vnctpmd],
+
 pkgs = find_packages()
 
 s = setup(
@@ -52,5 +57,5 @@ s = setup(
     install_requires=[
         ""
     ],
-    ext_modules=[vnctptd, vnctpmd],
+    ext_modules=ext_modules
 )
