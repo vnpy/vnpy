@@ -16,7 +16,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，自2015年1�
 
     * CTP(ctpGateway)：国内期货、期权
 
-    * 富途证券(futuGateway)：港股、每股
+    * 富途证券(futuGateway)：港股、美股
 
     * Interactive Brokers(ibGateway)：全球证券、期货、期权、外汇等
 
