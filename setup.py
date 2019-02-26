@@ -43,8 +43,9 @@ vnctptd = Extension("vnpy.api.ctp.vnctptd",
                     language="cpp",
                     )
 
+# use built in pyd for windows
 if platform.uname().system == "Windows":
-    ext_modules = [] # use built in pyd
+    ext_modules = []
 else:
     ext_modules = [vnctptd, vnctpmd],
 

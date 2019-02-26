@@ -36,29 +36,29 @@ vn.py是一套基于Python的开源量化交易系统开发框架，自2015年1�
 
 ## 环境准备
 
-**Windows**
-
-* 支持的系统版本：Windows 7/8/10/Server 2008/Server 2012
-* 安装[Anaconda最新版](https://www.anaconda.com/distribution/)，**注意必须是Python 3.7 64位版本**
-
-**Ubuntu**
-
-* 支持的系统版本：Ubuntu 18.04 LTS
+* 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
+* 安装Python 3.7 64位（**注意必须是Python 3.7 64位版本**），推荐使用[Anaconda最新版](https://www.anaconda.com/distribution/)
 
 ---
 ## 安装步骤
 
-在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行以下命令安装:
+在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行以下命令安装：
 
-    python setup.py install
+**Windows**
+
+    install.bat
+
+**Ubuntu**
+
+    bash install.sh
 
 
 ---
-### 使用指南
+## 使用指南
 
 1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址
 
-2. 在任意目录下创建run.py，输入以下示例代码：
+2. 在任意目录下创建run.py，写入以下示例代码：
 
 ```Python
 from vnpy.event import EventEngine
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
 
 ---
-### 贡献代码
+## 贡献代码
 
 vn.py使用github托管其源代码，如果希望贡献代码请使用github的PR(Pull Request)的流程:
 
@@ -116,9 +116,9 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 
 ---
-### 项目捐赠
+## 项目捐赠
 
-过去4年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
+过去5年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
 
 先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
 
@@ -128,7 +128,7 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 
 ---
-### 其他内容
+## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
 * [社区行为准侧](https://github.com/vnpy/vnpy/blob/dev/docs/CODE_OF_CONDUCT.md)
