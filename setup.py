@@ -1,52 +1,65 @@
-# encoding: UTF-8
+import platform
+import ast
+import re
+from setuptools import Extension, find_packages, setup
 
-'''
-vn.py - By Traders, For Traders.
+with open("vnpy/__init__.py", "rb") as f:
+    version_line = re.search(
+        r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
+    ).group(1)
+    version = str(ast.literal_eval(version_line))
 
-The vn.py project is an open-source quantitative trading framework
-that is developed by traders, for traders.
+if platform.uname().system == "Windows":
+    compiler_flags = []
+else:
+    compiler_flags = ["-std=c++11", "-Wno-delete-incomplete"]
 
-The project is mainly written in Python and uses C++ for low-layer
-and performance sensitive infrastructure.
+vnctpmd = Extension("vnpy.api.ctp.vnctpmd",
+                    [
+                        "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
+                    ],
+                    include_dirs=["vnpy/api/ctp/include", "vnpy/api/ctp/vnctp", ],
+                    define_macros=[],
+                    undef_macros=[],
+                    library_dirs=["vnpy/api/ctp/libs"],
+                    libraries=["thostmduserapi", "thosttraderapi", ],
+                    extra_compile_args=compiler_flags,
+                    extra_link_args=[],
+                    depends=[],
+                    language="cpp",
+                    )
+vnctptd = Extension("vnpy.api.ctp.vnctptd",
+                    [
+                        "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
+                    ],
+                    include_dirs=["vnpy/api/ctp/include", "vnpy/api/ctp/vnctp", ],
+                    define_macros=[],
+                    undef_macros=[],
+                    library_dirs=["vnpy/api/ctp/libs"],
+                    libraries=["thostmduserapi", "thosttraderapi", ],
+                    extra_compile_args=compiler_flags,
+                    extra_link_args=[],
+                    depends=[],
+                    language="cpp",
+                    )
 
-Using the vn.py project, institutional investors and professional
-traders, such as hedge funds, prop trading firms and investment banks,
-can easily develop complex trading strategies with the Event Engine
-Strategy Module, and automatically route their orders to the most
-desired destinations, including equity, commodity, forex and many
-other financial markets.
-'''
+# use built in pyd for windows
+if platform.uname().system == "Windows":
+    ext_modules = []
+else:
+    ext_modules = [vnctptd, vnctpmd],
 
+pkgs = find_packages()
 
-import os
-from setuptools import setup, find_packages
-
-import vnpy
-
-
-setup(
-    name='vnpy',
-    version=vnpy.__version__,
-    author=vnpy.__author__,
-    author_email='vn.py@foxmail.com',
-    license='MIT',
-    url='http://www.vnpy.org',
-    description='A framework for developing Quantitative Trading programmes',
-    long_description=__doc__,
-    keywords='quant quantitative investment trading algotrading',
-    classifiers=['Development Status :: 4 - Beta',
-                 'Operating System :: Microsoft :: Windows :: Windows 7',
-                 'Operating System :: Microsoft :: Windows :: Windows 8',
-                 'Operating System :: Microsoft :: Windows :: Windows 10',
-                 'Operating System :: Microsoft :: Windows :: Windows Server 2008',
-                 'Programming Language :: Python :: 2',
-                 'Programming Language :: Python :: 2.7',
-                 'Topic :: Office/Business :: Financial :: Investment',
-                 'Programming Language :: Python :: Implementation :: CPython',
-                 'License :: OSI Approved :: MIT License'],
-    packages=find_packages(),
-    package_data={'': ['*.json', '*.md', '*.ico',
-                       '*.h', '*.cpp', '*.bash', '*.txt',
-                       '*.dll', '*.lib', '*.so', '*.pyd',
-                       '*.dat', '*.ini', '*.pfx', '*.scc', '*.crt', '*.key']},
-    extras_require={'tq': ["tornado>=4.5.1", "sortedcontainers>=1.5.7"]})
+s = setup(
+    name="vnpy",
+    version=version,
+    include_package_data=True,
+    packages=pkgs,
+    package_data={"": [
+        "*.json", "*.md", "*.ico",
+        "*.dll", "*.so", "*.pyd"
+    ]},
+    install_requires=[],
+    ext_modules=ext_modules
+)
