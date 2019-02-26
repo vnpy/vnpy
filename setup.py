@@ -58,7 +58,7 @@ s = setup(
     packages=pkgs,
     package_data={"": [
         "*.json", "*.md", "*.ico",
-        "*.dll", "*.so",
+        "*.dll", "*.so", "*.pyd"
     ]},
     install_requires=[],
     ext_modules=ext_modules
