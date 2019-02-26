@@ -1,0 +1,12 @@
+{
+  "MONGO_HOST": "localhost",
+  "MONGO_PORT": 27017,
+  "QUANTOS_ADDR": "tcp://data.quantos.org:8910",
+  "PHONE": "quantos申请",
+  "QUANTOS_TOKEN": "quantos申请",
+  "SYMBOLS": [
+    "TA905.CZC"
+  ],
+  "START_DATE": "20190220",
+  "END_DATE": "20190225"
+}
