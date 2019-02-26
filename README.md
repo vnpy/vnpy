@@ -26,20 +26,22 @@ vn.py是一套基于Python的开源量化交易系统开发框架，自2015年1�
 
     * CtaStrategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
 
-4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现
+4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
 
-5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心
+5. 简洁易用的事件驱动引擎（vnpy.event），作为事件驱动型交易程序的核心。
 
-6. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容
+6. [社区论坛](http://www.vnpy.com)和[知乎专栏](http://zhuanlan.zhihu.com/vn-py)，内容包括vn.py项目的开发教程和Python在量化交易领域的应用研究等内容。
 
-7. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金
+7. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金。
 
 ## 环境准备
 
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNConda-2.0-Windows-x86_64](https://conda.vnpy.com/VNConda-2.0-Windows-x86_64.exe)，内置了最新版的vn.py，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
-* 安装Python 3.7 64位（**注意必须是Python 3.7 64位版本**），推荐使用[Anaconda最新版](https://www.anaconda.com/distribution/)
+* 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
+* 如需使用IB API，请在[Interactive Brokers Github](https://interactivebrokers.github.io/#)页面下载安装**IB API Latest**
 
----
+
 ## 安装步骤
 
 在[这里](https://github.com/vnpy/vnpy/releases)下载最新版本，解压后运行以下命令安装：
@@ -53,12 +55,19 @@ vn.py是一套基于Python的开源量化交易系统开发框架，自2015年1�
     bash install.sh
 
 
----
 ## 使用指南
 
-1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址
+1. 在[SimNow](http://www.simnow.com.cn/)注册CTP仿真账号，并在[该页面](http://www.simnow.com.cn/product.action)获取经纪商代码以及交易行情服务器地址。
 
-2. 在任意目录下创建run.py，写入以下示例代码：
+2. 在[vn.py社区论坛](https://www.vnpy.com/forum/)注册获得VN Station账号密码，论坛最新的注册邀请码为**El86Pa1p**
+
+3. 启动VN Station（安装VNConda后会在桌面自动创建快捷方式），输入上一步的账号密码登录
+
+4. 点击底部的**VN Trader**按钮，选择运行目录（默认在系统用户目录即可）后，在对话框中勾选CTP接口以及CtaStrategy应用，点击右下方的**启动**按钮，开始你的交易！！！
+
+5. 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
+
+6. 如选择了VNConda以外的安装方式（不推荐新手），可以在任意目录下创建run.py，写入以下示例代码后运行：
 
 ```Python
 from vnpy.event import EventEngine
@@ -86,10 +95,8 @@ if __name__ == "__main__":
     main()
 ```
 
-3. 双击run.py运行（若无法双击，则在当前目录按住Shift点鼠标右键，打开cmd输入python run.py运行）
 
 
----
 ## 贡献代码
 
 vn.py使用github托管其源代码，如果希望贡献代码请使用github的PR(Pull Request)的流程:
@@ -115,7 +122,7 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
   * 使用[flake8](https://pypi.org/project/flake8/)检查你的代码，确保没有error和warning。在项目根目录下运行```flake8```即可。
 
 
----
+
 ## 项目捐赠
 
 过去5年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
@@ -127,7 +134,7 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
 
 
----
+
 ## 其他内容
 
 * [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
@@ -136,8 +143,8 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 * [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
 
----
-### 版权说明
+
+## 版权说明
 MIT
   
 
