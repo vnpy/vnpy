@@ -1,14 +1,13 @@
 # By Traders, For Traders.
 
-<div style="text-align:center"><img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png" /></div>
-
----
+<p align="center">
+  <img src ="https://vnpy.oss-cn-shanghai.aliyuncs.com/vnpy-logo.png" />
+</p>
 
 vn.py是一套基于Python的开源量化交易系统开发框架，自2015年1月正式发布以来，在开源社区5年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过300家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
 2.0版本基于Python 3.7全新重构开发，目前功能还在逐步完善中。如需Python 2上的版本请点击：[长期支持版本v1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
 
----
 ## 功能特点
 
 1. 全功能量化交易平台（vnpy.trader），整合了多种交易接口，并针对具体策略算法和功能开发提供了简洁易用的API，用于快速构建交易员所需的量化交易应用。
@@ -35,7 +34,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，自2015年1�
 
 7. 官方交流群262656087（QQ），管理严格（定期清除长期潜水的成员），入群费将捐赠给vn.py社区基金
 
----
 ## 环境准备
 
 **Windows**

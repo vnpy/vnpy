@@ -1,13 +1,20 @@
 import platform
-
+import ast
+import re
 from setuptools import Extension, find_packages, setup
+
+with open("vnpy/__init__.py", "rb") as f:
+    version_line = re.search(
+        r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
+    ).group(1)
+    version = str(ast.literal_eval(version_line))
 
 if platform.uname().system == "Windows":
     compiler_flags = []
 else:
-    compiler_flags = ['-std=c++11', '-Wno-delete-incomplete']
+    compiler_flags = ["-std=c++11", "-Wno-delete-incomplete"]
 
-vnctpmd = Extension('vnpy.api.ctp.vnctpmd',
+vnctpmd = Extension("vnpy.api.ctp.vnctpmd",
                     [
                         "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
                     ],
@@ -16,13 +23,12 @@ vnctpmd = Extension('vnpy.api.ctp.vnctpmd',
                     undef_macros=[],
                     library_dirs=["vnpy/api/ctp/libs"],
                     libraries=["thostmduserapi", "thosttraderapi", ],
-                    # runtime_library_dirs=["vnpy/api/ctp/libs", ],
                     extra_compile_args=compiler_flags,
                     extra_link_args=[],
                     depends=[],
                     language="cpp",
                     )
-vnctptd = Extension('vnpy.api.ctp.vnctptd',
+vnctptd = Extension("vnpy.api.ctp.vnctptd",
                     [
                         "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
                     ],
@@ -31,7 +37,6 @@ vnctptd = Extension('vnpy.api.ctp.vnctptd',
                     undef_macros=[],
                     library_dirs=["vnpy/api/ctp/libs"],
                     libraries=["thostmduserapi", "thosttraderapi", ],
-                    # runtime_library_dirs=["vnpy/api/ctp/libs", ],
                     extra_compile_args=compiler_flags,
                     extra_link_args=[],
                     depends=[],
@@ -47,15 +52,13 @@ pkgs = find_packages()
 
 s = setup(
     name="vnpy",
-    version="2.0.dev0",
+    version=version,
     include_package_data=True,
     packages=pkgs,
-    package_data={'': [
-        '*.json', '*.md', '*.ico',
-        '*.dll', '*.so',
+    package_data={"": [
+        "*.json", "*.md", "*.ico",
+        "*.dll", "*.so",
     ]},
-    install_requires=[
-        ""
-    ],
+    install_requires=[],
     ext_modules=ext_modules
 )
