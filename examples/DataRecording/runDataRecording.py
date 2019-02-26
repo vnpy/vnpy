@@ -71,9 +71,9 @@ def runParentProcess():
         recording = False
 
         # 判断当前处于的时间段
-        if ((currentTime >= DAY_START and currentTime <= DAY_END) or
-            (currentTime >= NIGHT_START) or
-            (currentTime <= NIGHT_END)):
+        if ((DAY_START <= currentTime <= DAY_END) or
+                (currentTime >= NIGHT_START) or
+                (currentTime <= NIGHT_END)):
             recording = True
             
         # 过滤周末时间段：周六全天，周五夜盘，周日日盘
