@@ -217,7 +217,8 @@ class DrEngine(object):
             return
         
         # 上一个时间戳尚未到收盘时间，且当前时间戳已经到收盘时间
-        if self.lastTimerTime < self.marketCloseTime <= currentTime:
+        if (self.lastTimerTime < self.marketCloseTime and
+            currentTime >= self.marketCloseTime):
             # 强制所有的K线生成器立即完成K线
             for bg in self.bgDict.values():
                 bg.generate()
@@ -236,13 +237,13 @@ class DrEngine(object):
             if vtSymbol in self.activeSymbolDict:
                 activeSymbol = self.activeSymbolDict[vtSymbol]
                 self.insertData(TICK_DB_NAME, activeSymbol, tick)
-
-            self.writeDrLog(
-                text.TICK_LOGGING_MESSAGE.format(symbol=tick.vtSymbol,
-                                                 time=tick.time,
-                                                 last=tick.lastPrice,
-                                                 bid=tick.bidPrice1,
-                                                 ask=tick.askPrice1))
+            
+            
+            self.writeDrLog(text.TICK_LOGGING_MESSAGE.format(symbol=tick.vtSymbol,
+                                                             time=tick.time, 
+                                                             last=tick.lastPrice, 
+                                                             bid=tick.bidPrice1, 
+                                                             ask=tick.askPrice1))
     
     #----------------------------------------------------------------------
     def onBar(self, bar):
@@ -313,4 +314,5 @@ class DrEngine(object):
         log.logContent = content
         event = Event(type_=EVENT_DATARECORDER_LOG)
         event.dict_['data'] = log
-        self.eventEngine.put(event)
+        self.eventEngine.put(event)   
+    
