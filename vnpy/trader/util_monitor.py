@@ -93,7 +93,7 @@ class BasicMonitor(object):
 
         filename = os.path.abspath(os.path.join(path, monitor_name))
         print( u'create logger:{}'.format(filename))
-        self.logger = setup_logger(filename=filename, name=monitor_name)
+        self.logger = setup_logger(filename=filename, name=monitor_name,debug=True)
 
 ########################################################################
 class MarketMonitor(BasicMonitor):
