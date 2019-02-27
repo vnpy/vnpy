@@ -1,14 +1,14 @@
-pymongo 
-websocket-client
-msgpack-python
+PyQt5<5.12
+dataclasses; python_version<="3.6"
 qdarkstyle
-SortedContainers
-futuquant
-wmi
-future
-flask-socketio
-flask-restful
-flask-cors
-gevent-websocket
-pyjwt
-ccxt
+futu-api
+websocket-client
+peewee
+numpy
+pandas
+matplotlib
+seaborn
+jupyter
+ta-lib; platform_system=="Unix"
+http://conda.vnpy.com/pip/wheels/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl; platform_system=="Windows"
+

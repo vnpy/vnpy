@@ -1,3 +1,0 @@
-/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/edit_cache.dir
-/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/rebuild_cache.dir
-/home/vnpy/桌面/new/vn.ib/ibapi/linux/build/CMakeFiles/twsapi.dir
