@@ -47,7 +47,7 @@ vnctptd = Extension("vnpy.api.ctp.vnctptd",
 if platform.uname().system == "Windows":
     ext_modules = []
 else:
-    ext_modules = [vnctptd, vnctpmd],
+    ext_modules = [vnctptd, vnctpmd]
 
 pkgs = find_packages()
 
