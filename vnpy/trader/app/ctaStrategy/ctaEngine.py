@@ -30,7 +30,6 @@ import re
 import csv
 import copy
 import decimal
-from copy import copy
 
 from vnpy.trader.vtEvent import *
 from vnpy.trader.vtConstant import *
@@ -2115,7 +2114,7 @@ class CtaEngine(object):
         flt = {'name': strategy.name,
                'vtSymbol': strategy.vtSymbol}
 
-        d = copy(flt)
+        d = copy.copy(flt)
         for key in strategy.syncList:
             d[key] = strategy.__getattribute__(key)
 
