@@ -1,4 +1,4 @@
-from vnoes import OesApi_GetErrorMsg, OesApi_GetLastError
+from vnpy.api.oes.vnoes import OesApi_GetErrorMsg, OesApi_GetLastError
 
 
 def error_to_str(code: int):

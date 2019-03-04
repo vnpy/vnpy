@@ -4,7 +4,7 @@ from threading import Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict, Tuple
 
-from vnoes import OesApiClientEnvT, OesApi_DestoryAll, OesApi_InitAllByConvention, \
+from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApi_DestoryAll, OesApi_InitAllByConvention, \
     OesApi_IsValidOrdChannel, OesApi_IsValidQryChannel, OesApi_IsValidRptChannel, OesApi_LogoutAll, \
     OesApi_QueryCashAsset, OesApi_QueryEtf, OesApi_QueryIssue, OesApi_QueryOptHolding, \
     OesApi_QueryOption, OesApi_QueryOrder, OesApi_QueryStkHolding, OesApi_QueryStock, \
