@@ -3,6 +3,7 @@
 """
 import hashlib
 import os
+from threading import Thread
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (AccountData, CancelRequest, ContractData, OrderData, OrderRequest,
@@ -54,6 +55,9 @@ class OesGateway(BaseGateway):
         self.td_api = OesTdApi(self)
 
     def connect(self, setting: dict):
+        return self._connect_async(setting)
+
+    def _connect_sync(self, setting: dict):
         """"""
         if not setting['password'].startswith("md5:"):
             setting['password'] = "md5:" + hashlib.md5(setting['password'].encode()).hexdigest()
@@ -85,6 +89,9 @@ class OesGateway(BaseGateway):
 
         self.md_api.connect(str(config_path))
         self.md_api.start()
+
+    def _connect_async(self, setting: dict):
+        Thread(target=self._connect_sync, args=(setting, )).start()
 
     def subscribe(self, req: SubscribeRequest):
         """"""
