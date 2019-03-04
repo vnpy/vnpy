@@ -149,7 +149,7 @@ class RestClient(object):
         """
         Add a new request.
         :param method: GET, POST, PUT, DELETE, QUERY
-        :param path: 
+        :param path:
         :param callback: callback function if 2xx status, type: (dict, Request)
         :param params: dict for query string
         :param data: dict for body

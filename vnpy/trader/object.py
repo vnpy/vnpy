@@ -14,7 +14,7 @@ ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 @dataclass
 class BaseData:
     """
-    Any data object needs a gateway_name as source or 
+    Any data object needs a gateway_name as source or
     destination and should inherit base data.
     """
 
@@ -100,7 +100,7 @@ class BarData(BaseData):
 @dataclass
 class OrderData(BaseData):
     """
-    Order data contains information for tracking lastest status 
+    Order data contains information for tracking lastest status
     of a specific order.
     """
 

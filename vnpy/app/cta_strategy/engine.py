@@ -480,7 +480,7 @@ class CtaEngine(BaseEngine):
     def init_strategy(self, strategy_name: str):
         """
         Init a strategy.
-        """ 
+        """
         self.init_queue.put(strategy_name)
 
         if not self.init_thread:
@@ -525,7 +525,7 @@ class CtaEngine(BaseEngine):
             strategy.inited = True
             self.put_strategy_event(strategy)
             self.write_log(f"{strategy_name}初始化完成")
-        
+
         self.init_thread = None
 
     def start_strategy(self, strategy_name: str):
@@ -686,9 +686,9 @@ class CtaEngine(BaseEngine):
 
         for strategy_name, strategy_config in self.strategy_setting.items():
             self.add_strategy(
-                strategy_config["class_name"], 
+                strategy_config["class_name"],
                 strategy_name,
-                strategy_config["vt_symbol"], 
+                strategy_config["vt_symbol"],
                 strategy_config["setting"]
             )
 

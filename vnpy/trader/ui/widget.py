@@ -129,7 +129,7 @@ class PnlCell(BaseCell):
 
     def set_content(self, content: Any, data: Any):
         """
-        Cell color is set based on whether pnl is 
+        Cell color is set based on whether pnl is
         positive or negative.
         """
         super(PnlCell, self).set_content(content, data)
@@ -549,11 +549,11 @@ class ConnectDialog(QtWidgets.QDialog):
             else:
                 field_value = field_type(widget.text())
             setting[field_name] = field_value
-        
+
         save_json(self.filename, setting)
-        
+
         self.main_engine.connect(setting, self.gateway_name)
-        
+
         self.accept()
 
 
@@ -986,7 +986,7 @@ class AboutDialog(QtWidgets.QDialog):
         text = """
             Developed by Traders, for Traders.
             License：MIT
-            
+
             Website：www.vnpy.com
             Github：www.github.com/vnpy/vnpy
 

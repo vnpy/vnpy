@@ -14,7 +14,7 @@ from .object import BarData, TickData
 
 class Singleton(type):
     """
-    Singleton metaclass, 
+    Singleton metaclass,
 
     class A:
         __metaclass__ = Singleton
@@ -116,7 +116,7 @@ def round_to_pricetick(price: float, pricetick: float):
 
 class BarGenerator:
     """
-    For: 
+    For:
     1. generating 1 minute bar data from tick data
     2. generateing x minute bar data from 1 minute data
     """

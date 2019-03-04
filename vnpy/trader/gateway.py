@@ -31,7 +31,7 @@ from .object import (
 
 class BaseGateway(ABC):
     """
-    Abstract gateway class for creating gateways connection 
+    Abstract gateway class for creating gateways connection
     to different trading systems.
     """
 
