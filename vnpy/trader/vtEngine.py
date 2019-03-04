@@ -473,6 +473,8 @@ class MainEngine(object):
         # 发出邮件
         try:
             sendmail(subject=u'{0} Critical'.format('_'.join(self.connected_gw_names)), msgcontent=content)
+            from vnpy.trader.util_wx_ft import sendWxMsg
+            sendWxMsg(text=content,desp='Critical error')
         except:
             pass
 
@@ -485,6 +487,7 @@ class MainEngine(object):
         #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_FATAL)
         #except:
         #    pass
+
 #
     # ----------------------------------------------------------------------
     def dbConnect(self):
