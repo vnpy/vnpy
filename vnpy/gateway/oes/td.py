@@ -1,11 +1,19 @@
-from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
 from threading import Thread
 # noinspection PyUnresolvedReferences
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Tuple
 
-from vnoes import *
+from vnoes import OesApiClientEnvT, OesApi_DestoryAll, OesApi_InitAllByConvention, \
+    OesApi_IsValidOrdChannel, OesApi_IsValidQryChannel, OesApi_IsValidRptChannel, OesApi_LogoutAll, \
+    OesApi_QueryCashAsset, OesApi_QueryEtf, OesApi_QueryIssue, OesApi_QueryOptHolding, \
+    OesApi_QueryOption, OesApi_QueryOrder, OesApi_QueryStkHolding, OesApi_QueryStock, \
+    OesApi_SendOrderCancelReq, OesApi_SendOrderReq, OesApi_WaitReportMsg, OesOrdCancelReqT, \
+    OesOrdCnfmT, OesOrdRejectT, OesOrdReqT, OesQryCashAssetFilterT, OesQryCursorT, OesQryEtfFilterT, \
+    OesQryIssueFilterT, OesQryOptionFilterT, OesQryOrdFilterT, OesQryStkHoldingFilterT, \
+    OesQryStockFilterT, OesRspMsgBodyT, OesStockBaseInfoT, OesTrdCnfmT, SGeneralClientChannelT, \
+    SMSG_PROTO_BINARY, SMsgHeadT, SPlatform_IsNegEpipe, SPlatform_IsNegEtimeout, cast, \
+    eOesBuySellTypeT, eOesMarketIdT, eOesMsgTypeT, eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT
 
 from vnpy.gateway.oes.error_code import error_to_str
 from vnpy.trader.constant import Direction, Exchange, Offset, PriceType, Product, Status
@@ -671,8 +679,8 @@ class OesTdApi:
             pass
         return
 
-    def schedule_query_order(self, internal_order: InternalOrder)->Thread:
-        th = Thread(target=self.query_order, args=(internal_order, ))
+    def schedule_query_order(self, internal_order: InternalOrder) -> Thread:
+        th = Thread(target=self.query_order, args=(internal_order,))
         th.start()
         return th
 
@@ -761,4 +769,3 @@ class OesTdApi:
             vt_order.traded = data.cumQty
             self.gateway.on_order(vt_order)
             return 1
-

@@ -2,20 +2,14 @@
 """
 """
 import hashlib
-import json
 import os
-from threading import Thread
-from typing import Any, Callable, Dict
-
-import vnoes
-
-from .md import OesMdApi
-from .td import OesTdApi
 
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest, ContractData,
-                                AccountData, PositionData, OrderData, TradeData, TickData)
+from vnpy.trader.object import (AccountData, CancelRequest, ContractData, OrderData, OrderRequest,
+                                PositionData, SubscribeRequest, TickData, TradeData)
 from vnpy.trader.utility import get_file_path
+from .md import OesMdApi
+from .td import OesTdApi
 from .utils import config_template
 
 
@@ -117,4 +111,3 @@ class OesGateway(BaseGateway):
         self.md_api.stop()
         self.td_api.stop()
         pass
-

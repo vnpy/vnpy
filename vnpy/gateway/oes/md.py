@@ -3,7 +3,13 @@ from threading import Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
 
-from vnoes import *
+from vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitAllByConvention, \
+    MdsApi_IsValidQryChannel, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, \
+    MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, MdsMktDataRequestEntryT, \
+    MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, SGeneralClientChannelT, \
+    SMsgHeadT, SPlatform_IsNegEpipe, SPlatform_IsNegEtimeout, cast, eMdsExchangeIdT, \
+    eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
+    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT
 
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
@@ -72,7 +78,7 @@ class OesMdMessageLoop:
     def on_message(self, session_info: SGeneralClientChannelT,
                    head: SMsgHeadT,
                    body: Any):
-        if session_info.protocolType == SMSG_PROTO_BINARY:
+        if session_info.protocolType == eSMsgProtocolTypeT.SMSG_PROTO_BINARY:
             b = cast.toMdsMktRspMsgBodyT(body)
             if head.msgId in self.message_handlers:
                 # self.gateway.write_log(
