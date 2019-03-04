@@ -752,11 +752,15 @@ class BacktestingEngine(object):
             result = TradingResult(trade.price, trade.dt, endPrice, self.dt, 
                                    trade.volume, self.rate, self.slippage, self.size)
             resultList.append(result)
+            posList.extend([1, 0])
+            tradeTimeList.extend([result.entryDt, result.exitDt])
             
         for trade in shortTrade:
             result = TradingResult(trade.price, trade.dt, endPrice, self.dt, 
                                    -trade.volume, self.rate, self.slippage, self.size)
-            resultList.append(result)            
+            resultList.append(result)
+            posList.extend([-1, 0])
+            tradeTimeList.extend([result.entryDt, result.exitDt])
         
         # 检查是否有交易
         if not resultList:
@@ -887,7 +891,8 @@ class BacktestingEngine(object):
         if d['posList'][-1] == 0:
             del d['posList'][-1]
         tradeTimeIndex = [item.strftime("%m/%d %H:%M:%S") for item in d['tradeTimeList']]
-        xindex = np.arange(0, len(tradeTimeIndex), np.int(len(tradeTimeIndex)/10))
+        step = np.int(len(tradeTimeIndex) / 10)
+        xindex = np.arange(0, len(tradeTimeIndex), step if step > 0 else 1)
         tradeTimeIndex = list(map(lambda i: tradeTimeIndex[i], xindex))
         pPos.plot(d['posList'], color='k', drawstyle='steps-pre')
         pPos.set_ylim(-1.2, 1.2)
