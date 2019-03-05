@@ -1,6 +1,7 @@
-import platform
 import ast
+import platform
 import re
+
 from setuptools import Extension, find_packages, setup
 
 with open("vnpy/__init__.py", "rb") as f:
@@ -10,9 +11,16 @@ with open("vnpy/__init__.py", "rb") as f:
     version = str(ast.literal_eval(version_line))
 
 if platform.uname().system == "Windows":
-    compiler_flags = []
+    compiler_flags = ["/MP", "/std:c++17",  # standard
+                      "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
+                      "/wd4819"  # 936 code page
+                      ]
+    extra_link_args = []
 else:
-    compiler_flags = ["-std=c++11", "-Wno-delete-incomplete"]
+    compiler_flags = ["-std=c++17",
+                      "-Wno-delete-incomplete", "-Wno-sign-compare",
+                      ]
+    extra_link_args = ["-lstdc++"]
 
 vnctpmd = Extension("vnpy.api.ctp.vnctpmd",
                     [
@@ -21,11 +29,12 @@ vnctpmd = Extension("vnpy.api.ctp.vnctpmd",
                     include_dirs=["vnpy/api/ctp/include", "vnpy/api/ctp/vnctp", ],
                     define_macros=[],
                     undef_macros=[],
-                    library_dirs=["vnpy/api/ctp/libs"],
+                    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
                     libraries=["thostmduserapi", "thosttraderapi", ],
                     extra_compile_args=compiler_flags,
-                    extra_link_args=[],
+                    extra_link_args=extra_link_args,
                     depends=[],
+                    runtime_library_dirs=["vnpy/api/ctp"],
                     language="cpp",
                     )
 vnctptd = Extension("vnpy.api.ctp.vnctptd",
@@ -35,29 +44,46 @@ vnctptd = Extension("vnpy.api.ctp.vnctptd",
                     include_dirs=["vnpy/api/ctp/include", "vnpy/api/ctp/vnctp", ],
                     define_macros=[],
                     undef_macros=[],
-                    library_dirs=["vnpy/api/ctp/libs"],
+                    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
                     libraries=["thostmduserapi", "thosttraderapi", ],
                     extra_compile_args=compiler_flags,
-                    extra_link_args=[],
+                    extra_link_args=extra_link_args,
+                    runtime_library_dirs=["vnpy/api/ctp"],
                     depends=[],
                     language="cpp",
                     )
+vnoes = Extension("vnpy.api.oes.vnoes",
+                  [
+                      "vnpy/api/oes/vnoes/generated_files/classes_1.cpp",
+                      "vnpy/api/oes/vnoes/generated_files/classes_2.cpp",
+                      "vnpy/api/oes/vnoes/generated_files/module.cpp",
+                  ],
+                  include_dirs=["vnpy/api/oes/include", "vnpy/api/oes/vnoes", ],
+                  define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
+                  undef_macros=[],
+                  library_dirs=["vnpy/api/oes/libs"],
+                  libraries=["oes_api"],
+                  extra_compile_args=compiler_flags,
+                  extra_link_args=extra_link_args,
+                  depends=[],
+                  language="cpp",
+                  )
 
-# use built in pyd for windows
 if platform.uname().system == "Windows":
+    # use pre-built pyd for windows ( support python 3.7 only )
     ext_modules = []
 else:
-    ext_modules = [vnctptd, vnctpmd],
+    ext_modules = [vnctptd, vnctpmd, vnoes]
 
 pkgs = find_packages()
 
-s = setup(
+setup(
     name="vnpy",
     version=version,
     include_package_data=True,
     packages=pkgs,
     package_data={"": [
-        "*.json", "*.md", "*.ico",
+        "*.json", "*.md", "*.ico", "*.ini",
         "*.dll", "*.so", "*.pyd"
     ]},
     install_requires=[],
