@@ -10,6 +10,7 @@ from time import sleep
 import time
 import pandas as pd
 from pandas import DataFrame
+from datetime import datetime
 
 from tigeropen.tiger_open_config import TigerOpenClientConfig 
 from tigeropen.common.consts import Language, Currency, Market
@@ -197,6 +198,8 @@ class TigerGateway(BaseGateway):
         """
         protocol, host, port = self.client_config.socket_host_port
         self.push_client = PushClient(host, port, (protocol == 'ssl'))
+        
+        self.push_client.quote_changed = self.on_quote_change
 
         self.push_client.connect(self.client_config.tiger_id, self.client_config.private_key)
 
@@ -207,39 +210,33 @@ class TigerGateway(BaseGateway):
         # symbol = convert_symbol_vt2tiger(req.symbol, req.exchange)
         self.push_client.subscribe_quote([req.symbol])
 
-        def on_quote_change(*args):
-            print(args)
-        data = self.push_client.quote_changed = on_quote_change
+    def on_quote_change(self, symbol: str, data: list, trading: bool):
+        #print(symbol, data, trading)
 
-        tick = self.ticks.get(data, None)
+        tick = self.ticks.get(symbol, None)
         if not tick:
             tick = TickData(
-                symbol=req.symbol,
-                exchange=req.exchange,
+                symbol=symbol,
+                exchange=Exchange.SSE,
                 datetime=None,
                 gateway_name=self.gateway_name,
             )
-            self.ticks[data] = tick
-            self.process_quote(data)
+            self.ticks[symbol] = tick
+            # self.process_quote(data)
         contract = self.contracts.get(tick.vt_symbol, None)
         if contract:
             tick.name = contract.name
 
-        return tick
+        # volume, latest_price, high_price, prev_close, low_price, open_price, latest_time = [i[1] for i in info]
 
-    def process_quote(self, data):
-        """报价推送"""
-        symbol, info, _ = data
-        volume, latest_price, high_price, prev_close, low_price, open_price, latest_time = [i[1] for i in info]
-        tick = self.get_tick(symbol)
-        time_local = time.localtime(latest_time / 1000)
-        tick.datetime = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
-        tick.open_price = open_price
-        tick.high_price = open_price
-        tick.low_price = low_price
-        tick.pre_close = prev_close
-        tick.last_price = latest_price
-        tick.volume = volume
+        #tick.datetime = datetime.utcfromtimestamp(data[6][1] / 1000)
+        tick.datetime = datetime.now()
+        tick.open_price = data[5][1]
+        tick.high_price = data[2][1]
+        tick.low_price = data[4][1]
+        tick.pre_close = data[3][1]
+        tick.last_price = data[0][1]
+        tick.volume = data[1][1]
 
         self.on_tick(copy(tick))
 
