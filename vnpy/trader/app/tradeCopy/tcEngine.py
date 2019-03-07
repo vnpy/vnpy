@@ -222,17 +222,17 @@ class TcEngine(object):
                 
                 if DIRECTION_LONG in vtPositionName:
                     req.direction = DIRECTION_SHORT
-                    if tick.upperLimit:
-                        req.price = tick.upperLimit
-                    else:
-                        req.price = tick.askPrice1
-                
-                elif DIRECTION_SHORT in vtPositionName:
-                    req.direction = DIRECTION_LONG
                     if tick.lowerLimit:
                         req.price = tick.lowerLimit
                     else:
                         req.price = tick.bidPrice1
+                
+                elif DIRECTION_SHORT in vtPositionName:
+                    req.direction = DIRECTION_LONG
+                    if tick.upperLimit:
+                        req.price = tick.upperLimit
+                    else:
+                        req.price = tick.askPrice1
                     
                 # Use auto-convert for solving today/yesterday position problem
                 reqList = self.mainEngine.convertOrderReq(req)
