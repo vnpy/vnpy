@@ -450,7 +450,16 @@ class SettingEditor(QtWidgets.QDialog):
 
         for name, tp in self.edits.items():
             edit, type_ = tp
-            value = type_(edit.text())
+            value_text = edit.text()
+
+            if type_ == bool:
+                if value_text == "True":
+                    value = True
+                else:
+                    value = False
+            else:
+                value = type_(value_text)
+
             setting[name] = value
 
         return setting
