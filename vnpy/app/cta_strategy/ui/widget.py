@@ -125,7 +125,7 @@ class CtaManager(QtWidgets.QWidget):
 
     def remove_strategy(self, strategy_name):
         """"""
-        manager = self.managers[strategy_name]
+        manager = self.managers.pop(strategy_name)
         manager.deleteLater()
 
     def add_strategy(self):
