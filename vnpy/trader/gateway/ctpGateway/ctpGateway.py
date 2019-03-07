@@ -773,9 +773,9 @@ class CtpTdApi(TdApi):
         
         # 读取冻结
         if pos.direction is DIRECTION_LONG: 
-            pos.frozen += data['LongFrozen']
-        else:
             pos.frozen += data['ShortFrozen']
+        else:
+            pos.frozen += data['LongFrozen']
         
         # 查询回报结束
         if last:
