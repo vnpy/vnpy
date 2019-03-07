@@ -87,8 +87,8 @@ PRICETYPE_VT2CTP = {
 OFFSET_VT2CTP = {
     Offset.OPEN: THOST_FTDC_OF_Open, 
     Offset.CLOSE: THOST_FTDC_OFEN_Close,
-    Offset.CLOSETODAY: THOST_FTDC_OFEN_CloseYesterday,
-    Offset.CLOSEYESTERDAY: THOST_FTDC_OFEN_CloseToday,
+    Offset.CLOSETODAY: THOST_FTDC_OFEN_CloseToday,
+    Offset.CLOSEYESTERDAY: THOST_FTDC_OFEN_CloseYesterday,
 }
 OFFSET_CTP2VT = {v: k for k, v in OFFSET_VT2CTP.items()}
 
