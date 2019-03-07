@@ -730,7 +730,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
-        if not data['InstrumentID']:
+        symbol = data.get('InstrumentID', ''):
+        if not symbol:
             return
         
         # 获取持仓缓存对象
