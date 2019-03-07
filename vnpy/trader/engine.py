@@ -77,11 +77,11 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str):
+    def write_log(self, msg: str, source: str = ""):
         """
         Put log event with specific message.
         """
-        log = LogData(msg=msg)
+        log = LogData(msg=msg, gateway_name=source)
         event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
 
