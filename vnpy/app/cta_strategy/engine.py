@@ -271,7 +271,7 @@ class CtaEngine(BaseEngine):
         req = OrderRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
-            dierction=direction,
+            direction=direction,
             offset=offset,
             price_type=PriceType.LIMIT,
             price=price,
