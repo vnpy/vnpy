@@ -127,6 +127,8 @@ class CtaEngine(BaseEngine):
         symbol, exchange_str = vt_symbol.split(".")
         if symbol.upper() not in self.rq_symbols:
             return None
+        
+        end += timedelta(1)     # For querying night trading period data
 
         df = self.rq_client.get_price(
             symbol.upper(),
