@@ -108,48 +108,17 @@ def parse_oes_datetime(date: int, time: int):
     return datetime(year, month, day, hour, minute, sec, mill * 1000, tzinfo=bjtz)
 
 
-class OrderManager:
-
-    def __init__(self):
-        self.last_order_id = 100000000
-        self._orders: Dict[int, InternalOrder] = {}
-
-    @staticmethod
-    def hash_remote_order(data):
-        key = (data.origClSeqNo, data.origClOrdId, data.origClEnvId, data.userInfo)
-        return key
-
-    @staticmethod
-    def hash_remote_trade(data: OesTrdCnfmT):
-        key = (data.clSeqNo, data.clOrdId, data.clEnvId, data.userInfo)
-        return key
-
-    def save_local_created(self, order_id: int, order: OrderData):
-        print(f"saved order, id:{order_id}")
-        self._orders[order_id] = InternalOrder(
-            order_id=order_id,
-            vt_order=order,
-        )
-
-    def save_remote_created(self, order_id: int, vt_order: OrderData):
-        return self.save_local_created(order_id, vt_order)
-
-    def get_from_order_id(self, id: int):
-        return self._orders[id]
-
-
 class OesTdMessageLoop:
 
     def __init__(self,
                  gateway: BaseGateway,
                  env: OesApiClientEnvT,
-                 order_manager: OrderManager,
                  td: "OesTdApi"
                  ):
         self.gateway = gateway
-        self._td = td
+
         self._env = env
-        self._order_manager = order_manager
+        self._td = td
 
         self._alive = False
         self._th = Thread(target=self.message_loop)
@@ -218,7 +187,7 @@ class OesTdMessageLoop:
         error_string = error_to_str(error_code)
         data: OesOrdRejectT = d.rptMsg.rptBody.ordRejectRsp
         if not data.origClSeqNo:
-            i = self._order_manager.get_from_order_id(data.clSeqNo)
+            i = self._td.get_order(data.clSeqNo)
             vt_order = i.vt_order
 
             if vt_order == Status.ALLTRADED:
@@ -236,9 +205,9 @@ class OesTdMessageLoop:
         data = d.rptMsg.rptBody.ordInsertRsp
 
         if not data.origClSeqNo:
-            i = self._order_manager.get_from_order_id(data.clSeqNo)
+            i = self._td.get_order(data.clSeqNo)
         else:
-            i = self._order_manager.get_from_order_id(data.origClSeqNo)
+            i = self._td.get_order(data.origClSeqNo)
         vt_order = i.vt_order
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.volume = data.ordQty
@@ -251,20 +220,22 @@ class OesTdMessageLoop:
         data: OesOrdCnfmT = d.rptMsg.rptBody.ordCnfm
 
         if not data.origClSeqNo:
-            i = self._order_manager.get_from_order_id(data.clSeqNo)
+            i = self._td.get_order(data.clSeqNo)
         else:
-            i = self._order_manager.get_from_order_id(data.origClSeqNo)
+            i = self._td.get_order(data.origClSeqNo)
         vt_order = i.vt_order
+
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.volume = data.ordQty
         vt_order.traded = data.cumQty
         vt_order.time = parse_oes_datetime(data.ordDate, data.ordCnfmTime)
+
         self.gateway.on_order(vt_order)
 
     def on_trade_report(self, d: OesRspMsgBodyT):
         data: OesTrdCnfmT = d.rptMsg.rptBody.trdCnfm
 
-        i = self._order_manager.get_from_order_id(data.clSeqNo)
+        i = self._td.get_order(data.clSeqNo)
         vt_order = i.vt_order
         # vt_order.status = STATUS_OES2VT[data.ordStatus]
 
@@ -280,18 +251,11 @@ class OesTdMessageLoop:
             volume=data.trdQty,
             time=parse_oes_datetime(data.trdDate, data.trdTime)
         )
+        vt_order.status = STATUS_OES2VT[data.ordStatus]
+        vt_order.traded = data.origOrdQty + data.trdQty
+        vt_order.time = parse_oes_datetime(data.trdDate, data.trdTime)
         self.gateway.on_trade(trade)
-
-        # hack :
-        # Sometimes order_report is not received after a trade is received.
-        # (only trade msg but no order msg)
-        # This cause a problem  that vt_order.traded stay 0 after a trade, which is a error state.
-        # So we have to query new status of order for every receiving of trade.
-        # BUT
-        # Oes have no async call to query order only.
-        # And calling sync function here will slow down vnpy.
-        # So we queue it into another thread.
-        self._td.schedule_query_order(i)
+        self.gateway.on_order(vt_order)
 
     def on_option_holding(self, d: OesRspMsgBodyT):
         pass
@@ -339,14 +303,14 @@ class OesTdApi:
 
         self._env = OesApiClientEnvT()
 
-        self._order_manager = OrderManager()
         self._message_loop = OesTdMessageLoop(gateway,
                                               self._env,
-                                              self._order_manager,
                                               self)
 
         self._last_seq_lock = Lock()
         self._last_seq_index = 1000000  # 0 has special manning for oes
+        
+        self._orders: Dict[int, InternalOrder] = {}
 
     def connect(self):
         """Connect to trading server.
@@ -574,7 +538,7 @@ class OesTdApi:
 
         order = vt_req.create_order_data(str(order_id), self.gateway.gateway_name)
         order.direction = Direction.NET  # fix direction into NET: stock only
-        self._order_manager.save_local_created(order_id, order)
+        self.save_order(order_id, order)
         ret = OesApi_SendOrderReq(self._env.ordChannel,
                                   oes_req
                                   )
@@ -622,7 +586,7 @@ class OesTdApi:
                        cursor: OesQryCursorT):
         data: OesOrdCnfmT = cast.toOesOrdItemT(body)
 
-        i = self._order_manager.get_from_order_id(data.clSeqNo)
+        i = self._td.get_order(data.clSeqNo)
         vt_order = i.vt_order
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.volume = data.ordQty - data.canceledQty
@@ -650,7 +614,7 @@ class OesTdApi:
                              ):
         data: OesOrdCnfmT = cast.toOesOrdItemT(body)
         try:
-            i = self._order_manager.get_from_order_id(data.clSeqNo)
+            i = self.get_order(data.clSeqNo)
             vt_order = i.vt_order
             vt_order.status = STATUS_OES2VT[data.ordStatus]
             vt_order.volume = data.ordQty - data.canceledQty
@@ -680,6 +644,16 @@ class OesTdApi:
                 # this time should be generated automatically or by a static function
                 time=datetime.utcnow().isoformat(),
             )
-            self._order_manager.save_remote_created(order_id, vt_order)
+            self.save_order(order_id, vt_order)
             self.gateway.on_order(vt_order)
         return 1
+
+    def save_order(self, order_id: int, order: OrderData):
+        self._orders[order_id] = InternalOrder(
+            order_id=order_id,
+            vt_order=order,
+        )
+
+    def get_order(self, order_id: int):
+        return self._orders[order_id]
+
