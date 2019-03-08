@@ -264,7 +264,7 @@ class OesTdMessageLoop:
             time=parse_oes_datetime(data.trdDate, data.trdTime)
         )
         vt_order.status = STATUS_OES2VT[data.ordStatus]
-        vt_order.traded = data.origOrdQty + data.trdQty
+        vt_order.traded = data.cumQty
         vt_order.time = parse_oes_datetime(data.trdDate, data.trdTime)
         self.gateway.on_trade(trade)
         self.gateway.on_order(vt_order)
