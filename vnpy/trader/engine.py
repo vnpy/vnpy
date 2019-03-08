@@ -296,7 +296,6 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_position = self.get_position
         self.main_engine.get_account = self.get_account
         self.main_engine.get_contract = self.get_contract
-        self.main_engine.get_contract = self.get_contract
         self.main_engine.get_all_ticks = self.get_all_ticks
         self.main_engine.get_all_orders = self.get_all_orders
         self.main_engine.get_all_trades = self.get_all_trades
