@@ -6,13 +6,12 @@ from threading import Thread
 from typing import Any, Callable, Dict
 
 from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitAllByConvention, \
-    MdsApi_IsValidQryChannel, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, \
-    MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, MdsMktDataRequestEntryT, \
-    MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, SGeneralClientChannelT, \
-    SMsgHeadT, SPlatform_IsNegEpipe, SPlatform_IsNegEtimeout, cast, eMdsExchangeIdT, \
-    eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
-    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT, MdsApi_SetThreadUsername, \
-    MdsApi_SetThreadPassword
+    MdsApi_IsValidQryChannel, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
+    MdsApi_SetThreadUsername, MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, \
+    MdsMktDataRequestEntryT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, \
+    SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, SPlatform_IsNegEtimeout, cast, \
+    eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
+    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT
 
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
@@ -36,11 +35,13 @@ class OesMdMessageLoop:
         self.th = Thread(target=self.message_loop)
 
         self.message_handlers: Dict[int, Callable[[dict], None]] = {
+            # tick & orderbook
             eMdsMsgTypeT.MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: self.on_market_full_refresh,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: self.on_l2_market_data_snapshot,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_ORDER: self.on_l2_order,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_TRADE: self.on_l2_trade,
 
+            # others
             eMdsMsgTypeT.MDS_MSGTYPE_QRY_SECURITY_STATUS: self.on_security_status,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_MARKET_DATA_INCREMENTAL: lambda x: 1,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_BEST_ORDERS_SNAPSHOT: self.on_best_orders_snapshot,
@@ -50,6 +51,7 @@ class OesMdMessageLoop:
             eMdsMsgTypeT.MDS_MSGTYPE_TRADING_SESSION_STATUS: self.on_trading_session_status,
             eMdsMsgTypeT.MDS_MSGTYPE_SECURITY_STATUS: self.on_security_status,
             eMdsMsgTypeT.MDS_MSGTYPE_MARKET_DATA_REQUEST: self.on_market_data_request,
+
             eMdsMsgTypeT.MDS_MSGTYPE_HEARTBEAT: lambda x: 1,
         }
         self.last_tick: Dict[str, TickData] = {}
@@ -75,6 +77,9 @@ class OesMdMessageLoop:
     def start(self):
         self.alive = True
         self.th.start()
+
+    def stop(self):
+        self.alive = False
 
     def join(self):
         self.th.join()
@@ -113,7 +118,7 @@ class OesMdMessageLoop:
                 #     pass  # just no message
                 if is_disconnected(ret):
                     self.gateway.write_log(_("与行情服务器的连接已断开。"))
-                    while not self.reconnect():
+                    while not self.reconnect() and self.alive:
                         time.sleep(1)
         return
 
@@ -179,9 +184,6 @@ class OesMdMessageLoop:
 
     def on_security_status(self, d: MdsMktRspMsgBodyT):
         pass
-
-    def stop(self):
-        self.alive = False
 
 
 class OesMdApi:
