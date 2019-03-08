@@ -38,6 +38,7 @@ class OesGateway(BaseGateway):
         self.td_api = OesTdApi(self)
 
     def connect(self, setting: dict):
+        """"""
         return self._connect_async(setting)
 
     def _connect_sync(self, setting: dict):
@@ -89,6 +90,7 @@ class OesGateway(BaseGateway):
             self.write_log(_("无法连接到交易服务器，请检查你的配置"))
 
     def _connect_async(self, setting: dict):
+        """"""
         Thread(target=self._connect_sync, args=(setting,)).start()
 
     def subscribe(self, req: SubscribeRequest):

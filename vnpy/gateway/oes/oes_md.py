@@ -9,7 +9,7 @@ from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitA
     MdsApi_IsValidQryChannel, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
     MdsApi_SetThreadUsername, MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, \
     MdsMktDataRequestEntryT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, \
-    SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, SPlatform_IsNegEtimeout, cast, \
+    SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, cast, \
     eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
     eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT
 
@@ -28,11 +28,12 @@ EXCHANGE_VT2MDS = {v: k for k, v in EXCHANGE_MDS2VT.items()}
 class OesMdMessageLoop:
 
     def __init__(self, gateway: BaseGateway, md: "OesMdApi", env: MdsApiClientEnvT):
+        """"""
         self.gateway = gateway
         self.env = env
         self.alive = False
         self.md = md
-        self.th = Thread(target=self.message_loop)
+        self.th = Thread(target=self._message_loop)
 
         self.message_handlers: Dict[int, Callable[[dict], None]] = {
             # tick & orderbook
@@ -58,9 +59,29 @@ class OesMdMessageLoop:
         self.symbol_to_exchange: Dict[str, Exchange] = {}
 
     def register_symbol(self, symbol: str, exchange: Exchange):
+        """"""
         self.symbol_to_exchange[symbol] = exchange
 
-    def get_last_tick(self, symbol):
+    def start(self):
+        """"""
+        self.alive = True
+        self.th.start()
+
+    def stop(self):
+        """"""
+        self.alive = False
+
+    def join(self):
+        """"""
+        self.th.join()
+
+    def reconnect(self):
+        """"""
+        self.gateway.write_log(_("正在尝试重新连接到行情服务器。"))
+        return self.md.connect()
+
+    def _get_last_tick(self, symbol):
+        """"""
         try:
             return self.last_tick[symbol]
         except KeyError:
@@ -68,25 +89,15 @@ class OesMdMessageLoop:
                 gateway_name=self.gateway.gateway_name,
                 symbol=symbol,
                 exchange=self.symbol_to_exchange[symbol],
-                # todo: use cache of something else to resolve exchange
                 datetime=datetime.utcnow()
             )
             self.last_tick[symbol] = tick
             return tick
 
-    def start(self):
-        self.alive = True
-        self.th.start()
-
-    def stop(self):
-        self.alive = False
-
-    def join(self):
-        self.th.join()
-
-    def on_message(self, session_info: SGeneralClientChannelT,
-                   head: SMsgHeadT,
-                   body: Any):
+    def _on_message(self, session_info: SGeneralClientChannelT,
+                    head: SMsgHeadT,
+                    body: Any):
+        """"""
         if session_info.protocolType == eSMsgProtocolTypeT.SMSG_PROTO_BINARY:
             b = cast.toMdsMktRspMsgBodyT(body)
             if head.msgId in self.message_handlers:
@@ -100,19 +111,16 @@ class OesMdMessageLoop:
             self.gateway.write_log(f"unknown prototype : {session_info.protocolType}")
         return 1
 
-    def reconnect(self):
-        self.gateway.write_log(_("正在尝试重新连接到行情服务器。"))
-        return self.md.connect()
-
-    def message_loop(self):
+    def _message_loop(self):
+        """"""
         tcp_channel = self.env.tcpChannel
         timeout_ms = 1000
-        is_timeout = SPlatform_IsNegEtimeout
+        # is_timeout = SPlatform_IsNegEtimeout
         is_disconnected = SPlatform_IsNegEpipe
         while self.alive:
             ret = MdsApi_WaitOnMsg(tcp_channel,
                                    timeout_ms,
-                                   self.on_message)
+                                   self._on_message)
             if ret < 0:
                 # if is_timeout(ret):
                 #     pass  # just no message
@@ -123,9 +131,10 @@ class OesMdMessageLoop:
         return
 
     def on_l2_market_data_snapshot(self, d: MdsMktRspMsgBodyT):
+        """"""
         data: MdsL2StockSnapshotBodyT = d.mktDataSnapshot.l2Stock
         symbol = str(data.SecurityID)
-        tick = self.get_last_tick(symbol)
+        tick = self._get_last_tick(symbol)
         tick.open_price = data.OpenPx / 10000
         tick.pre_close = data.ClosePx / 10000
         tick.high_price = data.HighPx / 10000
@@ -138,9 +147,10 @@ class OesMdMessageLoop:
         self.gateway.on_tick(tick)
 
     def on_market_full_refresh(self, d: MdsMktRspMsgBodyT):
+        """"""
         data: MdsStockSnapshotBodyT = d.mktDataSnapshot.stock
         symbol = data.SecurityID
-        tick = self.get_last_tick(symbol)
+        tick = self._get_last_tick(symbol)
         tick.open_price = data.OpenPx / 10000
         tick.pre_close = data.ClosePx / 10000
         tick.high_price = data.HighPx / 10000
@@ -153,42 +163,52 @@ class OesMdMessageLoop:
         self.gateway.on_tick(tick)
 
     def on_l2_trade(self, d: MdsMktRspMsgBodyT):
+        """"""
         data = d.trade
         symbol = data.SecurityID
-        tick = self.get_last_tick(symbol)
+        tick = self._get_last_tick(symbol)
         tick.datetime = datetime.utcnow()
         tick.volume = data.TradeQty
         tick.last_price = data.TradePrice / 10000
         self.gateway.on_tick(tick)
 
     def on_market_data_request(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_trading_session_status(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_l2_market_overview(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_index_snapshot_full_refresh(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_option_snapshot_ful_refresh(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_best_orders_snapshot(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_l2_order(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
     def on_security_status(self, d: MdsMktRspMsgBodyT):
+        """"""
         pass
 
 
 class OesMdApi:
 
     def __init__(self, gateway: BaseGateway):
+        """"""
         self.gateway = gateway
         self.config_path: str = ''
         self.username: str = ''
@@ -198,6 +218,7 @@ class OesMdApi:
         self._message_loop = OesMdMessageLoop(gateway, self, self._env)
 
     def connect(self) -> bool:
+        """"""
         """Connect to trading server.
         :note set config_path before calling this function
         """
@@ -214,18 +235,22 @@ class OesMdApi:
         return True
 
     def start(self):
+        """"""
         self._message_loop.start()
 
     def stop(self):
+        """"""
         self._message_loop.stop()
         MdsApi_LogoutAll(self._env, True)
         MdsApi_DestoryAll(self._env)
 
     def join(self):
+        """"""
         self._message_loop.join()
 
     # why isn't arg a ContractData?
     def subscribe(self, req: SubscribeRequest):
+        """"""
         mds_req = MdsMktDataRequestReqT()
         entry = MdsMktDataRequestEntryT()
         mds_req.subMode = eMdsSubscribeModeT.MDS_SUB_MODE_APPEND
