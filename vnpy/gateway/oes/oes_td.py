@@ -186,7 +186,7 @@ class OesTdMessageLoop:
                 #     pass  # just no message
                 if is_disconnected(ret):
                     self.gateway.write_log(_("与交易服务器的连接已断开。"))
-                    while not self.reconnect() and self._alive:
+                    while self._alive and not self.reconnect():
                         pass
         return
 

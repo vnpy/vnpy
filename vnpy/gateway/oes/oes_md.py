@@ -31,9 +31,10 @@ class OesMdMessageLoop:
         """"""
         self.gateway = gateway
         self.env = env
-        self.alive = False
-        self.md = md
-        self.th = Thread(target=self._message_loop)
+
+        self._alive = False
+        self._md = md
+        self._th = Thread(target=self._message_loop)
 
         self.message_handlers: Dict[int, Callable[[dict], None]] = {
             # tick & orderbook
@@ -64,21 +65,21 @@ class OesMdMessageLoop:
 
     def start(self):
         """"""
-        self.alive = True
-        self.th.start()
+        self._alive = True
+        self._th.start()
 
     def stop(self):
         """"""
-        self.alive = False
+        self._alive = False
 
     def join(self):
         """"""
-        self.th.join()
+        self._th.join()
 
     def reconnect(self):
         """"""
         self.gateway.write_log(_("正在尝试重新连接到行情服务器。"))
-        return self.md.connect()
+        return self._md.connect()
 
     def _get_last_tick(self, symbol):
         """"""
@@ -117,7 +118,7 @@ class OesMdMessageLoop:
         timeout_ms = 1000
         # is_timeout = SPlatform_IsNegEtimeout
         is_disconnected = SPlatform_IsNegEpipe
-        while self.alive:
+        while self._alive:
             ret = MdsApi_WaitOnMsg(tcp_channel,
                                    timeout_ms,
                                    self._on_message)
@@ -126,7 +127,7 @@ class OesMdMessageLoop:
                 #     pass  # just no message
                 if is_disconnected(ret):
                     self.gateway.write_log(_("与行情服务器的连接已断开。"))
-                    while not self.reconnect() and self.alive:
+                    while self._alive and not self.reconnect():
                         time.sleep(1)
         return
 
