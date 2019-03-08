@@ -114,8 +114,6 @@ class OesMdMessageLoop:
         data: MdsL2StockSnapshotBodyT = d.mktDataSnapshot.l2Stock
         symbol = str(data.SecurityID)
         tick = self.get_last_tick(symbol)
-        tick.limit_up = data.HighPx / 10000
-        tick.limit_down = data.LowPx / 10000
         tick.open_price = data.OpenPx / 10000
         tick.pre_close = data.ClosePx / 10000
         tick.high_price = data.HighPx / 10000
@@ -131,8 +129,6 @@ class OesMdMessageLoop:
         data: MdsStockSnapshotBodyT = d.mktDataSnapshot.stock
         symbol = data.SecurityID
         tick = self.get_last_tick(symbol)
-        tick.limit_up = data.HighPx / 10000
-        tick.limit_down = data.LowPx / 10000
         tick.open_price = data.OpenPx / 10000
         tick.pre_close = data.ClosePx / 10000
         tick.high_price = data.HighPx / 10000
