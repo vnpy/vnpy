@@ -331,7 +331,7 @@ class CtaEngine(BaseEngine):
             return
 
         req = order.create_cancel_request()
-        self.main_engine.cancel_limit_order(req, order.gateway_name)
+        self.main_engine.cancel_order(req, order.gateway_name)
 
     def cancel_stop_order(self, strategy: CtaTemplate, stop_orderid: str):
         """
