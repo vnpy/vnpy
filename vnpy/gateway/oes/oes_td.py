@@ -399,11 +399,6 @@ class OesTdApi:
 
     def query_stock(self, ) -> bool:
         """"""
-        # Thread(target=self._query_stock, ).start()
-        return self._query_stock()
-
-    def _query_stock(self, ) -> bool:
-        """"""
         f = OesQryStockFilterT()
         ret = OesApi_QueryStock(self._env.qryChannel, f, self.on_query_stock)
         return ret >= 0
@@ -598,12 +593,6 @@ class OesTdApi:
         OesApi_SendOrderCancelReq(self._env.ordChannel,
                                   oes_req)
 
-    def schedule_query_order(self, internal_order: InternalOrder) -> Thread:
-        """"""
-        th = Thread(target=self.query_order, args=(internal_order,))
-        th.start()
-        return th
-
     def query_order(self, internal_order: InternalOrder) -> bool:
         """"""
         f = OesQryOrdFilterT()
@@ -623,7 +612,7 @@ class OesTdApi:
         """"""
         data: OesOrdCnfmT = cast.toOesOrdItemT(body)
 
-        i = self._td.get_order(data.clSeqNo)
+        i = self.get_order(data.clSeqNo)
         vt_order = i.vt_order
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.volume = data.ordQty - data.canceledQty
