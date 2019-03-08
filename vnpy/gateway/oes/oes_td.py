@@ -567,6 +567,7 @@ class OesTdApi:
         order = vt_req.create_order_data(str(order_id), self.gateway.gateway_name)
         order.direction = Direction.NET  # fix direction into NET: stock only
         self.save_order(order_id, order)
+
         ret = OesApi_SendOrderReq(self._env.ordChannel,
                                   oes_req
                                   )
@@ -620,24 +621,21 @@ class OesTdApi:
         self.gateway.on_order(vt_order)
         return 1
 
-    def init_query_orders(self) -> bool:
-        """
-        :note: this function can be called only before calling send_order
-        :return:
-        """
+    def query_orders(self) -> bool:
+        """"""
         f = OesQryOrdFilterT()
         ret = OesApi_QueryOrder(self._env.qryChannel,
                                 f,
-                                self.on_init_query_orders
+                                self.on_query_orders
                                 )
         return ret >= 0
 
-    def on_init_query_orders(self,
-                             session_info: SGeneralClientChannelT,
-                             head: SMsgHeadT,
-                             body: Any,
-                             cursor: OesQryCursorT,
-                             ):
+    def on_query_orders(self,
+                        session_info: SGeneralClientChannelT,
+                        head: SMsgHeadT,
+                        body: Any,
+                        cursor: OesQryCursorT,
+                        ):
         """"""
         data: OesOrdCnfmT = cast.toOesOrdItemT(body)
         try:
