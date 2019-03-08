@@ -3,14 +3,15 @@
 """
 import hashlib
 import os
+from gettext import gettext as _
 from threading import Thread
 
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (AccountData, CancelRequest, ContractData, OrderData, OrderRequest,
-                                PositionData, SubscribeRequest, TickData, TradeData)
+from vnpy.trader.object import (CancelRequest, OrderRequest,
+                                SubscribeRequest)
 from vnpy.trader.utility import get_file_path
-from .md import OesMdApi
-from .td import OesTdApi
+from .oes_md import OesMdApi
+from .oes_td import OesTdApi
 from .utils import config_template
 
 
@@ -44,7 +45,10 @@ class OesGateway(BaseGateway):
         if not setting['password'].startswith("md5:"):
             setting['password'] = "md5:" + hashlib.md5(setting['password'].encode()).hexdigest()
 
-        config_path = get_file_path("vnoes.ini")
+        username = setting['username']
+        password = setting['password']
+
+        config_path = str(get_file_path("vnoes.ini"))
         with open(config_path, "wt") as f:
             if 'test' in setting:
                 log_level = 'DEBUG'
@@ -54,7 +58,7 @@ class OesGateway(BaseGateway):
                 log_mode = 'file'
             log_dir = get_file_path('oes')
             log_path = os.path.join(log_dir, 'log.log')
-            if os.path.exists(log_dir):
+            if not os.path.exists(log_dir):
                 os.mkdir(log_dir)
             content = config_template.format(**setting,
                                              log_level=log_level,
@@ -62,20 +66,30 @@ class OesGateway(BaseGateway):
                                              log_path=log_path)
             f.write(content)
 
-        self.td_api.connect(str(config_path))
+        self.md_api.config_path = config_path
+        self.md_api.username = username
+        self.md_api.password = password
+        if self.md_api.connect():
+            self.md_api.start()
+        else:
+            self.write_log(_("无法连接到行情服务器，请检查你的配置"))
 
-        self.td_api.query_account()
-        self.td_api.query_contracts()
-        self.td_api.query_position()
-        self.td_api.init_query_orders()
-
-        self.td_api.start()
-
-        self.md_api.connect(str(config_path))
-        self.md_api.start()
+        self.td_api.config_path = config_path
+        self.td_api.username = username
+        self.td_api.password = password
+        if self.td_api.connect():
+            self.write_log(_("成功连接到交易服务器"))
+            self.td_api.query_account()
+            self.td_api.query_contracts()
+            self.write_log("合约信息查询成功")
+            self.td_api.query_position()
+            self.td_api.init_query_orders()
+            self.td_api.start()
+        else:
+            self.write_log(_("无法连接到交易服务器，请检查你的配置"))
 
     def _connect_async(self, setting: dict):
-        Thread(target=self._connect_sync, args=(setting, )).start()
+        Thread(target=self._connect_sync, args=(setting,)).start()
 
     def subscribe(self, req: SubscribeRequest):
         """"""

@@ -1,4 +1,6 @@
+import time
 from datetime import datetime
+from gettext import gettext as _
 from threading import Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
@@ -9,7 +11,8 @@ from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitA
     MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, SGeneralClientChannelT, \
     SMsgHeadT, SPlatform_IsNegEpipe, SPlatform_IsNegEtimeout, cast, eMdsExchangeIdT, \
     eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
-    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT
+    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT, MdsApi_SetThreadUsername, \
+    MdsApi_SetThreadPassword
 
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
@@ -25,10 +28,11 @@ EXCHANGE_VT2MDS = {v: k for k, v in EXCHANGE_MDS2VT.items()}
 
 class OesMdMessageLoop:
 
-    def __init__(self, gateway: BaseGateway, env: MdsApiClientEnvT):
+    def __init__(self, gateway: BaseGateway, md: "OesMdApi", env: MdsApiClientEnvT):
         self.gateway = gateway
         self.env = env
         self.alive = False
+        self.md = md
         self.th = Thread(target=self.message_loop)
 
         self.message_handlers: Dict[int, Callable[[dict], None]] = {
@@ -91,6 +95,10 @@ class OesMdMessageLoop:
             self.gateway.write_log(f"unknown prototype : {session_info.protocolType}")
         return 1
 
+    def reconnect(self):
+        self.gateway.write_log(_("正在尝试重新连接到行情服务器。"))
+        return self.md.connect()
+
     def message_loop(self):
         tcp_channel = self.env.tcpChannel
         timeout_ms = 1000
@@ -101,13 +109,12 @@ class OesMdMessageLoop:
                                    timeout_ms,
                                    self.on_message)
             if ret < 0:
-                if is_timeout(ret):
-                    pass
+                # if is_timeout(ret):
+                #     pass  # just no message
                 if is_disconnected(ret):
-                    # todo: handle disconnected
-                    self.alive = False
-                    break
-            pass
+                    self.gateway.write_log(_("与行情服务器的连接已断开。"))
+                    while not self.reconnect():
+                        time.sleep(1)
         return
 
     def on_l2_market_data_snapshot(self, d: MdsMktRspMsgBodyT):
@@ -139,7 +146,6 @@ class OesMdMessageLoop:
         for i in range(5):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
         self.gateway.on_tick(tick)
-        pass
 
     def on_l2_trade(self, d: MdsMktRspMsgBodyT):
         data = d.trade
@@ -182,30 +188,39 @@ class OesMdApi:
 
     def __init__(self, gateway: BaseGateway):
         self.gateway = gateway
-        self.env = MdsApiClientEnvT()
-        self.message_loop = OesMdMessageLoop(gateway, self.env)
+        self.config_path: str = ''
+        self.username: str = ''
+        self.password: str = ''
 
-    def connect(self, config_path: str):
-        if not MdsApi_InitAllByConvention(self.env, config_path):
-            pass
+        self._env = MdsApiClientEnvT()
+        self._message_loop = OesMdMessageLoop(gateway, self, self._env)
 
-        if not MdsApi_IsValidTcpChannel(self.env.tcpChannel):
-            pass
-        if not MdsApi_IsValidQryChannel(self.env.qryChannel):
-            pass
+    def connect(self) -> bool:
+        """Connect to trading server.
+        :note set config_path before calling this function
+        """
+        MdsApi_SetThreadUsername(self.username)
+        MdsApi_SetThreadPassword(self.password)
+
+        config_path = self.config_path
+        if not MdsApi_InitAllByConvention(self._env, config_path):
+            return False
+        if not MdsApi_IsValidTcpChannel(self._env.tcpChannel):
+            return False
+        if not MdsApi_IsValidQryChannel(self._env.qryChannel):
+            return False
+        return True
 
     def start(self):
-        self.message_loop.start()
+        self._message_loop.start()
 
     def stop(self):
-        self.message_loop.stop()
-        if not MdsApi_LogoutAll(self.env, True):
-            pass  # doc for this function is error
-        if not MdsApi_DestoryAll(self.env):
-            pass  # doc for this function is error
+        self._message_loop.stop()
+        MdsApi_LogoutAll(self._env, True)
+        MdsApi_DestoryAll(self._env)
 
     def join(self):
-        self.message_loop.join()
+        self._message_loop.join()
 
     # why isn't arg a ContractData?
     def subscribe(self, req: SubscribeRequest):
@@ -236,12 +251,11 @@ class OesMdApi:
         entry.securityType = eMdsSecurityTypeT.MDS_SECURITY_TYPE_STOCK  # todo: option and others
         entry.instrId = int(req.symbol)
 
-        self.message_loop.register_symbol(req.symbol, req.exchange)
+        self._message_loop.register_symbol(req.symbol, req.exchange)
         ret = MdsApi_SubscribeMarketData(
-            self.env.tcpChannel,
+            self._env.tcpChannel,
             mds_req,
             entry)
         if not ret:
             self.gateway.write_log(
                 f"MdsApi_SubscribeByString failed with {ret}:{error_to_str(ret)}")
-        pass
