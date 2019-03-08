@@ -54,9 +54,9 @@ DIRECTION_VT2TIGER = {
 }
 
 DIRECTION_TIGER2VT = {
-    "BUY": Direction.LONG,
+    "BUY":Direction.LONG,
     "SELL": Direction.SHORT,
-    "sell": Direction.SHORT,
+    "sell":Direction.SHORT,
 }
 
 PRICETYPE_VT2TIGER = {
@@ -76,25 +76,39 @@ STATUS_TIGER2VT = {
     ORDER_STATUS.EXPIRED: Status.NOTTRADED
 }
 
-# "1_key":       "MIICXQIBAAKBgQC1amZa5YsGTklry7DAsUBOwXJCgrsZZtB21PImw/yLmrbqRfsS3vawvMigLWcCwIDnHa+hpdpeze0eHIwbZzJzUDGvRALYK9t3D8pwPVxpwX1OF8RfHCM7YQvSOvPPnHHuVQvKaR7NNm1/WmvGXC9kVJdkYQ7kCmh52siFoy1MLQIDAQABAoGAVabcmIHTt7ByncBXvUJymDxhE+HhMEcImXJEueTCca8kOUu9FNXMJvmax3VoMzZsJbIwX+OMTEJxd0wHIlEA0gECjDwFK4Q42q+ptO4QABJQVSC6I+dOt2OIY28uvT3rkenOO8KRIDt4F52PFd71ZdB1aaXixORORq1MdSLi8EkCQQDiviAB+L5R/HVxwxvqZfJ530OtFd5IipZC9YZlY1CtXWCmu89LK7UUlEuNXyGsOxyz5jLqFuNRsie5AC23tfEPAkEAzNMCa8axJWfPZIH4tGrbZ1F3I41BQdgp2zBmR7AyUMBDkli86OzmJ7QUCJA/PJxK43/IYUWm4OU5Q+SvXCr3AwJBAJTBj1Y7zwES1CpSitn5EF+MbmX71t1YrsQ3OHkD80YJ4QMCbDkw75gUwox5QSoxjd8ow3Z4laJfc1gYGeZQ41kCQQCCiQwm8cceBq3W6To+iUdw7itWngRz2Ta7uXnFwFYgvpeR4jnq3GfF7+9AkeWrVBQqLtrem0xCUfQP/+N+gudPAkBFLbt78/MpQGEDc7jyu/KE5Mp4wMMDQQwch9VLvsAZwWLysB6rZWpo3jIfp9zZ7c3zOYGNMWAZjtMmNkRJ8COH",
+PUSH_STATUS_TIGER2VT = {
+    "Invalid":Status.REJECTED,
+    "Initial":Status.SUBMITTING,
+    "PendingCancel":Status.CANCELLED,
+    "Cancelled":Status.CANCELLED,
+    "Submitted":Status.SUBMITTING,
+    "PendingSubmit":Status.SUBMITTING,
+    "Filled":Status.ALLTRADED,
+    "Inactive":Status.REJECTED,
+
+
+
+}
+
+# "private_key": "MIICXQIBAAKBgQC1amZa5YsGTklry7DAsUBOwXJCgrsZZtB21PImw/yLmrbqRfsS3vawvMigLWcCwIDnHa+hpdpeze0eHIwbZzJzUDGvRALYK9t3D8pwPVxpwX1OF8RfHCM7YQvSOvPPnHHuVQvKaR7NNm1/WmvGXC9kVJdkYQ7kCmh52siFoy1MLQIDAQABAoGAVabcmIHTt7ByncBXvUJymDxhE+HhMEcImXJEueTCca8kOUu9FNXMJvmax3VoMzZsJbIwX+OMTEJxd0wHIlEA0gECjDwFK4Q42q+ptO4QABJQVSC6I+dOt2OIY28uvT3rkenOO8KRIDt4F52PFd71ZdB1aaXixORORq1MdSLi8EkCQQDiviAB+L5R/HVxwxvqZfJ530OtFd5IipZC9YZlY1CtXWCmu89LK7UUlEuNXyGsOxyz5jLqFuNRsie5AC23tfEPAkEAzNMCa8axJWfPZIH4tGrbZ1F3I41BQdgp2zBmR7AyUMBDkli86OzmJ7QUCJA/PJxK43/IYUWm4OU5Q+SvXCr3AwJBAJTBj1Y7zwES1CpSitn5EF+MbmX71t1YrsQ3OHkD80YJ4QMCbDkw75gUwox5QSoxjd8ow3Z4laJfc1gYGeZQ41kCQQCCiQwm8cceBq3W6To+iUdw7itWngRz2Ta7uXnFwFYgvpeR4jnq3GfF7+9AkeWrVBQqLtrem0xCUfQP/+N+gudPAkBFLbt78/MpQGEDc7jyu/KE5Mp4wMMDQQwch9VLvsAZwWLysB6rZWpo3jIfp9zZ7c3zOYGNMWAZjtMmNkRJ8COH",
 
 class TigerGateway(BaseGateway):
     """"""
 
     default_setting = {       
-        "private_key": "MIICXAIBAAKBgQC2s9fGSfp86pYpK/9FFtdzZXcpncxDMaWww9WPPn2EnZC9zqIamz4nUewDGgya33VgoHNL7a3iGNCe4zqivhr8k1ACG68psElaRjALl1UzdAMv4xwnrxpceTCgA9AZM8x+BmVXvO5cfgIfGdoahtdxjMNjIYDkx+HORGJ1cFcmrQIDAQABAoGBAIwf8uYJ5yvXX8PEEsyScDv5HiO0+uyuLz4bdLegXfRQRKrOyFVPq6PMmQ7n87L0n7m0VbluWWaHUboK3PXkiBzTsmx0aFS3aNyr203QGXXwp9hxF2WS968/6K2zSikaDrmSkWps5dVVqhnkJ6STj7cvM6ZGYIHWPC7W79qTYHihAkEA3FvFSznaTTajvZpHq83rrCh3wmI2ggeh1M1i89HAv0EfTLkWweyNM8qO39qeaGzB/TZiOal0LR8Mk7HbGPOTVwJBANRA4LyhwczHEdwH16n5QPcrogoSsPM6uq9ZL8zYwaMTcHvEJUhW6hUMQPyWcNtenH9mwcgRF78TFGLqIH9s95sCP1bv3ebP7FCKPg+Pzrb5hwFk9dq65MZoPHC4l1Gab3EFQFQEsfXQXeURBU1L8zM/tUkxK4+US0GB/nRGtyog7wJBALU4a2lCpqgDc4EshPsP4GLosyHskX4qL4hVGpXIn5NvnoNdlgNsidHMs5O1ksgJwI6aGmuKBH9Ud/x4L6T8UW8CQEbrCa3/vIv5mHzGe9G7ZsK5VaPx3VETSeRbDUai8KGpcMXX7nFUnhsBd7YvehOSwRSd5SCWrZuejhIdn5V7hYM=",
+        
         "tiger_id": "20150008",
         "account": "DU575568",
         "standard_account": "DU575568",
-        "paper_account": "DU575568",
-        "language": "Language.zh_CN",
+
     }
 
     def __init__(self, event_engine):
         """Constructor"""
         super(TigerGateway, self).__init__(event_engine, "TIGER")
 
-        self.private_key = ""
+        self.private_key = "MIICXQIBAAKBgQC1amZa5YsGTklry7DAsUBOwXJCgrsZZtB21PImw/yLmrbqRfsS3vawvMigLWcCwIDnHa+hpdpeze0eHIwbZzJzUDGvRALYK9t3D8pwPVxpwX1OF8RfHCM7YQvSOvPPnHHuVQvKaR7NNm1/WmvGXC9kVJdkYQ7kCmh52siFoy1MLQIDAQABAoGAVabcmIHTt7ByncBXvUJymDxhE+HhMEcImXJEueTCca8kOUu9FNXMJvmax3VoMzZsJbIwX+OMTEJxd0wHIlEA0gECjDwFK4Q42q+ptO4QABJQVSC6I+dOt2OIY28uvT3rkenOO8KRIDt4F52PFd71ZdB1aaXixORORq1MdSLi8EkCQQDiviAB+L5R/HVxwxvqZfJ530OtFd5IipZC9YZlY1CtXWCmu89LK7UUlEuNXyGsOxyz5jLqFuNRsie5AC23tfEPAkEAzNMCa8axJWfPZIH4tGrbZ1F3I41BQdgp2zBmR7AyUMBDkli86OzmJ7QUCJA/PJxK43/IYUWm4OU5Q+SvXCr3AwJBAJTBj1Y7zwES1CpSitn5EF+MbmX71t1YrsQ3OHkD80YJ4QMCbDkw75gUwox5QSoxjd8ow3Z4laJfc1gYGeZQ41kCQQCCiQwm8cceBq3W6To+iUdw7itWngRz2Ta7uXnFwFYgvpeR4jnq3GfF7+9AkeWrVBQqLtrem0xCUfQP/+N+gudPAkBFLbt78/MpQGEDc7jyu/KE5Mp4wMMDQQwch9VLvsAZwWLysB6rZWpo3jIfp9zZ7c3zOYGNMWAZjtMmNkRJ8COH"
+        self.tiger_key_2005 = "MIICXAIBAAKBgQC2s9fGSfp86pYpK/9FFtdzZXcpncxDMaWww9WPPn2EnZC9zqIamz4nUewDGgya33VgoHNL7a3iGNCe4zqivhr8k1ACG68psElaRjALl1UzdAMv4xwnrxpceTCgA9AZM8x+BmVXvO5cfgIfGdoahtdxjMNjIYDkx+HORGJ1cFcmrQIDAQABAoGBAIwf8uYJ5yvXX8PEEsyScDv5HiO0+uyuLz4bdLegXfRQRKrOyFVPq6PMmQ7n87L0n7m0VbluWWaHUboK3PXkiBzTsmx0aFS3aNyr203QGXXwp9hxF2WS968/6K2zSikaDrmSkWps5dVVqhnkJ6STj7cvM6ZGYIHWPC7W79qTYHihAkEA3FvFSznaTTajvZpHq83rrCh3wmI2ggeh1M1i89HAv0EfTLkWweyNM8qO39qeaGzB/TZiOal0LR8Mk7HbGPOTVwJBANRA4LyhwczHEdwH16n5QPcrogoSsPM6uq9ZL8zYwaMTcHvEJUhW6hUMQPyWcNtenH9mwcgRF78TFGLqIH9s95sCP1bv3ebP7FCKPg+Pzrb5hwFk9dq65MZoPHC4l1Gab3EFQFQEsfXQXeURBU1L8zM/tUkxK4+US0GB/nRGtyog7wJBALU4a2lCpqgDc4EshPsP4GLosyHskX4qL4hVGpXIn5NvnoNdlgNsidHMs5O1ksgJwI6aGmuKBH9Ud/x4L6T8UW8CQEbrCa3/vIv5mHzGe9G7ZsK5VaPx3VETSeRbDUai8KGpcMXX7nFUnhsBd7YvehOSwRSd5SCWrZuejhIdn5V7hYM="
         self.tiger_id = ""
         self.account = ""
         self.standard_account = ""
@@ -112,19 +126,15 @@ class TigerGateway(BaseGateway):
 
         self.thread = Thread(target=self.query_data)
 
-        # For query function.
-        self.count = 0
-        self.interval = 1
-        self.query_funcs = [self.query_order]
 
     def connect(self, setting: dict):
         """"""
-        self.private_key = setting["private_key"]
+        self.private_key = self.private_key
         self.tiger_id = setting["tiger_id"]
         self.account = setting["account"]
         self.standard_account = setting["standard_account"]
-        self.paper_account = setting["paper_account"]
-        self.languege = setting["language"]
+        self.paper_account = setting["account"]
+        self.languege = Language.zh_CN
 
         self.get_client_config()
         self.connect_quote()
@@ -137,26 +147,12 @@ class TigerGateway(BaseGateway):
         """
         Query all data necessary.
         """
-        sleep(2.0)  # Wait 2 seconds till connection completed.
 
-        self.query_contract()
-        # self.query_trade() 
+        self.query_contract() 
         self.query_order() 
         self.query_position() 
         self.query_account()  
 
-        # Start fixed interval query.
-        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
-        
-    def process_timer_event(self, event):
-        """"""
-        self.count += 1
-        if self.count < self.interval:
-            return
-        self.count = 0
-        func = self.query_funcs.pop(0)
-        func()
-        self.query_funcs.append(func)
 
     def get_client_config(self, sandbox=True):
         """"""
@@ -175,8 +171,7 @@ class TigerGateway(BaseGateway):
         """
         self.quote_client = QuoteClient(self.client_config)
         try:
-            symbol_names = self.quote_client.get_symbol_names(lang=Language.zh_CN)
-            self.symbol_names =dict(symbol_names)
+            self.symbol_names = dict(self.quote_client.get_symbol_names(lang=Language.zh_CN))
         except ApiException:
             self.write_log("行情接口连接失败")
             return
@@ -220,15 +215,17 @@ class TigerGateway(BaseGateway):
         self.write_log("推送接口连接成功")
 
     def subscribe(self, req: SubscribeRequest):
-        """"""        
+        """"""
+        symbol = convert_symbol_vt2tiger(req.symbol, req.exchange)
         self.push_client.subscribe_quote([req.symbol])
-        # self.push_client.subscribe_asset()
+        #self.push_client.subscribe_asset()
         # self.push_client.subscribe_position()
-        # self.push_client.subscribe_order()
+        #self.push_client.subscribe_order()
 
     def on_quote_change(self, symbol: str, data: list, trading: bool):
         symbol, exchange = convert_symbol_tiger2vt(symbol)
         name = self.symbol_names[symbol]
+        data = dict(data)
 
         tick = self.ticks.get(symbol, None)
         if not tick:
@@ -242,33 +239,50 @@ class TigerGateway(BaseGateway):
             self.ticks[symbol] = tick
             
         tick.datetime = datetime.now()
-        tick.open_price = data[5][1]
-        tick.high_price = data[2][1]
-        tick.low_price = data[4][1]
-        tick.pre_close = data[3][1]
-        tick.last_price = data[0][1]
-        tick.volume = data[1][1]
+
+        tick.pre_close = data.get("prev_close",0)
+        tick.last_price = data.get("latest_price",0)
+        tick.volume = data.get("volume", 0)
+        tick.open_price = data.get("open", 0)
+
+        tick.open_price = data.get("open", 0)  #美股无
+        tick.high_price = data.get("high", 0)  # 美股无
+        tick.low_price = data.get("low", 0) # 美股无
+
+
+        tick.ask_price_1=data.get("ask_price", 0) # A股/港股无
+        tick.bid_price_1=data.get("bid_price", 0)  # A股/港股无
+        tick.ask_volume_1=data.get("ask_size", 0) # A股/港股无
+        tick.bid_volume_1=data.get("bid_size", 0)  # A股/港股无
 
         self.on_tick(copy(tick))
 
-    def on_asset_changed(self, account: str, data: list):
+    
+
+    def on_asset_changed(self, account:str, data:list):
         """"""
-        print("账号", data)
-                    
+
+        #print("账号", data)
+        data = dict(data)
+                        
+
         account = AccountData(
             accountid=account,
-            balance=data[7][1],
+            balance=data["net_liquidation"],
             frozen=0.0,
             gateway_name=self.gateway_name,
         )
         self.on_account(account) 
 
-    def on_position_changed(self, account: str, data: list):
-        """"""
-        print("持仓", data)
+        
 
-        symbol = data[3][1]
-        volume = data[5][1]
+    def on_position_changed(self, account:str, data:list):
+        """"""
+        #print ("持仓", data)
+        data = dict(data)
+
+        symbol = data["origin_symbol"]
+        volume = data["quantity"]
         # 判断方向
         if volume > 0:
             direction = Direction.LONG
@@ -283,37 +297,61 @@ class TigerGateway(BaseGateway):
             direction=direction,
             volume=volume,
             frozen=0.0,
-            price=data[0][1],
-            pnl=data[4][1],
+            price=data["average_cost"],
+            pnl=data["unrealized_pnl"],
             gateway_name=self.gateway_name,
+
         )
         self.on_position(pos)
+
+
+
     
     def on_order_changed(self, account: str, data: list):
         """"""
-        print("委托", data)
-        symbol = data[6][1]
-        volume = data[7][1]
-        if volume > 0:
-            direction = Direction.LONG
-        else:
-            direction = Direction.SHORT
+        #print("委托", data)
+        data = dict(data)
+        symbol = data["origin_symbol"]
+        volume = data["quantity"]
 
         symbol, exchange = convert_symbol_tiger2vt(symbol)
+
+        if data["order_type"] == "LMT":
+            price = data["limit_price"]
+        else:
+            price = 0
+
         
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
-            orderid=data[2][1],
-            direction=direction,
-            price=data[8][1],
+            orderid=data["order_id"],
+            direction=DIRECTION_TIGER2VT[data["action"]],
+            price=price,
             volume=volume,
-            traded=data[4][1],
-            status=None,
-            time=datetime.now(),
+            traded=data["filled"],
+            status=PUSH_STATUS_TIGER2VT[data["status"]],
+            time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data["order_time"] / 1000)).split(" ")[-1],
             gateway_name=self.gateway_name,
         )
         self.on_order(order)
+
+        trade = TradeData(
+            symbol=symbol,
+            exchange=exchange,
+            direction=DIRECTION_TIGER2VT[data["action"]],
+            tradeid=data["order_id"],
+            orderid=data["order_id"],
+            price=data["avg_fill_price"],
+            volume=data["filled"],
+            time=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(data["trade_time"] / 1000)).split(" ")[-1],
+            gateway_name=self.gateway_name,
+        )
+        self.on_trade(trade)
+
+
+
+
 
     def send_order(self, req: OrderRequest):
         """"""
@@ -485,8 +523,8 @@ class TigerGateway(BaseGateway):
                 direction=direction,
                 volume=volume,
                 frozen=0.0,
-                price=float(i.market_price),  # market_price = 0.0
-                pnl=float(i.average_cost),  # 未知？？
+                price=float(i.average_cost),  
+                pnl=float(i.unrealized_pnl),  
                 gateway_name=self.gateway_name,
             )
 
@@ -523,6 +561,7 @@ class TigerGateway(BaseGateway):
                 price = i.limit_price
             else:
                 price = 0
+
 
             order = OrderData(
                 symbol=symbol,
