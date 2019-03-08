@@ -39,10 +39,6 @@ class OesGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        return self._connect_async(setting)
-
-    def _connect_sync(self, setting: dict):
-        """"""
         if not setting['password'].startswith("md5:"):
             setting['password'] = "md5:" + hashlib.md5(setting['password'].encode()).hexdigest()
 
@@ -67,14 +63,10 @@ class OesGateway(BaseGateway):
                                              log_path=log_path)
             f.write(content)
 
-        self.md_api.config_path = config_path
-        self.md_api.username = username
-        self.md_api.password = password
-        if self.md_api.connect():
-            self.md_api.start()
-        else:
-            self.write_log(_("无法连接到行情服务器，请检查你的配置"))
+        Thread(target=self._connect_md_sync, args=(config_path, username, password)).start()
+        Thread(target=self._connect_td_sync, args=(config_path, username, password)).start()
 
+    def _connect_td_sync(self, config_path, username, password):
         self.td_api.config_path = config_path
         self.td_api.username = username
         self.td_api.password = password
@@ -89,9 +81,14 @@ class OesGateway(BaseGateway):
         else:
             self.write_log(_("无法连接到交易服务器，请检查你的配置"))
 
-    def _connect_async(self, setting: dict):
-        """"""
-        Thread(target=self._connect_sync, args=(setting,)).start()
+    def _connect_md_sync(self, config_path, username, password):
+        self.md_api.config_path = config_path
+        self.md_api.username = username
+        self.md_api.password = password
+        if self.md_api.connect():
+            self.md_api.start()
+        else:
+            self.write_log(_("无法连接到行情服务器，请检查你的配置"))
 
     def subscribe(self, req: SubscribeRequest):
         """"""
