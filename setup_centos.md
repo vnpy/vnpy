@@ -8,7 +8,8 @@
      # 1.1 安装系列开发环境：
     # cmake
     yum install cmake
-
+    yum install gcc gcc-c++ libboost*
+    
     # 安装解压包支持
 	yum install bzip2.x86_64
 
@@ -60,7 +61,7 @@
 
 	改名 mv download boost_1_66_0.tar.gz
 
-	解压 tar -xvzf boost_1_66_0.tar.gz
+	解压 tar xvzf boost_1_66_0.tar.gz
 
 	cd boost_1_66_0/
 
