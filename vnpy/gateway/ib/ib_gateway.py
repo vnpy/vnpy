@@ -405,12 +405,17 @@ class IbApi(EWrapper):
             accountName,
         )
 
+        ib_size = contract.multiplier
+        if not ib_size:
+            ib_size = 1
+        price = averageCost / ib_size
+
         pos = PositionData(
             symbol=contract.conId,
             exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
             direction=Direction.NET,
             volume=position,
-            price=averageCost,
+            price=price,
             pnl=unrealizedPNL,
             gateway_name=self.gateway_name,
         )

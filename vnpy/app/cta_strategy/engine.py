@@ -127,6 +127,8 @@ class CtaEngine(BaseEngine):
         symbol, exchange_str = vt_symbol.split(".")
         if symbol.upper() not in self.rq_symbols:
             return None
+        
+        end += timedelta(1)     # For querying night trading period data
 
         df = self.rq_client.get_price(
             symbol.upper(),
@@ -271,7 +273,7 @@ class CtaEngine(BaseEngine):
         req = OrderRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
-            dierction=direction,
+            direction=direction,
             offset=offset,
             price_type=PriceType.LIMIT,
             price=price,
@@ -331,7 +333,7 @@ class CtaEngine(BaseEngine):
             return
 
         req = order.create_cancel_request()
-        self.main_engine.cancel_limit_order(req, order.gateway_name)
+        self.main_engine.cancel_order(req, order.gateway_name)
 
     def cancel_stop_order(self, strategy: CtaTemplate, stop_orderid: str):
         """

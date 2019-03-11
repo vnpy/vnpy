@@ -77,11 +77,11 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str):
+    def write_log(self, msg: str, source: str = ""):
         """
         Put log event with specific message.
         """
-        log = LogData(msg=msg)
+        log = LogData(msg=msg, gateway_name=source)
         event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
 
@@ -295,7 +295,6 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_order = self.get_order
         self.main_engine.get_position = self.get_position
         self.main_engine.get_account = self.get_account
-        self.main_engine.get_contract = self.get_contract
         self.main_engine.get_contract = self.get_contract
         self.main_engine.get_all_ticks = self.get_all_ticks
         self.main_engine.get_all_orders = self.get_all_orders
