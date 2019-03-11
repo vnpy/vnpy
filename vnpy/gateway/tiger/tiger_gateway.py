@@ -88,9 +88,9 @@ PUSH_STATUS_TIGER2VT = {
 class TigerGateway(BaseGateway):
     """"""
     default_setting = {               
-        "tiger_id": "20150008",
-        "account": "DU575568",
-        "standard_account": "DU575568"
+        "tiger_id": "",
+        "account": "",
+        "standard_account": "",
     }
 
     def __init__(self, event_engine):
