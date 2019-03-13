@@ -401,9 +401,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
                 continue
             status = symbol_dict.get("status", None)
             if status == "TRADING":
+
                 filters = symbol_dict["filters"]
-                price_filter = filters[0]
-                volume_filter = filters[1]
 
                 contract = VtContractData()
                 contract.gatewayName = self.gatewayName
@@ -411,10 +410,14 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
                 contract.exchange = EXCHANGE_BINANCE
                 contract.vtSymbol = contract.symbol 
                 contract.name = u"现货" + contract.vtSymbol
-                contract.size = float(volume_filter["stepSize"])
-                contract.priceTick = float(price_filter["tickSize"])
                 contract.productClass = PRODUCT_SPOT
-                contract.volumeTick = float(volume_filter["minQty"])
+                for filter in filters:
+                    filter_type = filter.get('filterType',None)
+                    if filter_type == 'PRICE_FILTER':
+                        contract.priceTick = float(filter.get("tickSize",0.001))
+                    elif filter_type == 'LOT_SIZE':
+                        contract.size = float(filter.get('stepSize',1))
+                        contract.volumeTick = float(filter.get("minQty",0.01))
 
                 self.gateway.onContract(contract)
 
@@ -478,6 +481,15 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
             tick.datetime , tick.date , tick.time = self.generateDateTime( float(msg["E"]))
             utc_dt = datetime.utcfromtimestamp( float(msg["E"])/1e3)
             tick.tradingDay = utc_dt.strftime('%Y-%m-%d')
+
+            if tick.lastPrice == 0 and tick.askPrice1 != 0 and tick.bidPrice1 != 0:
+                tick.lastPrice = (tick.askPrice1 + tick.bidPrice1) / 2
+
+            if tick.lastPrice == 0 or tick.askPrice1 == 0 or tick.bidPrice1 == 0:
+                print('onAllTicker drop tick {},lastprice:{},askprice1={},bidPrice1:{}'
+                      .format(tick.vtSymbol,tick.lastPrice,tick.askPrice1,tick.bidPrice1))
+                return
+
             self.gateway.onTick(tick)
 
     #----------------------------------------------------------------------
@@ -550,6 +562,7 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
     def onDepth(self, msg):
         upper_symbol = msg.get('s',None)
         if upper_symbol is None:
+            self.gateway.writeLog('no s in msg:{}'.format(msg))
             return
         symbol_pair = systemSymbolToVnSymbol(upper_symbol)
         first_update_id = msg["U"]
@@ -560,7 +573,7 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
 
         all_keys = self.symbol_real_depth_dict.keys()
 
-        # print "onDepth"
+        #print("onDepth:\n{}\n".format(msg))
         # 判断是否已经 读取过历史数据
         if symbol_pair in all_keys:
             # print "if symbol_pair in all_keys:"
@@ -570,7 +583,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
             last_event_id = info["last_event_id"]
             if int(last_event_id) + 1 >= int(first_update_id) and int(last_event_id) < int(final_update_id):
                 for b_arr in bids:
-                    price , volume , tmp_arr = b_arr
+                    #price , volume , tmp_arr = b_arr
+                    price, volume = b_arr
                     price = float(price)
                     volume = float(volume)
                     if volume > 0:
@@ -579,7 +593,8 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
                         if price in depth_dict_bids.keys():
                             del depth_dict_bids[price]
                 for a_arr in asks:
-                    price , volume , tmp_arr = a_arr
+                    #price , volume , tmp_arr = a_arr
+                    price, volume = a_arr
                     price = float(price)
                     volume = float(volume)
                     if volume > 0:
@@ -632,8 +647,9 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
             (tick.bidPrice4, tick.bidVolume4)  = arr[-4] if arr_len >=4 else (0,0)
             (tick.bidPrice5, tick.bidVolume5)  = arr[-5] if arr_len >=5 else (0,0)
         except Exception as ex:
+
             self.gateway.writeError(u'OnDepth Exception:{}'.format(str(ex)))
-            self.gateway.writeLog(u'OnDepth {}'.format(traceback.format_exc()))
+            self.gateway.writeLog(u'OnDepth exception, msg:{} \n trace: {}'.format(msg,traceback.format_exc()))
 
         try:
             arr = sorted(depth_dict_asks.items(), key=lambda x: x[0])
@@ -646,12 +662,20 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
             (tick.askPrice5, tick.askVolume5)  = arr[4] if arr_len >=5 else (0,0)
         except Exception as ex:
             self.gateway.writeError(u'OnDepth Exception:{}'.format(str(ex)))
-            self.gateway.writeLog(u'OnDepth {}'.format(traceback.format_exc()))
+            self.gateway.writeLog(u'OnDepth exception, msg:{} \n trace: {}'.format(msg,traceback.format_exc()))
 
         tick.datetime , tick.date, tick.time = self.generateDateTime(uu_time_stamp)
         utc_dt = datetime.utcfromtimestamp(float(uu_time_stamp)/ 1e3)
         tick.tradingDay = utc_dt.strftime('%Y-%m-%d')
         # print tick.__dict__
+        if tick.lastPrice == 0 and tick.askPrice1!=0 and tick.bidPrice1!=0:
+            tick.lastPrice = (tick.askPrice1 + tick.bidPrice1)/2
+
+        if tick.lastPrice == 0 or tick.askPrice1 == 0 or tick.bidPrice1 == 0:
+            self.gateway.writeLog('onDepth drop tick {},lastprice:{},askprice1={},bidPrice1:{}'
+                  .format(tick.vtSymbol, tick.lastPrice, tick.askPrice1, tick.bidPrice1))
+            return
+
         self.gateway.onTick(tick)
         #self.gateway.onTick(copy(tick))
 
@@ -665,12 +689,14 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
         bids = data["bids"]
         asks = data["asks"]
         for b_arr in bids:
-            price , volume , tmp_arr = b_arr
+            #price , volume , tmp_arr = b_arr
+            price, volume = b_arr
             price = float(price)
             volume = float(volume)
             depth_dict_bids[price] = volume
         for a_arr in asks:
-            price , volume , tmp_arr = a_arr
+            #price , volume , tmp_arr = a_arr
+            price, volume = a_arr
             price = float(price)
             volume = float(volume)
             depth_dict_asks[price] = volume
@@ -683,13 +709,15 @@ print ex.status_code, ex.message , ex.code , ex.request , ex.uri , ex.kwargs
                 bids = msg["b"]
                 asks = msg["a"]
                 for b_arr in bids:
-                    price , volume , tmp_arr = b_arr
+                    #price , volume , tmp_arr = b_arr
+                    price, volume = b_arr
                     price = float(price)
                     volume = float(volume)
                     if volume > 0:
                         depth_dict_bids[price] = volume
                 for a_arr in asks:
-                    price , volume , tmp_arr = a_arr
+                    #price , volume , tmp_arr = a_arr
+                    price, volume = a_arr
                     price = float(price)
                     volume = float(volume)
                     if volume > 0:
