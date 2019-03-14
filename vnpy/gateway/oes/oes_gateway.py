@@ -69,7 +69,13 @@ class OesGateway(BaseGateway):
                                              log_path=log_path)
             f.write(content)
 
+        self.md_api.tcp_server = setting['md_tcp_server']
+        self.md_api.qry_server = setting['md_qry_server']
         Thread(target=self._connect_md_sync, args=(config_path, username, password)).start()
+
+        self.td_api.ord_server = setting['td_ord_server']
+        self.td_api.rpt_server = setting['td_rpt_server']
+        self.td_api.qry_server = setting['td_qry_server']
         Thread(target=self._connect_td_sync, args=(config_path, username, password)).start()
 
     def _connect_td_sync(self, config_path, username, password):

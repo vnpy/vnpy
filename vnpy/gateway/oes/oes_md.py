@@ -5,14 +5,15 @@ from threading import Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
 
-from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitAllByConvention, \
-    MdsApi_IsValidQryChannel, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
+from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitLogger, \
+    MdsApi_InitTcpChannel2, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
     MdsApi_SetThreadUsername, MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, \
-    MdsMktDataRequestEntryT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, \
-    SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, cast, \
+    MdsMktDataRequestEntryT, MdsMktDataRequestReqBufT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, \
+    MdsStockSnapshotBodyT, SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, cast, \
     eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
-    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT
+    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eMdsSubscribedTickTypeT, eSMsgProtocolTypeT
 
+from vnpy.gateway.oes.utils import create_remote_config
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import SubscribeRequest, TickData
@@ -36,7 +37,7 @@ class OesMdMessageLoop:
         self._md = md
         self._th = Thread(target=self._message_loop)
 
-        self.message_handlers: Dict[int, Callable[[dict], None]] = {
+        self.message_handlers: Dict[eMdsMsgTypeT, Callable[[MdsMktRspMsgBodyT], int]] = {
             # tick & orderbook
             eMdsMsgTypeT.MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: self.on_market_full_refresh,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: self.on_l2_market_data_snapshot,
@@ -65,8 +66,9 @@ class OesMdMessageLoop:
 
     def start(self):
         """"""
-        self._alive = True
-        self._th.start()
+        if not self._alive:  # not thread-safe
+            self._alive = True
+            self._th.start()
 
     def stop(self):
         """"""
@@ -212,6 +214,9 @@ class OesMdApi:
         """"""
         self.gateway = gateway
         self.config_path: str = ''
+        self.tcp_server: str = ''
+        self.qry_server: str = ''
+
         self.username: str = ''
         self.password: str = ''
 
@@ -223,15 +228,31 @@ class OesMdApi:
         """Connect to trading server.
         :note set config_path before calling this function
         """
+        MdsApi_InitLogger(self.config_path, "log")
+
         MdsApi_SetThreadUsername(self.username)
         MdsApi_SetThreadPassword(self.password)
 
-        config_path = self.config_path
-        if not MdsApi_InitAllByConvention(self._env, config_path):
+        info = MdsMktDataRequestReqBufT()
+        info.mktDataRequestReq.subMode = eMdsSubscribeModeT.MDS_SUB_MODE_SET
+        info.mktDataRequestReq.tickType = eMdsSubscribedTickTypeT.MDS_TICK_TYPE_LATEST_SIMPLIFIED
+        info.mktDataRequestReq.isRequireInitialMktData = True
+        info.mktDataRequestReq.tickExpireType = eMdsSubscribedTickExpireTypeT.MDS_TICK_EXPIRE_TYPE_TIMELY
+        info.mktDataRequestReq.dataTypes = (eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L1_SNAPSHOT
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_SNAPSHOT
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_BEST_ORDERS
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_TRADE
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_ORDER
+                                            )
+        info.mktDataRequestReq.beginTime = 0
+        info.mktDataRequestReq.subSecurityCnt = 0
+        if not MdsApi_InitTcpChannel2(self._env.tcpChannel,
+                                      create_remote_config(server=self.tcp_server,
+                                                           username=self.username,
+                                                           password=self.password),
+                                      info):
             return False
         if not MdsApi_IsValidTcpChannel(self._env.tcpChannel):
-            return False
-        if not MdsApi_IsValidQryChannel(self._env.qryChannel):
             return False
         return True
 

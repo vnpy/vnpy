@@ -5,18 +5,21 @@ from threading import Lock, Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
 
-from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApi_DestoryAll, OesApi_InitAllByConvention, \
-    OesApi_IsValidOrdChannel, OesApi_IsValidQryChannel, OesApi_IsValidRptChannel, OesApi_LogoutAll, \
-    OesApi_QueryCashAsset, OesApi_QueryOptHolding, OesApi_QueryOption, OesApi_QueryOrder, \
-    OesApi_QueryStkHolding, OesApi_QueryStock, OesApi_SendOrderCancelReq, OesApi_SendOrderReq, \
-    OesApi_SetThreadPassword, OesApi_SetThreadUsername, OesApi_WaitReportMsg, OesOrdCancelReqT, \
-    OesOrdCnfmT, OesOrdRejectT, OesOrdReqT, OesQryCashAssetFilterT, OesQryCursorT, \
-    OesQryOptionFilterT, OesQryOrdFilterT, OesQryStkHoldingFilterT, OesQryStockFilterT, \
-    OesRspMsgBodyT, OesStockBaseInfoT, OesTrdCnfmT, SGeneralClientChannelT, SMSG_PROTO_BINARY, \
-    SMsgHeadT, SPlatform_IsNegEpipe, cast, eOesBuySellTypeT, eOesMarketIdT, \
-    eOesMsgTypeT, eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT
+from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_DestoryAll, \
+    OesApi_InitLogger, OesApi_InitOrdChannel2, OesApi_InitQryChannel2, OesApi_InitRptChannel2, \
+    OesApi_IsValidOrdChannel, OesApi_IsValidQryChannel, OesApi_LogoutAll, OesApi_QueryCashAsset, \
+    OesApi_QueryOptHolding, OesApi_QueryOption, OesApi_QueryOrder, OesApi_QueryStkHolding, \
+    OesApi_QueryStock, OesApi_SendOrderCancelReq, OesApi_SendOrderReq, OesApi_SetThreadPassword, \
+    OesApi_SetThreadUsername, OesApi_WaitReportMsg, OesOrdCancelReqT, OesOrdCnfmT, OesOrdRejectT, \
+    OesOrdReqT, OesQryCashAssetFilterT, OesQryCursorT, OesQryOptionFilterT, OesQryOrdFilterT, \
+    OesQryStkHoldingFilterT, OesQryStockFilterT, OesRspMsgBodyT, OesStockBaseInfoT, OesTrdCnfmT, \
+    SGeneralClientChannelT, SMSG_PROTO_BINARY, SMsgHeadT, SPlatform_IsNegEpipe, cast, \
+    eOesBuySellTypeT, eOesMarketIdT, eOesMsgTypeT, eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT, \
+    eOesSubscribeReportTypeT, OesApi_SetCustomizedDriverId, OesApi_GetCustomizedDriverId, \
+    OesApi_InitAllByConvention
 
 from vnpy.gateway.oes.error_code import error_to_str
+from vnpy.gateway.oes.utils import create_remote_config
 from vnpy.trader.constant import Direction, Exchange, Offset, PriceType, Product, Status
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, \
@@ -125,7 +128,7 @@ class OesTdMessageLoop:
         self._alive = False
         self._th = Thread(target=self._message_loop)
 
-        self.message_handlers: Dict[int, Callable[[dict], None]] = {
+        self.message_handlers: Dict[eOesMsgTypeT, Callable[[OesRspMsgBodyT], int]] = {
             eOesMsgTypeT.OESMSG_RPT_BUSINESS_REJECT: self.on_order_rejected,
             eOesMsgTypeT.OESMSG_RPT_ORDER_INSERT: self.on_order_inserted,
             eOesMsgTypeT.OESMSG_RPT_ORDER_REPORT: self.on_order_report,
@@ -140,8 +143,9 @@ class OesTdMessageLoop:
 
     def start(self):
         """"""
-        self._alive = True
-        self._th.start()
+        if not self._alive:  # not thread-safe
+            self._alive = True
+            self._th.start()
 
     def stop(self):
         """"""
@@ -196,7 +200,11 @@ class OesTdMessageLoop:
         error_string = error_to_str(error_code)
         data: OesOrdRejectT = d.rptMsg.rptBody.ordRejectRsp
         if not data.origClSeqNo:
-            i = self._td.get_order(data.clSeqNo)
+            try:
+                i = self._td.get_order(data.clSeqNo)
+            except KeyError:  # todo: check why KeyError at startup
+                # maybe I should find a way to disable subscription of orders at startup
+                return
             vt_order = i.vt_order
 
             if vt_order == Status.ALLTRADED:
@@ -255,13 +263,13 @@ class OesTdMessageLoop:
             gateway_name=self.gateway.gateway_name,
             symbol=data.securityId,
             exchange=EXCHANGE_OES2VT[data.mktId],
-            orderid=data.userInfo,
-            tradeid=data.exchTrdNum,
+            orderid=str(data.clSeqNo),
+            tradeid=str(data.exchTrdNum),
             direction=vt_order.direction,
             offset=vt_order.offset,
             price=data.trdPrice / 10000,
             volume=data.trdQty,
-            time=parse_oes_datetime(data.trdDate, data.trdTime)
+            time=parse_oes_datetime(data.trdDate, data.trdTime).isoformat()
         )
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.traded = data.cumQty
@@ -312,8 +320,11 @@ class OesTdApi:
 
     def __init__(self, gateway: BaseGateway):
         """"""
-        self.config_path: str = None
+        self.config_path: str = ''
         self.username: str = ''
+        self.ord_server: str = ''
+        self.qry_server: str = ''
+        self.rpt_server: str = ''
         self.password: str = ''
         self.gateway = gateway
 
@@ -332,19 +343,50 @@ class OesTdApi:
         """Connect to trading server.
         :note set config_path before calling this function
         """
+        OesApi_InitLogger(self.config_path, 'log')
         OesApi_SetThreadUsername(self.username)
         OesApi_SetThreadPassword(self.password)
 
-        config_path = self.config_path
-        if not OesApi_InitAllByConvention(self._env, config_path, -1, self._last_seq_index):
+        hdd_id = ""  # todo: get hdd_id if necessary
+        OesApi_SetCustomizedDriverId(hdd_id)
+
+        OesApi_InitAllByConvention(self._env, self.config_path, -1, 0)
+
+        if (not OesApi_InitOrdChannel2(self._env.ordChannel,
+                                       create_remote_config(self.ord_server,
+                                                            self.username,
+                                                            self.password),
+                                       0)
+            or not OesApi_IsValidOrdChannel(self._env.ordChannel)):
+            self.gateway.write_log(_("无法初始化交易下单通道(td_ord_server)"))
             return False
         self._last_seq_index = max(self._last_seq_index, self._env.ordChannel.lastOutMsgSeq + 1)
+        if (not OesApi_InitQryChannel2(self._env.qryChannel,
+                                       create_remote_config(self.qry_server,
+                                                            self.username,
+                                                            self.password))
+            or not OesApi_IsValidQryChannel(self._env.qryChannel)):
+            self.gateway.write_log(_("无法初始化交易查询通道(td_qry_server)"))
+            return False
 
-        if not OesApi_IsValidOrdChannel(self._env.ordChannel):
-            return False
-        if not OesApi_IsValidQryChannel(self._env.qryChannel):
-            return False
-        if not OesApi_IsValidRptChannel(self._env.rptChannel):
+        subscribe_info = OesApiSubscribeInfoT()
+        subscribe_info.clEnvId = 0
+        subscribe_info.rptTypes = (eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_BUSINESS_REJECT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_ORDER_INSERT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_ORDER_REPORT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_TRADE_REPORT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_FUND_TRSF_REPORT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_HOLDING_VARIATION
+                                   )
+        if (not OesApi_InitRptChannel2(self._env.rptChannel,
+                                       create_remote_config(self.rpt_server,
+                                                            self.username,
+                                                            self.password),
+                                       subscribe_info,
+                                       0)
+            or not OesApi_IsValidQryChannel(self._env.qryChannel)):
+            self.gateway.write_log(_("无法初始化交易查询通道(td_qry_server)"))
             return False
         return True
 
@@ -489,7 +531,6 @@ class OesTdApi:
         """"""
         f = OesQryStkHoldingFilterT()
         f.mktId = eOesMarketIdT.OES_MKT_ID_UNDEFINE
-        f.userInfo = 0
         ret = OesApi_QueryOptHolding(self._env.qryChannel,
                                      f,
                                      self.on_query_holding
@@ -658,7 +699,7 @@ class OesTdApi:
                 gateway_name=self.gateway.gateway_name,
                 symbol=data.securityId,
                 exchange=EXCHANGE_OES2VT[data.mktId],
-                orderid=order_id if order_id else data.origClSeqNo,  # generated id
+                orderid=str(order_id if order_id else data.origClSeqNo),  # generated id
                 direction=Direction.NET,
                 offset=offset,
                 price=data.ordPrice / 10000,
