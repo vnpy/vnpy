@@ -25,6 +25,7 @@ from vnpy.api.ctp import (
     THOST_FTDC_OFEN_CloseToday,
     THOST_FTDC_PC_Futures,
     THOST_FTDC_PC_Options,
+    THOST_FTDC_PC_Combination,
     THOST_FTDC_CP_CallOptions,
     THOST_FTDC_CP_PutOptions,
     THOST_FTDC_HF_Speculation,
@@ -102,7 +103,8 @@ EXCHANGE_CTP2VT = {
 
 PRODUCT_CTP2VT = {
     THOST_FTDC_PC_Futures: Product.FUTURES,
-    THOST_FTDC_PC_Options: Product.OPTION
+    THOST_FTDC_PC_Options: Product.OPTION,
+    THOST_FTDC_PC_Combination: Product.SPREAD
 }
 
 OPTIONTYPE_CTP2VT = {
@@ -533,28 +535,26 @@ class CtpTdApi(TdApi):
         Callback of instrument query.
         """
         product = PRODUCT_CTP2VT.get(data["ProductClass"], None)
-        if not product:
-            return
-
-        contract = ContractData(
-            symbol=data["InstrumentID"],
-            exchange=EXCHANGE_CTP2VT[data["ExchangeID"]],
-            name=data["InstrumentName"],
-            product=product,
-            size=data["VolumeMultiple"],
-            pricetick=data["PriceTick"],
-            option_underlying=data["UnderlyingInstrID"],
-            option_type=OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-            option_strike=data["StrikePrice"],
-            option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
-            gateway_name=self.gateway_name
-        )
-        
-        self.gateway.on_contract(contract)
-        
-        symbol_exchange_map[contract.symbol] = contract.exchange
-        symbol_name_map[contract.symbol] = contract.name
-        symbol_size_map[contract.symbol] = contract.size
+        if product:            
+            contract = ContractData(
+                symbol=data["InstrumentID"],
+                exchange=EXCHANGE_CTP2VT[data["ExchangeID"]],
+                name=data["InstrumentName"],
+                product=product,
+                size=data["VolumeMultiple"],
+                pricetick=data["PriceTick"],
+                option_underlying=data["UnderlyingInstrID"],
+                option_type=OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
+                option_strike=data["StrikePrice"],
+                option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
+                gateway_name=self.gateway_name
+            )
+            
+            self.gateway.on_contract(contract)
+            
+            symbol_exchange_map[contract.symbol] = contract.exchange
+            symbol_name_map[contract.symbol] = contract.name
+            symbol_size_map[contract.symbol] = contract.size
         
         if last:
             self.gateway.write_log("合约信息查询成功")

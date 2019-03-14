@@ -50,6 +50,7 @@ class Product(Enum):
     ETF = "ETF"
     BOND = "债券"
     WARRANT = "权证"
+    SPREAD = "价差"
 
 
 class PriceType(Enum):
