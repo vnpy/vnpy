@@ -10,5 +10,4 @@ matplotlib
 seaborn
 jupyter
 ta-lib; platform_system=="Unix"
-http://conda.vnpy.com/pip/wheels/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl; platform_system=="Windows"
 
