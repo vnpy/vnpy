@@ -6,16 +6,16 @@ from datetime import datetime
 from queue import Empty
 from threading import Thread
 
-from ibapi import comm
-from ibapi.client import EClient
-from ibapi.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
-from ibapi.contract import Contract, ContractDetails
-from ibapi.execution import Execution
-from ibapi.order import Order
-from ibapi.order_state import OrderState
-from ibapi.ticktype import TickType
-from ibapi.wrapper import EWrapper
-from ibapi.errors import BAD_LENGTH
+from vnpy.api.ib import comm
+from vnpy.api.ib.client import EClient
+from vnpy.api.ib.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
+from vnpy.api.ib.contract import Contract, ContractDetails
+from vnpy.api.ib.execution import Execution
+from vnpy.api.ib.order import Order
+from vnpy.api.ib.order_state import OrderState
+from vnpy.api.ib.ticktype import TickType
+from vnpy.api.ib.wrapper import EWrapper
+from vnpy.api.ib.errors import BAD_LENGTH
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
