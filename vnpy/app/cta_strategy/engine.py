@@ -301,17 +301,15 @@ class CtaEngine(BaseEngine):
         Send a new order.
         """
         self.stop_order_count += 1
-        direction, offset = ORDER_CTA2VT[order_type]
         stop_orderid = f"{STOPORDER_PREFIX}.{self.stop_order_count}"
 
         stop_order = StopOrder(
             vt_symbol=strategy.vt_symbol,
-            direction=direction,
-            offset=offset,
+            order_type=order_type,
             price=price,
             volume=volume,
             stop_orderid=stop_orderid,
-            strategy_name=strategy.strategy_name,
+            strategy_name=strategy.strategy_name
         )
 
         self.stop_orders[stop_orderid] = stop_order
