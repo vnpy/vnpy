@@ -8,9 +8,13 @@ import zmq
 from msgpack import packb, unpackb
 from json import dumps, loads
 
-import cPickle
-pDumps = cPickle.dumps
-pLoads = cPickle.loads
+try:
+    from cPickle import Pickler, Unpickler
+except ImportError:
+    from pickle import Pickler, Unpickler
+
+pDumps = Pickler.dump
+pLoads = Pickler.load
 
 
 # 实现Ctrl-c中断recv
