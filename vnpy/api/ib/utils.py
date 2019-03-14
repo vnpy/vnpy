@@ -1,3 +1,7 @@
+from .common import UNSET_INTEGER, UNSET_DOUBLE
+import inspect
+import logging
+import sys
 """
 Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
 and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
@@ -7,13 +11,6 @@ and conditions of the IB API Non-Commercial License or the IB API Commercial Lic
 """
 Collection of misc tools
 """
-
-
-import sys
-import logging
-import inspect
-
-from ibapi.common import UNSET_INTEGER, UNSET_DOUBLE
 
 
 logger = logging.getLogger(__name__)
@@ -37,27 +34,31 @@ class LogFunction(object):
     def __call__(self, fn):
         def newFn(origSelf, *args, **kwargs):
             if logger.getLogger().isEnabledFor(self.logLevel):
-                argNames = [argName for argName in inspect.getfullargspec(fn)[0] if argName != 'self']
+                argNames = [argName for argName in inspect.getfullargspec(fn)[
+                    0] if argName != 'self']
                 logger.log(self.logLevel,
-                    "{} {} {} kw:{}".format(self.text, fn.__name__,
-                        [nameNarg for nameNarg in zip(argNames, args) if nameNarg[1] is not origSelf], kwargs))
+                           "{} {} {} kw:{}".format(self.text, fn.__name__,
+                                                   [nameNarg for nameNarg in zip(argNames, args) if nameNarg[1] is not origSelf], kwargs))
             fn(origSelf, *args)
         return newFn
 
 
-def current_fn_name(parent_idx = 0):
-    #depth is 1 bc this is already a fn, so we need the caller
+def current_fn_name(parent_idx=0):
+    # depth is 1 bc this is already a fn, so we need the caller
     return sys._getframe(1 + parent_idx).f_code.co_name
 
 
 def setattr_log(self, var_name, var_value):
     #import code; code.interact(local=locals())
-    logger.debug("%s %s %s=|%s|", self.__class__, id(self), var_name, var_value)
+    logger.debug("%s %s %s=|%s|", self.__class__,
+                 id(self), var_name, var_value)
     super(self.__class__, self).__setattr__(var_name, var_value)
 
 
 SHOW_UNSET = True
-def decode(the_type, fields, show_unset = False):
+
+
+def decode(the_type, fields, show_unset=False):
     try:
         s = next(fields)
     except StopIteration:
@@ -71,7 +72,8 @@ def decode(the_type, fields, show_unset = False):
         elif type(s) is bytes:
             return s.decode()
         else:
-            raise TypeError("unsupported incoming type " + type(s) + " for desired type 'str")
+            raise TypeError("unsupported incoming type " +
+                            type(s) + " for desired type 'str")
 
     orig_type = the_type
     if the_type is bool:
@@ -84,7 +86,8 @@ def decode(the_type, fields, show_unset = False):
             elif the_type is int:
                 n = UNSET_INTEGER
             else:
-                raise TypeError("unsupported desired type for empty value" + the_type)
+                raise TypeError(
+                    "unsupported desired type for empty value" + the_type)
         else:
             n = the_type(s)
     else:
@@ -94,7 +97,6 @@ def decode(the_type, fields, show_unset = False):
         n = False if n == 0 else True
 
     return n
-
 
 
 def ExerciseStaticMethods(klass):
@@ -108,8 +110,6 @@ def ExerciseStaticMethods(klass):
             print(var())
             print()
 
+
 def floatToStr(val):
-    return str(val) if val != UNSET_DOUBLE else "";
-
-
-
+    return str(val) if val != UNSET_DOUBLE else ""

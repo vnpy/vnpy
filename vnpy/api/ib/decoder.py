@@ -12,20 +12,20 @@ It will call the corresponding method from the EWrapper so that customer's code
 
 import logging
 
-from ibapi import order_condition
-from ibapi.message import IN
-from ibapi.wrapper import * # @UnusedWildImport
-from ibapi.order import OrderComboLeg
-from ibapi.contract import ContractDescription
-from ibapi.contract import ComboLeg
-from ibapi.server_versions import * # @UnusedWildImport
-from ibapi.utils import * # @UnusedWildImport
-from ibapi.softdollartier import SoftDollarTier
-from ibapi.ticktype import * # @UnusedWildImport
-from ibapi.tag_value import TagValue
-from ibapi.scanner import ScanData
-from ibapi.errors import BAD_MESSAGE
-from ibapi.common import * # @UnusedWildImport
+from . import order_condition
+from .message import IN
+from .wrapper import * # @UnusedWildImport
+from .order import OrderComboLeg
+from .contract import ContractDescription
+from .contract import ComboLeg
+from .server_versions import * # @UnusedWildImport
+from .utils import * # @UnusedWildImport
+from .softdollartier import SoftDollarTier
+from .ticktype import * # @UnusedWildImport
+from .tag_value import TagValue
+from .scanner import ScanData
+from .errors import BAD_MESSAGE
+from .common import * # @UnusedWildImport
 
 
 logger = logging.getLogger(__name__)

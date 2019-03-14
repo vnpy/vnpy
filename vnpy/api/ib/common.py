@@ -5,8 +5,8 @@ and conditions of the IB API Non-Commercial License or the IB API Commercial Lic
 
 import sys
 
-from ibapi.enum_implem import Enum
-from ibapi.object_implem import Object
+from .enum_implem import Enum
+from .object_implem import Object
 
 
 NO_VALID_ID = -1

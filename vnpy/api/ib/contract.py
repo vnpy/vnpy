@@ -1,3 +1,4 @@
+from .object_implem import Object
 """
 Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
 and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
@@ -10,9 +11,6 @@ and conditions of the IB API Non-Commercial License or the IB API Commercial Lic
 	CLOSE_POS   = close
 	UNKNOWN_POS = unknown
 """
-
-
-from ibapi.object_implem import Object
 
 
 (SAME_POS, OPEN_POS, CLOSE_POS, UNKNOWN_POS) = range(4)
@@ -29,7 +27,6 @@ class ComboLeg(Object):
         self.shortSaleSlot = 0
         self.designatedLocation = ""
         self.exemptCode = -1
-
 
     def __str__(self):
         return ",".join((
@@ -66,7 +63,8 @@ class Contract(Object):
         self.right = ""
         self.multiplier = ""
         self.exchange = ""
-        self.primaryExchange = "" # pick an actual (ie non-aggregate) exchange that the contract trades on.  DO NOT SET TO SMART.
+        # pick an actual (ie non-aggregate) exchange that the contract trades on.  DO NOT SET TO SMART.
+        self.primaryExchange = ""
         self.currency = ""
         self.localSymbol = ""
         self.tradingClass = ""
@@ -74,11 +72,11 @@ class Contract(Object):
         self.secIdType = ""	  # CUSIP;SEDOL;ISIN;RIC
         self.secId = ""
 
-        #combos
-        self.comboLegsDescrip = ""  # type: str; received in open order 14 and up for all combos
+        # combos
+        # type: str; received in open order 14 and up for all combos
+        self.comboLegsDescrip = ""
         self.comboLegs = None     # type: list<ComboLeg>
         self.deltaNeutralContract = None
-
 
     def __str__(self):
         s = ",".join((
@@ -201,5 +199,3 @@ class ContractDescription(Object):
     def __init__(self):
         self.contract = Contract()
         self.derivativeSecTypes = None   # type: list of strings
-
-

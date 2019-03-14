@@ -1,3 +1,6 @@
+from . import comm
+from threading import Thread
+import logging
 """
 Copyright (C) 2018 Interactive Brokers LLC. All rights reserved. This code is subject to the terms
 and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable.
@@ -10,11 +13,6 @@ incoming messages.
 It will read the packets from the wire, use the low level IB messaging to
 remove the size prefix and put the rest in a Queue.
 """
-
-import logging
-from threading import Thread
-
-from ibapi import comm
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +36,7 @@ class EReader(Thread):
                 (size, msg, buf) = comm.read_msg(buf)
                 #logger.debug("resp %s", buf.decode('ascii'))
                 logger.debug("size:%d msg.size:%d msg:|%s| buf:%s|", size,
-                    len(msg), buf, "|")
+                             len(msg), buf, "|")
 
                 if msg:
                     self.msg_queue.put(msg)
@@ -47,5 +45,3 @@ class EReader(Thread):
                     break
 
         logger.debug("EReader thread finished")
-
-
