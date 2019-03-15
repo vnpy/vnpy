@@ -107,13 +107,17 @@ class WebsocketClient(object):
         """
         Send a text string to server.
         """
-        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+        ws = self._ws
+        if ws:
+            ws.send(text, opcode=websocket.ABNF.OPCODE_TEXT)
 
     def _send_binary(self, data: bytes):
         """
         Send bytes data to server.
         """
-        return self._get_ws()._send_binary(data)
+        ws = self._ws
+        if ws:
+            ws._send_binary(data)
 
     def _reconnect(self):
         """"""
@@ -143,11 +147,6 @@ class WebsocketClient(object):
                 self._ws.close()
                 self._ws = None
 
-    def _get_ws(self):
-        """"""
-        with self._ws_lock:
-            return self._ws
-
     def _run(self):
         """
         Keep running till stop is called.
@@ -158,7 +157,7 @@ class WebsocketClient(object):
             # todo: onDisconnect
             while self._active:
                 try:
-                    ws = self._get_ws()
+                    ws = self._ws
                     if ws:
                         text = ws.recv()
 
@@ -215,7 +214,7 @@ class WebsocketClient(object):
 
     def _ping(self):
         """"""
-        ws = self._get_ws()
+        ws = self._ws
         if ws:
             ws.send("ping", websocket.ABNF.OPCODE_PING)
 
