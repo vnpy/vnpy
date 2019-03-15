@@ -7,7 +7,6 @@ import traceback
 from datetime import datetime
 from threading import Lock, Thread
 from time import sleep
-from typing import Any
 
 import websocket
 
