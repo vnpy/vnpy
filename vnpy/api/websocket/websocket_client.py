@@ -7,6 +7,7 @@ import traceback
 from datetime import datetime
 from threading import Lock, Thread
 from time import sleep
+from typing import Any
 
 import websocket
 
@@ -23,13 +24,16 @@ class WebsocketClient(object):
 
     Default serialization format is json.
 
-    Callbacks to reimplement:
+    Callbacks to overrides:
+    * unpack_data
     * on_connected
     * on_disconnected
     * on_packet
     * on_error
 
     After start() is called, the ping thread will ping server every 60 seconds.
+
+    If you want to send anything other than JSON, override send_packet.
     """
 
     def __init__(self):
@@ -92,22 +96,24 @@ class WebsocketClient(object):
     def send_packet(self, packet: dict):
         """
         Send a packet (dict data) to server
+
+        override this if you want to send non-json packet
         """
         text = json.dumps(packet)
         self._record_last_sent_text(text)
-        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+        return self._send_text(text)
 
-    def send_text(self, text: str):
+    def _send_text(self, text: str):
         """
         Send a text string to server.
         """
         return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
 
-    def send_binary(self, data: bytes):
+    def _send_binary(self, data: bytes):
         """
         Send bytes data to server.
         """
-        return self._get_ws().send_binary(data)
+        return self._get_ws()._send_binary(data)
 
     def _reconnect(self):
         """"""
@@ -189,7 +195,7 @@ class WebsocketClient(object):
         """
         Default serialization format is json.
 
-        Reimplement this method if you want to use other serialization format.
+        override this method if you want to use other serialization format.
         """
         return json.loads(data)
 
