@@ -28,6 +28,7 @@ class OesGateway(BaseGateway):
         "md_qry_server": "",
         "username": "",
         "password": "",
+        "hdd_serial": "",
     }
 
     def __init__(self, event_engine):
@@ -76,6 +77,7 @@ class OesGateway(BaseGateway):
         self.td_api.ord_server = setting['td_ord_server']
         self.td_api.rpt_server = setting['td_rpt_server']
         self.td_api.qry_server = setting['td_qry_server']
+        self.td_api.hdd_serial = setting['hdd_serial']
         Thread(target=self._connect_td_sync, args=(config_path, username, password)).start()
 
     def _connect_td_sync(self, config_path, username, password):
