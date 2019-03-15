@@ -157,7 +157,7 @@ class OesTdMessageLoop:
     def reconnect(self):
         """"""
         self.gateway.write_log(_("正在尝试重新连接到交易服务器。"))
-        self._td.connect()
+        self._td.connect_rpt_channel()
 
     def _on_message(self, session_info: SGeneralClientChannelT,
                     head: SMsgHeadT,
@@ -336,7 +336,7 @@ class OesTdApi:
 
         self._last_seq_lock = Lock()
         self._last_seq_index = 1000000  # 0 has special manning for oes
-        self._reconnect_lock = Lock()
+        self._ord_reconnect_lock = Lock()
 
         self._orders: Dict[int, InternalOrder] = {}
 
@@ -354,7 +354,7 @@ class OesTdApi:
         if not self._connect_qry_channel():
             self.gateway.write_log(_("无法初始化交易查询通道(td_qry_server)"))
 
-        if not self._connect_rpt_channel():
+        if not self.connect_rpt_channel():
             self.gateway.write_log(_("无法初始化交易查询通道(td_qry_server)"))
         return True
 
@@ -401,7 +401,7 @@ class OesTdApi:
         self._last_seq_index = max(self._last_seq_index, self._env.ordChannel.lastOutMsgSeq + 1)
         return True
 
-    def _connect_rpt_channel(self):
+    def connect_rpt_channel(self):
         OesApi_SetThreadUsername(self.username)
         OesApi_SetThreadPassword(self.password)
 
@@ -423,7 +423,7 @@ class OesTdApi:
                                       0)
 
     def _reconnect_ord_channel(self):
-        with self._reconnect_lock:  # prevent spawning multiple reconnect thread
+        with self._ord_reconnect_lock:  # prevent spawning multiple reconnect thread
             self.gateway.write_log(_("正在重新连接到交易下单通道"))
             while not self._connect_ord_channel():
                 time.sleep(1)
@@ -431,8 +431,7 @@ class OesTdApi:
             self.gateway.write_log(_("成功重新连接到交易下单通道"))
 
     def _schedule_reconnect_ord_channel(self):
-        with self._reconnect_lock:
-            Thread(target=self._reconnect_ord_channel, ).start()
+        Thread(target=self._reconnect_ord_channel, ).start()
 
     def query_account(self):
         """"""
