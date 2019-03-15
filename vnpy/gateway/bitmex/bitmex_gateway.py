@@ -89,6 +89,7 @@ class BitmexGateway(BaseGateway):
                               server, proxy_host, proxy_port)
 
         self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
+        # websocket will push all account status on connected, including asset, position and orders.
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -279,7 +280,7 @@ class BitmexRestApi(RestClient):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_send_order(self, data, request):
-        """"""
+        """Websocket will push a new order status"""
         pass
 
     def on_cancel_order_error(
@@ -293,7 +294,7 @@ class BitmexRestApi(RestClient):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data, request):
-        """"""
+        """Websocket will push a new order status"""
         pass
 
     def on_failed(self, status_code: int, request: Request):
