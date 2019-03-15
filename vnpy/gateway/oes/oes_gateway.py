@@ -4,7 +4,7 @@
 import hashlib
 import os
 from gettext import gettext as _
-from threading import Thread, Lock
+from threading import Lock, Thread
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (CancelRequest, OrderRequest,

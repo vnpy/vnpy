@@ -1,6 +1,6 @@
 import os
 
-from vnpy.api.oes.vnoes import SGeneralClientRemoteCfgT, SGeneralClientAddrInfoT
+from vnpy.api.oes.vnoes import SGeneralClientRemoteCfgT
 
 mydir = os.path.dirname(__file__)
 config_template_path = os.path.join(mydir, "config_template.ini")
