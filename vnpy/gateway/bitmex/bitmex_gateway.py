@@ -62,7 +62,7 @@ class BitmexGateway(BaseGateway):
     default_setting = {
         "key": "",
         "secret": "",
-        "session": 3,
+        "session_number": 3,
         "server": ["REAL", "TESTNET"],
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
@@ -79,12 +79,12 @@ class BitmexGateway(BaseGateway):
         """"""
         key = setting["key"]
         secret = setting["secret"]
-        session = setting["session"]
+        session_number = setting["session_number"]
         server = setting["server"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
-        self.rest_api.connect(key, secret, session,
+        self.rest_api.connect(key, secret, session_number,
                               server, proxy_host, proxy_port)
 
         self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
@@ -172,7 +172,7 @@ class BitmexRestApi(RestClient):
         self,
         key: str,
         secret: str,
-        session: int,
+        session_number: int,
         server: str,
         proxy_host: str,
         proxy_port: int,
@@ -192,7 +192,7 @@ class BitmexRestApi(RestClient):
         else:
             self.init(TESTNET_REST_HOST, proxy_host, proxy_port)
 
-        self.start(session)
+        self.start(session_number)
 
         self.gateway.write_log("REST API启动成功")
 
