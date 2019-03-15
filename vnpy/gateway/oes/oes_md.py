@@ -1,4 +1,5 @@
 import time
+from copy import copy
 from datetime import datetime
 from gettext import gettext as _
 from threading import Thread
@@ -146,7 +147,7 @@ class OesMdMessageLoop:
             tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
         for i in range(min(data.OfferPriceLevel, 5)):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
-        self.gateway.on_tick(tick)
+        self.gateway.on_tick(copy(tick))
 
     def on_market_full_refresh(self, d: MdsMktRspMsgBodyT):
         """"""
@@ -162,7 +163,7 @@ class OesMdMessageLoop:
             tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
         for i in range(5):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
-        self.gateway.on_tick(tick)
+        self.gateway.on_tick(copy(tick))
 
     def on_l2_trade(self, d: MdsMktRspMsgBodyT):
         """"""
@@ -172,7 +173,7 @@ class OesMdMessageLoop:
         tick.datetime = datetime.utcnow()
         tick.volume = data.TradeQty
         tick.last_price = data.TradePrice / 10000
-        self.gateway.on_tick(tick)
+        self.gateway.on_tick(copy(tick))
 
     def on_market_data_request(self, d: MdsMktRspMsgBodyT):
         """"""

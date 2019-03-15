@@ -1,4 +1,5 @@
 import time
+from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from gettext import gettext as _
@@ -210,7 +211,7 @@ class OesTdMessageLoop:
 
             vt_order.status = Status.REJECTED
 
-            self.gateway.on_order(vt_order)
+            self.gateway.on_order(copy(vt_order))
             self.gateway.write_log(
                 f"Order: {vt_order.vt_symbol}-{vt_order.vt_orderid} Code: {error_code} Rejected: {error_string}")
         else:
@@ -230,7 +231,7 @@ class OesTdMessageLoop:
         vt_order.traded = data.cumQty
         vt_order.time = parse_oes_datetime(data.ordDate, data.ordTime)
 
-        self.gateway.on_order(vt_order)
+        self.gateway.on_order(copy(vt_order))
 
     def on_order_report(self, d: OesRspMsgBodyT):
         """"""
@@ -247,7 +248,7 @@ class OesTdMessageLoop:
         vt_order.traded = data.cumQty
         vt_order.time = parse_oes_datetime(data.ordDate, data.ordCnfmTime)
 
-        self.gateway.on_order(vt_order)
+        self.gateway.on_order(copy(vt_order))
 
     def on_trade_report(self, d: OesRspMsgBodyT):
         """"""
@@ -273,7 +274,7 @@ class OesTdMessageLoop:
         vt_order.traded = data.cumQty
         vt_order.time = parse_oes_datetime(data.trdDate, data.trdTime)
         self.gateway.on_trade(trade)
-        self.gateway.on_order(vt_order)
+        self.gateway.on_order(copy(vt_order))
 
     def on_option_holding(self, d: OesRspMsgBodyT):
         """"""
@@ -692,7 +693,7 @@ class OesTdApi:
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.volume = data.ordQty - data.canceledQty
         vt_order.traded = data.cumQty
-        self.gateway.on_order(vt_order)
+        self.gateway.on_order(copy(vt_order))
         return 1
 
     def query_orders(self) -> bool:
@@ -718,7 +719,7 @@ class OesTdApi:
             vt_order.status = STATUS_OES2VT[data.ordStatus]
             vt_order.volume = data.ordQty - data.canceledQty
             vt_order.traded = data.cumQty
-            self.gateway.on_order(vt_order)
+            self.gateway.on_order(copy(vt_order))
         except KeyError:
             # order_id = self.order_manager.new_remote_id()
             order_id = data.clSeqNo
@@ -744,7 +745,7 @@ class OesTdApi:
                 time=datetime.utcnow().isoformat(),
             )
             self.save_order(order_id, vt_order)
-            self.gateway.on_order(vt_order)
+            self.gateway.on_order(copy(vt_order))
         return 1
 
     def save_order(self, order_id: int, order: OrderData):
