@@ -36,6 +36,8 @@ class BaseGateway(ABC):
 
     # How to implement a gateway:
 
+    ---
+    ## Basics
     A gateway should satisfies:
     * this class should be thread-safe:
         * all methods should be thread-safe
@@ -44,16 +46,25 @@ class BaseGateway(ABC):
     * satisfies all requirements written in docstring for every method and callbacks.
     * automatically reconnect if connection lost.
 
-    methods must implements:
+    ---
+    ## methods must implements:
     all @abstractmethod
 
-    callbacks must response manually:
+    ---
+    ## callbacks must response manually:
     * on_tick
     * on_trade
     * on_order
     * on_position
     * on_account
     * on_contract
+
+    All the XxxData passed to callback should be constant, which means that
+        the object should not be modified after passing to on_xxxx.
+    So if you use a cache to store reference of data, use copy.copy to create a new object
+    before passing that data into on_xxxx
+
+
 
     """
 
