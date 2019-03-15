@@ -9,6 +9,9 @@ with open(config_template_path, "rt", encoding='utf-8') as f:
 
 
 def create_remote_config(server: str, username: str, password: str):
+    """
+    create a SGeneralClientRemoteCfgT.
+    """
     cfg = SGeneralClientRemoteCfgT()
     cfg.username = username
     cfg.password = password
@@ -28,3 +31,13 @@ def create_remote_config(server: str, username: str, password: str):
     cfg.socketOpt.keepCnt = 9
     return cfg
 
+
+def is_disconnected(ret: int):
+    """
+    check whether connection is lost by return value of OesApi/MdsApi
+    106 : ECONNABORTED
+    107 : ECONNREFUSED
+    108 : ECONNRESET
+    maybe there is more than there error codes indicating a disconnected state
+    """
+    return ret == -106 or ret == -107 or ret == -108

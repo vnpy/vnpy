@@ -11,9 +11,10 @@ from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitL
     MdsMktDataRequestEntryT, MdsMktDataRequestReqBufT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, \
     MdsStockSnapshotBodyT, SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, cast, \
     eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
-    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eMdsSubscribedTickTypeT, eSMsgProtocolTypeT
+    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eMdsSubscribedTickTypeT, eSMsgProtocolTypeT, \
+    SPlatform_IsNegEconnaborted
 
-from vnpy.gateway.oes.utils import create_remote_config
+from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import SubscribeRequest, TickData
@@ -118,8 +119,6 @@ class OesMdMessageLoop:
         """"""
         tcp_channel = self.env.tcpChannel
         timeout_ms = 1000
-        # is_timeout = SPlatform_IsNegEtimeout
-        is_disconnected = SPlatform_IsNegEpipe
         while self._alive:
             ret = MdsApi_WaitOnMsg(tcp_channel,
                                    timeout_ms,

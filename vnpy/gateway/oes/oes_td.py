@@ -18,7 +18,7 @@ from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_De
     eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT, eOesSubscribeReportTypeT
 
 from vnpy.gateway.oes.error_code import error_to_str
-from vnpy.gateway.oes.utils import create_remote_config
+from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
 from vnpy.trader.constant import Direction, Exchange, Offset, PriceType, Product, Status
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, \
@@ -177,7 +177,6 @@ class OesTdMessageLoop:
         """"""
         rpt_channel = self._env.rptChannel
         timeout_ms = 1000
-        is_disconnected = SPlatform_IsNegEpipe
 
         while self._alive:
             ret = OesApi_WaitReportMsg(rpt_channel,
@@ -643,7 +642,7 @@ class OesTdApi:
         else:
             order.status = Status.REJECTED
             self.gateway.write_log(_("下单失败"))  # todo: can I stringify error?
-            if ret == -108:  # is here any other ret code indicating connection lost?
+            if is_disconnected(ret):
                 self.gateway.write_log(_("下单时连接发现连接已断开，正在尝试重连"))
                 self._schedule_reconnect_ord_channel()
         self.gateway.on_order(order)
@@ -667,7 +666,7 @@ class OesTdApi:
                                         oes_req)
         if ret < 0:
             self.gateway.write_log(_("撤单失败"))  # todo: can I stringify error?
-            if ret == -108:  # is here any other ret code indicating connection lost?
+            if is_disconnected(ret):  # is here any other ret code indicating connection lost?
                 self.gateway.write_log(_("撤单时连接发现连接已断开，正在尝试重连"))
                 self._schedule_reconnect_ord_channel()
 
