@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from gettext import gettext as _
@@ -423,12 +424,10 @@ class OesTdApi:
 
     def _reconnect_ord_channel(self):
         with self._reconnect_lock:  # prevent spawning multiple reconnect thread
-            if OesApi_IsValidOrdChannel(self._env.ordChannel):
-                return
-
             self.gateway.write_log(_("正在重新连接到交易下单通道"))
-            while not OesApi_IsValidOrdChannel(self._env.ordChannel):
-                self._connect_ord_channel()
+            while not self._connect_ord_channel():
+                time.sleep(1)
+
             self.gateway.write_log(_("成功重新连接到交易下单通道"))
 
     def _schedule_reconnect_ord_channel(self):
