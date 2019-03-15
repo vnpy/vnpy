@@ -17,7 +17,14 @@ from .utils import config_template
 
 class OesGateway(BaseGateway):
     """
-    VN Trader Gateway for BitMEX connection.
+    VN Trader Gateway for OES
+
+    Because the design of OES API, multiple gateway instance with a same account is currently
+        not supported.
+    running multiple gateway instance with the same account will make send_order and
+        cancel_order fail frequently, because:
+        * seq_index is not unique between instances
+        * value range of client_id is too small to create a unique hash for different client.
     """
 
     default_setting = {

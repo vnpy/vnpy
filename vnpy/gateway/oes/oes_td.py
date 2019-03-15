@@ -202,10 +202,9 @@ class OesTdMessageLoop:
             try:
                 i = self._td.get_order(data.clSeqNo)
             except KeyError:
-                # todo: maybe I should find a way to disable subscription of orders at startup
-                return
-            vt_order = i.vt_order
+                return  # rejected order created by others, don't need to care.
 
+            vt_order = i.vt_order
             if vt_order == Status.ALLTRADED:
                 return
 
@@ -222,8 +221,10 @@ class OesTdMessageLoop:
         data = d.rptMsg.rptBody.ordInsertRsp
 
         if not data.origClSeqNo:
+            # normal order
             i = self._td.get_order(data.clSeqNo)
         else:
+            # data.ordStatus == eOesOrdStatusT.OES_ORD_STATUS_CANCEL_DONE:
             i = self._td.get_order(data.origClSeqNo)
         vt_order = i.vt_order
         vt_order.status = STATUS_OES2VT[data.ordStatus]
@@ -238,8 +239,10 @@ class OesTdMessageLoop:
         data: OesOrdCnfmT = d.rptMsg.rptBody.ordCnfm
 
         if not data.origClSeqNo:
+            # normal order
             i = self._td.get_order(data.clSeqNo)
         else:
+            # data.ordStatus == eOesOrdStatusT.OES_ORD_STATUS_CANCEL_DONE:
             i = self._td.get_order(data.origClSeqNo)
         vt_order = i.vt_order
 
@@ -691,7 +694,7 @@ class OesTdApi:
         i = self.get_order(data.clSeqNo)
         vt_order = i.vt_order
         vt_order.status = STATUS_OES2VT[data.ordStatus]
-        vt_order.volume = data.ordQty - data.canceledQty
+        vt_order.volume = data.ordQty
         vt_order.traded = data.cumQty
         self.gateway.on_order(copy(vt_order))
         return 1
@@ -717,7 +720,7 @@ class OesTdApi:
             i = self.get_order(data.clSeqNo)
             vt_order = i.vt_order
             vt_order.status = STATUS_OES2VT[data.ordStatus]
-            vt_order.volume = data.ordQty - data.canceledQty
+            vt_order.volume = data.ordQty
             vt_order.traded = data.cumQty
             self.gateway.on_order(copy(vt_order))
         except KeyError:
