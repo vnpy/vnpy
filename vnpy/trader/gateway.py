@@ -185,6 +185,7 @@ class BaseGateway(ABC):
 
         implementation should finish the tasks blow:
         * create an OrderData from req using OrderRequest.create_order_data
+        * assign a unique(gateway instance scope) id to OrderData.orderid
         * send request to server
             * if request is sent, OrderData.status should be set to Status.SUBMITTING
             * if request is failed to sent, OrderData.status should be set to Status.REJECTED
