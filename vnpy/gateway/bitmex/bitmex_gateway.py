@@ -8,6 +8,7 @@ import sys
 import time
 from copy import copy
 from datetime import datetime
+from threading import Lock
 from urllib.parse import urlencode
 
 from requests import ConnectionError
@@ -131,6 +132,8 @@ class BitmexRestApi(RestClient):
         self.secret = ""
 
         self.order_count = 1_000_000
+        self.order_count_lock = Lock()
+
         self.connect_time = 0
 
     def sign(self, request):
@@ -196,10 +199,14 @@ class BitmexRestApi(RestClient):
 
         self.gateway.write_log("REST API启动成功")
 
+    def _new_order_id(self):
+        with self.order_count_lock:
+            self.order_count += 1
+            return self.order_count
+
     def send_order(self, req: OrderRequest):
         """"""
-        self.order_count += 1
-        orderid = str(self.connect_time + self.order_count)
+        orderid = str(self.connect_time + self._new_order_id())
 
         data = {
             "symbol": req.symbol,
