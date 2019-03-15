@@ -100,6 +100,7 @@ class OesGateway(BaseGateway):
         self.md_api.username = username
         self.md_api.password = password
         if self.md_api.connect():
+            self.write_log(_("成功连接到行情服务器"))
             self.md_api.start()
         else:
             self.write_log(_("无法连接到行情服务器，请检查你的配置"))
