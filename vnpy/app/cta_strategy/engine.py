@@ -386,7 +386,7 @@ class CtaEngine(BaseEngine):
             return
 
         for vt_orderid in vt_orderids:
-            self.cancel_limit_order(strategy, vt_orderid)
+            self.cancel_order(strategy, vt_orderid)
 
     def get_engine_type(self):
         """"""
