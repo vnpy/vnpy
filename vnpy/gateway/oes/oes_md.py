@@ -82,7 +82,7 @@ class OesMdMessageLoop:
     def reconnect(self):
         """"""
         self.gateway.write_log(_("正在尝试重新连接到行情服务器。"))
-        return self._md.connect()
+        return self._md.connect_tcp_channel()
 
     def _get_last_tick(self, symbol):
         """"""
@@ -228,7 +228,24 @@ class OesMdApi:
         :note set config_path before calling this function
         """
         MdsApi_InitLogger(self.config_path, "log")
+        return self.connect_tcp_channel()
 
+    def start(self):
+        """"""
+        self._message_loop.start()
+
+    def stop(self):
+        """"""
+        self._message_loop.stop()
+        MdsApi_LogoutAll(self._env, True)
+        MdsApi_DestoryAll(self._env)
+
+    def join(self):
+        """"""
+        self._message_loop.join()
+
+    def connect_tcp_channel(self):
+        """"""
         MdsApi_SetThreadUsername(self.username)
         MdsApi_SetThreadPassword(self.password)
 
@@ -251,25 +268,8 @@ class OesMdApi:
                                                            password=self.password),
                                       info):
             return False
-        if not MdsApi_IsValidTcpChannel(self._env.tcpChannel):
-            return False
         return True
 
-    def start(self):
-        """"""
-        self._message_loop.start()
-
-    def stop(self):
-        """"""
-        self._message_loop.stop()
-        MdsApi_LogoutAll(self._env, True)
-        MdsApi_DestoryAll(self._env)
-
-    def join(self):
-        """"""
-        self._message_loop.join()
-
-    # why isn't arg a ContractData?
     def subscribe(self, req: SubscribeRequest):
         """"""
         mds_req = MdsMktDataRequestReqT()
