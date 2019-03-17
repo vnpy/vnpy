@@ -9,6 +9,7 @@ from typing import Any, Callable
 from datetime import datetime, timedelta
 from threading import Thread
 from queue import Queue
+from copy import copy
 
 import rqdatac
 
@@ -203,7 +204,7 @@ class CtaEngine(BaseEngine):
 
     def check_stop_order(self, tick: TickData):
         """"""
-        for stop_order in self.stop_orders.values():
+        for stop_order in list(self.stop_orders.values()):
             if stop_order.vt_symbol != tick.vt_symbol:
                 continue
 
@@ -385,7 +386,7 @@ class CtaEngine(BaseEngine):
         if not vt_orderids:
             return
 
-        for vt_orderid in vt_orderids:
+        for vt_orderid in copy(vt_orderids):
             self.cancel_order(strategy, vt_orderid)
 
     def get_engine_type(self):
