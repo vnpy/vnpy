@@ -8,6 +8,7 @@ import sys
 import time
 from copy import copy
 from datetime import datetime
+from threading import Lock
 from urllib.parse import urlencode
 
 from requests import ConnectionError
@@ -62,7 +63,7 @@ class BitmexGateway(BaseGateway):
     default_setting = {
         "key": "",
         "secret": "",
-        "session": 3,
+        "session_number": 3,
         "server": ["REAL", "TESTNET"],
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
@@ -79,15 +80,16 @@ class BitmexGateway(BaseGateway):
         """"""
         key = setting["key"]
         secret = setting["secret"]
-        session = setting["session"]
+        session_number = setting["session_number"]
         server = setting["server"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
-        self.rest_api.connect(key, secret, session,
+        self.rest_api.connect(key, secret, session_number,
                               server, proxy_host, proxy_port)
 
         self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
+        # websocket will push all account status on connected, including asset, position and orders.
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -131,6 +133,8 @@ class BitmexRestApi(RestClient):
         self.secret = ""
 
         self.order_count = 1_000_000
+        self.order_count_lock = Lock()
+
         self.connect_time = 0
 
     def sign(self, request):
@@ -172,7 +176,7 @@ class BitmexRestApi(RestClient):
         self,
         key: str,
         secret: str,
-        session: int,
+        session_number: int,
         server: str,
         proxy_host: str,
         proxy_port: int,
@@ -192,14 +196,18 @@ class BitmexRestApi(RestClient):
         else:
             self.init(TESTNET_REST_HOST, proxy_host, proxy_port)
 
-        self.start(session)
+        self.start(session_number)
 
         self.gateway.write_log("REST API启动成功")
 
+    def _new_order_id(self):
+        with self.order_count_lock:
+            self.order_count += 1
+            return self.order_count
+
     def send_order(self, req: OrderRequest):
         """"""
-        self.order_count += 1
-        orderid = str(self.connect_time + self.order_count)
+        orderid = str(self.connect_time + self._new_order_id())
 
         data = {
             "symbol": req.symbol,
@@ -272,7 +280,7 @@ class BitmexRestApi(RestClient):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_send_order(self, data, request):
-        """"""
+        """Websocket will push a new order status"""
         pass
 
     def on_cancel_order_error(
@@ -286,7 +294,7 @@ class BitmexRestApi(RestClient):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data, request):
-        """"""
+        """Websocket will push a new order status"""
         pass
 
     def on_failed(self, status_code: int, request: Request):
