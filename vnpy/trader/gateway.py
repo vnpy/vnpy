@@ -33,6 +33,39 @@ class BaseGateway(ABC):
     """
     Abstract gateway class for creating gateways connection 
     to different trading systems.
+
+    # How to implement a gateway:
+
+    ---
+    ## Basics
+    A gateway should satisfies:
+    * this class should be thread-safe:
+        * all methods should be thread-safe
+        * no mutable shared properties between objects.
+    * all methods should be non-blocked
+    * satisfies all requirements written in docstring for every method and callbacks.
+    * automatically reconnect if connection lost.
+
+    ---
+    ## methods must implements:
+    all @abstractmethod
+
+    ---
+    ## callbacks must response manually:
+    * on_tick
+    * on_trade
+    * on_order
+    * on_position
+    * on_account
+    * on_contract
+
+    All the XxxData passed to callback should be constant, which means that
+        the object should not be modified after passing to on_xxxx.
+    So if you use a cache to store reference of data, use copy.copy to create a new object
+    before passing that data into on_xxxx
+
+
+
     """
 
     # Fields required in setting dict for connect function.
@@ -113,6 +146,21 @@ class BaseGateway(ABC):
     def connect(self, setting: dict):
         """
         Start gateway connection.
+
+        to implement this method, you must:
+        * connect to server if necessary
+        * log connected if all necessary connection is established
+        * do the following query and response corresponding on_xxxx and write_log
+            * contracts : on_contract
+            * account asset : on_account
+            * account holding: on_position
+            * orders of account: on_order
+            * trades of account: on_trade
+        * if any of query above is failed,  write log.
+
+        future plan:
+        response callback/change status instead of write_log
+
         """
         pass
 
@@ -131,9 +179,20 @@ class BaseGateway(ABC):
         pass
 
     @abstractmethod
-    def send_order(self, req: OrderRequest):
+    def send_order(self, req: OrderRequest) -> str:
         """
-        Send a new order.
+        Send a new order to server.
+
+        implementation should finish the tasks blow:
+        * create an OrderData from req using OrderRequest.create_order_data
+        * assign a unique(gateway instance scope) id to OrderData.orderid
+        * send request to server
+            * if request is sent, OrderData.status should be set to Status.SUBMITTING
+            * if request is failed to sent, OrderData.status should be set to Status.REJECTED
+        * response on_order:
+        * return OrderData.vt_orderid
+
+        :return str vt_orderid for created OrderData
         """
         pass
 
@@ -141,6 +200,10 @@ class BaseGateway(ABC):
     def cancel_order(self, req: CancelRequest):
         """
         Cancel an existing order.
+        implementation should finish the tasks blow:
+        * send request to server
+
+
         """
         pass
 
@@ -148,6 +211,7 @@ class BaseGateway(ABC):
     def query_account(self):
         """
         Query account balance.
+
         """
         pass
 
