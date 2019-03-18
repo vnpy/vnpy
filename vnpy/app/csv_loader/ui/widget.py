@@ -4,12 +4,12 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtWidgets
 
 from .ui import CsvLoaderUI
-
 from ..CsvLoader import CsvLoader
 
 
 class CsvLoaderWidget(QtWidgets.QWidget):
     """"""
+
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         super().__init__()
         self.loader = CsvLoader(main_engine, event_engine)
@@ -34,13 +34,3 @@ class CsvLoaderWidget(QtWidgets.QWidget):
         self.loader.volume_head = self.ui.volume_edit.text()
 
         self.loader.load()
-
-
-
-
-
-
-
-
-
-
