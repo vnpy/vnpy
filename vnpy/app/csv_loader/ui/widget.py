@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import QFileDialog
 from vnpy.event import EventEngine
+from vnpy.trader.constant import Interval, Exchange
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtWidgets
 
-from .ui import CsvLoaderUI
+from .uic.uic_CsvLoader import Ui_CsvLoader
 from ..CsvLoader import CsvLoader
 
 
@@ -13,7 +14,18 @@ class CsvLoaderWidget(QtWidgets.QWidget):
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         super().__init__()
         self.loader = CsvLoader(main_engine, event_engine)
-        self.ui: CsvLoaderUI = CsvLoaderUI(self)
+        self.ui = Ui_CsvLoader()
+
+        self.init_ui()
+
+    def init_ui(self):
+        self.ui.setupUi(self)
+
+        for i in Interval:
+            self.ui.interval_combo.addItem(str(i), i)
+
+        for i in Exchange:
+            self.ui.exchange_combo.addItem(str(i), i)
 
     def on_choose_button_pressed(self):
         result: str = QFileDialog.getOpenFileName(self)
