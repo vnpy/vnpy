@@ -7,9 +7,8 @@ python:
 
 matrix:
   include:
-
-    # pip install under linux
-    - before_install:
+    - name: "pip install under linux"
+      before_install:
         # C++17
         - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         - sudo apt-get update -qq
@@ -22,11 +21,12 @@ matrix:
         # Linux install script
         - bash ./install.sh
       script:
+        # todo: use python unittest
         - python -c "import vnpy.api.ctp.vnctp; import vnpy.api.oes.vnoes; exit(0);"
 
 
-    # code quality analysis
-    - before_install:
+    - name: "code quality analysis: flake8"
+      before_install:
         - pip install flake8
       install:
         - ""  # prevent running "pip install -r requirements.txt"
