@@ -44,7 +44,7 @@ matrix:
         - bash ./install.sh
       script:
         # todo: use python unittest
-        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctp; import vnpy.api.oes.vnoes; exit(0);"
+        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctpmd; import vnpy.api.oes.vnoes; exit(0);"
 
     - name: "pip install under Ubuntu: gcc-7"
       before_install:
