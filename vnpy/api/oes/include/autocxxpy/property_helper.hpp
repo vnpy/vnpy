@@ -1,15 +1,41 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include <string_view>
 #include <functional>
 #include <mutex>
 #include <condition_variable>
 
 #include "config/config.hpp"
+#include "base/type.h"
 
 namespace autocxxpy
 {
-    template <class class_type, class value_type>
+    template <class tag, size_t size>
+    struct get_string
+    {
+        auto &operator()(string_literal<size> &val)
+        {
+            return val;
+        }
+    };
+
+    template <class tag, size_t size>
+    struct set_string
+    {
+        void operator()(string_literal<size> &val, const char *str)
+        {
+#ifdef _MSC_VER
+            strcpy_s(val, str);
+#else
+            strcpy(val, str);
+#endif
+        }
+    };
+
+
+    template <class tag, class class_type, class value_type>
     inline constexpr auto default_getter_wrap(value_type class_type::*member)
     { // match normal case
         return [member](const class_type &instance)->const value_type & {
@@ -17,7 +43,7 @@ namespace autocxxpy
         };
     }
 
-    template <class class_type, class value_type>
+    template <class tag, class class_type, class value_type>
     inline constexpr auto default_setter_wrap(value_type class_type::*member)
     { // match normal case
         return [member](class_type &instance, const value_type &value) {
@@ -26,26 +52,28 @@ namespace autocxxpy
     }
 
     // specialization for const setter
-    template <class class_type, class value_type>
+    template <class tag, class class_type, class value_type>
     inline constexpr auto default_setter_wrap(const value_type class_type::*member)
     { // match const
         return nullptr;
     }
 
     // specialization for any []
-    template <class element_t, size_t size>
-    using array_literal = element_t[size];
-
-    template <class class_type, class element_t, size_t size>
-    inline constexpr auto default_getter_wrap(array_literal<element_t, size> class_type::*member)
+    template <class tag, class class_type, class element_t, size_t size>
+    inline constexpr auto default_getter_wrap(literal_array<element_t, size> class_type::*member)
     { // match get any []
         return [member](const class_type &instance) {
-            return std::vector<element_t>(instance.*member, instance.*member + size);
+            auto es = std::vector<element_t *>(size);
+            for (size_t i = 0; i < size ; i++)
+            {
+                es[i] = instance.*member + i;
+            }
+            return std::move(es);
         };
     }
 
-    template <class class_type, class element_t, size_t size>
-    inline constexpr auto default_setter_wrap(array_literal<element_t, size> class_type::*member)
+    template <class tag, class class_type, class element_t, size_t size>
+    inline constexpr auto default_setter_wrap(literal_array<element_t, size> class_type::*member)
     { // match set any []
         return [member](class_type &instance, const std::vector<element_t> &value) {
             if (value.size() >= size)
@@ -61,8 +89,8 @@ namespace autocxxpy
     }
 
     // specialization for any *[]
-    template <class class_type, class element_t, size_t size>
-    inline constexpr auto default_getter_wrap(array_literal<element_t *, size> class_type::*member)
+    template <class tag, class class_type, class element_t, size_t size>
+    inline constexpr auto default_getter_wrap(literal_array<element_t *, size> class_type::*member)
     { // match get (any *)[]
         return [member](const class_type &instance) {
             std::vector<element_t *> arr;
@@ -75,42 +103,35 @@ namespace autocxxpy
     }
 
     // specialization for char[]
-    template <size_t size>
-    using string_literal = array_literal<char, size>;
-
-    template <class class_type, size_t size>
+    template <class tag, class class_type, size_t size>
     inline constexpr auto default_getter_wrap(string_literal<size> class_type::*member)
     { // match get char []
         return [member](const class_type &instance) {
-            return instance.*member;
+            return get_string<tag, size>{}(instance.*member);
         };
     }
 
-    template <class class_type, size_t size>
+    template <class tag, class class_type, size_t size>
     inline constexpr auto default_setter_wrap(string_literal<size> class_type::*member)
     { // match set char []
         return [member](class_type &instance, const std::string_view &value) {
-#ifdef _MSC_VER
-            strcpy_s(instance.*member, value.data());
-#else
-            strcpy(instance.*member, value.data());
-#endif
+            return set_string<tag, size>{}(instance.*member, value.data());
         };
     }
 
     template <class tag, class MemberConstant>
     struct getter_wrap
     {
-        using value_type = decltype(default_getter_wrap(MemberConstant::value));
-        static constexpr value_type value = default_getter_wrap(MemberConstant::value);
+        using value_type = decltype(default_getter_wrap<tag>(MemberConstant::value));
+        static constexpr value_type value = default_getter_wrap<tag>(MemberConstant::value);
     };
 
 
     template <class tag, class MemberConstant>
     struct setter_wrap
     {
-        using value_type = decltype(default_setter_wrap(MemberConstant::value));
-        static constexpr value_type value = default_setter_wrap(MemberConstant::value);
+        using value_type = decltype(default_setter_wrap<tag>(MemberConstant::value));
+        static constexpr value_type value = default_setter_wrap<tag>(MemberConstant::value);
     };
 }
 #define AUTOCXXPY_DEF_PROPERTY(cls, name, member) \

@@ -3,7 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include <brigand/brigand.hpp>
+#include "brigand.hpp"
 
 #include "utils/functional.hpp"
 #include "dispatcher.hpp"
@@ -71,30 +71,46 @@ namespace autocxxpy
     struct pybind11_static_caster {
         static pybind11::detail::overload_caster_t<ret_type> caster;
     };
+
+    template <class ret_type>
+    AUTOCXXPY_SELECT_ANY pybind11::detail::overload_caster_t<ret_type> pybind11_static_caster<ret_type>::caster;
+
 #endif
 
     namespace arg_helper
     {
+        // # todo: char8, char16, char32, wchar_t, etc...
+        // # todo: shall i copy only const type, treating non-const type as output pointer?
+        inline std::string save(const char *val)
+        { // match const char *
+            return val;
+        }
+        inline std::string save(char *val)
+        { // match char *
+            return val;
+        }
+
         template <class T>
-        inline T &deref(T *val)
+        inline T &save(T *val)
         { // match pointer
             return *val;
         }
+
         template <class T>
-        inline T &deref(const T *val)
+        inline T &save(const T *val)
         { // match const pointer
             return const_cast<T&>(*val);
         }
 
         template <class T>
-        inline T &deref(const T &val)
+        inline T &save(const T &val)
         { // match everything else : just use original type
             return const_cast<T&>(val);
         }
 
 
         template <class to_type>
-        struct resolver
+        struct loader
         { // match default(everyting besides pointer)
             template <class src_type>
             inline to_type operator ()(src_type &val)
@@ -103,8 +119,18 @@ namespace autocxxpy
             }
         };
 
+        template <>
+        struct loader<char *>
+        { // match char *
+            using to_type = char *;
+            inline to_type operator ()(const std::string &val)
+            {
+                return const_cast<char *>(val.data());
+            }
+        };
+
         template <class to_type>
-        struct resolver<to_type *>
+        struct loader<to_type *>
         { // match pointer
             template <class src_type>
             inline to_type *operator ()(src_type &val)
@@ -112,11 +138,11 @@ namespace autocxxpy
                 return const_cast<to_type *>(&val);
             }
 
-            template <class src_type>
-            inline to_type *operator ()(src_type *val)
-            { // pointer to pointer
-                return val;
-            }
+            //template <class src_type>
+            //inline to_type *operator ()(src_type *val)
+            //{ // pointer to pointer
+            //    return val;
+            //}
         };
 
     };
@@ -175,7 +201,7 @@ namespace autocxxpy
         {
             // wrap for ctp like function calls:
             // all the pointer might be unavailable after this call, so copy its value into a tuple
-            auto arg_tuple = std::make_tuple(arg_helper::deref(args) ...);
+            auto arg_tuple = std::make_tuple(arg_helper::save(args) ...);
             auto task = [instance, py_func_name, arg_tuple = std::move(arg_tuple)]()
             {
                 // resolve all value:
@@ -183,7 +209,7 @@ namespace autocxxpy
                 // if it was originally a value, just keep a reference to that value.
                 sync<arg_types ...>(
                     instance, py_func_name,
-                    arg_helper::resolver<brigand::at<brigand::list<arg_types ...>, brigand::integral_constant<int, idx> > >{}
+                    arg_helper::loader<brigand::at<brigand::list<arg_types ...>, brigand::integral_constant<int, idx> > >{}
                 (std::get<idx>(arg_tuple)) ...
                     );
             };

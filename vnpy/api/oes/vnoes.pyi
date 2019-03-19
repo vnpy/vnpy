@@ -4,31 +4,6 @@ from typing import *
 from enum import Enum
 
 
-class _spk_struct_timespec:
-    tv_sec: int
-    tv_nsec: int
-    ...
-
-class _spk_struct_timezone:
-    tz_minuteswest: int
-    tz_dsttime: int
-    ...
-
-class _spk_struct_iovec:
-    iov_base: Any
-    iov_len: int
-    ...
-
-class STimeval32T:
-    tv_sec: int
-    tv_usec: int
-    ...
-
-class STimeval64T:
-    tv_sec: int
-    tv_usec: int
-    ...
-
 class OesOrdReqT:
     clSeqNo: int
     mktId: int
@@ -41,8 +16,10 @@ class OesOrdReqT:
     ordPrice: int
     origClOrdId: int
     userInfo: int
-    __ordReqOrigSendTime: STimeval32T
+    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
     ...
+_OesOrdReq = OesOrdReqT
+
 
 class OesOrdCancelReqT:
     clSeqNo: int
@@ -55,8 +32,10 @@ class OesOrdCancelReqT:
     __ORD_CANCEL_BASE_INFO_filler2: Sequence[int]
     origClOrdId: int
     userInfo: int
-    __ordReqOrigSendTime: STimeval32T
+    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
     ...
+_OesOrdCancelReq = OesOrdCancelReqT
+
 
 class OesOrdRejectT:
     clSeqNo: int
@@ -70,7 +49,7 @@ class OesOrdRejectT:
     ordPrice: int
     origClOrdId: int
     userInfo: int
-    __ordReqOrigSendTime: STimeval32T
+    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
     origClSeqNo: int
     origClEnvId: int
     clEnvId: int
@@ -80,6 +59,8 @@ class OesOrdRejectT:
     ordRejReason: int
     __filler: int
     ...
+_OesOrdReject = OesOrdRejectT
+
 
 class OesOrdCnfmT:
     clSeqNo: int
@@ -93,7 +74,7 @@ class OesOrdCnfmT:
     ordPrice: int
     origClOrdId: int
     userInfo: int
-    __ordReqOrigSendTime: STimeval32T
+    __ordReqOrigSendTime: STimeval32T  # unknown what to wrap in py
     clOrdId: int
     clientId: int
     clEnvId: int
@@ -125,18 +106,21 @@ class OesOrdCnfmT:
     branchId: int
     __rowNum: int
     __recNum: int
-    __ordReqOrigRecvTime: STimeval32T
-    __ordReqCollectedTime: STimeval32T
-    __ordReqActualDealTime: STimeval32T
-    __ordReqProcessedTime: STimeval32T
-    __ordCnfmOrigRecvTime: STimeval32T
-    __ordCnfmCollectedTime: STimeval32T
-    __ordCnfmActualDealTime: STimeval32T
-    __ordCnfmProcessedTime: STimeval32T
-    __ordDeclareTime: STimeval32T
-    __ordDeclareDoneTime: STimeval32T
-    __pushingTime: STimeval32T
+    __ordReqOrigRecvTime: STimeval32T  # unknown what to wrap in py
+    __ordReqCollectedTime: STimeval32T  # unknown what to wrap in py
+    __ordReqActualDealTime: STimeval32T  # unknown what to wrap in py
+    __ordReqProcessedTime: STimeval32T  # unknown what to wrap in py
+    __ordCnfmOrigRecvTime: STimeval32T  # unknown what to wrap in py
+    __ordCnfmCollectedTime: STimeval32T  # unknown what to wrap in py
+    __ordCnfmActualDealTime: STimeval32T  # unknown what to wrap in py
+    __ordCnfmProcessedTime: STimeval32T  # unknown what to wrap in py
+    __ordDeclareTime: STimeval32T  # unknown what to wrap in py
+    __ordDeclareDoneTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_OesOrdCnfm = OesOrdCnfmT
+OesOrdItemT = OesOrdCnfmT
+
 
 class OesTrdBaseInfoT:
     exchTrdNum: int
@@ -161,6 +145,8 @@ class OesTrdBaseInfoT:
     pbuId: int
     branchId: int
     ...
+_OesTrdBaseInfo = OesTrdBaseInfoT
+
 
 class OesTrdCnfmT:
     exchTrdNum: int
@@ -197,12 +183,15 @@ class OesTrdCnfmT:
     cumInterest: int
     cumFee: int
     userInfo: int
-    __trdCnfmOrigRecvTime: STimeval32T
-    __trdCnfmCollectedTime: STimeval32T
-    __trdCnfmActualDealTime: STimeval32T
-    __trdCnfmProcessedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __trdCnfmOrigRecvTime: STimeval32T  # unknown what to wrap in py
+    __trdCnfmCollectedTime: STimeval32T  # unknown what to wrap in py
+    __trdCnfmActualDealTime: STimeval32T  # unknown what to wrap in py
+    __trdCnfmProcessedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+OesTrdItemT = OesTrdCnfmT
+_OesTrdCnfm = OesTrdCnfmT
+
 
 class OesLotWinningBaseInfoT:
     invAcctId: str
@@ -218,6 +207,9 @@ class OesLotWinningBaseInfoT:
     lotPrice: int
     lotAmt: int
     ...
+_OesLotWinningBaseInfo = OesLotWinningBaseInfoT
+OesLotWinningItemT = OesLotWinningBaseInfoT
+
 
 class OesFundTrsfBaseInfoT:
     clSeqNo: int
@@ -230,6 +222,8 @@ class OesFundTrsfBaseInfoT:
     occurAmt: int
     userInfo: int
     ...
+_OesFundTrsfBaseInfo = OesFundTrsfBaseInfoT
+
 
 class OesFundTrsfReqT:
     clSeqNo: int
@@ -242,6 +236,8 @@ class OesFundTrsfReqT:
     occurAmt: int
     userInfo: int
     ...
+_OesFundTrsfReq = OesFundTrsfReqT
+
 
 class OesFundTrsfRejectT:
     clSeqNo: int
@@ -261,6 +257,8 @@ class OesFundTrsfRejectT:
     rejReason: int
     errorInfo: str
     ...
+_OesFundTrsfReject = OesFundTrsfRejectT
+
 
 class OesFundTrsfReportT:
     clSeqNo: int
@@ -286,6 +284,9 @@ class OesFundTrsfReportT:
     allotSerialNo: str
     errorInfo: str
     ...
+_OesFundTrsfReport = OesFundTrsfReportT
+OesFundTransferSerialItemT = OesFundTrsfReportT
+
 
 class OesIssueBaseInfoT:
     securityId: str
@@ -307,11 +308,16 @@ class OesIssueBaseInfoT:
     ceilPrice: int
     floorPrice: int
     ...
+_OesIssueBaseInfo = OesIssueBaseInfoT
+OesIssueItemT = OesIssueBaseInfoT
+
 
 class OesPriceLimitT:
     ceilPrice: int
     floorPrice: int
     ...
+_OesPriceLimit = OesPriceLimitT
+
 
 class OesStockBaseInfoT:
     securityId: str
@@ -342,6 +348,9 @@ class OesStockBaseInfoT:
     securityName: str
     fundId: str
     ...
+OesStockItemT = OesStockBaseInfoT
+_OesStockBaseInfo = OesStockBaseInfoT
+
 
 class OesEtfBaseInfoT:
     fundId: str
@@ -369,6 +378,9 @@ class OesEtfBaseInfoT:
     netCreationLimit: int
     netRedemLimit: int
     ...
+_OesEtfBaseInfo = OesEtfBaseInfoT
+OesEtfItemT = OesEtfBaseInfoT
+
 
 class OesEtfComponentBaseInfoT:
     fundId: str
@@ -383,6 +395,8 @@ class OesEtfComponentBaseInfoT:
     creationSubCash: int
     redemptionCashSub: int
     ...
+_OesEtfComponentBaseInfo = OesEtfComponentBaseInfoT
+
 
 class OesOptionBaseInfoT:
     securityId: str
@@ -420,6 +434,9 @@ class OesOptionBaseInfoT:
     underlyingClosePrice: int
     securityName: str
     ...
+_OesOptionBaseInfo = OesOptionBaseInfoT
+OesOptionItemT = OesOptionBaseInfoT
+
 
 class OesCashAssetBaseInfoT:
     cashAcctId: str
@@ -446,6 +463,8 @@ class OesCashAssetBaseInfoT:
     marginAmt: int
     marginFrzAmt: int
     ...
+_OesCashAssetBaseInfo = OesCashAssetBaseInfoT
+
 
 class OesCustBaseInfoT:
     custId: str
@@ -459,6 +478,9 @@ class OesCustBaseInfoT:
     branchId: int
     __CUST_BASE_filler2: int
     ...
+_OesCustBaseInfo = OesCustBaseInfoT
+OesCustItemT = OesCustBaseInfoT
+
 
 class OesInvAcctBaseInfoT:
     invAcctId: str
@@ -474,6 +496,8 @@ class OesInvAcctBaseInfoT:
     pbuId: int
     subscriptionQuota: int
     ...
+_OesInvAcctBaseInfo = OesInvAcctBaseInfoT
+
 
 class OesStkHoldingBaseInfoT:
     invAcctId: str
@@ -501,6 +525,8 @@ class OesStkHoldingBaseInfoT:
     coveredFrzHld: int
     coveredHld: int
     ...
+_OesStkHoldingBaseInfo = OesStkHoldingBaseInfoT
+
 
 class OesOptHoldingBaseInfoT:
     invAcctId: str
@@ -515,6 +541,8 @@ class OesOptHoldingBaseInfoT:
     hldRB: int
     hldRC: int
     ...
+_OesOptHoldingBaseInfo = OesOptHoldingBaseInfoT
+
 
 class OesMarketStateInfoT:
     exchId: int
@@ -523,6 +551,9 @@ class OesMarketStateInfoT:
     mktState: int
     __filler: Sequence[int]
     ...
+_OesMarketStateInfo = OesMarketStateInfoT
+OesMarketStateItemT = OesMarketStateInfoT
+
 
 class OesTradingPermissionEntryT:
     permissionNo: int
@@ -533,6 +564,8 @@ class OesTradingPermissionEntryT:
     applicableMarkets: Sequence[int]
     permissionMemo: str
     ...
+_OesTradingPermissionEntry = OesTradingPermissionEntryT
+
 
 class OesInputSourceInfoT:
     sourceIp: str
@@ -541,6 +574,8 @@ class OesInputSourceInfoT:
     __filler: Sequence[int]
     sourceDriverId: str
     ...
+_OesInputSourceInfo = OesInputSourceInfoT
+
 
 class SMsgHeadT:
     msgFlag: int
@@ -549,6 +584,8 @@ class SMsgHeadT:
     detailStatus: int
     msgSize: int
     ...
+_SMsgHead = SMsgHeadT
+
 
 class OesQryCursorT:
     seqNo: int
@@ -556,11 +593,15 @@ class OesQryCursorT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryCursor = OesQryCursorT
+
 
 class OesQryReqHeadT:
     maxPageSize: int
     lastPosition: int
     ...
+_OesQryReqHead = OesQryReqHeadT
+
 
 class OesQryRspHeadT:
     itemCount: int
@@ -569,6 +610,8 @@ class OesQryRspHeadT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryRspHead = OesQryRspHeadT
+
 
 class OesQryOrdFilterT:
     custId: str
@@ -585,16 +628,22 @@ class OesQryOrdFilterT:
     endTime: int
     userInfo: int
     ...
+_OesQryOrdFilter = OesQryOrdFilterT
+
 
 class OesQryOrdReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryOrdFilterT
     ...
+_OesQryOrdReq = OesQryOrdReqT
+
 
 class OesQryOrdRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesOrdCnfmT]
     ...
+_OesQryOrdRsp = OesQryOrdRspT
+
 
 class OesQryTrdFilterT:
     custId: str
@@ -610,22 +659,30 @@ class OesQryTrdFilterT:
     endTime: int
     userInfo: int
     ...
+_OesQryTrdFilter = OesQryTrdFilterT
+
 
 class OesQryTrdReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryTrdFilterT
     ...
+_OesQryTrdReq = OesQryTrdReqT
+
 
 class OesQryTrdRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesTrdCnfmT]
     ...
+_OesQryTrdRsp = OesQryTrdRspT
+
 
 class OesQryCashAssetFilterT:
     custId: str
     cashAcctId: str
     userInfo: int
     ...
+_OesQryCashAssetFilter = OesQryCashAssetFilterT
+
 
 class OesCashAssetItemT:
     cashAcctId: str
@@ -655,16 +712,22 @@ class OesCashAssetItemT:
     currentAvailableBal: int
     currentDrawableBal: int
     ...
+_OesCashAssetItem = OesCashAssetItemT
+
 
 class OesQryCashAssetReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryCashAssetFilterT
     ...
+_OesQryCashAssetReq = OesQryCashAssetReqT
+
 
 class OesQryCashAssetRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesCashAssetItemT]
     ...
+_OesQryCashAssetRsp = OesQryCashAssetRspT
+
 
 class OesCounterCashItemT:
     cashAcctId: str
@@ -681,14 +744,20 @@ class OesCounterCashItemT:
     counterCashUpdateTime: int
     __reserve: Sequence[int]
     ...
+_OesCounterCashItem = OesCounterCashItemT
+
 
 class OesQryCounterCashReqT:
     cashAcctId: str
     ...
+_OesQryCounterCashReq = OesQryCounterCashReqT
+
 
 class OesQryCounterCashRspT:
     counterCashItem: OesCounterCashItemT
     ...
+_OesQryCounterCashRsp = OesQryCounterCashRspT
+
 
 class OesQryStkHoldingFilterT:
     custId: str
@@ -699,6 +768,9 @@ class OesQryStkHoldingFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryStkHoldingFilter = OesQryStkHoldingFilterT
+OesQryOptHoldingFilterT = OesQryStkHoldingFilterT
+
 
 class OesStkHoldingItemT:
     invAcctId: str
@@ -732,16 +804,22 @@ class OesStkHoldingItemT:
     sumHld: int
     costPrice: int
     ...
+_OesStkHoldingItem = OesStkHoldingItemT
+
 
 class OesQryStkHoldingReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryStkHoldingFilterT
     ...
+_OesQryStkHoldingReq = OesQryStkHoldingReqT
+
 
 class OesQryStkHoldingRspT:
     qryHead: OesQryRspHeadT
     qryItems: Sequence[OesStkHoldingItemT]
     ...
+_OesQryStkHoldingRsp = OesQryStkHoldingRspT
+
 
 class OesOptHoldingItemT:
     invAcctId: str
@@ -756,31 +834,43 @@ class OesOptHoldingItemT:
     hldRB: int
     hldRC: int
     ...
+_OesOptHoldingItem = OesOptHoldingItemT
+
 
 class OesQryOptHoldingReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryStkHoldingFilterT
     ...
+_OesQryOptHoldingReq = OesQryOptHoldingReqT
+
 
 class OesQryOptHoldingRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesOptHoldingItemT]
     ...
+_OesQryHoldRsp = OesQryOptHoldingRspT
+
 
 class OesQryCustFilterT:
     custId: str
     userInfo: int
     ...
+_OesQryCustFilter = OesQryCustFilterT
+
 
 class OesQryCustReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryCustFilterT
     ...
+_OesQryCustReq = OesQryCustReqT
+
 
 class OesQryCustRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesCustBaseInfoT]
     ...
+_OesQryCustRsp = OesQryCustRspT
+
 
 class OesQryInvAcctFilterT:
     custId: str
@@ -789,6 +879,8 @@ class OesQryInvAcctFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryInvAcctFilter = OesQryInvAcctFilterT
+
 
 class OesInvAcctItemT:
     invAcctId: str
@@ -805,16 +897,22 @@ class OesInvAcctItemT:
     subscriptionQuota: int
     custId: str
     ...
+_OesInvAcctItem = OesInvAcctItemT
+
 
 class OesQryInvAcctReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryInvAcctFilterT
     ...
+_OesQryInvAcctReq = OesQryInvAcctReqT
+
 
 class OesQryInvAcctRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesInvAcctItemT]
     ...
+_OesQryInvAcctRsp = OesQryInvAcctRspT
+
 
 class OesInvAcctOverviewT:
     invAcctId: str
@@ -840,6 +938,8 @@ class OesInvAcctOverviewT:
     trdCnt: int
     __reserve: int
     ...
+_OesInvAcctOverview = OesInvAcctOverviewT
+
 
 class OesCashAcctOverviewT:
     cashAcctId: str
@@ -853,6 +953,8 @@ class OesCashAcctOverviewT:
     __filler: Sequence[int]
     __reserve: int
     ...
+_OesCashAcctOverview = OesCashAcctOverviewT
+
 
 class OesCustOverviewT:
     custId: str
@@ -875,6 +977,8 @@ class OesCustOverviewT:
     szOptionInvAcct: OesInvAcctOverviewT
     __reserve: int
     ...
+_OesCustOverview = OesCustOverviewT
+
 
 class OesClientOverviewT:
     clientId: int
@@ -907,6 +1011,8 @@ class OesClientOverviewT:
     __filler4: int
     custItems: Sequence[OesCustOverviewT]
     ...
+_OesClientOverview = OesClientOverviewT
+
 
 class OesQryCommissionRateFilterT:
     custId: str
@@ -916,6 +1022,8 @@ class OesQryCommissionRateFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryCommissionRateFilter = OesQryCommissionRateFilterT
+
 
 class OesCommissionRateItemT:
     custId: str
@@ -932,16 +1040,22 @@ class OesCommissionRateItemT:
     minFee: int
     maxFee: int
     ...
+_OesCommissionRateItem = OesCommissionRateItemT
+
 
 class OesQryCommissionRateReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryCommissionRateFilterT
     ...
+_OesQryCommissionRateReq = OesQryCommissionRateReqT
+
 
 class OesQryCommissionRateRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesCommissionRateItemT]
     ...
+_OesQryCommissionRateRsp = OesQryCommissionRateRspT
+
 
 class OesQryFundTransferSerialFilterT:
     custId: str
@@ -951,16 +1065,22 @@ class OesQryFundTransferSerialFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryFundTransferSerialFilter = OesQryFundTransferSerialFilterT
+
 
 class OesQryFundTransferSerialReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryFundTransferSerialFilterT
     ...
+_OesQryFundTransferSerialReq = OesQryFundTransferSerialReqT
+
 
 class OesQryFundTransferSerialRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesFundTrsfReportT]
     ...
+_OesQryFundTransferSerialRsp = OesQryFundTransferSerialRspT
+
 
 class OesQryLotWinningFilterT:
     custId: str
@@ -972,16 +1092,22 @@ class OesQryLotWinningFilterT:
     endDate: int
     userInfo: int
     ...
+_OesQryLotWinningFilter = OesQryLotWinningFilterT
+
 
 class OesQryLotWinningReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryLotWinningFilterT
     ...
+_OesQryLotWinningReq = OesQryLotWinningReqT
+
 
 class OesQryLotWinningRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesLotWinningBaseInfoT]
     ...
+_OesQryLotWinningRsp = OesQryLotWinningRspT
+
 
 class OesQryIssueFilterT:
     securityId: str
@@ -989,16 +1115,22 @@ class OesQryIssueFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryIssueFilter = OesQryIssueFilterT
+
 
 class OesQryIssueReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryIssueFilterT
     ...
+_OesQryIssueReq = OesQryIssueReqT
+
 
 class OesQryIssueRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesIssueBaseInfoT]
     ...
+_OesQryIssueRsp = OesQryIssueRspT
+
 
 class OesQryStockFilterT:
     securityId: str
@@ -1008,16 +1140,22 @@ class OesQryStockFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryStockFilter = OesQryStockFilterT
+
 
 class OesQryStockReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryStockFilterT
     ...
+_OesQryStockReq = OesQryStockReqT
+
 
 class OesQryStockRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesStockBaseInfoT]
     ...
+_OesQryStockRsp = OesQryStockRspT
+
 
 class OesQryEtfFilterT:
     fundId: str
@@ -1025,21 +1163,29 @@ class OesQryEtfFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryEtfFilter = OesQryEtfFilterT
+
 
 class OesQryEtfReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryEtfFilterT
     ...
+_OesQryEtfReq = OesQryEtfReqT
+
 
 class OesQryEtfRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesEtfBaseInfoT]
     ...
+_OesQryEtfRsp = OesQryEtfRspT
+
 
 class OesQryEtfComponentFilterT:
     fundId: str
     userInfo: int
     ...
+_OesQryEtfComponentFilter = OesQryEtfComponentFilterT
+
 
 class OesEtfComponentItemT:
     securityId: str
@@ -1054,16 +1200,22 @@ class OesEtfComponentItemT:
     redemptionCashSub: int
     fundId: str
     ...
+_OesEtfComponentItem = OesEtfComponentItemT
+
 
 class OesQryEtfComponentReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryEtfComponentFilterT
     ...
+_OesQryEtfComponentReq = OesQryEtfComponentReqT
+
 
 class OesQryEtfComponentRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesEtfComponentItemT]
     ...
+_OesQryEtfComponentRsp = OesQryEtfComponentRspT
+
 
 class OesQryOptionFilterT:
     securityId: str
@@ -1071,21 +1223,29 @@ class OesQryOptionFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryOptionFilter = OesQryOptionFilterT
+
 
 class OesQryOptionReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryOptionFilterT
     ...
+_OesQryOptionReq = OesQryOptionReqT
+
 
 class OesQryOptionRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesOptionBaseInfoT]
     ...
+_OesQryOptionRsp = OesQryOptionRspT
+
 
 class OesQryTradingDayRspT:
     tradingDay: int
     __filler: int
     ...
+_OesQryTradingDayRsp = OesQryTradingDayRspT
+
 
 class OesQryMarketStateFilterT:
     exchId: int
@@ -1093,16 +1253,22 @@ class OesQryMarketStateFilterT:
     __filler: Sequence[int]
     userInfo: int
     ...
+_OesQryMarketStateFilter = OesQryMarketStateFilterT
+
 
 class OesQryMarketStateReqT:
     reqHead: OesQryReqHeadT
     qryFilter: OesQryMarketStateFilterT
     ...
+_OesQryMarketStateReq = OesQryMarketStateReqT
+
 
 class OesQryMarketStateRspT:
     rspHead: OesQryRspHeadT
     qryItems: Sequence[OesMarketStateInfoT]
     ...
+_OesQryMarketStateRsp = OesQryMarketStateRspT
+
 
 class OesQryReqMsgT:
     qryOrd: OesQryOrdReqT
@@ -1123,6 +1289,8 @@ class OesQryReqMsgT:
     qryMktState: OesQryMarketStateReqT
     qryCounterCash: OesQryCounterCashReqT
     ...
+_OesQryReqMsg = OesQryReqMsgT
+
 
 class OesQryRspMsgT:
     ordRsp: OesQryOrdRspT
@@ -1145,6 +1313,8 @@ class OesQryRspMsgT:
     clientOverview: OesClientOverviewT
     counterCashRsp: OesQryCounterCashRspT
     ...
+_OesQryRspMsg = OesQryRspMsgT
+
 
 class OesLogonReqT:
     encryptMethod: int
@@ -1162,6 +1332,8 @@ class OesLogonReqT:
     lastOutMsgSeq: int
     clientDriverId: str
     ...
+_OesLogonReq = OesLogonReqT
+
 
 class OesLogonRspT:
     encryptMethod: int
@@ -1180,6 +1352,8 @@ class OesLogonRspT:
     lastInMsgSeq: int
     lastOutMsgSeq: int
     ...
+_OesLogonRsp = OesLogonRspT
+
 
 class OesReportSynchronizationReqT:
     lastRptSeqNum: int
@@ -1187,6 +1361,8 @@ class OesReportSynchronizationReqT:
     __filler: Sequence[int]
     subscribeRptTypes: int
     ...
+_OesReportSynchronizationReq = OesReportSynchronizationReqT
+
 
 class OesReportSynchronizationRspT:
     lastRptSeqNum: int
@@ -1194,12 +1370,16 @@ class OesReportSynchronizationRspT:
     __filler: Sequence[int]
     subscribeRptTypes: int
     ...
+_OesReportSynchronizationRsp = OesReportSynchronizationRspT
+
 
 class OesTestRequestReqT:
     testReqId: str
     sendTime: str
     __filler: str
     ...
+_OesTestRequestReq = OesTestRequestReqT
+
 
 class OesTestRequestRspT:
     testReqId: str
@@ -1207,10 +1387,12 @@ class OesTestRequestRspT:
     __filler1: str
     respTime: str
     __filler2: str
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_OesTestRequestRsp = OesTestRequestRspT
+
 
 class OesChangePasswordReqT:
     encryptMethod: int
@@ -1220,6 +1402,8 @@ class OesChangePasswordReqT:
     oldPassword: str
     newPassword: str
     ...
+_OesChangePasswordReq = OesChangePasswordReqT
+
 
 class OesChangePasswordRspT:
     encryptMethod: int
@@ -1233,16 +1417,22 @@ class OesChangePasswordRspT:
     transTime: int
     rejReason: int
     ...
+_OesChangePasswordRsp = OesChangePasswordRspT
+
 
 class OesBatchOrdersHeadT:
     itemCount: int
     __filler: int
     ...
+_OesBatchOrdersHead = OesBatchOrdersHeadT
+
 
 class OesBatchOrdersReqT:
     batchHead: OesBatchOrdersHeadT
     items: Sequence[OesOrdReqT]
     ...
+_OesBatchOrdersReq = OesBatchOrdersReqT
+
 
 class OesRptMsgHeadT:
     rptSeqNum: int
@@ -1251,6 +1441,8 @@ class OesRptMsgHeadT:
     bodyLength: int
     ordRejReason: int
     ...
+_OesRptMsgHead = OesRptMsgHeadT
+
 
 class OesRptMsgBodyT:
     ordInsertRsp: OesOrdCnfmT
@@ -1263,11 +1455,15 @@ class OesRptMsgBodyT:
     stkHoldingRpt: OesStkHoldingItemT
     optHoldingRpt: OesOptHoldingItemT
     ...
+_OesRptMsgBody = OesRptMsgBodyT
+
 
 class OesRptMsgT:
     rptHead: OesRptMsgHeadT
     rptBody: OesRptMsgBodyT
     ...
+_OesRptMsg = OesRptMsgT
+
 
 class OesReqMsgBodyT:
     ordReq: OesOrdReqT
@@ -1279,6 +1475,8 @@ class OesReqMsgBodyT:
     rptSyncReq: OesReportSynchronizationReqT
     logonReq: OesLogonReqT
     ...
+_OesReqMsgBody = OesReqMsgBodyT
+
 
 class OesRspMsgBodyT:
     rptMsg: OesRptMsgT
@@ -1288,6 +1486,8 @@ class OesRspMsgBodyT:
     reportSynchronizationRsp: OesReportSynchronizationRspT
     logonRsp: OesLogonRspT
     ...
+_OesRspMsgBody = OesRspMsgBodyT
+
 
 class SErrMsgT:
     __index: int
@@ -1297,6 +1497,8 @@ class SErrMsgT:
     __msgSize: int
     MSG: str
     ...
+_SErrMsg = SErrMsgT
+
 
 class SDataBufferT:
     dataSize: int
@@ -1304,6 +1506,8 @@ class SDataBufferT:
     buffer: char *const  # unknown what to wrap in py
     __ref: Any
     ...
+_SDataBuffer = SDataBufferT
+
 
 class _SDataBufferVar:
     dataSize: int
@@ -1312,14 +1516,19 @@ class _SDataBufferVar:
     __ref: Any
     ...
 
+
 class SSocketUriInfoT:
     uri: str
     ...
+_SSocketUriInfo = SSocketUriInfoT
+
 
 class SSocketIpPortInfoT:
     port: int
     ip: str
     ...
+_SSocketIpPortInfo = SSocketIpPortInfoT
+
 
 class SSocketChannelInfoT:
     remotePort: int
@@ -1329,6 +1538,8 @@ class SSocketChannelInfoT:
     _isSendBroken: int
     remoteAddr: str
     ...
+_SSocketChannelInfo = SSocketChannelInfoT
+
 
 class SSocketOptionConfigT:
     soRcvbuf: int
@@ -1348,6 +1559,8 @@ class SSocketOptionConfigT:
     localSendingIp: str
     mcastInterfaceIp: str
     ...
+_SSocketOptionConfig = SSocketOptionConfigT
+
 
 class SGeneralClientChannelT:
     heartBtInt: int
@@ -1383,9 +1596,13 @@ class SGeneralClientChannelT:
     __groupFlag: int
     __protocolHints: int
     __filler: Sequence[int]
-    __reserveData: union (anonymous union at oes_libs-0.15.7.4-release\include\sutil/net/spk_general_client_define.h:181:5)  # unknown what to wrap in py
-    __extData: union (anonymous union at oes_libs-0.15.7.4-release\include\sutil/net/spk_general_client_define.h:197:5)  # unknown what to wrap in py
+    __reserveData: union (anonymous union at vnoes/include\sutil/net/spk_general_client_define.h:181:5)  # unknown what to wrap in py
+    __extData: union (anonymous union at vnoes/include\sutil/net/spk_general_client_define.h:197:5)  # unknown what to wrap in py
     ...
+OesApiSessionInfoT = SGeneralClientChannelT
+_SGeneralClientChannel = SGeneralClientChannelT
+MdsApiSessionInfoT = SGeneralClientChannelT
+
 
 class SGeneralClientChannelGroupT:
     channelCount: int
@@ -1396,6 +1613,10 @@ class SGeneralClientChannelGroupT:
     __filler: Sequence[int]
     __fdSet: fd_set  # unknown what to wrap in py
     ...
+MdsApiChannelGroupT = SGeneralClientChannelGroupT
+OesApiChannelGroupT = SGeneralClientChannelGroupT
+_SGeneralClientChannelGroup = SGeneralClientChannelGroupT
+
 
 class SGeneralClientAddrInfoT:
     uri: str
@@ -1405,6 +1626,10 @@ class SGeneralClientAddrInfoT:
     hostNum: int
     __filler: Sequence[int]
     ...
+_SGeneralClientAddrInfo = SGeneralClientAddrInfoT
+OesApiAddrInfoT = SGeneralClientAddrInfoT
+MdsApiAddrInfoT = SGeneralClientAddrInfoT
+
 
 class SGeneralClientRemoteCfgT:
     addrCnt: int
@@ -1419,12 +1644,18 @@ class SGeneralClientRemoteCfgT:
     addrList: Sequence[SGeneralClientAddrInfoT]
     socketOpt: SSocketOptionConfigT
     ...
+_SGeneralClientRemoteCfg = SGeneralClientRemoteCfgT
+MdsApiRemoteCfgT = SGeneralClientRemoteCfgT
+OesApiRemoteCfgT = SGeneralClientRemoteCfgT
+
 
 class OesApiSubscribeInfoT:
     clEnvId: int
     __filler: Sequence[int]
     rptTypes: int
     ...
+_OesApiSubscribeInfo = OesApiSubscribeInfoT
+
 
 class OesApiClientCfgT:
     ordChannelCfg: SGeneralClientRemoteCfgT
@@ -1432,12 +1663,16 @@ class OesApiClientCfgT:
     qryChannelCfg: SGeneralClientRemoteCfgT
     subscribeInfo: OesApiSubscribeInfoT
     ...
+_OesApiClientCfg = OesApiClientCfgT
+
 
 class OesApiClientEnvT:
     ordChannel: SGeneralClientChannelT
     rptChannel: SGeneralClientChannelT
     qryChannel: SGeneralClientChannelT
     ...
+_OesApiClientEnv = OesApiClientEnvT
+
 
 class MdsTradingSessionStatusMsgT:
     exchId: int
@@ -1453,12 +1688,14 @@ class MdsTradingSessionStatusMsgT:
     __filler3: Sequence[int]
     __dataVersion: int
     __origTickSeq: int
-    __origNetTime: STimeval32T
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __processedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __origNetTime: STimeval32T  # unknown what to wrap in py
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __processedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_MdsTradingSessionStatusMsg = MdsTradingSessionStatusMsgT
+
 
 class MdsSecurityStatusMsgT:
     exchId: int
@@ -1479,18 +1716,22 @@ class MdsSecurityStatusMsgT:
     NoSwitch: int
     __filler4: int
     switches: Sequence[None]
-    __origNetTime: STimeval32T
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __processedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __origNetTime: STimeval32T  # unknown what to wrap in py
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __processedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_MdsSecurityStatusMsg = MdsSecurityStatusMsgT
+
 
 class MdsPriceLevelEntryT:
     Price: int
     NumberOfOrders: int
     OrderQty: int
     ...
+_MdsPriceLevelEntry = MdsPriceLevelEntryT
+
 
 class MdsMktDataSnapshotHeadT:
     exchId: int
@@ -1505,12 +1746,14 @@ class MdsMktDataSnapshotHeadT:
     __channelNo: int
     __dataVersion: int
     __origTickSeq: int
-    __origNetTime: STimeval32T
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __processedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __origNetTime: STimeval32T  # unknown what to wrap in py
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __processedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_MdsMktDataSnapshotHead = MdsMktDataSnapshotHeadT
+
 
 class MdsIndexSnapshotBodyT:
     SecurityID: str
@@ -1528,6 +1771,8 @@ class MdsIndexSnapshotBodyT:
     StockNum: int
     __filler1: int
     ...
+_MdsIndexSnapshotBody = MdsIndexSnapshotBodyT
+
 
 class MdsStockSnapshotBodyT:
     SecurityID: str
@@ -1548,12 +1793,16 @@ class MdsStockSnapshotBodyT:
     BidLevels: Sequence[MdsPriceLevelEntryT]
     OfferLevels: Sequence[MdsPriceLevelEntryT]
     ...
+_MdsStockSnapshotBody = MdsStockSnapshotBodyT
+
 
 class MdsL1SnapshotBodyT:
     stock: MdsStockSnapshotBodyT
     option: MdsStockSnapshotBodyT
     index: MdsIndexSnapshotBodyT
     ...
+_MdsL1SnapshotBody = MdsL1SnapshotBodyT
+
 
 class MdsL2StockSnapshotBodyT:
     SecurityID: str
@@ -1580,6 +1829,8 @@ class MdsL2StockSnapshotBodyT:
     BidLevels: Sequence[MdsPriceLevelEntryT]
     OfferLevels: Sequence[MdsPriceLevelEntryT]
     ...
+_MdsL2StockSnapshotBody = MdsL2StockSnapshotBodyT
+
 
 class MdsL2StockSnapshotIncrementalT:
     NumTrades: int
@@ -1606,6 +1857,8 @@ class MdsL2StockSnapshotIncrementalT:
     PriceLevelOperator: Sequence[int]
     PriceLevels: Sequence[MdsPriceLevelEntryT]
     ...
+_MdsL2StockSnapshotIncremental = MdsL2StockSnapshotIncrementalT
+
 
 class MdsL2BestOrdersSnapshotBodyT:
     SecurityID: str
@@ -1618,6 +1871,8 @@ class MdsL2BestOrdersSnapshotBodyT:
     BidOrderQty: Sequence[int]
     OfferOrderQty: Sequence[int]
     ...
+_MdsL2BestOrdersSnapshotBody = MdsL2BestOrdersSnapshotBodyT
+
 
 class MdsL2BestOrdersSnapshotIncrementalT:
     TotalVolumeTraded: int
@@ -1634,6 +1889,8 @@ class MdsL2BestOrdersSnapshotIncrementalT:
     OperatorEntryID: Sequence[int]
     OrderQty: Sequence[int]
     ...
+_MdsL2BestOrdersSnapshotIncremental = MdsL2BestOrdersSnapshotIncrementalT
+
 
 class MdsL2VirtualAuctionPriceT:
     SecurityID: str
@@ -1643,6 +1900,8 @@ class MdsL2VirtualAuctionPriceT:
     VirtualAuctionQty: int
     LeavesQty: int
     ...
+_MdsL2VirtualAuctionPrice = MdsL2VirtualAuctionPriceT
+
 
 class MdsL2MarketOverviewT:
     OrigDate: int
@@ -1650,6 +1909,8 @@ class MdsL2MarketOverviewT:
     __exchSendingTime: int
     __mdsRecvTime: int
     ...
+_MdsL2MarketOverview = MdsL2MarketOverviewT
+
 
 class MdsL2SnapshotBodyT:
     l2Stock: MdsL2StockSnapshotBodyT
@@ -1660,6 +1921,8 @@ class MdsL2SnapshotBodyT:
     l2VirtualAuctionPrice: MdsL2VirtualAuctionPriceT
     l2MarketOverview: MdsL2MarketOverviewT
     ...
+_MdsL2SnapshotBody = MdsL2SnapshotBodyT
+
 
 class MdsMktDataSnapshotT:
     head: MdsMktDataSnapshotHeadT
@@ -1673,6 +1936,8 @@ class MdsMktDataSnapshotT:
     l2VirtualAuctionPrice: MdsL2VirtualAuctionPriceT
     l2MarketOverview: MdsL2MarketOverviewT
     ...
+_MdsMktDataSnapshot = MdsMktDataSnapshotT
+
 
 class MdsL2TradeT:
     exchId: int
@@ -1695,12 +1960,14 @@ class MdsL2TradeT:
     TradeMoney: int
     BidApplSeqNum: int
     OfferApplSeqNum: int
-    __origNetTime: STimeval32T
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __processedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __origNetTime: STimeval32T  # unknown what to wrap in py
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __processedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_MdsL2Trade = MdsL2TradeT
+
 
 class MdsL2OrderT:
     exchId: int
@@ -1720,12 +1987,14 @@ class MdsL2OrderT:
     __origTickSeq: int
     Price: int
     OrderQty: int
-    __origNetTime: STimeval32T
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __processedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __origNetTime: STimeval32T  # unknown what to wrap in py
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __processedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_MdsL2Order = MdsL2OrderT
+
 
 class MdsL2TickLostT:
     exchId: int
@@ -1737,6 +2006,8 @@ class MdsL2TickLostT:
     endApplSeqNum: int
     __origTickSeq: int
     ...
+_MdsL2TickLost = MdsL2TickLostT
+
 
 class MdsQryMktDataSnapshotReqT:
     exchId: int
@@ -1744,12 +2015,17 @@ class MdsQryMktDataSnapshotReqT:
     __filler: Sequence[int]
     instrId: int
     ...
+_MdsQryMktDataSnapshotReq = MdsQryMktDataSnapshotReqT
+MdsQrySecurityStatusReqT = MdsQryMktDataSnapshotReqT
+
 
 class MdsQryTrdSessionStatusReqT:
     exchId: int
     securityType: int
     __filler: Sequence[int]
     ...
+_MdsQryTrdSessionStatusReq = MdsQryTrdSessionStatusReqT
+
 
 class MdsLogonReqT:
     encryptMethod: int
@@ -1758,6 +2034,8 @@ class MdsLogonReqT:
     password: str
     applVerId: str
     ...
+_MdsLogonReq = MdsLogonReqT
+
 
 class MdsLogonRspT:
     encryptMethod: int
@@ -1770,6 +2048,8 @@ class MdsLogonRspT:
     leaderHostNum: int
     __filler: Sequence[int]
     ...
+_MdsLogonRsp = MdsLogonRspT
+
 
 class MdsMktDataRequestEntryT:
     exchId: int
@@ -1777,6 +2057,8 @@ class MdsMktDataRequestEntryT:
     __filler: Sequence[int]
     instrId: int
     ...
+_MdsMktDataRequestEntry = MdsMktDataRequestEntryT
+
 
 class MdsMktDataRequestReqT:
     subMode: int
@@ -1795,11 +2077,16 @@ class MdsMktDataRequestReqT:
     beginTime: int
     subSecurityCnt: int
     ...
+_MdsMktDataRequestReq = MdsMktDataRequestReqT
+
 
 class MdsMktDataRequestReqBufT:
     mktDataRequestReq: MdsMktDataRequestReqT
     entries: Sequence[MdsMktDataRequestEntryT]
     ...
+MdsApiSubscribeInfoT = MdsMktDataRequestReqBufT
+_MdsMktDataRequestReqBuf = MdsMktDataRequestReqBufT
+
 
 class MdsMktDataRequestRspT:
     subMode: int
@@ -1817,12 +2104,16 @@ class MdsMktDataRequestRspT:
     szseIndexSubscribed: int
     szseOptionSubscribed: int
     ...
+_MdsMktDataRequestRsp = MdsMktDataRequestRspT
+
 
 class MdsTestRequestReqT:
     testReqId: str
     sendTime: str
     __filler: str
     ...
+_MdsTestRequestReq = MdsTestRequestReqT
+
 
 class MdsTestRequestRspT:
     testReqId: str
@@ -1830,10 +2121,12 @@ class MdsTestRequestRspT:
     __filler1: str
     respTime: str
     __filler2: str
-    __recvTime: STimeval32T
-    __collectedTime: STimeval32T
-    __pushingTime: STimeval32T
+    __recvTime: STimeval32T  # unknown what to wrap in py
+    __collectedTime: STimeval32T  # unknown what to wrap in py
+    __pushingTime: STimeval32T  # unknown what to wrap in py
     ...
+_MdsTestRequestRsp = MdsTestRequestRspT
+
 
 class MdsMktReqMsgBodyT:
     wholeMktDataReqBuf: MdsMktDataRequestReqBufT
@@ -1844,6 +2137,8 @@ class MdsMktReqMsgBodyT:
     qrySecurityStatusReq: MdsQryMktDataSnapshotReqT
     qryTrdSessionStatusReq: MdsQryTrdSessionStatusReqT
     ...
+_MdsMktReqMsgBody = MdsMktReqMsgBodyT
+
 
 class MdsMktRspMsgBodyT:
     mktDataRequestRsp: MdsMktDataRequestRspT
@@ -1856,12 +2151,16 @@ class MdsMktRspMsgBodyT:
     trdSessionStatus: MdsTradingSessionStatusMsgT
     securityStatus: MdsSecurityStatusMsgT
     ...
+_MdsMktRspMsgBody = MdsMktRspMsgBodyT
+
 
 class MdsUdpPktHeadT:
     msgCnt: int
     pktSiz: int
     pktSeq: int
     ...
+_MdsUdpPktHead = MdsUdpPktHeadT
+
 
 class MdsApiClientCfgT:
     tcpChannelCfg: SGeneralClientRemoteCfgT
@@ -1872,6 +2171,8 @@ class MdsApiClientCfgT:
     udpOrderChannelCfg: SGeneralClientRemoteCfgT
     subscribeInfo: MdsMktDataRequestReqBufT
     ...
+_MdsApiClientCfg = MdsApiClientCfgT
+
 
 class MdsApiClientEnvT:
     tcpChannel: SGeneralClientChannelT
@@ -1882,71 +2183,10 @@ class MdsApiClientEnvT:
     udpOrderChannel: SGeneralClientChannelT
     udpChannelGroup: SGeneralClientChannelGroupT
     ...
+_MdsApiClientEnv = MdsApiClientEnvT
 
-class helper:
-    
-    @staticmethod
-    def mdstojson(
-            pRspHead: SMsgHeadT,
-            pRspBody: Any,
-            pRemoteInfo: str,
-        ) -> int:
-        ...
-    
-    
-    @staticmethod
-    def oestojson(
-            pRspHead: SMsgHeadT,
-            pRspBody: Any,
-            pRemoteInfo: str,
-        ) -> int:
-        ...
-    
-    ...
 
 class cast:
-    
-    def to_spk_struct_timespec(self, 
-            v: Any,
-        ) -> _spk_struct_timespec:
-        ...
-    
-    
-    def to_spk_struct_timezone(self, 
-            v: Any,
-        ) -> _spk_struct_timezone:
-        ...
-    
-    
-    def to_spk_struct_iovec(self, 
-            v: Any,
-        ) -> _spk_struct_iovec:
-        ...
-    
-    
-    def toSTimeval32T(self, 
-            v: Any,
-        ) -> STimeval32T:
-        ...
-    
-    
-    def to_spk_struct_timeval32(self, 
-            v: Any,
-        ) -> STimeval32T:
-        ...
-    
-    
-    def toSTimeval64T(self, 
-            v: Any,
-        ) -> STimeval64T:
-        ...
-    
-    
-    def to_spk_struct_timeval64(self, 
-            v: Any,
-        ) -> STimeval64T:
-        ...
-    
     
     def toOesOrdReqT(self, 
             v: Any,
@@ -2026,13 +2266,13 @@ class cast:
         ...
     
     
-    def to_OesTrdCnfm(self, 
+    def toOesTrdItemT(self, 
             v: Any,
         ) -> OesTrdCnfmT:
         ...
     
     
-    def toOesTrdItemT(self, 
+    def to_OesTrdCnfm(self, 
             v: Any,
         ) -> OesTrdCnfmT:
         ...
@@ -2116,13 +2356,13 @@ class cast:
         ...
     
     
-    def toOesIssueItemT(self, 
+    def to_OesIssueBaseInfo(self, 
             v: Any,
         ) -> OesIssueBaseInfoT:
         ...
     
     
-    def to_OesIssueBaseInfo(self, 
+    def toOesIssueItemT(self, 
             v: Any,
         ) -> OesIssueBaseInfoT:
         ...
@@ -2146,13 +2386,13 @@ class cast:
         ...
     
     
-    def to_OesStockBaseInfo(self, 
+    def toOesStockItemT(self, 
             v: Any,
         ) -> OesStockBaseInfoT:
         ...
     
     
-    def toOesStockItemT(self, 
+    def to_OesStockBaseInfo(self, 
             v: Any,
         ) -> OesStockBaseInfoT:
         ...
@@ -2164,13 +2404,13 @@ class cast:
         ...
     
     
-    def toOesEtfItemT(self, 
+    def to_OesEtfBaseInfo(self, 
             v: Any,
         ) -> OesEtfBaseInfoT:
         ...
     
     
-    def to_OesEtfBaseInfo(self, 
+    def toOesEtfItemT(self, 
             v: Any,
         ) -> OesEtfBaseInfoT:
         ...
@@ -2194,13 +2434,13 @@ class cast:
         ...
     
     
-    def toOesOptionItemT(self, 
+    def to_OesOptionBaseInfo(self, 
             v: Any,
         ) -> OesOptionBaseInfoT:
         ...
     
     
-    def to_OesOptionBaseInfo(self, 
+    def toOesOptionItemT(self, 
             v: Any,
         ) -> OesOptionBaseInfoT:
         ...
@@ -2524,13 +2764,13 @@ class cast:
         ...
     
     
-    def toOesQryOptHoldingFilterT(self, 
+    def to_OesQryStkHoldingFilter(self, 
             v: Any,
         ) -> OesQryStkHoldingFilterT:
         ...
     
     
-    def to_OesQryStkHoldingFilter(self, 
+    def toOesQryOptHoldingFilterT(self, 
             v: Any,
         ) -> OesQryStkHoldingFilterT:
         ...
@@ -3394,19 +3634,25 @@ class cast:
         ...
     
     
-    def toMdsApiSessionInfoT(self, 
-            v: Any,
-        ) -> SGeneralClientChannelT:
-        ...
-    
-    
     def to_SGeneralClientChannel(self, 
             v: Any,
         ) -> SGeneralClientChannelT:
         ...
     
     
+    def toMdsApiSessionInfoT(self, 
+            v: Any,
+        ) -> SGeneralClientChannelT:
+        ...
+    
+    
     def toSGeneralClientChannelGroupT(self, 
+            v: Any,
+        ) -> SGeneralClientChannelGroupT:
+        ...
+    
+    
+    def toMdsApiChannelGroupT(self, 
             v: Any,
         ) -> SGeneralClientChannelGroupT:
         ...
@@ -3424,13 +3670,13 @@ class cast:
         ...
     
     
-    def toMdsApiChannelGroupT(self, 
+    def toSGeneralClientAddrInfoT(self, 
             v: Any,
-        ) -> SGeneralClientChannelGroupT:
+        ) -> SGeneralClientAddrInfoT:
         ...
     
     
-    def toSGeneralClientAddrInfoT(self, 
+    def to_SGeneralClientAddrInfo(self, 
             v: Any,
         ) -> SGeneralClientAddrInfoT:
         ...
@@ -3448,13 +3694,13 @@ class cast:
         ...
     
     
-    def to_SGeneralClientAddrInfo(self, 
+    def toSGeneralClientRemoteCfgT(self, 
             v: Any,
-        ) -> SGeneralClientAddrInfoT:
+        ) -> SGeneralClientRemoteCfgT:
         ...
     
     
-    def toSGeneralClientRemoteCfgT(self, 
+    def to_SGeneralClientRemoteCfg(self, 
             v: Any,
         ) -> SGeneralClientRemoteCfgT:
         ...
@@ -3467,12 +3713,6 @@ class cast:
     
     
     def toOesApiRemoteCfgT(self, 
-            v: Any,
-        ) -> SGeneralClientRemoteCfgT:
-        ...
-    
-    
-    def to_SGeneralClientRemoteCfg(self, 
             v: Any,
         ) -> SGeneralClientRemoteCfgT:
         ...
@@ -3736,13 +3976,13 @@ class cast:
         ...
     
     
-    def toMdsQrySecurityStatusReqT(self, 
+    def to_MdsQryMktDataSnapshotReq(self, 
             v: Any,
         ) -> MdsQryMktDataSnapshotReqT:
         ...
     
     
-    def to_MdsQryMktDataSnapshotReq(self, 
+    def toMdsQrySecurityStatusReqT(self, 
             v: Any,
         ) -> MdsQryMktDataSnapshotReqT:
         ...
@@ -3921,13 +4161,8 @@ class cast:
         ) -> MdsApiClientEnvT:
         ...
     
-    
-    def tohelper(self, 
-            v: Any,
-        ) -> helper:
-        ...
-    
     ...
+
 
 def SPlatform_GetErrno(
     )->int:
@@ -4444,14 +4679,6 @@ def OesApi_ForeachInChannelGroup(
     )->int:
     ...
 
-def OesApi_WaitOnChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-        ppFailed: SGeneralClientChannelT,
-    )->int:
-    ...
-
 def OesApi_SetThreadUsername(
         pUsername: str,
     )->Any:
@@ -4602,29 +4829,6 @@ def MdsApi_SubscribeMarketData(
         pSessionInfo: SGeneralClientChannelT,
         pMktDataRequestReq: MdsMktDataRequestReqT,
         pEntries: MdsMktDataRequestEntryT,
-    )->int:
-    ...
-
-def MdsApi_SubscribeByString(
-        pTcpChannel: SGeneralClientChannelT,
-        pSecurityListStr: str,
-        pDelim: str,
-        exchangeId: eMdsExchangeIdT,
-        securityType: eMdsSecurityTypeT,
-        subMode: eMdsSubscribeModeT,
-        dataTypes: int,
-    )->int:
-    ...
-
-def MdsApi_SubscribeByStringAndPrefixes(
-        pTcpChannel: SGeneralClientChannelT,
-        pSecurityListStr: str,
-        pDelim: str,
-        pSseCodePrefixes: str,
-        pSzseCodePrefixes: str,
-        securityType: eMdsSecurityTypeT,
-        subMode: eMdsSubscribeModeT,
-        dataTypes: int,
     )->int:
     ...
 
@@ -4856,30 +5060,6 @@ def MdsApi_ForeachInChannelGroup(
     )->int:
     ...
 
-def MdsApi_WaitOnTcpChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-        ppFailed: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_WaitOnTcpChannelGroupCompressible(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-        ppFailed: SGeneralClientChannelT,
-    )->int:
-    ...
-
-def MdsApi_WaitOnUdpChannelGroup(
-        pChannelGroup: SGeneralClientChannelGroupT,
-        timeoutMs: int,
-        pOnMsgCallback: Callable[[SGeneralClientChannelT,SMsgHeadT,Any,Any], int],
-        ppFailed: SGeneralClientChannelT,
-    )->int:
-    ...
-
 def MdsApi_SetThreadUsername(
         pUsername: str,
     )->Any:
@@ -5057,6 +5237,32 @@ MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE: str = """udpServer.TickTrade"""
 MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER: str = """udpServer.TickOrder"""
 MDSAPI_DEFAULT_STRING_DELIM: str = """,;| 	
 """
+
+
+class constants:
+    OES_APPL_VER_ID: str = """0.15.7.4"""
+    OES_MIN_APPL_VER_ID: str = """0.15.5"""
+    OESAPI_CFG_DEFAULT_SECTION: str = """oes_client"""
+    OESAPI_CFG_DEFAULT_SECTION_LOGGER: str = """log"""
+    OESAPI_CFG_DEFAULT_KEY_ORD_ADDR: str = """ordServer"""
+    OESAPI_CFG_DEFAULT_KEY_RPT_ADDR: str = """rptServer"""
+    OESAPI_CFG_DEFAULT_KEY_QRY_ADDR: str = """qryServer"""
+    OESAPI_DEFAULT_STRING_DELIM: str = """,;| 	
+"""
+    MDS_APPL_VER_ID: str = """0.15.7.4"""
+    MDS_MIN_APPL_VER_ID: str = """0.15.5"""
+    MDSAPI_CFG_DEFAULT_SECTION: str = """mds_client"""
+    MDSAPI_CFG_DEFAULT_SECTION_LOGGER: str = """log"""
+    MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR: str = """tcpServer"""
+    MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR: str = """qryServer"""
+    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1: str = """udpServer.L1"""
+    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2: str = """udpServer.L2"""
+    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE: str = """udpServer.TickTrade"""
+    MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER: str = """udpServer.TickOrder"""
+    MDSAPI_DEFAULT_STRING_DELIM: str = """,;| 	
+"""
+    ...
+
 class eOesExchangeIdT(Enum):
     OES_EXCH_UNDEFINE: eOesExchangeIdT
     OES_EXCH_SSE: eOesExchangeIdT = 1

@@ -12,86 +12,14 @@
 
 namespace autocxxpy
 {
-    //template <>
-    //struct calling_wrapper<&::OesApi_WaitReportMsg>
-    //{
-    //    static constexpr auto value = [](
-    //        OesApiSessionInfoT *pRptChannel,
-    //        int32 timeoutMs,
-    //        F_OESAPI_ON_RPT_MSG_T pRptMsgCallback,
-    //        void *pCallbackParams
-    //        )
-    //    {
-    //        return ::OesApi_WaitReportMsg(pRptChannel, timeoutMs, pRptMsgCallback, pCallbackParams);
-    //    };
-    //};
+    //////////////////////////////////////////////////////////////////////////
+    // special output variable
 
-    template <>
-    struct calling_wrapper<&::OesApi_WaitOnChannelGroup>
-    {
-        static constexpr auto value = [](
-            OesApiChannelGroupT *pChannelGroup,
-            int32 timeoutMs,
-            F_OESAPI_ON_RPT_MSG_T pOnMsgCallback,
-            void *pCallbackParams
-            )
-        {
-            return ::OesApi_WaitOnChannelGroup(pChannelGroup, timeoutMs, pOnMsgCallback, pCallbackParams, nullptr);
-        };
-    };
-
-    template <>
-    struct calling_wrapper<&::MdsApi_WaitOnTcpChannelGroup>
-    {
-        static constexpr auto value = [](
-            MdsApiChannelGroupT *pChannelGroup,
-            int32 timeoutMs,
-            F_MDSAPI_ONMSG_T pOnMsgCallback,
-            void *pCallbackParams
-            )
-        {
-            return ::MdsApi_WaitOnTcpChannelGroup(pChannelGroup, timeoutMs, pOnMsgCallback, pCallbackParams, nullptr);
-        };
-    };
-
-    template <>
-    struct calling_wrapper<&::MdsApi_WaitOnTcpChannelGroupCompressible>
-    {
-        static constexpr auto value = [](
-            MdsApiChannelGroupT *pChannelGroup,
-            int32 timeoutMs,
-            F_MDSAPI_ONMSG_T pOnMsgCallback,
-            void *pCallbackParams
-            )
-        {
-            return ::MdsApi_WaitOnTcpChannelGroupCompressible(pChannelGroup, timeoutMs, pOnMsgCallback, pCallbackParams, nullptr);
-        };
-    };
-
-    template <>
-    struct calling_wrapper<&::MdsApi_WaitOnUdpChannelGroup>
-    {
-        static constexpr auto value = [](
-            MdsApiChannelGroupT *pChannelGroup,
-            int32 timeoutMs,
-            F_MDSAPI_ONMSG_T pOnMsgCallback,
-            void *pCallbackParams
-            )
-        {
-            return ::MdsApi_WaitOnUdpChannelGroup(pChannelGroup, timeoutMs, pOnMsgCallback, pCallbackParams, nullptr);
-        };
-    };
-
-    template <class T>
-    struct ssss
-    {
-        using type = int;
-    };
-
+    //////////////////////////////////////////////////////////////////////////
+    // set/get of userInfo.u64
     CREATE_MEMBER_DETECTOR(u64);
 
-
-    template <class MemberConstant>
+    template <class tag, class MemberConstant>
     struct my_getter_helper
     {
         static constexpr auto get()
@@ -110,7 +38,7 @@ namespace autocxxpy
             }
             else
             {
-                return default_getter_wrap(member);
+                return default_getter_wrap<tag>(member);
             }
         }
     };
@@ -118,12 +46,12 @@ namespace autocxxpy
     template <class MemberConstant>
     struct getter_wrap<module_tag, MemberConstant>
     {
-        using value_type = decltype(my_getter_helper<MemberConstant>::get());
-        static constexpr value_type value = my_getter_helper< MemberConstant>::get();
+        using value_type = decltype(my_getter_helper<module_tag, MemberConstant>::get());
+        static constexpr value_type value = my_getter_helper<module_tag, MemberConstant>::get();
     };
 
 
-    template <class MemberConstant>
+    template <class tag, class MemberConstant>
     struct my_setter_helper
     {
         static constexpr auto set()
@@ -142,7 +70,7 @@ namespace autocxxpy
             }
             else
             {
-                return default_setter_wrap(member);
+                return default_setter_wrap<tag>(member);
             }
         }
     };
@@ -150,28 +78,8 @@ namespace autocxxpy
     template <class MemberConstant>
     struct setter_wrap<module_tag, MemberConstant>
     {
-        using value_type = decltype(my_setter_helper<MemberConstant>::set());
-        static constexpr value_type value = my_setter_helper< MemberConstant>::set();
+        using value_type = decltype(my_setter_helper<module_tag, MemberConstant>::set());
+        static constexpr value_type value = my_setter_helper<module_tag, MemberConstant>::set();
     };
-
-
-
-    //template <>
-    //struct post_register_class<tag_vnoes, MdsMktDataSnapshotT>
-    //{
-    //    template <class T>
-    //    static constexpr void post_register(T &c)
-    //    {
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "l2Stock", l2Stock);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "l2StockIncremental", l2StockIncremental);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "l2BestOrders", l2BestOrders);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "l2BestOrdersIncremental", l2BestOrdersIncremental);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "stock", stock);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "option", option);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "index", index);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "l2VirtualAuctionPrice", l2VirtualAuctionPrice);
-    //        c.AUTOCXXPY_DEF_PROPERTY(MdsMktDataSnapshotT, "l2MarketOverview", l2MarketOverview);
-    //    }
-    //};
-
+    //////////////////////////////////////////////////////////////////////////
 }
