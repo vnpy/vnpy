@@ -8,6 +8,5 @@ numpy
 pandas
 matplotlib
 seaborn
-jupyter
-ta-lib; platform_system=="Unix"
+ta-lib; platform_system=="Linux"
 

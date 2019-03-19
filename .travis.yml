@@ -1,8 +1,34 @@
 language: python
+
+dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
+
 python:
-  - "3.6"
-install:
-  - pip install -r requirements.txt
-  - pip install flake8
-script:
-  - python check.py
+  - "3.7"
+
+matrix:
+  include:
+    - name: "pip install under linux"
+      before_install:
+        # C++17
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -qq
+      install:
+        # C++17
+        - sudo apt-get install -qq gcc-8 g++-8
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
+        # Linux install script
+        - bash ./install.sh
+      script:
+        # todo: use python unittest
+        - python -c "import vnpy.api.ctp.vnctp; import vnpy.api.oes.vnoes; exit(0);"
+
+
+    - name: "code quality analysis: flake8"
+      before_install:
+        - pip install flake8
+      install:
+        - ""  # prevent running "pip install -r requirements.txt"
+      script:
+        - flake8
