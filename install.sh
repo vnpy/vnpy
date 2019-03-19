@@ -1,5 +1,6 @@
-::Install Python Modules
+#!/usr/bin/env bash
+# Install Python Modules
 pip install -r requirements.txt
 
-:: Install vn.py
-python setup.py install
+# Install vn.py
+pip install .

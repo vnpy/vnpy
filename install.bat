@@ -2,4 +2,4 @@
 pip install -r requirements.txt
 
 :: Install vn.py
-python setup.py install
+pip install .
