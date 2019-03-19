@@ -15,6 +15,20 @@ matrix:
       script:
         - flake8
 
+    - name: "pip install under Windows"
+      os: "windows"
+      language: "cpp"
+      env:
+        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_install:
+        - choco install python3 --version 3.7.2
+      install:
+        - pip install -r requirements.txt
+        - pip install .
+      script:
+        # todo: use python unittest
+        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctpmd; import vnpy.api.oes.vnoes; exit(0);"
+
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
         # C++17
@@ -47,5 +61,5 @@ matrix:
         - bash ./install.sh
       script:
         # todo: use python unittest
-        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctp; import vnpy.api.oes.vnoes; exit(0);"
+        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctpmd; import vnpy.api.oes.vnoes; exit(0);"
 
