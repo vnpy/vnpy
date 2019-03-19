@@ -57,7 +57,7 @@ class Request(object):
             status_code = self.response.status_code
 
         return (
-            "reuqest : {} {} {} because {}: \n"
+            "request : {} {} {} because {}: \n"
             "headers: {}\n"
             "params: {}\n"
             "data: {}\n"
