@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\vnpy\app\csv_loader\ui\CsvLoader.ui'
+# Form implementation generated from reading ui file 'csv_loader.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -114,14 +114,4 @@ class Ui_CsvLoader(object):
         self.volume_edit.setText(_translate("CsvLoader", "Volume"))
         self.label_12.setText(_translate("CsvLoader", "Exchange"))
         self.load_button.setText(_translate("CsvLoader", "载入"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    CsvLoader = QtWidgets.QDialog()
-    ui = Ui_CsvLoader()
-    ui.setupUi(CsvLoader)
-    CsvLoader.show()
-    sys.exit(app.exec_())
 

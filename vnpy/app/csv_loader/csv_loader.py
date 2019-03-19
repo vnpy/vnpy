@@ -1,3 +1,25 @@
+"""
+Author: nanoric
+
+Load data from a csv file.
+
+Differences to 1.9.2:
+    * combine Date column and Time column into one DateTime column
+
+Sample csv file:
+
+```csv
+"DateTime","Open","High","Low","Close","Volume"
+2010-04-16T09:16:00.000000,3450.0,3488.0,3450.0,3468.0,489
+2010-04-16T09:17:00.000000,3468.0,3473.8,3467.0,3467.0,302
+2010-04-16T09:18:00.000000,3467.0,3471.0,3466.0,3467.0,203
+2010-04-16T09:19:00.000000,3467.0,3468.2,3448.0,3448.0,280
+2010-04-16T09:20:00.000000,3448.0,3459.0,3448.0,3454.0,250
+2010-04-16T09:21:00.000000,3454.0,3456.8,3454.0,3456.8,109
+```
+
+"""
+
 import csv
 from datetime import datetime
 
@@ -7,7 +29,7 @@ from vnpy.trader.database import DbBarData
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import BarData
 
-from .base import APP_NAME
+APP_NAME = "CsvLoader"
 
 
 class CsvLoader(BaseEngine):
@@ -29,6 +51,7 @@ class CsvLoader(BaseEngine):
         self.volume_head: str = ''
 
     def load(self):
+        """"""
         symbol = self.symbol
         exchange = self.exchange
         interval = self.interval

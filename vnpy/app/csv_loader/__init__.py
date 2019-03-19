@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from vnpy.trader.app import BaseApp
-from .CsvLoader import CsvLoader
-from .base import APP_NAME
+from .csv_loader import APP_NAME, CsvLoader
 
 
 class CsvLoaderApp(BaseApp):

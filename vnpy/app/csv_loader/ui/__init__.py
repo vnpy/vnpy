@@ -1,1 +1,1 @@
-from .widget import CsvLoaderWidget
+from .csv_loader_widget import CsvLoaderWidget
