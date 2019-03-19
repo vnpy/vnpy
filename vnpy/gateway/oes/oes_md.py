@@ -1,18 +1,20 @@
 import time
+from copy import copy
 from datetime import datetime
 from gettext import gettext as _
 from threading import Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
 
-from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitAllByConvention, \
-    MdsApi_IsValidQryChannel, MdsApi_IsValidTcpChannel, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
+from vnpy.api.oes.vnoes import MdsApiClientEnvT, MdsApi_DestoryAll, MdsApi_InitLogger, \
+    MdsApi_InitTcpChannel2, MdsApi_LogoutAll, MdsApi_SetThreadPassword, \
     MdsApi_SetThreadUsername, MdsApi_SubscribeMarketData, MdsApi_WaitOnMsg, MdsL2StockSnapshotBodyT, \
-    MdsMktDataRequestEntryT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, MdsStockSnapshotBodyT, \
-    SGeneralClientChannelT, SMsgHeadT, SPlatform_IsNegEpipe, cast, \
+    MdsMktDataRequestEntryT, MdsMktDataRequestReqBufT, MdsMktDataRequestReqT, MdsMktRspMsgBodyT, \
+    MdsStockSnapshotBodyT, SGeneralClientChannelT, SMsgHeadT, cast, \
     eMdsExchangeIdT, eMdsMktSubscribeFlagT, eMdsMsgTypeT, eMdsSecurityTypeT, eMdsSubscribeDataTypeT, \
-    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eSMsgProtocolTypeT
+    eMdsSubscribeModeT, eMdsSubscribedTickExpireTypeT, eMdsSubscribedTickTypeT, eSMsgProtocolTypeT
 
+from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
 from vnpy.trader.constant import Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import SubscribeRequest, TickData
@@ -36,7 +38,7 @@ class OesMdMessageLoop:
         self._md = md
         self._th = Thread(target=self._message_loop)
 
-        self.message_handlers: Dict[int, Callable[[dict], None]] = {
+        self.message_handlers: Dict[eMdsMsgTypeT, Callable[[MdsMktRspMsgBodyT], int]] = {
             # tick & orderbook
             eMdsMsgTypeT.MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: self.on_market_full_refresh,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: self.on_l2_market_data_snapshot,
@@ -65,8 +67,9 @@ class OesMdMessageLoop:
 
     def start(self):
         """"""
-        self._alive = True
-        self._th.start()
+        if not self._alive:  # not thread-safe
+            self._alive = True
+            self._th.start()
 
     def stop(self):
         """"""
@@ -79,7 +82,7 @@ class OesMdMessageLoop:
     def reconnect(self):
         """"""
         self.gateway.write_log(_("正在尝试重新连接到行情服务器。"))
-        return self._md.connect()
+        return self._md.connect_tcp_channel()
 
     def _get_last_tick(self, symbol):
         """"""
@@ -116,8 +119,6 @@ class OesMdMessageLoop:
         """"""
         tcp_channel = self.env.tcpChannel
         timeout_ms = 1000
-        # is_timeout = SPlatform_IsNegEtimeout
-        is_disconnected = SPlatform_IsNegEpipe
         while self._alive:
             ret = MdsApi_WaitOnMsg(tcp_channel,
                                    timeout_ms,
@@ -145,7 +146,7 @@ class OesMdMessageLoop:
             tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
         for i in range(min(data.OfferPriceLevel, 5)):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
-        self.gateway.on_tick(tick)
+        self.gateway.on_tick(copy(tick))
 
     def on_market_full_refresh(self, d: MdsMktRspMsgBodyT):
         """"""
@@ -161,7 +162,7 @@ class OesMdMessageLoop:
             tick.__dict__['bid_price_' + str(i + 1)] = data.BidLevels[i].Price / 10000
         for i in range(5):
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
-        self.gateway.on_tick(tick)
+        self.gateway.on_tick(copy(tick))
 
     def on_l2_trade(self, d: MdsMktRspMsgBodyT):
         """"""
@@ -171,7 +172,7 @@ class OesMdMessageLoop:
         tick.datetime = datetime.utcnow()
         tick.volume = data.TradeQty
         tick.last_price = data.TradePrice / 10000
-        self.gateway.on_tick(tick)
+        self.gateway.on_tick(copy(tick))
 
     def on_market_data_request(self, d: MdsMktRspMsgBodyT):
         """"""
@@ -212,6 +213,9 @@ class OesMdApi:
         """"""
         self.gateway = gateway
         self.config_path: str = ''
+        self.tcp_server: str = ''
+        self.qry_server: str = ''
+
         self.username: str = ''
         self.password: str = ''
 
@@ -223,17 +227,8 @@ class OesMdApi:
         """Connect to trading server.
         :note set config_path before calling this function
         """
-        MdsApi_SetThreadUsername(self.username)
-        MdsApi_SetThreadPassword(self.password)
-
-        config_path = self.config_path
-        if not MdsApi_InitAllByConvention(self._env, config_path):
-            return False
-        if not MdsApi_IsValidTcpChannel(self._env.tcpChannel):
-            return False
-        if not MdsApi_IsValidQryChannel(self._env.qryChannel):
-            return False
-        return True
+        MdsApi_InitLogger(self.config_path, "log")
+        return self.connect_tcp_channel()
 
     def start(self):
         """"""
@@ -249,7 +244,32 @@ class OesMdApi:
         """"""
         self._message_loop.join()
 
-    # why isn't arg a ContractData?
+    def connect_tcp_channel(self):
+        """"""
+        MdsApi_SetThreadUsername(self.username)
+        MdsApi_SetThreadPassword(self.password)
+
+        info = MdsMktDataRequestReqBufT()
+        info.mktDataRequestReq.subMode = eMdsSubscribeModeT.MDS_SUB_MODE_SET
+        info.mktDataRequestReq.tickType = eMdsSubscribedTickTypeT.MDS_TICK_TYPE_LATEST_SIMPLIFIED
+        info.mktDataRequestReq.isRequireInitialMktData = True
+        info.mktDataRequestReq.tickExpireType = eMdsSubscribedTickExpireTypeT.MDS_TICK_EXPIRE_TYPE_TIMELY
+        info.mktDataRequestReq.dataTypes = (eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L1_SNAPSHOT
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_SNAPSHOT
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_BEST_ORDERS
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_TRADE
+                                            | eMdsSubscribeDataTypeT.MDS_SUB_DATA_TYPE_L2_ORDER
+                                            )
+        info.mktDataRequestReq.beginTime = 0
+        info.mktDataRequestReq.subSecurityCnt = 0
+        if not MdsApi_InitTcpChannel2(self._env.tcpChannel,
+                                      create_remote_config(server=self.tcp_server,
+                                                           username=self.username,
+                                                           password=self.password),
+                                      info):
+            return False
+        return True
+
     def subscribe(self, req: SubscribeRequest):
         """"""
         mds_req = MdsMktDataRequestReqT()
