@@ -7,7 +7,15 @@ python:
 
 matrix:
   include:
-    - name: "pip install under linux"
+    - name: "code quality analysis: flake8"
+      before_install:
+        - pip install flake8
+      install:
+        - ""  # prevent running "pip install -r requirements.txt"
+      script:
+        - flake8
+
+    - name: "pip install under Ubuntu: gcc-8"
       before_install:
         # C++17
         - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -24,11 +32,20 @@ matrix:
         # todo: use python unittest
         - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctp; import vnpy.api.oes.vnoes; exit(0);"
 
-
-    - name: "code quality analysis: flake8"
+    - name: "pip install under Ubuntu: gcc-7"
       before_install:
-        - pip install flake8
+        # C++17
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -qq
       install:
-        - ""  # prevent running "pip install -r requirements.txt"
+        # C++17
+        - sudo apt-get install -qq gcc-7 g++-7
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
+        # Linux install script
+        - bash ./install.sh
       script:
-        - flake8
+        # todo: use python unittest
+        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctp; import vnpy.api.oes.vnoes; exit(0);"
+
