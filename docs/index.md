@@ -1,6 +1,7 @@
 # vn.py文档
 
 
-* [Introduction](introduction.md)
-* [Install](install.md)
-* [Quick Start](quickstart.md)
+* [vn.py简介](introduction.md)
+* [项目安装](install.md)
+* [基本使用](quickstart.md)
+* [CTA策略模块](cta_strategy.md)

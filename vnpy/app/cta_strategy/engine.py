@@ -11,8 +11,6 @@ from threading import Thread
 from queue import Queue
 from copy import copy
 
-import rqdatac
-
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
@@ -105,6 +103,8 @@ class CtaEngine(BaseEngine):
         if not username or not password:
             return
 
+        import rqdatac
+        
         self.rq_client = rqdatac
         self.rq_client.init(username, password,
                             ('rqdatad-pro.ricequant.com', 16011))
