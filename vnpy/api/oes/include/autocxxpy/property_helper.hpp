@@ -19,6 +19,10 @@ namespace autocxxpy
         {
             return val;
         }
+        auto &operator()(const string_literal<size> &val) const noexcept
+        {
+            return val;
+        }
     };
 
     template <class tag, size_t size>
