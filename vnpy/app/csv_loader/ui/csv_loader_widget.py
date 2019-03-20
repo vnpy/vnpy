@@ -7,6 +7,8 @@ compile:
 pyuic5 csv_loader.ui -o uic/uic_csv_loader.py
 ```
 """
+from gettext import gettext as _
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
@@ -17,7 +19,6 @@ from vnpy.trader.ui import QtWidgets
 from .uic.uic_csv_loader import Ui_CsvLoader
 from ..csv_loader import CsvLoader
 
-from gettext import gettext as _
 
 class CsvLoaderWidget(QtWidgets.QWidget):
     """"""
