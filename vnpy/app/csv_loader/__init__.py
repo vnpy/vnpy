@@ -13,4 +13,4 @@ class CsvLoaderApp(BaseApp):
     display_name = "CSV行情载入器"
     engine_class = CsvLoader
     widget_name = "CsvLoaderWidget"
-    icon_name = "cta.ico"
+    icon_name = "csv.ico"

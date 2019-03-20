@@ -3,7 +3,7 @@
  <class>CsvLoader</class>
  <widget class="QDialog" name="CsvLoader">
   <property name="windowTitle">
-   <string>Csv载入器</string>
+   <string>CSV行情载入器</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
