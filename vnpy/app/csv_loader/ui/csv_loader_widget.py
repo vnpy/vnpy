@@ -7,15 +7,17 @@ compile:
 pyuic5 csv_loader.ui -o uic/uic_csv_loader.py
 ```
 """
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
+
 from vnpy.event import EventEngine
-from vnpy.trader.constant import Interval, Exchange
+from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtWidgets
-
 from .uic.uic_csv_loader import Ui_CsvLoader
 from ..csv_loader import CsvLoader
 
+from gettext import gettext as _
 
 class CsvLoaderWidget(QtWidgets.QWidget):
     """"""
@@ -30,13 +32,17 @@ class CsvLoaderWidget(QtWidgets.QWidget):
 
     def init_ui(self):
         """"""
+        # someone ask me to disable maximum button
+        self.setWindowFlags(
+            (self.windowFlags() | Qt.CustomizeWindowHint)
+            & ~Qt.WindowMaximizeButtonHint)
         self.ui.setupUi(self)
 
         for i in Interval:
-            self.ui.interval_combo.addItem(str(i), i)
+            self.ui.interval_combo.addItem(str(i.name), i)
 
         for i in Exchange:
-            self.ui.exchange_combo.addItem(str(i), i)
+            self.ui.exchange_combo.addItem(str(i.name), i)
 
     def on_choose_button_pressed(self):
         """"""
@@ -59,3 +65,4 @@ class CsvLoaderWidget(QtWidgets.QWidget):
         self.loader.volume_head = self.ui.volume_edit.text()
 
         self.loader.load()
+        QMessageBox.information(self, _("载入成功！"), _("CSV行情载入成功！"))

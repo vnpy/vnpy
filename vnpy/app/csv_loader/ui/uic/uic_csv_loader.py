@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'csv_loader.ui'
+# Form implementation generated from reading ui file '../csv_loader.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
@@ -94,7 +94,7 @@ class Ui_CsvLoader(object):
 
     def retranslateUi(self, CsvLoader):
         _translate = QtCore.QCoreApplication.translate
-        CsvLoader.setWindowTitle(_translate("CsvLoader", "Csv载入器"))
+        CsvLoader.setWindowTitle(_translate("CsvLoader", "CSV行情载入器"))
         self.choose_button.setText(_translate("CsvLoader", "选择文件"))
         self.label_8.setText(_translate("CsvLoader", "合约信息"))
         self.label_9.setText(_translate("CsvLoader", "Symbol"))
