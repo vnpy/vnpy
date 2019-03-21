@@ -1,5 +1,5 @@
 """
-Author: nanoric
+Author: Zehua Wei (nanoric)
 
 Load data from a csv file.
 
