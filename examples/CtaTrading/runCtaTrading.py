@@ -56,6 +56,8 @@ def runChildProcess():
     ee.register(EVENT_ERROR, processErrorEvent)
     le.info(u'注册日志事件监听')
     
+    me.dbConnect()
+    
     me.connect('CTP')
     le.info(u'连接CTP接口')
     
