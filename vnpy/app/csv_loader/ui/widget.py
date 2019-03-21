@@ -1,21 +1,12 @@
 """
-Author: nanoric
-
-UI is designed by Qt Designer. source at csv_loader.ui
-compile:
-```
-pyuic5 csv_loader.ui -o uic/uic_csv_loader.py
-```
+Author: Zehua Wei (nanoric)
 """
-
-from gettext import gettext as _
 
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtWidgets, QtCore
 
-from .uic.uic_csv_loader import Ui_CsvLoader
 from ..engine import APP_NAME
 
 
@@ -32,38 +23,91 @@ class CsvLoaderWidget(QtWidgets.QWidget):
 
     def init_ui(self):
         """"""
+        self.setWindowTitle("CSV载入")
+        self.setFixedWidth(300)
+
         self.setWindowFlags(
-            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
-            & ~QtCore.Qt.WindowMaximizeButtonHint)
+            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint) &
+            ~QtCore.Qt.WindowMaximizeButtonHint)
 
-        self.ui = Ui_CsvLoader()
-        self.ui.setupUi(self)
+        file_button = QtWidgets.QPushButton("选择文件")
+        file_button.clicked.connect(self.select_file)
 
-        for i in Interval:
-            self.ui.interval_combo.addItem(str(i.name), i)
+        load_button = QtWidgets.QPushButton("载入数据")
+        load_button.clicked.connect(self.load_data)
 
+        self.file_edit = QtWidgets.QLineEdit()
+        self.symbol_edit = QtWidgets.QLineEdit()
+
+        self.exchange_combo = QtWidgets.QComboBox()
         for i in Exchange:
-            self.ui.exchange_combo.addItem(str(i.name), i)
+            self.exchange_combo.addItem(str(i.name), i)
 
-    def on_choose_button_pressed(self):
+        self.interval_combo = QtWidgets.QComboBox()
+        for i in Interval:
+            self.interval_combo.addItem(str(i.name), i)
+
+        self.datetime_edit = QtWidgets.QLineEdit("Datetime")
+        self.open_edit = QtWidgets.QLineEdit("Open")
+        self.high_edit = QtWidgets.QLineEdit("High")
+        self.low_edit = QtWidgets.QLineEdit("Low")
+        self.close_edit = QtWidgets.QLineEdit("Close")
+        self.volume_edit = QtWidgets.QLineEdit("Volume")
+
+        self.format_edit = QtWidgets.QLineEdit("%Y-%m-%d %H:%M:%S")
+
+        info_label = QtWidgets.QLabel("合约信息")
+        info_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        head_label = QtWidgets.QLabel("表头信息")
+        head_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        format_label = QtWidgets.QLabel("格式信息")
+        format_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        form = QtWidgets.QFormLayout()
+        form.addRow(file_button, self.file_edit)
+        form.addRow(QtWidgets.QLabel())
+        form.addRow(info_label)
+        form.addRow("代码", self.symbol_edit)
+        form.addRow("交易所", self.exchange_combo)
+        form.addRow("周期", self.interval_combo)
+        form.addRow(QtWidgets.QLabel())
+        form.addRow(head_label)
+        form.addRow("时间戳", self.datetime_edit)
+        form.addRow("开盘价", self.open_edit)
+        form.addRow("最高价", self.high_edit)
+        form.addRow("最低价", self.low_edit)
+        form.addRow("收盘价", self.close_edit)
+        form.addRow("成交量", self.volume_edit)
+        form.addRow(QtWidgets.QLabel())
+        form.addRow(format_label)
+        form.addRow("时间格式", self.format_edit)
+        form.addRow(QtWidgets.QLabel())
+        form.addRow(load_button)
+
+        self.setLayout(form)
+
+    def select_file(self):
         """"""
         result: str = QtWidgets.QFileDialog.getOpenFileName(self)
         filename = result[0]
         if filename:
-            self.ui.file_edit.setText(filename)
+            self.file_edit.setText(filename)
 
-    def on_load_button_pressed(self):
+    def load_data(self):
         """"""
-        file_path = self.ui.file_edit.text()
-        symbol = self.ui.symbol_edit.text()
-        exchange = self.ui.exchange_combo.currentData()
-        interval = self.ui.interval_combo.currentData()
-        datetime_head = self.ui.datetime_edit.text()
-        open_head = self.ui.open_edit.text()
-        low_head = self.ui.low_edit.text()
-        high_head = self.ui.high_edit.text()
-        close_head = self.ui.close_edit.text()
-        volume_head = self.ui.volume_edit.text()
+        file_path = self.file_edit.text()
+        symbol = self.symbol_edit.text()
+        exchange = self.exchange_combo.currentData()
+        interval = self.interval_combo.currentData()
+        datetime_head = self.datetime_edit.text()
+        open_head = self.open_edit.text()
+        low_head = self.low_edit.text()
+        high_head = self.high_edit.text()
+        close_head = self.close_edit.text()
+        volume_head = self.volume_edit.text()
+        datetime_format = self.format_edit.text()
 
         start, end, count = self.engine.load(
             file_path,
@@ -75,16 +119,17 @@ class CsvLoaderWidget(QtWidgets.QWidget):
             high_head,
             low_head,
             close_head,
-            volume_head
+            volume_head,
+            datetime_format
         )
 
-        msg = f"""
-        CSV载入成功
-        代码：{symbol}
-        交易所：{exchange.value}
-        周期：{interval.value}
-        起始：{start}
-        结束：{end}
-        总数量：{count}
-        """
-        QtWidgets.QMessageBox.information(self, _("载入成功！"), msg)
+        msg = f"\
+        CSV载入成功\n\
+        代码：{symbol}\n\
+        交易所：{exchange.value}\n\
+        周期：{interval.value}\n\
+        起始：{start}\n\
+        结束：{end}\n\
+        总数量：{count}\n\
+        "
+        QtWidgets.QMessageBox.information(self, "载入成功！", msg)

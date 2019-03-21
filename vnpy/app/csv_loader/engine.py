@@ -10,12 +10,12 @@ Sample csv file:
 
 ```csv
 "Datetime","Open","High","Low","Close","Volume"
-2010-04-16T09:16:00.000000,3450.0,3488.0,3450.0,3468.0,489
-2010-04-16T09:17:00.000000,3468.0,3473.8,3467.0,3467.0,302
-2010-04-16T09:18:00.000000,3467.0,3471.0,3466.0,3467.0,203
-2010-04-16T09:19:00.000000,3467.0,3468.2,3448.0,3448.0,280
-2010-04-16T09:20:00.000000,3448.0,3459.0,3448.0,3454.0,250
-2010-04-16T09:21:00.000000,3454.0,3456.8,3454.0,3456.8,109
+2010-04-16 09:16:00,3450.0,3488.0,3450.0,3468.0,489
+2010-04-16 09:17:00,3468.0,3473.8,3467.0,3467.0,302
+2010-04-16 09:18:00,3467.0,3471.0,3466.0,3467.0,203
+2010-04-16 09:19:00,3467.0,3468.2,3448.0,3448.0,280
+2010-04-16 09:20:00,3448.0,3459.0,3448.0,3454.0,250
+2010-04-16 09:21:00,3454.0,3456.8,3454.0,3456.8,109
 ```
 
 """
@@ -51,17 +51,20 @@ class CsvLoaderEngine(BaseEngine):
         self.high_head: str = ''
         self.volume_head: str = ''
 
-    def load(self,
-             file_path: str,
-             symbol: str,
-             exchange: Exchange,
-             interval: Interval,
-             datetime_head: str,
-             open_head: str,
-             close_head: str,
-             low_head: str,
-             high_head: str,
-             volume_head: str):
+    def load(
+        self,
+        file_path: str,
+        symbol: str,
+        exchange: Exchange,
+        interval: Interval,
+        datetime_head: str,
+        open_head: str,
+        close_head: str,
+        low_head: str,
+        high_head: str,
+        volume_head: str,
+        datetime_format: str
+    ):
         """"""
         vt_symbol = f"{symbol}.{exchange.value}"
 
@@ -77,7 +80,9 @@ class CsvLoaderEngine(BaseEngine):
 
                 db_bar.symbol = symbol
                 db_bar.exchange = exchange.value
-                db_bar.datetime = datetime.fromisoformat(item[datetime_head])
+                db_bar.datetime = datetime.strptime(
+                    item[datetime_head], datetime_format
+                )
                 db_bar.interval = interval.value
                 db_bar.volume = item[volume_head]
                 db_bar.open_price = item[open_head]
@@ -87,7 +92,7 @@ class CsvLoaderEngine(BaseEngine):
                 db_bar.vt_symbol = vt_symbol
                 db_bar.gateway_name = "DB"
 
-                db_bar.save()
+                db_bar.replace()
 
                 # do some statistics
                 count += 1
