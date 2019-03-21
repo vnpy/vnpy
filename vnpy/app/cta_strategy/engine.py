@@ -21,7 +21,7 @@ from vnpy.trader.object import (
     BarData
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.constant import Direction, PriceType, Interval, Exchange
+from vnpy.trader.constant import Direction, OrderType, Interval, Exchange
 from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.database import DbTickData, DbBarData
 from vnpy.trader.setting import SETTINGS
@@ -276,7 +276,7 @@ class CtaEngine(BaseEngine):
             exchange=contract.exchange,
             direction=direction,
             offset=offset,
-            price_type=PriceType.LIMIT,
+            type=OrderType.LIMIT,
             price=price,
             volume=volume,
         )

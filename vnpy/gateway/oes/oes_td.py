@@ -21,7 +21,7 @@ from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_De
 
 from vnpy.gateway.oes.error_code import error_to_str
 from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
-from vnpy.trader.constant import Direction, Exchange, Offset, PriceType, Product, Status
+from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Product, Status
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, \
     PositionData, TradeData
@@ -41,8 +41,8 @@ PRODUCT_OES2VT = {
 
 # only limit price can match, all other price types are not perfectly match.
 ORDER_TYPE_VT2OES = {
-    (Exchange.SSE, PriceType.LIMIT): eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT,
-    (Exchange.SZSE, PriceType.LIMIT): eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT,
+    (Exchange.SSE, OrderType.LIMIT): eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT,
+    (Exchange.SZSE, OrderType.LIMIT): eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT,
 }
 
 BUY_SELL_TYPE_VT2OES = {
@@ -623,7 +623,7 @@ class OesTdApi:
         oes_req = OesOrdReqT()
         oes_req.clSeqNo = seq_id
         oes_req.mktId = EXCHANGE_VT2OES[vt_req.exchange]
-        oes_req.ordType = ORDER_TYPE_VT2OES[(vt_req.exchange, vt_req.price_type)]
+        oes_req.ordType = ORDER_TYPE_VT2OES[(vt_req.exchange, vt_req.type)]
         oes_req.bsType = BUY_SELL_TYPE_VT2OES[(vt_req.exchange, vt_req.offset, vt_req.direction)]
         oes_req.invAcctId = ""
         oes_req.securityId = vt_req.symbol

@@ -41,7 +41,7 @@ from vnpy.trader.constant import (
     Direction,
     Offset,
     Exchange,
-    PriceType,
+    OrderType,
     Product,
     Status,
     OptionType
@@ -80,9 +80,9 @@ DIRECTION_CTP2VT = {v: k for k, v in DIRECTION_VT2CTP.items()}
 DIRECTION_CTP2VT[THOST_FTDC_PD_Long] = Direction.LONG
 DIRECTION_CTP2VT[THOST_FTDC_PD_Short] = Direction.SHORT
 
-PRICETYPE_VT2CTP = {
-    PriceType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
-    PriceType.MARKET: THOST_FTDC_OPT_AnyPrice
+ORDERTYPE_VT2CTP = {
+    OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
+    OrderType.MARKET: THOST_FTDC_OPT_AnyPrice
 }
 
 OFFSET_VT2CTP = {
@@ -687,7 +687,7 @@ class CtpTdApi(TdApi):
             "InstrumentID": req.symbol,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
-            "OrderPriceType": PRICETYPE_VT2CTP.get(req.price_type, ""),
+            "OrderPriceType": ORDERTYPE_VT2CTP.get(req.type, ""),
             "Direction": DIRECTION_VT2CTP.get(req.direction, ""),
             "CombOffsetFlag": OFFSET_VT2CTP.get(req.offset, ""),
             "OrderRef": str(self.order_ref),
@@ -703,11 +703,11 @@ class CtpTdApi(TdApi):
             "MinVolume": 1
         }
         
-        if req.price_type == PriceType.FAK:
+        if req.type == OrderType.FAK:
             ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
             ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
             ctp_req["VolumeCondition"] = THOST_FTDC_VC_AV
-        elif req.price_type == PriceType.FOK:
+        elif req.type == OrderType.FOK:
             ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
             ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
             ctp_req["VolumeCondition"] = THOST_FTDC_VC_CV            

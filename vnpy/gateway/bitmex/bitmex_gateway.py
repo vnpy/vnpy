@@ -18,7 +18,7 @@ from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
     Direction,
     Exchange,
-    PriceType,
+    OrderType,
     Product,
     Status,
 )
@@ -52,7 +52,7 @@ STATUS_BITMEX2VT = {
 DIRECTION_VT2BITMEX = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
 DIRECTION_BITMEX2VT = {v: k for k, v in DIRECTION_VT2BITMEX.items()}
 
-PRICETYPE_VT2BITMEX = {PriceType.LIMIT: "Limit", PriceType.MARKET: "Market"}
+ORDERTYPE_VT2BITMEX = {OrderType.LIMIT: "Limit", OrderType.MARKET: "Market"}
 
 
 class BitmexGateway(BaseGateway):
@@ -212,14 +212,14 @@ class BitmexRestApi(RestClient):
         data = {
             "symbol": req.symbol,
             "side": DIRECTION_VT2BITMEX[req.direction],
-            "ordType": PRICETYPE_VT2BITMEX[req.price_type],
+            "ordType": ORDERTYPE_VT2BITMEX[req.type],
             "price": req.price,
             "orderQty": int(req.volume),
             "clOrdID": orderid,
         }
 
         # Only add price for limit order.
-        if req.price_type == PriceType.LIMIT:
+        if req.type == OrderType.LIMIT:
             data["price"] = req.price
 
         order = req.create_order_data(orderid, self.gateway_name)

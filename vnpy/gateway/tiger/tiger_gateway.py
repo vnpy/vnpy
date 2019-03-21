@@ -22,7 +22,7 @@ from tigeropen.trade.domain.order import ORDER_STATUS
 from tigeropen.push.push_client import PushClient
 from tigeropen.common.exceptions import ApiException
 
-from vnpy.trader.constant import Direction, Product, Status, PriceType, Exchange
+from vnpy.trader.constant import Direction, Product, Status, OrderType, Exchange
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
@@ -57,9 +57,9 @@ DIRECTION_TIGER2VT = {
     "sell": Direction.SHORT,
 }
 
-PRICETYPE_VT2TIGER = {
-    PriceType.LIMIT: "LMT",
-    PriceType.MARKET: "MKT",
+ORDERTYPE_VT2TIGER = {
+    OrderType.LIMIT: "LMT",
+    OrderType.MARKET: "MKT",
 }
 
 STATUS_TIGER2VT = {
@@ -339,7 +339,7 @@ class TigerGateway(BaseGateway):
                 account=self.account, 
                 contract=contract, 
                 action=DIRECTION_VT2TIGER[req.direction], 
-                order_type=PRICETYPE_VT2TIGER[req.price_type], 
+                order_type=ORDERTYPE_VT2TIGER[req.type], 
                 quantity=int(req.volume), 
                 limit_price=req.price,
             )

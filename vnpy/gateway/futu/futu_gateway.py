@@ -244,7 +244,7 @@ class FutuGateway(BaseGateway):
     def send_order(self, req: OrderRequest):
         """"""
         side = DIRECTION_VT2FUTU[req.direction]
-        price_type = OrderType.NORMAL  # Only limit order is supported.
+        futu_order_type = OrderType.NORMAL  # Only limit order is supported.
 
         # Set price adjustment mode to inside adjustment.
         if req.direction is Direction.LONG:
@@ -258,7 +258,7 @@ class FutuGateway(BaseGateway):
             req.volume,
             futu_symbol,
             side,
-            price_type,
+            futu_order_type,
             trd_env=self.env,
             adjust_limit=adjust_limit,
         )

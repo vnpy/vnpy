@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from logging import INFO
 
-from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, PriceType
+from .constant import Direction, Exchange, Interval, Offset, Status, Product, OptionType, OrderType
 
 ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 
@@ -265,7 +265,7 @@ class OrderRequest:
     symbol: str
     exchange: Exchange
     direction: Direction
-    price_type: PriceType
+    type: OrderType
     volume: float
     price: float = 0
     offset: Offset = Offset.NONE

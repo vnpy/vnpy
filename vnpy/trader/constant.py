@@ -53,9 +53,9 @@ class Product(Enum):
     SPREAD = "价差"
 
 
-class PriceType(Enum):
+class OrderType(Enum):
     """
-    Order price type.
+    Order type.
     """
     LIMIT = "限价"
     MARKET = "市价"

@@ -31,7 +31,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.constant import (
     Product,
-    PriceType,
+    OrderType,
     Direction,
     Exchange,
     Currency,
@@ -39,8 +39,8 @@ from vnpy.trader.constant import (
     OptionType,
 )
 
-PRICETYPE_VT2IB = {PriceType.LIMIT: "LMT", PriceType.MARKET: "MKT"}
-PRICETYPE_IB2VT = {v: k for k, v in PRICETYPE_VT2IB.items()}
+ORDERTYPE_VT2IB = {OrderType.LIMIT: "LMT", OrderType.MARKET: "MKT"}
+ORDERTYPE_IB2VT = {v: k for k, v in ORDERTYPE_VT2IB.items()}
 
 DIRECTION_VT2IB = {Direction.LONG: "BUY", Direction.SHORT: "SELL"}
 DIRECTION_IB2VT = {v: k for k, v in DIRECTION_VT2IB.items()}
@@ -559,8 +559,8 @@ class IbApi(EWrapper):
             self.gateway.write_log(f"不支持的交易所：{req.exchange}")
             return ""
 
-        if req.price_type not in PRICETYPE_VT2IB:
-            self.gateway.write_log(f"不支持的价格类型：{req.price_type}")
+        if req.type not in ORDERTYPE_VT2IB:
+            self.gateway.write_log(f"不支持的价格类型：{req.type}")
             return ""
 
         self.orderid += 1
@@ -573,7 +573,7 @@ class IbApi(EWrapper):
         ib_order.orderId = self.orderid
         ib_order.clientId = self.clientid
         ib_order.action = DIRECTION_VT2IB[req.direction]
-        ib_order.orderType = PRICETYPE_VT2IB[req.price_type]
+        ib_order.orderType = ORDERTYPE_VT2IB[req.type]
         ib_order.lmtPrice = req.price
         ib_order.totalQuantity = req.volume
 
