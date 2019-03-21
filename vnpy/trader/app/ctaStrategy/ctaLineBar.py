@@ -25,6 +25,7 @@ PERIOD_SECOND = 'second'  # 秒级别周期
 PERIOD_MINUTE = 'minute'  # 分钟级别周期
 PERIOD_HOUR = 'hour'  # 小时级别周期
 PERIOD_DAY = 'day'  # 日级别周期
+PERIOD_WEEK = 'week'  # 日级别周期
 
 AREA_LONG_A = 'LONG_A'
 AREA_LONG_B = 'LONG_B'
@@ -242,6 +243,9 @@ class CtaLineBar(object):
         self.paramList.append('inputSarAfLimit')
         self.paramList.append('inputGoldenN')
         self.paramList.append('activate_boll_ma_area')
+        self.paramList.append('inputBiasLen')
+        self.paramList.append('inputBias2Len')
+        self.paramList.append('inputBias3Len')
 
         self.paramList.append('is_7x24')
 
@@ -540,6 +544,20 @@ class CtaLineBar(object):
         self.cur_area = None
         self.pre_area = None
 
+        # BIAS
+        self.inputBiasLen = EMPTY_INT
+        self.inputBias2Len = EMPTY_INT
+        self.inputBias3Len = EMPTY_INT
+        self.lineBias = []   # BIAS1
+        self.lineBias2 = []  # BIAS2
+        self.lineBias3 = []  # BIAS3
+        self.lastBias = EMPTY_FLOAT  # bar内计算时，最后一个未关闭的bar的实时BIAS1值
+        self.lastBias2 = EMPTY_FLOAT  # bar内计算时，最后一个未关闭的bar的实时BIAS2值
+        self.lastBias3 = EMPTY_FLOAT  # bar内计算时，最后一个未关闭的bar的实时BIAS3值
+        self._rt_Bias = None
+        self._rt_Bias2 = None
+        self._rt_Bias3 = None
+
         # 存为Bar文件，For TradeBlazer   WJ
         # filename = u'../TestLogs/rb1801_{}_Min.csv'.format(datetime.now().strftime('%m%d_%H%M'))
         # self.min1File = open(filename, mode='w')
@@ -594,6 +612,7 @@ class CtaLineBar(object):
 
     def addBar(self, bar, bar_is_completed=False, bar_freq=1):
         """
+        予以外部初始化程序增加bar
         予以外部初始化程序增加bar
         :param bar:
         :param bar_is_completed: 插入的bar，其周期与K线周期一致，就设为True
@@ -714,6 +733,7 @@ class CtaLineBar(object):
         self.__recountSar()
         self.__recountGoldenSection()
         self.__recountArea(bar)
+        self.__recountBias()
         self.export_to_csv(bar)
 
         # 实时计算
@@ -851,18 +871,20 @@ class CtaLineBar(object):
 
         if (self.inputBollLen > 0 or self.inputBollTBLen > 0) and len(self.lineUpperBand) > 0:
             msg = msg + u',Boll({}):std:{},mid:{},up:{},low:{},Atan:[mid:{},up:{},low:{}]'. \
-                format(self.inputBollLen, round(self.lineUpperBand[-1], self.round_n),
-                       round(self.lineMiddleBand[-1], self.round_n), round(self.lineLowerBand[-1], self.round_n),
-                       round(self.lineBollStd[-1], self.round_n),
+                format(self.inputBollLen, round(self.lineBollStd[-1], self.round_n),
+                       round(self.lineMiddleBand[-1], self.round_n),
+                       round(self.lineUpperBand[-1], self.round_n),
+                       round(self.lineLowerBand[-1], self.round_n),
                        round(self.lineMiddleBandAtan[-1], 2) if len(self.lineMiddleBandAtan) > 0 else 0,
                        round(self.lineUpperBandAtan[-1], 2) if len(self.lineUpperBandAtan) > 0 else 0,
                        round(self.lineLowerBandAtan[-1], 2) if len(self.lineLowerBandAtan) > 0 else 0)
 
         if (self.inputBoll2Len > 0 or self.inputBoll2TBLen > 0) and len(self.lineUpperBand) > 0:
-            msg = msg + u',Boll2({0}):std:{4},m:{2},u:{1},l:{3}'. \
-                format(self.inputBoll2Len, round(self.lineUpperBand2[-1], self.round_n),
-                       round(self.lineMiddleBand2[-1], self.round_n), round(self.lineLowerBand2[-1], self.round_n),
-                       round(self.lineBollStd[-1], self.round_n))
+            msg = msg + u',Boll2({}):std:{},m:{},u:{},l:{}'. \
+                format(self.inputBoll2Len, round(self.lineBollStd[-1], self.round_n),
+                       round(self.lineMiddleBand2[-1], self.round_n),
+                       round(self.lineUpperBand2[-1], self.round_n),
+                       round(self.lineLowerBand2[-1], self.round_n))
 
         if self.inputMacdFastPeriodLen > 0 and len(self.lineDif) > 0:
             msg = msg + u',MACD({0},{1},{2}):Dif:{3},Dea{4},Macd:{5}'. \
@@ -914,6 +936,19 @@ class CtaLineBar(object):
                                                                 self.sar_count)
         if self.activate_boll_ma_area:
             msg = msg + 'Area:{}'.format(self.cur_area)
+
+        if self.inputBiasLen > 0 and len(self.lineBias) > 0:
+            msg = msg + u',Bias({}):{}]'. \
+                format(self.inputBiasLen, round(self.lineBias[-1], self.round_n))
+
+        if self.inputBias2Len > 0 and len(self.lineBias2) > 0:
+            msg = msg + u',Bias2({}):{}]'. \
+                format(self.inputBias2Len, round(self.lineBias2[-1], self.round_n))
+
+        if self.inputBias3Len > 0 and len(self.lineBias3) > 0:
+            msg = msg + u',Bias3({}):{}]'. \
+                format(self.inputBias3Len, round(self.lineBias3[-1], self.round_n))
+
         return msg
 
     def firstTick(self, tick):
@@ -3539,11 +3574,8 @@ class CtaLineBar(object):
         :param:direction，多：检查是否有顶背离，空，检查是否有底背离
         :return:
         """
-        if len(self.lineSkTop) < 2 or len(self.lineSkButtom) < 2 :
+        if len(self.lineSkTop) < 2 or len(self.lineSkButtom) < 2 or self._rt_SK is None or self._rt_SD is None:
             return False
-        if runtime:
-            if self._rt_SK is None or self._rt_SD is None:
-                return False
 
         t1 = self.lineSkTop[-1]
         t2 = self.get_2nd_item(self.lineSkTop[:-1])
@@ -3983,6 +4015,168 @@ class CtaLineBar(object):
             self.cur_area = new_area
             self.pre_area = last_area
 
+    def __recountBias(self):
+        """乖离率"""
+        # BIAS1 : (CLOSE-MA(CLOSE,L1))/MA(CLOSE,L1)*100;
+        if not (self.inputBiasLen > EMPTY_INT or self.inputBias2Len > EMPTY_INT or
+                self.inputBias3Len > EMPTY_INT):  # 不计算
+            return
+
+        l = len(self.lineBar)
+        if self.inputBiasLen > EMPTY_INT:
+            if l < min(6, self.inputBiasLen) + 1:
+                self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算Bias需要：{1}'.
+                                 format(len(self.lineBar), min(14, self.inputBiasLen) + 1))
+            else:
+                if l < self.inputBiasLen + 2:
+                    BiasLen = l - 1
+                else:
+                    BiasLen = self.inputBiasLen
+
+                # 不包含当前最新的Bar
+                if self.mode == self.TICK_MODE:
+                    listClose = [x.close for x in self.lineBar[-BiasLen-1:-1]]
+                else:
+                    listClose = [x.close for x in self.lineBar[-BiasLen:]]
+
+                if len(self.lineBias) > self.inputBiasLen * 8:
+                    del self.lineBias[0]
+
+                # 计算BIAS
+                m = np.mean(listClose)
+                bias = (listClose[-1] - m) / m * 100
+                self.lineBias.append(bias)  # 中轨
+                self.lastBias = bias
+
+        l = len(self.lineBar)
+        if self.inputBias2Len > EMPTY_INT:
+            if l < min(6, self.inputBias2Len) + 1:
+                self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算Bias2需要：{1}'.
+                                 format(len(self.lineBar), min(14, self.inputBias2Len) + 1))
+            else:
+                if l < self.inputBias2Len + 2:
+                    Bias2Len = l - 1
+                else:
+                    Bias2Len = self.inputBias2Len
+
+                # 不包含当前最新的Bar
+                if self.mode == self.TICK_MODE:
+                    listClose = [x.close for x in self.lineBar[-Bias2Len-1:-1]]
+                else:
+                    listClose = [x.close for x in self.lineBar[-Bias2Len:]]
+
+                if len(self.lineBias2) > self.inputBias2Len * 8:
+                    del self.lineBias2[0]
+
+                # 计算BIAS2
+                m = np.mean(listClose)
+                bias2 = (listClose[-1] - m) / m * 100
+                self.lineBias2.append(bias2)  # 中轨
+                self.lastBias2 = bias2
+
+        l = len(self.lineBar)
+        if self.inputBias3Len > EMPTY_INT:
+            if l < min(6, self.inputBias3Len) + 1:
+                self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算Bias3需要：{1}'.
+                                 format(len(self.lineBar), min(14, self.inputBias3Len) + 1))
+            else:
+                if l < self.inputBias3Len + 2:
+                    Bias3Len = l - 1
+                else:
+                    Bias3Len = self.inputBias3Len
+
+                # 不包含当前最新的Bar
+                if self.mode == self.TICK_MODE:
+                    listClose = [x.close for x in self.lineBar[-Bias3Len-1:-1]]
+                else:
+                    listClose = [x.close for x in self.lineBar[-Bias3Len:]]
+
+                if len(self.lineBias3) > self.inputBias3Len * 8:
+                    del self.lineBias3[0]
+
+                # 计算BIAS3
+                m = np.mean(listClose)
+                bias3 = (listClose[-1] - m) / m * 100
+                self.lineBias3.append(bias3)  # 中轨
+                self.lastBias3 = bias3
+
+    def rt_countBias(self):
+        """实时计算乖离率"""
+        if not (self.inputBiasLen > EMPTY_INT or self.inputBias2Len or self.inputBias3Len > EMPTY_INT):  # 不计算
+            return
+
+        close_len = len(self.lineClose)
+
+        if self.inputBiasLen > EMPTY_INT:
+            if close_len < min(6, self.inputBiasLen) + 1:
+                return
+            else:
+                if close_len < self.inputBiasLen + 2:
+                    biasLen = close_len - 1
+                else:
+                    biasLen = self.inputBiasLen
+
+            listClose = [x.close for x in self.lineBar[-biasLen:]]
+
+            # 计算BIAS
+            m = np.mean(listClose)
+            self._rt_Bias = (listClose[-1] - m) / m * 100
+
+        if self.inputBias2Len > EMPTY_INT:
+            if close_len < min(6, self.inputBias2Len) + 1:
+                return
+            else:
+                if close_len < self.inputBias2Len + 2:
+                    biasLen = close_len - 1
+                else:
+                    biasLen = self.inputBias2Len
+
+            listClose = [x.close for x in self.lineBar[-biasLen:]]
+
+            # 计算BIAS
+            m = np.mean(listClose)
+            self._rt_Bias2 = (listClose[-1] - m) / m * 100
+
+        if self.inputBias3Len > EMPTY_INT:
+            if close_len < min(6, self.inputBias3Len) + 1:
+                return
+            else:
+                if close_len < self.inputBias3Len + 2:
+                    biasLen = close_len - 1
+                else:
+                    biasLen = self.inputBias3Len
+
+            listClose = [x.close for x in self.lineBar[-biasLen:]]
+
+            # 计算BIAS
+            m = np.mean(listClose)
+            self._rt_Bias3 = (listClose[-1] - m) / m * 100
+
+    def getRuntimeBias(self):
+        """获取实时BIAS计算值"""
+        if self.rt_countBias in self.rt_funcs:
+            return self._rt_Bias, self._rt_Bias2, self._rt_Bias3
+        else:
+            self.writeCtaLog(u'getRuntimeBias(),添加rt_countBias到实时函数中')
+            self.rt_funcs.add(self.rt_countBias)
+            self.rt_countBias()
+            return self._rt_Bias, self._rt_Bias2, self._rt_Bias3
+
+    @property
+    def rt_Bias(self):
+        self.check_rt_funcs(self.rt_countBias)
+        return self._rt_Bias
+
+    @property
+    def rt_Bias2(self):
+        self.check_rt_funcs(self.rt_countBias)
+        return self._rt_Bias2
+
+    @property
+    def rt_Bias3(self):
+        self.check_rt_funcs(self.rt_countBias)
+        return self._rt_Bias3
+
     # ----------------------------------------------------------------------
     def writeCtaLog(self, content):
         """记录CTA日志"""
@@ -4046,8 +4240,9 @@ class CtaLineBar(object):
                     dt_index = dict_fieldnames.index('datetime')
                     last_dt = self.get_csv_last_dt(file_name=file_name, dt_index=dt_index,
                                                    line_length=sys.getsizeof(dict_data) / 8 + 1)
-                    if last_dt is not None and dt <= last_dt:
+                    if last_dt is not None and dt < last_dt:
                         print(u'新增数据时间{}比最后一条记录时间{}早，不插入'.format(dt, last_dt))
+
                         return
 
                 with open(file_name, 'a', encoding='utf8', newline='') as csvWriteFile:
@@ -4269,6 +4464,11 @@ class CtaMinuteBar(CtaLineBar):
             if bar_is_completed:
                 # self.m1_bars_count = 0
                 self.onBar(bar)
+            # 计算当前加入的 bar的1分钟，属于当日的第几个1分钟
+            minutes_passed = (bar.datetime - datetime.strptime(bar.datetime.strftime('%Y-%m-%d'),
+                                                               '%Y-%m-%d')).total_seconds() / 60
+            # 计算，当前的bar，属于当日的第几个bar
+            self.bars_count = int(minutes_passed / self.barTimeInterval)
             return
 
         # 与最后一个BAR的时间比对，判断是否超过K线的周期
@@ -4398,9 +4598,9 @@ class CtaMinuteBar(CtaLineBar):
 
         # 不在同一交易日，推入新bar
         if self.curTradingDay != tick.tradingDay:
-            self.writeCtaLog('{} drawLineBar() new_bar,{} curTradingDay:{},tick.tradingDay:{} bars_count={}'
-                             .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), self.curTradingDay,
-                                     tick.tradingDay, self.bars_count))
+            #self.writeCtaLog('{} drawLineBar() new_bar,{} curTradingDay:{},tick.tradingDay:{} bars_count={}'
+            #                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), self.curTradingDay,
+            #                         tick.tradingDay, self.bars_count))
 
             is_new_bar = True
             self.curTradingDay = tick.tradingDay
@@ -4411,8 +4611,8 @@ class CtaMinuteBar(CtaLineBar):
             if bars_passed != self.bars_count:
                 is_new_bar = True
                 self.bars_count = bars_passed
-                self.writeCtaLog('{} drawLineBar() new_bar,{} bars_count={}'
-                                 .format(self.name, tick.datetime, self.bars_count))
+                #self.writeCtaLog('{} drawLineBar() new_bar,{} bars_count={}'
+                #                 .format(self.name, tick.datetime, self.bars_count))
 
         self.last_minute = tick.datetime.minute
 
@@ -4672,9 +4872,9 @@ class CtaHourBar(CtaLineBar):
             tick.time = tick.datetime.strftime('%H:%M:%S')
             self.last_minute = tick.datetime.minute
             self.curTradingDay = tick.tradingDay
-            self.writeCtaLog('{} drawLineBar() new_bar,{} curTradingDay:{},tick.tradingDay:{}'
-                             .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), self.curTradingDay,
-                                     tick.tradingDay))
+            #self.writeCtaLog('{} drawLineBar() new_bar,{} curTradingDay:{},tick.tradingDay:{}'
+            #                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"), self.curTradingDay,
+            #                         tick.tradingDay))
 
         else:
             # 同一交易日，看分钟是否一致
@@ -4685,10 +4885,10 @@ class CtaHourBar(CtaLineBar):
         if self.is_7x24:
             # 数字货币，用前后时间间隔
             if (tick.datetime - lastBar.datetime).total_seconds() >= 3600 * self.barTimeInterval:
-                self.writeCtaLog('{} drawLineBar() new_bar,{} - {} > 3600 * {} '
-                                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                                         lastBar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                                         self.barTimeInterval))
+                #self.writeCtaLog('{} drawLineBar() new_bar,{} - {} > 3600 * {} '
+                #                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                #                         lastBar.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                #                         self.barTimeInterval))
                 is_new_bar = True
                 # 去除分钟和秒数
                 tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:00:00'), '%Y-%m-%d %H:%M:%S')
@@ -4700,10 +4900,10 @@ class CtaHourBar(CtaLineBar):
         else:
             # 国内期货,用bar累加
             if self.m1_bars_count > 60 * self.barTimeInterval:
-                self.writeCtaLog('{} drawLineBar() new_bar,{} {} > 60 * {} '
-                                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
-                                         self.m1_bars_count,
-                                         self.barTimeInterval))
+                #self.writeCtaLog('{} drawLineBar() new_bar,{} {} > 60 * {} '
+                #                 .format(self.name, tick.datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                #                         self.m1_bars_count,
+                #                         self.barTimeInterval))
                 is_new_bar = True
                 # 去除秒数
                 tick.datetime = datetime.strptime(tick.datetime.strftime('%Y-%m-%d %H:%M:00'), '%Y-%m-%d %H:%M:%S')
@@ -4958,6 +5158,277 @@ class CtaDayBar(CtaLineBar):
 
         self.lastTick = tick
 
+
+class CtaWeekBar(CtaLineBar):
+    """
+    周线级别K线
+    """
+
+    def __init__(self, strategy, onBarFunc, setting=None):
+        self.had_night_market = False  # 是否有夜市
+
+        if 'period' in setting:
+            del setting['period']
+
+        if 'barTimeInterval' in setting:
+            del setting['barTimeInterval']
+
+        super(CtaWeekBar, self).__init__(strategy, onBarFunc, setting)
+
+        # 使用周一作为周线时间
+        self.use_monday = False
+        # 开始的小时/分钟/秒
+        self.bar_start_hour_dt = '21:00:00'
+
+        if self.is_7x24:
+            # 数字货币，使用周一的开始时间
+            self.use_monday = True
+            self.bar_start_hour_dt = '00:00:00'
+        else:
+            # 判断是否期货
+            if self.shortSymbol is not None:
+                if len(self.shortSymbol)<=4:
+                    from vnpy.trader.vtFunction import getShortSymbol
+                    # 是期货
+                    if getShortSymbol(self.shortSymbol) in MARKET_DAY_ONLY:
+                        # 日盘期货
+                        self.use_monday = True
+                        if getShortSymbol(self.shortSymbol) in MARKET_ZJ:
+                            # 中金所
+                            self.bar_start_hour_dt = '09:15:00'
+                        else:
+                            # 其他日盘期货
+                            self.bar_start_hour_dt = '09:00:00'
+                    else:
+                        # 夜盘期货
+                        self.use_monday = False
+                        self.bar_start_hour_dt = '21:00:00'
+                else:
+                    # 可能是股票
+                    self.use_monday = True
+                    self.bar_start_hour_dt = '09:30:00'
+            else:
+                # 可能是股票
+                self.use_monday = True
+                self.bar_start_hour_dt = '09:30:00'
+
+    def init_properties(self):
+        """
+        初始化内部变量
+        :return:
+        """
+
+        #self.paramList.append('barTimeInterval')
+        #self.paramList.append('period')
+
+        self.paramList.append('inputPreLen')
+        self.paramList.append('inputEma1Len')
+        self.paramList.append('inputEma2Len')
+        self.paramList.append('inputEma3Len')
+        self.paramList.append('inputMa1Len')
+        self.paramList.append('inputMa2Len')
+        self.paramList.append('inputMa3Len')
+        self.paramList.append('inputDmiLen')
+        self.paramList.append('inputDmiMax')
+        self.paramList.append('inputAtr1Len')
+        self.paramList.append('inputAtr2Len')
+        self.paramList.append('inputAtr3Len')
+        self.paramList.append('inputVolLen')
+        self.paramList.append('inputRsi1Len')
+        self.paramList.append('inputRsi2Len')
+        self.paramList.append('inputCmiLen')
+        self.paramList.append('inputBollLen')
+        self.paramList.append('inputBollTBLen')
+        self.paramList.append('inputBollStdRate')
+        self.paramList.append('inputBoll2Len')
+        self.paramList.append('inputBoll2TBLen')
+        self.paramList.append('inputBoll2StdRate')
+        self.paramList.append('inputKdjLen')
+        self.paramList.append('inputKdjTBLen')
+        self.paramList.append('inputKdjSlowLen')
+        self.paramList.append('inputKdjSmoothLen')
+        self.paramList.append('inputCciLen')
+        self.paramList.append('inputMacdFastPeriodLen')
+        self.paramList.append('inputMacdSlowPeriodLen')
+        self.paramList.append('inputMacdSignalPeriodLen')
+        self.paramList.append('inputKF')
+        self.paramList.append('inputSkd')
+        self.paramList.append('inputSkdLen1')
+        self.paramList.append('inputSkdLen2')
+        self.paramList.append('inputYb')
+        self.paramList.append('inputYbLen')
+        self.paramList.append('inputYbRef')
+        self.paramList.append('inputGoldenN')
+        self.paramList.append('activate_boll_ma_area')
+        self.paramList.append('is_7x24')
+
+        self.paramList.append('minDiff')
+        self.paramList.append('shortSymbol')
+
+        self.paramList.append('name')
+
+        # 输入参数
+        self.name = u'WeekBar'
+        self.mode = self.TICK_MODE  # 缺省为tick模式
+        self.period = PERIOD_WEEK   # 周线级别周期
+        self.barTimeInterval = 1    # 为1周
+
+        self.barMinuteInterval = 60 * 24 * 7
+
+    def addBar(self, bar, bar_is_completed=False, bar_freq=1):
+        """
+        予以外部初始化程序增加bar
+        :param bar:
+        :param bar_is_completed: 插入的bar，其周期与K线周期一致，就设为True
+        :param bar_freq, bar对象得frequency
+        :return:
+
+        # 国内期货,周线时间开始为周五晚上21点
+        # 股票，周线开始时间为周一
+        # 数字货币，周线的开始时间为周一
+
+        """
+        # 更新最后价格
+        self.cur_price = bar.close
+
+        l1 = len(self.lineBar)
+
+        if l1 == 0:
+            new_bar = copy.deepcopy(bar)
+            new_bar.datetime = self.get_bar_start_dt(bar.datetime)
+            self.writeCtaLog(u'周线开始时间:{}=>{}'.format(bar.datetime,new_bar.datetime))
+            self.lineBar.append(new_bar)
+            self.curTradingDay = bar.tradingDay if bar.tradingDay is not None else bar.date
+            if bar_is_completed:
+                self.onBar(bar)
+            return
+
+        # 与最后一个BAR的时间比对，判断是否超过K线的周期
+        lastBar = self.lineBar[-1]
+        self.curTradingDay = bar.tradingDay if bar.tradingDay is not None else bar.date
+
+        is_new_bar = False
+        if bar_is_completed:
+            is_new_bar = True
+
+        # 时间判断,与上一根Bar的时间，超过7天
+        if (bar.datetime - lastBar.datetime).total_seconds()>= 60*60*24*7:
+            is_new_bar = True
+            self.curTradingDay = bar.tradingDay if bar.tradingDay is not None else bar.date
+
+        if is_new_bar:
+            # 添加新的bar
+            new_bar = copy.deepcopy(bar)
+            new_bar.datetime = self.get_bar_start_dt(bar.datetime)
+            self.writeCtaLog(u'新周线开始时间:{}=>{}'.format(bar.datetime, new_bar.datetime))
+            self.lineBar.append(new_bar)
+            # 将上一个Bar推送至OnBar事件
+            self.onBar(lastBar)
+        else:
+            # 更新最后一个bar
+            # 此段代码，针对一部分短周期生成长周期的k线更新，如3根5分钟k线，合并成1根15分钟k线。
+            lastBar.close = bar.close
+            lastBar.high = max(lastBar.high, bar.high)
+            lastBar.low = min(lastBar.low, bar.low)
+            lastBar.volume = lastBar.volume + bar.volume
+            lastBar.dayVolume = lastBar.volume
+
+            lastBar.mid3 = round((lastBar.close + lastBar.high + lastBar.low) / 3, self.round_n)
+            lastBar.mid4 = round((2 * lastBar.close + lastBar.high + lastBar.low) / 4, self.round_n)
+            lastBar.mid5 = round((2 * lastBar.close + lastBar.open + lastBar.high + lastBar.low) / 5, self.round_n)
+
+            # 实时计算
+            self.runtime_recount()
+
+    def get_bar_start_dt(self,cur_dt):
+        """获取当前时间计算的周线Bar开始时间"""
+
+        if self.use_monday:
+            # 使用周一. 例如当前是周二，weekday=1,相当于减去一天
+            monday_dt = cur_dt.replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=cur_dt.weekday())
+            start_dt = datetime.strptime(monday_dt.strftime('%Y-%m-%d')+' '+self.bar_start_hour_dt,'%Y-%m-%d %H:%M:%S')
+            return start_dt
+
+        else:
+            # 使用周五
+            week_day = cur_dt.weekday()
+
+            if week_day >= 5 or (week_day == 4 and cur_dt.hour > 20):
+                # 周六或周天; 或者周五晚上21:00以后
+                friday_dt = cur_dt.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=cur_dt.weekday()-4)
+            else:
+                # 周一~周五白天
+                friday_dt = cur_dt.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=cur_dt.weekday()+2)
+
+            friday_night_dt = datetime.strptime(friday_dt.strftime('%Y-%m-%d') + ' ' + self.bar_start_hour_dt,
+                                                '%Y-%m-%d %H:%M:%S')
+            return friday_night_dt
+
+
+    # ----------------------------------------------------------------------
+    def drawLineBar(self, tick):
+        """
+        生成 line Bar
+        :param tick:
+        :return:
+        """
+
+        l1 = len(self.lineBar)
+
+        # 保存第一个K线数据
+        if l1 == 0:
+            self.firstTick(tick)
+            return
+
+        # 清除480周期前的数据，
+        if l1 > self.max_hold_bars:
+            del self.lineBar[0]
+
+        # 与最后一个BAR的时间比对，判断是否超过K线周期
+        lastBar = self.lineBar[-1]
+
+        is_new_bar = False
+
+        # 交易日期不一致，新的交易日
+        if (tick.datetime - lastBar.datetime).total_seconds() >= 60 * 60 * 24 * 7:
+            is_new_bar = True
+
+        if is_new_bar:
+            # 创建并推入新的Bar
+            self.firstTick(tick)
+            # 触发OnBar事件
+            self.onBar(lastBar)
+
+        else:
+            # 更新当前最后一个bar
+            self.barFirstTick = False
+
+            # 更新最高价、最低价、收盘价、成交量
+            lastBar.high = max(lastBar.high, tick.lastPrice)
+            lastBar.low = min(lastBar.low, tick.lastPrice)
+            lastBar.close = tick.lastPrice
+
+            # 更新日内总交易量，和bar内交易量
+            lastBar.dayVolume = tick.volume
+            if l1 == 1:
+                # 针对第一个bar的tick volume更新
+                lastBar.volume = tick.volume
+            else:
+                lastBar.volume = tick.volume - self.lineBar[-2].dayVolume
+
+            # 更新Bar的颜色
+            if lastBar.close > lastBar.open:
+                lastBar.color = COLOR_RED
+            elif lastBar.close < lastBar.open:
+                lastBar.color = COLOR_BLUE
+            else:
+                lastBar.color = COLOR_EQUAL
+
+            # 实时计算
+            self.runtime_recount()
+
+        self.lastTick = tick
+
 class test_strategy(object):
 
     def __init__(self):
@@ -4966,10 +5437,12 @@ class test_strategy(object):
         self.shortSymbol = 'I'
         self.vtSymbol = 'I99'
 
+        self.lineM5 = None
         self.lineM30 = None
         self.lineH1 = None
         self.lineH2 = None
         self.lineD = None
+        self.lineW = None
 
         self.TMinuteInterval = 1
 
@@ -4977,6 +5450,20 @@ class test_strategy(object):
         self.save_h1_bars = []
         self.save_h2_bars = []
         self.save_d_bars = []
+
+        self.save_w_bars = []
+    def createM5(self):
+        lineM5Setting = {}
+        lineM5Setting['name'] = u'M5'
+        lineM5Setting['period'] = PERIOD_MINUTE
+        lineM5Setting['barTimeInterval'] =5
+        lineM5Setting['mode'] = CtaLineBar.TICK_MODE
+        lineM5Setting['minDiff'] = self.minDiff
+        lineM5Setting['shortSymbol'] = self.shortSymbol
+        self.lineM5 = CtaMinuteBar(self, self.onBarM5, lineM5Setting)
+
+    def onBarM5(self,bar):
+        self.writeCtaLog(self.lineM5.displayLastBar())
 
     def createlineM30_with_macd(self):
         # 创建M30 K线
@@ -5081,8 +5568,26 @@ class test_strategy(object):
         lineDaySetting['shortSymbol'] = self.shortSymbol
         self.lineD = CtaDayBar(self, self.onBarD, lineDaySetting)
 
+    def createLineW(self):
+        """创建周线"""
+        lineWeekSetting = {}
+        lineWeekSetting['name'] = u'W1'
+        lineWeekSetting['inputPreLen'] = 5
+        lineWeekSetting['inputAtr1Len'] = 26
+        lineWeekSetting['inputMa1Len'] = 5
+        lineWeekSetting['inputMa2Len'] = 10
+        lineWeekSetting['inputMa3Len'] = 18
+        lineWeekSetting['inputYb'] = True
+        lineWeekSetting['inputSkd'] = True
+        lineWeekSetting['mode'] = CtaDayBar.TICK_MODE
+        lineWeekSetting['minDiff'] = self.minDiff
+        lineWeekSetting['shortSymbol'] = self.shortSymbol
+        self.lineW = CtaWeekBar(self, self.onBarW, lineWeekSetting)
+
     def onBar(self, bar):
         # print(u'tradingDay:{},dt:{},o:{},h:{},l:{},c:{},v:{}'.format(bar.tradingDay,bar.datetime, bar.open, bar.high, bar.low, bar.close, bar.volume))
+        if self.lineW:
+            self.lineW.addBar(bar, bar_freq=self.TMinuteInterval)
         if self.lineD:
             self.lineD.addBar(bar, bar_freq=self.TMinuteInterval)
         if self.lineH2:
@@ -5093,6 +5598,9 @@ class test_strategy(object):
 
         if self.lineM30:
             self.lineM30.addBar(bar, bar_freq=self.TMinuteInterval)
+
+        if self.lineM5:
+            self.lineM5.addBar(bar,bar_freq=self.TMinuteInterval)
 
         # if self.lineH2:
         #    self.lineH2.skd_is_high_dead_cross(runtime=True, high_skd=30)
@@ -5173,6 +5681,25 @@ class test_strategy(object):
             'sd': self.lineD.lineSD[-1] if len(self.lineD.lineSD) > 0 else 0
         })
 
+    def onBarW(self, bar):
+        self.writeCtaLog(self.lineW.displayLastBar())
+        self.save_w_bars.append({
+            'datetime': bar.datetime,
+            'open': bar.open,
+            'high': bar.high,
+            'low': bar.low,
+            'close': bar.close,
+            'turnover': 0,
+            'volume': bar.volume,
+            'openInterest': 0,
+            'ma5': self.lineW.lineMa1[-1] if len(self.lineW.lineMa1) > 0 else bar.close,
+            'ma10': self.lineW.lineMa2[-1] if len(self.lineW.lineMa2) > 0 else bar.close,
+            'ma18': self.lineW.lineMa3[-1] if len(self.lineW.lineMa3) > 0 else bar.close,
+            'sk': self.lineW.lineSK[-1] if len(self.lineW.lineSK) > 0 else 0,
+            'sd': self.lineW.lineSD[-1] if len(self.lineW.lineSD) > 0 else 0
+        })
+
+
     def onTick(self, tick):
         print(u'{0},{1},ap:{2},av:{3},bp:{4},bv:{5}'.format(tick.datetime, tick.lastPrice, tick.askPrice1,
                                                             tick.askVolume1, tick.bidPrice1, tick.bidVolume1))
@@ -5185,7 +5712,7 @@ class test_strategy(object):
         if len(self.save_m30_bars) > 0:
             outputFile = '{}_m30.csv'.format(self.vtSymbol)
             with open(outputFile, 'w', encoding='utf8', newline='') as f:
-                fieldnames = ['datetime', 'open', 'price', 'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
+                fieldnames = ['datetime', 'open',  'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
                               'ma5', 'ma10', 'ma18', 'sk', 'sd']
                 writer = csv.DictWriter(f=f, fieldnames=fieldnames, dialect='excel')
                 writer.writeheader()
@@ -5195,7 +5722,7 @@ class test_strategy(object):
         if len(self.save_h1_bars) > 0:
             outputFile = '{}_h1.csv'.format(self.vtSymbol)
             with open(outputFile, 'w', encoding='utf8', newline='') as f:
-                fieldnames = ['datetime', 'open', 'price', 'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
+                fieldnames = ['datetime', 'open',  'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
                               'ma5', 'ma10', 'ma18', 'sk', 'sd']
                 writer = csv.DictWriter(f=f, fieldnames=fieldnames, dialect='excel')
                 writer.writeheader()
@@ -5205,7 +5732,7 @@ class test_strategy(object):
         if len(self.save_h2_bars) > 0:
             outputFile = '{}_h2.csv'.format(self.vtSymbol)
             with open(outputFile, 'w', encoding='utf8', newline='') as f:
-                fieldnames = ['datetime', 'open', 'price', 'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
+                fieldnames = ['datetime', 'open', 'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
                               'ma5', 'ma10', 'ma18', 'sk', 'sd']
                 writer = csv.DictWriter(f=f, fieldnames=fieldnames, dialect='excel')
                 writer.writeheader()
@@ -5215,20 +5742,33 @@ class test_strategy(object):
         if len(self.save_d_bars) > 0:
             outputFile = '{}_d.csv'.format(self.vtSymbol)
             with open(outputFile, 'w', encoding='utf8', newline='') as f:
-                fieldnames = ['datetime', 'open', 'price', 'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
+                fieldnames = ['datetime', 'open',  'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
                               'ma5', 'ma10', 'ma18', 'sk', 'sd']
                 writer = csv.DictWriter(f=f, fieldnames=fieldnames, dialect='excel')
                 writer.writeheader()
                 for row in self.save_d_bars:
                     writer.writerow(row)
 
+        if len(self.save_w_bars) > 0:
+            outputFile = '{}_w.csv'.format(self.vtSymbol)
+            with open(outputFile, 'w', encoding='utf8', newline='') as f:
+                fieldnames = ['datetime', 'open', 'high', 'low', 'close', 'turnover', 'volume', 'openInterest',
+                              'ma5', 'ma10', 'ma18', 'sk', 'sd']
+                writer = csv.DictWriter(f=f, fieldnames=fieldnames, dialect='excel')
+                writer.writeheader()
+                for row in self.save_w_bars:
+                    writer.writerow(row)
 
 if __name__ == '__main__':
     t = test_strategy()
-    t.minDiff = 1
-    t.shortSymbol = 'AP'
-    t.vtSymbol = 'AP99'
-    t.createlineM30_with_macd()
+    t.minDiff = 0.5
+    t.shortSymbol = 'J'
+    t.vtSymbol = 'J99'
+
+    t.createM5()
+    #t.createLineW()
+
+    #t.createlineM30_with_macd()
 
     # 创建M30线
     #t.createLineM30()
@@ -5242,7 +5782,7 @@ if __name__ == '__main__':
     # 回测日线
     # t.createLineD()
 
-    filename = 'cache/{}_20170901_20181130_1m.csv'.format(t.vtSymbol)
+    filename = 'cache/{}_20141201_20171231_1m.csv'.format(t.vtSymbol)
 
     barTimeInterval = 60  # 60秒
     minDiff = 1  # 回测数据的最小跳动
