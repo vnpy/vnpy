@@ -9,14 +9,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas import DataFrame
 
-from vnpy.trader.constant import Direction, Exchange, Interval, Status
+from vnpy.trader.constant import (Direction, Offset, Exchange, 
+                                  Interval, Status)
 from vnpy.trader.database import DbBarData, DbTickData
 from vnpy.trader.object import OrderData, TradeData
 from vnpy.trader.utility import round_to_pricetick
 
 from .base import (
     BacktestingMode,
-    CtaOrderType,
     EngineType,
     ORDER_CTA2VT,
     STOPORDER_PREFIX,
@@ -718,7 +718,8 @@ class BacktestingEngine:
     def send_order(
         self,
         strategy: CtaTemplate,
-        order_type: CtaOrderType,
+        direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         stop: bool = False,
@@ -726,17 +727,24 @@ class BacktestingEngine:
         """"""
         price = round_to_pricetick(price, self.pricetick)
         if stop:
-            return self.send_stop_order(order_type, price, volume)
+            return self.send_stop_order(direction, offset, price, volume)
         else:
-            return self.send_limit_order(order_type, price, volume)
+            return self.send_limit_order(direction, offset, price, volume)
 
-    def send_stop_order(self, order_type: CtaOrderType, price: float, volume: float):
+    def send_stop_order(
+        self, 
+        direction: Direction, 
+        offset: Offset, 
+        price: float, 
+        volume: float
+    ):
         """"""
         self.stop_order_count += 1
 
         stop_order = StopOrder(
             vt_symbol=self.vt_symbol,
-            order_type=order_type,
+            direction=direction,
+            offset=offset,
             price=price,
             volume=volume,
             stop_orderid=f"{STOPORDER_PREFIX}.{self.stop_order_count}",
@@ -748,11 +756,16 @@ class BacktestingEngine:
 
         return stop_order.stop_orderid
 
-    def send_limit_order(self, order_type: CtaOrderType, price: float, volume: float):
+    def send_limit_order(
+        self, 
+        direction: Direction,
+        offset: Offset,
+        price: float, 
+        volume: float
+    ):
         """"""
         self.limit_order_count += 1
-        direction, offset = ORDER_CTA2VT[order_type]
-
+        
         order = OrderData(
             symbol=self.symbol,
             exchange=self.exchange,

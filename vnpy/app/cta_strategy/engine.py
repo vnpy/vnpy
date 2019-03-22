@@ -21,7 +21,7 @@ from vnpy.trader.object import (
     BarData
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.constant import Direction, OrderType, Interval, Exchange
+from vnpy.trader.constant import Direction, OrderType, Interval, Exchange, Offset
 from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.database import DbTickData, DbBarData
 from vnpy.trader.setting import SETTINGS
@@ -30,7 +30,6 @@ from .base import (
     EVENT_CTA_LOG,
     EVENT_CTA_STRATEGY,
     EVENT_CTA_STOPORDER,
-    CtaOrderType,
     EngineType,
     StopOrder,
     StopOrderStatus,
@@ -233,7 +232,11 @@ class CtaEngine(BaseEngine):
                         price = tick.bid_price_5
 
                 vt_orderid = self.send_limit_order(
-                    strategy, stop_order.order_type, price, stop_order.volume
+                    strategy, 
+                    stop_order.direction, 
+                    stop_order.offset, 
+                    price, 
+                    stop_order.volume
                 )
 
                 # Update stop order status if placed successfully
@@ -256,7 +259,8 @@ class CtaEngine(BaseEngine):
     def send_limit_order(
         self,
         strategy: CtaTemplate,
-        order_type: CtaOrderType,
+        direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
     ):
@@ -267,8 +271,6 @@ class CtaEngine(BaseEngine):
         if not contract:
             self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
             return ""
-
-        direction, offset = ORDER_CTA2VT[order_type]
 
         # Create request and send order.
         req = OrderRequest(
@@ -294,7 +296,8 @@ class CtaEngine(BaseEngine):
     def send_stop_order(
         self,
         strategy: CtaTemplate,
-        order_type: CtaOrderType,
+        direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
     ):
@@ -306,7 +309,8 @@ class CtaEngine(BaseEngine):
 
         stop_order = StopOrder(
             vt_symbol=strategy.vt_symbol,
-            order_type=order_type,
+            direction=direction,
+            offset=offset,
             price=price,
             volume=volume,
             stop_orderid=stop_orderid,
@@ -358,7 +362,8 @@ class CtaEngine(BaseEngine):
     def send_order(
         self,
         strategy: CtaTemplate,
-        order_type: CtaOrderType,
+        direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         stop: bool,
@@ -366,9 +371,9 @@ class CtaEngine(BaseEngine):
         """
         """
         if stop:
-            return self.send_stop_order(strategy, order_type, price, volume)
+            return self.send_stop_order(strategy, direction, offset, price, volume)
         else:
-            return self.send_limit_order(strategy, order_type, price, volume)
+            return self.send_limit_order(strategy, direction, offset, price, volume)
 
     def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """

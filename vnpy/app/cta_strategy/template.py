@@ -2,10 +2,10 @@
 from abc import ABC
 from typing import Any, Callable
 
-from vnpy.trader.constant import Interval, Status
+from vnpy.trader.constant import Interval, Status, Direction, Offset
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData
 
-from .base import CtaOrderType, StopOrder, EngineType
+from .base import StopOrder, EngineType
 
 
 class CtaTemplate(ABC):
@@ -139,29 +139,30 @@ class CtaTemplate(ABC):
         """
         Send buy order to open a long position.
         """
-        return self.send_order(CtaOrderType.BUY, price, volume, stop)
+        return self.send_order(Direction.LONG, Offset.OPEN, price, volume, stop)
 
     def sell(self, price: float, volume: float, stop: bool = False):
         """
         Send sell order to close a long position.
         """
-        return self.send_order(CtaOrderType.SELL, price, volume, stop)
+        return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop)
 
     def short(self, price: float, volume: float, stop: bool = False):
         """
         Send short order to open as short position.
         """
-        return self.send_order(CtaOrderType.SHORT, price, volume, stop)
+        return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, stop)
 
     def cover(self, price: float, volume: float, stop: bool = False):
         """
         Send cover order to close a short position.
         """
-        return self.send_order(CtaOrderType.COVER, price, volume, stop)
+        return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop)
 
     def send_order(
         self,
-        order_type: CtaOrderType,
+        direction: Direction,
+        offset: Offset,
         price: float,
         volume: float,
         stop: bool = False,
@@ -171,7 +172,7 @@ class CtaTemplate(ABC):
         """
         if self.trading:
             vt_orderid = self.cta_engine.send_order(
-                self, order_type, price, volume, stop
+                self, direction, offset, price, volume, stop
             )
         else:
             vt_orderid = ""
