@@ -22,7 +22,9 @@ from vnpy.trader.object import (
     ContractData
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
-from vnpy.trader.constant import Direction, OrderType, Interval, Exchange, Offset
+from vnpy.trader.constant import (
+    Direction, OrderType, Interval, Exchange, Offset, Status
+)
 from vnpy.trader.utility import load_json, save_json
 from vnpy.trader.database import DbTickData, DbBarData
 from vnpy.trader.setting import SETTINGS
@@ -37,6 +39,16 @@ from .base import (
     STOPORDER_PREFIX
 )
 from .template import CtaTemplate
+
+
+STOP_STATUS_MAP = {
+    Status.SUBMITTING: StopOrderStatus.WAITING,
+    Status.NOTTRADED: StopOrderStatus.WAITING,
+    Status.PARTTRADED: StopOrderStatus.TRIGGERED,
+    Status.ALLTRADED: StopOrderStatus.TRIGGERED,
+    Status.CANCELLED: StopOrderStatus.CANCELLED,
+    Status.REJECTED: StopOrderStatus.CANCELLED
+}
 
 
 class CtaEngine(BaseEngine):
@@ -183,6 +195,22 @@ class CtaEngine(BaseEngine):
         if order.vt_orderid in vt_orderids and not order.is_active():
             vt_orderids.remove(order.vt_orderid)
 
+        # For server stop order, call strategy on_stop_order function
+        if order.type == OrderType.STOP:
+            so = StopOrder(
+                vt_symbol=order.vt_symbol,
+                direction=order.direction,
+                offset=order.offset,
+                price=order.price,
+                volume=order.volume,
+                stop_orderid=order.vt_orderid,
+                strategy_name=strategy.strategy_name,
+                status=STOP_STATUS_MAP[order.status],
+                vt_orderid=order.vt_orderid,
+            )
+            self.call_strategy_func(strategy, strategy.on_stop_order, so)  
+
+        # Call strategy on_order function
         self.call_strategy_func(strategy, strategy.on_order, order)
 
     def process_trade_event(self, event: Event):
