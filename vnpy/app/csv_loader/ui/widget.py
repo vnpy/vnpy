@@ -5,7 +5,7 @@ Author: Zehua Wei (nanoric)
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Interval
 from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import QtWidgets, QtCore
+from vnpy.trader.ui import QtCore, QtWidgets
 
 from ..engine import APP_NAME
 
@@ -27,8 +27,8 @@ class CsvLoaderWidget(QtWidgets.QWidget):
         self.setFixedWidth(300)
 
         self.setWindowFlags(
-            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint) &
-            ~QtCore.Qt.WindowMaximizeButtonHint)
+            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
+            & ~QtCore.Qt.WindowMaximizeButtonHint)
 
         file_button = QtWidgets.QPushButton("选择文件")
         file_button.clicked.connect(self.select_file)
