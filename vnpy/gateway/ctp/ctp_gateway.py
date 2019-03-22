@@ -486,6 +486,11 @@ class CtpTdApi(TdApi):
             )
             self.positions[key] = position
         
+        # Get contract size, return if size value not collected
+        size = symbol_size_map.get(position.symbol, None)
+        if not size:
+            return
+        
         # For SHFE position data update
         if position.exchange == Exchange.SHFE:
             if data["YdPosition"] and not data["TodayPosition"]:
@@ -495,7 +500,7 @@ class CtpTdApi(TdApi):
             position.yd_volume = data["Position"] - data["TodayPosition"]
         
         # Calculate previous position cost
-        cost = position.price * position.volume
+        cost = position.price * position.volume * size
         
         # Update new position volume
         position.volume += data["Position"]
@@ -504,7 +509,7 @@ class CtpTdApi(TdApi):
         # Calculate average position price
         if position.volume:
             cost += data["PositionCost"]
-            position.price = cost / position.volume
+            position.price = cost / (position.volume * size)
         
         # Get frozen volume
         if position.direction == Direction.LONG:
