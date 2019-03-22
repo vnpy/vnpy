@@ -84,6 +84,7 @@ ORDERTYPE_VT2CTP = {
     OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
     OrderType.MARKET: THOST_FTDC_OPT_AnyPrice
 }
+ORDERTYPE_CTP2VT = {v: k for k, v in ORDERTYPE_VT2CTP.items()}
 
 OFFSET_VT2CTP = {
     Offset.OPEN: THOST_FTDC_OF_Open, 
@@ -591,6 +592,7 @@ class CtpTdApi(TdApi):
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
+            type=ORDERTYPE_CTP2VT[data["OrderPriceType"]],
             direction=DIRECTION_CTP2VT[data["Direction"]],
             offset=OFFSET_CTP2VT[data["CombOffsetFlag"]],
             price=data["LimitPrice"],

@@ -108,6 +108,7 @@ class OrderData(BaseData):
     exchange: Exchange
     orderid: str
 
+    type: OrderType = OrderType.LIMIT
     direction: Direction = ""
     offset: Offset = Offset.NONE
     price: float = 0
@@ -282,6 +283,7 @@ class OrderRequest:
             symbol=self.symbol,
             exchange=self.exchange,
             orderid=orderid,
+            type=self.type,
             direction=self.direction,
             offset=self.offset,
             price=self.price,
