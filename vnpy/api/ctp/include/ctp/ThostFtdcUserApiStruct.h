@@ -4998,6 +4998,21 @@ struct CThostFtdcQryInvestUnitField
 	TThostFtdcInvestUnitIDType	InvestUnitID;
 };
 
+///二级代理商资金校验模式
+struct CThostFtdcSecAgentCheckModeField
+{
+	///投资者代码
+	TThostFtdcInvestorIDType	InvestorID;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///币种
+	TThostFtdcCurrencyIDType	CurrencyID;
+	///境外中介机构资金帐号
+	TThostFtdcAccountIDType	BrokerSecAgentID;
+	///是否需要校验自己的资金账户
+	TThostFtdcBoolType	CheckSelfAccount;
+};
+
 ///市场行情
 struct CThostFtdcMarketDataField
 {
@@ -9198,6 +9213,15 @@ struct CThostFtdcCurrDRIdentityField
 {
 	///交易中心代码
 	TThostFtdcDRIdentityIDType	DRIdentityID;
+};
+
+///查询二级代理商资金校验模式
+struct CThostFtdcQrySecAgentCheckModeField
+{
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///投资者代码
+	TThostFtdcInvestorIDType	InvestorID;
 };
 
 
