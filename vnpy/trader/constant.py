@@ -59,6 +59,7 @@ class OrderType(Enum):
     """
     LIMIT = "限价"
     MARKET = "市价"
+    STOP = "STOP"
     FAK = "FAK"
     FOK = "FOK"
 

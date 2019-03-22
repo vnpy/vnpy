@@ -21,6 +21,7 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
+    Offset
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -52,7 +53,12 @@ STATUS_BITMEX2VT = {
 DIRECTION_VT2BITMEX = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
 DIRECTION_BITMEX2VT = {v: k for k, v in DIRECTION_VT2BITMEX.items()}
 
-ORDERTYPE_VT2BITMEX = {OrderType.LIMIT: "Limit", OrderType.MARKET: "Market"}
+ORDERTYPE_VT2BITMEX = {
+    OrderType.LIMIT: "Limit",
+    OrderType.MARKET: "Market",
+    OrderType.STOP: "Stop"
+}
+ORDERTYPE_BITMEX2VT = {v: k for k, v in ORDERTYPE_VT2BITMEX.items()}
 
 
 class BitmexGateway(BaseGateway):
@@ -213,14 +219,26 @@ class BitmexRestApi(RestClient):
             "symbol": req.symbol,
             "side": DIRECTION_VT2BITMEX[req.direction],
             "ordType": ORDERTYPE_VT2BITMEX[req.type],
-            "price": req.price,
             "orderQty": int(req.volume),
             "clOrdID": orderid,
         }
 
+        inst = []   # Order special instructions
+
         # Only add price for limit order.
         if req.type == OrderType.LIMIT:
             data["price"] = req.price
+        elif req.type == OrderType.STOP:
+            data["stopPx"] = req.price
+            inst.append("LastPrice")
+
+        # Check for close order
+        if req.offset == Offset.CLOSE:
+            inst.append("ReduceOnly")
+
+        # Generate execInst
+        if inst:
+            data["execInst"] = ",".join(inst)
 
         order = req.create_order_data(orderid, self.gateway_name)
 
@@ -531,6 +549,7 @@ class BitmexWebsocketApi(WebsocketClient):
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BITMEX,
+                type=ORDERTYPE_BITMEX2VT[d["ordType"]],
                 orderid=orderid,
                 direction=DIRECTION_BITMEX2VT[d["side"]],
                 price=d["price"],
