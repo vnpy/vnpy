@@ -606,6 +606,7 @@ class BitmexWebsocketApi(WebsocketClient):
             product=Product.FUTURES,
             pricetick=d["tickSize"],
             size=d["lotSize"],
+            stop_supported=True,
             gateway_name=self.gateway_name,
         )
 

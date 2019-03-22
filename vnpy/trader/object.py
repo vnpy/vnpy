@@ -233,8 +233,10 @@ class ContractData(BaseData):
     size: int
     pricetick: float
 
+    stop_supported: bool = False    # whether server supports stop order
+
     option_strike: float = 0
-    option_underlying: str = ""  # vt_symbol of underlying contract
+    option_underlying: str = ""     # vt_symbol of underlying contract
     option_type: OptionType = None
     option_expiry: datetime = None
 
