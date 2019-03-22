@@ -43,4 +43,3 @@ class StopOrder:
 EVENT_CTA_LOG = "eCtaLog"
 EVENT_CTA_STRATEGY = "eCtaStrategy"
 EVENT_CTA_STOPORDER = "eCtaStopOrder"
-

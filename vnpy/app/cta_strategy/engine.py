@@ -18,7 +18,8 @@ from vnpy.trader.object import (
     SubscribeRequest,
     LogData,
     TickData,
-    BarData
+    BarData,
+    ContractData
 )
 from vnpy.trader.event import EVENT_TICK, EVENT_ORDER, EVENT_TRADE
 from vnpy.trader.constant import Direction, OrderType, Interval, Exchange, Offset
@@ -33,7 +34,6 @@ from .base import (
     EngineType,
     StopOrder,
     StopOrderStatus,
-    ORDER_CTA2VT,
     STOPORDER_PREFIX
 )
 from .template import CtaTemplate
@@ -256,29 +256,26 @@ class CtaEngine(BaseEngine):
                         strategy, strategy.on_stop_order, stop_order
                     )
 
-    def send_limit_order(
+    def send_server_order(
         self,
         strategy: CtaTemplate,
+        contract: ContractData,
         direction: Direction,
         offset: Offset,
         price: float,
         volume: float,
+        type: OrderType
     ):
         """
-        Send a new order.
+        Send a new order to server.
         """
-        contract = self.main_engine.get_contract(strategy.vt_symbol)
-        if not contract:
-            self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
-            return ""
-
         # Create request and send order.
         req = OrderRequest(
             symbol=contract.symbol,
             exchange=contract.exchange,
             direction=direction,
             offset=offset,
-            type=OrderType.LIMIT,
+            type=type,
             price=price,
             volume=volume,
         )
@@ -292,8 +289,55 @@ class CtaEngine(BaseEngine):
         vt_orderids.add(vt_orderid)
 
         return vt_orderid
+    
+    def send_limit_order(
+        self,
+        strategy: CtaTemplate,
+        contract: ContractData,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: float
+    ):
+        """
+        Send a limit order to server.
+        """
+        return self.send_server_order(
+            strategy,
+            contract,
+            direction,
+            offset,
+            price,
+            volume,
+            OrderType.LIMIT
+        )
+    
+    def send_server_stop_order(
+        self,
+        strategy: CtaTemplate,
+        contract: ContractData,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: float
+    ):
+        """
+        Send a stop order to server.
+        
+        Should only be used if stop order supported 
+        on the trading server.
+        """
+        return self.send_server_order(
+            strategy,
+            contract,
+            direction,
+            offset,
+            price,
+            volume,
+            OrderType.STOP
+        )
 
-    def send_stop_order(
+    def send_local_stop_order(
         self,
         strategy: CtaTemplate,
         direction: Direction,
@@ -302,7 +346,7 @@ class CtaEngine(BaseEngine):
         volume: float,
     ):
         """
-        Send a new order.
+        Create a new local stop order.
         """
         self.stop_order_count += 1
         stop_orderid = f"{STOPORDER_PREFIX}.{self.stop_order_count}"
@@ -326,7 +370,7 @@ class CtaEngine(BaseEngine):
 
         return stop_orderid
 
-    def cancel_limit_order(self, strategy: CtaTemplate, vt_orderid: str):
+    def cancel_server_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
         Cancel existing order by vt_orderid.
         """
@@ -338,7 +382,7 @@ class CtaEngine(BaseEngine):
         req = order.create_cancel_request()
         self.main_engine.cancel_order(req, order.gateway_name)
 
-    def cancel_stop_order(self, strategy: CtaTemplate, stop_orderid: str):
+    def cancel_local_stop_order(self, strategy: CtaTemplate, stop_orderid: str):
         """
         Cancel a local stop order.
         """
@@ -370,18 +414,26 @@ class CtaEngine(BaseEngine):
     ):
         """
         """
+        contract = self.main_engine.get_contract(strategy.vt_symbol)
+        if not contract:
+            self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
+            return ""
+
         if stop:
-            return self.send_stop_order(strategy, direction, offset, price, volume)
+            if contract.stop_supported:
+                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume)
+            else:
+                return self.send_local_stop_order(strategy, contract, direction, offset, price, volume)
         else:
-            return self.send_limit_order(strategy, direction, offset, price, volume)
+            return self.send_limit_order(strategy, contract, direction, offset, price, volume)
 
     def cancel_order(self, strategy: CtaTemplate, vt_orderid: str):
         """
         """
         if vt_orderid.startswith(STOPORDER_PREFIX):
-            self.cancel_stop_order(strategy, vt_orderid)
+            self.cancel_local_stop_order(strategy, vt_orderid)
         else:
-            self.cancel_limit_order(strategy, vt_orderid)
+            self.cancel_server_order(strategy, vt_orderid)
 
     def cancel_all(self, strategy: CtaTemplate):
         """

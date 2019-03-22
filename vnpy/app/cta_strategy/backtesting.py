@@ -18,7 +18,6 @@ from vnpy.trader.utility import round_to_pricetick
 from .base import (
     BacktestingMode,
     EngineType,
-    ORDER_CTA2VT,
     STOPORDER_PREFIX,
     StopOrder,
     StopOrderStatus,
