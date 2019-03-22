@@ -125,13 +125,13 @@ class CtpGateway(BaseGateway):
     """
 
     default_setting = {
-        "userid": "",
-        "password": "",
-        "brokerid": "",
-        "td_address": "",
-        "md_address": "",
-        "auth_code": "",
-        "product_info": ""
+        "用户名": "",
+        "密码": "",
+        "经纪商代码": 0,
+        "交易服务器": "",
+        "行情服务器": "",
+        "产品名称": "",
+        "授权编码": ""
     }
 
     def __init__(self, event_engine):
@@ -143,13 +143,13 @@ class CtpGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        userid = setting["userid"]
-        password = setting["password"]
-        brokerid = setting["brokerid"]
-        td_address = setting["td_address"]
-        md_address = setting["md_address"]
-        auth_code = setting["auth_code"]
-        product_info = setting["product_info"]
+        userid = setting["用户名"]
+        password = setting["密码"]
+        brokerid = setting["经纪商代码"]
+        td_address = setting["交易服务器"]
+        md_address = setting["行情服务器"]
+        product_info = setting["产品名称"]
+        auth_code = setting["授权编码"]
         
         if not td_address.startswith("tcp://"):
             td_address = "tcp://" + td_address

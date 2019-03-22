@@ -110,7 +110,11 @@ ACCOUNTFIELD_IB2VT = {
 class IbGateway(BaseGateway):
     """"""
 
-    default_setting = {"host": "127.0.0.1", "port": 7497, "clientid": 1}
+    default_setting = {
+        "TWS地址": "127.0.0.1",
+        "TWS端口": 7497,
+        "客户号": 1
+    }
 
     def __init__(self, event_engine):
         """"""
@@ -122,7 +126,11 @@ class IbGateway(BaseGateway):
         """
         Start gateway connection.
         """
-        self.api.connect(setting)
+        host = setting["TWS地址"]
+        port = setting["TWS端口"]
+        clientid = setting["客户号"]
+
+        self.api.connect(host, port, clientid)
 
     def close(self):
         """
@@ -490,21 +498,17 @@ class IbApi(EWrapper):
         for account_code in accountsList.split(","):
             self.client.reqAccountUpdates(True, account_code)
 
-    def connect(self, setting: dict):
+    def connect(self, host: str, port: int, clientid: int):
         """
         Connect to TWS.
         """
         if self.status:
             return
 
-        self.clientid = setting["clientid"]
-
-        self.client.connect(
-            setting["host"], setting["port"], setting["clientid"])
-
+        self.clientid = clientid
+        self.client.connect(host, port, clientid)
         self.thread.start()
 
-        # n = self.client.reqCurrentTime()
         self.client.reqCurrentTime()
 
     def close(self):

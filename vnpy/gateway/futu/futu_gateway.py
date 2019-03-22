@@ -79,11 +79,11 @@ class FutuGateway(BaseGateway):
     """"""
 
     default_setting = {
-        "password": "",
-        "host": "127.0.0.1",
-        "port": 11111,
-        "market": ["HK", "US"],
-        "env": [TrdEnv.REAL, TrdEnv.SIMULATE],
+        "密码": "",
+        "地址": "127.0.0.1",
+        "端口": 11111,
+        "市场": ["HK", "US"],
+        "环境": [TrdEnv.REAL, TrdEnv.SIMULATE],
     }
 
     def __init__(self, event_engine):
@@ -112,11 +112,11 @@ class FutuGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        self.host = setting["host"]
-        self.port = setting["port"]
-        self.market = setting["market"]
-        self.password = setting["password"]
-        self.env = setting["env"]
+        self.host = setting["地址"]
+        self.port = setting["端口"]
+        self.market = setting["市场"]
+        self.password = setting["密码"]
+        self.env = setting["环境"]
 
         self.connect_quote()
         self.connect_trade()

@@ -67,12 +67,12 @@ class BitmexGateway(BaseGateway):
     """
 
     default_setting = {
-        "key": "",
-        "secret": "",
-        "session_number": 3,
-        "server": ["REAL", "TESTNET"],
-        "proxy_host": "127.0.0.1",
-        "proxy_port": 1080,
+        "ID": "",
+        "Secret": "",
+        "会话数": 3,
+        "服务器": ["REAL", "TESTNET"],
+        "代理地址": "127.0.0.1",
+        "代理端口": 1080,
     }
 
     def __init__(self, event_engine):
@@ -84,12 +84,12 @@ class BitmexGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        key = setting["key"]
-        secret = setting["secret"]
-        session_number = setting["session_number"]
-        server = setting["server"]
-        proxy_host = setting["proxy_host"]
-        proxy_port = setting["proxy_port"]
+        key = setting["ID"]
+        secret = setting["Secret"]
+        session_number = setting["会话数"]
+        server = setting["服务器"]
+        proxy_host = setting["代理地址"]
+        proxy_port = setting["代理端口"]
 
         self.rest_api.connect(key, secret, session_number,
                               server, proxy_host, proxy_port)
