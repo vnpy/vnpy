@@ -60,6 +60,7 @@ DIRECTION_TIGER2VT = {
 ORDERTYPE_VT2TIGER = {
     OrderType.LIMIT: "LMT",
     OrderType.MARKET: "MKT",
+    OrderType.STOP: "STP",
 }
 
 STATUS_TIGER2VT = {
