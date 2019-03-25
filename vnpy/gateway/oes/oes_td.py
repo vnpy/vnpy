@@ -718,7 +718,7 @@ class OrderManager:
             vt_order.status = STATUS_OES2VT[data.ordStatus]
             vt_order.volume = data.ordQty
             vt_order.traded = data.cumQty
-            vt_order.time = parse_oes_datetime(data.ordDate, data.ordTime)
+            vt_order.time = parse_oes_datetime(data.ordDate, data.ordTime).isoformat()
         except KeyError:
             if data.bsType == eOesBuySellTypeT.OES_BS_TYPE_BUY:
                 offset = Offset.OPEN
