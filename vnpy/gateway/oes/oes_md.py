@@ -40,8 +40,8 @@ class OesMdMessageLoop:
 
         self.message_handlers: Dict[eMdsMsgTypeT, Callable[[MdsMktRspMsgBodyT], int]] = {
             # tick & orderbook
-            eMdsMsgTypeT.MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: self.on_market_full_refresh,
-            eMdsMsgTypeT.MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: self.on_l2_market_data_snapshot,
+            eMdsMsgTypeT.MDS_MSGTYPE_MARKET_DATA_SNAPSHOT_FULL_REFRESH: self.on_init_tick,
+            eMdsMsgTypeT.MDS_MSGTYPE_L2_MARKET_DATA_SNAPSHOT: self.on_l2_tick,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_ORDER: self.on_l2_order,
             eMdsMsgTypeT.MDS_MSGTYPE_L2_TRADE: self.on_l2_trade,
 
@@ -132,7 +132,7 @@ class OesMdMessageLoop:
                         time.sleep(1)
         return
 
-    def on_l2_market_data_snapshot(self, d: MdsMktRspMsgBodyT):
+    def on_l2_tick(self, d: MdsMktRspMsgBodyT):
         """"""
         data: MdsL2StockSnapshotBodyT = d.mktDataSnapshot.l2Stock
         symbol = str(data.SecurityID)
@@ -148,7 +148,7 @@ class OesMdMessageLoop:
             tick.__dict__['ask_price_' + str(i + 1)] = data.OfferLevels[i].Price / 10000
         self.gateway.on_tick(copy(tick))
 
-    def on_market_full_refresh(self, d: MdsMktRspMsgBodyT):
+    def on_init_tick(self, d: MdsMktRspMsgBodyT):
         """"""
         data: MdsStockSnapshotBodyT = d.mktDataSnapshot.stock
         symbol = data.SecurityID
