@@ -94,11 +94,11 @@ class OesGateway(BaseGateway):
         self.td_api.password = password
         if self.td_api.connect():
             self.write_log(_("成功连接到交易服务器"))
-            self.td_api.query_account()
             self.td_api.query_contracts()
+            # self.td_api.query_account()
             self.write_log("合约信息查询成功")
-            self.td_api.query_position()
-            self.td_api.query_orders()
+            # self.td_api.query_position()
+            # self.td_api.query_orders()
             self.td_api.start()
         else:
             self.write_log(_("无法连接到交易服务器，请检查你的配置"))
