@@ -18,7 +18,6 @@ from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_De
     OesRspMsgBodyT, OesStockBaseInfoT, OesTrdCnfmT, SGeneralClientChannelT, SMSG_PROTO_BINARY, \
     SMsgHeadT, cast, eOesBuySellTypeT, eOesMarketIdT, eOesMsgTypeT, \
     eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT, eOesSubscribeReportTypeT
-
 from vnpy.gateway.oes.error_code import error_to_str
 from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
 from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Product, Status
@@ -43,6 +42,10 @@ PRODUCT_OES2VT = {
 ORDER_TYPE_VT2OES = {
     (Exchange.SSE, OrderType.LIMIT): eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT,
     (Exchange.SZSE, OrderType.LIMIT): eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT,
+}
+ORDER_TYPE_OES2VT = {
+    (eOesMarketIdT.OES_MKT_SH_ASHARE, eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT): OrderType.LIMIT,
+    (eOesMarketIdT.OES_MKT_SZ_ASHARE, eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT): OrderType.LIMIT,
 }
 
 BUY_SELL_TYPE_VT2OES = {
@@ -737,12 +740,14 @@ class OesTdApi:
                 symbol=data.securityId,
                 exchange=EXCHANGE_OES2VT[data.mktId],
                 orderid=str(order_id if order_id else data.origClSeqNo),  # generated id
+                type=ORDER_TYPE_OES2VT[(data.mktId, data.ordType)],
                 direction=Direction.NET,
                 offset=offset,
                 price=data.ordPrice / 10000,
                 volume=data.ordQty - data.canceledQty,
                 traded=data.cumQty,
-                status=STATUS_OES2VT[data.ordStatus],
+                status=STATUS_OES2VT[
+                    data.ordStatus],
 
                 # this time should be generated automatically or by a static function
                 time=datetime.utcnow().isoformat(),

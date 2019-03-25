@@ -1,5 +1,6 @@
 # encoding: UTF-8
 """
+Author: nanoric
 """
 import hashlib
 import os
