@@ -303,7 +303,6 @@ class FutuGateway(BaseGateway):
                     product=product,
                     size=1,
                     pricetick=0.001,
-                    net_position=True,
                     gateway_name=self.gateway_name,
                 )
                 self.on_contract(contract)

@@ -468,7 +468,6 @@ class OesTdApi:
             name=data.securityName,
             product=PRODUCT_OES2VT[data.mktId],
             size=data.buyQtyUnit,
-            net_position=True,
             pricetick=data.priceUnit,
         )
         self.gateway.on_contract(contract)
