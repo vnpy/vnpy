@@ -459,6 +459,7 @@ class IbApi(EWrapper):
             product=PRODUCT_IB2VT[ib_product],
             size=ib_size,
             pricetick=contractDetails.minTick,
+            net_position=True,
             gateway_name=self.gateway_name,
         )
 
