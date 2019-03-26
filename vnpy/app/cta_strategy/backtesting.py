@@ -293,7 +293,7 @@ class BacktestingEngine:
         self.output("逐日盯市盈亏计算完成")
         return self.daily_df
 
-    def calculate_statistics(self, df: DataFrame = None):
+    def calculate_statistics(self, df: DataFrame = None, Output=True):
         """"""
         self.output("开始计算策略统计指标")
 
@@ -325,6 +325,7 @@ class BacktestingEngine:
             daily_return = 0
             return_std = 0
             sharpe_ratio = 0
+            return_drawdown_ratio = 0
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
@@ -373,38 +374,42 @@ class BacktestingEngine:
             else:
                 sharpe_ratio = 0
 
+            return_drawdown_ratio = -total_return / max_ddpercent
+
         # Output
-        self.output("-" * 30)
-        self.output(f"首个交易日：\t{start_date}")
-        self.output(f"最后交易日：\t{end_date}")
+        if Output:
+            self.output("-" * 30)
+            self.output(f"首个交易日：\t{start_date}")
+            self.output(f"最后交易日：\t{end_date}")
 
-        self.output(f"总交易日：\t{total_days}")
-        self.output(f"盈利交易日：\t{profit_days}")
-        self.output(f"亏损交易日：\t{loss_days}")
+            self.output(f"总交易日：\t{total_days}")
+            self.output(f"盈利交易日：\t{profit_days}")
+            self.output(f"亏损交易日：\t{loss_days}")
 
-        self.output(f"起始资金：\t{self.capital:,.2f}")
-        self.output(f"结束资金：\t{end_balance:,.2f}")
+            self.output(f"起始资金：\t{self.capital:,.2f}")
+            self.output(f"结束资金：\t{end_balance:,.2f}")
 
-        self.output(f"总收益率：\t{total_return:,.2f}%")
-        self.output(f"年化收益：\t{annual_return:,.2f}%")
-        self.output(f"最大回撤: \t{max_drawdown:,.2f}")
-        self.output(f"百分比最大回撤: {max_ddpercent:,.2f}%")
+            self.output(f"总收益率：\t{total_return:,.2f}%")
+            self.output(f"年化收益：\t{annual_return:,.2f}%")
+            self.output(f"最大回撤: \t{max_drawdown:,.2f}")
+            self.output(f"百分比最大回撤: {max_ddpercent:,.2f}%")
 
-        self.output(f"总盈亏：\t{total_net_pnl:,.2f}")
-        self.output(f"总手续费：\t{total_commission:,.2f}")
-        self.output(f"总滑点：\t{total_slippage:,.2f}")
-        self.output(f"总成交金额：\t{total_turnover:,.2f}")
-        self.output(f"总成交笔数：\t{total_trade_count}")
+            self.output(f"总盈亏：\t{total_net_pnl:,.2f}")
+            self.output(f"总手续费：\t{total_commission:,.2f}")
+            self.output(f"总滑点：\t{total_slippage:,.2f}")
+            self.output(f"总成交金额：\t{total_turnover:,.2f}")
+            self.output(f"总成交笔数：\t{total_trade_count}")
 
-        self.output(f"日均盈亏：\t{daily_net_pnl:,.2f}")
-        self.output(f"日均手续费：\t{daily_commission:,.2f}")
-        self.output(f"日均滑点：\t{daily_slippage:,.2f}")
-        self.output(f"日均成交金额：\t{daily_turnover:,.2f}")
-        self.output(f"日均成交笔数：\t{daily_trade_count}")
+            self.output(f"日均盈亏：\t{daily_net_pnl:,.2f}")
+            self.output(f"日均手续费：\t{daily_commission:,.2f}")
+            self.output(f"日均滑点：\t{daily_slippage:,.2f}")
+            self.output(f"日均成交金额：\t{daily_turnover:,.2f}")
+            self.output(f"日均成交笔数：\t{daily_trade_count}")
 
-        self.output(f"日均收益率：\t{daily_return:,.2f}%")
-        self.output(f"收益标准差：\t{return_std:,.2f}%")
-        self.output(f"Sharpe Ratio：\t{sharpe_ratio:,.2f}")
+            self.output(f"日均收益率：\t{daily_return:,.2f}%")
+            self.output(f"收益标准差：\t{return_std:,.2f}%")
+            self.output(f"Sharpe Ratio：\t{sharpe_ratio:,.2f}")
+            self.output(f"收益回撤比：\t{return_drawdown_ratio:,.2f}")
 
         statistics = {
             "start_date": start_date,
@@ -430,6 +435,7 @@ class BacktestingEngine:
             "daily_return": daily_return,
             "return_std": return_std,
             "sharpe_ratio": sharpe_ratio,
+            "return_drawdown_ratio": return_drawdown_ratio,
         }
 
         return statistics
