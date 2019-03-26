@@ -209,7 +209,10 @@ class LogEngine(BaseEngine):
             return
 
         self.level = SETTINGS["log.level"]
+
         self.logger = logging.getLogger("VN Trader")
+        self.logger.setLevel(self.level)
+
         self.formatter = logging.Formatter(
             "%(asctime)s  %(levelname)s: %(message)s"
         )
