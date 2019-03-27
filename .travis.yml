@@ -5,6 +5,10 @@ dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 python:
   - "3.7"
 
+script:
+  # todo: use python unittest
+  - mkdir run; cd run; python ../tests/load_all.py
+
 matrix:
   include:
     - name: "code quality analysis: flake8"
@@ -25,9 +29,6 @@ matrix:
       install:
         - pip install -r requirements.txt
         - pip install .
-      script:
-        # todo: use python unittest
-        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctpmd; import vnpy.api.oes.vnoes; exit(0);"
 
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
@@ -42,9 +43,6 @@ matrix:
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
         # Linux install script
         - bash ./install.sh
-      script:
-        # todo: use python unittest
-        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctpmd; import vnpy.api.oes.vnoes; exit(0);"
 
     - name: "pip install under Ubuntu: gcc-7"
       before_install:
@@ -59,7 +57,3 @@ matrix:
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
         # Linux install script
         - bash ./install.sh
-      script:
-        # todo: use python unittest
-        - mkdir run; cd run; python -c "import vnpy.api.ctp.vnctpmd; import vnpy.api.oes.vnoes; exit(0);"
-
