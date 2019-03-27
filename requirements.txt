@@ -2,6 +2,7 @@ PyQt5<5.12
 dataclasses; python_version<="3.6"
 qdarkstyle
 futu-api
+requests
 websocket-client
 peewee
 numpy
