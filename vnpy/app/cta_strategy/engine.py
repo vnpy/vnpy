@@ -282,9 +282,12 @@ class CtaEngine(BaseEngine):
                         price = tick.limit_down
                     else:
                         price = tick.bid_price_5
+                
+                contract = self.main_engine.get_contract(stop_order.vt_symbol)
 
                 vt_orderids = self.send_limit_order(
                     strategy, 
+                    contract,
                     stop_order.direction, 
                     stop_order.offset, 
                     price, 
@@ -297,9 +300,9 @@ class CtaEngine(BaseEngine):
                     # Remove from relation map.
                     self.stop_orders.pop(stop_order.stop_orderid)
 
-                    vt_orderids = self.strategy_orderid_map[strategy.strategy_name]
-                    if stop_order.stop_orderid in vt_orderids:
-                        vt_orderids.remove(stop_order.stop_orderid)
+                    strategy_vt_orderids = self.strategy_orderid_map[strategy.strategy_name]
+                    if stop_order.stop_orderid in strategy_vt_orderids:
+                        strategy_vt_orderids.remove(stop_order.stop_orderid)
 
                     # Change stop order status to cancelled and update to strategy.
                     stop_order.status = StopOrderStatus.TRIGGERED
@@ -308,6 +311,7 @@ class CtaEngine(BaseEngine):
                     self.call_strategy_func(
                         strategy, strategy.on_stop_order, stop_order
                     )
+                    self.put_stop_order_event(stop_order)
 
     def send_server_order(
         self,
@@ -341,11 +345,11 @@ class CtaEngine(BaseEngine):
         vt_orderids = []
 
         for req in req_list:
-            self.offset_converter.update_order_request(req)
-
             vt_orderid = self.main_engine.send_order(
                 req, contract.gateway_name)
             vt_orderids.append(vt_orderid)
+
+            self.offset_converter.update_order_request(req, vt_orderid)
             
             # Save relationship between orderid and strategy.
             self.orderid_strategy_map[vt_orderid] = strategy
@@ -436,6 +440,7 @@ class CtaEngine(BaseEngine):
         vt_orderids.add(stop_orderid)
 
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
+        self.put_stop_order_event(stop_order)
 
         return stop_orderid
 
@@ -471,6 +476,7 @@ class CtaEngine(BaseEngine):
         stop_order.status = StopOrderStatus.CANCELLED
 
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
+        self.put_stop_order_event(stop_order)
 
     def send_order(
         self,
@@ -493,7 +499,7 @@ class CtaEngine(BaseEngine):
             if contract.stop_supported:
                 return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
             else:
-                return self.send_local_stop_order(strategy, contract, direction, offset, price, volume, lock)
+                return self.send_local_stop_order(strategy, direction, offset, price, volume, lock)
         else:
             return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock)
 

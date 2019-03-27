@@ -45,13 +45,13 @@ class OffsetConverter:
         holding = self.get_position_holding(order.vt_symbol)
         holding.update_order(order)
 
-    def update_order_request(self, req: OrderRequest):
+    def update_order_request(self, req: OrderRequest, vt_orderid: str):
         """"""
         if not self.is_convert_required(req.vt_symbol):
             return
 
         holding = self.get_position_holding(req.vt_symbol)
-        holding.update_order_request(req)
+        holding.update_order_request(req, vt_orderid)
 
     def get_position_holding(self, vt_symbol: str):
         """"""
@@ -76,12 +76,12 @@ class OffsetConverter:
         else:
             return [req]
 
-    @lru_cache
+    @lru_cache()
     def is_convert_required(self, vt_symbol: str):
         """
         Check if the contract needs offset convert.
         """
-        contract = self.main_engine.get(vt_symbol)
+        contract = self.main_engine.get_contract(vt_symbol)
 
         # Only contracts with long-short position mode requires convert
         if not contract.net_position:
@@ -139,7 +139,10 @@ class PositionHolding:
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str):
         """"""
-        gateway_name, orderid = vt_orderid.split(".")
+        ix = vt_orderid.index(".")
+        gateway_name = vt_orderid[:ix]
+        orderid = vt_orderid[ix + 1:]
+
         order = req.create_order_data(orderid, gateway_name)
         self.update_order(order)
 

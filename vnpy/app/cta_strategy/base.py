@@ -2,7 +2,7 @@
 Defines constants and objects used in CtaStrategy App.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from vnpy.trader.constant import Direction, Offset
@@ -36,9 +36,9 @@ class StopOrder:
     volume: float
     stop_orderid: str
     strategy_name: str
+    lock: bool = False
+    vt_orderids: list = field(default_factory=list)
     status: StopOrderStatus = StopOrderStatus.WAITING
-    vt_orderids: list
-    lock: bool
 
 
 EVENT_CTA_LOG = "eCtaLog"
