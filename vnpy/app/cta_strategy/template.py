@@ -273,22 +273,19 @@ class CtaSignal(ABC):
 
 class TargetPosTemplate(CtaTemplate):
     """"""
-
-    author = '量衍投资'
-
     tick_add = 1
+
     last_tick = None
     last_bar = None
     target_pos = 0
-    orderList = []
-
-    variables = ['target_pos']
+    vt_orderids = []
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
         super(TargetPosTemplate, self).__init__(
             cta_engine, strategy_name, vt_symbol, setting
         )
+        self.variables.append("target_pos")
 
     def on_tick(self, tick: TickData):
         """
@@ -310,8 +307,8 @@ class TargetPosTemplate(CtaTemplate):
         Callback of new order data update.
         """
         if order.status == Status.ALLTRADED or order.status == Status.CANCELLED:
-            if order.vt_orderid in self.orderList:
-                self.orderList.remove(order.vt_orderid)
+            if order.vt_orderid in self.vt_orderids:
+                self.vt_orderids.remove(order.vt_orderid)
 
     def set_target_pos(self, target_pos):
         """"""
@@ -347,29 +344,29 @@ class TargetPosTemplate(CtaTemplate):
 
         if self.get_engine_type() == EngineType.BACKTESTING:
             if pos_change > 0:
-                vt_orderid = self.buy(long_price, abs(pos_change))
+                vt_orderids = self.buy(long_price, abs(pos_change))
             else:
-                vt_orderid = self.short(short_price, abs(pos_change))
-            self.orderList.append(vt_orderid)
+                vt_orderids = self.short(short_price, abs(pos_change))
+            self.vt_orderids.extend(vt_orderids)
 
         else:
-            if self.orderList:
+            if self.vt_orderids:
                 return
 
             if pos_change > 0:
                 if self.pos < 0:
                     if pos_change < abs(self.pos):
-                        vt_orderid = self.cover(long_price, pos_change)
+                        vt_orderids = self.cover(long_price, pos_change)
                     else:
-                        vt_orderid = self.cover(long_price, abs(self.pos))
+                        vt_orderids = self.cover(long_price, abs(self.pos))
                 else:
-                    vt_orderid = self.buy(long_price, abs(pos_change))
+                    vt_orderids = self.buy(long_price, abs(pos_change))
             else:
                 if self.pos > 0:
                     if abs(pos_change) < self.pos:
-                        vt_orderid = self.sell(short_price, abs(pos_change))
+                        vt_orderids = self.sell(short_price, abs(pos_change))
                     else:
-                        vt_orderid = self.sell(short_price, abs(self.pos))
+                        vt_orderids = self.sell(short_price, abs(self.pos))
                 else:
-                    vt_orderid = self.short(short_price, abs(pos_change))
-            self.orderList.append(vt_orderid)
+                    vt_orderids = self.short(short_price, abs(pos_change))
+            self.vt_orderids.extend(vt_orderids)

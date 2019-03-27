@@ -25,9 +25,9 @@ class KingKeltnerStrategy(CtaTemplate):
     intra_trade_high = 0
     intra_trade_low = 0
 
-    buy_orderidList = []
-    short_orderidList = []
-    orderList = []
+    long_vt_orderids = []
+    short_vt_orderids = []
+    vt_orderids = []
 
     parameters = ['kk_length', 'kk_dev', 'fixed_size']
     variables = ['kk_up', 'kk_down']
@@ -74,9 +74,9 @@ class KingKeltnerStrategy(CtaTemplate):
 
     def on_5min_bar(self, bar: BarData):
         """"""
-        for orderid in self.orderList:
+        for orderid in self.vt_orderids:
             self.cancel_order(orderid)
-        self.orderList = []
+        self.vt_orderids = []
 
         am = self.am
         am.update_bar(bar)
@@ -96,7 +96,7 @@ class KingKeltnerStrategy(CtaTemplate):
 
             vt_orderid = self.sell(self.intra_trade_high * (1 - self.trailing_percent / 100),
                                    abs(self.pos), True)
-            self.orderList.append(vt_orderid)
+            self.vt_orderids.append(vt_orderid)
 
         elif self.pos < 0:
             self.intra_trade_high = bar.high_price
@@ -104,7 +104,7 @@ class KingKeltnerStrategy(CtaTemplate):
 
             vt_orderid = self.cover(self.intra_trade_low * (1 + self.trailing_percent / 100),
                                     abs(self.pos), True)
-            self.orderList.append(vt_orderid)
+            self.vt_orderids.append(vt_orderid)
 
         self.put_event()
 
@@ -120,26 +120,26 @@ class KingKeltnerStrategy(CtaTemplate):
         """
         if self.pos != 0:
             if self.pos > 0:
-                for short_orderid in self.short_orderidList:
+                for short_orderid in self.short_vt_orderids:
                     self.cancel_order(short_orderid)
 
             elif self.pos < 0:
-                for buy_orderid in self.buy_orderidList:
+                for buy_orderid in self.long_vt_orderids:
                     self.cancel_order(buy_orderid)
 
-            for orderid in (self.buy_orderidList + self.short_orderidList):
-                if orderid in self.orderList:
-                    self.orderList.remove(orderid)
+            for orderid in (self.long_vt_orderids + self.short_vt_orderids):
+                if orderid in self.vt_orderids:
+                    self.vt_orderids.remove(orderid)
 
         self.put_event()
 
     def send_oco_order(self, buy_price, short_price, volume):
         """"""
-        self.buy_orderidList = self.buy(buy_price, volume, True)
-        self.short_orderidList = self.short(short_price, volume, True)
+        self.long_vt_orderids = self.buy(buy_price, volume, True)
+        self.short_vt_orderids = self.short(short_price, volume, True)
 
-        self.orderList.append(self.buy_orderidList)
-        self.orderList.append(self.short_orderidList)
+        self.vt_orderids.append(self.long_vt_orderids)
+        self.vt_orderids.append(self.short_vt_orderids)
 
     def on_stop_order(self, stop_order: StopOrder):
         """
