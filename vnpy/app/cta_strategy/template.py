@@ -166,17 +166,18 @@ class CtaTemplate(ABC):
         price: float,
         volume: float,
         stop: bool = False,
+        lock: bool = False
     ):
         """
         Send a new order.
         """
         if self.trading:
-            vt_orderid = self.cta_engine.send_order(
-                self, direction, offset, price, volume, stop
+            vt_orderids = self.cta_engine.send_order(
+                self, direction, offset, price, volume, stop, lock
             )
+            return vt_orderids
         else:
-            vt_orderid = ""
-        return vt_orderid
+            return []
 
     def cancel_order(self, vt_orderid: str):
         """

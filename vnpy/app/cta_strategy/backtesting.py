@@ -721,14 +721,16 @@ class BacktestingEngine:
         offset: Offset,
         price: float,
         volume: float,
-        stop: bool = False,
+        stop: bool,
+        lock: bool
     ):
         """"""
         price = round_to_pricetick(price, self.pricetick)
         if stop:
-            return self.send_stop_order(direction, offset, price, volume)
+            vt_orderid = self.send_stop_order(direction, offset, price, volume)
         else:
-            return self.send_limit_order(direction, offset, price, volume)
+            vt_orderid = self.send_limit_order(direction, offset, price, volume)
+        return [vt_orderid]
 
     def send_stop_order(
         self, 

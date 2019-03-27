@@ -37,7 +37,8 @@ class StopOrder:
     stop_orderid: str
     strategy_name: str
     status: StopOrderStatus = StopOrderStatus.WAITING
-    vt_orderid: str = ""
+    vt_orderids: list
+    lock: bool
 
 
 EVENT_CTA_LOG = "eCtaLog"

@@ -334,13 +334,14 @@ class StopOrderMonitor(BaseMonitor):
             "cell": BaseCell,
             "update": False,
         },
-        "vt_orderid": {"display": "限价委托号", "cell": BaseCell, "update": True},
+        "vt_orderids": {"display": "限价委托号", "cell": BaseCell, "update": True},
         "vt_symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "order_type": {"display": "类型", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
-        "volume": {"display": "数量", "cell": BaseCell, "update": True},
+        "volume": {"display": "数量", "cell": BaseCell, "update": False},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
-        "strategy": {"display": "策略名", "cell": StrategyCell, "update": True},
+        "lock": {"display": "锁仓", "cell": BaseCell, "update": False},
+        "strategy": {"display": "策略名", "cell": StrategyCell, "update": False},
     }
 
     def init_ui(self):
