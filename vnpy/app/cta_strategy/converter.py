@@ -139,9 +139,7 @@ class PositionHolding:
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str):
         """"""
-        ix = vt_orderid.index(".")
-        gateway_name = vt_orderid[:ix]
-        orderid = vt_orderid[ix + 1:]
+        gateway_name, orderid = vt_orderid.split(".")
 
         order = req.create_order_data(orderid, gateway_name)
         self.update_order(order)
