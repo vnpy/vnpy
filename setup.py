@@ -111,8 +111,11 @@ setup(
     include_package_data=True,
     packages=pkgs,
     package_data={"": [
-        "*.json", "*.md", "*.ico", "*.ini",
-        "*.dll", "*.so", "*.pyd"
+        "*.ico",
+        "*.ini",
+        "*.dll",
+        "*.so",
+        "*.pyd"
     ]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
