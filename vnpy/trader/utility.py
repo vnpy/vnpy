@@ -7,11 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 import numpy as np
-
-try:
-    from vnpy import talib      # For windows
-except ModuleNotFoundError:
-    import talib                # For linux (needs extra install)
+import talib
 
 from .object import BarData, TickData
 
