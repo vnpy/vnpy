@@ -1,7 +1,6 @@
 PyQt5<5.12
 dataclasses; python_version<="3.6"
 qdarkstyle
-futu-api
 requests
 websocket-client
 peewee
@@ -9,6 +8,8 @@ numpy
 pandas
 matplotlib
 seaborn
+futu-api
+tigeropen
 
 # ta-lib
 ta-lib; platform_system=="Linux"
