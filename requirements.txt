@@ -1,13 +1,21 @@
 PyQt5<5.12
 dataclasses; python_version<="3.6"
 qdarkstyle
-futu-api
+requests
 websocket-client
 peewee
 numpy
 pandas
 matplotlib
 seaborn
-ta-lib
-ibapi
+futu-api
+tigeropen
+
+# ta-lib
+ta-lib; platform_system=="Linux"
+https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl; platform_system=="Windows"
+
+# ibapi
+# todo: use cdn instead
+https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
 
