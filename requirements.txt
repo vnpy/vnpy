@@ -15,5 +15,6 @@ ta-lib; platform_system=="Linux"
 https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl; platform_system=="Windows"
 
 # ibapi
-https://pip.vnpy.com/colletion/ibapi-9.75.1-py3-none-any.whl;
+# todo: use cdn instead
+https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
 
