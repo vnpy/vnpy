@@ -58,4 +58,5 @@ matrix:
         - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
         # Linux install script
+        - python -m pip install --upgrade pip wheel setuptools
         - bash ./install.sh
