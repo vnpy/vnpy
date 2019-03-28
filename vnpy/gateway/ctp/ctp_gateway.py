@@ -433,7 +433,7 @@ class CtpTdApi(TdApi):
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         order_ref = data["OrderRef"]
-        orderid = f"{self.frontid}.{self.sessionid}.{order_ref}"
+        orderid = f"{self.frontid}-{self.sessionid}-{order_ref}"
         
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map[symbol]
@@ -586,7 +586,7 @@ class CtpTdApi(TdApi):
         frontid = data["FrontID"]
         sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
-        orderid = f"{frontid}.{sessionid}.{order_ref}"
+        orderid = f"{frontid}-{sessionid}-{order_ref}"
         
         order = OrderData(
             symbol=symbol,
@@ -722,7 +722,7 @@ class CtpTdApi(TdApi):
         self.reqid += 1
         self.reqOrderInsert(ctp_req, self.reqid)
         
-        orderid = f"{self.frontid}.{self.sessionid}.{self.order_ref}"
+        orderid = f"{self.frontid}-{self.sessionid}-{self.order_ref}"
         order = req.create_order_data(orderid, self.gateway_name)
         self.gateway.on_order(order)
         
@@ -732,7 +732,7 @@ class CtpTdApi(TdApi):
         """
         Cancel existing order.
         """
-        frontid, sessionid, order_ref = req.orderid.split(".")
+        frontid, sessionid, order_ref = req.orderid.split("-")
         
         ctp_req = {
             "InstrumentID": req.symbol,

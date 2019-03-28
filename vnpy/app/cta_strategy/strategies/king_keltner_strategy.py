@@ -76,7 +76,7 @@ class KingKeltnerStrategy(CtaTemplate):
         """"""
         for orderid in self.vt_orderids:
             self.cancel_order(orderid)
-        self.vt_orderids = []
+        self.vt_orderids.clear()
 
         am = self.am
         am.update_bar(bar)
@@ -138,8 +138,8 @@ class KingKeltnerStrategy(CtaTemplate):
         self.long_vt_orderids = self.buy(buy_price, volume, True)
         self.short_vt_orderids = self.short(short_price, volume, True)
 
-        self.vt_orderids.append(self.long_vt_orderids)
-        self.vt_orderids.append(self.short_vt_orderids)
+        self.vt_orderids.extend(self.long_vt_orderids)
+        self.vt_orderids.extend(self.short_vt_orderids)
 
     def on_stop_order(self, stop_order: StopOrder):
         """
