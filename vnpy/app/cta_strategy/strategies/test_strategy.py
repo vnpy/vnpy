@@ -12,7 +12,7 @@ from time import time
 
 class TestStrategy(CtaTemplate):
     """"""
-    author = '用Python的交易员'
+    author = "用Python的交易员"
 
     test_trigger = 10
 
