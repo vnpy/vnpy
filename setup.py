@@ -153,6 +153,5 @@ setup(
         "Natural Language :: Chinese (Simplified)",
         "Natural Language :: Chinese (Simplified)"
     ],
-    install_requires=[],
     ext_modules=ext_modules
 )
