@@ -133,7 +133,7 @@ setup(
         "*.ini",
         "*.dll",
         "*.so",
-        "*.pyd"
+        "*.pyd",
     ]},
     install_requires=install_requires,
     classifiers=[
