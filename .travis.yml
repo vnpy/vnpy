@@ -31,6 +31,18 @@ matrix:
         - pip install -r requirements.txt
         - pip install .
 
+    - name: "sdist install under Windows"
+      os: "windows"
+      language: "cpp"
+      env:
+        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_install:
+        - choco install python3 --version 3.7.2
+      install:
+        - python -m pip install --upgrade pip wheel setuptools
+        - python setup.py sdist
+        - powershell -Command $name = (ls dist).name; pip install "dist/$name"
+
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
         # C++17
@@ -60,3 +72,30 @@ matrix:
         # Linux install script
         - python -m pip install --upgrade pip wheel setuptools
         - bash ./install.sh
+
+    - name: "sdist under Ubuntu: gcc-8"
+      before_install:
+        # C++17
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -y
+      install:
+        # C++17
+        - sudo apt-get install -y gcc-8 g++-8
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
+        # Linux install script
+        - python -m pip install --upgrade pip wheel setuptools
+        - # Get and build ta-lib
+          pushd /tmp
+          wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+          tar -xf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib
+          ./configure --prefix=/usr
+          make
+          sudo make install
+          popd
+          # ta-lib import numpy in setup.py, so we must install it before installing ta-lib
+          pip instal numpy
+        - python setup.py sdist
+        - pip install dist/`ls dist`
