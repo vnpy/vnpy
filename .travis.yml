@@ -73,7 +73,7 @@ matrix:
         - python -m pip install --upgrade pip wheel setuptools
         - bash ./install.sh
 
-    - name: "sdist under Ubuntu: gcc-8"
+    - name: "sdist install under Ubuntu: gcc-8"
       before_install:
         # C++17
         - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
