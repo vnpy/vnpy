@@ -13,7 +13,7 @@ from vnpy.app.cta_strategy import (
 class BollChannelStrategy(CtaTemplate):
     """"""
 
-    author = '用Python的交易员'
+    author = "用Python的交易员"
 
     boll_window = 18
     boll_dev = 3.4
@@ -32,10 +32,10 @@ class BollChannelStrategy(CtaTemplate):
     long_stop = 0
     short_stop = 0
 
-    parameters = ['boll_window', 'boll_dev', 'cci_window',
-                  'atr_window', 'sl_multiplier', 'fixed_size']
-    variables = ['boll_up', 'boll_down', 'cci_value', 'atr_value',
-                 'intra_trade_high', 'intra_trade_low', 'long_stop', 'short_stop']
+    parameters = ["boll_window", "boll_dev", "cci_window",
+                  "atr_window", "sl_multiplier", "fixed_size"]
+    variables = ["boll_up", "boll_down", "cci_value", "atr_value",
+                 "intra_trade_high", "intra_trade_low", "long_stop", "short_stop"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
