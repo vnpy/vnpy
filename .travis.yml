@@ -41,7 +41,7 @@ matrix:
       install:
         - python -m pip install --upgrade pip wheel setuptools
         - python setup.py sdist
-        - powershell -Command $name = (ls dist).name; pip install "dist/$name"
+        - pip install dist/`ls dist`
 
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
@@ -94,6 +94,6 @@ matrix:
         -   make
         -   sudo make install
         - popd
-        - pip instal numpy
+        - pip install numpy
         - python setup.py sdist
         - pip install dist/`ls dist`
