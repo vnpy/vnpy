@@ -21,6 +21,7 @@ matrix:
 
     - name: "pip install under Windows"
       os: "windows"
+      # language : cpp is necessary for windows
       language: "cpp"
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
@@ -63,6 +64,8 @@ matrix:
 
     - name: "sdist install under Windows"
       os: "windows"
+      # language : cpp is necessary for windows
+      language: "cpp"
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
       before_install:
@@ -96,5 +99,6 @@ matrix:
         -   sudo make install
         - popd
         - pip install numpy
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - python setup.py sdist
         - pip install dist/`ls dist`
