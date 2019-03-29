@@ -86,16 +86,14 @@ matrix:
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
         # Linux install script
         - python -m pip install --upgrade pip wheel setuptools
-        - # Get and build ta-lib
-          pushd /tmp
-          wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
-          tar -xf ta-lib-0.4.0-src.tar.gz
-          cd ta-lib
-          ./configure --prefix=/usr
-          make
-          sudo make install
-          popd
-          # ta-lib import numpy in setup.py, so we must install it before installing ta-lib
-          pip instal numpy
+        - pushd /tmp
+        -   wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+        -   tar -xf ta-lib-0.4.0-src.tar.gz
+        -   cd ta-lib
+        -   ./configure --prefix=/usr
+        -   make
+        -   sudo make install
+        - popd
+        - pip instal numpy
         - python setup.py sdist
         - pip install dist/`ls dist`
