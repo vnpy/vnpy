@@ -14,13 +14,13 @@ from vnpy.app.cta_strategy import (
 class DualThrustStrategy(CtaTemplate):
     """"""
 
-    author = u'用Python的交易员'
+    author = "用Python的交易员"
 
     fixed_size = 1
     k1 = 0.4
     k2 = 0.6
 
-    barList = []
+    bars = []
 
     day_open = 0
     day_high = 0
@@ -34,8 +34,8 @@ class DualThrustStrategy(CtaTemplate):
     long_entered = False
     short_entered = False
 
-    parameters = ['k1', 'k2', "fixed_size"]
-    variables = ['range', 'long_entry', 'short_entry', 'exit_time']
+    parameters = ["k1", "k2", "fixed_size"]
+    variables = ["range", "long_entry", "short_entry", "exit_time"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
@@ -45,7 +45,7 @@ class DualThrustStrategy(CtaTemplate):
 
         self.bg = BarGenerator(self.on_bar)
         self.am = ArrayManager()
-        self.barList = []
+        self.bars = []
 
     def on_init(self):
         """
@@ -78,12 +78,12 @@ class DualThrustStrategy(CtaTemplate):
         """
         self.cancel_all()
 
-        self.barList.append(bar)
-        if len(self.barList) <= 2:
+        self.bars.append(bar)
+        if len(self.bars) <= 2:
             return
         else:
-            self.barList.pop(0)
-        last_bar = self.barList[-2]
+            self.bars.pop(0)
+        last_bar = self.bars[-2]
 
         if last_bar.datetime.date() != bar.datetime.date():
             if self.day_high:
