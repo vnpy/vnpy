@@ -134,7 +134,7 @@ class MaSignal(CtaSignal):
 class MultiSignalStrategy(TargetPosTemplate):
     """"""
 
-    author = '用Python的交易员'
+    author = "用Python的交易员"
 
     rsi_window = 14
     rsi_level = 20
@@ -145,9 +145,9 @@ class MultiSignalStrategy(TargetPosTemplate):
 
     signal_pos = {}
 
-    parameters = ['rsi_window', 'rsi_level', 'cci_window',
-                  'cci_level', 'fast_window', 'slow_window']
-    variables = ['signal_pos', 'target_pos']
+    parameters = ["rsi_window", "rsi_level", "cci_window",
+                  "cci_level", "fast_window", "slow_window"]
+    variables = ["signal_pos", "target_pos"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
@@ -210,9 +210,9 @@ class MultiSignalStrategy(TargetPosTemplate):
 
     def calculate_target_pos(self):
         """"""
-        self.signal_pos['rsi'] = self.rsi_signal.get_signal_pos()
-        self.signal_pos['cci'] = self.cci_signal.get_signal_pos()
-        self.signal_pos['ma'] = self.ma_signal.get_signal_pos()
+        self.signal_pos["rsi"] = self.rsi_signal.get_signal_pos()
+        self.signal_pos["cci"] = self.cci_signal.get_signal_pos()
+        self.signal_pos["ma"] = self.ma_signal.get_signal_pos()
 
         target_pos = 0
         for v in self.signal_pos.values():
