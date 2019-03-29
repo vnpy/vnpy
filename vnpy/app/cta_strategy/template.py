@@ -183,19 +183,22 @@ class CtaTemplate(ABC):
         """
         Cancel an existing order.
         """
-        self.cta_engine.cancel_order(self, vt_orderid)
+        if self.trading:
+            self.cta_engine.cancel_order(self, vt_orderid)
 
     def cancel_all(self):
         """
         Cancel all orders sent by strategy.
         """
-        self.cta_engine.cancel_all(self)
+        if self.trading:
+            self.cta_engine.cancel_all(self)
 
     def write_log(self, msg: str):
         """
         Write a log message.
         """
-        self.cta_engine.write_log(msg, self)
+        if self.inited:
+            self.cta_engine.write_log(msg, self)
 
     def get_engine_type(self):
         """

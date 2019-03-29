@@ -309,9 +309,12 @@ class ApexApi:
         APEX.Fix_GetLastErrMsg(out, size)
         return out.value
 
-    def reg_reply_call_func(sess: int, self):
-        """注册全局回调函数"""
-        n = APEX.Fix_RegReplyCallFunc(c_void_p(None), self.reply_call_func)
+    def reg_reply_call_func(self, sess: int = 0):
+        """注册回调函数"""
+        if not sess:
+            n = APEX.Fix_RegReplyCallFunc(c_void_p(None), self.reply_call_func)
+        else:
+            n = APEX.Fix_RegReplyCallFunc(sess, self.reply_call_func)
         return bool(n)
 
     def on_reply(self, conn: int, sess: int, recv: int):
