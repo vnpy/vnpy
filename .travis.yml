@@ -31,18 +31,6 @@ matrix:
         - pip install -r requirements.txt
         - pip install .
 
-    - name: "sdist install under Windows"
-      os: "windows"
-      language: "cpp"
-      env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
-      before_install:
-        - choco install python3 --version 3.7.2
-      install:
-        - python -m pip install --upgrade pip wheel setuptools
-        - python setup.py sdist
-        - pip install dist/`ls dist`
-
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
         # C++17
@@ -72,6 +60,19 @@ matrix:
         # Linux install script
         - python -m pip install --upgrade pip wheel setuptools
         - bash ./install.sh
+
+    - name: "sdist install under Windows"
+      os: "windows"
+      env:
+        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_install:
+        - choco install python3 --version 3.7.2
+      install:
+        - python -m pip install --upgrade pip wheel setuptools
+        - python setup.py sdist
+        - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - pip install dist/`ls dist`
 
     - name: "sdist install under Ubuntu: gcc-8"
       before_install:
