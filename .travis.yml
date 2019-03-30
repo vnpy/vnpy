@@ -21,6 +21,7 @@ matrix:
 
     - name: "pip install under Windows"
       os: "windows"
+      # language : cpp is necessary for windows
       language: "cpp"
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
@@ -60,3 +61,44 @@ matrix:
         # Linux install script
         - python -m pip install --upgrade pip wheel setuptools
         - bash ./install.sh
+
+    - name: "sdist install under Windows"
+      os: "windows"
+      # language : cpp is necessary for windows
+      language: "cpp"
+      env:
+        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_install:
+        - choco install python3 --version 3.7.2
+      install:
+        - python -m pip install --upgrade pip wheel setuptools
+        - python setup.py sdist
+        - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - pip install dist/`ls dist`
+
+    - name: "sdist install under Ubuntu: gcc-8"
+      before_install:
+        # C++17
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -y
+      install:
+        # C++17
+        - sudo apt-get install -y gcc-8 g++-8
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
+        # Linux install script
+        - python -m pip install --upgrade pip wheel setuptools
+        - pushd /tmp
+        -   wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+        -   tar -xf ta-lib-0.4.0-src.tar.gz
+        -   cd ta-lib
+        -   ./configure --prefix=/usr
+        -   make
+        -   sudo make install
+        - popd
+        - pip install numpy
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - python setup.py sdist
+        - pip install dist/`ls dist`

@@ -18,9 +18,9 @@ other financial markets.
 import ast
 import platform
 import re
+import sys
 
 from setuptools import Extension, find_packages, setup
-
 
 with open("vnpy/__init__.py", "rb") as f:
     version_line = re.search(
@@ -98,6 +98,24 @@ else:
 
 pkgs = find_packages()
 
+install_requires = [
+    "PyQt5<5.12",
+    "qdarkstyle",
+    "requests",
+    "websocket-client",
+    "peewee",
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "seaborn",
+    "futu-api",
+    "tigeropen",
+    "ta-lib",
+    "ibapi"
+]
+if sys.version_info.minor < 7:
+    install_requires.append("dataclasses")
+
 setup(
     name="vnpy",
     version=version,
@@ -115,8 +133,9 @@ setup(
         "*.ini",
         "*.dll",
         "*.so",
-        "*.pyd"
+        "*.pyd",
     ]},
+    install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Operating System :: Microsoft :: Windows :: Windows 7",
@@ -134,6 +153,5 @@ setup(
         "Natural Language :: Chinese (Simplified)",
         "Natural Language :: Chinese (Simplified)"
     ],
-    install_requires=[],
     ext_modules=ext_modules
 )
