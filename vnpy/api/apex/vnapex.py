@@ -5,8 +5,8 @@ from ctypes import (cdll, CFUNCTYPE,
                     c_void_p, create_string_buffer, byref)
 
 
-DLL_PATH = Path(__file__).join("AbossFixApi.dll")
-APEX = cdll.LoadLibrary(DLL_PATH)
+DLL_PATH = Path(__file__).parent.joinpath("FixApi.dll")
+APEX = cdll.LoadLibrary(str(DLL_PATH))
 
 REPLY_FUNC = CFUNCTYPE(c_bool, c_long, c_long, c_int)
 PUSH_FUNC = CFUNCTYPE(c_bool, c_long, c_long, c_long, c_char_p)
