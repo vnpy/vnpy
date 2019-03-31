@@ -123,24 +123,6 @@ vn.py使用github托管其源代码，如果希望贡献代码请使用github的
 
 
 
-## 项目捐赠
-
-过去5年中收到过许多社区用户的捐赠，在此深表感谢！所有的捐赠资金都投入到了vn.py社区基金中，用于支持vn.py项目的运作。
-
-先强调一下：**vn.py是开源项目，可以永久免费使用，并没有强制捐赠的要求！！！**
-
-捐赠方式：支付宝3216630132@qq.com（*晓优）
-
-长期维护捐赠清单，请在留言中注明是项目捐赠以及捐赠人的名字。
-
-
-
-## 其他内容
-
-* [获取帮助](https://github.com/vnpy/vnpy/blob/dev/docs/SUPPORT.md)
-* [社区行为准侧](https://github.com/vnpy/vnpy/blob/dev/docs/CODE_OF_CONDUCT.md)
-* [Issue模板](https://github.com/vnpy/vnpy/blob/dev/docs/ISSUE_TEMPLATE.md)
-* [PR模板](https://github.com/vnpy/vnpy/blob/dev/docs/PULL_REQUEST_TEMPLATE.md)
 
 
 
