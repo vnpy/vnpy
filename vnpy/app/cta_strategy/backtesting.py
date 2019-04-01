@@ -35,7 +35,7 @@ class OptimizationSetting:
     def __init__(self):
         """"""
         self.params = {}
-        self.target = ""
+        self.target_name = ""
 
     def add_parameter(
         self, name: str, start: float, end: float = None, step: float = None
@@ -62,9 +62,9 @@ class OptimizationSetting:
 
         self.params[name] = value_list
 
-    def set_target(self, target: str):
+    def set_target(self, target_name: str):
         """"""
-        self.target = target
+        self.target_name = target_name
 
     def generate_setting(self):
         """"""
@@ -473,7 +473,7 @@ class BacktestingEngine:
             return
 
         if not target_name:
-            self.output("优化目标为设置，请检查")
+            self.output("优化目标未设置，请检查")
             return
 
         # Use multiprocessing pool for running backtesting with different setting
