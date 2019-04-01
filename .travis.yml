@@ -6,13 +6,9 @@ matrix:
     - os: osx
       language: shell  # 'language: python' is not yet supported on Travis CI macOS
 before_install:
-  - python2 --version ; pip2 --version
-  - pip2 install --upgrade pip
   - python3 --version ; pip3 --version
   - pip3 install --upgrade pip
 install:
-  - pip2 install flake8 -r requirements.txt
   - pip3 install flake8 -r requirements.txt
 script:
-  - python2 check.py
   - python3 check.py
