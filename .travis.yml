@@ -6,3 +6,25 @@ install:
   - pip install flake8
 script:
   - python check.py
+
+matrix:
+  allow_failures:
+    - os: osx
+    - os: windows
+  include:
+    - name "Build a macOS app"
+      os: osx
+      language: shell  # 'language: python' is not yet supported on Travis CI Windows
+      before_install:
+      - python3 -m pip install --upgrade pip
+      - pip3 install pyinstaller -r requirements.txt
+      script: pyinstaller --noconsole --onefile vnpy
+    - name "Build a Windows app"
+      os: windows      # Windows Server, version 1803 -- Platform: Windows-10-10.0.17134-SP0
+      language: shell  # 'language: python' is not yet supported on Travis CI Windows
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+      before_install:
+      - choco install python
+      - python -m pip install --upgrade pip
+      - pip install pyinstaller -r requirements.txt
+      script: pyinstaller --noconsole --onefile vnpy
