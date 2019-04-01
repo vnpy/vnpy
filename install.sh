@@ -16,5 +16,8 @@ pip install numpy
 # Install Python Modules
 pip install -r requirements.txt
 
+# Install local Chinese language environment
+sudo locale-gen zh_CN.GB18030
+
 # Install vn.py
 pip install .
