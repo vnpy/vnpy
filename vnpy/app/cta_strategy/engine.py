@@ -667,6 +667,14 @@ class CtaEngine(BaseEngine):
         Start a strategy.
         """
         strategy = self.strategies[strategy_name]
+        if not strategy.inited:
+            self.write_log(f"策略{strategy.strategy_name}启动失败，请先初始化")
+            return
+
+        if strategy.trading:
+            self.write_log(f"{strategy_name}已经启动，请勿重复操作")
+            return
+
         self.call_strategy_func(strategy, strategy.on_start)
         strategy.trading = True
 
@@ -677,9 +685,19 @@ class CtaEngine(BaseEngine):
         Stop a strategy.
         """
         strategy = self.strategies[strategy_name]
+        if not strategy.trading:
+            return
+
+        # Call on_stop function of the strategy
         self.call_strategy_func(strategy, strategy.on_stop)
+
+        # Change trading status of strategy to False
         strategy.trading = False
 
+        # Cancel all orders of the strategy
+        self.cancel_all(strategy)
+
+        # Update GUI
         self.put_strategy_event(strategy)
 
     def edit_strategy(self, strategy_name: str, setting: dict):
@@ -696,11 +714,15 @@ class CtaEngine(BaseEngine):
         """
         Remove a strategy.
         """
+        strategy = self.strategies[strategy_name]
+        if strategy.trading:
+            self.write_log(f"策略{strategy.strategy_name}移除失败，请先停止")
+            return
+
         # Remove setting
         self.remove_strategy_setting(strategy_name)
 
         # Remove from symbol strategy map
-        strategy = self.strategies[strategy_name]
         strategies = self.symbol_strategy_map[strategy.vt_symbol]
         strategies.remove(strategy)
 
@@ -710,10 +732,13 @@ class CtaEngine(BaseEngine):
 
             # Remove vt_orderid strategy map
             for vt_orderid in vt_orderids:
-                self.orderid_strategy_map.pop(vt_orderid)
+                if vt_orderid in self.orderid_strategy_map:
+                    self.orderid_strategy_map.pop(vt_orderid)
 
         # Remove from strategies
         self.strategies.pop(strategy_name)
+
+        return True
 
     def load_strategy_class(self):
         """

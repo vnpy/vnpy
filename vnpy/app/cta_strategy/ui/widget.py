@@ -239,8 +239,6 @@ class StrategyManager(QtWidgets.QFrame):
 
     def edit_strategy(self):
         """"""
-        # vt_symbol = self._data["vt_symbol"]
-        # class_name = self._data["class_name"]
         strategy_name = self._data["strategy_name"]
 
         parameters = self.cta_engine.get_strategy_parameters(strategy_name)
@@ -253,8 +251,11 @@ class StrategyManager(QtWidgets.QFrame):
 
     def remove_strategy(self):
         """"""
-        self.cta_engine.remove_strategy(self.strategy_name)
-        self.cta_manager.remove_strategy(self.strategy_name)
+        result = self.cta_engine.remove_strategy(self.strategy_name)
+
+        # Only remove strategy gui manager if it has been removed from engine
+        if result:
+            self.cta_manager.remove_strategy(self.strategy_name)
 
 
 class DataMonitor(QtWidgets.QTableWidget):

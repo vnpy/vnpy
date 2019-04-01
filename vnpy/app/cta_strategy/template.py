@@ -230,13 +230,15 @@ class CtaTemplate(ABC):
         """
         Put an strategy data event for ui update.
         """
-        self.cta_engine.put_strategy_event(self)
+        if self.inited:
+            self.cta_engine.put_strategy_event(self)
 
     def send_email(self, msg):
         """
         Send email to default receiver.
         """
-        self.cta_engine.send_email(msg, self)
+        if self.inited:
+            self.cta_engine.send_email(msg, self)
 
     def sync_data(self):
         """
@@ -309,9 +311,10 @@ class TargetPosTemplate(CtaTemplate):
         """
         Callback of new order data update.
         """
-        if order.status == Status.ALLTRADED or order.status == Status.CANCELLED:
-            if order.vt_orderid in self.vt_orderids:
-                self.vt_orderids.remove(order.vt_orderid)
+        vt_orderid = order.vt_orderid
+
+        if not order.is_active() and vt_orderid in self.vt_orderids:
+            self.vt_orderids.remove(vt_orderid)
 
     def set_target_pos(self, target_pos):
         """"""
