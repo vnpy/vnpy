@@ -1,9 +1,11 @@
 matrix:
   include:
-    - os: linux
+    - name: "Linux: Python 3.6"
+      os: linux
       language: python
       python: "3.6"
-    - os: osx
+    - name: "macOS: Python 3.6"
+      os: osx
       language: shell  # 'language: python' is not yet supported on Travis CI macOS
 before_install:
   - python3 --version ; pip3 --version
