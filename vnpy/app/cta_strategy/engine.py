@@ -151,13 +151,14 @@ class CtaEngine(BaseEngine):
         Query bar data from RQData.
         """
         symbol, exchange_str = vt_symbol.split(".")
-        if symbol.upper() not in self.rq_symbols:
+        rq_symbol = to_rq_symbol(vt_symbol)
+        if rq_symbol not in self.rq_symbols:
             return None
         
         end += timedelta(1)     # For querying night trading period data
 
         df = self.rq_client.get_price(
-            symbol.upper(),
+            rq_symbol,
             frequency=interval.value,
             fields=["open", "high", "low", "close", "volume"],
             start_date=start,
@@ -910,3 +911,29 @@ class CtaEngine(BaseEngine):
             subject = "CTA策略引擎"
 
         self.main_engine.send_email(subject, msg)
+
+
+def to_rq_symbol(vt_symbol: str):
+    """
+    CZCE product of RQData has symbol like "TA1905" while
+    vt symbol is "TA905.CZCE" so need to add "1" in symbol.
+    """
+    symbol, exchange_str = vt_symbol.split(".")
+    if exchange_str != "CZCE":
+        return symbol.upper()
+
+    for count, word in enumerate(symbol):
+        if word.isdigit():
+            break
+    
+    product = symbol[:count]
+    year = symbol[count]
+    month = symbol[count + 1:]
+    
+    if year == "9":
+        year = "1" + year
+    else:
+        year = "2" + year
+
+    rq_symbol = f"{product}{year}{month}".upper()
+    return rq_symbol
