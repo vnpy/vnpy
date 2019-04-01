@@ -35,7 +35,7 @@ def check_flake8():
     """
     passed = True
     try:
-        subprocess.check_call(["python3", "-m", "flake8", "./"])
+        subprocess.check_call(["flake8", "./"])
     except subprocess.SubprocessError:
         passed = False
     return passed
