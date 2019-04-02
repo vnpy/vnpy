@@ -170,7 +170,7 @@ class ApexApi:
     def get_err_msg(self, sess: int):
         """获取错误信息"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetErrMsg(sess, out, size)
         return out.value
@@ -182,7 +182,7 @@ class ApexApi:
     def get_item(self, sess: int, fid: int, row: int):
         """获取字符串内容"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetItem(sess, fid, out, size, row)
         return out.value
@@ -210,7 +210,7 @@ class ApexApi:
     def get_token(self, sess: int):
         """获取业务令牌"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetToken(sess, out, size)
         return out.value
@@ -220,7 +220,7 @@ class ApexApi:
         data = to_bytes(data)
         buf = create_string_buffer(data, 512)
         APEX.Fix_Encode(buf)
-        return buf.value
+        return to_unicode(buf.value)
 
     def add_backup_svc_addr(self, address: str):
         """设置业务令牌"""
@@ -240,9 +240,11 @@ class ApexApi:
 
     def subscribe_by_customer(self, conn: int, svc: int, khh: str, pwd: str):
         """订阅数据"""
-        func = APEX[93]
-        n = func(conn, svc, self.push_call_func, to_bytes(""), khh, pwd)
-        return bool(n)
+        func = APEX[108]
+        n = func(conn, svc, self.push_call_func,
+                 to_bytes(""), to_bytes(khh), to_bytes(pwd))
+
+        return n
 
     def unsubscribe_by_handle(self, handle: int):
         """退订推送"""
@@ -256,13 +258,13 @@ class ApexApi:
     def get_val_with_id_by_index(self, sess: int, row: int, col: int):
         """根据行列获取数据"""
         s = 256
-        buf = create_string_buffer("", s)
+        buf = create_string_buffer(b"", s)
         fid = c_long(0)
         size = c_int(s)
 
         APEX.Fix_GetValWithIdByIndex(
             sess, row, col, byref(fid), buf, byref(size))
-        return fid.value, buf.value
+        return fid.value, to_unicode(buf.value)
 
     def set_system_no(self, sess: int, val: str):
         """设置系统编号"""
@@ -293,7 +295,7 @@ class ApexApi:
         """获取缓存数据"""
         size = 1024
         outlen = c_int(size)
-        buf = create_string_buffer("", size)
+        buf = create_string_buffer(b"", size)
 
         APEX.Fix_GetItemBuf(sess, buf, byref(outlen), row)
         return buf
@@ -309,7 +311,7 @@ class ApexApi:
         out = create_string_buffer(b"", size)
 
         APEX.Fix_GetLastErrMsg(out, size)
-        return out.value
+        return to_unicode(out.value)
 
     def reg_reply_call_func(self, sess: int = 0):
         """注册回调函数"""
@@ -333,5 +335,18 @@ class ApexApi:
 
 
 def to_bytes(data: str):
-    """"""
-    return data.encode("GBK")
+    """
+    将unicode字符串转换为bytes
+    """
+    try:
+        bytes_data = data.encode("GBK")
+        return bytes_data
+    except AttributeError:
+        return data
+
+
+def to_unicode(data: bytes):
+    """
+    将bytes字符串转换为unicode
+    """
+    return data.decode("GBK")
