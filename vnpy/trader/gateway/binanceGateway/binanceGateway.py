@@ -415,17 +415,17 @@ class GatewayApi(BinanceApi):
             tick.lastPrice = float(data['c'])
             tick.date, tick.time = self.generateDateTime(data['E'])
         else:
-            tick.askPrice1, tick.askVolume1, buf = data['asks'][0]
-            tick.askPrice2, tick.askVolume2, buf = data['asks'][1]
-            tick.askPrice3, tick.askVolume3, buf = data['asks'][2]
-            tick.askPrice4, tick.askVolume4, buf = data['asks'][3]
-            tick.askPrice5, tick.askVolume5, buf = data['asks'][4]
+            tick.askPrice1, tick.askVolume1 = data['asks'][0]
+            tick.askPrice2, tick.askVolume2 = data['asks'][1]
+            tick.askPrice3, tick.askVolume3 = data['asks'][2]
+            tick.askPrice4, tick.askVolume4 = data['asks'][3]
+            tick.askPrice5, tick.askVolume5 = data['asks'][4]
             
-            tick.bidPrice1, tick.bidVolume1, buf = data['bids'][0]
-            tick.bidPrice2, tick.bidVolume2, buf = data['bids'][1]
-            tick.bidPrice3, tick.bidVolume3, buf = data['bids'][2]
-            tick.bidPrice4, tick.bidVolume4, buf = data['bids'][3]
-            tick.bidPrice5, tick.bidVolume5, buf = data['bids'][4]    
+            tick.bidPrice1, tick.bidVolume1 = data['bids'][0]
+            tick.bidPrice2, tick.bidVolume2 = data['bids'][1]
+            tick.bidPrice3, tick.bidVolume3 = data['bids'][2]
+            tick.bidPrice4, tick.bidVolume4 = data['bids'][3]
+            tick.bidPrice5, tick.bidVolume5 = data['bids'][4]    
             
             tick.askPrice1 = float(tick.askPrice1)
             tick.askPrice2 = float(tick.askPrice2)
