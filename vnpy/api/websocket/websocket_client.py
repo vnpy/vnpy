@@ -45,13 +45,16 @@ class WebsocketClient(object):
 
         self.proxy_host = None
         self.proxy_port = None
+        self.ping_interval = 60 # seconds
 
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
 
     def init(self, host: str, proxy_host: str = "", proxy_port: int = 0, ping_interval: int = 60):
-        """"""
+        """
+        :param ping_interval: unit: seconds, type: int
+        """
         self.host = host
         self.ping_interval = ping_interval  # seconds
 
