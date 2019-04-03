@@ -13,7 +13,6 @@ from vnpy.app.cta_strategy import (
 
 class TurtleSignalStrategy(CtaTemplate):
     """"""
-
     author = "用Python的交易员"
 
     entry_window = 20
