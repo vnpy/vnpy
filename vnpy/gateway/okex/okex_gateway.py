@@ -380,7 +380,14 @@ class OkexRestApi(RestClient):
 
     def on_send_order(self, data, request):
         """Websocket will push a new order status"""
-        pass
+        order = request.extra
+
+        error_msg = data["error_message"]
+        if error_msg:
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
+        
+        self.gateway.write_log(f"委托失败：{error_msg}")
 
     def on_cancel_order_error(
         self, exception_type: type, exception_value: Exception, tb, request: Request
