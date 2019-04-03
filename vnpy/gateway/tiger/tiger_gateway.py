@@ -123,6 +123,9 @@ class TigerGateway(BaseGateway):
         self.contracts = {}
         self.symbol_names = {}
 
+        self.push_connected = False
+        self.subscribed_symbols = set()
+
     def run(self):
         """"""
         while self.active:
@@ -203,22 +206,32 @@ class TigerGateway(BaseGateway):
         """
         protocol, host, port = self.client_config.socket_host_port
         self.push_client = PushClient(host, port, (protocol == 'ssl'))
-        self.push_client.connect(
-            self.client_config.tiger_id, self.client_config.private_key)
 
         self.push_client.quote_changed = self.on_quote_change
         self.push_client.asset_changed = self.on_asset_change
         self.push_client.position_changed = self.on_position_change
         self.push_client.order_changed = self.on_order_change
 
-        self.write_log("推送接口连接成功")
+        self.push_client.connect(
+            self.client_config.tiger_id, self.client_config.private_key)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
-        self.push_client.subscribe_quote([req.symbol])
+        self.subscribed_symbols.add(req.symbol)
+
+        if self.push_connected:
+            self.push_client.subscribe_quote([req.symbol])
+
+    def on_push_connected(self):
+        """"""
+        self.push_connected = True
+        self.write_log("推送接口连接成功")
+
         self.push_client.subscribe_asset()
         self.push_client.subscribe_position()
         self.push_client.subscribe_order()
+
+        self.push_client.subscribe_quote(list(self.subscribed_symbols))
 
     def on_quote_change(self, tiger_symbol: str, data: list, trading: bool):
         """"""
