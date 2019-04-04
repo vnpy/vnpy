@@ -2,14 +2,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 from time import sleep, time
 
-from .vnrpc import RpcServer
+from vnpy.rpc import RpcServer
 
 
 class TestServer(RpcServer):
     """
     Test RpcServer
     """
-    
+
     def __init__(self, rep_address, pub_address):
         """
         Constructor
