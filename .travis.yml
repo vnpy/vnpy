@@ -29,6 +29,8 @@ matrix:
         - choco install python3 --version 3.7.2
       install:
         - python -m pip install --upgrade pip wheel setuptools
+        - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - pip install -r requirements.txt
         - pip install .
 
@@ -43,8 +45,10 @@ matrix:
         - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
         - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
-        # Linux install script
+        # update pip & setuptools
         - python -m pip install --upgrade pip wheel setuptools
+        # Linux install script
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
     - name: "pip install under Ubuntu: gcc-7"
@@ -58,8 +62,10 @@ matrix:
         - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
         - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
-        # Linux install script
+        # update pip & setuptools
         - python -m pip install --upgrade pip wheel setuptools
+        # Linux install script
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
     - name: "sdist install under Windows"
