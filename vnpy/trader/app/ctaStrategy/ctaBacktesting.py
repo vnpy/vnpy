@@ -1089,7 +1089,7 @@ class BacktestingEngine(object):
         annualizedReturn = dailyReturn * annualDays
         returnStd = np.std(returnList) * 100
         #收益率均值，标准差，偏度，峰度
-        returnMean,returnStd,returnSkew, returnKurt = self.getStats(df['return'].values)   
+        returnMean,returnStd,returnSkew, returnKurt = self.getStats(np.array(returnList))   
         if returnStd:
             sharpeRatio = dailyReturn / returnStd * np.sqrt(annualDays)
         else:
