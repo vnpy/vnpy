@@ -16,7 +16,7 @@ import copy
 import pymongo
 import numpy as np
 import matplotlib.pyplot as plt
-
+import scipy.stats as scs
 from vnpy.rpc import RpcClient, RpcServer, RemoteException
 
 
@@ -1025,7 +1025,11 @@ class BacktestingEngine(object):
             
             dailyResult.calculatePnl(openPosition, self.size, self.rate, self.slippage )
             openPosition = dailyResult.closePosition
-    
+    #----------------------------------------------------------------------
+    #返回均值，标准差，偏度，峰度
+    def getStats(self,Array):
+        stats = scs.describe(Array)
+        return stats[2],np.sqrt(stats[3]),stats[4],stats[5]      
     #----------------------------------------------------------------------
     def calculateDailyStatistics(self, annualDays=240):
         """计算按日统计的结果"""
@@ -1084,7 +1088,8 @@ class BacktestingEngine(object):
         dailyReturn = np.mean(returnList) * 100
         annualizedReturn = dailyReturn * annualDays
         returnStd = np.std(returnList) * 100
-        
+        #收益率均值，标准差，偏度，峰度
+        returnMean,returnStd,returnSkew, returnKurt = self.getStats(df['return'].values)   
         if returnStd:
             sharpeRatio = dailyReturn / returnStd * np.sqrt(annualDays)
         else:
@@ -1114,6 +1119,10 @@ class BacktestingEngine(object):
             'annualizedReturn': annualizedReturn,
             'dailyReturn': dailyReturn,
             'returnStd': returnStd,
+            'returnMean': returnMean,
+            'returnStd': returnStd,
+            'returnSkew': returnSkew,
+            'returnKurt': returnKurt,
             'sharpeRatio': sharpeRatio
             }
         
@@ -1166,6 +1175,7 @@ class BacktestingEngine(object):
         
         self.output(u'日均收益率：\t%s%%' % formatNumber(result['dailyReturn']))
         self.output(u'收益标准差：\t%s%%' % formatNumber(result['returnStd']))
+        self.output('收益率均值：{}，收益率标准差：{}，收益率偏度：{}，收益率峰度：{}'.format(result['returnMean'],result['returnStd'],formatNumber(result['returnSkew']),formatNumber(result['returnKurt'])))
         self.output(u'Sharpe Ratio：\t%s' % formatNumber(result['sharpeRatio']))
         
         # 绘图
