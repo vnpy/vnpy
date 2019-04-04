@@ -23,12 +23,12 @@ def main():
     event_engine = EventEngine()
 
     main_engine = MainEngine(event_engine)
-    # main_engine.add_gateway(CtpGateway)
-    # main_engine.add_gateway(IbGateway)
-    # main_engine.add_gateway(FutuGateway)
-    # main_engine.add_gateway(BitmexGateway)
-    # main_engine.add_gateway(TigerGateway)
-    # main_engine.add_gateway(OesGateway)
+    main_engine.add_gateway(CtpGateway)
+    main_engine.add_gateway(IbGateway)
+    main_engine.add_gateway(FutuGateway)
+    main_engine.add_gateway(BitmexGateway)
+    main_engine.add_gateway(TigerGateway)
+    main_engine.add_gateway(OesGateway)
     main_engine.add_gateway(OkexGateway)
 
     main_engine.add_app(CtaStrategyApp)

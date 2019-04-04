@@ -23,15 +23,13 @@ from vnpy.trader.constant import (
     Exchange,
     OrderType,
     Product,
-    Status,
-    Offset
+    Status
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
-    PositionData,
     AccountData,
     ContractData,
     OrderRequest,
@@ -192,7 +190,7 @@ class OkexRestApi(RestClient):
         self.passphrase = passphrase
 
         self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S"))
-        
+
         self.init(REST_HOST, proxy_host, proxy_port)
         self.start(session_number)
         self.gateway.write_log("REST API启动成功")
@@ -210,7 +208,7 @@ class OkexRestApi(RestClient):
     def send_order(self, req: OrderRequest):
         """"""
         orderid = f"a{self.connect_time}{self._new_order_id()}"
-        
+
         data = {
             "client_oid": orderid,
             "type": ORDERTYPE_VT2OKEX[req.type],
@@ -232,11 +230,11 @@ class OkexRestApi(RestClient):
         self.add_request(
             "POST",
             "/api/spot/v3/orders",
-            callback = self.on_send_order,
-            data = data,
-            extra = order,
-            on_failed = self.on_send_order_failed,
-            on_error = self.on_send_order_error,
+            callback=self.on_send_order,
+            data=data,
+            extra=order,
+            on_failed=self.on_send_order_failed,
+            on_error=self.on_send_order_error,
         )
 
         self.gateway.on_order(order)
@@ -244,7 +242,7 @@ class OkexRestApi(RestClient):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        data={
+        data = {
             "instrument_id": req.symbol,
             "client_oid": req.orderid
         }
@@ -253,9 +251,9 @@ class OkexRestApi(RestClient):
         self.add_request(
             "POST",
             path,
-            callback = self.on_cancel_order,
-            data = data,
-            on_error = self.on_cancel_order_error,
+            callback=self.on_cancel_order,
+            data=data,
+            on_error=self.on_cancel_order_error,
         )
 
     def query_contract(self):
@@ -263,7 +261,7 @@ class OkexRestApi(RestClient):
         self.add_request(
             "GET",
             "/api/spot/v3/instruments",
-            callback = self.on_query_contract
+            callback=self.on_query_contract
         )
 
     def query_account(self):
@@ -271,7 +269,7 @@ class OkexRestApi(RestClient):
         self.add_request(
             "GET",
             "/api/spot/v3/accounts",
-            callback = self.on_query_account
+            callback=self.on_query_account
         )
 
     def query_order(self):
@@ -279,7 +277,7 @@ class OkexRestApi(RestClient):
         self.add_request(
             "GET",
             "/api/spot/v3/orders_pending",
-            callback = self.on_query_order
+            callback=self.on_query_order
         )
 
     def query_time(self):
@@ -300,8 +298,8 @@ class OkexRestApi(RestClient):
                 name=symbol,
                 product=Product.SPOT,
                 size=1,
-                pricetick = instrument_data["tick_size"],
-                gateway_name = self.gateway_name
+                pricetick=instrument_data["tick_size"],
+                gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
 
@@ -386,8 +384,8 @@ class OkexRestApi(RestClient):
         if error_msg:
             order.status = Status.REJECTED
             self.gateway.on_order(order)
-        
-        self.gateway.write_log(f"委托失败：{error_msg}")
+
+            self.gateway.write_log(f"委托失败：{error_msg}")
 
     def on_cancel_order_error(
         self, exception_type: type, exception_value: Exception, tb, request: Request
@@ -430,6 +428,7 @@ class OkexWebsocketApi(WebsocketClient):
     def __init__(self, gateway):
         """"""
         super(OkexWebsocketApi, self).__init__()
+        self.ping_interval = 20     # OKEX use 30 seconds for ping
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
@@ -514,15 +513,11 @@ class OkexWebsocketApi(WebsocketClient):
         else:
             channel = packet["table"]
             data = packet["data"]
-            callback = self.callbacks[channel]
+            callback = self.callbacks.get(channel, None)
 
-            try:
+            if callback:
                 for d in data:
                     callback(d)
-            except:
-                import traceback
-                traceback.print_exc()
-                print(packet)
 
     def on_error(self, exception_type: type, exception_value: Exception, tb):
         """"""
@@ -583,6 +578,13 @@ class OkexWebsocketApi(WebsocketClient):
         req = {
             "op": "subscribe",
             "args": channels
+        }
+        self.send_packet(req)
+
+        # Subscribe to BTC/USDT trade for keep connection alive
+        req = {
+            "op": "subscribe",
+            "args": ["spot/trade:BTC-USDT"]
         }
         self.send_packet(req)
 
@@ -681,7 +683,7 @@ class OkexWebsocketApi(WebsocketClient):
             frozen=float(d["hold"]),
             gateway_name=self.gateway_name
         )
-        
+
         self.gateway.on_account(copy(account))
 
 

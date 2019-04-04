@@ -48,7 +48,7 @@ class WebsocketClient(object):
 
         self.proxy_host = None
         self.proxy_port = None
-        self.ping_interval = 60 # seconds
+        self.ping_interval = 60     # seconds
 
         # For debugging
         self._last_sent_text = None
