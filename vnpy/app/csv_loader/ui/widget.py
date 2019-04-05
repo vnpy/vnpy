@@ -27,8 +27,8 @@ class CsvLoaderWidget(QtWidgets.QWidget):
         self.setFixedWidth(300)
 
         self.setWindowFlags(
-            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint)
-            & ~QtCore.Qt.WindowMaximizeButtonHint)
+            (self.windowFlags() | QtCore.Qt.CustomizeWindowHint) &
+            ~QtCore.Qt.WindowMaximizeButtonHint)
 
         file_button = QtWidgets.QPushButton("选择文件")
         file_button.clicked.connect(self.select_file)
@@ -90,7 +90,8 @@ class CsvLoaderWidget(QtWidgets.QWidget):
 
     def select_file(self):
         """"""
-        result: str = QtWidgets.QFileDialog.getOpenFileName(self)
+        result: str = QtWidgets.QFileDialog.getOpenFileName(
+            self, filter="CSV (*.csv)")
         filename = result[0]
         if filename:
             self.file_edit.setText(filename)
