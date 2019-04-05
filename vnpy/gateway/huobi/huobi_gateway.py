@@ -61,6 +61,7 @@ ORDERTYPE_HUOBI2VT = {v: k for k, v in ORDERTYPE_VT2HUOBI.items()}
 
 
 huobi_symbols = set()
+symbol_name_map = {}
 
 
 class HuobiGateway(BaseGateway):
@@ -435,6 +436,7 @@ class HuobiRestApi(RestClient):
             self.gateway.on_contract(contract)
             
             huobi_symbols.add(contract.symbol)
+            symbol_name_map[contract.symbol] = contract.name
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -648,6 +650,7 @@ class HuobiDataWebsocketApi(HuobiWebsocketApiBase):
         # Create tick data buffer
         tick = TickData(
             symbol=symbol,
+            name=symbol_name_map.get(symbol, ""),
             exchange=Exchange.HUOBI,
             datetime=datetime.now(),
             gateway_name=self.gateway_name,
