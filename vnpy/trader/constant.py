@@ -96,6 +96,7 @@ class Exchange(Enum):
 
     # CryptoCurrency
     BITMEX = "BITMEX"
+    BITFINEX = "BITFINEX"
 
 
 class Currency(Enum):
