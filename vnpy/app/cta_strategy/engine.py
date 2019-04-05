@@ -541,7 +541,7 @@ class CtaEngine(BaseEngine):
                 DbBarData.select()
                 .where(
                     (DbBarData.vt_symbol == vt_symbol)
-                    & (DbBarData.interval == interval)
+                    & (DbBarData.interval == interval.value)
                     & (DbBarData.datetime >= start)
                     & (DbBarData.datetime <= end)
                 )
