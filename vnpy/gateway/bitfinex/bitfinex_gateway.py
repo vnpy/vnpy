@@ -357,6 +357,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.accounts = {}
         self.orders = {}
         self.trades = set()
+        self.tickDict = {}
+        self.bidDict = {}
+        self.askDict = {}
+        self.orderLocalDict = {}
+        self.channelDict = {}       # ChannelID : (Channel, Symbol)
+
 
     def connect(
         self, key: str, secret: str,  proxy_host: str, proxy_port: int
@@ -422,32 +428,191 @@ class BitfinexWebsocketApi(WebsocketClient):
     # need debug 20190404
     def on_packet(self, packet: dict):
         """"""
-        print("on_packet func")
-        print(packet)
-        if "error" in packet:
-            self.gateway.write_log("Websocket API报错：%s" % packet["error"])
+        #print("on_packet func", type(packet))
+        #print(packet)
 
-            if "not valid" in packet["error"]:
-                self.active = False
+        if isinstance(packet, dict):
+            self.onResponse(packet)
+        else:
+            self.onUpdate(packet)
 
-        elif "request" in packet:
-            req = packet["request"]
-            success = packet["success"]
-
-            if success:
-                if req["op"] == "authKey":
-                    self.gateway.write_log("Websocket API验证授权成功")
-                    self.subscribe_topic()
-
-        elif "table" in packet:
-            name = packet["table"]
-            callback = self.callbacks[name]
-
-            if isinstance(packet["data"], list):
-                for d in packet["data"]:
-                    callback(d)
+    #----------------------------------------------------------------------
+    def onResponse(self, data):
+        """"""
+        print("onResponse func", type(data))
+        print(data)
+        if 'event' not in data:
+            return
+        
+        if data['event'] == 'subscribed':
+            symbol = str(data['symbol'].replace('t', ''))
+            #symbol = str(data['symbol'])
+            self.channelDict[data['chanId']] = (data['channel'], symbol)
+    
+    #----------------------------------------------------------------------
+    def onUpdate(self, data):
+        """"""
+        if data[1] == u'hb':
+            return
+        
+        channelID = data[0]
+        
+        if not channelID:
+            self.onTradeUpdate(data)
+        else:
+            self.onDataUpdate(data)
+    
+    #----------------------------------------------------------------------
+    def onDataUpdate(self, data):
+        """"""
+        print("debug onDataUpdate", data)
+        channelID = data[0]
+        channel, symbol = self.channelDict[channelID]
+        print("debug onDataUpdate channel_symbol", channel, symbol)
+        symbol = str(symbol.replace('t', ''))
+        #symbol = str(symbol)
+        
+        # 获取Tick对象
+        if symbol in self.tickDict:
+            tick = self.tickDict[symbol]
+        else:
+            tick = TickData(
+                symbol=symbol,
+                exchange=Exchange.BITFINEX,
+                name=symbol,
+                datetime=datetime.now(),
+                gateway_name=self.gateway_name,
+            )
+            #tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
+            
+            self.tickDict[symbol] = tick
+        
+        l = data[1]
+        
+        # 常规行情更新
+        if channel == 'ticker':
+            tick.volume = float(l[-3])
+            tick.highPrice = float(l[-2])
+            tick.lowPrice = float(l[-1])
+            tick.lastPrice = float(l[-4])
+            tick.openPrice = float(tick.lastPrice - l[4])
+        # 深度报价更新
+        elif channel == 'book':
+            bid = self.bidDict.setdefault(symbol, {})
+            ask = self.askDict.setdefault(symbol, {})
+            
+            if len(l) > 3:
+                for price, count, amount in l:
+                    price = float(price)
+                    count = int(count)
+                    amount = float(amount)
+                    
+                    if amount > 0:
+                        bid[price] = amount
+                    else:
+                        ask[price] = -amount
             else:
-                callback(packet["data"])
+                price, count, amount = l
+                price = float(price)
+                count = int(count)
+                amount = float(amount)                
+                
+                if not count:
+                    if price in bid:
+                        del bid[price]
+                    elif price in ask:
+                        del ask[price]
+                else:
+                    if amount > 0:
+                        bid[price] = amount
+                    else:
+                        ask[price] = -amount
+            
+            # Bitfinex的深度数据更新是逐档推送变动情况，而非5档一起推
+            # 因此会出现没有Bid或者Ask的情况，这里使用try...catch过滤
+            # 只有买卖深度满足5档时才做推送
+            try:
+                # BID
+                bid_keys = bid.keys()
+                #bidPriceList.sort(reverse=True)
+                bidPriceList = sorted(bid_keys, reverse=True)
+                
+                tick.bidPrice1 = bidPriceList[0]
+                tick.bidPrice2 = bidPriceList[1]
+                tick.bidPrice3 = bidPriceList[2]
+                tick.bidPrice4 = bidPriceList[3]
+                tick.bidPrice5 = bidPriceList[4]
+                
+                tick.bidVolume1 = bid[tick.bidPrice1]
+                tick.bidVolume2 = bid[tick.bidPrice2]
+                tick.bidVolume3 = bid[tick.bidPrice3]
+                tick.bidVolume4 = bid[tick.bidPrice4]
+                tick.bidVolume5 = bid[tick.bidPrice5]
+                
+                # ASK
+                ask_keys = ask.keys()
+                #askPriceList.sort()
+                askPriceList = sorted(ask_keys, reverse=True)
+                
+                tick.askPrice1 = askPriceList[0]
+                tick.askPrice2 = askPriceList[1]
+                tick.askPrice3 = askPriceList[2]
+                tick.askPrice4 = askPriceList[3]
+                tick.askPrice5 = askPriceList[4]
+                
+                tick.askVolume1 = ask[tick.askPrice1]
+                tick.askVolume2 = ask[tick.askPrice2]
+                tick.askVolume3 = ask[tick.askPrice3]
+                tick.askVolume4 = ask[tick.askPrice4]
+                tick.askVolume5 = ask[tick.askPrice5]  
+            except IndexError:
+                return            
+        
+        dt = datetime.now()
+        tick.date = dt.strftime('%Y%m%d')
+        tick.time = dt.strftime('%H:%M:%S.%f')
+        tick.datetime = dt
+        
+        # 推送
+        self.gateway.on_tick(copy(tick))
+
+    #----------------------------------------------------------------------
+    def onWallet(self, data):
+        """"""
+        if str(data[0]) == 'exchange':
+            accountid = str(data[1])
+            account = self.accounts.get(accountid, None)
+            if not account:
+                account = AccountData(accountid=accountid, gateway_name=self.gateway_name)
+            
+            account.vtAccountID = '.'.join([account.gateway_name, account.accountid])
+            account.balance = float(data[2])
+            account.available = None if not data[-1] else float(data[-1])
+            if account.available and account.balance:
+                account.frozen = account.balance - account.available
+            self.gateway.on_account(copy(account))
+
+    #----------------------------------------------------------------------
+    def onTradeUpdate(self, data):
+        """"""
+        print("debug onTradeUpdate: " , data)
+        name = data[1]
+        info = data[2]
+        
+        if name == 'ws':
+            for l in info:
+                self.onWallet(l)
+            self.gateway.write_log(u'账户资金获取成功')
+        elif name == 'wu':
+            self.onWallet(info)
+        elif name == 'os':
+            for l in info:
+                self.onOrder(l)
+            self.gateway.write_log(u'活动委托获取成功')
+        elif name in ['on', 'ou', 'oc']:
+            self.onOrder(info)
+        elif name == 'te':
+            self.onTrade(info)
 
     def on_error(self, exception_type: type, exception_value: Exception, tb):
         """"""
@@ -462,7 +627,6 @@ class BitfinexWebsocketApi(WebsocketClient):
         """
             Authenticate websocket connection to subscribe private topic.
         """
-        print("come to authenticate")
         nonce = int(time.time() * 1000000)
         authPayload = 'AUTH' + str(nonce)
         signature = hmac.new(
