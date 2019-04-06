@@ -549,12 +549,15 @@ class CtpTdApi(TdApi):
                 product=product,
                 size=data["VolumeMultiple"],
                 pricetick=data["PriceTick"],
-                option_underlying=data["UnderlyingInstrID"],
-                option_type=OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-                option_strike=data["StrikePrice"],
-                option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
                 gateway_name=self.gateway_name
             )
+            
+            # For option only
+            if data["OptionsType"]:
+                contract.option_underlying = data["UnderlyingInstrID"],
+                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
+                contract.option_strike = data["StrikePrice"],
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
             
             self.gateway.on_contract(contract)
             
