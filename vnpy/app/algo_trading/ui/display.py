@@ -11,5 +11,6 @@ NAME_DISPLAY_MAP = {
     "order_volume": "单笔委托",
     "timer_count": "本轮读秒",
     "total_count": "累计读秒",
-    "template_name": "算法模板"
+    "template_name": "算法模板",
+    "display_volume": "挂出数量"
 }

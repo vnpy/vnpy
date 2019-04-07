@@ -554,6 +554,10 @@ class AlgoManager(QtWidgets.QWidget):
         widget = self.algo_widgets[template_name]
         widget.update_setting(setting_name, setting)
 
+        ix = self.template_combo.findData(template_name)
+        self.template_combo.setCurrentIndex(ix)
+        self.show_algo_widget()
+
     def show(self):
         """"""
         self.showMaximized()

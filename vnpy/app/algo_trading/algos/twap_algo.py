@@ -26,6 +26,13 @@ class TwapAlgo(AlgoTemplate):
         ]
     }
 
+    variables = [
+        "traded",
+        "order_volume",
+        "timer_count",
+        "total_count"
+    ]
+
     def __init__(
         self,
         algo_engine: BaseEngine,
@@ -50,13 +57,6 @@ class TwapAlgo(AlgoTemplate):
         self.total_count = 0
         self.traded = 0
 
-        self.variables.extend([
-            "traded",
-            "order_volume",
-            "timer_count",
-            "total_count"
-        ])
-
         self.subscribe(self.vt_symbol)
         self.put_parameters_event()
         self.put_variables_event()
@@ -66,6 +66,7 @@ class TwapAlgo(AlgoTemplate):
         self.traded += trade.volume
 
         if self.traded >= self.volume:
+            self.write_log(f"已交易数量：{self.traded}，总数量：{self.volume}")
             self.stop()
         else:
             self.put_variables_event()
@@ -98,15 +99,7 @@ class TwapAlgo(AlgoTemplate):
             if tick.ask_price_1 <= self.price:
                 self.buy(self.vt_symbol, self.price,
                          order_volume, offset=self.offset)
-                self.write_log(
-                    f"委托买入{self.vt_symbol}：{order_volume}@{self.price}")
         else:
             if tick.bid_price_1 >= self.price:
                 self.sell(self.vt_symbol, self.price,
                           order_volume, offset=self.offset)
-                self.write_log(
-                    f"委托卖出{self.vt_symbol}：{order_volume}@{self.price}")
-
-    def get_default_setting(self):
-        """"""
-        return self.default_setting

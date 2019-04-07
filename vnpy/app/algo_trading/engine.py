@@ -44,8 +44,16 @@ class AlgoEngine(BaseEngine):
     def load_algo_template(self):
         """"""
         from .algos.twap_algo import TwapAlgo
+        from .algos.iceberg_algo import IcebergAlgo
+        from .algos.sniper_algo import SniperAlgo
 
-        self.algo_templates[TwapAlgo.__name__] = TwapAlgo
+        self.add_algo_template(TwapAlgo)
+        self.add_algo_template(IcebergAlgo)
+        self.add_algo_template(SniperAlgo)
+
+    def add_algo_template(self, template: AlgoTemplate):
+        """"""
+        self.algo_templates[template.__name__] = template
 
     def load_algo_setting(self):
         """"""
