@@ -40,6 +40,7 @@ from vnpy.trader.database import DbTickData, DbBarData
 from vnpy.trader.setting import SETTINGS
 
 from .base import (
+    APP_NAME,
     EVENT_CTA_LOG,
     EVENT_CTA_STRATEGY,
     EVENT_CTA_STOPORDER,
@@ -73,7 +74,7 @@ class CtaEngine(BaseEngine):
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
         super(CtaEngine, self).__init__(
-            main_engine, event_engine, "CtaStrategy")
+            main_engine, event_engine, APP_NAME)
 
         self.strategy_setting = {}  # strategy_name: dict
         self.strategy_data = {}     # strategy_name: dict
