@@ -9,7 +9,7 @@ from typing import Any
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from vnpy.event import Event, EventEngine
-from ..constant import Direction, Exchange, Offset, PriceType
+from ..constant import Direction, Exchange, Offset, OrderType
 from ..engine import MainEngine
 from ..event import (
     EVENT_TICK,
@@ -411,6 +411,7 @@ class OrderMonitor(BaseMonitor):
         "orderid": {"display": "委托号", "cell": BaseCell, "update": False},
         "symbol": {"display": "代码", "cell": BaseCell, "update": False},
         "exchange": {"display": "交易所", "cell": EnumCell, "update": False},
+        "type": {"display": "类型", "cell": EnumCell, "update": False},
         "direction": {"display": "方向", "cell": DirectionCell, "update": False},
         "offset": {"display": "开平", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
@@ -597,9 +598,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.offset_combo = QtWidgets.QComboBox()
         self.offset_combo.addItems([offset.value for offset in Offset])
 
-        self.price_type_combo = QtWidgets.QComboBox()
-        self.price_type_combo.addItems(
-            [price_type.value for price_type in PriceType])
+        self.order_type_combo = QtWidgets.QComboBox()
+        self.order_type_combo.addItems(
+            [order_type.value for order_type in OrderType])
 
         double_validator = QtGui.QDoubleValidator()
         double_validator.setBottom(0)
@@ -625,7 +626,7 @@ class TradingWidget(QtWidgets.QWidget):
         form1.addRow("名称", self.name_line)
         form1.addRow("方向", self.direction_combo)
         form1.addRow("开平", self.offset_combo)
-        form1.addRow("类型", self.price_type_combo)
+        form1.addRow("类型", self.order_type_combo)
         form1.addRow("价格", self.price_line)
         form1.addRow("数量", self.volume_line)
         form1.addRow("接口", self.gateway_combo)
@@ -838,7 +839,7 @@ class TradingWidget(QtWidgets.QWidget):
             symbol=symbol,
             exchange=Exchange(str(self.exchange_combo.currentText())),
             direction=Direction(str(self.direction_combo.currentText())),
-            price_type=PriceType(str(self.price_type_combo.currentText())),
+            type=OrderType(str(self.order_type_combo.currentText())),
             volume=volume,
             price=price,
             offset=Offset(str(self.offset_combo.currentText())),
