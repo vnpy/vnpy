@@ -465,10 +465,10 @@ class BitfinexWebsocketApi(WebsocketClient):
     #----------------------------------------------------------------------
     def onDataUpdate(self, data):
         """"""
-        print("debug onDataUpdate", data)
+        #print("debug onDataUpdate", data)
         channelID = data[0]
         channel, symbol = self.channelDict[channelID]
-        print("debug onDataUpdate channel_symbol", channel, symbol)
+        #print("debug onDataUpdate channel_symbol", channel, symbol)
         symbol = str(symbol.replace('t', ''))
         #symbol = str(symbol)
         
@@ -491,11 +491,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         
         # 常规行情更新
         if channel == 'ticker':
+            print("debug onDataUpdate ticker", data)
             tick.volume = float(l[-3])
-            tick.highPrice = float(l[-2])
-            tick.lowPrice = float(l[-1])
-            tick.lastPrice = float(l[-4])
-            tick.openPrice = float(tick.lastPrice - l[4])
+            tick.high_price = float(l[-2])
+            tick.low_price = float(l[-1])
+            tick.last_price = float(l[-4])
+            tick.open_price = float(tick.last_price - l[4])
         # 深度报价更新
         elif channel == 'book':
             bid = self.bidDict.setdefault(symbol, {})
@@ -537,34 +538,34 @@ class BitfinexWebsocketApi(WebsocketClient):
                 #bidPriceList.sort(reverse=True)
                 bidPriceList = sorted(bid_keys, reverse=True)
                 
-                tick.bidPrice1 = bidPriceList[0]
-                tick.bidPrice2 = bidPriceList[1]
-                tick.bidPrice3 = bidPriceList[2]
-                tick.bidPrice4 = bidPriceList[3]
-                tick.bidPrice5 = bidPriceList[4]
+                tick.bid_price_1 = bidPriceList[0]
+                tick.bid_price_2 = bidPriceList[1]
+                tick.bid_price_3 = bidPriceList[2]
+                tick.bid_price_4 = bidPriceList[3]
+                tick.bid_price_5 = bidPriceList[4]
                 
-                tick.bidVolume1 = bid[tick.bidPrice1]
-                tick.bidVolume2 = bid[tick.bidPrice2]
-                tick.bidVolume3 = bid[tick.bidPrice3]
-                tick.bidVolume4 = bid[tick.bidPrice4]
-                tick.bidVolume5 = bid[tick.bidPrice5]
+                tick.bid_volume_1 = bid[tick.bid_price_1]
+                tick.bid_volume_2 = bid[tick.bid_price_2]
+                tick.bid_volume_3 = bid[tick.bid_price_3]
+                tick.bid_volume_4 = bid[tick.bid_price_4]
+                tick.bid_volume_5 = bid[tick.bid_price_5]
                 
                 # ASK
                 ask_keys = ask.keys()
                 #askPriceList.sort()
                 askPriceList = sorted(ask_keys, reverse=True)
                 
-                tick.askPrice1 = askPriceList[0]
-                tick.askPrice2 = askPriceList[1]
-                tick.askPrice3 = askPriceList[2]
-                tick.askPrice4 = askPriceList[3]
-                tick.askPrice5 = askPriceList[4]
+                tick.ask_price_1 = askPriceList[0]
+                tick.ask_price_2 = askPriceList[1]
+                tick.ask_price_3 = askPriceList[2]
+                tick.ask_price_4 = askPriceList[3]
+                tick.ask_price_5 = askPriceList[4]
                 
-                tick.askVolume1 = ask[tick.askPrice1]
-                tick.askVolume2 = ask[tick.askPrice2]
-                tick.askVolume3 = ask[tick.askPrice3]
-                tick.askVolume4 = ask[tick.askPrice4]
-                tick.askVolume5 = ask[tick.askPrice5]  
+                tick.ask_volume_1 = ask[tick.ask_price_1]
+                tick.ask_volume_2 = ask[tick.ask_price_2]
+                tick.ask_volume_3 = ask[tick.ask_price_3]
+                tick.ask_volume_4 = ask[tick.ask_price_4]
+                tick.ask_volume_5 = ask[tick.ask_price_5]  
             except IndexError:
                 return            
         
