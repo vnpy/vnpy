@@ -338,7 +338,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
-        self.orderId = 1000000
+        self.orderId = 1_000_000
         self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
         self.key = ""
         self.secret = ""
@@ -391,9 +391,14 @@ class BitfinexWebsocketApi(WebsocketClient):
         print(d)
         self.send_packet(d)
 
+
+    def _gen_unqiue_cid(self):
+        return int(round(time.time() * 1000))
+
     def send_order(self, req: OrderRequest):
-        self.orderId += 1
-        orderid = str(self.date + self.orderId)
+        #self.orderId += 1
+        #orderid = str(self.date + self.orderId)
+        orderid = self._gen_unqiue_cid()
         vtOrderID = '.'.join([self.gateway_name, str(orderid)])
         
         if req.direction == Direction.LONG:
@@ -411,7 +416,6 @@ class BitfinexWebsocketApi(WebsocketClient):
         
         req = [0, 'on', None, o]
         print("send_order in ws: " , req)
-        #self.sendReq(req)
         self.send_packet(req)
         
         return vtOrderID
@@ -608,12 +612,12 @@ class BitfinexWebsocketApi(WebsocketClient):
             self.onWallet(info)
         elif name == 'os':
             for l in info:
-                self.onOrder(l)
+                self.on_order(l)
             self.gateway.write_log(u'活动委托获取成功')
         elif name in ['on', 'ou', 'oc']:
-            self.onOrder(info)
+            self.on_order(info)
         elif name == 'te':
-            self.onTrade(info)
+            self.on_trade(info)
 
     def on_error(self, exception_type: type, exception_value: Exception, tb):
         """"""
