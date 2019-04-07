@@ -4,7 +4,8 @@
 
 import hashlib
 import hmac
-import sys,json
+import sys
+import json
 import time
 from copy import copy
 from datetime import datetime
@@ -48,10 +49,12 @@ STATUS_BITFINEX2VT = {
     "PARTIALLY FILLED": Status.PARTTRADED,
     "EXECUTED": Status.ALLTRADED,
     "CANCELED": Status.CANCELLED,
-   # "Rejected": Status.REJECTED,
+    # "Rejected": Status.REJECTED,
 }
 
-PRICETYPE_VT2BITFINEX = {PriceType.LIMIT: "EXCHANGE LIMIT", PriceType.MARKET: "EXCHANGE MARKET"}
+PRICETYPE_VT2BITFINEX = {
+    PriceType.LIMIT: "EXCHANGE LIMIT",
+    PriceType.MARKET: "EXCHANGE MARKET"}
 DIRECTION_VT2BITFINEX = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
 """
 
@@ -106,7 +109,7 @@ class BitfinexGateway(BaseGateway):
 
     def send_order(self, req: OrderRequest):
         """"""
-        #return self.rest_api.send_order(req)
+        # return self.rest_api.send_order(req)
         return self.ws_api.send_order(req)
 
     def cancel_order(self, req: CancelRequest):
@@ -144,7 +147,12 @@ class BitfinexRestApi(RestClient):
 
         self.order_count = 1_000_000
         self.connect_time = 0
-        print(self.gateway_name , self.key ,self.secret,self.order_count, self.connect_time)
+        print(
+            self.gateway_name,
+            self.key,
+            self.secret,
+            self.order_count,
+            self.connect_time)
 
     def sign(self, request):
         """
@@ -164,11 +172,13 @@ class BitfinexRestApi(RestClient):
         else:
             request.data = ""
 
-        msg = request.method + "/api/v2/{}{}{}".format(path, nonce, request.data)
+        msg = request.method + \
+            "/api/v2/{}{}{}".format(path, nonce, request.data)
         #print("secret type",type(self.secret), "| secret: " ,self.secret)
         #print("msg type",type(msg))
         signature = hmac.new(
-            #self.secret.encode("utf8"), msg.encode("utf8"), digestmod=hashlib.sha384
+            # self.secret.encode("utf8"), msg.encode("utf8"),
+            # digestmod=hashlib.sha384
             self.secret, msg.encode("utf8"), digestmod=hashlib.sha384
         ).hexdigest()
 
@@ -190,7 +200,7 @@ class BitfinexRestApi(RestClient):
         session: int,
         proxy_host: str,
         proxy_port: int,
-    ): 
+    ):
         """
                Initialize connection to REST server.
         """
@@ -202,7 +212,7 @@ class BitfinexRestApi(RestClient):
         )
 
         self.init(REST_HOST, proxy_host, proxy_port)
-        print("rest connect: ",REST_HOST, proxy_host, proxy_port)
+        print("rest connect: ", REST_HOST, proxy_host, proxy_port)
         self.start(session)
         print("rest client connected")
         self.gateway.write_log("REST API启动成功")
@@ -363,9 +373,8 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.orderLocalDict = {}
         self.channelDict = {}       # ChannelID : (Channel, Symbol)
 
-
     def connect(
-        self, key: str, secret: str,  proxy_host: str, proxy_port: int
+        self, key: str, secret: str, proxy_host: str, proxy_port: int
     ):
         """"""
         self.key = key
@@ -380,7 +389,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         Subscribe to tick data upate.
         """
         print("debug subscribe: ")
-        print( req.__dict__)
+        print(req.__dict__)
         #self.ticks[req.symbol] = tick
         # vigar need need to modify  channel/symbol
         d = {
@@ -391,7 +400,6 @@ class BitfinexWebsocketApi(WebsocketClient):
         print(d)
         self.send_packet(d)
 
-
     def _gen_unqiue_cid(self):
         return int(round(time.time() * 1000))
 
@@ -400,12 +408,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         #orderid = str(self.date + self.orderId)
         orderid = self._gen_unqiue_cid()
         vtOrderID = '.'.join([self.gateway_name, str(orderid)])
-        
+
         if req.direction == Direction.LONG:
             amount = req.volume
         else:
             amount = -req.volume
-            
+
         o = {
             'cid': orderid,
             'type': PRICETYPE_VT2BITFINEX[req.price_type],
@@ -413,11 +421,11 @@ class BitfinexWebsocketApi(WebsocketClient):
             'amount': str(amount),
             'price': str(req.price)
         }
-        
+
         req = [0, 'on', None, o]
-        print("send_order in ws: " , req)
+        print("send_order in ws: ", req)
         self.send_packet(req)
-        
+
         return vtOrderID
 
     def on_connected(self):
@@ -433,40 +441,40 @@ class BitfinexWebsocketApi(WebsocketClient):
     def on_packet(self, packet: dict):
         """"""
         #print("on_packet func", type(packet))
-        #print(packet)
+        # print(packet)
 
         if isinstance(packet, dict):
             self.onResponse(packet)
         else:
             self.onUpdate(packet)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onResponse(self, data):
         """"""
         print("onResponse func", type(data))
         print(data)
         if 'event' not in data:
             return
-        
+
         if data['event'] == 'subscribed':
             symbol = str(data['symbol'].replace('t', ''))
             #symbol = str(data['symbol'])
             self.channelDict[data['chanId']] = (data['channel'], symbol)
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def onUpdate(self, data):
         """"""
         if data[1] == u'hb':
             return
-        
+
         channelID = data[0]
-        
+
         if not channelID:
             self.onTradeUpdate(data)
         else:
             self.onDataUpdate(data)
-    
-    #----------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------
     def onDataUpdate(self, data):
         """"""
         #print("debug onDataUpdate", data)
@@ -475,7 +483,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         #print("debug onDataUpdate channel_symbol", channel, symbol)
         symbol = str(symbol.replace('t', ''))
         #symbol = str(symbol)
-        
+
         # 获取Tick对象
         if symbol in self.tickDict:
             tick = self.tickDict[symbol]
@@ -488,11 +496,11 @@ class BitfinexWebsocketApi(WebsocketClient):
                 gateway_name=self.gateway_name,
             )
             #tick.vtSymbol = '.'.join([tick.symbol, tick.exchange])
-            
+
             self.tickDict[symbol] = tick
-        
+
         l = data[1]
-        
+
         # 常规行情更新
         if channel == 'ticker':
             print("debug onDataUpdate ticker", data)
@@ -505,13 +513,13 @@ class BitfinexWebsocketApi(WebsocketClient):
         elif channel == 'book':
             bid = self.bidDict.setdefault(symbol, {})
             ask = self.askDict.setdefault(symbol, {})
-            
+
             if len(l) > 3:
                 for price, count, amount in l:
                     price = float(price)
                     count = int(count)
                     amount = float(amount)
-                    
+
                     if amount > 0:
                         bid[price] = amount
                     else:
@@ -520,8 +528,8 @@ class BitfinexWebsocketApi(WebsocketClient):
                 price, count, amount = l
                 price = float(price)
                 count = int(count)
-                amount = float(amount)                
-                
+                amount = float(amount)
+
                 if not count:
                     if price in bid:
                         del bid[price]
@@ -532,78 +540,81 @@ class BitfinexWebsocketApi(WebsocketClient):
                         bid[price] = amount
                     else:
                         ask[price] = -amount
-            
+
             # Bitfinex的深度数据更新是逐档推送变动情况，而非5档一起推
             # 因此会出现没有Bid或者Ask的情况，这里使用try...catch过滤
             # 只有买卖深度满足5档时才做推送
             try:
                 # BID
                 bid_keys = bid.keys()
-                #bidPriceList.sort(reverse=True)
+                # bidPriceList.sort(reverse=True)
                 bidPriceList = sorted(bid_keys, reverse=True)
-                
+
                 tick.bid_price_1 = bidPriceList[0]
                 tick.bid_price_2 = bidPriceList[1]
                 tick.bid_price_3 = bidPriceList[2]
                 tick.bid_price_4 = bidPriceList[3]
                 tick.bid_price_5 = bidPriceList[4]
-                
+
                 tick.bid_volume_1 = bid[tick.bid_price_1]
                 tick.bid_volume_2 = bid[tick.bid_price_2]
                 tick.bid_volume_3 = bid[tick.bid_price_3]
                 tick.bid_volume_4 = bid[tick.bid_price_4]
                 tick.bid_volume_5 = bid[tick.bid_price_5]
-                
+
                 # ASK
                 ask_keys = ask.keys()
-                #askPriceList.sort()
+                # askPriceList.sort()
                 askPriceList = sorted(ask_keys, reverse=True)
-                
+
                 tick.ask_price_1 = askPriceList[0]
                 tick.ask_price_2 = askPriceList[1]
                 tick.ask_price_3 = askPriceList[2]
                 tick.ask_price_4 = askPriceList[3]
                 tick.ask_price_5 = askPriceList[4]
-                
+
                 tick.ask_volume_1 = ask[tick.ask_price_1]
                 tick.ask_volume_2 = ask[tick.ask_price_2]
                 tick.ask_volume_3 = ask[tick.ask_price_3]
                 tick.ask_volume_4 = ask[tick.ask_price_4]
-                tick.ask_volume_5 = ask[tick.ask_price_5]  
+                tick.ask_volume_5 = ask[tick.ask_price_5]
             except IndexError:
-                return            
-        
+                return
+
         dt = datetime.now()
         tick.date = dt.strftime('%Y%m%d')
         tick.time = dt.strftime('%H:%M:%S.%f')
         tick.datetime = dt
-        
+
         # 推送
         self.gateway.on_tick(copy(tick))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onWallet(self, data):
         """"""
         if str(data[0]) == 'exchange':
             accountid = str(data[1])
             account = self.accounts.get(accountid, None)
             if not account:
-                account = AccountData(accountid=accountid, gateway_name=self.gateway_name)
-            
-            account.vtAccountID = '.'.join([account.gateway_name, account.accountid])
+                account = AccountData(
+                    accountid=accountid,
+                    gateway_name=self.gateway_name)
+
+            account.vtAccountID = '.'.join(
+                [account.gateway_name, account.accountid])
             account.balance = float(data[2])
             account.available = None if not data[-1] else float(data[-1])
             if account.available and account.balance:
                 account.frozen = account.balance - account.available
             self.gateway.on_account(copy(account))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def onTradeUpdate(self, data):
         """"""
-        print("debug onTradeUpdate: " , data)
+        print("debug onTradeUpdate: ", data)
         name = data[1]
         info = data[2]
-        
+
         if name == 'ws':
             for l in info:
                 self.onWallet(l)
@@ -627,7 +638,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         sys.stderr.write(self.exception_detail(
             exception_type, exception_value, tb))
 
-    # debug OK , 0405 
+    # debug OK , 0405
     def authenticate(self):
         """
             Authenticate websocket connection to subscribe private topic.
@@ -807,4 +818,3 @@ class BitfinexWebsocketApi(WebsocketClient):
         )
 
         self.gateway.on_contract(contract)
-
