@@ -31,7 +31,7 @@ class ApexApi:
 
     def set_app_info(self, name: str, version: str):
         """设置应用信息"""
-        n = APEX.Fix_SetAppInfo(c_char_p(name), c_char_p(version))
+        n = APEX.Fix_SetAppInfo(to_bytes(name), to_bytes(version))
         return bool(n)
 
     def uninitialize(self):
@@ -42,19 +42,19 @@ class ApexApi:
     def set_default_info(self, user: str, wtfs: str, fbdm: str, dest: str):
         """设置默认信息"""
         n = APEX.Fix_SetDefaultInfo(
-            c_char_p(user),
-            c_char_p(wtfs),
-            c_char_p(fbdm),
-            c_char_p(dest)
+            to_bytes(user),
+            to_bytes(wtfs),
+            to_bytes(fbdm),
+            to_bytes(dest)
         )
         return bool(n)
 
     def connect(self, address: str, khh: str, pwd: str, timeout: int):
         """连接交易"""
         conn = APEX.Fix_Connect(
-            c_char_p(address),
-            c_char_p(khh),
-            c_char_p(pwd),
+            to_bytes(address),
+            to_bytes(khh),
+            to_bytes(pwd),
             timeout
         )
         return conn
@@ -66,13 +66,13 @@ class ApexApi:
     ):
         """连接交易"""
         conn = APEX.Fix_ConnectEx(
-            c_char_p(address),
-            c_char_p(khh),
-            c_char_p(pwd),
-            c_char_p(file_cert),
-            c_char_p(cert_pwd),
-            c_char_p(file_ca),
-            c_char_p(procotol),
+            to_bytes(address),
+            to_bytes(khh),
+            to_bytes(pwd),
+            to_bytes(file_cert),
+            to_bytes(cert_pwd),
+            to_bytes(file_ca),
+            to_bytes(procotol),
             verify,
             timeout
         )
@@ -100,27 +100,27 @@ class ApexApi:
 
     def set_wtfs(self, sess: int, wtfs: str):
         """设置委托方式"""
-        n = APEX.Fix_SetWTFS(sess, c_char_p(wtfs))
+        n = APEX.Fix_SetWTFS(sess, to_bytes(wtfs))
         return bool(n)
 
     def set_fbdm(self, sess: int, fbdm: str):
         """设置来源营业部"""
-        n = APEX.Fix_SetFBDM(sess, c_char_p(fbdm))
+        n = APEX.Fix_SetFBDM(sess, to_bytes(fbdm))
         return bool(n)
 
     def set_dest_fbdm(self, sess: int, fbdm: str):
         """设置目标营业部"""
-        n = APEX.Fix_SetDestFBDM(sess, c_char_p(fbdm))
+        n = APEX.Fix_SetDestFBDM(sess, to_bytes(fbdm))
         return bool(n)
 
     def set_node(self, sess: int, node: str):
         """设置业务站点"""
-        n = APEX.Fix_SetNode(sess, c_char_p(node))
+        n = APEX.Fix_SetNode(sess, to_bytes(node))
         return bool(n)
 
     def set_gydm(self, sess: int, gydm: str):
         """设置柜员号"""
-        n = APEX.Fix_SetGYDM(sess, c_char_p(gydm))
+        n = APEX.Fix_SetGYDM(sess, to_bytes(gydm))
         return bool(n)
 
     def create_head(self, sess: int, func: int):
@@ -170,7 +170,7 @@ class ApexApi:
     def get_err_msg(self, sess: int):
         """获取错误信息"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetErrMsg(sess, out, size)
         return out.value
@@ -182,7 +182,7 @@ class ApexApi:
     def get_item(self, sess: int, fid: int, row: int):
         """获取字符串内容"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetItem(sess, fid, out, size, row)
         return out.value
@@ -210,19 +210,21 @@ class ApexApi:
     def get_token(self, sess: int):
         """获取业务令牌"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetToken(sess, out, size)
         return out.value
 
-    def encode(self, data):
+    def encode(self, data: str):
         """加密"""
+        data = to_bytes(data)
         buf = create_string_buffer(data, 512)
         APEX.Fix_Encode(buf)
-        return buf.value
+        return to_unicode(buf.value)
 
     def add_backup_svc_addr(self, address: str):
         """设置业务令牌"""
+        address = to_bytes(address)
         n = APEX.Fix_AddBackupSvrAddr(address)
         return bool(n)
 
@@ -238,9 +240,11 @@ class ApexApi:
 
     def subscribe_by_customer(self, conn: int, svc: int, khh: str, pwd: str):
         """订阅数据"""
-        func = APEX[93]
-        n = func(conn, svc, self.push_call_func, c_char_p(""), khh, pwd)
-        return bool(n)
+        func = APEX[108]
+        n = func(conn, svc, self.push_call_func,
+                 to_bytes(""), to_bytes(khh), to_bytes(pwd))
+
+        return n
 
     def unsubscribe_by_handle(self, handle: int):
         """退订推送"""
@@ -254,22 +258,22 @@ class ApexApi:
     def get_val_with_id_by_index(self, sess: int, row: int, col: int):
         """根据行列获取数据"""
         s = 256
-        buf = create_string_buffer("", s)
+        buf = create_string_buffer(b"", s)
         fid = c_long(0)
         size = c_int(s)
 
         APEX.Fix_GetValWithIdByIndex(
             sess, row, col, byref(fid), buf, byref(size))
-        return fid.value, buf.value
+        return fid.value, to_unicode(buf.value)
 
     def set_system_no(self, sess: int, val: str):
         """设置系统编号"""
-        n = APEX.Fix_SetSystemNo(sess, c_char_p(val))
+        n = APEX.Fix_SetSystemNo(sess, to_bytes(val))
         return bool(n)
 
     def set_default_system_no(self, val: str):
         """设置默认系统编号"""
-        n = APEX.Fix_SetDefaultSystemNo(c_char_p(val))
+        n = APEX.Fix_SetDefaultSystemNo(to_bytes(val))
         return bool(n)
 
     def set_auto_reconnect(self, conn: int, reconnect: int):
@@ -291,23 +295,23 @@ class ApexApi:
         """获取缓存数据"""
         size = 1024
         outlen = c_int(size)
-        buf = create_string_buffer("", size)
+        buf = create_string_buffer(b"", size)
 
         APEX.Fix_GetItemBuf(sess, buf, byref(outlen), row)
         return buf
 
     def set_item(self, sess: int, fid: int, val: str):
         """设置请求内容"""
-        n = APEX.Fix_SetString(sess, fid, c_char_p(val))
+        n = APEX.Fix_SetString(sess, fid, to_bytes(val))
         return bool(n)
 
     def get_last_err_msg(self):
         """获取错误信息"""
         size = 256
-        out = create_string_buffer("", size)
+        out = create_string_buffer(b"", size)
 
         APEX.Fix_GetLastErrMsg(out, size)
-        return out.value
+        return to_unicode(out.value)
 
     def reg_reply_call_func(self, sess: int = 0):
         """注册回调函数"""
@@ -328,3 +332,21 @@ class ApexApi:
     def on_conn(self, conn: int, event, recv):
         """连接回调（需要继承）"""
         return True
+
+
+def to_bytes(data: str):
+    """
+    将unicode字符串转换为bytes
+    """
+    try:
+        bytes_data = data.encode("GBK")
+        return bytes_data
+    except AttributeError:
+        return data
+
+
+def to_unicode(data: bytes):
+    """
+    将bytes字符串转换为unicode
+    """
+    return data.decode("GBK")

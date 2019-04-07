@@ -52,6 +52,7 @@ class MainEngine:
         """
         engine = engine_class(self, self.event_engine)
         self.engines[engine.engine_name] = engine
+        return engine
 
     def add_gateway(self, gateway_class: BaseGateway):
         """
@@ -59,6 +60,7 @@ class MainEngine:
         """
         gateway = gateway_class(self.event_engine)
         self.gateways[gateway.gateway_name] = gateway
+        return gateway
 
     def add_app(self, app_class: BaseApp):
         """
@@ -67,7 +69,8 @@ class MainEngine:
         app = app_class()
         self.apps[app.app_name] = app
 
-        self.add_engine(app.engine_class)
+        engine = self.add_engine(app.engine_class)
+        return engine
 
     def init_engines(self):
         """

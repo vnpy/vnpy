@@ -2,7 +2,7 @@
 from abc import ABC
 from typing import Any, Callable
 
-from vnpy.trader.constant import Interval, Status, Direction, Offset
+from vnpy.trader.constant import Interval, Direction, Offset
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData
 
 from .base import StopOrder, EngineType

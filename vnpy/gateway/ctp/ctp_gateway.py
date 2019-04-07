@@ -405,7 +405,7 @@ class CtpTdApi(TdApi):
         """"""
         if not error['ErrorID']:
             self.authStatus = True
-            self.writeLog("交易授权验证成功")
+            self.gateway.write_log("交易授权验证成功")
             self.login()
         else:
             self.gateway.write_error("交易授权验证失败", error)
@@ -418,7 +418,7 @@ class CtpTdApi(TdApi):
             self.login_status = True
             self.gateway.write_log("交易登录成功")
             
-            # Confirm settelment
+            # Confirm settlement
             req = {
                 "BrokerID": self.brokerid,
                 "InvestorID": self.userid
@@ -549,12 +549,15 @@ class CtpTdApi(TdApi):
                 product=product,
                 size=data["VolumeMultiple"],
                 pricetick=data["PriceTick"],
-                option_underlying=data["UnderlyingInstrID"],
-                option_type=OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-                option_strike=data["StrikePrice"],
-                option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
                 gateway_name=self.gateway_name
             )
+            
+            # For option only
+            if data["OptionsType"]:
+                contract.option_underlying = data["UnderlyingInstrID"],
+                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
+                contract.option_strike = data["StrikePrice"],
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
             
             self.gateway.on_contract(contract)
             
@@ -662,7 +665,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "BrokerID": self.brokerid,
             "AuthCode": self.auth_code,
-            "ProductInfo": self.product_info
+            "UserProductInfo": self.product_info
         }
         
         self.reqid += 1
@@ -678,7 +681,8 @@ class CtpTdApi(TdApi):
         req = {
             "UserID": self.userid,
             "Password": self.password,
-            "BrokerID": self.brokerid
+            "BrokerID": self.brokerid,
+            "UserProductInfo": self.product_info
         }
         
         self.reqid += 1

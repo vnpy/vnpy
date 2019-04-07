@@ -1,2 +1,2 @@
-from .vnapex import ApexApi
+from .vnapex import *
 from .fiddef import *
