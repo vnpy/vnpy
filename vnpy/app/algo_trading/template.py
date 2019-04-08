@@ -1,6 +1,7 @@
 from vnpy.trader.engine import BaseEngine
 from vnpy.trader.object import TickData, OrderData, TradeData
 from vnpy.trader.constant import OrderType, Offset, Direction
+from vnpy.trader.utility import virtual
 
 
 class AlgoTemplate:
@@ -63,22 +64,27 @@ class AlgoTemplate:
         """"""
         pass
 
+    @virtual
     def on_stop(self):
         """"""
         pass
 
+    @virtual
     def on_tick(self, tick: TickData):
         """"""
         pass
 
+    @virtual
     def on_order(self, order: OrderData):
         """"""
         pass
 
+    @virtual
     def on_trade(self, trade: TradeData):
         """"""
         pass
 
+    @virtual
     def on_timer(self):
         """"""
         pass
