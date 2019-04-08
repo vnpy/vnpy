@@ -110,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
             func = partial(self.open_widget, widget_class, app.app_name)
             icon_path = str(app.app_path.joinpath("ui", app.icon_name))
             self.add_menu_action(
-                app_menu, f"打开{app.display_name}", icon_path, func
+                app_menu, app.display_name, icon_path, func
             )
 
         # Help menu
