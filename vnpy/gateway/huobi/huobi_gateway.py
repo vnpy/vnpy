@@ -15,7 +15,7 @@ from copy import copy
 from datetime import datetime
 
 from vnpy.event import Event
-from vnpy.api.rest import RestClient
+from vnpy.api.rest import RestClient, Request
 from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
     Direction,
@@ -268,13 +268,15 @@ class HuobiRestApi(RestClient):
             "price": str(req.price),
             "source": "api"
         }
-        
+
         self.add_request(
             method="POST",
             path="/v1/order/orders/place",
             callback=self.on_send_order,
             data=data,
             extra=order,
+            on_error=self.on_send_order_error,
+            on_failed=self.on_send_order_failed
         )
 
         self.order_manager.on_order(order)
@@ -283,15 +285,15 @@ class HuobiRestApi(RestClient):
     def cancel_order(self, req: CancelRequest):
         """"""
         sys_orderid = self.order_manager.get_sys_orderid(req.orderid)
-        
-        path = f"/v1/order/orders/{sys_orderid}/submitcancel" 
+
+        path = f"/v1/order/orders/{sys_orderid}/submitcancel"
         self.add_request(
-            method="POST", 
-            path=path, 
+            method="POST",
+            path=path,
             callback=self.on_cancel_order,
             extra=req
         )
-        
+
     def on_query_account(self, data, request):
         """"""
         if self.check_error(data, "查询账户"):
@@ -300,8 +302,8 @@ class HuobiRestApi(RestClient):
         for d in data["data"]:
             if d["type"] == "spot":
                 self.account_id = d["id"]
-                self.gateway.write_log(f"账户代码{self.account_id}查询成功")        
-        
+                self.gateway.write_log(f"账户代码{self.account_id}查询成功")
+
         self.query_account_balance()
 
     def on_query_account_balance(self, data, request):
@@ -327,7 +329,7 @@ class HuobiRestApi(RestClient):
                 self.gateway.on_account(account)
 
     def on_query_order(self, data, request):
-        """"""        
+        """"""
         if self.check_error(data, "查询委托"):
             return
 
@@ -354,7 +356,7 @@ class HuobiRestApi(RestClient):
             )
 
             self.order_manager.on_order(order)
-        
+
         self.gateway.write_log("委托信息查询成功")
 
     def on_query_contract(self, data, request):  # type: (dict, Request)->None
@@ -379,7 +381,7 @@ class HuobiRestApi(RestClient):
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
-            
+
             huobi_symbols.add(contract.symbol)
             symbol_name_map[contract.symbol] = contract.name
 
@@ -388,7 +390,7 @@ class HuobiRestApi(RestClient):
     def on_send_order(self, data, request):
         """"""
         order = request.extra
-        
+
         if self.check_error(data, "委托"):
             order.status = Status.REJECTED
             self.order_manager.on_order(order)
@@ -396,21 +398,46 @@ class HuobiRestApi(RestClient):
 
         sys_orderid = data["data"]
         self.order_manager.update_orderid_map(order.orderid, sys_orderid)
-    
+
+    def on_send_order_failed(self, status_code: str, request: Request):
+        """
+        Callback when sending order failed on server.
+        """
+        order = request.extra
+        order.status = Status.REJECTED
+        self.gateway.on_order(order)
+
+        msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
+        self.gateway.write_log(msg)
+
+    def on_send_order_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback when sending order caused exception.
+        """
+        order = request.extra
+        order.status = Status.REJECTED
+        self.gateway.on_order(order)
+
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
+
     def on_cancel_order(self, data, request):
         """"""
-        if self.check_error(data, "撤单"):
-            return
-
         cancel_request = request.extra
         local_orderid = cancel_request.orderid
-
         order = self.order_manager.get_order_with_local_orderid(local_orderid)
-        order.status = Status.CANCELLED
+        
+        if self.check_error(data, "撤单"):
+            order.status = Status.REJECTED
+        else:
+            order.status = Status.CANCELLED
+            self.gateway.write_log(f"委托撤单成功：{order.orderid}")
         
         self.order_manager.on_order(order)
-        self.gateway.write_log(f"委托撤单成功：{order.orderid}")
-
+        
     def check_error(self, data: dict, func: str = ""):
         """"""
         if data["status"] != "error":

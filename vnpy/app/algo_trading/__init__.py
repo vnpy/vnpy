@@ -3,9 +3,10 @@ from pathlib import Path
 from vnpy.trader.app import BaseApp
 
 from .engine import AlgoEngine, APP_NAME
+from .template import AlgoTemplate
 
 
-class CtaStrategyApp(BaseApp):
+class AlgoTradingApp(BaseApp):
     """"""
 
     app_name = APP_NAME
