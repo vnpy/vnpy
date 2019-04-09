@@ -74,8 +74,8 @@ class OkexGateway(BaseGateway):
         "Secret Key": "",
         "Passphrase": "",
         "会话数": 3,
-        "代理地址": "127.0.0.1",
-        "代理端口": 1080,
+        "代理地址": "",
+        "代理端口": "",
     }
 
     def __init__(self, event_engine):
@@ -94,9 +94,13 @@ class OkexGateway(BaseGateway):
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
 
+        if proxy_port.isdigit():
+            proxy_port = int(proxy_port)
+        else:
+            proxy_port = 0
+
         self.rest_api.connect(key, secret, passphrase,
                               session_number, proxy_host, proxy_port)
-
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
     def subscribe(self, req: SubscribeRequest):
