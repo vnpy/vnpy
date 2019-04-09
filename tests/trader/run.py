@@ -5,10 +5,11 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 
 from vnpy.gateway.bitmex import BitmexGateway
+from vnpy.gateway.bitfinex import BitfinexGateway
 from vnpy.gateway.futu import FutuGateway
-from vnpy.gateway.ib import IbGateway
+# from vnpy.gateway.ib import IbGateway
 from vnpy.gateway.ctp import CtpGateway
-from vnpy.gateway.tiger import TigerGateway
+# from vnpy.gateway.tiger import TigerGateway
 
 from vnpy.app.cta_strategy import CtaStrategyApp
 
@@ -21,10 +22,11 @@ def main():
 
     main_engine = MainEngine(event_engine)
     main_engine.add_gateway(CtpGateway)
-    main_engine.add_gateway(IbGateway)
+    # main_engine.add_gateway(IbGateway)
     main_engine.add_gateway(FutuGateway)
     main_engine.add_gateway(BitmexGateway)
-    main_engine.add_gateway(TigerGateway)
+    main_engine.add_gateway(BitfinexGateway)
+    # main_engine.add_gateway(TigerGateway)
 
     main_engine.add_app(CtaStrategyApp)
 
