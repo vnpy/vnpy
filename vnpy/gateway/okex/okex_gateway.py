@@ -85,6 +85,8 @@ class OkexGateway(BaseGateway):
         self.rest_api = OkexRestApi(self)
         self.ws_api = OkexWebsocketApi(self)
 
+        self.orders = {}
+
     def connect(self, setting: dict):
         """"""
         key = setting["API Key"]
@@ -127,6 +129,15 @@ class OkexGateway(BaseGateway):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
+
+    def on_order(self, order: OrderData):
+        """"""
+        self.orders[order.vt_orderid] = order
+        super().on_order(order)
+
+    def get_order(self, vt_orderid: str):
+        """"""
+        return self.orders.get(vt_orderid, None)
 
 
 class OkexRestApi(RestClient):
@@ -258,6 +269,8 @@ class OkexRestApi(RestClient):
             callback=self.on_cancel_order,
             data=data,
             on_error=self.on_cancel_order_error,
+            on_failed=self.on_cancel_order_failed,
+            extra=req
         )
 
     def query_contract(self):
@@ -405,6 +418,14 @@ class OkexRestApi(RestClient):
     def on_cancel_order(self, data, request):
         """Websocket will push a new order status"""
         pass
+
+    def on_cancel_order_failed(self, status_code: int, request: Request):
+        """If cancel failed, mark order status to be rejected."""
+        req = request.extra
+        order = self.gateway.get_order(req.vt_orderid)
+        if order:
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
 
     def on_failed(self, status_code: int, request: Request):
         """
