@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 from vnpy.trader.constant import Interval, Direction, Offset
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData
+from vnpy.trader.utility import virtual
 
 from .base import StopOrder, EngineType
 
@@ -87,48 +88,56 @@ class CtaTemplate(ABC):
         }
         return strategy_data
 
+    @virtual
     def on_init(self):
         """
         Callback when strategy is inited.
         """
         pass
 
+    @virtual
     def on_start(self):
         """
         Callback when strategy is started.
         """
         pass
 
+    @virtual
     def on_stop(self):
         """
         Callback when strategy is stopped.
         """
         pass
 
+    @virtual
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
         """
         pass
 
+    @virtual
     def on_bar(self, bar: BarData):
         """
         Callback of new bar data update.
         """
         pass
 
+    @virtual
     def on_trade(self, trade: TradeData):
         """
         Callback of new trade data update.
         """
         pass
 
+    @virtual
     def on_order(self, order: OrderData):
         """
         Callback of new order data update.
         """
         pass
 
+    @virtual
     def on_stop_order(self, stop_order: StopOrder):
         """
         Callback of stop order update.
@@ -255,12 +264,14 @@ class CtaSignal(ABC):
         """"""
         self.signal_pos = 0
 
+    @virtual
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
         """
         pass
 
+    @virtual
     def on_bar(self, bar: BarData):
         """
         Callback of new bar data update.
@@ -292,6 +303,7 @@ class TargetPosTemplate(CtaTemplate):
         )
         self.variables.append("target_pos")
 
+    @virtual
     def on_tick(self, tick: TickData):
         """
         Callback of new tick data update.
@@ -301,12 +313,14 @@ class TargetPosTemplate(CtaTemplate):
         if self.trading:
             self.trade()
 
+    @virtual
     def on_bar(self, bar: BarData):
         """
         Callback of new bar data update.
         """
         self.last_bar = bar
 
+    @virtual
     def on_order(self, order: OrderData):
         """
         Callback of new order data update.
