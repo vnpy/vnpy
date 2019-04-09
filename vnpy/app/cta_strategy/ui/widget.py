@@ -1,5 +1,3 @@
-from typing import Any
-
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtGui, QtWidgets
@@ -241,8 +239,6 @@ class StrategyManager(QtWidgets.QFrame):
 
     def edit_strategy(self):
         """"""
-        # vt_symbol = self._data["vt_symbol"]
-        # class_name = self._data["class_name"]
         strategy_name = self._data["strategy_name"]
 
         parameters = self.cta_engine.get_strategy_parameters(strategy_name)
@@ -255,8 +251,11 @@ class StrategyManager(QtWidgets.QFrame):
 
     def remove_strategy(self):
         """"""
-        self.cta_engine.remove_strategy(self.strategy_name)
-        self.cta_manager.remove_strategy(self.strategy_name)
+        result = self.cta_engine.remove_strategy(self.strategy_name)
+
+        # Only remove strategy gui manager if it has been removed from engine
+        if result:
+            self.cta_manager.remove_strategy(self.strategy_name)
 
 
 class DataMonitor(QtWidgets.QTableWidget):
@@ -302,23 +301,6 @@ class DataMonitor(QtWidgets.QTableWidget):
             cell.setText(str(value))
 
 
-class StrategyCell(BaseCell):
-    """
-    Cell used for showing strategy name.
-    """
-
-    def __init__(self, content: str, data: Any):
-        """"""
-        super(StrategyCell, self).__init__(content, data)
-
-    def set_content(self, content: Any, data: Any):
-        """
-        Set text using enum.constant.value.
-        """
-        if content:
-            super(StrategyCell, self).set_content(content.strategy_name, data)
-
-
 class StopOrderMonitor(BaseMonitor):
     """
     Monitor for local stop order.
@@ -334,24 +316,16 @@ class StopOrderMonitor(BaseMonitor):
             "cell": BaseCell,
             "update": False,
         },
-        "vt_orderid": {"display": "限价委托号", "cell": BaseCell, "update": True},
-        "vt_symbol": {"display": "代码", "cell": BaseCell, "update": False},
-        "order_type": {"display": "类型", "cell": EnumCell, "update": False},
+        "vt_orderids": {"display": "限价委托号", "cell": BaseCell, "update": True},
+        "vt_symbol": {"display": "本地代码", "cell": BaseCell, "update": False},
+        "direction": {"display": "方向", "cell": EnumCell, "update": False},
+        "offset": {"display": "开平", "cell": EnumCell, "update": False},
         "price": {"display": "价格", "cell": BaseCell, "update": False},
-        "volume": {"display": "数量", "cell": BaseCell, "update": True},
+        "volume": {"display": "数量", "cell": BaseCell, "update": False},
         "status": {"display": "状态", "cell": EnumCell, "update": True},
-        "strategy": {"display": "策略名", "cell": StrategyCell, "update": True},
+        "lock": {"display": "锁仓", "cell": BaseCell, "update": False},
+        "strategy_name": {"display": "策略名", "cell": BaseCell, "update": False},
     }
-
-    def init_ui(self):
-        """
-        Stretch columns.
-        """
-        super(StopOrderMonitor, self).init_ui()
-
-        self.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch
-        )
 
 
 class LogMonitor(BaseMonitor):

@@ -1,3 +1,5 @@
+import time
+from copy import copy
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from gettext import gettext as _
@@ -5,19 +7,20 @@ from threading import Lock, Thread
 # noinspection PyUnresolvedReferences
 from typing import Any, Callable, Dict
 
-from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApi_DestoryAll, OesApi_InitAllByConvention, \
-    OesApi_IsValidOrdChannel, OesApi_IsValidQryChannel, OesApi_IsValidRptChannel, OesApi_LogoutAll, \
-    OesApi_QueryCashAsset, OesApi_QueryOptHolding, OesApi_QueryOption, OesApi_QueryOrder, \
-    OesApi_QueryStkHolding, OesApi_QueryStock, OesApi_SendOrderCancelReq, OesApi_SendOrderReq, \
+from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_DestoryAll, \
+    OesApi_InitLogger, OesApi_InitOrdChannel2, OesApi_InitQryChannel2, OesApi_InitRptChannel2, \
+    OesApi_LogoutAll, OesApi_QueryCashAsset, \
+    OesApi_QueryOptHolding, OesApi_QueryOption, OesApi_QueryOrder, OesApi_QueryStkHolding, \
+    OesApi_QueryStock, OesApi_SendOrderCancelReq, OesApi_SendOrderReq, OesApi_SetCustomizedDriverId, \
     OesApi_SetThreadPassword, OesApi_SetThreadUsername, OesApi_WaitReportMsg, OesOrdCancelReqT, \
     OesOrdCnfmT, OesOrdRejectT, OesOrdReqT, OesQryCashAssetFilterT, OesQryCursorT, \
     OesQryOptionFilterT, OesQryOrdFilterT, OesQryStkHoldingFilterT, OesQryStockFilterT, \
     OesRspMsgBodyT, OesStockBaseInfoT, OesTrdCnfmT, SGeneralClientChannelT, SMSG_PROTO_BINARY, \
-    SMsgHeadT, SPlatform_IsNegEpipe, cast, eOesBuySellTypeT, eOesMarketIdT, \
-    eOesMsgTypeT, eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT
-
+    SMsgHeadT, cast, eOesBuySellTypeT, eOesMarketIdT, eOesMsgTypeT, \
+    eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT, eOesSubscribeReportTypeT
 from vnpy.gateway.oes.error_code import error_to_str
-from vnpy.trader.constant import Direction, Exchange, Offset, PriceType, Product, Status
+from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
+from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Product, Status
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import AccountData, CancelRequest, ContractData, OrderData, OrderRequest, \
     PositionData, TradeData
@@ -37,8 +40,12 @@ PRODUCT_OES2VT = {
 
 # only limit price can match, all other price types are not perfectly match.
 ORDER_TYPE_VT2OES = {
-    (Exchange.SSE, PriceType.LIMIT): eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT,
-    (Exchange.SZSE, PriceType.LIMIT): eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT,
+    (Exchange.SSE, OrderType.LIMIT): eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT,
+    (Exchange.SZSE, OrderType.LIMIT): eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT,
+}
+ORDER_TYPE_OES2VT = {
+    (eOesMarketIdT.OES_MKT_SH_ASHARE, eOesOrdTypeShT.OES_ORD_TYPE_SH_LMT): OrderType.LIMIT,
+    (eOesMarketIdT.OES_MKT_SZ_ASHARE, eOesOrdTypeSzT.OES_ORD_TYPE_SZ_LMT): OrderType.LIMIT,
 }
 
 BUY_SELL_TYPE_VT2OES = {
@@ -62,7 +69,6 @@ BUY_SELL_TYPE_VT2OES = {
     (Exchange.SHFE, Offset.CLOSE, Direction.LONG): eOesBuySellTypeT.OES_BS_TYPE_BUY_CLOSE,
     (Exchange.SHFE, Offset.CLOSE, Direction.SHORT): eOesBuySellTypeT.OES_BS_TYPE_SELL_CLOSE,
     (Exchange.SHFE, Offset.CLOSE, Direction.NET): eOesBuySellTypeT.OES_BS_TYPE_BUY_CLOSE,
-    # todo: eOesBuySellTypeT.OES_BS_TYPE_OPTION_EXERCISE == 行权
 }
 
 STATUS_OES2VT = {
@@ -114,18 +120,20 @@ class OesTdMessageLoop:
     def __init__(self,
                  gateway: BaseGateway,
                  env: OesApiClientEnvT,
-                 td: "OesTdApi"
+                 td: "OesTdApi",
+                 order_manager: "OrderManager",
                  ):
         """"""
         self.gateway = gateway
 
         self._env = env
         self._td = td
+        self._order_manager = order_manager
 
         self._alive = False
         self._th = Thread(target=self._message_loop)
 
-        self.message_handlers: Dict[int, Callable[[dict], None]] = {
+        self.message_handlers: Dict[eOesMsgTypeT, Callable[[OesRspMsgBodyT], int]] = {
             eOesMsgTypeT.OESMSG_RPT_BUSINESS_REJECT: self.on_order_rejected,
             eOesMsgTypeT.OESMSG_RPT_ORDER_INSERT: self.on_order_inserted,
             eOesMsgTypeT.OESMSG_RPT_ORDER_REPORT: self.on_order_report,
@@ -140,8 +148,9 @@ class OesTdMessageLoop:
 
     def start(self):
         """"""
-        self._alive = True
-        self._th.start()
+        if not self._alive:  # not thread-safe
+            self._alive = True
+            self._th.start()
 
     def stop(self):
         """"""
@@ -154,7 +163,7 @@ class OesTdMessageLoop:
     def reconnect(self):
         """"""
         self.gateway.write_log(_("正在尝试重新连接到交易服务器。"))
-        self._td.connect()
+        self._td.connect_rpt_channel()
 
     def _on_message(self, session_info: SGeneralClientChannelT,
                     head: SMsgHeadT,
@@ -175,7 +184,6 @@ class OesTdMessageLoop:
         """"""
         rpt_channel = self._env.rptChannel
         timeout_ms = 1000
-        is_disconnected = SPlatform_IsNegEpipe
 
         while self._alive:
             ret = OesApi_WaitReportMsg(rpt_channel,
@@ -196,15 +204,18 @@ class OesTdMessageLoop:
         error_string = error_to_str(error_code)
         data: OesOrdRejectT = d.rptMsg.rptBody.ordRejectRsp
         if not data.origClSeqNo:
-            i = self._td.get_order(data.clSeqNo)
-            vt_order = i.vt_order
+            try:
+                i = self._order_manager.get_order(data.clSeqNo)
+            except KeyError:
+                return  # rejected order created by others, don't need to care.
 
+            vt_order = i.vt_order
             if vt_order == Status.ALLTRADED:
                 return
 
             vt_order.status = Status.REJECTED
 
-            self.gateway.on_order(vt_order)
+            self.gateway.on_order(copy(vt_order))
             self.gateway.write_log(
                 f"Order: {vt_order.vt_symbol}-{vt_order.vt_orderid} Code: {error_code} Rejected: {error_string}")
         else:
@@ -214,60 +225,40 @@ class OesTdMessageLoop:
         """"""
         data = d.rptMsg.rptBody.ordInsertRsp
 
-        if not data.origClSeqNo:
-            i = self._td.get_order(data.clSeqNo)
-        else:
-            i = self._td.get_order(data.origClSeqNo)
-        vt_order = i.vt_order
-        vt_order.status = STATUS_OES2VT[data.ordStatus]
-        vt_order.volume = data.ordQty
-        vt_order.traded = data.cumQty
-        vt_order.time = parse_oes_datetime(data.ordDate, data.ordTime)
-
-        self.gateway.on_order(vt_order)
+        vt_order = self._order_manager.oes_order_to_vt(data)
+        self.gateway.on_order(copy(vt_order))
 
     def on_order_report(self, d: OesRspMsgBodyT):
         """"""
         data: OesOrdCnfmT = d.rptMsg.rptBody.ordCnfm
 
-        if not data.origClSeqNo:
-            i = self._td.get_order(data.clSeqNo)
-        else:
-            i = self._td.get_order(data.origClSeqNo)
-        vt_order = i.vt_order
-
-        vt_order.status = STATUS_OES2VT[data.ordStatus]
-        vt_order.volume = data.ordQty
-        vt_order.traded = data.cumQty
-        vt_order.time = parse_oes_datetime(data.ordDate, data.ordCnfmTime)
-
-        self.gateway.on_order(vt_order)
+        vt_order = self._order_manager.oes_order_to_vt(data)
+        self.gateway.on_order(copy(vt_order))
 
     def on_trade_report(self, d: OesRspMsgBodyT):
         """"""
         data: OesTrdCnfmT = d.rptMsg.rptBody.trdCnfm
 
-        i = self._td.get_order(data.clSeqNo)
+        i = self._order_manager.get_order(data.clSeqNo)
         vt_order = i.vt_order
-        # vt_order.status = STATUS_OES2VT[data.ordStatus]
 
         trade = TradeData(
             gateway_name=self.gateway.gateway_name,
             symbol=data.securityId,
             exchange=EXCHANGE_OES2VT[data.mktId],
-            orderid=data.userInfo,
-            tradeid=data.exchTrdNum,
+            orderid=str(data.clSeqNo),
+            tradeid=str(data.exchTrdNum),
             direction=vt_order.direction,
             offset=vt_order.offset,
             price=data.trdPrice / 10000,
             volume=data.trdQty,
-            time=parse_oes_datetime(data.trdDate, data.trdTime)
+            time=parse_oes_datetime(data.trdDate, data.trdTime).isoformat()
         )
         vt_order.status = STATUS_OES2VT[data.ordStatus]
         vt_order.traded = data.cumQty
         vt_order.time = parse_oes_datetime(data.trdDate, data.trdTime)
         self.gateway.on_trade(trade)
-        self.gateway.on_order(vt_order)
+        self.gateway.on_order(copy(vt_order))
 
     def on_option_holding(self, d: OesRspMsgBodyT):
         """"""
@@ -282,7 +273,7 @@ class OesTdMessageLoop:
             exchange=EXCHANGE_OES2VT[data.mktId],
             direction=Direction.NET,
             volume=data.sumHld,
-            frozen=data.lockHld,  # todo: to verify
+            frozen=data.lockHld,
             price=data.costPrice / 10000,
             # pnl=data.costPrice - data.originalCostAmt,
             pnl=0,
@@ -312,40 +303,45 @@ class OesTdApi:
 
     def __init__(self, gateway: BaseGateway):
         """"""
-        self.config_path: str = None
+        self.config_path: str = ''
+        self.ord_server: str = ''
+        self.qry_server: str = ''
+        self.rpt_server: str = ''
         self.username: str = ''
         self.password: str = ''
+        self.hdd_serial: str = ''
+
         self.gateway = gateway
 
         self._env = OesApiClientEnvT()
 
+        self._order_manager: "OrderManager" = OrderManager(self.gateway.gateway_name)
         self._message_loop = OesTdMessageLoop(gateway,
                                               self._env,
-                                              self)
+                                              self,
+                                              self._order_manager
+                                              )
 
         self._last_seq_lock = Lock()
         self._last_seq_index = 1000000  # 0 has special manning for oes
-
-        self._orders: Dict[int, InternalOrder] = {}
+        self._ord_reconnect_lock = Lock()
 
     def connect(self):
         """Connect to trading server.
         :note set config_path before calling this function
         """
-        OesApi_SetThreadUsername(self.username)
-        OesApi_SetThreadPassword(self.password)
+        OesApi_InitLogger(self.config_path, 'log')
 
-        config_path = self.config_path
-        if not OesApi_InitAllByConvention(self._env, config_path, -1, self._last_seq_index):
-            return False
-        self._last_seq_index = max(self._last_seq_index, self._env.ordChannel.lastOutMsgSeq + 1)
+        OesApi_SetCustomizedDriverId(self.hdd_serial)
 
-        if not OesApi_IsValidOrdChannel(self._env.ordChannel):
-            return False
-        if not OesApi_IsValidQryChannel(self._env.qryChannel):
-            return False
-        if not OesApi_IsValidRptChannel(self._env.rptChannel):
-            return False
+        if not self._connect_ord_channel():
+            self.gateway.write_log(_("无法初始化交易下单通道(td_ord_server)"))
+
+        if not self._connect_qry_channel():
+            self.gateway.write_log(_("无法初始化交易查询通道(td_qry_server)"))
+
+        if not self.connect_rpt_channel():
+            self.gateway.write_log(_("无法初始化交易查询通道(td_qry_server)"))
         return True
 
     def start(self):
@@ -368,6 +364,60 @@ class OesTdApi:
             index = self._last_seq_index
             self._last_seq_index += 1
             return index
+
+    def _connect_qry_channel(self):
+        OesApi_SetThreadUsername(self.username)
+        OesApi_SetThreadPassword(self.password)
+
+        return OesApi_InitQryChannel2(self._env.qryChannel,
+                                      create_remote_config(self.qry_server,
+                                                           self.username,
+                                                           self.password))
+
+    def _connect_ord_channel(self):
+        OesApi_SetThreadUsername(self.username)
+        OesApi_SetThreadPassword(self.password)
+
+        if not OesApi_InitOrdChannel2(self._env.ordChannel,
+                                      create_remote_config(self.ord_server,
+                                                           self.username,
+                                                           self.password),
+                                      0):
+            return False
+        self._last_seq_index = max(self._last_seq_index, self._env.ordChannel.lastOutMsgSeq + 1)
+        return True
+
+    def connect_rpt_channel(self):
+        OesApi_SetThreadUsername(self.username)
+        OesApi_SetThreadPassword(self.password)
+
+        subscribe_info = OesApiSubscribeInfoT()
+        subscribe_info.clEnvId = 0
+        subscribe_info.rptTypes = (eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_BUSINESS_REJECT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_ORDER_INSERT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_ORDER_REPORT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_TRADE_REPORT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_FUND_TRSF_REPORT
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_CASH_ASSET_VARIATION
+                                   | eOesSubscribeReportTypeT.OES_SUB_RPT_TYPE_HOLDING_VARIATION
+                                   )
+        return OesApi_InitRptChannel2(self._env.rptChannel,
+                                      create_remote_config(self.rpt_server,
+                                                           self.username,
+                                                           self.password),
+                                      subscribe_info,
+                                      0)
+
+    def _reconnect_ord_channel(self):
+        with self._ord_reconnect_lock:  # prevent spawning multiple reconnect thread
+            self.gateway.write_log(_("正在重新连接到交易下单通道"))
+            while not self._connect_ord_channel():
+                time.sleep(1)
+
+            self.gateway.write_log(_("成功重新连接到交易下单通道"))
+
+    def _schedule_reconnect_ord_channel(self):
+        Thread(target=self._reconnect_ord_channel, ).start()
 
     def query_account(self):
         """"""
@@ -418,6 +468,7 @@ class OesTdApi:
             name=data.securityName,
             product=PRODUCT_OES2VT[data.mktId],
             size=data.buyQtyUnit,
+            net_position=True,
             pricetick=data.priceUnit,
         )
         self.gateway.on_contract(contract)
@@ -479,7 +530,7 @@ class OesTdApi:
             frozen=data.lockHld,
             price=data.costPrice / 10000,
             # pnl=data.costPrice - data.originalCostAmt,
-            pnl=0,  # todo: oes只提供日初持仓价格信息，不提供最初持仓价格信息，所以pnl只有当日的
+            pnl=0,
             yd_volume=data.originalHld,
         )
         self.gateway.on_position(position)
@@ -489,7 +540,6 @@ class OesTdApi:
         """"""
         f = OesQryStkHoldingFilterT()
         f.mktId = eOesMarketIdT.OES_MKT_ID_UNDEFINE
-        f.userInfo = 0
         ret = OesApi_QueryOptHolding(self._env.qryChannel,
                                      f,
                                      self.on_query_holding
@@ -556,7 +606,7 @@ class OesTdApi:
         oes_req = OesOrdReqT()
         oes_req.clSeqNo = seq_id
         oes_req.mktId = EXCHANGE_VT2OES[vt_req.exchange]
-        oes_req.ordType = ORDER_TYPE_VT2OES[(vt_req.exchange, vt_req.price_type)]
+        oes_req.ordType = ORDER_TYPE_VT2OES[(vt_req.exchange, vt_req.type)]
         oes_req.bsType = BUY_SELL_TYPE_VT2OES[(vt_req.exchange, vt_req.offset, vt_req.direction)]
         oes_req.invAcctId = ""
         oes_req.securityId = vt_req.symbol
@@ -566,16 +616,21 @@ class OesTdApi:
 
         order = vt_req.create_order_data(str(order_id), self.gateway.gateway_name)
         order.direction = Direction.NET  # fix direction into NET: stock only
-        self.save_order(order_id, order)
+        self._order_manager.save_order(order_id, order)
 
         ret = OesApi_SendOrderReq(self._env.ordChannel,
                                   oes_req
                                   )
 
         if ret >= 0:
-            self.gateway.on_order(order)
+            order.status = Status.SUBMITTING
         else:
-            self.gateway.write_log("Failed to send_order!")
+            order.status = Status.REJECTED
+            self.gateway.write_log(_("下单失败"))  # todo: can I stringify error?
+            if is_disconnected(ret):
+                self.gateway.write_log(_("下单时连接发现连接已断开，正在尝试重连"))
+                self._schedule_reconnect_ord_channel()
+        self.gateway.on_order(order)
 
         return order.vt_orderid
 
@@ -591,8 +646,14 @@ class OesTdApi:
         oes_req.origClSeqNo = order_id
         oes_req.invAcctId = ""
         oes_req.securityId = vt_req.symbol
-        OesApi_SendOrderCancelReq(self._env.ordChannel,
-                                  oes_req)
+
+        ret = OesApi_SendOrderCancelReq(self._env.ordChannel,
+                                        oes_req)
+        if ret < 0:
+            self.gateway.write_log(_("撤单失败"))  # todo: can I stringify error?
+            if is_disconnected(ret):  # is here any other ret code indicating connection lost?
+                self.gateway.write_log(_("撤单时连接发现连接已断开，正在尝试重连"))
+                self._schedule_reconnect_ord_channel()
 
     def query_order(self, internal_order: InternalOrder) -> bool:
         """"""
@@ -613,12 +674,12 @@ class OesTdApi:
         """"""
         data: OesOrdCnfmT = cast.toOesOrdItemT(body)
 
-        i = self.get_order(data.clSeqNo)
+        i = self._order_manager.get_order(data.clSeqNo)
         vt_order = i.vt_order
         vt_order.status = STATUS_OES2VT[data.ordStatus]
-        vt_order.volume = data.ordQty - data.canceledQty
+        vt_order.volume = data.ordQty
         vt_order.traded = data.cumQty
-        self.gateway.on_order(vt_order)
+        self.gateway.on_order(copy(vt_order))
         return 1
 
     def query_orders(self) -> bool:
@@ -638,40 +699,52 @@ class OesTdApi:
                         ):
         """"""
         data: OesOrdCnfmT = cast.toOesOrdItemT(body)
+        vt_order = self._order_manager.oes_order_to_vt(data)
+        self.gateway.on_order(vt_order)
+        return 1
+
+
+class OrderManager:
+    def __init__(self, gateway_name: str):
+        self._orders: Dict[int, InternalOrder] = {}
+        self.gateway_name = gateway_name
+
+    def oes_order_to_vt(self, data):
+        order_id = data.clSeqNo
+        if hasattr(data, "origClSeqNo") and data.origClSeqNo:
+            order_id = data.origClSeqNo
         try:
-            i = self.get_order(data.clSeqNo)
+            i = self.get_order(order_id)
             vt_order = i.vt_order
             vt_order.status = STATUS_OES2VT[data.ordStatus]
-            vt_order.volume = data.ordQty - data.canceledQty
+            vt_order.volume = data.ordQty
             vt_order.traded = data.cumQty
-            self.gateway.on_order(vt_order)
+            vt_order.time = parse_oes_datetime(data.ordDate, data.ordTime).isoformat()
         except KeyError:
-            # order_id = self.order_manager.new_remote_id()
-            order_id = data.clSeqNo
-
             if data.bsType == eOesBuySellTypeT.OES_BS_TYPE_BUY:
                 offset = Offset.OPEN
             else:
                 offset = Offset.CLOSE
 
             vt_order = OrderData(
-                gateway_name=self.gateway.gateway_name,
+                gateway_name=self.gateway_name,
                 symbol=data.securityId,
                 exchange=EXCHANGE_OES2VT[data.mktId],
-                orderid=order_id if order_id else data.origClSeqNo,  # generated id
+                orderid=str(order_id if order_id else data.origClSeqNo),  # generated id
+                type=ORDER_TYPE_OES2VT[(data.mktId, data.ordType)],
                 direction=Direction.NET,
                 offset=offset,
                 price=data.ordPrice / 10000,
-                volume=data.ordQty - data.canceledQty,
+                volume=data.ordQty,
                 traded=data.cumQty,
-                status=STATUS_OES2VT[data.ordStatus],
+                status=STATUS_OES2VT[
+                    data.ordStatus],
 
                 # this time should be generated automatically or by a static function
-                time=datetime.utcnow().isoformat(),
+                time=parse_oes_datetime(data.ordDate, data.ordCnfmTime).isoformat(),
             )
             self.save_order(order_id, vt_order)
-            self.gateway.on_order(vt_order)
-        return 1
+        return vt_order
 
     def save_order(self, order_id: int, order: OrderData):
         """"""

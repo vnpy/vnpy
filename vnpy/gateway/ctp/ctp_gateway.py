@@ -41,7 +41,7 @@ from vnpy.trader.constant import (
     Direction,
     Offset,
     Exchange,
-    PriceType,
+    OrderType,
     Product,
     Status,
     OptionType
@@ -80,10 +80,11 @@ DIRECTION_CTP2VT = {v: k for k, v in DIRECTION_VT2CTP.items()}
 DIRECTION_CTP2VT[THOST_FTDC_PD_Long] = Direction.LONG
 DIRECTION_CTP2VT[THOST_FTDC_PD_Short] = Direction.SHORT
 
-PRICETYPE_VT2CTP = {
-    PriceType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
-    PriceType.MARKET: THOST_FTDC_OPT_AnyPrice
+ORDERTYPE_VT2CTP = {
+    OrderType.LIMIT: THOST_FTDC_OPT_LimitPrice, 
+    OrderType.MARKET: THOST_FTDC_OPT_AnyPrice
 }
+ORDERTYPE_CTP2VT = {v: k for k, v in ORDERTYPE_VT2CTP.items()}
 
 OFFSET_VT2CTP = {
     Offset.OPEN: THOST_FTDC_OF_Open, 
@@ -124,13 +125,13 @@ class CtpGateway(BaseGateway):
     """
 
     default_setting = {
-        "userid": "",
-        "password": "",
-        "brokerid": "",
-        "td_address": "",
-        "md_address": "",
-        "auth_code": "",
-        "product_info": ""
+        "用户名": "",
+        "密码": "",
+        "经纪商代码": "",
+        "交易服务器": "",
+        "行情服务器": "",
+        "产品名称": "",
+        "授权编码": ""
     }
 
     def __init__(self, event_engine):
@@ -142,13 +143,13 @@ class CtpGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        userid = setting["userid"]
-        password = setting["password"]
-        brokerid = setting["brokerid"]
-        td_address = setting["td_address"]
-        md_address = setting["md_address"]
-        auth_code = setting["auth_code"]
-        product_info = setting["product_info"]
+        userid = setting["用户名"]
+        password = setting["密码"]
+        brokerid = setting["经纪商代码"]
+        td_address = setting["交易服务器"]
+        md_address = setting["行情服务器"]
+        product_info = setting["产品名称"]
+        auth_code = setting["授权编码"]
         
         if not td_address.startswith("tcp://"):
             td_address = "tcp://" + td_address
@@ -404,7 +405,7 @@ class CtpTdApi(TdApi):
         """"""
         if not error['ErrorID']:
             self.authStatus = True
-            self.writeLog("交易授权验证成功")
+            self.gateway.write_log("交易授权验证成功")
             self.login()
         else:
             self.gateway.write_error("交易授权验证失败", error)
@@ -417,7 +418,7 @@ class CtpTdApi(TdApi):
             self.login_status = True
             self.gateway.write_log("交易登录成功")
             
-            # Confirm settelment
+            # Confirm settlement
             req = {
                 "BrokerID": self.brokerid,
                 "InvestorID": self.userid
@@ -432,7 +433,7 @@ class CtpTdApi(TdApi):
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         order_ref = data["OrderRef"]
-        orderid = f"{self.frontid}.{self.sessionid}.{order_ref}"
+        orderid = f"{self.frontid}_{self.sessionid}_{order_ref}"
         
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map[symbol]
@@ -486,6 +487,11 @@ class CtpTdApi(TdApi):
             )
             self.positions[key] = position
         
+        # Get contract size, return if size value not collected
+        size = symbol_size_map.get(position.symbol, None)
+        if not size:
+            return
+        
         # For SHFE position data update
         if position.exchange == Exchange.SHFE:
             if data["YdPosition"] and not data["TodayPosition"]:
@@ -495,7 +501,7 @@ class CtpTdApi(TdApi):
             position.yd_volume = data["Position"] - data["TodayPosition"]
         
         # Calculate previous position cost
-        cost = position.price * position.volume
+        cost = position.price * position.volume * size
         
         # Update new position volume
         position.volume += data["Position"]
@@ -504,7 +510,7 @@ class CtpTdApi(TdApi):
         # Calculate average position price
         if position.volume:
             cost += data["PositionCost"]
-            position.price = cost / position.volume
+            position.price = cost / (position.volume * size)
         
         # Get frozen volume
         if position.direction == Direction.LONG:
@@ -543,12 +549,15 @@ class CtpTdApi(TdApi):
                 product=product,
                 size=data["VolumeMultiple"],
                 pricetick=data["PriceTick"],
-                option_underlying=data["UnderlyingInstrID"],
-                option_type=OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-                option_strike=data["StrikePrice"],
-                option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
                 gateway_name=self.gateway_name
             )
+            
+            # For option only
+            if data["OptionsType"]:
+                contract.option_underlying = data["UnderlyingInstrID"],
+                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
+                contract.option_strike = data["StrikePrice"],
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
             
             self.gateway.on_contract(contract)
             
@@ -580,12 +589,13 @@ class CtpTdApi(TdApi):
         frontid = data["FrontID"]
         sessionid = data["SessionID"]
         order_ref = data["OrderRef"]
-        orderid = f"{frontid}.{sessionid}.{order_ref}"
+        orderid = f"{frontid}_{sessionid}_{order_ref}"
         
         order = OrderData(
             symbol=symbol,
             exchange=exchange,
             orderid=orderid,
+            type=ORDERTYPE_CTP2VT[data["OrderPriceType"]],
             direction=DIRECTION_CTP2VT[data["Direction"]],
             offset=OFFSET_CTP2VT[data["CombOffsetFlag"]],
             price=data["LimitPrice"],
@@ -655,7 +665,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "BrokerID": self.brokerid,
             "AuthCode": self.auth_code,
-            "ProductInfo": self.product_info
+            "UserProductInfo": self.product_info
         }
         
         self.reqid += 1
@@ -671,7 +681,8 @@ class CtpTdApi(TdApi):
         req = {
             "UserID": self.userid,
             "Password": self.password,
-            "BrokerID": self.brokerid
+            "BrokerID": self.brokerid,
+            "UserProductInfo": self.product_info
         }
         
         self.reqid += 1
@@ -687,7 +698,7 @@ class CtpTdApi(TdApi):
             "InstrumentID": req.symbol,
             "LimitPrice": req.price,
             "VolumeTotalOriginal": int(req.volume),
-            "OrderPriceType": PRICETYPE_VT2CTP.get(req.price_type, ""),
+            "OrderPriceType": ORDERTYPE_VT2CTP.get(req.type, ""),
             "Direction": DIRECTION_VT2CTP.get(req.direction, ""),
             "CombOffsetFlag": OFFSET_VT2CTP.get(req.offset, ""),
             "OrderRef": str(self.order_ref),
@@ -703,11 +714,11 @@ class CtpTdApi(TdApi):
             "MinVolume": 1
         }
         
-        if req.price_type == PriceType.FAK:
+        if req.type == OrderType.FAK:
             ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
             ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
             ctp_req["VolumeCondition"] = THOST_FTDC_VC_AV
-        elif req.price_type == PriceType.FOK:
+        elif req.type == OrderType.FOK:
             ctp_req["OrderPriceType"] = THOST_FTDC_OPT_LimitPrice
             ctp_req["TimeCondition"] = THOST_FTDC_TC_IOC
             ctp_req["VolumeCondition"] = THOST_FTDC_VC_CV            
@@ -715,7 +726,7 @@ class CtpTdApi(TdApi):
         self.reqid += 1
         self.reqOrderInsert(ctp_req, self.reqid)
         
-        orderid = f"{self.frontid}.{self.sessionid}.{self.order_ref}"
+        orderid = f"{self.frontid}_{self.sessionid}_{self.order_ref}"
         order = req.create_order_data(orderid, self.gateway_name)
         self.gateway.on_order(order)
         
@@ -725,7 +736,7 @@ class CtpTdApi(TdApi):
         """
         Cancel existing order.
         """
-        frontid, sessionid, order_ref = req.orderid.split(".")
+        frontid, sessionid, order_ref = req.orderid.split("_")
         
         ctp_req = {
             "InstrumentID": req.symbol,

@@ -51,14 +51,16 @@ class Product(Enum):
     BOND = "债券"
     WARRANT = "权证"
     SPREAD = "价差"
+    FUND = "基金"
 
 
-class PriceType(Enum):
+class OrderType(Enum):
     """
-    Order price type.
+    Order type.
     """
     LIMIT = "限价"
     MARKET = "市价"
+    STOP = "STOP"
     FAK = "FAK"
     FOK = "FOK"
 
@@ -97,7 +99,12 @@ class Exchange(Enum):
 
     # CryptoCurrency
     BITMEX = "BITMEX"
+
     BITFINEX = "BITFINEX"
+
+    OKEX = "OKEX"
+    HUOBI = "HUOBI"
+
 
 
 class Currency(Enum):

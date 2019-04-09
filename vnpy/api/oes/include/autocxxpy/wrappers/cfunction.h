@@ -1,7 +1,8 @@
 #pragma once
 
 #include <boost/callable_traits.hpp>
-#include <brigand/brigand.hpp>
+
+#include "../brigand.hpp"
 
 namespace autocxxpy
 {

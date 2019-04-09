@@ -7,11 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 import numpy as np
-
-try:
-    from vnpy import talib      # For windows
-except ModuleNotFoundError:
-    import talib                # For linux (needs extra install)
+import talib
 
 from .object import BarData, TickData
 
@@ -389,3 +385,12 @@ class ArrayManager(object):
         if array:
             return up, down
         return up[-1], down[-1]
+
+
+def virtual(func: "callable"):
+    """
+    mark a function as "virtual", which means that this function can be override.
+    any base class should use this or @abstractmethod to decorate all functions
+    that can be (re)implemented by subclasses.
+    """
+    return func
