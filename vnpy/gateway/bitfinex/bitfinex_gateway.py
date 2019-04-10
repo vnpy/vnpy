@@ -716,33 +716,35 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         self.gateway.on_trade(trade)
 
-    def on_order(self, d):
+    def generateDateTime(self, s):
+        """生成时间"""
+        dt = datetime.fromtimestamp(s / 1000.0)
+        time = dt.strftime("%H:%M:%S.%f")
+        return time    
+
+    def on_order(self, data):
         """"""
-        if "ordStatus" not in d:
-            return
-
-        sysid = d["orderID"]
-        order = self.orders.get(sysid, None)
-        if not order:
-            if d["clOrdID"]:
-                orderid = d["clOrdID"]
-            else:
-                orderid = sysid
-
-            order = OrderData(
-                symbol=d["symbol"],
-                exchange=Exchange.BITMEX,
-                orderid=orderid,
-                direction=DIRECTION_BITFINEX2VT[d["side"]],
-                price=d["price"],
-                volume=d["orderQty"],
-                time=d["timestamp"][11:19],
-                gateway_name=self.gateway_name,
-            )
-            self.orders[sysid] = order
-
-        order.traded = d.get("cumQty", order.traded)
-        order.status = STATUS_BITFINEX2VT.get(d["ordStatus"], order.status)
+        print("debug on_order: ", data)
+        orderid = str(data[2])
+        # vt_orderid = '.'.join([self.gateway_name, orderid])
+        direction = Direction.LONG
+        if data[7] > 0:
+            pass
+        elif data[7] < 0:
+            direction = Direction.SHORT
+        totalVolume = abs(data[7])
+        # tradedVolume = totalVolume - abs(data[6])
+        orderTime = self.generateDateTime(data[4])
+        order = OrderData(
+            symbol=str(data[3].replace('t', '')),
+            exchange=Exchange.BITFINEX,
+            orderid=orderid,
+            direction=direction,
+            price=float(data[16]),
+            volume=totalVolume,
+            time=orderTime,
+            gateway_name=self.gateway_name,
+        )
 
         self.gateway.on_order(copy(order))
 
