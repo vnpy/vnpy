@@ -6,16 +6,16 @@ from datetime import datetime
 from queue import Empty
 from threading import Thread
 
-from vnpy.api.ib import comm
-from vnpy.api.ib.client import EClient
-from vnpy.api.ib.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
-from vnpy.api.ib.contract import Contract, ContractDetails
-from vnpy.api.ib.execution import Execution
-from vnpy.api.ib.order import Order
-from vnpy.api.ib.order_state import OrderState
-from vnpy.api.ib.ticktype import TickType
-from vnpy.api.ib.wrapper import EWrapper
-from vnpy.api.ib.errors import BAD_LENGTH
+from ibapi import comm
+from ibapi.client import EClient
+from ibapi.common import MAX_MSG_LEN, NO_VALID_ID, OrderId, TickAttrib, TickerId
+from ibapi.contract import Contract, ContractDetails
+from ibapi.execution import Execution
+from ibapi.order import Order
+from ibapi.order_state import OrderState
+from ibapi.ticktype import TickType
+from ibapi.wrapper import EWrapper
+from ibapi.errors import BAD_LENGTH
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -31,7 +31,7 @@ from vnpy.trader.object import (
 )
 from vnpy.trader.constant import (
     Product,
-    PriceType,
+    OrderType,
     Direction,
     Exchange,
     Currency,
@@ -39,8 +39,8 @@ from vnpy.trader.constant import (
     OptionType,
 )
 
-PRICETYPE_VT2IB = {PriceType.LIMIT: "LMT", PriceType.MARKET: "MKT"}
-PRICETYPE_IB2VT = {v: k for k, v in PRICETYPE_VT2IB.items()}
+ORDERTYPE_VT2IB = {OrderType.LIMIT: "LMT", OrderType.MARKET: "MKT"}
+ORDERTYPE_IB2VT = {v: k for k, v in ORDERTYPE_VT2IB.items()}
 
 DIRECTION_VT2IB = {Direction.LONG: "BUY", Direction.SHORT: "SELL"}
 DIRECTION_IB2VT = {v: k for k, v in DIRECTION_VT2IB.items()}
@@ -110,7 +110,11 @@ ACCOUNTFIELD_IB2VT = {
 class IbGateway(BaseGateway):
     """"""
 
-    default_setting = {"host": "127.0.0.1", "port": 7497, "clientid": 1}
+    default_setting = {
+        "TWS地址": "127.0.0.1",
+        "TWS端口": 7497,
+        "客户号": 1
+    }
 
     def __init__(self, event_engine):
         """"""
@@ -122,7 +126,11 @@ class IbGateway(BaseGateway):
         """
         Start gateway connection.
         """
-        self.api.connect(setting)
+        host = setting["TWS地址"]
+        port = setting["TWS端口"]
+        clientid = setting["客户号"]
+
+        self.api.connect(host, port, clientid)
 
     def close(self):
         """
@@ -349,6 +357,7 @@ class IbApi(EWrapper):
             symbol=ib_contract.conId,
             exchange=EXCHANGE_IB2VT.get(
                 ib_contract.exchange, ib_contract.exchange),
+            type=ORDERTYPE_IB2VT[ib_order.orderType],
             orderid=orderid,
             direction=DIRECTION_IB2VT[ib_order.action],
             price=ib_order.lmtPrice,
@@ -450,6 +459,7 @@ class IbApi(EWrapper):
             product=PRODUCT_IB2VT[ib_product],
             size=ib_size,
             pricetick=contractDetails.minTick,
+            net_position=True,
             gateway_name=self.gateway_name,
         )
 
@@ -489,21 +499,17 @@ class IbApi(EWrapper):
         for account_code in accountsList.split(","):
             self.client.reqAccountUpdates(True, account_code)
 
-    def connect(self, setting: dict):
+    def connect(self, host: str, port: int, clientid: int):
         """
         Connect to TWS.
         """
         if self.status:
             return
 
-        self.clientid = setting["clientid"]
-
-        self.client.connect(
-            setting["host"], setting["port"], setting["clientid"])
-
+        self.clientid = clientid
+        self.client.connect(host, port, clientid)
         self.thread.start()
 
-        # n = self.client.reqCurrentTime()
         self.client.reqCurrentTime()
 
     def close(self):
@@ -559,8 +565,8 @@ class IbApi(EWrapper):
             self.gateway.write_log(f"不支持的交易所：{req.exchange}")
             return ""
 
-        if req.price_type not in PRICETYPE_VT2IB:
-            self.gateway.write_log(f"不支持的价格类型：{req.price_type}")
+        if req.type not in ORDERTYPE_VT2IB:
+            self.gateway.write_log(f"不支持的价格类型：{req.type}")
             return ""
 
         self.orderid += 1
@@ -573,7 +579,7 @@ class IbApi(EWrapper):
         ib_order.orderId = self.orderid
         ib_order.clientId = self.clientid
         ib_order.action = DIRECTION_VT2IB[req.direction]
-        ib_order.orderType = PRICETYPE_VT2IB[req.price_type]
+        ib_order.orderType = ORDERTYPE_VT2IB[req.type]
         ib_order.lmtPrice = req.price
         ib_order.totalQuantity = req.volume
 

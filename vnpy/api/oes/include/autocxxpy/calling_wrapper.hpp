@@ -2,10 +2,11 @@
 
 #include "utils/functional.hpp"
 #include "dispatcher.hpp"
-#include <brigand/brigand.hpp>
+#include "brigand.hpp"
 
 #include "wrappers/cfunction.h"
 #include "wrappers/no_gil.hpp"
+#include "wrappers/string_array.h"
 
 namespace autocxxpy
 {
@@ -39,7 +40,8 @@ namespace autocxxpy
     };
 
     using trans_list = brigand::list <
-        transform_holder<c_function_pointer_to_std_function_transform>
+        transform_holder<c_function_pointer_to_std_function_transform>,
+        transform_holder<string_array_transform>
         //, transform_holder<no_gil_transform>  // no gil transform should be the last one
     >;
 

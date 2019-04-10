@@ -23,13 +23,16 @@ class WebsocketClient(object):
 
     Default serialization format is json.
 
-    Callbacks to reimplement:
+    Callbacks to overrides:
+    * unpack_data
     * on_connected
     * on_disconnected
     * on_packet
     * on_error
 
     After start() is called, the ping thread will ping server every 60 seconds.
+
+    If you want to send anything other than JSON, override send_packet.
     """
 
     def __init__(self):
@@ -45,14 +48,18 @@ class WebsocketClient(object):
 
         self.proxy_host = None
         self.proxy_port = None
+        self.ping_interval = 60     # seconds
 
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
 
-    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0):
-        """"""
+    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0, ping_interval: int = 60):
+        """
+        :param ping_interval: unit: seconds, type: int
+        """
         self.host = host
+        self.ping_interval = ping_interval  # seconds
 
         if proxy_host and proxy_port:
             self.proxy_host = proxy_host
@@ -92,22 +99,28 @@ class WebsocketClient(object):
     def send_packet(self, packet: dict):
         """
         Send a packet (dict data) to server
+
+        override this if you want to send non-json packet
         """
         text = json.dumps(packet)
         self._record_last_sent_text(text)
-        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+        return self._send_text(text)
 
-    def send_text(self, text: str):
+    def _send_text(self, text: str):
         """
         Send a text string to server.
         """
-        return self._get_ws().send(text, opcode=websocket.ABNF.OPCODE_TEXT)
+        ws = self._ws
+        if ws:
+            ws.send(text, opcode=websocket.ABNF.OPCODE_TEXT)
 
-    def send_binary(self, data: bytes):
+    def _send_binary(self, data: bytes):
         """
         Send bytes data to server.
         """
-        return self._get_ws().send_binary(data)
+        ws = self._ws
+        if ws:
+            ws._send_binary(data)
 
     def _reconnect(self):
         """"""
@@ -137,11 +150,6 @@ class WebsocketClient(object):
                 self._ws.close()
                 self._ws = None
 
-    def _get_ws(self):
-        """"""
-        with self._ws_lock:
-            return self._ws
-
     def _run(self):
         """
         Keep running till stop is called.
@@ -152,7 +160,7 @@ class WebsocketClient(object):
             # todo: onDisconnect
             while self._active:
                 try:
-                    ws = self._get_ws()
+                    ws = self._ws
                     if ws:
                         text = ws.recv()
 
@@ -189,7 +197,7 @@ class WebsocketClient(object):
         """
         Default serialization format is json.
 
-        Reimplement this method if you want to use other serialization format.
+        override this method if you want to use other serialization format.
         """
         return json.loads(data)
 
@@ -202,14 +210,14 @@ class WebsocketClient(object):
                 et, ev, tb = sys.exc_info()
                 self.on_error(et, ev, tb)
                 self._reconnect()
-            for i in range(60):
+            for i in range(self.ping_interval):
                 if not self._active:
                     break
                 sleep(1)
 
     def _ping(self):
         """"""
-        ws = self._get_ws()
+        ws = self._ws
         if ws:
             ws.send("ping", websocket.ABNF.OPCODE_PING)
 

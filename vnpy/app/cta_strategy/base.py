@@ -2,20 +2,13 @@
 Defines constants and objects used in CtaStrategy App.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from vnpy.trader.constant import Direction, Offset
 
 APP_NAME = "CtaStrategy"
 STOPORDER_PREFIX = "STOP"
-
-
-class CtaOrderType(Enum):
-    BUY = "买开"
-    SELL = "卖平"
-    SHORT = "卖开"
-    COVER = "买平"
 
 
 class StopOrderStatus(Enum):
@@ -37,26 +30,17 @@ class BacktestingMode(Enum):
 @dataclass
 class StopOrder:
     vt_symbol: str
-    order_type: CtaOrderType
+    direction: Direction
+    offset: Offset
     price: float
     volume: float
     stop_orderid: str
     strategy_name: str
+    lock: bool = False
+    vt_orderids: list = field(default_factory=list)
     status: StopOrderStatus = StopOrderStatus.WAITING
-    vt_orderid: str = ""
-
-    def __post_init__(self):
-        """"""
-        self.direction, self.offset = ORDER_CTA2VT[self.order_type]
 
 
 EVENT_CTA_LOG = "eCtaLog"
 EVENT_CTA_STRATEGY = "eCtaStrategy"
 EVENT_CTA_STOPORDER = "eCtaStopOrder"
-
-ORDER_CTA2VT = {
-    CtaOrderType.BUY: (Direction.LONG, Offset.OPEN),
-    CtaOrderType.SELL: (Direction.SHORT, Offset.CLOSE),
-    CtaOrderType.SHORT: (Direction.SHORT, Offset.OPEN),
-    CtaOrderType.COVER: (Direction.LONG, Offset.CLOSE),
-}

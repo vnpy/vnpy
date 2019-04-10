@@ -1,10 +1,11 @@
 # encoding: UTF-8
 """
+Author: nanoric
 """
 import hashlib
 import os
 from gettext import gettext as _
-from threading import Thread, Lock
+from threading import Lock, Thread
 
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (CancelRequest, OrderRequest,
@@ -17,7 +18,14 @@ from .utils import config_template
 
 class OesGateway(BaseGateway):
     """
-    VN Trader Gateway for BitMEX connection.
+    VN Trader Gateway for OES
+
+    Because the design of OES API, multiple gateway instance with a same account is currently
+        not supported.
+    running multiple gateway instance with the same account will make send_order and
+        cancel_order fail frequently, because:
+        * seq_index is not unique between instances
+        * value range of client_id is too small to create a unique hash for different client.
     """
 
     default_setting = {
@@ -28,6 +36,7 @@ class OesGateway(BaseGateway):
         "md_qry_server": "",
         "username": "",
         "password": "",
+        "hdd_serial": "",
     }
 
     def __init__(self, event_engine):
@@ -69,7 +78,14 @@ class OesGateway(BaseGateway):
                                              log_path=log_path)
             f.write(content)
 
+        self.md_api.tcp_server = setting['md_tcp_server']
+        self.md_api.qry_server = setting['md_qry_server']
         Thread(target=self._connect_md_sync, args=(config_path, username, password)).start()
+
+        self.td_api.ord_server = setting['td_ord_server']
+        self.td_api.rpt_server = setting['td_rpt_server']
+        self.td_api.qry_server = setting['td_qry_server']
+        self.td_api.hdd_serial = setting['hdd_serial']
         Thread(target=self._connect_td_sync, args=(config_path, username, password)).start()
 
     def _connect_td_sync(self, config_path, username, password):
@@ -78,11 +94,11 @@ class OesGateway(BaseGateway):
         self.td_api.password = password
         if self.td_api.connect():
             self.write_log(_("成功连接到交易服务器"))
-            self.td_api.query_account()
             self.td_api.query_contracts()
+            # self.td_api.query_account()
             self.write_log("合约信息查询成功")
-            self.td_api.query_position()
-            self.td_api.query_orders()
+            # self.td_api.query_position()
+            # self.td_api.query_orders()
             self.td_api.start()
         else:
             self.write_log(_("无法连接到交易服务器，请检查你的配置"))
@@ -92,6 +108,7 @@ class OesGateway(BaseGateway):
         self.md_api.username = username
         self.md_api.password = password
         if self.md_api.connect():
+            self.write_log(_("成功连接到行情服务器"))
             self.md_api.start()
         else:
             self.write_log(_("无法连接到行情服务器，请检查你的配置"))

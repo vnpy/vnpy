@@ -646,12 +646,6 @@ void generate_functions(pybind11::module &m)
         >,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
-    m.def("OesApi_WaitOnChannelGroup",
-        autocxxpy::calling_wrapper_v<
-        &::OesApi_WaitOnChannelGroup
-        >,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
     m.def("OesApi_SetThreadUsername",
         autocxxpy::calling_wrapper_v<
         &::OesApi_SetThreadUsername
@@ -811,18 +805,6 @@ void generate_functions(pybind11::module &m)
     m.def("MdsApi_SubscribeMarketData",
         autocxxpy::calling_wrapper_v<
         &::MdsApi_SubscribeMarketData
-        >,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    m.def("MdsApi_SubscribeByString",
-        autocxxpy::calling_wrapper_v<
-        &::MdsApi_SubscribeByString
-        >,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    m.def("MdsApi_SubscribeByStringAndPrefixes",
-        autocxxpy::calling_wrapper_v<
-        &::MdsApi_SubscribeByStringAndPrefixes
         >,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -1027,24 +1009,6 @@ void generate_functions(pybind11::module &m)
     m.def("MdsApi_ForeachInChannelGroup",
         autocxxpy::calling_wrapper_v<
         &::MdsApi_ForeachInChannelGroup
-        >,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    m.def("MdsApi_WaitOnTcpChannelGroup",
-        autocxxpy::calling_wrapper_v<
-        &::MdsApi_WaitOnTcpChannelGroup
-        >,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    m.def("MdsApi_WaitOnTcpChannelGroupCompressible",
-        autocxxpy::calling_wrapper_v<
-        &::MdsApi_WaitOnTcpChannelGroupCompressible
-        >,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    m.def("MdsApi_WaitOnUdpChannelGroup",
-        autocxxpy::calling_wrapper_v<
-        &::MdsApi_WaitOnUdpChannelGroup
         >,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -2012,6 +1976,32 @@ void generate_constants(pybind11::module &m)
 
 }
 
+void generate_constants_class(pybind11::module &m)
+{
+    struct constants_class{};
+    pybind11::class_<constants_class> c(m, "constants");
+    c.attr("OES_APPL_VER_ID") = pybind11::str("0.15.7.4");
+    c.attr("OES_MIN_APPL_VER_ID") = pybind11::str("0.15.5");
+    c.attr("OESAPI_CFG_DEFAULT_SECTION") = pybind11::str("oes_client");
+    c.attr("OESAPI_CFG_DEFAULT_SECTION_LOGGER") = pybind11::str("log");
+    c.attr("OESAPI_CFG_DEFAULT_KEY_ORD_ADDR") = pybind11::str("ordServer");
+    c.attr("OESAPI_CFG_DEFAULT_KEY_RPT_ADDR") = pybind11::str("rptServer");
+    c.attr("OESAPI_CFG_DEFAULT_KEY_QRY_ADDR") = pybind11::str("qryServer");
+    c.attr("OESAPI_DEFAULT_STRING_DELIM") = pybind11::str(",;| \t\r\n");
+    c.attr("MDS_APPL_VER_ID") = pybind11::str("0.15.7.4");
+    c.attr("MDS_MIN_APPL_VER_ID") = pybind11::str("0.15.5");
+    c.attr("MDSAPI_CFG_DEFAULT_SECTION") = pybind11::str("mds_client");
+    c.attr("MDSAPI_CFG_DEFAULT_SECTION_LOGGER") = pybind11::str("log");
+    c.attr("MDSAPI_CFG_DEFAULT_KEY_TCP_ADDR") = pybind11::str("tcpServer");
+    c.attr("MDSAPI_CFG_DEFAULT_KEY_QRY_ADDR") = pybind11::str("qryServer");
+    c.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L1") = pybind11::str("udpServer.L1");
+    c.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_L2") = pybind11::str("udpServer.L2");
+    c.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_TRADE") = pybind11::str("udpServer.TickTrade");
+    c.attr("MDSAPI_CFG_DEFAULT_KEY_UDP_ADDR_TICK_ORDER") = pybind11::str("udpServer.TickOrder");
+    c.attr("MDSAPI_DEFAULT_STRING_DELIM") = pybind11::str(",;| \t\r\n");
+
+}
+
 void init_caster(pybind11::module &m)
 {
     auto c = autocxxpy::caster::bind(m, "cast"); 
@@ -2036,11 +2026,11 @@ void init_caster(pybind11::module &m)
     c.def("toOesOrdCnfmT", 
         &autocxxpy::caster::copy<OesOrdItemT>
         );
-    c.def("to_OesOrdCnfm", 
-        &autocxxpy::caster::copy<OesOrdCnfmT>
-        );
     c.def("toOesOrdItemT", 
         &autocxxpy::caster::copy<OesOrdItemT>
+        );
+    c.def("to_OesOrdCnfm", 
+        &autocxxpy::caster::copy<OesOrdCnfmT>
         );
     c.def("toOesTrdBaseInfoT", 
         &autocxxpy::caster::copy<OesTrdBaseInfoT>
@@ -2051,20 +2041,20 @@ void init_caster(pybind11::module &m)
     c.def("toOesTrdCnfmT", 
         &autocxxpy::caster::copy<OesTrdItemT>
         );
-    c.def("to_OesTrdCnfm", 
-        &autocxxpy::caster::copy<OesTrdCnfmT>
-        );
     c.def("toOesTrdItemT", 
         &autocxxpy::caster::copy<OesTrdItemT>
+        );
+    c.def("to_OesTrdCnfm", 
+        &autocxxpy::caster::copy<OesTrdCnfmT>
         );
     c.def("toOesLotWinningBaseInfoT", 
         &autocxxpy::caster::copy<OesLotWinningItemT>
         );
-    c.def("toOesLotWinningItemT", 
-        &autocxxpy::caster::copy<OesLotWinningItemT>
-        );
     c.def("to_OesLotWinningBaseInfo", 
         &autocxxpy::caster::copy<OesLotWinningBaseInfoT>
+        );
+    c.def("toOesLotWinningItemT", 
+        &autocxxpy::caster::copy<OesLotWinningItemT>
         );
     c.def("toOesFundTrsfBaseInfoT", 
         &autocxxpy::caster::copy<OesFundTrsfBaseInfoT>
@@ -2096,11 +2086,11 @@ void init_caster(pybind11::module &m)
     c.def("toOesIssueBaseInfoT", 
         &autocxxpy::caster::copy<OesIssueItemT>
         );
-    c.def("toOesIssueItemT", 
-        &autocxxpy::caster::copy<OesIssueItemT>
-        );
     c.def("to_OesIssueBaseInfo", 
         &autocxxpy::caster::copy<OesIssueBaseInfoT>
+        );
+    c.def("toOesIssueItemT", 
+        &autocxxpy::caster::copy<OesIssueItemT>
         );
     c.def("toOesPriceLimitT", 
         &autocxxpy::caster::copy<OesPriceLimitT>
@@ -2111,11 +2101,11 @@ void init_caster(pybind11::module &m)
     c.def("toOesStockBaseInfoT", 
         &autocxxpy::caster::copy<OesStockItemT>
         );
-    c.def("to_OesStockBaseInfo", 
-        &autocxxpy::caster::copy<OesStockBaseInfoT>
-        );
     c.def("toOesStockItemT", 
         &autocxxpy::caster::copy<OesStockItemT>
+        );
+    c.def("to_OesStockBaseInfo", 
+        &autocxxpy::caster::copy<OesStockBaseInfoT>
         );
     c.def("toOesEtfBaseInfoT", 
         &autocxxpy::caster::copy<OesEtfItemT>
@@ -2135,11 +2125,11 @@ void init_caster(pybind11::module &m)
     c.def("toOesOptionBaseInfoT", 
         &autocxxpy::caster::copy<OesOptionItemT>
         );
-    c.def("toOesOptionItemT", 
-        &autocxxpy::caster::copy<OesOptionItemT>
-        );
     c.def("to_OesOptionBaseInfo", 
         &autocxxpy::caster::copy<OesOptionBaseInfoT>
+        );
+    c.def("toOesOptionItemT", 
+        &autocxxpy::caster::copy<OesOptionItemT>
         );
     c.def("toOesCashAssetBaseInfoT", 
         &autocxxpy::caster::copy<OesCashAssetBaseInfoT>
@@ -2150,11 +2140,11 @@ void init_caster(pybind11::module &m)
     c.def("toOesCustBaseInfoT", 
         &autocxxpy::caster::copy<OesCustItemT>
         );
-    c.def("to_OesCustBaseInfo", 
-        &autocxxpy::caster::copy<OesCustBaseInfoT>
-        );
     c.def("toOesCustItemT", 
         &autocxxpy::caster::copy<OesCustItemT>
+        );
+    c.def("to_OesCustBaseInfo", 
+        &autocxxpy::caster::copy<OesCustBaseInfoT>
         );
     c.def("toOesInvAcctBaseInfoT", 
         &autocxxpy::caster::copy<OesInvAcctBaseInfoT>
@@ -2300,11 +2290,11 @@ void init_caster(pybind11::module &m)
     c.def("toOesQryStkHoldingFilterT", 
         &autocxxpy::caster::copy<OesQryOptHoldingFilterT>
         );
-    c.def("to_OesQryStkHoldingFilter", 
-        &autocxxpy::caster::copy<OesQryStkHoldingFilterT>
-        );
     c.def("toOesQryOptHoldingFilterT", 
         &autocxxpy::caster::copy<OesQryOptHoldingFilterT>
+        );
+    c.def("to_OesQryStkHoldingFilter", 
+        &autocxxpy::caster::copy<OesQryStkHoldingFilterT>
         );
     c.def("toOesStkHoldingItemT", 
         &autocxxpy::caster::copy<OesStkHoldingItemT>
@@ -2732,23 +2722,23 @@ void init_caster(pybind11::module &m)
     c.def("toSGeneralClientChannelT", 
         &autocxxpy::caster::copy<MdsApiSessionInfoT>
         );
-    c.def("toOesApiSessionInfoT", 
-        &autocxxpy::caster::copy<OesApiSessionInfoT>
+    c.def("toMdsApiSessionInfoT", 
+        &autocxxpy::caster::copy<MdsApiSessionInfoT>
         );
     c.def("to_SGeneralClientChannel", 
         &autocxxpy::caster::copy<SGeneralClientChannelT>
         );
-    c.def("toMdsApiSessionInfoT", 
-        &autocxxpy::caster::copy<MdsApiSessionInfoT>
+    c.def("toOesApiSessionInfoT", 
+        &autocxxpy::caster::copy<OesApiSessionInfoT>
         );
     c.def("toSGeneralClientChannelGroupT", 
         &autocxxpy::caster::copy<MdsApiChannelGroupT>
         );
-    c.def("toOesApiChannelGroupT", 
-        &autocxxpy::caster::copy<OesApiChannelGroupT>
-        );
     c.def("to_SGeneralClientChannelGroup", 
         &autocxxpy::caster::copy<SGeneralClientChannelGroupT>
+        );
+    c.def("toOesApiChannelGroupT", 
+        &autocxxpy::caster::copy<OesApiChannelGroupT>
         );
     c.def("toMdsApiChannelGroupT", 
         &autocxxpy::caster::copy<MdsApiChannelGroupT>
@@ -2756,26 +2746,26 @@ void init_caster(pybind11::module &m)
     c.def("toSGeneralClientAddrInfoT", 
         &autocxxpy::caster::copy<MdsApiAddrInfoT>
         );
-    c.def("to_SGeneralClientAddrInfo", 
-        &autocxxpy::caster::copy<SGeneralClientAddrInfoT>
+    c.def("toMdsApiAddrInfoT", 
+        &autocxxpy::caster::copy<MdsApiAddrInfoT>
         );
     c.def("toOesApiAddrInfoT", 
         &autocxxpy::caster::copy<OesApiAddrInfoT>
         );
-    c.def("toMdsApiAddrInfoT", 
-        &autocxxpy::caster::copy<MdsApiAddrInfoT>
+    c.def("to_SGeneralClientAddrInfo", 
+        &autocxxpy::caster::copy<SGeneralClientAddrInfoT>
         );
     c.def("toSGeneralClientRemoteCfgT", 
         &autocxxpy::caster::copy<MdsApiRemoteCfgT>
         );
-    c.def("toOesApiRemoteCfgT", 
-        &autocxxpy::caster::copy<OesApiRemoteCfgT>
+    c.def("to_SGeneralClientRemoteCfg", 
+        &autocxxpy::caster::copy<SGeneralClientRemoteCfgT>
         );
     c.def("toMdsApiRemoteCfgT", 
         &autocxxpy::caster::copy<MdsApiRemoteCfgT>
         );
-    c.def("to_SGeneralClientRemoteCfg", 
-        &autocxxpy::caster::copy<SGeneralClientRemoteCfgT>
+    c.def("toOesApiRemoteCfgT", 
+        &autocxxpy::caster::copy<OesApiRemoteCfgT>
         );
     c.def("toOesApiSubscribeInfoT", 
         &autocxxpy::caster::copy<OesApiSubscribeInfoT>
@@ -2906,11 +2896,11 @@ void init_caster(pybind11::module &m)
     c.def("toMdsQryMktDataSnapshotReqT", 
         &autocxxpy::caster::copy<MdsQrySecurityStatusReqT>
         );
-    c.def("to_MdsQryMktDataSnapshotReq", 
-        &autocxxpy::caster::copy<MdsQryMktDataSnapshotReqT>
-        );
     c.def("toMdsQrySecurityStatusReqT", 
         &autocxxpy::caster::copy<MdsQrySecurityStatusReqT>
+        );
+    c.def("to_MdsQryMktDataSnapshotReq", 
+        &autocxxpy::caster::copy<MdsQryMktDataSnapshotReqT>
         );
     c.def("toMdsQryTrdSessionStatusReqT", 
         &autocxxpy::caster::copy<MdsQryTrdSessionStatusReqT>
@@ -3018,6 +3008,7 @@ PYBIND11_MODULE(vnoes, m)
     generate_classes(m);
     generate_functions(m);
     generate_constants(m);
+    generate_constants_class(m);
     generate_enums(m);
     init_caster(m);
 
