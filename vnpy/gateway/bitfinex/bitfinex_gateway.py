@@ -374,12 +374,18 @@ class BitfinexWebsocketApi(WebsocketClient):
         d = {
             'event': 'subscribe',
             'channel': 'book',
-            'symbol': 'BTCUSD'
+            'symbol': req.symbol
+        }
+        print(d)
+        self.send_packet(d)
+        d = {
+            'event': 'subscribe',
+            'channel': 'ticker',
+            'symbol': req.symbol
         }
         print(d)
         self.send_packet(d)
 
-    def _gen_unqiue_cid(self):
         return int(round(time.time() * 1000))
 
     def send_order(self, req: OrderRequest):
