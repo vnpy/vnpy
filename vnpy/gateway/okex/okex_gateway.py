@@ -682,7 +682,7 @@ class OkexWebsocketApi(WebsocketClient):
         self.gateway.on_order(copy(order))
 
         trade_volume = d.get("last_fill_qty", 0)
-        if float(trade_volume) == 0:
+        if not trade_volume or float(trade_volume) == 0:
             return
 
         self.trade_count += 1
