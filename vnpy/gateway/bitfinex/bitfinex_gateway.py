@@ -99,7 +99,7 @@ class BitfinexGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        self.rest_api.cancel_order(req)
+        self.ws_api.cancel_order(req)
 
     def query_account(self):
         """"""
@@ -268,23 +268,22 @@ class BitfinexWebsocketApi(WebsocketClient):
         """
         Subscribe to tick data upate.
         """
-        print("debug subscribe: ")
-        print(req.__dict__)
         d = {
             'event': 'subscribe',
             'channel': 'book',
             'symbol': req.symbol
         }
-        print(d)
         self.send_packet(d)
         d = {
             'event': 'subscribe',
             'channel': 'ticker',
             'symbol': req.symbol
         }
-        print(d)
         self.send_packet(d)
 
+        return int(round(time.time() * 1000))
+
+    def _gen_unqiue_cid(self):
         return int(round(time.time() * 1000))
 
     def send_order(self, req: OrderRequest):
@@ -309,6 +308,23 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.send_packet(req)
 
         return vtOrderID
+
+    #----------------------------------------------------------------------
+    def cancel_order(self, req: CancelRequest):
+        """"""
+        print("debug cancelOrder: ", req) 
+        orderid = req.orderid
+        
+        req = [
+            0,
+            'oc',
+            None,
+            {
+                'cid': orderid,
+            }
+        ]
+        
+        self.send_packet(req)
 
     def on_connected(self):
         """"""
