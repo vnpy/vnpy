@@ -99,12 +99,9 @@ class Exchange(Enum):
 
     # CryptoCurrency
     BITMEX = "BITMEX"
-
     BITFINEX = "BITFINEX"
-
     OKEX = "OKEX"
     HUOBI = "HUOBI"
-
 
 
 class Currency(Enum):
