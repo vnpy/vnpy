@@ -394,5 +394,3 @@ def virtual(func: "callable"):
     that can be (re)implemented by subclasses.
     """
     return func
-
-

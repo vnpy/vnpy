@@ -74,8 +74,8 @@ class OkexGateway(BaseGateway):
         "Secret Key": "",
         "Passphrase": "",
         "会话数": 3,
-        "代理地址": "127.0.0.1",
-        "代理端口": 1080,
+        "代理地址": "",
+        "代理端口": "",
     }
 
     def __init__(self, event_engine):
@@ -84,6 +84,8 @@ class OkexGateway(BaseGateway):
 
         self.rest_api = OkexRestApi(self)
         self.ws_api = OkexWebsocketApi(self)
+
+        self.orders = {}
 
     def connect(self, setting: dict):
         """"""
@@ -94,9 +96,13 @@ class OkexGateway(BaseGateway):
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
 
+        if proxy_port.isdigit():
+            proxy_port = int(proxy_port)
+        else:
+            proxy_port = 0
+
         self.rest_api.connect(key, secret, passphrase,
                               session_number, proxy_host, proxy_port)
-
         self.ws_api.connect(key, secret, passphrase, proxy_host, proxy_port)
 
     def subscribe(self, req: SubscribeRequest):
@@ -123,6 +129,15 @@ class OkexGateway(BaseGateway):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
+
+    def on_order(self, order: OrderData):
+        """"""
+        self.orders[order.vt_orderid] = order
+        super().on_order(order)
+
+    def get_order(self, vt_orderid: str):
+        """"""
+        return self.orders.get(vt_orderid, None)
 
 
 class OkexRestApi(RestClient):
@@ -254,6 +269,8 @@ class OkexRestApi(RestClient):
             callback=self.on_cancel_order,
             data=data,
             on_error=self.on_cancel_order_error,
+            on_failed=self.on_cancel_order_failed,
+            extra=req
         )
 
     def query_contract(self):
@@ -401,6 +418,14 @@ class OkexRestApi(RestClient):
     def on_cancel_order(self, data, request):
         """Websocket will push a new order status"""
         pass
+
+    def on_cancel_order_failed(self, status_code: int, request: Request):
+        """If cancel failed, mark order status to be rejected."""
+        req = request.extra
+        order = self.gateway.get_order(req.vt_orderid)
+        if order:
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
 
     def on_failed(self, status_code: int, request: Request):
         """
