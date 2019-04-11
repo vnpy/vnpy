@@ -14,10 +14,11 @@ from .object import BarData, TickData
 
 class Singleton(type):
     """
-    Singleton metaclass, 
+    Singleton metaclass,
 
-    class A:
-        __metaclass__ = Singleton
+    usage:
+    class A(metaclass=Singleton):
+        ...
     """
     _instances = {}
 
