@@ -1,5 +1,6 @@
 import os
 import importlib
+import traceback
 from datetime import datetime
 from threading import Thread
 from pathlib import Path
@@ -8,8 +9,7 @@ from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.app.cta_strategy import (
     CtaTemplate,
-    BacktestingEngine,
-    OptimizationSetting
+    BacktestingEngine
 )
 
 
