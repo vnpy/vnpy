@@ -75,6 +75,7 @@ class BitfinexGateway(BaseGateway):
 
         self.rest_api = BitfinexRestApi(self)
         self.ws_api = BitfinexWebsocketApi(self)
+        self.order_map = {}
 
     def connect(self, setting: dict):
         """"""
@@ -228,8 +229,8 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
-        self.orderId = 1_000_000
-        self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
+        self.order_id = 1_000_000
+        # self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
         self.key = ""
         self.secret = ""
 
@@ -284,7 +285,10 @@ class BitfinexWebsocketApi(WebsocketClient):
         return int(round(time.time() * 1000))
 
     def _gen_unqiue_cid(self):
-        return int(round(time.time() * 1000))
+        # return int(round(time.time() * 1000))
+        self.order_id = self.order_id + 1
+        local_oid = time.strftime("%y%m%d")+str(self.order_id)
+        return int(local_oid) 
 
     def send_order(self, req: OrderRequest):
         orderid = self._gen_unqiue_cid()
@@ -312,19 +316,20 @@ class BitfinexWebsocketApi(WebsocketClient):
     #----------------------------------------------------------------------
     def cancel_order(self, req: CancelRequest):
         """"""
-        print("debug cancelOrder: ", req) 
+        print("debug cancelOrder1: ", req) 
         orderid = req.orderid
-        date = "2019-04-11" # req.sessionID
+        date = "2019-04-10" # req.sessionID
         
         req = [
             0,
             'oc',
             None,
             {
-                'cid': orderid,
+                'cid': int(orderid),
                 'cid_date': date
             }
         ]
+        print("debug cancelOrder2: ", req) 
         
         self.send_packet(req)
 
