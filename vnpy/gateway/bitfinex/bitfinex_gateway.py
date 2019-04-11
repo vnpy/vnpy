@@ -314,6 +314,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         """"""
         print("debug cancelOrder: ", req) 
         orderid = req.orderid
+        date = "2019-04-11" # req.sessionID
         
         req = [
             0,
@@ -321,6 +322,7 @@ class BitfinexWebsocketApi(WebsocketClient):
             None,
             {
                 'cid': orderid,
+                'cid_date': date
             }
         ]
         
