@@ -31,7 +31,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-def get_path(temp_name: str):
+def _get_trader_dir(temp_name: str):
     """
     Get path where trader is running in.
     """
@@ -54,21 +54,21 @@ def get_path(temp_name: str):
     return home_path, temp_path
 
 
-TRADER_PATH, TEMP_PATH = get_path(".vntrader")
+TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
 
 
 def get_file_path(filename: str):
     """
     Get path for temp file with filename.
     """
-    return TEMP_PATH.joinpath(filename)
+    return TEMP_DIR.joinpath(filename)
 
 
 def get_folder_path(folder_name: str):
     """
     Get path for temp folder with folder name.
     """
-    folder_path = TEMP_PATH.joinpath(folder_name)
+    folder_path = TEMP_DIR.joinpath(folder_name)
     if not folder_path.exists():
         folder_path.mkdir()
     return folder_path
@@ -395,5 +395,3 @@ def virtual(func: "callable"):
     that can be (re)implemented by subclasses.
     """
     return func
-
-
