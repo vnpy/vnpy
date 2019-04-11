@@ -107,7 +107,7 @@ class CsvLoaderEngine(BaseEngine):
 
         # Insert into DB
         with DB.atomic():
-            for batch in chunked(db_bars, 500):
+            for batch in chunked(db_bars, 50):
                 DbBarData.insert_many(batch).on_conflict_replace().execute()
 
         return start, end, count
