@@ -25,7 +25,7 @@ SETTINGS = {
     "rqdata.username": "",
     "rqdata.password": "",
     "database": {
-        "driver": "sqlite",
+        "driver": "sqlite",  # sqlite, mysql, postgresql
         "database": "{VNPY_TEMP}/database.db",  # for sqlite, use this as filepath
         "host": "localhost",
         "port": 3306,
