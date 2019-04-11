@@ -132,7 +132,9 @@ python run.py
 &nbsp;
 
 ## 6. 应用模块
-vnpy官方目前提供2个应用模块组件，分别是用于自动交易的“CTA策略”组件；把第三方数据文件导入到数据库的“CSV载入”组件。
+vnpy官方目前提供2个应用模块组件，分别是用于自动交易的“CTA策略”组件；把第三方数据文件导入到数据库的“CSV载入”组件。在菜单栏中点击“功能”，即显示应用模块，如下图：
+
+![enter image description here](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/application.png "enter image title here")
 
 ### 6.1 CTA策略
 CTA策略组件默认使用RQData的数据进行自动交易，故需要配置好RQData相关数据。
