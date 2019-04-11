@@ -1,13 +1,47 @@
 """"""
 
-from peewee import SqliteDatabase, Model, CharField, DateTimeField, FloatField
+from peewee import CharField, DateTimeField, FloatField, Model, MySQLDatabase, PostgresqlDatabase, \
+    SqliteDatabase
 
 from .constant import Exchange, Interval
 from .object import BarData, TickData
-from .utility import get_file_path
+from .setting import SETTINGS
+from .utility import resolve_path
 
-DB_NAME = "database.db"
-DB = SqliteDatabase(str(get_file_path(DB_NAME)))
+
+def init():
+    db_settings = SETTINGS['database']
+    driver = db_settings["driver"]
+
+    init_funcs = {
+        "sqlite": init_sqlite,
+        "mysql": init_mysql,
+        "postgresql": init_postgresql,
+    }
+
+    assert driver in init_funcs
+    del db_settings['driver']
+    return init_funcs[driver](db_settings)
+
+
+def init_sqlite(settings: dict):
+    global DB
+    database = settings['database']
+
+    DB = SqliteDatabase(str(resolve_path(database)))
+
+
+def init_mysql(settings: dict):
+    global DB
+    DB = MySQLDatabase(**settings)
+
+
+def init_postgresql(settings: dict):
+    global DB
+    DB = PostgresqlDatabase(**settings)
+
+
+init()
 
 
 class DbBarData(Model):

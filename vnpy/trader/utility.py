@@ -3,6 +3,7 @@ General utility functions.
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Callable
 
@@ -10,6 +11,12 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
+
+
+def resolve_path(pattern: str):
+    env = dict(os.environ)
+    env.update({"VNPY_TEMP": str(TEMP_DIR)})
+    return pattern.format(**env)
 
 
 def _get_trader_dir(temp_name: str):
