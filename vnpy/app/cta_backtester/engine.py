@@ -165,6 +165,7 @@ class BacktesterEngine(BaseEngine):
             self.write_log("已有回测在运行中，请等待完成")
             return False
 
+        self.write_log("-" * 40)
         self.thread = Thread(
             target=self.run_backtesting,
             args=(
