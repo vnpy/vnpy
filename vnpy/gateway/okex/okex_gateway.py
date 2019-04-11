@@ -132,12 +132,12 @@ class OkexGateway(BaseGateway):
 
     def on_order(self, order: OrderData):
         """"""
-        self.orders[order.vt_orderid] = order
+        self.orders[order.orderid] = order
         super().on_order(order)
 
-    def get_order(self, vt_orderid: str):
+    def get_order(self, orderid: str):
         """"""
-        return self.orders.get(vt_orderid, None)
+        return self.orders.get(orderid, None)
 
 
 class OkexRestApi(RestClient):
@@ -422,7 +422,7 @@ class OkexRestApi(RestClient):
     def on_cancel_order_failed(self, status_code: int, request: Request):
         """If cancel failed, mark order status to be rejected."""
         req = request.extra
-        order = self.gateway.get_order(req.vt_orderid)
+        order = self.gateway.get_order(req.orderid)
         if order:
             order.status = Status.REJECTED
             self.gateway.on_order(order)
