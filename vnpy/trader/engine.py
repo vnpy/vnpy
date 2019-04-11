@@ -197,7 +197,7 @@ class BaseEngine(ABC):
         pass
 
 
-class LogEngine(BaseEngine, metaclass=Singleton):
+class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
     """

@@ -23,9 +23,16 @@ SETTINGS = {
     "email.receiver": "",
 
     "rqdata.username": "",
-    "rqdata.password": ""
+    "rqdata.password": "",
+    "database": {
+        "driver": "sqlite",
+        "database": "{VNPY_TEMP}/database.db",  # for sqlite, use this as filepath
+        "host": "localhost",
+        "port": 3306,
+        "user": "root",
+        "password": ""
+    }
 }
-
 
 # Load global setting from json file.
 SETTING_FILENAME = "vt_setting.json"
