@@ -197,12 +197,10 @@ class BaseEngine(ABC):
         pass
 
 
-class LogEngine(BaseEngine):
+class LogEngine(BaseEngine, metaclass=Singleton):
     """
     Processes log event and output with logging module.
     """
-
-    __metaclass__ = Singleton
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
