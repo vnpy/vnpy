@@ -293,7 +293,7 @@ class BacktestingEngine:
         self.output("逐日盯市盈亏计算完成")
         return self.daily_df
 
-    def calculate_statistics(self, df: DataFrame = None, Output=True):
+    def calculate_statistics(self, df: DataFrame = None, output=True):
         """"""
         self.output("开始计算策略统计指标")
 
@@ -377,7 +377,7 @@ class BacktestingEngine:
             return_drawdown_ratio = -total_return / max_ddpercent
 
         # Output
-        if Output:
+        if output:
             self.output("-" * 30)
             self.output(f"首个交易日：\t{start_date}")
             self.output(f"最后交易日：\t{end_date}")
@@ -417,6 +417,7 @@ class BacktestingEngine:
             "total_days": total_days,
             "profit_days": profit_days,
             "loss_days": loss_days,
+            "capital": self.capital,
             "end_balance": end_balance,
             "max_drawdown": max_drawdown,
             "max_ddpercent": max_ddpercent,
