@@ -12,25 +12,6 @@ import talib
 from .object import BarData, TickData
 
 
-class Singleton(type):
-    """
-    Singleton metaclass,
-
-    usage:
-    class A(metaclass=Singleton):
-        ...
-    """
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        """"""
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs
-            )
-        return cls._instances[cls]
-
-
 def _get_trader_dir(temp_name: str):
     """
     Get path where trader is running in.

@@ -24,7 +24,7 @@ from .event import (
 from .gateway import BaseGateway
 from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
 from .setting import SETTINGS
-from .utility import Singleton, get_folder_path
+from .utility import get_folder_path
 
 
 class MainEngine:
@@ -197,7 +197,7 @@ class BaseEngine(ABC):
         pass
 
 
-class LogEngine(BaseEngine, metaclass=Singleton):
+class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
     """
