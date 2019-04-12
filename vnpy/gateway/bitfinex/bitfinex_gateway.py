@@ -9,9 +9,6 @@ import time
 from copy import copy
 from datetime import datetime
 from urllib.parse import urlencode
-
-from requests import ConnectionError
-
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 
@@ -658,16 +655,22 @@ class BitfinexWebsocketApi(WebsocketClient):
         totalVolume = abs(data[7])
         # tradedVolume = totalVolume - abs(data[6])
         orderTime = self.generateDateTime(data[4])
+        orderStatus = str(data[13].split('@')[0])
+        orderStatus = orderStatus.replace(' ', '')
+        
         order = OrderData(
             symbol=str(data[3].replace('t', '')),
             exchange=Exchange.BITFINEX,
             orderid=orderid,
+            status=STATUS_BITFINEX2VT[orderStatus],
             direction=direction,
             price=float(data[16]),
             volume=totalVolume,
             time=orderTime,
             gateway_name=self.gateway_name,
         )
+        if order.status == Status.CANCELLED:
+            order.cancelTime = self.generateDateTime(data[5])
 
         self.gateway.on_order(copy(order))
 
