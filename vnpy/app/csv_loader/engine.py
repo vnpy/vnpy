@@ -22,14 +22,12 @@ Sample csv file:
 
 import csv
 from datetime import datetime
-
-from peewee import chunked
+from typing import TextIO
 
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.database import DbBarData, DB
+from vnpy.trader.database import DbBarData
 from vnpy.trader.engine import BaseEngine, MainEngine
-
 
 APP_NAME = "CsvLoader"
 
@@ -41,17 +39,70 @@ class CsvLoaderEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.file_path: str = ""
+        self.file_path: str = ''
 
         self.symbol: str = ""
         self.exchange: Exchange = Exchange.SSE
         self.interval: Interval = Interval.MINUTE
-        self.datetime_head: str = ""
-        self.open_head: str = ""
-        self.close_head: str = ""
-        self.low_head: str = ""
-        self.high_head: str = ""
-        self.volume_head: str = ""
+        self.datetime_head: str = ''
+        self.open_head: str = ''
+        self.close_head: str = ''
+        self.low_head: str = ''
+        self.high_head: str = ''
+        self.volume_head: str = ''
+
+    def load_by_handle(
+        self,
+        f: TextIO,
+        symbol: str,
+        exchange: Exchange,
+        interval: Interval,
+        datetime_head: str,
+        open_head: str,
+        close_head: str,
+        low_head: str,
+        high_head: str,
+        volume_head: str,
+        datetime_format: str
+    ):
+        """
+        load by text mode file handle
+        """
+        reader = csv.DictReader(f)
+
+        db_bars = []
+        start = None
+        count = 0
+        for item in reader:
+            if datetime_format:
+                dt = datetime.strptime(item[datetime_head], datetime_format)
+            else:
+                dt = datetime.fromisoformat(item[datetime_head])
+                
+            db_bar = DbBarData(
+                    symbol=symbol,
+                    exchange=exchange.value,
+                    datetime=dt,
+                    interval=interval.value,
+                    volume=item[volume_head],
+                    open_price=item[open_head],
+                    high_price=item[high_head],
+                    low_price=item[low_head],
+                    close_price=item[close_head],
+            )
+
+            db_bars.append(db_bar)
+
+            # do some statistics
+            count += 1
+            if not start:
+                start = db_bar.datetime
+        end = db_bar.datetime
+
+        # insert into database
+        DbBarData.save_all(db_bars)
+
+        return start, end, count
 
     def load(
         self,
@@ -67,47 +118,20 @@ class CsvLoaderEngine(BaseEngine):
         volume_head: str,
         datetime_format: str
     ):
-        """"""
-        vt_symbol = f"{symbol}.{exchange.value}"
-
-        start = None
-        end = None
-        count = 0
-
-        with open(file_path, "rt") as f:
-            reader = csv.DictReader(f)
-
-            db_bars = []
-
-            for item in reader:
-                dt = datetime.strptime(item[datetime_head], datetime_format)
-
-                db_bar = {
-                    "symbol": symbol,
-                    "exchange": exchange.value,
-                    "datetime": dt,
-                    "interval": interval.value,
-                    "volume": item[volume_head],
-                    "open_price": item[open_head],
-                    "high_price": item[high_head],
-                    "low_price": item[low_head],
-                    "close_price": item[close_head],
-                    "vt_symbol": vt_symbol,
-                    "gateway_name": "DB"
-                }
-
-                db_bars.append(db_bar)
-
-                # do some statistics
-                count += 1
-                if not start:
-                    start = db_bar["datetime"]
-
-        end = db_bar["datetime"]
-
-        # Insert into DB
-        with DB.atomic():
-            for batch in chunked(db_bars, 50):
-                DbBarData.insert_many(batch).on_conflict_replace().execute()
-
-        return start, end, count
+        """
+        load by filename
+        """
+        with open(file_path, 'rt') as f:
+            return self.load_by_handle(
+                f,
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                datetime_head=datetime_head,
+                open_head=open_head,
+                close_head=close_head,
+                low_head=low_head,
+                high_head=high_head,
+                volume_head=volume_head,
+                datetime_format=datetime_format,
+            )
