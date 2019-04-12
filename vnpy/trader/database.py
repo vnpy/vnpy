@@ -1,56 +1,85 @@
 """"""
+from enum import Enum
+from typing import List
 
-from peewee import CharField, DateTimeField, FloatField, Model, MySQLDatabase, PostgresqlDatabase, \
-    SqliteDatabase
+from peewee import (
+    AutoField,
+    CharField,
+    Database,
+    DateTimeField,
+    FloatField,
+    Model,
+    MySQLDatabase,
+    PostgresqlDatabase,
+    SqliteDatabase,
+    chunked,
+)
 
 from .constant import Exchange, Interval
 from .object import BarData, TickData
 from .setting import SETTINGS
-from .utility import resolve_path
+from .utility import get_file_path
+
+
+class Driver(Enum):
+    SQLITE = "sqlite"
+    MYSQL = "mysql"
+    POSTGRESQL = "postgresql"
+
+
+_db: Database
+_driver: Driver
 
 
 def init():
-    db_settings = SETTINGS['database']
-    driver = db_settings["driver"]
+    global _driver
+    db_settings = {k[9:]: v for k, v in SETTINGS.items() if k.startswith("database.")}
+    _driver = Driver(db_settings["driver"])
 
     init_funcs = {
-        "sqlite": init_sqlite,
-        "mysql": init_mysql,
-        "postgresql": init_postgresql,
+        Driver.SQLITE: init_sqlite,
+        Driver.MYSQL: init_mysql,
+        Driver.POSTGRESQL: init_postgresql,
     }
 
-    assert driver in init_funcs
-    del db_settings['driver']
-    return init_funcs[driver](db_settings)
+    assert _driver in init_funcs
+    del db_settings["driver"]
+    return init_funcs[_driver](db_settings)
 
 
 def init_sqlite(settings: dict):
-    global DB
-    database = settings['database']
+    global _db
+    database = settings["database"]
 
-    DB = SqliteDatabase(str(resolve_path(database)))
+    _db = SqliteDatabase(str(get_file_path(database)))
 
 
 def init_mysql(settings: dict):
-    global DB
-    DB = MySQLDatabase(**settings)
+    global _db
+    _db = MySQLDatabase(**settings)
 
 
 def init_postgresql(settings: dict):
-    global DB
-    DB = PostgresqlDatabase(**settings)
+    global _db
+    _db = PostgresqlDatabase(**settings)
 
 
 init()
 
 
-class DbBarData(Model):
+class ModelBase(Model):
+    def to_dict(self):
+        return self.__data__
+
+
+class DbBarData(ModelBase):
     """
     Candlestick bar data for database storage.
 
-    Index is defined unique with vt_symbol, interval and datetime.
+    Index is defined unique with datetime, interval, symbol
     """
 
+    id = AutoField()
     symbol = CharField()
     exchange = CharField()
     datetime = DateTimeField()
@@ -62,12 +91,9 @@ class DbBarData(Model):
     low_price = FloatField()
     close_price = FloatField()
 
-    vt_symbol = CharField()
-    gateway_name = CharField()
-
     class Meta:
-        database = DB
-        indexes = ((("vt_symbol", "interval", "datetime"), True),)
+        database = _db
+        indexes = ((("datetime", "interval", "symbol"), True),)
 
     @staticmethod
     def from_bar(bar: BarData):
@@ -85,8 +111,6 @@ class DbBarData(Model):
         db_bar.high_price = bar.high_price
         db_bar.low_price = bar.low_price
         db_bar.close_price = bar.close_price
-        db_bar.vt_symbol = bar.vt_symbol
-        db_bar.gateway_name = "DB"
 
         return db_bar
 
@@ -104,17 +128,39 @@ class DbBarData(Model):
             high_price=self.high_price,
             low_price=self.low_price,
             close_price=self.close_price,
-            gateway_name=self.gateway_name,
+            gateway_name="DB",
         )
         return bar
 
+    @staticmethod
+    def save_all(objs: List["DbBarData"]):
+        """
+        save a list of objects, update if exists.
+        """
+        with _db.atomic():
+            if _driver is Driver.POSTGRESQL:
+                for bar in objs:
+                    DbBarData.insert(bar.to_dict()).on_conflict(
+                        update=bar.to_dict(),
+                        conflict_target=(
+                            DbBarData.datetime,
+                            DbBarData.interval,
+                            DbBarData.symbol,
+                        ),
+                    ).execute()
+            else:
+                for c in chunked(objs, 50):
+                    DbBarData.insert_many(c).on_conflict_replace()
 
-class DbTickData(Model):
+
+class DbTickData(ModelBase):
     """
     Tick data for database storage.
 
-    Index is defined unique with vt_symbol, interval and datetime.
+    Index is defined unique with (datetime, symbol)
     """
+
+    id = AutoField()
 
     symbol = CharField()
     exchange = CharField()
@@ -131,6 +177,7 @@ class DbTickData(Model):
     high_price = FloatField()
     low_price = FloatField()
     close_price = FloatField()
+    pre_close = FloatField()
 
     bid_price_1 = FloatField()
     bid_price_2 = FloatField()
@@ -156,12 +203,9 @@ class DbTickData(Model):
     ask_volume_4 = FloatField()
     ask_volume_5 = FloatField()
 
-    vt_symbol = CharField()
-    gateway_name = CharField()
-
     class Meta:
-        database = DB
-        indexes = ((("vt_symbol", "datetime"), True),)
+        database = _db
+        indexes = ((("datetime", "symbol"), True),)
 
     @staticmethod
     def from_tick(tick: TickData):
@@ -210,9 +254,6 @@ class DbTickData(Model):
             db_tick.ask_volume_4 = tick.ask_volume_4
             db_tick.ask_volume_5 = tick.ask_volume_5
 
-        db_tick.vt_symbol = tick.vt_symbol
-        db_tick.gateway_name = "DB"
-
         return tick
 
     def to_tick(self):
@@ -237,7 +278,7 @@ class DbTickData(Model):
             ask_price_1=self.ask_price_1,
             bid_volume_1=self.bid_volume_1,
             ask_volume_1=self.ask_volume_1,
-            gateway_name=self.gateway_name,
+            gateway_name="DB",
         )
 
         if self.bid_price_2:
@@ -263,6 +304,20 @@ class DbTickData(Model):
 
         return tick
 
+    @staticmethod
+    def save_all(objs: List["DbTickData"]):
+        with _db.atomic():
+            if _driver is Driver.POSTGRESQL:
+                for bar in objs:
+                    DbTickData.insert(bar.to_dict()).on_conflict(
+                        update=bar.to_dict(),
+                        preserve=(DbTickData.id),
+                        conflict_target=(DbTickData.datetime, DbTickData.symbol),
+                    ).execute()
+            else:
+                for c in chunked(objs, 50):
+                    DbBarData.insert_many(c).on_conflict_replace()
 
-DB.connect()
-DB.create_tables([DbBarData, DbTickData])
+
+_db.connect()
+_db.create_tables([DbBarData, DbTickData])

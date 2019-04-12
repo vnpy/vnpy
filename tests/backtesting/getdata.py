@@ -2,7 +2,7 @@ from time import time
 
 import rqdatac as rq
 
-from vnpy.trader.database import DbBarData, DB
+from vnpy.trader.database import DbBarData
 
 USERNAME = ""
 PASSWORD = ""
@@ -39,11 +39,11 @@ def download_minute_bar(vt_symbol):
 
     df = rq.get_price(symbol, frequency="1m", fields=FIELDS)
 
-    with DB.atomic():
-        for ix, row in df.iterrows():
-            print(row.name)
-            bar = generate_bar_from_row(row, symbol, exchange)
-            DbBarData.replace(bar.__data__).execute()
+    bars = []
+    for ix, row in df.iterrows():
+        bar = generate_bar_from_row(row, symbol, exchange)
+        bars.append(bar)
+    DbBarData.save_all(bars)
 
     end = time()
     cost = (end - start) * 1000
