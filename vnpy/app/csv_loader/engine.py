@@ -39,17 +39,17 @@ class CsvLoaderEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.file_path: str = ''
+        self.file_path: str = ""
 
         self.symbol: str = ""
         self.exchange: Exchange = Exchange.SSE
         self.interval: Interval = Interval.MINUTE
-        self.datetime_head: str = ''
-        self.open_head: str = ''
-        self.close_head: str = ''
-        self.low_head: str = ''
-        self.high_head: str = ''
-        self.volume_head: str = ''
+        self.datetime_head: str = ""
+        self.open_head: str = ""
+        self.close_head: str = ""
+        self.low_head: str = ""
+        self.high_head: str = ""
+        self.volume_head: str = ""
 
     def load_by_handle(
         self,
@@ -63,7 +63,7 @@ class CsvLoaderEngine(BaseEngine):
         low_head: str,
         high_head: str,
         volume_head: str,
-        datetime_format: str
+        datetime_format: str,
     ):
         """
         load by text mode file handle
@@ -78,17 +78,17 @@ class CsvLoaderEngine(BaseEngine):
                 dt = datetime.strptime(item[datetime_head], datetime_format)
             else:
                 dt = datetime.fromisoformat(item[datetime_head])
-                
+
             db_bar = DbBarData(
-                    symbol=symbol,
-                    exchange=exchange.value,
-                    datetime=dt,
-                    interval=interval.value,
-                    volume=item[volume_head],
-                    open_price=item[open_head],
-                    high_price=item[high_head],
-                    low_price=item[low_head],
-                    close_price=item[close_head],
+                symbol=symbol,
+                exchange=exchange.value,
+                datetime=dt,
+                interval=interval.value,
+                volume=item[volume_head],
+                open_price=item[open_head],
+                high_price=item[high_head],
+                low_price=item[low_head],
+                close_price=item[close_head],
             )
 
             db_bars.append(db_bar)
@@ -116,12 +116,12 @@ class CsvLoaderEngine(BaseEngine):
         low_head: str,
         high_head: str,
         volume_head: str,
-        datetime_format: str
+        datetime_format: str,
     ):
         """
         load by filename
         """
-        with open(file_path, 'rt') as f:
+        with open(file_path, "rt") as f:
             return self.load_by_handle(
                 f,
                 symbol=symbol,
