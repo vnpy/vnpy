@@ -284,8 +284,8 @@ class BitfinexWebsocketApi(WebsocketClient):
     def _gen_unqiue_cid(self):
         # return int(round(time.time() * 1000))
         self.order_id = self.order_id + 1
-        local_oid = time.strftime("%y%m%d")+str(self.order_id)
-        return int(local_oid) 
+        local_oid = time.strftime("%y%m%d") + str(self.order_id)
+        return int(local_oid)
 
     def send_order(self, req: OrderRequest):
         orderid = self._gen_unqiue_cid()
@@ -310,14 +310,14 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         return vtOrderID
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancel_order(self, req: CancelRequest):
         """"""
-        print("debug cancelOrder1: ", req) 
+        print("debug cancelOrder1: ", req)
         orderid = req.orderid
         date_str = "20" + str(orderid)[0:6]
         date = date_str[0:4] + "-" + date_str[4:6] + "-" + date_str[6:8]
-        
+
         req = [
             0,
             'oc',
@@ -327,8 +327,8 @@ class BitfinexWebsocketApi(WebsocketClient):
                 'cid_date': date
             }
         ]
-        print("debug cancelOrder2: ", req) 
-        
+        print("debug cancelOrder2: ", req)
+
         self.send_packet(req)
 
     def on_connected(self):
@@ -345,14 +345,14 @@ class BitfinexWebsocketApi(WebsocketClient):
         """"""
 
         if isinstance(packet, dict):
-            self.onResponse(packet)
+            self.on_response(packet)
         else:
-            self.onUpdate(packet)
+            self.on_update(packet)
 
     # ----------------------------------------------------------------------
-    def onResponse(self, data):
+    def on_response(self, data):
         """"""
-        print("onResponse func", type(data))
+        print("on_response func", type(data))
         print(data)
         if 'event' not in data:
             return
@@ -362,7 +362,7 @@ class BitfinexWebsocketApi(WebsocketClient):
             self.channelDict[data['chanId']] = (data['channel'], symbol)
 
     # ----------------------------------------------------------------------
-    def onUpdate(self, data):
+    def on_update(self, data):
         """"""
         if data[1] == u'hb':
             return
@@ -370,12 +370,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         channelID = data[0]
 
         if not channelID:
-            self.onTradeUpdate(data)
+            self.on_trade_update(data)
         else:
-            self.onDataUpdate(data)
+            self.on_data_update(data)
 
     # ----------------------------------------------------------------------
-    def onDataUpdate(self, data):
+    def on_data_update(self, data):
         """"""
         channelID = data[0]
         channel, symbol = self.channelDict[channelID]
@@ -399,7 +399,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
         # 常规行情更新
         if channel == 'ticker':
-            print("debug onDataUpdate ticker", data)
+            print("debug on_data_update ticker", data)
             tick.volume = float(l_data1[-3])
             tick.high_price = float(l_data1[-2])
             tick.low_price = float(l_data1[-1])
@@ -486,7 +486,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         self.gateway.on_tick(copy(tick))
 
     # ----------------------------------------------------------------------
-    def onWallet(self, data):
+    def on_wallet(self, data):
         """"""
         if str(data[0]) == 'exchange':
             accountid = str(data[1])
@@ -505,18 +505,18 @@ class BitfinexWebsocketApi(WebsocketClient):
             self.gateway.on_account(copy(account))
 
     # ----------------------------------------------------------------------
-    def onTradeUpdate(self, data):
+    def on_trade_update(self, data):
         """"""
-        print("debug onTradeUpdate: ", data)
+        print("debug on_trade_update: ", data)
         name = data[1]
         info = data[2]
 
         if name == 'ws':
             for l in info:
-                self.onWallet(l)
+                self.on_wallet(l)
             self.gateway.write_log(u'账户资金获取成功')
         elif name == 'wu':
-            self.onWallet(info)
+            self.on_wallet(info)
         elif name == 'os':
             for l in info:
                 self.on_order(l)
@@ -640,7 +640,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         """生成时间"""
         dt = datetime.fromtimestamp(s / 1000.0)
         time = dt.strftime("%H:%M:%S.%f")
-        return time    
+        return time
 
     def on_order(self, data):
         """"""
@@ -657,7 +657,7 @@ class BitfinexWebsocketApi(WebsocketClient):
         orderTime = self.generateDateTime(data[4])
         orderStatus = str(data[13].split('@')[0])
         orderStatus = orderStatus.replace(' ', '')
-        
+
         order = OrderData(
             symbol=str(data[3].replace('t', '')),
             exchange=Exchange.BITFINEX,
