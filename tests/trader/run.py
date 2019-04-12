@@ -16,6 +16,7 @@ from vnpy.gateway.huobi import HuobiGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.csv_loader import CsvLoaderApp
 from vnpy.app.algo_trading import AlgoTradingApp
+from vnpy.app.cta_backtester import CtaBacktesterApp
 
 
 def main():
@@ -35,6 +36,7 @@ def main():
     main_engine.add_gateway(HuobiGateway)
 
     main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
     main_engine.add_app(CsvLoaderApp)
     main_engine.add_app(AlgoTradingApp)
 

@@ -7,6 +7,7 @@ from vnpy.trader.utility import BarGenerator, ArrayManager
 
 from .base import APP_NAME, StopOrder
 from .engine import CtaEngine
+from .backtesting import BacktestingEngine, OptimizationSetting
 from .template import CtaTemplate, CtaSignal, TargetPosTemplate
 
 
