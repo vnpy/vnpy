@@ -11,6 +11,10 @@ services:
   - mysql
   - postgresql
 
+before_script:
+  - mysql -e 'CREATE DATABASE vnpy;'
+  - psql -c 'create database vnpy;' -U postgres
+
 script:
   # todo: use python unittest
   - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
