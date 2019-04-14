@@ -56,7 +56,6 @@ def init_postgresql(settings: dict):
 
 
 class ModelBase(Model):
-
     def to_dict(self):
         return self.__data__
 
@@ -318,7 +317,6 @@ def init_models(db: Database, driver: Driver):
 
 
 class SqlManager(BaseDatabaseManager):
-
     def __init__(self, class_bar: Type[Model], class_tick: Type[Model]):
         self.class_bar = class_bar
         self.class_tick = class_tick
@@ -333,14 +331,14 @@ class SqlManager(BaseDatabaseManager):
     ) -> Sequence[BarData]:
         s = (
             self.class_bar.select()
-                .where(
+            .where(
                 (self.class_bar.symbol == symbol)
                 & (self.class_bar.exchange == exchange.value)
                 & (self.class_bar.interval == interval.value)
                 & (self.class_bar.datetime >= start)
                 & (self.class_bar.datetime <= end)
             )
-                .order_by(self.class_bar.datetime)
+            .order_by(self.class_bar.datetime)
         )
         data = [db_bar.to_bar() for db_bar in s]
         return data
@@ -350,14 +348,15 @@ class SqlManager(BaseDatabaseManager):
     ) -> Sequence[TickData]:
         s = (
             self.class_tick.select()
-                .where(
+            .where(
                 (self.class_tick.symbol == symbol)
                 & (self.class_tick.exchange == exchange.value)
                 & (self.class_tick.datetime >= start)
                 & (self.class_tick.datetime <= end)
             )
-                .order_by(self.class_tick.datetime)
+            .order_by(self.class_tick.datetime)
         )
+
         data = [db_tick.to_tick() for db_tick in s]
         return data
 
