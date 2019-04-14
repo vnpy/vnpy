@@ -87,11 +87,9 @@ matrix:
     - name: "pip install under osx"
       language: shell  # osx supports only shell
       install:
-        - alias python=python3
-        - alias pip=pip3
-        - python -m pip install --upgrade pip wheel setuptools --user python
-        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install.sh
+        - python3 -m pip install --upgrade pip wheel setuptools --user python
+        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - bash ./install.sh python3 pip3
 
     - name: "sdist install under Windows"
       os: "windows"
