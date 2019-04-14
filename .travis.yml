@@ -24,6 +24,7 @@ matrix:
   include:
     - name: "code quality analysis: flake8"
       services: []  # service is not need
+      before_script: []
       before_install:
         - pip install flake8
       install:
@@ -39,7 +40,9 @@ matrix:
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
       before_install:
-        - choco install python3 --version 3.7.2
+        - choco install -yf mysql mongodb
+        - choco install -yf postgresql --params '/Password:'
+        - choco install -yf python3 --version 3.7.2
       install:
         - python -m pip install --upgrade pip wheel setuptools
         - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
@@ -84,7 +87,7 @@ matrix:
     - name: "pip install under osx"
       language: shell  # osx supports only shell
       install:
-        - python -m pip install --upgrade pip wheel setuptools
+        - python -m pip install --upgrade pip wheel setuptools --user python
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
