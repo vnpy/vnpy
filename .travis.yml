@@ -77,6 +77,13 @@ matrix:
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
+    - name: "pip install under osx"
+      language: shell  # osx supports only shell
+      install:
+        - python -m pip install --upgrade pip wheel setuptools
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - bash ./install.sh
+
     - name: "sdist install under Windows"
       os: "windows"
       # language : cpp is necessary for windows
