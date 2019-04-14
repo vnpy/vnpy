@@ -13,6 +13,7 @@ services:
 
 script:
   # todo: use python unittest
+  - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
   - cd tests; source travis_env.sh; python test_all.py
 
 matrix:

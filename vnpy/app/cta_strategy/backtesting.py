@@ -14,7 +14,7 @@ from vnpy.trader.constant import (Direction, Offset, Exchange,
                                   Interval, Status)
 from vnpy.trader.database import database_manager
 from vnpy.trader.object import OrderData, TradeData, BarData, TickData
-from vnpy.trader.utility import round_to_pricetick, extract_vt_symbol
+from vnpy.trader.utility import round_to_pricetick
 
 from .base import (
     BacktestingMode,
@@ -990,4 +990,3 @@ def load_tick_data(
     return database_manager.load_tick_data(
         symbol, exchange, start, end
     )
-
