@@ -19,6 +19,7 @@ script:
 matrix:
   include:
     - name: "code quality analysis: flake8"
+      services: []  # service is not need
       before_install:
         - pip install flake8
       install:
@@ -28,6 +29,7 @@ matrix:
 
     - name: "pip install under Windows"
       os: "windows"
+      services: []  # service is unavailable under windows
       # language : cpp is necessary for windows
       language: "cpp"
       env:
