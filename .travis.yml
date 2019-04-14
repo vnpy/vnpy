@@ -41,7 +41,7 @@ matrix:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
       before_install:
         - choco install -yf mysql mongodb
-        - choco install -yf postgresql --params '/Password:'
+        - choco install -yf postgresql10 --params '/Password:'
         - choco install -yf python3 --version 3.7.2
       install:
         - python -m pip install --upgrade pip wheel setuptools
