@@ -1,99 +1,59 @@
-""""""
+from datetime import datetime
 from enum import Enum
-from typing import List
+from typing import Sequence
 
-from peewee import (
-    AutoField,
-    CharField,
-    Database,
-    DateTimeField,
-    FloatField,
-    Model,
-    MySQLDatabase,
-    PostgresqlDatabase,
-    SqliteDatabase,
-    chunked,
-)
+from mongoengine import DateTimeField, Document, FloatField, StringField, connect
 
-from .constant import Exchange, Interval
-from .object import BarData, TickData
-from .setting import SETTINGS
-from .utility import get_file_path
+from vnpy.trader.constant import Exchange, Interval
+from vnpy.trader.object import BarData, TickData
+from .database import BaseDatabaseManager, Driver
 
 
-class Driver(Enum):
-    SQLITE = "sqlite"
-    MYSQL = "mysql"
-    POSTGRESQL = "postgresql"
-
-
-_db: Database
-_driver: Driver
-
-
-def init():
-    global _driver
-    db_settings = {k[9:]: v for k, v in SETTINGS.items() if k.startswith("database.")}
-    _driver = Driver(db_settings["driver"])
-
-    init_funcs = {
-        Driver.SQLITE: init_sqlite,
-        Driver.MYSQL: init_mysql,
-        Driver.POSTGRESQL: init_postgresql,
-    }
-
-    assert _driver in init_funcs
-    del db_settings["driver"]
-    return init_funcs[_driver](db_settings)
-
-
-def init_sqlite(settings: dict):
-    global _db
+def init(_: Driver, settings: dict):
     database = settings["database"]
-
-    _db = SqliteDatabase(str(get_file_path(database)))
-
-
-def init_mysql(settings: dict):
-    global _db
-    _db = MySQLDatabase(**settings)
-
-
-def init_postgresql(settings: dict):
-    global _db
-    _db = PostgresqlDatabase(**settings)
-
-
-init()
-
-
-class ModelBase(Model):
-    def to_dict(self):
-        return self.__data__
+    host = settings["host"]
+    port = settings["port"]
+    username = settings["user"]
+    password = settings["password"]
+    authentication_source = settings["authentication_source"]
+    if not username:  # if username == '' or None, skip username
+        username = None
+        password = None
+        authentication_source = None
+    connect(
+        db=database,
+        host=host,
+        port=port,
+        username=username,
+        password=password,
+        authentication_source=authentication_source,
+    )
+    return MongoManager()
 
 
-class DbBarData(ModelBase):
+class DbBarData(Document):
     """
     Candlestick bar data for database storage.
 
     Index is defined unique with datetime, interval, symbol
     """
 
-    id = AutoField()
-    symbol = CharField()
-    exchange = CharField()
-    datetime = DateTimeField()
-    interval = CharField()
+    symbol: str = StringField()
+    exchange: str = StringField()
+    datetime: datetime = DateTimeField()
+    interval: str = StringField()
 
-    volume = FloatField()
-    open_price = FloatField()
-    high_price = FloatField()
-    low_price = FloatField()
-    close_price = FloatField()
+    volume: float = FloatField()
+    open_price: float = FloatField()
+    high_price: float = FloatField()
+    low_price: float = FloatField()
+    close_price: float = FloatField()
 
-    class Meta:
-        database = _db
-        indexes = ((("datetime", "interval", "symbol"), True),)
+    meta = {
+        "indexes": [
+            {"fields": ("datetime", "interval", "symbol", "exchange"), "unique": True}
+        ]
+    }
 
     @staticmethod
     def from_bar(bar: BarData):
@@ -132,80 +92,56 @@ class DbBarData(ModelBase):
         )
         return bar
 
-    @staticmethod
-    def save_all(objs: List["DbBarData"]):
-        """
-        save a list of objects, update if exists.
-        """
-        with _db.atomic():
-            if _driver is Driver.POSTGRESQL:
-                for bar in objs:
-                    DbBarData.insert(bar.to_dict()).on_conflict(
-                        update=bar.to_dict(),
-                        conflict_target=(
-                            DbBarData.datetime,
-                            DbBarData.interval,
-                            DbBarData.symbol,
-                        ),
-                    ).execute()
-            else:
-                for c in chunked(objs, 50):
-                    DbBarData.insert_many(c).on_conflict_replace()
 
-
-class DbTickData(ModelBase):
+class DbTickData(Document):
     """
     Tick data for database storage.
 
     Index is defined unique with (datetime, symbol)
     """
 
-    id = AutoField()
+    symbol: str = StringField()
+    exchange: str = StringField()
+    datetime: datetime = DateTimeField()
 
-    symbol = CharField()
-    exchange = CharField()
-    datetime = DateTimeField()
+    name: str = StringField()
+    volume: float = FloatField()
+    last_price: float = FloatField()
+    last_volume: float = FloatField()
+    limit_up: float = FloatField()
+    limit_down: float = FloatField()
 
-    name = CharField()
-    volume = FloatField()
-    last_price = FloatField()
-    last_volume = FloatField()
-    limit_up = FloatField()
-    limit_down = FloatField()
+    open_price: float = FloatField()
+    high_price: float = FloatField()
+    low_price: float = FloatField()
+    close_price: float = FloatField()
+    pre_close: float = FloatField()
 
-    open_price = FloatField()
-    high_price = FloatField()
-    low_price = FloatField()
-    close_price = FloatField()
-    pre_close = FloatField()
+    bid_price_1: float = FloatField()
+    bid_price_2: float = FloatField()
+    bid_price_3: float = FloatField()
+    bid_price_4: float = FloatField()
+    bid_price_5: float = FloatField()
 
-    bid_price_1 = FloatField()
-    bid_price_2 = FloatField()
-    bid_price_3 = FloatField()
-    bid_price_4 = FloatField()
-    bid_price_5 = FloatField()
+    ask_price_1: float = FloatField()
+    ask_price_2: float = FloatField()
+    ask_price_3: float = FloatField()
+    ask_price_4: float = FloatField()
+    ask_price_5: float = FloatField()
 
-    ask_price_1 = FloatField()
-    ask_price_2 = FloatField()
-    ask_price_3 = FloatField()
-    ask_price_4 = FloatField()
-    ask_price_5 = FloatField()
+    bid_volume_1: float = FloatField()
+    bid_volume_2: float = FloatField()
+    bid_volume_3: float = FloatField()
+    bid_volume_4: float = FloatField()
+    bid_volume_5: float = FloatField()
 
-    bid_volume_1 = FloatField()
-    bid_volume_2 = FloatField()
-    bid_volume_3 = FloatField()
-    bid_volume_4 = FloatField()
-    bid_volume_5 = FloatField()
+    ask_volume_1: float = FloatField()
+    ask_volume_2: float = FloatField()
+    ask_volume_3: float = FloatField()
+    ask_volume_4: float = FloatField()
+    ask_volume_5: float = FloatField()
 
-    ask_volume_1 = FloatField()
-    ask_volume_2 = FloatField()
-    ask_volume_3 = FloatField()
-    ask_volume_4 = FloatField()
-    ask_volume_5 = FloatField()
-
-    class Meta:
-        database = _db
-        indexes = ((("datetime", "symbol"), True),)
+    meta = {"indexes": [{"fields": ("datetime", "symbol", "exchange"), "unique": True}]}
 
     @staticmethod
     def from_tick(tick: TickData):
@@ -254,7 +190,7 @@ class DbTickData(ModelBase):
             db_tick.ask_volume_4 = tick.ask_volume_4
             db_tick.ask_volume_5 = tick.ask_volume_5
 
-        return tick
+        return db_tick
 
     def to_tick(self):
         """
@@ -304,20 +240,63 @@ class DbTickData(ModelBase):
 
         return tick
 
+
+class MongoManager(BaseDatabaseManager):
+    def load_bar_data(
+        self,
+        symbol: str,
+        exchange: Exchange,
+        interval: Interval,
+        start: datetime,
+        end: datetime,
+    ) -> Sequence[BarData]:
+        s = DbBarData.objects(
+            symbol=symbol,
+            exchange=exchange.value,
+            interval=interval.value,
+            datetime__gte=start,
+            datetime__lte=end,
+        )
+        data = [db_bar.to_bar() for db_bar in s]
+        return data
+
+    def load_tick_data(
+        self, symbol: str, exchange: Exchange, start: datetime, end: datetime
+    ) -> Sequence[TickData]:
+        s = DbTickData.objects(
+            symbol=symbol,
+            exchange=exchange.value,
+            datetime__gte=start,
+            datetime__lte=end,
+        )
+        data = [db_tick.to_tick() for db_tick in s]
+        return data
+
     @staticmethod
-    def save_all(objs: List["DbTickData"]):
-        with _db.atomic():
-            if _driver is Driver.POSTGRESQL:
-                for bar in objs:
-                    DbTickData.insert(bar.to_dict()).on_conflict(
-                        update=bar.to_dict(),
-                        preserve=(DbTickData.id),
-                        conflict_target=(DbTickData.datetime, DbTickData.symbol),
-                    ).execute()
-            else:
-                for c in chunked(objs, 50):
-                    DbBarData.insert_many(c).on_conflict_replace()
+    def to_update_param(d):
+        return {
+            "set__" + k: v.value if isinstance(v, Enum) else v
+            for k, v in d.__dict__.items()
+        }
 
+    def save_bar_data(self, datas: Sequence[BarData]):
+        for d in datas:
+            updates = self.to_update_param(d)
+            updates.pop("set__gateway_name")
+            updates.pop("set__vt_symbol")
+            (
+                DbBarData.objects(
+                    symbol=d.symbol, interval=d.interval.value, datetime=d.datetime
+                ).update_one(upsert=True, **updates)
+            )
 
-_db.connect()
-_db.create_tables([DbBarData, DbTickData])
+    def save_tick_data(self, datas: Sequence[TickData]):
+        for d in datas:
+            updates = self.to_update_param(d)
+            updates.pop("set__gateway_name")
+            updates.pop("set__vt_symbol")
+            (
+                DbTickData.objects(
+                    symbol=d.symbol, exchange=d.exchange.value, datetime=d.datetime
+                ).update_one(upsert=True, **updates)
+            )

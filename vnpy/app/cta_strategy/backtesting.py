@@ -12,9 +12,9 @@ from pandas import DataFrame
 
 from vnpy.trader.constant import (Direction, Offset, Exchange, 
                                   Interval, Status)
-from vnpy.trader.database import DbBarData, DbTickData
-from vnpy.trader.object import OrderData, TradeData
-from vnpy.trader.utility import round_to_pricetick
+from vnpy.trader.database import database_manager
+from vnpy.trader.object import OrderData, TradeData, BarData, TickData
+from vnpy.trader.utility import round_to_pricetick, extract_vt_symbol
 
 from .base import (
     BacktestingMode,
@@ -103,8 +103,8 @@ class BacktestingEngine:
 
         self.strategy_class = None
         self.strategy = None
-        self.tick = None
-        self.bar = None
+        self.tick: TickData
+        self.bar: BarData
         self.datetime = None
 
         self.interval = None
@@ -199,14 +199,16 @@ class BacktestingEngine:
 
         if self.mode == BacktestingMode.BAR:
             self.history_data = load_bar_data(
-                self.vt_symbol,
+                self.symbol,
+                self.exchange,
                 self.interval,
                 self.start,
                 self.end
             )
         else:
             self.history_data = load_tick_data(
-                self.vt_symbol,
+                self.symbol,
+                self.exchange,
                 self.start,
                 self.end
             )
@@ -519,7 +521,7 @@ class BacktestingEngine:
         else:
             self.daily_results[d] = DailyResult(d, price)
 
-    def new_bar(self, bar: DbBarData):
+    def new_bar(self, bar: BarData):
         """"""
         self.bar = bar
         self.datetime = bar.datetime
@@ -530,7 +532,7 @@ class BacktestingEngine:
 
         self.update_daily_close(bar.close_price)
 
-    def new_tick(self, tick: DbTickData):
+    def new_tick(self, tick: TickData):
         """"""
         self.tick = tick
         self.datetime = tick.datetime
@@ -965,41 +967,27 @@ def optimize(
 
 @lru_cache(maxsize=10)
 def load_bar_data(
-    vt_symbol: str, 
-    interval: str, 
-    start: datetime, 
+    symbol: str,
+    exchange: Exchange,
+    interval: Interval,
+    start: datetime,
     end: datetime
 ):
     """"""
-    s = (
-        DbBarData.select()
-        .where(
-            (DbBarData.vt_symbol == vt_symbol) 
-            & (DbBarData.interval == interval) 
-            & (DbBarData.datetime >= start) 
-            & (DbBarData.datetime <= end)
-        )
-        .order_by(DbBarData.datetime)
+    return database_manager.load_bar_data(
+        symbol, exchange, interval, start, end
     )
-    data = [db_bar.to_bar() for db_bar in s]
-    return data
 
 
 @lru_cache(maxsize=10)
 def load_tick_data(
-    vt_symbol: str, 
-    start: datetime, 
+    symbol: str,
+    exchange: Exchange,
+    start: datetime,
     end: datetime
 ):
     """"""
-    s = (
-        DbTickData.select()
-        .where(
-            (DbTickData.vt_symbol == vt_symbol) 
-            & (DbTickData.datetime >= start) 
-            & (DbTickData.datetime <= end)
-        )
-        .order_by(DbTickData.datetime)
+    return database_manager.load_tick_data(
+        symbol, exchange, start, end
     )
-    data = [db_tick.db_tick() for db_tick in s]
-    return data
+

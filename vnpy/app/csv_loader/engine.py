@@ -26,8 +26,9 @@ from typing import TextIO
 
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.database import DbBarData
+from vnpy.trader.database import database_manager
 from vnpy.trader.engine import BaseEngine, MainEngine
+from vnpy.trader.object import BarData
 
 APP_NAME = "CsvLoader"
 
@@ -70,7 +71,7 @@ class CsvLoaderEngine(BaseEngine):
         """
         reader = csv.DictReader(f)
 
-        db_bars = []
+        bars = []
         start = None
         count = 0
         for item in reader:
@@ -79,29 +80,29 @@ class CsvLoaderEngine(BaseEngine):
             else:
                 dt = datetime.fromisoformat(item[datetime_head])
 
-            db_bar = DbBarData(
+            bar = BarData(
                 symbol=symbol,
-                exchange=exchange.value,
+                exchange=exchange,
                 datetime=dt,
-                interval=interval.value,
+                interval=interval,
                 volume=item[volume_head],
                 open_price=item[open_head],
                 high_price=item[high_head],
                 low_price=item[low_head],
                 close_price=item[close_head],
+                gateway_name="DB",
             )
 
-            db_bars.append(db_bar)
+            bars.append(bar)
 
             # do some statistics
             count += 1
             if not start:
-                start = db_bar.datetime
-        end = db_bar.datetime
+                start = bar.datetime
+        end = bar.datetime
 
         # insert into database
-        DbBarData.save_all(db_bars)
-
+        database_manager.save_bar_data(bars)
         return start, end, count
 
     def load(

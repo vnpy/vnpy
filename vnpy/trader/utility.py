@@ -3,20 +3,28 @@ General utility functions.
 """
 
 import json
-import os
 from pathlib import Path
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
 import numpy as np
 import talib
 
 from .object import BarData, TickData
 
+if TYPE_CHECKING:
+    from vnpy.trader.constant import Exchange
 
-def resolve_path(pattern: str):
-    env = dict(os.environ)
-    env.update({"VNPY_TEMP": str(TEMP_DIR)})
-    return pattern.format(**env)
+
+def extract_vt_symbol(vt_symbol: str):
+    """
+    :return: (symbol, exchange)
+    """
+    symbol, exchange = vt_symbol.split('.')
+    return symbol, exchange
+
+
+def generate_vt_symbol(symbol: str, exchange: "Exchange"):
+    return f'{symbol}.{exchange.value}'
 
 
 def _get_trader_dir(temp_name: str):
