@@ -2,6 +2,7 @@
 Test if database works fine
 """
 import unittest
+
 from vnpy.trader.setting import SETTINGS, get_settings
 
 
