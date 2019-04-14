@@ -95,12 +95,16 @@ matrix:
 
     - name: "sdist install under Windows"
       os: "windows"
+      services: []  # service is not need
+      before_script: []
       # language : cpp is necessary for windows
       language: "cpp"
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
       before_install:
-        - choco install python3 --version 3.7.2
+        - choco install -yf mysql mongodb
+        - choco install -yf postgresql10 --params '/Password:'
+        - choco install -yf python3 --version 3.7.2
       install:
         - python -m pip install --upgrade pip wheel setuptools
         - python setup.py sdist
