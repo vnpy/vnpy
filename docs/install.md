@@ -91,10 +91,13 @@ $ bash Miniconda3-latest-Linux-x86_64.sh
 安装过程中可以一直按“Enter”键继续下去，除了以下这点：
 
 当询问是否把Miniconda设置为Python 默认环境时，把默认的"no"改成“yes”。原因是Ubuntu 18.04已有自带的Python 3.6与Python 2.7。
+
 ![enter image description here](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/install.bat/install_Miniconda_ubuntu.png "enter image title here")
 
 
+
 重启Ubuntu后，打开终端直接输入"python" 然后按“Enter”键: 若出现如下图，则表示成功把Miniconda设置为Python默认环境。
+
 ![enter image description here](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/install.bat/Conda_Python_version.png "enter image title here")
 
 &nbsp;
