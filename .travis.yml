@@ -18,7 +18,8 @@ before_script:
 script:
   # todo: use python unittest
   - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
-  - cd tests; source travis_env.sh; python test_all.py
+  - cd tests; source travis_env.sh;
+  - python test_all.py
 
 matrix:
   include:
@@ -38,7 +39,7 @@ matrix:
       # language : cpp is necessary for windows
       language: "cpp"
       env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - PATH=/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH
       before_install:
         - choco install -yf mysql mongodb
         - choco install -yf postgresql10 --params '/Password:'
@@ -98,7 +99,7 @@ matrix:
       # language : cpp is necessary for windows
       language: "cpp"
       env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - PATH=/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH
       before_install:
         - choco install -yf mysql mongodb
         - choco install -yf postgresql10 --params '/Password:'
