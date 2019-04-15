@@ -1,5 +1,6 @@
 # encoding: UTF-8
 """
+    Author: vigarbuaa
 """
 
 import hashlib
