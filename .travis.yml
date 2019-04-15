@@ -5,9 +5,19 @@ dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 python:
   - "3.7"
 
+services:
+  - mongodb
+  - mysql
+  - postgresql
+
+before_script:
+  - psql -d postgresql://postgres:${VNPY_TEST_POSTGRESQL_PASSWORD}@localhost -c "create database vnpy;"
+  - mysql -u root --password=${VNPY_TEST_MYSQL_PASSWORD} -e 'CREATE DATABASE vnpy;'
+
 script:
-  # todo: use python unittest
-  - mkdir run; cd run; python ../tests/load_all.py
+  - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
+  - cd tests; source travis_env.sh;
+  - python test_all.py
 
 matrix:
   include:
@@ -21,12 +31,17 @@ matrix:
 
     - name: "pip install under Windows"
       os: "windows"
+      services: []  # service is unavailable under windows
       # language : cpp is necessary for windows
       language: "cpp"
       env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
       before_install:
-        - choco install python3 --version 3.7.2
+        - choco install -yf mysql mongodb
+        # I don't know how enable a "trust" auth method in choco installed psql
+        - choco install -yf postgresql10 --params '/Password:1234'
+        - export VNPY_TEST_POSTGRESQL_PASSWORD=1234
+        - choco install -yf python3 --version 3.7.2
       install:
         - python -m pip install --upgrade pip wheel setuptools
         - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
@@ -68,14 +83,34 @@ matrix:
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
+    - name: "pip install under osx"
+      os: osx
+      language: shell  # osx supports only shell
+      services: []
+      before_install: []
+      install:
+        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - bash ./install_osx.sh
+      before_script: []
+      script:
+        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
+        - cd tests; source travis_env.sh;
+        # osx is complicated for me, skip the tests
+        # python3 test_all.py
+
     - name: "sdist install under Windows"
       os: "windows"
+      services: []  # service is unavailable under windows
       # language : cpp is necessary for windows
       language: "cpp"
       env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
       before_install:
-        - choco install python3 --version 3.7.2
+        - choco install -yf mysql mongodb
+        # I don't know how enable a "trust" auth method in choco installed psql
+        - choco install -yf postgresql10 --params '/Password:1234'
+        - export VNPY_TEST_POSTGRESQL_PASSWORD=1234
+        - choco install -yf python3 --version 3.7.2
       install:
         - python -m pip install --upgrade pip wheel setuptools
         - python setup.py sdist
@@ -108,3 +143,4 @@ matrix:
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - python setup.py sdist
         - pip install dist/`ls dist`
+
