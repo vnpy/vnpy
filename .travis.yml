@@ -39,7 +39,7 @@ matrix:
       # language : cpp is necessary for windows
       language: "cpp"
       env:
-        - PATH='/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:'/c/Program Files/PostgreSQL/10/bin':$PATH'
+        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
       before_install:
         - choco install -yf mysql mongodb
         - choco install -yf postgresql10 --params '/Password:'
@@ -99,7 +99,7 @@ matrix:
       # language : cpp is necessary for windows
       language: "cpp"
       env:
-        - PATH='/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH'
+        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
       before_install:
         - choco install -yf mysql mongodb
         - choco install -yf postgresql10 --params '/Password:'
