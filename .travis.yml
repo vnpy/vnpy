@@ -42,9 +42,9 @@ matrix:
           packages:
             - g++-8
       before_install:
-        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
-        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
-        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
       install:
         # update pip & setuptools
         - python -m pip install --upgrade pip wheel setuptools
