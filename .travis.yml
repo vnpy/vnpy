@@ -49,26 +49,6 @@ matrix:
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
-    - name: "pip install under Ubuntu: gcc-7"
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-      before_install:
-        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
-        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
-        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
-      install:
-        # update pip & setuptools
-        - python -m pip install --upgrade pip wheel setuptools
-        # Linux install script
-        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install.sh
-
     - name: "pip install under osx"
       os: osx
       language: shell  # osx supports only shell
@@ -94,9 +74,9 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
       before_install:
-        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
-        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
-        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
       install:
         # Linux install script
         - python -m pip install --upgrade pip wheel setuptools
