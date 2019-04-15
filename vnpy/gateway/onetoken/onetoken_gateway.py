@@ -39,7 +39,7 @@ from vnpy.trader.object import (
 from urllib.parse import urlparse
 
 
-REST_HOST = 'https://1token.trade/api'
+REST_HOST = 'https://1token.trade/api/v1/trade'
 
 DIRECTION_VT2ONETOKEN = {Direction.LONG: "b", Direction.SHORT: "s"}
 DIRECTION_ONETOKEN2VT = {v: k for k, v in DIRECTION_VT2ONETOKEN.items()}
@@ -136,14 +136,14 @@ class OnetokenRestApi(RestClient):
         path = parsed_url.path
 
         nonce = str(int(time.time() * 1000000))
-
         data = request.data
         json_str = json.dumps(data) if data else ''
 
         message = method + path + nonce + json_str
 
         signature = hmac.new(bytes(self.secret, 'utf8'), bytes(message, 'utf8'), digestmod=hashlib.sha256).hexdigest()
-
+        print('message:>>>', message)
+        print('signature:>>>>>', signature)
         headers = {'Api-Nonce': nonce,
                    'Api-Key': self.key,
                    'Api-Signature': signature,
@@ -187,12 +187,13 @@ class OnetokenRestApi(RestClient):
         """"""
         self.add_request(
             "GET",
-            "/v1/trade/{}/info".format(self.account),
+            "/{}/info".format(self.account),
             callback=self.on_query_account
         )
 
     def on_query_account(self, data, request):
         """"""
+        print('on response>>>>>>>>>>>>>>>>>>>>', data, request)
         for account_data in data["position"]:
             account = AccountData(
                 accountid=account_data["contract"],
@@ -209,10 +210,10 @@ class OnetokenRestApi(RestClient):
         orderid = str(self.connect_time + self._new_order_id())
 
         data = {
-            "contract": req.symbol,
-            'price': float(req.price),
-            "side": DIRECTION_VT2ONETOKEN[req.direction],
-            'amount': float(req.volume)
+            'contract': req.symbol,
+            'price': int(req.price),
+            "bs": DIRECTION_VT2ONETOKEN[req.direction],
+            'amount': int(req.volume)
         }
 
         if req.offset == Offset.CLOSE:
@@ -222,7 +223,7 @@ class OnetokenRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/v1/trade/{}/info".format(self.account),
+            path="/{}/orders".format(self.account),
             callback=self.on_send_order,
             data=data,
             extra=order,
