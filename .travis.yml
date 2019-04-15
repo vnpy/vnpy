@@ -2,6 +2,11 @@ language: python
 
 dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 
+cache: pip
+
+git:
+  depth: 1
+
 python:
   - "3.7"
 
