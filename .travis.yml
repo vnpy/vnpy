@@ -18,6 +18,7 @@ services:
 before_script:
   - psql -d postgresql://postgres:${VNPY_TEST_POSTGRESQL_PASSWORD}@localhost -c "create database vnpy;"
   - mysql -u root --password=${VNPY_TEST_MYSQL_PASSWORD} -e 'CREATE DATABASE vnpy;'
+  - alias make="make -j2"
 
 script:
   - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
@@ -50,7 +51,6 @@ matrix:
         - python -m pip install --upgrade pip wheel setuptools
         # Linux install script
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - alias make=make -j2
         - bash ./install.sh
 
     - name: "sdist install under Ubuntu: gcc-7"
@@ -78,7 +78,6 @@ matrix:
         - pip install numpy
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - python setup.py sdist
-        - alias make=make -j2
         - pip install dist/`ls dist`
 
     - name: "pip install under osx"
