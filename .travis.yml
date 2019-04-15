@@ -29,26 +29,6 @@ matrix:
       script:
         - flake8
 
-    - name: "pip install under Windows"
-      os: "windows"
-      services: []  # service is unavailable under windows
-      # language : cpp is necessary for windows
-      language: "cpp"
-      env:
-        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
-      before_install:
-        - choco install -yf mysql mongodb
-        # I don't know how enable a "trust" auth method in choco installed psql
-        - choco install -yf postgresql10 --params '/Password:1234'
-        - export VNPY_TEST_POSTGRESQL_PASSWORD=1234
-        - choco install -yf python3 --version 3.7.2
-      install:
-        - python -m pip install --upgrade pip wheel setuptools
-        - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
-        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - pip install -r requirements.txt
-        - pip install .
-
     - name: "pip install under Ubuntu: gcc-8"
       addons:
         apt:
@@ -58,6 +38,10 @@ matrix:
             - g++-8
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      before_install:
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
       install:
         # update pip & setuptools
         - python -m pip install --upgrade pip wheel setuptools
@@ -74,6 +58,10 @@ matrix:
             - g++-7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      before_install:
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
       install:
         # update pip & setuptools
         - python -m pip install --upgrade pip wheel setuptools
@@ -96,26 +84,6 @@ matrix:
         # osx is complicated for me, skip the tests
         # python3 test_all.py
 
-    - name: "sdist install under Windows"
-      os: "windows"
-      services: []  # service is unavailable under windows
-      # language : cpp is necessary for windows
-      language: "cpp"
-      env:
-        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
-      before_install:
-        - choco install -yf mysql mongodb
-        # I don't know how enable a "trust" auth method in choco installed psql
-        - choco install -yf postgresql10 --params '/Password:1234'
-        - export VNPY_TEST_POSTGRESQL_PASSWORD=1234
-        - choco install -yf python3 --version 3.7.2
-      install:
-        - python -m pip install --upgrade pip wheel setuptools
-        - python setup.py sdist
-        - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
-        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - pip install dist/`ls dist`
-
     - name: "sdist install under Ubuntu: gcc-8"
       addons:
         apt:
@@ -125,6 +93,10 @@ matrix:
             - g++-7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+      before_install:
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
       install:
         # Linux install script
         - python -m pip install --upgrade pip wheel setuptools
