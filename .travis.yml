@@ -50,7 +50,7 @@ matrix:
       before_install: []
       install:
         - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install.sh python3 pip3
+        - bash ./install.sh python3 pip3 /usr/local
 
       script:
         - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment

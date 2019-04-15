@@ -2,16 +2,18 @@
 
 python=$1
 pip=$2
+prefix=$3
 
 [[ -z $python ]] && python=python
 [[ -z $pip ]] && pip=pip
+[[ -z $prefix ]] && prefix=/usr
 
 # Get and build ta-lib
 pushd /tmp
 wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
 tar -xf ta-lib-0.4.0-src.tar.gz
 cd ta-lib
-./configure --prefix=/usr/local
+./configure --prefix=$prefix
 make
 sudo make install
 popd
