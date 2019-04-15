@@ -12,8 +12,8 @@ services:
   - postgresql
 
 before_script:
+  - psql -d postgresql://postgres:@localhost -c "create database vnpy;"
   - mysql -e 'CREATE DATABASE vnpy;'
-  - psql -c 'create database vnpy;' -U postgres
 
 script:
   # todo: use python unittest

@@ -25,7 +25,7 @@ def main():
 
 if __name__ == '__main__':
     result = main()
-    if result.failures:
+    if result.failures or result.errors:
         exit(1)
     else:
         exit(0)
