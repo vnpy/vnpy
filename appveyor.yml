@@ -7,16 +7,16 @@ services:
   - postgresql
 
 environment:
-  PATH: C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\PostgreSQL\9.6\bin\;C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql;%PATH%
+  PATH: C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
   VNPY_TEST_MYSQL_USER: root
   VNPY_TEST_MYSQL_PASSWORD: Password12!
   VNPY_TEST_POSTGRESQL_USER: postgres
   VNPY_TEST_POSTGRESQL_PASSWORD: Password12!
+  MYSQL_PWD: Password12!
 
 before_build:
   - psql -d postgresql://%VNPY_TEST_POSTGRESQL_USER%:%VNPY_TEST_POSTGRESQL_PASSWORD%@localhost -c "create database vnpy;"
-  - ps: ls -Rec "C:\Program Files\MySQL\"
-  - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u %VNPY_TEST_MYSQL_USER% --password=%VNPY_TEST_MYSQL_PASSWORD% -e 'CREATE DATABASE vnpy;'
+  - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u $VNPY_TEST_MYSQL_USER " -e 'CREATE DATABASE vnpy;'
   - python -m pip install --upgrade pip wheel setuptools
 
 install:
