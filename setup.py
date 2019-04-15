@@ -22,35 +22,6 @@ import sys
 
 from setuptools import Extension, find_packages, setup
 
-
-# https://stackoverflow.com/a/13176803
-# monkey-patch for parallel compilation
-def parallelCCompile(self, sources, output_dir=None, macros=None, include_dirs=None, debug=0,
-                     extra_preargs=None, extra_postargs=None, depends=None):
-    # those lines are copied from distutils.ccompiler.CCompiler directly
-    macros, objects, extra_postargs, pp_opts, build = self._setup_compile(output_dir, macros,
-                                                                          include_dirs, sources,
-                                                                          depends, extra_postargs)
-    cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
-    # parallel code
-    N = 2  # number of parallel compilations
-    import multiprocessing.pool
-    def _single_compile(obj):
-        try:
-            src, ext = build[obj]
-        except KeyError:
-            return
-        self._compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
-
-    # convert to list, imap is evaluated on-demand
-    list(multiprocessing.pool.ThreadPool(N).imap(_single_compile, objects))
-    return objects
-
-
-import distutils.ccompiler
-
-distutils.ccompiler.CCompiler.compile = parallelCCompile
-
 with open("vnpy/__init__.py", "rb") as f:
     version_line = re.search(
         r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
@@ -58,67 +29,72 @@ with open("vnpy/__init__.py", "rb") as f:
     version = str(ast.literal_eval(version_line))
 
 if platform.uname().system == "Windows":
-    compiler_flags = ["/MP", "/std:c++17",  # standard
-                      "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
-                      "/wd4819"  # 936 code page
-                      ]
+    compiler_flags = [
+        "/MP", "/std:c++17",  # standard
+        "/O2", "/Ob2", "/Oi", "/Ot", "/Oy", "/GL",  # Optimization
+        "/wd4819"  # 936 code page
+    ]
     extra_link_args = []
 else:
-    compiler_flags = ["-std=c++17",
-                      "-O3",  # Optimization
-                      "-Wno-delete-incomplete", "-Wno-sign-compare",
-                      ]
+    compiler_flags = [
+        "-std=c++17",  # standard
+        "-O3",  # Optimization
+        "-Wno-delete-incomplete", "-Wno-sign-compare",
+    ]
     extra_link_args = ["-lstdc++"]
 
-vnctpmd = Extension("vnpy.api.ctp.vnctpmd",
-                    [
-                        "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
-                    ],
-                    include_dirs=["vnpy/api/ctp/include",
-                                  "vnpy/api/ctp/vnctp", ],
-                    define_macros=[],
-                    undef_macros=[],
-                    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-                    libraries=["thostmduserapi", "thosttraderapi", ],
-                    extra_compile_args=compiler_flags,
-                    extra_link_args=extra_link_args,
-                    depends=[],
-                    runtime_library_dirs=["$ORIGIN"],
-                    language="cpp",
-                    )
-vnctptd = Extension("vnpy.api.ctp.vnctptd",
-                    [
-                        "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
-                    ],
-                    include_dirs=["vnpy/api/ctp/include",
-                                  "vnpy/api/ctp/vnctp", ],
-                    define_macros=[],
-                    undef_macros=[],
-                    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-                    libraries=["thostmduserapi", "thosttraderapi", ],
-                    extra_compile_args=compiler_flags,
-                    extra_link_args=extra_link_args,
-                    runtime_library_dirs=["$ORIGIN"],
-                    depends=[],
-                    language="cpp",
-                    )
-vnoes = Extension("vnpy.api.oes.vnoes",
-                  [
-                      "vnpy/api/oes/vnoes/generated_files/classes_1.cpp",
-                      "vnpy/api/oes/vnoes/generated_files/classes_2.cpp",
-                      "vnpy/api/oes/vnoes/generated_files/module.cpp",
-                  ],
-                  include_dirs=["vnpy/api/oes/include",
-                                "vnpy/api/oes/vnoes", ],
-                  define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
-                  undef_macros=[],
-                  library_dirs=["vnpy/api/oes/libs"],
-                  libraries=["oes_api"],
-                  extra_compile_args=compiler_flags,
-                  extra_link_args=extra_link_args,
-                  depends=[],
-                  language="cpp",
-                  )
+vnctpmd = Extension(
+    "vnpy.api.ctp.vnctpmd",
+    [
+        "vnpy/api/ctp/vnctp/vnctpmd/vnctpmd.cpp",
+    ],
+    include_dirs=["vnpy/api/ctp/include",
+                  "vnpy/api/ctp/vnctp", ],
+    define_macros=[],
+    undef_macros=[],
+    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
+    libraries=["thostmduserapi", "thosttraderapi", ],
+    extra_compile_args=compiler_flags,
+    extra_link_args=extra_link_args,
+    depends=[],
+    runtime_library_dirs=["$ORIGIN"],
+    language="cpp",
+)
+vnctptd = Extension(
+    "vnpy.api.ctp.vnctptd",
+    [
+        "vnpy/api/ctp/vnctp/vnctptd/vnctptd.cpp",
+    ],
+    include_dirs=["vnpy/api/ctp/include",
+                  "vnpy/api/ctp/vnctp", ],
+    define_macros=[],
+    undef_macros=[],
+    library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
+    libraries=["thostmduserapi", "thosttraderapi", ],
+    extra_compile_args=compiler_flags,
+    extra_link_args=extra_link_args,
+    runtime_library_dirs=["$ORIGIN"],
+    depends=[],
+    language="cpp",
+)
+vnoes = Extension(
+    "vnpy.api.oes.vnoes",
+    [
+        "vnpy/api/oes/vnoes/generated_files/classes_1.cpp",
+        "vnpy/api/oes/vnoes/generated_files/classes_2.cpp",
+        "vnpy/api/oes/vnoes/generated_files/module.cpp",
+    ],
+    include_dirs=["vnpy/api/oes/include",
+                  "vnpy/api/oes/vnoes", ],
+    define_macros=[("BRIGAND_NO_BOOST_SUPPORT", "1")],
+    undef_macros=[],
+    library_dirs=["vnpy/api/oes/libs"],
+    libraries=["oes_api"],
+    extra_compile_args=compiler_flags,
+    extra_link_args=extra_link_args,
+    depends=[],
+    language="cpp",
+)
 
 if platform.uname().system == "Windows":
     # use pre-built pyd for windows ( support python 3.7 only )
