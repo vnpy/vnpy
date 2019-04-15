@@ -16,6 +16,7 @@ services:
   - postgresql
 
 before_install:
+  - echo eval "${MATRIX_EVAL}"
   - eval "${MATRIX_EVAL}"
 
 before_script:
