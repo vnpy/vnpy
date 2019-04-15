@@ -15,8 +15,6 @@ environment:
 
 before_build:
   - psql -d postgresql://%VNPY_TEST_POSTGRESQL_USER%:%VNPY_TEST_POSTGRESQL_PASSWORD%@localhost -c "create database vnpy;"
-  - ls "C:\Program Files"
-  - ls "C:\Program Files\MySQL\"
   - ps: ls -Rec "C:\Program Files\MySQL\"
   - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u %VNPY_TEST_MYSQL_USER% --password=%VNPY_TEST_MYSQL_PASSWORD% -e 'CREATE DATABASE vnpy;'
   - python -m pip install --upgrade pip wheel setuptools
