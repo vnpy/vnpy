@@ -68,12 +68,6 @@ matrix:
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
-    - name: "pip install under osx"
-      language: shell  # osx supports only shell
-      install:
-        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install.sh python3 pip3
-
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
         # C++17
