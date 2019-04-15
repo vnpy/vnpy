@@ -460,7 +460,7 @@ class BacktestingEngine:
 
         plt.show()
 
-    def run_optimization(self, optimization_setting: OptimizationSetting):
+    def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
         # Get optimization setting and target
         settings = optimization_setting.generate_setting()
@@ -503,9 +503,10 @@ class BacktestingEngine:
         result_values = [result.get() for result in results]
         result_values.sort(reverse=True, key=lambda result: result[1])
 
-        for value in result_values:
-            msg = f"参数：{value[0]}, 目标：{value[1]}"
-            self.output(msg)
+        if output:
+            for value in result_values:
+                msg = f"参数：{value[0]}, 目标：{value[1]}"
+                self.output(msg)
 
         return result_values
 
@@ -957,7 +958,7 @@ def optimize(
     engine.load_data()
     engine.run_backtesting()
     engine.calculate_result()
-    statistics = engine.calculate_statistics()
+    statistics = engine.calculate_statistics(output=False)
 
     target_value = statistics[target_name]
     return (str(setting), target_value, statistics)
