@@ -1,5 +1,8 @@
 clone_depth: 1
 
+cache:
+  - '%LOCALAPPDATA%\pip\Cache'
+
 configuration:
   - pip
   - sdist
