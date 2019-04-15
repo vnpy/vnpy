@@ -60,6 +60,5 @@ for:
       - pip install dist/`ls dist`
 
 test_script:
-  - cd tests;
-  - python test_all.py
+  - ps: cd tests; python test_all.py
 
