@@ -1,11 +1,10 @@
 language: python
 
-cache: pip
-
 dist: xenial  # required for Python >= 3.7 (travis-ci/travis-ci#9069)
 
 python:
   - "3.7"
+
 services:
   - mongodb
   - mysql
@@ -22,6 +21,14 @@ script:
 
 matrix:
   include:
+    - name: "code quality analysis: flake8"
+      before_install:
+        - pip install flake8
+      install:
+        - ""  # prevent running "pip install -r requirements.txt"
+      script:
+        - flake8
+
     - name: "pip install under Windows"
       os: "windows"
       services: []  # service is unavailable under windows
@@ -42,21 +49,6 @@ matrix:
         - pip install -r requirements.txt
         - pip install .
 
-    - name: "pip install under osx"
-      os: osx
-      services: []
-      before_script: []
-      language: shell  # osx supports only shell
-      before_install: []
-      install:
-        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install.sh python3 pip3 /usr/local
-
-      script:
-        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
-        - cd tests; source travis_env.sh;
-        - python3 test_all.py
-
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
         # C++17
@@ -73,3 +65,82 @@ matrix:
         # Linux install script
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
+
+    - name: "pip install under Ubuntu: gcc-7"
+      before_install:
+        # C++17
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -y
+      install:
+        # C++17
+        - sudo apt-get install -y gcc-7 g++-7
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
+        # update pip & setuptools
+        - python -m pip install --upgrade pip wheel setuptools
+        # Linux install script
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - bash ./install.sh
+
+    - name: "pip install under osx"
+      os: osx
+      language: shell  # osx supports only shell
+      services: []
+      before_install: []
+      install:
+        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - bash ./install_osx.sh
+      before_script: []
+      script:
+        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
+        - cd tests; source travis_env.sh;
+        # osx is complicated for me, skip the tests
+        # python3 test_all.py
+
+    - name: "sdist install under Windows"
+      os: "windows"
+      services: []  # service is unavailable under windows
+      # language : cpp is necessary for windows
+      language: "cpp"
+      env:
+        - PATH="/c/Python37:/c/Python37/Scripts:/c/tools/mysql/current/bin:/c/Program Files/PostgreSQL/10/bin:$PATH"
+      before_install:
+        - choco install -yf mysql mongodb
+        # I don't know how enable a "trust" auth method in choco installed psql
+        - choco install -yf postgresql10 --params '/Password:1234'
+        - export VNPY_TEST_POSTGRESQL_PASSWORD=1234
+        - choco install -yf python3 --version 3.7.2
+      install:
+        - python -m pip install --upgrade pip wheel setuptools
+        - python setup.py sdist
+        - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - pip install dist/`ls dist`
+
+    - name: "sdist install under Ubuntu: gcc-8"
+      before_install:
+        # C++17
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -y
+      install:
+        # C++17
+        - sudo apt-get install -y gcc-8 g++-8
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
+        - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
+        # Linux install script
+        - python -m pip install --upgrade pip wheel setuptools
+        - pushd /tmp
+        -   wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+        -   tar -xf ta-lib-0.4.0-src.tar.gz
+        -   cd ta-lib
+        -   ./configure --prefix=/usr
+        -   make
+        -   sudo make install
+        - popd
+        - pip install numpy
+        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - python setup.py sdist
+        - pip install dist/`ls dist`
+
