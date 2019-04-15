@@ -92,12 +92,15 @@ vnoes = Extension(
     libraries=["oes_api"],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
+    runtime_library_dirs=["$ORIGIN"],
     depends=[],
     language="cpp",
 )
 
-if platform.uname().system == "Windows":
+if platform.system() == "Windows":
     # use pre-built pyd for windows ( support python 3.7 only )
+    ext_modules = []
+elif platform.system() == "Darwin":
     ext_modules = []
 else:
     ext_modules = [vnctptd, vnctpmd, vnoes]

@@ -1,5 +1,6 @@
 # flake8: noqa
 import unittest
+import platform
 
 
 # noinspection PyUnresolvedReferences
@@ -24,12 +25,14 @@ class ImportTest(unittest.TestCase):
     def test_import_ib_gateway(self):
         from vnpy.gateway.ib import IbGateway
 
+    @unittest.skipIf(platform.system() == "Darwin", "Not supported yet under osx")
     def test_import_ctp_gateway(self):
         from vnpy.gateway.ctp import CtpGateway
 
     def test_import_tiger_gateway(self):
         from vnpy.gateway.tiger import TigerGateway
 
+    @unittest.skipIf(platform.system() == "Darwin", "Not supported yet under osx")
     def test_import_oes_gateway(self):
         from vnpy.gateway.oes import OesGateway
 
