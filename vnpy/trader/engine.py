@@ -24,7 +24,7 @@ from .event import (
 from .gateway import BaseGateway
 from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
 from .setting import SETTINGS
-from .utility import Singleton, get_folder_path
+from .utility import get_folder_path
 
 
 class MainEngine:
@@ -52,6 +52,7 @@ class MainEngine:
         """
         engine = engine_class(self, self.event_engine)
         self.engines[engine.engine_name] = engine
+        return engine
 
     def add_gateway(self, gateway_class: BaseGateway):
         """
@@ -59,6 +60,7 @@ class MainEngine:
         """
         gateway = gateway_class(self.event_engine)
         self.gateways[gateway.gateway_name] = gateway
+        return gateway
 
     def add_app(self, app_class: BaseApp):
         """
@@ -67,7 +69,8 @@ class MainEngine:
         app = app_class()
         self.apps[app.app_name] = app
 
-        self.add_engine(app.engine_class)
+        engine = self.add_engine(app.engine_class)
+        return engine
 
     def init_engines(self):
         """
@@ -77,11 +80,11 @@ class MainEngine:
         self.add_engine(OmsEngine)
         self.add_engine(EmailEngine)
 
-    def write_log(self, msg: str):
+    def write_log(self, msg: str, source: str = ""):
         """
         Put log event with specific message.
         """
-        log = LogData(msg=msg)
+        log = LogData(msg=msg, gateway_name=source)
         event = Event(EVENT_LOG, log)
         self.event_engine.put(event)
 
@@ -199,8 +202,6 @@ class LogEngine(BaseEngine):
     Processes log event and output with logging module.
     """
 
-    __metaclass__ = Singleton
-
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
         super(LogEngine, self).__init__(main_engine, event_engine, "log")
@@ -209,7 +210,10 @@ class LogEngine(BaseEngine):
             return
 
         self.level = SETTINGS["log.level"]
+
         self.logger = logging.getLogger("VN Trader")
+        self.logger.setLevel(self.level)
+
         self.formatter = logging.Formatter(
             "%(asctime)s  %(levelname)s: %(message)s"
         )
@@ -293,9 +297,9 @@ class OmsEngine(BaseEngine):
         """Add query function to main engine."""
         self.main_engine.get_tick = self.get_tick
         self.main_engine.get_order = self.get_order
+        self.main_engine.get_trade = self.get_trade
         self.main_engine.get_position = self.get_position
         self.main_engine.get_account = self.get_account
-        self.main_engine.get_contract = self.get_contract
         self.main_engine.get_contract = self.get_contract
         self.main_engine.get_all_ticks = self.get_all_ticks
         self.main_engine.get_all_orders = self.get_all_orders

@@ -11,7 +11,7 @@ from vnpy.app.cta_strategy import (
 
 
 class DoubleMaStrategy(CtaTemplate):
-    author = '用Python的交易员'
+    author = "用Python的交易员"
 
     fast_window = 10
     slow_window = 20
@@ -22,8 +22,8 @@ class DoubleMaStrategy(CtaTemplate):
     slow_ma0 = 0.0
     slow_ma1 = 0.0
 
-    parameters = ['fast_window', 'slow_window']
-    variables = ['fast_ma0', 'fast_ma1', 'slow_ma0', 'slow_ma1']
+    parameters = ["fast_window", "slow_window"]
+    variables = ["fast_ma0", "fast_ma1", "slow_ma0", "slow_ma1"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""

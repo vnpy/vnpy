@@ -24,7 +24,7 @@ from .widget import (
     AboutDialog,
 )
 from ..engine import MainEngine
-from ..utility import get_icon_path, TRADER_PATH
+from ..utility import get_icon_path, TRADER_DIR
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -38,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine = main_engine
         self.event_engine = event_engine
 
-        self.window_title = f"VN Trader [{TRADER_PATH}]"
+        self.window_title = f"VN Trader [{TRADER_DIR}]"
 
         self.connect_dialogs = {}
         self.widgets = {}
@@ -110,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
             func = partial(self.open_widget, widget_class, app.app_name)
             icon_path = str(app.app_path.joinpath("ui", app.icon_name))
             self.add_menu_action(
-                app_menu, f"打开{app.display_name}", icon_path, func
+                app_menu, app.display_name, icon_path, func
             )
 
         # Help menu
