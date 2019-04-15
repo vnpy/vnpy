@@ -15,33 +15,36 @@ profiles = {
     Driver.SQLITE: {
         "driver": "sqlite",
         "database": "test_db.db",
-    },
-    Driver.MYSQL: {
-        "driver": "mysql",
-        "database": os.environ['VNPY_TEST_MYSQL_DATABASE'],
-        "host": os.environ['VNPY_TEST_MYSQL_HOST'],
-        "port": int(os.environ['VNPY_TEST_MYSQL_PORT']),
-        "user": os.environ["VNPY_TEST_MYSQL_USER"],
-        "password": os.environ['VNPY_TEST_MYSQL_PASSWORD'],
-    },
-    Driver.POSTGRESQL: {
-        "driver": "postgresql",
-        "database": os.environ['VNPY_TEST_POSTGRESQL_DATABASE'],
-        "host": os.environ['VNPY_TEST_POSTGRESQL_HOST'],
-        "port": int(os.environ['VNPY_TEST_POSTGRESQL_PORT']),
-        "user": os.environ["VNPY_TEST_POSTGRESQL_USER"],
-        "password": os.environ['VNPY_TEST_POSTGRESQL_PASSWORD'],
-    },
-    Driver.MONGODB: {
-        "driver": "mongodb",
-        "database": os.environ['VNPY_TEST_MONGODB_DATABASE'],
-        "host": os.environ['VNPY_TEST_MONGODB_HOST'],
-        "port": int(os.environ['VNPY_TEST_MONGODB_PORT']),
-        "user": "",
-        "password": "",
-        "authentication_source": "",
-    },
+    }
 }
+if 'VNPY_TEST_ONLY_SQLITE' not in os.environ:
+    profiles.update({
+        Driver.MYSQL: {
+            "driver": "mysql",
+            "database": os.environ['VNPY_TEST_MYSQL_DATABASE'],
+            "host": os.environ['VNPY_TEST_MYSQL_HOST'],
+            "port": int(os.environ['VNPY_TEST_MYSQL_PORT']),
+            "user": os.environ["VNPY_TEST_MYSQL_USER"],
+            "password": os.environ['VNPY_TEST_MYSQL_PASSWORD'],
+        },
+        Driver.POSTGRESQL: {
+            "driver": "postgresql",
+            "database": os.environ['VNPY_TEST_POSTGRESQL_DATABASE'],
+            "host": os.environ['VNPY_TEST_POSTGRESQL_HOST'],
+            "port": int(os.environ['VNPY_TEST_POSTGRESQL_PORT']),
+            "user": os.environ["VNPY_TEST_POSTGRESQL_USER"],
+            "password": os.environ['VNPY_TEST_POSTGRESQL_PASSWORD'],
+        },
+        Driver.MONGODB: {
+            "driver": "mongodb",
+            "database": os.environ['VNPY_TEST_MONGODB_DATABASE'],
+            "host": os.environ['VNPY_TEST_MONGODB_HOST'],
+            "port": int(os.environ['VNPY_TEST_MONGODB_PORT']),
+            "user": "",
+            "password": "",
+            "authentication_source": "",
+        },
+    })
 
 
 def now():

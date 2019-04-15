@@ -49,21 +49,6 @@ matrix:
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
-    - name: "pip install under osx"
-      os: osx
-      language: shell  # osx supports only shell
-      services: []
-      before_install: []
-      install:
-        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install_osx.sh
-      before_script: []
-      script:
-        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
-        - cd tests; source travis_env.sh;
-        # osx is complicated for me, skip the tests
-        # python3 test_all.py
-
     - name: "sdist install under Ubuntu: gcc-8"
       addons:
         apt:
@@ -93,3 +78,16 @@ matrix:
         - python setup.py sdist
         - pip install dist/`ls dist`
 
+    - name: "pip install under osx"
+      os: osx
+      language: shell  # osx supports only shell
+      services: []
+      before_install: []
+      install:
+        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - bash ./install_osx.sh
+      before_script: []
+      script:
+        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
+        - cd tests; source travis_env.sh;
+        - VNPY_TEST_ONLY_SQLITE=1 python3 test_all.py
