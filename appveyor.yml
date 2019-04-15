@@ -17,6 +17,8 @@ environment:
   MYSQL_PWD: Password12!
 
 install:
+  - ps: psql -d "postgresql://$ENV:VNPY_TEST_POSTGRESQL_USER:$ENV:VNPY_TEST_POSTGRESQL_PASSWORD@localhost" -c "create database vnpy;"
+  - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u $ENV:VNPY_TEST_MYSQL_USER -e 'CREATE DATABASE vnpy;'
   - python -m pip install --upgrade pip wheel setuptools
 
 build_script:
@@ -25,11 +27,6 @@ build_script:
   - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
   - pip install -r requirements.txt
   - pip install .
-
-before_test:
-  - ps: echo psql -d "postgresql://$ENV:VNPY_TEST_POSTGRESQL_USER:$ENV:VNPY_TEST_POSTGRESQL_PASSWORD@localhost" -c "create database vnpy;"
-  - ps: psql -d "postgresql://$ENV:VNPY_TEST_POSTGRESQL_USER:$ENV:VNPY_TEST_POSTGRESQL_PASSWORD@localhost" -c "create database vnpy;"
-  - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u $ENV:VNPY_TEST_MYSQL_USER -e 'CREATE DATABASE vnpy;'
 
 test_script:
   - cd tests; source travis_env.sh;
