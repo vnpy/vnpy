@@ -1,5 +1,9 @@
 clone_depth: 1
 
+configuration:
+  - pip
+  - sdist
+
 image:
   - Visual Studio 2017
 
@@ -10,11 +14,27 @@ services:
 
 environment:
   PATH: C:\Python37-x64;C:\Python37-x64\Scripts;C:\Program Files\PostgreSQL\9.6\bin\;%PATH%
+  VNPY_TEST_MYSQL_DATABASE: vnpy
+  VNPY_TEST_MYSQL_HOST: localhost
+  VNPY_TEST_MYSQL_PORT: 3306
   VNPY_TEST_MYSQL_USER: root
   VNPY_TEST_MYSQL_PASSWORD: Password12!
+
+  VNPY_TEST_POSTGRESQL_DATABASE:
+  VNPY_TEST_POSTGRESQL_HOST: localhost
+  VNPY_TEST_POSTGRESQL_PORT: 5432
   VNPY_TEST_POSTGRESQL_USER: postgres
   VNPY_TEST_POSTGRESQL_PASSWORD: Password12!
+
+  VNPY_TEST_MONGODB_DATABASE: vnpy
+  VNPY_TEST_MONGODB_HOST: localhost
+  VNPY_TEST_MONGODB_PORT: 27017
+
   MYSQL_PWD: Password12!
+
+  matrix:
+    - BUILD: pip
+    - BUILD: sdist
 
 install:
   - python -m pip install --upgrade pip wheel setuptools
@@ -22,14 +42,30 @@ before_build:
   - ps: psql -d "postgresql://${ENV:VNPY_TEST_POSTGRESQL_USER}:${ENV:VNPY_TEST_POSTGRESQL_PASSWORD}@localhost" -c "create database vnpy;"
   - ps: . "C:\Program Files\MySQL\MySQL Server 5.7\bin\mysql" -u $ENV:VNPY_TEST_MYSQL_USER -e 'CREATE DATABASE vnpy;'
 
-build_script:
-  - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
-  - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
-  - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-  - pip install -r requirements.txt
-  - pip install .
+for:
+  - matrix:
+      only:
+        configuration:
+          pip
+    build_script:
+      - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
+      - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+      - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+      - pip install -r requirements.txt
+      - pip install .
+
+  - matrix:
+      only:
+        configuration:
+          sdist
+    build_script:
+      - python setup.py sdist
+      - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
+      - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
+      - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+      - pip install dist/`ls dist`
 
 test_script:
-  - cd tests; source travis_env.sh;
+  - cd tests;
   - python test_all.py
 
