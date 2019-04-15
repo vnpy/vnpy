@@ -18,7 +18,6 @@ services:
 before_script:
   - psql -d postgresql://postgres:${VNPY_TEST_POSTGRESQL_PASSWORD}@localhost -c "create database vnpy;"
   - mysql -u root --password=${VNPY_TEST_MYSQL_PASSWORD} -e 'CREATE DATABASE vnpy;'
-  - alias make="make -j2"
 
 script:
   - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
@@ -43,6 +42,7 @@ matrix:
           packages:
             - g++-8
       before_install:
+        - alias make="make -j2"
         - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
         - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 90
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-8 90
@@ -51,7 +51,7 @@ matrix:
         - python -m pip install --upgrade pip wheel setuptools
         # Linux install script
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-        - bash ./install.sh
+        - NPY_NUM_BUILD_JOBS=2 bash ./install.sh
 
     - name: "sdist install under Ubuntu: gcc-7"
       addons:
@@ -61,6 +61,7 @@ matrix:
           packages:
             - g++-7
       before_install:
+        - alias make="make -j2"
         - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
         - sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-7 90
         - sudo update-alternatives --install /usr/bin/gcc cc /usr/bin/gcc-7 90
@@ -78,7 +79,7 @@ matrix:
         - pip install numpy
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - python setup.py sdist
-        - pip install dist/`ls dist`
+        - NPY_NUM_BUILD_JOBS=2 pip install dist/`ls dist`
 
     - name: "pip install under osx"
       os: osx

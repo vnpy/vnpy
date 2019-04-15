@@ -22,6 +22,23 @@ import sys
 
 from setuptools import Extension, find_packages, setup
 
+
+def hook_compiler():
+    """
+    if numpy is installed, use compiler from that instead of setuptools,
+    which run faster in multi-core env
+    """
+    try:
+        from numpy.distutils.ccompiler import CCompiler_compile
+        import distutils.ccompiler
+
+        distutils.ccompiler.CCompiler.compile = CCompiler_compile
+    except ImportError:
+        pass
+
+
+hook_compiler()
+
 with open("vnpy/__init__.py", "rb") as f:
     version_line = re.search(
         r"__version__\s+=\s+(.*)", f.read().decode("utf-8")
