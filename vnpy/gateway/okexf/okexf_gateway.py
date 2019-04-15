@@ -90,7 +90,7 @@ def UTC2LOCAL(timestamp):
 
 class OkexFutureGateway(BaseGateway):
     """
-    VN Trader Gateway for OKEX connection.
+    VN Trader Gateway for OKEXFUTURE connection.
     """
 
     default_setting = {
@@ -187,7 +187,6 @@ class OkexFutureRestApi(RestClient):
         Generate OKEX signature.
         """
         # Sign
-        # timestamp = str(time.time())
         timestamp = get_timestamp()
         request.data = json.dumps(request.data)
 
@@ -300,7 +299,6 @@ class OkexFutureRestApi(RestClient):
 
     def query_order(self):
         """"""
-
         for code in instruments:
 
             # get waiting orders
@@ -319,7 +317,6 @@ class OkexFutureRestApi(RestClient):
 
     def query_position(self):
         """"""
-
         self.add_request(
             "GET",
             "/api/futures/v3/position",
@@ -406,9 +403,7 @@ class OkexFutureRestApi(RestClient):
     def on_query_order(self, data, request):
         """"""
         for order_data in data['order_info']:
-
             offset, direct = FROM_OKEXFUTURE_TYPE(order_data['type'])
-
             order = OrderData(
                 symbol=order_data["instrument_id"],
                 exchange=Exchange.OKEX,
@@ -461,7 +456,6 @@ class OkexFutureRestApi(RestClient):
     def on_send_order(self, data, request):
         """Websocket will push a new order status"""
         order = request.extra
-
         error_msg = data["error_message"]
         if error_msg:
             order.status = Status.REJECTED
@@ -590,8 +584,6 @@ class OkexFutureWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):
         """"""
-        # print(str(packet))
-
         if "event" in packet:
             event = packet["event"]
             if event == "subscribe":
@@ -794,7 +786,6 @@ class OkexFutureWebsocketApi(WebsocketClient):
 
     def on_position(self, d):
         """"""
-
         posi = PositionData(
             symbol=d['instrument_id'],
             exchange=Exchange.OKEX,
