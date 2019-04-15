@@ -32,10 +32,6 @@ environment:
 
   MYSQL_PWD: Password12!
 
-  matrix:
-    - BUILD: pip
-    - BUILD: sdist
-
 install:
   - python -m pip install --upgrade pip wheel setuptools
 before_build:
