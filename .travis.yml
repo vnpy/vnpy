@@ -16,7 +16,6 @@ before_script:
   - mysql -u root --password=${VNPY_TEST_MYSQL_PASSWORD} -e 'CREATE DATABASE vnpy;'
 
 script:
-  # todo: use python unittest
   - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
   - cd tests; source travis_env.sh;
   - python test_all.py
@@ -52,6 +51,11 @@ matrix:
       install:
         - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh python3 pip3
+
+      script:
+        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
+        - cd tests; source travis_env.sh;
+        - python3 test_all.py
 
     - name: "pip install under Ubuntu: gcc-8"
       before_install:
