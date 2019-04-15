@@ -65,6 +65,7 @@ if platform.uname().system == "Windows":
     extra_link_args = []
 else:
     compiler_flags = ["-std=c++17",
+                      "-O3",  # Optimization
                       "-Wno-delete-incomplete", "-Wno-sign-compare",
                       ]
     extra_link_args = ["-lstdc++"]
