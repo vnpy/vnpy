@@ -13,3 +13,4 @@ futu-api
 tigeropen
 ta-lib
 ibapi
+mongoengine

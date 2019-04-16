@@ -16,10 +16,12 @@ def init(_: Driver, settings: dict):
     username = settings["user"]
     password = settings["password"]
     authentication_source = settings["authentication_source"]
+
     if not username:  # if username == '' or None, skip username
         username = None
         password = None
         authentication_source = None
+
     connect(
         db=database,
         host=host,
@@ -28,6 +30,7 @@ def init(_: Driver, settings: dict):
         password=password,
         authentication_source=authentication_source,
     )
+
     return MongoManager()
 
 
@@ -51,7 +54,8 @@ class DbBarData(Document):
 
     meta = {
         "indexes": [
-            {"fields": ("datetime", "interval", "symbol", "exchange"), "unique": True}
+            {"fields": ("datetime", "interval", "symbol",
+                        "exchange"), "unique": True}
         ]
     }
 
@@ -141,7 +145,8 @@ class DbTickData(Document):
     ask_volume_4: float = FloatField()
     ask_volume_5: float = FloatField()
 
-    meta = {"indexes": [{"fields": ("datetime", "symbol", "exchange"), "unique": True}]}
+    meta = {"indexes": [
+        {"fields": ("datetime", "symbol", "exchange"), "unique": True}]}
 
     @staticmethod
     def from_tick(tick: TickData):
