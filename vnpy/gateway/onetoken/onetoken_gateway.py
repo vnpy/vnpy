@@ -4,40 +4,29 @@
 
 import hashlib
 import hmac
-import sys
-import time
 import json
-from copy import copy
+import time
 from datetime import datetime
 from threading import Lock
-from urllib.parse import urlencode
+from urllib.parse import urlparse
 
 from requests import ConnectionError
 
 from vnpy.api.rest import Request, RestClient
-from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
     Direction,
     Exchange,
-    OrderType,
-    Product,
     Status,
     Offset
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
     PositionData,
     AccountData,
-    ContractData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
 )
-from urllib.parse import urlparse
-
 
 REST_HOST = 'https://1token.trade/api/v1/trade'
 
