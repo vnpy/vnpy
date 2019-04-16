@@ -53,8 +53,9 @@ class OnetokenGateway(BaseGateway):
     default_setting = {
         "OT Key": "",
         "OT Secret": "",
+        "交易所": "",
+        "账户": "",
         "会话数": 3,
-        "服务器": ["REAL", "TESTNET"],
         "代理地址": "127.0.0.1",
         "代理端口": 1080,
     }
@@ -69,12 +70,13 @@ class OnetokenGateway(BaseGateway):
         """"""
         key = setting["OT Key"]
         secret = setting["OT Secret"]
-        session_number = setting["会话数"] # todo
-        server = setting["服务器"]
+        session_number = setting["会话数"]
+        exchange = setting["交易所"].lower()
+        account = setting["账户"]
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
         self.rest_api.connect(key, secret, session_number,
-                              server, proxy_host, proxy_port)
+                              exchange, account, proxy_host, proxy_port)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -87,12 +89,11 @@ class OnetokenGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        pass
-        # self.rest_api.cancel_order(req)
+        self.rest_api.cancel_order(req)
 
     def query_account(self):
         """"""
-        self.rest_api.get_account()
+        pass
 
     def query_position(self):
         """"""
@@ -117,38 +118,38 @@ class OnetokenRestApi(RestClient):
 
         self.key = ""
         self.secret = ""
+        self.exchange = ""
 
         self.order_count = 1_000_000
         self.order_count_lock = Lock()
 
         self.connect_time = 0
-        self.account = "okex/mock-archer" # todo
+        self.account = ""
 
     def sign(self, request):
         """
         Generate 1Token signature.
         """
-        timeout = 15
         method = request.method
 
         endpoint = request.path
         parsed_url = urlparse(endpoint)
         path = parsed_url.path
 
-        nonce = str(int(time.time() * 1000000))
+        nonce = str(int(time.time() * 1e6))
         data = request.data
-        json_str = json.dumps(data) if data else ''
+        json_str = data if data else ''
 
         message = method + path + nonce + json_str
 
         signature = hmac.new(bytes(self.secret, 'utf8'), bytes(message, 'utf8'), digestmod=hashlib.sha256).hexdigest()
-        print('message:>>>', message)
-        print('signature:>>>>>', signature)
+
         headers = {'Api-Nonce': nonce,
                    'Api-Key': self.key,
                    'Api-Signature': signature,
                    'Content-Type': 'application/json'}
         request.headers = headers
+
         return request
 
     def connect(
@@ -156,7 +157,8 @@ class OnetokenRestApi(RestClient):
             key: str,
             secret: str,
             session_number: int,
-            server: str,
+            exchange: str,
+            account: str,
             proxy_host: str,
             proxy_port: int,
     ):
@@ -165,6 +167,8 @@ class OnetokenRestApi(RestClient):
         """
         self.key = key
         self.secret = secret
+        self.exchange = exchange
+        self.account = account
 
         self.connect_time = (
                 int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
@@ -183,49 +187,74 @@ class OnetokenRestApi(RestClient):
             self.order_count += 1
             return self.order_count
 
-    def query_account(self):
+    def query_account(self):  # get balance and positions at the same time
         """"""
         self.add_request(
             "GET",
-            "/{}/info".format(self.account),
+            "/{}/{}/info".format(self.exchange, self.account),
             callback=self.on_query_account
         )
 
     def on_query_account(self, data, request):
-        """"""
-        print('on response>>>>>>>>>>>>>>>>>>>>', data, request)
+        """This is for WS Example"""
         for account_data in data["position"]:
-            account = AccountData(
-                accountid=account_data["contract"],
-                balance=float(account_data["total_amount"]),
-                frozen=float(account_data["frozen"]),
-                gateway_name=self.gateway_name
-            )
-            self.gateway.on_account(account)
+            _type = account_data['type']
+            if 'spot' in _type:  #统计balance
+                account = AccountData(
+                    accountid=account_data["contract"],
+                    balance=float(account_data["total_amount"]),
+                    frozen=float(account_data["frozen"]),
+                    gateway_name=self.gateway_name
+                )
+                self.gateway.on_account(account)
+            elif _type == 'future':  #期货合约
+                long_position = PositionData(
+                    symbol=account_data["contract"],
+                    exchange=Exchange.OKEX,   # todo add Exchange
+                    direction=Direction.LONG,
+                    volume=account_data['total_amount_long'],
+                    frozen=account_data['total_amount_long'] - account_data['available_long'],
+                    gateway_name=self.gateway_name,
+                    # yd_volume=?
+                )
+                short_position = PositionData(
+                    symbol=account_data["contract"],
+                    exchange=Exchange.OKEX,   # todo add Exchange
+                    direction=Direction.SHORT,
+                    volume=account_data['total_amount_short'],
+                    frozen=account_data['total_amount_short'] - account_data['available_short'],
+                    gateway_name=self.gateway_name,
+                    # yd_volume=?
+                )
+                self.gateway.on_position(long_position)
+                self.gateway.on_position(short_position)
 
         self.gateway.write_log("账户资金查询成功")
+        self.gateway.write_log("账户持仓查询成功")
 
     def send_order(self, req: OrderRequest):
         """"""
         orderid = str(self.connect_time + self._new_order_id())
 
         data = {
-            'contract': req.symbol,
-            'price': int(req.price),
+            'contract': self.exchange + '/' + req.symbol,
+            'price': float(req.price),
             "bs": DIRECTION_VT2ONETOKEN[req.direction],
-            'amount': int(req.volume)
+            'amount': float(req.volume),
+            'client_oid': orderid
         }
 
         if req.offset == Offset.CLOSE:
             data['options'] = {'close': True}
-
+        data = json.dumps(data)
         order = req.create_order_data(orderid, self.gateway_name)
 
         self.add_request(
             method="POST",
-            path="/{}/orders".format(self.account),
+            path="/{}/{}/orders".format(self.exchange, self.account),
             callback=self.on_send_order,
             data=data,
+            params={},
             extra=order,
             on_failed=self.on_send_order_failed,
             on_error=self.on_send_order_error
@@ -234,11 +263,25 @@ class OnetokenRestApi(RestClient):
         self.gateway.on_order(order)
         return order.vt_orderid
 
-    def on_send_order(self, data, request):
-        msg = request.response.text
-        self.gateway.write_log(msg)
+    def cancel_order(self, req: CancelRequest):
+        """"""
+        params = {
+            'client_oid': req.orderid
+        }
 
-    #todo
+        self.add_request(
+            method="DELETE",
+            path="/{}/{}/orders".format(self.exchange, self.account),
+            callback=self.on_cancel_order,
+            params=params,
+            on_error=self.on_cancel_order_error,
+            extra=req
+        )
+
+    def on_send_order(self, data, request):
+        """Websocket will push a new order status"""
+        pass
+
     def on_send_order_failed(self, status_code: str, request: Request):
         """
         Callback when sending order failed on server.
@@ -250,7 +293,6 @@ class OnetokenRestApi(RestClient):
         msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
 
-    #todo
     def on_send_order_error(
             self, exception_type: type, exception_value: Exception, tb, request: Request
     ):
@@ -261,6 +303,20 @@ class OnetokenRestApi(RestClient):
         order.status = Status.REJECTED
         self.gateway.on_order(order)
 
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
+
+    def on_cancel_order(self, data, request):
+        """Websocket will push a new order status"""
+        pass
+
+    def on_cancel_order_error(
+            self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback when cancelling order failed on server.
+        """
         # Record exception if not ConnectionError
         if not issubclass(exception_type, ConnectionError):
             self.on_error(exception_type, exception_value, tb, request)
