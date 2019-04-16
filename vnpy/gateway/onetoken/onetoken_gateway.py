@@ -125,7 +125,6 @@ class OnetokenRestApi(RestClient):
 
         endpoint = '/' + request.path.split('/', 3)[3]
         # v1/trade/okex/mock-example/info -> okex/mock-example/info
-        print('endpoint>>>>', endpoint)
         parsed_url = urlparse(endpoint)
         path = parsed_url.path
 
