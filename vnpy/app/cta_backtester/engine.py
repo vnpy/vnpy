@@ -9,7 +9,8 @@ from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.app.cta_strategy import (
     CtaTemplate,
-    BacktestingEngine
+    BacktestingEngine,
+    OptimizationSetting
 )
 
 
@@ -33,8 +34,12 @@ class BacktesterEngine(BaseEngine):
         self.backtesting_engine = None
         self.thread = None
 
+        # Backtesting reuslt
         self.result_df = None
         self.result_statistics = None
+
+        # Optimization result
+        self.result_values = None
 
         self.load_strategy_class()
 
@@ -162,7 +167,7 @@ class BacktesterEngine(BaseEngine):
         setting: dict
     ):
         if self.thread:
-            self.write_log("已有回测在运行中，请等待完成")
+            self.write_log("已有回测或者优化在运行中，请等待完成")
             return False
 
         self.write_log("-" * 40)
@@ -194,7 +199,102 @@ class BacktesterEngine(BaseEngine):
         """"""
         return self.result_statistics
 
+    def get_result_values(self):
+        """"""
+        return self.result_values
+
     def get_default_setting(self, class_name: str):
         """"""
         strategy_class = self.classes[class_name]
         return strategy_class.get_class_parameters()
+
+    def run_optimization(
+            self,
+            class_name: str,
+            vt_symbol: str,
+            interval: str,
+            start: datetime,
+            end: datetime,
+            rate: float,
+            slippage: float,
+            size: int,
+            pricetick: float,
+            capital: int,
+            optimization_setting: OptimizationSetting):
+        """"""
+        self.write_log("开始多进程参数优化")
+
+        self.result_values = None
+
+        engine = self.backtesting_engine
+        engine.clear_data()
+
+        engine.set_parameters(
+            vt_symbol=vt_symbol,
+            interval=interval,
+            start=start,
+            end=end,
+            rate=rate,
+            slippage=slippage,
+            size=size,
+            pricetick=pricetick,
+            capital=capital
+        )
+
+        strategy_class = self.classes[class_name]
+        engine.add_strategy(
+            strategy_class,
+            {}
+        )
+
+        self.result_values = engine.run_optimization(
+            optimization_setting,
+            output=False
+        )
+
+        # Clear thread object handler.
+        self.thread = None
+        self.write_log("多进程参数优化完成")
+
+        # Put optimization done event
+        event = Event(EVENT_BACKTESTER_OPTIMIZATION_FINISHED)
+        self.event_engine.put(event)
+
+    def start_optimization(
+        self,
+        class_name: str,
+        vt_symbol: str,
+        interval: str,
+        start: datetime,
+        end: datetime,
+        rate: float,
+        slippage: float,
+        size: int,
+        pricetick: float,
+        capital: int,
+        optimization_setting: OptimizationSetting
+    ):
+        if self.thread:
+            self.write_log("已有回测或者优化在运行中，请等待完成")
+            return False
+
+        self.write_log("-" * 40)
+        self.thread = Thread(
+            target=self.run_optimization,
+            args=(
+                class_name,
+                vt_symbol,
+                interval,
+                start,
+                end,
+                rate,
+                slippage,
+                size,
+                pricetick,
+                capital,
+                optimization_setting
+            )
+        )
+        self.thread.start()
+
+        return True
