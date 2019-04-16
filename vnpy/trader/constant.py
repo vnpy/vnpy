@@ -101,6 +101,7 @@ class Exchange(Enum):
     BITMEX = "BITMEX"
     OKEX = "OKEX"
     HUOBI = "HUOBI"
+    BITFINEX = "BITFINEX"
 
 
 class Currency(Enum):
