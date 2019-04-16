@@ -17,7 +17,8 @@ from vnpy.trader.constant import (
     Direction,
     Exchange,
     Status,
-    Offset
+    Offset,
+    Product
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -26,9 +27,10 @@ from vnpy.trader.object import (
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    ContractData
 )
 
-REST_HOST = 'https://1token.trade/api/v1/trade'
+REST_HOST = 'https://1token.trade/api'
 
 DIRECTION_VT2ONETOKEN = {Direction.LONG: "b", Direction.SHORT: "s"}
 DIRECTION_ONETOKEN2VT = {v: k for k, v in DIRECTION_VT2ONETOKEN.items()}
@@ -121,7 +123,9 @@ class OnetokenRestApi(RestClient):
         """
         method = request.method
 
-        endpoint = request.path
+        endpoint = '/' + request.path.split('/', 3)[3]
+        # v1/trade/okex/mock-example/info -> okex/mock-example/info
+        print('endpoint>>>>', endpoint)
         parsed_url = urlparse(endpoint)
         path = parsed_url.path
 
@@ -169,6 +173,8 @@ class OnetokenRestApi(RestClient):
 
         self.gateway.write_log("REST API启动成功")
 
+        self.query_time()
+        self.query_contract()
         self.query_account()
 
     def _new_order_id(self):
@@ -180,7 +186,7 @@ class OnetokenRestApi(RestClient):
         """"""
         self.add_request(
             "GET",
-            "/{}/{}/info".format(self.exchange, self.account),
+            "/v1/trade/{}/{}/info".format(self.exchange, self.account),
             callback=self.on_query_account
         )
 
@@ -221,6 +227,50 @@ class OnetokenRestApi(RestClient):
         self.gateway.write_log("账户资金查询成功")
         self.gateway.write_log("账户持仓查询成功")
 
+    def query_time(self):
+        """"""
+        self.add_request(
+            "GET",
+            "/v1/basic/time",
+            callback=self.on_query_time
+        )
+
+    def on_query_time(self, data, request):
+        """"""
+        server_timestamp = data["server_time"]
+        dt = datetime.utcfromtimestamp(server_timestamp)
+        server_time = dt.isoformat() + 'Z'
+        local_time = datetime.utcnow().isoformat()
+        msg = f"服务器时间：{server_time}，本机时间：{local_time}"
+        self.gateway.write_log(msg)
+
+    def query_contract(self):
+        """"""
+        self.add_request(
+            "GET",
+            "/v1/basic/contracts?exchange={}".format(self.exchange),
+            callback=self.on_query_contract
+        )
+
+    def on_query_contract(self, data, request):
+        """"""
+        for instrument_data in data:
+            symbol = instrument_data["name"]
+            contract = ContractData(
+                symbol=symbol,
+                exchange=Exchange.OKEX,  # todo
+                name=symbol,
+                product=Product.SPOT,  # todo
+                size=float(instrument_data['min_amount']),
+                pricetick=float(instrument_data['unit_amount']),
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_contract(contract)
+        self.gateway.write_log("合约信息查询成功")
+
+        # Start websocket api after instruments data collected
+        # self.gateway.ws_api.start()
+
     def send_order(self, req: OrderRequest):
         """"""
         orderid = str(self.connect_time + self._new_order_id())
@@ -240,7 +290,7 @@ class OnetokenRestApi(RestClient):
 
         self.add_request(
             method="POST",
-            path="/{}/{}/orders".format(self.exchange, self.account),
+            path="/v1/trade/{}/{}/orders".format(self.exchange, self.account),
             callback=self.on_send_order,
             data=data,
             params={},
@@ -260,7 +310,7 @@ class OnetokenRestApi(RestClient):
 
         self.add_request(
             method="DELETE",
-            path="/{}/{}/orders".format(self.exchange, self.account),
+            path="/v1/trade/{}/{}/orders".format(self.exchange, self.account),
             callback=self.on_cancel_order,
             params=params,
             on_error=self.on_cancel_order_error,
