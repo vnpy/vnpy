@@ -171,7 +171,7 @@ class OnetokenRestApi(RestClient):
         self.account = account
 
         self.connect_time = (
-                int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
+            int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
         )
 
         self.init(REST_HOST, proxy_host, proxy_port)
@@ -199,7 +199,7 @@ class OnetokenRestApi(RestClient):
         """This is for WS Example"""
         for account_data in data["position"]:
             _type = account_data['type']
-            if 'spot' in _type:  #统计balance
+            if 'spot' in _type:  # 统计balance
                 account = AccountData(
                     accountid=account_data["contract"],
                     balance=float(account_data["total_amount"]),
@@ -207,7 +207,7 @@ class OnetokenRestApi(RestClient):
                     gateway_name=self.gateway_name
                 )
                 self.gateway.on_account(account)
-            elif _type == 'future':  #期货合约
+            elif _type == 'future':  # 期货合约
                 long_position = PositionData(
                     symbol=account_data["contract"],
                     exchange=Exchange.OKEX,   # todo add Exchange
