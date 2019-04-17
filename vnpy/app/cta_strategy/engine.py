@@ -35,7 +35,7 @@ from vnpy.trader.constant import (
     Offset, 
     Status
 )
-from vnpy.trader.utility import load_json, save_json
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 from vnpy.trader.database import database_manager
 from vnpy.trader.setting import SETTINGS
 
@@ -528,10 +528,14 @@ class CtaEngine(BaseEngine):
         return self.engine_type
 
     def load_bar(
-        self, symbol: str, exchange: Exchange, days: int, interval: Interval,
+        self, 
+        vt_symbol: str, 
+        days: int, 
+        interval: Interval,
         callback: Callable[[BarData], None]
     ):
         """"""
+        symbol, exchange = extract_vt_symbol(vt_symbol)
         end = datetime.now()
         start = end - timedelta(days)
 
@@ -549,9 +553,14 @@ class CtaEngine(BaseEngine):
         for bar in bars:
             callback(bar)
 
-    def load_tick(self, symbol: str, exchange: Exchange, days: int,
-                  callback: Callable[[TickData], None]):
+    def load_tick(
+        self, 
+        vt_symbol: str,
+        days: int,
+        callback: Callable[[TickData], None]
+    ):
         """"""
+        symbol, exchange = extract_vt_symbol(vt_symbol)
         end = datetime.now()
         start = end - timedelta(days)
 

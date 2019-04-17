@@ -49,17 +49,21 @@ class WebsocketClient(object):
         self.proxy_host = None
         self.proxy_port = None
         self.ping_interval = 60     # seconds
+        self.header = {}
 
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
 
-    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0, ping_interval: int = 60):
+    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0, ping_interval: int = 60, header: dict = None):
         """
         :param ping_interval: unit: seconds, type: int
         """
         self.host = host
         self.ping_interval = ping_interval  # seconds
+
+        if header:
+            self.header = header
 
         if proxy_host and proxy_port:
             self.proxy_host = proxy_host
@@ -139,6 +143,7 @@ class WebsocketClient(object):
             sslopt={"cert_reqs": ssl.CERT_NONE},
             http_proxy_host=self.proxy_host,
             http_proxy_port=self.proxy_port,
+            header=self.header
         )
         self.on_connected()
 
