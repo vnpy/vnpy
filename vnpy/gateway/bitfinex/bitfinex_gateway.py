@@ -50,11 +50,11 @@ ORDERTYPE_VT2BITFINEX = {
     OrderType.MARKET: "EXCHANGE MARKET",
 }
 DIRECTION_VT2BITFINEX = {
-    Direction.LONG: "Buy", 
+    Direction.LONG: "Buy",
     Direction.SHORT: "Sell",
 }
 DIRECTION_BITFINEX2VT = {
-    "Buy": Direction.LONG, 
+    "Buy": Direction.LONG,
     "Sell": Direction.SHORT,
 }
 
@@ -204,7 +204,7 @@ class BitfinexRestApi(RestClient):
 
     def on_query_contract(self, data, request):
         """"""
-        for d in data:            
+        for d in data:
             contract = ContractData(
                 symbol=d["pair"].upper(),
                 exchange=Exchange.BITFINEX,
@@ -215,7 +215,7 @@ class BitfinexRestApi(RestClient):
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
-        
+
         self.gateway.write_log("账户资金查询成功")
 
     def on_failed(self, status_code: int, request: Request):
@@ -357,7 +357,7 @@ class BitfinexWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):
         """"""
-        if isinstance(packet, dict):  
+        if isinstance(packet, dict):
             self.on_response(packet)
         else:
             self.on_update(packet)
@@ -412,7 +412,7 @@ class BitfinexWebsocketApi(WebsocketClient):
             tick.low_price = float(l_data1[-1])
             tick.last_price = float(l_data1[-4])
             tick.open_price = float(tick.last_price - l_data1[4])
-        
+
         # Update deep quote
         elif channel == "book":
             bid = self.bidDict.setdefault(symbol, {})
@@ -490,6 +490,7 @@ class BitfinexWebsocketApi(WebsocketClient):
     def on_wallet(self, data):
         """"""
         if str(data[0]) == "exchange":
+            print("wallet", data)
             accountid = str(data[1])
             account = self.accounts.get(accountid, None)
             if not account:
@@ -602,7 +603,8 @@ class BitfinexWebsocketApi(WebsocketClient):
             tick.__setattr__("ask_price_%s" % (n + 1), price)
             tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-        tick.datetime = datetime.strptime(d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tick.datetime = datetime.strptime(
+            d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
         self.gateway.on_tick(copy(tick))
 
     def on_trade(self, data):
@@ -619,7 +621,7 @@ class BitfinexWebsocketApi(WebsocketClient):
             exchange=Exchange.BITFINEX,
             orderid=data[-1],
             direction=direction,
-            volume=data[4],
+            volume=abs(data[4]),
             price=data[5],
             tradeid=str(self.trade_id),
             time=self.generate_date_time(data[2]),
@@ -641,7 +643,12 @@ class BitfinexWebsocketApi(WebsocketClient):
         data = d[4]
         error_info = d[-1]
 
+        # Filter cancel of non-existing order
         orderid = str(data[2])
+        if orderid == "None":
+            self.gateway.write_log("撤单失败，委托不存在")
+            return
+
         if data[6] > 0:
             direction = Direction.LONG
         else:
@@ -666,7 +673,7 @@ class BitfinexWebsocketApi(WebsocketClient):
     def on_order(self, data):
         """"""
         orderid = str(data[2])
-       
+
         if data[7] > 0:
             direction = Direction.LONG
         else:
