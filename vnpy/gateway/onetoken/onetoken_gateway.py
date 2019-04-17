@@ -39,8 +39,11 @@ from vnpy.trader.event import EVENT_TIMER
 
 
 REST_HOST = "https://1token.trade/api"
-DATA_WEBSOCKET_HOST = "wss://1token.trade/api/v1/ws/tick"
-TRADE_WEBSOCKET_HOST = "wss://1token.trade/api/v1/ws/trade"
+# DATA_WEBSOCKET_HOST = "wss://1token.trade/api/v1/ws/tick"
+# TRADE_WEBSOCKET_HOST = "wss://1token.trade/api/v1/ws/trade"
+
+DATA_WEBSOCKET_HOST = "wss://cdn.1tokentrade.cn/api/v1/ws/tick"
+TRADE_WEBSOCKET_HOST = "wss://cdn.1tokentrade.cn/api/v1/ws/trade"
 
 DIRECTION_VT2ONETOKEN = {Direction.LONG: "b", Direction.SHORT: "s"}
 DIRECTION_ONETOKEN2VT = {v: k for k, v in DIRECTION_VT2ONETOKEN.items()}
@@ -555,6 +558,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
 
     def on_packet(self, packet: dict):
         """"""
+        # Reply
         if "uri" in packet:
             channel = packet["uri"]
 
@@ -564,12 +568,12 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
                 data = packet["code"]
             else:
                 data = None
-
+        # Push
         elif "action" in packet:
             channel = packet["action"]
             data = packet.get("data", None)
+        # Other
         else:
-            print(packet)
             return
 
         callback = self.callbacks.get(channel, None)
@@ -634,9 +638,7 @@ class OnetokenTradeWebsocketApi(WebsocketClient):
 
     def on_order(self, data: dict):
         """"""
-        print("--------------------------")
         for order_data in data:
-            print(order_data)
             contract_symbol = order_data["contract"]
             exchange_str, symbol = contract_symbol.split("/")
             timestamp = order_data["entrust_time"][11:19]
