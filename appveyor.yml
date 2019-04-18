@@ -48,7 +48,6 @@ for:
     build_script:
       - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
       - call install.bat
-      - pip install .
 
   - matrix:
       only:
