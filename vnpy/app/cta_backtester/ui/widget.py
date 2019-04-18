@@ -92,6 +92,17 @@ class BacktesterManager(QtWidgets.QWidget):
         self.result_button.clicked.connect(self.show_optimization_result)
         self.result_button.setEnabled(False)
 
+        downloading_button = QtWidgets.QPushButton("下载数据")
+        downloading_button.clicked.connect(self.start_downloading)
+
+        for button in [
+            backtesting_button,
+            optimization_button,
+            downloading_button,
+            self.result_button
+        ]:
+            button.setFixedHeight(button.sizeHint().height() * 2)
+
         form = QtWidgets.QFormLayout()
         form.addRow("交易策略", self.class_combo)
         form.addRow("本地代码", self.symbol_line)
@@ -107,6 +118,7 @@ class BacktesterManager(QtWidgets.QWidget):
 
         left_vbox = QtWidgets.QVBoxLayout()
         left_vbox.addLayout(form)
+        left_vbox.addWidget(downloading_button)
         left_vbox.addStretch()
         left_vbox.addWidget(optimization_button)
         left_vbox.addWidget(self.result_button)
@@ -246,6 +258,20 @@ class BacktesterManager(QtWidgets.QWidget):
         )
 
         self.result_button.setEnabled(False)
+
+    def start_downloading(self):
+        """"""
+        vt_symbol = self.symbol_line.text()
+        interval = self.interval_combo.currentText()
+        start = self.start_date_edit.date().toPyDate()
+        end = self.end_date_edit.date().toPyDate()
+
+        self.backtester_engine.start_downloading(
+            vt_symbol,
+            interval,
+            start,
+            end
+        )
 
     def show_optimization_result(self):
         """"""
