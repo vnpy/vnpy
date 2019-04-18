@@ -4,7 +4,7 @@ General utility functions.
 
 import json
 from pathlib import Path
-from typing import Callable, TYPE_CHECKING
+from typing import Callable
 
 import numpy as np
 import talib

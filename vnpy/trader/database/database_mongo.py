@@ -322,8 +322,8 @@ class MongoManager(BaseDatabaseManager):
             .order_by("-datetime")
             .first()
         )
-        if len(s):
-            return list(s)[0]
+        if s:
+            return s.to_bar()
         return None
 
     def get_newest_tick_data(
@@ -334,6 +334,10 @@ class MongoManager(BaseDatabaseManager):
             .order_by("-datetime")
             .first()
         )
-        if len(s):
-            return list(s)[0]
+        if s:
+            return s.to_tick()
         return None
+
+    def clean(self, symbol: str):
+        DbTickData.objects(symbol=symbol).delete()
+        DbBarData.objects(symbol=symbol).delete()

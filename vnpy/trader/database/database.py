@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
-from typing import Sequence, TYPE_CHECKING, Optional
+from typing import Optional, Sequence, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from vnpy.trader.constant import Interval, Exchange  # noqa
@@ -74,5 +74,12 @@ class BaseDatabaseManager(ABC):
         """
         If there is data in database, return the one with greatest datetime(newest one)
         otherwise, return None
+        """
+        pass
+
+    @abstractmethod
+    def clean(self, symbol: str):
+        """
+        delete all records for a symbol
         """
         pass
