@@ -5,6 +5,9 @@ qdarkstyle
 requests
 websocket-client
 peewee
+pymysql
+psycopg2
+mongoengine
 numpy
 pandas
 matplotlib
@@ -14,4 +17,3 @@ tigeropen
 rqdatac
 ta-lib
 ibapi
-mongoengine
