@@ -47,9 +47,7 @@ for:
         - configuration: pip
     build_script:
       - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
-      - pip install https://pip.vnpy.com/colletion/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl
-      - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
-      - pip install -r requirements.txt
+      - call install.bat
       - pip install .
 
   - matrix:
