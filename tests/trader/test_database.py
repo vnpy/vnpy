@@ -67,6 +67,7 @@ tick = TickData(
 
 
 class TestDatabase(unittest.TestCase):
+
     def connect(self, settings: dict):
         from vnpy.trader.database.initialize import init  # noqa
 
@@ -145,6 +146,11 @@ class TestDatabase(unittest.TestCase):
         for driver, settings in profiles.items():
             with self.subTest(driver=driver, settings=settings):
                 self.connect(settings)
+                got = self.manager.get_newest_bar_data(bar.symbol, bar.exchange, bar.interval)
+                self.assertIsNone(
+                    got,
+                    "database is empty, but return value for newest_bar_data() is not a None"
+                )
 
                 # an older one
                 older_one = copy(bar)
@@ -167,6 +173,11 @@ class TestDatabase(unittest.TestCase):
             with self.subTest(driver=driver, settings=settings):
                 self.connect(settings)
 
+                got = self.manager.get_newest_tick_data(tick.symbol, tick.exchange)
+                self.assertIsNone(
+                    got,
+                    "database is empty, but return value for newest_tick_data() is not a None"
+                )
                 # an older one
                 older_one = copy(tick)
                 older_one.volume = 123
