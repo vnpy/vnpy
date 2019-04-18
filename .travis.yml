@@ -20,7 +20,6 @@ before_script:
   - mysql -u root --password=${VNPY_TEST_MYSQL_PASSWORD} -e 'CREATE DATABASE vnpy;'
 
 script:
-  - pip install psycopg2 mongoengine pymysql  # we should support all database in test environment
   - cd tests; source travis_env.sh;
   - python test_all.py
 
@@ -90,6 +89,5 @@ matrix:
         - bash ./install_osx.sh
       before_script: []
       script:
-        - pip3 install psycopg2 mongoengine pymysql  # we should support all database in test environment
         - cd tests; source travis_env.sh;
         - VNPY_TEST_ONLY_SQLITE=1 python3 test_all.py
