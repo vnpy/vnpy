@@ -22,6 +22,7 @@ popd
 $pip install numpy
 
 # Install extra packages
+$pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
 $pip install ta-lib
 $pip install https://vnpy-pip.oss-cn-shanghai.aliyuncs.com/colletion/ibapi-9.75.1-py3-none-any.whl
 

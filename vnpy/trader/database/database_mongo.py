@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Sequence
+from typing import Sequence, Optional
 
 from mongoengine import DateTimeField, Document, FloatField, StringField, connect
 
@@ -54,8 +54,10 @@ class DbBarData(Document):
 
     meta = {
         "indexes": [
-            {"fields": ("datetime", "interval", "symbol",
-                        "exchange"), "unique": True}
+            {
+                "fields": ("datetime", "interval", "symbol", "exchange"),
+                "unique": True,
+            }
         ]
     }
 
@@ -145,8 +147,14 @@ class DbTickData(Document):
     ask_volume_4: float = FloatField()
     ask_volume_5: float = FloatField()
 
-    meta = {"indexes": [
-        {"fields": ("datetime", "symbol", "exchange"), "unique": True}]}
+    meta = {
+        "indexes": [
+            {
+                "fields": ("datetime", "symbol", "exchange"),
+                "unique": True,
+            }
+        ],
+    }
 
     @staticmethod
     def from_tick(tick: TickData):
@@ -305,3 +313,31 @@ class MongoManager(BaseDatabaseManager):
                     symbol=d.symbol, exchange=d.exchange.value, datetime=d.datetime
                 ).update_one(upsert=True, **updates)
             )
+
+    def get_newest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            DbBarData.objects(symbol=symbol, exchange=exchange.value)
+            .order_by("-datetime")
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
+    def get_newest_tick_data(
+        self, symbol: str, exchange: "Exchange"
+    ) -> Optional["TickData"]:
+        s = (
+            DbTickData.objects(symbol=symbol, exchange=exchange.value)
+            .order_by("-datetime")
+            .first()
+        )
+        if s:
+            return s.to_tick()
+        return None
+
+    def clean(self, symbol: str):
+        DbTickData.objects(symbol=symbol).delete()
+        DbBarData.objects(symbol=symbol).delete()

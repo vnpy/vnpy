@@ -75,6 +75,7 @@ matrix:
         -   sudo make install
         - popd
         - pip install numpy
+        - pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
         - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - python setup.py sdist
         - pip install dist/`ls dist`
