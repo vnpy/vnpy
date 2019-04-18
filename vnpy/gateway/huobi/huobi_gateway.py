@@ -507,7 +507,14 @@ class HuobiWebsocketApiBase(WebsocketClient):
     def on_packet(self, packet):
         """"""
         if "ping" in packet:
-            self.send_packet({"pong": packet["ping"]})
+            req = {"pong": packet["ping"]}
+            self.send_packet(req)
+        elif "op" in packet and packet["op"] == "ping":
+            req = {
+                "op": "pong",
+                "ts": packet["ts"]
+            }
+            self.send_packet(req)
         elif "err-msg" in packet:
             return self.on_error_msg(packet)
         elif "op" in packet and packet["op"] == "auth":
