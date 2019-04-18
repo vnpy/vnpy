@@ -405,7 +405,7 @@ class CtpTdApi(TdApi):
         """"""
         if not error['ErrorID']:
             self.authStatus = True
-            self.writeLog("交易授权验证成功")
+            self.gateway.write_log("交易授权验证成功")
             self.login()
         else:
             self.gateway.write_error("交易授权验证失败", error)
@@ -418,7 +418,7 @@ class CtpTdApi(TdApi):
             self.login_status = True
             self.gateway.write_log("交易登录成功")
             
-            # Confirm settelment
+            # Confirm settlement
             req = {
                 "BrokerID": self.brokerid,
                 "InvestorID": self.userid
@@ -487,11 +487,6 @@ class CtpTdApi(TdApi):
             )
             self.positions[key] = position
         
-        # Get contract size, return if size value not collected
-        size = symbol_size_map.get(position.symbol, None)
-        if not size:
-            return
-        
         # For SHFE position data update
         if position.exchange == Exchange.SHFE:
             if data["YdPosition"] and not data["TodayPosition"]:
@@ -499,6 +494,9 @@ class CtpTdApi(TdApi):
         # For other exchange position data update
         else:
             position.yd_volume = data["Position"] - data["TodayPosition"]
+        
+        # Get contract size (spread contract has no size value)
+        size = symbol_size_map.get(position.symbol, 0)
         
         # Calculate previous position cost
         cost = position.price * position.volume * size
@@ -508,7 +506,7 @@ class CtpTdApi(TdApi):
         position.pnl += data["PositionProfit"]
         
         # Calculate average position price
-        if position.volume:
+        if position.volume and size:
             cost += data["PositionCost"]
             position.price = cost / (position.volume * size)
         
@@ -549,12 +547,15 @@ class CtpTdApi(TdApi):
                 product=product,
                 size=data["VolumeMultiple"],
                 pricetick=data["PriceTick"],
-                option_underlying=data["UnderlyingInstrID"],
-                option_type=OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
-                option_strike=data["StrikePrice"],
-                option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
                 gateway_name=self.gateway_name
             )
+            
+            # For option only
+            if contract.product == Product.OPTION:
+                contract.option_underlying = data["UnderlyingInstrID"],
+                contract.option_type = OPTIONTYPE_CTP2VT.get(data["OptionsType"], None),
+                contract.option_strike = data["StrikePrice"],
+                contract.option_expiry = datetime.strptime(data["ExpireDate"], "%Y%m%d"),
             
             self.gateway.on_contract(contract)
             
@@ -662,7 +663,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "BrokerID": self.brokerid,
             "AuthCode": self.auth_code,
-            "ProductInfo": self.product_info
+            "UserProductInfo": self.product_info
         }
         
         self.reqid += 1
@@ -678,7 +679,8 @@ class CtpTdApi(TdApi):
         req = {
             "UserID": self.userid,
             "Password": self.password,
-            "BrokerID": self.brokerid
+            "BrokerID": self.brokerid,
+            "UserProductInfo": self.product_info
         }
         
         self.reqid += 1

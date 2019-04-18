@@ -71,8 +71,8 @@ class BitmexGateway(BaseGateway):
         "Secret": "",
         "会话数": 3,
         "服务器": ["REAL", "TESTNET"],
-        "代理地址": "127.0.0.1",
-        "代理端口": 1080,
+        "代理地址": "",
+        "代理端口": "",
     }
 
     def __init__(self, event_engine):
@@ -90,6 +90,11 @@ class BitmexGateway(BaseGateway):
         server = setting["服务器"]
         proxy_host = setting["代理地址"]
         proxy_port = setting["代理端口"]
+
+        if proxy_port.isdigit():
+            proxy_port = int(proxy_port)
+        else:
+            proxy_port = 0
 
         self.rest_api.connect(key, secret, session_number,
                               server, proxy_host, proxy_port)

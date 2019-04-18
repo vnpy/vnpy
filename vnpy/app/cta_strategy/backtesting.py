@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import date, datetime
 from typing import Callable
 from itertools import product
+from functools import lru_cache
 import multiprocessing
 
 import numpy as np
@@ -197,28 +198,18 @@ class BacktestingEngine:
         self.output("开始加载历史数据")
 
         if self.mode == BacktestingMode.BAR:
-            s = (
-                DbBarData.select()
-                .where(
-                    (DbBarData.vt_symbol == self.vt_symbol) 
-                    & (DbBarData.interval == self.interval) 
-                    & (DbBarData.datetime >= self.start) 
-                    & (DbBarData.datetime <= self.end)
-                )
-                .order_by(DbBarData.datetime)
+            self.history_data = load_bar_data(
+                self.vt_symbol,
+                self.interval,
+                self.start,
+                self.end
             )
-            self.history_data = [db_bar.to_bar() for db_bar in s]
         else:
-            s = (
-                DbTickData.select()
-                .where(
-                    (DbTickData.vt_symbol == self.vt_symbol) 
-                    & (DbTickData.datetime >= self.start) 
-                    & (DbTickData.datetime <= self.end)
-                )
-                .order_by(DbTickData.datetime)
+            self.history_data = load_tick_data(
+                self.vt_symbol,
+                self.start,
+                self.end
             )
-            self.history_data = [db_tick.to_tick() for db_tick in s]
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
@@ -293,7 +284,7 @@ class BacktestingEngine:
         self.output("逐日盯市盈亏计算完成")
         return self.daily_df
 
-    def calculate_statistics(self, df: DataFrame = None):
+    def calculate_statistics(self, df: DataFrame = None, output=True):
         """"""
         self.output("开始计算策略统计指标")
 
@@ -325,6 +316,7 @@ class BacktestingEngine:
             daily_return = 0
             return_std = 0
             sharpe_ratio = 0
+            return_drawdown_ratio = 0
         else:
             # Calculate balance related time series data
             df["balance"] = df["net_pnl"].cumsum() + self.capital
@@ -373,38 +365,42 @@ class BacktestingEngine:
             else:
                 sharpe_ratio = 0
 
+            return_drawdown_ratio = -total_return / max_ddpercent
+
         # Output
-        self.output("-" * 30)
-        self.output(f"首个交易日：\t{start_date}")
-        self.output(f"最后交易日：\t{end_date}")
+        if output:
+            self.output("-" * 30)
+            self.output(f"首个交易日：\t{start_date}")
+            self.output(f"最后交易日：\t{end_date}")
 
-        self.output(f"总交易日：\t{total_days}")
-        self.output(f"盈利交易日：\t{profit_days}")
-        self.output(f"亏损交易日：\t{loss_days}")
+            self.output(f"总交易日：\t{total_days}")
+            self.output(f"盈利交易日：\t{profit_days}")
+            self.output(f"亏损交易日：\t{loss_days}")
 
-        self.output(f"起始资金：\t{self.capital:,.2f}")
-        self.output(f"结束资金：\t{end_balance:,.2f}")
+            self.output(f"起始资金：\t{self.capital:,.2f}")
+            self.output(f"结束资金：\t{end_balance:,.2f}")
 
-        self.output(f"总收益率：\t{total_return:,.2f}%")
-        self.output(f"年化收益：\t{annual_return:,.2f}%")
-        self.output(f"最大回撤: \t{max_drawdown:,.2f}")
-        self.output(f"百分比最大回撤: {max_ddpercent:,.2f}%")
+            self.output(f"总收益率：\t{total_return:,.2f}%")
+            self.output(f"年化收益：\t{annual_return:,.2f}%")
+            self.output(f"最大回撤: \t{max_drawdown:,.2f}")
+            self.output(f"百分比最大回撤: {max_ddpercent:,.2f}%")
 
-        self.output(f"总盈亏：\t{total_net_pnl:,.2f}")
-        self.output(f"总手续费：\t{total_commission:,.2f}")
-        self.output(f"总滑点：\t{total_slippage:,.2f}")
-        self.output(f"总成交金额：\t{total_turnover:,.2f}")
-        self.output(f"总成交笔数：\t{total_trade_count}")
+            self.output(f"总盈亏：\t{total_net_pnl:,.2f}")
+            self.output(f"总手续费：\t{total_commission:,.2f}")
+            self.output(f"总滑点：\t{total_slippage:,.2f}")
+            self.output(f"总成交金额：\t{total_turnover:,.2f}")
+            self.output(f"总成交笔数：\t{total_trade_count}")
 
-        self.output(f"日均盈亏：\t{daily_net_pnl:,.2f}")
-        self.output(f"日均手续费：\t{daily_commission:,.2f}")
-        self.output(f"日均滑点：\t{daily_slippage:,.2f}")
-        self.output(f"日均成交金额：\t{daily_turnover:,.2f}")
-        self.output(f"日均成交笔数：\t{daily_trade_count}")
+            self.output(f"日均盈亏：\t{daily_net_pnl:,.2f}")
+            self.output(f"日均手续费：\t{daily_commission:,.2f}")
+            self.output(f"日均滑点：\t{daily_slippage:,.2f}")
+            self.output(f"日均成交金额：\t{daily_turnover:,.2f}")
+            self.output(f"日均成交笔数：\t{daily_trade_count}")
 
-        self.output(f"日均收益率：\t{daily_return:,.2f}%")
-        self.output(f"收益标准差：\t{return_std:,.2f}%")
-        self.output(f"Sharpe Ratio：\t{sharpe_ratio:,.2f}")
+            self.output(f"日均收益率：\t{daily_return:,.2f}%")
+            self.output(f"收益标准差：\t{return_std:,.2f}%")
+            self.output(f"Sharpe Ratio：\t{sharpe_ratio:,.2f}")
+            self.output(f"收益回撤比：\t{return_drawdown_ratio:,.2f}")
 
         statistics = {
             "start_date": start_date,
@@ -412,6 +408,7 @@ class BacktestingEngine:
             "total_days": total_days,
             "profit_days": profit_days,
             "loss_days": loss_days,
+            "capital": self.capital,
             "end_balance": end_balance,
             "max_drawdown": max_drawdown,
             "max_ddpercent": max_ddpercent,
@@ -430,6 +427,7 @@ class BacktestingEngine:
             "daily_return": daily_return,
             "return_std": return_std,
             "sharpe_ratio": sharpe_ratio,
+            "return_drawdown_ratio": return_drawdown_ratio,
         }
 
         return statistics
@@ -963,3 +961,45 @@ def optimize(
 
     target_value = statistics[target_name]
     return (str(setting), target_value, statistics)
+
+
+@lru_cache(maxsize=10)
+def load_bar_data(
+    vt_symbol: str, 
+    interval: str, 
+    start: datetime, 
+    end: datetime
+):
+    """"""
+    s = (
+        DbBarData.select()
+        .where(
+            (DbBarData.vt_symbol == vt_symbol) 
+            & (DbBarData.interval == interval) 
+            & (DbBarData.datetime >= start) 
+            & (DbBarData.datetime <= end)
+        )
+        .order_by(DbBarData.datetime)
+    )
+    data = [db_bar.to_bar() for db_bar in s]
+    return data
+
+
+@lru_cache(maxsize=10)
+def load_tick_data(
+    vt_symbol: str, 
+    start: datetime, 
+    end: datetime
+):
+    """"""
+    s = (
+        DbTickData.select()
+        .where(
+            (DbTickData.vt_symbol == vt_symbol) 
+            & (DbTickData.datetime >= start) 
+            & (DbTickData.datetime <= end)
+        )
+        .order_by(DbTickData.datetime)
+    )
+    data = [db_tick.db_tick() for db_tick in s]
+    return data
