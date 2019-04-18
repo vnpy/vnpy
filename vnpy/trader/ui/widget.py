@@ -550,11 +550,11 @@ class ConnectDialog(QtWidgets.QDialog):
             else:
                 field_value = field_type(widget.text())
             setting[field_name] = field_value
-        
+
         save_json(self.filename, setting)
-        
+
         self.main_engine.connect(setting, self.gateway_name)
-        
+
         self.accept()
 
 
@@ -893,6 +893,7 @@ class ContractManager(QtWidgets.QWidget):
         "product": "合约分类",
         "size": "合约乘数",
         "pricetick": "价格跳动",
+        "min_volume": "最小委托量",
         "gateway_name": "交易接口",
     }
 

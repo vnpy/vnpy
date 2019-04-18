@@ -212,6 +212,7 @@ class BitfinexRestApi(RestClient):
                 product=Product.SPOT,
                 size=1,
                 pricetick=1 / pow(10, d["price_precision"]),
+                min_volume=float(d["minimum_order_size"]),
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
