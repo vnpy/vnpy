@@ -7,12 +7,15 @@ from pathlib import Path
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
+from vnpy.trader.constant import Interval
+from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.rqdata import rqdata_client
+from vnpy.trader.database import database_manager
 from vnpy.app.cta_strategy import (
     CtaTemplate,
     BacktestingEngine,
     OptimizationSetting
 )
-
 
 APP_NAME = "CtaBacktester"
 
@@ -52,6 +55,16 @@ class BacktesterEngine(BaseEngine):
         self.backtesting_engine.output = self.write_log
 
         self.write_log("策略文件加载完成")
+
+        self.init_rqdata()
+
+    def init_rqdata(self):
+        """
+        Init RQData client.
+        """
+        result = rqdata_client.init()
+        if result:
+            self.write_log("RQData数据接口初始化成功")
 
     def write_log(self, msg: str):
         """"""
@@ -167,7 +180,7 @@ class BacktesterEngine(BaseEngine):
         setting: dict
     ):
         if self.thread:
-            self.write_log("已有回测或者优化在运行中，请等待完成")
+            self.write_log("已有任务在运行中，请等待完成")
             return False
 
         self.write_log("-" * 40)
@@ -275,7 +288,7 @@ class BacktesterEngine(BaseEngine):
         optimization_setting: OptimizationSetting
     ):
         if self.thread:
-            self.write_log("已有回测或者优化在运行中，请等待完成")
+            self.write_log("已有任务在运行中，请等待完成")
             return False
 
         self.write_log("-" * 40)
@@ -293,6 +306,57 @@ class BacktesterEngine(BaseEngine):
                 pricetick,
                 capital,
                 optimization_setting
+            )
+        )
+        self.thread.start()
+
+        return True
+
+    def run_downloading(
+        self,
+        vt_symbol: str,
+        interval: str,
+        start: datetime,
+        end: datetime
+    ):
+        """
+        Query bar data from RQData.
+        """
+        self.write_log(f"{vt_symbol}-{interval}开始下载历史数据")
+
+        symbol, exchange = extract_vt_symbol(vt_symbol)
+        data = rqdata_client.query_bar(
+            symbol, exchange, Interval(interval), start, end
+        )
+
+        if not data:
+            self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
+
+        database_manager.save_bar_data(data)
+
+        # Clear thread object handler.
+        self.thread = None
+        self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
+
+    def start_downloading(
+        self,
+        vt_symbol: str,
+        interval: str,
+        start: datetime,
+        end: datetime
+    ):
+        if self.thread:
+            self.write_log("已有任务在运行中，请等待完成")
+            return False
+
+        self.write_log("-" * 40)
+        self.thread = Thread(
+            target=self.run_downloading,
+            args=(
+                vt_symbol,
+                interval,
+                start,
+                end
             )
         )
         self.thread.start()
