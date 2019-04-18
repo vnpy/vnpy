@@ -1,6 +1,6 @@
 """"""
 from datetime import datetime
-from typing import List, Sequence, Type
+from typing import List, Optional, Sequence, Type
 
 from peewee import (
     AutoField,
@@ -367,3 +367,40 @@ class SqlManager(BaseDatabaseManager):
     def save_tick_data(self, datas: Sequence[TickData]):
         ds = [self.class_tick.from_tick(i) for i in datas]
         self.class_tick.save_all(ds)
+
+    def get_newest_bar_data(
+        self, symbol: str, exchange: "Exchange", interval: "Interval"
+    ) -> Optional["BarData"]:
+        s = (
+            self.class_bar.select()
+            .where(
+                (self.class_bar.symbol == symbol)
+                & (self.class_bar.exchange == exchange.value)
+                & (self.class_bar.interval == interval.value)
+            )
+            .order_by(self.class_bar.datetime.desc())
+            .first()
+        )
+        if s:
+            return s.to_bar()
+        return None
+
+    def get_newest_tick_data(
+        self, symbol: str, exchange: "Exchange"
+    ) -> Optional["TickData"]:
+        s = (
+            self.class_tick.select()
+            .where(
+                (self.class_tick.symbol == symbol)
+                & (self.class_tick.exchange == exchange.value)
+            )
+            .order_by(self.class_tick.datetime.desc())
+            .first()
+        )
+        if s:
+            return s.to_tick()
+        return None
+
+    def clean(self, symbol: str):
+        self.class_bar.delete().where(self.class_bar.symbol == symbol).execute()
+        self.class_tick.delete().where(self.class_tick.symbol == symbol).execute()
