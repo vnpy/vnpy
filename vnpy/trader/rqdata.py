@@ -35,8 +35,7 @@ class RqdataClient:
                     ('rqdatad-pro.ricequant.com', 16011))
 
         try:
-            df = rqdata_all_instruments(
-                type='Future', date=datetime.now())
+            df = rqdata_all_instruments(date=datetime.now())
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
         except RuntimeError:
@@ -50,24 +49,31 @@ class RqdataClient:
         CZCE product of RQData has symbol like "TA1905" while
         vt symbol is "TA905.CZCE" so need to add "1" in symbol.
         """
-        if exchange is not Exchange.CZCE:
-            return symbol.upper()
-
-        for count, word in enumerate(symbol):
-            if word.isdigit():
-                break
-
-        # noinspection PyUnboundLocalVariable
-        product = symbol[:count]
-        year = symbol[count]
-        month = symbol[count + 1:]
-
-        if year == "9":
-            year = "1" + year
+        if exchange in [Exchange.SSE, Exchange.SZSE]:
+            if exchange == Exchange.SSE:
+                rq_symbol = f"{symbol}.XSHG"
+            else:
+                rq_symbol = f"{symbol}.XSHE"
         else:
-            year = "2" + year
+            if exchange is not Exchange.CZCE:
+                return symbol.upper()
 
-        rq_symbol = f"{product}{year}{month}".upper()
+            for count, word in enumerate(symbol):
+                if word.isdigit():
+                    break
+
+            # noinspection PyUnboundLocalVariable
+            product = symbol[:count]
+            year = symbol[count]
+            month = symbol[count + 1:]
+
+            if year == "9":
+                year = "1" + year
+            else:
+                year = "2" + year
+
+            rq_symbol = f"{product}{year}{month}".upper()
+
         return rq_symbol
 
     def query_bar(

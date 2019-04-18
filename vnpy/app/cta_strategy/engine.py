@@ -871,4 +871,3 @@ class CtaEngine(BaseEngine):
             subject = "CTA策略引擎"
 
         self.main_engine.send_email(subject, msg)
-
