@@ -374,14 +374,15 @@ class HuobiRestApi(RestClient):
             quote_currency = d["quote-currency"]
             name = f"{base_currency.upper()}/{quote_currency.upper()}"
             pricetick = 1 / pow(10, d["price-precision"])
-            size = 1 / pow(10, d["amount-precision"])
-
+            min_volume = 1 / pow(10, d["amount-precision"])
+            
             contract = ContractData(
                 symbol=d["symbol"],
                 exchange=Exchange.HUOBI,
                 name=name,
                 pricetick=pricetick,
-                size=size,
+                size=1,
+                min_volume=min_volume,
                 product=Product.SPOT,
                 gateway_name=self.gateway_name,
             )
