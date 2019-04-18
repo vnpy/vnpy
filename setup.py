@@ -119,6 +119,7 @@ install_requires = [
     "seaborn",
     "futu-api",
     "tigeropen",
+    "rqdatac",
     "ta-lib",
     "ibapi"
 ]
