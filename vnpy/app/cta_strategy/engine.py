@@ -5,7 +5,7 @@ import os
 import traceback
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any, Callable
 from datetime import datetime, timedelta
 from threading import Thread
 from queue import Queue
@@ -37,7 +37,7 @@ from vnpy.trader.constant import (
 )
 from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
 from vnpy.trader.database import database_manager
-from vnpy.trader.setting import SETTINGS
+from vnpy.trader.rqdata import rqdata_client
 
 from .base import (
     APP_NAME,
@@ -124,26 +124,9 @@ class CtaEngine(BaseEngine):
         """
         Init RQData client.
         """
-        username = SETTINGS["rqdata.username"]
-        password = SETTINGS["rqdata.password"]
-        if not username or not password:
-            return
-
-        import rqdatac
-        
-        self.rq_client = rqdatac
-        self.rq_client.init(username, password,
-                            ('rqdatad-pro.ricequant.com', 16011))
-
-        try:
-            df = self.rq_client.all_instruments(
-                type='Future', date=datetime.now())
-            for ix, row in df.iterrows():
-                self.rq_symbols.add(row['order_book_id'])
-        except RuntimeError:
-            pass
-
-        self.write_log("RQData数据接口初始化成功")
+        result = rqdata_client.init()
+        if result:
+            self.write_log("RQData数据接口初始化成功")
 
     def query_bar_from_rq(
         self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
@@ -151,36 +134,9 @@ class CtaEngine(BaseEngine):
         """
         Query bar data from RQData.
         """
-        rq_symbol = to_rq_symbol(symbol, exchange)
-        if rq_symbol not in self.rq_symbols:
-            return None
-        
-        end += timedelta(1)     # For querying night trading period data
-
-        df = self.rq_client.get_price(
-            rq_symbol,
-            frequency=interval.value,
-            fields=["open", "high", "low", "close", "volume"],
-            start_date=start,
-            end_date=end
+        data = rqdata_client.query_bar(
+            symbol, exchange, interval, start, end
         )
-
-        data: List[BarData] = []
-        for ix, row in df.iterrows():
-            bar = BarData(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                datetime=row.name.to_pydatetime(),
-                open_price=row["open"],
-                high_price=row["high"],
-                low_price=row["low"],
-                close_price=row["close"],
-                volume=row["volume"],
-                gateway_name="RQ"
-            )
-            data.append(bar)
-
         return data
 
     def process_tick_event(self, event: Event):
@@ -916,28 +872,3 @@ class CtaEngine(BaseEngine):
 
         self.main_engine.send_email(subject, msg)
 
-
-def to_rq_symbol(symbol: str, exchange: Exchange):
-    """
-    CZCE product of RQData has symbol like "TA1905" while
-    vt symbol is "TA905.CZCE" so need to add "1" in symbol.
-    """
-    if exchange is not Exchange.CZCE:
-        return symbol.upper()
-
-    for count, word in enumerate(symbol):
-        if word.isdigit():
-            break
-
-    # noinspection PyUnboundLocalVariable
-    product = symbol[:count]
-    year = symbol[count]
-    month = symbol[count + 1:]
-    
-    if year == "9":
-        year = "1" + year
-    else:
-        year = "2" + year
-
-    rq_symbol = f"{product}{year}{month}".upper()
-    return rq_symbol
