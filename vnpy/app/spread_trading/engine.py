@@ -1,7 +1,5 @@
 # encoding: UTF-8
 
-import traceback
-
 from vnpy.event import Event, EventEngine
 from vnpy.trader.utility import load_json, save_json
 
