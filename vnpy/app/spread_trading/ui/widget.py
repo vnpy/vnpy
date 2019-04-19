@@ -28,7 +28,6 @@ from vnpy.trader.ui.widget import (
     BaseMonitor,
 )
 
-
 STYLESHEET_START = "background-color: rgb(111,255,244); color: black"
 STYLESHEET_STOP = "background-color: rgb(255,201,111); color: black"
 
@@ -318,10 +317,10 @@ class StAlgoManager(QtWidgets.QTableWidget):
     def initCells(self):
         """"""
         algoEngine = self.algoEngine
-        l = self.algoEngine.getAllAlgoParams()
-        self.setRowCount(len(l))
+        allParams = self.algoEngine.getAllAlgoParams()
+        self.setRowCount(len(allParams))
 
-        for row, d in enumerate(l):
+        for row, d in enumerate(allParams):
             cellSpreadName = QtWidgets.QTableWidgetItem(d["spread_name"])
             cellAlgoName = QtWidgets.QTableWidgetItem(d["algo_name"])
             params = d["Params"]
@@ -367,7 +366,6 @@ class StAlgoManager(QtWidgets.QTableWidget):
             buttonActive = StActiveButton(
                 algoEngine, d["spread_name"], d["algo_name"]
             )
-            # buttonDelete  = StDeleteButton(algoEngine, d['spread_name'], d['algo_name'])
 
             self.setItem(row, 0, cellSpreadName)
             self.setItem(row, 1, cellAlgoName)
@@ -578,13 +576,13 @@ class StModeComboBox(QtWidgets.QComboBox):
         self.spreadName = spreadName
         self.algoName = algoName
 
-        l = [
+        all_modes = [
             SpreadTradingTemplate.MODE_LONGSHORT,
             SpreadTradingTemplate.MODE_LONGONLY,
             SpreadTradingTemplate.MODE_SHORTONLY,
         ]
-        self.addItems(l)
-        self.setCurrentIndex(l.index(mode))
+        self.addItems(all_modes)
+        self.setCurrentIndex(all_modes.index(mode))
 
         self.currentIndexChanged.connect(self.setMode)
 

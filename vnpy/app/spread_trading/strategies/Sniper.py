@@ -1,6 +1,7 @@
 from vnpy.trader.constant import Direction, Status
 from vnpy.app.spread_trading.template import SpreadTradingTemplate
 
+
 ########################################################################
 class SniperAlgo(SpreadTradingTemplate):
     """market order"""
@@ -41,8 +42,8 @@ class SniperAlgo(SpreadTradingTemplate):
 
         # 若当前已有主动腿委托则直接返回
         if (
-            self.active_vt_symbol in self.legOrderDict
-            and self.legOrderDict[self.active_vt_symbol]
+                self.active_vt_symbol in self.legOrderDict
+                and self.legOrderDict[self.active_vt_symbol]
         ):
             return
 
@@ -50,9 +51,9 @@ class SniperAlgo(SpreadTradingTemplate):
         if self.mode == self.MODE_LONGSHORT or self.mode == self.MODE_LONGONLY:
             # 买入
             if (
-                spread.netPos >= 0
-                and spread.netPos < self.maxPosSize
-                and spread.askPrice <= self.buyPrice
+                    spread.netPos >= 0
+                    and spread.netPos < self.maxPosSize
+                    and spread.askPrice <= self.buyPrice
             ):
                 self.quoteActiveLeg(self.SPREAD_LONG)
                 self.writeLog("买入开仓")
@@ -64,14 +65,14 @@ class SniperAlgo(SpreadTradingTemplate):
 
         # 允许做空
         if (
-            self.mode == self.MODE_LONGSHORT
-            or self.mode == self.MODE_SHORTONLY
+                self.mode == self.MODE_LONGSHORT
+                or self.mode == self.MODE_SHORTONLY
         ):
             # 做空
             if (
-                spread.netPos <= 0
-                and spread.netPos > -self.maxPosSize
-                and spread.bidPrice >= self.shortPrice
+                    spread.netPos <= 0
+                    and spread.netPos > -self.maxPosSize
+                    and spread.bidPrice >= self.shortPrice
             ):
                 self.quoteActiveLeg(self.SPREAD_SHORT)
                 self.writeLog("卖出开仓")

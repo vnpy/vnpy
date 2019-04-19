@@ -129,7 +129,7 @@ class StDataEngine(object):
             d = load_json(self.setting_filename)
             for setting in d:
                 self.init_spread(setting)
-        except:
+        except Exception as ex:
             content = "价差配置加载出错，原因：" + traceback.format_exc()
             self.write_Log(content)
 
@@ -341,6 +341,7 @@ class StAlgoEngine(object):
     """"""
 
     algoFileName = r"spreadtrading\algo_setting.json"
+
     # ----------------------------------------------------------------------
     def __init__(self, dataEngine, mainEngine, eventEngine):
         """Constructor"""
@@ -460,34 +461,34 @@ class StAlgoEngine(object):
     # ----------------------------------------------------------------------
     def buy(self, vtSymbol, price, volume, payup=0):
         """Long-Open"""
-        l = self.sendOrder(
+        order_return = self.sendOrder(
             vtSymbol, Direction.LONG, Offset.OPEN, price, volume, payup
         )
-        return l
+        return order_return
 
     # ----------------------------------------------------------------------
     def sell(self, vtSymbol, price, volume, payup=0):
         """Short-Close"""
-        l = self.sendOrder(
+        order_return = self.sendOrder(
             vtSymbol, Direction.SHORT, Offset.CLOSE, price, volume, payup
         )
-        return l
+        return order_return
 
     # ----------------------------------------------------------------------
     def short(self, vtSymbol, price, volume, payup=0):
         """Short-Open"""
-        l = self.sendOrder(
+        order_return = self.sendOrder(
             vtSymbol, Direction.SHORT, Offset.OPEN, price, volume, payup
         )
-        return l
+        return order_return
 
     # ----------------------------------------------------------------------
     def cover(self, vtSymbol, price, volume, payup=0):
         """Long-Close"""
-        l = self.sendOrder(
+        order_return = self.sendOrder(
             vtSymbol, Direction.LONG, Offset.CLOSE, price, volume, payup
         )
-        return l
+        return order_return
 
     # ----------------------------------------------------------------------
     def putAlgoEvent(self, algo):
