@@ -125,13 +125,9 @@ class StDataEngine(object):
     # ----------------------------------------------------------------------
     def loadSetting(self):
         """"""
-        try:
-            d = load_json(self.setting_filename)
-            for setting in d:
-                self.init_spread(setting)
-        except Exception as ex:
-            content = "价差配置加载出错，原因：" + traceback.format_exc()
-            self.write_Log(content)
+        d = load_json(self.setting_filename)
+        for setting in d:
+            self.init_spread(setting)
 
     # ----------------------------------------------------------------------
     def init_spread(self, setting):

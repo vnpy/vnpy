@@ -70,7 +70,6 @@ class StSpread(object):
 
         #
         passiveSettingList = setting["passive_legs"]
-        passiveLegList = []
 
         for d in passiveSettingList:
             passiveLeg = StLeg()

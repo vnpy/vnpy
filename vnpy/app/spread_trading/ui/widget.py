@@ -12,14 +12,14 @@ from ..base import (
     EVENT_SPREADTRADING_TICK,
     EVENT_SPREADTRADING_POS,
     EVENT_SPREADTRADING_LOG,
-    EVENT_SPREADTRADING_ALGO,
+    # EVENT_SPREADTRADING_ALGO,
     EVENT_SPREADTRADING_ALGOLOG,
-    EVENT_SPREADTRADING_ADDSPREAD,
+    # EVENT_SPREADTRADING_ADDSPREAD,
 )
 
 from vnpy.trader.ui.widget import (
     BaseCell,
-    EnumCell,
+    # EnumCell,
     MsgCell,
     TimeCell,
     BidCell,
@@ -686,12 +686,6 @@ class StDeleteButton(QtWidgets.QPushButton):
 
         self.setInit()
         self.clicked.connect(self.cancel)
-
-    # ----------------------------------------------------------------------
-    def cancel(self):
-        """"""
-        algoActive = self.algoEngine.stopAlgo(self.spread_name, self.algo_name)
-        self.setDeleted()
 
     # ----------------------------------------------------------------------
     def setDeleted(self):
