@@ -86,6 +86,7 @@ class Exchange(Enum):
     SSE = "SSE"
     SZSE = "SZSE"
     SGE = "SGE"
+    WXE = "WXE"     # Wuxi Steel Exchange
 
     # Global
     SMART = "SMART"
@@ -96,6 +97,17 @@ class Exchange(Enum):
     ICE = "ICE"
     SEHK = "SEHK"
     HKFE = "HKFE"
+    
+    SGX = "SGX"     # Singapore Global Exchange
+    CBOT = "CBT"
+    DME = "DME"     # Dubai Mercantile Exchange
+    EUREX = "EUX"
+    APEX = "APEX"
+    LME = "LME"     # London Metal Exchange
+    BMD = "BMD"     # Bursa Malaysia Derivatives
+    TOCOM = "TOCOM" # Tokyo Commodity Exchange
+    EUNX = "EUNX"   # Euronext Exchange
+
 
     # CryptoCurrency
     BITMEX = "BITMEX"
