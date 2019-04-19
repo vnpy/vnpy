@@ -4,6 +4,7 @@ import json
 import ssl
 import sys
 import traceback
+import socket
 from datetime import datetime
 from threading import Lock, Thread
 from time import sleep
@@ -184,7 +185,8 @@ class WebsocketClient(object):
 
                         self.on_packet(data)
                 # ws is closed before recv function is called
-                except websocket.WebSocketConnectionClosedException:
+                # For socket.error, see Issue #1608
+                except (websocket.WebSocketConnectionClosedException, socket.error):
                     self._reconnect()
 
                 # other internal exception raised in on_packet
