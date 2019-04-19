@@ -5,11 +5,15 @@ qdarkstyle
 requests
 websocket-client
 peewee
+pymysql
+psycopg2
+mongoengine
 numpy
 pandas
 matplotlib
 seaborn
 futu-api
 tigeropen
+rqdatac
 ta-lib
 ibapi
