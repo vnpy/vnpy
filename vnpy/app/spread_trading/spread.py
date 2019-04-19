@@ -1,10 +1,12 @@
 from datetime import datetime
 from dataclasses import dataclass
 
+
 @dataclass
 class StLeg(object):
     """"""
-    vt_symbol = ''
+
+    vt_symbol = ""
     ratio = 0
     multiplier = 0.0
     payup = 0
@@ -18,6 +20,7 @@ class StLeg(object):
     shortPos = 0
     netPos = 0
 
+
 ########################################################################
 class StSpread(object):
     """"""
@@ -26,17 +29,13 @@ class StSpread(object):
     Standard Spread
     """
 
-    parameters = ["spread_name",
-                  "vt_symbol",
-                  "ratio",
-                  "multiplier",
-                  "payup", ]
+    parameters = ["spread_name", "vt_symbol", "ratio", "multiplier", "payup"]
 
     # ----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.name = ''
-        self.symbol = ''
+        self.name = ""
+        self.symbol = ""
 
         self.activeLeg = None
         self.passiveLegs = []
@@ -46,7 +45,7 @@ class StSpread(object):
         self.askPrice = 0.0
         self.bidVolume = 0
         self.askVolume = 0
-        self.time = ''
+        self.time = ""
 
         self.longPos = 0
         self.shortPos = 0
@@ -56,35 +55,35 @@ class StSpread(object):
     def initSpread(self, setting):
         """"""
         result = False
-        msg = ''
+        msg = ""
 
         #
-        self.name = setting['spread_name']
-        activeSetting = setting['active_legs']
+        self.name = setting["spread_name"]
+        activeSetting = setting["active_legs"]
 
         activeLeg = StLeg()
-        activeLeg.vt_symbol = str(activeSetting['vt_symbol'])
-        activeLeg.ratio = float(activeSetting['ratio'])
-        activeLeg.multiplier = float(activeSetting['multiplier'])
-        activeLeg.payup = int(activeSetting['payup'])
+        activeLeg.vt_symbol = str(activeSetting["vt_symbol"])
+        activeLeg.ratio = float(activeSetting["ratio"])
+        activeLeg.multiplier = float(activeSetting["multiplier"])
+        activeLeg.payup = int(activeSetting["payup"])
         self.addActiveLeg(activeLeg)
 
         #
-        passiveSettingList = setting['passive_legs']
+        passiveSettingList = setting["passive_legs"]
         passiveLegList = []
 
         for d in passiveSettingList:
             passiveLeg = StLeg()
-            passiveLeg.vt_symbol = str(d['vt_symbol'])
-            passiveLeg.ratio = float(d['ratio'])
-            passiveLeg.multiplier = float(d['multiplier'])
-            passiveLeg.payup = int(d['payup'])
+            passiveLeg.vt_symbol = str(d["vt_symbol"])
+            passiveLeg.ratio = float(d["ratio"])
+            passiveLeg.multiplier = float(d["multiplier"])
+            passiveLeg.payup = int(d["payup"])
 
             self.addPassiveLeg(passiveLeg)
 
         #
         result = True
-        msg = '%s价差创建成功' % self.name
+        msg = "%s价差创建成功" % self.name
         return result, msg
 
     # ----------------------------------------------------------------------
@@ -104,12 +103,12 @@ class StSpread(object):
 
         for leg in self.allLegs:
             if leg.multiplier >= 0:
-                legSymbol = '+%s*%s' % (leg.multiplier, leg.vt_symbol)
+                legSymbol = "+%s*%s" % (leg.multiplier, leg.vt_symbol)
             else:
-                legSymbol = '%s*%s' % (leg.multiplier, leg.vt_symbol)
+                legSymbol = "%s*%s" % (leg.multiplier, leg.vt_symbol)
             legSymbolList.append(legSymbol)
 
-        self.symbol = ''.join(legSymbolList)
+        self.symbol = "".join(legSymbolList)
 
     # ----------------------------------------------------------------------
     def calculatePrice(self):
@@ -144,7 +143,7 @@ class StSpread(object):
                 self.askVolume = min(self.askVolume, legAdjustedAskVolume)
 
         # update time
-        self.time = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+        self.time = datetime.now().strftime("%H:%M:%S.%f")[:-3]
 
     # ----------------------------------------------------------------------
     def calculatePos(self):

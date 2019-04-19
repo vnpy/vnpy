@@ -29,15 +29,15 @@ from vnpy.trader.ui.widget import (
 )
 
 
-STYLESHEET_START = 'background-color: rgb(111,255,244); color: black'
-STYLESHEET_STOP = 'background-color: rgb(255,201,111); color: black'
+STYLESHEET_START = "background-color: rgb(111,255,244); color: black"
+STYLESHEET_STOP = "background-color: rgb(255,201,111); color: black"
 
 
 ########################################################################
 class SpreadManager(QtWidgets.QWidget):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         super(SpreadManager, self).__init__()
 
@@ -49,7 +49,7 @@ class SpreadManager(QtWidgets.QWidget):
         self.init()
         self.update_class_combo()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """"""
         self.setWindowTitle("价差策略")
@@ -67,18 +67,18 @@ class SpreadManager(QtWidgets.QWidget):
         add_button = QtWidgets.QPushButton("Add Trading")
         add_button.clicked.connect(self.add_trading)
 
-        save_button = QtWidgets.QPushButton('Save')
+        save_button = QtWidgets.QPushButton("Save")
         save_button.clicked.connect(self.save_setting)
 
-        buttonStopAll = QtWidgets.QPushButton('全部停止')
+        buttonStopAll = QtWidgets.QPushButton("全部停止")
         buttonStopAll.clicked.connect(self.algo_Manager.stopAll)
 
         #
-        groupTick = StGroup(tick_Monitor, '价差行情')
-        groupPos = StGroup(pos_Monitor, '价差持仓')
-        groupLog = StGroup(log_Monitor, '日志信息')
-        groupAlgo = StGroup(self.algo_Manager, '价差算法')
-        groupAlgoLog = StGroup(algoLog_Monitor, '算法信息')
+        groupTick = StGroup(tick_Monitor, "价差行情")
+        groupPos = StGroup(pos_Monitor, "价差持仓")
+        groupLog = StGroup(log_Monitor, "日志信息")
+        groupAlgo = StGroup(self.algo_Manager, "价差算法")
+        groupAlgoLog = StGroup(algoLog_Monitor, "算法信息")
 
         #
         hbox = QtWidgets.QHBoxLayout()
@@ -100,9 +100,7 @@ class SpreadManager(QtWidgets.QWidget):
 
     def update_class_combo(self):
         """"""
-        self.class_combo.addItems(
-            self.st_engine.get_all_strategy_names()
-        )
+        self.class_combo.addItems(self.st_engine.get_all_strategy_names())
 
     def show(self):
         """"""
@@ -124,50 +122,48 @@ class SpreadManager(QtWidgets.QWidget):
     def add_spread(self):
         """"""
         parameters = {
-            'spread_name':'',
-            'active_vt_symbol':'',
-            'active_ratio':0,
-            'active_multiplier':0,
-            'active_payup':0,
-            'passive_vt_symbol': '',
-            'passive_ratio': 0,
-            'passive_multiplier': 0,
-            'passive_payup': 0,
+            "spread_name": "",
+            "active_vt_symbol": "",
+            "active_ratio": 0,
+            "active_multiplier": 0,
+            "active_payup": 0,
+            "passive_vt_symbol": "",
+            "passive_ratio": 0,
+            "passive_multiplier": 0,
+            "passive_payup": 0,
         }
 
         editor = SettingEditor(parameters)
         n = editor.exec_()
 
-        setting = {'spread_name': ''}
+        setting = {"spread_name": ""}
         if n == editor.Accepted:
             s = editor.get_setting()
             setting = {
-                'spread_name':s['spread_name'],
-                'active_legs':
+                "spread_name": s["spread_name"],
+                "active_legs": {
+                    "vt_symbol": s["active_vt_symbol"],
+                    "ratio": s["active_ratio"],
+                    "multiplier": s["active_multiplier"],
+                    "payup": s["active_payup"],
+                },
+                "passive_legs": [
                     {
-                        'vt_symbol':s['active_vt_symbol'],
-                        'ratio':s['active_ratio'],
-                        'multiplier': s['active_multiplier'],
-                        'payup': s['active_payup'],
-                    },
-                'passive_legs':
-                    [{
-                        'vt_symbol': s['passive_vt_symbol'],
-                        'ratio': s['passive_ratio'],
-                        'multiplier': s['passive_multiplier'],
-                        'payup': s['passive_payup'],
-                    }]}
+                        "vt_symbol": s["passive_vt_symbol"],
+                        "ratio": s["passive_ratio"],
+                        "multiplier": s["passive_multiplier"],
+                        "payup": s["passive_payup"],
+                    }
+                ],
+            }
 
             self.st_engine.add_spread(setting)
 
-        return setting['spread_name']
-
+        return setting["spread_name"]
 
     def delete_trading(self):
         """"""
-        parameters = {
-            'name':'',
-        }
+        parameters = {"name": ""}
 
         editor = SettingEditor(parameters)
         n = editor.exec_()
@@ -179,9 +175,9 @@ class SpreadManager(QtWidgets.QWidget):
     def add_algo(self, spread_name, algo_name):
         """"""
         setting = {
-            'spread_name': spread_name,
-            'algo_name': algo_name,
-            'Params': {}
+            "spread_name": spread_name,
+            "algo_name": algo_name,
+            "Params": {},
         }
         self.st_engine.add_algo(setting)
         self.algo_Manager.initCells()
@@ -195,15 +191,15 @@ class SpreadManager(QtWidgets.QWidget):
                 widget.show()
             else:
                 widget.hide()
+
+
 ########################################################################
 class SettingEditor(QtWidgets.QDialog):
     """
     For creating new strategy and editing strategy parameters.
     """
 
-    def __init__(
-        self, parameters: dict
-    ):
+    def __init__(self, parameters: dict):
         """"""
         super(SettingEditor, self).__init__()
 
@@ -222,7 +218,6 @@ class SettingEditor(QtWidgets.QDialog):
         button_text = "添加"
         parameters = {}
         parameters.update(self.parameters)
-
 
         for name, value in parameters.items():
             type_ = type(value)
@@ -264,11 +259,13 @@ class SettingEditor(QtWidgets.QDialog):
             setting[name] = value
 
         return setting
+
+
 ########################################################################
 class StGroup(QtWidgets.QGroupBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, widget, title, parent=None):
         """Constructor"""
         super(StGroup, self).__init__(parent)
@@ -278,42 +275,46 @@ class StGroup(QtWidgets.QGroupBox):
         vbox.addWidget(widget)
         self.setLayout(vbox)
 
+
 ########################################################################
 class StAlgoManager(QtWidgets.QTableWidget):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, stEngine, parent=None):
         """Constructor"""
         super(StAlgoManager, self).__init__(parent)
 
         self.algoEngine = stEngine.algoEngine
 
-        self.buttonActiveDict = {}       # spreadName: buttonActive
+        self.buttonActiveDict = {}  # spreadName: buttonActive
 
         self.initUi()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initUi(self):
         """"""
-        headers = ['价差',
-                   '算法',
-                   '买开',
-                   '买平',
-                   '卖开',
-                   '卖平',
-                   '委托上限',
-                   '持仓上限',
-                   '模式',
-                   '状态',
-                   ]
+        headers = [
+            "价差",
+            "算法",
+            "买开",
+            "买平",
+            "卖开",
+            "卖平",
+            "委托上限",
+            "持仓上限",
+            "模式",
+            "状态",
+        ]
         self.setColumnCount(len(headers))
         self.setHorizontalHeaderLabels(headers)
-        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch
+        )
         self.verticalHeader().setVisible(False)
         self.setEditTriggers(self.NoEditTriggers)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def initCells(self):
         """"""
         algoEngine = self.algoEngine
@@ -321,17 +322,51 @@ class StAlgoManager(QtWidgets.QTableWidget):
         self.setRowCount(len(l))
 
         for row, d in enumerate(l):
-            cellSpreadName = QtWidgets.QTableWidgetItem(d['spread_name'])
-            cellAlgoName = QtWidgets.QTableWidgetItem(d['algo_name'])
-            params = d['Params']
-            spinBuyPrice = StBuyPriceSpinBox(algoEngine, d['spread_name'], d['algo_name'], params['buyPrice'])
-            spinCoverPrice = StCoverPriceSpinBox(algoEngine, d['spread_name'], d['algo_name'], params['coverPrice'])
-            spinShortPrice = StShortPriceSpinBox(algoEngine, d['spread_name'], d['algo_name'], params['shortPrice'])
-            spinSellPrice = StSellPriceSpinBox(algoEngine, d['spread_name'], d['algo_name'], params['sellPrice'])
-            spinMaxOrderSize = StMaxOrderSizeSpinBox(algoEngine, d['spread_name'], d['algo_name'], params['maxOrderSize'])
-            spinMaxPosSize = StMaxPosSizeSpinBox(algoEngine, d['spread_name'], d['algo_name'], params['maxPosSize'])
-            comboMode = StModeComboBox(algoEngine, d['spread_name'], d['algo_name'], params['mode'])
-            buttonActive = StActiveButton(algoEngine, d['spread_name'], d['algo_name'])
+            cellSpreadName = QtWidgets.QTableWidgetItem(d["spread_name"])
+            cellAlgoName = QtWidgets.QTableWidgetItem(d["algo_name"])
+            params = d["Params"]
+            spinBuyPrice = StBuyPriceSpinBox(
+                algoEngine,
+                d["spread_name"],
+                d["algo_name"],
+                params["buyPrice"],
+            )
+            spinCoverPrice = StCoverPriceSpinBox(
+                algoEngine,
+                d["spread_name"],
+                d["algo_name"],
+                params["coverPrice"],
+            )
+            spinShortPrice = StShortPriceSpinBox(
+                algoEngine,
+                d["spread_name"],
+                d["algo_name"],
+                params["shortPrice"],
+            )
+            spinSellPrice = StSellPriceSpinBox(
+                algoEngine,
+                d["spread_name"],
+                d["algo_name"],
+                params["sellPrice"],
+            )
+            spinMaxOrderSize = StMaxOrderSizeSpinBox(
+                algoEngine,
+                d["spread_name"],
+                d["algo_name"],
+                params["maxOrderSize"],
+            )
+            spinMaxPosSize = StMaxPosSizeSpinBox(
+                algoEngine,
+                d["spread_name"],
+                d["algo_name"],
+                params["maxPosSize"],
+            )
+            comboMode = StModeComboBox(
+                algoEngine, d["spread_name"], d["algo_name"], params["mode"]
+            )
+            buttonActive = StActiveButton(
+                algoEngine, d["spread_name"], d["algo_name"]
+            )
             # buttonDelete  = StDeleteButton(algoEngine, d['spread_name'], d['algo_name'])
 
             self.setItem(row, 0, cellSpreadName)
@@ -348,19 +383,22 @@ class StAlgoManager(QtWidgets.QTableWidget):
 
             buttonActive.signalActive.connect(comboMode.algoActiveChanged)
 
-            self.buttonActiveDict[d['spread_name']] = buttonActive
+            self.buttonActiveDict[d["spread_name"]] = buttonActive
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def stopAll(self):
         """"""
         for button in list(self.buttonActiveDict.values()):
             button.stop()
 
+
 """"""
+
+
 class StBuyPriceSpinBox(QtWidgets.QDoubleSpinBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, price, parent=None):
         """Constructor"""
         super(StBuyPriceSpinBox, self).__init__(parent)
@@ -376,16 +414,19 @@ class StBuyPriceSpinBox(QtWidgets.QDoubleSpinBox):
 
         self.valueChanged.connect(self.setPrice)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setPrice(self, value):
         """"""
         self.algoEngine.setAlgoBuyPrice(self.spreadName, self.algoName, value)
 
+
 """"""
+
+
 class StSellPriceSpinBox(QtWidgets.QDoubleSpinBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, price, parent=None):
         """Constructor"""
         super(StSellPriceSpinBox, self).__init__(parent)
@@ -400,16 +441,19 @@ class StSellPriceSpinBox(QtWidgets.QDoubleSpinBox):
 
         self.valueChanged.connect(self.setPrice)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setPrice(self, value):
         """"""
-        self.algoEngine.setAlgoSellPrice(self.spreadName,self.algoName, value)
+        self.algoEngine.setAlgoSellPrice(self.spreadName, self.algoName, value)
+
 
 """"""
+
+
 class StShortPriceSpinBox(QtWidgets.QDoubleSpinBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, price, parent=None):
         """Constructor"""
         super(StShortPriceSpinBox, self).__init__(parent)
@@ -424,16 +468,21 @@ class StShortPriceSpinBox(QtWidgets.QDoubleSpinBox):
 
         self.valueChanged.connect(self.setPrice)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setPrice(self, value):
         """"""
-        self.algoEngine.setAlgoShortPrice(self.spreadName,self.algoName, value)
+        self.algoEngine.setAlgoShortPrice(
+            self.spreadName, self.algoName, value
+        )
+
 
 """"""
+
+
 class StCoverPriceSpinBox(QtWidgets.QDoubleSpinBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, price, parent=None):
         """Constructor"""
         super(StCoverPriceSpinBox, self).__init__(parent)
@@ -448,16 +497,21 @@ class StCoverPriceSpinBox(QtWidgets.QDoubleSpinBox):
 
         self.valueChanged.connect(self.setPrice)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setPrice(self, value):
         """"""
-        self.algoEngine.setAlgoCoverPrice(self.spreadName, self.algoName, value)
+        self.algoEngine.setAlgoCoverPrice(
+            self.spreadName, self.algoName, value
+        )
+
 
 """"""
+
+
 class StMaxPosSizeSpinBox(QtWidgets.QDoubleSpinBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, size, parent=None):
         """Constructor"""
         super(StMaxPosSizeSpinBox, self).__init__(parent)
@@ -472,16 +526,21 @@ class StMaxPosSizeSpinBox(QtWidgets.QDoubleSpinBox):
 
         self.valueChanged.connect(self.setSize)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setSize(self, size):
         """"""
-        self.algoEngine.setAlgoMaxPosSize(self.spread_name, self.algo_name, size)
+        self.algoEngine.setAlgoMaxPosSize(
+            self.spread_name, self.algo_name, size
+        )
+
 
 """"""
+
+
 class StMaxOrderSizeSpinBox(QtWidgets.QDoubleSpinBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, size, parent=None):
         """Constructor"""
         super(StMaxOrderSizeSpinBox, self).__init__(parent)
@@ -496,16 +555,21 @@ class StMaxOrderSizeSpinBox(QtWidgets.QDoubleSpinBox):
 
         self.valueChanged.connect(self.setSize)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setSize(self, size):
         """"""
-        self.algoEngine.setAlgoMaxOrderSize(self.spreadName, self.algoName, size)
+        self.algoEngine.setAlgoMaxOrderSize(
+            self.spreadName, self.algoName, size
+        )
+
 
 """"""
+
+
 class StModeComboBox(QtWidgets.QComboBox):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, mode, parent=None):
         """Constructor"""
         super(StModeComboBox, self).__init__(parent)
@@ -514,21 +578,23 @@ class StModeComboBox(QtWidgets.QComboBox):
         self.spreadName = spreadName
         self.algoName = algoName
 
-        l = [SpreadTradingTemplate.MODE_LONGSHORT,
-             SpreadTradingTemplate.MODE_LONGONLY,
-             SpreadTradingTemplate.MODE_SHORTONLY]
+        l = [
+            SpreadTradingTemplate.MODE_LONGSHORT,
+            SpreadTradingTemplate.MODE_LONGONLY,
+            SpreadTradingTemplate.MODE_SHORTONLY,
+        ]
         self.addItems(l)
         self.setCurrentIndex(l.index(mode))
 
         self.currentIndexChanged.connect(self.setMode)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setMode(self):
         """"""
         mode = str(self.currentText())
         self.algoEngine.setAlgoMode(self.spreadName, self.algoName, mode)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def algoActiveChanged(self, active):
         """"""
         # not allow change settings when algo running
@@ -537,12 +603,16 @@ class StModeComboBox(QtWidgets.QComboBox):
         else:
             self.setEnabled(True)
 
+
 """"""
+
+
 class StActiveButton(QtWidgets.QPushButton):
     """"""
+
     signalActive = QtCore.pyqtSignal(bool)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, parent=None):
         """Constructor"""
         super(StActiveButton, self).__init__(parent)
@@ -556,7 +626,7 @@ class StActiveButton(QtWidgets.QPushButton):
 
         self.clicked.connect(self.buttonClicked)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def buttonClicked(self):
         """"""
         if self.active:
@@ -564,44 +634,50 @@ class StActiveButton(QtWidgets.QPushButton):
         else:
             self.start()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def stop(self):
         """"""
         algoActive = self.algoEngine.stopAlgo(self.spread_name, self.algo_name)
         if not algoActive:
             self.setStopped()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def start(self):
         """"""
-        algoActive = self.algoEngine.startAlgo(self.spread_name, self.algo_name)
+        algoActive = self.algoEngine.startAlgo(
+            self.spread_name, self.algo_name
+        )
         if algoActive:
             self.setStarted()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setStarted(self):
         """"""
-        self.setText('运行中')
+        self.setText("运行中")
         self.setStyleSheet(STYLESHEET_START)
 
         self.active = True
         self.signalActive.emit(self.active)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setStopped(self):
         """"""
-        self.setText('已停止')
+        self.setText("已停止")
         self.setStyleSheet(STYLESHEET_STOP)
 
         self.active = False
         self.signalActive.emit(self.active)
 
+
 """"""
+
+
 class StDeleteButton(QtWidgets.QPushButton):
     """"""
+
     signalActive = QtCore.pyqtSignal(bool)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def __init__(self, algoEngine, spreadName, algoName, parent=None):
         """Constructor"""
         super(StDeleteButton, self).__init__(parent)
@@ -613,62 +689,67 @@ class StDeleteButton(QtWidgets.QPushButton):
         self.setInit()
         self.clicked.connect(self.cancel)
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def cancel(self):
         """"""
         algoActive = self.algoEngine.stopAlgo(self.spread_name, self.algo_name)
         self.setDeleted()
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setDeleted(self):
         """"""
-        self.setText('Deleted！')
+        self.setText("Deleted！")
         self.setStyleSheet(STYLESHEET_STOP)
         self.signalActive.emit(False)
 
     # ----------------------------------------------------------------------
     def setInit(self):
         """"""
-        self.setText('Delete')
+        self.setText("Delete")
         self.setStyleSheet(STYLESHEET_START)
         self.signalActive.emit(True)
+
 
 ########################################################################
 class StTickMonitor(BaseMonitor):
     """"""
+
     event_type = EVENT_SPREADTRADING_TICK
     data_key = "name"
     sorting = True
 
     headers = {
-        "name": {'display': '价差名称', 'cell': BaseCell, 'update':False},
-        "bidPrice": {'display': '买价', 'cell': BidCell, 'update':True},
-        "bidVolume": {'display': '买量', 'cell': BidCell, 'update':True},
-        "askPrice": {'display': '卖价', 'cell': AskCell, 'update':True},
-        "askVolume": {'display': '卖量', 'cell': AskCell, 'update':True},
-        "time": {'display': '时间', 'cell': BaseCell, 'update':True},
-        "symbol": {'display': '价差公式', 'cell': BaseCell, 'update':False},
+        "name": {"display": "价差名称", "cell": BaseCell, "update": False},
+        "bidPrice": {"display": "买价", "cell": BidCell, "update": True},
+        "bidVolume": {"display": "买量", "cell": BidCell, "update": True},
+        "askPrice": {"display": "卖价", "cell": AskCell, "update": True},
+        "askVolume": {"display": "卖量", "cell": AskCell, "update": True},
+        "time": {"display": "时间", "cell": BaseCell, "update": True},
+        "symbol": {"display": "价差公式", "cell": BaseCell, "update": False},
     }
+
 
 ########################################################################
 class StPosMonitor(BaseMonitor):
     """"""
 
     event_type = EVENT_SPREADTRADING_POS
-    data_key = 'name'
+    data_key = "name"
 
     headers = {}
-    headers['name'] = {'display': '价差名称', 'cell': BaseCell, 'update':True}
-    headers['netPos'] = {'display': '净仓', 'cell': PnlCell, 'update':True}
-    headers['longPos'] = {'display': '多仓', 'cell': BaseCell, 'update':True}
-    headers['shortPos'] = {'display': '空仓', 'cell': BaseCell, 'update':True}
-    headers['symbol'] = {'display': '代码', 'cell': BaseCell, 'update':True}
+    headers["name"] = {"display": "价差名称", "cell": BaseCell, "update": True}
+    headers["netPos"] = {"display": "净仓", "cell": PnlCell, "update": True}
+    headers["longPos"] = {"display": "多仓", "cell": BaseCell, "update": True}
+    headers["shortPos"] = {"display": "空仓", "cell": BaseCell, "update": True}
+    headers["symbol"] = {"display": "代码", "cell": BaseCell, "update": True}
+
 
 ########################################################################
 class StLogMonitor(BaseMonitor):
     """"""
+
     event_type = EVENT_SPREADTRADING_LOG
-    data_key = ''
+    data_key = ""
     sorting = False
 
     headers = {
@@ -693,11 +774,12 @@ class StLogMonitor(BaseMonitor):
         super(StLogMonitor, self).insert_new_row(data)
         self.resizeRowToContents(0)
 
+
 ########################################################################
 class StAlgoLogMonitor(BaseMonitor):
     """"""
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     event_type = EVENT_SPREADTRADING_ALGOLOG
 
     headers = {
