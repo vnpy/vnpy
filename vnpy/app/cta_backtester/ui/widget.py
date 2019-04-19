@@ -342,6 +342,7 @@ class StatisticsMonitor(QtWidgets.QTableWidget):
         self.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch
         )
+        self.setEditTriggers(self.NoEditTriggers)
 
         for row, key in enumerate(self.KEY_NAME_MAP.keys()):
             cell = QtWidgets.QTableWidgetItem()
@@ -704,6 +705,7 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
         table.setColumnCount(2)
         table.setRowCount(len(self.result_values))
         table.setHorizontalHeaderLabels(["参数", self.target_display])
+        table.setEditTriggers(table.NoEditTriggers)
         table.verticalHeader().setVisible(False)
 
         table.horizontalHeader().setSectionResizeMode(
