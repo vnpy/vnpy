@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 import threading
 import traceback
 import signal
@@ -8,308 +6,324 @@ import zmq
 from msgpack import packb, unpackb
 from json import dumps, loads
 
-import cPickle
-pDumps = cPickle.dumps
-pLoads = cPickle.loads
+import pickle
+p_dumps = pickle.dumps
+p_loads = pickle.loads
 
 
-# 实现Ctrl-c中断recv
+# Achieve Ctrl-c interrupt recv
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-########################################################################
 class RpcObject(object):
     """
-    RPC对象
+    Referred to serialization of packing and unpacking, we offer 3 tools:
+    1) maspack: higher performance, but usually requires the installation of msgpack related tools;
+    2) jason: Slightly lower performance but versatility is better, most programming languages have built-in libraries;
+    3) cPickle: Lower performance and only can be used in Python, but it is very convenient to transfer Python objects directly.
 
-    提供对数据的序列化打包和解包接口，目前提供了json、msgpack、cPickle三种工具。
-
-    msgpack：性能更高，但通常需要安装msgpack相关工具；
-    json：性能略低但通用性更好，大部分编程语言都内置了相关的库。
-    cPickle：性能一般且仅能用于Python，但是可以直接传送Python对象，非常方便。
-
-    因此建议尽量使用msgpack，如果要和某些语言通讯没有提供msgpack时再使用json，
-    当传送的数据包含很多自定义的Python对象时建议使用cPickle。
-
-    如果希望使用其他的序列化工具也可以在这里添加。
+    Therefore, it is recommended to use msgpack.
+    Use json, if you want to communicate with some languages without providing msgpack.
+    Use cPickle, when the data being transferred contains many custom Python objects.
     """
 
-    #----------------------------------------------------------------------
     def __init__(self):
-        """Constructor"""
-        # 默认使用msgpack作为序列化工具
-        #self.useMsgpack()
-        self.usePickle()
+        """
+        Constructor
+        Use msgpack as default serialization tool
+        """
+        self.use_msgpack()
 
-    #----------------------------------------------------------------------
     def pack(self, data):
-        """打包"""
+        """"""
         pass
 
-    #----------------------------------------------------------------------
     def unpack(self, data):
-        """解包"""
+        """"""
         pass
 
-    #----------------------------------------------------------------------
-    def __jsonPack(self, data):
-        """使用json打包"""
+    def __json_pack(self, data):
+        """
+        Pack with json
+        """
         return dumps(data)
 
-    #----------------------------------------------------------------------
-    def __jsonUnpack(self, data):
-        """使用json解包"""
+    def __json_unpack(self, data):
+        """
+        Unpack with json
+        """
         return loads(data)
 
-    #----------------------------------------------------------------------
-    def __msgpackPack(self, data):
-        """使用msgpack打包"""
+    def __msgpack_pack(self, data):
+        """
+        Pack with msgpack
+        """
         return packb(data)
 
-    #----------------------------------------------------------------------
-    def __msgpackUnpack(self, data):
-        """使用msgpack解包"""
+    def __msgpack_unpack(self, data):
+        """
+        Unpack with msgpack
+        """
         return unpackb(data)
 
-    #----------------------------------------------------------------------
-    def __picklePack(self, data):
-        """使用cPickle打包"""
-        return pDumps(data)
+    def __pickle_pack(self, data):
+        """
+        Pack with cPickle
+        """
+        return p_dumps(data)
 
-    #----------------------------------------------------------------------
-    def __pickleUnpack(self, data):
-        """使用cPickle解包"""
-        return pLoads(data)
+    def __pickle_unpack(self, data):
+        """
+        Unpack with cPickle
+        """
+        return p_loads(data)
 
-    #----------------------------------------------------------------------
-    def useJson(self):
-        """使用json作为序列化工具"""
-        self.pack = self.__jsonPack
-        self.unpack = self.__jsonUnpack
+    def use_json(self):
+        """
+        Use json as serialization tool
+        """
+        self.pack = self.__json_pack
+        self.unpack = self.__json_unpack
 
-    #----------------------------------------------------------------------
-    def useMsgpack(self):
-        """使用msgpack作为序列化工具"""
-        self.pack = self.__msgpackPack
-        self.unpack = self.__msgpackUnpack
+    def use_msgpack(self):
+        """
+        Use msgpack as serialization tool
+        """
+        self.pack = self.__msgpack_pack
+        self.unpack = self.__msgpack_unpack
 
-    #----------------------------------------------------------------------
-    def usePickle(self):
-        """使用cPickle作为序列化工具"""
-        self.pack = self.__picklePack
-        self.unpack = self.__pickleUnpack
+    def use_pickle(self):
+        """
+        Use cPickle as serialization tool
+        """
+        self.pack = self.__pickle_pack
+        self.unpack = self.__pickle_unpack
 
 
-########################################################################
 class RpcServer(RpcObject):
-    """RPC服务器"""
+    """"""
 
-    #----------------------------------------------------------------------
-    def __init__(self, repAddress, pubAddress):
-        """Constructor"""
+    def __init__(self, rep_address, pub_address):
+        """
+        Constructor
+        """
         super(RpcServer, self).__init__()
 
-        # 保存功能函数的字典，key是函数名，value是函数对象
+        # Save functions dict: key is fuction name, value is fuction object
         self.__functions = {}
 
-        # zmq端口相关
+        # Zmq port related
         self.__context = zmq.Context()
 
-        self.__socketREP = self.__context.socket(zmq.REP)   # 请求回应socket
-        self.__socketREP.bind(repAddress)
+        self.__socket_rep = self.__context.socket(
+            zmq.REP)   # Reply socket (Request–reply pattern)
+        self.__socket_rep.bind(rep_address)
 
-        self.__socketPUB = self.__context.socket(zmq.PUB)   # 数据广播socket
-        self.__socketPUB.bind(pubAddress)
+        # Publish socket (Publish–subscribe pattern)
+        self.__socket_pub = self.__context.socket(zmq.PUB)
+        self.__socket_pub.bind(pub_address)
 
-        # 工作线程相关
-        self.__active = False                             # 服务器的工作状态
-        self.__thread = threading.Thread(target=self.run) # 服务器的工作线程
+        # Woker thread related
+        self.__active = False                             # RpcServer status
+        self.__thread = threading.Thread(target=self.run)  # RpcServer thread
 
-    #----------------------------------------------------------------------
     def start(self):
-        """启动服务器"""
-        # 将服务器设为启动
+        """
+        Start RpcServer
+        """
+        # Start RpcServer status
         self.__active = True
 
-        # 启动工作线程
+        # Start RpcServer thread
         if not self.__thread.isAlive():
             self.__thread.start()
 
-    #----------------------------------------------------------------------
     def stop(self, join=False):
-        """停止服务器"""
-        # 将服务器设为停止
+        """
+        Stop RpcServer
+        """
+        # Stop RpcServer status
         self.__active = False
 
-        # 等待工作线程退出
+        # Wait for RpcServer thread to exit
         if join and self.__thread.isAlive():
             self.__thread.join()
 
-    #----------------------------------------------------------------------
     def run(self):
-        """服务器运行函数"""
+        """
+        Run RpcServer functions
+        """
         while self.__active:
-            # 使用poll来等待事件到达，等待1秒（1000毫秒）
-            if not self.__socketREP.poll(1000):
+            # Use poll to wait event arrival, waiting time is 1 second (1000 milliseconds)
+            if not self.__socket_rep.poll(1000):
                 continue
 
-            # 从请求响应socket收取请求数据
-            reqb = self.__socketREP.recv()
+            # Receive request data from Reply socket
+            reqb = self.__socket_rep.recv()
 
-            # 序列化解包
+            # Unpack request by deserialization
             req = self.unpack(reqb)
 
-            # 获取函数名和参数
+            # Get function name and parameters
             name, args, kwargs = req
 
-            # 获取引擎中对应的函数对象，并执行调用，如果有异常则捕捉后返回
+            # Try to get and execute callable function object; capture exception information if it fails
+            name = name.decode("UTF-8")
+
             try:
                 func = self.__functions[name]
                 r = func(*args, **kwargs)
                 rep = [True, r]
-            except Exception as e:
+            except Exception as e:  # noqa
                 rep = [False, traceback.format_exc()]
 
-            # 序列化打包
+            # Pack response by serialization
             repb = self.pack(rep)
 
-            # 通过请求响应socket返回调用结果
-            self.__socketREP.send(repb)
+            # send callable response by Reply socket
+            self.__socket_rep.send(repb)
 
-    #----------------------------------------------------------------------
     def publish(self, topic, data):
         """
-        广播推送数据
-        topic：主题内容（注意必须是ascii编码）
-        data：具体的数据
+        Publish data
         """
-        # 序列化数据
+        # Serialized data
+        topic = bytes(topic, "UTF-8")
         datab = self.pack(data)
 
-        # 通过广播socket发送数据
-        self.__socketPUB.send_multipart([topic, datab])
+        # Send data by Publish socket
+        # topci must be ascii encoding
+        self.__socket_pub.send_multipart([topic, datab])
 
-    #----------------------------------------------------------------------
     def register(self, func):
-        """注册函数"""
+        """
+        Register function
+        """
         self.__functions[func.__name__] = func
 
 
-########################################################################
 class RpcClient(RpcObject):
-    """RPC客户端"""
+    """"""
 
-    #----------------------------------------------------------------------
-    def __init__(self, reqAddress, subAddress):
+    def __init__(self, req_address, sub_address):
         """Constructor"""
         super(RpcClient, self).__init__()
 
-        # zmq端口相关
-        self.__reqAddress = reqAddress
-        self.__subAddress = subAddress
+        # zmq port related
+        self.__req_address = req_address
+        self.__sub_address = sub_address
 
         self.__context = zmq.Context()
-        self.__socketREQ = self.__context.socket(zmq.REQ)   # 请求发出socket
-        self.__socketSUB = self.__context.socket(zmq.SUB)   # 广播订阅socket
+        # Request socket (Request–reply pattern)
+        self.__socket_req = self.__context.socket(zmq.REQ)
+        # Subscribe socket (Publish–subscribe pattern)
+        self.__socket_sub = self.__context.socket(zmq.SUB)
 
-        # 工作线程相关，用于处理服务器推送的数据
-        self.__active = False                                   # 客户端的工作状态
-        self.__thread = threading.Thread(target=self.run)       # 客户端的工作线程
+        # Woker thread relate, used to process data pushed from server
+        self.__active = False                                   # RpcClient status
+        self.__thread = threading.Thread(
+            target=self.run)       # RpcClient thread
 
-    #----------------------------------------------------------------------
     def __getattr__(self, name):
-        """实现远程调用功能"""
-        # 执行远程调用任务
+        """
+        Realize remote call function
+        """
+        # Perform remote call task
         def dorpc(*args, **kwargs):
-            # 生成请求
+            # Generate request
             req = [name, args, kwargs]
 
-            # 序列化打包请求
+            # Pack request by serialization
             reqb = self.pack(req)
 
-            # 发送请求并等待回应
-            self.__socketREQ.send(reqb)
-            repb = self.__socketREQ.recv()
+            # Send request and wait for response
+            self.__socket_req.send(reqb)
+            repb = self.__socket_req.recv()
 
-            # 序列化解包回应
+            # Unpack response by deserialization
             rep = self.unpack(repb)
 
-            # 若正常则返回结果，调用失败则触发异常
+            # Return response if successed; Trigger exception if failed
             if rep[0]:
                 return rep[1]
             else:
-                raise RemoteException(rep[1])
+                raise RemoteException(rep[1].decode("UTF-8"))
 
         return dorpc
 
-    #----------------------------------------------------------------------
     def start(self):
-        """启动客户端"""
-        # 连接端口
-        self.__socketREQ.connect(self.__reqAddress)
-        self.__socketSUB.connect(self.__subAddress)
+        """
+        Start RpcClient
+        """
+        # Connect zmq port
+        self.__socket_req.connect(self.__req_address)
+        self.__socket_sub.connect(self.__sub_address)
 
-        # 将服务器设为启动
+        # Start RpcClient status
         self.__active = True
 
-        # 启动工作线程
+        # Start RpcClient thread
         if not self.__thread.isAlive():
             self.__thread.start()
 
-    #----------------------------------------------------------------------
     def stop(self):
-        """停止客户端"""
-        # 将客户端设为停止
+        """
+        Stop RpcClient 
+        """
+        # Stop RpcClient status
         self.__active = False
 
-        # 等待工作线程退出
+        # Wait for RpcClient thread to exit
         if self.__thread.isAlive():
             self.__thread.join()
 
-    #----------------------------------------------------------------------
     def run(self):
-        """客户端运行函数"""
+        """
+        Run RpcClient function
+        """
         while self.__active:
-            # 使用poll来等待事件到达，等待1秒（1000毫秒）
-            if not self.__socketSUB.poll(1000):
+            # Use poll to wait event arrival, waiting time is 1 second (1000 milliseconds)
+            if not self.__socket_sub.poll(1000):
                 continue
 
-            # 从订阅socket收取广播数据
-            topic, datab = self.__socketSUB.recv_multipart()
+            # Receive data from subscribe socket
+            topic, datab = self.__socket_sub.recv_multipart()
 
-            # 序列化解包
+            # Unpack data by deserialization
             data = self.unpack(datab)
 
-            # 调用回调函数处理
+            # Process data by callable function
+            topic = topic.decode("UTF-8")
+
             self.callback(topic, data)
 
-    #----------------------------------------------------------------------
     def callback(self, topic, data):
-        """回调函数，必须由用户实现"""
+        """
+        Callable function
+        """
         raise NotImplementedError
 
-    #----------------------------------------------------------------------
     def subscribeTopic(self, topic):
         """
-        订阅特定主题的广播数据
-
-        可以使用topic=''来订阅所有的主题
-
-        注意topic必须是ascii编码
+        Subscribe data
         """
-        self.__socketSUB.setsockopt(zmq.SUBSCRIBE, topic)
+        topic = bytes(topic, "UTF-8")
+        self.__socket_sub.setsockopt(zmq.SUBSCRIBE, topic)
 
 
-########################################################################
 class RemoteException(Exception):
-    """RPC远程异常"""
+    """
+    RPC remote exception
+    """
 
-    #----------------------------------------------------------------------
     def __init__(self, value):
-        """Constructor"""
+        """
+        Constructor
+        """
         self.__value = value
 
-    #----------------------------------------------------------------------
     def __str__(self):
-        """输出错误信息"""
+        """
+        Output error message
+        """
         return self.__value
