@@ -16,7 +16,6 @@ from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
     Direction,
     Exchange,
-    PriceType,
     Product,
     Status,
 )
@@ -46,9 +45,9 @@ STATUS_ALPACA2VT = {
     "CANCELED": Status.CANCELLED,
 }
 
-PRICETYPE_VT2ALPACA = {
-    PriceType.LIMIT: "EXCHANGE LIMIT",
-    PriceType.MARKET: "EXCHANGE MARKET"}
+#PRICETYPE_VT2ALPACA = {
+#    PriceType.LIMIT: "EXCHANGE LIMIT",
+#    PriceType.MARKET: "EXCHANGE MARKET"}
 DIRECTION_VT2ALPACA = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
 DIRECTION_ALPACA2VT = {"Buy": Direction.LONG, "Sell": Direction.SHORT}
 
