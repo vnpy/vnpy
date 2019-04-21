@@ -254,6 +254,7 @@ class RestClient(object):
                 params=request.params,
                 data=request.data,
                 proxies=self.proxies,
+                allow_redirects=request.allow_redirects
             )
             request.response = response
 
