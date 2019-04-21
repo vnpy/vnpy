@@ -11,7 +11,7 @@ import json
 import base64
 import zlib
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
 
@@ -228,8 +228,12 @@ class OkexfRestApi(RestClient):
 
     def send_order(self, req: OrderRequest):
         """"""
-        orderid = f"a{self.connect_time}{self._new_order_id()}"
+        # Need both offset and direction for sending order.
+        if (req.offset, req.direction) not in TYPE_VT2OKEXF:
+            return ""
 
+        orderid = f"a{self.connect_time}{self._new_order_id()}"
+        
         data = {
             "client_oid": orderid,
             "type": TYPE_VT2OKEXF[(req.offset, req.direction)],
@@ -407,7 +411,7 @@ class OkexfRestApi(RestClient):
                 traded=int(order_data["filled_qty"]),
                 price=float(order_data["price"]),
                 volume=float(order_data["size"]),
-                time=UTC2LOCAL(order_data["timestamp"]).strftime("%H:%M:%S"),
+                time=utc_to_local(order_data["timestamp"]).strftime("%H:%M:%S"),
                 status=STATUS_OKEXF2VT[order_data["status"]],
                 gateway_name=self.gateway_name,
             )
@@ -698,7 +702,7 @@ class OkexfWebsocketApi(WebsocketClient):
         tick.high_price = d["high_24h"]
         tick.low_price = d["low_24h"]
         tick.volume = d["volume_24h"]
-        tick.datetime = UTC2LOCAL(d["timestamp"])
+        tick.datetime = utc_to_local(d["timestamp"])
 
         self.gateway.on_tick(copy(tick))
 
@@ -722,7 +726,7 @@ class OkexfWebsocketApi(WebsocketClient):
                 tick.__setattr__("ask_price_%s" % (n + 1), price)
                 tick.__setattr__("ask_volume_%s" % (n + 1), volume)
 
-            tick.datetime = UTC2LOCAL(d["timestamp"])
+            tick.datetime = utc_to_local(d["timestamp"])
             self.gateway.on_tick(copy(tick))
 
     def on_order(self, d):
@@ -738,7 +742,7 @@ class OkexfWebsocketApi(WebsocketClient):
             price=float(d["price"]),
             volume=float(d["size"]),
             traded=float(d["filled_qty"]),
-            time=UTC2LOCAL(d["timestamp"]).strftime("%H:%M:%S"),
+            time=utc_to_local(d["timestamp"]).strftime("%H:%M:%S"),
             status=STATUS_OKEXF2VT[d["status"]],
             gateway_name=self.gateway_name,
         )
@@ -816,8 +820,7 @@ def get_timestamp():
     return timestamp + "Z"
 
 
-def UTC2LOCAL(timestamp):
-    import datetime
-    time = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ") 
-    utc_time = time + datetime.timedelta(hours=8)
+def utc_to_local(timestamp):
+    time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ") 
+    utc_time = time + timedelta(hours=8)
     return utc_time
