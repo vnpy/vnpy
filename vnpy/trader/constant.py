@@ -99,6 +99,8 @@ class Exchange(Enum):
 
     # CryptoCurrency
     BITMEX = "BITMEX"
+    BITFINEX = "BITFINEX"
+    ALPOCO = "ALPOCO"
     OKEX = "OKEX"
     HUOBI = "HUOBI"
 
