@@ -101,11 +101,11 @@ def save_json(filename: str, data: dict):
         json.dump(data, f, indent=4)
 
 
-def round_to_pricetick(price: float, pricetick: float):
+def round_to(value: float, target: float):
     """
     Round price to price tick value.
     """
-    rounded = round(price / pricetick, 0) * pricetick
+    rounded = int(round(value / target)) * target
     return rounded
 
 
