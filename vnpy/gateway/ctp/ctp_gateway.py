@@ -680,7 +680,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "Password": self.password,
             "BrokerID": self.brokerid,
-            "Appid": self.appid
+            "AppID": self.appid
         }
         
         self.reqid += 1
