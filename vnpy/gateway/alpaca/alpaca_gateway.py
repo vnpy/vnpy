@@ -70,7 +70,7 @@ class AlpacaGateway(BaseGateway):
         super(AlpacaGateway, self).__init__(event_engine, "ALPACA")
 
         self.rest_api = AlpacaRestApi(self)
-        self.ws_api = AlpacaWebsocketApi(self)
+        #self.ws_api = AlpacaWebsocketApi(self)
         self.order_map = {}
 
     def connect(self, setting: dict):
@@ -83,20 +83,19 @@ class AlpacaGateway(BaseGateway):
 
         self.rest_api.connect(key, secret, session, proxy_host, proxy_port)
 
-        self.ws_api.connect(key, secret, proxy_host, proxy_port)
+        #self.ws_api.connect(key, secret, proxy_host, proxy_port)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
-        self.ws_api.subscribe(req)
+        pass
 
     def send_order(self, req: OrderRequest):
         """"""
-        # return self.rest_api.send_order(req)
-        return self.ws_api.send_order(req)
+        return self.rest_api.send_order(req)
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        self.ws_api.cancel_order(req)
+        pass
 
     def query_account(self):
         """"""
@@ -141,8 +140,6 @@ class AlpacaRestApi(RestClient):
         Generate Alpaca signature.
         """
 
-        msg = request.method + \
-            "/api/v1/{}{}{}".format(path, nonce, request.data)
         headers = {
             "APCA-API-KEY-ID": self.key,
             "APCA-API-SECRET-KEY": self.secret,
@@ -172,10 +169,10 @@ class AlpacaRestApi(RestClient):
         print("rest client connected")
         self.gateway.write_log("ALPACA REST API启动成功")
         self.query_account()
+        self.query_contract()
 
     def query_account(self):
         """"""
-        print("debug query_account: ")
         self.add_request(
             "GET",
             "/v1/account",
@@ -184,19 +181,81 @@ class AlpacaRestApi(RestClient):
 
     def on_query_account(self, data, request):
         """"""
-        print("debug on_query_account: ",data)
-        for account_data in data:
-            account = AccountData(
-                accountid=account_data["currency"],
-                balance=float(account_data["balance"]),
-                frozen=float(account_data["hold"]),
-                gateway_name=self.gateway_name
-            )
-            self.gateway.on_account(account)
-
+        print("debug on_query_account: ",type(data),data)
+        account = AccountData(
+            accountid=data["id"],
+            balance=float(data["cash"]),
+            frozen=float(data["cash"])-float(data['buying_power']) ,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_account(account)
         self.gateway.write_log("账户资金查询成功")
 
+    def query_contract(self):
+        """"""
+        self.add_request(
+            "GET",
+            "/v1/assets",
+            callback=self.on_query_contract
+        )
+    
+    def on_query_contract(self, data, request):
+        """"""
+        for instrument_data in data:
+            symbol = instrument_data["symbol"]
+            #{"id":"74c0839d-1350-4801-842f-5f79b0d9a49a",
+            # "asset_class":"us_equity","exchange":"NASDAQ",
+            # "symbol":"NSIT","status":"active","tradable":true}]
+            contract = ContractData(
+                symbol=symbol,
+                exchange=Exchange.ALPACA, # vigar, need to fix to nasdq ...
+                name=symbol,
+                product=Product.SPOT,
+                size=1,
+                pricetick=0.01,
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_contract(contract)
 
+        self.gateway.write_log("合约信息查询成功")
+    
+    def send_order(self, req: OrderRequest):
+        #orderid = f"a{self.connect_time}{self._new_order_id()}"
+
+        if req.direction == Direction.LONG:
+            amount = req.volume
+        else:
+            amount = -req.volume
+        
+        data = {
+            "symbol": req.symbol,
+            'qty': amount,
+            "client_order_id": orderid,
+            "type": "market",
+            "side": "buy",
+            "timeinforce":"day"
+        }
+"""
+        if req.type == OrderType.MARKET:
+            if req.direction == Direction.LONG:
+                data["notional"] = req.volume
+            else:
+                data["size"] = req.volume
+        else:
+            data["price"] = req.price
+            data["size"] = req.volume
+
+        order = req.create_order_data(orderid, self.gateway_name)
+"""
+        self.add_request(
+            "POST",
+            "/api/spot/v3/orders",
+            callback=self.on_send_order,
+            data=data,
+            extra=order,
+            on_failed=self.on_send_order_failed,
+            on_error=self.on_send_order_error,
+        )
 
     def on_failed(self, status_code: int, request: Request):
         """
@@ -266,9 +325,10 @@ class AlpacaWebsocketApi(WebsocketClient):
 
     def subscribe(self, req: SubscribeRequest):
         pass
-
-    def send_order(self, req: OrderRequest):
+    
+    def send_order(self, req: SubscribeRequest):
         pass
+
 
     # ----------------------------------------------------------------------
     def cancel_order(self, req: CancelRequest):
