@@ -4,6 +4,7 @@ import json
 import ssl
 import sys
 import traceback
+import socket
 from datetime import datetime
 from threading import Lock, Thread
 from time import sleep
@@ -48,14 +49,22 @@ class WebsocketClient(object):
 
         self.proxy_host = None
         self.proxy_port = None
+        self.ping_interval = 60     # seconds
+        self.header = {}
 
         # For debugging
         self._last_sent_text = None
         self._last_received_text = None
 
-    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0):
-        """"""
+    def init(self, host: str, proxy_host: str = "", proxy_port: int = 0, ping_interval: int = 60, header: dict = None):
+        """
+        :param ping_interval: unit: seconds, type: int
+        """
         self.host = host
+        self.ping_interval = ping_interval  # seconds
+
+        if header:
+            self.header = header
 
         if proxy_host and proxy_port:
             self.proxy_host = proxy_host
@@ -135,6 +144,7 @@ class WebsocketClient(object):
             sslopt={"cert_reqs": ssl.CERT_NONE},
             http_proxy_host=self.proxy_host,
             http_proxy_port=self.proxy_port,
+            header=self.header
         )
         self.on_connected()
 
@@ -175,7 +185,8 @@ class WebsocketClient(object):
 
                         self.on_packet(data)
                 # ws is closed before recv function is called
-                except websocket.WebSocketConnectionClosedException:
+                # For socket.error, see Issue #1608
+                except (websocket.WebSocketConnectionClosedException, socket.error):
                     self._reconnect()
 
                 # other internal exception raised in on_packet
@@ -206,7 +217,7 @@ class WebsocketClient(object):
                 et, ev, tb = sys.exc_info()
                 self.on_error(et, ev, tb)
                 self._reconnect()
-            for i in range(60):
+            for i in range(self.ping_interval):
                 if not self._active:
                     break
                 sleep(1)

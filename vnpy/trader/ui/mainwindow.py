@@ -24,7 +24,7 @@ from .widget import (
     AboutDialog,
 )
 from ..engine import MainEngine
-from ..utility import get_icon_path, TRADER_PATH
+from ..utility import get_icon_path, TRADER_DIR
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -38,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine = main_engine
         self.event_engine = event_engine
 
-        self.window_title = f"VN Trader [{TRADER_PATH}]"
+        self.window_title = f"VN Trader [{TRADER_DIR}]"
 
         self.connect_dialogs = {}
         self.widgets = {}
