@@ -7,54 +7,53 @@ from datetime import datetime
 from vnpy.api.femas import (
     MdApi,
     TdApi,
-    USTP_FTDC_CAS_Submitted,
+    USTP_FTDC_AF_Delete,
     USTP_FTDC_CAS_Accepted,
     USTP_FTDC_CAS_Rejected,
-    USTP_FTDC_OS_NoTradeQueueing,
-    USTP_FTDC_OS_PartTradedQueueing,
-    USTP_FTDC_OS_AllTraded,
-    USTP_FTDC_OS_Canceled,
+    USTP_FTDC_CAS_Submitted,
+    USTP_FTDC_CHF_Speculation,
     USTP_FTDC_D_Buy,
     USTP_FTDC_D_Sell,
-    USTP_FTDC_OPT_LimitPrice,
-    USTP_FTDC_OPT_AnyPrice,
-    USTP_FTDC_OF_Open,
+    USTP_FTDC_FCR_NotForceClose,
     USTP_FTDC_OF_Close,
-    USTP_FTDC_OF_CloseYesterday,
     USTP_FTDC_OF_CloseToday,
+    USTP_FTDC_OF_CloseYesterday,
+    USTP_FTDC_OF_Open,
+    USTP_FTDC_OPT_AnyPrice,
+    USTP_FTDC_OPT_LimitPrice,
+    USTP_FTDC_OS_AllTraded,
+    USTP_FTDC_OS_Canceled,
+    USTP_FTDC_OS_NoTradeQueueing,
+    USTP_FTDC_OS_PartTradedQueueing,
     USTP_FTDC_OT_CallOptions,
     USTP_FTDC_OT_PutOptions,
-    USTP_FTDC_CHF_Speculation,
-    USTP_FTDC_FCR_NotForceClose,
     USTP_FTDC_TC_GFD,
-    USTP_FTDC_VC_AV,
     USTP_FTDC_TC_IOC,
+    USTP_FTDC_VC_AV,
     USTP_FTDC_VC_CV,
-    USTP_FTDC_AF_Delete,
 )
 from vnpy.trader.constant import (
     Direction,
-    Offset,
     Exchange,
-    OrderType,
-    Product,
-    Status,
+    Offset,
     OptionType,
+    OrderType,
+    Status,
 )
+from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
-    TickData,
-    OrderData,
-    TradeData,
-    PositionData,
     AccountData,
-    ContractData,
-    OrderRequest,
     CancelRequest,
+    ContractData,
+    OrderData,
+    OrderRequest,
+    PositionData,
     SubscribeRequest,
+    TickData,
+    TradeData,
 )
 from vnpy.trader.utility import get_folder_path
-from vnpy.trader.event import EVENT_TIMER
 
 USTP_FTDC_PD_Long = "2"
 USTP_FTDC_PD_Short = "3"
@@ -91,7 +90,6 @@ DIRECTION_FEMAS2VT = {v: k for k, v in DIRECTION_VT2FEMAS.items()}
 DIRECTION_FEMAS2VT[USTP_FTDC_PD_Long] = Direction.LONG
 DIRECTION_FEMAS2VT[USTP_FTDC_PD_Short] = Direction.SHORT
 
-
 EXCHANGE_FEMAS2VT = {
     "CFFEX": Exchange.CFFEX,
     "SHFE": Exchange.SHFE,
@@ -104,7 +102,6 @@ OPTIONTYPE_FEMAS2VT = {
     USTP_FTDC_OT_CallOptions: OptionType.CALL,
     USTP_FTDC_OT_PutOptions: OptionType.PUT,
 }
-
 
 symbol_exchange_map = {}
 symbol_name_map = {}
@@ -275,7 +272,7 @@ class FemasMdApi(MdApi):
         if not exchange:
             return
 
-        timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec']/100)}"
+        timestamp = f"{data['TradingDay']} {data['UpdateTime']}.{int(data['UpdateMillisec'] / 100)}"
 
         tick = TickData(
             symbol=symbol,
