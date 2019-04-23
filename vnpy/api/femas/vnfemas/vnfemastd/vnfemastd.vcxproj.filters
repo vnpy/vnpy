@@ -21,19 +21,19 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ctp\USTPFtdcMduserApi.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ctp\USTPFtdcTraderApi.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ctp\USTPFtdcUserApiDataType.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ctp\USTPFtdcUserApiStruct.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="vnfemastd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\femas\USTPFtdcMduserApi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\femas\USTPFtdcTraderApi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\femas\USTPFtdcUserApiDataType.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\femas\USTPFtdcUserApiStruct.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

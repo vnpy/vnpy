@@ -80,8 +80,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\ProgramData\VNConda\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\ProgramData\VNConda\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Python37\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Python37\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
@@ -95,10 +95,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\ProgramData\VNConda\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Python37\include;$(SolutionDir);$(SolutionDir)..\include;$(SolutionDir)..\include\femas;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <TargetExt>.pyd</TargetExt>
-    <LibraryPath>C:\ProgramData\VNConda\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Python37\libs;$(SolutionDir)..\libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)..\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -110,6 +110,7 @@
       <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;VNFEMASMD_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,6 +126,7 @@
       <PreprocessorDefinitions>NOMINMAX;_CRT_SECURE_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;VNFEMASMD_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +147,9 @@
       <ConformanceMode>true</ConformanceMode>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -167,6 +172,9 @@
       </AdditionalIncludeDirectories>
       <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
