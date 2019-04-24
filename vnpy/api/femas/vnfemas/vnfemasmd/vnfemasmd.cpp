@@ -717,7 +717,7 @@ public:
 
 PYBIND11_MODULE(vnfemasmd, m)
 {
-	class_<MdApi, PyMdApi> mdapi(m, "MdApi");
+	class_<MdApi, PyMdApi> mdapi(m, "MdApi", module_local());
 	mdapi
 		.def(init<>())
 		.def("createFtdcMdApi", &MdApi::createFtdcMdApi)

@@ -30,7 +30,7 @@ from vnpy.api.femas import (
     USTP_FTDC_TC_GFD,
     USTP_FTDC_TC_IOC,
     USTP_FTDC_VC_AV,
-    USTP_FTDC_VC_CV,
+    USTP_FTDC_VC_CV
 )
 from vnpy.trader.constant import (
     Direction,
@@ -39,6 +39,7 @@ from vnpy.trader.constant import (
     OptionType,
     OrderType,
     Status,
+    Product
 )
 from vnpy.trader.event import EVENT_TIMER
 from vnpy.trader.gateway import BaseGateway
@@ -85,6 +86,12 @@ OFFSET_VT2FEMAS = {
     Offset.CLOSEYESTERDAY: USTP_FTDC_OF_CloseToday,
 }
 OFFSET_FEMAS2VT = {v: k for k, v in OFFSET_VT2FEMAS.items()}
+
+# PRODUCT_CTP2VT = {
+#     THOST_FTDC_PC_Futures: Product.FUTURES,
+#     THOST_FTDC_PC_Options: Product.OPTION,
+#     THOST_FTDC_PC_Combination: Product.SPREAD
+# }
 
 DIRECTION_FEMAS2VT = {v: k for k, v in DIRECTION_VT2FEMAS.items()}
 DIRECTION_FEMAS2VT[USTP_FTDC_PD_Long] = Direction.LONG
@@ -237,16 +244,15 @@ class FemasMdApi(MdApi):
         """
         self.connect_status = False
         self.login_status = False
-        self.gateway.write_log(f"行情连接断开，原因{reason}")
+        self.gateway.write_log(f"行情服务器连接断开，原因{reason}")
 
     def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
         """
         Callback when user is logged in.
         """
-        if self.gateway.if_error_write_error("行情登录失败", error):
+        if self.gateway.if_error_write_error("行情服务器登录失败", error):
             return
         self.login_status = True
-        self.gateway.write_log("onRspUserLogin行情服务器登录成功")
         self.gateway.write_log("行情服务器登录成功")
 
         for symbol in self.subscribed:
@@ -354,8 +360,8 @@ class FemasTdApi(TdApi):
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
 
-        self.reqid = int(10e5)
-        self.localID = int(10e5 + 8888)
+        self.reqid = 0
+        self.localid = int(10e5 + 8888)
 
         self.connect_status = False
         self.login_status = False
@@ -373,7 +379,7 @@ class FemasTdApi(TdApi):
     def onFrontConnected(self):
         """"""
         self.connect_status = True
-        self.gateway.write_log("onFrontConnected交易连接成功")
+        self.gateway.write_log("交易服务器连接成功")
 
         self.login()
 
@@ -381,23 +387,23 @@ class FemasTdApi(TdApi):
         """"""
         self.connect_status = False
         self.login_status = False
-        self.gateway.write_log(f"交易连接断开，原因{reason}")
+        self.gateway.write_log(f"交易服务器连接断开，原因{reason}")
 
     def onRspUserLogin(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error["ErrorID"]:
             if data["MaxOrderLocalID"]:
-                self.localID = max(
-                    self.localID, int(data["MaxOrderLocalID"])
-                )  # 目前最大本地报单号
+                self.localid = int(data["MaxOrderLocalID"])
+
             self.login_status = True
-            self.gateway.write_log("onRspUserLogin交易登录成功")
+            self.gateway.write_log("交易服务器登录成功")
+
             self.reqid += 1
             self.reqQryInstrument({}, self.reqid)
         else:
             self.login_failed = True
 
-            self.gateway.if_error_write_error("交易登录失败", error)
+            self.gateway.if_error_write_error("交易服务器登录失败", error)
 
     def onRspOrderInsert(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
@@ -486,27 +492,40 @@ class FemasTdApi(TdApi):
             balance=data["PreBalance"],
             gateway_name=self.gateway_name,
         )
-        # todo: check for error
+
         self.gateway.on_account(account)
 
     def onRspQryInstrument(self, data: dict, error: dict, reqid: int, last: bool):
         """
         Callback of instrument query.
         """
+        # Femas gateway provides no ProductClass data, so need to determine
+        # product type using other logic.
+        option_type = OPTIONTYPE_FEMAS2VT.get(data["OptionsType"], None)
+        if option_type:
+            product = Product.OPTION
+        elif data["InstrumentID_2"]:
+            product = Product.SPREAD
+        else:
+            product = Product.FUTURES
 
         contract = ContractData(
-            product=data["ProductID"],
             symbol=data["InstrumentID"],
             exchange=EXCHANGE_FEMAS2VT[data["ExchangeID"]],
             name=data["InstrumentName"],
             size=data["VolumeMultiple"],
             pricetick=data["PriceTick"],
-            option_underlying=data["UnderlyingInstrID"],
-            option_type=OPTIONTYPE_FEMAS2VT.get(data["OptionsType"], None),
-            option_strike=data["StrikePrice"],
-            option_expiry=datetime.strptime(data["ExpireDate"], "%Y%m%d"),
-            gateway_name=self.gateway_name,
+            product=product,
+            gateway_name=self.gateway_name
         )
+
+        if product == Product.OPTION:
+            contract.option_underlying = data["UnderlyingInstrID"]
+            contract.option_type = OPTIONTYPE_FEMAS2VT.get(
+                data["OptionsType"], None)
+            contract.option_strike = data["StrikePrice"]
+            contract.option_expiry = datetime.strptime(
+                data["ExpireDate"], "%Y%m%d")
 
         self.gateway.on_contract(contract)
 
@@ -522,7 +541,8 @@ class FemasTdApi(TdApi):
         Callback of order status update.
         """
         # 更新最大报单编号
-        self.localID = max(self.localID, int(data["UserOrderLocalID"]))  # 检查并增加本地报单编号
+        self.localid = max(self.localid, int(
+            data["UserOrderLocalID"]))  # 检查并增加本地报单编号
 
         symbol = data["InstrumentID"]
         exchange = symbol_exchange_map.get(symbol, "")
@@ -617,8 +637,9 @@ class FemasTdApi(TdApi):
         """
         Send new order.
         """
-        self.localID += 1
-        strLocalID = str(self.localID).rjust(12, "0")
+        self.localid += 1
+        orderid = str(self.localid).rjust(12, "0")
+
         femas_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": str(req.exchange).split(".")[1],
@@ -630,7 +651,7 @@ class FemasTdApi(TdApi):
             "OrderPriceType": ORDERTYPE_VT2FEMAS.get(req.type, ""),
             "Direction": DIRECTION_VT2FEMAS.get(req.direction, ""),
             "OffsetFlag": OFFSET_VT2FEMAS.get(req.offset, ""),
-            "UserOrderLocalID": strLocalID,
+            "UserOrderLocalID": orderid,
             "HedgeFlag": USTP_FTDC_CHF_Speculation,
             "ForceCloseReason": USTP_FTDC_FCR_NotForceClose,
             "IsAutoSuspend": 0,
@@ -651,8 +672,6 @@ class FemasTdApi(TdApi):
         self.reqid += 1
         self.reqOrderInsert(femas_req, self.reqid)
 
-        orderid = femas_req["UserOrderLocalID"]
-        req.volume = femas_req["Volume"]
         order = req.create_order_data(orderid, self.gateway_name)
         self.gateway.on_order(order)
 
@@ -662,13 +681,14 @@ class FemasTdApi(TdApi):
         """
         Cancel existing order.
         """
-        self.localID += 1
-        strLocalID = str(self.localID)
+        self.localid += 1
+        orderid = str(self.localid).rjust(12, "0")
+
         femas_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": str(req.exchange).split(".")[1],
             "UserOrderLocalID": req.orderid,
-            "UserOrderActionLocalID": strLocalID,
+            "UserOrderActionLocalID": orderid,
             "ActionFlag": USTP_FTDC_AF_Delete,
             "BrokerID": self.brokerid,
             "InvestorID": self.userid,

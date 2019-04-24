@@ -2451,14 +2451,11 @@ void TdApi::processRspQryInvestorAccount(Task *task)
 		data["Margin"] = task_data->Margin;
 		data["Premium"] = task_data->Premium;
 		data["Risk"] = task_data->Risk;
-		print("processRspQryInvestorAccount");
-		print(data["AccountID"]);
 		delete task->task_data;
 	}
 	dict error;
 	if (task->task_error)
 	{
-		print("task->task_error");
 		CUstpFtdcRspInfoField *task_error = (CUstpFtdcRspInfoField*)task->task_error;
 		error["ErrorID"] = task_error->ErrorID;
 		error["ErrorMsg"] = toUtf(task_error->ErrorMsg);
@@ -4237,7 +4234,7 @@ public:
 
 PYBIND11_MODULE(vnfemastd, m)
 {
-	class_<TdApi, PyTdApi> TdApi(m, "TdApi");
+	class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
 	TdApi
 		.def(init<>())
 		.def("createFtdcTraderApi", &TdApi::createFtdcTraderApi)

@@ -80,5 +80,6 @@ class StructGenerator:
 
 
 if __name__ == "__main__":
-    generator = StructGenerator("USTPFtdcUserApiStruct.h", "femas")
+    generator = StructGenerator(
+        "../include/femas/USTPFtdcUserApiStruct.h", "femas")
     generator.run()

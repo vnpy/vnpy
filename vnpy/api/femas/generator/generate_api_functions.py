@@ -336,8 +336,10 @@ class ApiGenerator:
 
 
 if __name__ == "__main__":
-    md_generator = ApiGenerator("USTPFtdcMduserApi.h", "femas", "md", "MdApi")
+    md_generator = ApiGenerator(
+        "../include/femas/USTPFtdcMduserApi.h", "femas", "md", "MdApi")
     md_generator.run()
 
-    td_generator = ApiGenerator("USTPFtdcTraderApi.h", "femas", "td", "TdApi")
+    td_generator = ApiGenerator(
+        "../include/femas/USTPFtdcTraderApi.h", "femas", "td", "TdApi")
     td_generator.run()
