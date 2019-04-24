@@ -72,5 +72,6 @@ class DataTypeGenerator:
 
 
 if __name__ == "__main__":
-    generator = DataTypeGenerator("USTPFtdcUserApiDataType.h", "femas")
+    generator = DataTypeGenerator(
+        "../include/femas/USTPFtdcUserApiDataType.h", "femas")
     generator.run()
