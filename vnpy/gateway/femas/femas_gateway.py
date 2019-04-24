@@ -360,8 +360,8 @@ class FemasTdApi(TdApi):
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
 
-        self.reqid = int(10e5)
-        self.localID = int(10e5 + 8888)
+        self.reqid = 0
+        self.localid = int(10e5 + 8888)
 
         self.connect_status = False
         self.login_status = False
@@ -393,11 +393,11 @@ class FemasTdApi(TdApi):
         """"""
         if not error["ErrorID"]:
             if data["MaxOrderLocalID"]:
-                self.localID = max(
-                    self.localID, int(data["MaxOrderLocalID"])
-                )  # 目前最大本地报单号
+                self.localid = int(data["MaxOrderLocalID"])
+
             self.login_status = True
             self.gateway.write_log("交易服务器登录成功")
+
             self.reqid += 1
             self.reqQryInstrument({}, self.reqid)
         else:
@@ -541,7 +541,7 @@ class FemasTdApi(TdApi):
         Callback of order status update.
         """
         # 更新最大报单编号
-        self.localID = max(self.localID, int(
+        self.localid = max(self.localid, int(
             data["UserOrderLocalID"]))  # 检查并增加本地报单编号
 
         symbol = data["InstrumentID"]
@@ -637,8 +637,9 @@ class FemasTdApi(TdApi):
         """
         Send new order.
         """
-        self.localID += 1
-        strLocalID = str(self.localID).rjust(12, "0")
+        self.localid += 1
+        orderid = str(self.localid).rjust(12, "0")
+
         femas_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": str(req.exchange).split(".")[1],
@@ -650,7 +651,7 @@ class FemasTdApi(TdApi):
             "OrderPriceType": ORDERTYPE_VT2FEMAS.get(req.type, ""),
             "Direction": DIRECTION_VT2FEMAS.get(req.direction, ""),
             "OffsetFlag": OFFSET_VT2FEMAS.get(req.offset, ""),
-            "UserOrderLocalID": strLocalID,
+            "UserOrderLocalID": orderid,
             "HedgeFlag": USTP_FTDC_CHF_Speculation,
             "ForceCloseReason": USTP_FTDC_FCR_NotForceClose,
             "IsAutoSuspend": 0,
@@ -671,8 +672,6 @@ class FemasTdApi(TdApi):
         self.reqid += 1
         self.reqOrderInsert(femas_req, self.reqid)
 
-        orderid = femas_req["UserOrderLocalID"]
-        req.volume = femas_req["Volume"]
         order = req.create_order_data(orderid, self.gateway_name)
         self.gateway.on_order(order)
 
@@ -682,13 +681,14 @@ class FemasTdApi(TdApi):
         """
         Cancel existing order.
         """
-        self.localID += 1
-        strLocalID = str(self.localID)
+        self.localid += 1
+        orderid = str(self.localid).rjust(12, "0")
+
         femas_req = {
             "InstrumentID": req.symbol,
             "ExchangeID": str(req.exchange).split(".")[1],
             "UserOrderLocalID": req.orderid,
-            "UserOrderActionLocalID": strLocalID,
+            "UserOrderActionLocalID": orderid,
             "ActionFlag": USTP_FTDC_AF_Delete,
             "BrokerID": self.brokerid,
             "InvestorID": self.userid,
