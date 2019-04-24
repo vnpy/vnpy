@@ -7,7 +7,7 @@ from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.gateway.bitmex import BitmexGateway
 from vnpy.gateway.futu import FutuGateway
 from vnpy.gateway.ib import IbGateway
-from vnpy.gateway.ctp import CtpGateway
+#from vnpy.gateway.ctp import CtpGateway
 from vnpy.gateway.femas import FemasGateway
 from vnpy.gateway.tiger import TigerGateway
 from vnpy.gateway.oes import OesGateway
@@ -30,7 +30,7 @@ def main():
     event_engine = EventEngine()
 
     main_engine = MainEngine(event_engine)
-    main_engine.add_gateway(CtpGateway)
+    # main_engine.add_gateway(CtpGateway)
     main_engine.add_gateway(FemasGateway)
     main_engine.add_gateway(IbGateway)
     main_engine.add_gateway(FutuGateway)
