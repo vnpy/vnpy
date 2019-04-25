@@ -54,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def init_dock(self):
         """"""
-        trading_widget, trading_dock = self.create_dock(
+        self.trading_widget, trading_dock = self.create_dock(
             TradingWidget, "交易", QtCore.Qt.LeftDockWidgetArea
         )
         tick_widget, tick_dock = self.create_dock(
