@@ -7,34 +7,19 @@ if typing.TYPE_CHECKING:
     from .vnxtp import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
-    """
-    set a customize exception handler for async callback in this module(pyd)
-    \a handler should return True if it handles that exception,
-    If the return value of \a handler is not True, exception will be re-thrown.
-    """
-    ...
-
-
-class AsyncDispatchException:
-    what: str
-    instance: object
-    function_name: str
-
-
 from . import vnxtp_XTP as XTP
 class XTPRspInfoStruct():
     
     
     error_id: int
-    error_msg: str
+    error_msg: Sequence[int]
     
     
 class XTPSpecificTickerStruct():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    ticker: str
+    ticker: Sequence[int]
     
     
 class XTPMarketDataStockExData():
@@ -86,7 +71,7 @@ class XTPMarketDataStruct():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    ticker: str
+    ticker: Sequence[int]
     last_price: float
     pre_close_price: float
     open_price: float
@@ -110,7 +95,7 @@ class XTPMarketDataStruct():
     bid_qty: Sequence[int]
     ask_qty: Sequence[int]
     trades_count: int
-    ticker_status: str
+    ticker_status: Sequence[int]
     stk: XTPMarketDataStockExData
     opt: XTPMarketDataOptionExData
     data_type: XTP_MARKETDATA_TYPE
@@ -121,8 +106,8 @@ class XTPQuoteStaticInfo():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    ticker: str
-    ticker_name: str
+    ticker: Sequence[int]
+    ticker_name: Sequence[int]
     ticker_type: XTP_TICKER_TYPE
     pre_close_price: float
     upper_limit_price: float
@@ -136,7 +121,7 @@ class OrderBookStruct():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    ticker: str
+    ticker: Sequence[int]
     last_price: float
     qty: int
     turnover: float
@@ -176,7 +161,7 @@ class XTPTickByTickStruct():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    ticker: str
+    ticker: Sequence[int]
     seq: int
     data_time: int
     type: XTP_TBT_TYPE
@@ -188,7 +173,7 @@ class XTPTickerPriceInfo():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    ticker: str
+    ticker: Sequence[int]
     last_price: float
     
     
@@ -197,7 +182,7 @@ class XTPOrderInsertInfo():
     
     order_xtp_id: int
     order_client_id: int
-    ticker: str
+    ticker: Sequence[int]
     market: XTP_MARKET_TYPE
     price: float
     stop_price: float
@@ -225,7 +210,7 @@ class XTPOrderInfo():
     order_client_id: int
     order_cancel_client_id: int
     order_cancel_xtp_id: int
-    ticker: str
+    ticker: Sequence[int]
     market: XTP_MARKET_TYPE
     price: float
     quantity: int
@@ -242,7 +227,7 @@ class XTPOrderInfo():
     update_time: int
     cancel_time: int
     trade_amount: float
-    order_local_id: str
+    order_local_id: Sequence[int]
     order_status: XTP_ORDER_STATUS_TYPE
     order_submit_status: XTP_ORDER_SUBMIT_STATUS_TYPE
     order_type: int
@@ -253,16 +238,16 @@ class XTPTradeReport():
     
     order_xtp_id: int
     order_client_id: int
-    ticker: str
+    ticker: Sequence[int]
     market: XTP_MARKET_TYPE
     local_order_id: int
-    exec_id: str
+    exec_id: Sequence[int]
     price: float
     quantity: int
     trade_time: int
     trade_amount: float
     report_index: int
-    order_exch_id: str
+    order_exch_id: Sequence[int]
     trade_type: int
     u32: int
     side: int
@@ -270,13 +255,13 @@ class XTPTradeReport():
     reserved1: int
     reserved2: int
     business_type: XTP_BUSINESS_TYPE
-    branch_pbu: str
+    branch_pbu: Sequence[int]
     
     
 class XTPQueryOrderReq():
     
     
-    ticker: str
+    ticker: Sequence[int]
     begin_time: int
     end_time: int
     
@@ -285,13 +270,13 @@ class XTPQueryReportByExecIdReq():
     
     
     order_xtp_id: int
-    exec_id: str
+    exec_id: Sequence[int]
     
     
 class XTPQueryTraderReq():
     
     
-    ticker: str
+    ticker: Sequence[int]
     begin_time: int
     end_time: int
     
@@ -326,8 +311,8 @@ class XTPQueryAssetRsp():
 class XTPQueryStkPositionRsp():
     
     
-    ticker: str
-    ticker_name: str
+    ticker: Sequence[int]
+    ticker_name: Sequence[int]
     market: XTP_MARKET_TYPE
     total_qty: int
     sellable_qty: int
@@ -365,17 +350,17 @@ class XTPQueryStructuredFundInfoReq():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    sf_ticker: str
+    sf_ticker: Sequence[int]
     
     
 class XTPStructuredFundInfo():
     
     
     exchange_id: XTP_EXCHANGE_TYPE
-    sf_ticker: str
-    sf_ticker_name: str
-    ticker: str
-    ticker_name: str
+    sf_ticker: Sequence[int]
+    sf_ticker_name: Sequence[int]
+    ticker: Sequence[int]
+    ticker_name: Sequence[int]
     split_merge_status: XTP_SPLIT_MERGE_STATUS
     ratio: int
     min_split_qty: int
@@ -387,15 +372,15 @@ class XTPQueryETFBaseReq():
     
     
     market: XTP_MARKET_TYPE
-    ticker: str
+    ticker: Sequence[int]
     
     
 class XTPQueryETFBaseRsp():
     
     
     market: XTP_MARKET_TYPE
-    etf: str
-    subscribe_redemption_ticker: str
+    etf: Sequence[int]
+    subscribe_redemption_ticker: Sequence[int]
     unit: int
     subscribe_status: int
     redemption_status: int
@@ -410,16 +395,16 @@ class XTPQueryETFComponentReq():
     
     
     market: XTP_MARKET_TYPE
-    ticker: str
+    ticker: Sequence[int]
     
     
 class XTPQueryETFComponentRsp():
     
     
     market: XTP_MARKET_TYPE
-    ticker: str
-    component_ticker: str
-    component_name: str
+    ticker: Sequence[int]
+    component_ticker: Sequence[int]
+    component_name: Sequence[int]
     quantity: int
     component_market: XTP_MARKET_TYPE
     replace_type: ETF_REPLACE_TYPE
@@ -431,8 +416,8 @@ class XTPQueryIPOTickerRsp():
     
     
     market: XTP_MARKET_TYPE
-    ticker: str
-    ticker_name: str
+    ticker: Sequence[int]
+    ticker_name: Sequence[int]
     price: float
     unit: int
     qty_upper_limit: int
@@ -449,17 +434,17 @@ class XTPQueryOptionAuctionInfoReq():
     
     
     market: XTP_MARKET_TYPE
-    ticker: str
+    ticker: Sequence[int]
     
     
 class XTPQueryOptionAuctionInfoRsp():
     
     
-    ticker: str
+    ticker: Sequence[int]
     security_id_source: XTP_MARKET_TYPE
-    symbol: str
-    contract_id: str
-    underlying_security_id: str
+    symbol: Sequence[int]
+    contract_id: Sequence[int]
+    underlying_security_id: Sequence[int]
     underlying_security_id_source: XTP_MARKET_TYPE
     list_date: int
     last_trade_date: int
@@ -498,8 +483,8 @@ class XTPFundTransferReq():
     
     
     serial_id: int
-    fund_account: str
-    password: str
+    fund_account: Sequence[int]
+    password: Sequence[int]
     amount: float
     transfer_type: XTP_FUND_TRANSFER_TYPE
     
@@ -625,7 +610,7 @@ class XTP_POSITION_DIRECTION_TYPE(Enum):
 class XTP_MARKETDATA_TYPE(Enum):
     XTP_MARKETDATA_ACTUAL: XTP_MARKETDATA_TYPE
     XTP_MARKETDATA_OPTION: XTP_MARKETDATA_TYPE
-XTPVersionType = str
+XTPVersionType = Sequence[int]
 XTP_LOG_LEVEL = XTP_LOG_LEVEL
 XTP_PROTOCOL_TYPE = XTP_PROTOCOL_TYPE
 XTP_EXCHANGE_TYPE = XTP_EXCHANGE_TYPE
