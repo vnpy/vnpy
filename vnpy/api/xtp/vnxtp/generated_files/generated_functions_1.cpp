@@ -277,9 +277,14 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
         PyQuoteApi
     > c(parent, "QuoteApi");
     c.def_static("CreateQuoteApi",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
                 &XTP::API::QuoteApi::CreateQuoteApi
-        //,
-        //pybind11::call_guard<pybind11::gil_scoped_release>()
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Release",
         autocxxpy::apply_function_transform<
