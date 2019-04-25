@@ -1,3 +1,4 @@
+import sys
 from typing import Any, Sequence
 
 from vnpy.api.xtp.vnxtp import (
@@ -12,21 +13,21 @@ from vnpy.api.xtp.vnxtp import (
     XTP_EXCHANGE_TYPE,
     XTP_LOG_LEVEL,
     XTP_PROTOCOL_TYPE,
-    XTP_TICKER_TYPE_STOCK,
-    XTP_TICKER_TYPE_INDEX,
-    XTP_TICKER_TYPE_FUND,
-    XTP_TICKER_TYPE_BOND,
-    XTP_TICKER_TYPE_OPTION,
-    XTP_PROTOCOL_TCP,
-    XTP_PROTOCOL_UDP
+    set_async_callback_exception_handler,
+    AsyncDispatchException,
+    XTP_TICKER_TYPE,
 )
 
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Product
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest,
-                                TickData, ContractData, OrderData, TradeData,
-                                PositionData, AccountData)
+from vnpy.trader.object import (
+    CancelRequest,
+    OrderRequest,
+    SubscribeRequest,
+    TickData,
+    ContractData,
+)
 from vnpy.trader.utility import get_folder_path
 
 API = XTP.API
@@ -38,19 +39,17 @@ EXCHANGE_XTP2VT = {
 EXCHANGE_VT2XTP = {v: k for k, v in EXCHANGE_XTP2VT.items()}
 
 PRODUCT_XTP2VT = {
-    XTP_TICKER_TYPE_STOCK: Product.EQUITY,
-    XTP_TICKER_TYPE_INDEX: Product.INDEX,
-    XTP_TICKER_TYPE_FUND: Product.FUND,
-    XTP_TICKER_TYPE_BOND: Product.BOND,
-    XTP_TICKER_TYPE_OPTION: Product.OPTION
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_STOCK: Product.EQUITY,
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_INDEX: Product.INDEX,
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_FUND: Product.FUND,
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_BOND: Product.BOND,
+    XTP_TICKER_TYPE.XTP_TICKER_TYPE_OPTION: Product.OPTION,
 }
-
 
 symbol_name_map = {}
 
 
 class XtpGateway(BaseGateway):
-
     default_setting = {
         "账号": "",
         "密码": "",
@@ -59,7 +58,7 @@ class XtpGateway(BaseGateway):
         "行情端口": 0,
         "交易地址": "",
         "交易端口": 0,
-        "行情协议": ["TCP", "UDP"]
+        "行情协议": ["TCP", "UDP"],
     }
 
     def __init__(self, event_engine: EventEngine):
@@ -68,19 +67,23 @@ class XtpGateway(BaseGateway):
 
         self.quote_api = XtpQuoteApi(self)
 
+        set_async_callback_exception_handler(self._async_callback_exception_handler)
+        pass
+
     def connect(self, setting: dict):
         """"""
-        userid = setting['账号']
-        password = setting['密码']
-        client_id = setting['客户号']
-        quote_ip = setting['行情地址']
-        quote_port = setting['行情端口']
-        trade_ip = setting['交易地址']
-        trade_port = setting['交易端口']
+        userid = setting["账号"]
+        password = setting["密码"]
+        client_id = int(setting["客户号"])
+        quote_ip = setting["行情地址"]
+        quote_port = int(setting["行情端口"])
+        trade_ip = setting["交易地址"]
+        trade_port = setting["交易端口"]
         quote_protocol = setting["行情协议"]
 
-        self.quote_api.connect(userid, password, client_id,
-                               quote_ip, quote_port, quote_protocol)
+        self.quote_api.connect(
+            userid, password, client_id, quote_ip, quote_port, quote_protocol
+        )
 
     def close(self):
         """"""
@@ -102,11 +105,17 @@ class XtpGateway(BaseGateway):
     def query_position(self):
         pass
 
+    def _async_callback_exception_handler(self, e: AsyncDispatchException):
+        error_str = f"发生内部错误：\n" f"位置：{e.instance}.{e.function_name}" f"详细信息：{e.what}"
+        print(error_str, file=sys.stderr)
+
+        self.write_log(error_str)  # write_error function?
+
 
 class XtpQuoteApi(API.QuoteSpi):
-
     def __init__(self, gateway: BaseGateway):
         """"""
+        super(XtpQuoteApi, self).__init__()
         self.gateway = gateway
         self.gateway_name = gateway.gateway_name
 
@@ -123,10 +132,10 @@ class XtpQuoteApi(API.QuoteSpi):
         self,
         userid: str,
         password: str,
-        client_id: str,
+        client_id: int,
         server_ip: str,
-        server_port: str,
-        quote_protocol: str
+        server_port: int,
+        quote_protocol: str,
     ):
         """"""
         if self.api:
@@ -139,17 +148,15 @@ class XtpQuoteApi(API.QuoteSpi):
         self.server_port = server_port
 
         if quote_protocol == "CTP":
-            self.quote_protocol = XTP_PROTOCOL_TCP
+            self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_TCP
         else:
-            self.quote_protocol = XTP_PROTOCOL_UDP
+            self.quote_protocol = XTP_PROTOCOL_TYPE.XTP_PROTOCOL_UDP
 
         # Create API object
         path = str(get_folder_path(self.gateway_name.lower()))
 
         self.api = API.QuoteApi.CreateQuoteApi(
-            self.client_id,
-            path,
-            XTP_LOG_LEVEL.XTP_LOG_LEVEL_TRACE
+            self.client_id, path, XTP_LOG_LEVEL.XTP_LOG_LEVEL_TRACE
         )
 
         self.api.RegisterSpi(self)
@@ -161,7 +168,7 @@ class XtpQuoteApi(API.QuoteSpi):
             self.server_port,
             self.userid,
             self.password,
-            self.quote_protocol
+            self.quote_protocol,
         )
 
         if not ret:
@@ -180,11 +187,13 @@ class XtpQuoteApi(API.QuoteSpi):
     def query_contract(self):
         """"""
         for exchange_id in EXCHANGE_XTP2VT.keys():
-            self.api.QueryAllTickers(exchange_id)
+            ret = self.api.QueryAllTickers(exchange_id)
+            if ret != 0:
+                self.gateway.write_log("订阅合约失败")
 
     def check_error(self, func_name: str, error_info: XTPRspInfoStruct):
         """"""
-        if error_info.error_id:
+        if error_info and error_info.error_id:
             msg = f"{func_name}发生错误, 代码：{error_info.error_id}，信息：{error_info.error_msg}"
             self.gateway.write_log(msg)
             return True
@@ -199,21 +208,37 @@ class XtpQuoteApi(API.QuoteSpi):
         """"""
         self.check_error("行情接口", error_info)
 
-    def OnSubMarketData(self, ticker: XTPSpecificTickerStruct, error_info: XTPRspInfoStruct,
-                        is_last: bool) -> Any:
+    def OnSubMarketData(
+        self,
+        ticker: XTPSpecificTickerStruct,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         self.check_error("订阅行情", error_info)
+        return super().OnSubMarketData(ticker, error_info, is_last)
 
-    def OnUnSubMarketData(self, ticker: XTPSpecificTickerStruct, error_info: XTPRspInfoStruct,
-                          is_last: bool) -> Any:
+    def OnUnSubMarketData(
+        self,
+        ticker: XTPSpecificTickerStruct,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         pass
 
-    def OnDepthMarketData(self, market_data: XTPMarketDataStruct, bid1_qty: Sequence[int],
-                          bid1_count: int, max_bid1_count: int, ask1_qty: Sequence[int],
-                          ask1_count: int, max_ask1_count: int) -> Any:
+    def OnDepthMarketData(
+        self,
+        market_data: XTPMarketDataStruct,
+        bid1_qty: Sequence[int],
+        bid1_count: int,
+        max_bid1_count: int,
+        ask1_qty: Sequence[int],
+        ask1_count: int,
+        max_ask1_count: int,
+    ) -> Any:
         """"""
-        timestamp = market_data.date_time
+        timestamp = market_data.data_time
 
         tick = TickData(
             symbol=market_data.ticker,
@@ -247,19 +272,27 @@ class XtpQuoteApi(API.QuoteSpi):
             ask_volume_3=market_data.ask_qty[2],
             ask_volume_4=market_data.ask_qty[3],
             ask_volume_5=market_data.ask_qty[4],
-            gateway_name=self.gateway_name
+            gateway_name=self.gateway_name,
         )
         tick.name = symbol_name_map.get(tick.vt_symbol, tick.symbol)
 
         self.gateway.on_tick(tick)
 
-    def OnSubOrderBook(self, ticker: XTPSpecificTickerStruct, error_info: XTPRspInfoStruct,
-                       is_last: bool) -> Any:
+    def OnSubOrderBook(
+        self,
+        ticker: XTPSpecificTickerStruct,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubOrderBook(self, ticker: XTPSpecificTickerStruct, error_info: XTPRspInfoStruct,
-                         is_last: bool) -> Any:
+    def OnUnSubOrderBook(
+        self,
+        ticker: XTPSpecificTickerStruct,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         pass
 
@@ -267,13 +300,21 @@ class XtpQuoteApi(API.QuoteSpi):
         """"""
         pass
 
-    def OnSubTickByTick(self, ticker: XTPSpecificTickerStruct, error_info: XTPRspInfoStruct,
-                        is_last: bool) -> Any:
+    def OnSubTickByTick(
+        self,
+        ticker: XTPSpecificTickerStruct,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubTickByTick(self, ticker: XTPSpecificTickerStruct, error_info: XTPRspInfoStruct,
-                          is_last: bool) -> Any:
+    def OnUnSubTickByTick(
+        self,
+        ticker: XTPSpecificTickerStruct,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         pass
 
@@ -281,88 +322,106 @@ class XtpQuoteApi(API.QuoteSpi):
         """"""
         pass
 
-    def OnSubscribeAllMarketData(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                 error_info: XTPRspInfoStruct) -> Any:
+    def OnSubscribeAllMarketData(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubscribeAllMarketData(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                   error_info: XTPRspInfoStruct) -> Any:
+    def OnUnSubscribeAllMarketData(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnSubscribeAllOrderBook(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                error_info: XTPRspInfoStruct) -> Any:
+    def OnSubscribeAllOrderBook(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubscribeAllOrderBook(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                  error_info: XTPRspInfoStruct) -> Any:
+    def OnUnSubscribeAllOrderBook(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnSubscribeAllTickByTick(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                 error_info: XTPRspInfoStruct) -> Any:
+    def OnSubscribeAllTickByTick(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubscribeAllTickByTick(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                   error_info: XTPRspInfoStruct) -> Any:
+    def OnUnSubscribeAllTickByTick(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnQueryAllTickers(self, ticker_info: XTPQuoteStaticInfo, error_info: XTPRspInfoStruct,
-                          is_last: bool) -> Any:
-        """"""
-        return
-        # if self.check_error("查询合约", error_info):
-        #     return
+    def OnQueryAllTickers(
+        self,
+        ticker_info: XTPQuoteStaticInfo,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
+        if self.check_error("查询合约", error_info):
+            return
 
-        # contract = ContractData(
-        #     symbol=ticker_info.ticker,
-        #     exchange=EXCHANGE_XTP2VT[ticker_info.exchange_id],
-        #     name=ticker_info.ticker_name,
-        #     product=PRODUCT_XTP2VT[ticker_info.ticker_type],
-        #     size=1,
-        #     pricetick=ticker_info.pricetick,
-        #     min_volume=ticker_info.buy_qty_unit,
-        #     gateway_name=self.gateway_name
-        # )
-        # self.gateway.on_contract(contract)
+        contract = ContractData(
+            symbol=ticker_info.ticker,
+            exchange=EXCHANGE_XTP2VT[ticker_info.exchange_id],
+            name=ticker_info.ticker_name,
+            product=PRODUCT_XTP2VT[ticker_info.ticker_type],
+            size=1,
+            pricetick=ticker_info.pricetick,
+            min_volume=ticker_info.buy_qty_unit,
+            gateway_name=self.gateway_name,
+        )
+        self.gateway.on_contract(contract)
 
-        # symbol_name_map[contract.vt_symbol] = contract.name
+        symbol_name_map[contract.vt_symbol] = contract.name
 
-    def OnQueryTickersPriceInfo(self, ticker_info: XTPTickerPriceInfo, error_info: XTPRspInfoStruct,
-                                is_last: bool) -> Any:
-        """"""
-        pass
-
-    def OnSubscribeAllOptionMarketData(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                       error_info: XTPRspInfoStruct) -> Any:
-        """"""
-        pass
-
-    def OnUnSubscribeAllOptionMarketData(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                         error_info: XTPRspInfoStruct) -> Any:
+    def OnQueryTickersPriceInfo(
+        self,
+        ticker_info: XTPTickerPriceInfo,
+        error_info: XTPRspInfoStruct,
+        is_last: bool,
+    ) -> Any:
         """"""
         pass
 
-    def OnSubscribeAllOptionOrderBook(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                      error_info: XTPRspInfoStruct) -> Any:
+    def OnSubscribeAllOptionMarketData(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubscribeAllOptionOrderBook(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                        error_info: XTPRspInfoStruct) -> Any:
+    def OnUnSubscribeAllOptionMarketData(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnSubscribeAllOptionTickByTick(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                       error_info: XTPRspInfoStruct) -> Any:
+    def OnSubscribeAllOptionOrderBook(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
 
-    def OnUnSubscribeAllOptionTickByTick(self, exchange_id: XTP_EXCHANGE_TYPE,
-                                         error_info: XTPRspInfoStruct) -> Any:
+    def OnUnSubscribeAllOptionOrderBook(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
+        """"""
+        pass
+
+    def OnSubscribeAllOptionTickByTick(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
+        """"""
+        pass
+
+    def OnUnSubscribeAllOptionTickByTick(
+        self, exchange_id: XTP_EXCHANGE_TYPE, error_info: XTPRspInfoStruct
+    ) -> Any:
         """"""
         pass
