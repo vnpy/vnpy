@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <optional>
 
 #include "brigand.hpp"
 
@@ -66,7 +67,7 @@ namespace autocxxpy
     template <auto method>
     constexpr callback_type callback_type_of_v = callback_type_of<method>::value;
 
-#ifdef PYBIND11_OVERLOAD_NAME
+#ifdef AUTOCXXPY_INCLUDED_PYBIND11
     template <class ret_type>
     struct pybind11_static_caster {
         static pybind11::detail::overload_caster_t<ret_type> caster;
@@ -75,18 +76,59 @@ namespace autocxxpy
     template <class ret_type>
     AUTOCXXPY_SELECT_ANY pybind11::detail::overload_caster_t<ret_type> pybind11_static_caster<ret_type>::caster;
 
+    struct async_dispatch_exception : public std::exception
+    {
+        async_dispatch_exception(const char *what, const pybind11::object &instance, std::string function_name)
+            : std::exception(what), instance(instance), function_name(function_name)
+        {}
+        pybind11::object instance;
+        std::string function_name;
+        inline const char* what() noexcept
+        {
+            return std::exception::what();
+        }
+    };
+
+    struct async_callback_exception_handler
+    {
+        using handler_type = std::function<void(const async_dispatch_exception&)>;
+        static handler_type custom_handler;
+
+        inline static void handle_excepiton(const async_dispatch_exception&e)
+        {
+            if (custom_handler)
+            {
+                custom_handler(e);
+            }
+        }
+
+        inline static void set_handler(const handler_type& handler)
+        {
+            custom_handler = handler;
+        }
+    };
+
+    AUTOCXXPY_SELECT_ANY async_callback_exception_handler::handler_type async_callback_exception_handler::custom_handler;
 #endif
 
     namespace arg_helper
     {
+        //////////////////////////////////////////////////////////////////////////
+        // stores
+        //////////////////////////////////////////////////////////////////////////
+
         // # todo: char8, char16, char32, wchar_t, etc...
         // # todo: shall i copy only const type, treating non-const type as output pointer?
-        inline auto save(const char *val)
+        inline std::optional<std::string> save(const char* val)
         { // match const char *
+            if (nullptr == val) AUTOCXXPY_UNLIKELY
+                return std::nullopt;  // maybe empty string is also a choice?
             return std::string(val);
         }
-        inline auto save(char *val)
+        inline std::optional<std::string> save(char* val)
         { // match char *
+            if (nullptr == val) AUTOCXXPY_UNLIKELY
+                return std::nullopt;  // maybe empty string is also a choice?
             return std::string(val);
         }
         template<size_t size>
@@ -101,29 +143,41 @@ namespace autocxxpy
         }
 
         template <class T>
-        inline T &save(T *val)
+        inline std::optional<T> save(T * val)
         { // match pointer
+            if (nullptr == val) AUTOCXXPY_UNLIKELY
+            {
+                return std::nullopt;
+            }
             return *val;
         }
 
         template <class T>
-        inline T &save(const T *val)
+        inline std::optional<T>& save(const T * val)
         { // match const pointer
+            if (nullptr == val) AUTOCXXPY_UNLIKELY
+            {
+                return std::nullopt;
+            }
             return const_cast<T&>(*val);
         }
 
         template <class T>
-        inline T &save(const T &val)
+        inline T& save(const T & val)
         { // match everything else : just use original type
             return const_cast<T&>(val);
         }
 
 
+        //////////////////////////////////////////////////////////////////////////
+        // loads
+        //////////////////////////////////////////////////////////////////////////
+
         template <class to_type>
         struct loader
         { // match default(everyting besides pointer)
             template <class src_type>
-            inline to_type operator ()(src_type &val)
+            inline to_type operator ()(src_type& val)
             {
                 return val;
             }
@@ -132,57 +186,57 @@ namespace autocxxpy
         template <size_t size>
         struct loader<const string_array<size>>
         { // match const char []
-            using to_type = const char *;
-            inline to_type operator ()(const std::string &val)
+            using to_type = const char*;
+            inline to_type operator ()(const std::string& val)
             {
-                return const_cast<char *>(val.data());
+                return const_cast<char*>(val.data());
             }
         };
 
         template <size_t size>
         struct loader<string_array<size>>
         { // match char []
-            using to_type = char *;
-            inline to_type operator ()(const std::string &val)
+            using to_type = char*;
+            inline to_type operator ()(const std::string& val)
             {
-                return const_cast<char *>(val.data());
+                return const_cast<char*>(val.data());
             }
         };
 
         template <>
-        struct loader<const char *>
+        struct loader<const char*>
         { // match const char *
-            using to_type = const char *;
-            inline to_type operator ()(const std::string &val)
+            using to_type = const char*;
+            inline to_type operator ()(const std::optional<std::string>& val)
             {
-                return const_cast<char *>(val.data());
+                if (val) AUTOCXXPY_LIKELY
+                    return const_cast<char*>(val->data());
+                return nullptr;
             }
         };
 
         template <>
-        struct loader<char *>
+        struct loader<char*>
         { // match char *
-            using to_type = char *;
-            inline to_type operator ()(const std::string &val)
+            using to_type = char*;
+            inline to_type operator ()(const std::optional<std::string>& val)
             {
-                return const_cast<char *>(val.data());
+                if (val) AUTOCXXPY_LIKELY
+                    return const_cast<char*>(val->data());
+                return nullptr;
             }
         };
 
         template <class to_type>
-        struct loader<to_type *>
+        struct loader<to_type*>
         { // match pointer
             template <class src_type>
-            inline to_type *operator ()(src_type &val)
+            inline to_type* operator ()(const std::optional<src_type>& val)
             { // val to poiner
-                return const_cast<to_type *>(&val);
+                if (val) AUTOCXXPY_LIKELY
+                    return const_cast<to_type*>(&(*val));
+                return nullptr;
             }
-
-            //template <class src_type>
-            //inline to_type *operator ()(src_type *val)
-            //{ // pointer to pointer
-            //    return val;
-            //}
         };
 
     };
@@ -195,7 +249,7 @@ namespace autocxxpy
         using class_type = class_of_member_method_t<method>;
     public:
         template <class ... arg_types>
-        inline static ret_type call(class_type *instance, const char *py_func_name, arg_types ... args)
+        inline static ret_type call(class_type* instance, const char* py_func_name, arg_types ... args)
         {
             if constexpr (callback_type_of_v<method> == callback_type::Direct)
             {
@@ -211,47 +265,70 @@ namespace autocxxpy
         }
 
         template <class ... arg_types>
-        inline static void async(class_type *instance, const char *py_func_name, arg_types ... args)
+        inline static void async(class_type* instance, const char* py_func_name, arg_types ... args)
         {
             return async_impl(instance, py_func_name, std::index_sequence_for<arg_types ...>{}, args ...);
         }
 
         template <class ... arg_types>
-        inline static ret_type sync(class_type *instance, const char * py_func_name, arg_types ... args)
+        inline static ret_type sync(class_type * instance, const char* py_func_name, arg_types ... args)
         {
             // if this code is under test environment, we don't need pybind11
             // since header of pybind11 use #pragma once, no macros is defined, we use a public macro to check if pybind11 is included or not
 #ifdef PYBIND11_OVERLOAD_NAME
             pybind11::gil_scoped_acquire gil;
-            pybind11::function overload = pybind11::get_overload(static_cast<const class_type *>(instance), py_func_name);
-            if (overload) {
-                auto o = overload(args ...);
-                if (pybind11::detail::cast_is_temporary_value_reference<ret_type>::value) {
-                    auto & caster = pybind11_static_caster<ret_type>::caster;
-                    return pybind11::detail::cast_ref<ret_type>(std::move(o), caster);
+            pybind11::function overload = pybind11::get_overload(static_cast<const class_type*>(instance), py_func_name);
+            if (overload) AUTOCXXPY_LIKELY{
+                try
+                {
+                    auto result = overload(args ...);
+                    if (pybind11::detail::cast_is_temporary_value_reference<ret_type>::value)
+                    {
+                        auto& caster = pybind11_static_caster<ret_type>::caster;
+                        return pybind11::detail::cast_ref<ret_type>(std::move(result), caster);
+                    }
+                    else 
+                    {
+                        return pybind11::detail::cast_safe<ret_type>(std::move(result));
+                    }
                 }
-                else return pybind11::detail::cast_safe<ret_type>(std::move(o));
+                catch (const pybind11::error_already_set & e)
+                {
+                    // todo: option to not to throw when sync is called directly
+                    throw async_dispatch_exception(e.what(), pybind11::cast(instance), py_func_name);
+                }
             }
 #endif
             return (instance->*method)(args ...);
         }
     private:
         template <class ... arg_types, size_t ... idx>
-        inline static void async_impl(class_type *instance, const char *py_func_name, std::index_sequence<idx ...>, arg_types ... args)
+        inline static void async_impl(class_type * instance, const char* py_func_name, std::index_sequence<idx ...>, arg_types ... args)
         {
             // wrap for ctp like function calls:
             // all the pointer might be unavailable after this call, so copy its value into a tuple
             auto arg_tuple = std::make_tuple(arg_helper::save(args) ...);
             auto task = [instance, py_func_name, arg_tuple = std::move(arg_tuple)]()
             {
-                // resolve all value:
-                // if it was originally a pointer, then use pointer type.
-                // if it was originally a value, just keep a reference to that value.
-                sync<arg_types ...>(
-                    instance, py_func_name,
-                    arg_helper::loader<brigand::at<brigand::list<arg_types ...>, brigand::integral_constant<int, idx> > >{}
-                (std::get<idx>(arg_tuple)) ...
-                    );
+#ifdef AUTOCXXPY_INCLUDED_PYBIND11
+                try
+                {
+#endif
+                    // resolve all value:
+                    // if it was originally a pointer, then use pointer type.
+                    // if it was originally a value, just keep a reference to that value.
+                    sync<arg_types ...>(
+                        instance, py_func_name,
+                        arg_helper::loader<brigand::at<brigand::list<arg_types ...>, brigand::integral_constant<int, idx> > >{}
+                    (std::get<idx>(arg_tuple)) ...
+                        );
+#ifdef AUTOCXXPY_INCLUDED_PYBIND11
+                }
+                catch (const async_dispatch_exception &e)
+                {
+                    async_callback_exception_handler::handle_excepiton(e);
+                }
+#endif
             };
             dispatcher::instance().add(std::move(task));
         }
