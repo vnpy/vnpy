@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from multiprocessing.dummy import Pool
 from queue import Empty, Queue
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import requests
 
@@ -57,7 +57,7 @@ class Request(object):
             status_code = self.response.status_code
 
         return (
-            "reuqest : {} {} {} because {}: \n"
+            "request : {} {} {} because {}: \n"
             "headers: {}\n"
             "params: {}\n"
             "data: {}\n"
@@ -79,7 +79,7 @@ class RestClient(object):
     """
     HTTP Client designed for all sorts of trading RESTFul API.
 
-    * Reimplement before_request function to add signature function.
+    * Reimplement sign function to add signature function.
     * Reimplement on_failed function to handle Non-2xx responses.
     * Use on_failed parameter in add_request function for individual Non-2xx response handling.
     * Reimplement on_error function to handle exception msg.
@@ -88,7 +88,7 @@ class RestClient(object):
     def __init__(self):
         """
         """
-        self.url_base = None  # type: str
+        self.url_base = ''  # type: str
         self._active = False
 
         self._queue = Queue()
@@ -208,7 +208,7 @@ class RestClient(object):
         exception_type: type,
         exception_value: Exception,
         tb,
-        request: Request,
+        request: Optional[Request],
     ):
         """
         Default on_error handler for Python exception.
@@ -223,7 +223,7 @@ class RestClient(object):
         exception_type: type,
         exception_value: Exception,
         tb,
-        request: Request,
+        request: Optional[Request],
     ):
         text = "[{}]: Unhandled RestClient Error:{}\n".format(
             datetime.now().isoformat(), exception_type
@@ -236,8 +236,8 @@ class RestClient(object):
         return text
 
     def _process_request(
-        self, request: Request, session: requests.session
-    ):  # type: (Request, requests.Session)->None
+        self, request: Request, session: requests.Session
+    ):
         """
         Sending request to server and get result.
         """

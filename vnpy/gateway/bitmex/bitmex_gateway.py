@@ -8,6 +8,7 @@ import sys
 import time
 from copy import copy
 from datetime import datetime
+from threading import Lock
 from urllib.parse import urlencode
 
 from requests import ConnectionError
@@ -17,9 +18,10 @@ from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
     Direction,
     Exchange,
-    PriceType,
+    OrderType,
     Product,
     Status,
+    Offset
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -51,7 +53,12 @@ STATUS_BITMEX2VT = {
 DIRECTION_VT2BITMEX = {Direction.LONG: "Buy", Direction.SHORT: "Sell"}
 DIRECTION_BITMEX2VT = {v: k for k, v in DIRECTION_VT2BITMEX.items()}
 
-PRICETYPE_VT2BITMEX = {PriceType.LIMIT: "Limit", PriceType.MARKET: "Market"}
+ORDERTYPE_VT2BITMEX = {
+    OrderType.LIMIT: "Limit",
+    OrderType.MARKET: "Market",
+    OrderType.STOP: "Stop"
+}
+ORDERTYPE_BITMEX2VT = {v: k for k, v in ORDERTYPE_VT2BITMEX.items()}
 
 
 class BitmexGateway(BaseGateway):
@@ -60,12 +67,12 @@ class BitmexGateway(BaseGateway):
     """
 
     default_setting = {
-        "key": "",
-        "secret": "",
-        "session": 3,
-        "server": ["REAL", "TESTNET"],
-        "proxy_host": "127.0.0.1",
-        "proxy_port": 1080,
+        "ID": "",
+        "Secret": "",
+        "会话数": 3,
+        "服务器": ["REAL", "TESTNET"],
+        "代理地址": "",
+        "代理端口": "",
     }
 
     def __init__(self, event_engine):
@@ -77,17 +84,23 @@ class BitmexGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        key = setting["key"]
-        secret = setting["secret"]
-        session = setting["session"]
-        server = setting["server"]
-        proxy_host = setting["proxy_host"]
-        proxy_port = setting["proxy_port"]
+        key = setting["ID"]
+        secret = setting["Secret"]
+        session_number = setting["会话数"]
+        server = setting["服务器"]
+        proxy_host = setting["代理地址"]
+        proxy_port = setting["代理端口"]
 
-        self.rest_api.connect(key, secret, session,
+        if proxy_port.isdigit():
+            proxy_port = int(proxy_port)
+        else:
+            proxy_port = 0
+
+        self.rest_api.connect(key, secret, session_number,
                               server, proxy_host, proxy_port)
 
         self.ws_api.connect(key, secret, server, proxy_host, proxy_port)
+        # websocket will push all account status on connected, including asset, position and orders.
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -131,6 +144,8 @@ class BitmexRestApi(RestClient):
         self.secret = ""
 
         self.order_count = 1_000_000
+        self.order_count_lock = Lock()
+
         self.connect_time = 0
 
     def sign(self, request):
@@ -172,7 +187,7 @@ class BitmexRestApi(RestClient):
         self,
         key: str,
         secret: str,
-        session: int,
+        session_number: int,
         server: str,
         proxy_host: str,
         proxy_port: int,
@@ -192,27 +207,43 @@ class BitmexRestApi(RestClient):
         else:
             self.init(TESTNET_REST_HOST, proxy_host, proxy_port)
 
-        self.start(session)
+        self.start(session_number)
 
         self.gateway.write_log("REST API启动成功")
 
+    def _new_order_id(self):
+        with self.order_count_lock:
+            self.order_count += 1
+            return self.order_count
+
     def send_order(self, req: OrderRequest):
         """"""
-        self.order_count += 1
-        orderid = str(self.connect_time + self.order_count)
+        orderid = str(self.connect_time + self._new_order_id())
 
         data = {
             "symbol": req.symbol,
             "side": DIRECTION_VT2BITMEX[req.direction],
-            "ordType": PRICETYPE_VT2BITMEX[req.price_type],
-            "price": req.price,
+            "ordType": ORDERTYPE_VT2BITMEX[req.type],
             "orderQty": int(req.volume),
             "clOrdID": orderid,
         }
 
+        inst = []   # Order special instructions
+
         # Only add price for limit order.
-        if req.price_type == PriceType.LIMIT:
+        if req.type == OrderType.LIMIT:
             data["price"] = req.price
+        elif req.type == OrderType.STOP:
+            data["stopPx"] = req.price
+            inst.append("LastPrice")
+
+        # Check for close order
+        if req.offset == Offset.CLOSE:
+            inst.append("ReduceOnly")
+
+        # Generate execInst
+        if inst:
+            data["execInst"] = ",".join(inst)
 
         order = req.create_order_data(orderid, self.gateway_name)
 
@@ -272,7 +303,7 @@ class BitmexRestApi(RestClient):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_send_order(self, data, request):
-        """"""
+        """Websocket will push a new order status"""
         pass
 
     def on_cancel_order_error(
@@ -286,7 +317,7 @@ class BitmexRestApi(RestClient):
             self.on_error(exception_type, exception_value, tb, request)
 
     def on_cancel_order(self, data, request):
-        """"""
+        """Websocket will push a new order status"""
         pass
 
     def on_failed(self, status_code: int, request: Request):
@@ -523,6 +554,7 @@ class BitmexWebsocketApi(WebsocketClient):
             order = OrderData(
                 symbol=d["symbol"],
                 exchange=Exchange.BITMEX,
+                type=ORDERTYPE_BITMEX2VT[d["ordType"]],
                 orderid=orderid,
                 direction=DIRECTION_BITMEX2VT[d["side"]],
                 price=d["price"],
@@ -579,6 +611,8 @@ class BitmexWebsocketApi(WebsocketClient):
             product=Product.FUTURES,
             pricetick=d["tickSize"],
             size=d["lotSize"],
+            stop_supported=True,
+            net_position=True,
             gateway_name=self.gateway_name,
         )
 

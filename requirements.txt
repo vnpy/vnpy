@@ -1,14 +1,19 @@
 PyQt5<5.12
+pyqtgraph
 dataclasses; python_version<="3.6"
 qdarkstyle
-futu-api
+requests
 websocket-client
 peewee
+pymysql
+psycopg2
+mongoengine
 numpy
 pandas
 matplotlib
 seaborn
-jupyter
-ta-lib; platform_system=="Unix"
-http://conda.vnpy.com/pip/wheels/TA_Lib-0.4.17-cp37-cp37m-win_amd64.whl; platform_system=="Windows"
-
+futu-api
+tigeropen
+rqdatac
+ta-lib
+ibapi
