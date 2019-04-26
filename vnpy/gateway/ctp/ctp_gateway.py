@@ -663,7 +663,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "BrokerID": self.brokerid,
             "AuthCode": self.auth_code,
-            "UserProductInfo": self.appID,
+            "UserProductInfo": self.appid,
             "AppID": self.appid
         }
         
