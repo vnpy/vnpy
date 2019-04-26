@@ -82,10 +82,12 @@ class OffsetConverter:
         contract = self.main_engine.get_contract(vt_symbol)
 
         # Only contracts with long-short position mode requires convert
-        if not contract or not contract.net_position:
-            return True
-        else:
+        if not contract:
             return False
+        elif contract.net_position:
+            return False
+        else:
+            return True
 
 
 class PositionHolding:
