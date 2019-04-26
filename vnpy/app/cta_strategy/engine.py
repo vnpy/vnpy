@@ -97,6 +97,8 @@ class CtaEngine(BaseEngine):
         self.rq_client = None
         self.rq_symbols = set()
 
+        self.vt_tradeids = set()    # for filtering duplicate trade
+
         self.offset_converter = OffsetConverter(self.main_engine)
 
     def init_engine(self):
@@ -189,6 +191,11 @@ class CtaEngine(BaseEngine):
     def process_trade_event(self, event: Event):
         """"""
         trade = event.data
+
+        # Filter duplicate trade push
+        if trade.vt_tradeid in self.vt_tradeids:
+            return
+        self.vt_tradeids.add(trade.vt_tradeid)
 
         self.offset_converter.update_trade(trade)
 

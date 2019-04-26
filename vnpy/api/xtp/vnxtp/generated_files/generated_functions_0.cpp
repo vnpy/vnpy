@@ -379,7 +379,8 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
+        pybind11::call_guard<pybind11::gil_scoped_release>(),
+        pybind11::return_value_policy::reference
     );
     c.def("GetApiVersion",
         autocxxpy::apply_function_transform<

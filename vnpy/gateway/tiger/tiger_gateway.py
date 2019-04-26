@@ -299,8 +299,6 @@ class TigerGateway(BaseGateway):
     def on_order_change(self, tiger_account: str, data: list):
         """"""
         data = dict(data)
-        print("委托推送", data["origin_symbol"],
-              data["order_id"], data["filled"], data["status"])
         symbol, exchange = convert_symbol_tiger2vt(data["origin_symbol"])
         status = PUSH_STATUS_TIGER2VT[data["status"]]
 
@@ -368,8 +366,6 @@ class TigerGateway(BaseGateway):
             self.ID_VT2TIGER[local_id] = str(order.order_id)
 
             self.trade_client.place_order(order)
-            print("发单:", order.contract.symbol,
-                  order.order_id, order.quantity, order.status)
 
         except:  # noqa
             traceback.print_exc()
@@ -551,8 +547,6 @@ class TigerGateway(BaseGateway):
             self.on_order(order)
 
         self.ID_VT2TIGER = {v: k for k, v in self.ID_TIGER2VT.items()}
-        print("原始委托字典", self.ID_TIGER2VT)
-        print("原始反向字典", self.ID_VT2TIGER)
 
     def process_deal(self, data):
         """
