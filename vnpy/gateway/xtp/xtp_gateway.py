@@ -128,11 +128,11 @@ class XtpGateway(BaseGateway):
         """"""
         userid = setting['账号']
         password = setting['密码']
-        client_id = setting['客户号']
+        client_id = int(setting['客户号'])
         quote_ip = setting['行情地址']
-        quote_port = setting['行情端口']
+        quote_port = int(setting['行情端口'])
         trader_ip = setting['交易地址']
-        trader_port = setting['交易端口']
+        trader_port = int(setting['交易端口'])
         quote_protocol = setting["行情协议"]
 
         # self.quote_api.connect(userid, password, client_id,
@@ -181,9 +181,9 @@ class XtpQuoteApi(API.QuoteSpi):
 
         self.userid = ""
         self.password = ""
-        self.client_id = ""
+        self.client_id: int = 0
         self.server_ip = ""
-        self.server_port = ""
+        self.server_port: int = 0
         self.server_protocol = ""
 
         self.api = None
@@ -192,9 +192,9 @@ class XtpQuoteApi(API.QuoteSpi):
         self,
         userid: str,
         password: str,
-        client_id: str,
+        client_id: int,
         server_ip: str,
-        server_port: str,
+        server_port: int,
         quote_protocol: str
     ):
         """"""
@@ -468,9 +468,9 @@ class XtpTraderApi(API.TraderSpi):
         self,
         userid: str,
         password: str,
-        client_id: str,
+        client_id: int,
         server_ip: str,
-        server_port: str
+        server_port: int,
     ):
         """"""
         if self.api:
@@ -510,7 +510,7 @@ class XtpTraderApi(API.TraderSpi):
             msg = "交易服务器登录成功"
         else:
             reason = self.api.GetApiLastError()
-            msg = f"交易服务器登录失败，原因：{reason}"
+            msg = f"交易服务器登录失败，原因({reason.error_id})：{reason.error_msg}"
 
         self.gateway.write_log(msg)
 
