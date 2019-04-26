@@ -1,6 +1,5 @@
 """"""
 from copy import copy
-from functools import lru_cache
 
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.object import (
@@ -76,7 +75,6 @@ class OffsetConverter:
         else:
             return [req]
 
-    @lru_cache()
     def is_convert_required(self, vt_symbol: str):
         """
         Check if the contract needs offset convert.
@@ -84,7 +82,7 @@ class OffsetConverter:
         contract = self.main_engine.get_contract(vt_symbol)
 
         # Only contracts with long-short position mode requires convert
-        if not contract.net_position:
+        if not contract or not contract.net_position:
             return True
         else:
             return False
