@@ -324,7 +324,8 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
+        pybind11::call_guard<pybind11::gil_scoped_release>(),
+        pybind11::return_value_policy::reference
     );
     c.def("SetUDPBufferSize",
         autocxxpy::apply_function_transform<
