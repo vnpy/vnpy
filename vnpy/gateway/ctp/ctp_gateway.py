@@ -663,6 +663,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "BrokerID": self.brokerid,
             "AuthCode": self.auth_code,
+            "UserProductInfo": self.appID,
             "AppID": self.appid
         }
         
@@ -680,7 +681,7 @@ class CtpTdApi(TdApi):
             "UserID": self.userid,
             "Password": self.password,
             "BrokerID": self.brokerid,
-            "AppID": self.appid
+            "UserProductInfo": self.appid
         }
         
         self.reqid += 1
