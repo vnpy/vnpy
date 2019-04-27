@@ -1,4 +1,3 @@
-
 # 贡献代码
 
 ---
@@ -72,3 +71,4 @@ autopep8 --in-place --recursive .
 [GithubDocForSync]:https://help.github.com/articles/syncing-a-fork/
 [CreateIssue]:https://github.com/vnpy/vnpy/issues/new
 [CreatePR]:https://github.com/vnpy/vnpy/compare?expand=1
+
