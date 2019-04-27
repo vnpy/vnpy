@@ -35,9 +35,9 @@ from vnpy.trader.constant import (
     Offset, 
     Status
 )
-from vnpy.trader.utility import load_json, save_json
-from vnpy.trader.database import DbTickData, DbBarData
-from vnpy.trader.setting import SETTINGS
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
+from vnpy.trader.database import database_manager
+from vnpy.trader.rqdata import rqdata_client
 
 from .base import (
     APP_NAME,
@@ -97,6 +97,8 @@ class CtaEngine(BaseEngine):
         self.rq_client = None
         self.rq_symbols = set()
 
+        self.vt_tradeids = set()    # for filtering duplicate trade
+
         self.offset_converter = OffsetConverter(self.main_engine)
 
     def init_engine(self):
@@ -124,64 +126,19 @@ class CtaEngine(BaseEngine):
         """
         Init RQData client.
         """
-        username = SETTINGS["rqdata.username"]
-        password = SETTINGS["rqdata.password"]
-        if not username or not password:
-            return
-
-        import rqdatac
-        
-        self.rq_client = rqdatac
-        self.rq_client.init(username, password,
-                            ('rqdatad-pro.ricequant.com', 16011))
-
-        try:
-            df = self.rq_client.all_instruments(
-                type='Future', date=datetime.now())
-            for ix, row in df.iterrows():
-                self.rq_symbols.add(row['order_book_id'])
-        except RuntimeError:
-            pass
-
-        self.write_log("RQData数据接口初始化成功")
+        result = rqdata_client.init()
+        if result:
+            self.write_log("RQData数据接口初始化成功")
 
     def query_bar_from_rq(
-        self, vt_symbol: str, interval: Interval, start: datetime, end: datetime
+        self, symbol: str, exchange: Exchange, interval: Interval, start: datetime, end: datetime
     ):
         """
         Query bar data from RQData.
         """
-        symbol, exchange_str = vt_symbol.split(".")
-        rq_symbol = to_rq_symbol(vt_symbol)
-        if rq_symbol not in self.rq_symbols:
-            return None
-        
-        end += timedelta(1)     # For querying night trading period data
-
-        df = self.rq_client.get_price(
-            rq_symbol,
-            frequency=interval.value,
-            fields=["open", "high", "low", "close", "volume"],
-            start_date=start,
-            end_date=end
+        data = rqdata_client.query_bar(
+            symbol, exchange, interval, start, end
         )
-
-        data = []
-        for ix, row in df.iterrows():
-            bar = BarData(
-                symbol=symbol,
-                exchange=Exchange(exchange_str),
-                interval=interval,
-                datetime=row.name.to_pydatetime(),
-                open_price=row["open"],
-                high_price=row["high"],
-                low_price=row["low"],
-                close_price=row["close"],
-                volume=row["volume"],
-                gateway_name="RQ"
-            )
-            data.append(bar)
-
         return data
 
     def process_tick_event(self, event: Event):
@@ -234,6 +191,11 @@ class CtaEngine(BaseEngine):
     def process_trade_event(self, event: Event):
         """"""
         trade = event.data
+
+        # Filter duplicate trade push
+        if trade.vt_tradeid in self.vt_tradeids:
+            return
+        self.vt_tradeids.add(trade.vt_tradeid)
 
         self.offset_converter.update_trade(trade)
 
@@ -529,46 +491,50 @@ class CtaEngine(BaseEngine):
         return self.engine_type
 
     def load_bar(
-        self, vt_symbol: str, days: int, interval: Interval, callback: Callable
+        self, 
+        vt_symbol: str, 
+        days: int, 
+        interval: Interval,
+        callback: Callable[[BarData], None]
     ):
         """"""
+        symbol, exchange = extract_vt_symbol(vt_symbol)
         end = datetime.now()
         start = end - timedelta(days)
 
-        # Query data from RQData by default, if not found, load from database.
-        data = self.query_bar_from_rq(vt_symbol, interval, start, end)
-        if not data:
-            s = (
-                DbBarData.select()
-                .where(
-                    (DbBarData.vt_symbol == vt_symbol)
-                    & (DbBarData.interval == interval.value)
-                    & (DbBarData.datetime >= start)
-                    & (DbBarData.datetime <= end)
-                )
-                .order_by(DbBarData.datetime)
+        # Query bars from RQData by default, if not found, load from database.
+        bars = self.query_bar_from_rq(symbol, exchange, interval, start, end)
+        if not bars:
+            bars = database_manager.load_bar_data(
+                symbol=symbol,
+                exchange=exchange,
+                interval=interval,
+                start=start,
+                end=end,
             )
-            data = [db_bar.to_bar() for db_bar in s]
 
-        for bar in data:
+        for bar in bars:
             callback(bar)
 
-    def load_tick(self, vt_symbol: str, days: int, callback: Callable):
+    def load_tick(
+        self, 
+        vt_symbol: str,
+        days: int,
+        callback: Callable[[TickData], None]
+    ):
         """"""
+        symbol, exchange = extract_vt_symbol(vt_symbol)
         end = datetime.now()
         start = end - timedelta(days)
 
-        s = (
-            DbTickData.select()
-            .where(
-                (DbBarData.vt_symbol == vt_symbol)
-                & (DbBarData.datetime >= start)
-                & (DbBarData.datetime <= end)
-            )
-            .order_by(DbBarData.datetime)
+        ticks = database_manager.load_tick_data(
+            symbol=symbol,
+            exchange=exchange,
+            start=start,
+            end=end,
         )
 
-        for tick in s:
+        for tick in ticks:
             callback(tick)
 
     def call_strategy_func(
@@ -757,7 +723,7 @@ class CtaEngine(BaseEngine):
         """
         Load strategy class from certain folder.
         """
-        for dirpath, dirnames, filenames in os.walk(path):
+        for dirpath, dirnames, filenames in os.walk(str(path)):
             for filename in filenames:
                 if filename.endswith(".py"):
                     strategy_module_name = ".".join(
@@ -912,29 +878,3 @@ class CtaEngine(BaseEngine):
             subject = "CTA策略引擎"
 
         self.main_engine.send_email(subject, msg)
-
-
-def to_rq_symbol(vt_symbol: str):
-    """
-    CZCE product of RQData has symbol like "TA1905" while
-    vt symbol is "TA905.CZCE" so need to add "1" in symbol.
-    """
-    symbol, exchange_str = vt_symbol.split(".")
-    if exchange_str != "CZCE":
-        return symbol.upper()
-
-    for count, word in enumerate(symbol):
-        if word.isdigit():
-            break
-    
-    product = symbol[:count]
-    year = symbol[count]
-    month = symbol[count + 1:]
-    
-    if year == "9":
-        year = "1" + year
-    else:
-        year = "2" + year
-
-    rq_symbol = f"{product}{year}{month}".upper()
-    return rq_symbol

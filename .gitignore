@@ -19,3 +19,9 @@ dist
 
 # vn.py
 .vntrader
+
+# Visual Studio intermediate files
+*.exp
+*.iobj
+*.ipdb
+*.pdb

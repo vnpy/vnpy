@@ -468,6 +468,7 @@ class OesTdApi:
             name=data.securityName,
             product=PRODUCT_OES2VT[data.mktId],
             size=data.buyQtyUnit,
+            min_volume=100,
             net_position=True,
             pricetick=data.priceUnit,
         )

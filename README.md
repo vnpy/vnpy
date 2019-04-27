@@ -34,9 +34,22 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * BitMEX (bitmex)：数字货币期货、期权、永续合约
 
+    * OKEX (okex)：数字货币现货
+
+    * HUOBI(huobi)：数字货币现货
+    
+    * Bitfinex(bitfinex)：数字货币现货
+
+    * 1Token(onetoken)：数字货币券商（现货、期货）
+
+
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
     * cta_strategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
+
+    * cta_backtester：CTA策略回测模块，无需使用Jupyter Notebook，直接使用图形界面直接进行策略回测分析、参数优化等相关工作
+
+    * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
 
     * csv_loader：CSV历史数据加载器，用于加载CSV格式文件中的历史数据到平台数据库中，用于策略的回测研究以及实盘初始化等功能，支持自定义数据表头格式
 

@@ -12,9 +12,9 @@ from pandas import DataFrame
 
 from vnpy.trader.constant import (Direction, Offset, Exchange, 
                                   Interval, Status)
-from vnpy.trader.database import DbBarData, DbTickData
-from vnpy.trader.object import OrderData, TradeData
-from vnpy.trader.utility import round_to_pricetick
+from vnpy.trader.database import database_manager
+from vnpy.trader.object import OrderData, TradeData, BarData, TickData
+from vnpy.trader.utility import round_to
 
 from .base import (
     BacktestingMode,
@@ -103,8 +103,8 @@ class BacktestingEngine:
 
         self.strategy_class = None
         self.strategy = None
-        self.tick = None
-        self.bar = None
+        self.tick: TickData
+        self.bar: BarData
         self.datetime = None
 
         self.interval = None
@@ -167,7 +167,7 @@ class BacktestingEngine:
         """"""
         self.mode = mode
         self.vt_symbol = vt_symbol
-        self.interval = interval
+        self.interval = Interval(interval)
         self.rate = rate
         self.slippage = slippage
         self.size = size
@@ -199,14 +199,16 @@ class BacktestingEngine:
 
         if self.mode == BacktestingMode.BAR:
             self.history_data = load_bar_data(
-                self.vt_symbol,
+                self.symbol,
+                self.exchange,
                 self.interval,
                 self.start,
                 self.end
             )
         else:
             self.history_data = load_tick_data(
-                self.vt_symbol,
+                self.symbol,
+                self.exchange,
                 self.start,
                 self.end
             )
@@ -224,6 +226,8 @@ class BacktestingEngine:
 
         # Use the first [days] of history data for initializing strategy
         day_count = 0
+        ix = 0
+        
         for ix, data in enumerate(self.history_data):
             if self.datetime and data.datetime.day != self.datetime.day:
                 day_count += 1
@@ -460,7 +464,7 @@ class BacktestingEngine:
 
         plt.show()
 
-    def run_optimization(self, optimization_setting: OptimizationSetting):
+    def run_optimization(self, optimization_setting: OptimizationSetting, output=True):
         """"""
         # Get optimization setting and target
         settings = optimization_setting.generate_setting()
@@ -503,9 +507,10 @@ class BacktestingEngine:
         result_values = [result.get() for result in results]
         result_values.sort(reverse=True, key=lambda result: result[1])
 
-        for value in result_values:
-            msg = f"参数：{value[0]}, 目标：{value[1]}"
-            self.output(msg)
+        if output:
+            for value in result_values:
+                msg = f"参数：{value[0]}, 目标：{value[1]}"
+                self.output(msg)
 
         return result_values
 
@@ -519,7 +524,7 @@ class BacktestingEngine:
         else:
             self.daily_results[d] = DailyResult(d, price)
 
-    def new_bar(self, bar: DbBarData):
+    def new_bar(self, bar: BarData):
         """"""
         self.bar = bar
         self.datetime = bar.datetime
@@ -530,7 +535,7 @@ class BacktestingEngine:
 
         self.update_daily_close(bar.close_price)
 
-    def new_tick(self, tick: DbTickData):
+    def new_tick(self, tick: TickData):
         """"""
         self.tick = tick
         self.datetime = tick.datetime
@@ -723,7 +728,7 @@ class BacktestingEngine:
         lock: bool
     ):
         """"""
-        price = round_to_pricetick(price, self.pricetick)
+        price = round_to(price, self.pricetick)
         if stop:
             vt_orderid = self.send_stop_order(direction, offset, price, volume)
         else:
@@ -957,7 +962,7 @@ def optimize(
     engine.load_data()
     engine.run_backtesting()
     engine.calculate_result()
-    statistics = engine.calculate_statistics()
+    statistics = engine.calculate_statistics(output=False)
 
     target_value = statistics[target_name]
     return (str(setting), target_value, statistics)
@@ -965,41 +970,26 @@ def optimize(
 
 @lru_cache(maxsize=10)
 def load_bar_data(
-    vt_symbol: str, 
-    interval: str, 
-    start: datetime, 
+    symbol: str,
+    exchange: Exchange,
+    interval: Interval,
+    start: datetime,
     end: datetime
 ):
     """"""
-    s = (
-        DbBarData.select()
-        .where(
-            (DbBarData.vt_symbol == vt_symbol) 
-            & (DbBarData.interval == interval) 
-            & (DbBarData.datetime >= start) 
-            & (DbBarData.datetime <= end)
-        )
-        .order_by(DbBarData.datetime)
+    return database_manager.load_bar_data(
+        symbol, exchange, interval, start, end
     )
-    data = [db_bar.to_bar() for db_bar in s]
-    return data
 
 
 @lru_cache(maxsize=10)
 def load_tick_data(
-    vt_symbol: str, 
-    start: datetime, 
+    symbol: str,
+    exchange: Exchange,
+    start: datetime,
     end: datetime
 ):
     """"""
-    s = (
-        DbTickData.select()
-        .where(
-            (DbTickData.vt_symbol == vt_symbol) 
-            & (DbTickData.datetime >= start) 
-            & (DbTickData.datetime <= end)
-        )
-        .order_by(DbTickData.datetime)
+    return database_manager.load_tick_data(
+        symbol, exchange, start, end
     )
-    data = [db_tick.db_tick() for db_tick in s]
-    return data
