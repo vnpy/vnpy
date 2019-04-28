@@ -7,6 +7,7 @@
 
 * 应用模块
     * [CTA策略](cta_strategy.md)
+        * [模块构成](cta_strategy.md#模块构成)
     * [CSV载入](csv_loader.md)
     * [CTA回测](cta_backtester.md)
 
