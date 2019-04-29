@@ -72,6 +72,9 @@ class BaseGateway(ABC):
     # Fields required in setting dict for connect function.
     default_setting = {}
 
+    # Exchanges supported in the gateway.
+    exchanges = []
+
     def __init__(self, event_engine: EventEngine, gateway_name: str):
         """"""
         self.event_engine = event_engine

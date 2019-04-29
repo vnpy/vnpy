@@ -86,6 +86,8 @@ class FutuGateway(BaseGateway):
         "环境": [TrdEnv.REAL, TrdEnv.SIMULATE],
     }
 
+    exchanges = list(EXCHANGE_FUTU2VT.values())
+
     def __init__(self, event_engine):
         """Constructor"""
         super(FutuGateway, self).__init__(event_engine, "FUTU")

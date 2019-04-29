@@ -77,6 +77,8 @@ class HuobiGateway(BaseGateway):
         "代理端口": "",
     }
 
+    exchanges = [Exchange.HUOBI]
+
     def __init__(self, event_engine):
         """Constructor"""
         super(HuobiGateway, self).__init__(event_engine, "HUOBI")

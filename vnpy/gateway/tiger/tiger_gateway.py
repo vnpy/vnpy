@@ -96,6 +96,13 @@ class TigerGateway(BaseGateway):
         "private_key": '',
     }
 
+    exchanges = [
+        Exchange.SEHK,
+        Exchange.SMART,
+        Exchange.SSE,
+        Exchange.SZSE
+    ]
+
     def __init__(self, event_engine):
         """Constructor"""
         super(TigerGateway, self).__init__(event_engine, "TIGER")

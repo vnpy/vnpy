@@ -111,6 +111,8 @@ class XtpGateway(BaseGateway):
         "授权码": ""
     }
 
+    exchanges = list(EXCHANGE_VT2XTP.keys())
+
     def __init__(self, event_engine: EventEngine):
         """"""
         super().__init__(event_engine, "XTP")

@@ -75,6 +75,8 @@ class BitmexGateway(BaseGateway):
         "代理端口": "",
     }
 
+    exchanges = [Exchange.BITMEX]
+
     def __init__(self, event_engine):
         """Constructor"""
         super(BitmexGateway, self).__init__(event_engine, "BITMEX")
