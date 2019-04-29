@@ -10,6 +10,13 @@ from .constant import Exchange, Interval
 from .object import BarData
 
 
+INTERVAL_VT2RQ = {
+    Interval.MINUTE: "1m",
+    Interval.HOUR: "1h",
+    Interval.DAILY: "1d",
+}
+
+
 class RqdataClient:
     """
     Client for querying history data from RQData.
@@ -91,11 +98,15 @@ class RqdataClient:
         if rq_symbol not in self.symbols:
             return None
 
+        rq_interval = INTERVAL_VT2RQ.get(interval)
+        if not rq_interval:
+            return None
+
         end += timedelta(1)     # For querying night trading period data
 
         df = rqdata_get_price(
             rq_symbol,
-            frequency=interval.value,
+            frequency=rq_interval,
             fields=["open", "high", "low", "close", "volume"],
             start_date=start,
             end_date=end
