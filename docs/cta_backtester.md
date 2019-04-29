@@ -5,7 +5,7 @@ CTA回测模块是基于PyQt5和pyqtgraph的图形化回测工具。启动VN Tra
 
 &nbsp;
 
-## 1.加载启动
+## 加载启动
 进入图形化回测界面“CTA回测”后，会立刻完成初始化工作：初始化回测引擎、初始化RQData客户端。
 
 ```
@@ -33,7 +33,7 @@ CTA回测模块是基于PyQt5和pyqtgraph的图形化回测工具。启动VN Tra
 &nbsp;
 
 
-## 2.下载数据
+## 下载数据
 在开始策略回测之前，必须保证数据库内有充足的历史数据。故vnpy提供了历史数据一键下载的功能。
 下载数据功能主要是基于RQData的get_price()函数实现的。
 ```
@@ -60,7 +60,7 @@ get_price(
 
 &nbsp;
 
-## 3.策略回测
+## 策略回测
 下载完历史数据后，需要配置以下字段：交易策略、手续费率、交易滑点、合约乘数、价格跳动、回测资金。
 这些字段主要对应BacktesterEngine类的run_backtesting函数。
 ```
@@ -86,14 +86,14 @@ def run_backtesting(
 
 &nbsp;
 
-### 3.1统计数据
+### 统计数据
 用于显示回测完成后的相关统计数值, 如结束资金、总收益率、夏普比率、收益回撤比。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/show_result.png)
 
 &nbsp;
 
-### 3.2图表分析
+### 图表分析
 以下四个图分别是代表账号净值、净值回撤、每日盈亏、盈亏分布。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/cta_backtester/show_result_chat.png)
@@ -101,7 +101,7 @@ def run_backtesting(
 
 &nbsp;
 
-## 4.参数优化
+## 参数优化
 
 参数优化功能使用的是穷举算法，即多进程对所有参数组合进行回测，并输出最终解集。其操作流程如下：
 
