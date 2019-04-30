@@ -219,7 +219,7 @@ class PositionHolding:
                 elif order.offset == Offset.CLOSE:
                     self.long_td_frozen += frozen
 
-                    if self.long_td_frozen > self.short_td:
+                    if self.long_td_frozen > self.long_td:
                         self.long_yd_frozen += (self.long_td_frozen
                                                 - self.long_td)
                         self.long_td_frozen = self.long_td
