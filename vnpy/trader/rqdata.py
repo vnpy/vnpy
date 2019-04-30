@@ -12,7 +12,7 @@ from .object import BarData
 
 INTERVAL_VT2RQ = {
     Interval.MINUTE: "1m",
-    Interval.HOUR: "1h",
+    Interval.HOUR: "60m",
     Interval.DAILY: "1d",
 }
 
