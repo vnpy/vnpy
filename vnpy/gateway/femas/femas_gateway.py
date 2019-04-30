@@ -87,12 +87,6 @@ OFFSET_VT2FEMAS = {
 }
 OFFSET_FEMAS2VT = {v: k for k, v in OFFSET_VT2FEMAS.items()}
 
-# PRODUCT_CTP2VT = {
-#     THOST_FTDC_PC_Futures: Product.FUTURES,
-#     THOST_FTDC_PC_Options: Product.OPTION,
-#     THOST_FTDC_PC_Combination: Product.SPREAD
-# }
-
 DIRECTION_FEMAS2VT = {v: k for k, v in DIRECTION_VT2FEMAS.items()}
 DIRECTION_FEMAS2VT[USTP_FTDC_PD_Long] = Direction.LONG
 DIRECTION_FEMAS2VT[USTP_FTDC_PD_Short] = Direction.SHORT
@@ -127,6 +121,8 @@ class FemasGateway(BaseGateway):
         "td_address": "",
         "md_address": "",
     }
+
+    exchanges = list(EXCHANGE_FEMAS2VT.values())
 
     def __init__(self, event_engine):
         """Constructor"""

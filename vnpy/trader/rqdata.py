@@ -12,8 +12,14 @@ from .object import BarData
 
 INTERVAL_VT2RQ = {
     Interval.MINUTE: "1m",
-    Interval.HOUR: "1h",
+    Interval.HOUR: "60m",
     Interval.DAILY: "1d",
+}
+
+INTERVAL_ADJUSTMENT_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta()         # no need to adjust for daily bar
 }
 
 
@@ -102,7 +108,11 @@ class RqdataClient:
         if not rq_interval:
             return None
 
-        end += timedelta(1)     # For querying night trading period data
+        # For adjust timestamp from bar close point (RQData) to open point (VN Trader)
+        adjustment = INTERVAL_ADJUSTMENT_MAP[interval]
+
+        # For querying night trading period data
+        end += timedelta(1)
 
         df = rqdata_get_price(
             rq_symbol,
@@ -118,7 +128,7 @@ class RqdataClient:
                 symbol=symbol,
                 exchange=exchange,
                 interval=interval,
-                datetime=row.name.to_pydatetime(),
+                datetime=row.name.to_pydatetime() - adjustment,
                 open_price=row["open"],
                 high_price=row["high"],
                 low_price=row["low"],

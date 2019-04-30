@@ -43,6 +43,7 @@ class MainEngine:
         self.gateways = {}
         self.engines = {}
         self.apps = {}
+        self.exchanges = []
 
         self.init_engines()
 
@@ -60,6 +61,12 @@ class MainEngine:
         """
         gateway = gateway_class(self.event_engine)
         self.gateways[gateway.gateway_name] = gateway
+
+        # Add gateway supported exchanges into engine
+        for exchange in gateway.exchanges:
+            if exchange not in self.exchanges:
+                self.exchanges.append(exchange)
+
         return gateway
 
     def add_app(self, app_class: BaseApp):
@@ -126,6 +133,12 @@ class MainEngine:
         Get all app objects.
         """
         return list(self.apps.values())
+
+    def get_all_exchanges(self):
+        """
+        Get all exchanges.
+        """
+        return self.exchanges
 
     def connect(self, setting: dict, gateway_name: str):
         """

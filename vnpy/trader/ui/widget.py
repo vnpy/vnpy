@@ -582,8 +582,9 @@ class TradingWidget(QtWidgets.QWidget):
         self.setFixedWidth(300)
 
         # Trading function area
+        exchanges = self.main_engine.get_all_exchanges()
         self.exchange_combo = QtWidgets.QComboBox()
-        self.exchange_combo.addItems([exchange.value for exchange in Exchange])
+        self.exchange_combo.addItems([exchange.value for exchange in exchanges])
 
         self.symbol_line = QtWidgets.QLineEdit()
         self.symbol_line.returnPressed.connect(self.set_vt_symbol)
