@@ -116,29 +116,39 @@ class AlpacaGateway(BaseGateway):
         self.pool.apply_async(self.run)
 
         # Put connect task into quque.
-        self.add_task(self.connect_rest)
+        self.add_task(self.query_account)
+        self.add_task(self.query_contract)
         # self.add_task(self.connect_ws)
-
-    def connect_rest(self):
-        print("debug connect rest2")
-        self.query_account()
 
     def query_account(self):
         """"""
-        print("debug connect rest2.5")
         data = self.rest_api.get_account()
-        print("debug connect rest3",data)
         account = AccountData(
             accountid=data.id,
             balance=float(data.cash),
             frozen=float(data.cash) - float(data.buying_power),
             gateway_name=self.gateway_name
         )
-        print("debug connect rest4",account)
         self.on_account(account)
-        print("debug connect rest5")
         self.write_log("账户资金查询成功")
 
+    def query_contract(self):
+        """"""
+        data = self.rest_api.list_assets()
+        for instrument_data in data:
+            symbol = instrument_data.symbol
+            contract = ContractData(
+                symbol=symbol,
+                exchange=Exchange.ALPACA,  # vigar, need to fix to nasdq ...
+                name=symbol,
+                product=Product.SPOT,
+                size=1,
+                pricetick=0.01,
+                gateway_name=self.gateway_name
+            )
+            self.on_contract(contract)
+        self.write_log("合约信息查询成功")
+    
     def subscribe(self, req: SubscribeRequest):
         """"""
         pass
@@ -224,22 +234,6 @@ class AlpacaRestApi(RestClient):
         self.query_contract()
 
 
-    def query_contract(self):
-        """"""
-        data = self.raw_rest_api.list_assets()
-        for instrument_data in data:
-            symbol = instrument_data.symbol
-            contract = ContractData(
-                symbol=symbol,
-                exchange=Exchange.ALPACA,  # vigar, need to fix to nasdq ...
-                name=symbol,
-                product=Product.SPOT,
-                size=1,
-                pricetick=0.01,
-                gateway_name=self.gateway_name
-            )
-            self.gateway.on_contract(contract)
-        self.gateway.write_log("合约信息查询成功")
 
     def _gen_unqiue_cid(self):
         # return int(round(time.time() * 1000))
