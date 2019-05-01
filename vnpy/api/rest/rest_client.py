@@ -246,16 +246,26 @@ class RestClient(object):
             request = self.sign(request)
 
             url = self.make_full_url(request.path)
-
-            response = session.request(
-                request.method,
-                url,
-                headers=request.headers,
-                params=request.params,
-                data=request.data,
-                proxies=self.proxies,
-                allow_redirects=request.allow_redirects
-            )
+            if "alpaca" in url and "orders" in url:
+                response =session.request(
+                    request.method,
+                    url,
+                    headers=request.headers,
+                    params=request.params,
+                    json=request.data,
+                    proxies=self.proxies,
+                    allow_redirects=request.allow_redirects
+                )
+            else:
+                response = session.request(
+                    request.method,
+                    url,
+                    headers=request.headers,
+                    params=request.params,
+                    data=request.data,
+                    proxies=self.proxies,
+                    allow_redirects=request.allow_redirects
+                )
             request.response = response
 
             status_code = response.status_code

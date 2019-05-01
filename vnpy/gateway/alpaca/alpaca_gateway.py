@@ -8,10 +8,13 @@ import hmac
 import sys
 import time
 from copy import copy
+from queue import Empty, Queue
+from multiprocessing.dummy import Pool
 from datetime import datetime
 from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
+import alpaca_trade_api as tradeapi
 
 from vnpy.trader.constant import (
     Direction,
@@ -58,7 +61,6 @@ ORDERTYPE_VT2ALPACA = {
 }
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
 
-
 class AlpacaGateway(BaseGateway):
     """
     VN Trader Gateway for Alpaca connection.
@@ -76,9 +78,25 @@ class AlpacaGateway(BaseGateway):
         """Constructor"""
         super(AlpacaGateway, self).__init__(event_engine, "ALPACA")
 
-        self.rest_api = AlpacaRestApi(self)
+        self.rest_api = None
         # self.ws_api = AlpacaWebsocketApi(self)
         self.order_map = {}
+        self.queue = Queue()
+        self.active = False
+        self.pool = None
+
+    def add_task(self, func, *args):
+        """"""
+        self.queue.put((func, [*args]))
+
+    def run(self):
+        """"""
+        while self.active:
+            try:
+                func, args = self.queue.get(timeout=0.1)
+                func(*args)
+            except Empty:
+                pass
 
     def connect(self, setting: dict):
         """"""
@@ -88,9 +106,38 @@ class AlpacaGateway(BaseGateway):
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
 
-        self.rest_api.connect(key, secret, session, proxy_host, proxy_port)
-
         # self.ws_api.connect(key, secret, proxy_host, proxy_port)
+        print("debug connect rest1")
+        self.rest_api = tradeapi.REST(key, secret, REST_HOST)
+
+        # Start thread pool for REST call
+        self.active = True
+        self.pool = Pool(5)
+        self.pool.apply_async(self.run)
+
+        # Put connect task into quque.
+        self.add_task(self.connect_rest)
+        # self.add_task(self.connect_ws)
+
+    def connect_rest(self):
+        print("debug connect rest2")
+        self.query_account()
+
+    def query_account(self):
+        """"""
+        print("debug connect rest2.5")
+        data = self.rest_api.get_account()
+        print("debug connect rest3",data)
+        account = AccountData(
+            accountid=data.id,
+            balance=float(data.cash),
+            frozen=float(data.cash) - float(data.buying_power),
+            gateway_name=self.gateway_name
+        )
+        print("debug connect rest4",account)
+        self.on_account(account)
+        print("debug connect rest5")
+        self.write_log("账户资金查询成功")
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -103,10 +150,6 @@ class AlpacaGateway(BaseGateway):
     def cancel_order(self, req: CancelRequest):
         """"""
         pass
-
-    def query_account(self):
-        """"""
-        self.rest_api.query_account()
 
     def query_position(self):
         """"""
@@ -170,50 +213,22 @@ class AlpacaRestApi(RestClient):
         """
         self.key = key
         self.secret = secret
+        self.raw_rest_api = tradeapi.REST(self.key, self.secret, REST_HOST)
 
-        self.init(REST_HOST, proxy_host, proxy_port)
+        #self.init(REST_HOST, proxy_host, proxy_port)
         print("rest connect: ", REST_HOST, proxy_host, proxy_port)
-        self.start(session)
+        # self.start(session)
         print("rest client connected")
         self.gateway.write_log("ALPACA REST API启动成功")
         self.query_account()
         self.query_contract()
 
-    def query_account(self):
-        """"""
-        self.add_request(
-            "GET",
-            "/v1/account",
-            callback=self.on_query_account
-        )
-
-    def on_query_account(self, data, request):
-        """"""
-        print("debug on_query_account: ", type(data), data)
-        account = AccountData(
-            accountid=data["id"],
-            balance=float(data["cash"]),
-            frozen=float(data["cash"]) - float(data['buying_power']),
-            gateway_name=self.gateway_name
-        )
-        self.gateway.on_account(account)
-        self.gateway.write_log("账户资金查询成功")
 
     def query_contract(self):
         """"""
-        self.add_request(
-            "GET",
-            "/v1/assets",
-            callback=self.on_query_contract
-        )
-
-    def on_query_contract(self, data, request):
-        """"""
+        data = self.raw_rest_api.list_assets()
         for instrument_data in data:
-            symbol = instrument_data["symbol"]
-            # {"id":"74c0839d-1350-4801-842f-5f79b0d9a49a",
-            # "asset_class":"us_equity","exchange":"NASDAQ",
-            # "symbol":"NSIT","status":"active","tradable":true}]
+            symbol = instrument_data.symbol
             contract = ContractData(
                 symbol=symbol,
                 exchange=Exchange.ALPACA,  # vigar, need to fix to nasdq ...
@@ -224,16 +239,25 @@ class AlpacaRestApi(RestClient):
                 gateway_name=self.gateway_name
             )
             self.gateway.on_contract(contract)
-
         self.gateway.write_log("合约信息查询成功")
 
     def _gen_unqiue_cid(self):
         # return int(round(time.time() * 1000))
         self.order_id = self.order_id + 1
-        local_oid = time.strftime("%y%m%d") + str(self.order_id)
+        local_oid = time.strftime("%y%m%d%H%M%S") + "_" + str(self.order_id)
         return int(local_oid)
-    
+
     def send_order(self, req: OrderRequest):
+        """"""
+        local_id = self._gen_unqiue_cid()
+        order = req.create_order_data(local_id, self.gateway_name)
+
+        self.on_order(order)
+        self.add_task(self._send_order, req, local_id)
+        return order.vt_orderid
+
+    # need config
+    def _send_order(self, req: OrderRequest, local_id):
         orderid = self._gen_unqiue_cid()
 
         if req.direction == Direction.LONG:
@@ -242,33 +266,37 @@ class AlpacaRestApi(RestClient):
             amount = -req.volume
         order_type = ORDERTYPE_VT2ALPACA[req.type]
         order_side = DIRECTION_VT2ALPACA[req.direction]
-        data = {
-            "symbol": "b0b6dd9d-8b9b-48a9-ba46-b9d54906e415",#req.symbol,
-            'qty': int(amount),
-            "client_order_id": str(orderid),
-            "type": order_type,
-            "side": order_side,
-            "time_in_force": "day"
-        }
-        if req.type==OrderType.MARKET:
-            data['limit_price']=float(req.price)
-        
-        order = req.create_order_data(orderid, self.gateway_name)
-       
-        self.add_request(
-            "POST",
-            "/v1/orders",
-            callback=self.on_send_order,
-            data=data,
-            extra=order,
-            on_failed=self.on_send_order_failed,
-            on_error=self.on_send_order_error,
-        )
+
+        if req.type == OrderType.LIMIT:
+            order = self.raw_rest_api.submit_order(
+                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
+                qty=int(amount),
+                side=order_side,
+                type=order_type,
+                time_in_force='day',
+                client_order_id=str(orderid),
+                limit_price=float(req.price),
+            )
+            print("debug 1", order)
+        else:
+            order = self.raw_rest_api.submit_order(
+                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
+                qty=int(amount),
+                side=order_side,
+                type=order_type,
+                time_in_force='day',
+                client_order_id=str(orderid)
+            )
+            print("debug 2", order)
+
+        #order = req.create_order_data(orderid, self.gateway_name)
 
     def on_send_order(self, data, request):
         """Websocket will push a new order status"""
         print("debug on_send_order data: ", data)
         print("debug on_send_order request: ", request)
+        order = request.extra
+        self.gateway.on_order(order)
 
     def on_send_order_failed(self, status_code: str, request: Request):
         """
