@@ -84,6 +84,7 @@ class AlpacaGateway(BaseGateway):
         self.queue = Queue()
         self.active = False
         self.pool = None
+        self.order_id = 1_000_000
 
     def add_task(self, func, *args):
         """"""
@@ -149,13 +150,59 @@ class AlpacaGateway(BaseGateway):
             self.on_contract(contract)
         self.write_log("合约信息查询成功")
     
+    def _gen_unqiue_cid(self):
+        # return int(round(time.time() * 1000))
+        self.order_id = self.order_id + 1
+        local_oid = time.strftime("%y%m%d%H%M%S") + "_" + str(self.order_id)
+        return int(local_oid)
+    
+    def send_order(self, req: OrderRequest):
+        """"""
+        local_id = self._gen_unqiue_cid()
+        order = req.create_order_data(local_id, self.gateway_name)
+        self.on_order(order)
+        self.add_task(self._send_order, req, local_id)
+        print("debug send order: ", order.__dict__)
+        return order.vt_orderid
+
+    # need config
+    def _send_order(self, req: OrderRequest, local_id):
+        orderid = local_id
+
+        if req.direction == Direction.LONG:
+            amount = req.volume
+        else:
+            amount = -req.volume
+        order_type = ORDERTYPE_VT2ALPACA[req.type]
+        order_side = DIRECTION_VT2ALPACA[req.direction]
+
+        if req.type == OrderType.LIMIT:
+            order = self.raw_rest_api.submit_order(
+                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
+                qty=int(amount),
+                side=order_side,
+                type=order_type,
+                time_in_force='day',
+                client_order_id=str(orderid),
+                limit_price=float(req.price),
+            )
+            print("debug 1", order)
+        else:
+            order = self.raw_rest_api.submit_order(
+                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
+                qty=int(amount),
+                side=order_side,
+                type=order_type,
+                time_in_force='day',
+                client_order_id=str(orderid)
+            )
+            print("debug 2", order)
+
+        #order = req.create_order_data(orderid, self.gateway_name)
+    
     def subscribe(self, req: SubscribeRequest):
         """"""
         pass
-
-    def send_order(self, req: OrderRequest):
-        """"""
-        return self.rest_api.send_order(req)
 
     def cancel_order(self, req: CancelRequest):
         """"""
@@ -185,7 +232,6 @@ class AlpacaRestApi(RestClient):
 
         self.key = ""
         self.secret = ""
-        self.order_id = 1_000_000
 
         self.order_count = 1_000_000
         self.connect_time = 0
@@ -234,56 +280,6 @@ class AlpacaRestApi(RestClient):
         self.query_contract()
 
 
-
-    def _gen_unqiue_cid(self):
-        # return int(round(time.time() * 1000))
-        self.order_id = self.order_id + 1
-        local_oid = time.strftime("%y%m%d%H%M%S") + "_" + str(self.order_id)
-        return int(local_oid)
-
-    def send_order(self, req: OrderRequest):
-        """"""
-        local_id = self._gen_unqiue_cid()
-        order = req.create_order_data(local_id, self.gateway_name)
-
-        self.on_order(order)
-        self.add_task(self._send_order, req, local_id)
-        return order.vt_orderid
-
-    # need config
-    def _send_order(self, req: OrderRequest, local_id):
-        orderid = self._gen_unqiue_cid()
-
-        if req.direction == Direction.LONG:
-            amount = req.volume
-        else:
-            amount = -req.volume
-        order_type = ORDERTYPE_VT2ALPACA[req.type]
-        order_side = DIRECTION_VT2ALPACA[req.direction]
-
-        if req.type == OrderType.LIMIT:
-            order = self.raw_rest_api.submit_order(
-                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
-                qty=int(amount),
-                side=order_side,
-                type=order_type,
-                time_in_force='day',
-                client_order_id=str(orderid),
-                limit_price=float(req.price),
-            )
-            print("debug 1", order)
-        else:
-            order = self.raw_rest_api.submit_order(
-                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
-                qty=int(amount),
-                side=order_side,
-                type=order_type,
-                time_in_force='day',
-                client_order_id=str(orderid)
-            )
-            print("debug 2", order)
-
-        #order = req.create_order_data(orderid, self.gateway_name)
 
     def on_send_order(self, data, request):
         """Websocket will push a new order status"""
