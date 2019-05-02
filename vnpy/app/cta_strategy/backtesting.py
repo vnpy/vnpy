@@ -3,12 +3,15 @@ from datetime import date, datetime
 from typing import Callable
 from itertools import product
 from functools import lru_cache
+from time import time
 import multiprocessing
+import random
 
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pandas import DataFrame
+from deap import creator, base, tools, algorithms
 
 from vnpy.trader.constant import (Direction, Offset, Exchange, 
                                   Interval, Status)
@@ -514,6 +517,101 @@ class BacktestingEngine:
 
         return result_values
 
+    def run_ga_optimization(self, optimization_setting: OptimizationSetting, output=True):
+        """"""
+        # Get optimization setting and target
+        settings = optimization_setting.generate_setting()
+        target_name = optimization_setting.target_name
+
+        if not settings:
+            self.output("优化参数组合为空，请检查")
+            return
+
+        if not target_name:
+            self.output("优化目标未设置，请检查")
+            return
+
+        # Define parameter generation function
+        def generate_parameter():
+            """"""
+            return list(random.choice(settings).values())
+
+        # Create ga object function
+        object_func = create_ga_optimize(
+            target_name,
+            self.strategy_class,
+            settings[0],
+            self.vt_symbol,
+            self.interval,
+            self.start,
+            self.rate,
+            self.slippage,
+            self.size,
+            self.pricetick,
+            self.capital,
+            self.end,
+            self.mode
+        )
+
+        # Set up genetic algorithem
+        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+        creator.create("Individual", list, fitness=creator.FitnessMax)
+
+        toolbox = base.Toolbox() 
+        toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)                          
+        toolbox.register("population", tools.initRepeat, list, toolbox.individual)                                            
+        toolbox.register("mate", tools.cxTwoPoint)                                               
+        toolbox.register("mutate", tools.mutUniformInt, low=4, up=40, indpb=1)               
+        toolbox.register("evaluate", object_func)                                                
+        toolbox.register("select", tools.selNSGA2)       
+
+        # pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        # toolbox.register("map", pool.map)
+        
+        MU = 80         # 设置每一代选择的个体数
+        LAMBDA = 100    # 设置每一代产生的子女数
+        POP = 100       
+        CXPB = 0.95     # 交叉概率    
+        MUTPB = 0.05    # 变异概率
+        NGEN = 300      # 种群代数
+        
+        pop = toolbox.population(POP)               # 设置族群里面的个体数量
+        hof = tools.ParetoFront()                   # 解的集合：帕累托前沿(非占优最优集)
+
+        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        np.set_printoptions(suppress=True)          # 对numpy默认输出的科学计数法转换
+        stats.register("mean", np.mean, axis=0)     # 统计目标优化函数结果的平均值
+        stats.register("std", np.std, axis=0)       # 统计目标优化函数结果的标准差
+        stats.register("min", np.min, axis=0)       # 统计目标优化函数结果的最小值
+        stats.register("max", np.max, axis=0)       # 统计目标优化函数结果的最大值
+        
+        msg = "开始运行遗传算法，每代族群总数：%s, 优良品种筛选个数：%s，迭代次数：%s，交叉概率：%s，突变概率：%s" %(POP,MU,NGEN,CXPB,MUTPB)
+        self.output(msg)
+
+        # Run ga optimization
+        # esMuPlusLambda是一种基于(μ+λ)选择策略的多目标优化分段遗传算法
+        start = time()
+
+        algorithms.eaMuPlusLambda(
+            pop, 
+            toolbox, 
+            MU, 
+            LAMBDA, 
+            CXPB, 
+            MUTPB, 
+            NGEN, 
+            stats,
+            halloffame=hof
+        )    
+
+        end = time()
+        cost = int((end - start))
+
+        self.output(f"遗传算法优化完成，耗时{cost}秒")
+        self.output("输出帕累托前沿解集：")
+        
+        return hof
+
     def update_daily_close(self, price: float):
         """"""
         d = self.datetime.date()
@@ -966,6 +1064,54 @@ def optimize(
 
     target_value = statistics[target_name]
     return (str(setting), target_value, statistics)
+
+
+def create_ga_optimize(
+    target_name: str,
+    strategy_class: CtaTemplate,
+    setting: dict,
+    vt_symbol: str,
+    interval: Interval,
+    start: datetime,
+    rate: float,
+    slippage: float,
+    size: float,
+    pricetick: float,
+    capital: int,
+    end: datetime,
+    mode: BacktestingMode,
+):
+    """
+    Function for running in multiprocessing.pool
+    """
+    parameter_keys = list(setting.keys())
+
+    @lru_cache(maxsize=1000000)
+    def _optimizae(parameter_values: tuple):
+        """"""
+        setting = dict(zip(parameter_keys, parameter_values))
+        result = optimize(
+            target_name,
+            strategy_class,
+            setting,
+            vt_symbol,
+            interval,
+            start,
+            rate,
+            slippage,
+            size,
+            pricetick,
+            capital,
+            end,
+            mode
+        )
+        return (result[1],)
+
+    def ga_optimize(parameter_values: list):
+        """"""
+        return _optimizae(tuple(parameter_values))
+
+    return ga_optimize
 
 
 @lru_cache(maxsize=10)
