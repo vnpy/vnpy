@@ -17,6 +17,7 @@ from vnpy.gateway.bitfinex import BitfinexGateway
 from vnpy.gateway.onetoken import OnetokenGateway
 from vnpy.gateway.okexf import OkexfGateway
 from vnpy.gateway.xtp import XtpGateway
+from vnpy.gateway.hbdm import HbdmGateway
 
 from vnpy.app.cta_strategy import CtaStrategyApp
 from vnpy.app.csv_loader import CsvLoaderApp
@@ -44,6 +45,7 @@ def main():
     main_engine.add_gateway(BitfinexGateway)
     main_engine.add_gateway(OnetokenGateway)
     main_engine.add_gateway(OkexfGateway)
+    main_engine.add_gateway(HbdmGateway)
 
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
