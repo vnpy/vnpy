@@ -22,6 +22,7 @@ from .widget import (
     ContractManager,
     TradingWidget,
     AboutDialog,
+    GlobalDialog
 )
 from ..engine import MainEngine
 from ..utility import get_icon_path, TRADER_DIR
@@ -87,11 +88,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """"""
         bar = self.menuBar()
 
-        sys_menu = bar.addMenu("系统")
-        app_menu = bar.addMenu("功能")
-        help_menu = bar.addMenu("帮助")
-
         # System menu
+        sys_menu = bar.addMenu("系统")
+
         gateway_names = self.main_engine.get_all_gateway_names()
         for name in gateway_names:
             func = partial(self.connect, name)
@@ -102,6 +101,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_menu_action(sys_menu, "退出", "exit.ico", self.close)
 
         # App menu
+        app_menu = bar.addMenu("功能")
+
         all_apps = self.main_engine.get_all_apps()
         for app in all_apps:
             ui_module = import_module(app.app_module + ".ui")
@@ -113,7 +114,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 app_menu, app.display_name, icon_path, func
             )
 
+        # Global setting editor
+        action = QtWidgets.QAction("配置", self)
+        action.triggered.connect(self.edit_global_setting)
+        bar.addAction(action)
+
         # Help menu
+        help_menu = bar.addMenu("帮助")
+
         self.add_menu_action(
             help_menu,
             "查询合约",
@@ -255,3 +263,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         """
         webbrowser.open("https://www.vnpy.com/forum/")
+
+    def edit_global_setting(self):
+        """
+        """
+        dialog = GlobalDialog()
+        dialog.exec_()

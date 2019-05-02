@@ -5,6 +5,7 @@ Basic widgets for VN Trader.
 import csv
 from enum import Enum
 from typing import Any
+from copy import copy
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -21,6 +22,8 @@ from ..event import (
 )
 from ..object import OrderRequest, SubscribeRequest
 from ..utility import load_json, save_json
+from ..setting import SETTING_FILENAME, SETTINGS
+
 
 COLOR_LONG = QtGui.QColor("red")
 COLOR_SHORT = QtGui.QColor("green")
@@ -1002,3 +1005,70 @@ class AboutDialog(QtWidgets.QDialog):
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(label)
         self.setLayout(vbox)
+
+
+class GlobalDialog(QtWidgets.QDialog):
+    """
+    Start connection of a certain gateway.
+    """
+
+    def __init__(self):
+        """"""
+        super().__init__()
+
+        self.widgets = {}
+
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("全局配置")
+        self.setMinimumWidth(800)
+
+        settings = copy(SETTINGS)
+        settings.update(load_json(SETTING_FILENAME))
+
+        # Initialize line edits and form layout based on setting.
+        form = QtWidgets.QFormLayout()
+
+        for field_name, field_value in settings.items():
+            field_type = type(field_value)
+            widget = QtWidgets.QLineEdit(str(field_value))
+
+            form.addRow(f"{field_name} <{field_type.__name__}>", widget)
+            self.widgets[field_name] = (widget, field_type)
+
+        button = QtWidgets.QPushButton("确定")
+        button.clicked.connect(self.update_setting)
+        form.addRow(button)
+
+        self.setLayout(form)
+
+    def update_setting(self):
+        """
+        Get setting value from line edits and update global setting file.
+        """
+        settings = {}
+        for field_name, tp in self.widgets.items():
+            widget, field_type = tp
+            value_text = widget.text()
+
+            if field_type == bool:
+                if value_text == "True":
+                    field_value = True
+                else:
+                    field_value = False
+            else:
+                field_value = field_type(value_text)
+
+            settings[field_name] = field_value
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "注意",
+            "全局配置的修改需要重启VN Trader后才会生效！",
+            QtWidgets.QMessageBox.Ok
+        )
+
+        save_json(SETTING_FILENAME, settings)
+        self.accept()
