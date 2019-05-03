@@ -6,6 +6,7 @@ from functools import lru_cache
 from time import time
 import multiprocessing
 import random
+import math
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,6 +30,8 @@ from .base import (
 from .template import CtaTemplate
 
 sns.set_style("whitegrid")
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
 
 
 class OptimizationSetting:
@@ -537,44 +540,52 @@ class BacktestingEngine:
             return list(random.choice(settings).values())
 
         # Create ga object function
-        object_func = create_ga_optimize(
-            target_name,
-            self.strategy_class,
-            settings[0],
-            self.vt_symbol,
-            self.interval,
-            self.start,
-            self.rate,
-            self.slippage,
-            self.size,
-            self.pricetick,
-            self.capital,
-            self.end,
-            self.mode
-        )
+        global ga_target_name
+        global ga_strategy_class
+        global ga_setting
+        global ga_vt_symbol
+        global ga_interval
+        global ga_start
+        global ga_rate
+        global ga_slippage
+        global ga_size
+        global ga_pricetick
+        global ga_capital
+        global ga_end
+        global ga_mode
+
+        ga_target_name = target_name
+        ga_strategy_class = self.strategy_class
+        ga_setting = settings[0]
+        ga_vt_symbol = self.vt_symbol
+        ga_interval = self.interval
+        ga_start = self.start
+        ga_rate = self.rate
+        ga_slippage = self.slippage
+        ga_size = self.size
+        ga_pricetick = self.pricetick
+        ga_capital = self.capital
+        ga_end = self.end
+        ga_mode = self.mode
 
         # Set up genetic algorithem
-        creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMax)
-
         toolbox = base.Toolbox() 
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)                          
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)                                            
         toolbox.register("mate", tools.cxTwoPoint)                                               
         toolbox.register("mutate", tools.mutUniformInt, low=4, up=40, indpb=1)               
-        toolbox.register("evaluate", object_func)                                                
+        toolbox.register("evaluate", ga_optimize)                                                
         toolbox.register("select", tools.selNSGA2)       
 
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
-        toolbox.register("map", pool.map)
-        
-        mu = 16         # number of individuals to select for the next generation
-        lambda_ = 20    # number of children to produce at each generation
-        cxpb = 0.95     # probability that an offspring is produced by crossover    
-        mutpb = 0.05    # probability that an offspring is produced by mutation
-        ngen = 300      # number of generation
-        
-        pop_size = 20   # number of individuals in each generation
+        total_size = len(settings)
+        pop_size = int(pow(total_size, 1 / math.e))     # number of individuals in each generation
+        lambda_ = pop_size                              # number of children to produce at each generation
+        mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
+
+        cxpb = 0.95         # probability that an offspring is produced by crossover    
+        mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
+        ngen = 30           # number of generation
+                
         pop = toolbox.population(pop_size)      
         hof = tools.ParetoFront()               # end result of pareto front
 
@@ -584,11 +595,15 @@ class BacktestingEngine:
         stats.register("std", np.std, axis=0)
         stats.register("min", np.min, axis=0)
         stats.register("max", np.max, axis=0)
-        
-        msg = "开始运行遗传算法，每代族群总数：%s, 优良品种筛选个数：%s，迭代次数：%s，交叉概率：%s，突变概率：%s" %(pop_size, mu, ngen, cxpb, mutpb)
-        self.output(msg)
+
+        # Multiprocessing is not supported yet.
+        # pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        # toolbox.register("map", pool.map)
 
         # Run ga optimization
+        msg = "开始运行遗传算法，每代族群总数：%s, 优良品种筛选个数：%s，迭代次数：%s，交叉概率：%s，突变概率：%s" % (pop_size, mu, ngen, cxpb, mutpb)
+        self.output(msg)
+
         start = time()
 
         algorithms.eaMuPlusLambda(
@@ -607,9 +622,17 @@ class BacktestingEngine:
         cost = int((end - start))
 
         self.output(f"遗传算法优化完成，耗时{cost}秒")
-        self.output("输出帕累托前沿解集：")
         
-        return hof
+        # Return result list
+        results = []
+        parameter_keys = list(ga_setting.keys())
+
+        for parameter_values in hof:
+            setting = dict(zip(parameter_keys, parameter_values))
+            target_value = ga_optimize(parameter_values)[0]
+            results.append((setting, target_value))
+        
+        return results
 
     def update_daily_close(self, price: float):
         """"""
@@ -1065,52 +1088,33 @@ def optimize(
     return (str(setting), target_value, statistics)
 
 
-def create_ga_optimize(
-    target_name: str,
-    strategy_class: CtaTemplate,
-    setting: dict,
-    vt_symbol: str,
-    interval: Interval,
-    start: datetime,
-    rate: float,
-    slippage: float,
-    size: float,
-    pricetick: float,
-    capital: int,
-    end: datetime,
-    mode: BacktestingMode,
-):
-    """
-    Function for running in multiprocessing.pool
-    """
-    parameter_keys = list(setting.keys())
+@lru_cache(maxsize=1000000)
+def _ga_optimizae(parameter_values: tuple):
+    """"""
+    parameter_keys = list(ga_setting.keys())
+    setting = dict(zip(parameter_keys, parameter_values))
 
-    @lru_cache(maxsize=1000000)
-    def _optimizae(parameter_values: tuple):
-        """"""
-        setting = dict(zip(parameter_keys, parameter_values))
-        result = optimize(
-            target_name,
-            strategy_class,
-            setting,
-            vt_symbol,
-            interval,
-            start,
-            rate,
-            slippage,
-            size,
-            pricetick,
-            capital,
-            end,
-            mode
-        )
-        return (result[1],)
+    result = optimize(
+        ga_target_name,
+        ga_strategy_class,
+        setting,
+        ga_vt_symbol,
+        ga_interval,
+        ga_start,
+        ga_rate,
+        ga_slippage,
+        ga_size,
+        ga_pricetick,
+        ga_capital,
+        ga_end,
+        ga_mode
+    )
+    return (result[1],)
 
-    def ga_optimize(parameter_values: list):
-        """"""
-        return _optimizae(tuple(parameter_values))
 
-    return ga_optimize
+def ga_optimize(parameter_values: list):
+    """"""
+    return _ga_optimizae(tuple(parameter_values))
 
 
 @lru_cache(maxsize=10)
@@ -1141,6 +1145,8 @@ def load_tick_data(
 
 
 # GA related global value
+ga_end = None
+ga_mode = None
 ga_target_name = None
 ga_strategy_class = None
 ga_setting = None
@@ -1152,5 +1158,3 @@ ga_slippage = None
 ga_size = None
 ga_pricetick = None
 ga_capital = None
-ga_end = None
-ga_mode = None
