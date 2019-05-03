@@ -43,23 +43,27 @@ REST_HOST = "https://paper-api.alpaca.markets"
 WEBSOCKET_HOST = "https://api.alpaca.com/ws/2"
 
 STATUS_ALPACA2VT = {
-    "ACTIVE": Status.NOTTRADED,
-    "PARTIALLY FILLED": Status.PARTTRADED,
-    "EXECUTED": Status.ALLTRADED,
-    "CANCELED": Status.CANCELLED,
+    "new": Status.SUBMITTING,
+    "open": Status.NOTTRADED,
+    "part_filled": Status.PARTTRADED,
+    "filled": Status.ALLTRADED,
+    "cancelled": Status.CANCELLED,
+    "cancelling": Status.CANCELLED,
+    "failure": Status.REJECTED,
 }
-
 # PRICETYPE_VT2ALPACA = {
 #    PriceType.LIMIT: "EXCHANGE LIMIT",
 #    PriceType.MARKET: "EXCHANGE MARKET"}
 DIRECTION_VT2ALPACA = {Direction.LONG: "buy", Direction.SHORT: "sell"}
-DIRECTION_ALPACA2VT = {"buy": Direction.LONG, "sell": Direction.SHORT,"long":Direction.LONG,"short":Direction.SHORT}
+DIRECTION_ALPACA2VT = {"buy": Direction.LONG, "sell": Direction.SHORT,
+                       "long": Direction.LONG, "short": Direction.SHORT}
 
 ORDERTYPE_VT2ALPACA = {
     OrderType.LIMIT: "limit",
     OrderType.MARKET: "market"
 }
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
+
 
 class AlpacaGateway(BaseGateway):
     """
@@ -120,13 +124,14 @@ class AlpacaGateway(BaseGateway):
         self.add_task(self.query_account)
         self.add_task(self.query_contract)
         self.add_task(self.query_position)
+        self.add_task(self.query_order)
 
         # self.add_task(self.connect_ws)
 
     def query_account(self):
         """"""
         data = self.rest_api.get_account()
-        print("deubg query_account: ",data)
+        print("deubg query_account: ", data)
         account = AccountData(
             accountid=data.id,
             balance=float(data.cash),
@@ -152,13 +157,13 @@ class AlpacaGateway(BaseGateway):
             )
             self.on_contract(contract)
         self.write_log("合约信息查询成功")
-    
+
     def _gen_unqiue_cid(self):
         # return int(round(time.time() * 1000))
         self.order_id = self.order_id + 1
         local_oid = time.strftime("%y%m%d%H%M%S") + "_" + str(self.order_id)
         return int(local_oid)
-    
+
     def send_order(self, req: OrderRequest):
         """"""
         local_id = self._gen_unqiue_cid()
@@ -171,7 +176,7 @@ class AlpacaGateway(BaseGateway):
     # need config
     def _send_order(self, req: OrderRequest, local_id):
         orderid = local_id
-        print("debug in _send_order: ",orderid)
+        print("debug in _send_order: ", orderid)
         if req.direction == Direction.LONG:
             amount = req.volume
         else:
@@ -179,7 +184,7 @@ class AlpacaGateway(BaseGateway):
         order_type = ORDERTYPE_VT2ALPACA[req.type]
         order_side = DIRECTION_VT2ALPACA[req.direction]
 
-        order=None
+        order = None
         if req.type == OrderType.LIMIT:
             order = self.rest_api.submit_order(
                 symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
@@ -203,54 +208,79 @@ class AlpacaGateway(BaseGateway):
             print("debug 2", order)
         return order.vt_orderid
         #order = req.create_order_data(orderid, self.gateway_name)
+
     # fix
     def subscribe(self, req: SubscribeRequest):
         """"""
         pass
 
-    #fix
+    def query_order(self):
+        """"""
+        print("come to query_order")
+        try:
+            data = self.rest_api.list_orders()
+            print("queryorders: ", data)
+            data = sorted(data, key=lambda x: x.created_at, reverse=False)
+            for d in data:
+                print("debug order: ", d)
+                order = OrderData(
+                    symbol=d.symbol,
+                    orderid=d.client_order_id,
+                    exchange=Exchange.ALPACA,
+                    direction=DIRECTION_ALPACA2VT[d.side],
+                    price=d.limit_price if d.limit_price else 0.0,
+                    volume=d.qty,
+                    # orderType: ORDERTYPE_ALPACA2VT[d.order_type],
+                    # traded=i.filled,
+                    status=STATUS_ALPACA2VT[d.status],
+                    #time=datetime.fromtimestamp(i.created_at / 1000).strftime("%H:%M:%S"),
+                    gateway_name=self.gateway_name,
+                )
+                #self.ID_TIGER2VT[str(i.order_id)] = local_id
+                self.on_order(order)
+
+        except:  # noqa
+            traceback.print_exc()
+            self.write_log("查询委托失败")
+            return
+
+        # self.process_order(data)
+        # self.process_deal(data)
+
+    # fix
     def cancel_order(self, req: CancelRequest):
         """"""
-        self.add_task(self._cancel_order, req)
-
-    def _cancel_order(self, req: CancelRequest):
-        """"""
-        try:
-            order_id = self.ID_VT2TIGER[req.orderid]
-            data = self.trade_client.cancel_order(order_id=order_id)
-        except ApiException:
-            self.write_log(f"撤单失败：{req.orderid}")
-
-        if not data:
-            self.write_log('撤单成功')
+        print("debug _cancel_order: ", req)
+        order = self.rest_api.get_order_by_client_order_id(req.orderid)
+        order_id = order.id
+        print("debug cancel order: localid: ",
+              req.orderid, "--remote_id--", order_id)
+        self.rest_api.cancel_order(order_id)
 
     def query_position(self):
         """"""
-        try:
-            data = self.rest_api.list_positions()
-            print("debug query_pos: ",data)
-            print("debug query_pos: ",type(data))
-            for d in data:
-                print("debug query_pos  3: ",d)
-                position = PositionData(
-                    symbol=d.symbol,
-                    exchange=Exchange.ALPACA,
-                    direction=DIRECTION_ALPACA2VT[d.side],
-                    volume=d.qty,
-                    price=d.avg_entry_price,
-                    pnl=d.unrealized_pl,
-                    gateway_name=self.gateway_name,
-                )
-                print("debug query_position: ",position)
-                self.on_position(position)
-        except ApiException:
-            self.write_log("查询持仓失败")
-            return
+        data = self.rest_api.list_positions()
+        print("debug query_pos: ", data)
+        print("debug query_pos: ", type(data))
+        for d in data:
+            print("debug query_pos  3: ", d)
+            position = PositionData(
+                symbol=d.symbol,
+                exchange=Exchange.ALPACA,
+                direction=DIRECTION_ALPACA2VT[d.side],
+                volume=d.qty,
+                price=d.avg_entry_price,
+                pnl=d.unrealized_pl,
+                gateway_name=self.gateway_name,
+            )
+            print("debug query_position: ", position)
+            self.on_position(position)
 
     def close(self):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
+
 
 class AlpacaRestApi(RestClient):
     """
@@ -312,8 +342,6 @@ class AlpacaRestApi(RestClient):
         self.gateway.write_log("ALPACA REST API启动成功")
         self.query_account()
         self.query_contract()
-
-
 
     def on_send_order(self, data, request):
         """Websocket will push a new order status"""
