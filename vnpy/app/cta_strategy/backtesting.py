@@ -601,8 +601,12 @@ class BacktestingEngine:
         # toolbox.register("map", pool.map)
 
         # Run ga optimization
-        msg = "开始运行遗传算法，每代族群总数：%s, 优良品种筛选个数：%s，迭代次数：%s，交叉概率：%s，突变概率：%s" % (pop_size, mu, ngen, cxpb, mutpb)
-        self.output(msg)
+        self.output(f"参数优化空间：{total_size}")
+        self.output(f"每代族群总数：{pop_size}")
+        self.output(f"优良筛选个数：{mu}")
+        self.output(f"迭代次数：{ngen}")
+        self.output(f"交叉概率：{cxpb:.0%}")
+        self.output(f"突变概率：{mutpb:.0%}")
 
         start = time()
 
@@ -617,7 +621,7 @@ class BacktestingEngine:
             stats,
             halloffame=hof
         )    
-
+        
         end = time()
         cost = int((end - start))
 
@@ -630,7 +634,7 @@ class BacktestingEngine:
         for parameter_values in hof:
             setting = dict(zip(parameter_keys, parameter_values))
             target_value = ga_optimize(parameter_values)[0]
-            results.append((setting, target_value))
+            results.append((setting, target_value, {}))
         
         return results
 
@@ -1059,12 +1063,13 @@ def optimize(
     pricetick: float,
     capital: int,
     end: datetime,
-    mode: BacktestingMode,
+    mode: BacktestingMode
 ):
     """
     Function for running in multiprocessing.pool
     """
     engine = BacktestingEngine()
+    
     engine.set_parameters(
         vt_symbol=vt_symbol,
         interval=interval,
