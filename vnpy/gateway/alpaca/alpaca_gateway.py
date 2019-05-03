@@ -53,7 +53,7 @@ STATUS_ALPACA2VT = {
 #    PriceType.LIMIT: "EXCHANGE LIMIT",
 #    PriceType.MARKET: "EXCHANGE MARKET"}
 DIRECTION_VT2ALPACA = {Direction.LONG: "buy", Direction.SHORT: "sell"}
-DIRECTION_ALPACA2VT = {"buy": Direction.LONG, "sell": Direction.SHORT}
+DIRECTION_ALPACA2VT = {"buy": Direction.LONG, "sell": Direction.SHORT,"long":Direction.LONG,"short":Direction.SHORT}
 
 ORDERTYPE_VT2ALPACA = {
     OrderType.LIMIT: "limit",
@@ -119,11 +119,14 @@ class AlpacaGateway(BaseGateway):
         # Put connect task into quque.
         self.add_task(self.query_account)
         self.add_task(self.query_contract)
+        self.add_task(self.query_position)
+
         # self.add_task(self.connect_ws)
 
     def query_account(self):
         """"""
         data = self.rest_api.get_account()
+        print("deubg query_account: ",data)
         account = AccountData(
             accountid=data.id,
             balance=float(data.cash),
@@ -168,7 +171,7 @@ class AlpacaGateway(BaseGateway):
     # need config
     def _send_order(self, req: OrderRequest, local_id):
         orderid = local_id
-
+        print("debug in _send_order: ",orderid)
         if req.direction == Direction.LONG:
             amount = req.volume
         else:
@@ -176,8 +179,9 @@ class AlpacaGateway(BaseGateway):
         order_type = ORDERTYPE_VT2ALPACA[req.type]
         order_side = DIRECTION_VT2ALPACA[req.direction]
 
+        order=None
         if req.type == OrderType.LIMIT:
-            order = self.raw_rest_api.submit_order(
+            order = self.rest_api.submit_order(
                 symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
                 qty=int(amount),
                 side=order_side,
@@ -188,7 +192,7 @@ class AlpacaGateway(BaseGateway):
             )
             print("debug 1", order)
         else:
-            order = self.raw_rest_api.submit_order(
+            order = self.rest_api.submit_order(
                 symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
                 qty=int(amount),
                 side=order_side,
@@ -197,26 +201,56 @@ class AlpacaGateway(BaseGateway):
                 client_order_id=str(orderid)
             )
             print("debug 2", order)
-
+        return order.vt_orderid
         #order = req.create_order_data(orderid, self.gateway_name)
-    
+    # fix
     def subscribe(self, req: SubscribeRequest):
         """"""
         pass
 
+    #fix
     def cancel_order(self, req: CancelRequest):
         """"""
-        pass
+        self.add_task(self._cancel_order, req)
+
+    def _cancel_order(self, req: CancelRequest):
+        """"""
+        try:
+            order_id = self.ID_VT2TIGER[req.orderid]
+            data = self.trade_client.cancel_order(order_id=order_id)
+        except ApiException:
+            self.write_log(f"撤单失败：{req.orderid}")
+
+        if not data:
+            self.write_log('撤单成功')
 
     def query_position(self):
         """"""
-        self.rest_api.query_position()
+        try:
+            data = self.rest_api.list_positions()
+            print("debug query_pos: ",data)
+            print("debug query_pos: ",type(data))
+            for d in data:
+                print("debug query_pos  3: ",d)
+                position = PositionData(
+                    symbol=d.symbol,
+                    exchange=Exchange.ALPACA,
+                    direction=DIRECTION_ALPACA2VT[d.side],
+                    volume=d.qty,
+                    price=d.avg_entry_price,
+                    pnl=d.unrealized_pl,
+                    gateway_name=self.gateway_name,
+                )
+                print("debug query_position: ",position)
+                self.on_position(position)
+        except ApiException:
+            self.write_log("查询持仓失败")
+            return
 
     def close(self):
         """"""
         self.rest_api.stop()
         self.ws_api.stop()
-
 
 class AlpacaRestApi(RestClient):
     """
