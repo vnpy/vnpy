@@ -222,20 +222,25 @@ class BacktesterEngine(BaseEngine):
         return strategy_class.get_class_parameters()
 
     def run_optimization(
-            self,
-            class_name: str,
-            vt_symbol: str,
-            interval: str,
-            start: datetime,
-            end: datetime,
-            rate: float,
-            slippage: float,
-            size: int,
-            pricetick: float,
-            capital: int,
-            optimization_setting: OptimizationSetting):
+        self,
+        class_name: str,
+        vt_symbol: str,
+        interval: str,
+        start: datetime,
+        end: datetime,
+        rate: float,
+        slippage: float,
+        size: int,
+        pricetick: float,
+        capital: int,
+        optimization_setting: OptimizationSetting,
+        use_ga: bool
+    ):
         """"""
-        self.write_log("开始多进程参数优化")
+        if use_ga:
+            self.write_log("开始遗传算法参数优化")
+        else:
+            self.write_log("开始多进程参数优化")
 
         self.result_values = None
 
@@ -260,10 +265,16 @@ class BacktesterEngine(BaseEngine):
             {}
         )
 
-        self.result_values = engine.run_optimization(
-            optimization_setting,
-            output=False
-        )
+        if use_ga:
+            self.result_values = engine.run_ga_optimization(
+                optimization_setting,
+                output=False
+            )
+        else:
+            self.result_values = engine.run_optimization(
+                optimization_setting,
+                output=False
+            )
 
         # Clear thread object handler.
         self.thread = None
@@ -285,7 +296,8 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
-        optimization_setting: OptimizationSetting
+        optimization_setting: OptimizationSetting,
+        use_ga: bool
     ):
         if self.thread:
             self.write_log("已有任务在运行中，请等待完成")
@@ -305,7 +317,8 @@ class BacktesterEngine(BaseEngine):
                 size,
                 pricetick,
                 capital,
-                optimization_setting
+                optimization_setting,
+                use_ga
             )
         )
         self.thread.start()
