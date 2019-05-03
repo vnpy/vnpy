@@ -565,41 +565,40 @@ class BacktestingEngine:
         toolbox.register("evaluate", object_func)                                                
         toolbox.register("select", tools.selNSGA2)       
 
-        # pool = multiprocessing.Pool(multiprocessing.cpu_count())
-        # toolbox.register("map", pool.map)
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        toolbox.register("map", pool.map)
         
-        MU = 80         # 设置每一代选择的个体数
-        LAMBDA = 100    # 设置每一代产生的子女数
-        POP = 100       
-        CXPB = 0.95     # 交叉概率    
-        MUTPB = 0.05    # 变异概率
-        NGEN = 300      # 种群代数
+        mu = 16         # number of individuals to select for the next generation
+        lambda_ = 20    # number of children to produce at each generation
+        cxpb = 0.95     # probability that an offspring is produced by crossover    
+        mutpb = 0.05    # probability that an offspring is produced by mutation
+        ngen = 300      # number of generation
         
-        pop = toolbox.population(POP)               # 设置族群里面的个体数量
-        hof = tools.ParetoFront()                   # 解的集合：帕累托前沿(非占优最优集)
+        pop_size = 20   # number of individuals in each generation
+        pop = toolbox.population(pop_size)      
+        hof = tools.ParetoFront()               # end result of pareto front
 
         stats = tools.Statistics(lambda ind: ind.fitness.values)
-        np.set_printoptions(suppress=True)          # 对numpy默认输出的科学计数法转换
-        stats.register("mean", np.mean, axis=0)     # 统计目标优化函数结果的平均值
-        stats.register("std", np.std, axis=0)       # 统计目标优化函数结果的标准差
-        stats.register("min", np.min, axis=0)       # 统计目标优化函数结果的最小值
-        stats.register("max", np.max, axis=0)       # 统计目标优化函数结果的最大值
+        np.set_printoptions(suppress=True)
+        stats.register("mean", np.mean, axis=0)
+        stats.register("std", np.std, axis=0)
+        stats.register("min", np.min, axis=0)
+        stats.register("max", np.max, axis=0)
         
-        msg = "开始运行遗传算法，每代族群总数：%s, 优良品种筛选个数：%s，迭代次数：%s，交叉概率：%s，突变概率：%s" %(POP,MU,NGEN,CXPB,MUTPB)
+        msg = "开始运行遗传算法，每代族群总数：%s, 优良品种筛选个数：%s，迭代次数：%s，交叉概率：%s，突变概率：%s" %(pop_size, mu, ngen, cxpb, mutpb)
         self.output(msg)
 
         # Run ga optimization
-        # esMuPlusLambda是一种基于(μ+λ)选择策略的多目标优化分段遗传算法
         start = time()
 
         algorithms.eaMuPlusLambda(
             pop, 
             toolbox, 
-            MU, 
-            LAMBDA, 
-            CXPB, 
-            MUTPB, 
-            NGEN, 
+            mu, 
+            lambda_, 
+            cxpb, 
+            mutpb, 
+            ngen, 
             stats,
             halloffame=hof
         )    
@@ -1139,3 +1138,19 @@ def load_tick_data(
     return database_manager.load_tick_data(
         symbol, exchange, start, end
     )
+
+
+# GA related global value
+ga_target_name = None
+ga_strategy_class = None
+ga_setting = None
+ga_vt_symbol = None
+ga_interval = None
+ga_start = None
+ga_rate = None
+ga_slippage = None
+ga_size = None
+ga_pricetick = None
+ga_capital = None
+ga_end = None
+ga_mode = None
