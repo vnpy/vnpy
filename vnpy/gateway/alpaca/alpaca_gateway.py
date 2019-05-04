@@ -15,6 +15,8 @@ from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
 from vnpy.api.websocket import WebsocketClient
 import alpaca_trade_api as tradeapi
+from alpaca_trade_api.stream2 import StreamConn
+import asyncio
 
 from vnpy.trader.constant import (
     Direction,
@@ -114,7 +116,10 @@ class AlpacaGateway(BaseGateway):
         # self.ws_api.connect(key, secret, proxy_host, proxy_port)
         print("debug connect rest1")
         self.rest_api = tradeapi.REST(key, secret, REST_HOST)
-
+        self.ws_api = StreamConn(key, secret, REST_HOST)
+        self.ws_api.register(r'account_updates',self.on_account_updates)
+        self.ws_api.register(r'trade_updates',self.on_trade_updates)
+        self.ws_api.register(r'Q.',self.on_quote_updates)
         # Start thread pool for REST call
         self.active = True
         self.pool = Pool(5)
@@ -125,9 +130,20 @@ class AlpacaGateway(BaseGateway):
         self.add_task(self.query_contract)
         self.add_task(self.query_position)
         self.add_task(self.query_order)
+        self.add_task(self.run_ws)
 
-        # self.add_task(self.connect_ws)
+    def run_ws(self):
+        self.ws_api.run(['account_updates', 'AM.*'])
+    
+    async def on_account_updates(conn, channel, account):
+        print('account', account)
 
+    async def on_trade_updates(conn, channel, account):
+        print('on_trade_updates:', account)
+    
+    async def on_quote_updates(conn, channel, account):
+        print('on_quote_updates:', account)
+    
     def query_account(self):
         """"""
         data = self.rest_api.get_account()
@@ -282,124 +298,6 @@ class AlpacaGateway(BaseGateway):
         self.ws_api.stop()
 
 
-class AlpacaRestApi(RestClient):
-    """
-    Alpaca REST API
-    """
-
-    def __init__(self, gateway: BaseGateway):
-        """"""
-        super(AlpacaRestApi, self).__init__()
-
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
-
-        self.key = ""
-        self.secret = ""
-
-        self.order_count = 1_000_000
-        self.connect_time = 0
-        print(
-            self.gateway_name,
-            self.key,
-            self.secret,
-            self.order_count,
-            self.connect_time)
-
-    def sign(self, request):
-        """
-        Generate Alpaca signature.
-        """
-
-        headers = {
-            "APCA-API-KEY-ID": self.key,
-            "APCA-API-SECRET-KEY": self.secret,
-        }
-
-        request.headers = headers
-        request.allow_redirects = False
-        return request
-
-    def connect(
-        self,
-        key: str,
-        secret: str,
-        session: int,
-        proxy_host: str,
-        proxy_port: int,
-    ):
-        """
-               Initialize connection to REST server.
-        """
-        self.key = key
-        self.secret = secret
-        self.raw_rest_api = tradeapi.REST(self.key, self.secret, REST_HOST)
-
-        #self.init(REST_HOST, proxy_host, proxy_port)
-        print("rest connect: ", REST_HOST, proxy_host, proxy_port)
-        # self.start(session)
-        print("rest client connected")
-        self.gateway.write_log("ALPACA REST API启动成功")
-        self.query_account()
-        self.query_contract()
-
-    def on_send_order(self, data, request):
-        """Websocket will push a new order status"""
-        print("debug on_send_order data: ", data)
-        print("debug on_send_order request: ", request)
-        order = request.extra
-        self.gateway.on_order(order)
-
-    def on_send_order_failed(self, status_code: str, request: Request):
-        """
-        Callback when sending order failed on server.
-        """
-        print("debug on_send_order_failed data: ", request)
-        print("debug on_send_order_failed status code: ", status_code)
-        order = request.extra
-        order.status = Status.REJECTED
-        self.gateway.on_order(order)
-
-        msg = f"委托失败，状态码：{status_code}，信息：{request.response.text}"
-        self.gateway.write_log(msg)
-
-    def on_send_order_error(
-        self, exception_type: type, exception_value: Exception, tb, request: Request
-    ):
-        """
-        Callback when sending order caused exception.
-        """
-        print("debug on_send_order_error req: ", request)
-        print("debug on_send_order_error tb: ", tb)
-        order = request.extra
-        order.status = Status.REJECTED
-        self.gateway.on_order(order)
-
-        # Record exception if not ConnectionError
-        if not issubclass(exception_type, ConnectionError):
-            self.on_error(exception_type, exception_value, tb, request)
-
-    def on_failed(self, status_code: int, request: Request):
-        """
-        Callback to handle request failed.
-        """
-        msg = f"请求失败，状态码：{status_code}，信息：{request.response.text}"
-        self.gateway.write_log(msg)
-
-    def on_error(
-        self, exception_type: type, exception_value: Exception, tb, request: Request
-    ):
-        """
-        Callback to handler request exception.
-        """
-        msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
-        self.gateway.write_log(msg)
-
-        sys.stderr.write(
-            self.exception_detail(exception_type, exception_value, tb, request)
-        )
-
-
 class AlpacaWebsocketApi(WebsocketClient):
     """"""
 
@@ -440,9 +338,7 @@ class AlpacaWebsocketApi(WebsocketClient):
         """"""
         self.key = key
         self.secret = secret.encode()
-
         self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
-
         self.start()
 
     def subscribe(self, req: SubscribeRequest):
@@ -450,21 +346,6 @@ class AlpacaWebsocketApi(WebsocketClient):
 
     def send_order(self, req: SubscribeRequest):
         pass
-
-    # ----------------------------------------------------------------------
-
-    def cancel_order(self, req: CancelRequest):
-        """"""
-        pass
-
-    def on_connected(self):
-        """"""
-        self.gateway.write_log("Websocket API连接成功")
-        self.authenticate()
-
-    def on_disconnected(self):
-        """"""
-        self.gateway.write_log("Websocket API连接断开")
 
     # need debug 20190404
     def on_packet(self, packet: dict):
@@ -513,12 +394,6 @@ class AlpacaWebsocketApi(WebsocketClient):
     def on_trade(self, d):
         """"""
         pass
-
-    def generateDateTime(self, s):
-        """生成时间"""
-        dt = datetime.fromtimestamp(s / 1000.0)
-        time = dt.strftime("%H:%M:%S.%f")
-        return time
 
     def on_order(self, data):
         """"""
