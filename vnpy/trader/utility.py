@@ -10,7 +10,7 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
-from .constant import Exchange
+from .constant import Exchange, Interval
 
 
 def extract_vt_symbol(vt_symbol: str):
@@ -113,21 +113,33 @@ class BarGenerator:
     """
     For: 
     1. generating 1 minute bar data from tick data
-    2. generateing x minute bar data from 1 minute data
+    2. generateing x minute bar/x hour bar data from 1 minute data
+
+    Notice:
+    1. for x minute bar, x must be able to divide 60: 2, 3, 5, 6, 10, 15, 20, 30
+    2. for x hour bar, x can be any number
     """
 
     def __init__(
-        self, on_bar: Callable, xmin: int = 0, on_xmin_bar: Callable = None
+        self,
+        on_bar: Callable,
+        window: int = 0,
+        on_window_bar: Callable = None,
+        interval: Interval = Interval.MINUTE
     ):
         """Constructor"""
         self.bar = None
         self.on_bar = on_bar
 
-        self.xmin = xmin
-        self.xmin_bar = None
-        self.on_xmin_bar = on_xmin_bar
+        self.interval = interval
+        self.interval_count = 0
+
+        self.window = window
+        self.window_bar = None
+        self.on_window_bar = on_window_bar
 
         self.last_tick = None
+        self.last_bar = None
 
     def update_tick(self, tick: TickData):
         """
@@ -172,32 +184,60 @@ class BarGenerator:
         """
         Update 1 minute bar into generator
         """
-        if not self.xmin_bar:
-            self.xmin_bar = BarData(
+        # If not inited, creaate window bar object
+        if not self.window_bar:
+            # Generate timestamp for bar data
+            if self.interval == Interval.MINUTE:
+                dt = bar.datetime.replace(second=0, microsecond=0)
+            else:
+                dt = bar.datetime.replace(minute=0, second=0, microsecond=0)
+
+            self.window_bar = BarData(
                 symbol=bar.symbol,
                 exchange=bar.exchange,
-                datetime=bar.datetime,
+                datetime=dt,
                 gateway_name=bar.gateway_name,
                 open_price=bar.open_price,
                 high_price=bar.high_price,
                 low_price=bar.low_price
             )
+        # Otherwise, update high/low price into window bar
         else:
-            self.xmin_bar.high_price = max(
-                self.xmin_bar.high_price, bar.high_price)
-            self.xmin_bar.low_price = min(
-                self.xmin_bar.low_price, bar.low_price)
+            self.window_bar.high_price = max(
+                self.window_bar.high_price, bar.high_price)
+            self.window_bar.low_price = min(
+                self.window_bar.low_price, bar.low_price)
 
-        self.xmin_bar.close_price = bar.close_price
-        self.xmin_bar.volume += int(bar.volume)
+        # Update close price/volume into window bar
+        self.window_bar.close_price = bar.close_price
+        self.window_bar.volume += int(bar.volume)
 
-        if not (bar.datetime.minute + 1) % self.xmin:
-            self.xmin_bar.datetime = self.xmin_bar.datetime.replace(
-                second=0, microsecond=0
-            )
-            self.on_xmin_bar(self.xmin_bar)
+        # Check if window bar completed
+        finished = False
 
-            self.xmin_bar = None
+        if self.interval == Interval.MINUTE:
+            # x-minute bar
+            if not (bar.datetime.minute + 1) % self.window:
+                finished = True
+        elif self.interval == Interval.HOUR:
+            if self.last_bar and bar.datetime.hour != self.last_bar.datetime.hour:
+                # 1-hour bar
+                if self.window == 1:
+                    finished = True
+                # x-hour bar
+                else:
+                    self.interval_count += 1
+
+                    if not self.interval_count % self.window:
+                        finished = True
+                        self.interval_count = 0
+
+        if finished:
+            self.on_window_bar(self.window_bar)
+            self.window_bar = None
+
+        # Cache last bar object
+        self.last_bar = bar
 
     def generate(self):
         """
