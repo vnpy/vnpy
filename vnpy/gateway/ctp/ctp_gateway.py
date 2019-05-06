@@ -331,7 +331,7 @@ class CtpMdApi(MdApi):
         req = {
             "UserID": self.userid,
             "Password": self.password,
-            "BrokerID": self.brokerid,
+            "BrokerID": self.brokerid
         }
         
         self.reqid += 1
