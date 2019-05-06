@@ -414,14 +414,15 @@ class IbApi(EWrapper):
             accountName,
         )
 
-        ib_size = contract.multiplier
+        ib_size = float(contract.multiplier)
         if not ib_size:
             ib_size = 1
         price = averageCost / ib_size
+        exchange = contract.exchange if contract.exchange else contract.primaryExchange
 
         pos = PositionData(
             symbol=contract.conId,
-            exchange=EXCHANGE_IB2VT.get(contract.exchange, contract.exchange),
+            exchange=EXCHANGE_IB2VT.get(exchange, exchange),
             direction=Direction.NET,
             volume=position,
             price=price,
@@ -446,7 +447,7 @@ class IbApi(EWrapper):
 
         ib_symbol = contractDetails.contract.conId
         ib_exchange = contractDetails.contract.exchange
-        ib_size = contractDetails.contract.multiplier
+        ib_size = float(contractDetails.contract.multiplier)
         ib_product = contractDetails.contract.secType
 
         if not ib_size:
