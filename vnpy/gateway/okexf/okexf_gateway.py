@@ -700,10 +700,10 @@ class OkexfWebsocketApi(WebsocketClient):
         if not tick:
             return
 
-        tick.last_price = d["last"]
-        tick.high_price = d["high_24h"]
-        tick.low_price = d["low_24h"]
-        tick.volume = d["volume_24h"]
+        tick.last_price = float(d["last"])
+        tick.high_price = float(d["high_24h"])
+        tick.low_price = float(d["low_24h"])
+        tick.volume = float(d["volume_24h"])
         tick.datetime = utc_to_local(d["timestamp"])
 
         self.gateway.on_tick(copy(tick))
