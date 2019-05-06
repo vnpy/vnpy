@@ -27,7 +27,7 @@
       * [应用模块](https://www.vnpy.com/docs/cn/quickstart.html#id14)
         * [CTA策略](https://www.vnpy.com/docs/cn/quickstart.html#cta)
         * [CSV载入](https://www.vnpy.com/docs/cn/quickstart.html#csv)
-
+        
 * 应用模块
     * [CSV载入](https://www.vnpy.com/docs/cn/csv_loader.html#csv)
         * [初始化配置](https://www.vnpy.com/docs/cn/csv_loader.html#id1)
@@ -48,7 +48,6 @@
           * [15分钟K线数据回报](https://www.vnpy.com/docs/cn/cta_strategy.html#id9)
           * [委托回报、成交回报、停止单回报](https://www.vnpy.com/docs/cn/cta_strategy.html#id10)
 
-
         * [回测研究](https://www.vnpy.com/docs/cn/cta_strategy.html#id11)
           * [加载策略](https://www.vnpy.com/docs/cn/cta_strategy.html#id12)
           * [载入历史数据](https://www.vnpy.com/docs/cn/cta_strategy.html#id13)
@@ -57,7 +56,6 @@
           * [计算策略统计指标](https://www.vnpy.com/docs/cn/cta_strategy.html#id16)
           * [统计指标绘图](https://www.vnpy.com/docs/cn/cta_strategy.html#id17)
           * [回测引擎使用示例](https://www.vnpy.com/docs/cn/cta_strategy.html#id18)
-
 
         * [参数优化](https://www.vnpy.com/docs/cn/cta_strategy.html#id19)
           * [参数设置](https://www.vnpy.com/docs/cn/cta_strategy.html#id20)
@@ -70,7 +68,6 @@
           * [停止策略](https://www.vnpy.com/docs/cn/cta_strategy.html#id27)
           * [编辑策略](https://www.vnpy.com/docs/cn/cta_strategy.html#id28)
           * [移除策略](https://www.vnpy.com/docs/cn/cta_strategy.html#id29)
-
 
     * [CTA回测](https://www.vnpy.com/docs/cn/cta_backtester.html#cta)
         * [加载启动](https://www.vnpy.com/docs/cn/cta_backtester.html#id1)
@@ -85,3 +82,4 @@
 
 * [RPC应用](rpc.md)
 * [贡献代码](contribution.md)
+* [配置数据库](database.md)
