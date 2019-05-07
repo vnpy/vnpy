@@ -141,7 +141,8 @@ def init_models(db: Database, driver: Driver):
                         ).execute()
                 else:
                     for c in chunked(dicts, 50):
-                        DbBarData.insert_many(c).on_conflict_replace().execute()
+                        DbBarData.insert_many(
+                            c).on_conflict_replace().execute()
 
     class DbTickData(ModelBase):
         """
@@ -309,7 +310,8 @@ def init_models(db: Database, driver: Driver):
                         ).execute()
                 else:
                     for c in chunked(dicts, 50):
-                        DbTickData.insert_many(c).on_conflict_replace().execute()
+                        DbTickData.insert_many(
+                            c).on_conflict_replace().execute()
 
     db.connect()
     db.create_tables([DbBarData, DbTickData])
@@ -332,11 +334,11 @@ class SqlManager(BaseDatabaseManager):
         s = (
             self.class_bar.select()
             .where(
-                (self.class_bar.symbol == symbol)
-                & (self.class_bar.exchange == exchange.value)
-                & (self.class_bar.interval == interval.value)
-                & (self.class_bar.datetime >= start)
-                & (self.class_bar.datetime <= end)
+                (self.class_bar.symbol == symbol) &
+                (self.class_bar.exchange == exchange.value) &
+                (self.class_bar.interval == interval.value) &
+                (self.class_bar.datetime >= start) &
+                (self.class_bar.datetime <= end)
             )
             .order_by(self.class_bar.datetime)
         )
@@ -349,10 +351,10 @@ class SqlManager(BaseDatabaseManager):
         s = (
             self.class_tick.select()
             .where(
-                (self.class_tick.symbol == symbol)
-                & (self.class_tick.exchange == exchange.value)
-                & (self.class_tick.datetime >= start)
-                & (self.class_tick.datetime <= end)
+                (self.class_tick.symbol == symbol) &
+                (self.class_tick.exchange == exchange.value) &
+                (self.class_tick.datetime >= start) &
+                (self.class_tick.datetime <= end)
             )
             .order_by(self.class_tick.datetime)
         )
@@ -374,9 +376,9 @@ class SqlManager(BaseDatabaseManager):
         s = (
             self.class_bar.select()
             .where(
-                (self.class_bar.symbol == symbol)
-                & (self.class_bar.exchange == exchange.value)
-                & (self.class_bar.interval == interval.value)
+                (self.class_bar.symbol == symbol) &
+                (self.class_bar.exchange == exchange.value) &
+                (self.class_bar.interval == interval.value)
             )
             .order_by(self.class_bar.datetime.desc())
             .first()
@@ -391,8 +393,8 @@ class SqlManager(BaseDatabaseManager):
         s = (
             self.class_tick.select()
             .where(
-                (self.class_tick.symbol == symbol)
-                & (self.class_tick.exchange == exchange.value)
+                (self.class_tick.symbol == symbol) &
+                (self.class_tick.exchange == exchange.value)
             )
             .order_by(self.class_tick.datetime.desc())
             .first()

@@ -10,7 +10,7 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
-from .constant import Exchange
+from .constant import Exchange, Interval
 
 
 def extract_vt_symbol(vt_symbol: str):
@@ -135,6 +135,10 @@ class BarGenerator:
         """
         new_minute = False
 
+        # Filter tick data with 0 last price
+        if not tick.last_price:
+            return
+
         if not self.bar:
             new_minute = True
         elif self.bar.datetime.minute != tick.datetime.minute:
@@ -149,6 +153,7 @@ class BarGenerator:
             self.bar = BarData(
                 symbol=tick.symbol,
                 exchange=tick.exchange,
+                interval=Interval.MINUTE,
                 datetime=tick.datetime,
                 gateway_name=tick.gateway_name,
                 open_price=tick.last_price,
