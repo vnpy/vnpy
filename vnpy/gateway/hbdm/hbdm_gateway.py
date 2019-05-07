@@ -87,6 +87,8 @@ class HbdmGateway(BaseGateway):
         "代理端口": "",
     }
 
+    exchagnes = [Exchange.HUOBI]
+
     def __init__(self, event_engine):
         """Constructor"""
         super().__init__(event_engine, "HBDM")
