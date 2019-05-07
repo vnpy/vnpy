@@ -113,7 +113,7 @@ class CtaEngine(BaseEngine):
 
     def close(self):
         """"""
-        pass
+        self.stop_all_strategies()
 
     def register_event(self):
         """"""
