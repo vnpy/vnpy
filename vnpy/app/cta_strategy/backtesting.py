@@ -6,7 +6,6 @@ from functools import lru_cache
 from time import time
 import multiprocessing
 import random
-import math
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -85,6 +84,15 @@ class OptimizationSetting:
             settings.append(setting)
 
         return settings
+    
+    def generate_setting_ga(self):
+        """""" 
+        settings_ga = []
+        settings = self.generate_setting()     
+        for d in settings:            
+            param = [tuple(i) for i in d.items()]
+            settings_ga.append(param)
+        return settings_ga
 
 
 class BacktestingEngine:
@@ -520,10 +528,10 @@ class BacktestingEngine:
 
         return result_values
 
-    def run_ga_optimization(self, optimization_setting: OptimizationSetting, output=True):
+    def run_ga_optimization(self, optimization_setting: OptimizationSetting, population_size=100, ngen_size=30, output=True):
         """"""
         # Get optimization setting and target
-        settings = optimization_setting.generate_setting()
+        settings = optimization_setting.generate_setting_ga()
         target_name = optimization_setting.target_name
 
         if not settings:
@@ -537,7 +545,16 @@ class BacktestingEngine:
         # Define parameter generation function
         def generate_parameter():
             """"""
-            return list(random.choice(settings).values())
+            return random.choice(settings)
+        
+        def mutate_individual(individual, indpb):
+            """"""
+            size = len(individual)
+            paramlist = generate_parameter()
+            for i in range(size):
+                if random.random() < indpb:
+                    individual[i] = paramlist[i]
+            return individual,
 
         # Create ga object function
         global ga_target_name
@@ -573,18 +590,18 @@ class BacktestingEngine:
         toolbox.register("individual", tools.initIterate, creator.Individual, generate_parameter)                          
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)                                            
         toolbox.register("mate", tools.cxTwoPoint)                                               
-        toolbox.register("mutate", tools.mutUniformInt, low=4, up=40, indpb=1)               
+        toolbox.register("mutate", mutate_individual, indpb=1)               
         toolbox.register("evaluate", ga_optimize)                                                
         toolbox.register("select", tools.selNSGA2)       
 
         total_size = len(settings)
-        pop_size = int(pow(total_size, 1 / math.e))     # number of individuals in each generation
+        pop_size = population_size                      # number of individuals in each generation
         lambda_ = pop_size                              # number of children to produce at each generation
         mu = int(pop_size * 0.8)                        # number of individuals to select for the next generation
 
         cxpb = 0.95         # probability that an offspring is produced by crossover    
         mutpb = 1 - cxpb    # probability that an offspring is produced by mutation
-        ngen = 30           # number of generation
+        ngen = ngen_size    # number of generation
                 
         pop = toolbox.population(pop_size)      
         hof = tools.ParetoFront()               # end result of pareto front
@@ -629,10 +646,9 @@ class BacktestingEngine:
         
         # Return result list
         results = []
-        parameter_keys = list(ga_setting.keys())
 
         for parameter_values in hof:
-            setting = dict(zip(parameter_keys, parameter_values))
+            setting = dict(parameter_values)
             target_value = ga_optimize(parameter_values)[0]
             results.append((setting, target_value, {}))
         
@@ -1094,10 +1110,9 @@ def optimize(
 
 
 @lru_cache(maxsize=1000000)
-def _ga_optimizae(parameter_values: tuple):
+def _ga_optimize(parameter_values: tuple):
     """"""
-    parameter_keys = list(ga_setting.keys())
-    setting = dict(zip(parameter_keys, parameter_values))
+    setting = dict(parameter_values)
 
     result = optimize(
         ga_target_name,
@@ -1119,7 +1134,7 @@ def _ga_optimizae(parameter_values: tuple):
 
 def ga_optimize(parameter_values: list):
     """"""
-    return _ga_optimizae(tuple(parameter_values))
+    return _ga_optimize(tuple(parameter_values))
 
 
 @lru_cache(maxsize=10)
