@@ -360,12 +360,7 @@ class BitmexRestApi(RestClient):
                 # Update start time
                 start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
 
-        return history
-
-
-
-
-            
+        return history            
 
     def on_send_order_failed(self, status_code: str, request: Request):
         """

@@ -7,7 +7,7 @@ from rqdatac.services.get_price import get_price as rqdata_get_price
 
 from .setting import SETTINGS
 from .constant import Exchange, Interval
-from .object import BarData
+from .object import BarData, HistoryRequest
 
 
 INTERVAL_VT2RQ = {
@@ -89,17 +89,16 @@ class RqdataClient:
 
         return rq_symbol
 
-    def query_bar(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
-    ):
+    def query_history(self, req: HistoryRequest):
         """
-        Query bar data from RQData.
+        Query history bar data from RQData.
         """
+        symbol = req.symbol
+        exchange = req.exchange
+        interval = req.interval
+        start = req.start
+        end = req.end
+
         rq_symbol = self.to_rq_symbol(symbol, exchange)
         if rq_symbol not in self.symbols:
             return None
