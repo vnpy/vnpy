@@ -9,6 +9,7 @@ from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.constant import Interval
 from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.object import HistoryRequest
 from vnpy.trader.rqdata import rqdata_client
 from vnpy.trader.database import database_manager
 from vnpy.app.cta_strategy import (
@@ -337,10 +338,25 @@ class BacktesterEngine(BaseEngine):
         """
         self.write_log(f"{vt_symbol}-{interval}开始下载历史数据")
 
-        symbol, exchange = extract_vt_symbol(vt_symbol)
-        data = rqdata_client.query_bar(
-            symbol, exchange, Interval(interval), start, end
-        )
+        contract = self.main_engine.get_contract(vt_symbol)
+
+        # If history data provided in gateway, then query
+        if contract and contract.history_data:
+            req = HistoryRequest(
+                symbol=contract.symbol,
+                exchange=contract.exchange,
+                interval=Interval(interval),
+                start=start,
+                end=end
+            )
+            data = self.main_engine.query_history(req, contract.gateway_name)
+        # Otherwise use RQData to query data
+        else:
+            symbol, exchange = extract_vt_symbol(vt_symbol)
+
+            data = rqdata_client.query_bar(
+                symbol, exchange, Interval(interval), start, end
+            )
 
         if data:
             database_manager.save_bar_data(data)

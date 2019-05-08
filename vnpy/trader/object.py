@@ -236,8 +236,7 @@ class ContractData(BaseData):
     min_volume: float = 1           # minimum trading volume of the contract
     stop_supported: bool = False    # whether server supports stop order
     net_position: bool = False      # whether gateway uses net position volume
-    bar_history: bool = False       # whether gateway provides bar history data
-    tick_history: bool = False      # whether gateway provides tick history data
+    history_data: bool = False      # whether gateway provides bar history data
 
     option_strike: float = 0
     option_underlying: str = ""     # vt_symbol of underlying contract
