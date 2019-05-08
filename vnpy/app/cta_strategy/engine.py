@@ -16,6 +16,7 @@ from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
     SubscribeRequest,
+    HistoryRequest,
     LogData,
     TickData,
     BarData,
@@ -136,9 +137,14 @@ class CtaEngine(BaseEngine):
         """
         Query bar data from RQData.
         """
-        data = rqdata_client.query_bar(
-            symbol, exchange, interval, start, end
+        req = HistoryRequest(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
+            end=end
         )
+        data = rqdata_client.query_history(req)
         return data
 
     def process_tick_event(self, event: Event):

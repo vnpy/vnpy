@@ -22,7 +22,13 @@ from .event import (
     EVENT_LOG
 )
 from .gateway import BaseGateway
-from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
+from .object import (
+    CancelRequest,
+    LogData,
+    OrderRequest,
+    SubscribeRequest,
+    HistoryRequest
+)
 from .setting import SETTINGS
 from .utility import get_folder_path
 
@@ -173,6 +179,16 @@ class MainEngine:
         gateway = self.get_gateway(gateway_name)
         if gateway:
             gateway.cancel_order(req)
+
+    def query_history(self, req: HistoryRequest, gateway_name: str):
+        """
+        Send cancel order request to a specific gateway.
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            return gateway.query_history(req)
+        else:
+            return None
 
     def close(self):
         """
