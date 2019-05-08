@@ -27,12 +27,13 @@ from .object import (
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 
 class BaseGateway(ABC):
     """
-    Abstract gateway class for creating gateways connection 
+    Abstract gateway class for creating gateways connection
     to different trading systems.
 
     # How to implement a gateway:
@@ -206,8 +207,6 @@ class BaseGateway(ABC):
         Cancel an existing order.
         implementation should finish the tasks blow:
         * send request to server
-
-
         """
         pass
 
@@ -215,7 +214,6 @@ class BaseGateway(ABC):
     def query_account(self):
         """
         Query account balance.
-
         """
         pass
 
@@ -223,6 +221,18 @@ class BaseGateway(ABC):
     def query_position(self):
         """
         Query holding positions.
+        """
+        pass
+
+    def query_bar_history(self, req: HistoryRequest):
+        """
+        Query bar history data.
+        """
+        pass
+
+    def query_tick_history(self, req: HistoryRequest):
+        """
+        Query tick history data.
         """
         pass
 
