@@ -1,6 +1,9 @@
 import numpy as np
 import pyqtgraph as pg
 from datetime import datetime, timedelta
+import pandas as pd
+from typing import List
+from enum import Enum
 
 from ..engine import (
     APP_NAME,
@@ -13,7 +16,7 @@ from vnpy.trader.constant import Interval
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.event import Event, EventEngine
-
+from vnpy.trader.object import TradeData
 
 class BacktesterManager(QtWidgets.QWidget):
     """"""
@@ -56,7 +59,7 @@ class BacktesterManager(QtWidgets.QWidget):
         self.class_combo = QtWidgets.QComboBox()
         self.class_combo.addItems(self.class_names)
 
-        self.symbol_line = QtWidgets.QLineEdit("IF88.CFFEX")
+        self.symbol_line = QtWidgets.QLineEdit("359142357.HKFE")
 
         self.interval_combo = QtWidgets.QComboBox()
         for inteval in Interval:
@@ -95,8 +98,12 @@ class BacktesterManager(QtWidgets.QWidget):
         downloading_button = QtWidgets.QPushButton("下载数据")
         downloading_button.clicked.connect(self.start_downloading)
 
+        daily_result_button = QtWidgets.QPushButton("查看交易结果")
+        daily_result_button.clicked.connect(self.show_daily_result)
+
         for button in [
             backtesting_button,
+            daily_result_button,
             optimization_button,
             downloading_button,
             self.result_button
@@ -115,6 +122,7 @@ class BacktesterManager(QtWidgets.QWidget):
         form.addRow("价格跳动", self.pricetick_line)
         form.addRow("回测资金", self.capital_line)
         form.addRow(backtesting_button)
+        form.addRow(daily_result_button)
 
         left_vbox = QtWidgets.QVBoxLayout()
         left_vbox.addLayout(form)
@@ -282,6 +290,16 @@ class BacktesterManager(QtWidgets.QWidget):
             self.target_display
         )
         dialog.exec_()
+
+    def show_daily_result(self):
+        """"""
+        result_df = self.backtester_engine.get_result_df()
+        dialog = DailyResultMonitor(
+            result_df
+        )
+        dialog.exec_()
+
+
 
     def show(self):
         """"""
@@ -723,6 +741,107 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
 
             table.setItem(n, 0, setting_cell)
             table.setItem(n, 1, target_cell)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(table)
+
+        self.setLayout(vbox)
+
+
+class DailyResultMonitor(QtWidgets.QDialog):
+    """
+    For viewing trade result.
+    """
+
+    def __init__(
+        self, daily_df: pd.DataFrame):
+        """"""
+        super().__init__()
+
+        self.daily_df = daily_df
+
+        self.init_ui()
+
+    def show_trade_data(self, item):
+        r = item.row()
+        trades = self.daily_df.iloc[r]['trades']
+        if len(trades) > 0:
+            dialog = TradeResultMonitor(
+                trades
+            )
+            dialog.exec_()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("回测每日明细")
+        self.resize(1100, 500)
+
+        table = QtWidgets.QTableWidget()
+
+        table.setColumnCount(18)
+        table.setRowCount(len(self.daily_df))
+        table.setHorizontalHeaderLabels(self.daily_df.columns)
+        table.setVerticalHeaderLabels(str(i) for i in self.daily_df.index)
+        table.verticalHeader().setVisible(True)
+
+
+        for r, (d, s) in enumerate(self.daily_df.iterrows()):
+            for c, (t, v) in enumerate(s.items()):
+                if t == 'trades':
+                    cell = QtWidgets.QTableWidgetItem("交易明细")
+                    cell.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEnabled)
+                else:
+                    cell = QtWidgets.QTableWidgetItem(str(v))
+                    cell.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                cell.setTextAlignment(QtCore.Qt.AlignCenter)
+                table.setItem(r, c, cell)
+
+        table.itemDoubleClicked.connect(self.show_trade_data)
+
+        vbox = QtWidgets.QVBoxLayout()
+        vbox.addWidget(table)
+
+        self.setLayout(vbox)
+
+
+class TradeResultMonitor(QtWidgets.QDialog):
+    """
+    For viewing trade result.
+    """
+
+    def __init__(
+        self, trade_values: List[TradeData]):
+        """"""
+        super().__init__()
+
+        self.trade_values = trade_values
+        self.init_ui()
+
+    def init_ui(self):
+        """"""
+        self.setWindowTitle("交易明细")
+        self.resize(1100, 500)
+
+        table = QtWidgets.QTableWidget()
+        fields = self.trade_values[0].__dataclass_fields__
+        table.setColumnCount(len(fields))
+        table.setRowCount(len(self.trade_values))
+        table.setHorizontalHeaderLabels(fields.keys())
+        table.verticalHeader().setVisible(False)
+
+
+        for r, tradeData in enumerate(self.trade_values):
+            for c, k in enumerate(fields.keys()):
+                v = getattr(tradeData, k)
+                if isinstance(v, Enum):
+                    v = v.value
+                cell = QtWidgets.QTableWidgetItem(str(v))
+                cell.setFlags(QtCore.Qt.ItemIsEnabled)
+
+                cell.setTextAlignment(QtCore.Qt.AlignCenter)
+                table.setItem(r, c, cell)
+
 
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(table)
