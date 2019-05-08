@@ -224,15 +224,9 @@ class BaseGateway(ABC):
         """
         pass
 
-    def query_bar_history(self, req: HistoryRequest):
+    def query_history(self, req: HistoryRequest):
         """
         Query bar history data.
-        """
-        pass
-
-    def query_tick_history(self, req: HistoryRequest):
-        """
-        Query tick history data.
         """
         pass
 

@@ -34,6 +34,7 @@ from vnpy.trader.object import (
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 REST_HOST = "https://www.bitmex.com/api/v1"
@@ -123,6 +124,10 @@ class BitmexGateway(BaseGateway):
     def query_position(self):
         """"""
         pass
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
@@ -278,6 +283,10 @@ class BitmexRestApi(RestClient):
             params=params,
             on_error=self.on_cancel_order_error,
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        pass
 
     def on_send_order_failed(self, status_code: str, request: Request):
         """
@@ -615,6 +624,7 @@ class BitmexWebsocketApi(WebsocketClient):
             size=d["lotSize"],
             stop_supported=True,
             net_position=True,
+            bar_history=True,
             gateway_name=self.gateway_name,
         )
 
