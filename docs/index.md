@@ -81,5 +81,9 @@
 * [交易接口](gateway.md)
 
 * [RPC应用](rpc.md)
-* [贡献代码](contribution.md)
+
 * [配置数据库](database.md)
+  * [SQLite](database.md#SQLite)
+  * [SQL(MySQL,PostgreSQL)](database.md#SQL(MySQL,PostgreSQL))
+  * [MongoDB](database.md#MongoDB)
+* [贡献代码](contribution.md)
