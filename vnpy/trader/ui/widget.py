@@ -824,12 +824,12 @@ class TradingWidget(QtWidgets.QWidget):
         """
         symbol = str(self.symbol_line.text())
         if not symbol:
-            QtWidgets.QMessageBox.critical("委托失败", "请输入合约代码")
+            QtWidgets.QMessageBox.critical(self, "委托失败", "请输入合约代码")
             return
 
         volume_text = str(self.volume_line.text())
         if not volume_text:
-            QtWidgets.QMessageBox.critical("委托失败", "请输入委托数量")
+            QtWidgets.QMessageBox.critical(self, "委托失败", "请输入委托数量")
             return
         volume = float(volume_text)
 
