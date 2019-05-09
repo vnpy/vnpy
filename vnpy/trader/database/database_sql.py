@@ -82,7 +82,7 @@ def init_models(db: Database, driver: Driver):
 
         class Meta:
             database = db
-            indexes = ((("datetime", "interval", "symbol", "exchange"), True),)
+            indexes = ((("symbol", "exchange", "interval", "datetime"), True),)
 
         @staticmethod
         def from_bar(bar: BarData):
@@ -194,7 +194,7 @@ def init_models(db: Database, driver: Driver):
 
         class Meta:
             database = db
-            indexes = ((("datetime", "symbol", "exchange"), True),)
+            indexes = ((("symbol", "exchange", "datetime"), True),)
 
         @staticmethod
         def from_tick(tick: TickData):
