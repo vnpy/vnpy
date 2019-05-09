@@ -331,9 +331,13 @@ class BitmexRestApi(RestClient):
                 break
             else:
                 data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    break
 
                 for d in data:
-                    dt = datetime.strptime(d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    dt = datetime.strptime(
+                        d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
                     bar = BarData(
                         symbol=req.symbol,
                         exchange=req.exchange,
@@ -360,7 +364,7 @@ class BitmexRestApi(RestClient):
                 # Update start time
                 start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
 
-        return history            
+        return history
 
     def on_send_order_failed(self, status_code: str, request: Request):
         """
