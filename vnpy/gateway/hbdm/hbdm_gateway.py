@@ -12,6 +12,7 @@ import hmac
 from copy import copy
 from datetime import datetime
 from threading import Lock
+from typing import Sequence
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -128,6 +129,10 @@ class HbdmGateway(BaseGateway):
     def cancel_order(self, req: CancelRequest):
         """"""
         self.rest_api.cancel_order(req)
+
+    def send_orders(self, reqs: Sequence[OrderRequest]):
+        """"""
+        return self.rest_api.send_orders(reqs)
 
     def query_account(self):
         """"""
@@ -288,8 +293,8 @@ class HbdmRestApi(RestClient):
             "client_order_id": int(local_orderid),
             "price": req.price,
             "volume": int(req.volume),
-            "direction": DIRECTION_VT2HBDM[req.direction],
-            "offset": OFFSET_VT2HBDM[req.offset],
+            "direction": DIRECTION_VT2HBDM.get(req.direction, ""),
+            "offset": OFFSET_VT2HBDM.get(req.offset, ""),
             "order_price_type": ORDERTYPE_VT2HBDM.get(req.type, ""),
             "lever_rate": 20
         }
@@ -307,6 +312,53 @@ class HbdmRestApi(RestClient):
         self.gateway.on_order(order)
         return order.vt_orderid
 
+    def send_orders(self, reqs: Sequence[OrderRequest]):
+        """"""
+        orders_data = []
+        orders = []
+        vt_orderids = []
+
+        for req in reqs:
+            local_orderid = self.new_local_orderid()
+        
+            order = req.create_order_data(
+                local_orderid,
+                self.gateway_name
+            )
+            order.time = datetime.now().strftime("%H:%M:%S")
+            self.gateway.on_order(order)
+
+            d = {
+                "contract_code": req.symbol,
+                "client_order_id": int(local_orderid),
+                "price": req.price,
+                "volume": int(req.volume),
+                "direction": DIRECTION_VT2HBDM.get(req.direction, ""),
+                "offset": OFFSET_VT2HBDM.get(req.offset, ""),
+                "order_price_type": ORDERTYPE_VT2HBDM.get(req.type, ""),
+                "lever_rate": 20
+            }
+
+            orders_data.append(d)
+            orders.append(order)
+            vt_orderids.append(order.vt_orderid)
+
+        data = {
+            "orders_data": orders_data
+        }
+
+        self.add_request(
+            method="POST",
+            path="/api/v1/contract_batchorder",
+            callback=self.on_send_orders,
+            data=data,
+            extra=orders,
+            on_error=self.on_send_orders_error,
+            on_failed=self.on_send_orders_failed
+        )
+
+        return vt_orderids
+
     def cancel_order(self, req: CancelRequest):
         """"""
         buf = [i for i in req.symbol if not i.isdigit()]
@@ -315,10 +367,11 @@ class HbdmRestApi(RestClient):
             "symbol": "".join(buf),
         }
 
-        if req.orderid > 1000000:
-            data["client_order_id"] = int(req.orderid)
+        orderid = int(req.orderid)
+        if orderid > 1000000:
+            data["client_order_id"] = orderid
         else:
-            data["order_id"] = int(req.orderid)
+            data["order_id"] = orderid
 
         self.add_request(
             method="POST",
@@ -478,6 +531,53 @@ class HbdmRestApi(RestClient):
         """
         msg = f"撤单失败，状态码：{status_code}，信息：{request.response.text}"
         self.gateway.write_log(msg)
+
+    def on_send_orders(self, data, request):
+        """"""
+        orders = request.extra
+
+        errors = data.get("errors", None)
+        if errors:
+            for d in errors:
+                ix = d["index"]
+                code = d["err_code"]
+                msg = d["err_msg"]
+
+                order = orders[ix]
+                order.status = Status.REJECTED
+                self.gateway.on_order(order)
+
+                msg = f"批量委托失败，状态码：{code}，信息：{msg}"
+                self.gateway.write_log(msg)
+
+    def on_send_orders_failed(self, status_code: str, request: Request):
+        """
+        Callback when sending order failed on server.
+        """
+        orders = request.extra
+
+        for order in orders:
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
+
+        msg = f"批量委托失败，状态码：{status_code}，信息：{request.response.text}"
+        self.gateway.write_log(msg)
+
+    def on_send_orders_error(
+        self, exception_type: type, exception_value: Exception, tb, request: Request
+    ):
+        """
+        Callback when sending order caused exception.
+        """
+        orders = request.extra
+        
+        for order in orders:
+            order.status = Status.REJECTED
+            self.gateway.on_order(order)
+
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
 
     def check_error(self, data: dict, func: str = ""):
         """"""
