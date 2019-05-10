@@ -8,7 +8,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any
+from typing import Any, Sequence
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -179,6 +179,22 @@ class MainEngine:
         gateway = self.get_gateway(gateway_name)
         if gateway:
             gateway.cancel_order(req)
+
+    def send_orders(self, reqs: Sequence[OrderRequest], gateway_name: str):
+        """
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            return gateway.send_orders(reqs)
+        else:
+            return ["" for req in reqs]
+
+    def cancel_orders(self, reqs: Sequence[CancelRequest], gateway_name: str):
+        """
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            gateway.cancel_orders(reqs)
 
     def query_history(self, req: HistoryRequest, gateway_name: str):
         """

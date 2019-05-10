@@ -521,6 +521,9 @@ class BacktesterChart(pg.GraphicsWindow):
 
     def set_data(self, df):
         """"""
+        if df is None:
+            return
+
         count = len(df)
 
         self.dates.clear()
