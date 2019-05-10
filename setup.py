@@ -124,7 +124,8 @@ install_requires = [
     "tigeropen",
     "rqdatac",
     "ta-lib",
-    "ibapi"
+    "ibapi",
+    "deap"
 ]
 if sys.version_info.minor < 7:
     install_requires.append("dataclasses")
