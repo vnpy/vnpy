@@ -23,19 +23,22 @@ from vnpy.trader.constant import (
     Exchange,
     Product,
     Status,
-    OrderType
+    OrderType,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     TickData,
     OrderData,
     TradeData,
+    BarData,
     AccountData,
     PositionData,
     ContractData,
     OrderRequest,
     CancelRequest,
-    SubscribeRequest
+    SubscribeRequest,
+    HistoryRequest
 )
 from vnpy.trader.event import EVENT_TIMER
 
@@ -71,6 +74,18 @@ OFFSET_VT2HBDM = {
     Offset.CLOSE: "close",
 }
 OFFSET_HBDM2VT = {v: k for k, v in OFFSET_VT2HBDM.items()}
+
+INTERVAL_VT2HBDM = {
+    Interval.MINUTE: "1min",
+    Interval.HOUR: "60min",
+    Interval.DAILY: "1day"
+}
+
+CONTRACT_TYPE_MAP = {
+    "this_week": "CW",
+    "next_week": "NW",
+    "this_quarter": "CQ"
+}
 
 
 symbol_type_map = {}
@@ -142,6 +157,10 @@ class HbdmGateway(BaseGateway):
     def query_position(self):
         """"""
         self.rest_api.query_position()
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
 
     def close(self):
         """"""
@@ -307,6 +326,66 @@ class HbdmRestApi(RestClient):
             path="/api/v1/contract_contract_info",
             callback=self.on_query_contract
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        # Convert symbol
+        contract_type = symbol_type_map.get(req.symbol, "")
+        buf = [i for i in req.symbol if not i.isdigit()]
+        symbol = "".join(buf)
+
+        ws_contract_type = CONTRACT_TYPE_MAP[contract_type]
+        ws_symbol = f"{symbol}_{ws_contract_type}"
+
+        # Create query params
+        params = {
+            "symbol": ws_symbol,
+            "period": INTERVAL_VT2HBDM[req.interval],
+            "size": 2000
+        }
+
+        # Get response from server
+        resp = self.request(
+            "GET",
+            "/market/history/kline",
+            params=params
+        )
+
+        # Break if request failed with other status code
+        history = []
+
+        if resp.status_code // 100 != 2:
+            msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+            self.gateway.write_log(msg)
+        else:
+            data = resp.json()
+            if not data:
+                msg = f"获取历史数据为空"
+                self.gateway.write_log(msg)
+            else:
+                for d in data["data"]:
+                    dt = datetime.fromtimestamp(d["id"])
+                    
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=d["vol"],
+                        open_price=d["open"],
+                        high_price=d["high"],
+                        low_price=d["low"],
+                        close_price=d["close"],
+                        gateway_name=self.gateway_name
+                    )
+                    history.append(bar)
+
+                begin = history[0].datetime
+                end = history[-1].datetime
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+        return history
 
     def new_local_orderid(self):
         """"""
@@ -570,6 +649,7 @@ class HbdmRestApi(RestClient):
                 size=int(d["contract_size"]),
                 min_volume=1,
                 product=Product.FUTURES,
+                history_data=True,
                 gateway_name=self.gateway_name,
             )
             self.gateway.on_contract(contract)
@@ -863,11 +943,6 @@ class HbdmTradeWebsocketApi(HbdmWebsocketApiBase):
 
 class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
     """"""
-    CONTRACT_TYPE_MAP = {
-        "this_week": "CW",
-        "next_week": "NW",
-        "this_quarter": "CQ"
-    }
 
     def __init__(self, gateway):
         """"""
@@ -892,7 +967,7 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
         buf = [i for i in req.symbol if not i.isdigit()]
         symbol = "".join(buf)
 
-        ws_contract_type = self.CONTRACT_TYPE_MAP[contract_type]
+        ws_contract_type = CONTRACT_TYPE_MAP[contract_type]
         ws_symbol = f"{symbol}_{ws_contract_type}"
 
         # Create tick data buffer
