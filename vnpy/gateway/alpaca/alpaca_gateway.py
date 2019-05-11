@@ -1,11 +1,13 @@
 # encoding: UTF-8
 """
+    please install alpaca_trade_api first
     Author: vigarbuaa
 """
 
 import hashlib
 import hmac
 import sys
+import threading
 import time
 from copy import copy
 from queue import Empty, Queue
@@ -85,7 +87,6 @@ class AlpacaGateway(BaseGateway):
         super(AlpacaGateway, self).__init__(event_engine, "ALPACA")
 
         self.rest_api = None
-        # self.ws_api = AlpacaWebsocketApi(self)
         self.order_map = {}
         self.queue = Queue()
         self.active = False
@@ -107,43 +108,34 @@ class AlpacaGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        key = setting["key"]
-        secret = setting["secret"]
-        session = setting["session"]
-        proxy_host = setting["proxy_host"]
-        proxy_port = setting["proxy_port"]
+        self.key = setting["key"]
+        self.secret = setting["secret"]
+        self.session = setting["session"]
+        self.proxy_host = setting["proxy_host"]
+        self.proxy_port = setting["proxy_port"]
 
-        # self.ws_api.connect(key, secret, proxy_host, proxy_port)
-        print("debug connect rest1")
-        self.rest_api = tradeapi.REST(key, secret, REST_HOST)
-        self.ws_api = StreamConn(key, secret, REST_HOST)
-        self.ws_api.register(r'account_updates',self.on_account_updates)
-        self.ws_api.register(r'trade_updates',self.on_trade_updates)
-        self.ws_api.register(r'Q.',self.on_quote_updates)
-        # Start thread pool for REST call
+        print("starting rest api")
+        self.rest_api = tradeapi.REST(self.key, self.secret, REST_HOST)
         self.active = True
         self.pool = Pool(5)
         self.pool.apply_async(self.run)
+        print("starting stream api")
+        t = threading.Thread(target=self.streaming_handler)
+        t.daemon = True
+        t.start()
+        print("rest|stream api done")
 
         # Put connect task into quque.
         self.add_task(self.query_account)
-        self.add_task(self.query_contract)
+        # self.add_task(self.query_contract)
         self.add_task(self.query_position)
         self.add_task(self.query_order)
-        self.add_task(self.run_ws)
+        
 
-    def run_ws(self):
-        self.ws_api.run(['account_updates', 'AM.*'])
-    
-    async def on_account_updates(conn, channel, account):
-        print('account', account)
+    def streaming_handler(self):
+        stream_api = AlpacaWebsocketApi(self.key, self.secret, REST_HOST)
+        stream_api.start()
 
-    async def on_trade_updates(conn, channel, account):
-        print('on_trade_updates:', account)
-    
-    async def on_quote_updates(conn, channel, account):
-        print('on_quote_updates:', account)
-    
     def query_account(self):
         """"""
         data = self.rest_api.get_account()
@@ -185,8 +177,9 @@ class AlpacaGateway(BaseGateway):
         local_id = self._gen_unqiue_cid()
         order = req.create_order_data(local_id, self.gateway_name)
         self.on_order(order)
-        self.add_task(self._send_order, req, local_id)
+        #self.add_task(self._send_order, req, local_id)
         print("debug send order: ", order.__dict__)
+        self._send_order(req, local_id)
         return order.vt_orderid
 
     # need config
@@ -222,8 +215,7 @@ class AlpacaGateway(BaseGateway):
                 client_order_id=str(orderid)
             )
             print("debug 2", order)
-        return order.vt_orderid
-        #order = req.create_order_data(orderid, self.gateway_name)
+        return
 
     # fix
     def subscribe(self, req: SubscribeRequest):
@@ -238,7 +230,7 @@ class AlpacaGateway(BaseGateway):
             print("queryorders: ", data)
             data = sorted(data, key=lambda x: x.created_at, reverse=False)
             for d in data:
-                print("debug order: ", d)
+                print("debug order in query_order: ", d)
                 order = OrderData(
                     symbol=d.symbol,
                     orderid=d.client_order_id,
@@ -298,115 +290,41 @@ class AlpacaGateway(BaseGateway):
         self.ws_api.stop()
 
 
-class AlpacaWebsocketApi(WebsocketClient):
+class AlpacaWebsocketApi(object):
     """"""
 
-    def __init__(self, gateway):
-        """"""
-        super(AlpacaWebsocketApi, self).__init__()
-
-        self.gateway = gateway
-        self.gateway_name = gateway.gateway_name
-        self.order_id = 1_000_000
-        # self.date = int(datetime.now().strftime('%y%m%d%H%M%S')) * self.orderId
-        self.key = ""
-        self.secret = ""
-
-        self.callbacks = {
-            "trade": self.on_tick,
-            "orderBook10": self.on_depth,
-            "execution": self.on_trade,
-            "order": self.on_order,
-            "position": self.on_position,
-            "margin": self.on_account,
-            "instrument": self.on_contract,
-        }
-
-        self.ticks = {}
-        self.accounts = {}
-        self.orders = {}
-        self.trades = set()
-        self.tickDict = {}
-        self.bidDict = {}
-        self.askDict = {}
-        self.orderLocalDict = {}
-        self.channelDict = {}       # ChannelID : (Channel, Symbol)
-
-    def connect(
-        self, key: str, secret: str, proxy_host: str, proxy_port: int
-    ):
+    def __init__(self, key, secret, base_url):
         """"""
         self.key = key
-        self.secret = secret.encode()
-        self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
-        self.start()
+        self.secret = secret
+        self.base_url = base_url
+        self.conn=None
 
-    def subscribe(self, req: SubscribeRequest):
-        pass
+    def start(self):
+        self.conn = StreamConn(self.key, self.secret, self.base_url)
+        self.conn.on('authenticated')(self.on_auth)
+        self.conn.on(r'Q.*')(self.on_q)
+        self.conn.on(r'account_updates')(self.on_account_updates)
+        self.conn.on(r'trade_updates')(self.on_trade_updates)
+        self.run()
 
-    def send_order(self, req: SubscribeRequest):
-        pass
+    def run(self):
+        print("---------------stream api --running--------------------")
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        self.conn.run(['account_updates','trade_updates','authorized','^Q.'])
 
-    # need debug 20190404
-    def on_packet(self, packet: dict):
-        """"""
-        print("debug on_packet: ", packet)
+    async def on_account_updates(self,conn, channel, account):
+        print('account', account)
 
-    # ----------------------------------------------------------------------
-    def on_response(self, data):
-        """"""
-        pass
-    # ----------------------------------------------------------------------
+    async def on_trade_updates(self,conn, channel, trade):
+        print('trade', trade)
 
-    def on_update(self, data):
-        """"""
-        pass
+    async def on_auth(self,conn, stream, msg):
+        print('on_auth stream', stream, "  [msg]:", msg)
 
-    # ----------------------------------------------------------------------
-    def on_wallet(self, data):
-        """"""
-        pass
+    async def on_q(self,conn, subject, data):
+        print('on_auth subject', subject, "  [data]:", data)
 
-    # ----------------------------------------------------------------------
-    def on_trade_update(self, data):
-        """"""
-        pass
-
-    def on_error(self, exception_type: type, exception_value: Exception, tb):
-        """"""
-        pass
-
-    # debug OK , 0405
-    def authenticate(self):
-        pass
-
-    def subscribe_topic(self):
-        pass
-
-    def on_tick(self, d):
-        """"""
-        pass
-
-    def on_depth(self, d):
-        """"""
-        pass
-
-    def on_trade(self, d):
-        """"""
-        pass
-
-    def on_order(self, data):
-        """"""
-        pass
-
-    def on_position(self, d):
-        """"""
-        pass
-
-    def on_account(self, d):
-        """"""
-        pass
-
-    def on_contract(self, d):
-        """"""
-        pass
+    async def on_bars(self,conn, channel, bar):
+        print('on_bars channel:', channel, "  [bar]:", bar)
