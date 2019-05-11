@@ -7,7 +7,7 @@ import hmac
 import sys
 import time
 from copy import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Lock
 from urllib.parse import urlencode
 
@@ -21,7 +21,8 @@ from vnpy.trader.constant import (
     OrderType,
     Product,
     Status,
-    Offset
+    Offset,
+    Interval
 )
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -31,9 +32,11 @@ from vnpy.trader.object import (
     PositionData,
     AccountData,
     ContractData,
+    BarData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 REST_HOST = "https://www.bitmex.com/api/v1"
@@ -60,6 +63,18 @@ ORDERTYPE_VT2BITMEX = {
 }
 ORDERTYPE_BITMEX2VT = {v: k for k, v in ORDERTYPE_VT2BITMEX.items()}
 
+INTERVAL_VT2BITMEX = {
+    Interval.MINUTE: "1m",
+    Interval.HOUR: "1h",
+    Interval.DAILY: "1d",
+}
+
+TIMEDELTA_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta(days=1),
+}
+
 
 class BitmexGateway(BaseGateway):
     """
@@ -74,6 +89,8 @@ class BitmexGateway(BaseGateway):
         "代理地址": "",
         "代理端口": "",
     }
+
+    exchanges = [Exchange.BITMEX]
 
     def __init__(self, event_engine):
         """Constructor"""
@@ -122,6 +139,10 @@ class BitmexGateway(BaseGateway):
         """"""
         pass
 
+    def query_history(self, req: HistoryRequest):
+        """"""
+        return self.rest_api.query_history(req)
+
     def close(self):
         """"""
         self.rest_api.stop()
@@ -153,7 +174,7 @@ class BitmexRestApi(RestClient):
         Generate BitMEX signature.
         """
         # Sign
-        expires = int(time.time() + 5)
+        expires = int(time.time() + 30)
 
         if request.params:
             query = urlencode(request.params)
@@ -276,6 +297,74 @@ class BitmexRestApi(RestClient):
             params=params,
             on_error=self.on_cancel_order_error,
         )
+
+    def query_history(self, req: HistoryRequest):
+        """"""
+        history = []
+        count = 750
+        start_time = req.start.isoformat()
+
+        while True:
+            # Create query params
+            params = {
+                "binSize": INTERVAL_VT2BITMEX[req.interval],
+                "symbol": req.symbol,
+                "count": count,
+                "startTime": start_time
+            }
+
+            # Add end time if specified
+            if req.end:
+                params["endTime"] = req.end.isoformat()
+
+            # Get response from server
+            resp = self.request(
+                "GET",
+                "/trade/bucketed",
+                params=params
+            )
+
+            # Break if request failed with other status code
+            if resp.status_code // 100 != 2:
+                msg = f"获取历史数据失败，状态码：{resp.status_code}，信息：{resp.text}"
+                self.gateway.write_log(msg)
+                break
+            else:
+                data = resp.json()
+                if not data:
+                    msg = f"获取历史数据为空，开始时间：{start_time}，数量：{count}"
+                    break
+
+                for d in data:
+                    dt = datetime.strptime(
+                        d["timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    bar = BarData(
+                        symbol=req.symbol,
+                        exchange=req.exchange,
+                        datetime=dt,
+                        interval=req.interval,
+                        volume=d["volume"],
+                        open_price=d["open"],
+                        high_price=d["high"],
+                        low_price=d["low"],
+                        close_price=d["close"],
+                        gateway_name=self.gateway_name
+                    )
+                    history.append(bar)
+
+                begin = data[0]["timestamp"]
+                end = data[-1]["timestamp"]
+                msg = f"获取历史数据成功，{req.symbol} - {req.interval.value}，{begin} - {end}"
+                self.gateway.write_log(msg)
+
+                # Break if total data count less than 750 (latest date collected)
+                if len(data) < 750:
+                    break
+
+                # Update start time
+                start_time = bar.datetime + TIMEDELTA_MAP[req.interval]
+
+        return history
 
     def on_send_order_failed(self, status_code: str, request: Request):
         """
@@ -613,6 +702,7 @@ class BitmexWebsocketApi(WebsocketClient):
             size=d["lotSize"],
             stop_supported=True,
             net_position=True,
+            history_data=True,
             gateway_name=self.gateway_name,
         )
 

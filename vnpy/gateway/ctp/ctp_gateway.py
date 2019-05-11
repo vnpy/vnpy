@@ -134,6 +134,8 @@ class CtpGateway(BaseGateway):
         "授权编码": ""
     }
 
+    exchanges = list(EXCHANGE_CTP2VT.values())
+    
     def __init__(self, event_engine):
         """Constructor"""
         super(CtpGateway, self).__init__(event_engine, "CTP")
