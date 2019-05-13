@@ -118,9 +118,10 @@ class BarGenerator(object):
     #----------------------------------------------------------------------
     def generate(self):
         """手动强制立即完成K线合成"""
-        self.onBar(self.bar)
-        self.bar = None
-
+        if self.bar:
+            self.bar.date = self.bar.datetime.strftime('%Y%m%d')
+            self.bar.time = self.bar.datetime.strftime('%H:%M:%S.%f')
+            self.onBar(self.bar)
 
 
 ########################################################################
