@@ -149,7 +149,7 @@ void generate_sub_namespace_XTP_API(pybind11::module & parent)
 void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
 {
     pybind11::class_<XTP::API::TraderSpi, PyTraderSpi> c(parent, "TraderSpi");
-    if constexpr (std::is_default_constructible_v<XTP::API::TraderSpi>)
+    if constexpr (std::is_default_constructible_v<PyTraderSpi>)
         c.def(pybind11::init<>());
     c.def("OnDisconnected",
         autocxxpy::apply_function_transform<
@@ -159,6 +159,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnError",
@@ -169,6 +170,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnOrderEvent",
@@ -179,6 +181,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnTradeEvent",
@@ -189,6 +192,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnCancelOrderError",
@@ -199,6 +203,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryOrder",
@@ -209,6 +214,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryTrade",
@@ -219,6 +225,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryPosition",
@@ -229,6 +236,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryAsset",
@@ -239,6 +247,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryStructuredFund",
@@ -249,6 +258,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryFundTransfer",
@@ -259,6 +269,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnFundTransfer",
@@ -269,6 +280,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryETF",
@@ -279,6 +291,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryETFBasket",
@@ -289,6 +302,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryIPOInfoList",
@@ -299,6 +313,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryIPOQuotaInfo",
@@ -309,6 +324,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryOptionAuctionInfo",
@@ -319,6 +335,7 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTP::API::TraderSpi, c);
@@ -331,6 +348,8 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
         std::unique_ptr<XTP::API::TraderApi, pybind11::nodelete>,
         PyTraderApi
     > c(parent, "TraderApi");
+    if constexpr (std::is_default_constructible_v<PyTraderApi>)
+        c.def(pybind11::init<>());
     c.def_static("CreateTraderApi",
         autocxxpy::apply_function_transform<
             autocxxpy::function_constant<
@@ -339,6 +358,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Release",
@@ -349,6 +369,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetTradingDay",
@@ -359,6 +380,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterSpi",
@@ -369,6 +391,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetApiLastError",
@@ -379,8 +402,8 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
-        pybind11::call_guard<pybind11::gil_scoped_release>(),
-        pybind11::return_value_policy::reference
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetApiVersion",
         autocxxpy::apply_function_transform<
@@ -390,6 +413,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetClientIDByXTPID",
@@ -400,6 +424,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetAccountByXTPID",
@@ -410,6 +435,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribePublicTopic",
@@ -420,6 +446,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetSoftwareVersion",
@@ -430,6 +457,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetSoftwareKey",
@@ -440,6 +468,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetHeartBeatInterval",
@@ -450,6 +479,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Login",
@@ -460,6 +490,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Logout",
@@ -470,6 +501,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("InsertOrder",
@@ -480,6 +512,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("CancelOrder",
@@ -490,6 +523,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryOrderByXTPID",
@@ -500,6 +534,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryOrders",
@@ -510,6 +545,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryTradesByXTPID",
@@ -520,6 +556,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryTrades",
@@ -530,6 +567,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryPosition",
@@ -540,6 +578,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryAsset",
@@ -550,6 +589,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryStructuredFund",
@@ -560,6 +600,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("FundTransfer",
@@ -570,6 +611,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryFundTransfer",
@@ -580,6 +622,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryETF",
@@ -590,6 +633,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryETFTickerBasket",
@@ -600,6 +644,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryIPOInfoList",
@@ -610,6 +655,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryIPOQuotaInfo",
@@ -620,6 +666,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryOptionAuctionInfo",
@@ -630,6 +677,7 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTP::API::TraderApi, c);
