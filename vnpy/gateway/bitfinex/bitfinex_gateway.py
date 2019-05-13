@@ -72,6 +72,8 @@ class BitfinexGateway(BaseGateway):
         "proxy_port": 1080,
     }
 
+    exchanges = [Exchange.BITFINEX]
+
     def __init__(self, event_engine):
         """Constructor"""
         super(BitfinexGateway, self).__init__(event_engine, "BITFINEX")

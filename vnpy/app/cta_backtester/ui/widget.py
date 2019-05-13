@@ -240,7 +240,7 @@ class BacktesterManager(QtWidgets.QWidget):
         if i != dialog.Accepted:
             return
 
-        optimization_setting = dialog.get_setting()
+        optimization_setting, use_ga = dialog.get_setting()
         self.target_display = dialog.target_display
 
         self.backtester_engine.start_optimization(
@@ -254,7 +254,8 @@ class BacktesterManager(QtWidgets.QWidget):
             size,
             pricetick,
             capital,
-            optimization_setting
+            optimization_setting,
+            use_ga
         )
 
         self.result_button.setEnabled(False)
@@ -342,6 +343,7 @@ class StatisticsMonitor(QtWidgets.QTableWidget):
         self.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch
         )
+        self.setEditTriggers(self.NoEditTriggers)
 
         for row, key in enumerate(self.KEY_NAME_MAP.keys()):
             cell = QtWidgets.QTableWidgetItem()
@@ -519,6 +521,9 @@ class BacktesterChart(pg.GraphicsWindow):
 
     def set_data(self, df):
         """"""
+        if df is None:
+            return
+
         count = len(df)
 
         self.dates.clear()
@@ -591,6 +596,7 @@ class OptimizationSettingEditor(QtWidgets.QDialog):
         self.edits = {}
 
         self.optimization_setting = None
+        self.use_ga = False
 
         self.init_ui()
 
@@ -641,11 +647,26 @@ class OptimizationSettingEditor(QtWidgets.QDialog):
 
             row += 1
 
-        button = QtWidgets.QPushButton("确定")
-        button.clicked.connect(self.generate_setting)
-        grid.addWidget(button, row, 0, 1, 4)
+        parallel_button = QtWidgets.QPushButton("多进程优化")
+        parallel_button.clicked.connect(self.generate_parallel_setting)
+        grid.addWidget(parallel_button, row, 0, 1, 4)
+
+        row += 1
+        ga_button = QtWidgets.QPushButton("遗传算法优化")
+        ga_button.clicked.connect(self.generate_ga_setting)
+        grid.addWidget(ga_button, row, 0, 1, 4)
 
         self.setLayout(grid)
+
+    def generate_ga_setting(self):
+        """"""
+        self.use_ga = True
+        self.generate_setting()
+
+    def generate_parallel_setting(self):
+        """"""
+        self.use_ga = False
+        self.generate_setting()
 
     def generate_setting(self):
         """"""
@@ -675,7 +696,7 @@ class OptimizationSettingEditor(QtWidgets.QDialog):
 
     def get_setting(self):
         """"""
-        return self.optimization_setting
+        return self.optimization_setting, self.use_ga
 
 
 class OptimizationResultMonitor(QtWidgets.QDialog):
@@ -704,6 +725,7 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
         table.setColumnCount(2)
         table.setRowCount(len(self.result_values))
         table.setHorizontalHeaderLabels(["参数", self.target_display])
+        table.setEditTriggers(table.NoEditTriggers)
         table.verticalHeader().setVisible(False)
 
         table.horizontalHeader().setSectionResizeMode(

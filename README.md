@@ -24,7 +24,11 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * CTP(ctp)：国内期货、期权
 
+    * 飞马(femas)：国内期货
+
     * 宽睿(oes)：A股
+
+    * 中泰XTP(xtp)：A股
 
     * 富途证券(futu)：港股、美股
 
@@ -32,11 +36,15 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * Interactive Brokers(ib)：全球证券、期货、期权、外汇等
 
-    * BitMEX (bitmex)：数字货币期货、期权、永续合约
+    * BitMEX(bitmex)：数字货币期货、期权、永续合约
 
-    * OKEX (okex)：数字货币现货
+    * OKEX合约(okexf)：数字货币期货
 
-    * HUOBI(huobi)：数字货币现货
+    * 火币合约(okexf)：数字货币期货
+
+    * OKEX(okex)：数字货币现货
+
+    * 火币(huobi)：数字货币现货
     
     * Bitfinex(bitfinex)：数字货币现货
 
@@ -52,6 +60,8 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * algo_trading：算法交易模块，提供多种常用的智能交易算法：TWAP、Sniper、Iceberg、BestLimit等等，支持常用算法配置保存
 
     * csv_loader：CSV历史数据加载器，用于加载CSV格式文件中的历史数据到平台数据库中，用于策略的回测研究以及实盘初始化等功能，支持自定义数据表头格式
+
+    * data_recorder：行情记录模块，基于图形界面进行配置，根据需求实时录制Tick或者K线行情到数据库中，用于策略回测或者实盘初始化
 
 4. Python交易API接口封装（vnpy.api），提供上述交易接口的底层对接实现。
 

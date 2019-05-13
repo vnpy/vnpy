@@ -16,6 +16,7 @@ from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.object import (
     OrderRequest,
     SubscribeRequest,
+    HistoryRequest,
     LogData,
     TickData,
     BarData,
@@ -97,6 +98,8 @@ class CtaEngine(BaseEngine):
         self.rq_client = None
         self.rq_symbols = set()
 
+        self.vt_tradeids = set()    # for filtering duplicate trade
+
         self.offset_converter = OffsetConverter(self.main_engine)
 
     def init_engine(self):
@@ -111,7 +114,7 @@ class CtaEngine(BaseEngine):
 
     def close(self):
         """"""
-        pass
+        self.stop_all_strategies()
 
     def register_event(self):
         """"""
@@ -134,9 +137,14 @@ class CtaEngine(BaseEngine):
         """
         Query bar data from RQData.
         """
-        data = rqdata_client.query_bar(
-            symbol, exchange, interval, start, end
+        req = HistoryRequest(
+            symbol=symbol,
+            exchange=exchange,
+            interval=interval,
+            start=start,
+            end=end
         )
+        data = rqdata_client.query_history(req)
         return data
 
     def process_tick_event(self, event: Event):
@@ -189,6 +197,11 @@ class CtaEngine(BaseEngine):
     def process_trade_event(self, event: Event):
         """"""
         trade = event.data
+
+        # Filter duplicate trade push
+        if trade.vt_tradeid in self.vt_tradeids:
+            return
+        self.vt_tradeids.add(trade.vt_tradeid)
 
         self.offset_converter.update_trade(trade)
 
