@@ -10,27 +10,22 @@ import numpy as np
 import talib
 
 from .object import BarData, TickData
+from .constant import Exchange
 
 
-class Singleton(type):
+def extract_vt_symbol(vt_symbol: str):
     """
-    Singleton metaclass, 
-
-    class A:
-        __metaclass__ = Singleton
+    :return: (symbol, exchange)
     """
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        """"""
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(
-                *args, **kwargs
-            )
-        return cls._instances[cls]
+    symbol, exchange_str = vt_symbol.split('.')
+    return symbol, Exchange(exchange_str)
 
 
-def get_path(temp_name: str):
+def generate_vt_symbol(symbol: str, exchange: Exchange):
+    return f'{symbol}.{exchange.value}'
+
+
+def _get_trader_dir(temp_name: str):
     """
     Get path where trader is running in.
     """
@@ -53,21 +48,21 @@ def get_path(temp_name: str):
     return home_path, temp_path
 
 
-TRADER_PATH, TEMP_PATH = get_path(".vntrader")
+TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
 
 
 def get_file_path(filename: str):
     """
     Get path for temp file with filename.
     """
-    return TEMP_PATH.joinpath(filename)
+    return TEMP_DIR.joinpath(filename)
 
 
 def get_folder_path(folder_name: str):
     """
     Get path for temp folder with folder name.
     """
-    folder_path = TEMP_PATH.joinpath(folder_name)
+    folder_path = TEMP_DIR.joinpath(folder_name)
     if not folder_path.exists():
         folder_path.mkdir()
     return folder_path
@@ -385,3 +380,12 @@ class ArrayManager(object):
         if array:
             return up, down
         return up[-1], down[-1]
+
+
+def virtual(func: "callable"):
+    """
+    mark a function as "virtual", which means that this function can be override.
+    any base class should use this or @abstractmethod to decorate all functions
+    that can be (re)implemented by subclasses.
+    """
+    return func

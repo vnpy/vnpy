@@ -12,7 +12,7 @@ from vnpy.app.cta_strategy import (
 
 class MultiTimeframeStrategy(CtaTemplate):
     """"""
-    author = '用Python的交易员'
+    author = "用Python的交易员"
 
     rsi_signal = 20
     rsi_window = 14
@@ -27,12 +27,12 @@ class MultiTimeframeStrategy(CtaTemplate):
     slow_ma = 0
     ma_trend = 0
 
-    parameters = ['rsi_signal', 'rsi_window',
-                  'fast_window', 'slow_window',
-                  'fixed_size']
+    parameters = ["rsi_signal", "rsi_window",
+                  "fast_window", "slow_window",
+                  "fixed_size"]
 
-    variables = ['rsi_value', 'rsi_long', 'rsi_short',
-                 'fast_ma', 'slow_ma', 'ma_trend']
+    variables = ["rsi_value", "rsi_long", "rsi_short",
+                 "fast_ma", "slow_ma", "ma_trend"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
