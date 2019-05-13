@@ -84,7 +84,7 @@ def load_json(filename: str):
     filepath = get_file_path(filename)
 
     if filepath.exists():
-        with open(filepath, mode='r') as f:
+        with open(filepath, mode='r',encoding = 'UTF-8') as f:
             data = json.load(f)
         return data
     else:
