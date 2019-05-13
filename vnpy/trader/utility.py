@@ -97,8 +97,8 @@ def save_json(filename: str, data: dict):
     Save data into json file in temp path.
     """
     filepath = get_file_path(filename)
-    with open(filepath, mode='w+') as f:
-        json.dump(data, f, indent=4)
+    with open(filepath, mode='w+',encoding = 'UTF-8') as f:
+        json.dump(data, f,sort_keys=True,indent =4,ensure_ascii=False)
 
 
 def round_to(value: float, target: float):
