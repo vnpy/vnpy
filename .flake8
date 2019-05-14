@@ -5,4 +5,3 @@ ignore =
     W503 line break before binary operator
     W293 blank line contains whitespace
     W291 trailing whitespace
-    W391 blank line at end of file
