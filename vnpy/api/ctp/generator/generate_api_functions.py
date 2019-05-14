@@ -227,7 +227,7 @@ class ApiGenerator:
                                 f.write(
                                     f"\t\terror[\"{struct_field}\"] = task_error->{struct_field};\n")
 
-                        f.write("\t\tdelete task->task_error;\n")
+                        f.write("\t\tdelete task_error;\n")
                         f.write("\t}\n")
                     else:
                         args.append("data")
@@ -247,7 +247,7 @@ class ApiGenerator:
                                 f.write(
                                     f"\t\tdata[\"{struct_field}\"] = task_data->{struct_field};\n")
 
-                        f.write("\t\tdelete task->task_data;\n")
+                        f.write("\t\tdelete task_data;\n")
                         f.write("\t}\n")
 
                 args_str = ", ".join(args)
