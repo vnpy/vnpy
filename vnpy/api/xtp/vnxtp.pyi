@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
     from .vnxtp import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
+def set_async_callback_exception_handler(handler: Callable[[Exception, object, str], bool]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
@@ -105,10 +105,10 @@ class XTPMarketDataStruct():
     qty: int
     turnover: float
     avg_price: float
-    bid: Sequence[float]
-    ask: Sequence[float]
-    bid_qty: Sequence[int]
-    ask_qty: Sequence[int]
+    bid: List[float]
+    ask: List[float]
+    bid_qty: List[int]
+    ask_qty: List[int]
     trades_count: int
     ticker_status: str
     stk: XTPMarketDataStockExData
@@ -141,10 +141,10 @@ class OrderBookStruct():
     qty: int
     turnover: float
     trades_count: int
-    bid: Sequence[float]
-    ask: Sequence[float]
-    bid_qty: Sequence[int]
-    ask_qty: Sequence[int]
+    bid: List[float]
+    ask: List[float]
+    bid_qty: List[int]
+    ask_qty: List[int]
     data_time: int
     
     
@@ -320,7 +320,7 @@ class XTPQueryAssetRsp():
     captial_asset: float
     force_freeze_amount: float
     preferred_amount: float
-    unknown: Sequence[int]
+    unknown: List[int]
     
     
 class XTPQueryStkPositionRsp():
@@ -342,7 +342,7 @@ class XTPQueryStkPositionRsp():
     executable_underlying: int
     locked_position: int
     usable_locked_position: int
-    unknown: Sequence[int]
+    unknown: List[int]
     
     
 class XTPFundTransferNotice():
@@ -491,7 +491,7 @@ class XTPQueryOptionAuctionInfoRsp():
     sell_margin: float
     margin_ratio_param1: float
     margin_ratio_param2: float
-    unknown: Sequence[int]
+    unknown: List[int]
     
     
 class XTPFundTransferReq():

@@ -1,10 +1,13 @@
 #pragma once
+
+#include "../utils/type_traits.hpp"
+
 namespace autocxxpy
 {
     template <class T, class T2>
     auto append_as_tuple(T&& v1, T2&& v2)
     {
-        return std::make_tuple<T, T2>(std::move(v1), std::move(v2));
+        return std::make_tuple<T, remove_cvref_t<T2>>(std::move(v1), std::move(v2));
     }
 
     template <class ... Ts, class T2, size_t ... idx>

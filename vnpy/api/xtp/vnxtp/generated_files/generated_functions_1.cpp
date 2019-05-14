@@ -14,7 +14,7 @@
 void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
 {
     pybind11::class_<XTP::API::QuoteSpi, PyQuoteSpi> c(parent, "QuoteSpi");
-    if constexpr (std::is_default_constructible_v<XTP::API::QuoteSpi>)
+    if constexpr (std::is_default_constructible_v<PyQuoteSpi>)
         c.def(pybind11::init<>());
     c.def("OnDisconnected",
         autocxxpy::apply_function_transform<
@@ -24,6 +24,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnError",
@@ -34,6 +35,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubMarketData",
@@ -44,6 +46,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubMarketData",
@@ -54,6 +57,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnDepthMarketData",
@@ -64,6 +68,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubOrderBook",
@@ -74,6 +79,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubOrderBook",
@@ -84,6 +90,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnOrderBook",
@@ -94,6 +101,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubTickByTick",
@@ -104,6 +112,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubTickByTick",
@@ -114,6 +123,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnTickByTick",
@@ -124,6 +134,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubscribeAllMarketData",
@@ -134,6 +145,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubscribeAllMarketData",
@@ -144,6 +156,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubscribeAllOrderBook",
@@ -154,6 +167,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubscribeAllOrderBook",
@@ -164,6 +178,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubscribeAllTickByTick",
@@ -174,6 +189,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubscribeAllTickByTick",
@@ -184,6 +200,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryAllTickers",
@@ -194,6 +211,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnQueryTickersPriceInfo",
@@ -204,6 +222,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubscribeAllOptionMarketData",
@@ -214,6 +233,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubscribeAllOptionMarketData",
@@ -224,6 +244,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubscribeAllOptionOrderBook",
@@ -234,6 +255,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubscribeAllOptionOrderBook",
@@ -244,6 +266,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnSubscribeAllOptionTickByTick",
@@ -254,6 +277,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnUnSubscribeAllOptionTickByTick",
@@ -264,6 +288,7 @@ void generate_class_XTP_API_QuoteSpi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTP::API::QuoteSpi, c);
@@ -276,6 +301,8 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
         std::unique_ptr<XTP::API::QuoteApi, pybind11::nodelete>,
         PyQuoteApi
     > c(parent, "QuoteApi");
+    if constexpr (std::is_default_constructible_v<PyQuoteApi>)
+        c.def(pybind11::init<>());
     c.def_static("CreateQuoteApi",
         autocxxpy::apply_function_transform<
             autocxxpy::function_constant<
@@ -284,6 +311,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Release",
@@ -294,6 +322,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetTradingDay",
@@ -304,6 +333,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetApiVersion",
@@ -314,6 +344,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("GetApiLastError",
@@ -324,8 +355,8 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
-        pybind11::call_guard<pybind11::gil_scoped_release>(),
-        pybind11::return_value_policy::reference
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetUDPBufferSize",
         autocxxpy::apply_function_transform<
@@ -335,6 +366,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterSpi",
@@ -345,6 +377,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SetHeartBeatInterval",
@@ -355,6 +388,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeMarketData",
@@ -363,9 +397,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::SubscribeMarketData
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeMarketData",
@@ -374,9 +409,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::UnSubscribeMarketData
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeOrderBook",
@@ -385,9 +421,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::SubscribeOrderBook
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeOrderBook",
@@ -396,9 +433,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::UnSubscribeOrderBook
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeTickByTick",
@@ -407,9 +445,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::SubscribeTickByTick
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeTickByTick",
@@ -418,9 +457,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::UnSubscribeTickByTick
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeAllMarketData",
@@ -431,6 +471,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeAllMarketData",
@@ -441,6 +482,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeAllOrderBook",
@@ -451,6 +493,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeAllOrderBook",
@@ -461,6 +504,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeAllTickByTick",
@@ -471,6 +515,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeAllTickByTick",
@@ -481,6 +526,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Login",
@@ -491,6 +537,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Logout",
@@ -501,6 +548,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryAllTickers",
@@ -511,6 +559,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryTickersPriceInfo",
@@ -519,9 +568,10 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
                 &XTP::API::QuoteApi::QueryTickersPriceInfo
             >, 
             brigand::list<
-                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 1>
+                autocxxpy::indexed_transform_holder<autocxxpy::string_array_transform, 0 + 1/*self*/>
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("QueryAllTickersPriceInfo",
@@ -532,6 +582,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeAllOptionMarketData",
@@ -542,6 +593,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeAllOptionMarketData",
@@ -552,6 +604,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeAllOptionOrderBook",
@@ -562,6 +615,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeAllOptionOrderBook",
@@ -572,6 +626,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("SubscribeAllOptionTickByTick",
@@ -582,6 +637,7 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("UnSubscribeAllOptionTickByTick",
@@ -592,32 +648,9 @@ void generate_class_XTP_API_QuoteApi(pybind11::object & parent)
             brigand::list<
             >
         >::value,
+        pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTP::API::QuoteApi, c);
     module_vnxtp::objects.emplace("XTP::API::QuoteApi", c);
-}
-void generate_caster_XTP_API(pybind11::object & parent)
-{
-    struct caster: autocxxpy::caster{};
-    auto c = autocxxpy::caster::bind<caster>(parent, "caster"); 
-    autocxxpy::caster::try_generate<XTP::API::TraderSpi>(c, "toTraderSpi)");
-    autocxxpy::caster::try_generate<XTP::API::TraderApi>(c, "toTraderApi)");
-    autocxxpy::caster::try_generate<XTP::API::QuoteSpi>(c, "toQuoteSpi)");
-    autocxxpy::caster::try_generate<XTP::API::QuoteApi>(c, "toQuoteApi)");
-}
-void generate_caster_XTP(pybind11::object & parent)
-{
-    struct caster: autocxxpy::caster{};
-    auto c = autocxxpy::caster::bind<caster>(parent, "caster"); 
-}
-void generate_class_XTPRspInfoStruct(pybind11::object & parent)
-{
-    pybind11::class_<XTPRspInfoStruct> c(parent, "XTPRspInfoStruct");
-    if constexpr (std::is_default_constructible_v<XTPRspInfoStruct>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPRspInfoStruct, "error_id", error_id);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPRspInfoStruct, "error_msg", error_msg);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPRspInfoStruct, c);
-    module_vnxtp::objects.emplace("XTPRspInfoStruct", c);
 }
