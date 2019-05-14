@@ -710,6 +710,10 @@ typedef char TThostFtdcRatioAttrType;
 #define THOST_FTDC_HF_Hedge '3'
 ///做市商
 #define THOST_FTDC_HF_MarketMaker '5'
+///第一腿投机第二腿套保 大商所专用
+#define THOST_FTDC_HF_SpecHedge '6'
+///第一腿套保第二腿投机  大商所专用
+#define THOST_FTDC_HF_HedgeSpec '7'
 
 typedef char TThostFtdcHedgeFlagType;
 
@@ -834,8 +838,10 @@ typedef char TThostFtdcForceCloseReasonType;
 #define THOST_FTDC_ORDT_ConditionalOrder '4'
 ///互换单
 #define THOST_FTDC_ORDT_Swap '5'
-///期转现衍生
-#define THOST_FTDC_ORDT_DeriveFromEFP '6'
+///大宗交易成交衍生
+#define THOST_FTDC_ORDT_DeriveFromBlockTrade '6'
+///期转现成交衍生
+#define THOST_FTDC_ORDT_DeriveFromEFPTrade '7'
 
 typedef char TThostFtdcOrderTypeType;
 
@@ -954,6 +960,8 @@ typedef char TThostFtdcOrderSourceType;
 #define THOST_FTDC_TRDT_EFPDerived '3'
 ///组合衍生成交
 #define THOST_FTDC_TRDT_CombinationDerived '4'
+///大宗交易成交
+#define THOST_FTDC_TRDT_BlockTrade '5'
 
 typedef char TThostFtdcTradeTypeType;
 
@@ -966,6 +974,8 @@ typedef char TThostFtdcTradeTypeType;
 #define THOST_FTDC_PSRC_Buy '1'
 ///卖委托价
 #define THOST_FTDC_PSRC_Sell '2'
+///场外成交价
+#define THOST_FTDC_PSRC_OTC '3'
 
 typedef char TThostFtdcPriceSourceType;
 
@@ -6184,6 +6194,34 @@ typedef char TThostFtdcStrikeTimeType[13];
 #define THOST_FTDC_COMBT_CLD '6'
 
 typedef char TThostFtdcCombinationTypeType;
+
+/////////////////////////////////////////////////////////////////////////
+///TFtdcDceCombinationTypeType是一个组合类型类型
+/////////////////////////////////////////////////////////////////////////
+///期货对锁组合
+#define THOST_FTDC_DCECOMBT_SPL '0'
+///期权对锁组合
+#define THOST_FTDC_DCECOMBT_OPL '1'
+///期货跨期组合
+#define THOST_FTDC_DCECOMBT_SP '2'
+///期货跨品种组合
+#define THOST_FTDC_DCECOMBT_SPC '3'
+///买入期权垂直价差组合
+#define THOST_FTDC_DCECOMBT_BLS '4'
+///卖出期权垂直价差组合
+#define THOST_FTDC_DCECOMBT_BES '5'
+///期权日历价差组合
+#define THOST_FTDC_DCECOMBT_CAS '6'
+///期权跨式组合
+#define THOST_FTDC_DCECOMBT_STD '7'
+///期权宽跨式组合
+#define THOST_FTDC_DCECOMBT_STG '8'
+///买入期货期权组合
+#define THOST_FTDC_DCECOMBT_BFO '9'
+///卖出期货期权组合
+#define THOST_FTDC_DCECOMBT_SFO 'a'
+
+typedef char TThostFtdcDceCombinationTypeType;
 
 /////////////////////////////////////////////////////////////////////////
 ///TFtdcOptionRoyaltyPriceTypeType是一个期权权利金价格类型类型
