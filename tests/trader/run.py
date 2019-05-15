@@ -47,7 +47,7 @@ def main():
     main_engine.add_gateway(OnetokenGateway)
     main_engine.add_gateway(OkexfGateway)
     main_engine.add_gateway(HbdmGateway)
-
+    
     main_engine.add_app(CtaStrategyApp)
     main_engine.add_app(CtaBacktesterApp)
     main_engine.add_app(CsvLoaderApp)

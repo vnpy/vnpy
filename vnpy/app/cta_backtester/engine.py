@@ -339,7 +339,7 @@ class BacktesterEngine(BaseEngine):
         self.write_log(f"{vt_symbol}-{interval}开始下载历史数据")
 
         symbol, exchange = extract_vt_symbol(vt_symbol)
-
+        
         req = HistoryRequest(
             symbol=symbol,
             exchange=exchange,
