@@ -1163,7 +1163,6 @@ def load_tick_data(
         symbol, exchange, start, end
     )
 
-
 # GA related global value
 ga_end = None
 ga_mode = None

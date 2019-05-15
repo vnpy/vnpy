@@ -310,6 +310,7 @@ def init_models(db: Database, driver: Driver):
                         ).execute()
                 else:
                     for c in chunked(dicts, 50):
+                        DbTickData.insert_many(c).on_conflict_replace().execute()
                         DbTickData.insert_many(
                             c).on_conflict_replace().execute()
 
