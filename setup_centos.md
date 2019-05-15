@@ -7,13 +7,13 @@
 
      # 1.1 安装系列开发环境：
     # cmake
-    yum install cmake
-    yum install gcc gcc-c++ libboost*
+    yum -y install cmake
+    yum -y install gcc gcc-c++ libboost*
     
     # 安装解压包支持
-	yum install bzip2.x86_64
+	yum -y install bzip2.x86_64
 
-    yum install unzip
+    yum -y install unzip
 
 	# 安装nodejs，支持request
 	wget -qO- https://rpm.nodesource.com/setup_8.x | bash -
@@ -24,10 +24,10 @@
 	yum -y install openssl-devel
 
 	# 安装python开发库
-    yum  install python-devel.x86_64
+    yum -y install python-devel.x86_64
 
     # 安装LibGL支持库
-    yum install mesa-libGL.x86_64
+    yum -y install mesa-libGL.x86_64
   2、下载 anaconda 3.6得64位安装包[trade用户]
 
     1) wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.2.0-Linux-x86_64.sh
