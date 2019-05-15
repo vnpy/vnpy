@@ -50,16 +50,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 1Token(onetoken)：数字货币券商（现货、期货）
 
-
-    * OKEX (okex)：数字货币现货
-
-    * HUOBI(huobi)：数字货币现货
-    
-    * Bitfinex(bitfinex)：数字货币现货
-
-    * 1Token(onetoken)：数字货币券商（现货、期货）
-
-
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
     * cta_strategy：CTA策略引擎模块，在保持易用性的同时，允许用户针对CTA类策略运行过程中委托的报撤行为进行细粒度控制（降低交易滑点、实现高频策略）
