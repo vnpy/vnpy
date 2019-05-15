@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 python=$1
-prefix=$3
+prefix=$2
 
 [[ -z $python ]] && python=python
 [[ -z $prefix ]] && prefix=/usr
