@@ -50,6 +50,8 @@ struct CThostFtdcReqUserLoginField
 	TThostFtdcIPAddressType	ClientIPAddress;
 	///登录备注
 	TThostFtdcLoginRemarkType	LoginRemark;
+	///终端IP端口
+	TThostFtdcIPPortType	ClientIPPort;
 };
 
 ///用户登录应答
@@ -112,6 +114,8 @@ struct CThostFtdcReqAuthenticateField
 	TThostFtdcProductInfoType	UserProductInfo;
 	///认证码
 	TThostFtdcAuthCodeType	AuthCode;
+	///App代码
+	TThostFtdcAppIDType	AppID;
 };
 
 ///客户端认证响应
@@ -123,6 +127,10 @@ struct CThostFtdcRspAuthenticateField
 	TThostFtdcUserIDType	UserID;
 	///用户端产品信息
 	TThostFtdcProductInfoType	UserProductInfo;
+	///App代码
+	TThostFtdcAppIDType	AppID;
+	///App类型
+	TThostFtdcAppTypeType	AppType;
 };
 
 ///客户端认证信息
@@ -138,6 +146,10 @@ struct CThostFtdcAuthenticationInfoField
 	TThostFtdcAuthInfoType	AuthInfo;
 	///是否为认证结果
 	TThostFtdcBoolType	IsResult;
+	///App代码
+	TThostFtdcAppIDType	AppID;
+	///App类型
+	TThostFtdcAppTypeType	AppType;
 };
 
 ///用户登录应答2
@@ -798,6 +810,8 @@ struct CThostFtdcInvestorPositionField
 	TThostFtdcVolumeType	YdStrikeFrozen;
 	///投资单元代码
 	TThostFtdcInvestUnitIDType	InvestUnitID;
+	///大商所持仓成本差值，只有大商所使用
+	TThostFtdcMoneyType	PositionCostOffset;
 };
 
 ///合约保证金率
@@ -2257,6 +2271,8 @@ struct CThostFtdcSyncingInvestorPositionField
 	TThostFtdcVolumeType	YdStrikeFrozen;
 	///投资单元代码
 	TThostFtdcInvestUnitIDType	InvestUnitID;
+	///大商所持仓成本差值，只有大商所使用
+	TThostFtdcMoneyType	PositionCostOffset;
 };
 
 ///正在同步中的合约保证金率
@@ -3276,6 +3292,10 @@ struct CThostFtdcExchangeExecOrderActionField
 	TThostFtdcIPAddressType	IPAddress;
 	///Mac地址
 	TThostFtdcMacAddressType	MacAddress;
+	///合约在交易所的代码
+	TThostFtdcExchangeInstIDType	ExchangeInstID;
+	///数量
+	TThostFtdcVolumeType	Volume;
 };
 
 ///交易所执行宣告操作查询
@@ -4930,6 +4950,10 @@ struct CThostFtdcExchangeOptionSelfCloseActionField
 	TThostFtdcIPAddressType	IPAddress;
 	///Mac地址
 	TThostFtdcMacAddressType	MacAddress;
+	///合约在交易所的代码
+	TThostFtdcExchangeInstIDType	ExchangeInstID;
+	///期权行权的头寸是否自对冲
+	TThostFtdcOptSelfCloseFlagType	OptSelfCloseFlag;
 };
 
 ///延时换汇同步
@@ -5011,6 +5035,19 @@ struct CThostFtdcSecAgentCheckModeField
 	TThostFtdcAccountIDType	BrokerSecAgentID;
 	///是否需要校验自己的资金账户
 	TThostFtdcBoolType	CheckSelfAccount;
+};
+
+///二级代理商信息
+struct CThostFtdcSecAgentTradeInfoField
+{
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///境外中介机构资金帐号
+	TThostFtdcAccountIDType	BrokerSecAgentID;
+	///投资者代码
+	TThostFtdcInvestorIDType	InvestorID;
+	///二级代理商姓名
+	TThostFtdcLongIndividualNameType	LongCustomerName;
 };
 
 ///市场行情
@@ -5368,6 +5405,8 @@ struct CThostFtdcInvestorPositionDetailField
 	TThostFtdcVolumeType	CloseVolume;
 	///平仓金额
 	TThostFtdcMoneyType	CloseAmount;
+	///按照时间顺序平仓的笔数,大商所专用
+	TThostFtdcVolumeType	TimeFirstVolume;
 	///投资单元代码
 	TThostFtdcInvestUnitIDType	InvestUnitID;
 };
@@ -9222,6 +9261,230 @@ struct CThostFtdcQrySecAgentCheckModeField
 	TThostFtdcBrokerIDType	BrokerID;
 	///投资者代码
 	TThostFtdcInvestorIDType	InvestorID;
+};
+
+///查询二级代理商信息
+struct CThostFtdcQrySecAgentTradeInfoField
+{
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///境外中介机构资金帐号
+	TThostFtdcAccountIDType	BrokerSecAgentID;
+};
+
+///用户系统信息
+struct CThostFtdcUserSystemInfoField
+{
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+	///用户端系统内部信息长度
+	TThostFtdcSystemInfoLenType	ClientSystemInfoLen;
+	///用户端系统内部信息
+	TThostFtdcClientSystemInfoType	ClientSystemInfo;
+	///用户公网IP
+	TThostFtdcIPAddressType	ClientPublicIP;
+	///终端IP端口
+	TThostFtdcIPPortType	ClientIPPort;
+	///登录成功时间
+	TThostFtdcTimeType	ClientLoginTime;
+	///App代码
+	TThostFtdcAppIDType	ClientAppID;
+};
+
+///用户发出获取安全安全登陆方法请求
+struct CThostFtdcReqUserAuthMethodField
+{
+	///交易日
+	TThostFtdcDateType	TradingDay;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+};
+
+///用户发出获取安全安全登陆方法回复
+struct CThostFtdcRspUserAuthMethodField
+{
+	///当前可以用的认证模式
+	TThostFtdcCurrentAuthMethodType	UsableAuthMethod;
+};
+
+///用户发出获取安全安全登陆方法请求
+struct CThostFtdcReqGenUserCaptchaField
+{
+	///交易日
+	TThostFtdcDateType	TradingDay;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+};
+
+///生成的图片验证码信息
+struct CThostFtdcRspGenUserCaptchaField
+{
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+	///图片信息长度
+	TThostFtdcCaptchaInfoLenType	CaptchaInfoLen;
+	///图片信息
+	TThostFtdcCaptchaInfoType	CaptchaInfo;
+};
+
+///用户发出获取安全安全登陆方法请求
+struct CThostFtdcReqGenUserTextField
+{
+	///交易日
+	TThostFtdcDateType	TradingDay;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+};
+
+///短信验证码生成的回复
+struct CThostFtdcRspGenUserTextField
+{
+	///短信验证码序号
+	TThostFtdcUserTextSeqType	UserTextSeq;
+};
+
+///用户发出带图形验证码的登录请求请求
+struct CThostFtdcReqUserLoginWithCaptchaField
+{
+	///交易日
+	TThostFtdcDateType	TradingDay;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+	///密码
+	TThostFtdcPasswordType	Password;
+	///用户端产品信息
+	TThostFtdcProductInfoType	UserProductInfo;
+	///接口端产品信息
+	TThostFtdcProductInfoType	InterfaceProductInfo;
+	///协议信息
+	TThostFtdcProtocolInfoType	ProtocolInfo;
+	///Mac地址
+	TThostFtdcMacAddressType	MacAddress;
+	///终端IP地址
+	TThostFtdcIPAddressType	ClientIPAddress;
+	///登录备注
+	TThostFtdcLoginRemarkType	LoginRemark;
+	///图形验证码的文字内容
+	TThostFtdcPasswordType	Captcha;
+	///终端IP端口
+	TThostFtdcIPPortType	ClientIPPort;
+};
+
+///用户发出带短信验证码的登录请求请求
+struct CThostFtdcReqUserLoginWithTextField
+{
+	///交易日
+	TThostFtdcDateType	TradingDay;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+	///密码
+	TThostFtdcPasswordType	Password;
+	///用户端产品信息
+	TThostFtdcProductInfoType	UserProductInfo;
+	///接口端产品信息
+	TThostFtdcProductInfoType	InterfaceProductInfo;
+	///协议信息
+	TThostFtdcProtocolInfoType	ProtocolInfo;
+	///Mac地址
+	TThostFtdcMacAddressType	MacAddress;
+	///终端IP地址
+	TThostFtdcIPAddressType	ClientIPAddress;
+	///登录备注
+	TThostFtdcLoginRemarkType	LoginRemark;
+	///短信验证码文字内容
+	TThostFtdcPasswordType	Text;
+	///终端IP端口
+	TThostFtdcIPPortType	ClientIPPort;
+};
+
+///用户发出带动态验证码的登录请求请求
+struct CThostFtdcReqUserLoginWithOTPField
+{
+	///交易日
+	TThostFtdcDateType	TradingDay;
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+	///密码
+	TThostFtdcPasswordType	Password;
+	///用户端产品信息
+	TThostFtdcProductInfoType	UserProductInfo;
+	///接口端产品信息
+	TThostFtdcProductInfoType	InterfaceProductInfo;
+	///协议信息
+	TThostFtdcProtocolInfoType	ProtocolInfo;
+	///Mac地址
+	TThostFtdcMacAddressType	MacAddress;
+	///终端IP地址
+	TThostFtdcIPAddressType	ClientIPAddress;
+	///登录备注
+	TThostFtdcLoginRemarkType	LoginRemark;
+	///OTP密码
+	TThostFtdcPasswordType	OTPPassword;
+	///终端IP端口
+	TThostFtdcIPPortType	ClientIPPort;
+};
+
+///api握手请求
+struct CThostFtdcReqApiHandshakeField
+{
+	///api与front通信密钥版本号
+	TThostFtdcCryptoKeyVersionType	CryptoKeyVersion;
+};
+
+///front发给api的握手回复
+struct CThostFtdcRspApiHandshakeField
+{
+	///握手回复数据长度
+	TThostFtdcHandshakeDataLenType	FrontHandshakeDataLen;
+	///握手回复数据
+	TThostFtdcHandshakeDataType	FrontHandshakeData;
+	///API认证是否开启
+	TThostFtdcBoolType	IsApiAuthEnabled;
+};
+
+///api给front的验证key的请求
+struct CThostFtdcReqVerifyApiKeyField
+{
+	///握手回复数据长度
+	TThostFtdcHandshakeDataLenType	ApiHandshakeDataLen;
+	///握手回复数据
+	TThostFtdcHandshakeDataType	ApiHandshakeData;
+};
+
+///操作员组织架构关系
+struct CThostFtdcDepartmentUserField
+{
+	///经纪公司代码
+	TThostFtdcBrokerIDType	BrokerID;
+	///用户代码
+	TThostFtdcUserIDType	UserID;
+	///投资者范围
+	TThostFtdcDepartmentRangeType	InvestorRange;
+	///投资者代码
+	TThostFtdcInvestorIDType	InvestorID;
+};
+
+///查询频率，每秒查询比数
+struct CThostFtdcQueryFreqField
+{
+	///查询频率
+	TThostFtdcQueryFreqType	QueryFreq;
 };
 
 

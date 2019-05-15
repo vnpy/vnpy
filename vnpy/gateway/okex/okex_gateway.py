@@ -78,6 +78,8 @@ class OkexGateway(BaseGateway):
         "代理端口": "",
     }
 
+    exchanges = [Exchange.OKEX]
+
     def __init__(self, event_engine):
         """Constructor"""
         super(OkexGateway, self).__init__(event_engine, "OKEX")

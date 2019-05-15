@@ -55,7 +55,7 @@ class DbBarData(Document):
     meta = {
         "indexes": [
             {
-                "fields": ("datetime", "interval", "symbol", "exchange"),
+                "fields": ("symbol", "exchange", "interval", "datetime"),
                 "unique": True,
             }
         ]
@@ -150,7 +150,7 @@ class DbTickData(Document):
     meta = {
         "indexes": [
             {
-                "fields": ("datetime", "symbol", "exchange"),
+                "fields": ("symbol", "exchange", "datetime"),
                 "unique": True,
             }
         ],

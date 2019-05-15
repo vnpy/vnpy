@@ -144,29 +144,29 @@ class CtaTemplate(ABC):
         """
         pass
 
-    def buy(self, price: float, volume: float, stop: bool = False):
+    def buy(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send buy order to open a long position.
         """
-        return self.send_order(Direction.LONG, Offset.OPEN, price, volume, stop)
+        return self.send_order(Direction.LONG, Offset.OPEN, price, volume, stop, lock)
 
-    def sell(self, price: float, volume: float, stop: bool = False):
+    def sell(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send sell order to close a long position.
         """
-        return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop)
+        return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop, lock)
 
-    def short(self, price: float, volume: float, stop: bool = False):
+    def short(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send short order to open as short position.
         """
-        return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, stop)
+        return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, stop, lock)
 
-    def cover(self, price: float, volume: float, stop: bool = False):
+    def cover(self, price: float, volume: float, stop: bool = False, lock: bool = False):
         """
         Send cover order to close a short position.
         """
-        return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop)
+        return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop, lock)
 
     def send_order(
         self,

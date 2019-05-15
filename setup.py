@@ -53,7 +53,7 @@ vnctpmd = Extension(
     define_macros=[],
     undef_macros=[],
     library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-    libraries=["thostmduserapi", "thosttraderapi", ],
+    libraries=["thostmduserapi_se", "thosttraderapi_se", ],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
     depends=[],
@@ -70,7 +70,7 @@ vnctptd = Extension(
     define_macros=[],
     undef_macros=[],
     library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-    libraries=["thostmduserapi", "thosttraderapi", ],
+    libraries=["thostmduserapi_se", "thosttraderapi_se", ],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
     runtime_library_dirs=["$ORIGIN"],
@@ -124,7 +124,8 @@ install_requires = [
     "tigeropen",
     "rqdatac",
     "ta-lib",
-    "ibapi"
+    "ibapi",
+    "deap"
 ]
 if sys.version_info.minor < 7:
     install_requires.append("dataclasses")
