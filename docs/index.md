@@ -6,6 +6,7 @@
 * [安装指南](install.md)
   * [Windows](install.md#Windows)
     * [使用VNConda](install.md#使用VNConda)
+      * [下载VNConda]()
     * [手动安装](install.md#手动安装) 
   * [Ubuntu](install.md#Ubuntu)
 
@@ -42,6 +43,17 @@
     * [参数优化](cta_backtester.md#参数优化)
       * [穷举算法](cta_backtester.md#穷举算法)
       * [遗传算法](cta_backtester.md#遗传算法)
+
+* [行情记录](datarecoder.md)
+  * [加载启动](datarecoder.md#加载启动)
+  * [开始收录](datarecoder.md#开始收录)
+    * [订阅行情](datarecoder.md#订阅行情)
+    * [将订阅信息保存到json文件](datarecoder.md#将订阅信息保存到json文件)
+    * [推送行情记录事件](datarecoder.md#推送行情记录事件)
+    * [注册行情记录事件](datarecoder.md#注册行情记录事件)
+    * [执行记录行情任务](datarecoder.md#执行记录行情任务)
+  * [移除记录](datarecoder.md#移除记录)
+  * [停止记录](datarecoder.md#停止记录)
 
 
 * [交易接口](gateway.md)
