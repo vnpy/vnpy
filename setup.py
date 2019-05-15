@@ -107,6 +107,15 @@ else:
 
 pkgs = find_packages()
 
+
+def is_psycopg2_exists():
+    try:
+        import psycopg2
+        return True
+    except ImportError:
+        return False
+
+
 install_requires = [
     "PyQt5<5.12",
     "qdarkstyle",
@@ -114,7 +123,6 @@ install_requires = [
     "websocket-client",
     "peewee",
     "pymysql",
-    "psycopg2",
     "mongoengine",
     "numpy",
     "pandas",
@@ -127,6 +135,9 @@ install_requires = [
     "ibapi",
     "deap"
 ]
+if not is_psycopg2_exists():
+    install_requires.append("psycopg2-binary")
+
 if sys.version_info.minor < 7:
     install_requires.append("dataclasses")
 
