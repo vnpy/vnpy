@@ -110,7 +110,7 @@ pkgs = find_packages()
 
 def is_psycopg2_exists():
     try:
-        import psycopg2
+        import psycopg2  # noqa
         return True
     except ImportError:
         return False
