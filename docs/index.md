@@ -43,6 +43,12 @@
       * [穷举算法](cta_backtester.md#穷举算法)
       * [遗传算法](cta_backtester.md#遗传算法)
 
+* [行情记录](datarecoder.md)
+  * [加载启动](datarecoder.md#加载启动)
+  * [开始收录](datarecoder.md#开始收录)
+  * [移除记录](datarecoder.md#移除记录)
+  * [停止记录](datarecoder.md#停止记录)
+
 
 * [交易接口](gateway.md)
   * [如何连接](gateway.md#如何连接)
