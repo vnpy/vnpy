@@ -231,6 +231,10 @@ register_event()函数分别注册2种事件：EVENT_CONTRACT、EVENT_TICK
 
 ## 移除记录
 
+移除记录操作：输入需要移除合约品种的本地代码，如rb1905.SHFE。该本地代码必须在“Tick记录列表” 或者“K线记录列表”中。若要移除Tick记录，只需在”Tick记录“那一栏上点击”移除“按钮即可。
+
+下面展示代码运作原理：
+
 - 从tick_recordings字典移除vt_symbol
 - 调用save_setting()函数保存json配置文件
 - 推送最新的tick_recordings字典来继续记录行情，原来移除合约品种不再记录。
@@ -251,6 +255,8 @@ register_event()函数分别注册2种事件：EVENT_CONTRACT、EVENT_TICK
 &nbsp;
 
 ## 停止记录
+
+停止记录操作：只需手动关闭行情记录模块窗口就停止记录行情。
 
 - 记录行情状态改为False, 停止while循环；
 - 调用join()函数关掉线程。
