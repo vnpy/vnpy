@@ -273,8 +273,9 @@ class EventEngine2(object):
         self.__active = False
         
         # 停止计时器
-        self.__timerActive = False
-        self.__timer.join()
+        if self.__timerActive:
+            self.__timerActive = False
+            self.__timer.join()
         
         # 等待事件处理线程退出
         self.__thread.join()
