@@ -405,5 +405,8 @@ class SqlManager(BaseDatabaseManager):
         return None
 
     def clean(self, symbol: str,interval: "Interval"):
-        self.class_bar.delete().where((self.class_bar.symbol == symbol) & (self.class_bar.interval == interval.value)).execute()
+        self.class_bar.delete().where(
+            (self.class_bar.symbol == symbol) 
+            & (self.class_bar.interval == interval.value)
+        ).execute()
         self.class_tick.delete().where(self.class_tick.symbol == symbol).execute()
