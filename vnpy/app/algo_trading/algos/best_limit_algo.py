@@ -87,7 +87,7 @@ class BestLimitAlgo(AlgoTemplate):
         if not order.is_active():
             self.vt_orderid = ""
             self.order_price = 0
-            self.put_variables_event()   
+            self.put_variables_event()
 
     def buy_best_limit(self):
         """"""
@@ -98,7 +98,7 @@ class BestLimitAlgo(AlgoTemplate):
             self.order_price,
             order_volume,
             offset=self.offset
-        )        
+        )
 
     def sell_best_limit(self):
         """"""
@@ -109,4 +109,4 @@ class BestLimitAlgo(AlgoTemplate):
             self.order_price,
             order_volume,
             offset=self.offset
-        )         
+        )

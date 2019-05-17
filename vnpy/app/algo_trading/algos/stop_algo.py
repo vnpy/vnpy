@@ -75,12 +75,13 @@ class StopAlgo(AlgoTemplate):
                     self.volume,
                     offset=self.offset
                 )
-                self.write_log(f"停止单已触发，代码：{self.vt_symbol}，方向：{self.direction}, 价格：{self.stop_price}，数量：{self.volume}，开平：{self.offset}")                   
+                self.write_log(
+                    f"停止单已触发，代码：{self.vt_symbol}，方向：{self.direction}, 价格：{self.stop_price}，数量：{self.volume}，开平：{self.offset}")
 
         else:
             if tick.last_price <= self.stop_price:
                 price = self.stop_price - self.price_add
-                
+
                 if tick.limit_down:
                     price = max(price, tick.limit_down)
 
@@ -90,7 +91,8 @@ class StopAlgo(AlgoTemplate):
                     self.volume,
                     offset=self.offset
                 )
-                self.write_log(f"停止单已触发，代码：{self.vt_symbol}，方向：{self.direction}, 价格：{self.stop_price}，数量：{self.volume}，开平：{self.offset}") 
+                self.write_log(
+                    f"停止单已触发，代码：{self.vt_symbol}，方向：{self.direction}, 价格：{self.stop_price}，数量：{self.volume}，开平：{self.offset}")
 
         self.put_variables_event()
 
