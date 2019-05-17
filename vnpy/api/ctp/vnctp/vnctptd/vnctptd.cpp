@@ -11150,7 +11150,7 @@ public:
 
 PYBIND11_MODULE(vnctptd, m)
 {
-    class_<TdApi, PyTdApi> TdApi(m, "TdApi");
+    class_<TdApi, PyTdApi> TdApi(m, "TdApi", module_local());
     TdApi
         .def(init<>())
         .def("createFtdcTraderApi", &TdApi::createFtdcTraderApi)
