@@ -49,6 +49,10 @@
   * [移除记录](datarecoder.md#移除记录)
   * [停止记录](datarecoder.md#停止记录)
 
+* [算法交易](algo_trader.md)
+  * [模块构成](algo_trader#模块构成)
+  * [基本操作](algo_trader#基本操作)
+  * [算法示例](algo_trader#算法示例)
 
 * [交易接口](gateway.md)
   * [如何连接](gateway.md#如何连接)
