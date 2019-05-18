@@ -66,8 +66,6 @@ productClassMap[PRODUCT_FUTURES] = defineDict["THOST_FTDC_PC_Futures"]
 productClassMap[PRODUCT_OPTION] = defineDict["THOST_FTDC_PC_Options"]
 productClassMap[PRODUCT_COMBINATION] = defineDict["THOST_FTDC_PC_Combination"]
 productClassMapReverse = {v:k for k,v in productClassMap.items()}
-productClassMapReverse[defineDict["THOST_FTDC_PC_ETFOption"]] = PRODUCT_OPTION
-productClassMapReverse[defineDict["THOST_FTDC_PC_Stock"]] = PRODUCT_EQUITY
 
 # 委托状态映射
 statusMap = {}
@@ -129,11 +127,11 @@ class CtpGateway(VtGateway):
             # 如果json文件提供了验证码
             if 'authCode' in setting: 
                 authCode = str(setting['authCode'])
-                userProductInfo = str(setting['userProductInfo'])
+                appID = str(setting['appID'])
                 self.tdApi.requireAuthentication = True
             else:
                 authCode = None
-                userProductInfo = None
+                appID = None
 
         except KeyError:
             log = VtLogData()
@@ -144,7 +142,7 @@ class CtpGateway(VtGateway):
         
         # 创建行情和交易接口对象
         self.mdApi.connect(userID, password, brokerID, mdAddress)
-        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, userProductInfo)
+        self.tdApi.connect(userID, password, brokerID, tdAddress, authCode, appID)
         
         # 初始化并启动查询
         self.initQuery()
@@ -1374,14 +1372,14 @@ class CtpTdApi(TdApi):
         pass
         
     #----------------------------------------------------------------------
-    def connect(self, userID, password, brokerID, address, authCode, userProductInfo):
+    def connect(self, userID, password, brokerID, address, authCode, appID):
         """初始化连接"""
         self.userID = userID                # 账号
         self.password = password            # 密码
         self.brokerID = brokerID            # 经纪商代码
         self.address = address              # 服务器地址
-        self.authCode = authCode            #验证码
-        self.userProductInfo = userProductInfo  #产品信息
+        self.appID = appID                  # 产品信息
+        self.authCode = authCode            # 验证码
         
         # 如果尚未建立服务器连接，则进行连接
         if not self.connectionStatus:
@@ -1425,12 +1423,12 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def authenticate(self):
         """申请验证"""
-        if self.userID and self.brokerID and self.authCode and self.userProductInfo:
+        if self.userID and self.brokerID and self.authCode and self.appID:
             req = {}
             req['UserID'] = self.userID
             req['BrokerID'] = self.brokerID
             req['AuthCode'] = self.authCode
-            req['UserProductInfo'] = self.userProductInfo
+            req['AppID'] = self.appID
             self.reqID +=1
             self.reqAuthenticate(req, self.reqID)
 
