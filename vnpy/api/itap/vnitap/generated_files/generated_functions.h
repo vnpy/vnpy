@@ -8,6 +8,7 @@
 #include "TapQuoteAPI.h"
 #include "TapAPIError.h"
 #include "iTapAPIError.h"
+#include "custom/custom_wrappers.hpp"
 
 
 void generate_vnitap(pybind11::module & parent);

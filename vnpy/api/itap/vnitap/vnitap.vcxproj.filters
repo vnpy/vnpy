@@ -39,6 +39,15 @@
     <ClInclude Include="include\TapQuoteAPIDataType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="custom\custom_wrappers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated_files\module.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated_files\wrappers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="generated_files\generated_functions_0.cpp">

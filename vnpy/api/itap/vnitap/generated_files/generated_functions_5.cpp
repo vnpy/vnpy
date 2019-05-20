@@ -11,6 +11,7 @@
 #include "TapQuoteAPI.h"
 #include "TapAPIError.h"
 #include "iTapAPIError.h"
+#include "custom/custom_wrappers.hpp"
 
 
 void generate_class_TapAPIApplicationInfo(pybind11::object & parent)

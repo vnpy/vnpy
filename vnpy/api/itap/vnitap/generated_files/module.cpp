@@ -11,6 +11,7 @@
 #include "TapQuoteAPI.h"
 #include "TapAPIError.h"
 #include "iTapAPIError.h"
+#include "custom/custom_wrappers.hpp"
 
 
 autocxxpy::cross_assign module_vnitap::cross;

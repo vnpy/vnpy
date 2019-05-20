@@ -4,6 +4,7 @@ python -m autocxxpy \
       vnitap \
       iTapTradeAPI.h TapQuoteAPI.h TapAPIError.h iTapAPIError.h \
       -I vnitap/include \
+      -A custom/custom_wrappers.hpp\
       --output-dir vnitap/generated_files \
       --pyi-output-dir . \
       \

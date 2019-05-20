@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="custom\custom_wrappers.hpp" />
+    <ClInclude Include="generated_files\module.hpp" />
+    <ClInclude Include="generated_files\wrappers.hpp" />
     <ClInclude Include="include\iTapAPICommDef.h" />
     <ClInclude Include="include\iTapAPIError.h" />
     <ClInclude Include="include\iTapTradeAPI.h" />
@@ -94,14 +97,14 @@
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
-    <IncludePath>$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -109,14 +112,14 @@
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetExt>.pyd</TargetExt>
     <OutDir>$(SolutionDir)</OutDir>
-    <IncludePath>$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)include;C:\Python37\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)\libs;C:\Python37\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
