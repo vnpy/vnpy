@@ -2,7 +2,7 @@
 
 CSV载入模块在vnpy根目录下vnpy\app\csv_loader文件夹内，engine.py里面的CsvLoaderEngine类负责载入功能实现。
 
-## 1. 初始化
+## 初始化配置
 初始化数据载入相关信息，可以分成3类：
 
 - CSV文件路径
@@ -26,7 +26,7 @@ CSV载入模块在vnpy根目录下vnpy\app\csv_loader文件夹内，engine.py里
 
 &nbsp;
 
-## 2. 数据载入
+## 数据载入
 
 从文件路径中读取CSV文件，然后在每一次迭代中载入数据到数据库中。
 ```

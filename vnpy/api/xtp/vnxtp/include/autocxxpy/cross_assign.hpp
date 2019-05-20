@@ -40,6 +40,11 @@ namespace autocxxpy
                 }
             }
         }
+
+        void clear()
+        {
+            _delay_assings.clear();
+        }
     private:
         std::vector<std::tuple<pybind11::object, std::string, std::string, std::string>> _delay_assings;
     };

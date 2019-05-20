@@ -11,6 +11,30 @@
 #include "xtp_quote_api.h"
 
 
+void generate_caster_XTP_API(pybind11::object & parent)
+{
+    struct caster: autocxxpy::caster{};
+    auto c = autocxxpy::caster::bind<caster>(parent, "caster"); 
+    autocxxpy::caster::try_generate<XTP::API::TraderSpi>(c, "toTraderSpi)");
+    autocxxpy::caster::try_generate<XTP::API::TraderApi>(c, "toTraderApi)");
+    autocxxpy::caster::try_generate<XTP::API::QuoteSpi>(c, "toQuoteSpi)");
+    autocxxpy::caster::try_generate<XTP::API::QuoteApi>(c, "toQuoteApi)");
+}
+void generate_caster_XTP(pybind11::object & parent)
+{
+    struct caster: autocxxpy::caster{};
+    auto c = autocxxpy::caster::bind<caster>(parent, "caster"); 
+}
+void generate_class_XTPRspInfoStruct(pybind11::object & parent)
+{
+    pybind11::class_<XTPRspInfoStruct> c(parent, "XTPRspInfoStruct");
+    if constexpr (std::is_default_constructible_v<XTPRspInfoStruct>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPRspInfoStruct, "error_id", error_id);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPRspInfoStruct, "error_msg", error_msg);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPRspInfoStruct, c);
+    module_vnxtp::objects.emplace("XTPRspInfoStruct", c);
+}
 void generate_class_XTPSpecificTickerStruct(pybind11::object & parent)
 {
     pybind11::class_<XTPSpecificTickerStruct> c(parent, "XTPSpecificTickerStruct");
@@ -657,4 +681,16 @@ void generate_enum_XTP_ORDER_STATUS_TYPE(pybind11::object & parent)
     e.value("XTP_ORDER_STATUS_UNKNOWN", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_UNKNOWN);
     e.export_values();
     module_vnxtp::objects.emplace("XTP_ORDER_STATUS_TYPE", e);
+}
+void generate_enum_XTP_ORDER_SUBMIT_STATUS_TYPE(pybind11::object & parent)
+{
+    pybind11::enum_<XTP_ORDER_SUBMIT_STATUS_TYPE> e(parent, "XTP_ORDER_SUBMIT_STATUS_TYPE", pybind11::arithmetic());
+    e.value("XTP_ORDER_SUBMIT_STATUS_INSERT_SUBMITTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_INSERT_SUBMITTED);
+    e.value("XTP_ORDER_SUBMIT_STATUS_INSERT_ACCEPTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_INSERT_ACCEPTED);
+    e.value("XTP_ORDER_SUBMIT_STATUS_INSERT_REJECTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_INSERT_REJECTED);
+    e.value("XTP_ORDER_SUBMIT_STATUS_CANCEL_SUBMITTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_CANCEL_SUBMITTED);
+    e.value("XTP_ORDER_SUBMIT_STATUS_CANCEL_REJECTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_CANCEL_REJECTED);
+    e.value("XTP_ORDER_SUBMIT_STATUS_CANCEL_ACCEPTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_CANCEL_ACCEPTED);
+    e.export_values();
+    module_vnxtp::objects.emplace("XTP_ORDER_SUBMIT_STATUS_TYPE", e);
 }
