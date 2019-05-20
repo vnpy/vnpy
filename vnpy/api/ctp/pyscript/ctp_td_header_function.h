@@ -8,6 +8,18 @@ int reqUserPasswordUpdate(dict req, int nRequestID);
 
 int reqTradingAccountPasswordUpdate(dict req, int nRequestID);
 
+int reqUserAuthMethod(dict req, int nRequestID);
+
+int reqGenUserCaptcha(dict req, int nRequestID);
+
+int reqGenUserText(dict req, int nRequestID);
+
+int reqUserLoginWithCaptcha(dict req, int nRequestID);
+
+int reqUserLoginWithText(dict req, int nRequestID);
+
+int reqUserLoginWithOTP(dict req, int nRequestID);
+
 int reqOrderInsert(dict req, int nRequestID);
 
 int reqParkedOrderInsert(dict req, int nRequestID);
@@ -34,7 +46,11 @@ int reqQuoteInsert(dict req, int nRequestID);
 
 int reqQuoteAction(dict req, int nRequestID);
 
-int reqLockInsert(dict req, int nRequestID);
+int reqBatchOrderAction(dict req, int nRequestID);
+
+int reqOptionSelfCloseInsert(dict req, int nRequestID);
+
+int reqOptionSelfCloseAction(dict req, int nRequestID);
 
 int reqCombActionInsert(dict req, int nRequestID);
 
@@ -92,6 +108,18 @@ int reqQryProductExchRate(dict req, int nRequestID);
 
 int reqQryProductGroup(dict req, int nRequestID);
 
+int reqQryMMInstrumentCommissionRate(dict req, int nRequestID);
+
+int reqQryMMOptionInstrCommRate(dict req, int nRequestID);
+
+int reqQryInstrumentOrderCommRate(dict req, int nRequestID);
+
+int reqQrySecAgentTradingAccount(dict req, int nRequestID);
+
+int reqQrySecAgentCheckMode(dict req, int nRequestID);
+
+int reqQrySecAgentTradeInfo(dict req, int nRequestID);
+
 int reqQryOptionInstrTradeCost(dict req, int nRequestID);
 
 int reqQryOptionInstrCommRate(dict req, int nRequestID);
@@ -102,13 +130,9 @@ int reqQryForQuote(dict req, int nRequestID);
 
 int reqQryQuote(dict req, int nRequestID);
 
-int reqQryLock(dict req, int nRequestID);
+int reqQryOptionSelfClose(dict req, int nRequestID);
 
-int reqQryLockPosition(dict req, int nRequestID);
-
-int reqQryInvestorLevel(dict req, int nRequestID);
-
-int reqQryExecFreeze(dict req, int nRequestID);
+int reqQryInvestUnit(dict req, int nRequestID);
 
 int reqQryCombInstrumentGuard(dict req, int nRequestID);
 

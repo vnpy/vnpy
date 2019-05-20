@@ -52,11 +52,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ctpapi\thostmduserapi.dll" />
-    <None Include="..\..\ctpapi\thosttraderapi.dll" />
+    <Library Include="..\..\ctpapi\thostmduserapi_se.lib" />
+    <Library Include="..\..\ctpapi\thosttraderapi_se.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\ctpapi\thostmduserapi.lib" />
-    <Library Include="..\..\ctpapi\thosttraderapi.lib" />
+    <None Include="..\..\ctpapi\thosttraderapi_se.dll" />
+    <None Include="..\..\ctpapi\thostmduserapi_se.dll" />
   </ItemGroup>
 </Project>

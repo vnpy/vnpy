@@ -11,6 +11,12 @@ virtual void onRspUserPasswordUpdate(dict data, dict error, int id, bool last) {
 
 virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bool last) {};
 
+virtual void onRspUserAuthMethod(dict data, dict error, int id, bool last) {};
+
+virtual void onRspGenUserCaptcha(dict data, dict error, int id, bool last) {};
+
+virtual void onRspGenUserText(dict data, dict error, int id, bool last) {};
+
 virtual void onRspOrderInsert(dict data, dict error, int id, bool last) {};
 
 virtual void onRspParkedOrderInsert(dict data, dict error, int id, bool last) {};
@@ -37,7 +43,11 @@ virtual void onRspQuoteInsert(dict data, dict error, int id, bool last) {};
 
 virtual void onRspQuoteAction(dict data, dict error, int id, bool last) {};
 
-virtual void onRspLockInsert(dict data, dict error, int id, bool last) {};
+virtual void onRspBatchOrderAction(dict data, dict error, int id, bool last) {};
+
+virtual void onRspOptionSelfCloseInsert(dict data, dict error, int id, bool last) {};
+
+virtual void onRspOptionSelfCloseAction(dict data, dict error, int id, bool last) {};
 
 virtual void onRspCombActionInsert(dict data, dict error, int id, bool last) {};
 
@@ -95,6 +105,18 @@ virtual void onRspQryProductExchRate(dict data, dict error, int id, bool last) {
 
 virtual void onRspQryProductGroup(dict data, dict error, int id, bool last) {};
 
+virtual void onRspQryMMInstrumentCommissionRate(dict data, dict error, int id, bool last) {};
+
+virtual void onRspQryMMOptionInstrCommRate(dict data, dict error, int id, bool last) {};
+
+virtual void onRspQryInstrumentOrderCommRate(dict data, dict error, int id, bool last) {};
+
+virtual void onRspQrySecAgentTradingAccount(dict data, dict error, int id, bool last) {};
+
+virtual void onRspQrySecAgentCheckMode(dict data, dict error, int id, bool last) {};
+
+virtual void onRspQrySecAgentTradeInfo(dict data, dict error, int id, bool last) {};
+
 virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int id, bool last) {};
 
 virtual void onRspQryOptionInstrCommRate(dict data, dict error, int id, bool last) {};
@@ -105,13 +127,9 @@ virtual void onRspQryForQuote(dict data, dict error, int id, bool last) {};
 
 virtual void onRspQryQuote(dict data, dict error, int id, bool last) {};
 
-virtual void onRspQryLock(dict data, dict error, int id, bool last) {};
+virtual void onRspQryOptionSelfClose(dict data, dict error, int id, bool last) {};
 
-virtual void onRspQryLockPosition(dict data, dict error, int id, bool last) {};
-
-virtual void onRspQryInvestorLevel(dict data, dict error, int id, bool last) {};
-
-virtual void onRspQryExecFreeze(dict data, dict error, int id, bool last) {};
+virtual void onRspQryInvestUnit(dict data, dict error, int id, bool last) {};
 
 virtual void onRspQryCombInstrumentGuard(dict data, dict error, int id, bool last) {};
 
@@ -132,6 +150,8 @@ virtual void onErrRtnOrderInsert(dict data, dict error) {};
 virtual void onErrRtnOrderAction(dict data, dict error) {};
 
 virtual void onRtnInstrumentStatus(dict data) {};
+
+virtual void onRtnBulletin(dict data) {};
 
 virtual void onRtnTradingNotice(dict data) {};
 
@@ -155,9 +175,13 @@ virtual void onRtnForQuoteRsp(dict data) {};
 
 virtual void onRtnCFMMCTradingAccountToken(dict data) {};
 
-virtual void onRtnLock(dict data) {};
+virtual void onErrRtnBatchOrderAction(dict data, dict error) {};
 
-virtual void onErrRtnLockInsert(dict data, dict error) {};
+virtual void onRtnOptionSelfClose(dict data) {};
+
+virtual void onErrRtnOptionSelfCloseInsert(dict data, dict error) {};
+
+virtual void onErrRtnOptionSelfCloseAction(dict data, dict error) {};
 
 virtual void onRtnCombAction(dict data) {};
 
