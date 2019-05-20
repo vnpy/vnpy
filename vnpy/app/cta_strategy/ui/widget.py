@@ -56,6 +56,9 @@ class CtaManager(QtWidgets.QWidget):
         stop_button = QtWidgets.QPushButton("全部停止")
         stop_button.clicked.connect(self.cta_engine.stop_all_strategies)
 
+        clear_button = QtWidgets.QPushButton("清空日志")
+        clear_button.clicked.connect(self.clear_log)
+
         self.scroll_layout = QtWidgets.QVBoxLayout()
         self.scroll_layout.addStretch()
 
@@ -80,6 +83,7 @@ class CtaManager(QtWidgets.QWidget):
         hbox1.addWidget(init_button)
         hbox1.addWidget(start_button)
         hbox1.addWidget(stop_button)
+        hbox1.addWidget(clear_button)
 
         grid = QtWidgets.QGridLayout()
         grid.addWidget(scroll_area, 0, 0, 2, 1)
@@ -144,6 +148,10 @@ class CtaManager(QtWidgets.QWidget):
             self.cta_engine.add_strategy(
                 class_name, strategy_name, vt_symbol, setting
             )
+
+    def clear_log(self):
+        """"""
+        self.log_monitor.setRowCount(0)
 
     def show(self):
         """"""
