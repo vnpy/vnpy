@@ -7,11 +7,12 @@ if typing.TYPE_CHECKING:
     from .vnitap import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[Exception, object, str], bool]):
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], bool]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
-    If the return value of \a handler is not True, exception will be re-thrown.
+
+    :note: If the return value of \a handler is not True, exception will be re-thrown.
     """
     ...
 
@@ -1129,105 +1130,105 @@ class ITapTradeAPINotify():
     
     
     
-    def OnConnect(self, )->Any:
+    def OnConnect(self, )->None:
         ...
-    def OnRspLogin(self, errorCode: int, loginRspInfo: ITapTrade.TapAPITradeLoginRspInfo)->Any:
+    def OnRspLogin(self, errorCode: int, loginRspInfo: ITapTrade.TapAPITradeLoginRspInfo)->None:
         ...
-    def OnRtnContactInfo(self, errorCode: int, isLast: int, ContactInfo: str)->Any:
+    def OnRtnContactInfo(self, errorCode: int, isLast: int, ContactInfo: str)->None:
         ...
-    def OnRspRequestVertificateCode(self, sessionID: int, errorCode: int, rsp: ITapTrade.TapAPIRequestVertificateCodeRsp)->Any:
+    def OnRspRequestVertificateCode(self, sessionID: int, errorCode: int, rsp: ITapTrade.TapAPIRequestVertificateCodeRsp)->None:
         ...
-    def OnExpriationDate(self, date: str, days: int)->Any:
+    def OnExpriationDate(self, date: str, days: int)->None:
         ...
-    def OnAPIReady(self, errorCode: int)->Any:
+    def OnAPIReady(self, errorCode: int)->None:
         ...
-    def OnDisconnect(self, reasonCode: int)->Any:
+    def OnDisconnect(self, reasonCode: int)->None:
         ...
-    def OnRspChangePassword(self, sessionID: int, errorCode: int)->Any:
+    def OnRspChangePassword(self, sessionID: int, errorCode: int)->None:
         ...
-    def OnRspAuthPassword(self, sessionID: int, errorCode: int)->Any:
+    def OnRspAuthPassword(self, sessionID: int, errorCode: int)->None:
         ...
-    def OnRspQryTradingDate(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPITradingCalendarQryRsp)->Any:
+    def OnRspQryTradingDate(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPITradingCalendarQryRsp)->None:
         ...
-    def OnRspSetReservedInfo(self, sessionID: int, errorCode: int, info: str)->Any:
+    def OnRspSetReservedInfo(self, sessionID: int, errorCode: int, info: str)->None:
         ...
-    def OnRspQryAccount(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountInfo)->Any:
+    def OnRspQryAccount(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountInfo)->None:
         ...
-    def OnRspQryFund(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIFundData)->Any:
+    def OnRspQryFund(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIFundData)->None:
         ...
-    def OnRtnFund(self, info: ITapTrade.TapAPIFundData)->Any:
+    def OnRtnFund(self, info: ITapTrade.TapAPIFundData)->None:
         ...
-    def OnRspQryExchange(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIExchangeInfo)->Any:
+    def OnRspQryExchange(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIExchangeInfo)->None:
         ...
-    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPICommodityInfo)->Any:
+    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPICommodityInfo)->None:
         ...
-    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPITradeContractInfo)->Any:
+    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPITradeContractInfo)->None:
         ...
-    def OnRtnContract(self, info: ITapTrade.TapAPITradeContractInfo)->Any:
+    def OnRtnContract(self, info: ITapTrade.TapAPITradeContractInfo)->None:
         ...
-    def OnRspOrderAction(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderActionRsp)->Any:
+    def OnRspOrderAction(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderActionRsp)->None:
         ...
-    def OnRtnOrder(self, info: ITapTrade.TapAPIOrderInfoNotice)->Any:
+    def OnRtnOrder(self, info: ITapTrade.TapAPIOrderInfoNotice)->None:
         ...
-    def OnRspQryOrder(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIOrderInfo)->Any:
+    def OnRspQryOrder(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspQryOrderProcess(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIOrderInfo)->Any:
+    def OnRspQryOrderProcess(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspQryFill(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIFillInfo)->Any:
+    def OnRspQryFill(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIFillInfo)->None:
         ...
-    def OnRtnFill(self, info: ITapTrade.TapAPIFillInfo)->Any:
+    def OnRtnFill(self, info: ITapTrade.TapAPIFillInfo)->None:
         ...
-    def OnRspQryPosition(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIPositionInfo)->Any:
+    def OnRspQryPosition(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIPositionInfo)->None:
         ...
-    def OnRtnPosition(self, info: ITapTrade.TapAPIPositionInfo)->Any:
+    def OnRtnPosition(self, info: ITapTrade.TapAPIPositionInfo)->None:
         ...
-    def OnRspQryPositionSummary(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIPositionSummary)->Any:
+    def OnRspQryPositionSummary(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIPositionSummary)->None:
         ...
-    def OnRtnPositionSummary(self, info: ITapTrade.TapAPIPositionSummary)->Any:
+    def OnRtnPositionSummary(self, info: ITapTrade.TapAPIPositionSummary)->None:
         ...
-    def OnRtnPositionProfit(self, info: ITapTrade.TapAPIPositionProfitNotice)->Any:
+    def OnRtnPositionProfit(self, info: ITapTrade.TapAPIPositionProfitNotice)->None:
         ...
-    def OnRspQryCurrency(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPICurrencyInfo)->Any:
+    def OnRspQryCurrency(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPICurrencyInfo)->None:
         ...
-    def OnRspQryTradeMessage(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPITradeMessage)->Any:
+    def OnRspQryTradeMessage(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPITradeMessage)->None:
         ...
-    def OnRtnTradeMessage(self, info: ITapTrade.TapAPITradeMessage)->Any:
+    def OnRtnTradeMessage(self, info: ITapTrade.TapAPITradeMessage)->None:
         ...
-    def OnRspQryHisOrder(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisOrderQryRsp)->Any:
+    def OnRspQryHisOrder(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisOrderQryRsp)->None:
         ...
-    def OnRspQryHisOrderProcess(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisOrderQryRsp)->Any:
+    def OnRspQryHisOrderProcess(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisOrderQryRsp)->None:
         ...
-    def OnRspQryHisMatch(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisMatchQryRsp)->Any:
+    def OnRspQryHisMatch(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisMatchQryRsp)->None:
         ...
-    def OnRspQryHisPosition(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisPositionQryRsp)->Any:
+    def OnRspQryHisPosition(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisPositionQryRsp)->None:
         ...
-    def OnRspQryHisDelivery(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisDeliveryQryRsp)->Any:
+    def OnRspQryHisDelivery(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIHisDeliveryQryRsp)->None:
         ...
-    def OnRspQryAccountCashAdjust(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountCashAdjustQryRsp)->Any:
+    def OnRspQryAccountCashAdjust(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountCashAdjustQryRsp)->None:
         ...
-    def OnRspQryBill(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIBillQryRsp)->Any:
+    def OnRspQryBill(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIBillQryRsp)->None:
         ...
-    def OnRspQryAccountFeeRent(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountFeeRentQryRsp)->Any:
+    def OnRspQryAccountFeeRent(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountFeeRentQryRsp)->None:
         ...
-    def OnRspQryAccountMarginRent(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountMarginRentQryRsp)->Any:
+    def OnRspQryAccountMarginRent(self, sessionID: int, errorCode: int, isLast: int, info: ITapTrade.TapAPIAccountMarginRentQryRsp)->None:
         ...
-    def OnRspHKMarketOrderInsert(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderMarketInsertRsp)->Any:
+    def OnRspHKMarketOrderInsert(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderMarketInsertRsp)->None:
         ...
-    def OnRspHKMarketOrderDelete(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderMarketInsertRsp)->Any:
+    def OnRspHKMarketOrderDelete(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderMarketInsertRsp)->None:
         ...
-    def OnHKMarketQuoteNotice(self, info: ITapTrade.TapAPIOrderQuoteMarketNotice)->Any:
+    def OnHKMarketQuoteNotice(self, info: ITapTrade.TapAPIOrderQuoteMarketNotice)->None:
         ...
-    def OnRspOrderLocalRemove(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderLocalRemoveRsp)->Any:
+    def OnRspOrderLocalRemove(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderLocalRemoveRsp)->None:
         ...
-    def OnRspOrderLocalInput(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderInfo)->Any:
+    def OnRspOrderLocalInput(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspOrderLocalModify(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderInfo)->Any:
+    def OnRspOrderLocalModify(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspOrderLocalTransfer(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderInfo)->Any:
+    def OnRspOrderLocalTransfer(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIOrderInfo)->None:
         ...
-    def OnRspFillLocalInput(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIFillLocalInputReq)->Any:
+    def OnRspFillLocalInput(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIFillLocalInputReq)->None:
         ...
-    def OnRspFillLocalRemove(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIFillLocalRemoveReq)->Any:
+    def OnRspFillLocalRemove(self, sessionID: int, errorCode: int, info: ITapTrade.TapAPIFillLocalRemoveReq)->None:
         ...
 class ITapTradeAPI():
     

@@ -3,11 +3,14 @@
 #include <tuple>
 #include <type_traits>
 #include <optional>
+#include <iostream>
 
-#include "brigand.hpp"
+#include "./brigand.hpp"
 
-#include "utils/functional.hpp"
-#include "dispatcher.hpp"
+#include "./utils/functional.hpp"
+#include "./dispatcher.hpp"
+#include "./config/config.hpp"
+#include "./wrappers/string_array.hpp"
 
 namespace autocxxpy
 {
@@ -28,7 +31,7 @@ namespace autocxxpy
     template<>
     struct callback_wrapper<static_cast<int(A::*)(int)>(&A::func2)>
     {
-        inline static void call(A *instance, float)
+        inline static void call(A *instance, const char *py_func_name, float)
         {
             constexpr auto method = static_cast<int(A::*)(int)>(&A::func2);
             default_callback_wrapper<method>::call(instance, 1);
@@ -83,7 +86,9 @@ namespace autocxxpy
         {}
         pybind11::object instance;
         std::string function_name;
-        inline const char* what() noexcept
+
+        // mutable version of what() for pybind11 to make it happy
+        inline const char* what_mutable() noexcept
         {
             return std::exception::what();
         }
@@ -98,7 +103,23 @@ namespace autocxxpy
         {
             if (custom_handler)
             {
-                custom_handler(e);
+                try
+                {
+                    custom_handler(e);
+                }
+                catch (pybind11::error_already_set & e2)
+                {
+                   std::cerr << "error while calling custom async callback exception handler:" << std::endl;
+                    std::cerr << e2.what() << std::endl;
+                    std::cerr << "while handling following exception:" << std::endl;
+                    std::cerr << e.what() << std::endl;
+                }
+            }
+            else
+            {
+                std::cerr << e.what() << std::endl;
+                std::cerr << "custom async callback exception handler not set." << std::endl;
+                std::cerr << "Call set_async_callback_exception_handler() to set it. " << std::endl;
             }
         }
 

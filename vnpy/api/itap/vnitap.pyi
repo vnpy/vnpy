@@ -7,11 +7,12 @@ if typing.TYPE_CHECKING:
     from .vnitap import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[Exception, object, str], bool]):
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], bool]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
-    If the return value of \a handler is not True, exception will be re-thrown.
+
+    :note: If the return value of \a handler is not True, exception will be re-thrown.
     """
     ...
 
@@ -179,21 +180,21 @@ class ITapQuoteAPINotify():
     
     
     
-    def OnRspLogin(self, errorCode: int, info: TapAPIQuotLoginRspInfo)->Any:
+    def OnRspLogin(self, errorCode: int, info: TapAPIQuotLoginRspInfo)->None:
         ...
-    def OnAPIReady(self, )->Any:
+    def OnAPIReady(self, )->None:
         ...
-    def OnDisconnect(self, reasonCode: int)->Any:
+    def OnDisconnect(self, reasonCode: int)->None:
         ...
-    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteCommodityInfo)->Any:
+    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteCommodityInfo)->None:
         ...
-    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteContractInfo)->Any:
+    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteContractInfo)->None:
         ...
-    def OnRspSubscribeQuote(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteWhole)->Any:
+    def OnRspSubscribeQuote(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteWhole)->None:
         ...
-    def OnRspUnSubscribeQuote(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIContract)->Any:
+    def OnRspUnSubscribeQuote(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIContract)->None:
         ...
-    def OnRtnQuote(self, info: TapAPIQuoteWhole)->Any:
+    def OnRtnQuote(self, info: TapAPIQuoteWhole)->None:
         ...
 class ITapQuoteAPI():
     
@@ -438,7 +439,7 @@ TAPIERROR_SUBSCRIBEQUOTE_CONTRACT_MAY_NOT_EXIST: int
 TAPIERROR_QUOTEFRONT_UNKNOWN_PROTOCOL: int
 def CreateITapTradeAPI(appInfo: ITapTrade.TapAPIApplicationInfo)->Tuple[ITapTrade.ITapTradeAPI,int]:
     return "retv","iResult"
-def FreeITapTradeAPI(apiObj: ITapTrade.ITapTradeAPI)->Any:
+def FreeITapTradeAPI(apiObj: ITapTrade.ITapTradeAPI)->None:
     ...
 def GetITapTradeAPIVersion()->str:
     ...
@@ -450,7 +451,7 @@ def GetITapErrorDescribe(errorCode: int)->str:
     ...
 def CreateTapQuoteAPI(appInfo: TapAPIApplicationInfo)->Tuple[ITapQuoteAPI,int]:
     return "retv","iResult"
-def FreeTapQuoteAPI(apiObj: ITapQuoteAPI)->Any:
+def FreeTapQuoteAPI(apiObj: ITapQuoteAPI)->None:
     ...
 def GetTapQuoteAPIVersion()->str:
     ...
