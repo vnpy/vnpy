@@ -364,6 +364,8 @@ namespace XTP {
 
 			///获取合约的最新价格信息
 			///@return 查询是否成功，“0”表示查询成功，非“0”表示查询不成功
+			///@param ticker 合约ID数组，注意合约代码必须以'\0'结尾，不包含空格  
+			///@param count 要查询的合约个数
 			///@param exchange_id 交易所代码
 			virtual int QueryTickersPriceInfo(char *ticker[], int count, XTP_EXCHANGE_TYPE exchange_id) = 0;
 
