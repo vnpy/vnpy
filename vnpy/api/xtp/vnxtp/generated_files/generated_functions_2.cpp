@@ -378,6 +378,7 @@ void generate_class_XTPQueryAssetRsp(pybind11::object & parent)
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPQueryAssetRsp, "captial_asset", captial_asset);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPQueryAssetRsp, "force_freeze_amount", force_freeze_amount);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPQueryAssetRsp, "preferred_amount", preferred_amount);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPQueryAssetRsp, "repay_stock_aval_banlance", repay_stock_aval_banlance);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPQueryAssetRsp, "unknown", unknown);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPQueryAssetRsp, c);
     module_vnxtp::objects.emplace("XTPQueryAssetRsp", c);
@@ -592,105 +593,27 @@ void generate_class_XTPQueryOptionAuctionInfoRsp(pybind11::object & parent)
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPQueryOptionAuctionInfoRsp, c);
     module_vnxtp::objects.emplace("XTPQueryOptionAuctionInfoRsp", c);
 }
-void generate_class_XTPFundTransferReq(pybind11::object & parent)
+void generate_class_XTPCrdCashRepayRsp(pybind11::object & parent)
 {
-    pybind11::class_<XTPFundTransferReq> c(parent, "XTPFundTransferReq");
-    if constexpr (std::is_default_constructible_v<XTPFundTransferReq>)
+    pybind11::class_<XTPCrdCashRepayRsp> c(parent, "XTPCrdCashRepayRsp");
+    if constexpr (std::is_default_constructible_v<XTPCrdCashRepayRsp>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPFundTransferReq, "serial_id", serial_id);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPFundTransferReq, "fund_account", fund_account);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPFundTransferReq, "password", password);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPFundTransferReq, "amount", amount);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPFundTransferReq, "transfer_type", transfer_type);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPFundTransferReq, c);
-    module_vnxtp::objects.emplace("XTPFundTransferReq", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayRsp, "xtp_id", xtp_id);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayRsp, "request_amount", request_amount);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayRsp, "cash_repay_amount", cash_repay_amount);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPCrdCashRepayRsp, c);
+    module_vnxtp::objects.emplace("XTPCrdCashRepayRsp", c);
 }
-void generate_enum_XTP_LOG_LEVEL(pybind11::object & parent)
+void generate_class_XTPCrdCashRepayDebtInterestFeeRsp(pybind11::object & parent)
 {
-    pybind11::enum_<XTP_LOG_LEVEL> e(parent, "XTP_LOG_LEVEL", pybind11::arithmetic());
-    e.value("XTP_LOG_LEVEL_FATAL", XTP_LOG_LEVEL::XTP_LOG_LEVEL_FATAL);
-    e.value("XTP_LOG_LEVEL_ERROR", XTP_LOG_LEVEL::XTP_LOG_LEVEL_ERROR);
-    e.value("XTP_LOG_LEVEL_WARNING", XTP_LOG_LEVEL::XTP_LOG_LEVEL_WARNING);
-    e.value("XTP_LOG_LEVEL_INFO", XTP_LOG_LEVEL::XTP_LOG_LEVEL_INFO);
-    e.value("XTP_LOG_LEVEL_DEBUG", XTP_LOG_LEVEL::XTP_LOG_LEVEL_DEBUG);
-    e.value("XTP_LOG_LEVEL_TRACE", XTP_LOG_LEVEL::XTP_LOG_LEVEL_TRACE);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_LOG_LEVEL", e);
-}
-void generate_enum_XTP_PROTOCOL_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_PROTOCOL_TYPE> e(parent, "XTP_PROTOCOL_TYPE", pybind11::arithmetic());
-    e.value("XTP_PROTOCOL_TCP", XTP_PROTOCOL_TYPE::XTP_PROTOCOL_TCP);
-    e.value("XTP_PROTOCOL_UDP", XTP_PROTOCOL_TYPE::XTP_PROTOCOL_UDP);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_PROTOCOL_TYPE", e);
-}
-void generate_enum_XTP_EXCHANGE_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_EXCHANGE_TYPE> e(parent, "XTP_EXCHANGE_TYPE", pybind11::arithmetic());
-    e.value("XTP_EXCHANGE_SH", XTP_EXCHANGE_TYPE::XTP_EXCHANGE_SH);
-    e.value("XTP_EXCHANGE_SZ", XTP_EXCHANGE_TYPE::XTP_EXCHANGE_SZ);
-    e.value("XTP_EXCHANGE_UNKNOWN", XTP_EXCHANGE_TYPE::XTP_EXCHANGE_UNKNOWN);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_EXCHANGE_TYPE", e);
-}
-void generate_enum_XTP_MARKET_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_MARKET_TYPE> e(parent, "XTP_MARKET_TYPE", pybind11::arithmetic());
-    e.value("XTP_MKT_INIT", XTP_MARKET_TYPE::XTP_MKT_INIT);
-    e.value("XTP_MKT_SZ_A", XTP_MARKET_TYPE::XTP_MKT_SZ_A);
-    e.value("XTP_MKT_SH_A", XTP_MARKET_TYPE::XTP_MKT_SH_A);
-    e.value("XTP_MKT_UNKNOWN", XTP_MARKET_TYPE::XTP_MKT_UNKNOWN);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_MARKET_TYPE", e);
-}
-void generate_enum_XTP_PRICE_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_PRICE_TYPE> e(parent, "XTP_PRICE_TYPE", pybind11::arithmetic());
-    e.value("XTP_PRICE_LIMIT", XTP_PRICE_TYPE::XTP_PRICE_LIMIT);
-    e.value("XTP_PRICE_BEST_OR_CANCEL", XTP_PRICE_TYPE::XTP_PRICE_BEST_OR_CANCEL);
-    e.value("XTP_PRICE_BEST5_OR_LIMIT", XTP_PRICE_TYPE::XTP_PRICE_BEST5_OR_LIMIT);
-    e.value("XTP_PRICE_BEST5_OR_CANCEL", XTP_PRICE_TYPE::XTP_PRICE_BEST5_OR_CANCEL);
-    e.value("XTP_PRICE_ALL_OR_CANCEL", XTP_PRICE_TYPE::XTP_PRICE_ALL_OR_CANCEL);
-    e.value("XTP_PRICE_FORWARD_BEST", XTP_PRICE_TYPE::XTP_PRICE_FORWARD_BEST);
-    e.value("XTP_PRICE_REVERSE_BEST_LIMIT", XTP_PRICE_TYPE::XTP_PRICE_REVERSE_BEST_LIMIT);
-    e.value("XTP_PRICE_LIMIT_OR_CANCEL", XTP_PRICE_TYPE::XTP_PRICE_LIMIT_OR_CANCEL);
-    e.value("XTP_PRICE_TYPE_UNKNOWN", XTP_PRICE_TYPE::XTP_PRICE_TYPE_UNKNOWN);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_PRICE_TYPE", e);
-}
-void generate_enum_XTP_ORDER_ACTION_STATUS_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_ORDER_ACTION_STATUS_TYPE> e(parent, "XTP_ORDER_ACTION_STATUS_TYPE", pybind11::arithmetic());
-    e.value("XTP_ORDER_ACTION_STATUS_SUBMITTED", XTP_ORDER_ACTION_STATUS_TYPE::XTP_ORDER_ACTION_STATUS_SUBMITTED);
-    e.value("XTP_ORDER_ACTION_STATUS_ACCEPTED", XTP_ORDER_ACTION_STATUS_TYPE::XTP_ORDER_ACTION_STATUS_ACCEPTED);
-    e.value("XTP_ORDER_ACTION_STATUS_REJECTED", XTP_ORDER_ACTION_STATUS_TYPE::XTP_ORDER_ACTION_STATUS_REJECTED);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_ORDER_ACTION_STATUS_TYPE", e);
-}
-void generate_enum_XTP_ORDER_STATUS_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_ORDER_STATUS_TYPE> e(parent, "XTP_ORDER_STATUS_TYPE", pybind11::arithmetic());
-    e.value("XTP_ORDER_STATUS_INIT", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_INIT);
-    e.value("XTP_ORDER_STATUS_ALLTRADED", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_ALLTRADED);
-    e.value("XTP_ORDER_STATUS_PARTTRADEDQUEUEING", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_PARTTRADEDQUEUEING);
-    e.value("XTP_ORDER_STATUS_PARTTRADEDNOTQUEUEING", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_PARTTRADEDNOTQUEUEING);
-    e.value("XTP_ORDER_STATUS_NOTRADEQUEUEING", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_NOTRADEQUEUEING);
-    e.value("XTP_ORDER_STATUS_CANCELED", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_CANCELED);
-    e.value("XTP_ORDER_STATUS_REJECTED", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_REJECTED);
-    e.value("XTP_ORDER_STATUS_UNKNOWN", XTP_ORDER_STATUS_TYPE::XTP_ORDER_STATUS_UNKNOWN);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_ORDER_STATUS_TYPE", e);
-}
-void generate_enum_XTP_ORDER_SUBMIT_STATUS_TYPE(pybind11::object & parent)
-{
-    pybind11::enum_<XTP_ORDER_SUBMIT_STATUS_TYPE> e(parent, "XTP_ORDER_SUBMIT_STATUS_TYPE", pybind11::arithmetic());
-    e.value("XTP_ORDER_SUBMIT_STATUS_INSERT_SUBMITTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_INSERT_SUBMITTED);
-    e.value("XTP_ORDER_SUBMIT_STATUS_INSERT_ACCEPTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_INSERT_ACCEPTED);
-    e.value("XTP_ORDER_SUBMIT_STATUS_INSERT_REJECTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_INSERT_REJECTED);
-    e.value("XTP_ORDER_SUBMIT_STATUS_CANCEL_SUBMITTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_CANCEL_SUBMITTED);
-    e.value("XTP_ORDER_SUBMIT_STATUS_CANCEL_REJECTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_CANCEL_REJECTED);
-    e.value("XTP_ORDER_SUBMIT_STATUS_CANCEL_ACCEPTED", XTP_ORDER_SUBMIT_STATUS_TYPE::XTP_ORDER_SUBMIT_STATUS_CANCEL_ACCEPTED);
-    e.export_values();
-    module_vnxtp::objects.emplace("XTP_ORDER_SUBMIT_STATUS_TYPE", e);
+    pybind11::class_<XTPCrdCashRepayDebtInterestFeeRsp> c(parent, "XTPCrdCashRepayDebtInterestFeeRsp");
+    if constexpr (std::is_default_constructible_v<XTPCrdCashRepayDebtInterestFeeRsp>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayDebtInterestFeeRsp, "xtp_id", xtp_id);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayDebtInterestFeeRsp, "request_amount", request_amount);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayDebtInterestFeeRsp, "cash_repay_amount", cash_repay_amount);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayDebtInterestFeeRsp, "debt_compact_id", debt_compact_id);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vnxtp, XTPCrdCashRepayDebtInterestFeeRsp, "unknow", unknow);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnxtp, XTPCrdCashRepayDebtInterestFeeRsp, c);
+    module_vnxtp::objects.emplace("XTPCrdCashRepayDebtInterestFeeRsp", c);
 }

@@ -115,6 +115,54 @@ public:
             this,"OnQueryOptionAuctionInfo",option_info,error_info,request_id,is_last,session_id
         );
     }
+    void OnCreditCashRepay(XTPCrdCashRepayRsp * cash_repay_info,XTPRI * error_info,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnCreditCashRepay>::call(
+            this,"OnCreditCashRepay",cash_repay_info,error_info,session_id
+        );
+    }
+    void OnQueryCreditCashRepayInfo(XTPCrdCashRepayInfo * cash_repay_info,XTPRI * error_info,int request_id,bool is_last,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditCashRepayInfo>::call(
+            this,"OnQueryCreditCashRepayInfo",cash_repay_info,error_info,request_id,is_last,session_id
+        );
+    }
+    void OnQueryCreditFundInfo(XTPCrdFundInfo * fund_info,XTPRI * error_info,int request_id,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditFundInfo>::call(
+            this,"OnQueryCreditFundInfo",fund_info,error_info,request_id,session_id
+        );
+    }
+    void OnQueryCreditDebtInfo(XTPCrdDebtInfo * debt_info,XTPRI * error_info,int request_id,bool is_last,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditDebtInfo>::call(
+            this,"OnQueryCreditDebtInfo",debt_info,error_info,request_id,is_last,session_id
+        );
+    }
+    void OnQueryCreditTickerDebtInfo(XTPCrdDebtStockInfo * debt_info,XTPRI * error_info,int request_id,bool is_last,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditTickerDebtInfo>::call(
+            this,"OnQueryCreditTickerDebtInfo",debt_info,error_info,request_id,is_last,session_id
+        );
+    }
+    void OnQueryCreditAssetDebtInfo(double remain_amount,XTPRI * error_info,int request_id,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditAssetDebtInfo>::call(
+            this,"OnQueryCreditAssetDebtInfo",remain_amount,error_info,request_id,session_id
+        );
+    }
+    void OnQueryCreditTickerAssignInfo(XTPClientQueryCrdPositionStkInfo * assign_info,XTPRI * error_info,int request_id,bool is_last,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditTickerAssignInfo>::call(
+            this,"OnQueryCreditTickerAssignInfo",assign_info,error_info,request_id,is_last,session_id
+        );
+    }
+    void OnQueryCreditExcessStock(XTPClientQueryCrdSurplusStkRspInfo * stock_info,XTPRI * error_info,int request_id,uint64_t session_id) override
+    {
+        return autocxxpy::callback_wrapper<&XTP::API::TraderSpi::OnQueryCreditExcessStock>::call(
+            this,"OnQueryCreditExcessStock",stock_info,error_info,request_id,session_id
+        );
+    }
 
 };
 
