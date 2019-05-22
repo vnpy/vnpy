@@ -107,8 +107,8 @@ class CtaEngine(BaseEngine):
         """
         self.init_rqdata()
         self.load_strategy_class()
-        self.load_strategy_setting()
         self.load_strategy_data()
+        self.load_strategy_setting()
         self.register_event()
         self.write_log("CTA策略引擎初始化成功")
 
