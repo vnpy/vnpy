@@ -15,6 +15,8 @@ from multiprocessing.dummy import Pool
 from datetime import datetime
 from urllib.parse import urlencode
 from vnpy.api.rest import Request, RestClient
+from vnpy.event import Event
+from vnpy.trader.event import EVENT_TIMER
 from vnpy.api.websocket import WebsocketClient
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.stream2 import StreamConn
@@ -92,6 +94,7 @@ class AlpacaGateway(BaseGateway):
         self.active = False
         self.pool = None
         self.order_id = 1_000_000
+        self.count = 0
 
     def add_task(self, func, *args):
         """"""
@@ -130,10 +133,12 @@ class AlpacaGateway(BaseGateway):
         # self.add_task(self.query_contract)
         self.add_task(self.query_position)
         self.add_task(self.query_order)
+
+        self.init_query()
         
 
     def streaming_handler(self):
-        stream_api = AlpacaWebsocketApi(self.key, self.secret, REST_HOST)
+        stream_api = AlpacaWebsocketApi(self.key, self.secret, REST_HOST,self)
         stream_api.start()
 
     def query_account(self):
@@ -197,7 +202,7 @@ class AlpacaGateway(BaseGateway):
         if req.type == OrderType.LIMIT:
             order = self.rest_api.submit_order(
                 symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
-                qty=int(amount),
+                qty=abs(int(amount)),
                 side=order_side,
                 type=order_type,
                 time_in_force='day',
@@ -208,7 +213,7 @@ class AlpacaGateway(BaseGateway):
         else:
             order = self.rest_api.submit_order(
                 symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
-                qty=int(amount),
+                qty=abs(int(amount)),
                 side=order_side,
                 type=order_type,
                 time_in_force='day',
@@ -287,18 +292,34 @@ class AlpacaGateway(BaseGateway):
     def close(self):
         """"""
         self.rest_api.stop()
-        self.ws_api.stop()
+    
+    def init_query(self):
+        """"""
+        self.count = 0
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+    
+    def process_timer_event(self, event: Event):
+        """"""
+        self.count += 1
+        if self.count < 5:
+            return
+
+        self.query_account()
+        self.query_position()
 
 
 class AlpacaWebsocketApi(object):
     """"""
 
-    def __init__(self, key, secret, base_url):
+    def __init__(self, key, secret, base_url,gateway):
         """"""
         self.key = key
         self.secret = secret
         self.base_url = base_url
         self.conn=None
+        self.trade_count = 10000
+        self.connect_time = None
+        self.gateway=gateway
 
     def start(self):
         self.conn = StreamConn(self.key, self.secret, self.base_url)
@@ -306,6 +327,7 @@ class AlpacaWebsocketApi(object):
         self.conn.on(r'Q.*')(self.on_q)
         self.conn.on(r'account_updates')(self.on_account_updates)
         self.conn.on(r'trade_updates')(self.on_trade_updates)
+        self.connect_time = int(datetime.now().strftime("%y%m%d%H%M%S"))
         self.run()
 
     def run(self):
@@ -315,10 +337,33 @@ class AlpacaWebsocketApi(object):
         self.conn.run(['account_updates','trade_updates','authorized','^Q.'])
 
     async def on_account_updates(self,conn, channel, account):
-        print('account', account)
+        print('---account---', account)
 
-    async def on_trade_updates(self,conn, channel, trade):
-        print('trade', trade)
+    async def on_trade_updates(self,conn, channel, trade_raw):
+        print('on_trade_updates', trade_raw)
+        print('trade_raw event:',trade_raw.event)
+        print('trade_raw order:',trade_raw.order)
+        event = trade_raw.event
+        ret_order=trade_raw.order
+
+        if event == "fill":
+            self.trade_count += 1
+            tradeid = f"{self.connect_time}{self.trade_count}"
+            trade = TradeData(
+                symbol=ret_order['symbol'],
+                exchange=Exchange.ALPACA,  # vigar, need to fix to nasdq ...
+                direction=DIRECTION_ALPACA2VT[ret_order['side']],
+                tradeid=tradeid,
+                orderid=ret_order['id'],
+                price=float(trade_raw.price),
+                volume=float(ret_order['qty']),
+                time=trade_raw.timestamp[11:19],
+                gateway_name=self.gateway.gateway_name,
+            )
+            print('call gateay on_trade:',trade)
+            self.gateway.on_trade(trade)
+        else:
+            print("trade event is not null")
 
     async def on_auth(self,conn, stream, msg):
         print('on_auth stream', stream, "  [msg]:", msg)
