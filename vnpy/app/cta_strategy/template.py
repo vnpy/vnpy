@@ -71,8 +71,9 @@ class CtaTemplate(ABC):
         """
         for name in self.variables:
             if(type(getattr(self, name))) in [np.int32]:
-                getattr(self, name) = int(getattr(self, name))
-            strategy_variables[name] = getattr(self, name)
+                strategy_variables[name] = int(getattr(self, name))
+            else:
+                strategy_variables[name] = getattr(self, name)
         return strategy_variables
 
     def get_data(self):
