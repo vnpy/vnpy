@@ -306,6 +306,8 @@ class XtpQuoteApi(API.QuoteSpi):
         """"""
         self.gateway.write_log("行情服务器连接断开")
 
+        self.login()
+
     def OnError(self, error_info: XTPRspInfoStruct) -> Any:
         """"""
         self.check_error("行情接口", error_info)
@@ -640,6 +642,8 @@ class XtpTraderApi(API.TraderSpi):
     def OnDisconnected(self, session_id: int, reason: int) -> Any:
         """"""
         self.gateway.write_log("交易服务器连接断开")
+
+        self.login()
 
     def OnError(self, error_info: XTPRspInfoStruct) -> Any:
         """"""
