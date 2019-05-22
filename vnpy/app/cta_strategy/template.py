@@ -71,7 +71,7 @@ class CtaTemplate(ABC):
         """
         strategy_variables = {}
         for name in self.variables:
-            strategy_variables[name] = getattr(self, name)
+            strategy_variables[name] = float(getattr(self, name))
         return strategy_variables
 
     def get_data(self):
