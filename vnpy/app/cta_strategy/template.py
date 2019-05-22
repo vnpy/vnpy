@@ -5,7 +5,7 @@ from typing import Any, Callable
 from vnpy.trader.constant import Interval, Direction, Offset
 from vnpy.trader.object import BarData, TickData, OrderData, TradeData
 from vnpy.trader.utility import virtual
-
+import numpy as np
 from .base import StopOrder, EngineType
 
 
@@ -69,9 +69,10 @@ class CtaTemplate(ABC):
         """
         Get strategy variables dict.
         """
-        strategy_variables = {}
         for name in self.variables:
-            strategy_variables[name] = float(getattr(self, name))
+            if(type(getattr(self, name))) in [np.int32]:
+                getattr(self, name) = float(getattr(self, name))
+            strategy_variables[name] = getattr(self, name)
         return strategy_variables
 
     def get_data(self):
