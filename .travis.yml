@@ -27,7 +27,7 @@ matrix:
   include:
     - name: "code quality analysis: flake8"
       before_install:
-        - pip install flake8
+        - python -m pip install flake8
       install:
         - ""  # prevent running "pip install -r requirements.txt"
       script:
@@ -48,7 +48,7 @@ matrix:
         # update pip & setuptools
         - python -m pip install --upgrade pip wheel setuptools
         # Linux install script
-        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - python -m pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install.sh
 
     - name: "sdist install under Ubuntu: gcc-7"
@@ -73,11 +73,11 @@ matrix:
         -   make
         -   sudo make install
         - popd
-        - pip install numpy
-        - pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
-        - pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - python -m pip install numpy
+        - python -m pip install --pre --extra-index-url https://rquser:ricequant99@py.ricequant.com/simple/ rqdatac
+        - python -m pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - python setup.py sdist
-        - pip install dist/`ls dist`
+        - python -m pip install dist/`ls dist`
 
     - name: "pip install under osx"
       os: osx
@@ -85,7 +85,7 @@ matrix:
       services: []
       before_install: []
       install:
-        - pip3 install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
+        - python3 -m pip install https://pip.vnpy.com/colletion/ibapi-9.75.1-001-py3-none-any.whl
         - bash ./install_osx.sh
       before_script: []
       script:
