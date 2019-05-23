@@ -654,7 +654,7 @@ class XtpTraderApi(API.TraderSpi):
         """"""
         self.check_error("委托下单", error_info)
 
-        direction, offset = DIRECTION_XTP2VT[ order_info.side]
+        direction, offset = DIRECTION_XTP2VT[order_info.side]
 
         order = OrderData(
             symbol=order_info.ticker,
@@ -814,4 +814,3 @@ class XtpTraderApi(API.TraderSpi):
                 self.gateway.on_position(position)
 
             self.short_positions.clear()
-
