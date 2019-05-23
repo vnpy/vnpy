@@ -324,7 +324,9 @@ class CtaEngine(BaseEngine):
             # Save relationship between orderid and strategy.
             self.orderid_strategy_map[vt_orderid] = strategy
             self.strategy_orderid_map[strategy.strategy_name].add(vt_orderid)
-
+        self.write_log(f'策略:{strategy.strategy_name}发送委托,交易合约:{vt_symbol},
+                       交易方向:{original_req.direction.value},{original_req.offset.value},
+                       价格:{original_req.price},发单量:{original_req.volume}')
         return vt_orderids
     
     def send_limit_order(
@@ -411,7 +413,9 @@ class CtaEngine(BaseEngine):
 
         self.call_strategy_func(strategy, strategy.on_stop_order, stop_order)
         self.put_stop_order_event(stop_order)
-
+        self.write_log(f'策略:{strategy.strategy_name}发送委托,交易合约:{vt_symbol},
+                       交易方向:{stop_order.direction.value},{stop_order.offset.value},
+                       价格:{stop_order.price},发单量:{stop_order.volume}')
         return stop_orderid
 
     def cancel_server_order(self, strategy: CtaTemplate, vt_orderid: str):
