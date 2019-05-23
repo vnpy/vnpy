@@ -109,7 +109,6 @@ class CtaEngine(BaseEngine):
         self.load_strategy_class()
         self.load_strategy_setting()
         self.load_strategy_data()
-        self.register_event()
         self.write_log("CTA策略引擎初始化成功")
 
     def close(self):
@@ -631,6 +630,7 @@ class CtaEngine(BaseEngine):
 
             # Put event to update init completed status.
             strategy.inited = True
+            self.register_event()
             self.put_strategy_event(strategy)
             self.write_log(f"{strategy_name}初始化完成")
         
