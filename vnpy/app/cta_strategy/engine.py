@@ -630,10 +630,9 @@ class CtaEngine(BaseEngine):
 
             # Put event to update init completed status.
             strategy.inited = True
-            self.register_event()
             self.put_strategy_event(strategy)
             self.write_log(f"{strategy_name}初始化完成")
-        
+        self.register_event()      
         self.init_thread = None
 
     def start_strategy(self, strategy_name: str):
