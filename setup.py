@@ -53,7 +53,7 @@ vnctpmd = Extension(
     define_macros=[],
     undef_macros=[],
     library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-    libraries=["thostmduserapi", "thosttraderapi", ],
+    libraries=["thostmduserapi_se", "thosttraderapi_se", ],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
     depends=[],
@@ -70,7 +70,7 @@ vnctptd = Extension(
     define_macros=[],
     undef_macros=[],
     library_dirs=["vnpy/api/ctp/libs", "vnpy/api/ctp"],
-    libraries=["thostmduserapi", "thosttraderapi", ],
+    libraries=["thostmduserapi_se", "thosttraderapi_se", ],
     extra_compile_args=compiler_flags,
     extra_link_args=extra_link_args,
     runtime_library_dirs=["$ORIGIN"],
@@ -107,6 +107,15 @@ else:
 
 pkgs = find_packages()
 
+
+def is_psycopg2_exists():
+    try:
+        import psycopg2  # noqa
+        return True
+    except ImportError:
+        return False
+
+
 install_requires = [
     "PyQt5<5.12",
     "qdarkstyle",
@@ -114,7 +123,6 @@ install_requires = [
     "websocket-client",
     "peewee",
     "pymysql",
-    "psycopg2",
     "mongoengine",
     "numpy",
     "pandas",
@@ -124,8 +132,12 @@ install_requires = [
     "tigeropen",
     "rqdatac",
     "ta-lib",
-    "ibapi"
+    "ibapi",
+    "deap"
 ]
+if not is_psycopg2_exists():
+    install_requires.append("psycopg2-binary")
+
 if sys.version_info.minor < 7:
     install_requires.append("dataclasses")
 

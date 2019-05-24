@@ -9,6 +9,7 @@ from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.constant import Interval
 from vnpy.trader.utility import extract_vt_symbol
+from vnpy.trader.object import HistoryRequest
 from vnpy.trader.rqdata import rqdata_client
 from vnpy.trader.database import database_manager
 from vnpy.app.cta_strategy import (
@@ -222,20 +223,25 @@ class BacktesterEngine(BaseEngine):
         return strategy_class.get_class_parameters()
 
     def run_optimization(
-            self,
-            class_name: str,
-            vt_symbol: str,
-            interval: str,
-            start: datetime,
-            end: datetime,
-            rate: float,
-            slippage: float,
-            size: int,
-            pricetick: float,
-            capital: int,
-            optimization_setting: OptimizationSetting):
+        self,
+        class_name: str,
+        vt_symbol: str,
+        interval: str,
+        start: datetime,
+        end: datetime,
+        rate: float,
+        slippage: float,
+        size: int,
+        pricetick: float,
+        capital: int,
+        optimization_setting: OptimizationSetting,
+        use_ga: bool
+    ):
         """"""
-        self.write_log("开始多进程参数优化")
+        if use_ga:
+            self.write_log("开始遗传算法参数优化")
+        else:
+            self.write_log("开始多进程参数优化")
 
         self.result_values = None
 
@@ -260,10 +266,16 @@ class BacktesterEngine(BaseEngine):
             {}
         )
 
-        self.result_values = engine.run_optimization(
-            optimization_setting,
-            output=False
-        )
+        if use_ga:
+            self.result_values = engine.run_ga_optimization(
+                optimization_setting,
+                output=False
+            )
+        else:
+            self.result_values = engine.run_optimization(
+                optimization_setting,
+                output=False
+            )
 
         # Clear thread object handler.
         self.thread = None
@@ -285,7 +297,8 @@ class BacktesterEngine(BaseEngine):
         size: int,
         pricetick: float,
         capital: int,
-        optimization_setting: OptimizationSetting
+        optimization_setting: OptimizationSetting,
+        use_ga: bool
     ):
         if self.thread:
             self.write_log("已有任务在运行中，请等待完成")
@@ -305,7 +318,8 @@ class BacktesterEngine(BaseEngine):
                 size,
                 pricetick,
                 capital,
-                optimization_setting
+                optimization_setting,
+                use_ga
             )
         )
         self.thread.start()
@@ -325,18 +339,32 @@ class BacktesterEngine(BaseEngine):
         self.write_log(f"{vt_symbol}-{interval}开始下载历史数据")
 
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        data = rqdata_client.query_bar(
-            symbol, exchange, Interval(interval), start, end
+        
+        req = HistoryRequest(
+            symbol=symbol,
+            exchange=exchange,
+            interval=Interval(interval),
+            start=start,
+            end=end
         )
 
-        if not data:
-            self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
+        contract = self.main_engine.get_contract(vt_symbol)
 
-        database_manager.save_bar_data(data)
+        # If history data provided in gateway, then query
+        if contract and contract.history_data:
+            data = self.main_engine.query_history(req, contract.gateway_name)
+        # Otherwise use RQData to query data
+        else:
+            data = rqdata_client.query_history(req)
+
+        if data:
+            database_manager.save_bar_data(data)
+            self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
+        else:
+            self.write_log(f"数据下载失败，无法获取{vt_symbol}的历史数据")
 
         # Clear thread object handler.
         self.thread = None
-        self.write_log(f"{vt_symbol}-{interval}历史数据下载完成")
 
     def start_downloading(
         self,

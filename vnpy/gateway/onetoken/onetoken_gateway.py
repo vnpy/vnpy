@@ -71,6 +71,8 @@ class OnetokenGateway(BaseGateway):
         "代理端口": 1080,
     }
 
+    exchanges = list(EXCHANGE_VT2ONETOKEN.keys())
+
     def __init__(self, event_engine):
         """Constructor"""
         super(OnetokenGateway, self).__init__(event_engine, "1TOKEN")

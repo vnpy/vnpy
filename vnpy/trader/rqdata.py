@@ -7,7 +7,20 @@ from rqdatac.services.get_price import get_price as rqdata_get_price
 
 from .setting import SETTINGS
 from .constant import Exchange, Interval
-from .object import BarData
+from .object import BarData, HistoryRequest
+
+
+INTERVAL_VT2RQ = {
+    Interval.MINUTE: "1m",
+    Interval.HOUR: "60m",
+    Interval.DAILY: "1d",
+}
+
+INTERVAL_ADJUSTMENT_MAP = {
+    Interval.MINUTE: timedelta(minutes=1),
+    Interval.HOUR: timedelta(hours=1),
+    Interval.DAILY: timedelta()         # no need to adjust for daily bar
+}
 
 
 class RqdataClient:
@@ -76,26 +89,33 @@ class RqdataClient:
 
         return rq_symbol
 
-    def query_bar(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
-    ):
+    def query_history(self, req: HistoryRequest):
         """
-        Query bar data from RQData.
+        Query history bar data from RQData.
         """
+        symbol = req.symbol
+        exchange = req.exchange
+        interval = req.interval
+        start = req.start
+        end = req.end
+
         rq_symbol = self.to_rq_symbol(symbol, exchange)
         if rq_symbol not in self.symbols:
             return None
 
-        end += timedelta(1)     # For querying night trading period data
+        rq_interval = INTERVAL_VT2RQ.get(interval)
+        if not rq_interval:
+            return None
+
+        # For adjust timestamp from bar close point (RQData) to open point (VN Trader)
+        adjustment = INTERVAL_ADJUSTMENT_MAP[interval]
+
+        # For querying night trading period data
+        end += timedelta(1)
 
         df = rqdata_get_price(
             rq_symbol,
-            frequency=interval.value,
+            frequency=rq_interval,
             fields=["open", "high", "low", "close", "volume"],
             start_date=start,
             end_date=end
@@ -107,7 +127,7 @@ class RqdataClient:
                 symbol=symbol,
                 exchange=exchange,
                 interval=interval,
-                datetime=row.name.to_pydatetime(),
+                datetime=row.name.to_pydatetime() - adjustment,
                 open_price=row["open"],
                 high_price=row["high"],
                 low_price=row["low"],

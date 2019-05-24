@@ -8,7 +8,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
-from typing import Any
+from typing import Any, Sequence
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -22,7 +22,13 @@ from .event import (
     EVENT_LOG
 )
 from .gateway import BaseGateway
-from .object import CancelRequest, LogData, OrderRequest, SubscribeRequest
+from .object import (
+    CancelRequest,
+    LogData,
+    OrderRequest,
+    SubscribeRequest,
+    HistoryRequest
+)
 from .setting import SETTINGS
 from .utility import get_folder_path
 
@@ -43,6 +49,7 @@ class MainEngine:
         self.gateways = {}
         self.engines = {}
         self.apps = {}
+        self.exchanges = []
 
         self.init_engines()
 
@@ -60,6 +67,12 @@ class MainEngine:
         """
         gateway = gateway_class(self.event_engine)
         self.gateways[gateway.gateway_name] = gateway
+
+        # Add gateway supported exchanges into engine
+        for exchange in gateway.exchanges:
+            if exchange not in self.exchanges:
+                self.exchanges.append(exchange)
+
         return gateway
 
     def add_app(self, app_class: BaseApp):
@@ -127,6 +140,12 @@ class MainEngine:
         """
         return list(self.apps.values())
 
+    def get_all_exchanges(self):
+        """
+        Get all exchanges.
+        """
+        return self.exchanges
+
     def connect(self, setting: dict, gateway_name: str):
         """
         Start connection of a specific gateway.
@@ -160,6 +179,32 @@ class MainEngine:
         gateway = self.get_gateway(gateway_name)
         if gateway:
             gateway.cancel_order(req)
+
+    def send_orders(self, reqs: Sequence[OrderRequest], gateway_name: str):
+        """
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            return gateway.send_orders(reqs)
+        else:
+            return ["" for req in reqs]
+
+    def cancel_orders(self, reqs: Sequence[CancelRequest], gateway_name: str):
+        """
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            gateway.cancel_orders(reqs)
+
+    def query_history(self, req: HistoryRequest, gateway_name: str):
+        """
+        Send cancel order request to a specific gateway.
+        """
+        gateway = self.get_gateway(gateway_name)
+        if gateway:
+            return gateway.query_history(req)
+        else:
+            return None
 
     def close(self):
         """

@@ -92,9 +92,16 @@ class TigerGateway(BaseGateway):
     default_setting = {
         "tiger_id": "",
         "account": "",
-        "standard_account": "",
-        "private_key": '',
+        "服务器": ["标准", "环球", "仿真"],
+        "private_key": "",
     }
+
+    exchanges = [
+        Exchange.SEHK,
+        Exchange.SMART,
+        Exchange.SSE,
+        Exchange.SZSE
+    ]
 
     def __init__(self, event_engine):
         """Constructor"""
@@ -102,8 +109,7 @@ class TigerGateway(BaseGateway):
 
         self.tiger_id = ""
         self.account = ""
-        self.standard_account = ""
-        self.paper_account = ""
+        self.server = ""
         self.language = ""
 
         self.client_config = None
@@ -142,11 +148,10 @@ class TigerGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
-        self.private_key = setting['private_key']
+        self.private_key = setting["private_key"]
         self.tiger_id = setting["tiger_id"]
+        self.server = setting["服务器"]
         self.account = setting["account"]
-        self.standard_account = setting["standard_account"]
-        self.paper_account = setting["account"]
         self.languege = Language.zh_CN
 
         # Start thread pool for REST call
@@ -160,14 +165,12 @@ class TigerGateway(BaseGateway):
         self.add_task(self.connect_trade)
         self.add_task(self.connect_push)
 
-    def init_client_config(self, sandbox=True):
+    def init_client_config(self, sandbox=False):
         """"""
         self.client_config = TigerOpenClientConfig(sandbox_debug=sandbox)
         self.client_config.private_key = self.private_key
         self.client_config.tiger_id = self.tiger_id
         self.client_config.account = self.account
-        self.client_config.standard_account = self.standard_account
-        self.client_config.paper_account = self.paper_account
         self.client_config.language = self.language
 
     def connect_quote(self):
@@ -206,12 +209,13 @@ class TigerGateway(BaseGateway):
         Connect to push server.
         """
         protocol, host, port = self.client_config.socket_host_port
-        self.push_client = PushClient(host, port, (protocol == 'ssl'))
+        self.push_client = PushClient(host, port, (protocol == "ssl"))
 
         self.push_client.quote_changed = self.on_quote_change
         self.push_client.asset_changed = self.on_asset_change
         self.push_client.position_changed = self.on_position_change
         self.push_client.order_changed = self.on_order_change
+        self.push_client.connect_callback = self.on_push_connected
 
         self.push_client.connect(
             self.client_config.tiger_id, self.client_config.private_key)
@@ -250,18 +254,17 @@ class TigerGateway(BaseGateway):
             )
             self.ticks[symbol] = tick
 
-        tick.datetime = datetime.fromtimestamp(data["latest_time"] / 1000)
-        tick.pre_close = data.get("prev_close", 0)
-        tick.last_price = data.get("latest_price", 0)
-        tick.volume = data.get("volume", 0)
-        tick.open_price = data.get("open", 0)
-        tick.open_price = data.get("open", 0)
-        tick.high_price = data.get("high", 0)
-        tick.low_price = data.get("low", 0)
-        tick.ask_price_1 = data.get("ask_price", 0)
-        tick.bid_price_1 = data.get("bid_price", 0)
-        tick.ask_volume_1 = data.get("ask_size", 0)
-        tick.bid_volume_1 = data.get("bid_size", 0)
+        tick.datetime = datetime.fromtimestamp(int(data["latest_time"]) / 1000)
+        tick.pre_close = data.get("prev_close", tick.pre_close)
+        tick.last_price = data.get("latest_price", tick.last_price)
+        tick.volume = data.get("volume", tick.volume)
+        tick.open_price = data.get("open", tick.open_price)
+        tick.high_price = data.get("high", tick.high_price)
+        tick.low_price = data.get("low", tick.low_price)
+        tick.ask_price_1 = data.get("ask_price", tick.ask_price_1)
+        tick.bid_price_1 = data.get("bid_price", tick.bid_price_1)
+        tick.ask_volume_1 = data.get("ask_size", tick.ask_volume_1)
+        tick.bid_volume_1 = data.get("bid_size", tick.bid_volume_1)
 
         self.on_tick(copy(tick))
 
@@ -299,8 +302,6 @@ class TigerGateway(BaseGateway):
     def on_order_change(self, tiger_account: str, data: list):
         """"""
         data = dict(data)
-        print("委托推送", data["origin_symbol"],
-              data["order_id"], data["filled"], data["status"])
         symbol, exchange = convert_symbol_tiger2vt(data["origin_symbol"])
         status = PUSH_STATUS_TIGER2VT[data["status"]]
 
@@ -368,8 +369,6 @@ class TigerGateway(BaseGateway):
             self.ID_VT2TIGER[local_id] = str(order.order_id)
 
             self.trade_client.place_order(order)
-            print("发单:", order.contract.symbol,
-                  order.order_id, order.quantity, order.status)
 
         except:  # noqa
             traceback.print_exc()
@@ -389,7 +388,7 @@ class TigerGateway(BaseGateway):
             self.write_log(f"撤单失败：{req.orderid}")
 
         if not data:
-            self.write_log('撤单成功')
+            self.write_log("撤单成功")
 
     def query_contract(self):
         """"""
@@ -398,20 +397,20 @@ class TigerGateway(BaseGateway):
         symbols_names_HK = self.quote_client.get_symbol_names(
             lang=Language.zh_CN, market=Market.HK)
         contract_names_HK = DataFrame(
-            symbols_names_HK, columns=['symbol', 'name'])
+            symbols_names_HK, columns=["symbol", "name"])
 
         contractList = list(contract_names_HK["symbol"])
         i, n = 0, len(contractList)
         result = pd.DataFrame()
         while i < n:
-            i += 500
-            c = contractList[i - 500:i]
+            i += 50
+            c = contractList[i - 50:i]
             r = self.quote_client.get_trade_metas(c)
             result = result.append(r)
 
         contract_detail_HK = result.sort_values(by="symbol", ascending=True)
         contract_HK = pd.merge(
-            contract_names_HK, contract_detail_HK, how='left', on='symbol')
+            contract_names_HK, contract_detail_HK, how="left", on="symbol")
 
         for ix, row in contract_HK.iterrows():
             contract = ContractData(
@@ -420,6 +419,7 @@ class TigerGateway(BaseGateway):
                 name=row["name"],
                 product=Product.EQUITY,
                 size=1,
+                min_volume=row["lot_size"],
                 pricetick=row["min_tick"],
                 net_position=True,
                 gateway_name=self.gateway_name,
@@ -430,7 +430,7 @@ class TigerGateway(BaseGateway):
         # US Stock
         symbols_names_US = self.quote_client.get_symbol_names(
             lang=Language.zh_CN, market=Market.US)
-        contract_US = DataFrame(symbols_names_US, columns=['symbol', 'name'])
+        contract_US = DataFrame(symbols_names_US, columns=["symbol", "name"])
 
         for ix, row in contract_US.iterrows():
             contract = ContractData(
@@ -439,6 +439,7 @@ class TigerGateway(BaseGateway):
                 name=row["name"],
                 product=Product.EQUITY,
                 size=1,
+                min_volume=100,
                 pricetick=0.001,
                 gateway_name=self.gateway_name,
             )
@@ -448,7 +449,7 @@ class TigerGateway(BaseGateway):
         # CN Stock
         symbols_names_CN = self.quote_client.get_symbol_names(
             lang=Language.zh_CN, market=Market.CN)
-        contract_CN = DataFrame(symbols_names_CN, columns=['symbol', 'name'])
+        contract_CN = DataFrame(symbols_names_CN, columns=["symbol", "name"])
 
         for ix, row in contract_CN.iterrows():
             symbol = row["symbol"]
@@ -460,6 +461,7 @@ class TigerGateway(BaseGateway):
                 name=row["name"],
                 product=Product.EQUITY,
                 size=1,
+                min_volume=100,
                 pricetick=0.001,
                 gateway_name=self.gateway_name,
             )
@@ -551,8 +553,6 @@ class TigerGateway(BaseGateway):
             self.on_order(order)
 
         self.ID_VT2TIGER = {v: k for k, v in self.ID_TIGER2VT.items()}
-        print("原始委托字典", self.ID_TIGER2VT)
-        print("原始反向字典", self.ID_VT2TIGER)
 
     def process_deal(self, data):
         """

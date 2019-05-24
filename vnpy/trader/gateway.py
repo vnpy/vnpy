@@ -3,7 +3,7 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Sequence
 from copy import copy
 
 from vnpy.event import Event, EventEngine
@@ -27,12 +27,13 @@ from .object import (
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
+    HistoryRequest
 )
 
 
 class BaseGateway(ABC):
     """
-    Abstract gateway class for creating gateways connection 
+    Abstract gateway class for creating gateways connection
     to different trading systems.
 
     # How to implement a gateway:
@@ -71,6 +72,9 @@ class BaseGateway(ABC):
 
     # Fields required in setting dict for connect function.
     default_setting = {}
+
+    # Exchanges supported in the gateway.
+    exchanges = []
 
     def __init__(self, event_engine: EventEngine, gateway_name: str):
         """"""
@@ -203,16 +207,36 @@ class BaseGateway(ABC):
         Cancel an existing order.
         implementation should finish the tasks blow:
         * send request to server
-
-
         """
         pass
+
+    def send_orders(self, reqs: Sequence[OrderRequest]):
+        """
+        Send a batch of orders to server.
+        Use a for loop of send_order function by default. 
+        Reimplement this function if batch order supported on server.
+        """
+        vt_orderids = []
+
+        for req in reqs:
+            vt_orderid = self.send_order(req)
+            vt_orderids.append(vt_orderid)
+
+        return vt_orderids
+
+    def cancel_orders(self, reqs: Sequence[CancelRequest]):
+        """
+        Cancel a batch of orders to server.
+        Use a for loop of cancel_order function by default. 
+        Reimplement this function if batch cancel supported on server.
+        """
+        for req in reqs:
+            self.cancel_order(req)
 
     @abstractmethod
     def query_account(self):
         """
         Query account balance.
-
         """
         pass
 
@@ -220,6 +244,12 @@ class BaseGateway(ABC):
     def query_position(self):
         """
         Query holding positions.
+        """
+        pass
+
+    def query_history(self, req: HistoryRequest):
+        """
+        Query bar history data.
         """
         pass
 

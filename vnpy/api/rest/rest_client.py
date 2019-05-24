@@ -30,7 +30,7 @@ class Request(object):
         params: dict,
         data: dict,
         headers: dict,
-        callback: Callable,
+        callback: Callable = None,
         on_failed: Callable = None,
         on_error: Callable = None,
         extra: Any = None,
@@ -258,7 +258,7 @@ class RestClient(object):
             request.response = response
 
             status_code = response.status_code
-            if status_code / 100 == 2:  # 2xx都算成功，尽管交易所都用200
+            if status_code // 100 == 2:  # 2xx都算成功，尽管交易所都用200
                 jsonBody = response.json()
                 request.callback(jsonBody, request)
                 request.status = RequestStatus.success
@@ -284,3 +284,41 @@ class RestClient(object):
         """
         url = self.url_base + path
         return url
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        params: dict = None,
+        data: dict = None,
+        headers: dict = None,
+    ):
+        """
+        Add a new request.
+        :param method: GET, POST, PUT, DELETE, QUERY
+        :param path: 
+        :param params: dict for query string
+        :param data: dict for body
+        :param headers: dict for headers
+        :return: requests.Response
+        """
+        request = Request(
+            method,
+            path,
+            params,
+            data,
+            headers
+        )
+        request = self.sign(request)
+
+        url = self.make_full_url(request.path)
+
+        response = requests.request(
+            request.method,
+            url,
+            headers=request.headers,
+            params=request.params,
+            data=request.data,
+            proxies=self.proxies,
+        )
+        return response
