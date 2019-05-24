@@ -10,7 +10,7 @@ if vnpy_root not in sys.path:
     print(u'append {}'.format(vnpy_root))
     sys.path.append(vnpy_root)
 
-from vnpy.api.ctp_se.vnctpmd import *
+from vnpy.api.ctp_se.vnctpmd import MdApi
 from threading import Thread
 
 
@@ -39,19 +39,20 @@ class TestMdApi(MdApi):
     def __init__(self):
         """Constructor"""
         super(TestMdApi, self).__init__()
-        
+        self.is_connected = False
     #----------------------------------------------------------------------
     @simple_log    
     def onFrontConnected(self):
         """服务器连接"""
-        pass
+        print('tdtest.py: onFrontConnected')
+        self.is_connected = True
     
     #----------------------------------------------------------------------
     @simple_log    
     def onFrontDisconnected(self, n):
         """服务器断开"""
         print (n)
-        
+        self.is_connected = False
     #----------------------------------------------------------------------
     @simple_log    
     def onHeartBeatWarning(self, n):
@@ -70,7 +71,7 @@ class TestMdApi(MdApi):
         """登陆回报"""
         print_dict(data)
         print_dict(error)
-        
+        print('onRspUserLogin')
     #----------------------------------------------------------------------
     @simple_log    
     def onRspUserLogout(self, data, error, n, last):
@@ -116,9 +117,23 @@ class TestMdApi(MdApi):
     @simple_log    
     def onRtnForQuoteRsp(self, data):
         """行情推送"""
-        print_dict(data)    
+        print_dict(data)
 
+# 长江
+md_addr = "tcp://124.74.10.62:47213"
+td_addr = "tcp://124.74.10.62:43205"
+# 银河联通:
+#md_addr = "tcp://114.255.82.175:31213"
+#td_addr = "tcp://114.255.82.175:31205"
+# 银河电信
+#md_addr = "tcp://106.39.36.72:31213"
+#td_addr = "tcp://106.39.36.72:31205"
 
+user_id = "xxx"
+user_pass = "xxx@123"
+app_id = "xx.0.0"
+auth_code = "xx"
+broker_id = '4300'
 
 #----------------------------------------------------------------------
 def main():
@@ -132,23 +147,38 @@ def main():
     api = TestMdApi()
     
     # 在C++环境中创建MdApi对象，传入参数是希望用来保存.con文件的地址
+    print('create mdapi')
     api.createFtdcMdApi('')
-    
+
     # 注册前置机地址
-    api.registerFront("tcp://106.39.36.72:31213")
+    print('mdtest:registerFront:{}'.format(md_addr))
+
+    api.registerFront(md_addr)
     
     # 初始化api，连接前置机
     api.init()
     sleep(0.5)
-    
+
+    print('mdtest: login')
     # 登陆
     loginReq = {}                           # 创建一个空字典
-    loginReq['UserID'] = '10000061'                 # 参数作为字典键值的方式传入
-    loginReq['Password'] = 'abc@123456'               # 键名和C++中的结构体成员名对应
-    loginReq['BrokerID'] = '1010'
+    loginReq['UserID'] = user_id                 # 参数作为字典键值的方式传入
+    loginReq['Password'] = user_pass               # 键名和C++中的结构体成员名对应
+    loginReq['BrokerID'] = broker_id
     reqid = reqid + 1                       # 请求数必须保持唯一性
     i = api.reqUserLogin(loginReq, 1)
-    sleep(0.5)
+    counter = 0
+    while (True):
+
+        if api.is_connected:
+            break
+
+        sleep(1)
+        counter += 1
+        print('waiting {}'.format(counter))
+        if counter > 10:
+            print('time expired, connect fail, auth fail')
+            exit(0)
     
     ## 登出，测试出错（无此功能）
     #reqid = reqid + 1
@@ -164,7 +194,8 @@ def main():
     #sleep(0.5)
     
     ## 订阅合约，测试通过
-    i = api.subscribeMarketData('IF1906')
+    print('subscribe')
+    i = api.subscribeMarketData('sc1906')
     
     ## 退订合约，测试通过
     #i = api.unSubscribeMarketData('IF1505')
@@ -174,9 +205,7 @@ def main():
     
     # 退订询价，测试通过
     #i = api.unSubscribeForQuoteRsp('IO1504-C-3900')
-    
-    # 连续运行，用于输出行情
-    #app.exec_()
+
     
     
     

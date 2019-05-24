@@ -1,22 +1,15 @@
-// vnctptd.cpp : ���� DLL Ӧ�ó���ĵ���������
-//
-
 #include "vnctptd.h"
-
-
-///-------------------------------------------------------------------------------------
-///��Python����C++����ת���õĺ���
-///-------------------------------------------------------------------------------------
+#include <exception>
 
 void getInt(dict d, string key, int *value)
 {
-	if (d.has_key(key))		//
+	if (d.has_key(key))		
 	{
-		object o = d[key];	//
-		extract<int> x(o);	//
-		if (x.check())		//
+		object o = d[key];	
+		extract<int> x(o);	
+		if (x.check())		
 		{
-			*value = x();	//
+			*value = x();	
 		}
 	}
 }
@@ -44,7 +37,7 @@ void getStr(dict d, string key, char *value)
 		{
 			string s = x();
 			const char *buffer = s.c_str();
-
+		
 #ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
@@ -76,9 +69,11 @@ void getChar(dict d, string key, char *value)
 
 void TdApi::OnFrontConnected()
 {
+	
 	Task task = Task();
 	task.task_name = ONFRONTCONNECTED;
 	this->task_queue.push(task);
+	
 };
 
 void TdApi::OnFrontDisconnected(int nReason)
@@ -99,6 +94,7 @@ void TdApi::OnHeartBeatWarning(int nTimeLapse)
 
 void TdApi::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAuthenticateField, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
+
 	Task task = Task();
 	task.task_name = ONRSPAUTHENTICATE;
 
@@ -126,6 +122,8 @@ void TdApi::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAuthenticateFi
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
 	this->task_queue.push(task);
+	
+
 };
 
 void TdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -157,6 +155,7 @@ void TdApi::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtd
 	task.task_id = nRequestID;
 	task.task_last = bIsLast;
 	this->task_queue.push(task);
+	
 };
 
 void TdApi::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
@@ -233,6 +232,99 @@ void TdApi::OnRspTradingAccountPasswordUpdate(CThostFtdcTradingAccountPasswordUp
 	else
 	{
 		CThostFtdcTradingAccountPasswordUpdateField empty_data = CThostFtdcTradingAccountPasswordUpdateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspUserAuthMethod(CThostFtdcRspUserAuthMethodField *pRspUserAuthMethod, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPUSERAUTHMETHOD;
+
+	if (pRspUserAuthMethod)
+	{
+		task.task_data = *pRspUserAuthMethod;
+	}
+	else
+	{
+		CThostFtdcRspUserAuthMethodField empty_data = CThostFtdcRspUserAuthMethodField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspGenUserCaptcha(CThostFtdcRspGenUserCaptchaField *pRspGenUserCaptcha, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPGENUSERCAPTCHA;
+
+	if (pRspGenUserCaptcha)
+	{
+		task.task_data = *pRspGenUserCaptcha;
+	}
+	else
+	{
+		CThostFtdcRspGenUserCaptchaField empty_data = CThostFtdcRspGenUserCaptchaField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspGenUserText(CThostFtdcRspGenUserTextField *pRspGenUserText, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPGENUSERTEXT;
+
+	if (pRspGenUserText)
+	{
+		task.task_data = *pRspGenUserText;
+	}
+	else
+	{
+		CThostFtdcRspGenUserTextField empty_data = CThostFtdcRspGenUserTextField();
 		memset(&empty_data, 0, sizeof(empty_data));
 		task.task_data = empty_data;
 	}
@@ -655,6 +747,98 @@ void TdApi::OnRspQuoteAction(CThostFtdcInputQuoteActionField *pInputQuoteAction,
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRspBatchOrderAction(CThostFtdcInputBatchOrderActionField *pInputBatchOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPBATCHORDERACTION;
+
+	if (pInputBatchOrderAction)
+	{
+		task.task_data = *pInputBatchOrderAction;
+	}
+	else
+	{
+		CThostFtdcInputBatchOrderActionField empty_data = CThostFtdcInputBatchOrderActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspOptionSelfCloseInsert(CThostFtdcInputOptionSelfCloseField *pInputOptionSelfClose, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPOPTIONSELFCLOSEINSERT;
+
+	if (pInputOptionSelfClose)
+	{
+		task.task_data = *pInputOptionSelfClose;
+	}
+	else
+	{
+		CThostFtdcInputOptionSelfCloseField empty_data = CThostFtdcInputOptionSelfCloseField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspOptionSelfCloseAction(CThostFtdcInputOptionSelfCloseActionField *pInputOptionSelfCloseAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPOPTIONSELFCLOSEACTION;
+
+	if (pInputOptionSelfCloseAction)
+	{
+		task.task_data = *pInputOptionSelfCloseAction;
+	}
+	else
+	{
+		CThostFtdcInputOptionSelfCloseActionField empty_data = CThostFtdcInputOptionSelfCloseActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
 
 void TdApi::OnRspCombActionInsert(CThostFtdcInputCombActionField *pInputCombAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
@@ -1524,6 +1708,192 @@ void TdApi::OnRspQryProductGroup(CThostFtdcProductGroupField *pProductGroup, CTh
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRspQryMMInstrumentCommissionRate(CThostFtdcMMInstrumentCommissionRateField *pMMInstrumentCommissionRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYMMINSTRUMENTCOMMISSIONRATE;
+
+	if (pMMInstrumentCommissionRate)
+	{
+		task.task_data = *pMMInstrumentCommissionRate;
+	}
+	else
+	{
+		CThostFtdcMMInstrumentCommissionRateField empty_data = CThostFtdcMMInstrumentCommissionRateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryMMOptionInstrCommRate(CThostFtdcMMOptionInstrCommRateField *pMMOptionInstrCommRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYMMOPTIONINSTRCOMMRATE;
+
+	if (pMMOptionInstrCommRate)
+	{
+		task.task_data = *pMMOptionInstrCommRate;
+	}
+	else
+	{
+		CThostFtdcMMOptionInstrCommRateField empty_data = CThostFtdcMMOptionInstrCommRateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryInstrumentOrderCommRate(CThostFtdcInstrumentOrderCommRateField *pInstrumentOrderCommRate, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYINSTRUMENTORDERCOMMRATE;
+
+	if (pInstrumentOrderCommRate)
+	{
+		task.task_data = *pInstrumentOrderCommRate;
+	}
+	else
+	{
+		CThostFtdcInstrumentOrderCommRateField empty_data = CThostFtdcInstrumentOrderCommRateField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQrySecAgentTradingAccount(CThostFtdcTradingAccountField *pTradingAccount, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYSECAGENTTRADINGACCOUNT;
+
+	if (pTradingAccount)
+	{
+		task.task_data = *pTradingAccount;
+	}
+	else
+	{
+		CThostFtdcTradingAccountField empty_data = CThostFtdcTradingAccountField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQrySecAgentCheckMode(CThostFtdcSecAgentCheckModeField *pSecAgentCheckMode, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYSECAGENTCHECKMODE;
+
+	if (pSecAgentCheckMode)
+	{
+		task.task_data = *pSecAgentCheckMode;
+	}
+	else
+	{
+		CThostFtdcSecAgentCheckModeField empty_data = CThostFtdcSecAgentCheckModeField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQrySecAgentTradeInfo(CThostFtdcSecAgentTradeInfoField *pSecAgentTradeInfo, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYSECAGENTTRADEINFO;
+
+	if (pSecAgentTradeInfo)
+	{
+		task.task_data = *pSecAgentTradeInfo;
+	}
+	else
+	{
+		CThostFtdcSecAgentTradeInfoField empty_data = CThostFtdcSecAgentTradeInfoField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
 void TdApi::OnRspQryOptionInstrTradeCost(CThostFtdcOptionInstrTradeCostField *pOptionInstrTradeCost, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
 	Task task = Task();
@@ -1679,7 +2049,67 @@ void TdApi::OnRspQryQuote(CThostFtdcQuoteField *pQuote, CThostFtdcRspInfoField *
 	this->task_queue.push(task);
 };
 
+void TdApi::OnRspQryOptionSelfClose(CThostFtdcOptionSelfCloseField *pOptionSelfClose, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYOPTIONSELFCLOSE;
 
+	if (pOptionSelfClose)
+	{
+		task.task_data = *pOptionSelfClose;
+	}
+	else
+	{
+		CThostFtdcOptionSelfCloseField empty_data = CThostFtdcOptionSelfCloseField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRspQryInvestUnit(CThostFtdcInvestUnitField *pInvestUnit, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+	Task task = Task();
+	task.task_name = ONRSPQRYINVESTUNIT;
+
+	if (pInvestUnit)
+	{
+		task.task_data = *pInvestUnit;
+	}
+	else
+	{
+		CThostFtdcInvestUnitField empty_data = CThostFtdcInvestUnitField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	task.task_id = nRequestID;
+	task.task_last = bIsLast;
+	this->task_queue.push(task);
+};
 
 void TdApi::OnRspQryCombInstrumentGuard(CThostFtdcCombInstrumentGuardField *pCombInstrumentGuard, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
@@ -1931,6 +2361,24 @@ void TdApi::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField *pInstrumentSt
 	else
 	{
 		CThostFtdcInstrumentStatusField empty_data = CThostFtdcInstrumentStatusField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRtnBulletin(CThostFtdcBulletinField *pBulletin)
+{
+	Task task = Task();
+	task.task_name = ONRTNBULLETIN;
+
+	if (pBulletin)
+	{
+		task.task_data = *pBulletin;
+	}
+	else
+	{
+		CThostFtdcBulletinField empty_data = CThostFtdcBulletinField();
 		memset(&empty_data, 0, sizeof(empty_data));
 		task.task_data = empty_data;
 	}
@@ -2190,6 +2638,110 @@ void TdApi::OnRtnCFMMCTradingAccountToken(CThostFtdcCFMMCTradingAccountTokenFiel
 	this->task_queue.push(task);
 };
 
+void TdApi::OnErrRtnBatchOrderAction(CThostFtdcBatchOrderActionField *pBatchOrderAction, CThostFtdcRspInfoField *pRspInfo)
+{
+	Task task = Task();
+	task.task_name = ONERRRTNBATCHORDERACTION;
+
+	if (pBatchOrderAction)
+	{
+		task.task_data = *pBatchOrderAction;
+	}
+	else
+	{
+		CThostFtdcBatchOrderActionField empty_data = CThostFtdcBatchOrderActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnRtnOptionSelfClose(CThostFtdcOptionSelfCloseField *pOptionSelfClose)
+{
+	Task task = Task();
+	task.task_name = ONRTNOPTIONSELFCLOSE;
+
+	if (pOptionSelfClose)
+	{
+		task.task_data = *pOptionSelfClose;
+	}
+	else
+	{
+		CThostFtdcOptionSelfCloseField empty_data = CThostFtdcOptionSelfCloseField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnErrRtnOptionSelfCloseInsert(CThostFtdcInputOptionSelfCloseField *pInputOptionSelfClose, CThostFtdcRspInfoField *pRspInfo)
+{
+	Task task = Task();
+	task.task_name = ONERRRTNOPTIONSELFCLOSEINSERT;
+
+	if (pInputOptionSelfClose)
+	{
+		task.task_data = *pInputOptionSelfClose;
+	}
+	else
+	{
+		CThostFtdcInputOptionSelfCloseField empty_data = CThostFtdcInputOptionSelfCloseField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	this->task_queue.push(task);
+};
+
+void TdApi::OnErrRtnOptionSelfCloseAction(CThostFtdcOptionSelfCloseActionField *pOptionSelfCloseAction, CThostFtdcRspInfoField *pRspInfo)
+{
+	Task task = Task();
+	task.task_name = ONERRRTNOPTIONSELFCLOSEACTION;
+
+	if (pOptionSelfCloseAction)
+	{
+		task.task_data = *pOptionSelfCloseAction;
+	}
+	else
+	{
+		CThostFtdcOptionSelfCloseActionField empty_data = CThostFtdcOptionSelfCloseActionField();
+		memset(&empty_data, 0, sizeof(empty_data));
+		task.task_data = empty_data;
+	}
+
+	if (pRspInfo)
+	{
+		task.task_error = *pRspInfo;
+	}
+	else
+	{
+		CThostFtdcRspInfoField empty_error = CThostFtdcRspInfoField();
+		memset(&empty_error, 0, sizeof(empty_error));
+		task.task_error = empty_error;
+	}
+	this->task_queue.push(task);
+};
 
 void TdApi::OnRtnCombAction(CThostFtdcCombActionField *pCombAction)
 {
@@ -2945,8 +3497,6 @@ void TdApi::OnRtnChangeAccountByBank(CThostFtdcChangeAccountField *pChangeAccoun
 	this->task_queue.push(task);
 };
 
-
-
 ///-------------------------------------------------------------------------------------
 ///�����̴߳Ӷ�����ȡ�����ݣ�ת��Ϊpython����󣬽�������
 ///-------------------------------------------------------------------------------------
@@ -2957,645 +3507,764 @@ void TdApi::processTask()
 	{
 		Task task = this->task_queue.wait_and_pop();
 
-		switch (task.task_name)
-		{
-		case ONFRONTCONNECTED:
-		{
-			this->processFrontConnected(task);
-			break;
-		}
-
-		case ONFRONTDISCONNECTED:
-		{
-			this->processFrontDisconnected(task);
-			break;
-		}
-
-		case ONHEARTBEATWARNING:
-		{
-			this->processHeartBeatWarning(task);
-			break;
-		}
-
-		case ONRSPAUTHENTICATE:
-		{
-			this->processRspAuthenticate(task);
-			break;
-		}
-
-		case ONRSPUSERLOGIN:
-		{
-			this->processRspUserLogin(task);
-			break;
-		}
-
-		case ONRSPUSERLOGOUT:
-		{
-			this->processRspUserLogout(task);
-			break;
-		}
-
-		case ONRSPUSERPASSWORDUPDATE:
-		{
-			this->processRspUserPasswordUpdate(task);
-			break;
-		}
-
-		case ONRSPTRADINGACCOUNTPASSWORDUPDATE:
-		{
-			this->processRspTradingAccountPasswordUpdate(task);
-			break;
-		}
-
-		case ONRSPORDERINSERT:
-		{
-			this->processRspOrderInsert(task);
-			break;
-		}
-
-		case ONRSPPARKEDORDERINSERT:
-		{
-			this->processRspParkedOrderInsert(task);
-			break;
-		}
-
-		case ONRSPPARKEDORDERACTION:
-		{
-			this->processRspParkedOrderAction(task);
-			break;
-		}
-
-		case ONRSPORDERACTION:
-		{
-			this->processRspOrderAction(task);
-			break;
-		}
-
-		case ONRSPQUERYMAXORDERVOLUME:
-		{
-			this->processRspQueryMaxOrderVolume(task);
-			break;
-		}
-
-		case ONRSPSETTLEMENTINFOCONFIRM:
-		{
-			this->processRspSettlementInfoConfirm(task);
-			break;
-		}
-
-		case ONRSPREMOVEPARKEDORDER:
-		{
-			this->processRspRemoveParkedOrder(task);
-			break;
-		}
-
-		case ONRSPREMOVEPARKEDORDERACTION:
-		{
-			this->processRspRemoveParkedOrderAction(task);
-			break;
-		}
-
-		case ONRSPEXECORDERINSERT:
-		{
-			this->processRspExecOrderInsert(task);
-			break;
-		}
-
-		case ONRSPEXECORDERACTION:
-		{
-			this->processRspExecOrderAction(task);
-			break;
-		}
-
-		case ONRSPFORQUOTEINSERT:
-		{
-			this->processRspForQuoteInsert(task);
-			break;
-		}
-
-		case ONRSPQUOTEINSERT:
-		{
-			this->processRspQuoteInsert(task);
-			break;
-		}
-
-		case ONRSPQUOTEACTION:
-		{
-			this->processRspQuoteAction(task);
-			break;
-		}
-
-		case ONRSPCOMBACTIONINSERT:
-		{
-			this->processRspCombActionInsert(task);
-			break;
-		}
-
-		case ONRSPQRYORDER:
-		{
-			this->processRspQryOrder(task);
-			break;
-		}
-
-		case ONRSPQRYTRADE:
-		{
-			this->processRspQryTrade(task);
-			break;
-		}
-
-		case ONRSPQRYINVESTORPOSITION:
-		{
-			this->processRspQryInvestorPosition(task);
-			break;
-		}
-
-		case ONRSPQRYTRADINGACCOUNT:
-		{
-			this->processRspQryTradingAccount(task);
-			break;
-		}
-
-		case ONRSPQRYINVESTOR:
-		{
-			this->processRspQryInvestor(task);
-			break;
-		}
-
-		case ONRSPQRYTRADINGCODE:
-		{
-			this->processRspQryTradingCode(task);
-			break;
-		}
-
-		case ONRSPQRYINSTRUMENTMARGINRATE:
-		{
-			this->processRspQryInstrumentMarginRate(task);
-			break;
-		}
-
-		case ONRSPQRYINSTRUMENTCOMMISSIONRATE:
-		{
-			this->processRspQryInstrumentCommissionRate(task);
-			break;
-		}
-
-		case ONRSPQRYEXCHANGE:
-		{
-			this->processRspQryExchange(task);
-			break;
-		}
-
-		case ONRSPQRYPRODUCT:
-		{
-			this->processRspQryProduct(task);
-			break;
-		}
-
-		case ONRSPQRYINSTRUMENT:
-		{
-			this->processRspQryInstrument(task);
-			break;
-		}
-
-		case ONRSPQRYDEPTHMARKETDATA:
-		{
-			this->processRspQryDepthMarketData(task);
-			break;
-		}
-
-		case ONRSPQRYSETTLEMENTINFO:
-		{
-			this->processRspQrySettlementInfo(task);
-			break;
-		}
-
-		case ONRSPQRYTRANSFERBANK:
-		{
-			this->processRspQryTransferBank(task);
-			break;
-		}
-
-		case ONRSPQRYINVESTORPOSITIONDETAIL:
-		{
-			this->processRspQryInvestorPositionDetail(task);
-			break;
-		}
-
-		case ONRSPQRYNOTICE:
-		{
-			this->processRspQryNotice(task);
-			break;
-		}
-
-		case ONRSPQRYSETTLEMENTINFOCONFIRM:
-		{
-			this->processRspQrySettlementInfoConfirm(task);
-			break;
-		}
-
-		case ONRSPQRYINVESTORPOSITIONCOMBINEDETAIL:
-		{
-			this->processRspQryInvestorPositionCombineDetail(task);
-			break;
-		}
-
-		case ONRSPQRYCFMMCTRADINGACCOUNTKEY:
-		{
-			this->processRspQryCFMMCTradingAccountKey(task);
-			break;
-		}
-
-		case ONRSPQRYEWARRANTOFFSET:
-		{
-			this->processRspQryEWarrantOffset(task);
-			break;
-		}
-
-		case ONRSPQRYINVESTORPRODUCTGROUPMARGIN:
-		{
-			this->processRspQryInvestorProductGroupMargin(task);
-			break;
-		}
-
-		case ONRSPQRYEXCHANGEMARGINRATE:
-		{
-			this->processRspQryExchangeMarginRate(task);
-			break;
-		}
-
-		case ONRSPQRYEXCHANGEMARGINRATEADJUST:
-		{
-			this->processRspQryExchangeMarginRateAdjust(task);
-			break;
-		}
-
-		case ONRSPQRYEXCHANGERATE:
-		{
-			this->processRspQryExchangeRate(task);
-			break;
-		}
-
-		case ONRSPQRYSECAGENTACIDMAP:
-		{
-			this->processRspQrySecAgentACIDMap(task);
-			break;
-		}
-
-		case ONRSPQRYPRODUCTEXCHRATE:
-		{
-			this->processRspQryProductExchRate(task);
-			break;
-		}
-
-		case ONRSPQRYPRODUCTGROUP:
-		{
-			this->processRspQryProductGroup(task);
-			break;
-		}
-
-		case ONRSPQRYOPTIONINSTRTRADECOST:
-		{
-			this->processRspQryOptionInstrTradeCost(task);
-			break;
-		}
-
-		case ONRSPQRYOPTIONINSTRCOMMRATE:
-		{
-			this->processRspQryOptionInstrCommRate(task);
-			break;
-		}
-
-		case ONRSPQRYEXECORDER:
-		{
-			this->processRspQryExecOrder(task);
-			break;
-		}
-
-		case ONRSPQRYFORQUOTE:
-		{
-			this->processRspQryForQuote(task);
-			break;
-		}
-
-		case ONRSPQRYQUOTE:
-		{
-			this->processRspQryQuote(task);
-			break;
-		}
-			
-
-		case ONRSPQRYCOMBINSTRUMENTGUARD:
-		{
-			this->processRspQryCombInstrumentGuard(task);
-			break;
-		}
-
-		case ONRSPQRYCOMBACTION:
-		{
-			this->processRspQryCombAction(task);
-			break;
-		}
-
-		case ONRSPQRYTRANSFERSERIAL:
-		{
-			this->processRspQryTransferSerial(task);
-			break;
-		}
-
-		case ONRSPQRYACCOUNTREGISTER:
-		{
-			this->processRspQryAccountregister(task);
-			break;
-		}
-
-		case ONRSPERROR:
-		{
-			this->processRspError(task);
-			break;
-		}
-
-		case ONRTNORDER:
-		{
-			this->processRtnOrder(task);
-			break;
-		}
-
-		case ONRTNTRADE:
-		{
-			this->processRtnTrade(task);
-			break;
-		}
-
-		case ONERRRTNORDERINSERT:
-		{
-			this->processErrRtnOrderInsert(task);
-			break;
-		}
-
-		case ONERRRTNORDERACTION:
-		{
-			this->processErrRtnOrderAction(task);
-			break;
-		}
-
-		case ONRTNINSTRUMENTSTATUS:
-		{
-			this->processRtnInstrumentStatus(task);
-			break;
-		}
-
-		case ONRTNTRADINGNOTICE:
-		{
-			this->processRtnTradingNotice(task);
-			break;
-		}
-
-		case ONRTNERRORCONDITIONALORDER:
-		{
-			this->processRtnErrorConditionalOrder(task);
-			break;
-		}
-
-		case ONRTNEXECORDER:
-		{
-			this->processRtnExecOrder(task);
-			break;
-		}
-
-		case ONERRRTNEXECORDERINSERT:
-		{
-			this->processErrRtnExecOrderInsert(task);
-			break;
-		}
-
-		case ONERRRTNEXECORDERACTION:
-		{
-			this->processErrRtnExecOrderAction(task);
-			break;
-		}
-
-		case ONERRRTNFORQUOTEINSERT:
-		{
-			this->processErrRtnForQuoteInsert(task);
-			break;
-		}
-
-		case ONRTNQUOTE:
-		{
-			this->processRtnQuote(task);
-			break;
-		}
-
-		case ONERRRTNQUOTEINSERT:
-		{
-			this->processErrRtnQuoteInsert(task);
-			break;
-		}
-
-		case ONERRRTNQUOTEACTION:
-		{
-			this->processErrRtnQuoteAction(task);
-			break;
-		}
-
-		case ONRTNFORQUOTERSP:
-		{
-			this->processRtnForQuoteRsp(task);
-			break;
-		}
-
-		case ONRTNCFMMCTRADINGACCOUNTTOKEN:
-		{
-			this->processRtnCFMMCTradingAccountToken(task);
-			break;
-		}
-
-		
-		case ONRTNCOMBACTION:
-		{
-			this->processRtnCombAction(task);
-			break;
-		}
-
-		case ONERRRTNCOMBACTIONINSERT:
-		{
-			this->processErrRtnCombActionInsert(task);
-			break;
-		}
-
-		case ONRSPQRYCONTRACTBANK:
-		{
-			this->processRspQryContractBank(task);
-			break;
-		}
-
-		case ONRSPQRYPARKEDORDER:
-		{
-			this->processRspQryParkedOrder(task);
-			break;
-		}
-
-		case ONRSPQRYPARKEDORDERACTION:
-		{
-			this->processRspQryParkedOrderAction(task);
-			break;
-		}
-
-		case ONRSPQRYTRADINGNOTICE:
-		{
-			this->processRspQryTradingNotice(task);
-			break;
-		}
-
-		case ONRSPQRYBROKERTRADINGPARAMS:
-		{
-			this->processRspQryBrokerTradingParams(task);
-			break;
-		}
-
-		case ONRSPQRYBROKERTRADINGALGOS:
-		{
-			this->processRspQryBrokerTradingAlgos(task);
-			break;
-		}
-
-		case ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN:
-		{
-			this->processRspQueryCFMMCTradingAccountToken(task);
-			break;
-		}
-
-		case ONRTNFROMBANKTOFUTUREBYBANK:
-		{
-			this->processRtnFromBankToFutureByBank(task);
-			break;
-		}
-
-		case ONRTNFROMFUTURETOBANKBYBANK:
-		{
-			this->processRtnFromFutureToBankByBank(task);
-			break;
-		}
-
-		case ONRTNREPEALFROMBANKTOFUTUREBYBANK:
-		{
-			this->processRtnRepealFromBankToFutureByBank(task);
-			break;
-		}
-
-		case ONRTNREPEALFROMFUTURETOBANKBYBANK:
-		{
-			this->processRtnRepealFromFutureToBankByBank(task);
-			break;
-		}
-
-		case ONRTNFROMBANKTOFUTUREBYFUTURE:
-		{
-			this->processRtnFromBankToFutureByFuture(task);
-			break;
-		}
-
-		case ONRTNFROMFUTURETOBANKBYFUTURE:
-		{
-			this->processRtnFromFutureToBankByFuture(task);
-			break;
-		}
-
-		case ONRTNREPEALFROMBANKTOFUTUREBYFUTUREMANUAL:
-		{
-			this->processRtnRepealFromBankToFutureByFutureManual(task);
-			break;
-		}
-
-		case ONRTNREPEALFROMFUTURETOBANKBYFUTUREMANUAL:
-		{
-			this->processRtnRepealFromFutureToBankByFutureManual(task);
-			break;
-		}
-
-		case ONRTNQUERYBANKBALANCEBYFUTURE:
-		{
-			this->processRtnQueryBankBalanceByFuture(task);
-			break;
-		}
-
-		case ONERRRTNBANKTOFUTUREBYFUTURE:
-		{
-			this->processErrRtnBankToFutureByFuture(task);
-			break;
-		}
-
-		case ONERRRTNFUTURETOBANKBYFUTURE:
-		{
-			this->processErrRtnFutureToBankByFuture(task);
-			break;
-		}
-
-		case ONERRRTNREPEALBANKTOFUTUREBYFUTUREMANUAL:
-		{
-			this->processErrRtnRepealBankToFutureByFutureManual(task);
-			break;
-		}
-
-		case ONERRRTNREPEALFUTURETOBANKBYFUTUREMANUAL:
-		{
-			this->processErrRtnRepealFutureToBankByFutureManual(task);
-			break;
-		}
-
-		case ONERRRTNQUERYBANKBALANCEBYFUTURE:
-		{
-			this->processErrRtnQueryBankBalanceByFuture(task);
-			break;
-		}
-
-		case ONRTNREPEALFROMBANKTOFUTUREBYFUTURE:
-		{
-			this->processRtnRepealFromBankToFutureByFuture(task);
-			break;
-		}
-
-		case ONRTNREPEALFROMFUTURETOBANKBYFUTURE:
-		{
-			this->processRtnRepealFromFutureToBankByFuture(task);
-			break;
-		}
-
-		case ONRSPFROMBANKTOFUTUREBYFUTURE:
-		{
-			this->processRspFromBankToFutureByFuture(task);
-			break;
-		}
-
-		case ONRSPFROMFUTURETOBANKBYFUTURE:
-		{
-			this->processRspFromFutureToBankByFuture(task);
-			break;
-		}
-
-		case ONRSPQUERYBANKACCOUNTMONEYBYFUTURE:
-		{
-			this->processRspQueryBankAccountMoneyByFuture(task);
-			break;
-		}
-
-		case ONRTNOPENACCOUNTBYBANK:
-		{
-			this->processRtnOpenAccountByBank(task);
-			break;
-		}
-
-		case ONRTNCANCELACCOUNTBYBANK:
-		{
-			this->processRtnCancelAccountByBank(task);
-			break;
-		}
-
-		case ONRTNCHANGEACCOUNTBYBANK:
-		{
-			this->processRtnChangeAccountByBank(task);
-			break;
-		}
+		try
+		{
+			switch (task.task_name)
+			{
+			case ONFRONTCONNECTED:
+			{
+				this->processFrontConnected(task);
+				break;
+			}
+
+			case ONFRONTDISCONNECTED:
+			{
+				this->processFrontDisconnected(task);
+				break;
+			}
+
+			case ONHEARTBEATWARNING:
+			{
+				this->processHeartBeatWarning(task);
+				break;
+			}
+
+			case ONRSPAUTHENTICATE:
+			{
+				this->processRspAuthenticate(task);
+				break;
+			}
+
+			case ONRSPUSERLOGIN:
+			{
+				this->processRspUserLogin(task);
+				break;
+			}
+
+			case ONRSPUSERLOGOUT:
+			{
+				this->processRspUserLogout(task);
+				break;
+			}
+
+			case ONRSPUSERPASSWORDUPDATE:
+			{
+				this->processRspUserPasswordUpdate(task);
+				break;
+			}
+
+			case ONRSPTRADINGACCOUNTPASSWORDUPDATE:
+			{
+				this->processRspTradingAccountPasswordUpdate(task);
+				break;
+			}
+
+			case ONRSPUSERAUTHMETHOD:
+			{
+				this->processRspUserAuthMethod(task);
+				break;
+			}
+
+			case ONRSPGENUSERCAPTCHA:
+			{
+				this->processRspGenUserCaptcha(task);
+				break;
+			}
+
+			case ONRSPGENUSERTEXT:
+			{
+				this->processRspGenUserText(task);
+				break;
+			}
+
+			case ONRSPORDERINSERT:
+			{
+				this->processRspOrderInsert(task);
+				break;
+			}
+
+			case ONRSPPARKEDORDERINSERT:
+			{
+				this->processRspParkedOrderInsert(task);
+				break;
+			}
+
+			case ONRSPPARKEDORDERACTION:
+			{
+				this->processRspParkedOrderAction(task);
+				break;
+			}
+
+			case ONRSPORDERACTION:
+			{
+				this->processRspOrderAction(task);
+				break;
+			}
+
+			case ONRSPQUERYMAXORDERVOLUME:
+			{
+				this->processRspQueryMaxOrderVolume(task);
+				break;
+			}
+
+			case ONRSPSETTLEMENTINFOCONFIRM:
+			{
+				this->processRspSettlementInfoConfirm(task);
+				break;
+			}
+
+			case ONRSPREMOVEPARKEDORDER:
+			{
+				this->processRspRemoveParkedOrder(task);
+				break;
+			}
+
+			case ONRSPREMOVEPARKEDORDERACTION:
+			{
+				this->processRspRemoveParkedOrderAction(task);
+				break;
+			}
+
+			case ONRSPEXECORDERINSERT:
+			{
+				this->processRspExecOrderInsert(task);
+				break;
+			}
+
+			case ONRSPEXECORDERACTION:
+			{
+				this->processRspExecOrderAction(task);
+				break;
+			}
+
+			case ONRSPFORQUOTEINSERT:
+			{
+				this->processRspForQuoteInsert(task);
+				break;
+			}
+
+			case ONRSPQUOTEINSERT:
+			{
+				this->processRspQuoteInsert(task);
+				break;
+			}
+
+			case ONRSPQUOTEACTION:
+			{
+				this->processRspQuoteAction(task);
+				break;
+			}
+
+			case ONRSPBATCHORDERACTION:
+			{
+				this->processRspBatchOrderAction(task);
+				break;
+			}
+
+			case ONRSPOPTIONSELFCLOSEINSERT:
+			{
+				this->processRspOptionSelfCloseInsert(task);
+				break;
+			}
+
+			case ONRSPOPTIONSELFCLOSEACTION:
+			{
+				this->processRspOptionSelfCloseAction(task);
+				break;
+			}
+
+			case ONRSPCOMBACTIONINSERT:
+			{
+				this->processRspCombActionInsert(task);
+				break;
+			}
+
+			case ONRSPQRYORDER:
+			{
+				this->processRspQryOrder(task);
+				break;
+			}
+
+			case ONRSPQRYTRADE:
+			{
+				this->processRspQryTrade(task);
+				break;
+			}
+
+			case ONRSPQRYINVESTORPOSITION:
+			{
+				this->processRspQryInvestorPosition(task);
+				break;
+			}
+
+			case ONRSPQRYTRADINGACCOUNT:
+			{
+				this->processRspQryTradingAccount(task);
+				break;
+			}
+
+			case ONRSPQRYINVESTOR:
+			{
+				this->processRspQryInvestor(task);
+				break;
+			}
+
+			case ONRSPQRYTRADINGCODE:
+			{
+				this->processRspQryTradingCode(task);
+				break;
+			}
+
+			case ONRSPQRYINSTRUMENTMARGINRATE:
+			{
+				this->processRspQryInstrumentMarginRate(task);
+				break;
+			}
+
+			case ONRSPQRYINSTRUMENTCOMMISSIONRATE:
+			{
+				this->processRspQryInstrumentCommissionRate(task);
+				break;
+			}
+
+			case ONRSPQRYEXCHANGE:
+			{
+				this->processRspQryExchange(task);
+				break;
+			}
+
+			case ONRSPQRYPRODUCT:
+			{
+				this->processRspQryProduct(task);
+				break;
+			}
+
+			case ONRSPQRYINSTRUMENT:
+			{
+				this->processRspQryInstrument(task);
+				break;
+			}
+
+			case ONRSPQRYDEPTHMARKETDATA:
+			{
+				this->processRspQryDepthMarketData(task);
+				break;
+			}
+
+			case ONRSPQRYSETTLEMENTINFO:
+			{
+				this->processRspQrySettlementInfo(task);
+				break;
+			}
+
+			case ONRSPQRYTRANSFERBANK:
+			{
+				this->processRspQryTransferBank(task);
+				break;
+			}
+
+			case ONRSPQRYINVESTORPOSITIONDETAIL:
+			{
+				this->processRspQryInvestorPositionDetail(task);
+				break;
+			}
+
+			case ONRSPQRYNOTICE:
+			{
+				this->processRspQryNotice(task);
+				break;
+			}
+
+			case ONRSPQRYSETTLEMENTINFOCONFIRM:
+			{
+				this->processRspQrySettlementInfoConfirm(task);
+				break;
+			}
+
+			case ONRSPQRYINVESTORPOSITIONCOMBINEDETAIL:
+			{
+				this->processRspQryInvestorPositionCombineDetail(task);
+				break;
+			}
+
+			case ONRSPQRYCFMMCTRADINGACCOUNTKEY:
+			{
+				this->processRspQryCFMMCTradingAccountKey(task);
+				break;
+			}
+
+			case ONRSPQRYEWARRANTOFFSET:
+			{
+				this->processRspQryEWarrantOffset(task);
+				break;
+			}
+
+			case ONRSPQRYINVESTORPRODUCTGROUPMARGIN:
+			{
+				this->processRspQryInvestorProductGroupMargin(task);
+				break;
+			}
+
+			case ONRSPQRYEXCHANGEMARGINRATE:
+			{
+				this->processRspQryExchangeMarginRate(task);
+				break;
+			}
+
+			case ONRSPQRYEXCHANGEMARGINRATEADJUST:
+			{
+				this->processRspQryExchangeMarginRateAdjust(task);
+				break;
+			}
+
+			case ONRSPQRYEXCHANGERATE:
+			{
+				this->processRspQryExchangeRate(task);
+				break;
+			}
+
+			case ONRSPQRYSECAGENTACIDMAP:
+			{
+				this->processRspQrySecAgentACIDMap(task);
+				break;
+			}
+
+			case ONRSPQRYPRODUCTEXCHRATE:
+			{
+				this->processRspQryProductExchRate(task);
+				break;
+			}
+
+			case ONRSPQRYPRODUCTGROUP:
+			{
+				this->processRspQryProductGroup(task);
+				break;
+			}
+
+			case ONRSPQRYMMINSTRUMENTCOMMISSIONRATE:
+			{
+				this->processRspQryMMInstrumentCommissionRate(task);
+				break;
+			}
+
+			case ONRSPQRYMMOPTIONINSTRCOMMRATE:
+			{
+				this->processRspQryMMOptionInstrCommRate(task);
+				break;
+			}
+
+			case ONRSPQRYINSTRUMENTORDERCOMMRATE:
+			{
+				this->processRspQryInstrumentOrderCommRate(task);
+				break;
+			}
+
+			case ONRSPQRYSECAGENTTRADINGACCOUNT:
+			{
+				this->processRspQrySecAgentTradingAccount(task);
+				break;
+			}
+
+			case ONRSPQRYSECAGENTCHECKMODE:
+			{
+				this->processRspQrySecAgentCheckMode(task);
+				break;
+			}
+
+			case ONRSPQRYSECAGENTTRADEINFO:
+			{
+				this->processRspQrySecAgentTradeInfo(task);
+				break;
+			}
+
+			case ONRSPQRYOPTIONINSTRTRADECOST:
+			{
+				this->processRspQryOptionInstrTradeCost(task);
+				break;
+			}
+
+			case ONRSPQRYOPTIONINSTRCOMMRATE:
+			{
+				this->processRspQryOptionInstrCommRate(task);
+				break;
+			}
+
+			case ONRSPQRYEXECORDER:
+			{
+				this->processRspQryExecOrder(task);
+				break;
+			}
+
+			case ONRSPQRYFORQUOTE:
+			{
+				this->processRspQryForQuote(task);
+				break;
+			}
+
+			case ONRSPQRYQUOTE:
+			{
+				this->processRspQryQuote(task);
+				break;
+			}
+
+			case ONRSPQRYOPTIONSELFCLOSE:
+			{
+				this->processRspQryOptionSelfClose(task);
+				break;
+			}
+
+			case ONRSPQRYINVESTUNIT:
+			{
+				this->processRspQryInvestUnit(task);
+				break;
+			}
+
+			case ONRSPQRYCOMBINSTRUMENTGUARD:
+			{
+				this->processRspQryCombInstrumentGuard(task);
+				break;
+			}
+
+			case ONRSPQRYCOMBACTION:
+			{
+				this->processRspQryCombAction(task);
+				break;
+			}
+
+			case ONRSPQRYTRANSFERSERIAL:
+			{
+				this->processRspQryTransferSerial(task);
+				break;
+			}
+
+			case ONRSPQRYACCOUNTREGISTER:
+			{
+				this->processRspQryAccountregister(task);
+				break;
+			}
+
+			case ONRSPERROR:
+			{
+				this->processRspError(task);
+				break;
+			}
+
+			case ONRTNORDER:
+			{
+				this->processRtnOrder(task);
+				break;
+			}
+
+			case ONRTNTRADE:
+			{
+				this->processRtnTrade(task);
+				break;
+			}
+
+			case ONERRRTNORDERINSERT:
+			{
+				this->processErrRtnOrderInsert(task);
+				break;
+			}
+
+			case ONERRRTNORDERACTION:
+			{
+				this->processErrRtnOrderAction(task);
+				break;
+			}
+
+			case ONRTNINSTRUMENTSTATUS:
+			{
+				this->processRtnInstrumentStatus(task);
+				break;
+			}
+
+			case ONRTNBULLETIN:
+			{
+				this->processRtnBulletin(task);
+				break;
+			}
+
+			case ONRTNTRADINGNOTICE:
+			{
+				this->processRtnTradingNotice(task);
+				break;
+			}
+
+			case ONRTNERRORCONDITIONALORDER:
+			{
+				this->processRtnErrorConditionalOrder(task);
+				break;
+			}
+
+			case ONRTNEXECORDER:
+			{
+				this->processRtnExecOrder(task);
+				break;
+			}
+
+			case ONERRRTNEXECORDERINSERT:
+			{
+				this->processErrRtnExecOrderInsert(task);
+				break;
+			}
+
+			case ONERRRTNEXECORDERACTION:
+			{
+				this->processErrRtnExecOrderAction(task);
+				break;
+			}
+
+			case ONERRRTNFORQUOTEINSERT:
+			{
+				this->processErrRtnForQuoteInsert(task);
+				break;
+			}
+
+			case ONRTNQUOTE:
+			{
+				this->processRtnQuote(task);
+				break;
+			}
+
+			case ONERRRTNQUOTEINSERT:
+			{
+				this->processErrRtnQuoteInsert(task);
+				break;
+			}
+
+			case ONERRRTNQUOTEACTION:
+			{
+				this->processErrRtnQuoteAction(task);
+				break;
+			}
+
+			case ONRTNFORQUOTERSP:
+			{
+				this->processRtnForQuoteRsp(task);
+				break;
+			}
+
+			case ONRTNCFMMCTRADINGACCOUNTTOKEN:
+			{
+				this->processRtnCFMMCTradingAccountToken(task);
+				break;
+			}
+
+			case ONERRRTNBATCHORDERACTION:
+			{
+				this->processErrRtnBatchOrderAction(task);
+				break;
+			}
+
+			case ONRTNOPTIONSELFCLOSE:
+			{
+				this->processRtnOptionSelfClose(task);
+				break;
+			}
+
+			case ONERRRTNOPTIONSELFCLOSEINSERT:
+			{
+				this->processErrRtnOptionSelfCloseInsert(task);
+				break;
+			}
+
+			case ONERRRTNOPTIONSELFCLOSEACTION:
+			{
+				this->processErrRtnOptionSelfCloseAction(task);
+				break;
+			}
+
+			case ONRTNCOMBACTION:
+			{
+				this->processRtnCombAction(task);
+				break;
+			}
+
+			case ONERRRTNCOMBACTIONINSERT:
+			{
+				this->processErrRtnCombActionInsert(task);
+				break;
+			}
+
+			case ONRSPQRYCONTRACTBANK:
+			{
+				this->processRspQryContractBank(task);
+				break;
+			}
+
+			case ONRSPQRYPARKEDORDER:
+			{
+				this->processRspQryParkedOrder(task);
+				break;
+			}
+
+			case ONRSPQRYPARKEDORDERACTION:
+			{
+				this->processRspQryParkedOrderAction(task);
+				break;
+			}
+
+			case ONRSPQRYTRADINGNOTICE:
+			{
+				this->processRspQryTradingNotice(task);
+				break;
+			}
+
+			case ONRSPQRYBROKERTRADINGPARAMS:
+			{
+				this->processRspQryBrokerTradingParams(task);
+				break;
+			}
+
+			case ONRSPQRYBROKERTRADINGALGOS:
+			{
+				this->processRspQryBrokerTradingAlgos(task);
+				break;
+			}
+
+			case ONRSPQUERYCFMMCTRADINGACCOUNTTOKEN:
+			{
+				this->processRspQueryCFMMCTradingAccountToken(task);
+				break;
+			}
+
+			case ONRTNFROMBANKTOFUTUREBYBANK:
+			{
+				this->processRtnFromBankToFutureByBank(task);
+				break;
+			}
+
+			case ONRTNFROMFUTURETOBANKBYBANK:
+			{
+				this->processRtnFromFutureToBankByBank(task);
+				break;
+			}
+
+			case ONRTNREPEALFROMBANKTOFUTUREBYBANK:
+			{
+				this->processRtnRepealFromBankToFutureByBank(task);
+				break;
+			}
+
+			case ONRTNREPEALFROMFUTURETOBANKBYBANK:
+			{
+				this->processRtnRepealFromFutureToBankByBank(task);
+				break;
+			}
+
+			case ONRTNFROMBANKTOFUTUREBYFUTURE:
+			{
+				this->processRtnFromBankToFutureByFuture(task);
+				break;
+			}
+
+			case ONRTNFROMFUTURETOBANKBYFUTURE:
+			{
+				this->processRtnFromFutureToBankByFuture(task);
+				break;
+			}
+
+			case ONRTNREPEALFROMBANKTOFUTUREBYFUTUREMANUAL:
+			{
+				this->processRtnRepealFromBankToFutureByFutureManual(task);
+				break;
+			}
+
+			case ONRTNREPEALFROMFUTURETOBANKBYFUTUREMANUAL:
+			{
+				this->processRtnRepealFromFutureToBankByFutureManual(task);
+				break;
+			}
+
+			case ONRTNQUERYBANKBALANCEBYFUTURE:
+			{
+				this->processRtnQueryBankBalanceByFuture(task);
+				break;
+			}
+
+			case ONERRRTNBANKTOFUTUREBYFUTURE:
+			{
+				this->processErrRtnBankToFutureByFuture(task);
+				break;
+			}
+
+			case ONERRRTNFUTURETOBANKBYFUTURE:
+			{
+				this->processErrRtnFutureToBankByFuture(task);
+				break;
+			}
+
+			case ONERRRTNREPEALBANKTOFUTUREBYFUTUREMANUAL:
+			{
+				this->processErrRtnRepealBankToFutureByFutureManual(task);
+				break;
+			}
+
+			case ONERRRTNREPEALFUTURETOBANKBYFUTUREMANUAL:
+			{
+				this->processErrRtnRepealFutureToBankByFutureManual(task);
+				break;
+			}
+
+			case ONERRRTNQUERYBANKBALANCEBYFUTURE:
+			{
+				this->processErrRtnQueryBankBalanceByFuture(task);
+				break;
+			}
+
+			case ONRTNREPEALFROMBANKTOFUTUREBYFUTURE:
+			{
+				this->processRtnRepealFromBankToFutureByFuture(task);
+				break;
+			}
+
+			case ONRTNREPEALFROMFUTURETOBANKBYFUTURE:
+			{
+				this->processRtnRepealFromFutureToBankByFuture(task);
+				break;
+			}
+
+			case ONRSPFROMBANKTOFUTUREBYFUTURE:
+			{
+				this->processRspFromBankToFutureByFuture(task);
+				break;
+			}
+
+			case ONRSPFROMFUTURETOBANKBYFUTURE:
+			{
+				this->processRspFromFutureToBankByFuture(task);
+				break;
+			}
+
+			case ONRSPQUERYBANKACCOUNTMONEYBYFUTURE:
+			{
+				this->processRspQueryBankAccountMoneyByFuture(task);
+				break;
+			}
+
+			case ONRTNOPENACCOUNTBYBANK:
+			{
+				this->processRtnOpenAccountByBank(task);
+				break;
+			}
+
+			case ONRTNCANCELACCOUNTBYBANK:
+			{
+				this->processRtnCancelAccountByBank(task);
+				break;
+			}
+
+			case ONRTNCHANGEACCOUNTBYBANK:
+			{
+				this->processRtnChangeAccountByBank(task);
+				break;
+			}
+			}
+		}
+		catch (std::exception & e)
+		{
+			cout << "TdApi processTask exception: " << e.what() << task.task_name << endl;
 		}
 	}
 }
@@ -3620,12 +4289,18 @@ void TdApi::processHeartBeatWarning(Task task)
 
 void TdApi::processRspAuthenticate(Task task)
 {
+
 	PyLock lock;
 	CThostFtdcRspAuthenticateField task_data = any_cast<CThostFtdcRspAuthenticateField>(task.task_data);
 	dict data;
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+
+	cout << "begin processRspAuthenticate\n" << endl;
+
 	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["AppID"] = boost::locale::conv::to_utf<char>(task_data.AppID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["AppType"] = task_data.AppType;
+	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3633,6 +4308,7 @@ void TdApi::processRspAuthenticate(Task task)
 	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
 
 	this->onRspAuthenticate(data, error, task.task_id, task.task_last);
+	cout << "end processRspAuthenticate\n" << endl;
 };
 
 void TdApi::processRspUserLogin(Task task)
@@ -3640,19 +4316,19 @@ void TdApi::processRspUserLogin(Task task)
 	PyLock lock;
 	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
-	data["FFEXTime"] = boost::locale::conv::to_utf<char>(task_data.FFEXTime, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CZCETime"] = boost::locale::conv::to_utf<char>(task_data.CZCETime, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SHFETime"] = boost::locale::conv::to_utf<char>(task_data.SHFETime, std::string("GB2312"));
-	data["INETime"] = boost::locale::conv::to_utf<char>(task_data.INETime, std::string("GB2312"));
-	data["DCETime"] = boost::locale::conv::to_utf<char>(task_data.DCETime, std::string("GB2312"));
-	data["LoginTime"] = boost::locale::conv::to_utf<char>(task_data.LoginTime, std::string("GB2312"));
-	data["MaxOrderRef"] = boost::locale::conv::to_utf<char>(task_data.MaxOrderRef, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["SystemName"] = boost::locale::conv::to_utf<char>(task_data.SystemName, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CZCETime"] = boost::locale::conv::to_utf<char>(task_data.CZCETime, std::string("GB2312"));
+    data["DCETime"] = boost::locale::conv::to_utf<char>(task_data.DCETime, std::string("GB2312"));
+    data["FFEXTime"] = boost::locale::conv::to_utf<char>(task_data.FFEXTime, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["INETime"] = boost::locale::conv::to_utf<char>(task_data.INETime, std::string("GB2312"));
+    data["LoginTime"] = boost::locale::conv::to_utf<char>(task_data.LoginTime, std::string("GB2312"));
+    data["MaxOrderRef"] = boost::locale::conv::to_utf<char>(task_data.MaxOrderRef, std::string("GB2312"));
+    data["SessionID"] = task_data.SessionID;
+    data["SHFETime"] = boost::locale::conv::to_utf<char>(task_data.SHFETime, std::string("GB2312"));
+    data["SystemName"] = boost::locale::conv::to_utf<char>(task_data.SystemName, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3715,6 +4391,54 @@ void TdApi::processRspTradingAccountPasswordUpdate(Task task)
 	this->onRspTradingAccountPasswordUpdate(data, error, task.task_id, task.task_last);
 };
 
+void TdApi::processRspUserAuthMethod(Task task)
+{
+	PyLock lock;
+	CThostFtdcRspUserAuthMethodField task_data = any_cast<CThostFtdcRspUserAuthMethodField>(task.task_data);
+	dict data;
+	data["UsableAuthMethod"] = task_data.UsableAuthMethod;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+	error["ErrorID"] = task_error.ErrorID;
+
+	this->onRspUserAuthMethod(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspGenUserCaptcha(Task task)
+{
+	PyLock lock;
+	CThostFtdcRspGenUserCaptchaField task_data = any_cast<CThostFtdcRspGenUserCaptchaField>(task.task_data);
+	dict data;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["CaptchaInfoLen"] = task_data.CaptchaInfoLen;
+	data["CaptchaInfo"] = boost::locale::conv::to_utf<char>(task_data.CaptchaInfo, std::string("GB2312"));
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspGenUserCaptcha(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspGenUserText(Task task)
+{
+	PyLock lock;
+	CThostFtdcRspGenUserTextField task_data = any_cast<CThostFtdcRspGenUserTextField>(task.task_data);
+	dict data;
+	data["UserTextSeq"] = task_data.UserTextSeq;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspGenUserText(data, error, task.task_id, task.task_last);
+};
+
 void TdApi::processRspOrderInsert(Task task)
 {
 	PyLock lock;
@@ -3732,18 +4456,26 @@ void TdApi::processRspOrderInsert(Task task)
 	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
 	data["OrderPriceType"] = task_data.OrderPriceType;
 	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
 	data["RequestID"] = task_data.RequestID;
 	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 	data["UserForceClose"] = task_data.UserForceClose;
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["MinVolume"] = task_data.MinVolume;
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["VolumeCondition"] = task_data.VolumeCondition;
 	data["LimitPrice"] = task_data.LimitPrice;
 	data["IsSwapOrder"] = task_data.IsSwapOrder;
 	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
 	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
 	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
 	data["Direction"] = task_data.Direction;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+	data["MinVolume"] = task_data.MinVolume;
+
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3758,35 +4490,42 @@ void TdApi::processRspParkedOrderInsert(Task task)
 	PyLock lock;
 	CThostFtdcParkedOrderField task_data = any_cast<CThostFtdcParkedOrderField>(task.task_data);
 	dict data;
-	data["TimeCondition"] = task_data.TimeCondition;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["UserType"] = task_data.UserType;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ContingentCondition"] = task_data.ContingentCondition;
-	data["ParkedOrderID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderID, std::string("GB2312"));
-	data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
-	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
-	data["StopPrice"] = task_data.StopPrice;
-	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
-	data["OrderPriceType"] = task_data.OrderPriceType;
-	data["ErrorID"] = task_data.ErrorID;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["UserForceClose"] = task_data.UserForceClose;
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["MinVolume"] = task_data.MinVolume;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["IsSwapOrder"] = task_data.IsSwapOrder;
-	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["Status"] = task_data.Status;
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["Direction"] = task_data.Direction;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
+    data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
+    data["ContingentCondition"] = task_data.ContingentCondition;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+    data["IsSwapOrder"] = task_data.IsSwapOrder;
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["MinVolume"] = task_data.MinVolume;
+    data["OrderPriceType"] = task_data.OrderPriceType;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["ParkedOrderID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["Status"] = task_data.Status;
+    data["StopPrice"] = task_data.StopPrice;
+    data["TimeCondition"] = task_data.TimeCondition;
+    data["UserForceClose"] = task_data.UserForceClose;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserType"] = task_data.UserType;
+    data["VolumeCondition"] = task_data.VolumeCondition;
+    data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3801,25 +4540,29 @@ void TdApi::processRspParkedOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcParkedOrderActionField task_data = any_cast<CThostFtdcParkedOrderActionField>(task.task_data);
 	dict data;
-	data["UserType"] = task_data.UserType;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["VolumeChange"] = task_data.VolumeChange;
-	data["OrderActionRef"] = task_data.OrderActionRef;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["ErrorID"] = task_data.ErrorID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["Status"] = task_data.Status;
-	data["FrontID"] = task_data.FrontID;
-	data["RequestID"] = task_data.RequestID;
 	data["ActionFlag"] = task_data.ActionFlag;
-	data["ParkedOrderActionID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderActionID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OrderActionRef"] = task_data.OrderActionRef;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["ParkedOrderActionID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderActionID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["Status"] = task_data.Status;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserType"] = task_data.UserType;
+    data["VolumeChange"] = task_data.VolumeChange;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3834,20 +4577,23 @@ void TdApi::processRspOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcInputOrderActionField task_data = any_cast<CThostFtdcInputOrderActionField>(task.task_data);
 	dict data;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["VolumeChange"] = task_data.VolumeChange;
-	data["OrderActionRef"] = task_data.OrderActionRef;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["RequestID"] = task_data.RequestID;
-	data["ActionFlag"] = task_data.ActionFlag;
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
+    data["ActionFlag"] = task_data.ActionFlag;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OrderActionRef"] = task_data.OrderActionRef;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VolumeChange"] = task_data.VolumeChange;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3862,14 +4608,16 @@ void TdApi::processRspQueryMaxOrderVolume(Task task)
 	PyLock lock;
 	CThostFtdcQueryMaxOrderVolumeField task_data = any_cast<CThostFtdcQueryMaxOrderVolumeField>(task.task_data);
 	dict data;
-	data["MaxVolume"] = task_data.MaxVolume;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["MaxVolume"] = task_data.MaxVolume;
+    data["OffsetFlag"] = task_data.OffsetFlag;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3884,10 +4632,13 @@ void TdApi::processRspSettlementInfoConfirm(Task task)
 	PyLock lock;
 	CThostFtdcSettlementInfoConfirmField task_data = any_cast<CThostFtdcSettlementInfoConfirmField>(task.task_data);
 	dict data;
+	data["SettlementID"] = task_data.SettlementID;
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["ConfirmDate"] = boost::locale::conv::to_utf<char>(task_data.ConfirmDate, std::string("GB2312"));
 	data["ConfirmTime"] = boost::locale::conv::to_utf<char>(task_data.ConfirmTime, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3902,9 +4653,10 @@ void TdApi::processRspRemoveParkedOrder(Task task)
 	PyLock lock;
 	CThostFtdcRemoveParkedOrderField task_data = any_cast<CThostFtdcRemoveParkedOrderField>(task.task_data);
 	dict data;
-	data["ParkedOrderID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["ParkedOrderID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3919,9 +4671,10 @@ void TdApi::processRspRemoveParkedOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcRemoveParkedOrderActionField task_data = any_cast<CThostFtdcRemoveParkedOrderActionField>(task.task_data);
 	dict data;
-	data["ParkedOrderActionID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderActionID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["ParkedOrderActionID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderActionID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3936,21 +4689,28 @@ void TdApi::processRspExecOrderInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputExecOrderField task_data = any_cast<CThostFtdcInputExecOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ActionType"] = task_data.ActionType;
-	data["ReservePositionFlag"] = task_data.ReservePositionFlag;
-	data["Volume"] = task_data.Volume;
-	data["CloseFlag"] = task_data.CloseFlag;
-	data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
-	data["PosiDirection"] = task_data.PosiDirection;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["HedgeFlag"] = task_data.HedgeFlag;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActionType"] = task_data.ActionType;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CloseFlag"] = task_data.CloseFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OffsetFlag"] = task_data.OffsetFlag;
+    data["PosiDirection"] = task_data.PosiDirection;
+    data["RequestID"] = task_data.RequestID;
+    data["ReservePositionFlag"] = task_data.ReservePositionFlag;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3965,18 +4725,22 @@ void TdApi::processRspExecOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcInputExecOrderActionField task_data = any_cast<CThostFtdcInputExecOrderActionField>(task.task_data);
 	dict data;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ExecOrderActionRef"] = task_data.ExecOrderActionRef;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
-	data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
 	data["ActionFlag"] = task_data.ActionFlag;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExecOrderActionRef"] = task_data.ExecOrderActionRef;
+    data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
+    data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -3991,12 +4755,16 @@ void TdApi::processRspForQuoteInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputForQuoteField task_data = any_cast<CThostFtdcInputForQuoteField>(task.task_data);
 	dict data;
-	data["ForQuoteRef"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteRef, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForQuoteRef"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteRef, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4011,25 +4779,30 @@ void TdApi::processRspQuoteInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputQuoteField task_data = any_cast<CThostFtdcInputQuoteField>(task.task_data);
 	dict data;
-	data["BidPrice"] = task_data.BidPrice;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
-	data["AskHedgeFlag"] = task_data.AskHedgeFlag;
-	data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["AskOffsetFlag"] = task_data.AskOffsetFlag;
-	data["BidOffsetFlag"] = task_data.BidOffsetFlag;
-	data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
-	data["AskPrice"] = task_data.AskPrice;
-	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
-	data["AskVolume"] = task_data.AskVolume;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BidVolume"] = task_data.BidVolume;
-	data["RequestID"] = task_data.RequestID;
-	data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["AskHedgeFlag"] = task_data.AskHedgeFlag;
+    data["AskOffsetFlag"] = task_data.AskOffsetFlag;
+    data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
+    data["AskPrice"] = task_data.AskPrice;
+    data["AskVolume"] = task_data.AskVolume;
+    data["BidHedgeFlag"] = task_data.BidHedgeFlag;
+    data["BidOffsetFlag"] = task_data.BidOffsetFlag;
+    data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
+    data["BidPrice"] = task_data.BidPrice;
+    data["BidVolume"] = task_data.BidVolume;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4044,18 +4817,23 @@ void TdApi::processRspQuoteAction(Task task)
 	PyLock lock;
 	CThostFtdcInputQuoteActionField task_data = any_cast<CThostFtdcInputQuoteActionField>(task.task_data);
 	dict data;
-	data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["QuoteActionRef"] = task_data.QuoteActionRef;
-	data["FrontID"] = task_data.FrontID;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["ActionFlag"] = task_data.ActionFlag;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
+    data["ActionFlag"] = task_data.ActionFlag;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["QuoteActionRef"] = task_data.QuoteActionRef;
+    data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
+    data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4065,22 +4843,109 @@ void TdApi::processRspQuoteAction(Task task)
 	this->onRspQuoteAction(data, error, task.task_id, task.task_last);
 };
 
+void TdApi::processRspBatchOrderAction(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputBatchOrderActionField task_data = any_cast<CThostFtdcInputBatchOrderActionField>(task.task_data);
+	dict data;
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["OrderActionRef"] = task_data.OrderActionRef;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["SessionID"] = task_data.SessionID;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["RequestID"] = task_data.RequestID;
+	data["FrontID"] = task_data.FrontID;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspBatchOrderAction(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspOptionSelfCloseInsert(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputOptionSelfCloseField task_data = any_cast<CThostFtdcInputOptionSelfCloseField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OptSelfCloseFlag"] = task_data.OptSelfCloseFlag;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["RequestID"] = task_data.RequestID;
+	data["OptionSelfCloseRef"] = task_data.OptionSelfCloseRef;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspOptionSelfCloseInsert(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspOptionSelfCloseAction(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputOptionSelfCloseActionField task_data = any_cast<CThostFtdcInputOptionSelfCloseActionField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OptionSelfCloseSysID"] = task_data.OptionSelfCloseSysID;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["OptionSelfCloseActionRef"] = task_data.OptionSelfCloseActionRef;
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["SessionID"] = task_data.SessionID;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["RequestID"] = task_data.RequestID;
+	data["ActionFlag"] = task_data.ActionFlag;
+	data["OptionSelfCloseRef"] = task_data.OptionSelfCloseRef;
+	data["FrontID"] = task_data.FrontID;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspOptionSelfCloseAction(data, error, task.task_id, task.task_last);
+};
 
 void TdApi::processRspCombActionInsert(Task task)
 {
 	PyLock lock;
 	CThostFtdcInputCombActionField task_data = any_cast<CThostFtdcInputCombActionField>(task.task_data);
 	dict data;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["CombDirection"] = task_data.CombDirection;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
-	data["Volume"] = task_data.Volume;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
+    data["CombDirection"] = task_data.CombDirection;
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4095,64 +4960,72 @@ void TdApi::processRspQryOrder(Task task)
 	PyLock lock;
 	CThostFtdcOrderField task_data = any_cast<CThostFtdcOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["RelativeOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.RelativeOrderSysID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ContingentCondition"] = task_data.ContingentCondition;
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
-	data["OrderPriceType"] = task_data.OrderPriceType;
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["ActiveTraderID"] = boost::locale::conv::to_utf<char>(task_data.ActiveTraderID, std::string("GB2312"));
-	data["ActiveTime"] = boost::locale::conv::to_utf<char>(task_data.ActiveTime, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["RequestID"] = task_data.RequestID;
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["ZCETotalTradedVolume"] = task_data.ZCETotalTradedVolume;
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["OrderSource"] = task_data.OrderSource;
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["MinVolume"] = task_data.MinVolume;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["UserForceClose"] = task_data.UserForceClose;
-	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["Direction"] = task_data.Direction;
-	data["TimeCondition"] = task_data.TimeCondition;
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
-	data["StopPrice"] = task_data.StopPrice;
-	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
-	data["VolumeTraded"] = task_data.VolumeTraded;
-	data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["OrderType"] = task_data.OrderType;
-	data["SuspendTime"] = boost::locale::conv::to_utf<char>(task_data.SuspendTime, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["VolumeTotal"] = task_data.VolumeTotal;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["SettlementID"] = task_data.SettlementID;
-	data["IsSwapOrder"] = task_data.IsSwapOrder;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["OrderStatus"] = task_data.OrderStatus;
-	data["InstallID"] = task_data.InstallID;
+
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActiveTime"] = boost::locale::conv::to_utf<char>(task_data.ActiveTime, std::string("GB2312"));
+    data["ActiveTraderID"] = boost::locale::conv::to_utf<char>(task_data.ActiveTraderID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
+    data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
+    data["ContingentCondition"] = task_data.ContingentCondition;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["FrontID"] = task_data.FrontID;
+    data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+    data["IsSwapOrder"] = task_data.IsSwapOrder;
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["MinVolume"] = task_data.MinVolume;
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
+    data["OrderPriceType"] = task_data.OrderPriceType;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSource"] = task_data.OrderSource;
+    data["OrderStatus"] = task_data.OrderStatus;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["OrderType"] = task_data.OrderType;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["RelativeOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.RelativeOrderSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["StopPrice"] = task_data.StopPrice;
+    data["SuspendTime"] = boost::locale::conv::to_utf<char>(task_data.SuspendTime, std::string("GB2312"));
+    data["TimeCondition"] = task_data.TimeCondition;
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
+    data["UserForceClose"] = task_data.UserForceClose;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["VolumeCondition"] = task_data.VolumeCondition;
+    data["VolumeTotal"] = task_data.VolumeTotal;
+    data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
+    data["VolumeTraded"] = task_data.VolumeTraded;
+    data["ZCETotalTradedVolume"] = task_data.ZCETotalTradedVolume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4167,36 +5040,37 @@ void TdApi::processRspQryTrade(Task task)
 	PyLock lock;
 	CThostFtdcTradeField task_data = any_cast<CThostFtdcTradeField>(task.task_data);
 	dict data;
-	data["TradingRole"] = task_data.TradingRole;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["TradeType"] = task_data.TradeType;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["TradeSource"] = task_data.TradeSource;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
-	data["PriceSource"] = task_data.PriceSource;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["Volume"] = task_data.Volume;
-	data["Price"] = task_data.Price;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["OffsetFlag"] = task_data.OffsetFlag;
+    data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["Price"] = task_data.Price;
+    data["PriceSource"] = task_data.PriceSource;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SettlementID"] = task_data.SettlementID;
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradeSource"] = task_data.TradeSource;
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradeType"] = task_data.TradeType;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TradingRole"] = task_data.TradingRole;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4211,51 +5085,53 @@ void TdApi::processRspQryInvestorPosition(Task task)
 	PyLock lock;
 	CThostFtdcInvestorPositionField task_data = any_cast<CThostFtdcInvestorPositionField>(task.task_data);
 	dict data;
-	data["ShortFrozen"] = task_data.ShortFrozen;
-	data["FrozenMargin"] = task_data.FrozenMargin;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["CashIn"] = task_data.CashIn;
-	data["FrozenCommission"] = task_data.FrozenCommission;
-	data["UseMargin"] = task_data.UseMargin;
-	data["MarginRateByVolume"] = task_data.MarginRateByVolume;
-	data["CloseProfitByDate"] = task_data.CloseProfitByDate;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["StrikeFrozen"] = task_data.StrikeFrozen;
-	data["CombLongFrozen"] = task_data.CombLongFrozen;
-	data["CloseProfitByTrade"] = task_data.CloseProfitByTrade;
-	data["TodayPosition"] = task_data.TodayPosition;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CombShortFrozen"] = task_data.CombShortFrozen;
-	data["YdStrikeFrozen"] = task_data.YdStrikeFrozen;
-	data["PreSettlementPrice"] = task_data.PreSettlementPrice;
-	data["OpenVolume"] = task_data.OpenVolume;
-	data["CloseVolume"] = task_data.CloseVolume;
-	data["SettlementPrice"] = task_data.SettlementPrice;
-	data["OpenCost"] = task_data.OpenCost;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["OpenAmount"] = task_data.OpenAmount;
-	data["StrikeFrozenAmount"] = task_data.StrikeFrozenAmount;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["PositionCost"] = task_data.PositionCost;
-	data["LongFrozenAmount"] = task_data.LongFrozenAmount;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["PreMargin"] = task_data.PreMargin;
-	data["CloseProfit"] = task_data.CloseProfit;
-	data["CloseAmount"] = task_data.CloseAmount;
-	data["LongFrozen"] = task_data.LongFrozen;
-	data["PosiDirection"] = task_data.PosiDirection;
-	data["CombPosition"] = task_data.CombPosition;
-	data["YdPosition"] = task_data.YdPosition;
-	data["PositionDate"] = task_data.PositionDate;
-	data["AbandonFrozen"] = task_data.AbandonFrozen;
-	data["ShortFrozenAmount"] = task_data.ShortFrozenAmount;
-	data["FrozenCash"] = task_data.FrozenCash;
-	data["SettlementID"] = task_data.SettlementID;
-	data["Position"] = task_data.Position;
-	data["ExchangeMargin"] = task_data.ExchangeMargin;
-	data["MarginRateByMoney"] = task_data.MarginRateByMoney;
-	data["PositionProfit"] = task_data.PositionProfit;
-	data["Commission"] = task_data.Commission;
+    data["AbandonFrozen"] = task_data.AbandonFrozen;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CashIn"] = task_data.CashIn;
+    data["CloseAmount"] = task_data.CloseAmount;
+    data["CloseProfit"] = task_data.CloseProfit;
+    data["CloseProfitByDate"] = task_data.CloseProfitByDate;
+    data["CloseProfitByTrade"] = task_data.CloseProfitByTrade;
+    data["CloseVolume"] = task_data.CloseVolume;
+    data["CombLongFrozen"] = task_data.CombLongFrozen;
+    data["CombPosition"] = task_data.CombPosition;
+    data["CombShortFrozen"] = task_data.CombShortFrozen;
+    data["Commission"] = task_data.Commission;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeMargin"] = task_data.ExchangeMargin;
+    data["FrozenCash"] = task_data.FrozenCash;
+    data["FrozenCommission"] = task_data.FrozenCommission;
+    data["FrozenMargin"] = task_data.FrozenMargin;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["LongFrozen"] = task_data.LongFrozen;
+    data["LongFrozenAmount"] = task_data.LongFrozenAmount;
+    data["MarginRateByMoney"] = task_data.MarginRateByMoney;
+    data["MarginRateByVolume"] = task_data.MarginRateByVolume;
+    data["OpenAmount"] = task_data.OpenAmount;
+    data["OpenCost"] = task_data.OpenCost;
+    data["OpenVolume"] = task_data.OpenVolume;
+    data["PosiDirection"] = task_data.PosiDirection;
+    data["Position"] = task_data.Position;
+    data["PositionCost"] = task_data.PositionCost;
+    data["PositionDate"] = task_data.PositionDate;
+    data["PositionProfit"] = task_data.PositionProfit;
+    data["PreMargin"] = task_data.PreMargin;
+    data["PreSettlementPrice"] = task_data.PreSettlementPrice;
+    data["SettlementID"] = task_data.SettlementID;
+    data["SettlementPrice"] = task_data.SettlementPrice;
+    data["ShortFrozen"] = task_data.ShortFrozen;
+    data["ShortFrozenAmount"] = task_data.ShortFrozenAmount;
+    data["StrikeFrozen"] = task_data.StrikeFrozen;
+    data["StrikeFrozenAmount"] = task_data.StrikeFrozenAmount;
+    data["TodayPosition"] = task_data.TodayPosition;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UseMargin"] = task_data.UseMargin;
+    data["YdPosition"] = task_data.YdPosition;
+    data["YdStrikeFrozen"] = task_data.YdStrikeFrozen;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4270,53 +5146,56 @@ void TdApi::processRspQryTradingAccount(Task task)
 	PyLock lock;
 	CThostFtdcTradingAccountField task_data = any_cast<CThostFtdcTradingAccountField>(task.task_data);
 	dict data;
-	data["ReserveBalance"] = task_data.ReserveBalance;
-	data["Reserve"] = task_data.Reserve;
-	data["SpecProductCommission"] = task_data.SpecProductCommission;
-	data["FrozenMargin"] = task_data.FrozenMargin;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["CashIn"] = task_data.CashIn;
-	data["FundMortgageOut"] = task_data.FundMortgageOut;
-	data["FrozenCommission"] = task_data.FrozenCommission;
-	data["SpecProductPositionProfitByAlg"] = task_data.SpecProductPositionProfitByAlg;
-	data["Commission"] = task_data.Commission;
-	data["SpecProductPositionProfit"] = task_data.SpecProductPositionProfit;
-	data["Deposit"] = task_data.Deposit;
-	data["DeliveryMargin"] = task_data.DeliveryMargin;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["Interest"] = task_data.Interest;
-	data["PreDeposit"] = task_data.PreDeposit;
-	data["Available"] = task_data.Available;
-	data["SpecProductFrozenMargin"] = task_data.SpecProductFrozenMargin;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["SpecProductMargin"] = task_data.SpecProductMargin;
-	data["PreFundMortgageOut"] = task_data.PreFundMortgageOut;
-	data["InterestBase"] = task_data.InterestBase;
-	data["SpecProductExchangeMargin"] = task_data.SpecProductExchangeMargin;
-	data["PreBalance"] = task_data.PreBalance;
-	data["Balance"] = task_data.Balance;
-	data["MortgageableFund"] = task_data.MortgageableFund;
-	data["Withdraw"] = task_data.Withdraw;
-	data["SpecProductFrozenCommission"] = task_data.SpecProductFrozenCommission;
-	data["PreMortgage"] = task_data.PreMortgage;
-	data["SpecProductCloseProfit"] = task_data.SpecProductCloseProfit;
-	data["WithdrawQuota"] = task_data.WithdrawQuota;
-	data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
-	data["BizType"] = task_data.BizType;
-	data["PreCredit"] = task_data.PreCredit;
-	data["FrozenCash"] = task_data.FrozenCash;
-	data["SettlementID"] = task_data.SettlementID;
-	data["CloseProfit"] = task_data.CloseProfit;
-	data["ExchangeDeliveryMargin"] = task_data.ExchangeDeliveryMargin;
-	data["Mortgage"] = task_data.Mortgage;
-	data["Credit"] = task_data.Credit;
-	data["CurrMargin"] = task_data.CurrMargin;
-	data["FundMortgageIn"] = task_data.FundMortgageIn;
-	data["ExchangeMargin"] = task_data.ExchangeMargin;
-	data["PreFundMortgageIn"] = task_data.PreFundMortgageIn;
-	data["PositionProfit"] = task_data.PositionProfit;
-	data["PreMargin"] = task_data.PreMargin;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["Available"] = task_data.Available;
+    data["Balance"] = task_data.Balance;
+    data["BizType"] = task_data.BizType;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CashIn"] = task_data.CashIn;
+    data["CloseProfit"] = task_data.CloseProfit;
+    data["Commission"] = task_data.Commission;
+    data["Credit"] = task_data.Credit;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CurrMargin"] = task_data.CurrMargin;
+    data["DeliveryMargin"] = task_data.DeliveryMargin;
+    data["Deposit"] = task_data.Deposit;
+    data["ExchangeDeliveryMargin"] = task_data.ExchangeDeliveryMargin;
+    data["ExchangeMargin"] = task_data.ExchangeMargin;
+    data["FrozenCash"] = task_data.FrozenCash;
+    data["FrozenCommission"] = task_data.FrozenCommission;
+    data["FrozenMargin"] = task_data.FrozenMargin;
+    data["FrozenSwap"] = task_data.FrozenSwap;
+    data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
+    data["FundMortgageIn"] = task_data.FundMortgageIn;
+    data["FundMortgageOut"] = task_data.FundMortgageOut;
+    data["Interest"] = task_data.Interest;
+    data["InterestBase"] = task_data.InterestBase;
+    data["Mortgage"] = task_data.Mortgage;
+    data["MortgageableFund"] = task_data.MortgageableFund;
+    data["PositionProfit"] = task_data.PositionProfit;
+    data["PreBalance"] = task_data.PreBalance;
+    data["PreCredit"] = task_data.PreCredit;
+    data["PreDeposit"] = task_data.PreDeposit;
+    data["PreFundMortgageIn"] = task_data.PreFundMortgageIn;
+    data["PreFundMortgageOut"] = task_data.PreFundMortgageOut;
+    data["PreMargin"] = task_data.PreMargin;
+    data["PreMortgage"] = task_data.PreMortgage;
+    data["RemainSwap"] = task_data.RemainSwap;
+    data["Reserve"] = task_data.Reserve;
+    data["ReserveBalance"] = task_data.ReserveBalance;
+    data["SettlementID"] = task_data.SettlementID;
+    data["SpecProductCloseProfit"] = task_data.SpecProductCloseProfit;
+    data["SpecProductCommission"] = task_data.SpecProductCommission;
+    data["SpecProductExchangeMargin"] = task_data.SpecProductExchangeMargin;
+    data["SpecProductFrozenCommission"] = task_data.SpecProductFrozenCommission;
+    data["SpecProductFrozenMargin"] = task_data.SpecProductFrozenMargin;
+    data["SpecProductMargin"] = task_data.SpecProductMargin;
+    data["SpecProductPositionProfit"] = task_data.SpecProductPositionProfit;
+    data["SpecProductPositionProfitByAlg"] = task_data.SpecProductPositionProfitByAlg;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["Withdraw"] = task_data.Withdraw;
+    data["WithdrawQuota"] = task_data.WithdrawQuota;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4331,19 +5210,20 @@ void TdApi::processRspQryInvestor(Task task)
 	PyLock lock;
 	CThostFtdcInvestorField task_data = any_cast<CThostFtdcInvestorField>(task.task_data);
 	dict data;
-	data["MarginModelID"] = boost::locale::conv::to_utf<char>(task_data.MarginModelID, std::string("GB2312"));
-	data["Mobile"] = boost::locale::conv::to_utf<char>(task_data.Mobile, std::string("GB2312"));
-	data["IdentifiedCardType"] = task_data.IdentifiedCardType;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
-	data["IsActive"] = task_data.IsActive;
-	data["InvestorName"] = boost::locale::conv::to_utf<char>(task_data.InvestorName, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["InvestorGroupID"] = boost::locale::conv::to_utf<char>(task_data.InvestorGroupID, std::string("GB2312"));
-	data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
-	data["CommModelID"] = boost::locale::conv::to_utf<char>(task_data.CommModelID, std::string("GB2312"));
+    data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CommModelID"] = boost::locale::conv::to_utf<char>(task_data.CommModelID, std::string("GB2312"));
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["IdentifiedCardType"] = task_data.IdentifiedCardType;
+    data["InvestorGroupID"] = boost::locale::conv::to_utf<char>(task_data.InvestorGroupID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestorName"] = boost::locale::conv::to_utf<char>(task_data.InvestorName, std::string("GB2312"));
+    data["IsActive"] = task_data.IsActive;
+    data["MarginModelID"] = boost::locale::conv::to_utf<char>(task_data.MarginModelID, std::string("GB2312"));
+    data["Mobile"] = boost::locale::conv::to_utf<char>(task_data.Mobile, std::string("GB2312"));
+    data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
+    data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4358,14 +5238,15 @@ void TdApi::processRspQryTradingCode(Task task)
 	PyLock lock;
 	CThostFtdcTradingCodeField task_data = any_cast<CThostFtdcTradingCodeField>(task.task_data);
 	dict data;
-	data["BizType"] = task_data.BizType;
-	data["IsActive"] = task_data.IsActive;
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["ClientIDType"] = task_data.ClientIDType;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["BizType"] = task_data.BizType;
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ClientIDType"] = task_data.ClientIDType;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IsActive"] = task_data.IsActive;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4380,16 +5261,18 @@ void TdApi::processRspQryInstrumentMarginRate(Task task)
 	PyLock lock;
 	CThostFtdcInstrumentMarginRateField task_data = any_cast<CThostFtdcInstrumentMarginRateField>(task.task_data);
 	dict data;
-	data["LongMarginRatioByVolume"] = task_data.LongMarginRatioByVolume;
-	data["InvestorRange"] = task_data.InvestorRange;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["ShortMarginRatioByVolume"] = task_data.ShortMarginRatioByVolume;
-	data["ShortMarginRatioByMoney"] = task_data.ShortMarginRatioByMoney;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["IsRelative"] = task_data.IsRelative;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["LongMarginRatioByMoney"] = task_data.LongMarginRatioByMoney;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestorRange"] = task_data.InvestorRange;
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IsRelative"] = task_data.IsRelative;
+    data["LongMarginRatioByMoney"] = task_data.LongMarginRatioByMoney;
+    data["LongMarginRatioByVolume"] = task_data.LongMarginRatioByVolume;
+    data["ShortMarginRatioByMoney"] = task_data.ShortMarginRatioByMoney;
+    data["ShortMarginRatioByVolume"] = task_data.ShortMarginRatioByVolume;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4404,18 +5287,20 @@ void TdApi::processRspQryInstrumentCommissionRate(Task task)
 	PyLock lock;
 	CThostFtdcInstrumentCommissionRateField task_data = any_cast<CThostFtdcInstrumentCommissionRateField>(task.task_data);
 	dict data;
-	data["BizType"] = task_data.BizType;
-	data["InvestorRange"] = task_data.InvestorRange;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["CloseTodayRatioByVolume"] = task_data.CloseTodayRatioByVolume;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
-	data["CloseRatioByMoney"] = task_data.CloseRatioByMoney;
-	data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
-	data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["OpenRatioByVolume"] = task_data.OpenRatioByVolume;
+    data["BizType"] = task_data.BizType;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CloseRatioByMoney"] = task_data.CloseRatioByMoney;
+    data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
+    data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
+    data["CloseTodayRatioByVolume"] = task_data.CloseTodayRatioByVolume;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestorRange"] = task_data.InvestorRange;
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
+    data["OpenRatioByVolume"] = task_data.OpenRatioByVolume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4447,23 +5332,24 @@ void TdApi::processRspQryProduct(Task task)
 	PyLock lock;
 	CThostFtdcProductField task_data = any_cast<CThostFtdcProductField>(task.task_data);
 	dict data;
-	data["ProductID"] = boost::locale::conv::to_utf<char>(task_data.ProductID, std::string("GB2312"));
-	data["ProductClass"] = task_data.ProductClass;
-	data["ProductName"] = boost::locale::conv::to_utf<char>(task_data.ProductName, std::string("GB2312"));
-	data["TradeCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.TradeCurrencyID, std::string("GB2312"));
-	data["MinLimitOrderVolume"] = task_data.MinLimitOrderVolume;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["MortgageFundUseRange"] = task_data.MortgageFundUseRange;
-	data["ExchangeProductID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeProductID, std::string("GB2312"));
-	data["VolumeMultiple"] = task_data.VolumeMultiple;
-	data["PositionDateType"] = task_data.PositionDateType;
-	data["MinMarketOrderVolume"] = task_data.MinMarketOrderVolume;
-	data["MaxLimitOrderVolume"] = task_data.MaxLimitOrderVolume;
-	data["MaxMarketOrderVolume"] = task_data.MaxMarketOrderVolume;
-	data["PositionType"] = task_data.PositionType;
-	data["PriceTick"] = task_data.PriceTick;
-	data["CloseDealType"] = task_data.CloseDealType;
-	data["UnderlyingMultiple"] = task_data.UnderlyingMultiple;
+    data["CloseDealType"] = task_data.CloseDealType;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeProductID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeProductID, std::string("GB2312"));
+    data["MaxLimitOrderVolume"] = task_data.MaxLimitOrderVolume;
+    data["MaxMarketOrderVolume"] = task_data.MaxMarketOrderVolume;
+    data["MinLimitOrderVolume"] = task_data.MinLimitOrderVolume;
+    data["MinMarketOrderVolume"] = task_data.MinMarketOrderVolume;
+    data["MortgageFundUseRange"] = task_data.MortgageFundUseRange;
+    data["PositionDateType"] = task_data.PositionDateType;
+    data["PositionType"] = task_data.PositionType;
+    data["PriceTick"] = task_data.PriceTick;
+    data["ProductClass"] = task_data.ProductClass;
+    data["ProductID"] = boost::locale::conv::to_utf<char>(task_data.ProductID, std::string("GB2312"));
+    data["ProductName"] = boost::locale::conv::to_utf<char>(task_data.ProductName, std::string("GB2312"));
+    data["TradeCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.TradeCurrencyID, std::string("GB2312"));
+    data["UnderlyingMultiple"] = task_data.UnderlyingMultiple;
+    data["VolumeMultiple"] = task_data.VolumeMultiple;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4478,40 +5364,37 @@ void TdApi::processRspQryInstrument(Task task)
 	PyLock lock;
 	CThostFtdcInstrumentField task_data = any_cast<CThostFtdcInstrumentField>(task.task_data);
 	dict data;
-	data["ShortMarginRatio"] = task_data.ShortMarginRatio;
-	data["EndDelivDate"] = boost::locale::conv::to_utf<char>(task_data.EndDelivDate, std::string("GB2312"));
-	data["ProductID"] = boost::locale::conv::to_utf<char>(task_data.ProductID, std::string("GB2312"));
-	data["PriceTick"] = task_data.PriceTick;
-	data["PositionType"] = task_data.PositionType;
-	data["MinLimitOrderVolume"] = task_data.MinLimitOrderVolume;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["DeliveryYear"] = task_data.DeliveryYear;
-	data["MaxLimitOrderVolume"] = task_data.MaxLimitOrderVolume;
-	//data["MinSellVolume"] = task_data.MinSellVolume;
-	data["MinMarketOrderVolume"] = task_data.MinMarketOrderVolume;
-	data["InstrumentName"] = boost::locale::conv::to_utf<char>(task_data.InstrumentName, std::string("GB2312"));
-	//data["InstrumentCode"] = boost::locale::conv::to_utf<char>(task_data.InstrumentCode, std::string("GB2312"));
-	data["IsTrading"] = task_data.IsTrading;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["LongMarginRatio"] = task_data.LongMarginRatio;
-	data["UnderlyingMultiple"] = task_data.UnderlyingMultiple;
-	data["OptionsType"] = task_data.OptionsType;
-	data["CreateDate"] = boost::locale::conv::to_utf<char>(task_data.CreateDate, std::string("GB2312"));
-	data["ProductClass"] = task_data.ProductClass;
-	data["CombinationType"] = task_data.CombinationType;
-	data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
-	//data["MinBuyVolume"] = task_data.MinBuyVolume;
-	data["VolumeMultiple"] = task_data.VolumeMultiple;
-	data["UnderlyingInstrID"] = boost::locale::conv::to_utf<char>(task_data.UnderlyingInstrID, std::string("GB2312"));
-	data["PositionDateType"] = task_data.PositionDateType;
-	data["ExpireDate"] = boost::locale::conv::to_utf<char>(task_data.ExpireDate, std::string("GB2312"));
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["DeliveryMonth"] = task_data.DeliveryMonth;
-	data["MaxMarketOrderVolume"] = task_data.MaxMarketOrderVolume;
-	data["InstLifePhase"] = task_data.InstLifePhase;
-	data["MaxMarginSideAlgorithm"] = task_data.MaxMarginSideAlgorithm;
-	data["StartDelivDate"] = boost::locale::conv::to_utf<char>(task_data.StartDelivDate, std::string("GB2312"));
-	data["StrikePrice"] = task_data.StrikePrice;
+    data["CombinationType"] = task_data.CombinationType;
+    data["CreateDate"] = boost::locale::conv::to_utf<char>(task_data.CreateDate, std::string("GB2312"));
+    data["DeliveryMonth"] = task_data.DeliveryMonth;
+    data["DeliveryYear"] = task_data.DeliveryYear;
+    data["EndDelivDate"] = boost::locale::conv::to_utf<char>(task_data.EndDelivDate, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ExpireDate"] = boost::locale::conv::to_utf<char>(task_data.ExpireDate, std::string("GB2312"));
+    data["InstLifePhase"] = task_data.InstLifePhase;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InstrumentName"] = boost::locale::conv::to_utf<char>(task_data.InstrumentName, std::string("GB2312"));
+    data["IsTrading"] = task_data.IsTrading;
+    data["LongMarginRatio"] = task_data.LongMarginRatio;
+    data["MaxLimitOrderVolume"] = task_data.MaxLimitOrderVolume;
+    data["MaxMarginSideAlgorithm"] = task_data.MaxMarginSideAlgorithm;
+    data["MaxMarketOrderVolume"] = task_data.MaxMarketOrderVolume;
+    data["MinLimitOrderVolume"] = task_data.MinLimitOrderVolume;
+    data["MinMarketOrderVolume"] = task_data.MinMarketOrderVolume;
+    data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
+    data["OptionsType"] = task_data.OptionsType;
+    data["PositionDateType"] = task_data.PositionDateType;
+    data["PositionType"] = task_data.PositionType;
+    data["PriceTick"] = task_data.PriceTick;
+    data["ProductClass"] = task_data.ProductClass;
+    data["ProductID"] = boost::locale::conv::to_utf<char>(task_data.ProductID, std::string("GB2312"));
+    data["ShortMarginRatio"] = task_data.ShortMarginRatio;
+    data["StartDelivDate"] = boost::locale::conv::to_utf<char>(task_data.StartDelivDate, std::string("GB2312"));
+    data["StrikePrice"] = task_data.StrikePrice;
+    data["UnderlyingInstrID"] = boost::locale::conv::to_utf<char>(task_data.UnderlyingInstrID, std::string("GB2312"));
+    data["UnderlyingMultiple"] = task_data.UnderlyingMultiple;
+    data["VolumeMultiple"] = task_data.VolumeMultiple;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4526,50 +5409,51 @@ void TdApi::processRspQryDepthMarketData(Task task)
 	PyLock lock;
 	CThostFtdcDepthMarketDataField task_data = any_cast<CThostFtdcDepthMarketDataField>(task.task_data);
 	dict data;
-	data["ActionDay"] = boost::locale::conv::to_utf<char>(task_data.ActionDay, std::string("GB2312"));
-	data["UpdateMillisec"] = task_data.UpdateMillisec;
-	data["PreDelta"] = task_data.PreDelta;
-	data["PreClosePrice"] = task_data.PreClosePrice;
-	data["BidVolume1"] = task_data.BidVolume1;
-	data["Turnover"] = task_data.Turnover;
-	data["BidVolume4"] = task_data.BidVolume4;
-	data["OpenPrice"] = task_data.OpenPrice;
-	data["LastPrice"] = task_data.LastPrice;
-	data["CurrDelta"] = task_data.CurrDelta;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["AskVolume4"] = task_data.AskVolume4;
-	data["BidPrice2"] = task_data.BidPrice2;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["AskPrice2"] = task_data.AskPrice2;
-	data["PreSettlementPrice"] = task_data.PreSettlementPrice;
-	data["PreOpenInterest"] = task_data.PreOpenInterest;
-	data["Volume"] = task_data.Volume;
-	data["OpenInterest"] = task_data.OpenInterest;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["HighestPrice"] = task_data.HighestPrice;
-	data["AskPrice1"] = task_data.AskPrice1;
-	data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
-	data["LowestPrice"] = task_data.LowestPrice;
-	data["AskVolume3"] = task_data.AskVolume3;
-	data["AskVolume2"] = task_data.AskVolume2;
-	data["BidPrice3"] = task_data.BidPrice3;
-	data["AveragePrice"] = task_data.AveragePrice;
-	data["BidPrice4"] = task_data.BidPrice4;
-	data["SettlementPrice"] = task_data.SettlementPrice;
-	data["LowerLimitPrice"] = task_data.LowerLimitPrice;
-	data["BidVolume2"] = task_data.BidVolume2;
-	data["UpperLimitPrice"] = task_data.UpperLimitPrice;
-	data["AskVolume5"] = task_data.AskVolume5;
-	data["AskVolume1"] = task_data.AskVolume1;
-	data["AskPrice5"] = task_data.AskPrice5;
-	data["BidVolume5"] = task_data.BidVolume5;
-	data["BidPrice1"] = task_data.BidPrice1;
-	data["BidPrice5"] = task_data.BidPrice5;
-	data["AskPrice3"] = task_data.AskPrice3;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["ClosePrice"] = task_data.ClosePrice;
-	data["BidVolume3"] = task_data.BidVolume3;
-	data["AskPrice4"] = task_data.AskPrice4;
+    data["ActionDay"] = boost::locale::conv::to_utf<char>(task_data.ActionDay, std::string("GB2312"));
+    data["AskPrice1"] = task_data.AskPrice1;
+    data["AskPrice2"] = task_data.AskPrice2;
+    data["AskPrice3"] = task_data.AskPrice3;
+    data["AskPrice4"] = task_data.AskPrice4;
+    data["AskPrice5"] = task_data.AskPrice5;
+    data["AskVolume1"] = task_data.AskVolume1;
+    data["AskVolume2"] = task_data.AskVolume2;
+    data["AskVolume3"] = task_data.AskVolume3;
+    data["AskVolume4"] = task_data.AskVolume4;
+    data["AskVolume5"] = task_data.AskVolume5;
+    data["AveragePrice"] = task_data.AveragePrice;
+    data["BidPrice1"] = task_data.BidPrice1;
+    data["BidPrice2"] = task_data.BidPrice2;
+    data["BidPrice3"] = task_data.BidPrice3;
+    data["BidPrice4"] = task_data.BidPrice4;
+    data["BidPrice5"] = task_data.BidPrice5;
+    data["BidVolume1"] = task_data.BidVolume1;
+    data["BidVolume2"] = task_data.BidVolume2;
+    data["BidVolume3"] = task_data.BidVolume3;
+    data["BidVolume4"] = task_data.BidVolume4;
+    data["BidVolume5"] = task_data.BidVolume5;
+    data["ClosePrice"] = task_data.ClosePrice;
+    data["CurrDelta"] = task_data.CurrDelta;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["HighestPrice"] = task_data.HighestPrice;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["LastPrice"] = task_data.LastPrice;
+    data["LowerLimitPrice"] = task_data.LowerLimitPrice;
+    data["LowestPrice"] = task_data.LowestPrice;
+    data["OpenInterest"] = task_data.OpenInterest;
+    data["OpenPrice"] = task_data.OpenPrice;
+    data["PreClosePrice"] = task_data.PreClosePrice;
+    data["PreDelta"] = task_data.PreDelta;
+    data["PreOpenInterest"] = task_data.PreOpenInterest;
+    data["PreSettlementPrice"] = task_data.PreSettlementPrice;
+    data["SettlementPrice"] = task_data.SettlementPrice;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["Turnover"] = task_data.Turnover;
+    data["UpdateMillisec"] = task_data.UpdateMillisec;
+    data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
+    data["UpperLimitPrice"] = task_data.UpperLimitPrice;
+    data["Volume"] = task_data.Volume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4584,12 +5468,14 @@ void TdApi::processRspQrySettlementInfo(Task task)
 	PyLock lock;
 	CThostFtdcSettlementInfoField task_data = any_cast<CThostFtdcSettlementInfoField>(task.task_data);
 	dict data;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["Content"] = boost::locale::conv::to_utf<char>(task_data.Content, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["SequenceNo"] = task_data.SequenceNo;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["Content"] = boost::locale::conv::to_utf<char>(task_data.Content, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SettlementID"] = task_data.SettlementID;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4622,32 +5508,33 @@ void TdApi::processRspQryInvestorPositionDetail(Task task)
 	PyLock lock;
 	CThostFtdcInvestorPositionDetailField task_data = any_cast<CThostFtdcInvestorPositionDetailField>(task.task_data);
 	dict data;
-	data["TradeType"] = task_data.TradeType;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["PositionProfitByTrade"] = task_data.PositionProfitByTrade;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["OpenPrice"] = task_data.OpenPrice;
-	data["PositionProfitByDate"] = task_data.PositionProfitByDate;
-	data["CloseAmount"] = task_data.CloseAmount;
-	data["Margin"] = task_data.Margin;
-	data["MarginRateByVolume"] = task_data.MarginRateByVolume;
-	data["CloseProfitByDate"] = task_data.CloseProfitByDate;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["CloseProfitByTrade"] = task_data.CloseProfitByTrade;
-	data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
-	data["ExchMargin"] = task_data.ExchMargin;
-	data["Volume"] = task_data.Volume;
-	data["CloseVolume"] = task_data.CloseVolume;
-	data["LastSettlementPrice"] = task_data.LastSettlementPrice;
-	data["Direction"] = task_data.Direction;
-	data["SettlementPrice"] = task_data.SettlementPrice;
-	data["SettlementID"] = task_data.SettlementID;
-	data["MarginRateByMoney"] = task_data.MarginRateByMoney;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["CombInstrumentID"] = boost::locale::conv::to_utf<char>(task_data.CombInstrumentID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CloseAmount"] = task_data.CloseAmount;
+    data["CloseProfitByDate"] = task_data.CloseProfitByDate;
+    data["CloseProfitByTrade"] = task_data.CloseProfitByTrade;
+    data["CloseVolume"] = task_data.CloseVolume;
+    data["CombInstrumentID"] = boost::locale::conv::to_utf<char>(task_data.CombInstrumentID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchMargin"] = task_data.ExchMargin;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["LastSettlementPrice"] = task_data.LastSettlementPrice;
+    data["Margin"] = task_data.Margin;
+    data["MarginRateByMoney"] = task_data.MarginRateByMoney;
+    data["MarginRateByVolume"] = task_data.MarginRateByVolume;
+    data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
+    data["OpenPrice"] = task_data.OpenPrice;
+    data["PositionProfitByDate"] = task_data.PositionProfitByDate;
+    data["PositionProfitByTrade"] = task_data.PositionProfitByTrade;
+    data["SettlementID"] = task_data.SettlementID;
+    data["SettlementPrice"] = task_data.SettlementPrice;
+    data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
+    data["TradeType"] = task_data.TradeType;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4662,9 +5549,9 @@ void TdApi::processRspQryNotice(Task task)
 	PyLock lock;
 	CThostFtdcNoticeField task_data = any_cast<CThostFtdcNoticeField>(task.task_data);
 	dict data;
-	data["SequenceLabel"] = boost::locale::conv::to_utf<char>(task_data.SequenceLabel, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["Content"] = boost::locale::conv::to_utf<char>(task_data.Content, std::string("GB2312"));
+    data["SequenceLabel"] = boost::locale::conv::to_utf<char>(task_data.SequenceLabel, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4679,9 +5566,12 @@ void TdApi::processRspQrySettlementInfoConfirm(Task task)
 	PyLock lock;
 	CThostFtdcSettlementInfoConfirmField task_data = any_cast<CThostFtdcSettlementInfoConfirmField>(task.task_data);
 	dict data;
+	data["SettlementID"] = task_data.SettlementID;
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["ConfirmDate"] = boost::locale::conv::to_utf<char>(task_data.ConfirmDate, std::string("GB2312"));
 	data["ConfirmTime"] = boost::locale::conv::to_utf<char>(task_data.ConfirmTime, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
@@ -4697,26 +5587,28 @@ void TdApi::processRspQryInvestorPositionCombineDetail(Task task)
 	PyLock lock;
 	CThostFtdcInvestorPositionCombineDetailField task_data = any_cast<CThostFtdcInvestorPositionCombineDetailField>(task.task_data);
 	dict data;
-	data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
-	data["ExchMargin"] = task_data.ExchMargin;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["TradeGroupID"] = task_data.TradeGroupID;
-	data["ComTradeID"] = boost::locale::conv::to_utf<char>(task_data.ComTradeID, std::string("GB2312"));
-	data["LegMultiple"] = task_data.LegMultiple;
-	data["LegID"] = task_data.LegID;
-	data["CombInstrumentID"] = boost::locale::conv::to_utf<char>(task_data.CombInstrumentID, std::string("GB2312"));
-	data["Margin"] = task_data.Margin;
-	data["MarginRateByVolume"] = task_data.MarginRateByVolume;
-	data["TotalAmt"] = task_data.TotalAmt;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["MarginRateByMoney"] = task_data.MarginRateByMoney;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CombInstrumentID"] = boost::locale::conv::to_utf<char>(task_data.CombInstrumentID, std::string("GB2312"));
+    data["ComTradeID"] = boost::locale::conv::to_utf<char>(task_data.ComTradeID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchMargin"] = task_data.ExchMargin;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["LegID"] = task_data.LegID;
+    data["LegMultiple"] = task_data.LegMultiple;
+    data["Margin"] = task_data.Margin;
+    data["MarginRateByMoney"] = task_data.MarginRateByMoney;
+    data["MarginRateByVolume"] = task_data.MarginRateByVolume;
+    data["OpenDate"] = boost::locale::conv::to_utf<char>(task_data.OpenDate, std::string("GB2312"));
+    data["SettlementID"] = task_data.SettlementID;
+    data["TotalAmt"] = task_data.TotalAmt;
+    data["TradeGroupID"] = task_data.TradeGroupID;
+    data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4731,11 +5623,11 @@ void TdApi::processRspQryCFMMCTradingAccountKey(Task task)
 	PyLock lock;
 	CThostFtdcCFMMCTradingAccountKeyField task_data = any_cast<CThostFtdcCFMMCTradingAccountKeyField>(task.task_data);
 	dict data;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["CurrentKey"] = boost::locale::conv::to_utf<char>(task_data.CurrentKey, std::string("GB2312"));
-	data["KeyID"] = task_data.KeyID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CurrentKey"] = boost::locale::conv::to_utf<char>(task_data.CurrentKey, std::string("GB2312"));
+    data["KeyID"] = task_data.KeyID;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4750,14 +5642,16 @@ void TdApi::processRspQryEWarrantOffset(Task task)
 	PyLock lock;
 	CThostFtdcEWarrantOffsetField task_data = any_cast<CThostFtdcEWarrantOffsetField>(task.task_data);
 	dict data;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
-	data["Volume"] = task_data.Volume;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4772,33 +5666,36 @@ void TdApi::processRspQryInvestorProductGroupMargin(Task task)
 	PyLock lock;
 	CThostFtdcInvestorProductGroupMarginField task_data = any_cast<CThostFtdcInvestorProductGroupMarginField>(task.task_data);
 	dict data;
-	data["ShortOffsetAmount"] = task_data.ShortOffsetAmount;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["LongOffsetAmount"] = task_data.LongOffsetAmount;
-	data["FrozenMargin"] = task_data.FrozenMargin;
-	data["SettlementID"] = task_data.SettlementID;
-	data["LongExchOffsetAmount"] = task_data.LongExchOffsetAmount;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["CashIn"] = task_data.CashIn;
-	data["FrozenCommission"] = task_data.FrozenCommission;
-	data["ShortExchMargin"] = task_data.ShortExchMargin;
-	data["CloseProfit"] = task_data.CloseProfit;
-	data["UseMargin"] = task_data.UseMargin;
-	data["OffsetAmount"] = task_data.OffsetAmount;
-	data["ShortExchOffsetAmount"] = task_data.ShortExchOffsetAmount;
-	data["LongUseMargin"] = task_data.LongUseMargin;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["ProductGroupID"] = boost::locale::conv::to_utf<char>(task_data.ProductGroupID, std::string("GB2312"));
-	data["FrozenCash"] = task_data.FrozenCash;
-	data["ExchMargin"] = task_data.ExchMargin;
-	data["ShortUseMargin"] = task_data.ShortUseMargin;
-	data["LongExchMargin"] = task_data.LongExchMargin;
-	data["ExchOffsetAmount"] = task_data.ExchOffsetAmount;
-	data["LongFrozenMargin"] = task_data.LongFrozenMargin;
-	data["ShortFrozenMargin"] = task_data.ShortFrozenMargin;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["PositionProfit"] = task_data.PositionProfit;
-	data["Commission"] = task_data.Commission;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CashIn"] = task_data.CashIn;
+    data["CloseProfit"] = task_data.CloseProfit;
+    data["Commission"] = task_data.Commission;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchMargin"] = task_data.ExchMargin;
+    data["ExchOffsetAmount"] = task_data.ExchOffsetAmount;
+    data["FrozenCash"] = task_data.FrozenCash;
+    data["FrozenCommission"] = task_data.FrozenCommission;
+    data["FrozenMargin"] = task_data.FrozenMargin;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["LongExchMargin"] = task_data.LongExchMargin;
+    data["LongExchOffsetAmount"] = task_data.LongExchOffsetAmount;
+    data["LongFrozenMargin"] = task_data.LongFrozenMargin;
+    data["LongOffsetAmount"] = task_data.LongOffsetAmount;
+    data["LongUseMargin"] = task_data.LongUseMargin;
+    data["OffsetAmount"] = task_data.OffsetAmount;
+    data["PositionProfit"] = task_data.PositionProfit;
+    data["ProductGroupID"] = boost::locale::conv::to_utf<char>(task_data.ProductGroupID, std::string("GB2312"));
+    data["SettlementID"] = task_data.SettlementID;
+    data["ShortExchMargin"] = task_data.ShortExchMargin;
+    data["ShortExchOffsetAmount"] = task_data.ShortExchOffsetAmount;
+    data["ShortFrozenMargin"] = task_data.ShortFrozenMargin;
+    data["ShortOffsetAmount"] = task_data.ShortOffsetAmount;
+    data["ShortUseMargin"] = task_data.ShortUseMargin;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UseMargin"] = task_data.UseMargin;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4813,13 +5710,15 @@ void TdApi::processRspQryExchangeMarginRate(Task task)
 	PyLock lock;
 	CThostFtdcExchangeMarginRateField task_data = any_cast<CThostFtdcExchangeMarginRateField>(task.task_data);
 	dict data;
-	data["LongMarginRatioByVolume"] = task_data.LongMarginRatioByVolume;
-	data["ShortMarginRatioByVolume"] = task_data.ShortMarginRatioByVolume;
-	data["ShortMarginRatioByMoney"] = task_data.ShortMarginRatioByMoney;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["LongMarginRatioByMoney"] = task_data.LongMarginRatioByMoney;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["LongMarginRatioByMoney"] = task_data.LongMarginRatioByMoney;
+    data["LongMarginRatioByVolume"] = task_data.LongMarginRatioByVolume;
+    data["ShortMarginRatioByMoney"] = task_data.ShortMarginRatioByMoney;
+    data["ShortMarginRatioByVolume"] = task_data.ShortMarginRatioByVolume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4834,21 +5733,21 @@ void TdApi::processRspQryExchangeMarginRateAdjust(Task task)
 	PyLock lock;
 	CThostFtdcExchangeMarginRateAdjustField task_data = any_cast<CThostFtdcExchangeMarginRateAdjustField>(task.task_data);
 	dict data;
-	data["LongMarginRatioByVolume"] = task_data.LongMarginRatioByVolume;
-	data["NoLongMarginRatioByMoney"] = task_data.NoLongMarginRatioByMoney;
-	data["NoLongMarginRatioByVolume"] = task_data.NoLongMarginRatioByVolume;
-	data["NoShortMarginRatioByMoney"] = task_data.NoShortMarginRatioByMoney;
-	data["ShortMarginRatioByVolume"] = task_data.ShortMarginRatioByVolume;
-	data["ExchLongMarginRatioByMoney"] = task_data.ExchLongMarginRatioByMoney;
-	data["ShortMarginRatioByMoney"] = task_data.ShortMarginRatioByMoney;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ExchShortMarginRatioByVolume"] = task_data.ExchShortMarginRatioByVolume;
-	data["ExchShortMarginRatioByMoney"] = task_data.ExchShortMarginRatioByMoney;
-	data["NoShortMarginRatioByVolume"] = task_data.NoShortMarginRatioByVolume;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["ExchLongMarginRatioByVolume"] = task_data.ExchLongMarginRatioByVolume;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["LongMarginRatioByMoney"] = task_data.LongMarginRatioByMoney;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchLongMarginRatioByMoney"] = task_data.ExchLongMarginRatioByMoney;
+    data["ExchLongMarginRatioByVolume"] = task_data.ExchLongMarginRatioByVolume;
+    data["ExchShortMarginRatioByMoney"] = task_data.ExchShortMarginRatioByMoney;
+    data["ExchShortMarginRatioByVolume"] = task_data.ExchShortMarginRatioByVolume;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["LongMarginRatioByMoney"] = task_data.LongMarginRatioByMoney;
+    data["LongMarginRatioByVolume"] = task_data.LongMarginRatioByVolume;
+    data["NoLongMarginRatioByMoney"] = task_data.NoLongMarginRatioByMoney;
+    data["NoLongMarginRatioByVolume"] = task_data.NoLongMarginRatioByVolume;
+    data["NoShortMarginRatioByMoney"] = task_data.NoShortMarginRatioByMoney;
+    data["NoShortMarginRatioByVolume"] = task_data.NoShortMarginRatioByVolume;
+    data["ShortMarginRatioByMoney"] = task_data.ShortMarginRatioByMoney;
+    data["ShortMarginRatioByVolume"] = task_data.ShortMarginRatioByVolume;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4863,11 +5762,11 @@ void TdApi::processRspQryExchangeRate(Task task)
 	PyLock lock;
 	CThostFtdcExchangeRateField task_data = any_cast<CThostFtdcExchangeRateField>(task.task_data);
 	dict data;
-	data["FromCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.FromCurrencyID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FromCurrencyUnit"] = task_data.FromCurrencyUnit;
-	data["ExchangeRate"] = task_data.ExchangeRate;
-	data["ToCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.ToCurrencyID, std::string("GB2312"));
+    data["ExchangeRate"] = task_data.ExchangeRate;
+    data["FromCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.FromCurrencyID, std::string("GB2312"));
+    data["FromCurrencyUnit"] = task_data.FromCurrencyUnit;
+    data["ToCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.ToCurrencyID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4882,11 +5781,11 @@ void TdApi::processRspQrySecAgentACIDMap(Task task)
 	PyLock lock;
 	CThostFtdcSecAgentACIDMapField task_data = any_cast<CThostFtdcSecAgentACIDMapField>(task.task_data);
 	dict data;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
 	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BrokerSecAgentID"] = boost::locale::conv::to_utf<char>(task_data.BrokerSecAgentID, std::string("GB2312"));
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["BrokerSecAgentID"] = task_data.BrokerSecAgentID;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4901,8 +5800,9 @@ void TdApi::processRspQryProductExchRate(Task task)
 	PyLock lock;
 	CThostFtdcProductExchRateField task_data = any_cast<CThostFtdcProductExchRateField>(task.task_data);
 	dict data;
-	data["ProductID"] = boost::locale::conv::to_utf<char>(task_data.ProductID, std::string("GB2312"));
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
 	data["ExchangeRate"] = task_data.ExchangeRate;
+	data["ProductID"] = boost::locale::conv::to_utf<char>(task_data.ProductID, std::string("GB2312"));
 	data["QuoteCurrencyID"] = boost::locale::conv::to_utf<char>(task_data.QuoteCurrencyID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
@@ -4930,21 +5830,195 @@ void TdApi::processRspQryProductGroup(Task task)
 	this->onRspQryProductGroup(data, error, task.task_id, task.task_last);
 };
 
+void TdApi::processRspQryMMInstrumentCommissionRate(Task task)
+{
+	PyLock lock;
+	CThostFtdcMMInstrumentCommissionRateField task_data = any_cast<CThostFtdcMMInstrumentCommissionRateField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
+	data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
+	data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["InvestorRange"] = task_data.InvestorRange;
+	data["CloseRatioByMoney"] = task_data.CloseRatioByMoney;
+	data["OpenRatioByVolume"] = task_data.OpenRatioByVolume;
+	data["CloseTodayRatioByVolume"] = task_data.CloseTodayRatioByVolume;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQryMMInstrumentCommissionRate(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryMMOptionInstrCommRate(Task task)
+{
+	PyLock lock;
+	CThostFtdcMMOptionInstrCommRateField task_data = any_cast<CThostFtdcMMOptionInstrCommRateField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
+	data["StrikeRatioByMoney"] = task_data.StrikeRatioByMoney;
+	data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
+	data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["InvestorRange"] = task_data.InvestorRange;
+	data["CloseRatioByMoney"] = task_data.CloseRatioByMoney;
+	data["OpenRatioByVolume"] = task_data.OpenRatioByVolume;
+	data["StrikeRatioByVolume"] = task_data.StrikeRatioByVolume;
+	data["CloseTodayRatioByVolume"] = task_data.CloseTodayRatioByVolume;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQryMMOptionInstrCommRate(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryInstrumentOrderCommRate(Task task)
+{
+	PyLock lock;
+	CThostFtdcInstrumentOrderCommRateField task_data = any_cast<CThostFtdcInstrumentOrderCommRateField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["OrderActionCommByVolume"] = task_data.OrderActionCommByVolume;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["InvestorRange"] = task_data.InvestorRange;
+	data["OrderCommByVolume"] = task_data.OrderCommByVolume;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQryInstrumentOrderCommRate(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQrySecAgentTradingAccount(Task task)
+{
+	PyLock lock;
+	CThostFtdcTradingAccountField task_data = any_cast<CThostFtdcTradingAccountField>(task.task_data);
+	dict data;
+	data["SpecProductFrozenCommission"] = task_data.SpecProductFrozenCommission;
+	data["FundMortgageOut"] = task_data.FundMortgageOut;
+	data["Mortgage"] = task_data.Mortgage;
+	data["ExchangeDeliveryMargin"] = task_data.ExchangeDeliveryMargin;
+	data["FrozenMargin"] = task_data.FrozenMargin;
+	data["WithdrawQuota"] = task_data.WithdrawQuota;
+	data["PositionProfit"] = task_data.PositionProfit;
+	data["Commission"] = task_data.Commission;
+	data["SpecProductCloseProfit"] = task_data.SpecProductCloseProfit;
+	data["Interest"] = task_data.Interest;
+	data["SpecProductCommission"] = task_data.SpecProductCommission;
+	data["CashIn"] = task_data.CashIn;
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+	data["Available"] = task_data.Available;
+	data["FundMortgageAvailable"] = task_data.FundMortgageAvailable;
+	data["FrozenSwap"] = task_data.FrozenSwap;
+	data["PreCredit"] = task_data.PreCredit;
+	data["PreMortgage"] = task_data.PreMortgage;
+	data["InterestBase"] = task_data.InterestBase;
+	data["ExchangeMargin"] = task_data.ExchangeMargin;
+	data["MortgageableFund"] = task_data.MortgageableFund;
+	data["PreFundMortgageIn"] = task_data.PreFundMortgageIn;
+	data["PreMargin"] = task_data.PreMargin;
+	data["SettlementID"] = task_data.SettlementID;
+	data["BizType"] = task_data.BizType;
+	data["FundMortgageIn"] = task_data.FundMortgageIn;
+	data["DeliveryMargin"] = task_data.DeliveryMargin;
+	data["SpecProductFrozenMargin"] = task_data.SpecProductFrozenMargin;
+	data["TradingDay"] = task_data.TradingDay;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["FrozenCash"] = task_data.FrozenCash;
+	data["Withdraw"] = task_data.Withdraw;
+	data["RemainSwap"] = task_data.RemainSwap;
+	data["Balance"] = task_data.Balance;
+	data["SpecProductMargin"] = task_data.SpecProductMargin;
+	data["SpecProductPositionProfitByAlg"] = task_data.SpecProductPositionProfitByAlg;
+	data["Reserve"] = task_data.Reserve;
+	data["PreDeposit"] = task_data.PreDeposit;
+	data["Credit"] = task_data.Credit;
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["ReserveBalance"] = task_data.ReserveBalance;
+	data["SpecProductPositionProfit"] = task_data.SpecProductPositionProfit;
+	data["SpecProductExchangeMargin"] = task_data.SpecProductExchangeMargin;
+	data["PreBalance"] = task_data.PreBalance;
+	data["CurrMargin"] = task_data.CurrMargin;
+	data["FrozenCommission"] = task_data.FrozenCommission;
+	data["CloseProfit"] = task_data.CloseProfit;
+	data["PreFundMortgageOut"] = task_data.PreFundMortgageOut;
+	data["Deposit"] = task_data.Deposit;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQrySecAgentTradingAccount(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQrySecAgentCheckMode(Task task)
+{
+	PyLock lock;
+	CThostFtdcSecAgentCheckModeField task_data = any_cast<CThostFtdcSecAgentCheckModeField>(task.task_data);
+	dict data;
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerSecAgentID"] = task_data.BrokerSecAgentID;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["CheckSelfAccount"] = task_data.CheckSelfAccount;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQrySecAgentCheckMode(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQrySecAgentTradeInfo(Task task)
+{
+	PyLock lock;
+	CThostFtdcSecAgentTradeInfoField task_data = any_cast<CThostFtdcSecAgentTradeInfoField>(task.task_data);
+	dict data;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerSecAgentID"] = task_data.BrokerSecAgentID;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["LongCustomerName"] = task_data.LongCustomerName;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQrySecAgentTradeInfo(data, error, task.task_id, task.task_last);
+};
+
 void TdApi::processRspQryOptionInstrTradeCost(Task task)
 {
 	PyLock lock;
 	CThostFtdcOptionInstrTradeCostField task_data = any_cast<CThostFtdcOptionInstrTradeCostField>(task.task_data);
 	dict data;
-	data["Royalty"] = task_data.Royalty;
-	data["ExchMiniMargin"] = task_data.ExchMiniMargin;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["MiniMargin"] = task_data.MiniMargin;
-	data["ExchFixedMargin"] = task_data.ExchFixedMargin;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["FixedMargin"] = task_data.FixedMargin;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchFixedMargin"] = task_data.ExchFixedMargin;
+    data["ExchMiniMargin"] = task_data.ExchMiniMargin;
+    data["FixedMargin"] = task_data.FixedMargin;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["MiniMargin"] = task_data.MiniMargin;
+    data["Royalty"] = task_data.Royalty;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4959,19 +6033,21 @@ void TdApi::processRspQryOptionInstrCommRate(Task task)
 	PyLock lock;
 	CThostFtdcOptionInstrCommRateField task_data = any_cast<CThostFtdcOptionInstrCommRateField>(task.task_data);
 	dict data;
-	data["InvestorRange"] = task_data.InvestorRange;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
-	data["CloseTodayRatioByVolume"] = task_data.CloseTodayRatioByVolume;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["StrikeRatioByMoney"] = task_data.StrikeRatioByMoney;
-	data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
-	data["CloseRatioByMoney"] = task_data.CloseRatioByMoney;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["StrikeRatioByVolume"] = task_data.StrikeRatioByVolume;
-	data["OpenRatioByVolume"] = task_data.OpenRatioByVolume;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CloseRatioByMoney"] = task_data.CloseRatioByMoney;
+    data["CloseRatioByVolume"] = task_data.CloseRatioByVolume;
+    data["CloseTodayRatioByMoney"] = task_data.CloseTodayRatioByMoney;
+    data["CloseTodayRatioByVolume"] = task_data.CloseTodayRatioByVolume;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestorRange"] = task_data.InvestorRange;
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["OpenRatioByMoney"] = task_data.OpenRatioByMoney;
+    data["OpenRatioByVolume"] = task_data.OpenRatioByVolume;
+    data["StrikeRatioByMoney"] = task_data.StrikeRatioByMoney;
+    data["StrikeRatioByVolume"] = task_data.StrikeRatioByVolume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -4986,45 +6062,51 @@ void TdApi::processRspQryExecOrder(Task task)
 	PyLock lock;
 	CThostFtdcExecOrderField task_data = any_cast<CThostFtdcExecOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
-	data["ReservePositionFlag"] = task_data.ReservePositionFlag;
-	data["FrontID"] = task_data.FrontID;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["CloseFlag"] = task_data.CloseFlag;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["ExecOrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderLocalID, std::string("GB2312"));
-	data["BrokerExecOrderSeq"] = task_data.BrokerExecOrderSeq;
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["ActionType"] = task_data.ActionType;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["Volume"] = task_data.Volume;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["ExecResult"] = task_data.ExecResult;
-	data["InstallID"] = task_data.InstallID;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["PosiDirection"] = task_data.PosiDirection;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActionType"] = task_data.ActionType;
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerExecOrderSeq"] = task_data.BrokerExecOrderSeq;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CloseFlag"] = task_data.CloseFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ExecOrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderLocalID, std::string("GB2312"));
+    data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
+    data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
+    data["ExecResult"] = task_data.ExecResult;
+    data["FrontID"] = task_data.FrontID;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OffsetFlag"] = task_data.OffsetFlag;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["PosiDirection"] = task_data.PosiDirection;
+    data["RequestID"] = task_data.RequestID;
+    data["ReservePositionFlag"] = task_data.ReservePositionFlag;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5039,26 +6121,30 @@ void TdApi::processRspQryForQuote(Task task)
 	PyLock lock;
 	CThostFtdcForQuoteField task_data = any_cast<CThostFtdcForQuoteField>(task.task_data);
 	dict data;
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["BrokerForQutoSeq"] = task_data.BrokerForQutoSeq;
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["ForQuoteStatus"] = task_data.ForQuoteStatus;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["ForQuoteRef"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteRef, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["ForQuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteLocalID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BrokerForQutoSeq"] = task_data.BrokerForQutoSeq;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ForQuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteLocalID, std::string("GB2312"));
+    data["ForQuoteRef"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteRef, std::string("GB2312"));
+    data["ForQuoteStatus"] = task_data.ForQuoteStatus;
+    data["FrontID"] = task_data.FrontID;
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["SessionID"] = task_data.SessionID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5073,51 +6159,56 @@ void TdApi::processRspQryQuote(Task task)
 	PyLock lock;
 	CThostFtdcQuoteField task_data = any_cast<CThostFtdcQuoteField>(task.task_data);
 	dict data;
-	data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AskHedgeFlag"] = task_data.AskHedgeFlag;
-	data["SettlementID"] = task_data.SettlementID;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["BidOffsetFlag"] = task_data.BidOffsetFlag;
-	data["AskOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.AskOrderSysID, std::string("GB2312"));
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["BidPrice"] = task_data.BidPrice;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
-	data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
-	data["BrokerQuoteSeq"] = task_data.BrokerQuoteSeq;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["QuoteStatus"] = task_data.QuoteStatus;
-	data["AskVolume"] = task_data.AskVolume;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["AskOffsetFlag"] = task_data.AskOffsetFlag;
-	data["BidVolume"] = task_data.BidVolume;
-	data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
-	data["AskPrice"] = task_data.AskPrice;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["BidOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.BidOrderSysID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["QuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.QuoteLocalID, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["AskHedgeFlag"] = task_data.AskHedgeFlag;
+    data["AskOffsetFlag"] = task_data.AskOffsetFlag;
+    data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
+    data["AskOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.AskOrderSysID, std::string("GB2312"));
+    data["AskPrice"] = task_data.AskPrice;
+    data["AskVolume"] = task_data.AskVolume;
+    data["BidHedgeFlag"] = task_data.BidHedgeFlag;
+    data["BidOffsetFlag"] = task_data.BidOffsetFlag;
+    data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
+    data["BidOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.BidOrderSysID, std::string("GB2312"));
+    data["BidPrice"] = task_data.BidPrice;
+    data["BidVolume"] = task_data.BidVolume;
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerQuoteSeq"] = task_data.BrokerQuoteSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["QuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.QuoteLocalID, std::string("GB2312"));
+    data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
+    data["QuoteStatus"] = task_data.QuoteStatus;
+    data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5127,15 +6218,93 @@ void TdApi::processRspQryQuote(Task task)
 	this->onRspQryQuote(data, error, task.task_id, task.task_last);
 };
 
+void TdApi::processRspQryOptionSelfClose(Task task)
+{
+	PyLock lock;
+	CThostFtdcOptionSelfCloseField task_data = any_cast<CThostFtdcOptionSelfCloseField>(task.task_data);
+	dict data;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerOptionSelfCloseSeq"] = task_data.BrokerOptionSelfCloseSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ExecResult"] = task_data.ExecResult;
+    data["FrontID"] = task_data.FrontID;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InsertDate"] = task_data.InsertDate;
+    data["InsertTime"] = task_data.InsertTime;
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OptionSelfCloseLocalID"] = task_data.OptionSelfCloseLocalID;
+    data["OptionSelfCloseRef"] = task_data.OptionSelfCloseRef;
+    data["OptionSelfCloseSysID"] = task_data.OptionSelfCloseSysID;
+    data["OptSelfCloseFlag"] = task_data.OptSelfCloseFlag;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQryOptionSelfClose(data, error, task.task_id, task.task_last);
+};
+
+void TdApi::processRspQryInvestUnit(Task task)
+{
+	PyLock lock;
+	CThostFtdcInvestUnitField task_data = any_cast<CThostFtdcInvestUnitField>(task.task_data);
+	dict data;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CommModelID"] = task_data.CommModelID;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["InvestorGroupID"] = task_data.InvestorGroupID;
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestorUnitName"] = task_data.InvestorUnitName;
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["MarginModelID"] = task_data.MarginModelID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onRspQryInvestUnit(data, error, task.task_id, task.task_last);
+};
 
 void TdApi::processRspQryCombInstrumentGuard(Task task)
 {
 	PyLock lock;
 	CThostFtdcCombInstrumentGuardField task_data = any_cast<CThostFtdcCombInstrumentGuardField>(task.task_data);
 	dict data;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
 	data["GuarantRatio"] = task_data.GuarantRatio;
+	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5150,31 +6319,37 @@ void TdApi::processRspQryCombAction(Task task)
 	PyLock lock;
 	CThostFtdcCombActionField task_data = any_cast<CThostFtdcCombActionField>(task.task_data);
 	dict data;
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["CombDirection"] = task_data.CombDirection;
-	data["FrontID"] = task_data.FrontID;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["Volume"] = task_data.Volume;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["ActionStatus"] = task_data.ActionStatus;
-	data["InstallID"] = task_data.InstallID;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
+    data["ActionStatus"] = task_data.ActionStatus;
+    data["BranchID"] = task_data.BranchID;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
+    data["CombDirection"] = task_data.CombDirection;
+    data["ComTradeID"] = task_data.ComTradeID;
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5189,34 +6364,35 @@ void TdApi::processRspQryTransferSerial(Task task)
 	PyLock lock;
 	CThostFtdcTransferSerialField task_data = any_cast<CThostFtdcTransferSerialField>(task.task_data);
 	dict data;
-	data["BankNewAccount"] = boost::locale::conv::to_utf<char>(task_data.BankNewAccount, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["OperatorCode"] = boost::locale::conv::to_utf<char>(task_data.OperatorCode, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["AvailabilityFlag"] = task_data.AvailabilityFlag;
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["FutureAccType"] = task_data.FutureAccType;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["AvailabilityFlag"] = task_data.AvailabilityFlag;
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankNewAccount"] = boost::locale::conv::to_utf<char>(task_data.BankNewAccount, std::string("GB2312"));
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FutureAccType"] = task_data.FutureAccType;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["OperatorCode"] = boost::locale::conv::to_utf<char>(task_data.OperatorCode, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["SessionID"] = task_data.SessionID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5231,23 +6407,25 @@ void TdApi::processRspQryAccountregister(Task task)
 	PyLock lock;
 	CThostFtdcAccountregisterField task_data = any_cast<CThostFtdcAccountregisterField>(task.task_data);
 	dict data;
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["TradeDay"] = boost::locale::conv::to_utf<char>(task_data.TradeDay, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["OutDate"] = boost::locale::conv::to_utf<char>(task_data.OutDate, std::string("GB2312"));
-	data["OpenOrDestroy"] = task_data.OpenOrDestroy;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["RegDate"] = boost::locale::conv::to_utf<char>(task_data.RegDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["LongCustomerName"] = task_data.LongCustomerName;
+    data["OpenOrDestroy"] = task_data.OpenOrDestroy;
+    data["OutDate"] = boost::locale::conv::to_utf<char>(task_data.OutDate, std::string("GB2312"));
+    data["RegDate"] = boost::locale::conv::to_utf<char>(task_data.RegDate, std::string("GB2312"));
+    data["TID"] = task_data.TID;
+    data["TradeDay"] = boost::locale::conv::to_utf<char>(task_data.TradeDay, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5273,64 +6451,70 @@ void TdApi::processRtnOrder(Task task)
 	PyLock lock;
 	CThostFtdcOrderField task_data = any_cast<CThostFtdcOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["RelativeOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.RelativeOrderSysID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ContingentCondition"] = task_data.ContingentCondition;
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
-	data["OrderPriceType"] = task_data.OrderPriceType;
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["ActiveTraderID"] = boost::locale::conv::to_utf<char>(task_data.ActiveTraderID, std::string("GB2312"));
-	data["ActiveTime"] = boost::locale::conv::to_utf<char>(task_data.ActiveTime, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["RequestID"] = task_data.RequestID;
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["ZCETotalTradedVolume"] = task_data.ZCETotalTradedVolume;
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["OrderSource"] = task_data.OrderSource;
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["MinVolume"] = task_data.MinVolume;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["UserForceClose"] = task_data.UserForceClose;
-	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["Direction"] = task_data.Direction;
-	data["TimeCondition"] = task_data.TimeCondition;
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
-	data["StopPrice"] = task_data.StopPrice;
-	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
-	data["VolumeTraded"] = task_data.VolumeTraded;
-	data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["OrderType"] = task_data.OrderType;
-	data["SuspendTime"] = boost::locale::conv::to_utf<char>(task_data.SuspendTime, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["VolumeTotal"] = task_data.VolumeTotal;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["SettlementID"] = task_data.SettlementID;
-	data["IsSwapOrder"] = task_data.IsSwapOrder;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["OrderStatus"] = task_data.OrderStatus;
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActiveTime"] = boost::locale::conv::to_utf<char>(task_data.ActiveTime, std::string("GB2312"));
+    data["ActiveTraderID"] = boost::locale::conv::to_utf<char>(task_data.ActiveTraderID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
+    data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
+    data["ContingentCondition"] = task_data.ContingentCondition;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["FrontID"] = task_data.FrontID;
+    data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+    data["IsSwapOrder"] = task_data.IsSwapOrder;
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["MinVolume"] = task_data.MinVolume;
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
+    data["OrderPriceType"] = task_data.OrderPriceType;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSource"] = task_data.OrderSource;
+    data["OrderStatus"] = task_data.OrderStatus;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["OrderType"] = task_data.OrderType;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["RelativeOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.RelativeOrderSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["StopPrice"] = task_data.StopPrice;
+    data["SuspendTime"] = boost::locale::conv::to_utf<char>(task_data.SuspendTime, std::string("GB2312"));
+    data["TimeCondition"] = task_data.TimeCondition;
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
+    data["UserForceClose"] = task_data.UserForceClose;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["VolumeCondition"] = task_data.VolumeCondition;
+    data["VolumeTotal"] = task_data.VolumeTotal;
+    data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
+    data["VolumeTraded"] = task_data.VolumeTraded;
+    data["ZCETotalTradedVolume"] = task_data.ZCETotalTradedVolume;
+
 
 	this->onRtnOrder(data);
 };
@@ -5340,36 +6524,38 @@ void TdApi::processRtnTrade(Task task)
 	PyLock lock;
 	CThostFtdcTradeField task_data = any_cast<CThostFtdcTradeField>(task.task_data);
 	dict data;
-	data["TradingRole"] = task_data.TradingRole;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["TradeType"] = task_data.TradeType;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["TradeSource"] = task_data.TradeSource;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
-	data["PriceSource"] = task_data.PriceSource;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["Volume"] = task_data.Volume;
-	data["Price"] = task_data.Price;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["OffsetFlag"] = task_data.OffsetFlag;
+    data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["Price"] = task_data.Price;
+    data["PriceSource"] = task_data.PriceSource;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SettlementID"] = task_data.SettlementID;
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeID"] = boost::locale::conv::to_utf<char>(task_data.TradeID, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradeSource"] = task_data.TradeSource;
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradeType"] = task_data.TradeType;
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TradingRole"] = task_data.TradingRole;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	this->onRtnTrade(data);
 };
@@ -5379,30 +6565,37 @@ void TdApi::processErrRtnOrderInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputOrderField task_data = any_cast<CThostFtdcInputOrderField>(task.task_data);
 	dict data;
-	data["TimeCondition"] = task_data.TimeCondition;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ContingentCondition"] = task_data.ContingentCondition;
-	data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
-	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
-	data["StopPrice"] = task_data.StopPrice;
-	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
-	data["OrderPriceType"] = task_data.OrderPriceType;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["UserForceClose"] = task_data.UserForceClose;
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["MinVolume"] = task_data.MinVolume;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["IsSwapOrder"] = task_data.IsSwapOrder;
-	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["Direction"] = task_data.Direction;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
+    data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
+    data["ContingentCondition"] = task_data.ContingentCondition;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+    data["IsSwapOrder"] = task_data.IsSwapOrder;
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["MinVolume"] = task_data.MinVolume;
+    data["OrderPriceType"] = task_data.OrderPriceType;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["StopPrice"] = task_data.StopPrice;
+    data["TimeCondition"] = task_data.TimeCondition;
+    data["UserForceClose"] = task_data.UserForceClose;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VolumeCondition"] = task_data.VolumeCondition;
+    data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5417,32 +6610,36 @@ void TdApi::processErrRtnOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcOrderActionField task_data = any_cast<CThostFtdcOrderActionField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["VolumeChange"] = task_data.VolumeChange;
-	data["OrderActionRef"] = task_data.OrderActionRef;
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
-	data["ActionDate"] = boost::locale::conv::to_utf<char>(task_data.ActionDate, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["ActionFlag"] = task_data.ActionFlag;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["OrderActionStatus"] = task_data.OrderActionStatus;
-	data["ActionTime"] = boost::locale::conv::to_utf<char>(task_data.ActionTime, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["ActionDate"] = boost::locale::conv::to_utf<char>(task_data.ActionDate, std::string("GB2312"));
+    data["ActionFlag"] = task_data.ActionFlag;
+    data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
+    data["ActionTime"] = boost::locale::conv::to_utf<char>(task_data.ActionTime, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OrderActionRef"] = task_data.OrderActionRef;
+    data["OrderActionStatus"] = task_data.OrderActionStatus;
+    data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VolumeChange"] = task_data.VolumeChange;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5457,16 +6654,38 @@ void TdApi::processRtnInstrumentStatus(Task task)
 	PyLock lock;
 	CThostFtdcInstrumentStatusField task_data = any_cast<CThostFtdcInstrumentStatusField>(task.task_data);
 	dict data;
-	data["EnterTime"] = boost::locale::conv::to_utf<char>(task_data.EnterTime, std::string("GB2312"));
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["EnterReason"] = task_data.EnterReason;
-	data["SettlementGroupID"] = boost::locale::conv::to_utf<char>(task_data.SettlementGroupID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["TradingSegmentSN"] = task_data.TradingSegmentSN;
-	data["InstrumentStatus"] = task_data.InstrumentStatus;
+    data["EnterReason"] = task_data.EnterReason;
+    data["EnterTime"] = boost::locale::conv::to_utf<char>(task_data.EnterTime, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InstrumentStatus"] = task_data.InstrumentStatus;
+    data["SettlementGroupID"] = boost::locale::conv::to_utf<char>(task_data.SettlementGroupID, std::string("GB2312"));
+    data["TradingSegmentSN"] = task_data.TradingSegmentSN;
+
 
 	this->onRtnInstrumentStatus(data);
+};
+
+void TdApi::processRtnBulletin(Task task)
+{
+	PyLock lock;
+	CThostFtdcBulletinField task_data = any_cast<CThostFtdcBulletinField>(task.task_data);
+	dict data;
+	data["URLLink"] = task_data.URLLink;
+	data["Content"] = task_data.Content;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["SequenceNo"] = task_data.SequenceNo;
+	data["Abstract"] = task_data.Abstract;
+	data["BulletinID"] = task_data.BulletinID;
+	data["NewsUrgency"] = task_data.NewsUrgency;
+	data["NewsType"] = task_data.NewsType;
+	data["ComeFrom"] = task_data.ComeFrom;
+	data["TradingDay"] = task_data.TradingDay;
+	data["SendTime"] = task_data.SendTime;
+	data["MarketID"] = task_data.MarketID;
+
+	this->onRtnBulletin(data);
 };
 
 void TdApi::processRtnTradingNotice(Task task)
@@ -5474,12 +6693,14 @@ void TdApi::processRtnTradingNotice(Task task)
 	PyLock lock;
 	CThostFtdcTradingNoticeInfoField task_data = any_cast<CThostFtdcTradingNoticeInfoField>(task.task_data);
 	dict data;
-	data["FieldContent"] = boost::locale::conv::to_utf<char>(task_data.FieldContent, std::string("GB2312"));
-	data["SequenceSeries"] = task_data.SequenceSeries;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["SendTime"] = boost::locale::conv::to_utf<char>(task_data.SendTime, std::string("GB2312"));
+    data["FieldContent"] = boost::locale::conv::to_utf<char>(task_data.FieldContent, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["SendTime"] = boost::locale::conv::to_utf<char>(task_data.SendTime, std::string("GB2312"));
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SequenceSeries"] = task_data.SequenceSeries;
+
 
 	this->onRtnTradingNotice(data);
 };
@@ -5489,66 +6710,72 @@ void TdApi::processRtnErrorConditionalOrder(Task task)
 	PyLock lock;
 	CThostFtdcErrorConditionalOrderField task_data = any_cast<CThostFtdcErrorConditionalOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["RelativeOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.RelativeOrderSysID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ContingentCondition"] = task_data.ContingentCondition;
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
-	data["OrderPriceType"] = task_data.OrderPriceType;
-	data["ErrorID"] = task_data.ErrorID;
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["ActiveTraderID"] = boost::locale::conv::to_utf<char>(task_data.ActiveTraderID, std::string("GB2312"));
-	data["ActiveTime"] = boost::locale::conv::to_utf<char>(task_data.ActiveTime, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["RequestID"] = task_data.RequestID;
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["ZCETotalTradedVolume"] = task_data.ZCETotalTradedVolume;
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["OrderSource"] = task_data.OrderSource;
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["MinVolume"] = task_data.MinVolume;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["UserForceClose"] = task_data.UserForceClose;
-	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["Direction"] = task_data.Direction;
-	data["TimeCondition"] = task_data.TimeCondition;
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
-	data["StopPrice"] = task_data.StopPrice;
-	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
-	data["VolumeTraded"] = task_data.VolumeTraded;
-	data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["OrderType"] = task_data.OrderType;
-	data["SuspendTime"] = boost::locale::conv::to_utf<char>(task_data.SuspendTime, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["VolumeTotal"] = task_data.VolumeTotal;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["SettlementID"] = task_data.SettlementID;
-	data["IsSwapOrder"] = task_data.IsSwapOrder;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["OrderStatus"] = task_data.OrderStatus;
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActiveTime"] = boost::locale::conv::to_utf<char>(task_data.ActiveTime, std::string("GB2312"));
+    data["ActiveTraderID"] = boost::locale::conv::to_utf<char>(task_data.ActiveTraderID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerOrderSeq"] = task_data.BrokerOrderSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
+    data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
+    data["ContingentCondition"] = task_data.ContingentCondition;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["FrontID"] = task_data.FrontID;
+    data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+    data["IsSwapOrder"] = task_data.IsSwapOrder;
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["MinVolume"] = task_data.MinVolume;
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.OrderLocalID, std::string("GB2312"));
+    data["OrderPriceType"] = task_data.OrderPriceType;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSource"] = task_data.OrderSource;
+    data["OrderStatus"] = task_data.OrderStatus;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["OrderType"] = task_data.OrderType;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["RelativeOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.RelativeOrderSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["StopPrice"] = task_data.StopPrice;
+    data["SuspendTime"] = boost::locale::conv::to_utf<char>(task_data.SuspendTime, std::string("GB2312"));
+    data["TimeCondition"] = task_data.TimeCondition;
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UpdateTime"] = boost::locale::conv::to_utf<char>(task_data.UpdateTime, std::string("GB2312"));
+    data["UserForceClose"] = task_data.UserForceClose;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["VolumeCondition"] = task_data.VolumeCondition;
+    data["VolumeTotal"] = task_data.VolumeTotal;
+    data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
+    data["VolumeTraded"] = task_data.VolumeTraded;
+    data["ZCETotalTradedVolume"] = task_data.ZCETotalTradedVolume;
+
 
 	this->onRtnErrorConditionalOrder(data);
 };
@@ -5558,45 +6785,51 @@ void TdApi::processRtnExecOrder(Task task)
 	PyLock lock;
 	CThostFtdcExecOrderField task_data = any_cast<CThostFtdcExecOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
-	data["ReservePositionFlag"] = task_data.ReservePositionFlag;
-	data["FrontID"] = task_data.FrontID;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["CloseFlag"] = task_data.CloseFlag;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["ExecOrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderLocalID, std::string("GB2312"));
-	data["BrokerExecOrderSeq"] = task_data.BrokerExecOrderSeq;
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["ActionType"] = task_data.ActionType;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["Volume"] = task_data.Volume;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["ExecResult"] = task_data.ExecResult;
-	data["InstallID"] = task_data.InstallID;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["PosiDirection"] = task_data.PosiDirection;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActionType"] = task_data.ActionType;
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerExecOrderSeq"] = task_data.BrokerExecOrderSeq;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CloseFlag"] = task_data.CloseFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ExecOrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderLocalID, std::string("GB2312"));
+    data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
+    data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
+    data["ExecResult"] = task_data.ExecResult;
+    data["FrontID"] = task_data.FrontID;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OffsetFlag"] = task_data.OffsetFlag;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["PosiDirection"] = task_data.PosiDirection;
+    data["RequestID"] = task_data.RequestID;
+    data["ReservePositionFlag"] = task_data.ReservePositionFlag;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	this->onRtnExecOrder(data);
 };
@@ -5606,21 +6839,28 @@ void TdApi::processErrRtnExecOrderInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputExecOrderField task_data = any_cast<CThostFtdcInputExecOrderField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ActionType"] = task_data.ActionType;
-	data["ReservePositionFlag"] = task_data.ReservePositionFlag;
-	data["Volume"] = task_data.Volume;
-	data["CloseFlag"] = task_data.CloseFlag;
-	data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
-	data["PosiDirection"] = task_data.PosiDirection;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["OffsetFlag"] = task_data.OffsetFlag;
-	data["HedgeFlag"] = task_data.HedgeFlag;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActionType"] = task_data.ActionType;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CloseFlag"] = task_data.CloseFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OffsetFlag"] = task_data.OffsetFlag;
+    data["PosiDirection"] = task_data.PosiDirection;
+    data["RequestID"] = task_data.RequestID;
+    data["ReservePositionFlag"] = task_data.ReservePositionFlag;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5635,31 +6875,35 @@ void TdApi::processErrRtnExecOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcExecOrderActionField task_data = any_cast<CThostFtdcExecOrderActionField>(task.task_data);
 	dict data;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ActionDate"] = boost::locale::conv::to_utf<char>(task_data.ActionDate, std::string("GB2312"));
-	data["ActionFlag"] = task_data.ActionFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["SessionID"] = task_data.SessionID;
-	data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
-	data["ExecOrderActionRef"] = task_data.ExecOrderActionRef;
-	data["OrderActionStatus"] = task_data.OrderActionStatus;
-	data["ActionType"] = task_data.ActionType;
-	data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["ExecOrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderLocalID, std::string("GB2312"));
-	data["ActionTime"] = boost::locale::conv::to_utf<char>(task_data.ActionTime, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ActionDate"] = boost::locale::conv::to_utf<char>(task_data.ActionDate, std::string("GB2312"));
+    data["ActionFlag"] = task_data.ActionFlag;
+    data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
+    data["ActionTime"] = boost::locale::conv::to_utf<char>(task_data.ActionTime, std::string("GB2312"));
+    data["ActionType"] = task_data.ActionType;
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExecOrderActionRef"] = task_data.ExecOrderActionRef;
+    data["ExecOrderLocalID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderLocalID, std::string("GB2312"));
+    data["ExecOrderRef"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderRef, std::string("GB2312"));
+    data["ExecOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.ExecOrderSysID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OrderActionStatus"] = task_data.OrderActionStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5674,12 +6918,16 @@ void TdApi::processErrRtnForQuoteInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputForQuoteField task_data = any_cast<CThostFtdcInputForQuoteField>(task.task_data);
 	dict data;
-	data["ForQuoteRef"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteRef, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForQuoteRef"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteRef, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5694,51 +6942,56 @@ void TdApi::processRtnQuote(Task task)
 	PyLock lock;
 	CThostFtdcQuoteField task_data = any_cast<CThostFtdcQuoteField>(task.task_data);
 	dict data;
-	data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AskHedgeFlag"] = task_data.AskHedgeFlag;
-	data["SettlementID"] = task_data.SettlementID;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["BidOffsetFlag"] = task_data.BidOffsetFlag;
-	data["AskOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.AskOrderSysID, std::string("GB2312"));
-	data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
-	data["FrontID"] = task_data.FrontID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["BidPrice"] = task_data.BidPrice;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
-	data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
-	data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
-	data["BrokerQuoteSeq"] = task_data.BrokerQuoteSeq;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["QuoteStatus"] = task_data.QuoteStatus;
-	data["AskVolume"] = task_data.AskVolume;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
-	data["AskOffsetFlag"] = task_data.AskOffsetFlag;
-	data["BidVolume"] = task_data.BidVolume;
-	data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
-	data["AskPrice"] = task_data.AskPrice;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["BidOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.BidOrderSysID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["QuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.QuoteLocalID, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["ActiveUserID"] = boost::locale::conv::to_utf<char>(task_data.ActiveUserID, std::string("GB2312"));
+    data["AskHedgeFlag"] = task_data.AskHedgeFlag;
+    data["AskOffsetFlag"] = task_data.AskOffsetFlag;
+    data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
+    data["AskOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.AskOrderSysID, std::string("GB2312"));
+    data["AskPrice"] = task_data.AskPrice;
+    data["AskVolume"] = task_data.AskVolume;
+    data["BidHedgeFlag"] = task_data.BidHedgeFlag;
+    data["BidOffsetFlag"] = task_data.BidOffsetFlag;
+    data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
+    data["BidOrderSysID"] = boost::locale::conv::to_utf<char>(task_data.BidOrderSysID, std::string("GB2312"));
+    data["BidPrice"] = task_data.BidPrice;
+    data["BidVolume"] = task_data.BidVolume;
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerQuoteSeq"] = task_data.BrokerQuoteSeq;
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["CancelTime"] = boost::locale::conv::to_utf<char>(task_data.CancelTime, std::string("GB2312"));
+    data["ClearingPartID"] = boost::locale::conv::to_utf<char>(task_data.ClearingPartID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InsertDate"] = boost::locale::conv::to_utf<char>(task_data.InsertDate, std::string("GB2312"));
+    data["InsertTime"] = boost::locale::conv::to_utf<char>(task_data.InsertTime, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["QuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.QuoteLocalID, std::string("GB2312"));
+    data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
+    data["QuoteStatus"] = task_data.QuoteStatus;
+    data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
 
 	this->onRtnQuote(data);
 };
@@ -5748,25 +7001,29 @@ void TdApi::processErrRtnQuoteInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputQuoteField task_data = any_cast<CThostFtdcInputQuoteField>(task.task_data);
 	dict data;
-	data["BidPrice"] = task_data.BidPrice;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
 	data["AskHedgeFlag"] = task_data.AskHedgeFlag;
-	data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["AskOffsetFlag"] = task_data.AskOffsetFlag;
-	data["BidOffsetFlag"] = task_data.BidOffsetFlag;
-	data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
-	data["AskPrice"] = task_data.AskPrice;
-	data["BidHedgeFlag"] = task_data.BidHedgeFlag;
-	data["AskVolume"] = task_data.AskVolume;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BidVolume"] = task_data.BidVolume;
-	data["RequestID"] = task_data.RequestID;
-	data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["AskOffsetFlag"] = task_data.AskOffsetFlag;
+    data["AskOrderRef"] = boost::locale::conv::to_utf<char>(task_data.AskOrderRef, std::string("GB2312"));
+    data["AskPrice"] = task_data.AskPrice;
+    data["AskVolume"] = task_data.AskVolume;
+    data["BidHedgeFlag"] = task_data.BidHedgeFlag;
+    data["BidOffsetFlag"] = task_data.BidOffsetFlag;
+    data["BidOrderRef"] = boost::locale::conv::to_utf<char>(task_data.BidOrderRef, std::string("GB2312"));
+    data["BidPrice"] = task_data.BidPrice;
+    data["BidVolume"] = task_data.BidVolume;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5781,30 +7038,34 @@ void TdApi::processErrRtnQuoteAction(Task task)
 	PyLock lock;
 	CThostFtdcQuoteActionField task_data = any_cast<CThostFtdcQuoteActionField>(task.task_data);
 	dict data;
-	data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ActionDate"] = boost::locale::conv::to_utf<char>(task_data.ActionDate, std::string("GB2312"));
-	data["ActionFlag"] = task_data.ActionFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["SessionID"] = task_data.SessionID;
-	data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
-	data["OrderActionStatus"] = task_data.OrderActionStatus;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["QuoteActionRef"] = task_data.QuoteActionRef;
-	data["FrontID"] = task_data.FrontID;
-	data["ActionTime"] = boost::locale::conv::to_utf<char>(task_data.ActionTime, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["QuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.QuoteLocalID, std::string("GB2312"));
+    data["ActionDate"] = boost::locale::conv::to_utf<char>(task_data.ActionDate, std::string("GB2312"));
+    data["ActionFlag"] = task_data.ActionFlag;
+    data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
+    data["ActionTime"] = boost::locale::conv::to_utf<char>(task_data.ActionTime, std::string("GB2312"));
+    data["BranchID"] = boost::locale::conv::to_utf<char>(task_data.BranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OrderActionStatus"] = task_data.OrderActionStatus;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["QuoteActionRef"] = task_data.QuoteActionRef;
+    data["QuoteLocalID"] = boost::locale::conv::to_utf<char>(task_data.QuoteLocalID, std::string("GB2312"));
+    data["QuoteRef"] = boost::locale::conv::to_utf<char>(task_data.QuoteRef, std::string("GB2312"));
+    data["QuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.QuoteSysID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5820,11 +7081,11 @@ void TdApi::processRtnForQuoteRsp(Task task)
 	CThostFtdcForQuoteRspField task_data = any_cast<CThostFtdcForQuoteRspField>(task.task_data);
 	dict data;
 	data["ActionDay"] = boost::locale::conv::to_utf<char>(task_data.ActionDay, std::string("GB2312"));
-	data["ForQuoteTime"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteTime, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForQuoteSysID"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteSysID, std::string("GB2312"));
+    data["ForQuoteTime"] = boost::locale::conv::to_utf<char>(task_data.ForQuoteTime, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
 
 	this->onRtnForQuoteRsp(data);
 };
@@ -5834,46 +7095,207 @@ void TdApi::processRtnCFMMCTradingAccountToken(Task task)
 	PyLock lock;
 	CThostFtdcCFMMCTradingAccountTokenField task_data = any_cast<CThostFtdcCFMMCTradingAccountTokenField>(task.task_data);
 	dict data;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["Token"] = boost::locale::conv::to_utf<char>(task_data.Token, std::string("GB2312"));
-	data["KeyID"] = task_data.KeyID;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["KeyID"] = task_data.KeyID;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["Token"] = boost::locale::conv::to_utf<char>(task_data.Token, std::string("GB2312"));
 
 	this->onRtnCFMMCTradingAccountToken(data);
 };
 
+void TdApi::processErrRtnBatchOrderAction(Task task)
+{
+	PyLock lock;
+	CThostFtdcBatchOrderActionField task_data = any_cast<CThostFtdcBatchOrderActionField>(task.task_data);
+	dict data;
+	data["ActionDate"] = task_data.ActionDate;
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["ActionTime"] = task_data.ActionTime;
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["OrderActionRef"] = task_data.OrderActionRef;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["TraderID"] = task_data.TraderID;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+	data["ActionLocalID"] = task_data.ActionLocalID;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["SessionID"] = task_data.SessionID;
+	data["InstallID"] = task_data.InstallID;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["RequestID"] = task_data.RequestID;
+	data["FrontID"] = task_data.FrontID;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+	data["OrderActionStatus"] = task_data.OrderActionStatus;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onErrRtnBatchOrderAction(data, error);
+};
+
+void TdApi::processRtnOptionSelfClose(Task task)
+{
+	PyLock lock;
+	CThostFtdcOptionSelfCloseField task_data = any_cast<CThostFtdcOptionSelfCloseField>(task.task_data);
+	dict data;
+	data["NotifySequence"] = task_data.NotifySequence;
+	data["ActiveUserID"] = task_data.ActiveUserID;
+	data["UserProductInfo"] = task_data.UserProductInfo;
+	data["TraderID"] = task_data.TraderID;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["ExecResult"] = task_data.ExecResult;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["InstallID"] = task_data.InstallID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+	data["Volume"] = task_data.Volume;
+	data["SessionID"] = task_data.SessionID;
+	data["OrderSubmitStatus"] = task_data.OrderSubmitStatus;
+	data["OptionSelfCloseRef"] = task_data.OptionSelfCloseRef;
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OptionSelfCloseSysID"] = task_data.OptionSelfCloseSysID;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["SettlementID"] = task_data.SettlementID;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["TradingDay"] = task_data.TradingDay;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["InsertTime"] = task_data.InsertTime;
+	data["ClearingPartID"] = task_data.ClearingPartID;
+	data["OptSelfCloseFlag"] = task_data.OptSelfCloseFlag;
+	data["CancelTime"] = task_data.CancelTime;
+	data["BrokerOptionSelfCloseSeq"] = task_data.BrokerOptionSelfCloseSeq;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["InsertDate"] = task_data.InsertDate;
+	data["BranchID"] = task_data.BranchID;
+	data["SequenceNo"] = task_data.SequenceNo;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["ExchangeInstID"] = task_data.ExchangeInstID;
+	data["RequestID"] = task_data.RequestID;
+	data["FrontID"] = task_data.FrontID;
+	data["OptionSelfCloseLocalID"] = task_data.OptionSelfCloseLocalID;
+
+	this->onRtnOptionSelfClose(data);
+};
+
+void TdApi::processErrRtnOptionSelfCloseInsert(Task task)
+{
+	PyLock lock;
+	CThostFtdcInputOptionSelfCloseField task_data = any_cast<CThostFtdcInputOptionSelfCloseField>(task.task_data);
+	dict data;
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OptSelfCloseFlag"] = task_data.OptSelfCloseFlag;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["HedgeFlag"] = task_data.HedgeFlag;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+	data["Volume"] = task_data.Volume;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["RequestID"] = task_data.RequestID;
+	data["OptionSelfCloseRef"] = task_data.OptionSelfCloseRef;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onErrRtnOptionSelfCloseInsert(data, error);
+};
+
+void TdApi::processErrRtnOptionSelfCloseAction(Task task)
+{
+	PyLock lock;
+	CThostFtdcOptionSelfCloseActionField task_data = any_cast<CThostFtdcOptionSelfCloseActionField>(task.task_data);
+	dict data;
+	data["ActionTime"] = task_data.ActionTime;
+	data["TraderID"] = task_data.TraderID;
+	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+	data["OrderActionStatus"] = task_data.OrderActionStatus;
+	data["StatusMsg"] = task_data.StatusMsg;
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+	data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+	data["InstallID"] = task_data.InstallID;
+	data["ParticipantID"] = task_data.ParticipantID;
+	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+	data["SessionID"] = task_data.SessionID;
+	data["ActionFlag"] = task_data.ActionFlag;
+	data["OptionSelfCloseRef"] = task_data.OptionSelfCloseRef;
+	data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+	data["InstrumentID"] = task_data.InstrumentID;
+	data["OptionSelfCloseSysID"] = task_data.OptionSelfCloseSysID;
+	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+	data["OptionSelfCloseActionRef"] = task_data.OptionSelfCloseActionRef;
+	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["ActionDate"] = task_data.ActionDate;
+	data["BranchID"] = task_data.BranchID;
+	data["BusinessUnit"] = task_data.BusinessUnit;
+	data["ActionLocalID"] = task_data.ActionLocalID;
+	data["RequestID"] = task_data.RequestID;
+	data["FrontID"] = task_data.FrontID;
+	data["OptionSelfCloseLocalID"] = task_data.OptionSelfCloseLocalID;
+
+	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
+	dict error;
+	error["ErrorID"] = task_error.ErrorID;
+	error["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_error.ErrorMsg, std::string("GB2312"));
+
+	this->onErrRtnOptionSelfCloseAction(data, error);
+};
 
 void TdApi::processRtnCombAction(Task task)
 {
 	PyLock lock;
 	CThostFtdcCombActionField task_data = any_cast<CThostFtdcCombActionField>(task.task_data);
 	dict data;
-	data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["CombDirection"] = task_data.CombDirection;
-	data["FrontID"] = task_data.FrontID;
-	data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
-	data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
-	data["SettlementID"] = task_data.SettlementID;
-	data["Volume"] = task_data.Volume;
-	data["NotifySequence"] = task_data.NotifySequence;
-	data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
-	data["ActionStatus"] = task_data.ActionStatus;
-	data["InstallID"] = task_data.InstallID;
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["ActionLocalID"] = boost::locale::conv::to_utf<char>(task_data.ActionLocalID, std::string("GB2312"));
+    data["ActionStatus"] = task_data.ActionStatus;
+    data["BranchID"] = task_data.BranchID;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ClientID"] = boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
+    data["CombDirection"] = task_data.CombDirection;
+    data["ComTradeID"] = task_data.ComTradeID;
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ExchangeInstID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeInstID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["HedgeFlag"] = task_data.HedgeFlag;
+    data["InstallID"] = task_data.InstallID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["NotifySequence"] = task_data.NotifySequence;
+    data["ParticipantID"] = boost::locale::conv::to_utf<char>(task_data.ParticipantID, std::string("GB2312"));
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SessionID"] = task_data.SessionID;
+    data["SettlementID"] = task_data.SettlementID;
+    data["StatusMsg"] = boost::locale::conv::to_utf<char>(task_data.StatusMsg, std::string("GB2312"));
+    data["TraderID"] = boost::locale::conv::to_utf<char>(task_data.TraderID, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserProductInfo"] = boost::locale::conv::to_utf<char>(task_data.UserProductInfo, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
+
 
 	this->onRtnCombAction(data);
 };
@@ -5883,16 +7305,19 @@ void TdApi::processErrRtnCombActionInsert(Task task)
 	PyLock lock;
 	CThostFtdcInputCombActionField task_data = any_cast<CThostFtdcInputCombActionField>(task.task_data);
 	dict data;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["CombDirection"] = task_data.CombDirection;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["HedgeFlag"] = task_data.HedgeFlag;
-	data["Direction"] = task_data.Direction;
-	data["Volume"] = task_data.Volume;
+    data["CombActionRef"] = boost::locale::conv::to_utf<char>(task_data.CombActionRef, std::string("GB2312"));
+    data["CombDirection"] = task_data.CombDirection;
+    data["Direction"] = task_data.Direction;
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["HedgeFlag"] = task_data.HedgeFlag;
+   data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["Volume"] = task_data.Volume;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5907,10 +7332,10 @@ void TdApi::processRspQryContractBank(Task task)
 	PyLock lock;
 	CThostFtdcContractBankField task_data = any_cast<CThostFtdcContractBankField>(task.task_data);
 	dict data;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
 	data["BankBrchID"] = boost::locale::conv::to_utf<char>(task_data.BankBrchID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["BankName"] = boost::locale::conv::to_utf<char>(task_data.BankName, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankName"] = boost::locale::conv::to_utf<char>(task_data.BankName, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5925,35 +7350,41 @@ void TdApi::processRspQryParkedOrder(Task task)
 	PyLock lock;
 	CThostFtdcParkedOrderField task_data = any_cast<CThostFtdcParkedOrderField>(task.task_data);
 	dict data;
-	data["TimeCondition"] = task_data.TimeCondition;
-	data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
-	data["UserType"] = task_data.UserType;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["ContingentCondition"] = task_data.ContingentCondition;
-	data["ParkedOrderID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderID, std::string("GB2312"));
-	data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
-	data["IsAutoSuspend"] = task_data.IsAutoSuspend;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
-	data["StopPrice"] = task_data.StopPrice;
-	data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
-	data["OrderPriceType"] = task_data.OrderPriceType;
-	data["ErrorID"] = task_data.ErrorID;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["UserForceClose"] = task_data.UserForceClose;
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["ForceCloseReason"] = task_data.ForceCloseReason;
-	data["VolumeCondition"] = task_data.VolumeCondition;
-	data["MinVolume"] = task_data.MinVolume;
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["IsSwapOrder"] = task_data.IsSwapOrder;
-	data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["Status"] = task_data.Status;
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["Direction"] = task_data.Direction;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BusinessUnit"] = boost::locale::conv::to_utf<char>(task_data.BusinessUnit, std::string("GB2312"));
+    data["ClientID"] =  boost::locale::conv::to_utf<char>(task_data.ClientID, std::string("GB2312"));
+    data["CombHedgeFlag"] = boost::locale::conv::to_utf<char>(task_data.CombHedgeFlag, std::string("GB2312"));
+    data["CombOffsetFlag"] = boost::locale::conv::to_utf<char>(task_data.CombOffsetFlag, std::string("GB2312"));
+    data["ContingentCondition"] = task_data.ContingentCondition;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["Direction"] = task_data.Direction;
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["ForceCloseReason"] = task_data.ForceCloseReason;
+    data["GTDDate"] = boost::locale::conv::to_utf<char>(task_data.GTDDate, std::string("GB2312"));
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["IsAutoSuspend"] = task_data.IsAutoSuspend;
+    data["IsSwapOrder"] = task_data.IsSwapOrder;
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["MinVolume"] = task_data.MinVolume;
+    data["OrderPriceType"] = task_data.OrderPriceType;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["ParkedOrderID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["Status"] = task_data.Status;
+    data["StopPrice"] = task_data.StopPrice;
+    data["TimeCondition"] = task_data.TimeCondition;
+    data["UserForceClose"] = task_data.UserForceClose;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserType"] = task_data.UserType;
+    data["VolumeCondition"] = task_data.VolumeCondition;
+    data["VolumeTotalOriginal"] = task_data.VolumeTotalOriginal;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -5968,25 +7399,29 @@ void TdApi::processRspQryParkedOrderAction(Task task)
 	PyLock lock;
 	CThostFtdcParkedOrderActionField task_data = any_cast<CThostFtdcParkedOrderActionField>(task.task_data);
 	dict data;
-	data["UserType"] = task_data.UserType;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
-	data["VolumeChange"] = task_data.VolumeChange;
-	data["OrderActionRef"] = task_data.OrderActionRef;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["LimitPrice"] = task_data.LimitPrice;
-	data["ErrorID"] = task_data.ErrorID;
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["Status"] = task_data.Status;
-	data["FrontID"] = task_data.FrontID;
-	data["RequestID"] = task_data.RequestID;
-	data["ActionFlag"] = task_data.ActionFlag;
-	data["ParkedOrderActionID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderActionID, std::string("GB2312"));
-	data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["ActionFlag"] = task_data.ActionFlag;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FrontID"] = task_data.FrontID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["IPAddress"] = boost::locale::conv::to_utf<char>(task_data.IPAddress, std::string("GB2312"));
+    data["LimitPrice"] = task_data.LimitPrice;
+    data["MacAddress"] = boost::locale::conv::to_utf<char>(task_data.MacAddress, std::string("GB2312"));
+    data["OrderActionRef"] = task_data.OrderActionRef;
+    data["OrderRef"] = boost::locale::conv::to_utf<char>(task_data.OrderRef, std::string("GB2312"));
+    data["OrderSysID"] = boost::locale::conv::to_utf<char>(task_data.OrderSysID, std::string("GB2312"));
+    data["ParkedOrderActionID"] = boost::locale::conv::to_utf<char>(task_data.ParkedOrderActionID, std::string("GB2312"));
+    data["RequestID"] = task_data.RequestID;
+    data["SessionID"] = task_data.SessionID;
+    data["Status"] = task_data.Status;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["UserType"] = task_data.UserType;
+    data["VolumeChange"] = task_data.VolumeChange;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6001,14 +7436,16 @@ void TdApi::processRspQryTradingNotice(Task task)
 	PyLock lock;
 	CThostFtdcTradingNoticeField task_data = any_cast<CThostFtdcTradingNoticeField>(task.task_data);
 	dict data;
-	data["FieldContent"] = boost::locale::conv::to_utf<char>(task_data.FieldContent, std::string("GB2312"));
-	data["InvestorRange"] = task_data.InvestorRange;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["SequenceSeries"] = task_data.SequenceSeries;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["SequenceNo"] = task_data.SequenceNo;
-	data["SendTime"] = boost::locale::conv::to_utf<char>(task_data.SendTime, std::string("GB2312"));
+    data["FieldContent"] = boost::locale::conv::to_utf<char>(task_data.FieldContent, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["InvestorRange"] = task_data.InvestorRange;
+    data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
+    data["SendTime"] = boost::locale::conv::to_utf<char>(task_data.SendTime, std::string("GB2312"));
+    data["SequenceNo"] = task_data.SequenceNo;
+    data["SequenceSeries"] = task_data.SequenceSeries;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6023,13 +7460,15 @@ void TdApi::processRspQryBrokerTradingParams(Task task)
 	PyLock lock;
 	CThostFtdcBrokerTradingParamsField task_data = any_cast<CThostFtdcBrokerTradingParamsField>(task.task_data);
 	dict data;
-	data["MarginPriceType"] = task_data.MarginPriceType;
-	data["Algorithm"] = task_data.Algorithm;
-	data["OptionRoyaltyPriceType"] = task_data.OptionRoyaltyPriceType;
-	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["AvailIncludeCloseProfit"] = task_data.AvailIncludeCloseProfit;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["Algorithm"] = task_data.Algorithm;
+    data["AvailIncludeCloseProfit"] = task_data.AvailIncludeCloseProfit;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+    data["MarginPriceType"] = task_data.MarginPriceType;
+    data["OptionRoyaltyPriceType"] = task_data.OptionRoyaltyPriceType;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6044,12 +7483,12 @@ void TdApi::processRspQryBrokerTradingAlgos(Task task)
 	PyLock lock;
 	CThostFtdcBrokerTradingAlgosField task_data = any_cast<CThostFtdcBrokerTradingAlgosField>(task.task_data);
 	dict data;
-	data["HandlePositionAlgoID"] = task_data.HandlePositionAlgoID;
-	data["HandleTradingAccountAlgoID"] = task_data.HandleTradingAccountAlgoID;
-	data["FindMarginRateAlgoID"] = task_data.FindMarginRateAlgoID;
-	data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
-	data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["ExchangeID"] = boost::locale::conv::to_utf<char>(task_data.ExchangeID, std::string("GB2312"));
+    data["FindMarginRateAlgoID"] = task_data.FindMarginRateAlgoID;
+    data["HandlePositionAlgoID"] = task_data.HandlePositionAlgoID;
+    data["HandleTradingAccountAlgoID"] = task_data.HandleTradingAccountAlgoID;
+    data["InstrumentID"] = boost::locale::conv::to_utf<char>(task_data.InstrumentID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6066,6 +7505,7 @@ void TdApi::processRspQueryCFMMCTradingAccountToken(Task task)
 	dict data;
 	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
 	data["InvestorID"] = boost::locale::conv::to_utf<char>(task_data.InvestorID, std::string("GB2312"));
+	data["InvestUnitID"] = boost::locale::conv::to_utf<char>(task_data.InvestUnitID, std::string("GB2312"));
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6080,51 +7520,53 @@ void TdApi::processRtnFromBankToFutureByBank(Task task)
 	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["RequestID"] = task_data.RequestID;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = task_data.LongCustomerName;
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnFromBankToFutureByBank(data);
 };
@@ -6134,51 +7576,53 @@ void TdApi::processRtnFromFutureToBankByBank(Task task)
 	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["RequestID"] = task_data.RequestID;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnFromFutureToBankByBank(data);
 };
@@ -6188,58 +7632,60 @@ void TdApi::processRtnRepealFromBankToFutureByBank(Task task)
 	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+     data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnRepealFromBankToFutureByBank(data);
 };
@@ -6249,58 +7695,60 @@ void TdApi::processRtnRepealFromFutureToBankByBank(Task task)
 	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnRepealFromFutureToBankByBank(data);
 };
@@ -6310,51 +7758,53 @@ void TdApi::processRtnFromBankToFutureByFuture(Task task)
 	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["RequestID"] = task_data.RequestID;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnFromBankToFutureByFuture(data);
 };
@@ -6364,51 +7814,53 @@ void TdApi::processRtnFromFutureToBankByFuture(Task task)
 	PyLock lock;
 	CThostFtdcRspTransferField task_data = any_cast<CThostFtdcRspTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["RequestID"] = task_data.RequestID;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnFromFutureToBankByFuture(data);
 };
@@ -6418,58 +7870,59 @@ void TdApi::processRtnRepealFromBankToFutureByFutureManual(Task task)
 	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+   data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
 
 	this->onRtnRepealFromBankToFutureByFutureManual(data);
 };
@@ -6479,58 +7932,60 @@ void TdApi::processRtnRepealFromFutureToBankByFutureManual(Task task)
 	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] =  boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnRepealFromFutureToBankByFutureManual(data);
 };
@@ -6540,46 +7995,48 @@ void TdApi::processRtnQueryBankBalanceByFuture(Task task)
 	PyLock lock;
 	CThostFtdcNotifyQueryAccountField task_data = any_cast<CThostFtdcNotifyQueryAccountField>(task.task_data);
 	dict data;
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankUseAmount"] = task_data.BankUseAmount;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BankFetchAmount"] = task_data.BankFetchAmount;
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankFetchAmount"] = task_data.BankFetchAmount;
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BankUseAmount"] = task_data.BankUseAmount;
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnQueryBankBalanceByFuture(data);
 };
@@ -6589,49 +8046,51 @@ void TdApi::processErrRtnBankToFutureByFuture(Task task)
 	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
 	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["RequestID"] = task_data.RequestID;
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = data["Message"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6646,49 +8105,51 @@ void TdApi::processErrRtnFutureToBankByFuture(Task task)
 	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["RequestID"] = task_data.RequestID;
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+   data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6703,56 +8164,57 @@ void TdApi::processErrRtnRepealBankToFutureByFutureManual(Task task)
 	PyLock lock;
 	CThostFtdcReqRepealField task_data = any_cast<CThostFtdcReqRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] =  boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6767,56 +8229,58 @@ void TdApi::processErrRtnRepealFutureToBankByFutureManual(Task task)
 	PyLock lock;
 	CThostFtdcReqRepealField task_data = any_cast<CThostFtdcReqRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+   data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6831,42 +8295,44 @@ void TdApi::processErrRtnQueryBankBalanceByFuture(Task task)
 	PyLock lock;
 	CThostFtdcReqQueryAccountField task_data = any_cast<CThostFtdcReqQueryAccountField>(task.task_data);
 	dict data;
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+   data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -6881,58 +8347,60 @@ void TdApi::processRtnRepealFromBankToFutureByFuture(Task task)
 	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
 	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnRepealFromBankToFutureByFuture(data);
 };
@@ -6942,58 +8410,60 @@ void TdApi::processRtnRepealFromFutureToBankByFuture(Task task)
 	PyLock lock;
 	CThostFtdcRspRepealField task_data = any_cast<CThostFtdcRspRepealField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["ErrorID"] = task_data.ErrorID;
-	data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
-	data["BankRepealFlag"] = task_data.BankRepealFlag;
-	data["RequestID"] = task_data.RequestID;
-	data["RepealTimeInterval"] = task_data.RepealTimeInterval;
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateRepealSerial"] = task_data.PlateRepealSerial;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
 	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["FutureRepealSerial"] = task_data.FutureRepealSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["LastFragment"] = task_data.LastFragment;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["RepealedTimes"] = task_data.RepealedTimes;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankRepealFlag"] = task_data.BankRepealFlag;
+    data["BankRepealSerial"] = boost::locale::conv::to_utf<char>(task_data.BankRepealSerial, std::string("GB2312"));
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["BrokerRepealFlag"] = task_data.BrokerRepealFlag;
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureRepealSerial"] = task_data.FutureRepealSerial;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateRepealSerial"] = task_data.PlateRepealSerial;
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RepealedTimes"] = task_data.RepealedTimes;
+    data["RepealTimeInterval"] = task_data.RepealTimeInterval;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	this->onRtnRepealFromFutureToBankByFuture(data);
 };
@@ -7003,49 +8473,50 @@ void TdApi::processRspFromBankToFutureByFuture(Task task)
 	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["RequestID"] = task_data.RequestID;
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -7060,49 +8531,51 @@ void TdApi::processRspFromFutureToBankByFuture(Task task)
 	PyLock lock;
 	CThostFtdcReqTransferField task_data = any_cast<CThostFtdcReqTransferField>(task.task_data);
 	dict data;
-	data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["FeePayFlag"] = task_data.FeePayFlag;
-	data["BrokerFee"] = task_data.BrokerFee;
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["TradeAmount"] = task_data.TradeAmount;
-	data["FutureFetchAmount"] = task_data.FutureFetchAmount;
-	data["RequestID"] = task_data.RequestID;
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["TransferStatus"] = task_data.TransferStatus;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["CustFee"] = task_data.CustFee;
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerFee"] = task_data.BrokerFee;
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustFee"] = task_data.CustFee;
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FeePayFlag"] = task_data.FeePayFlag;
+    data["FutureFetchAmount"] = task_data.FutureFetchAmount;
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["Message"] = boost::locale::conv::to_utf<char>(task_data.Message, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeAmount"] = task_data.TradeAmount;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["TransferStatus"] = task_data.TransferStatus;
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -7117,42 +8590,43 @@ void TdApi::processRspQueryBankAccountMoneyByFuture(Task task)
 	PyLock lock;
 	CThostFtdcReqQueryAccountField task_data = any_cast<CThostFtdcReqQueryAccountField>(task.task_data);
 	dict data;
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
 	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["FutureSerial"] = task_data.FutureSerial;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["RequestID"] = task_data.RequestID;
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["FutureSerial"] = task_data.FutureSerial;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["RequestID"] = task_data.RequestID;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["TID"] = task_data.TID;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
 
 	CThostFtdcRspInfoField task_error = any_cast<CThostFtdcRspInfoField>(task.task_error);
 	dict error;
@@ -7167,52 +8641,54 @@ void TdApi::processRtnOpenAccountByBank(Task task)
 	PyLock lock;
 	CThostFtdcOpenAccountField task_data = any_cast<CThostFtdcOpenAccountField>(task.task_data);
 	dict data;
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["EMail"] = boost::locale::conv::to_utf<char>(task_data.EMail, std::string("GB2312"));
-	data["ZipCode"] = boost::locale::conv::to_utf<char>(task_data.ZipCode, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ErrorID"] = task_data.ErrorID;
-	data["Fax"] = boost::locale::conv::to_utf<char>(task_data.Fax, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["MobilePhone"] = boost::locale::conv::to_utf<char>(task_data.MobilePhone, std::string("GB2312"));
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["CountryCode"] = boost::locale::conv::to_utf<char>(task_data.CountryCode, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["Gender"] = task_data.Gender;
-	data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
-	data["CashExchangeCode"] = task_data.CashExchangeCode;
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["InstallID"] = task_data.InstallID;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CashExchangeCode"] = task_data.CashExchangeCode;
+    data["CountryCode"] = boost::locale::conv::to_utf<char>(task_data.CountryCode, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["EMail"] = boost::locale::conv::to_utf<char>(task_data.EMail, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["Fax"] = boost::locale::conv::to_utf<char>(task_data.Fax, std::string("GB2312"));
+    data["Gender"] = task_data.Gender;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["MobilePhone"] = boost::locale::conv::to_utf<char>(task_data.MobilePhone, std::string("GB2312"));
+    data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
+    data["TID"] = task_data.TID;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+    data["ZipCode"] = boost::locale::conv::to_utf<char>(task_data.ZipCode, std::string("GB2312"));
+
 
 	this->onRtnOpenAccountByBank(data);
 };
@@ -7222,52 +8698,54 @@ void TdApi::processRtnCancelAccountByBank(Task task)
 	PyLock lock;
 	CThostFtdcCancelAccountField task_data = any_cast<CThostFtdcCancelAccountField>(task.task_data);
 	dict data;
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["EMail"] = boost::locale::conv::to_utf<char>(task_data.EMail, std::string("GB2312"));
-	data["ZipCode"] = boost::locale::conv::to_utf<char>(task_data.ZipCode, std::string("GB2312"));
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["ErrorID"] = task_data.ErrorID;
-	data["Fax"] = boost::locale::conv::to_utf<char>(task_data.Fax, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["MobilePhone"] = boost::locale::conv::to_utf<char>(task_data.MobilePhone, std::string("GB2312"));
 	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
-	data["CountryCode"] = boost::locale::conv::to_utf<char>(task_data.CountryCode, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
-	data["BankSecuAccType"] = task_data.BankSecuAccType;
-	data["Gender"] = task_data.Gender;
-	data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
-	data["CashExchangeCode"] = task_data.CashExchangeCode;
-	data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["InstallID"] = task_data.InstallID;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+    data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSecuAcc"] = boost::locale::conv::to_utf<char>(task_data.BankSecuAcc, std::string("GB2312"));
+    data["BankSecuAccType"] = task_data.BankSecuAccType;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CashExchangeCode"] = task_data.CashExchangeCode;
+    data["CountryCode"] = boost::locale::conv::to_utf<char>(task_data.CountryCode, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["DeviceID"] = boost::locale::conv::to_utf<char>(task_data.DeviceID, std::string("GB2312"));
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["EMail"] = boost::locale::conv::to_utf<char>(task_data.EMail, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["Fax"] = boost::locale::conv::to_utf<char>(task_data.Fax, std::string("GB2312"));
+    data["Gender"] = task_data.Gender;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] = boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["MobilePhone"] = boost::locale::conv::to_utf<char>(task_data.MobilePhone, std::string("GB2312"));
+    data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
+    data["OperNo"] = boost::locale::conv::to_utf<char>(task_data.OperNo, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
+    data["TID"] = task_data.TID;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["UserID"] = boost::locale::conv::to_utf<char>(task_data.UserID, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+    data["ZipCode"] = boost::locale::conv::to_utf<char>(task_data.ZipCode, std::string("GB2312"));
+
 
 	this->onRtnCancelAccountByBank(data);
 };
@@ -7277,55 +8755,52 @@ void TdApi::processRtnChangeAccountByBank(Task task)
 	PyLock lock;
 	CThostFtdcChangeAccountField task_data = any_cast<CThostFtdcChangeAccountField>(task.task_data);
 	dict data;
-	data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
-	data["NewBankAccount"] = boost::locale::conv::to_utf<char>(task_data.NewBankAccount, std::string("GB2312"));
-	data["CountryCode"] = boost::locale::conv::to_utf<char>(task_data.CountryCode, std::string("GB2312"));
-	data["EMail"] = boost::locale::conv::to_utf<char>(task_data.EMail, std::string("GB2312"));
-	data["LastFragment"] = task_data.LastFragment;
-	data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
-	data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
-	data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
-	data["TID"] = task_data.TID;
-	data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
-	data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
-	data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
-	data["Fax"] = boost::locale::conv::to_utf<char>(task_data.Fax, std::string("GB2312"));
-	data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
-	data["SecuPwdFlag"] = task_data.SecuPwdFlag;
-	data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
-	data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
-	data["SessionID"] = task_data.SessionID;
-	data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
-	data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
-	data["IdCardType"] = task_data.IdCardType;
-	data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
-	data["CustType"] = task_data.CustType;
-	data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
-	data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
-	data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
-	data["BankAccType"] = task_data.BankAccType;
-	data["MobilePhone"] = boost::locale::conv::to_utf<char>(task_data.MobilePhone, std::string("GB2312"));
-	data["Gender"] = task_data.Gender;
-	data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
-	data["ErrorID"] = task_data.ErrorID;
-	data["PlateSerial"] = task_data.PlateSerial;
-	data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
-	data["ZipCode"] = boost::locale::conv::to_utf<char>(task_data.ZipCode, std::string("GB2312"));
-	data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
-	data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
-	data["BankPwdFlag"] = task_data.BankPwdFlag;
-	data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
-	data["InstallID"] = task_data.InstallID;
-	data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
-	data["NewBankPassWord"] = boost::locale::conv::to_utf<char>(task_data.NewBankPassWord, std::string("GB2312"));
-	data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["AccountID"] = boost::locale::conv::to_utf<char>(task_data.AccountID, std::string("GB2312"));
+    data["Address"] = boost::locale::conv::to_utf<char>(task_data.Address, std::string("GB2312"));
+    data["BankAccount"] = boost::locale::conv::to_utf<char>(task_data.BankAccount, std::string("GB2312"));
+    data["BankAccType"] = task_data.BankAccType;
+    data["BankBranchID"] = boost::locale::conv::to_utf<char>(task_data.BankBranchID, std::string("GB2312"));
+    data["BankID"] = boost::locale::conv::to_utf<char>(task_data.BankID, std::string("GB2312"));
+    data["BankPassWord"] = boost::locale::conv::to_utf<char>(task_data.BankPassWord, std::string("GB2312"));
+    data["BankPwdFlag"] = task_data.BankPwdFlag;
+    data["BankSerial"] = boost::locale::conv::to_utf<char>(task_data.BankSerial, std::string("GB2312"));
+    data["BrokerBranchID"] = boost::locale::conv::to_utf<char>(task_data.BrokerBranchID, std::string("GB2312"));
+    data["BrokerID"] = boost::locale::conv::to_utf<char>(task_data.BrokerID, std::string("GB2312"));
+    data["BrokerIDByBank"] = boost::locale::conv::to_utf<char>(task_data.BrokerIDByBank, std::string("GB2312"));
+    data["CountryCode"] = boost::locale::conv::to_utf<char>(task_data.CountryCode, std::string("GB2312"));
+    data["CurrencyID"] = boost::locale::conv::to_utf<char>(task_data.CurrencyID, std::string("GB2312"));
+    data["CustomerName"] = boost::locale::conv::to_utf<char>(task_data.CustomerName, std::string("GB2312"));
+    data["CustType"] = task_data.CustType;
+    data["Digest"] = boost::locale::conv::to_utf<char>(task_data.Digest, std::string("GB2312"));
+    data["EMail"] = boost::locale::conv::to_utf<char>(task_data.EMail, std::string("GB2312"));
+    data["ErrorID"] = task_data.ErrorID;
+    data["ErrorMsg"] = boost::locale::conv::to_utf<char>(task_data.ErrorMsg, std::string("GB2312"));
+    data["Fax"] = boost::locale::conv::to_utf<char>(task_data.Fax, std::string("GB2312"));
+    data["Gender"] = task_data.Gender;
+    data["IdCardType"] = task_data.IdCardType;
+    data["IdentifiedCardNo"] = boost::locale::conv::to_utf<char>(task_data.IdentifiedCardNo, std::string("GB2312"));
+    data["InstallID"] = task_data.InstallID;
+    data["LastFragment"] = task_data.LastFragment;
+    data["LongCustomerName"] =  boost::locale::conv::to_utf<char>(task_data.LongCustomerName, std::string("GB2312"));
+    data["MobilePhone"] = boost::locale::conv::to_utf<char>(task_data.MobilePhone, std::string("GB2312"));
+    data["MoneyAccountStatus"] = task_data.MoneyAccountStatus;
+    data["NewBankAccount"] = boost::locale::conv::to_utf<char>(task_data.NewBankAccount, std::string("GB2312"));
+    data["NewBankPassWord"] = boost::locale::conv::to_utf<char>(task_data.NewBankPassWord, std::string("GB2312"));
+    data["Password"] = boost::locale::conv::to_utf<char>(task_data.Password, std::string("GB2312"));
+    data["PlateSerial"] = task_data.PlateSerial;
+    data["SecuPwdFlag"] = task_data.SecuPwdFlag;
+    data["SessionID"] = task_data.SessionID;
+    data["Telephone"] = boost::locale::conv::to_utf<char>(task_data.Telephone, std::string("GB2312"));
+    data["TID"] = task_data.TID;
+    data["TradeCode"] = boost::locale::conv::to_utf<char>(task_data.TradeCode, std::string("GB2312"));
+    data["TradeDate"] = boost::locale::conv::to_utf<char>(task_data.TradeDate, std::string("GB2312"));
+    data["TradeTime"] = boost::locale::conv::to_utf<char>(task_data.TradeTime, std::string("GB2312"));
+    data["TradingDay"] = boost::locale::conv::to_utf<char>(task_data.TradingDay, std::string("GB2312"));
+    data["VerifyCertNoFlag"] = task_data.VerifyCertNoFlag;
+    data["ZipCode"] = boost::locale::conv::to_utf<char>(task_data.ZipCode, std::string("GB2312"));
 
 	this->onRtnChangeAccountByBank(data);
 };
-
-
-
-
 
 ///-------------------------------------------------------------------------------------
 ///��������
@@ -7333,8 +8808,10 @@ void TdApi::processRtnChangeAccountByBank(Task task)
 
 void TdApi::createFtdcTraderApi(string pszFlowPath)
 {
+	
 	this->api = CThostFtdcTraderApi::CreateFtdcTraderApi(pszFlowPath.c_str());
 	this->api->RegisterSpi(this);
+	cout << "Api Version:" << this->api->GetApiVersion() << " ------" << endl;
 };
 
 void TdApi::release()
@@ -7345,6 +8822,7 @@ void TdApi::release()
 void TdApi::init()
 {
 	this->api->Init();
+
 };
 
 int TdApi::join()
@@ -7370,6 +8848,7 @@ string TdApi::getTradingDay()
 
 void TdApi::registerFront(string pszFrontAddress)
 {
+	printf("TdApi:registerFont\n");
 	this->api->RegisterFront((char*)pszFrontAddress.c_str());
 };
 
@@ -7433,29 +8912,36 @@ void TdApi::subscribePublicTopic(int nType)
 
 int TdApi::reqAuthenticate(dict req, int nRequestID)
 {
+	
 	CThostFtdcReqAuthenticateField myreq = CThostFtdcReqAuthenticateField();
+	printf("reqAuthenticate\n");
 	memset(&myreq, 0, sizeof(myreq));
-	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "UserID", myreq.UserID);
-	getStr(req, "UserProductInfo", myreq.UserProductInfo);
 	getStr(req, "AuthCode", myreq.AuthCode);
+	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "AppID", myreq.AppID);
+	getStr(req, "UserProductInfo", myreq.UserProductInfo);
 	int i = this->api->ReqAuthenticate(&myreq, nRequestID);
 	return i;
 };
 
+
 int TdApi::reqUserLogin(dict req, int nRequestID)
 {
+	
 	CThostFtdcReqUserLoginField myreq = CThostFtdcReqUserLoginField();
+	printf("reqUserLogin\n");
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "MacAddress", myreq.MacAddress);
 	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
 	getStr(req, "UserID", myreq.UserID);
 	getStr(req, "TradingDay", myreq.TradingDay);
 	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
 	getStr(req, "OneTimePassword", myreq.OneTimePassword);
+	getStr(req, "LoginRemark", myreq.LoginRemark);
 	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
 	getStr(req, "Password", myreq.Password);
 	int i = this->api->ReqUserLogin(&myreq, nRequestID);
@@ -7497,20 +8983,119 @@ int TdApi::reqTradingAccountPasswordUpdate(dict req, int nRequestID)
 	return i;
 };
 
+int TdApi::reqUserAuthMethod(dict req, int nRequestID)
+{
+	CThostFtdcReqUserAuthMethodField myreq = CThostFtdcReqUserAuthMethodField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "UserID", myreq.UserID);
+	int i = this->api->ReqUserAuthMethod(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqGenUserCaptcha(dict req, int nRequestID)
+{
+	CThostFtdcReqGenUserCaptchaField myreq = CThostFtdcReqGenUserCaptchaField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "UserID", myreq.UserID);
+	int i = this->api->ReqGenUserCaptcha(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqGenUserText(dict req, int nRequestID)
+{
+	CThostFtdcReqGenUserTextField myreq = CThostFtdcReqGenUserTextField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "UserID", myreq.UserID);
+	int i = this->api->ReqGenUserText(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqUserLoginWithCaptcha(dict req, int nRequestID)
+{
+	CThostFtdcReqUserLoginWithCaptchaField myreq = CThostFtdcReqUserLoginWithCaptchaField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "Captcha", myreq.Captcha);
+	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
+	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	getStr(req, "LoginRemark", myreq.LoginRemark);
+	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
+	getStr(req, "Password", myreq.Password);
+	int i = this->api->ReqUserLoginWithCaptcha(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqUserLoginWithText(dict req, int nRequestID)
+{
+	CThostFtdcReqUserLoginWithTextField myreq = CThostFtdcReqUserLoginWithTextField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
+	getStr(req, "Text", myreq.Text);
+	getStr(req, "LoginRemark", myreq.LoginRemark);
+	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
+	getStr(req, "Password", myreq.Password);
+	int i = this->api->ReqUserLoginWithText(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqUserLoginWithOTP(dict req, int nRequestID)
+{
+	CThostFtdcReqUserLoginWithOTPField myreq = CThostFtdcReqUserLoginWithOTPField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "UserProductInfo", myreq.UserProductInfo);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "TradingDay", myreq.TradingDay);
+	getStr(req, "InterfaceProductInfo", myreq.InterfaceProductInfo);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "ClientIPAddress", myreq.ClientIPAddress);
+	getInt(req, "ClientIPPort", &myreq.ClientIPPort);
+	getStr(req, "LoginRemark", myreq.LoginRemark);
+	getStr(req, "ProtocolInfo", myreq.ProtocolInfo);
+	getStr(req, "Password", myreq.Password);
+	getStr(req, "OTPPassword", myreq.OTPPassword);
+	int i = this->api->ReqUserLoginWithOTP(&myreq, nRequestID);
+	return i;
+};
+
 int TdApi::reqOrderInsert(dict req, int nRequestID)
 {
 	CThostFtdcInputOrderField myreq = CThostFtdcInputOrderField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
+	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getStr(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getStr(req, "UserID", myreq.UserID);
 	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "AccountID", myreq.AccountID);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getChar(req, "Direction", &myreq.Direction);
 	getInt(req, "IsSwapOrder", &myreq.IsSwapOrder);
 	getInt(req, "VolumeTotalOriginal", &myreq.VolumeTotalOriginal);
+	getStr(req, "ClientID", myreq.ClientID);
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
 	getChar(req, "TimeCondition", &myreq.TimeCondition);
+	getStr(req, "IPAddress", myreq.IPAddress);
 	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
 	getDouble(req, "StopPrice", &myreq.StopPrice);
 	getStr(req, "InstrumentID", myreq.InstrumentID);
@@ -7534,17 +9119,23 @@ int TdApi::reqParkedOrderInsert(dict req, int nRequestID)
 	CThostFtdcParkedOrderField myreq = CThostFtdcParkedOrderField();
 	memset(&myreq, 0, sizeof(myreq));
 	getChar(req, "ContingentCondition", &myreq.ContingentCondition);
+	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getStr(req, "CombOffsetFlag", myreq.CombOffsetFlag);
 	getStr(req, "UserID", myreq.UserID);
 	getDouble(req, "LimitPrice", &myreq.LimitPrice);
 	getInt(req, "UserForceClose", &myreq.UserForceClose);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "AccountID", myreq.AccountID);
 	getChar(req, "Status", &myreq.Status);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getChar(req, "Direction", &myreq.Direction);
 	getInt(req, "IsSwapOrder", &myreq.IsSwapOrder);
 	getChar(req, "UserType", &myreq.UserType);
 	getInt(req, "VolumeTotalOriginal", &myreq.VolumeTotalOriginal);
+	getStr(req, "ClientID", myreq.ClientID);
 	getChar(req, "OrderPriceType", &myreq.OrderPriceType);
 	getChar(req, "TimeCondition", &myreq.TimeCondition);
+	getStr(req, "IPAddress", myreq.IPAddress);
 	getInt(req, "IsAutoSuspend", &myreq.IsAutoSuspend);
 	getDouble(req, "StopPrice", &myreq.StopPrice);
 	getStr(req, "InstrumentID", myreq.InstrumentID);
@@ -7570,25 +9161,28 @@ int TdApi::reqParkedOrderAction(dict req, int nRequestID)
 {
 	CThostFtdcParkedOrderActionField myreq = CThostFtdcParkedOrderActionField();
 	memset(&myreq, 0, sizeof(myreq));
-	getStr(req, "InstrumentID", myreq.InstrumentID);
-	getChar(req, "Status", &myreq.Status);
-	getStr(req, "ExchangeID", myreq.ExchangeID);
-	getChar(req, "ActionFlag", &myreq.ActionFlag);
-	getInt(req, "OrderActionRef", &myreq.OrderActionRef);
-	getChar(req, "UserType", &myreq.UserType);
-	getStr(req, "ErrorMsg", myreq.ErrorMsg);
 	getStr(req, "UserID", myreq.UserID);
 	getDouble(req, "LimitPrice", &myreq.LimitPrice);
+	getStr(req, "ParkedOrderActionID", myreq.ParkedOrderActionID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getChar(req, "Status", &myreq.Status);
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getInt(req, "OrderActionRef", &myreq.OrderActionRef);
+	getInt(req, "VolumeChange", &myreq.VolumeChange);
+	getChar(req, "UserType", &myreq.UserType);
+	getInt(req, "SessionID", &myreq.SessionID);
+	getChar(req, "ActionFlag", &myreq.ActionFlag);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	getInt(req, "ErrorID", &myreq.ErrorID);
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getStr(req, "OrderSysID", myreq.OrderSysID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "ErrorMsg", myreq.ErrorMsg);
 	getStr(req, "OrderRef", myreq.OrderRef);
 	getStr(req, "InvestorID", myreq.InvestorID);
-	getInt(req, "SessionID", &myreq.SessionID);
-	getInt(req, "VolumeChange", &myreq.VolumeChange);
-	getStr(req, "BrokerID", myreq.BrokerID);
 	getInt(req, "RequestID", &myreq.RequestID);
-	getStr(req, "OrderSysID", myreq.OrderSysID);
-	getStr(req, "ParkedOrderActionID", myreq.ParkedOrderActionID);
 	getInt(req, "FrontID", &myreq.FrontID);
-	getInt(req, "ErrorID", &myreq.ErrorID);
 	int i = this->api->ReqParkedOrderAction(&myreq, nRequestID);
 	return i;
 };
@@ -7598,6 +9192,7 @@ int TdApi::reqOrderAction(dict req, int nRequestID)
 	CThostFtdcInputOrderActionField myreq = CThostFtdcInputOrderActionField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getChar(req, "ActionFlag", &myreq.ActionFlag);
 	getInt(req, "OrderActionRef", &myreq.OrderActionRef);
@@ -7611,6 +9206,8 @@ int TdApi::reqOrderAction(dict req, int nRequestID)
 	getInt(req, "RequestID", &myreq.RequestID);
 	getStr(req, "OrderSysID", myreq.OrderSysID);
 	getInt(req, "FrontID", &myreq.FrontID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
 	int i = this->api->ReqOrderAction(&myreq, nRequestID);
 	return i;
 };
@@ -7627,6 +9224,7 @@ int TdApi::reqQueryMaxOrderVolume(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getInt(req, "MaxVolume", &myreq.MaxVolume);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQueryMaxOrderVolume(&myreq, nRequestID);
 	return i;
 };
@@ -7635,10 +9233,13 @@ int TdApi::reqSettlementInfoConfirm(dict req, int nRequestID)
 {
 	CThostFtdcSettlementInfoConfirmField myreq = CThostFtdcSettlementInfoConfirmField();
 	memset(&myreq, 0, sizeof(myreq));
-	getStr(req, "ConfirmTime", myreq.ConfirmTime);
+	getInt(req, "SettlementID", &myreq.SettlementID);
+	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "ConfirmDate", myreq.ConfirmDate);
+	getStr(req, "ConfirmTime", myreq.ConfirmTime);
+	getStr(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqSettlementInfoConfirm(&myreq, nRequestID);
 	return i;
 };
@@ -7648,6 +9249,7 @@ int TdApi::reqRemoveParkedOrder(dict req, int nRequestID)
 	CThostFtdcRemoveParkedOrderField myreq = CThostFtdcRemoveParkedOrderField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "ParkedOrderID", myreq.ParkedOrderID);
 	int i = this->api->ReqRemoveParkedOrder(&myreq, nRequestID);
@@ -7659,6 +9261,7 @@ int TdApi::reqRemoveParkedOrderAction(dict req, int nRequestID)
 	CThostFtdcRemoveParkedOrderActionField myreq = CThostFtdcRemoveParkedOrderActionField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "ParkedOrderActionID", myreq.ParkedOrderActionID);
 	int i = this->api->ReqRemoveParkedOrderAction(&myreq, nRequestID);
@@ -7674,16 +9277,22 @@ int TdApi::reqExecOrderInsert(dict req, int nRequestID)
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getChar(req, "CloseFlag", &myreq.CloseFlag);
 	getChar(req, "OffsetFlag", &myreq.OffsetFlag);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getChar(req, "PosiDirection", &myreq.PosiDirection);
 	getStr(req, "BusinessUnit", myreq.BusinessUnit);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "ClientID", myreq.ClientID);
 	getInt(req, "Volume", &myreq.Volume);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getInt(req, "RequestID", &myreq.RequestID);
 	getChar(req, "ActionType", &myreq.ActionType);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getChar(req, "ReservePositionFlag", &myreq.ReservePositionFlag);
+	getStr(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqExecOrderInsert(&myreq, nRequestID);
 	return i;
 };
@@ -7695,6 +9304,7 @@ int TdApi::reqExecOrderAction(dict req, int nRequestID)
 	getStr(req, "InstrumentID", myreq.InstrumentID);
 	getStr(req, "ExecOrderSysID", myreq.ExecOrderSysID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getStr(req, "UserID", myreq.UserID);
 	getStr(req, "ExecOrderRef", myreq.ExecOrderRef);
 	getStr(req, "InvestorID", myreq.InvestorID);
@@ -7704,6 +9314,8 @@ int TdApi::reqExecOrderAction(dict req, int nRequestID)
 	getChar(req, "ActionFlag", &myreq.ActionFlag);
 	getInt(req, "ExecOrderActionRef", &myreq.ExecOrderActionRef);
 	getInt(req, "FrontID", &myreq.FrontID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
 	int i = this->api->ReqExecOrderAction(&myreq, nRequestID);
 	return i;
 };
@@ -7715,9 +9327,12 @@ int TdApi::reqForQuoteInsert(dict req, int nRequestID)
 	getStr(req, "InstrumentID", myreq.InstrumentID);
 	getStr(req, "ForQuoteRef", myreq.ForQuoteRef);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getStr(req, "UserID", myreq.UserID);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
 	int i = this->api->ReqForQuoteInsert(&myreq, nRequestID);
 	return i;
 };
@@ -7726,25 +9341,29 @@ int TdApi::reqQuoteInsert(dict req, int nRequestID)
 {
 	CThostFtdcInputQuoteField myreq = CThostFtdcInputQuoteField();
 	memset(&myreq, 0, sizeof(myreq));
-	getStr(req, "InstrumentID", myreq.InstrumentID);
-	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getChar(req, "AskHedgeFlag", &myreq.AskHedgeFlag);
-	getStr(req, "BusinessUnit", myreq.BusinessUnit);
-	getDouble(req, "AskPrice", &myreq.AskPrice);
 	getStr(req, "UserID", myreq.UserID);
-	getChar(req, "AskOffsetFlag", &myreq.AskOffsetFlag);
-	getInt(req, "BidVolume", &myreq.BidVolume);
-	getStr(req, "AskOrderRef", myreq.AskOrderRef);
 	getInt(req, "AskVolume", &myreq.AskVolume);
-	getStr(req, "InvestorID", myreq.InvestorID);
-	getChar(req, "BidOffsetFlag", &myreq.BidOffsetFlag);
-	getStr(req, "BrokerID", myreq.BrokerID);
-	getInt(req, "RequestID", &myreq.RequestID);
-	getStr(req, "ForQuoteSysID", myreq.ForQuoteSysID);
-	getDouble(req, "BidPrice", &myreq.BidPrice);
+	getStr(req, "BidOrderRef", myreq.BidOrderRef);
 	getChar(req, "BidHedgeFlag", &myreq.BidHedgeFlag);
 	getStr(req, "QuoteRef", myreq.QuoteRef);
-	getStr(req, "BidOrderRef", myreq.BidOrderRef);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getChar(req, "AskOffsetFlag", &myreq.AskOffsetFlag);
+	getStr(req, "ClientID", myreq.ClientID);
+	getChar(req, "BidOffsetFlag", &myreq.BidOffsetFlag);
+	getDouble(req, "BidPrice", &myreq.BidPrice);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getInt(req, "BidVolume", &myreq.BidVolume);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "BusinessUnit", myreq.BusinessUnit);
+	getDouble(req, "AskPrice", &myreq.AskPrice);
+	getStr(req, "AskOrderRef", myreq.AskOrderRef);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getInt(req, "RequestID", &myreq.RequestID);
+	getStr(req, "ForQuoteSysID", myreq.ForQuoteSysID);
 	int i = this->api->ReqQuoteInsert(&myreq, nRequestID);
 	return i;
 };
@@ -7754,9 +9373,11 @@ int TdApi::reqQuoteAction(dict req, int nRequestID)
 	CThostFtdcInputQuoteActionField myreq = CThostFtdcInputQuoteActionField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getInt(req, "QuoteActionRef", &myreq.QuoteActionRef);
 	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "ClientID", myreq.ClientID);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getInt(req, "SessionID", &myreq.SessionID);
 	getStr(req, "BrokerID", myreq.BrokerID);
@@ -7765,7 +9386,76 @@ int TdApi::reqQuoteAction(dict req, int nRequestID)
 	getInt(req, "FrontID", &myreq.FrontID);
 	getStr(req, "QuoteSysID", myreq.QuoteSysID);
 	getStr(req, "QuoteRef", myreq.QuoteRef);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQuoteAction(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqBatchOrderAction(dict req, int nRequestID)
+{
+	CThostFtdcInputBatchOrderActionField myreq = CThostFtdcInputBatchOrderActionField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getInt(req, "OrderActionRef", &myreq.OrderActionRef);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getInt(req, "SessionID", &myreq.SessionID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getInt(req, "RequestID", &myreq.RequestID);
+	getInt(req, "FrontID", &myreq.FrontID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	int i = this->api->ReqBatchOrderAction(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqOptionSelfCloseInsert(dict req, int nRequestID)
+{
+	CThostFtdcInputOptionSelfCloseField myreq = CThostFtdcInputOptionSelfCloseField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getChar(req, "OptSelfCloseFlag", &myreq.OptSelfCloseFlag);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "BusinessUnit", myreq.BusinessUnit);
+	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "ClientID", myreq.ClientID);
+	getInt(req, "Volume", &myreq.Volume);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getInt(req, "RequestID", &myreq.RequestID);
+	getStr(req, "OptionSelfCloseRef", myreq.OptionSelfCloseRef);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	getStr(req, "CurrencyID", myreq.CurrencyID);
+	getStr(req, "AccountID", myreq.AccountID);
+	int i = this->api->ReqOptionSelfCloseInsert(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqOptionSelfCloseAction(dict req, int nRequestID)
+{
+	CThostFtdcInputOptionSelfCloseActionField myreq = CThostFtdcInputOptionSelfCloseActionField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "OptionSelfCloseSysID", myreq.OptionSelfCloseSysID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getInt(req, "OptionSelfCloseActionRef", &myreq.OptionSelfCloseActionRef);
+	getStr(req, "MacAddress", myreq.MacAddress);
+	getStr(req, "UserID", myreq.UserID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getInt(req, "SessionID", &myreq.SessionID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getInt(req, "RequestID", &myreq.RequestID);
+	getChar(req, "ActionFlag", &myreq.ActionFlag);
+	getStr(req, "OptionSelfCloseRef", myreq.OptionSelfCloseRef);
+	getInt(req, "FrontID", &myreq.FrontID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "IPAddress", myreq.IPAddress);
+	int i = this->api->ReqOptionSelfCloseAction(&myreq, nRequestID);
 	return i;
 };
 
@@ -7774,6 +9464,7 @@ int TdApi::reqCombActionInsert(dict req, int nRequestID)
 	CThostFtdcInputCombActionField myreq = CThostFtdcInputCombActionField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "MacAddress", myreq.MacAddress);
 	getChar(req, "Direction", &myreq.Direction);
 	getStr(req, "CombActionRef", myreq.CombActionRef);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
@@ -7782,7 +9473,9 @@ int TdApi::reqCombActionInsert(dict req, int nRequestID)
 	getInt(req, "Volume", &myreq.Volume);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getChar(req, "CombDirection", &myreq.CombDirection);
+	getStr(req, "IPAddress", myreq.IPAddress);
 	int i = this->api->ReqCombActionInsert(&myreq, nRequestID);
 	return i;
 };
@@ -7797,6 +9490,7 @@ int TdApi::reqQryOrder(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "OrderSysID", myreq.OrderSysID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "InsertTimeEnd", myreq.InsertTimeEnd);
 	int i = this->api->ReqQryOrder(&myreq, nRequestID);
 	return i;
@@ -7812,6 +9506,7 @@ int TdApi::reqQryTrade(dict req, int nRequestID)
 	getStr(req, "TradeID", myreq.TradeID);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "TradeTimeEnd", myreq.TradeTimeEnd);
 	int i = this->api->ReqQryTrade(&myreq, nRequestID);
 	return i;
@@ -7825,6 +9520,7 @@ int TdApi::reqQryInvestorPosition(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryInvestorPosition(&myreq, nRequestID);
 	return i;
 };
@@ -7837,6 +9533,7 @@ int TdApi::reqQryTradingAccount(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getChar(req, "BizType", &myreq.BizType);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqQryTradingAccount(&myreq, nRequestID);
 	return i;
 };
@@ -7855,11 +9552,12 @@ int TdApi::reqQryTradingCode(dict req, int nRequestID)
 {
 	CThostFtdcQryTradingCodeField myreq = CThostFtdcQryTradingCodeField();
 	memset(&myreq, 0, sizeof(myreq));
-	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
-	getStr(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "ClientIDType", &myreq.ClientIDType);
 	getStr(req, "ClientID", myreq.ClientID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getChar(req, "ClientIDType", &myreq.ClientIDType);
 	int i = this->api->ReqQryTradingCode(&myreq, nRequestID);
 	return i;
 };
@@ -7869,9 +9567,11 @@ int TdApi::reqQryInstrumentMarginRate(dict req, int nRequestID)
 	CThostFtdcQryInstrumentMarginRateField myreq = CThostFtdcQryInstrumentMarginRateField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryInstrumentMarginRate(&myreq, nRequestID);
 	return i;
 };
@@ -7884,6 +9584,7 @@ int TdApi::reqQryInstrumentCommissionRate(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryInstrumentCommissionRate(&myreq, nRequestID);
 	return i;
 };
@@ -7934,7 +9635,9 @@ int TdApi::reqQrySettlementInfo(dict req, int nRequestID)
 {
 	CThostFtdcQrySettlementInfoField myreq = CThostFtdcQrySettlementInfoField();
 	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "AccountID", myreq.AccountID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "TradingDay", myreq.TradingDay);
 	int i = this->api->ReqQrySettlementInfo(&myreq, nRequestID);
@@ -7959,6 +9662,7 @@ int TdApi::reqQryInvestorPositionDetail(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryInvestorPositionDetail(&myreq, nRequestID);
 	return i;
 };
@@ -7976,8 +9680,10 @@ int TdApi::reqQrySettlementInfoConfirm(dict req, int nRequestID)
 {
 	CThostFtdcQrySettlementInfoConfirmField myreq = CThostFtdcQrySettlementInfoConfirmField();
 	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqQrySettlementInfoConfirm(&myreq, nRequestID);
 	return i;
 };
@@ -7987,7 +9693,9 @@ int TdApi::reqQryInvestorPositionCombineDetail(dict req, int nRequestID)
 	CThostFtdcQryInvestorPositionCombineDetailField myreq = CThostFtdcQryInvestorPositionCombineDetailField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "CombInstrumentID", myreq.CombInstrumentID);
 	int i = this->api->ReqQryInvestorPositionCombineDetail(&myreq, nRequestID);
 	return i;
@@ -8011,6 +9719,7 @@ int TdApi::reqQryEWarrantOffset(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryEWarrantOffset(&myreq, nRequestID);
 	return i;
 };
@@ -8019,10 +9728,12 @@ int TdApi::reqQryInvestorProductGroupMargin(dict req, int nRequestID)
 {
 	CThostFtdcQryInvestorProductGroupMarginField myreq = CThostFtdcQryInvestorProductGroupMarginField();
 	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getStr(req, "ProductGroupID", myreq.ProductGroupID);
+	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
-	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
-	getStr(req, "ProductGroupID", myreq.ProductGroupID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryInvestorProductGroupMargin(&myreq, nRequestID);
 	return i;
 };
@@ -8033,6 +9744,7 @@ int TdApi::reqQryExchangeMarginRate(dict req, int nRequestID)
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqQryExchangeMarginRate(&myreq, nRequestID);
 	return i;
@@ -8076,6 +9788,7 @@ int TdApi::reqQryProductExchRate(dict req, int nRequestID)
 {
 	CThostFtdcQryProductExchRateField myreq = CThostFtdcQryProductExchRateField();
 	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "ProductID", myreq.ProductID);
 	int i = this->api->ReqQryProductExchRate(&myreq, nRequestID);
 	return i;
@@ -8091,6 +9804,72 @@ int TdApi::reqQryProductGroup(dict req, int nRequestID)
 	return i;
 };
 
+int TdApi::reqQryMMInstrumentCommissionRate(dict req, int nRequestID)
+{
+	CThostFtdcQryMMInstrumentCommissionRateField myreq = CThostFtdcQryMMInstrumentCommissionRateField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	int i = this->api->ReqQryMMInstrumentCommissionRate(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQryMMOptionInstrCommRate(dict req, int nRequestID)
+{
+	CThostFtdcQryMMOptionInstrCommRateField myreq = CThostFtdcQryMMOptionInstrCommRateField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	int i = this->api->ReqQryMMOptionInstrCommRate(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQryInstrumentOrderCommRate(dict req, int nRequestID)
+{
+	CThostFtdcQryInstrumentOrderCommRateField myreq = CThostFtdcQryInstrumentOrderCommRateField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	int i = this->api->ReqQryInstrumentOrderCommRate(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQrySecAgentTradingAccount(dict req, int nRequestID)
+{
+	CThostFtdcQryTradingAccountField myreq = CThostFtdcQryTradingAccountField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "CurrencyID", myreq.CurrencyID);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getChar(req, "BizType", &myreq.BizType);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "AccountID", myreq.AccountID);
+	int i = this->api->ReqQrySecAgentTradingAccount(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQrySecAgentCheckMode(dict req, int nRequestID)
+{
+	CThostFtdcQrySecAgentCheckModeField myreq = CThostFtdcQrySecAgentCheckModeField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	int i = this->api->ReqQrySecAgentCheckMode(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQrySecAgentTradeInfo(dict req, int nRequestID)
+{
+	CThostFtdcQrySecAgentTradeInfoField myreq = CThostFtdcQrySecAgentTradeInfoField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "BrokerSecAgentID", myreq.BrokerSecAgentID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	int i = this->api->ReqQrySecAgentTradeInfo(&myreq, nRequestID);
+	return i;
+};
+
 int TdApi::reqQryOptionInstrTradeCost(dict req, int nRequestID)
 {
 	CThostFtdcQryOptionInstrTradeCostField myreq = CThostFtdcQryOptionInstrTradeCostField();
@@ -8102,6 +9881,7 @@ int TdApi::reqQryOptionInstrTradeCost(dict req, int nRequestID)
 	getChar(req, "HedgeFlag", &myreq.HedgeFlag);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryOptionInstrTradeCost(&myreq, nRequestID);
 	return i;
 };
@@ -8114,6 +9894,7 @@ int TdApi::reqQryOptionInstrCommRate(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryOptionInstrCommRate(&myreq, nRequestID);
 	return i;
 };
@@ -8142,6 +9923,7 @@ int TdApi::reqQryForQuote(dict req, int nRequestID)
 	getStr(req, "InsertTimeStart", myreq.InsertTimeStart);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "InsertTimeEnd", myreq.InsertTimeEnd);
 	int i = this->api->ReqQryForQuote(&myreq, nRequestID);
 	return i;
@@ -8157,17 +9939,44 @@ int TdApi::reqQryQuote(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	getStr(req, "QuoteSysID", myreq.QuoteSysID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "InsertTimeEnd", myreq.InsertTimeEnd);
 	int i = this->api->ReqQryQuote(&myreq, nRequestID);
 	return i;
 };
 
+int TdApi::reqQryOptionSelfClose(dict req, int nRequestID)
+{
+	CThostFtdcQryOptionSelfCloseField myreq = CThostFtdcQryOptionSelfCloseField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "OptionSelfCloseSysID", myreq.OptionSelfCloseSysID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
+	getStr(req, "InsertTimeStart", myreq.InsertTimeStart);
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InsertTimeEnd", myreq.InsertTimeEnd);
+	int i = this->api->ReqQryOptionSelfClose(&myreq, nRequestID);
+	return i;
+};
+
+int TdApi::reqQryInvestUnit(dict req, int nRequestID)
+{
+	CThostFtdcQryInvestUnitField myreq = CThostFtdcQryInvestUnitField();
+	memset(&myreq, 0, sizeof(myreq));
+	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
+	getStr(req, "BrokerID", myreq.BrokerID);
+	int i = this->api->ReqQryInvestUnit(&myreq, nRequestID);
+	return i;
+};
 
 int TdApi::reqQryCombInstrumentGuard(dict req, int nRequestID)
 {
 	CThostFtdcQryCombInstrumentGuardField myreq = CThostFtdcQryCombInstrumentGuardField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InstrumentID", myreq.InstrumentID);
+	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqQryCombInstrumentGuard(&myreq, nRequestID);
 	return i;
@@ -8181,6 +9990,7 @@ int TdApi::reqQryCombAction(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryCombAction(&myreq, nRequestID);
 	return i;
 };
@@ -8229,6 +10039,7 @@ int TdApi::reqQryParkedOrder(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryParkedOrder(&myreq, nRequestID);
 	return i;
 };
@@ -8241,6 +10052,7 @@ int TdApi::reqQryParkedOrderAction(dict req, int nRequestID)
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "ExchangeID", myreq.ExchangeID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	int i = this->api->ReqQryParkedOrderAction(&myreq, nRequestID);
 	return i;
 };
@@ -8250,6 +10062,7 @@ int TdApi::reqQryTradingNotice(dict req, int nRequestID)
 	CThostFtdcQryTradingNoticeField myreq = CThostFtdcQryTradingNoticeField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqQryTradingNotice(&myreq, nRequestID);
 	return i;
@@ -8262,6 +10075,7 @@ int TdApi::reqQryBrokerTradingParams(dict req, int nRequestID)
 	getStr(req, "CurrencyID", myreq.CurrencyID);
 	getStr(req, "InvestorID", myreq.InvestorID);
 	getStr(req, "BrokerID", myreq.BrokerID);
+	getStr(req, "AccountID", myreq.AccountID);
 	int i = this->api->ReqQryBrokerTradingParams(&myreq, nRequestID);
 	return i;
 };
@@ -8282,6 +10096,7 @@ int TdApi::reqQueryCFMMCTradingAccountToken(dict req, int nRequestID)
 	CThostFtdcQueryCFMMCTradingAccountTokenField myreq = CThostFtdcQueryCFMMCTradingAccountTokenField();
 	memset(&myreq, 0, sizeof(myreq));
 	getStr(req, "InvestorID", myreq.InvestorID);
+	getStr(req, "InvestUnitID", myreq.InvestUnitID);
 	getStr(req, "BrokerID", myreq.BrokerID);
 	int i = this->api->ReqQueryCFMMCTradingAccountToken(&myreq, nRequestID);
 	return i;
@@ -8309,6 +10124,7 @@ int TdApi::reqFromBankToFutureByFuture(dict req, int nRequestID)
 	getChar(req, "BankPwdFlag", &myreq.BankPwdFlag);
 	getInt(req, "RequestID", &myreq.RequestID);
 	getChar(req, "CustType", &myreq.CustType);
+	getStr(req, "LongCustomerName", myreq.LongCustomerName);
 	getStr(req, "IdentifiedCardNo", myreq.IdentifiedCardNo);
 	getChar(req, "FeePayFlag", &myreq.FeePayFlag);
 	getStr(req, "BankSerial", myreq.BankSerial);
@@ -8360,6 +10176,7 @@ int TdApi::reqFromFutureToBankByFuture(dict req, int nRequestID)
 	getChar(req, "BankPwdFlag", &myreq.BankPwdFlag);
 	getInt(req, "RequestID", &myreq.RequestID);
 	getChar(req, "CustType", &myreq.CustType);
+	getStr(req, "LongCustomerName", myreq.LongCustomerName);
 	getStr(req, "IdentifiedCardNo", myreq.IdentifiedCardNo);
 	getChar(req, "FeePayFlag", &myreq.FeePayFlag);
 	getStr(req, "BankSerial", myreq.BankSerial);
@@ -8411,6 +10228,7 @@ int TdApi::reqQueryBankAccountMoneyByFuture(dict req, int nRequestID)
 	getChar(req, "BankPwdFlag", &myreq.BankPwdFlag);
 	getInt(req, "RequestID", &myreq.RequestID);
 	getChar(req, "CustType", &myreq.CustType);
+	getStr(req, "LongCustomerName", myreq.LongCustomerName);
 	getStr(req, "IdentifiedCardNo", myreq.IdentifiedCardNo);
 	getStr(req, "BankSerial", myreq.BankSerial);
 	getStr(req, "OperNo", myreq.OperNo);
@@ -8433,7 +10251,6 @@ int TdApi::reqQueryBankAccountMoneyByFuture(dict req, int nRequestID)
 	return i;
 };
 
-
 ///-------------------------------------------------------------------------------------
 ///Boost.Python��װ
 ///-------------------------------------------------------------------------------------
@@ -8442,8 +10259,10 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 {
 	virtual void onFrontConnected()
 	{
+		
 		//����python�����е��ûص�������������ǰ����Ҫ�Ȼ�ȡȫ����GIL����ֹ����������
 		PyLock lock;
+		printf("TdApiWrap:onFrontConnected\n");
 
 		//���µ�try...catch...����ʵ�ֲ�׽python�����д���Ĺ��ܣ���ֹC++ֱ�ӳ���ԭ��δ֪�ı���
 		try
@@ -8488,6 +10307,7 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 	{
 		try
 		{
+			printf("TdApiWrap: OnRspAuthenticate\n");
 			this->get_override("onRspAuthenticate")(data, error, id, last);
 		}
 		catch (error_already_set const &)
@@ -8537,6 +10357,42 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		try
 		{
 			this->get_override("onRspTradingAccountPasswordUpdate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspUserAuthMethod(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspUserAuthMethod")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspGenUserCaptcha(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspGenUserCaptcha")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspGenUserText(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspGenUserText")(data, error, id, last);
 		}
 		catch (error_already_set const &)
 		{
@@ -8700,6 +10556,41 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
+	virtual void onRspBatchOrderAction(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspBatchOrderAction")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspOptionSelfCloseInsert(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspOptionSelfCloseInsert")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspOptionSelfCloseAction(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspOptionSelfCloseAction")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
 
 	virtual void onRspCombActionInsert(dict data, dict error, int id, bool last)
 	{
@@ -9037,6 +10928,78 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
+	virtual void onRspQryMMInstrumentCommissionRate(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQryMMInstrumentCommissionRate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspQryMMOptionInstrCommRate(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQryMMOptionInstrCommRate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspQryInstrumentOrderCommRate(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQryInstrumentOrderCommRate")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspQrySecAgentTradingAccount(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQrySecAgentTradingAccount")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspQrySecAgentCheckMode(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQrySecAgentCheckMode")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspQrySecAgentTradeInfo(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQrySecAgentTradeInfo")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
 	virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int id, bool last)
 	{
 		try
@@ -9097,6 +11060,29 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
+	virtual void onRspQryOptionSelfClose(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQryOptionSelfClose")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRspQryInvestUnit(dict data, dict error, int id, bool last)
+	{
+		try
+		{
+			this->get_override("onRspQryInvestUnit")(data, error, id, last);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
 
 	virtual void onRspQryCombInstrumentGuard(dict data, dict error, int id, bool last)
 	{
@@ -9211,6 +11197,18 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		try
 		{
 			this->get_override("onRtnInstrumentStatus")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRtnBulletin(dict data)
+	{
+		try
+		{
+			this->get_override("onRtnBulletin")(data);
 		}
 		catch (error_already_set const &)
 		{
@@ -9350,6 +11348,53 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 		}
 	};
 
+	virtual void onErrRtnBatchOrderAction(dict data, dict error)
+	{
+		try
+		{
+			this->get_override("onErrRtnBatchOrderAction")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onRtnOptionSelfClose(dict data)
+	{
+		try
+		{
+			this->get_override("onRtnOptionSelfClose")(data);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onErrRtnOptionSelfCloseInsert(dict data, dict error)
+	{
+		try
+		{
+			this->get_override("onErrRtnOptionSelfCloseInsert")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
+
+	virtual void onErrRtnOptionSelfCloseAction(dict data, dict error)
+	{
+		try
+		{
+			this->get_override("onErrRtnOptionSelfCloseAction")(data, error);
+		}
+		catch (error_already_set const &)
+		{
+			PyErr_Print();
+		}
+	};
 
 	virtual void onRtnCombAction(dict data)
 	{
@@ -9722,7 +11767,6 @@ struct TdApiWrap : TdApi, wrapper < TdApi >
 			PyErr_Print();
 		}
 	};
-
 };
 
 BOOST_PYTHON_MODULE(vnctptd)
@@ -9744,6 +11788,12 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("reqUserLogout", &TdApiWrap::reqUserLogout)
 		.def("reqUserPasswordUpdate", &TdApiWrap::reqUserPasswordUpdate)
 		.def("reqTradingAccountPasswordUpdate", &TdApiWrap::reqTradingAccountPasswordUpdate)
+		.def("reqUserAuthMethod", &TdApiWrap::reqUserAuthMethod)
+		.def("reqGenUserCaptcha", &TdApiWrap::reqGenUserCaptcha)
+		.def("reqGenUserText", &TdApiWrap::reqGenUserText)
+		.def("reqUserLoginWithCaptcha", &TdApiWrap::reqUserLoginWithCaptcha)
+		.def("reqUserLoginWithText", &TdApiWrap::reqUserLoginWithText)
+		.def("reqUserLoginWithOTP", &TdApiWrap::reqUserLoginWithOTP)
 		.def("reqOrderInsert", &TdApiWrap::reqOrderInsert)
 		.def("reqParkedOrderInsert", &TdApiWrap::reqParkedOrderInsert)
 		.def("reqParkedOrderAction", &TdApiWrap::reqParkedOrderAction)
@@ -9756,7 +11806,10 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("reqExecOrderAction", &TdApiWrap::reqExecOrderAction)
 		.def("reqForQuoteInsert", &TdApiWrap::reqForQuoteInsert)
 		.def("reqQuoteInsert", &TdApiWrap::reqQuoteInsert)
-		.def("reqQuoteAction", &TdApiWrap::reqQuoteAction)	
+		.def("reqQuoteAction", &TdApiWrap::reqQuoteAction)
+		.def("reqBatchOrderAction", &TdApiWrap::reqBatchOrderAction)
+		.def("reqOptionSelfCloseInsert", &TdApiWrap::reqOptionSelfCloseInsert)
+		.def("reqOptionSelfCloseAction", &TdApiWrap::reqOptionSelfCloseAction)
 		.def("reqCombActionInsert", &TdApiWrap::reqCombActionInsert)
 		.def("reqQryOrder", &TdApiWrap::reqQryOrder)
 		.def("reqQryTrade", &TdApiWrap::reqQryTrade)
@@ -9785,11 +11838,19 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("reqQrySecAgentACIDMap", &TdApiWrap::reqQrySecAgentACIDMap)
 		.def("reqQryProductExchRate", &TdApiWrap::reqQryProductExchRate)
 		.def("reqQryProductGroup", &TdApiWrap::reqQryProductGroup)
+		.def("reqQryMMInstrumentCommissionRate", &TdApiWrap::reqQryMMInstrumentCommissionRate)
+		.def("reqQryMMOptionInstrCommRate", &TdApiWrap::reqQryMMOptionInstrCommRate)
+		.def("reqQryInstrumentOrderCommRate", &TdApiWrap::reqQryInstrumentOrderCommRate)
+		.def("reqQrySecAgentTradingAccount", &TdApiWrap::reqQrySecAgentTradingAccount)
+		.def("reqQrySecAgentCheckMode", &TdApiWrap::reqQrySecAgentCheckMode)
+		.def("reqQrySecAgentTradeInfo", &TdApiWrap::reqQrySecAgentTradeInfo)
 		.def("reqQryOptionInstrTradeCost", &TdApiWrap::reqQryOptionInstrTradeCost)
 		.def("reqQryOptionInstrCommRate", &TdApiWrap::reqQryOptionInstrCommRate)
 		.def("reqQryExecOrder", &TdApiWrap::reqQryExecOrder)
 		.def("reqQryForQuote", &TdApiWrap::reqQryForQuote)
-		.def("reqQryQuote", &TdApiWrap::reqQryQuote)		
+		.def("reqQryQuote", &TdApiWrap::reqQryQuote)
+		.def("reqQryOptionSelfClose", &TdApiWrap::reqQryOptionSelfClose)
+		.def("reqQryInvestUnit", &TdApiWrap::reqQryInvestUnit)
 		.def("reqQryCombInstrumentGuard", &TdApiWrap::reqQryCombInstrumentGuard)
 		.def("reqQryCombAction", &TdApiWrap::reqQryCombAction)
 		.def("reqQryTransferSerial", &TdApiWrap::reqQryTransferSerial)
@@ -9813,6 +11874,9 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("onRspUserLogout", pure_virtual(&TdApiWrap::onRspUserLogout))
 		.def("onRspUserPasswordUpdate", pure_virtual(&TdApiWrap::onRspUserPasswordUpdate))
 		.def("onRspTradingAccountPasswordUpdate", pure_virtual(&TdApiWrap::onRspTradingAccountPasswordUpdate))
+		.def("onRspUserAuthMethod", pure_virtual(&TdApiWrap::onRspUserAuthMethod))
+		.def("onRspGenUserCaptcha", pure_virtual(&TdApiWrap::onRspGenUserCaptcha))
+		.def("onRspGenUserText", pure_virtual(&TdApiWrap::onRspGenUserText))
 		.def("onRspOrderInsert", pure_virtual(&TdApiWrap::onRspOrderInsert))
 		.def("onRspParkedOrderInsert", pure_virtual(&TdApiWrap::onRspParkedOrderInsert))
 		.def("onRspParkedOrderAction", pure_virtual(&TdApiWrap::onRspParkedOrderAction))
@@ -9825,7 +11889,10 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("onRspExecOrderAction", pure_virtual(&TdApiWrap::onRspExecOrderAction))
 		.def("onRspForQuoteInsert", pure_virtual(&TdApiWrap::onRspForQuoteInsert))
 		.def("onRspQuoteInsert", pure_virtual(&TdApiWrap::onRspQuoteInsert))
-		.def("onRspQuoteAction", pure_virtual(&TdApiWrap::onRspQuoteAction))	
+		.def("onRspQuoteAction", pure_virtual(&TdApiWrap::onRspQuoteAction))
+		.def("onRspBatchOrderAction", pure_virtual(&TdApiWrap::onRspBatchOrderAction))
+		.def("onRspOptionSelfCloseInsert", pure_virtual(&TdApiWrap::onRspOptionSelfCloseInsert))
+		.def("onRspOptionSelfCloseAction", pure_virtual(&TdApiWrap::onRspOptionSelfCloseAction))
 		.def("onRspCombActionInsert", pure_virtual(&TdApiWrap::onRspCombActionInsert))
 		.def("onRspQryOrder", pure_virtual(&TdApiWrap::onRspQryOrder))
 		.def("onRspQryTrade", pure_virtual(&TdApiWrap::onRspQryTrade))
@@ -9854,11 +11921,19 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("onRspQrySecAgentACIDMap", pure_virtual(&TdApiWrap::onRspQrySecAgentACIDMap))
 		.def("onRspQryProductExchRate", pure_virtual(&TdApiWrap::onRspQryProductExchRate))
 		.def("onRspQryProductGroup", pure_virtual(&TdApiWrap::onRspQryProductGroup))
+		.def("onRspQryMMInstrumentCommissionRate", pure_virtual(&TdApiWrap::onRspQryMMInstrumentCommissionRate))
+		.def("onRspQryMMOptionInstrCommRate", pure_virtual(&TdApiWrap::onRspQryMMOptionInstrCommRate))
+		.def("onRspQryInstrumentOrderCommRate", pure_virtual(&TdApiWrap::onRspQryInstrumentOrderCommRate))
+		.def("onRspQrySecAgentTradingAccount", pure_virtual(&TdApiWrap::onRspQrySecAgentTradingAccount))
+		.def("onRspQrySecAgentCheckMode", pure_virtual(&TdApiWrap::onRspQrySecAgentCheckMode))
+		.def("onRspQrySecAgentTradeInfo", pure_virtual(&TdApiWrap::onRspQrySecAgentTradeInfo))
 		.def("onRspQryOptionInstrTradeCost", pure_virtual(&TdApiWrap::onRspQryOptionInstrTradeCost))
 		.def("onRspQryOptionInstrCommRate", pure_virtual(&TdApiWrap::onRspQryOptionInstrCommRate))
 		.def("onRspQryExecOrder", pure_virtual(&TdApiWrap::onRspQryExecOrder))
 		.def("onRspQryForQuote", pure_virtual(&TdApiWrap::onRspQryForQuote))
-		.def("onRspQryQuote", pure_virtual(&TdApiWrap::onRspQryQuote))			
+		.def("onRspQryQuote", pure_virtual(&TdApiWrap::onRspQryQuote))
+		.def("onRspQryOptionSelfClose", pure_virtual(&TdApiWrap::onRspQryOptionSelfClose))
+		.def("onRspQryInvestUnit", pure_virtual(&TdApiWrap::onRspQryInvestUnit))
 		.def("onRspQryCombInstrumentGuard", pure_virtual(&TdApiWrap::onRspQryCombInstrumentGuard))
 		.def("onRspQryCombAction", pure_virtual(&TdApiWrap::onRspQryCombAction))
 		.def("onRspQryTransferSerial", pure_virtual(&TdApiWrap::onRspQryTransferSerial))
@@ -9869,6 +11944,7 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("onErrRtnOrderInsert", pure_virtual(&TdApiWrap::onErrRtnOrderInsert))
 		.def("onErrRtnOrderAction", pure_virtual(&TdApiWrap::onErrRtnOrderAction))
 		.def("onRtnInstrumentStatus", pure_virtual(&TdApiWrap::onRtnInstrumentStatus))
+		.def("onRtnBulletin", pure_virtual(&TdApiWrap::onRtnBulletin))
 		.def("onRtnTradingNotice", pure_virtual(&TdApiWrap::onRtnTradingNotice))
 		.def("onRtnErrorConditionalOrder", pure_virtual(&TdApiWrap::onRtnErrorConditionalOrder))
 		.def("onRtnExecOrder", pure_virtual(&TdApiWrap::onRtnExecOrder))
@@ -9879,7 +11955,11 @@ BOOST_PYTHON_MODULE(vnctptd)
 		.def("onErrRtnQuoteInsert", pure_virtual(&TdApiWrap::onErrRtnQuoteInsert))
 		.def("onErrRtnQuoteAction", pure_virtual(&TdApiWrap::onErrRtnQuoteAction))
 		.def("onRtnForQuoteRsp", pure_virtual(&TdApiWrap::onRtnForQuoteRsp))
-		.def("onRtnCFMMCTradingAccountToken", pure_virtual(&TdApiWrap::onRtnCFMMCTradingAccountToken))	
+		.def("onRtnCFMMCTradingAccountToken", pure_virtual(&TdApiWrap::onRtnCFMMCTradingAccountToken))
+		.def("onErrRtnBatchOrderAction", pure_virtual(&TdApiWrap::onErrRtnBatchOrderAction))
+		.def("onRtnOptionSelfClose", pure_virtual(&TdApiWrap::onRtnOptionSelfClose))
+		.def("onErrRtnOptionSelfCloseInsert", pure_virtual(&TdApiWrap::onErrRtnOptionSelfCloseInsert))
+		.def("onErrRtnOptionSelfCloseAction", pure_virtual(&TdApiWrap::onErrRtnOptionSelfCloseAction))
 		.def("onRtnCombAction", pure_virtual(&TdApiWrap::onRtnCombAction))
 		.def("onErrRtnCombActionInsert", pure_virtual(&TdApiWrap::onErrRtnCombActionInsert))
 		.def("onRspQryContractBank", pure_virtual(&TdApiWrap::onRspQryContractBank))

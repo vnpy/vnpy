@@ -58,6 +58,42 @@ virtual void onRspTradingAccountPasswordUpdate(dict data, dict error, int id, bo
 	}
 };
 
+virtual void onRspUserAuthMethod(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspUserAuthMethod")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspGenUserCaptcha(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspGenUserCaptcha")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspGenUserText(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspGenUserText")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
 virtual void onRspOrderInsert(dict data, dict error, int id, bool last)
 {
 	try
@@ -214,11 +250,35 @@ virtual void onRspQuoteAction(dict data, dict error, int id, bool last)
 	}
 };
 
-virtual void onRspLockInsert(dict data, dict error, int id, bool last)
+virtual void onRspBatchOrderAction(dict data, dict error, int id, bool last)
 {
 	try
 	{
-		this->get_override("onRspLockInsert")(data, error, id, last);
+		this->get_override("onRspBatchOrderAction")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspOptionSelfCloseInsert(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspOptionSelfCloseInsert")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspOptionSelfCloseAction(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspOptionSelfCloseAction")(data, error, id, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -562,6 +622,78 @@ virtual void onRspQryProductGroup(dict data, dict error, int id, bool last)
 	}
 };
 
+virtual void onRspQryMMInstrumentCommissionRate(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryMMInstrumentCommissionRate")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryMMOptionInstrCommRate(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryMMOptionInstrCommRate")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQryInstrumentOrderCommRate(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQryInstrumentOrderCommRate")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQrySecAgentTradingAccount(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQrySecAgentTradingAccount")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQrySecAgentCheckMode(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQrySecAgentCheckMode")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRspQrySecAgentTradeInfo(dict data, dict error, int id, bool last)
+{
+	try
+	{
+		this->get_override("onRspQrySecAgentTradeInfo")(data, error, id, last);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
 virtual void onRspQryOptionInstrTradeCost(dict data, dict error, int id, bool last)
 {
 	try
@@ -622,11 +754,11 @@ virtual void onRspQryQuote(dict data, dict error, int id, bool last)
 	}
 };
 
-virtual void onRspQryLock(dict data, dict error, int id, bool last)
+virtual void onRspQryOptionSelfClose(dict data, dict error, int id, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryLock")(data, error, id, last);
+		this->get_override("onRspQryOptionSelfClose")(data, error, id, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -634,35 +766,11 @@ virtual void onRspQryLock(dict data, dict error, int id, bool last)
 	}
 };
 
-virtual void onRspQryLockPosition(dict data, dict error, int id, bool last)
+virtual void onRspQryInvestUnit(dict data, dict error, int id, bool last)
 {
 	try
 	{
-		this->get_override("onRspQryLockPosition")(data, error, id, last);
-	}
-	catch (error_already_set const &)
-	{
-		PyErr_Print();
-	}
-};
-
-virtual void onRspQryInvestorLevel(dict data, dict error, int id, bool last)
-{
-	try
-	{
-		this->get_override("onRspQryInvestorLevel")(data, error, id, last);
-	}
-	catch (error_already_set const &)
-	{
-		PyErr_Print();
-	}
-};
-
-virtual void onRspQryExecFreeze(dict data, dict error, int id, bool last)
-{
-	try
-	{
-		this->get_override("onRspQryExecFreeze")(data, error, id, last);
+		this->get_override("onRspQryInvestUnit")(data, error, id, last);
 	}
 	catch (error_already_set const &)
 	{
@@ -783,6 +891,18 @@ virtual void onRtnInstrumentStatus(dict data)
 	try
 	{
 		this->get_override("onRtnInstrumentStatus")(data);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onRtnBulletin(dict data)
+{
+	try
+	{
+		this->get_override("onRtnBulletin")(data);
 	}
 	catch (error_already_set const &)
 	{
@@ -922,11 +1042,11 @@ virtual void onRtnCFMMCTradingAccountToken(dict data)
 	}
 };
 
-virtual void onRtnLock(dict data)
+virtual void onErrRtnBatchOrderAction(dict data, dict error)
 {
 	try
 	{
-		this->get_override("onRtnLock")(data);
+		this->get_override("onErrRtnBatchOrderAction")(data, error);
 	}
 	catch (error_already_set const &)
 	{
@@ -934,11 +1054,35 @@ virtual void onRtnLock(dict data)
 	}
 };
 
-virtual void onErrRtnLockInsert(dict data, dict error)
+virtual void onRtnOptionSelfClose(dict data)
 {
 	try
 	{
-		this->get_override("onErrRtnLockInsert")(data, error);
+		this->get_override("onRtnOptionSelfClose")(data);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onErrRtnOptionSelfCloseInsert(dict data, dict error)
+{
+	try
+	{
+		this->get_override("onErrRtnOptionSelfCloseInsert")(data, error);
+	}
+	catch (error_already_set const &)
+	{
+		PyErr_Print();
+	}
+};
+
+virtual void onErrRtnOptionSelfCloseAction(dict data, dict error)
+{
+	try
+	{
+		this->get_override("onErrRtnOptionSelfCloseAction")(data, error);
 	}
 	catch (error_already_set const &)
 	{

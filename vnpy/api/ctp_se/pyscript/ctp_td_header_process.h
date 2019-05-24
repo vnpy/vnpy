@@ -14,6 +14,12 @@ void processRspUserPasswordUpdate(Task task);
 
 void processRspTradingAccountPasswordUpdate(Task task);
 
+void processRspUserAuthMethod(Task task);
+
+void processRspGenUserCaptcha(Task task);
+
+void processRspGenUserText(Task task);
+
 void processRspOrderInsert(Task task);
 
 void processRspParkedOrderInsert(Task task);
@@ -40,7 +46,11 @@ void processRspQuoteInsert(Task task);
 
 void processRspQuoteAction(Task task);
 
-void processRspLockInsert(Task task);
+void processRspBatchOrderAction(Task task);
+
+void processRspOptionSelfCloseInsert(Task task);
+
+void processRspOptionSelfCloseAction(Task task);
 
 void processRspCombActionInsert(Task task);
 
@@ -98,6 +108,18 @@ void processRspQryProductExchRate(Task task);
 
 void processRspQryProductGroup(Task task);
 
+void processRspQryMMInstrumentCommissionRate(Task task);
+
+void processRspQryMMOptionInstrCommRate(Task task);
+
+void processRspQryInstrumentOrderCommRate(Task task);
+
+void processRspQrySecAgentTradingAccount(Task task);
+
+void processRspQrySecAgentCheckMode(Task task);
+
+void processRspQrySecAgentTradeInfo(Task task);
+
 void processRspQryOptionInstrTradeCost(Task task);
 
 void processRspQryOptionInstrCommRate(Task task);
@@ -108,13 +130,9 @@ void processRspQryForQuote(Task task);
 
 void processRspQryQuote(Task task);
 
-void processRspQryLock(Task task);
+void processRspQryOptionSelfClose(Task task);
 
-void processRspQryLockPosition(Task task);
-
-void processRspQryInvestorLevel(Task task);
-
-void processRspQryExecFreeze(Task task);
+void processRspQryInvestUnit(Task task);
 
 void processRspQryCombInstrumentGuard(Task task);
 
@@ -135,6 +153,8 @@ void processErrRtnOrderInsert(Task task);
 void processErrRtnOrderAction(Task task);
 
 void processRtnInstrumentStatus(Task task);
+
+void processRtnBulletin(Task task);
 
 void processRtnTradingNotice(Task task);
 
@@ -158,9 +178,13 @@ void processRtnForQuoteRsp(Task task);
 
 void processRtnCFMMCTradingAccountToken(Task task);
 
-void processRtnLock(Task task);
+void processErrRtnBatchOrderAction(Task task);
 
-void processErrRtnLockInsert(Task task);
+void processRtnOptionSelfClose(Task task);
+
+void processErrRtnOptionSelfCloseInsert(Task task);
+
+void processErrRtnOptionSelfCloseAction(Task task);
 
 void processRtnCombAction(Task task);
 

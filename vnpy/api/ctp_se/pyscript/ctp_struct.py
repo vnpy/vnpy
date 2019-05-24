@@ -51,6 +51,10 @@ CThostFtdcReqUserLoginField["MacAddress"] = "string"
 CThostFtdcReqUserLoginField["OneTimePassword"] = "string"
 #终端IP地址
 CThostFtdcReqUserLoginField["ClientIPAddress"] = "string"
+#登录备注
+CThostFtdcReqUserLoginField["LoginRemark"] = "string"
+#终端IP端口
+CThostFtdcReqUserLoginField["ClientIPPort"] = "int"
 structDict['CThostFtdcReqUserLoginField'] = CThostFtdcReqUserLoginField
 
 
@@ -113,6 +117,8 @@ CThostFtdcReqAuthenticateField["UserID"] = "string"
 CThostFtdcReqAuthenticateField["UserProductInfo"] = "string"
 #认证码
 CThostFtdcReqAuthenticateField["AuthCode"] = "string"
+#App代码
+CThostFtdcReqAuthenticateField["AppID"] = "string"
 structDict['CThostFtdcReqAuthenticateField'] = CThostFtdcReqAuthenticateField
 
 
@@ -124,6 +130,10 @@ CThostFtdcRspAuthenticateField["BrokerID"] = "string"
 CThostFtdcRspAuthenticateField["UserID"] = "string"
 #用户端产品信息
 CThostFtdcRspAuthenticateField["UserProductInfo"] = "string"
+#App代码
+CThostFtdcRspAuthenticateField["AppID"] = "string"
+#App类型
+CThostFtdcRspAuthenticateField["AppType"] = "char"
 structDict['CThostFtdcRspAuthenticateField'] = CThostFtdcRspAuthenticateField
 
 
@@ -139,7 +149,44 @@ CThostFtdcAuthenticationInfoField["UserProductInfo"] = "string"
 CThostFtdcAuthenticationInfoField["AuthInfo"] = "string"
 #是否为认证结果
 CThostFtdcAuthenticationInfoField["IsResult"] = "int"
+#App代码
+CThostFtdcAuthenticationInfoField["AppID"] = "string"
+#App类型
+CThostFtdcAuthenticationInfoField["AppType"] = "char"
 structDict['CThostFtdcAuthenticationInfoField'] = CThostFtdcAuthenticationInfoField
+
+
+#用户登录应答2
+CThostFtdcRspUserLogin2Field = {}
+#交易日
+CThostFtdcRspUserLogin2Field["TradingDay"] = "string"
+#登录成功时间
+CThostFtdcRspUserLogin2Field["LoginTime"] = "string"
+#经纪公司代码
+CThostFtdcRspUserLogin2Field["BrokerID"] = "string"
+#用户代码
+CThostFtdcRspUserLogin2Field["UserID"] = "string"
+#交易系统名称
+CThostFtdcRspUserLogin2Field["SystemName"] = "string"
+#前置编号
+CThostFtdcRspUserLogin2Field["FrontID"] = "int"
+#会话编号
+CThostFtdcRspUserLogin2Field["SessionID"] = "int"
+#最大报单引用
+CThostFtdcRspUserLogin2Field["MaxOrderRef"] = "string"
+#上期所时间
+CThostFtdcRspUserLogin2Field["SHFETime"] = "string"
+#大商所时间
+CThostFtdcRspUserLogin2Field["DCETime"] = "string"
+#郑商所时间
+CThostFtdcRspUserLogin2Field["CZCETime"] = "string"
+#中金所时间
+CThostFtdcRspUserLogin2Field["FFEXTime"] = "string"
+#能源中心时间
+CThostFtdcRspUserLogin2Field["INETime"] = "string"
+#随机串
+CThostFtdcRspUserLogin2Field["RandomString"] = "string"
+structDict['CThostFtdcRspUserLogin2Field'] = CThostFtdcRspUserLogin2Field
 
 
 #银期转帐报文头
@@ -436,12 +483,6 @@ CThostFtdcInstrumentField["OptionsType"] = "char"
 CThostFtdcInstrumentField["UnderlyingMultiple"] = "float"
 #组合类型
 CThostFtdcInstrumentField["CombinationType"] = "char"
-#最小买下单单位
-CThostFtdcInstrumentField["MinBuyVolume"] = "int"
-#最小卖下单单位
-CThostFtdcInstrumentField["MinSellVolume"] = "int"
-#合约标识码
-CThostFtdcInstrumentField["InstrumentCode"] = "string"
 structDict['CThostFtdcInstrumentField'] = CThostFtdcInstrumentField
 
 
@@ -524,6 +565,8 @@ CThostFtdcTradingCodeField["ClientIDType"] = "char"
 CThostFtdcTradingCodeField["BranchID"] = "string"
 #业务类型
 CThostFtdcTradingCodeField["BizType"] = "char"
+#投资单元代码
+CThostFtdcTradingCodeField["InvestUnitID"] = "string"
 structDict['CThostFtdcTradingCodeField'] = CThostFtdcTradingCodeField
 
 
@@ -669,6 +712,10 @@ CThostFtdcTradingAccountField["SpecProductPositionProfitByAlg"] = "float"
 CThostFtdcTradingAccountField["SpecProductExchangeMargin"] = "float"
 #业务类型
 CThostFtdcTradingAccountField["BizType"] = "char"
+#延时换汇冻结金额
+CThostFtdcTradingAccountField["FrozenSwap"] = "float"
+#剩余换汇额度
+CThostFtdcTradingAccountField["RemainSwap"] = "float"
 structDict['CThostFtdcTradingAccountField'] = CThostFtdcTradingAccountField
 
 
@@ -764,6 +811,8 @@ CThostFtdcInvestorPositionField["AbandonFrozen"] = "int"
 CThostFtdcInvestorPositionField["ExchangeID"] = "string"
 #执行冻结的昨仓
 CThostFtdcInvestorPositionField["YdStrikeFrozen"] = "int"
+#投资单元代码
+CThostFtdcInvestorPositionField["InvestUnitID"] = "string"
 structDict['CThostFtdcInvestorPositionField'] = CThostFtdcInvestorPositionField
 
 
@@ -789,6 +838,10 @@ CThostFtdcInstrumentMarginRateField["ShortMarginRatioByMoney"] = "float"
 CThostFtdcInstrumentMarginRateField["ShortMarginRatioByVolume"] = "float"
 #是否相对交易所收取
 CThostFtdcInstrumentMarginRateField["IsRelative"] = "int"
+#交易所代码
+CThostFtdcInstrumentMarginRateField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInstrumentMarginRateField["InvestUnitID"] = "string"
 structDict['CThostFtdcInstrumentMarginRateField'] = CThostFtdcInstrumentMarginRateField
 
 
@@ -818,6 +871,8 @@ CThostFtdcInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
 CThostFtdcInstrumentCommissionRateField["ExchangeID"] = "string"
 #业务类型
 CThostFtdcInstrumentCommissionRateField["BizType"] = "char"
+#投资单元代码
+CThostFtdcInstrumentCommissionRateField["InvestUnitID"] = "string"
 structDict['CThostFtdcInstrumentCommissionRateField'] = CThostFtdcInstrumentCommissionRateField
 
 
@@ -926,10 +981,6 @@ CThostFtdcInstrumentTradingRightField["BrokerID"] = "string"
 CThostFtdcInstrumentTradingRightField["InvestorID"] = "string"
 #交易权限
 CThostFtdcInstrumentTradingRightField["TradingRight"] = "char"
-#交易所代码
-CThostFtdcInstrumentTradingRightField["ExchangeID"] = "string"
-#业务类型
-CThostFtdcInstrumentTradingRightField["BizType"] = "char"
 structDict['CThostFtdcInstrumentTradingRightField'] = CThostFtdcInstrumentTradingRightField
 
 
@@ -947,6 +998,8 @@ CThostFtdcBrokerUserField["UserType"] = "char"
 CThostFtdcBrokerUserField["IsActive"] = "int"
 #是否使用令牌
 CThostFtdcBrokerUserField["IsUsingOTP"] = "int"
+#是否强制终端认证
+CThostFtdcBrokerUserField["IsAuthForce"] = "int"
 structDict['CThostFtdcBrokerUserField'] = CThostFtdcBrokerUserField
 
 
@@ -958,6 +1011,14 @@ CThostFtdcBrokerUserPasswordField["BrokerID"] = "string"
 CThostFtdcBrokerUserPasswordField["UserID"] = "string"
 #密码
 CThostFtdcBrokerUserPasswordField["Password"] = "string"
+#上次修改时间
+CThostFtdcBrokerUserPasswordField["LastUpdateTime"] = "string"
+#上次登陆时间
+CThostFtdcBrokerUserPasswordField["LastLoginTime"] = "string"
+#密码过期时间
+CThostFtdcBrokerUserPasswordField["ExpireDate"] = "string"
+#弱密码过期时间
+CThostFtdcBrokerUserPasswordField["WeakExpireDate"] = "string"
 structDict['CThostFtdcBrokerUserPasswordField'] = CThostFtdcBrokerUserPasswordField
 
 
@@ -1012,8 +1073,6 @@ CThostFtdcTraderOfferField["BrokerID"] = "string"
 CThostFtdcTraderOfferField["MaxTradeID"] = "string"
 #本席位最大报单备拷
 CThostFtdcTraderOfferField["MaxOrderMessageReference"] = "string"
-#业务类型
-CThostFtdcTraderOfferField["BizType"] = "char"
 structDict['CThostFtdcTraderOfferField'] = CThostFtdcTraderOfferField
 
 
@@ -1031,6 +1090,10 @@ CThostFtdcSettlementInfoField["InvestorID"] = "string"
 CThostFtdcSettlementInfoField["SequenceNo"] = "int"
 #消息正文
 CThostFtdcSettlementInfoField["Content"] = "string"
+#投资者帐号
+CThostFtdcSettlementInfoField["AccountID"] = "string"
+#币种代码
+CThostFtdcSettlementInfoField["CurrencyID"] = "string"
 structDict['CThostFtdcSettlementInfoField'] = CThostFtdcSettlementInfoField
 
 
@@ -1075,6 +1138,8 @@ CThostFtdcExchangeMarginRateField["LongMarginRatioByVolume"] = "float"
 CThostFtdcExchangeMarginRateField["ShortMarginRatioByMoney"] = "float"
 #空头保证金费
 CThostFtdcExchangeMarginRateField["ShortMarginRatioByVolume"] = "float"
+#交易所代码
+CThostFtdcExchangeMarginRateField["ExchangeID"] = "string"
 structDict['CThostFtdcExchangeMarginRateField'] = CThostFtdcExchangeMarginRateField
 
 
@@ -1185,8 +1250,8 @@ CThostFtdcLoginInfoField["InterfaceProductInfo"] = "string"
 CThostFtdcLoginInfoField["ProtocolInfo"] = "string"
 #系统名称
 CThostFtdcLoginInfoField["SystemName"] = "string"
-#密码
-CThostFtdcLoginInfoField["Password"] = "string"
+#密码,已弃用
+CThostFtdcLoginInfoField["PasswordDeprecated"] = "string"
 #最大报单引用
 CThostFtdcLoginInfoField["MaxOrderRef"] = "string"
 #上期所时间
@@ -1203,6 +1268,12 @@ CThostFtdcLoginInfoField["MacAddress"] = "string"
 CThostFtdcLoginInfoField["OneTimePassword"] = "string"
 #能源中心时间
 CThostFtdcLoginInfoField["INETime"] = "string"
+#查询时是否需要流控
+CThostFtdcLoginInfoField["IsQryControl"] = "int"
+#登录备注
+CThostFtdcLoginInfoField["LoginRemark"] = "string"
+#密码
+CThostFtdcLoginInfoField["Password"] = "string"
 structDict['CThostFtdcLoginInfoField'] = CThostFtdcLoginInfoField
 
 
@@ -1293,6 +1364,18 @@ CThostFtdcInputOrderField["UserForceClose"] = "int"
 CThostFtdcInputOrderField["IsSwapOrder"] = "int"
 #交易所代码
 CThostFtdcInputOrderField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInputOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcInputOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcInputOrderField["CurrencyID"] = "string"
+#交易编码
+CThostFtdcInputOrderField["ClientID"] = "string"
+#IP地址
+CThostFtdcInputOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputOrderField["MacAddress"] = "string"
 structDict['CThostFtdcInputOrderField'] = CThostFtdcInputOrderField
 
 
@@ -1414,6 +1497,16 @@ CThostFtdcOrderField["ZCETotalTradedVolume"] = "int"
 CThostFtdcOrderField["IsSwapOrder"] = "int"
 #营业部编号
 CThostFtdcOrderField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcOrderField["CurrencyID"] = "string"
+#IP地址
+CThostFtdcOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcOrderField["MacAddress"] = "string"
 structDict['CThostFtdcOrderField'] = CThostFtdcOrderField
 
 
@@ -1505,6 +1598,10 @@ CThostFtdcExchangeOrderField["ClearingPartID"] = "string"
 CThostFtdcExchangeOrderField["SequenceNo"] = "int"
 #营业部编号
 CThostFtdcExchangeOrderField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeOrderField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeOrderField'] = CThostFtdcExchangeOrderField
 
 
@@ -1557,6 +1654,12 @@ CThostFtdcInputOrderActionField["VolumeChange"] = "int"
 CThostFtdcInputOrderActionField["UserID"] = "string"
 #合约代码
 CThostFtdcInputOrderActionField["InstrumentID"] = "string"
+#投资单元代码
+CThostFtdcInputOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcInputOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcInputOrderActionField'] = CThostFtdcInputOrderActionField
 
 
@@ -1614,6 +1717,12 @@ CThostFtdcOrderActionField["StatusMsg"] = "string"
 CThostFtdcOrderActionField["InstrumentID"] = "string"
 #营业部编号
 CThostFtdcOrderActionField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcOrderActionField'] = CThostFtdcOrderActionField
 
 
@@ -1653,6 +1762,10 @@ CThostFtdcExchangeOrderActionField["OrderActionStatus"] = "char"
 CThostFtdcExchangeOrderActionField["UserID"] = "string"
 #营业部编号
 CThostFtdcExchangeOrderActionField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeOrderActionField'] = CThostFtdcExchangeOrderActionField
 
 
@@ -1674,8 +1787,6 @@ CThostFtdcExchangeOrderActionErrorField["ActionLocalID"] = "string"
 CThostFtdcExchangeOrderActionErrorField["ErrorID"] = "int"
 #错误信息
 CThostFtdcExchangeOrderActionErrorField["ErrorMsg"] = "string"
-#经纪公司代码
-CThostFtdcExchangeOrderActionErrorField["BrokerID"] = "string"
 structDict['CThostFtdcExchangeOrderActionErrorField'] = CThostFtdcExchangeOrderActionErrorField
 
 
@@ -1790,6 +1901,8 @@ CThostFtdcTradeField["SettlementID"] = "int"
 CThostFtdcTradeField["BrokerOrderSeq"] = "int"
 #成交来源
 CThostFtdcTradeField["TradeSource"] = "char"
+#投资单元代码
+CThostFtdcTradeField["InvestUnitID"] = "string"
 structDict['CThostFtdcTradeField'] = CThostFtdcTradeField
 
 
@@ -1817,6 +1930,8 @@ CThostFtdcUserSessionField["InterfaceProductInfo"] = "string"
 CThostFtdcUserSessionField["ProtocolInfo"] = "string"
 #Mac地址
 CThostFtdcUserSessionField["MacAddress"] = "string"
+#登录备注
+CThostFtdcUserSessionField["LoginRemark"] = "string"
 structDict['CThostFtdcUserSessionField'] = CThostFtdcUserSessionField
 
 
@@ -1838,6 +1953,8 @@ CThostFtdcQueryMaxOrderVolumeField["HedgeFlag"] = "char"
 CThostFtdcQueryMaxOrderVolumeField["MaxVolume"] = "int"
 #交易所代码
 CThostFtdcQueryMaxOrderVolumeField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQueryMaxOrderVolumeField["InvestUnitID"] = "string"
 structDict['CThostFtdcQueryMaxOrderVolumeField'] = CThostFtdcQueryMaxOrderVolumeField
 
 
@@ -1851,6 +1968,12 @@ CThostFtdcSettlementInfoConfirmField["InvestorID"] = "string"
 CThostFtdcSettlementInfoConfirmField["ConfirmDate"] = "string"
 #确认时间
 CThostFtdcSettlementInfoConfirmField["ConfirmTime"] = "string"
+#结算编号
+CThostFtdcSettlementInfoConfirmField["SettlementID"] = "int"
+#投资者帐号
+CThostFtdcSettlementInfoConfirmField["AccountID"] = "string"
+#币种代码
+CThostFtdcSettlementInfoConfirmField["CurrencyID"] = "string"
 structDict['CThostFtdcSettlementInfoConfirmField'] = CThostFtdcSettlementInfoConfirmField
 
 
@@ -1940,8 +2063,6 @@ CThostFtdcSyncingTradingCodeField["ClientID"] = "string"
 CThostFtdcSyncingTradingCodeField["IsActive"] = "int"
 #交易编码类型
 CThostFtdcSyncingTradingCodeField["ClientIDType"] = "char"
-#营业部编号
-CThostFtdcSyncingTradingCodeField["BranchID"] = "string"
 structDict['CThostFtdcSyncingTradingCodeField'] = CThostFtdcSyncingTradingCodeField
 
 
@@ -2050,6 +2171,10 @@ CThostFtdcSyncingTradingAccountField["SpecProductCloseProfit"] = "float"
 CThostFtdcSyncingTradingAccountField["SpecProductPositionProfitByAlg"] = "float"
 #特殊产品交易所保证金
 CThostFtdcSyncingTradingAccountField["SpecProductExchangeMargin"] = "float"
+#延时换汇冻结金额
+CThostFtdcSyncingTradingAccountField["FrozenSwap"] = "float"
+#剩余换汇额度
+CThostFtdcSyncingTradingAccountField["RemainSwap"] = "float"
 structDict['CThostFtdcSyncingTradingAccountField'] = CThostFtdcSyncingTradingAccountField
 
 
@@ -2145,6 +2270,8 @@ CThostFtdcSyncingInvestorPositionField["AbandonFrozen"] = "int"
 CThostFtdcSyncingInvestorPositionField["ExchangeID"] = "string"
 #执行冻结的昨仓
 CThostFtdcSyncingInvestorPositionField["YdStrikeFrozen"] = "int"
+#投资单元代码
+CThostFtdcSyncingInvestorPositionField["InvestUnitID"] = "string"
 structDict['CThostFtdcSyncingInvestorPositionField'] = CThostFtdcSyncingInvestorPositionField
 
 
@@ -2195,8 +2322,6 @@ CThostFtdcSyncingInstrumentCommissionRateField["CloseRatioByVolume"] = "float"
 CThostFtdcSyncingInstrumentCommissionRateField["CloseTodayRatioByMoney"] = "float"
 #平今手续费
 CThostFtdcSyncingInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
-#交易所代码
-CThostFtdcSyncingInstrumentCommissionRateField["ExchangeID"] = "string"
 structDict['CThostFtdcSyncingInstrumentCommissionRateField'] = CThostFtdcSyncingInstrumentCommissionRateField
 
 
@@ -2212,8 +2337,6 @@ CThostFtdcSyncingInstrumentTradingRightField["BrokerID"] = "string"
 CThostFtdcSyncingInstrumentTradingRightField["InvestorID"] = "string"
 #交易权限
 CThostFtdcSyncingInstrumentTradingRightField["TradingRight"] = "char"
-#交易所代码
-CThostFtdcSyncingInstrumentTradingRightField["ExchangeID"] = "string"
 structDict['CThostFtdcSyncingInstrumentTradingRightField'] = CThostFtdcSyncingInstrumentTradingRightField
 
 
@@ -2233,6 +2356,8 @@ CThostFtdcQryOrderField["OrderSysID"] = "string"
 CThostFtdcQryOrderField["InsertTimeStart"] = "string"
 #结束时间
 CThostFtdcQryOrderField["InsertTimeEnd"] = "string"
+#投资单元代码
+CThostFtdcQryOrderField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryOrderField'] = CThostFtdcQryOrderField
 
 
@@ -2252,6 +2377,8 @@ CThostFtdcQryTradeField["TradeID"] = "string"
 CThostFtdcQryTradeField["TradeTimeStart"] = "string"
 #结束时间
 CThostFtdcQryTradeField["TradeTimeEnd"] = "string"
+#投资单元代码
+CThostFtdcQryTradeField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryTradeField'] = CThostFtdcQryTradeField
 
 
@@ -2265,6 +2392,8 @@ CThostFtdcQryInvestorPositionField["InvestorID"] = "string"
 CThostFtdcQryInvestorPositionField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryInvestorPositionField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryInvestorPositionField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryInvestorPositionField'] = CThostFtdcQryInvestorPositionField
 
 
@@ -2278,6 +2407,8 @@ CThostFtdcQryTradingAccountField["InvestorID"] = "string"
 CThostFtdcQryTradingAccountField["CurrencyID"] = "string"
 #业务类型
 CThostFtdcQryTradingAccountField["BizType"] = "char"
+#投资者帐号
+CThostFtdcQryTradingAccountField["AccountID"] = "string"
 structDict['CThostFtdcQryTradingAccountField'] = CThostFtdcQryTradingAccountField
 
 
@@ -2302,6 +2433,8 @@ CThostFtdcQryTradingCodeField["ExchangeID"] = "string"
 CThostFtdcQryTradingCodeField["ClientID"] = "string"
 #交易编码类型
 CThostFtdcQryTradingCodeField["ClientIDType"] = "char"
+#投资单元代码
+CThostFtdcQryTradingCodeField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryTradingCodeField'] = CThostFtdcQryTradingCodeField
 
 
@@ -2322,6 +2455,10 @@ CThostFtdcQryInstrumentMarginRateField["InvestorID"] = "string"
 CThostFtdcQryInstrumentMarginRateField["InstrumentID"] = "string"
 #投机套保标志
 CThostFtdcQryInstrumentMarginRateField["HedgeFlag"] = "char"
+#交易所代码
+CThostFtdcQryInstrumentMarginRateField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryInstrumentMarginRateField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryInstrumentMarginRateField'] = CThostFtdcQryInstrumentMarginRateField
 
 
@@ -2335,6 +2472,8 @@ CThostFtdcQryInstrumentCommissionRateField["InvestorID"] = "string"
 CThostFtdcQryInstrumentCommissionRateField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryInstrumentCommissionRateField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryInstrumentCommissionRateField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryInstrumentCommissionRateField'] = CThostFtdcQryInstrumentCommissionRateField
 
 
@@ -2346,8 +2485,6 @@ CThostFtdcQryInstrumentTradingRightField["BrokerID"] = "string"
 CThostFtdcQryInstrumentTradingRightField["InvestorID"] = "string"
 #合约代码
 CThostFtdcQryInstrumentTradingRightField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryInstrumentTradingRightField["ExchangeID"] = "string"
 structDict['CThostFtdcQryInstrumentTradingRightField'] = CThostFtdcQryInstrumentTradingRightField
 
 
@@ -2539,6 +2676,10 @@ CThostFtdcQrySettlementInfoField["BrokerID"] = "string"
 CThostFtdcQrySettlementInfoField["InvestorID"] = "string"
 #交易日
 CThostFtdcQrySettlementInfoField["TradingDay"] = "string"
+#投资者帐号
+CThostFtdcQrySettlementInfoField["AccountID"] = "string"
+#币种代码
+CThostFtdcQrySettlementInfoField["CurrencyID"] = "string"
 structDict['CThostFtdcQrySettlementInfoField'] = CThostFtdcQrySettlementInfoField
 
 
@@ -2550,6 +2691,8 @@ CThostFtdcQryExchangeMarginRateField["BrokerID"] = "string"
 CThostFtdcQryExchangeMarginRateField["InstrumentID"] = "string"
 #投机套保标志
 CThostFtdcQryExchangeMarginRateField["HedgeFlag"] = "char"
+#交易所代码
+CThostFtdcQryExchangeMarginRateField["ExchangeID"] = "string"
 structDict['CThostFtdcQryExchangeMarginRateField'] = CThostFtdcQryExchangeMarginRateField
 
 
@@ -2623,8 +2766,6 @@ CThostFtdcOptionInstrMiniMarginField["MinMargin"] = "float"
 CThostFtdcOptionInstrMiniMarginField["ValueMethod"] = "char"
 #是否跟随交易所收取
 CThostFtdcOptionInstrMiniMarginField["IsRelative"] = "int"
-#交易所代码
-CThostFtdcOptionInstrMiniMarginField["ExchangeID"] = "string"
 structDict['CThostFtdcOptionInstrMiniMarginField'] = CThostFtdcOptionInstrMiniMarginField
 
 
@@ -2652,8 +2793,10 @@ CThostFtdcOptionInstrMarginAdjustField["AShortMarginRatioByMoney"] = "float"
 CThostFtdcOptionInstrMarginAdjustField["AShortMarginRatioByVolume"] = "float"
 #是否跟随交易所收取
 CThostFtdcOptionInstrMarginAdjustField["IsRelative"] = "int"
-#交易所代码
-CThostFtdcOptionInstrMarginAdjustField["ExchangeID"] = "string"
+#做市商空头保证金调整系数
+CThostFtdcOptionInstrMarginAdjustField["MShortMarginRatioByMoney"] = "float"
+#做市商空头保证金调整系数
+CThostFtdcOptionInstrMarginAdjustField["MShortMarginRatioByVolume"] = "float"
 structDict['CThostFtdcOptionInstrMarginAdjustField'] = CThostFtdcOptionInstrMarginAdjustField
 
 
@@ -2685,6 +2828,8 @@ CThostFtdcOptionInstrCommRateField["StrikeRatioByMoney"] = "float"
 CThostFtdcOptionInstrCommRateField["StrikeRatioByVolume"] = "float"
 #交易所代码
 CThostFtdcOptionInstrCommRateField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcOptionInstrCommRateField["InvestUnitID"] = "string"
 structDict['CThostFtdcOptionInstrCommRateField'] = CThostFtdcOptionInstrCommRateField
 
 
@@ -2710,6 +2855,8 @@ CThostFtdcOptionInstrTradeCostField["ExchFixedMargin"] = "float"
 CThostFtdcOptionInstrTradeCostField["ExchMiniMargin"] = "float"
 #交易所代码
 CThostFtdcOptionInstrTradeCostField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcOptionInstrTradeCostField["InvestUnitID"] = "string"
 structDict['CThostFtdcOptionInstrTradeCostField'] = CThostFtdcOptionInstrTradeCostField
 
 
@@ -2729,6 +2876,8 @@ CThostFtdcQryOptionInstrTradeCostField["InputPrice"] = "float"
 CThostFtdcQryOptionInstrTradeCostField["UnderlyingPrice"] = "float"
 #交易所代码
 CThostFtdcQryOptionInstrTradeCostField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryOptionInstrTradeCostField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryOptionInstrTradeCostField'] = CThostFtdcQryOptionInstrTradeCostField
 
 
@@ -2742,6 +2891,8 @@ CThostFtdcQryOptionInstrCommRateField["InvestorID"] = "string"
 CThostFtdcQryOptionInstrCommRateField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryOptionInstrCommRateField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryOptionInstrCommRateField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryOptionInstrCommRateField'] = CThostFtdcQryOptionInstrCommRateField
 
 
@@ -2753,8 +2904,6 @@ CThostFtdcIndexPriceField["BrokerID"] = "string"
 CThostFtdcIndexPriceField["InstrumentID"] = "string"
 #指数现货收盘价
 CThostFtdcIndexPriceField["ClosePrice"] = "float"
-#交易所代码
-CThostFtdcIndexPriceField["ExchangeID"] = "string"
 structDict['CThostFtdcIndexPriceField'] = CThostFtdcIndexPriceField
 
 
@@ -2784,12 +2933,24 @@ CThostFtdcInputExecOrderField["HedgeFlag"] = "char"
 CThostFtdcInputExecOrderField["ActionType"] = "char"
 #保留头寸申请的持仓方向
 CThostFtdcInputExecOrderField["PosiDirection"] = "char"
-#期权行权后是否保留期货头寸的标记
+#期权行权后是否保留期货头寸的标记,该字段已废弃
 CThostFtdcInputExecOrderField["ReservePositionFlag"] = "char"
 #期权行权后生成的头寸是否自动平仓
 CThostFtdcInputExecOrderField["CloseFlag"] = "char"
 #交易所代码
 CThostFtdcInputExecOrderField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInputExecOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcInputExecOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcInputExecOrderField["CurrencyID"] = "string"
+#交易编码
+CThostFtdcInputExecOrderField["ClientID"] = "string"
+#IP地址
+CThostFtdcInputExecOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputExecOrderField["MacAddress"] = "string"
 structDict['CThostFtdcInputExecOrderField'] = CThostFtdcInputExecOrderField
 
 
@@ -2819,6 +2980,12 @@ CThostFtdcInputExecOrderActionField["ActionFlag"] = "char"
 CThostFtdcInputExecOrderActionField["UserID"] = "string"
 #合约代码
 CThostFtdcInputExecOrderActionField["InstrumentID"] = "string"
+#投资单元代码
+CThostFtdcInputExecOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcInputExecOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputExecOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcInputExecOrderActionField'] = CThostFtdcInputExecOrderActionField
 
 
@@ -2848,7 +3015,7 @@ CThostFtdcExecOrderField["HedgeFlag"] = "char"
 CThostFtdcExecOrderField["ActionType"] = "char"
 #保留头寸申请的持仓方向
 CThostFtdcExecOrderField["PosiDirection"] = "char"
-#期权行权后是否保留期货头寸的标记
+#期权行权后是否保留期货头寸的标记,该字段已废弃
 CThostFtdcExecOrderField["ReservePositionFlag"] = "char"
 #期权行权后生成的头寸是否自动平仓
 CThostFtdcExecOrderField["CloseFlag"] = "char"
@@ -2902,6 +3069,16 @@ CThostFtdcExecOrderField["ActiveUserID"] = "string"
 CThostFtdcExecOrderField["BrokerExecOrderSeq"] = "int"
 #营业部编号
 CThostFtdcExecOrderField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcExecOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcExecOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcExecOrderField["CurrencyID"] = "string"
+#IP地址
+CThostFtdcExecOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExecOrderField["MacAddress"] = "string"
 structDict['CThostFtdcExecOrderField'] = CThostFtdcExecOrderField
 
 
@@ -2957,6 +3134,12 @@ CThostFtdcExecOrderActionField["StatusMsg"] = "string"
 CThostFtdcExecOrderActionField["InstrumentID"] = "string"
 #营业部编号
 CThostFtdcExecOrderActionField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcExecOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcExecOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExecOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcExecOrderActionField'] = CThostFtdcExecOrderActionField
 
 
@@ -2995,7 +3178,7 @@ CThostFtdcExchangeExecOrderField["HedgeFlag"] = "char"
 CThostFtdcExchangeExecOrderField["ActionType"] = "char"
 #保留头寸申请的持仓方向
 CThostFtdcExchangeExecOrderField["PosiDirection"] = "char"
-#期权行权后是否保留期货头寸的标记
+#期权行权后是否保留期货头寸的标记,该字段已废弃
 CThostFtdcExchangeExecOrderField["ReservePositionFlag"] = "char"
 #期权行权后生成的头寸是否自动平仓
 CThostFtdcExchangeExecOrderField["CloseFlag"] = "char"
@@ -3037,6 +3220,10 @@ CThostFtdcExchangeExecOrderField["ClearingPartID"] = "string"
 CThostFtdcExchangeExecOrderField["SequenceNo"] = "int"
 #营业部编号
 CThostFtdcExchangeExecOrderField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeExecOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeExecOrderField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeExecOrderField'] = CThostFtdcExchangeExecOrderField
 
 
@@ -3100,6 +3287,14 @@ CThostFtdcExchangeExecOrderActionField["UserID"] = "string"
 CThostFtdcExchangeExecOrderActionField["ActionType"] = "char"
 #营业部编号
 CThostFtdcExchangeExecOrderActionField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeExecOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeExecOrderActionField["MacAddress"] = "string"
+#合约在交易所的代码
+CThostFtdcExchangeExecOrderActionField["ExchangeInstID"] = "string"
+#数量
+CThostFtdcExchangeExecOrderActionField["Volume"] = "int"
 structDict['CThostFtdcExchangeExecOrderActionField'] = CThostFtdcExchangeExecOrderActionField
 
 
@@ -3142,12 +3337,24 @@ CThostFtdcErrExecOrderField["HedgeFlag"] = "char"
 CThostFtdcErrExecOrderField["ActionType"] = "char"
 #保留头寸申请的持仓方向
 CThostFtdcErrExecOrderField["PosiDirection"] = "char"
-#期权行权后是否保留期货头寸的标记
+#期权行权后是否保留期货头寸的标记,该字段已废弃
 CThostFtdcErrExecOrderField["ReservePositionFlag"] = "char"
 #期权行权后生成的头寸是否自动平仓
 CThostFtdcErrExecOrderField["CloseFlag"] = "char"
 #交易所代码
 CThostFtdcErrExecOrderField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcErrExecOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcErrExecOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcErrExecOrderField["CurrencyID"] = "string"
+#交易编码
+CThostFtdcErrExecOrderField["ClientID"] = "string"
+#IP地址
+CThostFtdcErrExecOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcErrExecOrderField["MacAddress"] = "string"
 #错误代码
 CThostFtdcErrExecOrderField["ErrorID"] = "int"
 #错误信息
@@ -3190,6 +3397,12 @@ CThostFtdcErrExecOrderActionField["ActionFlag"] = "char"
 CThostFtdcErrExecOrderActionField["UserID"] = "string"
 #合约代码
 CThostFtdcErrExecOrderActionField["InstrumentID"] = "string"
+#投资单元代码
+CThostFtdcErrExecOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcErrExecOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcErrExecOrderActionField["MacAddress"] = "string"
 #错误代码
 CThostFtdcErrExecOrderActionField["ErrorID"] = "int"
 #错误信息
@@ -3220,10 +3433,6 @@ CThostFtdcOptionInstrTradingRightField["InvestorID"] = "string"
 CThostFtdcOptionInstrTradingRightField["Direction"] = "char"
 #交易权限
 CThostFtdcOptionInstrTradingRightField["TradingRight"] = "char"
-#交易所代码
-CThostFtdcOptionInstrTradingRightField["ExchangeID"] = "string"
-#投机套保标志
-CThostFtdcOptionInstrTradingRightField["HedgeFlag"] = "char"
 structDict['CThostFtdcOptionInstrTradingRightField'] = CThostFtdcOptionInstrTradingRightField
 
 
@@ -3237,8 +3446,6 @@ CThostFtdcQryOptionInstrTradingRightField["InvestorID"] = "string"
 CThostFtdcQryOptionInstrTradingRightField["InstrumentID"] = "string"
 #买卖方向
 CThostFtdcQryOptionInstrTradingRightField["Direction"] = "char"
-#交易所代码
-CThostFtdcQryOptionInstrTradingRightField["ExchangeID"] = "string"
 structDict['CThostFtdcQryOptionInstrTradingRightField'] = CThostFtdcQryOptionInstrTradingRightField
 
 
@@ -3256,6 +3463,12 @@ CThostFtdcInputForQuoteField["ForQuoteRef"] = "string"
 CThostFtdcInputForQuoteField["UserID"] = "string"
 #交易所代码
 CThostFtdcInputForQuoteField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInputForQuoteField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcInputForQuoteField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputForQuoteField["MacAddress"] = "string"
 structDict['CThostFtdcInputForQuoteField'] = CThostFtdcInputForQuoteField
 
 
@@ -3301,6 +3514,12 @@ CThostFtdcForQuoteField["StatusMsg"] = "string"
 CThostFtdcForQuoteField["ActiveUserID"] = "string"
 #经纪公司询价编号
 CThostFtdcForQuoteField["BrokerForQutoSeq"] = "int"
+#投资单元代码
+CThostFtdcForQuoteField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcForQuoteField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcForQuoteField["MacAddress"] = "string"
 structDict['CThostFtdcForQuoteField'] = CThostFtdcForQuoteField
 
 
@@ -3318,6 +3537,8 @@ CThostFtdcQryForQuoteField["ExchangeID"] = "string"
 CThostFtdcQryForQuoteField["InsertTimeStart"] = "string"
 #结束时间
 CThostFtdcQryForQuoteField["InsertTimeEnd"] = "string"
+#投资单元代码
+CThostFtdcQryForQuoteField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryForQuoteField'] = CThostFtdcQryForQuoteField
 
 
@@ -3343,6 +3564,10 @@ CThostFtdcExchangeForQuoteField["InsertDate"] = "string"
 CThostFtdcExchangeForQuoteField["InsertTime"] = "string"
 #询价状态
 CThostFtdcExchangeForQuoteField["ForQuoteStatus"] = "char"
+#IP地址
+CThostFtdcExchangeForQuoteField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeForQuoteField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeForQuoteField'] = CThostFtdcExchangeForQuoteField
 
 
@@ -3401,6 +3626,14 @@ CThostFtdcInputQuoteField["BidOrderRef"] = "string"
 CThostFtdcInputQuoteField["ForQuoteSysID"] = "string"
 #交易所代码
 CThostFtdcInputQuoteField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInputQuoteField["InvestUnitID"] = "string"
+#交易编码
+CThostFtdcInputQuoteField["ClientID"] = "string"
+#IP地址
+CThostFtdcInputQuoteField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputQuoteField["MacAddress"] = "string"
 structDict['CThostFtdcInputQuoteField'] = CThostFtdcInputQuoteField
 
 
@@ -3430,6 +3663,14 @@ CThostFtdcInputQuoteActionField["ActionFlag"] = "char"
 CThostFtdcInputQuoteActionField["UserID"] = "string"
 #合约代码
 CThostFtdcInputQuoteActionField["InstrumentID"] = "string"
+#投资单元代码
+CThostFtdcInputQuoteActionField["InvestUnitID"] = "string"
+#交易编码
+CThostFtdcInputQuoteActionField["ClientID"] = "string"
+#IP地址
+CThostFtdcInputQuoteActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputQuoteActionField["MacAddress"] = "string"
 structDict['CThostFtdcInputQuoteActionField'] = CThostFtdcInputQuoteActionField
 
 
@@ -3525,6 +3766,16 @@ CThostFtdcQuoteField["BidOrderRef"] = "string"
 CThostFtdcQuoteField["ForQuoteSysID"] = "string"
 #营业部编号
 CThostFtdcQuoteField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcQuoteField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcQuoteField["AccountID"] = "string"
+#币种代码
+CThostFtdcQuoteField["CurrencyID"] = "string"
+#IP地址
+CThostFtdcQuoteField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcQuoteField["MacAddress"] = "string"
 structDict['CThostFtdcQuoteField'] = CThostFtdcQuoteField
 
 
@@ -3578,6 +3829,12 @@ CThostFtdcQuoteActionField["StatusMsg"] = "string"
 CThostFtdcQuoteActionField["InstrumentID"] = "string"
 #营业部编号
 CThostFtdcQuoteActionField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcQuoteActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcQuoteActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcQuoteActionField["MacAddress"] = "string"
 structDict['CThostFtdcQuoteActionField'] = CThostFtdcQuoteActionField
 
 
@@ -3597,6 +3854,8 @@ CThostFtdcQryQuoteField["QuoteSysID"] = "string"
 CThostFtdcQryQuoteField["InsertTimeStart"] = "string"
 #结束时间
 CThostFtdcQryQuoteField["InsertTimeEnd"] = "string"
+#投资单元代码
+CThostFtdcQryQuoteField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryQuoteField'] = CThostFtdcQryQuoteField
 
 
@@ -3666,6 +3925,10 @@ CThostFtdcExchangeQuoteField["BidOrderSysID"] = "string"
 CThostFtdcExchangeQuoteField["ForQuoteSysID"] = "string"
 #营业部编号
 CThostFtdcExchangeQuoteField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeQuoteField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeQuoteField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeQuoteField'] = CThostFtdcExchangeQuoteField
 
 
@@ -3725,6 +3988,10 @@ CThostFtdcExchangeQuoteActionField["BusinessUnit"] = "string"
 CThostFtdcExchangeQuoteActionField["OrderActionStatus"] = "char"
 #用户代码
 CThostFtdcExchangeQuoteActionField["UserID"] = "string"
+#IP地址
+CThostFtdcExchangeQuoteActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeQuoteActionField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeQuoteActionField'] = CThostFtdcExchangeQuoteActionField
 
 
@@ -3753,8 +4020,6 @@ CThostFtdcOptionInstrDeltaField["BrokerID"] = "string"
 CThostFtdcOptionInstrDeltaField["InvestorID"] = "string"
 #Delta值
 CThostFtdcOptionInstrDeltaField["Delta"] = "float"
-#交易所代码
-CThostFtdcOptionInstrDeltaField["ExchangeID"] = "string"
 structDict['CThostFtdcOptionInstrDeltaField'] = CThostFtdcOptionInstrDeltaField
 
 
@@ -3787,8 +4052,8 @@ CThostFtdcStrikeOffsetField["BrokerID"] = "string"
 CThostFtdcStrikeOffsetField["InvestorID"] = "string"
 #执行偏移值
 CThostFtdcStrikeOffsetField["Offset"] = "float"
-#交易所代码
-CThostFtdcStrikeOffsetField["ExchangeID"] = "string"
+#执行偏移类型
+CThostFtdcStrikeOffsetField["OffsetType"] = "char"
 structDict['CThostFtdcStrikeOffsetField'] = CThostFtdcStrikeOffsetField
 
 
@@ -3801,317 +4066,6 @@ CThostFtdcQryStrikeOffsetField["InvestorID"] = "string"
 #合约代码
 CThostFtdcQryStrikeOffsetField["InstrumentID"] = "string"
 structDict['CThostFtdcQryStrikeOffsetField'] = CThostFtdcQryStrikeOffsetField
-
-
-#录入锁定
-CThostFtdcInputLockField = {}
-#经纪公司代码
-CThostFtdcInputLockField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcInputLockField["InvestorID"] = "string"
-#合约代码
-CThostFtdcInputLockField["InstrumentID"] = "string"
-#锁定引用
-CThostFtdcInputLockField["LockRef"] = "string"
-#用户代码
-CThostFtdcInputLockField["UserID"] = "string"
-#数量
-CThostFtdcInputLockField["Volume"] = "int"
-#请求编号
-CThostFtdcInputLockField["RequestID"] = "int"
-#业务单元
-CThostFtdcInputLockField["BusinessUnit"] = "string"
-#锁定类型
-CThostFtdcInputLockField["LockType"] = "char"
-#交易所代码
-CThostFtdcInputLockField["ExchangeID"] = "string"
-structDict['CThostFtdcInputLockField'] = CThostFtdcInputLockField
-
-
-#锁定
-CThostFtdcLockField = {}
-#经纪公司代码
-CThostFtdcLockField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcLockField["InvestorID"] = "string"
-#合约代码
-CThostFtdcLockField["InstrumentID"] = "string"
-#锁定引用
-CThostFtdcLockField["LockRef"] = "string"
-#用户代码
-CThostFtdcLockField["UserID"] = "string"
-#数量
-CThostFtdcLockField["Volume"] = "int"
-#请求编号
-CThostFtdcLockField["RequestID"] = "int"
-#业务单元
-CThostFtdcLockField["BusinessUnit"] = "string"
-#锁定类型
-CThostFtdcLockField["LockType"] = "char"
-#本地锁定编号
-CThostFtdcLockField["LockLocalID"] = "string"
-#交易所代码
-CThostFtdcLockField["ExchangeID"] = "string"
-#会员代码
-CThostFtdcLockField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcLockField["ClientID"] = "string"
-#合约在交易所的代码
-CThostFtdcLockField["ExchangeInstID"] = "string"
-#交易所交易员代码
-CThostFtdcLockField["TraderID"] = "string"
-#安装编号
-CThostFtdcLockField["InstallID"] = "int"
-#执行宣告提交状态
-CThostFtdcLockField["OrderSubmitStatus"] = "char"
-#报单提示序号
-CThostFtdcLockField["NotifySequence"] = "int"
-#交易日
-CThostFtdcLockField["TradingDay"] = "string"
-#结算编号
-CThostFtdcLockField["SettlementID"] = "int"
-#锁定编号
-CThostFtdcLockField["LockSysID"] = "string"
-#报单日期
-CThostFtdcLockField["InsertDate"] = "string"
-#插入时间
-CThostFtdcLockField["InsertTime"] = "string"
-#撤销时间
-CThostFtdcLockField["CancelTime"] = "string"
-#锁定状态
-CThostFtdcLockField["LockStatus"] = "char"
-#结算会员编号
-CThostFtdcLockField["ClearingPartID"] = "string"
-#序号
-CThostFtdcLockField["SequenceNo"] = "int"
-#前置编号
-CThostFtdcLockField["FrontID"] = "int"
-#会话编号
-CThostFtdcLockField["SessionID"] = "int"
-#用户端产品信息
-CThostFtdcLockField["UserProductInfo"] = "string"
-#状态信息
-CThostFtdcLockField["StatusMsg"] = "string"
-#操作用户代码
-CThostFtdcLockField["ActiveUserID"] = "string"
-#经纪公司报单编号
-CThostFtdcLockField["BrokerLockSeq"] = "int"
-#营业部编号
-CThostFtdcLockField["BranchID"] = "string"
-structDict['CThostFtdcLockField'] = CThostFtdcLockField
-
-
-#查询锁定
-CThostFtdcQryLockField = {}
-#经纪公司代码
-CThostFtdcQryLockField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryLockField["InvestorID"] = "string"
-#合约代码
-CThostFtdcQryLockField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryLockField["ExchangeID"] = "string"
-#锁定编号
-CThostFtdcQryLockField["LockSysID"] = "string"
-#开始时间
-CThostFtdcQryLockField["InsertTimeStart"] = "string"
-#结束时间
-CThostFtdcQryLockField["InsertTimeEnd"] = "string"
-structDict['CThostFtdcQryLockField'] = CThostFtdcQryLockField
-
-
-#锁定证券仓位
-CThostFtdcLockPositionField = {}
-#经纪公司代码
-CThostFtdcLockPositionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcLockPositionField["InvestorID"] = "string"
-#合约代码
-CThostFtdcLockPositionField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcLockPositionField["ExchangeID"] = "string"
-#数量
-CThostFtdcLockPositionField["Volume"] = "int"
-#冻结数量
-CThostFtdcLockPositionField["FrozenVolume"] = "int"
-structDict['CThostFtdcLockPositionField'] = CThostFtdcLockPositionField
-
-
-#查询锁定证券仓位
-CThostFtdcQryLockPositionField = {}
-#经纪公司代码
-CThostFtdcQryLockPositionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryLockPositionField["InvestorID"] = "string"
-#合约代码
-CThostFtdcQryLockPositionField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryLockPositionField["ExchangeID"] = "string"
-structDict['CThostFtdcQryLockPositionField'] = CThostFtdcQryLockPositionField
-
-
-#当前ETF期权合约手续费的详细内容
-CThostFtdcETFOptionInstrCommRateField = {}
-#合约代码
-CThostFtdcETFOptionInstrCommRateField["InstrumentID"] = "string"
-#投资者范围
-CThostFtdcETFOptionInstrCommRateField["InvestorRange"] = "char"
-#经纪公司代码
-CThostFtdcETFOptionInstrCommRateField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcETFOptionInstrCommRateField["InvestorID"] = "string"
-#开仓手续费率
-CThostFtdcETFOptionInstrCommRateField["OpenRatioByMoney"] = "float"
-#开仓手续费
-CThostFtdcETFOptionInstrCommRateField["OpenRatioByVolume"] = "float"
-#平仓手续费率
-CThostFtdcETFOptionInstrCommRateField["CloseRatioByMoney"] = "float"
-#平仓手续费
-CThostFtdcETFOptionInstrCommRateField["CloseRatioByVolume"] = "float"
-#平今手续费率
-CThostFtdcETFOptionInstrCommRateField["CloseTodayRatioByMoney"] = "float"
-#平今手续费
-CThostFtdcETFOptionInstrCommRateField["CloseTodayRatioByVolume"] = "float"
-#执行手续费率
-CThostFtdcETFOptionInstrCommRateField["StrikeRatioByMoney"] = "float"
-#执行手续费
-CThostFtdcETFOptionInstrCommRateField["StrikeRatioByVolume"] = "float"
-#交易所代码
-CThostFtdcETFOptionInstrCommRateField["ExchangeID"] = "string"
-#投机套保标志
-CThostFtdcETFOptionInstrCommRateField["HedgeFlag"] = "char"
-#持仓方向
-CThostFtdcETFOptionInstrCommRateField["PosiDirection"] = "char"
-structDict['CThostFtdcETFOptionInstrCommRateField'] = CThostFtdcETFOptionInstrCommRateField
-
-
-#ETF期权手续费率查询
-CThostFtdcQryETFOptionInstrCommRateField = {}
-#经纪公司代码
-CThostFtdcQryETFOptionInstrCommRateField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryETFOptionInstrCommRateField["InvestorID"] = "string"
-#合约代码
-CThostFtdcQryETFOptionInstrCommRateField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryETFOptionInstrCommRateField["ExchangeID"] = "string"
-structDict['CThostFtdcQryETFOptionInstrCommRateField'] = CThostFtdcQryETFOptionInstrCommRateField
-
-
-#输入的持仓冻结
-CThostFtdcPosiFreezeField = {}
-#经纪公司代码
-CThostFtdcPosiFreezeField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcPosiFreezeField["InvestorID"] = "string"
-#合约代码
-CThostFtdcPosiFreezeField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcPosiFreezeField["ExchangeID"] = "string"
-#本地报单编号
-CThostFtdcPosiFreezeField["OrderLocalID"] = "string"
-#交易所交易员代码
-CThostFtdcPosiFreezeField["TraderID"] = "string"
-#会员代码
-CThostFtdcPosiFreezeField["ParticipantID"] = "string"
-#安装编号
-CThostFtdcPosiFreezeField["InstallID"] = "int"
-#数量
-CThostFtdcPosiFreezeField["Volume"] = "int"
-#冻结原因
-CThostFtdcPosiFreezeField["FreezeReasonType"] = "char"
-#冻结类型
-CThostFtdcPosiFreezeField["FreezeType"] = "char"
-structDict['CThostFtdcPosiFreezeField'] = CThostFtdcPosiFreezeField
-
-
-#查询锁定
-CThostFtdcQryExchangeLockField = {}
-#会员代码
-CThostFtdcQryExchangeLockField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcQryExchangeLockField["ClientID"] = "string"
-#合约在交易所的代码
-CThostFtdcQryExchangeLockField["ExchangeInstID"] = "string"
-#交易所代码
-CThostFtdcQryExchangeLockField["ExchangeID"] = "string"
-#交易所交易员代码
-CThostFtdcQryExchangeLockField["TraderID"] = "string"
-structDict['CThostFtdcQryExchangeLockField'] = CThostFtdcQryExchangeLockField
-
-
-#交易所锁定
-CThostFtdcExchangeLockField = {}
-#数量
-CThostFtdcExchangeLockField["Volume"] = "int"
-#请求编号
-CThostFtdcExchangeLockField["RequestID"] = "int"
-#业务单元
-CThostFtdcExchangeLockField["BusinessUnit"] = "string"
-#锁定类型
-CThostFtdcExchangeLockField["LockType"] = "char"
-#本地锁定编号
-CThostFtdcExchangeLockField["LockLocalID"] = "string"
-#交易所代码
-CThostFtdcExchangeLockField["ExchangeID"] = "string"
-#会员代码
-CThostFtdcExchangeLockField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcExchangeLockField["ClientID"] = "string"
-#合约在交易所的代码
-CThostFtdcExchangeLockField["ExchangeInstID"] = "string"
-#交易所交易员代码
-CThostFtdcExchangeLockField["TraderID"] = "string"
-#安装编号
-CThostFtdcExchangeLockField["InstallID"] = "int"
-#执行宣告提交状态
-CThostFtdcExchangeLockField["OrderSubmitStatus"] = "char"
-#报单提示序号
-CThostFtdcExchangeLockField["NotifySequence"] = "int"
-#交易日
-CThostFtdcExchangeLockField["TradingDay"] = "string"
-#结算编号
-CThostFtdcExchangeLockField["SettlementID"] = "int"
-#锁定编号
-CThostFtdcExchangeLockField["LockSysID"] = "string"
-#报单日期
-CThostFtdcExchangeLockField["InsertDate"] = "string"
-#插入时间
-CThostFtdcExchangeLockField["InsertTime"] = "string"
-#撤销时间
-CThostFtdcExchangeLockField["CancelTime"] = "string"
-#锁定状态
-CThostFtdcExchangeLockField["LockStatus"] = "char"
-#结算会员编号
-CThostFtdcExchangeLockField["ClearingPartID"] = "string"
-#序号
-CThostFtdcExchangeLockField["SequenceNo"] = "int"
-#营业部编号
-CThostFtdcExchangeLockField["BranchID"] = "string"
-structDict['CThostFtdcExchangeLockField'] = CThostFtdcExchangeLockField
-
-
-#交易所操作错误
-CThostFtdcExchangeExecOrderActionErrorField = {}
-#交易所代码
-CThostFtdcExchangeExecOrderActionErrorField["ExchangeID"] = "string"
-#执行宣告编号
-CThostFtdcExchangeExecOrderActionErrorField["ExecOrderSysID"] = "string"
-#交易所交易员代码
-CThostFtdcExchangeExecOrderActionErrorField["TraderID"] = "string"
-#安装编号
-CThostFtdcExchangeExecOrderActionErrorField["InstallID"] = "int"
-#本地执行宣告编号
-CThostFtdcExchangeExecOrderActionErrorField["ExecOrderLocalID"] = "string"
-#操作本地编号
-CThostFtdcExchangeExecOrderActionErrorField["ActionLocalID"] = "string"
-#错误代码
-CThostFtdcExchangeExecOrderActionErrorField["ErrorID"] = "int"
-#错误信息
-CThostFtdcExchangeExecOrderActionErrorField["ErrorMsg"] = "string"
-#经纪公司代码
-CThostFtdcExchangeExecOrderActionErrorField["BrokerID"] = "string"
-structDict['CThostFtdcExchangeExecOrderActionErrorField'] = CThostFtdcExchangeExecOrderActionErrorField
 
 
 #输入批量报单操作
@@ -4132,6 +4086,12 @@ CThostFtdcInputBatchOrderActionField["SessionID"] = "int"
 CThostFtdcInputBatchOrderActionField["ExchangeID"] = "string"
 #用户代码
 CThostFtdcInputBatchOrderActionField["UserID"] = "string"
+#投资单元代码
+CThostFtdcInputBatchOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcInputBatchOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputBatchOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcInputBatchOrderActionField'] = CThostFtdcInputBatchOrderActionField
 
 
@@ -4173,6 +4133,12 @@ CThostFtdcBatchOrderActionField["OrderActionStatus"] = "char"
 CThostFtdcBatchOrderActionField["UserID"] = "string"
 #状态信息
 CThostFtdcBatchOrderActionField["StatusMsg"] = "string"
+#投资单元代码
+CThostFtdcBatchOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcBatchOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcBatchOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcBatchOrderActionField'] = CThostFtdcBatchOrderActionField
 
 
@@ -4200,6 +4166,10 @@ CThostFtdcExchangeBatchOrderActionField["BusinessUnit"] = "string"
 CThostFtdcExchangeBatchOrderActionField["OrderActionStatus"] = "char"
 #用户代码
 CThostFtdcExchangeBatchOrderActionField["UserID"] = "string"
+#IP地址
+CThostFtdcExchangeBatchOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeBatchOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcExchangeBatchOrderActionField'] = CThostFtdcExchangeBatchOrderActionField
 
 
@@ -4214,392 +4184,6 @@ CThostFtdcQryBatchOrderActionField["ExchangeID"] = "string"
 structDict['CThostFtdcQryBatchOrderActionField'] = CThostFtdcQryBatchOrderActionField
 
 
-#投资者持仓限制
-CThostFtdcLimitPosiField = {}
-#经纪公司代码
-CThostFtdcLimitPosiField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcLimitPosiField["InvestorID"] = "string"
-#合约代码
-CThostFtdcLimitPosiField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcLimitPosiField["ExchangeID"] = "string"
-#总数量限制
-CThostFtdcLimitPosiField["TotalVolume"] = "int"
-#多头数量限制
-CThostFtdcLimitPosiField["LongVolume"] = "int"
-#当日多头开仓数量限制
-CThostFtdcLimitPosiField["OpenVolume"] = "int"
-#多头持仓金额限制
-CThostFtdcLimitPosiField["LongAmount"] = "float"
-#总数量冻结
-CThostFtdcLimitPosiField["TotalVolumeFrozen"] = "int"
-#多头数量冻结
-CThostFtdcLimitPosiField["LongVolumeFrozen"] = "int"
-#当日多头开仓数量冻结
-CThostFtdcLimitPosiField["OpenVolumeFrozen"] = "int"
-#多头持仓金额冻结
-CThostFtdcLimitPosiField["LongAmountFrozen"] = "float"
-structDict['CThostFtdcLimitPosiField'] = CThostFtdcLimitPosiField
-
-
-#查询投资者持仓限制
-CThostFtdcQryLimitPosiField = {}
-#经纪公司代码
-CThostFtdcQryLimitPosiField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryLimitPosiField["InvestorID"] = "string"
-#合约代码
-CThostFtdcQryLimitPosiField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryLimitPosiField["ExchangeID"] = "string"
-structDict['CThostFtdcQryLimitPosiField'] = CThostFtdcQryLimitPosiField
-
-
-#经纪公司持仓限制
-CThostFtdcBrokerLimitPosiField = {}
-#经纪公司代码
-CThostFtdcBrokerLimitPosiField["BrokerID"] = "string"
-#合约代码
-CThostFtdcBrokerLimitPosiField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcBrokerLimitPosiField["ExchangeID"] = "string"
-#总数量限制
-CThostFtdcBrokerLimitPosiField["TotalVolume"] = "float"
-#多头数量限制
-CThostFtdcBrokerLimitPosiField["LongVolume"] = "float"
-#总数量冻结
-CThostFtdcBrokerLimitPosiField["TotalVolumeFrozen"] = "float"
-#多头数量冻结
-CThostFtdcBrokerLimitPosiField["LongVolumeFrozen"] = "float"
-structDict['CThostFtdcBrokerLimitPosiField'] = CThostFtdcBrokerLimitPosiField
-
-
-#查询经纪公司持仓限制
-CThostFtdcQryBrokerLimitPosiField = {}
-#经纪公司代码
-CThostFtdcQryBrokerLimitPosiField["BrokerID"] = "string"
-#合约代码
-CThostFtdcQryBrokerLimitPosiField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryBrokerLimitPosiField["ExchangeID"] = "string"
-structDict['CThostFtdcQryBrokerLimitPosiField'] = CThostFtdcQryBrokerLimitPosiField
-
-
-#投资者证券持仓限制
-CThostFtdcLimitPosiSField = {}
-#经纪公司代码
-CThostFtdcLimitPosiSField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcLimitPosiSField["InvestorID"] = "string"
-#合约代码
-CThostFtdcLimitPosiSField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcLimitPosiSField["ExchangeID"] = "string"
-#总数量限制
-CThostFtdcLimitPosiSField["TotalVolume"] = "int"
-#当日开仓数量限制
-CThostFtdcLimitPosiSField["OpenVolume"] = "int"
-#总数量冻结
-CThostFtdcLimitPosiSField["TotalVolumeFrozen"] = "int"
-#当日开仓数量冻结
-CThostFtdcLimitPosiSField["OpenVolumeFrozen"] = "int"
-structDict['CThostFtdcLimitPosiSField'] = CThostFtdcLimitPosiSField
-
-
-#查询投资者证券持仓限制
-CThostFtdcQryLimitPosiSField = {}
-#经纪公司代码
-CThostFtdcQryLimitPosiSField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryLimitPosiSField["InvestorID"] = "string"
-#合约代码
-CThostFtdcQryLimitPosiSField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryLimitPosiSField["ExchangeID"] = "string"
-structDict['CThostFtdcQryLimitPosiSField'] = CThostFtdcQryLimitPosiSField
-
-
-#投资者持仓限制参数
-CThostFtdcLimitPosiParamField = {}
-#合约代码
-CThostFtdcLimitPosiParamField["InstrumentID"] = "string"
-#投资者范围
-CThostFtdcLimitPosiParamField["InvestorRange"] = "char"
-#经纪公司代码
-CThostFtdcLimitPosiParamField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcLimitPosiParamField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcLimitPosiParamField["ExchangeID"] = "string"
-#总数量限制
-CThostFtdcLimitPosiParamField["TotalVolume"] = "int"
-#多头数量限制
-CThostFtdcLimitPosiParamField["LongVolume"] = "int"
-#当日多头开仓数量限制
-CThostFtdcLimitPosiParamField["OpenVolume"] = "int"
-#多头持仓金额限制
-CThostFtdcLimitPosiParamField["LongAmount"] = "float"
-structDict['CThostFtdcLimitPosiParamField'] = CThostFtdcLimitPosiParamField
-
-
-#经纪公司持仓限制参数
-CThostFtdcBrokerLimitPosiParamField = {}
-#经纪公司代码
-CThostFtdcBrokerLimitPosiParamField["BrokerID"] = "string"
-#合约代码
-CThostFtdcBrokerLimitPosiParamField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcBrokerLimitPosiParamField["ExchangeID"] = "string"
-#总数量限制
-CThostFtdcBrokerLimitPosiParamField["TotalVolume"] = "float"
-#多头数量限制
-CThostFtdcBrokerLimitPosiParamField["LongVolume"] = "float"
-structDict['CThostFtdcBrokerLimitPosiParamField'] = CThostFtdcBrokerLimitPosiParamField
-
-
-#投资者证券持仓限制参数
-CThostFtdcLimitPosiParamSField = {}
-#合约代码
-CThostFtdcLimitPosiParamSField["InstrumentID"] = "string"
-#投资者范围
-CThostFtdcLimitPosiParamSField["InvestorRange"] = "char"
-#经纪公司代码
-CThostFtdcLimitPosiParamSField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcLimitPosiParamSField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcLimitPosiParamSField["ExchangeID"] = "string"
-#总数量限制
-CThostFtdcLimitPosiParamSField["TotalVolume"] = "int"
-#当日开仓数量限制
-CThostFtdcLimitPosiParamSField["OpenVolume"] = "int"
-structDict['CThostFtdcLimitPosiParamSField'] = CThostFtdcLimitPosiParamSField
-
-
-#输入证券处置操作
-CThostFtdcInputStockDisposalActionField = {}
-#经纪公司代码
-CThostFtdcInputStockDisposalActionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcInputStockDisposalActionField["InvestorID"] = "string"
-#证券处置操作引用
-CThostFtdcInputStockDisposalActionField["StockDisposalActionRef"] = "int"
-#证券处置引用
-CThostFtdcInputStockDisposalActionField["StockDisposalRef"] = "string"
-#请求编号
-CThostFtdcInputStockDisposalActionField["RequestID"] = "int"
-#前置编号
-CThostFtdcInputStockDisposalActionField["FrontID"] = "int"
-#会话编号
-CThostFtdcInputStockDisposalActionField["SessionID"] = "int"
-#交易所代码
-CThostFtdcInputStockDisposalActionField["ExchangeID"] = "string"
-#证券处置操作编号
-CThostFtdcInputStockDisposalActionField["StockDisposalSysID"] = "string"
-#操作标志
-CThostFtdcInputStockDisposalActionField["ActionFlag"] = "char"
-#用户代码
-CThostFtdcInputStockDisposalActionField["UserID"] = "string"
-#合约代码
-CThostFtdcInputStockDisposalActionField["InstrumentID"] = "string"
-structDict['CThostFtdcInputStockDisposalActionField'] = CThostFtdcInputStockDisposalActionField
-
-
-#证券处置操作
-CThostFtdcStockDisposalActionField = {}
-#经纪公司代码
-CThostFtdcStockDisposalActionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcStockDisposalActionField["InvestorID"] = "string"
-#证券处置操作引用
-CThostFtdcStockDisposalActionField["StockDisposalActionRef"] = "int"
-#证券处置引用
-CThostFtdcStockDisposalActionField["StockDisposalRef"] = "string"
-#请求编号
-CThostFtdcStockDisposalActionField["RequestID"] = "int"
-#前置编号
-CThostFtdcStockDisposalActionField["FrontID"] = "int"
-#会话编号
-CThostFtdcStockDisposalActionField["SessionID"] = "int"
-#交易所代码
-CThostFtdcStockDisposalActionField["ExchangeID"] = "string"
-#证券处置操作编号
-CThostFtdcStockDisposalActionField["StockDisposalSysID"] = "string"
-#操作标志
-CThostFtdcStockDisposalActionField["ActionFlag"] = "char"
-#操作日期
-CThostFtdcStockDisposalActionField["ActionDate"] = "string"
-#操作时间
-CThostFtdcStockDisposalActionField["ActionTime"] = "string"
-#交易所交易员代码
-CThostFtdcStockDisposalActionField["TraderID"] = "string"
-#安装编号
-CThostFtdcStockDisposalActionField["InstallID"] = "int"
-#本地证券处置编号
-CThostFtdcStockDisposalActionField["StockDisposalLocalID"] = "string"
-#操作本地编号
-CThostFtdcStockDisposalActionField["ActionLocalID"] = "string"
-#会员代码
-CThostFtdcStockDisposalActionField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcStockDisposalActionField["ClientID"] = "string"
-#业务单元
-CThostFtdcStockDisposalActionField["BusinessUnit"] = "string"
-#报单操作状态
-CThostFtdcStockDisposalActionField["OrderActionStatus"] = "char"
-#用户代码
-CThostFtdcStockDisposalActionField["UserID"] = "string"
-#执行类型
-CThostFtdcStockDisposalActionField["ActionType"] = "char"
-#状态信息
-CThostFtdcStockDisposalActionField["StatusMsg"] = "string"
-#合约代码
-CThostFtdcStockDisposalActionField["InstrumentID"] = "string"
-#营业部编号
-CThostFtdcStockDisposalActionField["BranchID"] = "string"
-structDict['CThostFtdcStockDisposalActionField'] = CThostFtdcStockDisposalActionField
-
-
-#证券处置操作查询
-CThostFtdcQryStockDisposalActionField = {}
-#经纪公司代码
-CThostFtdcQryStockDisposalActionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryStockDisposalActionField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcQryStockDisposalActionField["ExchangeID"] = "string"
-structDict['CThostFtdcQryStockDisposalActionField'] = CThostFtdcQryStockDisposalActionField
-
-
-#交易所证券处置操作
-CThostFtdcExchangeStockDisposalActionField = {}
-#交易所代码
-CThostFtdcExchangeStockDisposalActionField["ExchangeID"] = "string"
-#证券处置操作编号
-CThostFtdcExchangeStockDisposalActionField["StockDisposalSysID"] = "string"
-#操作标志
-CThostFtdcExchangeStockDisposalActionField["ActionFlag"] = "char"
-#操作日期
-CThostFtdcExchangeStockDisposalActionField["ActionDate"] = "string"
-#操作时间
-CThostFtdcExchangeStockDisposalActionField["ActionTime"] = "string"
-#交易所交易员代码
-CThostFtdcExchangeStockDisposalActionField["TraderID"] = "string"
-#安装编号
-CThostFtdcExchangeStockDisposalActionField["InstallID"] = "int"
-#本地证券处置编号
-CThostFtdcExchangeStockDisposalActionField["StockDisposalLocalID"] = "string"
-#操作本地编号
-CThostFtdcExchangeStockDisposalActionField["ActionLocalID"] = "string"
-#会员代码
-CThostFtdcExchangeStockDisposalActionField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcExchangeStockDisposalActionField["ClientID"] = "string"
-#业务单元
-CThostFtdcExchangeStockDisposalActionField["BusinessUnit"] = "string"
-#报单操作状态
-CThostFtdcExchangeStockDisposalActionField["OrderActionStatus"] = "char"
-#用户代码
-CThostFtdcExchangeStockDisposalActionField["UserID"] = "string"
-#执行类型
-CThostFtdcExchangeStockDisposalActionField["ActionType"] = "char"
-#营业部编号
-CThostFtdcExchangeStockDisposalActionField["BranchID"] = "string"
-structDict['CThostFtdcExchangeStockDisposalActionField'] = CThostFtdcExchangeStockDisposalActionField
-
-
-#错误证券处置操作
-CThostFtdcQryExchangeStockDisposalActionField = {}
-#会员代码
-CThostFtdcQryExchangeStockDisposalActionField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcQryExchangeStockDisposalActionField["ClientID"] = "string"
-#交易所代码
-CThostFtdcQryExchangeStockDisposalActionField["ExchangeID"] = "string"
-#交易所交易员代码
-CThostFtdcQryExchangeStockDisposalActionField["TraderID"] = "string"
-structDict['CThostFtdcQryExchangeStockDisposalActionField'] = CThostFtdcQryExchangeStockDisposalActionField
-
-
-#查询错误证券处置操作
-CThostFtdcQryErrStockDisposalActionField = {}
-#经纪公司代码
-CThostFtdcQryErrStockDisposalActionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryErrStockDisposalActionField["InvestorID"] = "string"
-structDict['CThostFtdcQryErrStockDisposalActionField'] = CThostFtdcQryErrStockDisposalActionField
-
-
-#交易所证券处置操作错误
-CThostFtdcExchangeStockDisposalActionErrorField = {}
-#交易所代码
-CThostFtdcExchangeStockDisposalActionErrorField["ExchangeID"] = "string"
-#证券处置编号
-CThostFtdcExchangeStockDisposalActionErrorField["StockDisposalSysID"] = "string"
-#交易所交易员代码
-CThostFtdcExchangeStockDisposalActionErrorField["TraderID"] = "string"
-#安装编号
-CThostFtdcExchangeStockDisposalActionErrorField["InstallID"] = "int"
-#本地证券处置编号
-CThostFtdcExchangeStockDisposalActionErrorField["StockDisposalLocalID"] = "string"
-#操作本地编号
-CThostFtdcExchangeStockDisposalActionErrorField["ActionLocalID"] = "string"
-#错误代码
-CThostFtdcExchangeStockDisposalActionErrorField["ErrorID"] = "int"
-#错误信息
-CThostFtdcExchangeStockDisposalActionErrorField["ErrorMsg"] = "string"
-#经纪公司代码
-CThostFtdcExchangeStockDisposalActionErrorField["BrokerID"] = "string"
-structDict['CThostFtdcExchangeStockDisposalActionErrorField'] = CThostFtdcExchangeStockDisposalActionErrorField
-
-
-#错误证券处置操作
-CThostFtdcErrStockDisposalActionField = {}
-#经纪公司代码
-CThostFtdcErrStockDisposalActionField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcErrStockDisposalActionField["InvestorID"] = "string"
-#证券处置操作引用
-CThostFtdcErrStockDisposalActionField["StockDisposalActionRef"] = "int"
-#证券处置引用
-CThostFtdcErrStockDisposalActionField["StockDisposalRef"] = "string"
-#请求编号
-CThostFtdcErrStockDisposalActionField["RequestID"] = "int"
-#前置编号
-CThostFtdcErrStockDisposalActionField["FrontID"] = "int"
-#会话编号
-CThostFtdcErrStockDisposalActionField["SessionID"] = "int"
-#交易所代码
-CThostFtdcErrStockDisposalActionField["ExchangeID"] = "string"
-#证券处置操作编号
-CThostFtdcErrStockDisposalActionField["StockDisposalSysID"] = "string"
-#操作标志
-CThostFtdcErrStockDisposalActionField["ActionFlag"] = "char"
-#用户代码
-CThostFtdcErrStockDisposalActionField["UserID"] = "string"
-#合约代码
-CThostFtdcErrStockDisposalActionField["InstrumentID"] = "string"
-#错误代码
-CThostFtdcErrStockDisposalActionField["ErrorID"] = "int"
-#错误信息
-CThostFtdcErrStockDisposalActionField["ErrorMsg"] = "string"
-structDict['CThostFtdcErrStockDisposalActionField'] = CThostFtdcErrStockDisposalActionField
-
-
-#投资者分级
-CThostFtdcInvestorLevelField = {}
-#经纪公司代码
-CThostFtdcInvestorLevelField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcInvestorLevelField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcInvestorLevelField["ExchangeID"] = "string"
-#投资者分级类型
-CThostFtdcInvestorLevelField["LevelType"] = "char"
-structDict['CThostFtdcInvestorLevelField'] = CThostFtdcInvestorLevelField
-
-
 #组合合约安全系数
 CThostFtdcCombInstrumentGuardField = {}
 #经纪公司代码
@@ -4608,6 +4192,8 @@ CThostFtdcCombInstrumentGuardField["BrokerID"] = "string"
 CThostFtdcCombInstrumentGuardField["InstrumentID"] = "string"
 #
 CThostFtdcCombInstrumentGuardField["GuarantRatio"] = "float"
+#交易所代码
+CThostFtdcCombInstrumentGuardField["ExchangeID"] = "string"
 structDict['CThostFtdcCombInstrumentGuardField'] = CThostFtdcCombInstrumentGuardField
 
 
@@ -4617,6 +4203,8 @@ CThostFtdcQryCombInstrumentGuardField = {}
 CThostFtdcQryCombInstrumentGuardField["BrokerID"] = "string"
 #合约代码
 CThostFtdcQryCombInstrumentGuardField["InstrumentID"] = "string"
+#交易所代码
+CThostFtdcQryCombInstrumentGuardField["ExchangeID"] = "string"
 structDict['CThostFtdcQryCombInstrumentGuardField'] = CThostFtdcQryCombInstrumentGuardField
 
 
@@ -4642,6 +4230,12 @@ CThostFtdcInputCombActionField["CombDirection"] = "char"
 CThostFtdcInputCombActionField["HedgeFlag"] = "char"
 #交易所代码
 CThostFtdcInputCombActionField["ExchangeID"] = "string"
+#IP地址
+CThostFtdcInputCombActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputCombActionField["MacAddress"] = "string"
+#投资单元代码
+CThostFtdcInputCombActionField["InvestUnitID"] = "string"
 structDict['CThostFtdcInputCombActionField'] = CThostFtdcInputCombActionField
 
 
@@ -4697,6 +4291,16 @@ CThostFtdcCombActionField["SessionID"] = "int"
 CThostFtdcCombActionField["UserProductInfo"] = "string"
 #状态信息
 CThostFtdcCombActionField["StatusMsg"] = "string"
+#IP地址
+CThostFtdcCombActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcCombActionField["MacAddress"] = "string"
+#组合编号
+CThostFtdcCombActionField["ComTradeID"] = "string"
+#营业部编号
+CThostFtdcCombActionField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcCombActionField["InvestUnitID"] = "string"
 structDict['CThostFtdcCombActionField'] = CThostFtdcCombActionField
 
 
@@ -4710,6 +4314,8 @@ CThostFtdcQryCombActionField["InvestorID"] = "string"
 CThostFtdcQryCombActionField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryCombActionField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryCombActionField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryCombActionField'] = CThostFtdcQryCombActionField
 
 
@@ -4747,6 +4353,14 @@ CThostFtdcExchangeCombActionField["TradingDay"] = "string"
 CThostFtdcExchangeCombActionField["SettlementID"] = "int"
 #序号
 CThostFtdcExchangeCombActionField["SequenceNo"] = "int"
+#IP地址
+CThostFtdcExchangeCombActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeCombActionField["MacAddress"] = "string"
+#组合编号
+CThostFtdcExchangeCombActionField["ComTradeID"] = "string"
+#营业部编号
+CThostFtdcExchangeCombActionField["BranchID"] = "string"
 structDict['CThostFtdcExchangeCombActionField'] = CThostFtdcExchangeCombActionField
 
 
@@ -4773,6 +4387,8 @@ CThostFtdcProductExchRateField["ProductID"] = "string"
 CThostFtdcProductExchRateField["QuoteCurrencyID"] = "string"
 #汇率
 CThostFtdcProductExchRateField["ExchangeRate"] = "float"
+#交易所代码
+CThostFtdcProductExchRateField["ExchangeID"] = "string"
 structDict['CThostFtdcProductExchRateField'] = CThostFtdcProductExchRateField
 
 
@@ -4780,260 +4396,9 @@ structDict['CThostFtdcProductExchRateField'] = CThostFtdcProductExchRateField
 CThostFtdcQryProductExchRateField = {}
 #产品代码
 CThostFtdcQryProductExchRateField["ProductID"] = "string"
+#交易所代码
+CThostFtdcQryProductExchRateField["ExchangeID"] = "string"
 structDict['CThostFtdcQryProductExchRateField'] = CThostFtdcQryProductExchRateField
-
-
-#输入的指定
-CThostFtdcInputDesignateField = {}
-#经纪公司代码
-CThostFtdcInputDesignateField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcInputDesignateField["InvestorID"] = "string"
-#指定登记引用
-CThostFtdcInputDesignateField["DesignateRef"] = "string"
-#用户代码
-CThostFtdcInputDesignateField["UserID"] = "string"
-#指定方向
-CThostFtdcInputDesignateField["DesignateType"] = "char"
-#交易所代码
-CThostFtdcInputDesignateField["ExchangeID"] = "string"
-structDict['CThostFtdcInputDesignateField'] = CThostFtdcInputDesignateField
-
-
-#指定
-CThostFtdcDesignateField = {}
-#经纪公司代码
-CThostFtdcDesignateField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcDesignateField["InvestorID"] = "string"
-#指定登记引用
-CThostFtdcDesignateField["DesignateRef"] = "string"
-#用户代码
-CThostFtdcDesignateField["UserID"] = "string"
-#指定方向
-CThostFtdcDesignateField["DesignateType"] = "char"
-#本地指定编号
-CThostFtdcDesignateField["DesignateLocalID"] = "string"
-#交易所代码
-CThostFtdcDesignateField["ExchangeID"] = "string"
-#会员代码
-CThostFtdcDesignateField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcDesignateField["ClientID"] = "string"
-#交易所交易员代码
-CThostFtdcDesignateField["TraderID"] = "string"
-#安装编号
-CThostFtdcDesignateField["InstallID"] = "int"
-#指定状态
-CThostFtdcDesignateField["DesignateStatus"] = "char"
-#报单提示序号
-CThostFtdcDesignateField["NotifySequence"] = "int"
-#交易日
-CThostFtdcDesignateField["TradingDay"] = "string"
-#结算编号
-CThostFtdcDesignateField["SettlementID"] = "int"
-#报单日期
-CThostFtdcDesignateField["InsertDate"] = "string"
-#插入时间
-CThostFtdcDesignateField["InsertTime"] = "string"
-#前置编号
-CThostFtdcDesignateField["FrontID"] = "int"
-#会话编号
-CThostFtdcDesignateField["SessionID"] = "int"
-#用户端产品信息
-CThostFtdcDesignateField["UserProductInfo"] = "string"
-#状态信息
-CThostFtdcDesignateField["StatusMsg"] = "string"
-#营业部编号
-CThostFtdcDesignateField["BranchID"] = "string"
-structDict['CThostFtdcDesignateField'] = CThostFtdcDesignateField
-
-
-#申请指定
-CThostFtdcQryDesignateField = {}
-#经纪公司代码
-CThostFtdcQryDesignateField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryDesignateField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcQryDesignateField["ExchangeID"] = "string"
-structDict['CThostFtdcQryDesignateField'] = CThostFtdcQryDesignateField
-
-
-#交易所指定信息
-CThostFtdcExchangeDesignateField = {}
-#指定方向
-CThostFtdcExchangeDesignateField["DesignateType"] = "char"
-#本地指定编号
-CThostFtdcExchangeDesignateField["DesignateLocalID"] = "string"
-#交易所代码
-CThostFtdcExchangeDesignateField["ExchangeID"] = "string"
-#会员代码
-CThostFtdcExchangeDesignateField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcExchangeDesignateField["ClientID"] = "string"
-#交易所交易员代码
-CThostFtdcExchangeDesignateField["TraderID"] = "string"
-#安装编号
-CThostFtdcExchangeDesignateField["InstallID"] = "int"
-#指定状态
-CThostFtdcExchangeDesignateField["DesignateStatus"] = "char"
-#报单提示序号
-CThostFtdcExchangeDesignateField["NotifySequence"] = "int"
-#交易日
-CThostFtdcExchangeDesignateField["TradingDay"] = "string"
-#结算编号
-CThostFtdcExchangeDesignateField["SettlementID"] = "int"
-#报单日期
-CThostFtdcExchangeDesignateField["InsertDate"] = "string"
-#插入时间
-CThostFtdcExchangeDesignateField["InsertTime"] = "string"
-#营业部编号
-CThostFtdcExchangeDesignateField["BranchID"] = "string"
-structDict['CThostFtdcExchangeDesignateField'] = CThostFtdcExchangeDesignateField
-
-
-#输入的证券处置
-CThostFtdcInputStockDisposalField = {}
-#经纪公司代码
-CThostFtdcInputStockDisposalField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcInputStockDisposalField["InvestorID"] = "string"
-#证券处置登记引用
-CThostFtdcInputStockDisposalField["StockDisposalRef"] = "string"
-#用户代码
-CThostFtdcInputStockDisposalField["UserID"] = "string"
-#合约代码
-CThostFtdcInputStockDisposalField["InstrumentID"] = "string"
-#数量
-CThostFtdcInputStockDisposalField["Volume"] = "int"
-#证券处置方向
-CThostFtdcInputStockDisposalField["StockDisposalType"] = "char"
-#交易所代码
-CThostFtdcInputStockDisposalField["ExchangeID"] = "string"
-structDict['CThostFtdcInputStockDisposalField'] = CThostFtdcInputStockDisposalField
-
-
-#证券处置
-CThostFtdcStockDisposalField = {}
-#经纪公司代码
-CThostFtdcStockDisposalField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcStockDisposalField["InvestorID"] = "string"
-#证券处置登记引用
-CThostFtdcStockDisposalField["StockDisposalRef"] = "string"
-#用户代码
-CThostFtdcStockDisposalField["UserID"] = "string"
-#合约代码
-CThostFtdcStockDisposalField["InstrumentID"] = "string"
-#数量
-CThostFtdcStockDisposalField["Volume"] = "int"
-#证券处置方向
-CThostFtdcStockDisposalField["StockDisposalType"] = "char"
-#本地证券处置编号
-CThostFtdcStockDisposalField["StockDisposalLocalID"] = "string"
-#交易所代码
-CThostFtdcStockDisposalField["ExchangeID"] = "string"
-#合约在交易所的代码
-CThostFtdcStockDisposalField["ExchangeInstID"] = "string"
-#会员代码
-CThostFtdcStockDisposalField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcStockDisposalField["ClientID"] = "string"
-#交易所交易员代码
-CThostFtdcStockDisposalField["TraderID"] = "string"
-#安装编号
-CThostFtdcStockDisposalField["InstallID"] = "int"
-#证券处置状态
-CThostFtdcStockDisposalField["StockDisposalStatus"] = "char"
-#报单提示序号
-CThostFtdcStockDisposalField["NotifySequence"] = "int"
-#交易日
-CThostFtdcStockDisposalField["TradingDay"] = "string"
-#结算编号
-CThostFtdcStockDisposalField["SettlementID"] = "int"
-#报单日期
-CThostFtdcStockDisposalField["InsertDate"] = "string"
-#插入时间
-CThostFtdcStockDisposalField["InsertTime"] = "string"
-#前置编号
-CThostFtdcStockDisposalField["FrontID"] = "int"
-#会话编号
-CThostFtdcStockDisposalField["SessionID"] = "int"
-#用户端产品信息
-CThostFtdcStockDisposalField["UserProductInfo"] = "string"
-#状态信息
-CThostFtdcStockDisposalField["StatusMsg"] = "string"
-#营业部编号
-CThostFtdcStockDisposalField["BranchID"] = "string"
-#证券处置操作编号
-CThostFtdcStockDisposalField["StockDisposalSysID"] = "string"
-#业务单元
-CThostFtdcStockDisposalField["BusinessUnit"] = "string"
-structDict['CThostFtdcStockDisposalField'] = CThostFtdcStockDisposalField
-
-
-#申请证券处置
-CThostFtdcQryStockDisposalField = {}
-#经纪公司代码
-CThostFtdcQryStockDisposalField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryStockDisposalField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcQryStockDisposalField["ExchangeID"] = "string"
-structDict['CThostFtdcQryStockDisposalField'] = CThostFtdcQryStockDisposalField
-
-
-#交易所证券处置信息
-CThostFtdcExchangeStockDisposalField = {}
-#数量
-CThostFtdcExchangeStockDisposalField["Volume"] = "int"
-#证券处置方向
-CThostFtdcExchangeStockDisposalField["StockDisposalType"] = "char"
-#本地证券处置编号
-CThostFtdcExchangeStockDisposalField["StockDisposalLocalID"] = "string"
-#交易所代码
-CThostFtdcExchangeStockDisposalField["ExchangeID"] = "string"
-#合约在交易所的代码
-CThostFtdcExchangeStockDisposalField["ExchangeInstID"] = "string"
-#会员代码
-CThostFtdcExchangeStockDisposalField["ParticipantID"] = "string"
-#客户代码
-CThostFtdcExchangeStockDisposalField["ClientID"] = "string"
-#交易所交易员代码
-CThostFtdcExchangeStockDisposalField["TraderID"] = "string"
-#安装编号
-CThostFtdcExchangeStockDisposalField["InstallID"] = "int"
-#证券处置状态
-CThostFtdcExchangeStockDisposalField["StockDisposalStatus"] = "char"
-#报单提示序号
-CThostFtdcExchangeStockDisposalField["NotifySequence"] = "int"
-#交易日
-CThostFtdcExchangeStockDisposalField["TradingDay"] = "string"
-#结算编号
-CThostFtdcExchangeStockDisposalField["SettlementID"] = "int"
-#报单日期
-CThostFtdcExchangeStockDisposalField["InsertDate"] = "string"
-#插入时间
-CThostFtdcExchangeStockDisposalField["InsertTime"] = "string"
-#营业部编号
-CThostFtdcExchangeStockDisposalField["BranchID"] = "string"
-#证券处置操作编号
-CThostFtdcExchangeStockDisposalField["StockDisposalSysID"] = "string"
-#业务单元
-CThostFtdcExchangeStockDisposalField["BusinessUnit"] = "string"
-structDict['CThostFtdcExchangeStockDisposalField'] = CThostFtdcExchangeStockDisposalField
-
-
-#查询投资者分级
-CThostFtdcQryInvestorLevelField = {}
-#经纪公司代码
-CThostFtdcQryInvestorLevelField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryInvestorLevelField["InvestorID"] = "string"
-#交易所代码
-CThostFtdcQryInvestorLevelField["ExchangeID"] = "string"
-structDict['CThostFtdcQryInvestorLevelField'] = CThostFtdcQryInvestorLevelField
 
 
 #查询询价价差参数
@@ -5062,38 +4427,627 @@ CThostFtdcForQuoteParamField["PriceInterval"] = "float"
 structDict['CThostFtdcForQuoteParamField'] = CThostFtdcForQuoteParamField
 
 
-#查询行权冻结
-CThostFtdcQryExecFreezeField = {}
-#经纪公司代码
-CThostFtdcQryExecFreezeField["BrokerID"] = "string"
-#投资者代码
-CThostFtdcQryExecFreezeField["InvestorID"] = "string"
+#当前做市商期权合约手续费的详细内容
+CThostFtdcMMOptionInstrCommRateField = {}
 #合约代码
-CThostFtdcQryExecFreezeField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcQryExecFreezeField["ExchangeID"] = "string"
-structDict['CThostFtdcQryExecFreezeField'] = CThostFtdcQryExecFreezeField
-
-
-#行权冻结
-CThostFtdcExecFreezeField = {}
-#标的合约代码
-CThostFtdcExecFreezeField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcExecFreezeField["ExchangeID"] = "string"
+CThostFtdcMMOptionInstrCommRateField["InstrumentID"] = "string"
+#投资者范围
+CThostFtdcMMOptionInstrCommRateField["InvestorRange"] = "char"
 #经纪公司代码
-CThostFtdcExecFreezeField["BrokerID"] = "string"
+CThostFtdcMMOptionInstrCommRateField["BrokerID"] = "string"
 #投资者代码
-CThostFtdcExecFreezeField["InvestorID"] = "string"
-#持仓多空方向
-CThostFtdcExecFreezeField["PosiDirection"] = "char"
-#期权类型
-CThostFtdcExecFreezeField["OptionsType"] = "char"
-#冻结的数量_单位股
-CThostFtdcExecFreezeField["Volume"] = "int"
-#冻结金额
-CThostFtdcExecFreezeField["FrozenAmount"] = "float"
-structDict['CThostFtdcExecFreezeField'] = CThostFtdcExecFreezeField
+CThostFtdcMMOptionInstrCommRateField["InvestorID"] = "string"
+#开仓手续费率
+CThostFtdcMMOptionInstrCommRateField["OpenRatioByMoney"] = "float"
+#开仓手续费
+CThostFtdcMMOptionInstrCommRateField["OpenRatioByVolume"] = "float"
+#平仓手续费率
+CThostFtdcMMOptionInstrCommRateField["CloseRatioByMoney"] = "float"
+#平仓手续费
+CThostFtdcMMOptionInstrCommRateField["CloseRatioByVolume"] = "float"
+#平今手续费率
+CThostFtdcMMOptionInstrCommRateField["CloseTodayRatioByMoney"] = "float"
+#平今手续费
+CThostFtdcMMOptionInstrCommRateField["CloseTodayRatioByVolume"] = "float"
+#执行手续费率
+CThostFtdcMMOptionInstrCommRateField["StrikeRatioByMoney"] = "float"
+#执行手续费
+CThostFtdcMMOptionInstrCommRateField["StrikeRatioByVolume"] = "float"
+structDict['CThostFtdcMMOptionInstrCommRateField'] = CThostFtdcMMOptionInstrCommRateField
+
+
+#做市商期权手续费率查询
+CThostFtdcQryMMOptionInstrCommRateField = {}
+#经纪公司代码
+CThostFtdcQryMMOptionInstrCommRateField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQryMMOptionInstrCommRateField["InvestorID"] = "string"
+#合约代码
+CThostFtdcQryMMOptionInstrCommRateField["InstrumentID"] = "string"
+structDict['CThostFtdcQryMMOptionInstrCommRateField'] = CThostFtdcQryMMOptionInstrCommRateField
+
+
+#做市商合约手续费率
+CThostFtdcMMInstrumentCommissionRateField = {}
+#合约代码
+CThostFtdcMMInstrumentCommissionRateField["InstrumentID"] = "string"
+#投资者范围
+CThostFtdcMMInstrumentCommissionRateField["InvestorRange"] = "char"
+#经纪公司代码
+CThostFtdcMMInstrumentCommissionRateField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcMMInstrumentCommissionRateField["InvestorID"] = "string"
+#开仓手续费率
+CThostFtdcMMInstrumentCommissionRateField["OpenRatioByMoney"] = "float"
+#开仓手续费
+CThostFtdcMMInstrumentCommissionRateField["OpenRatioByVolume"] = "float"
+#平仓手续费率
+CThostFtdcMMInstrumentCommissionRateField["CloseRatioByMoney"] = "float"
+#平仓手续费
+CThostFtdcMMInstrumentCommissionRateField["CloseRatioByVolume"] = "float"
+#平今手续费率
+CThostFtdcMMInstrumentCommissionRateField["CloseTodayRatioByMoney"] = "float"
+#平今手续费
+CThostFtdcMMInstrumentCommissionRateField["CloseTodayRatioByVolume"] = "float"
+structDict['CThostFtdcMMInstrumentCommissionRateField'] = CThostFtdcMMInstrumentCommissionRateField
+
+
+#查询做市商合约手续费率
+CThostFtdcQryMMInstrumentCommissionRateField = {}
+#经纪公司代码
+CThostFtdcQryMMInstrumentCommissionRateField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQryMMInstrumentCommissionRateField["InvestorID"] = "string"
+#合约代码
+CThostFtdcQryMMInstrumentCommissionRateField["InstrumentID"] = "string"
+structDict['CThostFtdcQryMMInstrumentCommissionRateField'] = CThostFtdcQryMMInstrumentCommissionRateField
+
+
+#当前报单手续费的详细内容
+CThostFtdcInstrumentOrderCommRateField = {}
+#合约代码
+CThostFtdcInstrumentOrderCommRateField["InstrumentID"] = "string"
+#投资者范围
+CThostFtdcInstrumentOrderCommRateField["InvestorRange"] = "char"
+#经纪公司代码
+CThostFtdcInstrumentOrderCommRateField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcInstrumentOrderCommRateField["InvestorID"] = "string"
+#投机套保标志
+CThostFtdcInstrumentOrderCommRateField["HedgeFlag"] = "char"
+#报单手续费
+CThostFtdcInstrumentOrderCommRateField["OrderCommByVolume"] = "float"
+#撤单手续费
+CThostFtdcInstrumentOrderCommRateField["OrderActionCommByVolume"] = "float"
+#交易所代码
+CThostFtdcInstrumentOrderCommRateField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInstrumentOrderCommRateField["InvestUnitID"] = "string"
+structDict['CThostFtdcInstrumentOrderCommRateField'] = CThostFtdcInstrumentOrderCommRateField
+
+
+#报单手续费率查询
+CThostFtdcQryInstrumentOrderCommRateField = {}
+#经纪公司代码
+CThostFtdcQryInstrumentOrderCommRateField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQryInstrumentOrderCommRateField["InvestorID"] = "string"
+#合约代码
+CThostFtdcQryInstrumentOrderCommRateField["InstrumentID"] = "string"
+structDict['CThostFtdcQryInstrumentOrderCommRateField'] = CThostFtdcQryInstrumentOrderCommRateField
+
+
+#交易参数
+CThostFtdcTradeParamField = {}
+#经纪公司代码
+CThostFtdcTradeParamField["BrokerID"] = "string"
+#参数代码
+CThostFtdcTradeParamField["TradeParamID"] = "char"
+#参数代码值
+CThostFtdcTradeParamField["TradeParamValue"] = "string"
+#备注
+CThostFtdcTradeParamField["Memo"] = "string"
+structDict['CThostFtdcTradeParamField'] = CThostFtdcTradeParamField
+
+
+#合约保证金率调整
+CThostFtdcInstrumentMarginRateULField = {}
+#合约代码
+CThostFtdcInstrumentMarginRateULField["InstrumentID"] = "string"
+#投资者范围
+CThostFtdcInstrumentMarginRateULField["InvestorRange"] = "char"
+#经纪公司代码
+CThostFtdcInstrumentMarginRateULField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcInstrumentMarginRateULField["InvestorID"] = "string"
+#投机套保标志
+CThostFtdcInstrumentMarginRateULField["HedgeFlag"] = "char"
+#多头保证金率
+CThostFtdcInstrumentMarginRateULField["LongMarginRatioByMoney"] = "float"
+#多头保证金费
+CThostFtdcInstrumentMarginRateULField["LongMarginRatioByVolume"] = "float"
+#空头保证金率
+CThostFtdcInstrumentMarginRateULField["ShortMarginRatioByMoney"] = "float"
+#空头保证金费
+CThostFtdcInstrumentMarginRateULField["ShortMarginRatioByVolume"] = "float"
+structDict['CThostFtdcInstrumentMarginRateULField'] = CThostFtdcInstrumentMarginRateULField
+
+
+#期货持仓限制参数
+CThostFtdcFutureLimitPosiParamField = {}
+#投资者范围
+CThostFtdcFutureLimitPosiParamField["InvestorRange"] = "char"
+#经纪公司代码
+CThostFtdcFutureLimitPosiParamField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcFutureLimitPosiParamField["InvestorID"] = "string"
+#产品代码
+CThostFtdcFutureLimitPosiParamField["ProductID"] = "string"
+#当日投机开仓数量限制
+CThostFtdcFutureLimitPosiParamField["SpecOpenVolume"] = "int"
+#当日套利开仓数量限制
+CThostFtdcFutureLimitPosiParamField["ArbiOpenVolume"] = "int"
+#当日投机+套利开仓数量限制
+CThostFtdcFutureLimitPosiParamField["OpenVolume"] = "int"
+structDict['CThostFtdcFutureLimitPosiParamField'] = CThostFtdcFutureLimitPosiParamField
+
+
+#禁止登录IP
+CThostFtdcLoginForbiddenIPField = {}
+#IP地址
+CThostFtdcLoginForbiddenIPField["IPAddress"] = "string"
+structDict['CThostFtdcLoginForbiddenIPField'] = CThostFtdcLoginForbiddenIPField
+
+
+#IP列表
+CThostFtdcIPListField = {}
+#IP地址
+CThostFtdcIPListField["IPAddress"] = "string"
+#是否白名单
+CThostFtdcIPListField["IsWhite"] = "int"
+structDict['CThostFtdcIPListField'] = CThostFtdcIPListField
+
+
+#输入的期权自对冲
+CThostFtdcInputOptionSelfCloseField = {}
+#经纪公司代码
+CThostFtdcInputOptionSelfCloseField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcInputOptionSelfCloseField["InvestorID"] = "string"
+#合约代码
+CThostFtdcInputOptionSelfCloseField["InstrumentID"] = "string"
+#期权自对冲引用
+CThostFtdcInputOptionSelfCloseField["OptionSelfCloseRef"] = "string"
+#用户代码
+CThostFtdcInputOptionSelfCloseField["UserID"] = "string"
+#数量
+CThostFtdcInputOptionSelfCloseField["Volume"] = "int"
+#请求编号
+CThostFtdcInputOptionSelfCloseField["RequestID"] = "int"
+#业务单元
+CThostFtdcInputOptionSelfCloseField["BusinessUnit"] = "string"
+#投机套保标志
+CThostFtdcInputOptionSelfCloseField["HedgeFlag"] = "char"
+#期权行权的头寸是否自对冲
+CThostFtdcInputOptionSelfCloseField["OptSelfCloseFlag"] = "char"
+#交易所代码
+CThostFtdcInputOptionSelfCloseField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInputOptionSelfCloseField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcInputOptionSelfCloseField["AccountID"] = "string"
+#币种代码
+CThostFtdcInputOptionSelfCloseField["CurrencyID"] = "string"
+#交易编码
+CThostFtdcInputOptionSelfCloseField["ClientID"] = "string"
+#IP地址
+CThostFtdcInputOptionSelfCloseField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputOptionSelfCloseField["MacAddress"] = "string"
+structDict['CThostFtdcInputOptionSelfCloseField'] = CThostFtdcInputOptionSelfCloseField
+
+
+#输入期权自对冲操作
+CThostFtdcInputOptionSelfCloseActionField = {}
+#经纪公司代码
+CThostFtdcInputOptionSelfCloseActionField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcInputOptionSelfCloseActionField["InvestorID"] = "string"
+#期权自对冲操作引用
+CThostFtdcInputOptionSelfCloseActionField["OptionSelfCloseActionRef"] = "int"
+#期权自对冲引用
+CThostFtdcInputOptionSelfCloseActionField["OptionSelfCloseRef"] = "string"
+#请求编号
+CThostFtdcInputOptionSelfCloseActionField["RequestID"] = "int"
+#前置编号
+CThostFtdcInputOptionSelfCloseActionField["FrontID"] = "int"
+#会话编号
+CThostFtdcInputOptionSelfCloseActionField["SessionID"] = "int"
+#交易所代码
+CThostFtdcInputOptionSelfCloseActionField["ExchangeID"] = "string"
+#期权自对冲操作编号
+CThostFtdcInputOptionSelfCloseActionField["OptionSelfCloseSysID"] = "string"
+#操作标志
+CThostFtdcInputOptionSelfCloseActionField["ActionFlag"] = "char"
+#用户代码
+CThostFtdcInputOptionSelfCloseActionField["UserID"] = "string"
+#合约代码
+CThostFtdcInputOptionSelfCloseActionField["InstrumentID"] = "string"
+#投资单元代码
+CThostFtdcInputOptionSelfCloseActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcInputOptionSelfCloseActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcInputOptionSelfCloseActionField["MacAddress"] = "string"
+structDict['CThostFtdcInputOptionSelfCloseActionField'] = CThostFtdcInputOptionSelfCloseActionField
+
+
+#期权自对冲
+CThostFtdcOptionSelfCloseField = {}
+#经纪公司代码
+CThostFtdcOptionSelfCloseField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcOptionSelfCloseField["InvestorID"] = "string"
+#合约代码
+CThostFtdcOptionSelfCloseField["InstrumentID"] = "string"
+#期权自对冲引用
+CThostFtdcOptionSelfCloseField["OptionSelfCloseRef"] = "string"
+#用户代码
+CThostFtdcOptionSelfCloseField["UserID"] = "string"
+#数量
+CThostFtdcOptionSelfCloseField["Volume"] = "int"
+#请求编号
+CThostFtdcOptionSelfCloseField["RequestID"] = "int"
+#业务单元
+CThostFtdcOptionSelfCloseField["BusinessUnit"] = "string"
+#投机套保标志
+CThostFtdcOptionSelfCloseField["HedgeFlag"] = "char"
+#期权行权的头寸是否自对冲
+CThostFtdcOptionSelfCloseField["OptSelfCloseFlag"] = "char"
+#本地期权自对冲编号
+CThostFtdcOptionSelfCloseField["OptionSelfCloseLocalID"] = "string"
+#交易所代码
+CThostFtdcOptionSelfCloseField["ExchangeID"] = "string"
+#会员代码
+CThostFtdcOptionSelfCloseField["ParticipantID"] = "string"
+#客户代码
+CThostFtdcOptionSelfCloseField["ClientID"] = "string"
+#合约在交易所的代码
+CThostFtdcOptionSelfCloseField["ExchangeInstID"] = "string"
+#交易所交易员代码
+CThostFtdcOptionSelfCloseField["TraderID"] = "string"
+#安装编号
+CThostFtdcOptionSelfCloseField["InstallID"] = "int"
+#期权自对冲提交状态
+CThostFtdcOptionSelfCloseField["OrderSubmitStatus"] = "char"
+#报单提示序号
+CThostFtdcOptionSelfCloseField["NotifySequence"] = "int"
+#交易日
+CThostFtdcOptionSelfCloseField["TradingDay"] = "string"
+#结算编号
+CThostFtdcOptionSelfCloseField["SettlementID"] = "int"
+#期权自对冲编号
+CThostFtdcOptionSelfCloseField["OptionSelfCloseSysID"] = "string"
+#报单日期
+CThostFtdcOptionSelfCloseField["InsertDate"] = "string"
+#插入时间
+CThostFtdcOptionSelfCloseField["InsertTime"] = "string"
+#撤销时间
+CThostFtdcOptionSelfCloseField["CancelTime"] = "string"
+#自对冲结果
+CThostFtdcOptionSelfCloseField["ExecResult"] = "char"
+#结算会员编号
+CThostFtdcOptionSelfCloseField["ClearingPartID"] = "string"
+#序号
+CThostFtdcOptionSelfCloseField["SequenceNo"] = "int"
+#前置编号
+CThostFtdcOptionSelfCloseField["FrontID"] = "int"
+#会话编号
+CThostFtdcOptionSelfCloseField["SessionID"] = "int"
+#用户端产品信息
+CThostFtdcOptionSelfCloseField["UserProductInfo"] = "string"
+#状态信息
+CThostFtdcOptionSelfCloseField["StatusMsg"] = "string"
+#操作用户代码
+CThostFtdcOptionSelfCloseField["ActiveUserID"] = "string"
+#经纪公司报单编号
+CThostFtdcOptionSelfCloseField["BrokerOptionSelfCloseSeq"] = "int"
+#营业部编号
+CThostFtdcOptionSelfCloseField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcOptionSelfCloseField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcOptionSelfCloseField["AccountID"] = "string"
+#币种代码
+CThostFtdcOptionSelfCloseField["CurrencyID"] = "string"
+#IP地址
+CThostFtdcOptionSelfCloseField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcOptionSelfCloseField["MacAddress"] = "string"
+structDict['CThostFtdcOptionSelfCloseField'] = CThostFtdcOptionSelfCloseField
+
+
+#期权自对冲操作
+CThostFtdcOptionSelfCloseActionField = {}
+#经纪公司代码
+CThostFtdcOptionSelfCloseActionField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcOptionSelfCloseActionField["InvestorID"] = "string"
+#期权自对冲操作引用
+CThostFtdcOptionSelfCloseActionField["OptionSelfCloseActionRef"] = "int"
+#期权自对冲引用
+CThostFtdcOptionSelfCloseActionField["OptionSelfCloseRef"] = "string"
+#请求编号
+CThostFtdcOptionSelfCloseActionField["RequestID"] = "int"
+#前置编号
+CThostFtdcOptionSelfCloseActionField["FrontID"] = "int"
+#会话编号
+CThostFtdcOptionSelfCloseActionField["SessionID"] = "int"
+#交易所代码
+CThostFtdcOptionSelfCloseActionField["ExchangeID"] = "string"
+#期权自对冲操作编号
+CThostFtdcOptionSelfCloseActionField["OptionSelfCloseSysID"] = "string"
+#操作标志
+CThostFtdcOptionSelfCloseActionField["ActionFlag"] = "char"
+#操作日期
+CThostFtdcOptionSelfCloseActionField["ActionDate"] = "string"
+#操作时间
+CThostFtdcOptionSelfCloseActionField["ActionTime"] = "string"
+#交易所交易员代码
+CThostFtdcOptionSelfCloseActionField["TraderID"] = "string"
+#安装编号
+CThostFtdcOptionSelfCloseActionField["InstallID"] = "int"
+#本地期权自对冲编号
+CThostFtdcOptionSelfCloseActionField["OptionSelfCloseLocalID"] = "string"
+#操作本地编号
+CThostFtdcOptionSelfCloseActionField["ActionLocalID"] = "string"
+#会员代码
+CThostFtdcOptionSelfCloseActionField["ParticipantID"] = "string"
+#客户代码
+CThostFtdcOptionSelfCloseActionField["ClientID"] = "string"
+#业务单元
+CThostFtdcOptionSelfCloseActionField["BusinessUnit"] = "string"
+#报单操作状态
+CThostFtdcOptionSelfCloseActionField["OrderActionStatus"] = "char"
+#用户代码
+CThostFtdcOptionSelfCloseActionField["UserID"] = "string"
+#状态信息
+CThostFtdcOptionSelfCloseActionField["StatusMsg"] = "string"
+#合约代码
+CThostFtdcOptionSelfCloseActionField["InstrumentID"] = "string"
+#营业部编号
+CThostFtdcOptionSelfCloseActionField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcOptionSelfCloseActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcOptionSelfCloseActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcOptionSelfCloseActionField["MacAddress"] = "string"
+structDict['CThostFtdcOptionSelfCloseActionField'] = CThostFtdcOptionSelfCloseActionField
+
+
+#期权自对冲查询
+CThostFtdcQryOptionSelfCloseField = {}
+#经纪公司代码
+CThostFtdcQryOptionSelfCloseField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQryOptionSelfCloseField["InvestorID"] = "string"
+#合约代码
+CThostFtdcQryOptionSelfCloseField["InstrumentID"] = "string"
+#交易所代码
+CThostFtdcQryOptionSelfCloseField["ExchangeID"] = "string"
+#期权自对冲编号
+CThostFtdcQryOptionSelfCloseField["OptionSelfCloseSysID"] = "string"
+#开始时间
+CThostFtdcQryOptionSelfCloseField["InsertTimeStart"] = "string"
+#结束时间
+CThostFtdcQryOptionSelfCloseField["InsertTimeEnd"] = "string"
+structDict['CThostFtdcQryOptionSelfCloseField'] = CThostFtdcQryOptionSelfCloseField
+
+
+#交易所期权自对冲信息
+CThostFtdcExchangeOptionSelfCloseField = {}
+#数量
+CThostFtdcExchangeOptionSelfCloseField["Volume"] = "int"
+#请求编号
+CThostFtdcExchangeOptionSelfCloseField["RequestID"] = "int"
+#业务单元
+CThostFtdcExchangeOptionSelfCloseField["BusinessUnit"] = "string"
+#投机套保标志
+CThostFtdcExchangeOptionSelfCloseField["HedgeFlag"] = "char"
+#期权行权的头寸是否自对冲
+CThostFtdcExchangeOptionSelfCloseField["OptSelfCloseFlag"] = "char"
+#本地期权自对冲编号
+CThostFtdcExchangeOptionSelfCloseField["OptionSelfCloseLocalID"] = "string"
+#交易所代码
+CThostFtdcExchangeOptionSelfCloseField["ExchangeID"] = "string"
+#会员代码
+CThostFtdcExchangeOptionSelfCloseField["ParticipantID"] = "string"
+#客户代码
+CThostFtdcExchangeOptionSelfCloseField["ClientID"] = "string"
+#合约在交易所的代码
+CThostFtdcExchangeOptionSelfCloseField["ExchangeInstID"] = "string"
+#交易所交易员代码
+CThostFtdcExchangeOptionSelfCloseField["TraderID"] = "string"
+#安装编号
+CThostFtdcExchangeOptionSelfCloseField["InstallID"] = "int"
+#期权自对冲提交状态
+CThostFtdcExchangeOptionSelfCloseField["OrderSubmitStatus"] = "char"
+#报单提示序号
+CThostFtdcExchangeOptionSelfCloseField["NotifySequence"] = "int"
+#交易日
+CThostFtdcExchangeOptionSelfCloseField["TradingDay"] = "string"
+#结算编号
+CThostFtdcExchangeOptionSelfCloseField["SettlementID"] = "int"
+#期权自对冲编号
+CThostFtdcExchangeOptionSelfCloseField["OptionSelfCloseSysID"] = "string"
+#报单日期
+CThostFtdcExchangeOptionSelfCloseField["InsertDate"] = "string"
+#插入时间
+CThostFtdcExchangeOptionSelfCloseField["InsertTime"] = "string"
+#撤销时间
+CThostFtdcExchangeOptionSelfCloseField["CancelTime"] = "string"
+#自对冲结果
+CThostFtdcExchangeOptionSelfCloseField["ExecResult"] = "char"
+#结算会员编号
+CThostFtdcExchangeOptionSelfCloseField["ClearingPartID"] = "string"
+#序号
+CThostFtdcExchangeOptionSelfCloseField["SequenceNo"] = "int"
+#营业部编号
+CThostFtdcExchangeOptionSelfCloseField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeOptionSelfCloseField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeOptionSelfCloseField["MacAddress"] = "string"
+structDict['CThostFtdcExchangeOptionSelfCloseField'] = CThostFtdcExchangeOptionSelfCloseField
+
+
+#期权自对冲操作查询
+CThostFtdcQryOptionSelfCloseActionField = {}
+#经纪公司代码
+CThostFtdcQryOptionSelfCloseActionField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQryOptionSelfCloseActionField["InvestorID"] = "string"
+#交易所代码
+CThostFtdcQryOptionSelfCloseActionField["ExchangeID"] = "string"
+structDict['CThostFtdcQryOptionSelfCloseActionField'] = CThostFtdcQryOptionSelfCloseActionField
+
+
+#交易所期权自对冲操作
+CThostFtdcExchangeOptionSelfCloseActionField = {}
+#交易所代码
+CThostFtdcExchangeOptionSelfCloseActionField["ExchangeID"] = "string"
+#期权自对冲操作编号
+CThostFtdcExchangeOptionSelfCloseActionField["OptionSelfCloseSysID"] = "string"
+#操作标志
+CThostFtdcExchangeOptionSelfCloseActionField["ActionFlag"] = "char"
+#操作日期
+CThostFtdcExchangeOptionSelfCloseActionField["ActionDate"] = "string"
+#操作时间
+CThostFtdcExchangeOptionSelfCloseActionField["ActionTime"] = "string"
+#交易所交易员代码
+CThostFtdcExchangeOptionSelfCloseActionField["TraderID"] = "string"
+#安装编号
+CThostFtdcExchangeOptionSelfCloseActionField["InstallID"] = "int"
+#本地期权自对冲编号
+CThostFtdcExchangeOptionSelfCloseActionField["OptionSelfCloseLocalID"] = "string"
+#操作本地编号
+CThostFtdcExchangeOptionSelfCloseActionField["ActionLocalID"] = "string"
+#会员代码
+CThostFtdcExchangeOptionSelfCloseActionField["ParticipantID"] = "string"
+#客户代码
+CThostFtdcExchangeOptionSelfCloseActionField["ClientID"] = "string"
+#业务单元
+CThostFtdcExchangeOptionSelfCloseActionField["BusinessUnit"] = "string"
+#报单操作状态
+CThostFtdcExchangeOptionSelfCloseActionField["OrderActionStatus"] = "char"
+#用户代码
+CThostFtdcExchangeOptionSelfCloseActionField["UserID"] = "string"
+#营业部编号
+CThostFtdcExchangeOptionSelfCloseActionField["BranchID"] = "string"
+#IP地址
+CThostFtdcExchangeOptionSelfCloseActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcExchangeOptionSelfCloseActionField["MacAddress"] = "string"
+#合约在交易所的代码
+CThostFtdcExchangeOptionSelfCloseActionField["ExchangeInstID"] = "string"
+#期权行权的头寸是否自对冲
+CThostFtdcExchangeOptionSelfCloseActionField["OptSelfCloseFlag"] = "char"
+structDict['CThostFtdcExchangeOptionSelfCloseActionField'] = CThostFtdcExchangeOptionSelfCloseActionField
+
+
+#延时换汇同步
+CThostFtdcSyncDelaySwapField = {}
+#换汇流水号
+CThostFtdcSyncDelaySwapField["DelaySwapSeqNo"] = "string"
+#经纪公司代码
+CThostFtdcSyncDelaySwapField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcSyncDelaySwapField["InvestorID"] = "string"
+#源币种
+CThostFtdcSyncDelaySwapField["FromCurrencyID"] = "string"
+#源金额
+CThostFtdcSyncDelaySwapField["FromAmount"] = "float"
+#源换汇冻结金额(可用冻结)
+CThostFtdcSyncDelaySwapField["FromFrozenSwap"] = "float"
+#源剩余换汇额度(可提冻结)
+CThostFtdcSyncDelaySwapField["FromRemainSwap"] = "float"
+#目标币种
+CThostFtdcSyncDelaySwapField["ToCurrencyID"] = "string"
+#目标金额
+CThostFtdcSyncDelaySwapField["ToAmount"] = "float"
+structDict['CThostFtdcSyncDelaySwapField'] = CThostFtdcSyncDelaySwapField
+
+
+#查询延时换汇同步
+CThostFtdcQrySyncDelaySwapField = {}
+#经纪公司代码
+CThostFtdcQrySyncDelaySwapField["BrokerID"] = "string"
+#延时换汇流水号
+CThostFtdcQrySyncDelaySwapField["DelaySwapSeqNo"] = "string"
+structDict['CThostFtdcQrySyncDelaySwapField'] = CThostFtdcQrySyncDelaySwapField
+
+
+#投资单元
+CThostFtdcInvestUnitField = {}
+#经纪公司代码
+CThostFtdcInvestUnitField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcInvestUnitField["InvestorID"] = "string"
+#投资单元代码
+CThostFtdcInvestUnitField["InvestUnitID"] = "string"
+#投资者单元名称
+CThostFtdcInvestUnitField["InvestorUnitName"] = "string"
+#投资者分组代码
+CThostFtdcInvestUnitField["InvestorGroupID"] = "string"
+#手续费率模板代码
+CThostFtdcInvestUnitField["CommModelID"] = "string"
+#保证金率模板代码
+CThostFtdcInvestUnitField["MarginModelID"] = "string"
+#资金账号
+CThostFtdcInvestUnitField["AccountID"] = "string"
+#币种代码
+CThostFtdcInvestUnitField["CurrencyID"] = "string"
+structDict['CThostFtdcInvestUnitField'] = CThostFtdcInvestUnitField
+
+
+#查询投资单元
+CThostFtdcQryInvestUnitField = {}
+#经纪公司代码
+CThostFtdcQryInvestUnitField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQryInvestUnitField["InvestorID"] = "string"
+#投资单元代码
+CThostFtdcQryInvestUnitField["InvestUnitID"] = "string"
+structDict['CThostFtdcQryInvestUnitField'] = CThostFtdcQryInvestUnitField
+
+
+#二级代理商资金校验模式
+CThostFtdcSecAgentCheckModeField = {}
+#投资者代码
+CThostFtdcSecAgentCheckModeField["InvestorID"] = "string"
+#经纪公司代码
+CThostFtdcSecAgentCheckModeField["BrokerID"] = "string"
+#币种
+CThostFtdcSecAgentCheckModeField["CurrencyID"] = "string"
+#境外中介机构资金帐号
+CThostFtdcSecAgentCheckModeField["BrokerSecAgentID"] = "string"
+#是否需要校验自己的资金账户
+CThostFtdcSecAgentCheckModeField["CheckSelfAccount"] = "int"
+structDict['CThostFtdcSecAgentCheckModeField'] = CThostFtdcSecAgentCheckModeField
+
+
+#二级代理商信息
+CThostFtdcSecAgentTradeInfoField = {}
+#经纪公司代码
+CThostFtdcSecAgentTradeInfoField["BrokerID"] = "string"
+#境外中介机构资金帐号
+CThostFtdcSecAgentTradeInfoField["BrokerSecAgentID"] = "string"
+#投资者代码
+CThostFtdcSecAgentTradeInfoField["InvestorID"] = "string"
+#二级代理商姓名
+CThostFtdcSecAgentTradeInfoField["LongCustomerName"] = "string"
+structDict['CThostFtdcSecAgentTradeInfoField'] = CThostFtdcSecAgentTradeInfoField
 
 
 #市场行情
@@ -5271,8 +5225,6 @@ CThostFtdcMarketDataUpdateTimeField["UpdateTime"] = "string"
 CThostFtdcMarketDataUpdateTimeField["UpdateMillisec"] = "int"
 #业务日期
 CThostFtdcMarketDataUpdateTimeField["ActionDay"] = "string"
-#交易所代码
-CThostFtdcMarketDataUpdateTimeField["ExchangeID"] = "string"
 structDict['CThostFtdcMarketDataUpdateTimeField'] = CThostFtdcMarketDataUpdateTimeField
 
 
@@ -5393,6 +5345,8 @@ CThostFtdcQryInvestorPositionDetailField["InvestorID"] = "string"
 CThostFtdcQryInvestorPositionDetailField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryInvestorPositionDetailField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryInvestorPositionDetailField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryInvestorPositionDetailField'] = CThostFtdcQryInvestorPositionDetailField
 
 
@@ -5450,6 +5404,8 @@ CThostFtdcInvestorPositionDetailField["SettlementPrice"] = "float"
 CThostFtdcInvestorPositionDetailField["CloseVolume"] = "int"
 #平仓金额
 CThostFtdcInvestorPositionDetailField["CloseAmount"] = "float"
+#投资单元代码
+CThostFtdcInvestorPositionDetailField["InvestUnitID"] = "string"
 structDict['CThostFtdcInvestorPositionDetailField'] = CThostFtdcInvestorPositionDetailField
 
 
@@ -5506,8 +5462,6 @@ CThostFtdcMDTraderOfferField["BrokerID"] = "string"
 CThostFtdcMDTraderOfferField["MaxTradeID"] = "string"
 #本席位最大报单备拷
 CThostFtdcMDTraderOfferField["MaxOrderMessageReference"] = "string"
-#业务类型
-CThostFtdcMDTraderOfferField["BizType"] = "char"
 structDict['CThostFtdcMDTraderOfferField'] = CThostFtdcMDTraderOfferField
 
 
@@ -5559,6 +5513,10 @@ CThostFtdcQrySettlementInfoConfirmField = {}
 CThostFtdcQrySettlementInfoConfirmField["BrokerID"] = "string"
 #投资者代码
 CThostFtdcQrySettlementInfoConfirmField["InvestorID"] = "string"
+#投资者帐号
+CThostFtdcQrySettlementInfoConfirmField["AccountID"] = "string"
+#币种代码
+CThostFtdcQrySettlementInfoConfirmField["CurrencyID"] = "string"
 structDict['CThostFtdcQrySettlementInfoConfirmField'] = CThostFtdcQrySettlementInfoConfirmField
 
 
@@ -5735,8 +5693,6 @@ CThostFtdcBrokerUserEventField["UserEventInfo"] = "string"
 CThostFtdcBrokerUserEventField["InvestorID"] = "string"
 #合约代码
 CThostFtdcBrokerUserEventField["InstrumentID"] = "string"
-#交易所代码
-CThostFtdcBrokerUserEventField["ExchangeID"] = "string"
 structDict['CThostFtdcBrokerUserEventField'] = CThostFtdcBrokerUserEventField
 
 
@@ -5806,6 +5762,8 @@ CThostFtdcInvestorPositionCombineDetailField["LegMultiple"] = "int"
 CThostFtdcInvestorPositionCombineDetailField["CombInstrumentID"] = "string"
 #成交组号
 CThostFtdcInvestorPositionCombineDetailField["TradeGroupID"] = "int"
+#投资单元代码
+CThostFtdcInvestorPositionCombineDetailField["InvestUnitID"] = "string"
 structDict['CThostFtdcInvestorPositionCombineDetailField'] = CThostFtdcInvestorPositionCombineDetailField
 
 
@@ -5869,6 +5827,18 @@ CThostFtdcParkedOrderField["ErrorID"] = "int"
 CThostFtdcParkedOrderField["ErrorMsg"] = "string"
 #互换单标志
 CThostFtdcParkedOrderField["IsSwapOrder"] = "int"
+#资金账号
+CThostFtdcParkedOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcParkedOrderField["CurrencyID"] = "string"
+#交易编码
+CThostFtdcParkedOrderField["ClientID"] = "string"
+#投资单元代码
+CThostFtdcParkedOrderField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcParkedOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcParkedOrderField["MacAddress"] = "string"
 structDict['CThostFtdcParkedOrderField'] = CThostFtdcParkedOrderField
 
 
@@ -5912,6 +5882,12 @@ CThostFtdcParkedOrderActionField["Status"] = "char"
 CThostFtdcParkedOrderActionField["ErrorID"] = "int"
 #错误信息
 CThostFtdcParkedOrderActionField["ErrorMsg"] = "string"
+#投资单元代码
+CThostFtdcParkedOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcParkedOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcParkedOrderActionField["MacAddress"] = "string"
 structDict['CThostFtdcParkedOrderActionField'] = CThostFtdcParkedOrderActionField
 
 
@@ -5925,6 +5901,8 @@ CThostFtdcQryParkedOrderField["InvestorID"] = "string"
 CThostFtdcQryParkedOrderField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryParkedOrderField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryParkedOrderField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryParkedOrderField'] = CThostFtdcQryParkedOrderField
 
 
@@ -5938,6 +5916,8 @@ CThostFtdcQryParkedOrderActionField["InvestorID"] = "string"
 CThostFtdcQryParkedOrderActionField["InstrumentID"] = "string"
 #交易所代码
 CThostFtdcQryParkedOrderActionField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryParkedOrderActionField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryParkedOrderActionField'] = CThostFtdcQryParkedOrderActionField
 
 
@@ -5949,6 +5929,8 @@ CThostFtdcRemoveParkedOrderField["BrokerID"] = "string"
 CThostFtdcRemoveParkedOrderField["InvestorID"] = "string"
 #预埋报单编号
 CThostFtdcRemoveParkedOrderField["ParkedOrderID"] = "string"
+#投资单元代码
+CThostFtdcRemoveParkedOrderField["InvestUnitID"] = "string"
 structDict['CThostFtdcRemoveParkedOrderField'] = CThostFtdcRemoveParkedOrderField
 
 
@@ -5960,6 +5942,8 @@ CThostFtdcRemoveParkedOrderActionField["BrokerID"] = "string"
 CThostFtdcRemoveParkedOrderActionField["InvestorID"] = "string"
 #预埋撤单编号
 CThostFtdcRemoveParkedOrderActionField["ParkedOrderActionID"] = "string"
+#投资单元代码
+CThostFtdcRemoveParkedOrderActionField["InvestUnitID"] = "string"
 structDict['CThostFtdcRemoveParkedOrderActionField'] = CThostFtdcRemoveParkedOrderActionField
 
 
@@ -5988,6 +5972,10 @@ CThostFtdcQryInvestorPositionCombineDetailField["BrokerID"] = "string"
 CThostFtdcQryInvestorPositionCombineDetailField["InvestorID"] = "string"
 #组合持仓合约编码
 CThostFtdcQryInvestorPositionCombineDetailField["CombInstrumentID"] = "string"
+#交易所代码
+CThostFtdcQryInvestorPositionCombineDetailField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryInvestorPositionCombineDetailField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryInvestorPositionCombineDetailField'] = CThostFtdcQryInvestorPositionCombineDetailField
 
 
@@ -6038,6 +6026,8 @@ CThostFtdcTradingNoticeInfoField["FieldContent"] = "string"
 CThostFtdcTradingNoticeInfoField["SequenceSeries"] = "int"
 #序列号
 CThostFtdcTradingNoticeInfoField["SequenceNo"] = "int"
+#投资单元代码
+CThostFtdcTradingNoticeInfoField["InvestUnitID"] = "string"
 structDict['CThostFtdcTradingNoticeInfoField'] = CThostFtdcTradingNoticeInfoField
 
 
@@ -6059,6 +6049,8 @@ CThostFtdcTradingNoticeField["SendTime"] = "string"
 CThostFtdcTradingNoticeField["SequenceNo"] = "int"
 #消息正文
 CThostFtdcTradingNoticeField["FieldContent"] = "string"
+#投资单元代码
+CThostFtdcTradingNoticeField["InvestUnitID"] = "string"
 structDict['CThostFtdcTradingNoticeField'] = CThostFtdcTradingNoticeField
 
 
@@ -6068,6 +6060,8 @@ CThostFtdcQryTradingNoticeField = {}
 CThostFtdcQryTradingNoticeField["BrokerID"] = "string"
 #投资者代码
 CThostFtdcQryTradingNoticeField["InvestorID"] = "string"
+#投资单元代码
+CThostFtdcQryTradingNoticeField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryTradingNoticeField'] = CThostFtdcQryTradingNoticeField
 
 
@@ -6134,6 +6128,18 @@ CThostFtdcErrOrderField["ErrorMsg"] = "string"
 CThostFtdcErrOrderField["IsSwapOrder"] = "int"
 #交易所代码
 CThostFtdcErrOrderField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcErrOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcErrOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcErrOrderField["CurrencyID"] = "string"
+#交易编码
+CThostFtdcErrOrderField["ClientID"] = "string"
+#IP地址
+CThostFtdcErrOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcErrOrderField["MacAddress"] = "string"
 structDict['CThostFtdcErrOrderField'] = CThostFtdcErrOrderField
 
 
@@ -6259,6 +6265,16 @@ CThostFtdcErrorConditionalOrderField["ErrorMsg"] = "string"
 CThostFtdcErrorConditionalOrderField["IsSwapOrder"] = "int"
 #营业部编号
 CThostFtdcErrorConditionalOrderField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcErrorConditionalOrderField["InvestUnitID"] = "string"
+#资金账号
+CThostFtdcErrorConditionalOrderField["AccountID"] = "string"
+#币种代码
+CThostFtdcErrorConditionalOrderField["CurrencyID"] = "string"
+#IP地址
+CThostFtdcErrorConditionalOrderField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcErrorConditionalOrderField["MacAddress"] = "string"
 structDict['CThostFtdcErrorConditionalOrderField'] = CThostFtdcErrorConditionalOrderField
 
 
@@ -6325,6 +6341,12 @@ CThostFtdcErrOrderActionField["StatusMsg"] = "string"
 CThostFtdcErrOrderActionField["InstrumentID"] = "string"
 #营业部编号
 CThostFtdcErrOrderActionField["BranchID"] = "string"
+#投资单元代码
+CThostFtdcErrOrderActionField["InvestUnitID"] = "string"
+#IP地址
+CThostFtdcErrOrderActionField["IPAddress"] = "string"
+#Mac地址
+CThostFtdcErrOrderActionField["MacAddress"] = "string"
 #错误代码
 CThostFtdcErrOrderActionField["ErrorID"] = "int"
 #错误信息
@@ -6370,6 +6392,8 @@ CThostFtdcQueryMaxOrderVolumeWithPriceField["MaxVolume"] = "int"
 CThostFtdcQueryMaxOrderVolumeWithPriceField["Price"] = "float"
 #交易所代码
 CThostFtdcQueryMaxOrderVolumeWithPriceField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQueryMaxOrderVolumeWithPriceField["InvestUnitID"] = "string"
 structDict['CThostFtdcQueryMaxOrderVolumeWithPriceField'] = CThostFtdcQueryMaxOrderVolumeWithPriceField
 
 
@@ -6381,6 +6405,8 @@ CThostFtdcQryBrokerTradingParamsField["BrokerID"] = "string"
 CThostFtdcQryBrokerTradingParamsField["InvestorID"] = "string"
 #币种代码
 CThostFtdcQryBrokerTradingParamsField["CurrencyID"] = "string"
+#投资者帐号
+CThostFtdcQryBrokerTradingParamsField["AccountID"] = "string"
 structDict['CThostFtdcQryBrokerTradingParamsField'] = CThostFtdcQryBrokerTradingParamsField
 
 
@@ -6400,6 +6426,8 @@ CThostFtdcBrokerTradingParamsField["AvailIncludeCloseProfit"] = "char"
 CThostFtdcBrokerTradingParamsField["CurrencyID"] = "string"
 #期权权利金价格类型
 CThostFtdcBrokerTradingParamsField["OptionRoyaltyPriceType"] = "char"
+#投资者帐号
+CThostFtdcBrokerTradingParamsField["AccountID"] = "string"
 structDict['CThostFtdcBrokerTradingParamsField'] = CThostFtdcBrokerTradingParamsField
 
 
@@ -6615,6 +6643,8 @@ CThostFtdcEWarrantOffsetField["Direction"] = "char"
 CThostFtdcEWarrantOffsetField["HedgeFlag"] = "char"
 #数量
 CThostFtdcEWarrantOffsetField["Volume"] = "int"
+#投资单元代码
+CThostFtdcEWarrantOffsetField["InvestUnitID"] = "string"
 structDict['CThostFtdcEWarrantOffsetField'] = CThostFtdcEWarrantOffsetField
 
 
@@ -6628,6 +6658,8 @@ CThostFtdcQryEWarrantOffsetField["InvestorID"] = "string"
 CThostFtdcQryEWarrantOffsetField["ExchangeID"] = "string"
 #合约代码
 CThostFtdcQryEWarrantOffsetField["InstrumentID"] = "string"
+#投资单元代码
+CThostFtdcQryEWarrantOffsetField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryEWarrantOffsetField'] = CThostFtdcQryEWarrantOffsetField
 
 
@@ -6641,6 +6673,10 @@ CThostFtdcQryInvestorProductGroupMarginField["InvestorID"] = "string"
 CThostFtdcQryInvestorProductGroupMarginField["ProductGroupID"] = "string"
 #投机套保标志
 CThostFtdcQryInvestorProductGroupMarginField["HedgeFlag"] = "char"
+#交易所代码
+CThostFtdcQryInvestorProductGroupMarginField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcQryInvestorProductGroupMarginField["InvestUnitID"] = "string"
 structDict['CThostFtdcQryInvestorProductGroupMarginField'] = CThostFtdcQryInvestorProductGroupMarginField
 
 
@@ -6700,6 +6736,10 @@ CThostFtdcInvestorProductGroupMarginField["LongExchOffsetAmount"] = "float"
 CThostFtdcInvestorProductGroupMarginField["ShortExchOffsetAmount"] = "float"
 #投机套保标志
 CThostFtdcInvestorProductGroupMarginField["HedgeFlag"] = "char"
+#交易所代码
+CThostFtdcInvestorProductGroupMarginField["ExchangeID"] = "string"
+#投资单元代码
+CThostFtdcInvestorProductGroupMarginField["InvestUnitID"] = "string"
 structDict['CThostFtdcInvestorProductGroupMarginField'] = CThostFtdcInvestorProductGroupMarginField
 
 
@@ -6709,6 +6749,8 @@ CThostFtdcQueryCFMMCTradingAccountTokenField = {}
 CThostFtdcQueryCFMMCTradingAccountTokenField["BrokerID"] = "string"
 #投资者代码
 CThostFtdcQueryCFMMCTradingAccountTokenField["InvestorID"] = "string"
+#投资单元代码
+CThostFtdcQueryCFMMCTradingAccountTokenField["InvestUnitID"] = "string"
 structDict['CThostFtdcQueryCFMMCTradingAccountTokenField'] = CThostFtdcQueryCFMMCTradingAccountTokenField
 
 
@@ -6725,21 +6767,6 @@ CThostFtdcCFMMCTradingAccountTokenField["KeyID"] = "int"
 #动态令牌
 CThostFtdcCFMMCTradingAccountTokenField["Token"] = "string"
 structDict['CThostFtdcCFMMCTradingAccountTokenField'] = CThostFtdcCFMMCTradingAccountTokenField
-
-
-#投资者指令权限
-CThostFtdcInstructionRightField = {}
-#经纪公司代码
-CThostFtdcInstructionRightField["BrokerID"] = "string"
-#交易所代码
-CThostFtdcInstructionRightField["ExchangeID"] = "string"
-#投资者代码
-CThostFtdcInstructionRightField["InvestorID"] = "string"
-#指令权限类型
-CThostFtdcInstructionRightField["InstructionRight"] = "char"
-#是否禁止
-CThostFtdcInstructionRightField["IsForbidden"] = "int"
-structDict['CThostFtdcInstructionRightField'] = CThostFtdcInstructionRightField
 
 
 #查询产品组
@@ -6760,6 +6787,50 @@ CThostFtdcProductGroupField["ExchangeID"] = "string"
 #产品组代码
 CThostFtdcProductGroupField["ProductGroupID"] = "string"
 structDict['CThostFtdcProductGroupField'] = CThostFtdcProductGroupField
+
+
+#交易所公告
+CThostFtdcBulletinField = {}
+#交易所代码
+CThostFtdcBulletinField["ExchangeID"] = "string"
+#交易日
+CThostFtdcBulletinField["TradingDay"] = "string"
+#公告编号
+CThostFtdcBulletinField["BulletinID"] = "int"
+#序列号
+CThostFtdcBulletinField["SequenceNo"] = "int"
+#公告类型
+CThostFtdcBulletinField["NewsType"] = "string"
+#紧急程度
+CThostFtdcBulletinField["NewsUrgency"] = "char"
+#发送时间
+CThostFtdcBulletinField["SendTime"] = "string"
+#消息摘要
+CThostFtdcBulletinField["Abstract"] = "string"
+#消息来源
+CThostFtdcBulletinField["ComeFrom"] = "string"
+#消息正文
+CThostFtdcBulletinField["Content"] = "string"
+#WEB地址
+CThostFtdcBulletinField["URLLink"] = "string"
+#市场代码
+CThostFtdcBulletinField["MarketID"] = "string"
+structDict['CThostFtdcBulletinField'] = CThostFtdcBulletinField
+
+
+#查询交易所公告
+CThostFtdcQryBulletinField = {}
+#交易所代码
+CThostFtdcQryBulletinField["ExchangeID"] = "string"
+#公告编号
+CThostFtdcQryBulletinField["BulletinID"] = "int"
+#序列号
+CThostFtdcQryBulletinField["SequenceNo"] = "int"
+#公告类型
+CThostFtdcQryBulletinField["NewsType"] = "string"
+#紧急程度
+CThostFtdcQryBulletinField["NewsUrgency"] = "char"
+structDict['CThostFtdcQryBulletinField'] = CThostFtdcQryBulletinField
 
 
 #转帐开户请求
@@ -6852,6 +6923,8 @@ CThostFtdcReqOpenAccountField["OperNo"] = "string"
 CThostFtdcReqOpenAccountField["TID"] = "int"
 #用户标识
 CThostFtdcReqOpenAccountField["UserID"] = "string"
+#长客户姓名
+CThostFtdcReqOpenAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqOpenAccountField'] = CThostFtdcReqOpenAccountField
 
 
@@ -6945,6 +7018,8 @@ CThostFtdcReqCancelAccountField["OperNo"] = "string"
 CThostFtdcReqCancelAccountField["TID"] = "int"
 #用户标识
 CThostFtdcReqCancelAccountField["UserID"] = "string"
+#长客户姓名
+CThostFtdcReqCancelAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqCancelAccountField'] = CThostFtdcReqCancelAccountField
 
 
@@ -7030,6 +7105,8 @@ CThostFtdcReqChangeAccountField["SecuPwdFlag"] = "char"
 CThostFtdcReqChangeAccountField["TID"] = "int"
 #摘要
 CThostFtdcReqChangeAccountField["Digest"] = "string"
+#长客户姓名
+CThostFtdcReqChangeAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqChangeAccountField'] = CThostFtdcReqChangeAccountField
 
 
@@ -7121,6 +7198,8 @@ CThostFtdcReqTransferField["RequestID"] = "int"
 CThostFtdcReqTransferField["TID"] = "int"
 #转账交易状态
 CThostFtdcReqTransferField["TransferStatus"] = "char"
+#长客户姓名
+CThostFtdcReqTransferField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqTransferField'] = CThostFtdcReqTransferField
 
 
@@ -7216,6 +7295,8 @@ CThostFtdcRspTransferField["TransferStatus"] = "char"
 CThostFtdcRspTransferField["ErrorID"] = "int"
 #错误信息
 CThostFtdcRspTransferField["ErrorMsg"] = "string"
+#长客户姓名
+CThostFtdcRspTransferField["LongCustomerName"] = "string"
 structDict['CThostFtdcRspTransferField'] = CThostFtdcRspTransferField
 
 
@@ -7321,6 +7402,8 @@ CThostFtdcReqRepealField["RequestID"] = "int"
 CThostFtdcReqRepealField["TID"] = "int"
 #转账交易状态
 CThostFtdcReqRepealField["TransferStatus"] = "char"
+#长客户姓名
+CThostFtdcReqRepealField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqRepealField'] = CThostFtdcReqRepealField
 
 
@@ -7430,6 +7513,8 @@ CThostFtdcRspRepealField["TransferStatus"] = "char"
 CThostFtdcRspRepealField["ErrorID"] = "int"
 #错误信息
 CThostFtdcRspRepealField["ErrorMsg"] = "string"
+#长客户姓名
+CThostFtdcRspRepealField["LongCustomerName"] = "string"
 structDict['CThostFtdcRspRepealField'] = CThostFtdcRspRepealField
 
 
@@ -7507,6 +7592,8 @@ CThostFtdcReqQueryAccountField["OperNo"] = "string"
 CThostFtdcReqQueryAccountField["RequestID"] = "int"
 #交易ID
 CThostFtdcReqQueryAccountField["TID"] = "int"
+#长客户姓名
+CThostFtdcReqQueryAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqQueryAccountField'] = CThostFtdcReqQueryAccountField
 
 
@@ -7588,6 +7675,8 @@ CThostFtdcRspQueryAccountField["TID"] = "int"
 CThostFtdcRspQueryAccountField["BankUseAmount"] = "float"
 #银行可取金额
 CThostFtdcRspQueryAccountField["BankFetchAmount"] = "float"
+#长客户姓名
+CThostFtdcRspQueryAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcRspQueryAccountField'] = CThostFtdcRspQueryAccountField
 
 
@@ -7845,6 +7934,8 @@ CThostFtdcReqQueryTradeResultBySerialField["CurrencyID"] = "string"
 CThostFtdcReqQueryTradeResultBySerialField["TradeAmount"] = "float"
 #摘要
 CThostFtdcReqQueryTradeResultBySerialField["Digest"] = "string"
+#长客户姓名
+CThostFtdcReqQueryTradeResultBySerialField["LongCustomerName"] = "string"
 structDict['CThostFtdcReqQueryTradeResultBySerialField'] = CThostFtdcReqQueryTradeResultBySerialField
 
 
@@ -8000,6 +8091,8 @@ CThostFtdcVerifyCustInfoField["IdCardType"] = "char"
 CThostFtdcVerifyCustInfoField["IdentifiedCardNo"] = "string"
 #客户类型
 CThostFtdcVerifyCustInfoField["CustType"] = "char"
+#长客户姓名
+CThostFtdcVerifyCustInfoField["LongCustomerName"] = "string"
 structDict['CThostFtdcVerifyCustInfoField'] = CThostFtdcVerifyCustInfoField
 
 
@@ -8019,6 +8112,8 @@ CThostFtdcVerifyFuturePasswordAndCustInfoField["AccountID"] = "string"
 CThostFtdcVerifyFuturePasswordAndCustInfoField["Password"] = "string"
 #币种代码
 CThostFtdcVerifyFuturePasswordAndCustInfoField["CurrencyID"] = "string"
+#长客户姓名
+CThostFtdcVerifyFuturePasswordAndCustInfoField["LongCustomerName"] = "string"
 structDict['CThostFtdcVerifyFuturePasswordAndCustInfoField'] = CThostFtdcVerifyFuturePasswordAndCustInfoField
 
 
@@ -8217,6 +8312,8 @@ CThostFtdcNotifyQueryAccountField["BankFetchAmount"] = "float"
 CThostFtdcNotifyQueryAccountField["ErrorID"] = "int"
 #错误信息
 CThostFtdcNotifyQueryAccountField["ErrorMsg"] = "string"
+#长客户姓名
+CThostFtdcNotifyQueryAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcNotifyQueryAccountField'] = CThostFtdcNotifyQueryAccountField
 
 
@@ -8500,6 +8597,8 @@ CThostFtdcAccountregisterField["TID"] = "int"
 CThostFtdcAccountregisterField["CustType"] = "char"
 #银行帐号类型
 CThostFtdcAccountregisterField["BankAccType"] = "char"
+#长客户姓名
+CThostFtdcAccountregisterField["LongCustomerName"] = "string"
 structDict['CThostFtdcAccountregisterField'] = CThostFtdcAccountregisterField
 
 
@@ -8597,6 +8696,8 @@ CThostFtdcOpenAccountField["UserID"] = "string"
 CThostFtdcOpenAccountField["ErrorID"] = "int"
 #错误信息
 CThostFtdcOpenAccountField["ErrorMsg"] = "string"
+#长客户姓名
+CThostFtdcOpenAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcOpenAccountField'] = CThostFtdcOpenAccountField
 
 
@@ -8694,6 +8795,8 @@ CThostFtdcCancelAccountField["UserID"] = "string"
 CThostFtdcCancelAccountField["ErrorID"] = "int"
 #错误信息
 CThostFtdcCancelAccountField["ErrorMsg"] = "string"
+#长客户姓名
+CThostFtdcCancelAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcCancelAccountField'] = CThostFtdcCancelAccountField
 
 
@@ -8783,6 +8886,8 @@ CThostFtdcChangeAccountField["Digest"] = "string"
 CThostFtdcChangeAccountField["ErrorID"] = "int"
 #错误信息
 CThostFtdcChangeAccountField["ErrorMsg"] = "string"
+#长客户姓名
+CThostFtdcChangeAccountField["LongCustomerName"] = "string"
 structDict['CThostFtdcChangeAccountField'] = CThostFtdcChangeAccountField
 
 
@@ -8911,33 +9016,473 @@ CThostFtdcTradingAccountReserveField["CurrencyID"] = "string"
 structDict['CThostFtdcTradingAccountReserveField'] = CThostFtdcTradingAccountReserveField
 
 
-#DBF记录
-CThostFtdcDBFRecordField = {}
-#DBF命令类型
-CThostFtdcDBFRecordField["DBFComdType"] = "string"
-#DBF时间类型
-CThostFtdcDBFRecordField["DBFComTime"] = "string"
-#DBF原始流水号类型
-CThostFtdcDBFRecordField["DBFOComNo"] = "string"
-#DBF流水号类型
-CThostFtdcDBFRecordField["DBFComNo"] = "string"
-#DBF字段类型
-CThostFtdcDBFRecordField["DBFFdName1"] = "string"
-#DBF字段内容类型
-CThostFtdcDBFRecordField["DBFFdContent1"] = "string"
-#DBF字段类型
-CThostFtdcDBFRecordField["DBFFdName2"] = "string"
-#DBF字段内容类型
-CThostFtdcDBFRecordField["DBFFdContent2"] = "string"
-#DBF字段类型
-CThostFtdcDBFRecordField["DBFFdName3"] = "string"
-#DBF字段内容类型
-CThostFtdcDBFRecordField["DBFFdContent3"] = "string"
-#DBF字段类型
-CThostFtdcDBFRecordField["DBFFdName4"] = "string"
-#DBF字段内容类型
-CThostFtdcDBFRecordField["DBFFdContent4"] = "string"
-structDict['CThostFtdcDBFRecordField'] = CThostFtdcDBFRecordField
+#查询禁止登录IP
+CThostFtdcQryLoginForbiddenIPField = {}
+#IP地址
+CThostFtdcQryLoginForbiddenIPField["IPAddress"] = "string"
+structDict['CThostFtdcQryLoginForbiddenIPField'] = CThostFtdcQryLoginForbiddenIPField
+
+
+#查询IP列表
+CThostFtdcQryIPListField = {}
+#IP地址
+CThostFtdcQryIPListField["IPAddress"] = "string"
+structDict['CThostFtdcQryIPListField'] = CThostFtdcQryIPListField
+
+
+#查询用户下单权限分配表
+CThostFtdcQryUserRightsAssignField = {}
+#应用单元代码
+CThostFtdcQryUserRightsAssignField["BrokerID"] = "string"
+#用户代码
+CThostFtdcQryUserRightsAssignField["UserID"] = "string"
+structDict['CThostFtdcQryUserRightsAssignField'] = CThostFtdcQryUserRightsAssignField
+
+
+#银期预约开户确认请求
+CThostFtdcReserveOpenAccountConfirmField = {}
+#业务功能码
+CThostFtdcReserveOpenAccountConfirmField["TradeCode"] = "string"
+#银行代码
+CThostFtdcReserveOpenAccountConfirmField["BankID"] = "string"
+#银行分支机构代码
+CThostFtdcReserveOpenAccountConfirmField["BankBranchID"] = "string"
+#期商代码
+CThostFtdcReserveOpenAccountConfirmField["BrokerID"] = "string"
+#期商分支机构代码
+CThostFtdcReserveOpenAccountConfirmField["BrokerBranchID"] = "string"
+#交易日期
+CThostFtdcReserveOpenAccountConfirmField["TradeDate"] = "string"
+#交易时间
+CThostFtdcReserveOpenAccountConfirmField["TradeTime"] = "string"
+#银行流水号
+CThostFtdcReserveOpenAccountConfirmField["BankSerial"] = "string"
+#交易系统日期 
+CThostFtdcReserveOpenAccountConfirmField["TradingDay"] = "string"
+#银期平台消息流水号
+CThostFtdcReserveOpenAccountConfirmField["PlateSerial"] = "int"
+#最后分片标志
+CThostFtdcReserveOpenAccountConfirmField["LastFragment"] = "char"
+#会话号
+CThostFtdcReserveOpenAccountConfirmField["SessionID"] = "int"
+#客户姓名
+CThostFtdcReserveOpenAccountConfirmField["CustomerName"] = "string"
+#证件类型
+CThostFtdcReserveOpenAccountConfirmField["IdCardType"] = "char"
+#证件号码
+CThostFtdcReserveOpenAccountConfirmField["IdentifiedCardNo"] = "string"
+#性别
+CThostFtdcReserveOpenAccountConfirmField["Gender"] = "char"
+#国家代码
+CThostFtdcReserveOpenAccountConfirmField["CountryCode"] = "string"
+#客户类型
+CThostFtdcReserveOpenAccountConfirmField["CustType"] = "char"
+#地址
+CThostFtdcReserveOpenAccountConfirmField["Address"] = "string"
+#邮编
+CThostFtdcReserveOpenAccountConfirmField["ZipCode"] = "string"
+#电话号码
+CThostFtdcReserveOpenAccountConfirmField["Telephone"] = "string"
+#手机
+CThostFtdcReserveOpenAccountConfirmField["MobilePhone"] = "string"
+#传真
+CThostFtdcReserveOpenAccountConfirmField["Fax"] = "string"
+#电子邮件
+CThostFtdcReserveOpenAccountConfirmField["EMail"] = "string"
+#资金账户状态
+CThostFtdcReserveOpenAccountConfirmField["MoneyAccountStatus"] = "char"
+#银行帐号
+CThostFtdcReserveOpenAccountConfirmField["BankAccount"] = "string"
+#银行密码
+CThostFtdcReserveOpenAccountConfirmField["BankPassWord"] = "string"
+#安装编号
+CThostFtdcReserveOpenAccountConfirmField["InstallID"] = "int"
+#验证客户证件号码标志
+CThostFtdcReserveOpenAccountConfirmField["VerifyCertNoFlag"] = "char"
+#币种代码
+CThostFtdcReserveOpenAccountConfirmField["CurrencyID"] = "string"
+#摘要
+CThostFtdcReserveOpenAccountConfirmField["Digest"] = "string"
+#银行帐号类型
+CThostFtdcReserveOpenAccountConfirmField["BankAccType"] = "char"
+#期货公司银行编码
+CThostFtdcReserveOpenAccountConfirmField["BrokerIDByBank"] = "string"
+#交易ID
+CThostFtdcReserveOpenAccountConfirmField["TID"] = "int"
+#投资者帐号
+CThostFtdcReserveOpenAccountConfirmField["AccountID"] = "string"
+#期货密码
+CThostFtdcReserveOpenAccountConfirmField["Password"] = "string"
+#预约开户银行流水号
+CThostFtdcReserveOpenAccountConfirmField["BankReserveOpenSeq"] = "string"
+#预约开户日期
+CThostFtdcReserveOpenAccountConfirmField["BookDate"] = "string"
+#预约开户验证密码
+CThostFtdcReserveOpenAccountConfirmField["BookPsw"] = "string"
+#错误代码
+CThostFtdcReserveOpenAccountConfirmField["ErrorID"] = "int"
+#错误信息
+CThostFtdcReserveOpenAccountConfirmField["ErrorMsg"] = "string"
+structDict['CThostFtdcReserveOpenAccountConfirmField'] = CThostFtdcReserveOpenAccountConfirmField
+
+
+#银期预约开户
+CThostFtdcReserveOpenAccountField = {}
+#业务功能码
+CThostFtdcReserveOpenAccountField["TradeCode"] = "string"
+#银行代码
+CThostFtdcReserveOpenAccountField["BankID"] = "string"
+#银行分支机构代码
+CThostFtdcReserveOpenAccountField["BankBranchID"] = "string"
+#期商代码
+CThostFtdcReserveOpenAccountField["BrokerID"] = "string"
+#期商分支机构代码
+CThostFtdcReserveOpenAccountField["BrokerBranchID"] = "string"
+#交易日期
+CThostFtdcReserveOpenAccountField["TradeDate"] = "string"
+#交易时间
+CThostFtdcReserveOpenAccountField["TradeTime"] = "string"
+#银行流水号
+CThostFtdcReserveOpenAccountField["BankSerial"] = "string"
+#交易系统日期 
+CThostFtdcReserveOpenAccountField["TradingDay"] = "string"
+#银期平台消息流水号
+CThostFtdcReserveOpenAccountField["PlateSerial"] = "int"
+#最后分片标志
+CThostFtdcReserveOpenAccountField["LastFragment"] = "char"
+#会话号
+CThostFtdcReserveOpenAccountField["SessionID"] = "int"
+#客户姓名
+CThostFtdcReserveOpenAccountField["CustomerName"] = "string"
+#证件类型
+CThostFtdcReserveOpenAccountField["IdCardType"] = "char"
+#证件号码
+CThostFtdcReserveOpenAccountField["IdentifiedCardNo"] = "string"
+#性别
+CThostFtdcReserveOpenAccountField["Gender"] = "char"
+#国家代码
+CThostFtdcReserveOpenAccountField["CountryCode"] = "string"
+#客户类型
+CThostFtdcReserveOpenAccountField["CustType"] = "char"
+#地址
+CThostFtdcReserveOpenAccountField["Address"] = "string"
+#邮编
+CThostFtdcReserveOpenAccountField["ZipCode"] = "string"
+#电话号码
+CThostFtdcReserveOpenAccountField["Telephone"] = "string"
+#手机
+CThostFtdcReserveOpenAccountField["MobilePhone"] = "string"
+#传真
+CThostFtdcReserveOpenAccountField["Fax"] = "string"
+#电子邮件
+CThostFtdcReserveOpenAccountField["EMail"] = "string"
+#资金账户状态
+CThostFtdcReserveOpenAccountField["MoneyAccountStatus"] = "char"
+#银行帐号
+CThostFtdcReserveOpenAccountField["BankAccount"] = "string"
+#银行密码
+CThostFtdcReserveOpenAccountField["BankPassWord"] = "string"
+#安装编号
+CThostFtdcReserveOpenAccountField["InstallID"] = "int"
+#验证客户证件号码标志
+CThostFtdcReserveOpenAccountField["VerifyCertNoFlag"] = "char"
+#币种代码
+CThostFtdcReserveOpenAccountField["CurrencyID"] = "string"
+#摘要
+CThostFtdcReserveOpenAccountField["Digest"] = "string"
+#银行帐号类型
+CThostFtdcReserveOpenAccountField["BankAccType"] = "char"
+#期货公司银行编码
+CThostFtdcReserveOpenAccountField["BrokerIDByBank"] = "string"
+#交易ID
+CThostFtdcReserveOpenAccountField["TID"] = "int"
+#预约开户状态
+CThostFtdcReserveOpenAccountField["ReserveOpenAccStas"] = "char"
+#错误代码
+CThostFtdcReserveOpenAccountField["ErrorID"] = "int"
+#错误信息
+CThostFtdcReserveOpenAccountField["ErrorMsg"] = "string"
+structDict['CThostFtdcReserveOpenAccountField'] = CThostFtdcReserveOpenAccountField
+
+
+#银行账户属性
+CThostFtdcAccountPropertyField = {}
+#经纪公司代码
+CThostFtdcAccountPropertyField["BrokerID"] = "string"
+#投资者帐号
+CThostFtdcAccountPropertyField["AccountID"] = "string"
+#银行统一标识类型
+CThostFtdcAccountPropertyField["BankID"] = "string"
+#银行账户
+CThostFtdcAccountPropertyField["BankAccount"] = "string"
+#银行账户的开户人名称
+CThostFtdcAccountPropertyField["OpenName"] = "string"
+#银行账户的开户行
+CThostFtdcAccountPropertyField["OpenBank"] = "string"
+#是否活跃
+CThostFtdcAccountPropertyField["IsActive"] = "int"
+#账户来源
+CThostFtdcAccountPropertyField["AccountSourceType"] = "char"
+#开户日期
+CThostFtdcAccountPropertyField["OpenDate"] = "string"
+#注销日期
+CThostFtdcAccountPropertyField["CancelDate"] = "string"
+#录入员代码
+CThostFtdcAccountPropertyField["OperatorID"] = "string"
+#录入日期
+CThostFtdcAccountPropertyField["OperateDate"] = "string"
+#录入时间
+CThostFtdcAccountPropertyField["OperateTime"] = "string"
+#币种代码
+CThostFtdcAccountPropertyField["CurrencyID"] = "string"
+structDict['CThostFtdcAccountPropertyField'] = CThostFtdcAccountPropertyField
+
+
+#查询当前交易中心
+CThostFtdcQryCurrDRIdentityField = {}
+#交易中心代码
+CThostFtdcQryCurrDRIdentityField["DRIdentityID"] = "int"
+structDict['CThostFtdcQryCurrDRIdentityField'] = CThostFtdcQryCurrDRIdentityField
+
+
+#当前交易中心
+CThostFtdcCurrDRIdentityField = {}
+#交易中心代码
+CThostFtdcCurrDRIdentityField["DRIdentityID"] = "int"
+structDict['CThostFtdcCurrDRIdentityField'] = CThostFtdcCurrDRIdentityField
+
+
+#查询二级代理商资金校验模式
+CThostFtdcQrySecAgentCheckModeField = {}
+#经纪公司代码
+CThostFtdcQrySecAgentCheckModeField["BrokerID"] = "string"
+#投资者代码
+CThostFtdcQrySecAgentCheckModeField["InvestorID"] = "string"
+structDict['CThostFtdcQrySecAgentCheckModeField'] = CThostFtdcQrySecAgentCheckModeField
+
+
+#查询二级代理商信息
+CThostFtdcQrySecAgentTradeInfoField = {}
+#经纪公司代码
+CThostFtdcQrySecAgentTradeInfoField["BrokerID"] = "string"
+#境外中介机构资金帐号
+CThostFtdcQrySecAgentTradeInfoField["BrokerSecAgentID"] = "string"
+structDict['CThostFtdcQrySecAgentTradeInfoField'] = CThostFtdcQrySecAgentTradeInfoField
+
+
+#用户系统信息
+CThostFtdcUserSystemInfoField = {}
+#经纪公司代码
+CThostFtdcUserSystemInfoField["BrokerID"] = "string"
+#用户代码
+CThostFtdcUserSystemInfoField["UserID"] = "string"
+#用户端系统内部信息长度
+CThostFtdcUserSystemInfoField["ClientSystemInfoLen"] = "int"
+#用户端系统内部信息
+CThostFtdcUserSystemInfoField["ClientSystemInfo"] = "string"
+#用户公网IP
+CThostFtdcUserSystemInfoField["ClientPublicIP"] = "string"
+#终端IP端口
+CThostFtdcUserSystemInfoField["ClientIPPort"] = "int"
+#登录成功时间
+CThostFtdcUserSystemInfoField["ClientLoginTime"] = "string"
+#App代码
+CThostFtdcUserSystemInfoField["ClientAppID"] = "string"
+structDict['CThostFtdcUserSystemInfoField'] = CThostFtdcUserSystemInfoField
+
+
+#用户发出获取安全安全登陆方法请求
+CThostFtdcReqUserAuthMethodField = {}
+#交易日
+CThostFtdcReqUserAuthMethodField["TradingDay"] = "string"
+#经纪公司代码
+CThostFtdcReqUserAuthMethodField["BrokerID"] = "string"
+#用户代码
+CThostFtdcReqUserAuthMethodField["UserID"] = "string"
+structDict['CThostFtdcReqUserAuthMethodField'] = CThostFtdcReqUserAuthMethodField
+
+
+#用户发出获取安全安全登陆方法回复
+CThostFtdcRspUserAuthMethodField = {}
+#当前可以用的认证模式
+CThostFtdcRspUserAuthMethodField["UsableAuthMethod"] = "int"
+structDict['CThostFtdcRspUserAuthMethodField'] = CThostFtdcRspUserAuthMethodField
+
+
+#用户发出获取安全安全登陆方法请求
+CThostFtdcReqGenUserCaptchaField = {}
+#交易日
+CThostFtdcReqGenUserCaptchaField["TradingDay"] = "string"
+#经纪公司代码
+CThostFtdcReqGenUserCaptchaField["BrokerID"] = "string"
+#用户代码
+CThostFtdcReqGenUserCaptchaField["UserID"] = "string"
+structDict['CThostFtdcReqGenUserCaptchaField'] = CThostFtdcReqGenUserCaptchaField
+
+
+#生成的图片验证码信息
+CThostFtdcRspGenUserCaptchaField = {}
+#经纪公司代码
+CThostFtdcRspGenUserCaptchaField["BrokerID"] = "string"
+#用户代码
+CThostFtdcRspGenUserCaptchaField["UserID"] = "string"
+#图片信息长度
+CThostFtdcRspGenUserCaptchaField["CaptchaInfoLen"] = "int"
+#图片信息
+CThostFtdcRspGenUserCaptchaField["CaptchaInfo"] = "string"
+structDict['CThostFtdcRspGenUserCaptchaField'] = CThostFtdcRspGenUserCaptchaField
+
+
+#用户发出获取安全安全登陆方法请求
+CThostFtdcReqGenUserTextField = {}
+#交易日
+CThostFtdcReqGenUserTextField["TradingDay"] = "string"
+#经纪公司代码
+CThostFtdcReqGenUserTextField["BrokerID"] = "string"
+#用户代码
+CThostFtdcReqGenUserTextField["UserID"] = "string"
+structDict['CThostFtdcReqGenUserTextField'] = CThostFtdcReqGenUserTextField
+
+
+#短信验证码生成的回复
+CThostFtdcRspGenUserTextField = {}
+#短信验证码序号
+CThostFtdcRspGenUserTextField["UserTextSeq"] = "int"
+structDict['CThostFtdcRspGenUserTextField'] = CThostFtdcRspGenUserTextField
+
+
+#用户发出带图形验证码的登录请求请求
+CThostFtdcReqUserLoginWithCaptchaField = {}
+#交易日
+CThostFtdcReqUserLoginWithCaptchaField["TradingDay"] = "string"
+#经纪公司代码
+CThostFtdcReqUserLoginWithCaptchaField["BrokerID"] = "string"
+#用户代码
+CThostFtdcReqUserLoginWithCaptchaField["UserID"] = "string"
+#密码
+CThostFtdcReqUserLoginWithCaptchaField["Password"] = "string"
+#用户端产品信息
+CThostFtdcReqUserLoginWithCaptchaField["UserProductInfo"] = "string"
+#接口端产品信息
+CThostFtdcReqUserLoginWithCaptchaField["InterfaceProductInfo"] = "string"
+#协议信息
+CThostFtdcReqUserLoginWithCaptchaField["ProtocolInfo"] = "string"
+#Mac地址
+CThostFtdcReqUserLoginWithCaptchaField["MacAddress"] = "string"
+#终端IP地址
+CThostFtdcReqUserLoginWithCaptchaField["ClientIPAddress"] = "string"
+#登录备注
+CThostFtdcReqUserLoginWithCaptchaField["LoginRemark"] = "string"
+#图形验证码的文字内容
+CThostFtdcReqUserLoginWithCaptchaField["Captcha"] = "string"
+#终端IP端口
+CThostFtdcReqUserLoginWithCaptchaField["ClientIPPort"] = "int"
+structDict['CThostFtdcReqUserLoginWithCaptchaField'] = CThostFtdcReqUserLoginWithCaptchaField
+
+
+#用户发出带短信验证码的登录请求请求
+CThostFtdcReqUserLoginWithTextField = {}
+#交易日
+CThostFtdcReqUserLoginWithTextField["TradingDay"] = "string"
+#经纪公司代码
+CThostFtdcReqUserLoginWithTextField["BrokerID"] = "string"
+#用户代码
+CThostFtdcReqUserLoginWithTextField["UserID"] = "string"
+#密码
+CThostFtdcReqUserLoginWithTextField["Password"] = "string"
+#用户端产品信息
+CThostFtdcReqUserLoginWithTextField["UserProductInfo"] = "string"
+#接口端产品信息
+CThostFtdcReqUserLoginWithTextField["InterfaceProductInfo"] = "string"
+#协议信息
+CThostFtdcReqUserLoginWithTextField["ProtocolInfo"] = "string"
+#Mac地址
+CThostFtdcReqUserLoginWithTextField["MacAddress"] = "string"
+#终端IP地址
+CThostFtdcReqUserLoginWithTextField["ClientIPAddress"] = "string"
+#登录备注
+CThostFtdcReqUserLoginWithTextField["LoginRemark"] = "string"
+#短信验证码文字内容
+CThostFtdcReqUserLoginWithTextField["Text"] = "string"
+#终端IP端口
+CThostFtdcReqUserLoginWithTextField["ClientIPPort"] = "int"
+structDict['CThostFtdcReqUserLoginWithTextField'] = CThostFtdcReqUserLoginWithTextField
+
+
+#用户发出带动态验证码的登录请求请求
+CThostFtdcReqUserLoginWithOTPField = {}
+#交易日
+CThostFtdcReqUserLoginWithOTPField["TradingDay"] = "string"
+#经纪公司代码
+CThostFtdcReqUserLoginWithOTPField["BrokerID"] = "string"
+#用户代码
+CThostFtdcReqUserLoginWithOTPField["UserID"] = "string"
+#密码
+CThostFtdcReqUserLoginWithOTPField["Password"] = "string"
+#用户端产品信息
+CThostFtdcReqUserLoginWithOTPField["UserProductInfo"] = "string"
+#接口端产品信息
+CThostFtdcReqUserLoginWithOTPField["InterfaceProductInfo"] = "string"
+#协议信息
+CThostFtdcReqUserLoginWithOTPField["ProtocolInfo"] = "string"
+#Mac地址
+CThostFtdcReqUserLoginWithOTPField["MacAddress"] = "string"
+#终端IP地址
+CThostFtdcReqUserLoginWithOTPField["ClientIPAddress"] = "string"
+#登录备注
+CThostFtdcReqUserLoginWithOTPField["LoginRemark"] = "string"
+#OTP密码
+CThostFtdcReqUserLoginWithOTPField["OTPPassword"] = "string"
+#终端IP端口
+CThostFtdcReqUserLoginWithOTPField["ClientIPPort"] = "int"
+structDict['CThostFtdcReqUserLoginWithOTPField'] = CThostFtdcReqUserLoginWithOTPField
+
+
+#api握手请求
+CThostFtdcReqApiHandshakeField = {}
+#api与front通信密钥版本号
+CThostFtdcReqApiHandshakeField["CryptoKeyVersion"] = "string"
+structDict['CThostFtdcReqApiHandshakeField'] = CThostFtdcReqApiHandshakeField
+
+
+#front发给api的握手回复
+CThostFtdcRspApiHandshakeField = {}
+#握手回复数据长度
+CThostFtdcRspApiHandshakeField["FrontHandshakeDataLen"] = "int"
+#握手回复数据
+CThostFtdcRspApiHandshakeField["FrontHandshakeData"] = "string"
+#API认证是否开启
+CThostFtdcRspApiHandshakeField["IsApiAuthEnabled"] = "int"
+structDict['CThostFtdcRspApiHandshakeField'] = CThostFtdcRspApiHandshakeField
+
+
+#api给front的验证key的请求
+CThostFtdcReqVerifyApiKeyField = {}
+#握手回复数据长度
+CThostFtdcReqVerifyApiKeyField["ApiHandshakeDataLen"] = "int"
+#握手回复数据
+CThostFtdcReqVerifyApiKeyField["ApiHandshakeData"] = "string"
+structDict['CThostFtdcReqVerifyApiKeyField'] = CThostFtdcReqVerifyApiKeyField
+
+
+#操作员组织架构关系
+CThostFtdcDepartmentUserField = {}
+#经纪公司代码
+CThostFtdcDepartmentUserField["BrokerID"] = "string"
+#用户代码
+CThostFtdcDepartmentUserField["UserID"] = "string"
+#投资者范围
+CThostFtdcDepartmentUserField["InvestorRange"] = "char"
+#投资者代码
+CThostFtdcDepartmentUserField["InvestorID"] = "string"
+structDict['CThostFtdcDepartmentUserField'] = CThostFtdcDepartmentUserField
+
+
+#查询频率，每秒查询比数
+CThostFtdcQueryFreqField = {}
+#查询频率
+CThostFtdcQueryFreqField["QueryFreq"] = "int"
+structDict['CThostFtdcQueryFreqField'] = CThostFtdcQueryFreqField
 
 
 

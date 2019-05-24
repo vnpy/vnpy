@@ -46,6 +46,24 @@ case ONRSPTRADINGACCOUNTPASSWORDUPDATE:
 	break;
 }
 
+case ONRSPUSERAUTHMETHOD:
+{
+	this->processRspUserAuthMethod(task);
+	break;
+}
+
+case ONRSPGENUSERCAPTCHA:
+{
+	this->processRspGenUserCaptcha(task);
+	break;
+}
+
+case ONRSPGENUSERTEXT:
+{
+	this->processRspGenUserText(task);
+	break;
+}
+
 case ONRSPORDERINSERT:
 {
 	this->processRspOrderInsert(task);
@@ -124,9 +142,21 @@ case ONRSPQUOTEACTION:
 	break;
 }
 
-case ONRSPLOCKINSERT:
+case ONRSPBATCHORDERACTION:
 {
-	this->processRspLockInsert(task);
+	this->processRspBatchOrderAction(task);
+	break;
+}
+
+case ONRSPOPTIONSELFCLOSEINSERT:
+{
+	this->processRspOptionSelfCloseInsert(task);
+	break;
+}
+
+case ONRSPOPTIONSELFCLOSEACTION:
+{
+	this->processRspOptionSelfCloseAction(task);
 	break;
 }
 
@@ -298,6 +328,42 @@ case ONRSPQRYPRODUCTGROUP:
 	break;
 }
 
+case ONRSPQRYMMINSTRUMENTCOMMISSIONRATE:
+{
+	this->processRspQryMMInstrumentCommissionRate(task);
+	break;
+}
+
+case ONRSPQRYMMOPTIONINSTRCOMMRATE:
+{
+	this->processRspQryMMOptionInstrCommRate(task);
+	break;
+}
+
+case ONRSPQRYINSTRUMENTORDERCOMMRATE:
+{
+	this->processRspQryInstrumentOrderCommRate(task);
+	break;
+}
+
+case ONRSPQRYSECAGENTTRADINGACCOUNT:
+{
+	this->processRspQrySecAgentTradingAccount(task);
+	break;
+}
+
+case ONRSPQRYSECAGENTCHECKMODE:
+{
+	this->processRspQrySecAgentCheckMode(task);
+	break;
+}
+
+case ONRSPQRYSECAGENTTRADEINFO:
+{
+	this->processRspQrySecAgentTradeInfo(task);
+	break;
+}
+
 case ONRSPQRYOPTIONINSTRTRADECOST:
 {
 	this->processRspQryOptionInstrTradeCost(task);
@@ -328,27 +394,15 @@ case ONRSPQRYQUOTE:
 	break;
 }
 
-case ONRSPQRYLOCK:
+case ONRSPQRYOPTIONSELFCLOSE:
 {
-	this->processRspQryLock(task);
+	this->processRspQryOptionSelfClose(task);
 	break;
 }
 
-case ONRSPQRYLOCKPOSITION:
+case ONRSPQRYINVESTUNIT:
 {
-	this->processRspQryLockPosition(task);
-	break;
-}
-
-case ONRSPQRYINVESTORLEVEL:
-{
-	this->processRspQryInvestorLevel(task);
-	break;
-}
-
-case ONRSPQRYEXECFREEZE:
-{
-	this->processRspQryExecFreeze(task);
+	this->processRspQryInvestUnit(task);
 	break;
 }
 
@@ -409,6 +463,12 @@ case ONERRRTNORDERACTION:
 case ONRTNINSTRUMENTSTATUS:
 {
 	this->processRtnInstrumentStatus(task);
+	break;
+}
+
+case ONRTNBULLETIN:
+{
+	this->processRtnBulletin(task);
 	break;
 }
 
@@ -478,15 +538,27 @@ case ONRTNCFMMCTRADINGACCOUNTTOKEN:
 	break;
 }
 
-case ONRTNLOCK:
+case ONERRRTNBATCHORDERACTION:
 {
-	this->processRtnLock(task);
+	this->processErrRtnBatchOrderAction(task);
 	break;
 }
 
-case ONERRRTNLOCKINSERT:
+case ONRTNOPTIONSELFCLOSE:
 {
-	this->processErrRtnLockInsert(task);
+	this->processRtnOptionSelfClose(task);
+	break;
+}
+
+case ONERRRTNOPTIONSELFCLOSEINSERT:
+{
+	this->processErrRtnOptionSelfCloseInsert(task);
+	break;
+}
+
+case ONERRRTNOPTIONSELFCLOSEACTION:
+{
+	this->processErrRtnOptionSelfCloseAction(task);
 	break;
 }
 

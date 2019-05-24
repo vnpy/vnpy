@@ -2,8 +2,9 @@
 
 __author__ = 'CHENXY'
 
-
+from string import join
 from ctp_struct import structDict
+
 
 
 def processCallBack(line):
@@ -190,7 +191,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
         elif type_ == 'int':
             onArgsList.append('task.task_id')
 
-    onArgs = ', '.join(onArgsList)
+    onArgs = join(onArgsList, ', ')
     fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs +');\n')
 
     fprocess.write("};\n")
@@ -260,16 +261,16 @@ def createFunction(fcName, fcArgsTypeList, fcArgsValueList):
 #########################################################
 apiName = 'MdApi'
 
-fcpp = open(file='ThostFtdcMdApi.h', mode='r',encoding='gbk')
-ftask = open('ctp_md_task.cpp',  mode='w',encoding='utf-8')
-fprocess = open('ctp_md_process.cpp', mode='w',encoding='utf-8')
-ffunction = open('ctp_md_function.cpp',mode='w',encoding='utf-8')
-fdefine = open('ctp_md_define.cpp', mode='w',encoding='utf-8')
-fswitch = open('ctp_md_switch.cpp', mode='w',encoding='utf-8')
-fheaderprocess = open('ctp_md_header_process.h', mode='w',encoding='utf-8')
-fheaderon = open('ctp_md_header_on.h', mode='w',encoding='utf-8')
-fheaderfunction = open('ctp_md_header_function.h', mode='w',encoding='utf-8')
-fwrap = open('ctp_md_wrap.cpp', mode='w',encoding='utf-8')
+fcpp = open('ThostFtdcMdApi.h', 'r')
+ftask = open('ctp_md_task.cpp', 'w')
+fprocess = open('ctp_md_process.cpp', 'w')
+ffunction = open('ctp_md_function.cpp', 'w')
+fdefine = open('ctp_md_define.cpp', 'w')
+fswitch = open('ctp_md_switch.cpp', 'w')
+fheaderprocess = open('ctp_md_header_process.h', 'w')
+fheaderon = open('ctp_md_header_on.h', 'w')
+fheaderfunction = open('ctp_md_header_function.h', 'w')
+fwrap = open('ctp_md_wrap.cpp', 'w')
 
 define_count = 1
 

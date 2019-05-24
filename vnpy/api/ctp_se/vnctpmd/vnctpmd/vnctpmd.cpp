@@ -1,21 +1,16 @@
-// vnctpmd.cpp : ¶¨Òå DLL Ó¦ÓÃ³ÌÐòµÄµ¼³öº¯Êý¡£
-//
+
 
 #include "vnctpmd.h"
 
-///-------------------------------------------------------------------------------------
-///´ÓPython¶ÔÏóµ½C++ÀàÐÍ×ª»»ÓÃµÄº¯Êý
-///-------------------------------------------------------------------------------------
-
 void getInt(dict d, string key, int *value)
 {
-	if (d.has_key(key))		//¼ì²é×ÖµäÖÐÊÇ·ñ´æÔÚ¸Ã¼üÖµ
+	if (d.has_key(key))		
 	{
-		object o = d[key];	//»ñÈ¡¸Ã¼üÖµ
-		extract<int> x(o);	//´´½¨ÌáÈ¡Æ÷
-		if (x.check())		//Èç¹û¿ÉÒÔÌáÈ¡
+		object o = d[key];	
+		extract<int> x(o);	
+		if (x.check())		
 		{
-			*value = x();	//¶ÔÄ¿±êÕûÊýÖ¸Õë¸³Öµ
+			*value = x();	
 		}
 	}
 };
@@ -43,8 +38,7 @@ void getStr(dict d, string key, char *value)
 		{
 			string s = x();
 			const char *buffer = s.c_str();
-			//¶Ô×Ö·û´®Ö¸Õë¸³Öµ±ØÐëÊ¹ÓÃstrcpy_s, vs2013Ê¹ÓÃstrcpy±àÒëÍ¨²»¹ý
-			//+1Ó¦¸ÃÊÇÒòÎªC++×Ö·û´®µÄ½áÎ²·ûºÅ£¿²»ÊÇÌØ±ðÈ·¶¨£¬²»¼ÓÕâ¸ö1»á³ö´í
+			
 #ifdef _MSC_VER //WIN32
 			strcpy_s(value, strlen(buffer) + 1, buffer);
 #elif __GNUC__
@@ -71,12 +65,13 @@ void getChar(dict d, string key, char *value)
 
 
 ///-------------------------------------------------------------------------------------
-///C++µÄ»Øµ÷º¯Êý½«Êý¾Ý±£´æµ½¶ÓÁÐÖÐ
+///C++ï¿½Ä»Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý±ï¿½ï¿½æµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ///-------------------------------------------------------------------------------------
 
 void MdApi::OnFrontConnected()
 {
 	Task task = Task();
+	printf("MdApi:OnFrontConnected\n");
 	task.task_name = ONFRONTCONNECTED;
 	this->task_queue.push(task);
 };
@@ -342,7 +337,7 @@ void MdApi::OnRtnForQuoteRsp(CThostFtdcForQuoteRspField *pForQuoteRsp)
 
 
 ///-------------------------------------------------------------------------------------
-///¹¤×÷Ïß³Ì´Ó¶ÓÁÐÖÐÈ¡³öÊý¾Ý£¬×ª»¯Îªpython¶ÔÏóºó£¬½øÐÐÍÆËÍ
+///ï¿½ï¿½ï¿½ï¿½ï¿½ß³Ì´Ó¶ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½×ªï¿½ï¿½Îªpythonï¿½ï¿½ï¿½ï¿½ó£¬½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ///-------------------------------------------------------------------------------------
 
 void MdApi::processTask()
@@ -431,6 +426,7 @@ void MdApi::processTask()
 void MdApi::processFrontConnected(Task task)
 {
 	PyLock lock;
+	printf("processFrontConnected\n");
 	this->onFrontConnected();
 };
 
@@ -451,6 +447,7 @@ void MdApi::processRspUserLogin(Task task)
 	PyLock lock;
 	CThostFtdcRspUserLoginField task_data = any_cast<CThostFtdcRspUserLoginField>(task.task_data);
 	dict data;
+
 	data["SessionID"] = task_data.SessionID;
 	data["MaxOrderRef"] = boost::locale::conv::to_utf<char>(task_data.MaxOrderRef, std::string("GB2312"));
 	data["LoginTime"] = boost::locale::conv::to_utf<char>(task_data.LoginTime, std::string("GB2312"));
@@ -631,13 +628,14 @@ void MdApi::processRtnForQuoteRsp(Task task)
 
 
 ///-------------------------------------------------------------------------------------
-///Ö÷¶¯º¯Êý
+///ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ///-------------------------------------------------------------------------------------
 
 void MdApi::createFtdcMdApi(string pszFlowPath)
 {
 	this->api = CThostFtdcMdApi::CreateFtdcMdApi(pszFlowPath.c_str());
 	this->api->RegisterSpi(this);
+	cout << "Api Version:" << this->api->GetApiVersion() << " ------" << endl;
 };
 
 void MdApi::release()
@@ -658,7 +656,7 @@ int MdApi::join()
 
 int MdApi::exit()
 {
-	//¸Ãº¯ÊýÔÚÔ­ÉúAPIÀïÃ»ÓÐ£¬ÓÃÓÚ°²È«ÍË³öAPIÓÃ£¬Ô­ÉúµÄjoinËÆºõ²»Ì«ÎÈ¶¨
+	//ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½APIï¿½ï¿½Ã»ï¿½Ð£ï¿½ï¿½ï¿½ï¿½Ú°ï¿½È«ï¿½Ë³ï¿½APIï¿½Ã£ï¿½Ô­ï¿½ï¿½ï¿½ï¿½joinï¿½Æºï¿½ï¿½ï¿½Ì«ï¿½È¶ï¿½
 	this->api->RegisterSpi(NULL);
 	this->api->Release();
 	this->api = NULL;
@@ -673,6 +671,7 @@ string MdApi::getTradingDay()
 
 void MdApi::registerFront(string pszFrontAddress)
 {
+	printf("MdApi:registerFront\n");
 	this->api->RegisterFront((char*)pszFrontAddress.c_str());
 };
 
@@ -739,16 +738,17 @@ int MdApi::reqUserLogout(dict req, int nRequestID)
 
 
 ///-------------------------------------------------------------------------------------
-///Boost.Python·â×°
+///Boost.Pythonï¿½ï¿½×°
 ///-------------------------------------------------------------------------------------
 
 struct MdApiWrap : MdApi, wrapper < MdApi >
 {
 	virtual void onFrontConnected()
 	{
-		//ÒÔÏÂµÄtry...catch...¿ÉÒÔÊµÏÖ²¶×½python»·¾³ÖÐ´íÎóµÄ¹¦ÄÜ£¬·ÀÖ¹C++Ö±½Ó³öÏÖÔ­ÒòÎ´ÖªµÄ±ÀÀ£
+		//ï¿½ï¿½ï¿½Âµï¿½try...catch...ï¿½ï¿½ï¿½ï¿½Êµï¿½Ö²ï¿½×½pythonï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½Ü£ï¿½ï¿½ï¿½Ö¹C++Ö±ï¿½Ó³ï¿½ï¿½ï¿½Ô­ï¿½ï¿½Î´Öªï¿½Ä±ï¿½ï¿½ï¿½
 		try
 		{
+			printf("MdApiWrap:onFrontConnected\n");
 			this->get_override("onFrontConnected")();
 		}
 		catch (error_already_set const &)
@@ -893,7 +893,7 @@ struct MdApiWrap : MdApi, wrapper < MdApi >
 
 BOOST_PYTHON_MODULE(vnctpmd)
 {
-	PyEval_InitThreads();	//µ¼ÈëÊ±ÔËÐÐ£¬±£Ö¤ÏÈ´´½¨GIL
+	PyEval_InitThreads();	//ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½Ö¤ï¿½È´ï¿½ï¿½ï¿½GIL
 
 	class_<MdApiWrap, boost::noncopyable>("MdApi")
 		.def("createFtdcMdApi", &MdApiWrap::createFtdcMdApi)

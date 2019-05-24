@@ -6,8 +6,8 @@ from ctp_data_type import *
 
 def main():
     """主函数"""
-    fcpp = open('ThostFtdcUserApiStruct.h', mode='r',encoding='gbk')
-    fpy = open('ctp_struct.py', mode='w',encoding='utf-8')
+    fcpp = open('ThostFtdcUserApiStruct.h', 'r')
+    fpy = open('ctp_struct.py', 'w')
 
     fpy.write('# encoding: UTF-8\n')
     fpy.write('\n')
@@ -50,7 +50,7 @@ def main():
         else:
             py_line = '\n'
 
-        fpy.write(py_line)    #.decode('gbk').encode('utf-8'))
+        fpy.write(py_line.decode('gbk').encode('utf-8'))
 
 
 if __name__ == '__main__':

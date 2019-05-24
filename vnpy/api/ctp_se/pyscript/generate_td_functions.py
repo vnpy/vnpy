@@ -1,9 +1,12 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
-
+from string import join
 from ctp_struct import structDict
+
+
 
 def processCallBack(line):
     orignalLine = line
@@ -189,7 +192,7 @@ def createProcess(cbName, cbArgsTypeList, cbArgsValueList):
         elif type_ == 'int':
             onArgsList.append('task.task_id')
 
-    onArgs =  ', '.join(onArgsList)
+    onArgs = join(onArgsList, ', ')
     fprocess.write('\tthis->' + cbName.replace('On', 'on') + '(' + onArgs +');\n')
 
     fprocess.write("};\n")

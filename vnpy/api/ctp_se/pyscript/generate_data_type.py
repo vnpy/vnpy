@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+from __future__ import print_function
 __author__ = 'CHENXY'
 
 # C++和python类型的映射字典
@@ -75,8 +76,8 @@ def process_define(line):
 def main():
     """主函数"""
     try:
-        fcpp = open(file='ThostFtdcUserApiDataType.h',mode='r',encoding='gbk')
-        fpy = open(file='ctp_data_type.py', mode='w',encoding='utf-8')
+        fcpp = open('ThostFtdcUserApiDataType.h','r')
+        fpy = open('ctp_data_type.py', 'w')
 
         fpy.write('# encoding: UTF-8\n')
         fpy.write('\n')
@@ -87,8 +88,8 @@ def main():
         for line in fcpp:
             py_line = process_line(line)
             if py_line:
-                #fpy.write(py_line.decode('gbk').encode('utf-8'))
-                fpy.write(py_line)
+                fpy.write(py_line.decode('gbk').encode('utf-8'))
+
         fcpp.close()
         fpy.close()
 
