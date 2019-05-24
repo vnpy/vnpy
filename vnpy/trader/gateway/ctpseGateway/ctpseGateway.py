@@ -122,6 +122,7 @@ class CtpseGateway(VtGateway):
         self.requireAuthentication = False
 
         self.debug_tick = False
+        self.debug = False
 
         self.tdx_pool_count = 2         # 通达信连接池内连接数
 
@@ -171,7 +172,7 @@ class CtpseGateway(VtGateway):
             if 'authCode' in setting:
                 authCode = str(setting['authCode'])
                 appID = str(setting['appID'])
-                userProductInfo = str(setting['userProductInfo'])
+                userProductInfo = setting.get('userProductInfo',"")
                 self.tdApi.requireAuthentication = True
                 self.writeLog(u'使用授权码验证')
             else:
@@ -477,7 +478,8 @@ class CtpMdApi(MdApi):
         
         self.writeLog(text.DATA_SERVER_CONNECTED)
 
-        self.login()
+        if not self.loginStatus:
+            self.login()
     
     #----------------------------------------------------------------------  
     def onFrontDisconnected(self, n):
@@ -492,7 +494,8 @@ class CtpMdApi(MdApi):
     def onHeartBeatWarning(self, n):
         """心跳报警"""
         # 因为API的心跳报警比较常被触发，且与API工作关系不大，因此选择忽略
-        pass
+        if getattr(self.gateway,'debug',False):
+            print('onHeartBeatWarning')
     
     #----------------------------------------------------------------------   
     def onRspError(self, error, n, last):
@@ -506,6 +509,9 @@ class CtpMdApi(MdApi):
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
+        if getattr(self.gateway,'debug',False):
+            print('onRspUserLogin')
+
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = True
@@ -527,6 +533,8 @@ class CtpMdApi(MdApi):
     #---------------------------------------------------------------------- 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
+        if getattr(self.gateway,'debug',False):
+            print('onRspUserLogout')
         # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = False
@@ -546,13 +554,15 @@ class CtpMdApi(MdApi):
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
         # 通常不在乎订阅错误，选择忽略
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspSubMarketData')
         
     #----------------------------------------------------------------------  
     def onRspUnSubMarketData(self, data, error, n, last):
         """退订合约回报"""
         # 同上
-        pass  
+        if getattr(self.gateway, 'debug', False):
+            print('onRspUnSubMarketData')
         
     #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
@@ -562,6 +572,8 @@ class CtpMdApi(MdApi):
         #    self.writeLog(u'忽略成交量为0的无效单合约tick数据:')
         #    self.writeLog(data)
         #    return
+        if getattr(self.gateway, 'debug', False):
+            print('onRtnDepthMarketData')
 
         if not self.connectionStatus:
             self.connectionStatus = True
@@ -674,21 +686,26 @@ class CtpMdApi(MdApi):
     #---------------------------------------------------------------------- 
     def onRspSubForQuoteRsp(self, data, error, n, last):
         """订阅期权询价"""
-        pass
-        
-    #----------------------------------------------------------------------
+        if getattr(self.gateway, 'debug', False):
+            print('onRspSubForQuoteRsp')
+
+            #----------------------------------------------------------------------
     def onRspUnSubForQuoteRsp(self, data, error, n, last):
         """退订期权询价"""
-        pass 
+        if getattr(self.gateway, 'debug', False):
+            print('onRspUnSubForQuoteRsp')
         
     #---------------------------------------------------------------------- 
     def onRtnForQuoteRsp(self, data):
         """期权询价推送"""
-        pass        
-        
+        if getattr(self.gateway, 'debug', False):
+            print('onRtnForQuoteRsp')
+
     #----------------------------------------------------------------------
     def connect(self, userID, password, brokerID, address):
         """初始化连接"""
+        if getattr(self.gateway, 'debug', False):
+            print('connect')
         self.userID = userID                # 账号
         self.password = password            # 密码
         self.brokerID = brokerID            # 经纪商代码
@@ -707,6 +724,8 @@ class CtpMdApi(MdApi):
             
             # 初始化连接，成功会调用onFrontConnected
             self.init()
+
+            self.login()
             
         # 若已经连接但尚未登录，则进行登录
         else:
@@ -718,6 +737,8 @@ class CtpMdApi(MdApi):
         """订阅合约"""
         # 这里的设计是，如果尚未登录就调用了订阅方法
         # 则先保存订阅请求，登录完成后会自动订阅
+        if getattr(self.gateway, 'debug', False):
+            print('subscribe')
 
         # 订阅传统合约
         self.subscribeMarketData(str(subscribeReq.symbol))
@@ -788,8 +809,9 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
+        if getattr(self.gateway, 'debug', False):
+            print('onFrontConnected')
         self.connectionStatus = True
-        
         self.writeLog(text.TRADING_SERVER_CONNECTED)
         
         if self.requireAuthentication:
@@ -800,6 +822,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onFrontDisconnected(self, n):
         """服务器断开"""
+        if getattr(self.gateway, 'debug', False):
+            print('onFrontDisconnected')
         self.connectionStatus = False
         self.loginStatus = False
         self.gateway.tdConnected = False
@@ -809,11 +833,15 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onHeartBeatWarning')
     
     #----------------------------------------------------------------------
     def onRspAuthenticate(self, data, error, n, last):
         """验证客户端回报"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspAuthenticate')
+
         if error['ErrorID'] == 0:
             self.authStatus = True
             self.writeLog(text.TRADING_SERVER_AUTHENTICATED)
@@ -824,6 +852,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspUserLogin')
         # 如果登录成功，推送日志信息
         if error['ErrorID'] == 0:
             self.tradingDay = str(data['TradingDay'])
@@ -857,12 +887,16 @@ class CtpTdApi(TdApi):
 
     def resentReqQryInstrument(self):
         # 查询合约代码
+        if getattr(self.gateway, 'debug', False):
+            print('resentReqQryInstrument')
         self.reqID += 1
         self.reqQryInstrument({}, self.reqID)
 
     #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspUserLogout')
         # 如果登出成功，推送日志信息
         if error['ErrorID'] == 0:
             self.loginStatus = False
@@ -881,16 +915,20 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspUserPasswordUpdate')
     
     #----------------------------------------------------------------------
     def onRspTradingAccountPasswordUpdate(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspTradingAccountPasswordUpdate')
     
     #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspOrderInsert')
         # 推送委托信息
         order = VtOrderData()
         order.gatewayName = self.gatewayName
@@ -918,16 +956,20 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspParkedOrderInsert(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspParkedOrderInsert')
     
     #----------------------------------------------------------------------
     def onRspParkedOrderAction(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspParkedOrderAction')
     
     #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspOrderAction')
         try:
             symbol = data['InstrumentID']
         except KeyError:
@@ -943,72 +985,89 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQueryMaxOrderVolume(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQueryMaxOrderVolume')
     
     #----------------------------------------------------------------------
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspSettlementInfoConfirm')
         self.writeLog(text.SETTLEMENT_INFO_CONFIRMED)
 
         
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrder(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspSettlementInfoConfirm')
 
     #----------------------------------------------------------------------
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspRemoveParkedOrderAction')
     
     #----------------------------------------------------------------------
     def onRspExecOrderInsert(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspExecOrderInsert')
     
     #----------------------------------------------------------------------
     def onRspExecOrderAction(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspExecOrderAction')
     
     #----------------------------------------------------------------------
     def onRspForQuoteInsert(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspForQuoteInsert')
     
     #----------------------------------------------------------------------
     def onRspQuoteInsert(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQuoteInsert')
     
     #----------------------------------------------------------------------
     def onRspQuoteAction(self, data, error, n, last):
         """"""
-        pass
-    
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQuoteAction')
+
     #----------------------------------------------------------------------
     def onRspLockInsert(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspLockInsert')
 
     #----------------------------------------------------------------------
     def onRspCombActionInsert(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspCombActionInsert')
 
     #----------------------------------------------------------------------
     def onRspQryOrder(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspCombActionInsert')
     
     #----------------------------------------------------------------------
     def onRspQryTrade(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryTrade')
     
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
+
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInvestorPosition')
 
         if not data['InstrumentID']:
             return
@@ -1072,6 +1131,8 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryTradingAccount')
         self.gateway.mdConnected = True
 
         account = VtAccountData()
@@ -1101,12 +1162,14 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInvestor')
     
     #----------------------------------------------------------------------
     def onRspQryTradingCode(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryTradingCode')
     
     #----------------------------------------------------------------------
     def onRspQryInstrumentMarginRate(self, data, error, n, last):
@@ -1118,26 +1181,32 @@ class CtpTdApi(TdApi):
         :param last: 
         :return: 
         """
-        pass
-    
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInstrumentMarginRate')
+
     #----------------------------------------------------------------------
     def onRspQryInstrumentCommissionRate(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInstrumentCommissionRate')
     
     #----------------------------------------------------------------------
     def onRspQryExchange(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryExchange')
     
     #----------------------------------------------------------------------
     def onRspQryProduct(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryProduct')
     
     #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """合约查询回报"""
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInstrument')
 
         self.gateway.mdConnected = True
         contract = VtContractData()
@@ -1191,62 +1260,74 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryDepthMarketData')
     
     #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
         """查询结算信息回报"""
-        pass
-    
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryDepthMarketData')
+
     #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryTransferBank')
     
     #----------------------------------------------------------------------
     def onRspQryInvestorPositionDetail(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInvestorPositionDetail')
     
     #----------------------------------------------------------------------
     def onRspQryNotice(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInvestorPositionDetail')
     
     #----------------------------------------------------------------------
     def onRspQrySettlementInfoConfirm(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQrySettlementInfoConfirm')
     
     #----------------------------------------------------------------------
     def onRspQryInvestorPositionCombineDetail(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInvestorPositionCombineDetail')
     
     #----------------------------------------------------------------------
     def onRspQryCFMMCTradingAccountKey(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryCFMMCTradingAccountKey')
     
     #----------------------------------------------------------------------
     def onRspQryEWarrantOffset(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryEWarrantOffset')
     
     #----------------------------------------------------------------------
     def onRspQryInvestorProductGroupMargin(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryInvestorProductGroupMargin')
     
     #----------------------------------------------------------------------
     def onRspQryExchangeMarginRate(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryExchangeMarginRate')
     
     #----------------------------------------------------------------------
     def onRspQryExchangeMarginRateAdjust(self, data, error, n, last):
         """"""
-        pass
+        if getattr(self.gateway, 'debug', False):
+            print('onRspQryExchangeMarginRateAdjust')
     
     #----------------------------------------------------------------------
     def onRspQryExchangeRate(self, data, error, n, last):
@@ -1733,12 +1814,13 @@ class CtpTdApi(TdApi):
     def authenticate(self):
         """申请验证"""
         self.writeLog(u'申请授权码验证')
-        if self.userID and self.brokerID and self.authCode and self.userProductInfo:
+        if self.userID and self.brokerID and self.authCode:
             req = {}
             req['UserID'] = self.userID
             req['BrokerID'] = self.brokerID
             req['AuthCode'] = self.authCode
-            req['UserProductInfo'] = self.userProductInfo
+            if len(self.userProductInfo) > 0:
+                req['UserProductInfo'] = self.userProductInfo
             req['AppID'] = self.appID
             self.reqID +=1
             self.writeLog(u'提交验证...')
