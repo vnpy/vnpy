@@ -92,7 +92,8 @@ class AlpacaGateway(BaseGateway):
         self.pool = None
         self.order_id = 1_000_000
         self.count = 0
-        slef.subscirbe_symbols=[]
+        self.subscirbe_symbols=[]
+        self.ticks={}
 
     def add_task(self, func, *args):
         """"""
@@ -297,21 +298,41 @@ class AlpacaGateway(BaseGateway):
     def init_query(self):
         """"""
         self.count = 0
-        #self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def get_bar(self):
-        self.rest_api.get_barset('AAPL,TSLA', 'minute', limit=1)
+        ret = self.rest_api.get_barset(",".join(self.subscirbe_symbols), 'minute', limit=1)
+        for elem in self.subscirbe_symbols:
+            print(elem)
+            bar =  ret[elem][0]
+            open = float(bar.__dict__['_raw']['o'])
+            high = float(bar.__dict__['_raw']['h'])
+            low = float(bar.__dict__['_raw']['l'])
+            close = float(bar.__dict__['_raw']['c'])
+
+            tick = TickData(
+                symbol=elem,
+                exchange=Exchange.ALPACA,
+                datetime=datetime.fromtimestamp(int(  bar.__dict__['_raw']['t'] )),
+                gateway_name=self.gateway_name,
+                open_price =open ,
+                high_price =high ,
+                low_price =low ,
+                pre_close =close 
+            )
+            self.gateway.on_tick(copy(tick))
 
     def process_timer_event(self, event: Event):
         """"""
         self.count += 1
-        if self.count < 10:
+        if self.count < 20:
             return
         else:
             self.count=0
 
         self.query_account()
         self.query_position()
+        self.get_bar()
 
 
 class AlpacaWebsocketApi(object):
