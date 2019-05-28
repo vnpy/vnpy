@@ -3,7 +3,6 @@
     please install alpaca_trade_api first
     Author: vigarbuaa
 """
-
 import hashlib
 import hmac
 import sys
@@ -21,6 +20,7 @@ from vnpy.api.websocket import WebsocketClient
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.stream2 import StreamConn
 import asyncio
+import traceback
 
 from vnpy.trader.constant import (
     Direction,
@@ -57,9 +57,7 @@ STATUS_ALPACA2VT = {
     "cancelling": Status.CANCELLED,
     "failure": Status.REJECTED,
 }
-# PRICETYPE_VT2ALPACA = {
-#    PriceType.LIMIT: "EXCHANGE LIMIT",
-#    PriceType.MARKET: "EXCHANGE MARKET"}
+
 DIRECTION_VT2ALPACA = {Direction.LONG: "buy", Direction.SHORT: "sell"}
 DIRECTION_ALPACA2VT = {"buy": Direction.LONG, "sell": Direction.SHORT,
                        "long": Direction.LONG, "short": Direction.SHORT}
@@ -69,7 +67,6 @@ ORDERTYPE_VT2ALPACA = {
     OrderType.MARKET: "market"
 }
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
-
 
 class AlpacaGateway(BaseGateway):
     """
@@ -95,6 +92,7 @@ class AlpacaGateway(BaseGateway):
         self.pool = None
         self.order_id = 1_000_000
         self.count = 0
+        slef.subscirbe_symbols=[]
 
     def add_task(self, func, *args):
         """"""
@@ -130,12 +128,11 @@ class AlpacaGateway(BaseGateway):
 
         # Put connect task into quque.
         self.add_task(self.query_account)
-        # self.add_task(self.query_contract)
+        self.add_task(self.query_contract)
         self.add_task(self.query_position)
         self.add_task(self.query_order)
 
         self.init_query()
-        
 
     def streaming_handler(self):
         stream_api = AlpacaWebsocketApi(self.key, self.secret, REST_HOST,self)
@@ -152,7 +149,6 @@ class AlpacaGateway(BaseGateway):
             gateway_name=self.gateway_name
         )
         self.on_account(account)
-        self.write_log("账户资金查询成功")
 
     def query_contract(self):
         """"""
@@ -180,12 +176,10 @@ class AlpacaGateway(BaseGateway):
     def send_order(self, req: OrderRequest):
         """"""
         local_id = self._gen_unqiue_cid()
-        order = req.create_order_data(local_id, self.gateway_name)
-        self.on_order(order)
-        #self.add_task(self._send_order, req, local_id)
-        print("debug send order: ", order.__dict__)
-        self._send_order(req, local_id)
-        return order.vt_orderid
+        if(self._send_order(req, local_id)):
+            order = req.create_order_data(local_id, self.gateway_name)
+            self.on_order(order)
+            return order.vt_orderid
 
     # need config
     def _send_order(self, req: OrderRequest, local_id):
@@ -200,32 +194,45 @@ class AlpacaGateway(BaseGateway):
 
         order = None
         if req.type == OrderType.LIMIT:
-            order = self.rest_api.submit_order(
-                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
-                qty=abs(int(amount)),
-                side=order_side,
-                type=order_type,
-                time_in_force='day',
-                client_order_id=str(orderid),
-                limit_price=float(req.price),
-            )
-            print("debug 1", order)
+            try:
+                order = self.rest_api.submit_order(
+                    symbol=req.symbol,
+                    qty=abs(int(amount)),
+                    side=order_side,
+                    type=order_type,
+                    time_in_force='day',
+                    client_order_id=str(orderid),
+                    limit_price=float(req.price),
+                )
+            except:
+                traceback.print_exc()
+                self.write_log("查询委托失败")
+                return False
         else:
-            order = self.rest_api.submit_order(
-                symbol='b0b6dd9d-8b9b-48a9-ba46-b9d54906e415',
-                qty=abs(int(amount)),
-                side=order_side,
-                type=order_type,
-                time_in_force='day',
-                client_order_id=str(orderid)
-            )
-            print("debug 2", order)
-        return
+            try:
+                order = self.rest_api.submit_order(
+                    symbol=req.symbol,
+                    qty=abs(int(amount)),
+                    side=order_side,
+                    type=order_type,
+                    time_in_force='day',
+                    client_order_id=str(orderid)
+                )
+            except:
+                traceback.print_exc()
+                self.write_log("查询委托失败")
+                return False
+
+        return True
 
     # fix
     def subscribe(self, req: SubscribeRequest):
         """"""
-        pass
+        print('debug subscribe req',req)
+        # debug subscribe req SubscribeRequest(symbol='AAPL', exchange=<Exchange.ALPACA: '
+        # barset = api.get_barset('AAPL,TSLA', 'minute', limit=1)
+        # barset = self.rest_api.get_barset('AAPL,TSLA', 'minute', limit=1)
+        self.subscirbe_symbols.append(req.symbol)
 
     def query_order(self):
         """"""
@@ -257,9 +264,6 @@ class AlpacaGateway(BaseGateway):
             self.write_log("查询委托失败")
             return
 
-        # self.process_order(data)
-        # self.process_deal(data)
-
     # fix
     def cancel_order(self, req: CancelRequest):
         """"""
@@ -273,8 +277,6 @@ class AlpacaGateway(BaseGateway):
     def query_position(self):
         """"""
         data = self.rest_api.list_positions()
-        print("debug query_pos: ", data)
-        print("debug query_pos: ", type(data))
         for d in data:
             print("debug query_pos  3: ", d)
             position = PositionData(
@@ -286,7 +288,6 @@ class AlpacaGateway(BaseGateway):
                 pnl=d.unrealized_pl,
                 gateway_name=self.gateway_name,
             )
-            print("debug query_position: ", position)
             self.on_position(position)
 
     def close(self):
@@ -296,13 +297,18 @@ class AlpacaGateway(BaseGateway):
     def init_query(self):
         """"""
         self.count = 0
-        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
-    
+        #self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
+    def get_bar(self):
+        self.rest_api.get_barset('AAPL,TSLA', 'minute', limit=1)
+
     def process_timer_event(self, event: Event):
         """"""
         self.count += 1
-        if self.count < 5:
+        if self.count < 10:
             return
+        else:
+            self.count=0
 
         self.query_account()
         self.query_position()
