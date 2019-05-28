@@ -1,13 +1,6 @@
-# encoding: UTF-8
-
-"""
-本文件中实现了风控引擎，用于提供一系列常用的风控功能：
-1. 委托流控（单位时间内最大允许发出的委托数量）
-2. 总成交限制（每日总成交数量限制）
-3. 单笔委托的委托数量控制
-"""
-import platform
-from vnpy.trader.object import LogData, OrderRequest
+""""""
+from collections import defaultdict
+from vnpy.trader.object import OrderRequest
 from vnpy.event import Event, EventEngine, EVENT_TIMER
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_LOG
@@ -15,7 +8,10 @@ from vnpy.trader.constant import Status
 from vnpy.trader.utility import load_json, save_json
 
 
-class RmEngine(BaseEngine):
+APP_NAME = "RiskManager"
+
+
+class RiskManagerEngine(BaseEngine):
     """风控引擎"""
     setting_filename = "risk_manager_setting.json"
     
@@ -26,16 +22,16 @@ class RmEngine(BaseEngine):
         main_engine.rmEngine = self
 
         self.active = False
-        self.order_flow_count = 0    # 单位时间内委托计数
-        self.order_flow_limit = 50     # 委托限制
-        self.order_flow_clear = 1     # 计数清空时间（秒）
-        self.order_flow_timer = 0    # 计数清空时间计时
-        self.order_size_limit = 100    # 单笔委托最大限制
-        self.trade_count = 0        # 当日成交合约数量统计
-        self.trade_limit = 1000         # 当日成交合约数量限制
-        self.order_cancel_limit = 10   # 撤单总次数限制
-        self.order_cancel_count = {}           # 单一合约对应撤单次数的字典
-        self.active_order_limit = 20  # 活动合约最大限制
+        self.order_flow_count = 0    
+        self.order_flow_limit = 50     
+        self.order_flow_clear = 1     
+        self.order_flow_timer = 0    
+        self.order_size_limit = 100   
+        self.trade_count = 0      
+        self.trade_limit = 1000         
+        self.order_cancel_limit = 10  
+        self.order_cancel_counts = defaultdict(int)          
+        self.active_order_limit = 20  
         
         self.load_setting()
         self.registerEvent()
@@ -68,27 +64,23 @@ class RmEngine(BaseEngine):
    
     def register_event(self):
         """"""
-        self.event_engine.register(EVENT_TRADE, self.update_trade)
-        self.event_engine.register(EVENT_TIMER, self.update_timer)
-        self.event_engine.register(EVENT_ORDER, self.update_order)
+        self.event_engine.register(EVENT_TRADE, self.process_trade_event)
+        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+        self.event_engine.register(EVENT_ORDER, self.process_order_event)
             
-    def update_order(self, event):
+    def process_order_event(self, event: Event):
         """"""
-        order = event.dict_["data"]
+        order = event.data
         if order.status != Status.CANCELLED:
-            return
-        
-        if order.symbol not in self.order_cancel_count:
-            self.order_cancel_count[order.symbol] = 1
-        else:
-            self.order_cancel_count[order.symbol] += 1
+            return       
+        self.order_cancel_counts[order.symbol] += 1
    
-    def update_trade(self, event):
+    def process_trade_event(self, event: Event):
         """"""
-        trade = event.dict_["data"]
+        trade = event.data
         self.trade_count += trade.volume
     
-    def update_timer(self, event):
+    def process_timer_event(self, event: Event):
         """"""
         self.order_flow_timer += 1
 
@@ -96,68 +88,62 @@ class RmEngine(BaseEngine):
             self.order_flow_count = 0
             self.order_flow_timer = 0
    
-    def write_risk_log(self, content):
-        """"""
-        if platform.uname() == "Windows":
-            import winsound
-            winsound.PlaySound("SystemHand", winsound.SND_ASYNC)
-
-        log = LogData()
-        log.log_content = content
-        log.gateway_name = self.name
-        event = Event(type_=EVENT_LOG)
-        event.dict_["data"] = log
+    def write_risk_log(self, msg: str):
+        """"""        
+        event = Event(
+            EVENT_LOG,
+            msg
+        )
         self.event_engine.put(event)
-   
-    def checkRisk(self, req: OrderRequest, gateway_name):
+
+    def check_risk(self, req: OrderRequest, gateway_name: str):
         """"""
         if not self.active:
             return True
 
-        # 检查委托数量
+        # Check order volume
         if req.volume <= 0:
-            self.write_risk_log(f"委托数量必须大于0")
+            self.write_risk_log("委托数量必须大于0")
             return False
         
         if req.volume > self.order_size_limit:
             self.write_risk_log(f"单笔委托数量{req.volume}，超过限制{self.order_size_limit}")
             return False
 
-        # 检查成交合约量
+        # Check trade volume
         if self.trade_count >= self.trade_limit:
             self.write_risk_log(f"今日总成交合约数量{self.trade_count}，超过限制{self.trade_limit}")
             return False
 
-        # 检查流控
+        # Check flow count
         if self.order_flow_count >= self.order_flow_limit:
             self.write_risk_log(f"委托流数量{self.order_flow_count}，超过限制每{self.order_flow_clear}秒{self.order_flow_limit}")
             return False
 
-        # 检查总活动合约
+        # Check all active orders
         active_order_count = len(self.main_engine.get_all_active_orders())
         if active_order_count >= self.active_order_limit:
             self.write_risk_log(f"当前活动委托数量{active_order_count}，超过限制{self.active_order_limit}")
             return False
 
-        # 检查撤单次数
-        if req.symbol in self.order_cancel_count and self.order_cancel_count[req.symbol] >= self.order_cancel_limit:
-            self.write_risk_log(f"当日{req.symbol}撤单次数{self.order_cancel_count[req.symbol]}，超过限制{self.order_cancel_limit}")
+        # Check order cancel counts
+        if req.symbol in self.order_cancel_counts and self.order_cancel_counts[req.symbol] >= self.order_cancel_limit:
+            self.write_risk_log(f"当日{req.symbol}撤单次数{self.order_cancel_counts[req.symbol]}，超过限制{self.order_cancel_limit}")
             return False
 
-        # 对于通过风控的委托，增加流控计数
+        # Add flow count if pass all checks
         self.order_flow_count += 1
-
         return True
     
     def clear_order_flow_count(self):
         """"""
         self.order_flow_count = 0
-        self.write_risk_log(f"清空流控计数")
+        self.write_risk_log("清空流控计数")
     
     def clear_trade_count(self):
         """"""
         self.trade_count = 0
-        self.write_risk_log(f"清空总成交计数")
+        self.write_risk_log("清空总成交计数")
    
     def set_order_flow_limit(self, n):
         """"""
@@ -188,9 +174,9 @@ class RmEngine(BaseEngine):
         self.active = not self.active
 
         if self.active:
-            self.write_risk_log(f"风险管理功能启动")
+            self.write_risk_log("风险管理功能启动")
         else:
-            self.write_risk_log(f"风险管理功能停止")
+            self.write_risk_log("风险管理功能停止")
                 
     def stop(self):
         """"""
