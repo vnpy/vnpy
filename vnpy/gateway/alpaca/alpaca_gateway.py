@@ -41,12 +41,10 @@ from vnpy.trader.object import (
     SubscribeRequest,
 )
 
-BASE_URL = "https://paper-api.alpaca.markets"
-KEY = "https://api.alpaca.com/"
+REST_HOST = "https://api.alpaca.markets"
+PAPER_REST_HOST = "https://paper-api.alpaca.markets"
+KEY = ""
 SECRET = ""
-
-REST_HOST = "https://paper-api.alpaca.markets"
-WEBSOCKET_HOST = "https://api.alpaca.com/ws/2"
 
 STATUS_ALPACA2VT = {
     "new": Status.SUBMITTING,
@@ -68,17 +66,18 @@ ORDERTYPE_VT2ALPACA = {
 }
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
 
+
 class AlpacaGateway(BaseGateway):
     """
     VN Trader Gateway for Alpaca connection.
     """
-
-    default_setting = {
+default_setting = {
         "key": "",
         "secret": "",
         "session": 3,
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
+        "rest_host": PAPER_REST_HOST,
     }
 
     def __init__(self, event_engine):
@@ -92,8 +91,8 @@ class AlpacaGateway(BaseGateway):
         self.pool = None
         self.order_id = 1_000_000
         self.count = 0
-        self.subscirbe_symbols=[]
-        self.ticks={}
+        self.subscirbe_symbols = []
+        self.ticks = {}
 
     def add_task(self, func, *args):
         """"""
@@ -115,9 +114,10 @@ class AlpacaGateway(BaseGateway):
         self.session = setting["session"]
         self.proxy_host = setting["proxy_host"]
         self.proxy_port = setting["proxy_port"]
+        self.rest_host = setting["rest_host"]
 
         print("starting rest api")
-        self.rest_api = tradeapi.REST(self.key, self.secret, REST_HOST)
+        self.rest_api = tradeapi.REST(self.key, self.secret, self.rest_host)
         self.active = True
         self.pool = Pool(5)
         self.pool.apply_async(self.run)
@@ -136,13 +136,12 @@ class AlpacaGateway(BaseGateway):
         self.init_query()
 
     def streaming_handler(self):
-        stream_api = AlpacaWebsocketApi(self.key, self.secret, REST_HOST,self)
+        stream_api = AlpacaWebsocketApi(self.key, self.secret, self.rest_host, self)
         stream_api.start()
 
     def query_account(self):
         """"""
         data = self.rest_api.get_account()
-        print("deubg query_account: ", data)
         account = AccountData(
             accountid=data.id,
             balance=float(data.cash),
@@ -158,7 +157,7 @@ class AlpacaGateway(BaseGateway):
             symbol = instrument_data.symbol
             contract = ContractData(
                 symbol=symbol,
-                exchange=Exchange.ALPACA,  # vigar, need to fix to nasdq ...
+                exchange=Exchange.ALPACA,  
                 name=symbol,
                 product=Product.SPOT,
                 size=1,
@@ -169,7 +168,6 @@ class AlpacaGateway(BaseGateway):
         self.write_log("合约信息查询成功")
 
     def _gen_unqiue_cid(self):
-        # return int(round(time.time() * 1000))
         self.order_id = self.order_id + 1
         local_oid = time.strftime("%y%m%d%H%M%S") + "_" + str(self.order_id)
         return int(local_oid)
@@ -182,10 +180,8 @@ class AlpacaGateway(BaseGateway):
             self.on_order(order)
             return order.vt_orderid
 
-    # need config
     def _send_order(self, req: OrderRequest, local_id):
         orderid = local_id
-        print("debug in _send_order: ", orderid)
         if req.direction == Direction.LONG:
             amount = req.volume
         else:
@@ -223,27 +219,18 @@ class AlpacaGateway(BaseGateway):
                 traceback.print_exc()
                 self.write_log("查询委托失败")
                 return False
-
         return True
 
-    # fix
     def subscribe(self, req: SubscribeRequest):
         """"""
-        print('debug subscribe req',req)
-        # debug subscribe req SubscribeRequest(symbol='AAPL', exchange=<Exchange.ALPACA: '
-        # barset = api.get_barset('AAPL,TSLA', 'minute', limit=1)
-        # barset = self.rest_api.get_barset('AAPL,TSLA', 'minute', limit=1)
         self.subscirbe_symbols.append(req.symbol)
 
     def query_order(self):
         """"""
-        print("come to query_order")
         try:
             data = self.rest_api.list_orders()
-            print("queryorders: ", data)
             data = sorted(data, key=lambda x: x.created_at, reverse=False)
             for d in data:
-                print("debug order in query_order: ", d)
                 order = OrderData(
                     symbol=d.symbol,
                     orderid=d.client_order_id,
@@ -251,13 +238,10 @@ class AlpacaGateway(BaseGateway):
                     direction=DIRECTION_ALPACA2VT[d.side],
                     price=d.limit_price if d.limit_price else 0.0,
                     volume=d.qty,
-                    # orderType: ORDERTYPE_ALPACA2VT[d.order_type],
-                    # traded=i.filled,
                     status=STATUS_ALPACA2VT[d.status],
                     #time=datetime.fromtimestamp(i.created_at / 1000).strftime("%H:%M:%S"),
                     gateway_name=self.gateway_name,
                 )
-                #self.ID_TIGER2VT[str(i.order_id)] = local_id
                 self.on_order(order)
 
         except:  # noqa
@@ -265,10 +249,8 @@ class AlpacaGateway(BaseGateway):
             self.write_log("查询委托失败")
             return
 
-    # fix
     def cancel_order(self, req: CancelRequest):
         """"""
-        print("debug _cancel_order: ", req)
         order = self.rest_api.get_order_by_client_order_id(req.orderid)
         order_id = order.id
         print("debug cancel order: localid: ",
@@ -279,7 +261,6 @@ class AlpacaGateway(BaseGateway):
         """"""
         data = self.rest_api.list_positions()
         for d in data:
-            print("debug query_pos  3: ", d)
             position = PositionData(
                 symbol=d.symbol,
                 exchange=Exchange.ALPACA,
@@ -293,18 +274,22 @@ class AlpacaGateway(BaseGateway):
 
     def close(self):
         """"""
-        self.rest_api.stop()
-    
+        pass
+
     def init_query(self):
         """"""
         self.count = 0
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
     def get_bar(self):
-        ret = self.rest_api.get_barset(",".join(self.subscirbe_symbols), 'minute', limit=1)
+        print("call get_bar", self.subscirbe_symbols)
+        if len(self.subscirbe_symbols) == 0:
+            return
+        ret = self.rest_api.get_barset(
+            ",".join(self.subscirbe_symbols), 'minute', limit=1)
         for elem in self.subscirbe_symbols:
             print(elem)
-            bar =  ret[elem][0]
+            bar = ret[elem][0]
             open = float(bar.__dict__['_raw']['o'])
             high = float(bar.__dict__['_raw']['h'])
             low = float(bar.__dict__['_raw']['l'])
@@ -313,22 +298,23 @@ class AlpacaGateway(BaseGateway):
             tick = TickData(
                 symbol=elem,
                 exchange=Exchange.ALPACA,
-                datetime=datetime.fromtimestamp(int(  bar.__dict__['_raw']['t'] )),
+                datetime=datetime.fromtimestamp(
+                    int(bar.__dict__['_raw']['t'])),
                 gateway_name=self.gateway_name,
-                open_price =open ,
-                high_price =high ,
-                low_price =low ,
-                pre_close =close 
+                open_price=open,
+                high_price=high,
+                low_price=low,
+                pre_close=close
             )
-            self.gateway.on_tick(copy(tick))
+            self.on_tick(copy(tick))
 
     def process_timer_event(self, event: Event):
         """"""
         self.count += 1
-        if self.count < 20:
+        if self.count < 5:
             return
         else:
-            self.count=0
+            self.count = 0
 
         self.query_account()
         self.query_position()
@@ -338,15 +324,15 @@ class AlpacaGateway(BaseGateway):
 class AlpacaWebsocketApi(object):
     """"""
 
-    def __init__(self, key, secret, base_url,gateway):
+    def __init__(self, key, secret, base_url, gateway):
         """"""
         self.key = key
         self.secret = secret
         self.base_url = base_url
-        self.conn=None
+        self.conn = None
         self.trade_count = 10000
         self.connect_time = None
-        self.gateway=gateway
+        self.gateway = gateway
 
     def start(self):
         self.conn = StreamConn(self.key, self.secret, self.base_url)
@@ -358,20 +344,20 @@ class AlpacaWebsocketApi(object):
         self.run()
 
     def run(self):
-        print("---------------stream api --running--------------------")
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        self.conn.run(['account_updates','trade_updates','authorized','^Q.'])
+        self.conn.run(
+            ['account_updates', 'trade_updates', 'authorized', '^Q.'])
 
-    async def on_account_updates(self,conn, channel, account):
+    async def on_account_updates(self, conn, channel, account):
         print('---account---', account)
 
-    async def on_trade_updates(self,conn, channel, trade_raw):
+    async def on_trade_updates(self, conn, channel, trade_raw):
         print('on_trade_updates', trade_raw)
-        print('trade_raw event:',trade_raw.event)
-        print('trade_raw order:',trade_raw.order)
+        print('trade_raw event:', trade_raw.event)
+        print('trade_raw order:', trade_raw.order)
         event = trade_raw.event
-        ret_order=trade_raw.order
+        ret_order = trade_raw.order
 
         if event == "fill":
             self.trade_count += 1
@@ -387,16 +373,16 @@ class AlpacaWebsocketApi(object):
                 time=trade_raw.timestamp[11:19],
                 gateway_name=self.gateway.gateway_name,
             )
-            print('call gateay on_trade:',trade)
+            print('call gateay on_trade:', trade)
             self.gateway.on_trade(trade)
         else:
             print("trade event is not null")
 
-    async def on_auth(self,conn, stream, msg):
+    async def on_auth(self, conn, stream, msg):
         print('on_auth stream', stream, "  [msg]:", msg)
 
-    async def on_q(self,conn, subject, data):
+    async def on_q(self, conn, subject, data):
         print('on_auth subject', subject, "  [data]:", data)
 
-    async def on_bars(self,conn, channel, bar):
+    async def on_bars(self, conn, channel, bar):
         print('on_bars channel:', channel, "  [bar]:", bar)
