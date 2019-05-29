@@ -46,10 +46,16 @@ class AlgoEngine(BaseEngine):
         from .algos.twap_algo import TwapAlgo
         from .algos.iceberg_algo import IcebergAlgo
         from .algos.sniper_algo import SniperAlgo
+        from .algos.stop_algo import StopAlgo
+        from .algos.best_limit_algo import BestLimitAlgo
+        from .algos.grid_algo import GridAlgo
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
         self.add_algo_template(SniperAlgo)
+        self.add_algo_template(StopAlgo)
+        self.add_algo_template(BestLimitAlgo)
+        self.add_algo_template(GridAlgo)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""

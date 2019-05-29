@@ -406,7 +406,7 @@ class CtpTdApi(TdApi):
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
-            self.authStatus = True
+            self.auth_staus = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
         else:

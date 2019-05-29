@@ -91,6 +91,7 @@ class Exchange(Enum):
     # Global
     SMART = "SMART"         # Smart Router for US stocks
     NYMEX = "NYMEX"         # New York Mercantile Exchange
+    COMEX = "COMEX"         # a division of theNew York Mercantile Exchange
     GLOBEX = "GLOBEX"       # Globex of CME
     IDEALPRO = "IDEALPRO"   # Forex ECN of Interactive Brokers
     CME = "CME"             # Chicago Mercantile Exchange

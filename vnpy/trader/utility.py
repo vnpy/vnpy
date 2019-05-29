@@ -17,12 +17,12 @@ def extract_vt_symbol(vt_symbol: str):
     """
     :return: (symbol, exchange)
     """
-    symbol, exchange_str = vt_symbol.split('.')
+    symbol, exchange_str = vt_symbol.split(".")
     return symbol, Exchange(exchange_str)
 
 
 def generate_vt_symbol(symbol: str, exchange: Exchange):
-    return f'{symbol}.{exchange.value}'
+    return f"{symbol}.{exchange.value}"
 
 
 def _get_trader_dir(temp_name: str):
@@ -84,7 +84,7 @@ def load_json(filename: str):
     filepath = get_file_path(filename)
 
     if filepath.exists():
-        with open(filepath, mode='r') as f:
+        with open(filepath, mode="r", encoding="UTF-8") as f:
             data = json.load(f)
         return data
     else:
@@ -97,8 +97,13 @@ def save_json(filename: str, data: dict):
     Save data into json file in temp path.
     """
     filepath = get_file_path(filename)
-    with open(filepath, mode='w+') as f:
-        json.dump(data, f, indent=4)
+    with open(filepath, mode="w+", encoding="UTF-8") as f:
+        json.dump(
+            data,
+            f,
+            indent=4,
+            ensure_ascii=False
+        )
 
 
 def round_to(value: float, target: float):
