@@ -188,12 +188,7 @@ texinfo_documents = [
 
 # -- Options for intersphinx output ----------------------------------------------
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'flask': ('http://flask.pocoo.org/docs/latest/', None),
-    'werkzeug': ('http://werkzeug.pocoo.org/docs/latest/', None),
-    'click': ('http://click.pocoo.org/', None),
-    'jinja': ('http://jinja.pocoo.org/docs/latest', None),
-    'wtforms': ('https://wtforms.readthedocs.io/en/latest', None),
+    #'python': ('https://docs.python.org/3/', None),
 }
 
 # -- Options for Epub output -------------------------------------------------
