@@ -19,7 +19,7 @@ from tigeropen.tiger_open_config import TigerOpenClientConfig
 from tigeropen.common.consts import Language, Currency, Market
 from tigeropen.quote.quote_client import QuoteClient
 from tigeropen.trade.trade_client import TradeClient
-from tigeropen.trade.domain.order import ORDER_STATUS
+from tigeropen.trade.domain.order import OrderStatus
 from tigeropen.push.push_client import PushClient
 from tigeropen.common.exceptions import ApiException
 
@@ -64,15 +64,15 @@ ORDERTYPE_VT2TIGER = {
 }
 
 STATUS_TIGER2VT = {
-    ORDER_STATUS.PENDING_NEW: Status.SUBMITTING,
-    ORDER_STATUS.NEW: Status.SUBMITTING,
-    ORDER_STATUS.HELD: Status.SUBMITTING,
-    ORDER_STATUS.PARTIALLY_FILLED: Status.PARTTRADED,
-    ORDER_STATUS.FILLED: Status.ALLTRADED,
-    ORDER_STATUS.CANCELLED: Status.CANCELLED,
-    ORDER_STATUS.PENDING_CANCEL: Status.CANCELLED,
-    ORDER_STATUS.REJECTED: Status.REJECTED,
-    ORDER_STATUS.EXPIRED: Status.NOTTRADED
+    OrderStatus.PENDING_NEW: Status.SUBMITTING,
+    OrderStatus.NEW: Status.SUBMITTING,
+    OrderStatus.HELD: Status.SUBMITTING,
+    OrderStatus.PARTIALLY_FILLED: Status.PARTTRADED,
+    OrderStatus.FILLED: Status.ALLTRADED,
+    OrderStatus.CANCELLED: Status.CANCELLED,
+    OrderStatus.PENDING_CANCEL: Status.CANCELLED,
+    OrderStatus.REJECTED: Status.REJECTED,
+    OrderStatus.EXPIRED: Status.NOTTRADED
 }
 
 PUSH_STATUS_TIGER2VT = {
@@ -559,7 +559,7 @@ class TigerGateway(BaseGateway):
         Process trade data for both query and update.
         """
         for i in data:
-            if i.status == ORDER_STATUS.PARTIALLY_FILLED or i.status == ORDER_STATUS.FILLED:
+            if i.status == OrderStatus.PARTIALLY_FILLED or i.status == OrderStatus.FILLED:
                 symbol, exchange = convert_symbol_tiger2vt(str(i.contract))
                 self.tradeid += 1
 
