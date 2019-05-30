@@ -49,6 +49,7 @@ class AlgoEngine(BaseEngine):
         from .algos.stop_algo import StopAlgo
         from .algos.best_limit_algo import BestLimitAlgo
         from .algos.grid_algo import GridAlgo
+        from .algos.dma_algo import DmaAlgo
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
@@ -56,6 +57,7 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(StopAlgo)
         self.add_algo_template(BestLimitAlgo)
         self.add_algo_template(GridAlgo)
+        self.add_algo_template(DmaAlgo)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
