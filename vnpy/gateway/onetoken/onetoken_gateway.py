@@ -64,7 +64,7 @@ class OnetokenGateway(BaseGateway):
     default_setting = {
         "OT Key": "",
         "OT Secret": "",
-        "交易所": ["BINANCE", "BITMEX", "OKEX", "OKEF"],
+        "交易所": ["BINANCE", "BITMEX", "OKEX", "OKEF", "HUOBIP", "HUOBIF"],
         "账户": "",
         "会话数": 3,
         "代理地址": "127.0.0.1",
