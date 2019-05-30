@@ -85,7 +85,7 @@ class StopAlgo(AlgoTemplate):
                 if tick.limit_down:
                     price = max(price, tick.limit_down)
 
-                self.vt_orderid = self.buy(
+                self.vt_orderid = self.sell(
                     self.vt_symbol,
                     price,
                     self.volume,
