@@ -1019,6 +1019,18 @@ class BacktestingEngine:
         """
         print(f"{datetime.now()}\t{msg}")
 
+    def get_all_trades(self):
+        """
+        Return all trade data of current backtesting result.
+        """
+        return self.trades.values()
+
+    def get_all_orders(self):
+        """
+        Return all limit order data of current backtesting result.
+        """
+        return self.limit_orders.values()
+
 
 class DailyResult:
     """"""
