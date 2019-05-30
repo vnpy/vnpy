@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Callable
 from itertools import product
 from functools import lru_cache
@@ -211,22 +211,44 @@ class BacktestingEngine:
         """"""
         self.output("开始加载历史数据")
 
-        if self.mode == BacktestingMode.BAR:
-            self.history_data = load_bar_data(
-                self.symbol,
-                self.exchange,
-                self.interval,
-                self.start,
-                self.end
-            )
-        else:
-            self.history_data = load_tick_data(
-                self.symbol,
-                self.exchange,
-                self.start,
-                self.end
-            )
+        if not self.end:
+            self.end = datetime.now()
 
+        # Load 30 days of data each time and allow for progress update
+        progress_delta = timedelta(days=30)
+        total_delta = self.end - self.start
+
+        start = self.start
+        end = self.start + progress_delta
+        progress = 0
+
+        while start < self.end:
+            if self.mode == BacktestingMode.BAR:
+                data = load_bar_data(
+                    self.symbol,
+                    self.exchange,
+                    self.interval,
+                    start,
+                    end
+                )
+            else:
+                data = load_tick_data(
+                    self.symbol,
+                    self.exchange,
+                    start,
+                    end
+                )
+
+            self.history_data.extend(data)
+            
+            progress += progress_delta / total_delta
+            progress = min(progress, 1)
+            progress_bar = "#" * int(progress * 10)
+            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
+            
+            start = end
+            end += progress_delta
+        
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
     def run_backtesting(self):
@@ -803,6 +825,7 @@ class BacktestingEngine:
                 status=Status.ALLTRADED,
                 gateway_name=self.gateway_name,
             )
+            order.datetime = self.datetime
 
             self.limit_orders[order.vt_orderid] = order
 
@@ -921,6 +944,7 @@ class BacktestingEngine:
             status=Status.NOTTRADED,
             gateway_name=self.gateway_name,
         )
+        order.datetime = self.datetime
 
         self.active_limit_orders[order.vt_orderid] = order
         self.limit_orders[order.vt_orderid] = order
@@ -997,6 +1021,23 @@ class BacktestingEngine:
         """
         print(f"{datetime.now()}\t{msg}")
 
+    def get_all_trades(self):
+        """
+        Return all trade data of current backtesting result.
+        """
+        return list(self.trades.values())
+
+    def get_all_orders(self):
+        """
+        Return all limit order data of current backtesting result.
+        """
+        return list(self.limit_orders.values())
+
+    def get_all_daily_results(self):
+        """
+        Return all daily result data.
+        """
+        return list(self.daily_results.values())
 
 class DailyResult:
     """"""

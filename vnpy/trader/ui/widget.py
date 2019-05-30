@@ -237,8 +237,9 @@ class BaseMonitor(QtWidgets.QTableWidget):
         """
         Register event handler into event engine.
         """
-        self.signal.connect(self.process_event)
-        self.event_engine.register(self.event_type, self.signal.emit)
+        if self.event_type:
+            self.signal.connect(self.process_event)
+            self.event_engine.register(self.event_type, self.signal.emit)
 
     def process_event(self, event):
         """
