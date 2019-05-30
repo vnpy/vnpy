@@ -1,6 +1,7 @@
 """"""
+
 from collections import defaultdict
-from vnpy.trader.object import OrderRequest
+from vnpy.trader.object import OrderRequest, LogData
 from vnpy.event import Event, EventEngine, EVENT_TIMER
 from vnpy.trader.engine import BaseEngine, MainEngine
 from vnpy.trader.event import EVENT_TRADE, EVENT_ORDER, EVENT_LOG
@@ -12,15 +13,16 @@ APP_NAME = "RiskManager"
 
 
 class RiskManagerEngine(BaseEngine):
-    """风控引擎"""
+    """"""
     setting_filename = "risk_manager_setting.json"
     
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
+        super().__init__(main_engine, event_engine, APP_NAME)
+        
         self.main_engine = main_engine
         self.event_engine = event_engine
-        main_engine.rmEngine = self
-
+        
         self.active = False
         self.order_flow_count = 0    
         self.order_flow_limit = 50     
@@ -31,22 +33,34 @@ class RiskManagerEngine(BaseEngine):
         self.trade_limit = 1000         
         self.order_cancel_limit = 10  
         self.order_cancel_counts = defaultdict(int)          
-        self.active_order_limit = 20  
+        self.active_order_limit = 20 
         
+        # Patch send order function of MainEngine
+        self._send_order = self.main_engine.send_order
+        self.main_engine.send_order = self.send_order
+
         self.load_setting()
-        self.registerEvent()
+        self.register_event()
+
+    def send_order(self, req: OrderRequest, gateway_name: str):
+        """"""
+        result = self.check_risk(req, gateway_name)
+        if not result:
+            return ""
+
+        return self._send_order(req, gateway_name)
   
     def load_setting(self):
         """"""
         setting = load_json(self.setting_filename)
 
-        self.active = setting["active"]
-        self.order_flow_limit = setting["order_flow_limit"]
-        self.order_flow_clear = setting["order_flow_clear"]
-        self.order_size_limit = setting["order_size_limit"]
-        self.trade_limit = setting["trade_limit"]
-        self.active_order_limit = setting["active_order_limit"]
-        self.order_cancel_limit = setting["order_cancel_limit"]            
+        self.active = setting.get("active", self.active)
+        self.order_flow_limit = setting.get("order_flow_limit", self.order_flow_count)
+        self.order_flow_clear = setting.get("order_flow_clear", self.order_flow_clear)
+        self.order_size_limit = setting.get("order_size_limit", self.order_size_limit)
+        self.trade_limit = setting.get("trade_limit", self.trade_limit)
+        self.active_order_limit = setting.get("active_order_limit", self.active_order_limit)
+        self.order_cancel_limit = setting.get("order_cancel_limit", self.order_cancel_limit)            
    
     def save_setting(self):
         """"""
@@ -89,11 +103,9 @@ class RiskManagerEngine(BaseEngine):
             self.order_flow_timer = 0
    
     def write_risk_log(self, msg: str):
-        """"""        
-        event = Event(
-            EVENT_LOG,
-            msg
-        )
+        """"""  
+        log = LogData(msg=msg, gateway_name="RiskManager")
+        event = Event(type=EVENT_LOG, data=log)
         self.event_engine.put(event)
 
     def check_risk(self, req: OrderRequest, gateway_name: str):
@@ -117,17 +129,17 @@ class RiskManagerEngine(BaseEngine):
 
         # Check flow count
         if self.order_flow_count >= self.order_flow_limit:
-            self.write_risk_log(f"委托流数量{self.order_flow_count}，超过限制每{self.order_flow_clear}秒{self.order_flow_limit}")
+            self.write_risk_log(f"委托流数量{self.order_flow_count}，超过限制每{self.order_flow_clear}秒{self.order_flow_limit}次")
             return False
 
         # Check all active orders
         active_order_count = len(self.main_engine.get_all_active_orders())
         if active_order_count >= self.active_order_limit:
-            self.write_risk_log(f"当前活动委托数量{active_order_count}，超过限制{self.active_order_limit}")
+            self.write_risk_log(f"当前活动委托次数{active_order_count}，超过限制{self.active_order_limit}")
             return False
 
         # Check order cancel counts
-        if req.symbol in self.order_cancel_counts and self.order_cancel_counts[req.symbol] >= self.order_cancel_limit:
+        if req.symbol in self.order_cancel_counts and self.order_cancel_counts[req.symbol] >= self.order_cancel_limit:           
             self.write_risk_log(f"当日{req.symbol}撤单次数{self.order_cancel_counts[req.symbol]}，超过限制{self.order_cancel_limit}")
             return False
 
@@ -181,4 +193,3 @@ class RiskManagerEngine(BaseEngine):
     def stop(self):
         """"""
         self.save_setting()
-        
