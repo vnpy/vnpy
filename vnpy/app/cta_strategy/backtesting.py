@@ -825,6 +825,7 @@ class BacktestingEngine:
                 status=Status.ALLTRADED,
                 gateway_name=self.gateway_name,
             )
+            order.datetime = self.datetime
 
             self.limit_orders[order.vt_orderid] = order
 
@@ -943,6 +944,7 @@ class BacktestingEngine:
             status=Status.NOTTRADED,
             gateway_name=self.gateway_name,
         )
+        order.datetime = self.datetime
 
         self.active_limit_orders[order.vt_orderid] = order
         self.limit_orders[order.vt_orderid] = order
@@ -1023,14 +1025,19 @@ class BacktestingEngine:
         """
         Return all trade data of current backtesting result.
         """
-        return self.trades.values()
+        return list(self.trades.values())
 
     def get_all_orders(self):
         """
         Return all limit order data of current backtesting result.
         """
-        return self.limit_orders.values()
+        return list(self.limit_orders.values())
 
+    def get_all_daily_results(self):
+        """
+        Return all daily result data.
+        """
+        return list(self.daily_results.values())
 
 class DailyResult:
     """"""

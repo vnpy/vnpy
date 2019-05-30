@@ -398,3 +398,7 @@ class BacktesterEngine(BaseEngine):
     def get_all_orders(self):
         """"""
         return self.backtesting_engine.get_all_orders()
+
+    def get_all_daily_results(self):
+        """"""
+        return self.backtesting_engine.get_all_daily_results()
