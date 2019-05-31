@@ -96,6 +96,16 @@ class CrossHairAxisX(CrossHairAxis):
         super().__init__(Orientation.HORIZONTAL, underlying_axis, parent)
 
 
+class CrossHairBarAxisX(CrossHairAxis):
+
+    def __init__(self, underlying_axis: AxisBase, parent=None):
+        super().__init__(Orientation.HORIZONTAL, underlying_axis, parent)
+
+    def _set_drawer_value(self, value: float):
+        value = int(value) + 0.5  # just round it
+        super()._set_drawer_value(value)
+
+
 class CrossHairAxisY(CrossHairAxis):
 
     def __init__(self, underlying_axis: AxisBase, parent=None):
@@ -121,9 +131,7 @@ class SubChartWrapper:
             return
         choose = axis_x_list[0]
         axis = CrossHairAxisX(choose)
-        axis.qobject.updated.connect(self.on_cross_hair_updated)
-        self.chart.add_axis(axis)
-        self.cross_hair_x = axis
+        self.set_cross_hair_x(axis)
         return self
 
     def create_cross_hair_y(self):
@@ -134,15 +142,27 @@ class SubChartWrapper:
             return
         choose = axis_y_list[0]
         axis = CrossHairAxisY(choose)
+        self.set_cross_hair_y(axis)
+        return self
+
+    def set_cross_hair_x(self, axis):
+        assert self.cross_hair_x is None
+        self._add_cross_hair(axis)
+        self.cross_hair_x = axis
+
+    def set_cross_hair_y(self, axis):
+        assert self.cross_hair_y is None
+        self._add_cross_hair(axis)
+        self.cross_hair_y = axis
+
+    def _add_cross_hair(self, axis):
         axis.qobject.updated.connect(self.on_cross_hair_updated)
         self.chart.add_axis(axis)
-        self.cross_hair_y = axis
-        return self
 
     def on_cross_hair_updated(self):
         self.chart.update()
 
-    def create_cross_hair(self):
+    def create_default_cross_hair(self):
         self.create_cross_hair_x()
         self.create_cross_hair_y()
         return self
@@ -185,7 +205,6 @@ class AdvancedChartWidget(QWidget):
 
     def on_sub_chart_mouse_move(self, wrapper: "SubChartWrapper", event: "QMouseEvent"):
         pos = event.localPos()
-        print(pos)
         x = pos.x()
         y = pos.y()
 

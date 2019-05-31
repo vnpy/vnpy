@@ -1,13 +1,8 @@
 from typing import Sequence
 
-from vnpy.chart.base import (
-    AdvancedChartWidget,
-    CandleChartDrawer,
-    CandleDataSource,
-    ChartWidget,
-    HistogramDrawer,
-    CandleAxisX, ValueAxisY)
-from vnpy.chart.base.advanced_chart import SubChartWrapper
+from vnpy.chart.base import (AdvancedChartWidget, CandleAxisX, CandleChartDrawer, CandleDataSource,
+                             ChartWidget, HistogramDrawer, ValueAxisY)
+from vnpy.chart.base.advanced_chart import CrossHairBarAxisX, SubChartWrapper
 from vnpy.chart.base.data_source import HistogramDataSource
 from vnpy.trader.object import BarData
 
@@ -21,13 +16,13 @@ class CandleChart(AdvancedChartWidget):
         self.__init_ui()
 
     def __init_ui(self):
-
         # main chart: candle chart
         candle_ds = CandleDataSource()
         candle_drawer = CandleChartDrawer(candle_ds)
         candle_chart = ChartWidget(self)
         candle_chart.add_drawer(candle_drawer)
         candle_chart.add_axis(CandleAxisX(candle_ds), ValueAxisY())
+        candle_chart.clip_plot_area = False  # disabling clip makes it runs a bit faster
 
         # volume chart: His
         volume_ds = HistogramDataSource()
@@ -40,12 +35,14 @@ class CandleChart(AdvancedChartWidget):
         volume_wrapper = self.add_chart(volume_chart, 1)
 
         # create cross hair
-        ch1 = candle_wrapper.create_cross_hair()
-        ch2 = volume_wrapper.create_cross_hair()
+        candle_wrapper.create_cross_hair_y()
+        candle_wrapper.set_cross_hair_x(CrossHairBarAxisX(candle_chart.all_axis_x[0]))
+        volume_wrapper.create_cross_hair_y()
+        volume_wrapper.set_cross_hair_x(CrossHairBarAxisX(volume_chart.all_axis_x[0]))
 
         # link vertical line of cross hair
-        ch1.link_x_to(ch2)
-        ch2.link_x_to(ch1)
+        candle_wrapper.link_x_to(volume_wrapper)
+        volume_wrapper.link_x_to(candle_wrapper)
 
         self.candle_ds: "CandleDataSource" = candle_ds
         self.volume_ds: "HistogramDataSource" = volume_ds
@@ -62,7 +59,7 @@ class CandleChart(AdvancedChartWidget):
         self.candle_ds.append(bar)
         self.volume_ds.append(bar.volume)
         begin, end = self.get_x_range()
-        self.set_x_range(begin, end+1)
+        self.set_x_range(begin, end + 1)
 
     def update_bars(self, bars: Sequence[BarData]):
         """
@@ -71,7 +68,7 @@ class CandleChart(AdvancedChartWidget):
         self.candle_ds.extend(bars)
         self.volume_ds.extend([i.volume for i in bars])
         begin, end = self.get_x_range()
-        self.set_x_range(begin, end+len(bars))
+        self.set_x_range(begin, end + len(bars))
         pass
 
     def clear(self):
@@ -108,4 +105,4 @@ class CandleChart(AdvancedChartWidget):
         Scroll chart to the right end.
         """
         begin, end = self.get_x_range()
-        self.scroll_x(0-begin)
+        self.scroll_x(0 - begin)
