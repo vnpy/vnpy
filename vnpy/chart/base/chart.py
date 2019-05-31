@@ -1,6 +1,6 @@
 from copy import copy
 from threading import Lock
-from typing import List, TYPE_CHECKING, TypeVar
+from typing import List, TYPE_CHECKING, Tuple, TypeVar
 
 from PyQt5.QtCore import QRectF, Qt
 from PyQt5.QtGui import (QBrush, QColor, QPaintEvent, QPainter, QPalette, QPen, QTransform)
@@ -10,7 +10,7 @@ from .axis import AxisBase, ValueAxisX, ValueAxisY
 from .base import ColorType, DrawConfig, DrawingCache, Orientation
 
 if TYPE_CHECKING:
-    from chart import ChartDrawerBase
+    from .drawer import ChartDrawerBase
 
 T = TypeVar("T")
 
@@ -26,6 +26,10 @@ class ExtraDrawConfig(DrawConfig):
     def __init__(self):
         super().__init__()
         self.has_showing_data: bool = False
+
+
+class NoVisualAreaError(RuntimeError):
+    pass
 
 
 class ChartWidget(QWidget):
@@ -60,15 +64,33 @@ class ChartWidget(QWidget):
         self._repaint_lock = Lock()
         self._repaint_scheduled = False
 
-    def add_drawer(self, drawer: "ChartDrawerBase"):
-        if drawer not in self._drawers:
-            self._drawers.append(drawer)
-            self.update()
+        self.setMouseTracking(True)
+
+    @property
+    def x_range(self) -> Tuple[int, int]:
+        return self.get_x_range()
+
+    @x_range.setter
+    def x_range(self, val: Tuple[int, int]):
+        self.set_x_range(*val)
+
+    def get_x_range(self):
+        config = self._draw_config
+        return config.begin, config.end
 
     def set_x_range(self, begin: int, end: int):
         config = self._draw_config
         if (begin, end) != (config.begin, config.end):
             config.begin, config.end = begin, end
+            self.update()
+
+    def scroll_x(self, diff: int):
+        config = self._draw_config
+        config.begin, config.end = config.begin+diff, config.end+diff
+
+    def add_drawer(self, drawer: "ChartDrawerBase"):
+        if drawer not in self._drawers:
+            self._drawers.append(drawer)
             self.update()
 
     def add_axis(self, *axis_list: "AxisBase"):
@@ -83,7 +105,7 @@ class ChartWidget(QWidget):
 
     @property
     def all_axis(self):
-        return self._axis_list
+        return list(self._axis_list)  # give user a copy
 
     @property
     def all_axis_x(self):
@@ -125,7 +147,10 @@ class ChartWidget(QWidget):
         # copy config: ensure config is not change while painting
         config: "ExtraDrawConfig" = copy(self._draw_config)
 
-        config = self._prepare_painting(config)
+        try:
+            config = self._prepare_painting(config)
+        except NoVisualAreaError:
+            return
         primary_painter = QPainter(self)
         primary_painter.setWorldMatrixEnabled(True)
 
@@ -234,6 +259,9 @@ class ChartWidget(QWidget):
             max(config.y_high - config.y_low, 1),
         )
         plot_area = self.plot_area()
+        if plot_area.width() <= 0 or plot_area.height() <= 0:
+            raise NoVisualAreaError()
+
         # 应用这个坐标转化
         transform = self._coordinate_transform(drawer_area, plot_area)
 
