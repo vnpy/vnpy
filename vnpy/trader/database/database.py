@@ -16,6 +16,13 @@ class Driver(Enum):
 
 
 class BaseDatabaseManager(ABC):
+    """
+    Base class describing the API of A Database
+
+    instance of BaseDatabaseManager can be found in __init__.py,
+      # import it by the following code:
+      import vnpy.trader.database.database_manager
+    """
 
     @abstractmethod
     def load_bar_data(
