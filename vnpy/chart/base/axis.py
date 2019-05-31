@@ -424,7 +424,7 @@ class CandleAxisX(AxisBase):
         )
         ds: CandleLabelDataSource = self.label_data_source
         ds.clear()
-        ds.append_by_index_sequence([int(i)+0.5 for i in seq], Alignment.BEFORE)
+        ds.append_by_index_sequence([int(i)+0.5 for i in seq], Alignment.AFTER)
 
 
 def _generate_sequence(begin, end, step):
