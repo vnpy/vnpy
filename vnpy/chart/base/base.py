@@ -33,11 +33,11 @@ class Alignment(Enum):
 class DrawingCache:
     # intermediate variables to speed up calculation
     drawer_transform: Optional["QTransform"] = None  # 坐标转化矩阵(UI->drawer)
-    ui_transform: Optional["QTransform"] = None  # 坐标转化矩阵(drawer->UI)
+    ui_transform: Optional[QTransform] = None  # 坐标转化矩阵(drawer->UI)
     drawer_area: Optional["QRectF"] = None  # drawer坐标的世界大小
     drawer_area_width: Optional["float"] = None
     # self.drawer_area_height: Optional['float'] = None
-    plot_area: Optional["QRectF"] = None  # UI坐标中属于绘制区域的部分
+    plot_area: Optional[QRectF] = None  # UI坐标中属于绘制区域的部分
     # self.plot_area_width: Optional['float'] = None
     # self.plot_area_height: Optional['float'] = None
     p2d_w: Optional[float] = None  # drawer_area.width / plot_area.width

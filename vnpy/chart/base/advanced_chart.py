@@ -270,7 +270,7 @@ class AdvancedChartWidget(QWidget):
         return chart.get_x_range()
 
     def scroll_x(self, diff: int,
-                    chart: Optional[Union["SubChartWrapper", "ChartWidget"]] = None):
+                 chart: Optional[Union["SubChartWrapper", "ChartWidget"]] = None):
         """
         scroll specific charts's
         :param chart a chart instance. None for all sub charts.

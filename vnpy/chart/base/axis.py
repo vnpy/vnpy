@@ -416,7 +416,7 @@ class CandleAxisX(AxisBase):
         )
         ds = self.grid_drawer.data_source
         ds.clear()
-        ds.append_by_index_sequence([int(i)+0.5 for i in seq])
+        ds.append_by_index_sequence([int(i) + 0.5 for i in seq])
 
     def prepare_draw_labels(self, config: "DrawConfig", painter: "QPainter") -> None:
         seq = ValueSequenceGenerator(self, self.label_count + 1).prepare(
@@ -424,7 +424,7 @@ class CandleAxisX(AxisBase):
         )
         ds: CandleLabelDataSource = self.label_data_source
         ds.clear()
-        ds.append_by_index_sequence([int(i)+0.5 for i in seq], Alignment.AFTER)
+        ds.append_by_index_sequence([int(i) + 0.5 for i in seq], Alignment.AFTER)
 
 
 def _generate_sequence(begin, end, step):

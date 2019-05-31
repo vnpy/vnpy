@@ -2,9 +2,8 @@ from copy import copy
 from threading import Lock
 from typing import List, TYPE_CHECKING, Tuple, TypeVar
 
-from PyQt5.QtCore import QPointF, QRectF, Qt
-from PyQt5.QtGui import (QBrush, QColor, QImage, QPaintEvent, QPainter, QPalette, QPen, QTransform,
-                         QRegion)
+from PyQt5.QtCore import QRectF, Qt
+from PyQt5.QtGui import (QBrush, QColor, QPaintEvent, QPainter, QPalette, QPen, QTransform)
 from PyQt5.QtWidgets import QWidget
 
 from .axis import AxisBase, ValueAxisX, ValueAxisY
@@ -191,21 +190,10 @@ class ChartWidget(QWidget):
     ):
         if self.clip_plot_area:
             plot_area = config.drawing_cache.plot_area
-            # img = QImage(self.width(), self.height(), QImage.Format_RGB32)
-            # p = QPainter(img)
-            # p.setPen(QPen(Qt.transparent))
-            # drawer.draw(copy(config), p)
-            # p.end()
-            #
-            # point = QPointF(plot_area.left(), plot_area.top())
-            # painter.drawImage(point, img, plot_area)
             painter.setPen(QPen(Qt.transparent))
-            org_clip = painter.clipRegion()
-            # painter.setClipRegion(QRegion(plot_area.toRect()))
             painter.setClipRect(plot_area.toRect())
             self._switch_painter_to_drawer_coordinate(painter, config)
             drawer.draw(copy(config), painter)
-            # painter.setClipRegion(org_clip)
             painter.setClipping(False)
         else:
             self._switch_painter_to_drawer_coordinate(painter, config)
