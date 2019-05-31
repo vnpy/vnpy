@@ -143,8 +143,8 @@ class AdvancedChartWidget(QWidget):
     AdvancedChartWidget(ABC) is a  widget combining multiple BarChart.
     The data in different BarChart can have different Drawer and different DataSource,
 
-    You can add multiple BarChart into one ABC.
-    ABC also provide an Value Panel, and a CrossHair showing information about the value under cursor.
+    You can add multiple BarChartWidget into one ABC.
+    ABC also provide an CrossHair showing information about the value under cursor.
     """
 
     def __init__(self, parent=None):
