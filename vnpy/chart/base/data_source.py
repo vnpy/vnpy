@@ -59,10 +59,10 @@ class CandleData:
     Represent a single record in DataSource for CandleChartDrawer
     """
 
-    open: float
-    low: float
-    high: float
-    close: float
+    open_price: float
+    low_price: float
+    high_price: float
+    close_price: float
     datetime: datetime
 
 

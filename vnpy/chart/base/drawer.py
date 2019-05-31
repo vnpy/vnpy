@@ -112,8 +112,8 @@ class CandleChartDrawer(ChartDrawerBase):
     def prepare_draw(self, config: "DrawConfig") -> "DrawConfig":
         showing_data = self._data_source[config.begin: config.end]
         if showing_data:
-            low = min(showing_data, key=lambda c: c.low).low
-            high = max(showing_data, key=lambda c: c.high).high
+            low = min(showing_data, key=lambda c: c.low_price).low_price
+            high = max(showing_data, key=lambda c: c.high_price).high_price
             config.y_low, config.y_high = low, high
         return config
 
@@ -144,7 +144,7 @@ class CandleChartDrawer(ChartDrawerBase):
         for i in range(begin, end):
             data: "CandleData" = self._data_source[i]
 
-            if data.open <= data.close:
+            if data.open_price <= data.close_price:
                 push_cache = self._cache_raising
                 nop_cache = self._cache_falling
             else:
@@ -152,12 +152,12 @@ class CandleChartDrawer(ChartDrawerBase):
                 nop_cache = self._cache_raising
 
             # draw box
-            box = self.get_rect(i, data.open, data.close, self.body_width)
+            box = self.get_rect(i, data.open_price, data.close_price, self.body_width)
             push_cache.append(box)
             nop_cache.append(None)
 
             # draw line
-            line = self.get_rect(i, data.low, data.high, self.line_width)
+            line = self.get_rect(i, data.low_price, data.high_price, self.line_width)
             push_cache.append(line)
             nop_cache.append(None)
 
