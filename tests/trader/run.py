@@ -25,6 +25,7 @@ from vnpy.app.csv_loader import CsvLoaderApp
 from vnpy.app.algo_trading import AlgoTradingApp
 from vnpy.app.cta_backtester import CtaBacktesterApp
 from vnpy.app.data_recorder import DataRecorderApp
+from vnpy.app.risk_manager import RiskManagerApp
 
 
 def main():
@@ -55,6 +56,7 @@ def main():
     main_engine.add_app(CsvLoaderApp)
     main_engine.add_app(AlgoTradingApp)
     main_engine.add_app(DataRecorderApp)
+    main_engine.add_app(RiskManagerApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
