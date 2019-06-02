@@ -15,32 +15,42 @@ APP_NAME = "RiskManager"
 class RiskManagerEngine(BaseEngine):
     """"""
     setting_filename = "risk_manager_setting.json"
-    
+
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
-        
+
         self.main_engine = main_engine
         self.event_engine = event_engine
-        
+
         self.active = False
-        self.order_flow_count = 0    
-        self.order_flow_limit = 50     
-        self.order_flow_clear = 1     
-        self.order_flow_timer = 0    
-        self.order_size_limit = 100   
-        self.trade_count = 0      
-        self.trade_limit = 1000         
-        self.order_cancel_limit = 10  
-        self.order_cancel_counts = defaultdict(int)          
-        self.active_order_limit = 20 
-        
-        # Patch send order function of MainEngine
-        self._send_order = self.main_engine.send_order
-        self.main_engine.send_order = self.send_order
+
+        self.order_flow_count = 0
+        self.order_flow_limit = 50
+
+        self.order_flow_clear = 1
+        self.order_flow_timer = 0
+
+        self.order_size_limit = 100
+
+        self.trade_count = 0
+        self.trade_limit = 1000
+
+        self.order_cancel_limit = 500
+        self.order_cancel_counts = defaultdict(int)
+
+        self.active_order_limit = 50
 
         self.load_setting()
         self.register_event()
+        self.patch_send_order()
+
+    def patch_send_order(self):
+        """
+        Patch send order function of MainEngine.
+        """
+        self._send_order = self.main_engine.send_order
+        self.main_engine.send_order = self.send_order
 
     def send_order(self, req: OrderRequest, gateway_name: str):
         """"""
@@ -49,20 +59,23 @@ class RiskManagerEngine(BaseEngine):
             return ""
 
         return self._send_order(req, gateway_name)
-  
-    def load_setting(self):
-        """"""
-        setting = load_json(self.setting_filename)
 
-        self.active = setting.get("active", self.active)
-        self.order_flow_limit = setting.get("order_flow_limit", self.order_flow_count)
-        self.order_flow_clear = setting.get("order_flow_clear", self.order_flow_clear)
-        self.order_size_limit = setting.get("order_size_limit", self.order_size_limit)
-        self.trade_limit = setting.get("trade_limit", self.trade_limit)
-        self.active_order_limit = setting.get("active_order_limit", self.active_order_limit)
-        self.order_cancel_limit = setting.get("order_cancel_limit", self.order_cancel_limit)            
-   
-    def save_setting(self):
+    def update_setting(self, setting: dict):
+        """"""
+        self.active = setting["active"]
+        self.order_flow_limit = setting["order_flow_limit"]
+        self.order_flow_clear = setting["order_flow_clear"]
+        self.order_size_limit = setting["order_size_limit"]
+        self.trade_limit = setting["trade_limit"]
+        self.active_order_limit = setting["active_order_limit"]
+        self.order_cancel_limit = setting["order_cancel_limit"]
+
+        if self.active:
+            self.write_log("交易风控功能启动")
+        else:
+            self.write_log("交易风控功能停止")
+
+    def get_setting(self):
         """"""
         setting = {
             "active": self.active,
@@ -73,27 +86,39 @@ class RiskManagerEngine(BaseEngine):
             "active_order_limit": self.active_order_limit,
             "order_cancel_limit": self.order_cancel_limit,
         }
+        return setting
 
+    def load_setting(self):
+        """"""
+        setting = load_json(self.setting_filename)
+        if not setting:
+            return
+
+        self.update_setting(setting)
+
+    def save_setting(self):
+        """"""
+        setting = self.get_setting()
         save_json(self.setting_filename, setting)
-   
+
     def register_event(self):
         """"""
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
-            
+
     def process_order_event(self, event: Event):
         """"""
         order = event.data
         if order.status != Status.CANCELLED:
-            return       
+            return
         self.order_cancel_counts[order.symbol] += 1
-   
+
     def process_trade_event(self, event: Event):
         """"""
         trade = event.data
         self.trade_count += trade.volume
-    
+
     def process_timer_event(self, event: Event):
         """"""
         self.order_flow_timer += 1
@@ -101,9 +126,9 @@ class RiskManagerEngine(BaseEngine):
         if self.order_flow_timer >= self.order_flow_clear:
             self.order_flow_count = 0
             self.order_flow_timer = 0
-   
-    def write_risk_log(self, msg: str):
-        """"""  
+
+    def write_log(self, msg: str):
+        """"""
         log = LogData(msg=msg, gateway_name="RiskManager")
         event = Event(type=EVENT_LOG, data=log)
         self.event_engine.put(event)
@@ -115,81 +140,39 @@ class RiskManagerEngine(BaseEngine):
 
         # Check order volume
         if req.volume <= 0:
-            self.write_risk_log("委托数量必须大于0")
+            self.write_log("委托数量必须大于0")
             return False
-        
+
         if req.volume > self.order_size_limit:
-            self.write_risk_log(f"单笔委托数量{req.volume}，超过限制{self.order_size_limit}")
+            self.write_log(
+                f"单笔委托数量{req.volume}，超过限制{self.order_size_limit}")
             return False
 
         # Check trade volume
         if self.trade_count >= self.trade_limit:
-            self.write_risk_log(f"今日总成交合约数量{self.trade_count}，超过限制{self.trade_limit}")
+            self.write_log(
+                f"今日总成交合约数量{self.trade_count}，超过限制{self.trade_limit}")
             return False
 
         # Check flow count
         if self.order_flow_count >= self.order_flow_limit:
-            self.write_risk_log(f"委托流数量{self.order_flow_count}，超过限制每{self.order_flow_clear}秒{self.order_flow_limit}次")
+            self.write_log(
+                f"委托流数量{self.order_flow_count}，超过限制每{self.order_flow_clear}秒{self.order_flow_limit}次")
             return False
 
         # Check all active orders
         active_order_count = len(self.main_engine.get_all_active_orders())
         if active_order_count >= self.active_order_limit:
-            self.write_risk_log(f"当前活动委托次数{active_order_count}，超过限制{self.active_order_limit}")
+            self.write_log(
+                f"当前活动委托次数{active_order_count}，超过限制{self.active_order_limit}")
             return False
 
         # Check order cancel counts
-        if req.symbol in self.order_cancel_counts and self.order_cancel_counts[req.symbol] >= self.order_cancel_limit:           
-            self.write_risk_log(f"当日{req.symbol}撤单次数{self.order_cancel_counts[req.symbol]}，超过限制{self.order_cancel_limit}")
+        if req.symbol in self.order_cancel_counts and self.order_cancel_counts[req.symbol] >= self.order_cancel_limit:
+            self.write_log(
+                f"当日{req.symbol}撤单次数{self.order_cancel_counts[req.symbol]}，超过限制{self.order_cancel_limit}")
             return False
 
         # Add flow count if pass all checks
         self.order_flow_count += 1
         return True
-    
-    def clear_order_flow_count(self):
-        """"""
-        self.order_flow_count = 0
-        self.write_risk_log("清空流控计数")
-    
-    def clear_trade_count(self):
-        """"""
-        self.trade_count = 0
-        self.write_risk_log("清空总成交计数")
-   
-    def set_order_flow_limit(self, n):
-        """"""
-        self.order_flow_limit = n
-   
-    def set_order_flow_clear(self, n):
-        """"""
-        self.order_flow_clear = n
-    
-    def set_order_size_limit(self, n):
-        """"""
-        self.order_size_limit = n
-   
-    def set_trade_limit(self, n):
-        """"""
-        self.trade_limit = n
-   
-    def set_active_order_limit(self, n):
-        """"""
-        self.active_order_limit = n
-   
-    def set_order_cancel_limit(self, n):
-        """"""
-        self.order_cancel_limit = n
-    
-    def switch_engine_status(self):
-        """"""
-        self.active = not self.active
-
-        if self.active:
-            self.write_risk_log("风险管理功能启动")
-        else:
-            self.write_risk_log("风险管理功能停止")
-                
-    def stop(self):
-        """"""
-        self.save_setting()

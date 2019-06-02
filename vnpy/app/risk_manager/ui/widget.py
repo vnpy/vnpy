@@ -4,7 +4,7 @@ from vnpy.trader.ui import QtWidgets
 from ..engine import APP_NAME
 
 
-class RiskManager(QtWidgets.QWidget):
+class RiskManager(QtWidgets.QDialog):
     """"""
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine):
@@ -13,104 +13,95 @@ class RiskManager(QtWidgets.QWidget):
 
         self.main_engine = main_engine
         self.event_engine = event_engine
-        self.risk_manager_engine = main_engine.get_engine(APP_NAME)
+        self.rm_engine = main_engine.get_engine(APP_NAME)
 
         self.init_ui()
-        self.update_engine_status()
 
     def init_ui(self):
         """"""
-        self.setWindowTitle("风险控制")
+        self.setWindowTitle("交易风控")
 
-        # SpinBox
-        self.order_flow_limit = RiskManagerSpinBox(0)
-        self.order_flow_clear = RiskManagerSpinBox(0)   
-        self.order_size_limit = RiskManagerSpinBox(0)     
-        self.trade_limit = RiskManagerSpinBox(0)              
-        self.active_order_limit = RiskManagerSpinBox(0)   
-        self.order_cancel_limit = RiskManagerSpinBox(0)  
+        # Create widgets
+        self.active_combo = QtWidgets.QComboBox()
+        self.active_combo.addItems(["停止", "启动"])
 
-        # Button
-        self.switch_button = QtWidgets.QPushButton("风控模块未启动")
-        clear_order_count_button = QtWidgets.QPushButton("清空流控计数")
-        clear_trade_count_button = QtWidgets.QPushButton("清空总成交计数")
-        save_setting_button = QtWidgets.QPushButton("保存设置")
+        self.flow_limit_spin = RiskManagerSpinBox()
+        self.flow_clear_spin = RiskManagerSpinBox()
+        self.size_limit_spin = RiskManagerSpinBox()
+        self.trade_limit_spin = RiskManagerSpinBox()
+        self.active_limit_spin = RiskManagerSpinBox()
+        self.cancel_limit_spin = RiskManagerSpinBox()
 
-        # Grid layout
-        Label = QtWidgets.QLabel
-        grid = QtWidgets.QGridLayout()
-        grid.addWidget(Label("工作状态"), 0, 0)
-        grid.addWidget(self.switch_button, 0, 1)
-        grid.addWidget(Label("流控上限"), 1, 0)
-        grid.addWidget(self.order_flow_limit, 1, 1)
-        grid.addWidget(Label("流控清空（秒）"), 2, 0)
-        grid.addWidget(self.order_flow_clear, 2, 1)
-        grid.addWidget(Label("单笔委托上限"), 3, 0)
-        grid.addWidget(self.order_size_limit, 3, 1)        
-        grid.addWidget(Label("总成交上限"), 4, 0)
-        grid.addWidget(self.trade_limit, 4, 1)
-        grid.addWidget(Label("活动订单上限"), 5, 0)
-        grid.addWidget(self.active_order_limit, 5, 1) 
-        grid.addWidget(Label("单合约撤单上限"), 6, 0)
-        grid.addWidget(self.order_cancel_limit, 6, 1) 
+        save_button = QtWidgets.QPushButton("保存")
+        save_button.clicked.connect(self.save_setting)
 
-        # Horizontal box layout
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addWidget(clear_order_count_button)
-        hbox.addWidget(clear_trade_count_button)
-        hbox.addWidget(save_setting_button)
+        # Form layout
+        form = QtWidgets.QFormLayout()
+        form.addRow("风控运行状态", self.active_combo)
+        form.addRow("委托流控上限（笔）", self.flow_limit_spin)
+        form.addRow("委托流控清空（秒）", self.flow_clear_spin)
+        form.addRow("单笔委托上限（数量）", self.size_limit_spin)
+        form.addRow("总成交上限（笔）", self.trade_limit_spin)
+        form.addRow("活动委托上限（笔）", self.active_limit_spin)
+        form.addRow("合约撤单上限（笔）", self.cancel_limit_spin)
+        form.addRow(save_button)
 
-        # Vertical box layout
-        vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(grid)
-        vbox.addLayout(hbox)
-        self.setLayout(vbox)
-
-        # Connect signal to SpinBox
-        self.order_flow_limit.valueChanged.connect(self.risk_manager_engine.set_order_flow_limit)
-        self.order_flow_clear.valueChanged.connect(self.risk_manager_engine.set_order_flow_clear)
-        self.order_size_limit.valueChanged.connect(self.risk_manager_engine.set_order_size_limit)
-        self.trade_limit.valueChanged.connect(self.risk_manager_engine.set_trade_limit)
-        self.active_order_limit.valueChanged.connect(self.risk_manager_engine.set_active_order_limit)
-        self.order_cancel_limit.valueChanged.connect(self.risk_manager_engine.set_order_cancel_limit)
-
-        # Connect signal to button       
-        self.switch_button.clicked.connect(self.switch_engine_status)
-        clear_order_count_button.clicked.connect(self.risk_manager_engine.clear_order_flow_count)
-        clear_trade_count_button.clicked.connect(self.risk_manager_engine.clear_trade_count)
-        save_setting_button.clicked.connect(self.risk_manager_engine.save_setting)
+        self.setLayout(form)
 
         # Set Fix Size
-        self.setFixedSize(self.sizeHint())
+        hint = self.sizeHint()
+        self.setFixedSize(hint.width() * 1.2, hint.height())
 
-    def switch_engine_status(self):
+    def save_setting(self):
         """"""
-        self.risk_manager_engine.switch_engine_status()
-        self.update_engine_status()
-
-    def update_engine_status(self):
-        """"""
-        if self.risk_manager_engine.active:
-            self.switch_button.setText("风控模块运行中")
-            self.order_flow_limit.setValue(self.risk_manager_engine.order_flow_limit)
-            self.order_flow_clear.setValue(self.risk_manager_engine.order_flow_clear)
-            self.order_size_limit.setValue(self.risk_manager_engine.order_size_limit)   
-            self.trade_limit.setValue(self.risk_manager_engine.trade_limit)              
-            self.active_order_limit.setValue(self.risk_manager_engine.active_order_limit)  
-            self.order_cancel_limit.setValue(self.risk_manager_engine.order_cancel_limit)
+        active_text = self.active_combo.currentText()
+        if active_text == "启动":
+            active = True
         else:
-            self.switch_button.setText("风控模块未启动")
-        
-        self.risk_manager_engine.save_setting()
+            active = False
+
+        setting = {
+            "active": active,
+            "order_flow_limit": self.flow_limit_spin.value(),
+            "order_flow_clear": self.flow_clear_spin.value(),
+            "order_size_limit": self.size_limit_spin.value(),
+            "trade_limit": self.trade_limit_spin.value(),
+            "active_order_limit": self.active_limit_spin.value(),
+            "order_cancel_limit": self.cancel_limit_spin.value(),
+        }
+
+        self.rm_engine.update_setting(setting)
+        self.rm_engine.save_setting()
+
+        self.close()
+
+    def update_setting(self):
+        """"""
+        setting = self.rm_engine.get_setting()
+        if setting["active"]:
+            self.active_combo.setCurrentIndex(1)
+        else:
+            self.active_combo.setCurrentIndex(0)
+
+        self.flow_limit_spin.setValue(setting["order_flow_limit"])
+        self.flow_clear_spin.setValue(setting["order_flow_clear"])
+        self.size_limit_spin.setValue(setting["order_size_limit"])
+        self.trade_limit_spin.setValue(setting["trade_limit"])
+        self.active_limit_spin.setValue(setting["active_order_limit"])
+        self.cancel_limit_spin.setValue(setting["order_cancel_limit"])
+
+    def exec_(self):
+        """"""
+        self.update_setting()
+        super().exec_()
 
 
 class RiskManagerSpinBox(QtWidgets.QSpinBox):
     """"""
 
-    def __init__(self, value):
+    def __init__(self, value: int = 0):
         """"""
-        super(RiskManagerSpinBox, self).__init__()
-
+        super().__init__()
         self.setMinimum(0)
-        self.setMaximum(1000000)        
+        self.setMaximum(1000000)
         self.setValue(value)

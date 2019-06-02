@@ -187,7 +187,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not dialog:
             dialog = ConnectDialog(self.main_engine, gateway_name)
 
-        dialog.exec()
+        dialog.exec_()
 
     def closeEvent(self, event):
         """
@@ -222,7 +222,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.widgets[name] = widget
 
         if isinstance(widget, QtWidgets.QDialog):
-            widget.exec()
+            widget.exec_()
         else:
             widget.show()
 

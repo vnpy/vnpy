@@ -8,7 +8,7 @@ class RiskManagerApp(BaseApp):
     app_name = APP_NAME
     app_module = __module__
     app_path = Path(__file__).parent
-    display_name = "风险控制"
+    display_name = "交易风控"
     engine_class = RiskManagerEngine
     widget_name = "RiskManager"
-    icon_name = "risk_manager.ico"
+    icon_name = "rm.ico"
