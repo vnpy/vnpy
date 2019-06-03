@@ -544,8 +544,8 @@ void generate_class_ITapTrade_ITapTradeAPI(pybind11::object & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, ITapTrade::ITapTradeAPI, c);
-    module_vnitap::objects.emplace("ITapTrade::ITapTradeAPI", c);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::ITapTradeAPI, c);
+    module_vntap::objects.emplace("ITapTrade::ITapTradeAPI", c);
 }
 void generate_caster_ITapTrade(pybind11::object & parent)
 {

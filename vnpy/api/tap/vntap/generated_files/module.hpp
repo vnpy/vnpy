@@ -2,8 +2,8 @@
 
 #include <autocxxpy/autocxxpy.hpp>
 
-struct tag_vnitap{};
-struct module_vnitap{
+struct tag_vntap{};
+struct module_vntap{
     static autocxxpy::cross_assign cross;
     static autocxxpy::object_store objects;
     static inline void process_post_assign()
@@ -13,6 +13,6 @@ struct module_vnitap{
         objects.clear();
     }
 };
-using module_tag=tag_vnitap;
+using module_tag=tag_vntap;
 
 

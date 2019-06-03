@@ -14,12 +14,12 @@
 #include "custom/custom_wrappers.hpp"
 
 
-autocxxpy::cross_assign module_vnitap::cross;
-autocxxpy::object_store module_vnitap::objects;
+autocxxpy::cross_assign module_vntap::cross;
+autocxxpy::object_store module_vntap::objects;
 
 void additional_init(pybind11::module &m)
 {
-    autocxxpy::additional_init<tag_vnitap>::init(m);
+    autocxxpy::additional_init<tag_vntap>::init(m);
 }
 
 void init_dispatcher(pybind11::module &m)
@@ -34,11 +34,11 @@ void init_dispatcher(pybind11::module &m)
     autocxxpy::dispatcher::instance().start();
 }
 
-PYBIND11_MODULE(vnitap, m)
+PYBIND11_MODULE(vntap, m)
 {
-    generate_vnitap(m);
+    generate_vntap(m);
 
-    module_vnitap::process_post_assign();
+    module_vntap::process_post_assign();
 
     additional_init(m);
     init_dispatcher(m);
