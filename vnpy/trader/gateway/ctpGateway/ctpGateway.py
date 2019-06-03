@@ -122,6 +122,7 @@ class CtpGateway(VtGateway):
         self.requireAuthentication = False
 
         self.debug_tick = False
+        self.debug = False
 
         self.tdx_pool_count = 2         # 通达信连接池内连接数
 
@@ -166,6 +167,7 @@ class CtpGateway(VtGateway):
             mdAddress = str(setting['mdAddress'])
 
             self.debug_tick = setting.get('debug_tick',False)
+            self.debug = setting.get('debug',False)
 
             # 如果json文件提供了验证码
             if 'authCode' in setting:
@@ -1030,6 +1032,7 @@ class CtpTdApi(TdApi):
 
             exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
 
+            yd_position = data['YdPosition']
             # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
             if exchange == EXCHANGE_SHFE:
                 if data['YdPosition'] and not data['TodayPosition']:
@@ -1080,8 +1083,6 @@ class CtpTdApi(TdApi):
             # 查询回报结束
             if last:
                 # 遍历推送
-                if self.gateway.debug:
-                    print(u'最后推送')
                 for pos in list(self.posDict.values()):
                     self.gateway.onPosition(pos)
 
