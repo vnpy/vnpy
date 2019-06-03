@@ -1,6 +1,8 @@
 # encoding: UTF-8
 
-print(u'启动load vtEngine.py')
+# 20190318 增加自定义套利合约Customer_Contract
+
+print('load vtEngine.py')
 
 import shelve
 from collections import OrderedDict
@@ -13,14 +15,18 @@ from pymongo.errors import ConnectionFailure,AutoReconnect
 
 from vnpy.trader.vtEvent import Event as vn_event
 from vnpy.trader.language import text
-#from vnpy.trader.app.ctaStrategy.ctaEngine import CtaEngine
-#from vnpy.trader.app.dataRecorder.drEngine import DrEngine
-#from vnpy.trader.app.riskManager.rmEngine import RmEngine
-from vnpy.trader.vtFunction import loadMongoSetting, getTempPath
+
+from vnpy.trader.vtFunction import loadMongoSetting, getTempPath,getFullSymbol,getShortSymbol,getJsonPath
 from vnpy.trader.vtGateway import *
-from vnpy.trader.app import (ctaStrategy,cmaStrategy, riskManager)
+from vnpy.trader.app import (ctaStrategy, riskManager)
 from vnpy.trader.setup_logger import setup_logger
+from vnpy.trader.vtGlobal import globalSetting
 import traceback
+from datetime import datetime, timedelta, time, date
+
+from vnpy.trader.vtConstant import (DIRECTION_LONG, DIRECTION_SHORT,
+                                    OFFSET_OPEN, OFFSET_CLOSE, OFFSET_CLOSETODAY,
+                                    STATUS_ALLTRADED, STATUS_CANCELLED, STATUS_REJECTED,STATUS_UNKNOWN)
 
 import psutil
 try:
@@ -67,6 +73,7 @@ class MainEngine(object):
         self.ctaEngine = None       # CtaEngine(self, self.eventEngine)  # cta策略运行模块
         self.drEngine = None        # DrEngine(self, self.eventEngine)    # 数据记录模块
         self.rmEngine = None        #   RmEngine(self, self.eventEngine)    # 风险管理模块
+        self.algoEngine = None # 算法交易模块
         self.cmaEngine = None       # 跨市场套利引擎
         self.connected_gw_names = []
 
@@ -75,6 +82,9 @@ class MainEngine(object):
         self.logger = None
 
         self.createLogger()
+
+        self.spd_id = 1             # 自定义套利的委托编号
+        self.algo_order_dict = {}   # 记录算法交易的委托编号，便于通过算法引擎撤单
 
     # ----------------------------------------------------------------------
     def addGateway(self, gatewayModule,gateway_name=EMPTY_STRING):
@@ -119,7 +129,9 @@ class MainEngine(object):
             self.ctaEngine = self.appDict[appName]
         elif appName == riskManager.appName:
             self.rmEngine = self.appDict[appName]
-        elif appName == cmaStrategy.appName:
+        elif appName == 'AlgoTrading':
+            self.algoEngine = self.appDict[appName]
+        elif appName == 'CrossMarketArbitrage':
             self.cmaEngine = self.appDict[appName]
 
         # 保存应用信息
@@ -198,6 +210,9 @@ class MainEngine(object):
     def subscribe(self, subscribeReq, gatewayName):
         """订阅特定接口的行情"""
         # 处理没有输入gatewayName的情况
+        if len(subscribeReq.symbol) == 0:
+            return
+
         if gatewayName is None or len(gatewayName) == 0:
             if len(self.connected_gw_names) == 0:
                 self.writeError(u'vtEngine.subscribe, no connected gateway')
@@ -214,8 +229,11 @@ class MainEngine(object):
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
         
     # ----------------------------------------------------------------------
-    def sendOrder(self, orderReq, gatewayName):
-        """对特定接口发单"""
+    def sendOrder(self, orderReq, gatewayName, strategyName=None):
+        """
+        对特定接口发单
+        strategyName: ctaEngine中，发单的策略实例名称
+        """
         # 如果风控检查失败则不发单
         if self.rmEngine and not self.rmEngine.checkRisk(orderReq):
             self.writeCritical(u'风控检查不通过,gw:{},{} {} {} p:{} v:{}'.format(gatewayName, orderReq.direction, orderReq.offset, orderReq.symbol, orderReq.price, orderReq.volume))
@@ -229,20 +247,144 @@ class MainEngine(object):
                                                            orderReq.symbol, orderReq.price, orderReq.volume))
             return ''
 
+        # 判断是否包含gatewayName
+        if gatewayName is None or len(gatewayName)==0:
+            if len(self.connected_gw_names) == 1:
+                gatewayName = self.connected_gw_names[0]
+            else:
+                self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+                return ''
+        else:
+            if gatewayName not in self.connected_gw_names:
+                self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+                return ''
+
+        #  如果合约在自定义清单中，并且包含SPD，则使用算法交易, 而不是CtpGateway发单
+        if orderReq.symbol.endswith('SPD') and orderReq.symbol in self.dataEngine.custom_contract_setting:
+            return self.sendAlgoOrder(orderReq, gatewayName, strategyName)
+
         if gatewayName in self.gatewayDict:
             gateway = self.gatewayDict[gatewayName]
             return gateway.sendOrder(orderReq)
-        else:
-            self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
-    
+
+    def sendAlgoOrder(self,orderReq, gatewayName, strategyName=None):
+        """发送算法交易指令"""
+        self.writeLog(u'创建算法交易,gatewayName:{},strategyName:{},symbol:{},price:{},volume:{}'
+                      .format(gatewayName, strategyName,orderReq.vtSymbol,orderReq.price,orderReq.volume))
+
+        # 创建一个Order事件
+        order = VtOrderData()
+        order.vtSymbol = orderReq.vtSymbol
+        order.symbol = orderReq.symbol
+        order.exchange = orderReq.exchange
+        order.gatewayName = gatewayName
+        order.direction = orderReq.direction
+        order.offset = orderReq.offset
+        order.price = orderReq.price
+        order.totalVolume = orderReq.volume
+        order.tradedVolume = 0
+        order.orderTime = datetime.now().strftime('%H:%M:%S.%f')
+        order.orderID = 'spd_{}'.format(self.spd_id)
+        self.spd_id += 1
+        order.vtOrderID = gatewayName+'.'+order.orderID
+
+        #如果算法引擎未启动，发出拒单事件
+        if self.algoEngine is None:
+            try:
+                self.writeLog(u'算法引擎未启动，启动ing')
+                from vnpy.trader.app import algoTrading
+                self.addApp(algoTrading)
+            except Exception as ex:
+                self.writeError(u'算法引擎未加载，不能创建算法交易')
+                order.cancelTime = datetime.now().strftime('%H:%M:%S.%f')
+                order.status = STATUS_REJECTED
+                event1 = Event(type_=EVENT_ORDER)
+                event1.dict_['data'] = order
+                self.eventEngine.put(event1)
+                return ''
+
+        # 创建算法实例，由算法引擎启动
+        tradeCommand = ''
+        if orderReq.direction == DIRECTION_LONG and orderReq.offset == OFFSET_OPEN:
+            tradeCommand = 'Buy'
+        elif orderReq.direction == DIRECTION_SHORT and orderReq.offset == OFFSET_OPEN:
+            tradeCommand = 'Short'
+        elif orderReq.direction == DIRECTION_SHORT and orderReq.offset in [OFFSET_CLOSE, OFFSET_CLOSETODAY]:
+            tradeCommand = 'Sell'
+        elif orderReq.direction == DIRECTION_LONG and orderReq.offset in [OFFSET_CLOSE, OFFSET_CLOSETODAY]:
+            tradeCommand = 'Cover'
+
+        contract_setting = self.dataEngine.custom_contract_setting.get(orderReq.symbol,{})
+        algo = {
+            'templateName': u'SpreadTrading 套利',
+            'order_vtSymbol': orderReq.symbol,
+            'order_command': tradeCommand,
+            'order_price': orderReq.price,
+            'order_volume': orderReq.volume,
+            'timer_interval': 120,
+            'strategy_name': strategyName
+        }
+        algo.update(contract_setting)
+
+        # 算法引擎
+        algoName = self.algoEngine.addAlgo(algo)
+        self.writeLog(u'sendAlgoOrder(): addAlgo {}={}'.format(algoName, str(algo)))
+
+        order.status = STATUS_UNKNOWN
+        order.orderID = algoName
+        order.vtOrderID = gatewayName + u'.' + algoName
+
+        event1 = Event(type_=EVENT_ORDER)
+        event1.dict_['data'] = order
+        self.eventEngine.put(event1)
+
+        # 登记在本地的算法委托字典中
+        self.algo_order_dict.update({algoName: {'algo': algo, 'order': order}})
+
+        return gatewayName + u'.' + algoName
+
     # ----------------------------------------------------------------------
     def cancelOrder(self, cancelOrderReq, gatewayName):
         """对特定接口撤单"""
-        if gatewayName in self.gatewayDict:
+        if cancelOrderReq.orderID in self.algo_order_dict:
+            self.writeLog(u'执行算法实例撤单')
+            self.cancelAlgoOrder(cancelOrderReq,gatewayName)
+            return
+
+        if gatewayName in self.gatewayDict and gatewayName in self.connected_gw_names:
             gateway = self.gatewayDict[gatewayName]
             gateway.cancelOrder(cancelOrderReq)
         else:
             self.writeLog(text.GATEWAY_NOT_EXIST.format(gateway=gatewayName))
+
+    def cancelAlgoOrder(self, cancelOrderReq, gatewayName):
+        if self.algoEngine is None:
+            self.writeError(u'算法引擎未实例化，不能撤单:{}'.format(cancelOrderReq.orderID))
+            return
+        try:
+            d = self.algo_order_dict.get(cancelOrderReq.orderID)
+            algo = d.get('algo',None)
+            order = d.get('order', None)
+
+            if algo is None or order is None:
+                self.writeError(u'未找到算法配置和委托单,不能撤单:{}'.format(cancelOrderReq.orderID))
+                return
+
+            if cancelOrderReq.orderID not in self.algoEngine.algoDict:
+                self.writeError(u'算法实例不存在，不能撤单')
+                return
+
+            self.algoEngine.stopAlgo(cancelOrderReq.orderID)
+
+            order.cancelTime = datetime.now().strftime('%H:%M:%S.%f')
+            order.status = STATUS_CANCELLED
+            event1 = Event(type_=EVENT_ORDER)
+            event1.dict_['data'] = order
+            self.eventEngine.put(event1)
+
+        except Exception as ex:
+            self.writeError(u'算法实例撤销异常:{}\n{}'.format(str(ex),traceback.format_exc()))
+
 
     # ----------------------------------------------------------------------
     def qryAccount(self, gatewayName):
@@ -330,7 +472,7 @@ class MainEngine(object):
             return True
 
         except Exception as ex:
-            print( u'vtEngine.disconnect Exception:{0} '.format(str(ex)))
+            self.writeError(u'vtEngine.disconnect Exception:{0} '.format(str(ex)))
             return False
 
     # ----------------------------------------------------------------------
@@ -363,7 +505,7 @@ class MainEngine(object):
 
         filename = os.path.abspath(os.path.join(path, 'vnpy'))
 
-        print( u'create logger:{}'.format(filename))
+        print(u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name='vnpy', debug=True)
 
     # ----------------------------------------------------------------------
@@ -381,15 +523,22 @@ class MainEngine(object):
         else:
             self.createLogger()
 
-        # 发出邮件/微信
-       #try:
-       #    if len(self.gatewayDetailList) > 0:
-       #        target = self.gatewayDetailList[0]['gatewayName']
-       #    else:
-       #        target = WECHAT_GROUP["DEBUG_01"]
-       #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_ERROR)
-       #except Exception as ex:
-       #    print(u'send wechat exception:{}'.format(str(ex)),file=sys.stderr)
+        # 发出邮件
+        if globalSetting.get('activate_email', False):
+            try:
+                sendmail(subject=u'{0} Error'.format('_'.join(self.connected_gw_names)), msgcontent=content)
+            except Exception as ex:
+                print(u'vtEngine.writeError sendmail Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
+
+        # 发出微信
+        if globalSetting.get('activate_wx_ft', False):
+            try:
+                from huafu.util.util_wx_ft import sendWxMsg
+                sendWxMsg(text=content)
+            except Exception as ex:
+                print(u'vtEngine.writeError sendWxMsg Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
 
     # ----------------------------------------------------------------------
     def writeWarning(self, content):
@@ -411,20 +560,22 @@ class MainEngine(object):
             self.createLogger()
 
         # 发出邮件
-        try:
-            sendmail(subject=u'{0} Warning'.format('_'.join(self.connected_gw_names)), msgcontent=content)
-        except:
-            pass
+        if globalSetting.get('activate_email', False):
+            try:
+                sendmail(subject=u'{0} Warning'.format('_'.join(self.connected_gw_names)), msgcontent=content)
+            except Exception as ex:
+                print(u'vtEngine.writeWarning sendmail Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
 
         # 发出微信
-        #try:
-        #    if len(self.gatewayDetailList) > 0:
-        #        target = self.gatewayDetailList[0]['gatewayName']
-        #    else:
-        #        target = WECHAT_GROUP["DEBUG_01"]
-        #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_WARNING)
-        #except Exception as ex:
-        #    print(u'send wechat exception:{}'.format(str(ex)), file=sys.stderr)
+        if globalSetting.get('activate_wx_ft', False):
+            try:
+                from huafu.util.util_wx_ft import sendWxMsg
+                sendWxMsg(text=content)
+            except Exception as ex:
+                print(u'vtEngine.writeWarning sendWxMsg Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
+
 
     # ----------------------------------------------------------------------
     def writeNotification(self, content):
@@ -436,20 +587,21 @@ class MainEngine(object):
         self.eventEngine.put(event)
 
         # 发出邮件
-        try:
-            sendmail(subject=u'{0} Notification'.format('_'.join(self.connected_gw_names)), msgcontent=content)
-        except:
-            pass
+        if globalSetting.get('activate_email', False):
+            try:
+                sendmail(subject=u'{0} Notification'.format('_'.join(self.connected_gw_names)), msgcontent=content)
+            except Exception as ex:
+                print(u'vtEngine.writeNotification sendmail Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
 
         # 发出微信
-       # try:
-       #     if len(self.gatewayDetailList) > 0:
-       #         target = self.gatewayDetailList[0]['gatewayName']
-       #     else:
-       #         target = WECHAT_GROUP["DEBUG_01"]
-       #     sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_INFO)
-       # except Exception as ex:
-       #     print(u'send wechat exception:{}'.format(str(ex)), file=sys.stderr)
+        if globalSetting.get('activate_wx_ft', False):
+            try:
+                from huafu.util.util_wx_ft import sendWxMsg
+                sendWxMsg(text=content)
+            except Exception as ex:
+                print(u'vtEngine.writeNotification sendWxMsg Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
 
     # ----------------------------------------------------------------------
     def writeCritical(self, content):
@@ -471,23 +623,22 @@ class MainEngine(object):
             self.createLogger()
 
         # 发出邮件
-        try:
-            sendmail(subject=u'{0} Critical'.format('_'.join(self.connected_gw_names)), msgcontent=content)
-            from vnpy.trader.util_wx_ft import sendWxMsg
-            sendWxMsg(text=content,desp='Critical error')
-        except:
-            pass
+        if globalSetting.get('activate_email',False):
+            # 发出邮件
+            try:
+                sendmail(subject=u'{0} Critical'.format('_'.join(self.connected_gw_names)), msgcontent=content)
+            except Exception as ex:
+                print(u'vtEngine.writeCritical sendmail Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
 
-        ## 发出微信
-        #try:
-        # #   if len(self.gatewayDetailList) > 0:
-        #        target = self.gatewayDetailList[0]['gatewayName']
-        #    else:
-        #        target = WECHAT_GROUP["DEBUG_01"]
-        #    sendWeChatMsg(content, target=target, level=WECHAT_LEVEL_FATAL)
-        #except:
-        #    pass
-
+        # 发出微信
+        if globalSetting.get('activate_wx_ft',False):
+            try:
+                from huafu.util.util_wx_ft import sendWxMsg
+                sendWxMsg(text=content)
+            except Exception as ex:
+                print(u'vtEngine.writeCritical sendWxMsg Exception:{}'.format(str(ex)), file=sys.stderr)
+                print(u'{}'.format(traceback.format_exc()), file=sys.stderr)
 #
     # ----------------------------------------------------------------------
     def dbConnect(self):
@@ -515,7 +666,6 @@ class MainEngine(object):
                 self.writeError(text.DATABASE_CONNECTING_FAILED)
                 self.db_has_connected = False
 
-    
     # ----------------------------------------------------------------------
     def dbInsert(self, dbName, collectionName, d):
         """向MongoDB中插入数据，d是具体数据"""
@@ -648,7 +798,7 @@ class MainEngine(object):
             self.writeError(u'dbQueryBySort exception:{}'.format(str(ex)))
 
         return []
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def dbUpdate(self, dbName, collectionName, d, flt, upsert=False):
         """向MongoDB中更新数据，d是具体数据，flt是过滤条件，upsert代表若无是否要插入"""
         try:
@@ -701,7 +851,7 @@ class MainEngine(object):
         except Exception as ex:
             self.writeError(u'dbDelete exception:{}'.format(str(ex)))
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def dbLogging(self, event):
         """向MongoDB中插入日志"""
         log = event.dict_['data']
@@ -802,7 +952,13 @@ class DataEngine(object):
         
         # 保存合约详细信息的字典
         self.contractDict = {}
-        
+
+        # 本地自定义的合约详细配置字典
+        self.custom_contract_setting = {}
+
+        # 合约与自定义套利合约映射表
+        self.contract_spd_mapping = {}
+
         # 保存委托数据的字典
         self.orderDict = {}
         
@@ -836,10 +992,14 @@ class DataEngine(object):
     def getContract(self, vtSymbol):
         """查询合约对象"""
         try:
-            return self.contractDict[vtSymbol]
-        except KeyError:
+            if vtSymbol in self.contractDict.keys():
+                return self.contractDict[vtSymbol]
+
             return None
-        
+        except Exception as ex:
+            print(str(ex),file=sys.stderr)
+            return None
+
     # ----------------------------------------------------------------------
     def getAllContracts(self):
         """查询所有合约对象（返回列表）"""
@@ -863,7 +1023,28 @@ class DataEngine(object):
             for key, value in d.items():
                 self.contractDict[key] = value
         f.close()
-        
+
+        c = Custom_Contract()
+        self.custom_contract_setting = c.get_config()
+        d = c.get_contracts()
+        if len(d)>0:
+            print(u'更新本地定制合约')
+            self.contractDict.update(d)
+
+        # 将leg1，leg2合约对应的自定义spd合约映射
+        for spd_name in self.custom_contract_setting.keys():
+            setting = self.custom_contract_setting.get(spd_name)
+            leg1_symbol = setting.get('leg1_symbol')
+            leg2_symbol = setting.get('leg2_symbol')
+
+            for symbol in [leg1_symbol,leg2_symbol]:
+                spd_mapping_list = self.contract_spd_mapping.get(symbol,[])
+
+                # 更新映射
+                if spd_name not in spd_mapping_list:
+                    spd_mapping_list.append(spd_name)
+                    self.contract_spd_mapping.update({symbol:spd_mapping_list})
+
     # ----------------------------------------------------------------------
     def updateOrder(self, event):
         """更新委托数据"""
@@ -938,8 +1119,7 @@ class DataEngine(object):
 
     def updatePosition(self,event):
         """更新持仓信息"""
-        # 在获取更新持仓信息时，自动订阅这个symbol
-        # 目的：1、
+        # 1、在获取更新持仓信息时，自动订阅这个symbol
 
         position = event.dict_['data']
         symbol = position.symbol
@@ -974,3 +1154,59 @@ class DataEngine(object):
 
         self.mainEngine.writeLog(u'自动订阅合约{0}'.format(symbol))
 
+class Custom_Contract(object):
+    """
+    定制合约
+    # 适用于初始化系统时，补充到本地合约信息文件中 contracts.vt
+    # 适用于CTP网关，加载自定义的套利合约，做内部行情撮合
+    """
+    # 运行本地目录下，定制合约的配置文件（dict）
+    file_name = 'Custom_Contracts.json'
+    custom_config_file = getJsonPath(file_name, __file__)
+
+    def __init__(self):
+        """构造函数"""
+
+        self.setting = {}       # 所有设置
+
+        try:
+            # 配置文件是否存在
+            if not os.path.exists(self.custom_config_file):
+                return
+
+            # 加载配置文件，兼容中文说明
+            with open(self.custom_config_file,'r',encoding='UTF-8') as f:
+                # 解析json文件
+                print(u'从{}文件加载定制合约'.format(self.custom_config_file))
+                self.setting = json.load(f)
+
+        except IOError:
+            print('读取{} 出错'.format(self.custom_config_file),file=sys.stderr)
+
+    def get_config(self):
+        """获取配置"""
+        return self.setting
+
+    def get_contracts(self):
+        """获取所有合约信息"""
+        d = {}
+        for k,v in self.setting.items():
+            contract = VtContractData()
+            contract.gatewayName = v.get('gateway_name',None)
+            if contract.gatewayName is None and globalSetting.get('gateway_name',None) is not None:
+                contract.gatewayName = globalSetting.get('gateway_name')
+            contract.symbol = k
+            contract.exchange = v.get('exchange',None)
+            contract.vtSymbol = contract.symbol
+            contract.name = v.get('name',contract.symbol)
+            contract.size = v.get('size',100)
+
+            contract.priceTick = v.get('minDiff',0.01)  # 最小跳动
+            contract.strikePrice = v.get('strike_price',None)
+            contract.underlyingSymbol = v.get('underlying_symbol')
+            contract.longMarginRatio = v.get('margin_rate',0.1)
+            contract.shortMarginRatio = v.get('margin_rate',0.1)
+            contract.productClass = v.get('product_class',None)
+            d[contract.vtSymbol] = contract
+
+        return d

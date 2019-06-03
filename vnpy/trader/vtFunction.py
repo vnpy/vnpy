@@ -7,12 +7,56 @@
 import os,sys
 import decimal
 import json
-from datetime import datetime
+from datetime import datetime,timedelta
 import importlib
 import re
+from functools import lru_cache
 
 MAX_NUMBER = 10000000000000
 MAX_DECIMAL = 8
+
+
+def import_module_by_str(import_module_name):
+    """
+    动态导入模块/函数
+    :param import_module_name:
+    :return:
+    """
+    import traceback
+    from importlib import import_module, reload
+
+    # 参数检查
+    if len(import_module_name) == 0:
+        print('import_module_by_str parameter error,return None')
+        return None
+
+    print('trying to import {}'.format(import_module_name))
+    try:
+        import_name = str(import_module_name).replace(':', '.')
+        modules = import_name.split('.')
+        if len(modules) == 1:
+            mod = import_module(modules[0])
+            return mod
+        else:
+            loaded_modules = '.'.join(modules[0:-1])
+            print('import {}'.format(loaded_modules))
+            mod = import_module(loaded_modules)
+
+            comp = modules[-1]
+            if not hasattr(mod, comp):
+                loaded_modules = '.'.join([loaded_modules,comp])
+                print('realod {}'.format(loaded_modules))
+                mod = reload(loaded_modules)
+            else:
+                print('from {} import {}'.format(loaded_modules,comp))
+                mod = getattr(mod, comp)
+            return mod
+
+    except Exception as ex:
+        print('import {} fail,{},{}'.format(import_module_name,str(ex),traceback.format_exc()))
+
+        return None
+
 
 
 def floatToStr(float_str):
@@ -30,6 +74,45 @@ def floatToStr(float_str):
     else:
         return float_str
 
+# ----------------------------------------------------------------------
+def roundToPriceTick(priceTick, price):
+    """取整价格到合约最小价格变动"""
+    if not priceTick:
+        return price
+
+    if price > 0:
+        # 根据最小跳动取整
+        newPrice = price - price % priceTick
+    else:
+        # 兼容套利品种的负数价格
+        newPrice = round(price / priceTick, 0) * priceTick
+
+    # 数字货币，对浮点的长度有要求，需要砍除多余
+    if isinstance(priceTick,float):
+        price_exponent = decimal.Decimal(str(newPrice))
+        tick_exponent = decimal.Decimal(str(priceTick))
+        if abs(price_exponent.as_tuple().exponent) > abs(tick_exponent.as_tuple().exponent):
+            newPrice = round(newPrice, ndigits=abs(tick_exponent.as_tuple().exponent))
+            newPrice = float(str(newPrice))
+
+    return newPrice
+
+def roundToVolumeTick(volumeTick,volume):
+    if volumeTick == 0:
+        return volume
+    # 取整
+    newVolume = volume - volume % volumeTick
+
+    if isinstance(volumeTick,float):
+        v_exponent = decimal.Decimal(str(newVolume))
+        vt_exponent = decimal.Decimal(str(volumeTick))
+        if abs(v_exponent.as_tuple().exponent) > abs(vt_exponent.as_tuple().exponent):
+            newVolume = round(newVolume, ndigits=abs(vt_exponent.as_tuple().exponent))
+            newVolume = float(str(newVolume))
+
+    return newVolume
+
+@lru_cache()
 def getShortSymbol(symbol):
     """取得合约的短号"""
     # 套利合约
@@ -55,15 +138,25 @@ def getShortSymbol(symbol):
 
     return shortSymbol.group(1)
 
+@lru_cache()
 def getFullSymbol(symbol):
-    """获取全路径得合约名称"""
+    """
+    获取全路径得合约名称
+    """
+    if symbol.endswith('SPD'):
+        return symbol
+
     short_symbol = getShortSymbol(symbol)
     if short_symbol == symbol:
         return symbol
 
     symbol_month = symbol.replace(short_symbol, '')
     if len(symbol_month) == 3:
-        return '{0}1{1}'.format(short_symbol, symbol_month)
+        if symbol_month[0] == '0':
+            # 支持2020年合约
+            return '{0}2{1}'.format(short_symbol, symbol_month)
+        else:
+            return '{0}1{1}'.format(short_symbol, symbol_month)
     else:
         return symbol
 
@@ -116,6 +209,14 @@ def safeUnicode(value):
 
     return value
 
+
+def get_tdx_market_code(code):
+    # 获取通达信股票的market code
+    code = str(code)
+    if code[0] in ['5', '6', '9'] or code[:3] in ["009", "126", "110", "201", "202", "203", "204"]:
+        return 1
+    return 0
+
 #----------------------------------------------------------------------
 def loadMongoSetting():
     """载入MongoDB数据库的配置"""
@@ -136,6 +237,31 @@ def loadMongoSetting():
 def todayDate():
     """获取当前本机电脑时间的日期"""
     return datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def getTradingDate(dt=None):
+    """
+    根据输入的时间，返回交易日的日期
+    :param dt:
+    :return:
+    """
+    tradingDay = ''
+    if dt is None:
+        dt = datetime.now()
+
+    if dt.hour >= 21:
+        if dt.isoweekday() == 5:
+            # 星期五=》星期一
+            return (dt + timedelta(days=3)).strftime('%Y-%m-%d')
+        else:
+            # 第二天
+            return (dt + timedelta(days=1)).strftime('%Y-%m-%d')
+    elif dt.hour < 8 and dt.isoweekday() == 6:
+        # 星期六=>星期一
+        return (dt + timedelta(days=2)).strftime('%Y-%m-%d')
+    else:
+        return dt.strftime('%Y-%m-%d')
+
 
 # 图标路径
 iconPathDict = {}
@@ -163,6 +289,12 @@ def getTempPath(name):
     path = os.path.join(tempPath, name)
     return path
 
+def get_data_path():
+    """获取存放数据文件的路径"""
+    data_path = os.path.join(os.getcwd(),'data')
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    return  data_path
 
 # JSON配置文件路径
 jsonPathDict = {}
@@ -188,14 +320,6 @@ def getJsonPath(name, moduleFile):
     return moduleJsonPath
 
 
-# ----------------------------- 扩展的功能 ---------
-try:
-    import openpyxl
-    from openpyxl.utils.dataframe import dataframe_to_rows
-    from openpyxl.drawing.image import Image
-except:
-    print(u'can not import openpyxl',file=sys.stderr)
-
 def save_df_to_excel(file_name, sheet_name, df):
     """
     保存dataframe到execl
@@ -206,6 +330,14 @@ def save_df_to_excel(file_name, sheet_name, df):
     """
     if file_name is None or sheet_name is None or df is None:
         return False
+
+    # ----------------------------- 扩展的功能 ---------
+    try:
+        import openpyxl
+        from openpyxl.utils.dataframe import dataframe_to_rows
+        from openpyxl.drawing.image import Image
+    except:
+        print(u'can not import openpyxl', file=sys.stderr)
 
     if 'openpyxl' not in sys.modules:
         print(u'can not import openpyxl', file=sys.stderr)
@@ -254,6 +386,14 @@ def save_text_to_excel(file_name, sheet_name, text):
     if file_name is None or len(sheet_name)==0 or len(text) == 0 :
         return False
 
+    # ----------------------------- 扩展的功能 ---------
+    try:
+        import openpyxl
+        from openpyxl.utils.dataframe import dataframe_to_rows
+        from openpyxl.drawing.image import Image
+    except:
+        print(u'can not import openpyxl', file=sys.stderr)
+
     if 'openpyxl' not in sys.modules:
         return False
 
@@ -300,6 +440,13 @@ def save_images_to_excel(file_name, sheet_name, image_names):
     """
     if file_name is None or len(sheet_name) == 0 or len(image_names) == 0:
         return False
+    # ----------------------------- 扩展的功能 ---------
+    try:
+        import openpyxl
+        from openpyxl.utils.dataframe import dataframe_to_rows
+        from openpyxl.drawing.image import Image
+    except:
+        print(u'can not import openpyxl', file=sys.stderr)
 
     if 'openpyxl' not in sys.modules:
         return False
@@ -350,3 +497,56 @@ def save_images_to_excel(file_name, sheet_name, image_names):
         import traceback
         print(u'save_images_to_excel exception:{}'.format(str(ex)), traceback.format_exc(),file=sys.stderr)
         return False
+
+
+def display_dual_axis(df, columns1, columns2=[], invert_yaxis1=False, invert_yaxis2=False, file_name=None, sheet_name=None,
+             image_name=None):
+    """
+    显示(保存)双Y轴的走势图
+    :param df: DataFrame
+    :param columns1:  y1轴
+    :param columns2: Y2轴
+    :param invert_yaxis1: Y1 轴反转
+    :param invert_yaxis2: Y2 轴翻转
+    :param file_name:   保存的excel 文件名称
+    :param sheet_name:  excel 的sheet
+    :param image_name:  保存的image 文件名
+    :return:
+    """
+
+    import matplotlib
+    import matplotlib.pyplot as plt
+    matplotlib.rcParams['figure.figsize'] = (20.0, 10.0)
+
+    df1 = df[columns1]
+    df1.index = list(range(len(df)))
+    fig, ax1 = plt.subplots()
+    if invert_yaxis1:
+        ax1.invert_yaxis()
+    ax1.plot(df1)
+
+    if len(columns2) > 0:
+        df2 = df[columns2]
+        df2.index = list(range(len(df)))
+        ax2 = ax1.twinx()
+        if invert_yaxis2:
+            ax2.invert_yaxis()
+        ax2.plot(df2)
+
+    # 修改x轴得label为时间
+    xt = ax1.get_xticks()
+    xt2 = [df.index[int(i)] for i in xt[1:-2]]
+    xt2.insert(0, '')
+    xt2.append('')
+    ax1.set_xticklabels(xt2)
+
+    # 是否保存图片到文件
+    if image_name is not None:
+        fig = plt.gcf()
+        fig.savefig(image_name, bbox_inches='tight')
+
+        # 插入图片到指定的excel文件sheet中并保存excel
+        if file_name is not None and sheet_name is not None:
+            save_images_to_excel(file_name, sheet_name, [image_name])
+    else:
+        plt.show()
