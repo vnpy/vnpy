@@ -26,6 +26,8 @@ class VtGateway(object):
         # 所有订阅onBar的都会添加
         self.klines = {}
 
+        self.symbol_price_dict = {}
+
     # ----------------------------------------------------------------------
     def onTick(self, tick):
         """市场行情推送"""
@@ -33,6 +35,11 @@ class VtGateway(object):
         event1 = Event(type_=EVENT_TICK)
         event1.dict_['data'] = tick
         self.eventEngine.put(event1)
+
+        if tick.lastPrice is not None or tick.lastPrice != 0:
+            self.symbol_price_dict.update({tick.vtSymbol: tick.lastPrice})
+        elif tick.askPrice1 is not None and tick.bidPrice1 is not None:
+            self.symbol_price_dict.update({tick.vtSymbol: (tick.askPrice1 + tick.bidPrice1)/2})
 
         # 特定合约代码的事件
         event2 = Event(type_=EVENT_TICK+tick.vtSymbol)
@@ -45,6 +52,8 @@ class VtGateway(object):
         event = Event(type_=type)
         event.dict_['data'] = bar
         self.eventEngine.put(event)
+        self.writeLog(u'Onbar Event:{},{},o:{},h:{},l:{},c:{}'.format(bar.vtSymbol, bar.datetime, bar.open,
+                                                                    bar.high, bar.low, bar.close))
 
     # ----------------------------------------------------------------------
     def onTrade(self, trade):
@@ -108,13 +117,6 @@ class VtGateway(object):
         event1.dict_['data'] = error
         self.eventEngine.put(event1)
 
-        logMsg = u'{} {}:[{}]:{}'.format(datetime.now(), error.gatewayName, error.errorID,error.errorMsg )
-        # 写入本地log日志
-        if self.logger:
-            self.logger.error(logMsg)
-            print(logMsg,file=sys.stderr)
-        else:
-            self.createLogger()
 
     # ----------------------------------------------------------------------
     def onLog(self, log):
@@ -221,7 +223,6 @@ class VtGateway(object):
 
         if self.logger:
             self.logger.error(content)
-
 
     # ----------------------------------------------------------------------
     def printDict(self,d):

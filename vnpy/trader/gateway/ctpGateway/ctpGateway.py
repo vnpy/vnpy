@@ -1056,13 +1056,20 @@ class CtpTdApi(TdApi):
                 pre_settlement_price = data['PreSettlementPrice']
                 # 开仓均价
                 open_cost_price = data['OpenCost'] / (pos.position * size)
-                # 逐笔盈亏 = (上一交易日结算价 - 开仓价)* 持仓数量 * 杠杆 + 当日持仓收益
-                if pos.direction == DIRECTION_LONG:
-                    pre_profit = (pre_settlement_price - open_cost_price) * (pos.position * size)
-                else:
-                    pre_profit = (open_cost_price - pre_settlement_price) * (pos.position * size)
 
-                pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+                cur_price = self.gateway.symbol_price_dict.get(pos.vtSymbol, None)
+                if cur_price is None:
+                # 逐笔盈亏 = (上一交易日结算价 - 开仓价)* 持仓数量 * 杠杆 + 当日持仓收益
+                    if pos.direction == DIRECTION_LONG:
+                       pre_profit = (pre_settlement_price - open_cost_price) * (yd_position * size)
+                    else:
+                       pre_profit = (open_cost_price - pre_settlement_price) * (yd_position * size)
+                    pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+                else:
+                    if pos.direction == DIRECTION_LONG:
+                        pos.positionProfit = (cur_price - open_cost_price) * (pos.position * size)
+                    else:
+                        pos.positionProfit = (open_cost_price - cur_price) * (pos.position * size)
 
             # 读取冻结
             if pos.direction is DIRECTION_LONG:

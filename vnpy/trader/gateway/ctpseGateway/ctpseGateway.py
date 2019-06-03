@@ -1054,6 +1054,7 @@ class CtpTdApi(TdApi):
 
             exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
 
+            yd_position = data['YdPosition']
             # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
             if exchange == EXCHANGE_SHFE:
                 if data['YdPosition'] and not data['TodayPosition']:
@@ -1080,13 +1081,22 @@ class CtpTdApi(TdApi):
                 pre_settlement_price = data['PreSettlementPrice']
                 # 开仓均价
                 open_cost_price = data['OpenCost'] / (pos.position * size)
-                # 逐笔盈亏 = (上一交易日结算价 - 开仓价)* 持仓数量 * 杠杆 + 当日持仓收益
-                if pos.direction == DIRECTION_LONG:
-                    pre_profit = (pre_settlement_price - open_cost_price) * (pos.position * size)
-                else:
-                    pre_profit = (open_cost_price - pre_settlement_price) * (pos.position * size)
 
-                pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+                cur_price = self.gateway.symbol_price_dict.get(pos.vtSymbol, None)
+                if cur_price is None:
+
+                    # 逐笔盈亏 = (上一交易日结算价 - 开仓价)* 昨仓持仓数量 * 杠杆 + 当日持仓收益
+                    if pos.direction == DIRECTION_LONG:
+                       pre_profit = (pre_settlement_price - open_cost_price) * (yd_position * size)
+                    else:
+                       pre_profit = (open_cost_price - pre_settlement_price) * (yd_position * size)
+                    pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+                else:
+                    # 逐笔盈亏 = (当前价 - 开仓价)* 持仓数量 * 杠杆
+                    if pos.direction == DIRECTION_LONG:
+                        pos.positionProfit = (cur_price - open_cost_price) * (pos.position * size)
+                    else:
+                        pos.positionProfit = (open_cost_price - cur_price) * (pos.position * size)
 
             # 读取冻结
             if pos.direction is DIRECTION_LONG:
@@ -1106,7 +1116,7 @@ class CtpTdApi(TdApi):
                 self.posDict.clear()
         except Exception as ex:
             self.gateway.writeError('onRspQryInvestorPosition exception:{}'.format(str(ex)))
-            self.gateway.writeError('traceL{}'.format(traceback.format_exc()))
+            self.gateway.writeError('trace {}'.format(traceback.format_exc()))
 
 
     #----------------------------------------------------------------------
