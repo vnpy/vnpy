@@ -254,7 +254,7 @@ class TigerGateway(BaseGateway):
             )
             self.ticks[symbol] = tick
 
-        tick.datetime = datetime.fromtimestamp(int(data["latest_time"]) / 1000)
+        tick.datetime = datetime.fromtimestamp(int(data["timestamp"]) / 1000)
         tick.pre_close = data.get("prev_close", tick.pre_close)
         tick.last_price = data.get("latest_price", tick.last_price)
         tick.volume = data.get("volume", tick.volume)
