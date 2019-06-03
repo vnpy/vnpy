@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # autocxxpy version: 0.2.4
 python -m autocxxpy \
-      vnitap \
+      vntap \
       iTapTradeAPI.h TapQuoteAPI.h TapAPIError.h iTapAPIError.h \
-      -I vnitap/include \
+      -I vntap/include \
       -A custom/custom_wrappers.hpp\
-      --output-dir vnitap/generated_files \
+      --output-dir vntap/generated_files \
       --pyi-output-dir . \
       \
       --no-clear-pyi-output \

@@ -19,181 +19,181 @@ void generate_class_TapAPIApplicationInfo(pybind11::object & parent)
     pybind11::class_<TapAPIApplicationInfo> c(parent, "TapAPIApplicationInfo");
     if constexpr (std::is_default_constructible_v<TapAPIApplicationInfo>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIApplicationInfo, "AuthCode", AuthCode);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIApplicationInfo, "KeyOperationLogPath", KeyOperationLogPath);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIApplicationInfo, c);
-    module_vnitap::objects.emplace("TapAPIApplicationInfo", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIApplicationInfo, "AuthCode", AuthCode);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIApplicationInfo, "KeyOperationLogPath", KeyOperationLogPath);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIApplicationInfo, c);
+    module_vntap::objects.emplace("TapAPIApplicationInfo", c);
 }
 void generate_class_TapAPICommodity(pybind11::object & parent)
 {
     pybind11::class_<TapAPICommodity> c(parent, "TapAPICommodity");
     if constexpr (std::is_default_constructible_v<TapAPICommodity>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPICommodity, "ExchangeNo", ExchangeNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPICommodity, "CommodityType", CommodityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPICommodity, "CommodityNo", CommodityNo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPICommodity, c);
-    module_vnitap::objects.emplace("TapAPICommodity", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPICommodity, "ExchangeNo", ExchangeNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPICommodity, "CommodityType", CommodityType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPICommodity, "CommodityNo", CommodityNo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPICommodity, c);
+    module_vntap::objects.emplace("TapAPICommodity", c);
 }
 void generate_class_TapAPIContract(pybind11::object & parent)
 {
     pybind11::class_<TapAPIContract> c(parent, "TapAPIContract");
     if constexpr (std::is_default_constructible_v<TapAPIContract>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "Commodity", Commodity);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "ContractNo1", ContractNo1);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "StrikePrice1", StrikePrice1);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "CallOrPutFlag1", CallOrPutFlag1);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "ContractNo2", ContractNo2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "StrikePrice2", StrikePrice2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIContract, "CallOrPutFlag2", CallOrPutFlag2);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIContract, c);
-    module_vnitap::objects.emplace("TapAPIContract", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "Commodity", Commodity);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "ContractNo1", ContractNo1);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "StrikePrice1", StrikePrice1);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "CallOrPutFlag1", CallOrPutFlag1);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "ContractNo2", ContractNo2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "StrikePrice2", StrikePrice2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIContract, "CallOrPutFlag2", CallOrPutFlag2);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIContract, c);
+    module_vntap::objects.emplace("TapAPIContract", c);
 }
 void generate_class_TapAPIExchangeInfo(pybind11::object & parent)
 {
     pybind11::class_<TapAPIExchangeInfo> c(parent, "TapAPIExchangeInfo");
     if constexpr (std::is_default_constructible_v<TapAPIExchangeInfo>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIExchangeInfo, "ExchangeNo", ExchangeNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIExchangeInfo, "ExchangeName", ExchangeName);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIExchangeInfo, c);
-    module_vnitap::objects.emplace("TapAPIExchangeInfo", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIExchangeInfo, "ExchangeNo", ExchangeNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIExchangeInfo, "ExchangeName", ExchangeName);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIExchangeInfo, c);
+    module_vntap::objects.emplace("TapAPIExchangeInfo", c);
 }
 void generate_class_TapAPIChangePasswordReq(pybind11::object & parent)
 {
     pybind11::class_<TapAPIChangePasswordReq> c(parent, "TapAPIChangePasswordReq");
     if constexpr (std::is_default_constructible_v<TapAPIChangePasswordReq>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIChangePasswordReq, "OldPassword", OldPassword);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIChangePasswordReq, "NewPassword", NewPassword);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIChangePasswordReq, c);
-    module_vnitap::objects.emplace("TapAPIChangePasswordReq", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIChangePasswordReq, "OldPassword", OldPassword);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIChangePasswordReq, "NewPassword", NewPassword);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIChangePasswordReq, c);
+    module_vntap::objects.emplace("TapAPIChangePasswordReq", c);
 }
 void generate_class_TapAPIQuoteLoginAuth(pybind11::object & parent)
 {
     pybind11::class_<TapAPIQuoteLoginAuth> c(parent, "TapAPIQuoteLoginAuth");
     if constexpr (std::is_default_constructible_v<TapAPIQuoteLoginAuth>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "UserNo", UserNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "ISModifyPassword", ISModifyPassword);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "Password", Password);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "NewPassword", NewPassword);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "QuoteTempPassword", QuoteTempPassword);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "ISDDA", ISDDA);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteLoginAuth, "DDASerialNo", DDASerialNo);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIQuoteLoginAuth, c);
-    module_vnitap::objects.emplace("TapAPIQuoteLoginAuth", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "UserNo", UserNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "ISModifyPassword", ISModifyPassword);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "Password", Password);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "NewPassword", NewPassword);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "QuoteTempPassword", QuoteTempPassword);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "ISDDA", ISDDA);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteLoginAuth, "DDASerialNo", DDASerialNo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIQuoteLoginAuth, c);
+    module_vntap::objects.emplace("TapAPIQuoteLoginAuth", c);
 }
 void generate_class_TapAPIQuotLoginRspInfo(pybind11::object & parent)
 {
     pybind11::class_<TapAPIQuotLoginRspInfo> c(parent, "TapAPIQuotLoginRspInfo");
     if constexpr (std::is_default_constructible_v<TapAPIQuotLoginRspInfo>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "UserNo", UserNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "UserType", UserType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "UserName", UserName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "QuoteTempPassword", QuoteTempPassword);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "ReservedInfo", ReservedInfo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "LastLoginIP", LastLoginIP);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "LastLoginProt", LastLoginProt);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "LastLoginTime", LastLoginTime);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "LastLogoutTime", LastLogoutTime);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "TradeDate", TradeDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "LastSettleTime", LastSettleTime);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "StartTime", StartTime);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuotLoginRspInfo, "InitTime", InitTime);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIQuotLoginRspInfo, c);
-    module_vnitap::objects.emplace("TapAPIQuotLoginRspInfo", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "UserNo", UserNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "UserType", UserType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "UserName", UserName);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "QuoteTempPassword", QuoteTempPassword);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "ReservedInfo", ReservedInfo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "LastLoginIP", LastLoginIP);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "LastLoginProt", LastLoginProt);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "LastLoginTime", LastLoginTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "LastLogoutTime", LastLogoutTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "TradeDate", TradeDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "LastSettleTime", LastSettleTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "StartTime", StartTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuotLoginRspInfo, "InitTime", InitTime);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIQuotLoginRspInfo, c);
+    module_vntap::objects.emplace("TapAPIQuotLoginRspInfo", c);
 }
 void generate_class_TapAPIQuoteCommodityInfo(pybind11::object & parent)
 {
     pybind11::class_<TapAPIQuoteCommodityInfo> c(parent, "TapAPIQuoteCommodityInfo");
     if constexpr (std::is_default_constructible_v<TapAPIQuoteCommodityInfo>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "Commodity", Commodity);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "CommodityName", CommodityName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "CommodityEngName", CommodityEngName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "ContractSize", ContractSize);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "CommodityTickSize", CommodityTickSize);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "CommodityDenominator", CommodityDenominator);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "CmbDirect", CmbDirect);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "CommodityContractLen", CommodityContractLen);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "IsDST", IsDST);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "RelateCommodity1", RelateCommodity1);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteCommodityInfo, "RelateCommodity2", RelateCommodity2);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIQuoteCommodityInfo, c);
-    module_vnitap::objects.emplace("TapAPIQuoteCommodityInfo", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "Commodity", Commodity);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "CommodityName", CommodityName);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "CommodityEngName", CommodityEngName);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "ContractSize", ContractSize);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "CommodityTickSize", CommodityTickSize);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "CommodityDenominator", CommodityDenominator);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "CmbDirect", CmbDirect);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "CommodityContractLen", CommodityContractLen);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "IsDST", IsDST);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "RelateCommodity1", RelateCommodity1);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteCommodityInfo, "RelateCommodity2", RelateCommodity2);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIQuoteCommodityInfo, c);
+    module_vntap::objects.emplace("TapAPIQuoteCommodityInfo", c);
 }
 void generate_class_TapAPIQuoteContractInfo(pybind11::object & parent)
 {
     pybind11::class_<TapAPIQuoteContractInfo> c(parent, "TapAPIQuoteContractInfo");
     if constexpr (std::is_default_constructible_v<TapAPIQuoteContractInfo>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "Contract", Contract);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "ContractType", ContractType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "QuoteUnderlyingContract", QuoteUnderlyingContract);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "ContractName", ContractName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "ContractExpDate", ContractExpDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "LastTradeDate", LastTradeDate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteContractInfo, "FirstNoticeDate", FirstNoticeDate);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIQuoteContractInfo, c);
-    module_vnitap::objects.emplace("TapAPIQuoteContractInfo", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "Contract", Contract);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "ContractType", ContractType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "QuoteUnderlyingContract", QuoteUnderlyingContract);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "ContractName", ContractName);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "ContractExpDate", ContractExpDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "LastTradeDate", LastTradeDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteContractInfo, "FirstNoticeDate", FirstNoticeDate);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIQuoteContractInfo, c);
+    module_vntap::objects.emplace("TapAPIQuoteContractInfo", c);
 }
 void generate_class_TapAPIQuoteWhole(pybind11::object & parent)
 {
     pybind11::class_<TapAPIQuoteWhole> c(parent, "TapAPIQuoteWhole");
     if constexpr (std::is_default_constructible_v<TapAPIQuoteWhole>)
         c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "Contract", Contract);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "CurrencyNo", CurrencyNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "TradingState", TradingState);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "DateTimeStamp", DateTimeStamp);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPreClosingPrice", QPreClosingPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPreSettlePrice", QPreSettlePrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPrePositionQty", QPrePositionQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QOpeningPrice", QOpeningPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QLastPrice", QLastPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QHighPrice", QHighPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QLowPrice", QLowPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QHisHighPrice", QHisHighPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QHisLowPrice", QHisLowPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QLimitUpPrice", QLimitUpPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QLimitDownPrice", QLimitDownPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QTotalQty", QTotalQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QTotalTurnover", QTotalTurnover);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPositionQty", QPositionQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QAveragePrice", QAveragePrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QClosingPrice", QClosingPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QSettlePrice", QSettlePrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QLastQty", QLastQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QBidPrice", QBidPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QBidQty", QBidQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QAskPrice", QAskPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QAskQty", QAskQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QImpliedBidPrice", QImpliedBidPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QImpliedBidQty", QImpliedBidQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QImpliedAskPrice", QImpliedAskPrice);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QImpliedAskQty", QImpliedAskQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPreDelta", QPreDelta);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QCurrDelta", QCurrDelta);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QInsideQty", QInsideQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QOutsideQty", QOutsideQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QTurnoverRate", QTurnoverRate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "Q5DAvgQty", Q5DAvgQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPERatio", QPERatio);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QTotalValue", QTotalValue);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QNegotiableValue", QNegotiableValue);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QPositionTrend", QPositionTrend);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QChangeSpeed", QChangeSpeed);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QChangeRate", QChangeRate);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QChangeValue", QChangeValue);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QSwing", QSwing);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QTotalBidQty", QTotalBidQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "QTotalAskQty", QTotalAskQty);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vnitap, TapAPIQuoteWhole, "UnderlyContract", UnderlyContract);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, TapAPIQuoteWhole, c);
-    module_vnitap::objects.emplace("TapAPIQuoteWhole", c);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "Contract", Contract);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "CurrencyNo", CurrencyNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "TradingState", TradingState);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "DateTimeStamp", DateTimeStamp);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPreClosingPrice", QPreClosingPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPreSettlePrice", QPreSettlePrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPrePositionQty", QPrePositionQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QOpeningPrice", QOpeningPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QLastPrice", QLastPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QHighPrice", QHighPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QLowPrice", QLowPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QHisHighPrice", QHisHighPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QHisLowPrice", QHisLowPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QLimitUpPrice", QLimitUpPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QLimitDownPrice", QLimitDownPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QTotalQty", QTotalQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QTotalTurnover", QTotalTurnover);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPositionQty", QPositionQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QAveragePrice", QAveragePrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QClosingPrice", QClosingPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QSettlePrice", QSettlePrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QLastQty", QLastQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QBidPrice", QBidPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QBidQty", QBidQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QAskPrice", QAskPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QAskQty", QAskQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QImpliedBidPrice", QImpliedBidPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QImpliedBidQty", QImpliedBidQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QImpliedAskPrice", QImpliedAskPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QImpliedAskQty", QImpliedAskQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPreDelta", QPreDelta);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QCurrDelta", QCurrDelta);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QInsideQty", QInsideQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QOutsideQty", QOutsideQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QTurnoverRate", QTurnoverRate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "Q5DAvgQty", Q5DAvgQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPERatio", QPERatio);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QTotalValue", QTotalValue);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QNegotiableValue", QNegotiableValue);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QPositionTrend", QPositionTrend);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QChangeSpeed", QChangeSpeed);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QChangeRate", QChangeRate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QChangeValue", QChangeValue);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QSwing", QSwing);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QTotalBidQty", QTotalBidQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "QTotalAskQty", QTotalAskQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, TapAPIQuoteWhole, "UnderlyContract", UnderlyContract);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, TapAPIQuoteWhole, c);
+    module_vntap::objects.emplace("TapAPIQuoteWhole", c);
 }
 void generate_class_ITapQuoteAPINotify(pybind11::object & parent)
 {
@@ -288,8 +288,8 @@ void generate_class_ITapQuoteAPINotify(pybind11::object & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, ITapQuoteAPINotify, c);
-    module_vnitap::objects.emplace("ITapQuoteAPINotify", c);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapQuoteAPINotify, c);
+    module_vntap::objects.emplace("ITapQuoteAPINotify", c);
 }
 void generate_class_ITapQuoteAPI(pybind11::object & parent)
 {
@@ -388,8 +388,8 @@ void generate_class_ITapQuoteAPI(pybind11::object & parent)
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vnitap, ITapQuoteAPI, c);
-    module_vnitap::objects.emplace("ITapQuoteAPI", c);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapQuoteAPI, c);
+    module_vntap::objects.emplace("ITapQuoteAPI", c);
 }
 void generate_caster_(pybind11::object & parent)
 {

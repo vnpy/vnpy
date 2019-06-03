@@ -11,7 +11,7 @@
 #include "custom/custom_wrappers.hpp"
 
 
-void generate_vnitap(pybind11::module & parent);
+void generate_vntap(pybind11::module & parent);
 void generate_sub_namespace_ITapTrade(pybind11::module & parent);
 void generate_class_ITapTrade_TapAPIApplicationInfo(pybind11::object & parent);
 void generate_class_ITapTrade_TapAPICommodity(pybind11::object & parent);

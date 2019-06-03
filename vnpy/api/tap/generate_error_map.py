@@ -8,7 +8,7 @@ parser = CxxFileParser(
     files=["iTapAPIError.h",
            "TapAPIError.h",
            ],
-    include_paths=['vnitap/include']
+    include_paths=['vntap/include']
 )
 result = parser.parse()
 error_map: Dict[int, str] = {}
