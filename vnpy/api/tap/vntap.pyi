@@ -4,7 +4,7 @@ if typing.TYPE_CHECKING:
     from typing import *
     # noinspection PyUnresolvedReferences
     from enum import Enum
-    from .vnitap import *
+    from .vntap import *
 
 
 def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], bool]):
@@ -23,7 +23,7 @@ class AsyncDispatchException:
     function_name: str
 
 
-from . import vnitap_ITapTrade as ITapTrade
+from . import vntap_ITapTrade as ITapTrade
 class TapAPIApplicationInfo():
     
     

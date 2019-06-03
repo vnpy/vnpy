@@ -14,7 +14,7 @@
 #include "custom/custom_wrappers.hpp"
 
 
-void generate_vnitap(pybind11::module & parent)
+void generate_vntap(pybind11::module & parent)
 {
     {
         auto m = parent.def_submodule("ITapTrade");
@@ -858,15 +858,15 @@ void generate_sub_namespace_ITapTrade(pybind11::module & parent)
     parent.attr("TAPIERROR_DISCONNECT_HAS_CONNECTED") = ITapTrade::TAPIERROR_DISCONNECT_HAS_CONNECTED;
     parent.attr("TAPIERROR_DISCONNECT_HAS_EXIT") = ITapTrade::TAPIERROR_DISCONNECT_HAS_EXIT;
     parent.attr("TAPIERROR_DISCONNECT_TRY_LATER") = ITapTrade::TAPIERROR_DISCONNECT_TRY_LATER;
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderDeactivateReq", "ITapTrade::TapAPIOrderDeactivateReq", "::ITapTrade::TapAPIOrderCancelReq");
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderActivateReq", "ITapTrade::TapAPIOrderActivateReq", "::ITapTrade::TapAPIOrderCancelReq");
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderDeleteReq", "ITapTrade::TapAPIOrderDeleteReq", "::ITapTrade::TapAPIOrderCancelReq");
-    module_vnitap::cross.record_assign(parent, "TapAPIHisOrderProcessQryRsp", "ITapTrade::TapAPIHisOrderProcessQryRsp", "::ITapTrade::TapAPIHisOrderQryRsp");
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderMarketDeleteRsp", "ITapTrade::TapAPIOrderMarketDeleteRsp", "::ITapTrade::TapAPIOrderMarketInsertRsp");
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderLocalInputRsp", "ITapTrade::TapAPIOrderLocalInputRsp", "::ITapTrade::TapAPIOrderInfo");
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderLocalModifyRsp", "ITapTrade::TapAPIOrderLocalModifyRsp", "::ITapTrade::TapAPIOrderInfo");
-    module_vnitap::cross.record_assign(parent, "TapAPIOrderLocalTransferRsp", "ITapTrade::TapAPIOrderLocalTransferRsp", "::ITapTrade::TapAPIOrderInfo");
-    module_vnitap::cross.record_assign(parent, "TapAPIFillLocalInputRsp", "ITapTrade::TapAPIFillLocalInputRsp", "::ITapTrade::TapAPIFillLocalInputReq");
-    module_vnitap::cross.record_assign(parent, "TapAPIFillLocalRemoveRsp", "ITapTrade::TapAPIFillLocalRemoveRsp", "::ITapTrade::TapAPIFillLocalRemoveReq");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderDeactivateReq", "ITapTrade::TapAPIOrderDeactivateReq", "::ITapTrade::TapAPIOrderCancelReq");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderActivateReq", "ITapTrade::TapAPIOrderActivateReq", "::ITapTrade::TapAPIOrderCancelReq");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderDeleteReq", "ITapTrade::TapAPIOrderDeleteReq", "::ITapTrade::TapAPIOrderCancelReq");
+    module_vntap::cross.record_assign(parent, "TapAPIHisOrderProcessQryRsp", "ITapTrade::TapAPIHisOrderProcessQryRsp", "::ITapTrade::TapAPIHisOrderQryRsp");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderMarketDeleteRsp", "ITapTrade::TapAPIOrderMarketDeleteRsp", "::ITapTrade::TapAPIOrderMarketInsertRsp");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderLocalInputRsp", "ITapTrade::TapAPIOrderLocalInputRsp", "::ITapTrade::TapAPIOrderInfo");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderLocalModifyRsp", "ITapTrade::TapAPIOrderLocalModifyRsp", "::ITapTrade::TapAPIOrderInfo");
+    module_vntap::cross.record_assign(parent, "TapAPIOrderLocalTransferRsp", "ITapTrade::TapAPIOrderLocalTransferRsp", "::ITapTrade::TapAPIOrderInfo");
+    module_vntap::cross.record_assign(parent, "TapAPIFillLocalInputRsp", "ITapTrade::TapAPIFillLocalInputRsp", "::ITapTrade::TapAPIFillLocalInputReq");
+    module_vntap::cross.record_assign(parent, "TapAPIFillLocalRemoveRsp", "ITapTrade::TapAPIFillLocalRemoveRsp", "::ITapTrade::TapAPIFillLocalRemoveReq");
     generate_caster_ITapTrade(parent);
 }

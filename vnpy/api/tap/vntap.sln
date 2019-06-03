@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.202
+VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vnitap", "vnitap\vnitap.vcxproj", "{B4DDEDDF-B142-47CE-8D11-DF57370BF4EF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vntap", "vntap\vntap.vcxproj", "{B4DDEDDF-B142-47CE-8D11-DF57370BF4EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {749FD565-415D-46CA-AD10-FC133AD1853A}
+		SolutionGuid = {D43B71D7-1009-401C-9B68-1E6AD8750AAC}
 	EndGlobalSection
 EndGlobal

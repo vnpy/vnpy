@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
-from vnpy.api.itap.vnitap import (APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
+from vnpy.api.tap.vntap import (APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
                                   FreeTapQuoteAPI, ITapQuoteAPI, ITapQuoteAPINotify,
                                   TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
                                   TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
@@ -13,7 +13,7 @@ from vnpy.api.itap.vnitap import (APIYNFLAG_NO, AsyncDispatchException, CreateTa
                                   TapAPIQuoteContractInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
                                   set_async_callback_exception_handler)
 
-from vnpy.api.itap.error_codes import error_map
+from vnpy.api.tap.error_codes import error_map
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Product
 from vnpy.trader.gateway import BaseGateway
@@ -24,7 +24,7 @@ from vnpy.trader.object import (
     SubscribeRequest,
     TickData)
 
-PRODUCT_TYPE_ITAP2VT = {
+PRODUCT_TYPE_TAP2VT = {
     TAPI_COMMODITY_TYPE_SPOT: Product.SPOT,
     TAPI_COMMODITY_TYPE_FUTURES: Product.FUTURES,
     TAPI_COMMODITY_TYPE_OPTION: Product.OPTION,
@@ -32,7 +32,7 @@ PRODUCT_TYPE_ITAP2VT = {
     TAPI_COMMODITY_TYPE_STOCK: Product.EQUITY,
 }
 
-EXCHANGE_ITAP2VT = {
+EXCHANGE_TAP2VT = {
     'SGX': Exchange.SGX,
     'INE': Exchange.INE,
     'APEX': Exchange.APEX,
@@ -43,7 +43,7 @@ EXCHANGE_ITAP2VT = {
     'HKEX': Exchange.HKFE,  # verify: is this correct?,
     'CME': Exchange.CME,
 }
-EXCHANGE_VT2ITAP = {v: k for k, v in EXCHANGE_ITAP2VT.items()}
+EXCHANGE_VT2TAP = {v: k for k, v in EXCHANGE_TAP2VT.items()}
 
 
 def parse_datetime(dt_str: str):
@@ -71,7 +71,7 @@ class ContractExtraInfo:
 
 class QuoteNotify(ITapQuoteAPINotify):
 
-    def __init__(self, gateway: "ITapGateway"):
+    def __init__(self, gateway: "TapGateway"):
         super().__init__()
         self.gateway = gateway
 
@@ -115,14 +115,14 @@ class QuoteNotify(ITapQuoteAPINotify):
             return
         if info is not None:  # isLast == True ==> info is None
             symbol = info.Contract.ContractNo1  # what's the different between No1 and No2?
-            exchange = EXCHANGE_ITAP2VT[info.Contract.Commodity.ExchangeNo]
+            exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
             name = info.ContractName
             contract_data = ContractData(
                 gateway_name=self.gateway.gateway_name,
                 symbol=symbol,
                 exchange=exchange,
                 name=name,
-                product=PRODUCT_TYPE_ITAP2VT.get(info.ContractType, Product.EQUITY),
+                product=PRODUCT_TYPE_TAP2VT.get(info.ContractType, Product.EQUITY),
                 size=1,  # verify: no key for this
                 pricetick=1,  # verify: no key for this
                 min_volume=1,  # verify: no key for this
@@ -152,7 +152,7 @@ class QuoteNotify(ITapQuoteAPINotify):
 
     def OnRtnQuote(self, info: TapAPIQuoteWhole) -> Any:
         symbol = info.Contract.ContractNo1
-        exchange = EXCHANGE_ITAP2VT[info.Contract.Commodity.ExchangeNo]
+        exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
         extra_info = self.gateway.contract_extra_infos[(symbol, exchange)]
         tick = TickData(
             gateway_name=self.gateway.gateway_name,
@@ -193,7 +193,7 @@ class QuoteNotify(ITapQuoteAPINotify):
         self.gateway.on_tick(tick=tick)
 
 
-class ITapGateway(BaseGateway):
+class TapGateway(BaseGateway):
     default_setting = {
         "auth_code": "",
         "quote_host": "123.15.58.21",
@@ -201,7 +201,7 @@ class ITapGateway(BaseGateway):
         "quote_username": "",
         "quote_password": "",
     }
-    exchanges = list(EXCHANGE_VT2ITAP.keys())
+    exchanges = list(EXCHANGE_VT2TAP.keys())
 
     def __init__(self, event_engine: EventEngine):
         super().__init__(event_engine, "ITAP")
@@ -259,7 +259,7 @@ class ITapGateway(BaseGateway):
     def subscribe(self, req: SubscribeRequest):
         contract = TapAPIContract()
         extra_info = self.contract_extra_infos[(req.symbol, req.exchange)]
-        contract.Commodity.ExchangeNo = EXCHANGE_VT2ITAP[req.exchange]
+        contract.Commodity.ExchangeNo = EXCHANGE_VT2TAP[req.exchange]
         contract.Commodity.CommodityType = extra_info.commodity_type
         contract.Commodity.CommodityNo = extra_info.commodity_no
         contract.ContractNo1 = req.symbol
