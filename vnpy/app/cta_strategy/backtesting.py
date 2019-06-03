@@ -209,6 +209,8 @@ class BacktestingEngine:
 
     def load_data(self):
         """"""
+        if len(self.history_data) > 0:
+            return
         self.output("开始加载历史数据")
 
         if not self.end:
