@@ -1008,6 +1008,11 @@ class CtpTdApi(TdApi):
     #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
+        if self.gateway.debug:
+            print('onRspQryInvestorPosition')
+            print(u'data:\n{}'.format(self.gateway.printDict(data)))
+            print(u'error:{}'.format(error))
+            print('n:{},last:{}'.format(n,last))
 
         if not data['InstrumentID']:
             return
@@ -1032,47 +1037,49 @@ class CtpTdApi(TdApi):
 
             exchange = self.symbolExchangeDict.get(pos.symbol, EXCHANGE_UNKNOWN)
 
-            yd_position = data['YdPosition']
+
             # 针对上期所持仓的今昨分条返回（有昨仓、无今仓），读取昨仓数据
             if exchange == EXCHANGE_SHFE:
                 if data['YdPosition'] and not data['TodayPosition']:
                     pos.ydPosition = data['Position']
+                    yd_position = data['YdPosition']
+                else:
+                    yd_position = 0
             # 否则基于总持仓和今持仓来计算昨仓数据
             else:
                 pos.ydPosition = data['Position'] - data['TodayPosition']
+                yd_position = data['Position'] - data['TodayPosition']
 
             # 计算成本
             if pos.symbol not in self.symbolSizeDict:
                 return
             size = self.symbolSizeDict[pos.symbol]
-            cost = pos.price * pos.position * size
 
-            # 汇总总仓
+            # 前汇总，总成本
+            pre_cost = pos.price * pos.position * size
+
+            # 仓位累加汇总
             pos.position += data['Position']
 
-            # 计算持仓均价
             if pos.position and size:
-                #pos.price = (cost + data['PositionCost']) / (pos.position * size)
-                pos.price = (cost + data['OpenCost']) / (pos.position * size)
+                # 计算持仓均价
+                pos.price = (pre_cost + data['OpenCost']) / (pos.position * size)
 
                 # 上一交易日结算价
                 pre_settlement_price = data['PreSettlementPrice']
-                # 开仓均价
-                open_cost_price = data['OpenCost'] / (pos.position * size)
 
-                cur_price = self.gateway.symbol_price_dict.get(pos.vtSymbol, None)
-                if cur_price is None:
-                # 逐笔盈亏 = (上一交易日结算价 - 开仓价)* 持仓数量 * 杠杆 + 当日持仓收益
-                    if pos.direction == DIRECTION_LONG:
-                       pre_profit = (pre_settlement_price - open_cost_price) * (yd_position * size)
-                    else:
-                       pre_profit = (open_cost_price - pre_settlement_price) * (yd_position * size)
-                    pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
+                # 当前一笔的开仓均价
+                open_cost_price = data['OpenCost'] / (data['Position'] * size)
+
+                pre_profit = 0
+                # 上-交易日收益 = (上一交易日结算价 - 开仓价)* 昨仓持仓数量 * 杠杆
+                if pos.direction == DIRECTION_LONG:
+                    pre_profit = (pre_settlement_price - open_cost_price) * (yd_position * size)
                 else:
-                    if pos.direction == DIRECTION_LONG:
-                        pos.positionProfit = (cur_price - open_cost_price) * (pos.position * size)
-                    else:
-                        pos.positionProfit = (open_cost_price - cur_price) * (pos.position * size)
+                    pre_profit = (open_cost_price - pre_settlement_price) * (yd_position * size)
+
+                # 汇总收益：上一收益 + 上-交易日收益 + 当日持仓收益
+                pos.positionProfit = pos.positionProfit + pre_profit + data['PositionProfit']
 
             # 读取冻结
             if pos.direction is DIRECTION_LONG:
