@@ -11,15 +11,12 @@ import hashlib
 import hmac
 
 
-from time import time, sleep
+from time import time
 
-from websocket import create_connection
-
-from datetime import datetime, date
+from datetime import datetime
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
-from vnpy.api.websocket import WebsocketClient
 from vnpy.trader.constant import (
     Direction,
     Exchange,
@@ -30,10 +27,7 @@ from vnpy.trader.constant import (
 )
 from vnpy.trader.gateway import BaseGateway, LocalOrderManager
 from vnpy.trader.object import (
-    TickData,
     OrderData,
-    BarData,
-    TradeData,
     AccountData,
     ContractData,
     OrderRequest,
@@ -91,7 +85,7 @@ ORDERTYPE_BINANCE2VT = {
     "LIMIT_MAKER": OrderType.LIMIT
 }
 
-SIDE_BINANCE2VT = { v: k for k,v in SIDE_VT2BINANCE.items()}
+SIDE_BINANCE2VT = {v: k for k, v in SIDE_VT2BINANCE.items()}
 
 binance_symbols = set()
 symbol_name_map = {}
@@ -357,7 +351,7 @@ class BinanceRestApi(RestClient):
         """"""
         sys_orderid = self.order_manager.get_sys_orderid(req.orderid)
 
-        params={
+        params = {
             "symbol": req.symbol,
             "orderId": sys_orderid
         }
@@ -509,6 +503,7 @@ class BinanceRestApi(RestClient):
         self.gateway.write_log(f"{func}请求出错，代码：{error_code}，信息：{error_msg}")
         return True
 
+
 def _split_url(url):
     """
     将url拆分为host和path
@@ -517,5 +512,3 @@ def _split_url(url):
     result = re.match("\w+://([^/]*)(.*)", url)  # noqa
     if result:
         return result.group(1), result.group(2)
-
-
