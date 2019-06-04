@@ -379,3 +379,8 @@ class LocalOrderManager:
 
         req = self.cancel_request_buf.pop(local_orderid)
         self.gateway.cancel_order(req)
+
+    def set_order_count(self, n: int):
+        """"""
+        if n > self.order_count:
+            self.order_count = n

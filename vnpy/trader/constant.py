@@ -61,9 +61,9 @@ class OrderType(Enum):
     LIMIT = "限价"
     MARKET = "市价"
     STOP = "STOP"
-    FAK = "FAK"
-    FOK = "FOK"
-
+    FAK = "FAK"  # Finish and kill
+    FOK = "FOK"  # Finish or kill
+    GTC = "GTC"  # Good till cancel
 
 class OptionType(Enum):
     """
@@ -113,6 +113,7 @@ class Exchange(Enum):
     OKEX = "OKEX"
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
+    BINANCE = "BINANCE"
 
 
 class Currency(Enum):
