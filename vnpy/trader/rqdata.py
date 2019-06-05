@@ -122,20 +122,22 @@ class RqdataClient:
         )
 
         data: List[BarData] = []
-        for ix, row in df.iterrows():
-            bar = BarData(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                datetime=row.name.to_pydatetime() - adjustment,
-                open_price=row["open"],
-                high_price=row["high"],
-                low_price=row["low"],
-                close_price=row["close"],
-                volume=row["volume"],
-                gateway_name="RQ"
-            )
-            data.append(bar)
+
+        if df is not None:
+            for ix, row in df.iterrows():
+                bar = BarData(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    datetime=row.name.to_pydatetime() - adjustment,
+                    open_price=row["open"],
+                    high_price=row["high"],
+                    low_price=row["low"],
+                    close_price=row["close"],
+                    volume=row["volume"],
+                    gateway_name="RQ"
+                )
+                data.append(bar)
 
         return data
 
