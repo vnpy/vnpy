@@ -36,10 +36,14 @@ class RqdataClient:
         self.inited = False
         self.symbols = set()
 
-    def init(self):
+    def init(self, username="", password=""):
         """"""
         if self.inited:
             return True
+
+        if username and password:
+            self.username = username
+            self.password = password
 
         if not self.username or not self.password:
             return False
