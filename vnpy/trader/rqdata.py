@@ -123,7 +123,8 @@ class RqdataClient:
             frequency=rq_interval,
             fields=["open", "high", "low", "close", "volume"],
             start_date=start,
-            end_date=end
+            end_date=end,
+            adjust_type="none"
         )
 
         data: List[BarData] = []
