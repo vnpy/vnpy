@@ -75,6 +75,11 @@ class RqdataClient:
                 if word.isdigit():
                     break
 
+            # Check for index symbol
+            time_str = symbol[count:]
+            if time_str in ["88", "888", "99"]:
+                return symbol
+
             # noinspection PyUnboundLocalVariable
             product = symbol[:count]
             year = symbol[count]
