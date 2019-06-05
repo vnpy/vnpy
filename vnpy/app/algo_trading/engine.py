@@ -50,6 +50,7 @@ class AlgoEngine(BaseEngine):
         from .algos.best_limit_algo import BestLimitAlgo
         from .algos.grid_algo import GridAlgo
         from .algos.dma_algo import DmaAlgo
+        from .algos.arbitrage_algo import ArbitrageAlgo
 
         self.add_algo_template(TwapAlgo)
         self.add_algo_template(IcebergAlgo)
@@ -58,6 +59,7 @@ class AlgoEngine(BaseEngine):
         self.add_algo_template(BestLimitAlgo)
         self.add_algo_template(GridAlgo)
         self.add_algo_template(DmaAlgo)
+        self.add_algo_template(ArbitrageAlgo)
 
     def add_algo_template(self, template: AlgoTemplate):
         """"""
