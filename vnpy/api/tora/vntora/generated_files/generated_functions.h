@@ -8,6 +8,7 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
+#include "custom/custom_wrappers.hpp"
 
 
 void generate_vntora(pybind11::module & parent);

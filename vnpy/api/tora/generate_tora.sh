@@ -7,6 +7,7 @@ python -m autocxxpy \
         TORATstpUserApiDataType.h\
         TORATstpUserApiStruct.h\
         -I vntora/include \
+        -A custom/custom_wrappers.hpp\
         --copy-autocxxpy-includes vntora/include \
         --output-dir vntora/generated_files \
         --pyi-output-dir . \
