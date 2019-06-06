@@ -1077,7 +1077,7 @@ class CtpTdApi(TdApi):
             # 仓位累加汇总
             pos.position += data['Position']
 
-            if pos.position and size:
+            if pos.position > 0 and size > 0:
                 # 计算持仓均价
                 pos.price = (pre_cost + data['OpenCost']) / (pos.position * size)
 
@@ -1085,7 +1085,7 @@ class CtpTdApi(TdApi):
                 pre_settlement_price = data['PreSettlementPrice']
 
                 # 当前一笔的开仓均价
-                open_cost_price = (data['OpenCost'] / (data['Position'] * size)) if data['Position'] > 0 else 0.0
+                open_cost_price = (data['OpenCost'] / (data['Position'] * size)) if data['Position'] * size != 0 else 0.0
 
                 pre_profit = 0
                 # 上-交易日收益 = (上一交易日结算价 - 开仓价)* 昨仓持仓数量 * 杠杆
