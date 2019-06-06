@@ -1085,7 +1085,7 @@ class CtpTdApi(TdApi):
                 pre_settlement_price = data['PreSettlementPrice']
 
                 # 当前一笔的开仓均价
-                open_cost_price = data['OpenCost'] / (data['Position'] * size)
+                open_cost_price = (data['OpenCost'] / (data['Position'] * size)) if data['Position'] > 0 else 0.0
 
                 pre_profit = 0
                 # 上-交易日收益 = (上一交易日结算价 - 开仓价)* 昨仓持仓数量 * 杠杆
@@ -2025,6 +2025,7 @@ class TdxMdApi():
 
             except Exception as ex:
                 self.writeError(u'连接服务器tdx[{}]异常:{},{}'.format(i,str(ex),traceback.format_exc()))
+                self.best_ip = {'ip': None, 'port': None}
                 return
 
         # 更新 symbol_exchange_dict , symbol_market_dict
