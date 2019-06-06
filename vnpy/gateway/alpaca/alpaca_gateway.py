@@ -263,14 +263,17 @@ class AlpacaRestApi(RestClient):
 
     def send_order(self, req: OrderRequest):
         orderid = str(self.connect_time + self._new_order_id())
-        data = {
+        raw_dict={
             "symbol": req.symbol,
             "qty": int(req.volume),
             "side": DIRECTION_VT2ALPACA[req.direction],
             "type": ORDERTYPE_VT2ALPACA[req.type],
-            "time_in_force":'opg',
-            "limit_price": float(req.price)
+            "time_in_force":'day',
         }
+        if raw_dict['type'] == "limit":
+            raw_dict['limit_price'] = float(req.price)
+
+        data = raw_dict
         order = req.create_order_data(orderid, self.gateway_name)
         self.add_request(
             "POST",
