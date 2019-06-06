@@ -1,53 +1,17 @@
-from typing import Any, Sequence, List, Optional
-from datetime import datetime
-from threading import Thread
-from vnpy.event import EventEngine
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status, Offset
+from typing import Optional
 from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (
-    CancelRequest,
-    OrderRequest,
-    SubscribeRequest,
-    TickData,
-    ContractData,
-    OrderData,
-    TradeData,
-    PositionData,
-    AccountData,
-)
 from vnpy.trader.utility import get_folder_path
 
 from vnpy.api.tora.vntora import (
-    set_async_callback_exception_handler,
-    AsyncDispatchException,
     CTORATstpTraderApi,
-    CTORATstpMdApi,
-    CTORATstpMdSpi,
     CTORATstpTraderSpi,
     TORA_TSTP_EXD_SSE,
-    TORA_TSTP_EXD_SZSE,
-    TORA_TSTP_EXD_HK,
-    CTORATstpFundsFlowMarketDataField,
-    CTORATstpEffectVolumeMarketDataField,
-    CTORATstpEffectPriceMarketDataField,
-    CTORATstpSpecialMarketDataField,
-    CTORATstpMarketDataField,
-    CTORATstpSpecificSecurityField,
     CTORATstpRspInfoField,
-    CTORATstpUserLogoutField,
     CTORATstpRspUserLoginField,
     CTORATstpQrySecurityField, CTORATstpSecurityField, CTORATstpReqUserLoginField,
-    TORA_TSTP_LACT_AccountID, CTORATstpQryExchangeField)
+    TORA_TSTP_LACT_AccountID, CTORATstpQryExchangeField, CTORATstpQryMarketDataField)
 
-from .error_codes import error_codes, get_error_msg
-
-EXCHANGE_TORA2VT = {
-    TORA_TSTP_EXD_SSE: Exchange.SSE,
-    TORA_TSTP_EXD_SZSE: Exchange.SZSE,
-    TORA_TSTP_EXD_HK: Exchange.SEHK,
-}
-EXCHANGE_VT2TORA = {v: k for k, v in EXCHANGE_TORA2VT.items()}
+from .error_codes import get_error_msg
 
 
 class ToraTdSpi(CTORATstpTraderSpi):
@@ -69,6 +33,7 @@ class ToraTdSpi(CTORATstpTraderSpi):
         self.gateway.write_log("交易服务器登录成功")
         self._api.query_contracts()
         self._api.query_exchange()
+        self._api.query_market_data()
 
     def OnFrontDisconnected(self, nReason: int) -> None:
         self.gateway.write_log("交易服务器连接断开")
@@ -101,7 +66,7 @@ class ToraTdApi:
 
     def query_contracts(self):
         info = CTORATstpQrySecurityField()
-        info.ExchangeID = TORA_TSTP_EXD_SSE
+        # info.ExchangeID = TORA_TSTP_EXD_SSE
         err = self._native_api.ReqQrySecurity(info, self._get_new_req_id())
         self._if_error_write_log(err, "ReqQrySecurity")
 
@@ -109,7 +74,15 @@ class ToraTdApi:
         info = CTORATstpQryExchangeField()
         info.ExchangeID = TORA_TSTP_EXD_SSE
         err = self._native_api.ReqQryExchange(info, self._get_new_req_id())
+
         self._if_error_write_log(err, "ReqQryExchange")
+
+    def query_market_data(self):
+        info = CTORATstpQryMarketDataField()
+        info.ExchangeID = TORA_TSTP_EXD_SSE
+        info.SecurityID = "010303"
+        err = self._native_api.ReqQryMarketData(info, self._get_new_req_id())
+        self._if_error_write_log(err, "ReqQryMarketData")
 
     def stop(self):
         if self._native_api:

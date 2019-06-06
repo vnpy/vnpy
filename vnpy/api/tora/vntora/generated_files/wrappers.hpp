@@ -9,6 +9,7 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
+#include "custom/custom_wrappers.hpp"
 
 
 

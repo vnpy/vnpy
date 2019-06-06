@@ -11,6 +11,7 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
+#include "custom/custom_wrappers.hpp"
 
 
 void generate_enum_TORA_TE_RESUME_TYPE(pybind11::object & parent)

@@ -11,6 +11,7 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
+#include "custom/custom_wrappers.hpp"
 
 
 void generate_class_CTORATstpPeripheryPositionTransferDetailField(pybind11::object & parent)

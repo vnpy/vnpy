@@ -3,6 +3,7 @@
 #include <tuple>
 #include <type_traits>
 #include <optional>
+#include <iostream>
 
 #include "./brigand.hpp"
 
@@ -85,7 +86,9 @@ namespace autocxxpy
         {}
         pybind11::object instance;
         std::string function_name;
-        inline const char* what() noexcept
+
+        // mutable version of what() for pybind11 to make it happy
+        inline const char* what_mutable() noexcept
         {
             return std::exception::what();
         }
@@ -104,10 +107,19 @@ namespace autocxxpy
                 {
                     custom_handler(e);
                 }
-                catch (pybind11::error_already_set & e)
+                catch (pybind11::error_already_set & e2)
                 {
-                    std::cout << "error while calling custom async dispatcher:%s" << e.what() << std::endl;
+                   std::cerr << "error while calling custom async callback exception handler:" << std::endl;
+                    std::cerr << e2.what() << std::endl;
+                    std::cerr << "while handling following exception:" << std::endl;
+                    std::cerr << e.what() << std::endl;
                 }
+            }
+            else
+            {
+                std::cerr << e.what() << std::endl;
+                std::cerr << "custom async callback exception handler not set." << std::endl;
+                std::cerr << "Call set_async_callback_exception_handler() to set it. " << std::endl;
             }
         }
 

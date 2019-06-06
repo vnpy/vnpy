@@ -20,18 +20,11 @@ CTORATstpTraderSpi,
 )
 from .md import ToraMdApi
 from .td import ToraTdApi
-from .error_codes import get_error_msg
-
-
-EXCHANGE_TORA2VT = {
-
-}
-EXCHANGE_VT2TORA = {v:k for k,v in EXCHANGE_TORA2VT.items()}
+from .constant import EXCHANGE_VT2TORA
 
 
 def is_valid_front_address(address: str):
     return address.startswith("tcp://") or address.startswith("udp://")
-
 
 
 class ToraGateway(BaseGateway):

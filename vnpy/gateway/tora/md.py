@@ -38,14 +38,7 @@ from vnpy.api.tora.vntora import (
     CTORATstpUserLogoutField,
     CTORATstpRspUserLoginField,
 )
-
-
-EXCHANGE_TORA2VT = {
-    TORA_TSTP_EXD_SSE: Exchange.SSE,
-    TORA_TSTP_EXD_SZSE: Exchange.SZSE,
-    TORA_TSTP_EXD_HK: Exchange.SEHK,
-}
-EXCHANGE_VT2TORA = {v: k for k, v in EXCHANGE_TORA2VT.items()}
+from .constant import EXCHANGE_VT2TORA, EXCHANGE_TORA2VT
 
 
 def parse_datetime(date: str, time: str):
@@ -96,7 +89,7 @@ class ToraMdSpi(CTORATstpMdSpi):
         nRequestID: int,
         bIsLast: bool,
     ) -> Any:
-        self.gateway.write_log("OnRspSubMarketData")
+        self.gateway.write_log(f"OnRspSubMarketData({pRspInfo.ErrorID})")
 
     def OnRspUnSubMarketData(
         self,
@@ -180,6 +173,7 @@ class ToraMdSpi(CTORATstpMdSpi):
             ask_volume_4=data.AskVolume4,
             ask_volume_5=data.AskVolume5,
         )
+        self.gateway.on_tick(tick_data)
         self.gateway.write_log("OnRtnDepthMarketData")
 
     def OnRtnSpecialMarketData(
