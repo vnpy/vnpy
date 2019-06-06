@@ -49,6 +49,10 @@ class Request(object):
 
         self.response = None
         self.status = RequestStatus.ready
+        self.json=None
+
+    def set_json(self, json_str: dict):
+        self.json=json_str
 
     def __str__(self):
         if self.response is None:
@@ -61,6 +65,7 @@ class Request(object):
             "headers: {}\n"
             "params: {}\n"
             "data: {}\n"
+            "json: {}\n"
             "response:"
             "{}\n".format(
                 self.method,
@@ -70,6 +75,7 @@ class Request(object):
                 self.headers,
                 self.params,
                 self.data,
+                self.json,
                 "" if self.response is None else self.response.text,
             )
         )
@@ -145,6 +151,7 @@ class RestClient(object):
         on_failed: Callable = None,
         on_error: Callable = None,
         extra: Any = None,
+        json_str: dict = None,
     ):
         """
         Add a new request.
@@ -170,6 +177,8 @@ class RestClient(object):
             on_error,
             extra,
         )
+        if json_str is not None:
+            request.set_json(json_str)
         self._queue.put(request)
         return request
 
@@ -253,10 +262,10 @@ class RestClient(object):
                 headers=request.headers,
                 params=request.params,
                 data=request.data,
+                json=request.json,
                 proxies=self.proxies,
             )
             request.response = response
-
             status_code = response.status_code
             if status_code // 100 == 2:  # 2xx都算成功，尽管交易所都用200
                 jsonBody = response.json()

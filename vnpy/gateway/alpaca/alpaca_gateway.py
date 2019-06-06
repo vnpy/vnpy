@@ -265,26 +265,22 @@ class AlpacaRestApi(RestClient):
         orderid = str(self.connect_time + self._new_order_id())
         data = {
             "symbol": req.symbol,
-            "qty":2,
-            "side":'buy',
-            "type":'limit',
+            "qty": int(req.volume),
+            "side": DIRECTION_VT2ALPACA[req.direction],
+            "type": ORDERTYPE_VT2ALPACA[req.type],
             "time_in_force":'opg',
-            "limit_price":20.50
-#            "side": DIRECTION_VT2BITMEX[req.direction],
-#            "ordType": ORDERTYPE_VT2BITMEX[req.type],
-#            "orderQty": int(req.volume),
-#            "clOrdID": orderid,
+            "limit_price": float(req.price)
         }
         order = req.create_order_data(orderid, self.gateway_name)
-        print("debug detail order: ",order)
         self.add_request(
             "POST",
             "/v1/orders",
             callback=self.on_send_order,
-            data=data,
+            #data=data,
             extra=order,
             on_failed=self.on_failed,
             on_error=self.on_error,
+            json_str=data,
         )
         self.gateway.on_order(order)
         return order.vt_orderid
