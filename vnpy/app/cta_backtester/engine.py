@@ -7,7 +7,7 @@ from pathlib import Path
 
 from vnpy.event import Event, EventEngine
 from vnpy.trader.engine import BaseEngine, MainEngine
-from vnpy.trader.constant import Interval
+from vnpy.trader.constant import (Interval, Direction)
 from vnpy.trader.utility import extract_vt_symbol
 from vnpy.trader.object import HistoryRequest
 from vnpy.trader.rqdata import rqdata_client
@@ -119,6 +119,7 @@ class BacktesterEngine(BaseEngine):
         self,
         class_name: str,
         vt_symbol: str,
+        direction: Direction,
         interval: str,
         start: datetime,
         end: datetime,
@@ -138,6 +139,7 @@ class BacktesterEngine(BaseEngine):
 
         engine.set_parameters(
             vt_symbol=vt_symbol,
+            direction=direction,
             interval=interval,
             start=start,
             end=end,
@@ -170,6 +172,7 @@ class BacktesterEngine(BaseEngine):
         self,
         class_name: str,
         vt_symbol: str,
+        dir: Direction,
         interval: str,
         start: datetime,
         end: datetime,
@@ -190,6 +193,7 @@ class BacktesterEngine(BaseEngine):
             args=(
                 class_name,
                 vt_symbol,
+                dir,
                 interval,
                 start,
                 end,
@@ -226,6 +230,7 @@ class BacktesterEngine(BaseEngine):
         self,
         class_name: str,
         vt_symbol: str,
+        direction: Direction,
         interval: str,
         start: datetime,
         end: datetime,
@@ -250,6 +255,7 @@ class BacktesterEngine(BaseEngine):
 
         engine.set_parameters(
             vt_symbol=vt_symbol,
+            direction=direction,
             interval=interval,
             start=start,
             end=end,
@@ -289,6 +295,7 @@ class BacktesterEngine(BaseEngine):
         self,
         class_name: str,
         vt_symbol: str,
+        direction: Direction,
         interval: str,
         start: datetime,
         end: datetime,
@@ -310,6 +317,7 @@ class BacktesterEngine(BaseEngine):
             args=(
                 class_name,
                 vt_symbol,
+                direction,
                 interval,
                 start,
                 end,

@@ -9,7 +9,7 @@ from ..engine import (
     EVENT_BACKTESTER_OPTIMIZATION_FINISHED,
     OptimizationSetting
 )
-from vnpy.trader.constant import Interval
+from vnpy.trader.constant import (Interval, Direction)
 from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import QtCore, QtWidgets, QtGui
 from vnpy.trader.ui.widget import BaseMonitor, BaseCell, DirectionCell, EnumCell
@@ -58,6 +58,10 @@ class BacktesterManager(QtWidgets.QWidget):
         self.class_combo.addItems(self.class_names)
 
         self.symbol_line = QtWidgets.QLineEdit("IF88.CFFEX")
+
+        self.dir_combo = QtWidgets.QComboBox()
+        self.dir_combo.addItems(["多", "空", "多空"])
+        self.dir_combo.setCurrentIndex(0)
 
         self.interval_combo = QtWidgets.QComboBox()
         for inteval in Interval:
@@ -122,6 +126,7 @@ class BacktesterManager(QtWidgets.QWidget):
         form = QtWidgets.QFormLayout()
         form.addRow("交易策略", self.class_combo)
         form.addRow("本地代码", self.symbol_line)
+        form.addRow("可做方向", self.dir_combo)
         form.addRow("K线周期", self.interval_combo)
         form.addRow("开始日期", self.start_date_edit)
         form.addRow("结束日期", self.end_date_edit)
@@ -224,11 +229,19 @@ class BacktesterManager(QtWidgets.QWidget):
         self.write_log("请点击[优化结果]按钮查看")
         self.result_button.setEnabled(True)
 
+    def combo_index_to_dir(self, idx: int):
+        if idx == 0:
+            return Direction.LONG
+        if idx == 1:
+            return Direction.SHORT
+        return Direction.NET
+
     def start_backtesting(self):
         """"""
         class_name = self.class_combo.currentText()
         vt_symbol = self.symbol_line.text()
         interval = self.interval_combo.currentText()
+        direction = self.combo_index_to_dir(self.dir_combo.currentIndex())
         start = self.start_date_edit.date().toPyDate()
         end = self.end_date_edit.date().toPyDate()
         rate = float(self.rate_line.text())
@@ -249,6 +262,7 @@ class BacktesterManager(QtWidgets.QWidget):
         result = self.backtester_engine.start_backtesting(
             class_name,
             vt_symbol,
+            direction,
             interval,
             start,
             end,
@@ -276,6 +290,7 @@ class BacktesterManager(QtWidgets.QWidget):
         """"""
         class_name = self.class_combo.currentText()
         vt_symbol = self.symbol_line.text()
+        direction = self.combo_index_to_dir(self.dir_combo.currentIndex())
         interval = self.interval_combo.currentText()
         start = self.start_date_edit.date().toPyDate()
         end = self.end_date_edit.date().toPyDate()
@@ -297,6 +312,7 @@ class BacktesterManager(QtWidgets.QWidget):
         self.backtester_engine.start_optimization(
             class_name,
             vt_symbol,
+            direction,
             interval,
             start,
             end,

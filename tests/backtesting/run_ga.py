@@ -2,12 +2,15 @@ from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSet
 from vnpy.app.cta_strategy.strategies.atr_rsi_strategy import (
     AtrRsiStrategy,
 )
+from vnpy.trader.constant import (Direction)
+
 from datetime import datetime
 
 if __name__ == "__main__":
     engine = BacktestingEngine()
     engine.set_parameters(
         vt_symbol="IF88.CFFEX",
+        direction=Direction.NET,
         interval="1m",
         start=datetime(2019, 1, 1),
         end=datetime(2019, 4, 30),

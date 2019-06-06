@@ -122,6 +122,7 @@ class BacktestingEngine:
         self.datetime = None
 
         self.interval = None
+        self.dir = Direction.NET
         self.days = 0
         self.callback = None
         self.history_data = []
@@ -168,6 +169,7 @@ class BacktestingEngine:
     def set_parameters(
         self,
         vt_symbol: str,
+        direction: Direction,
         interval: Interval,
         start: datetime,
         rate: float,
@@ -182,6 +184,7 @@ class BacktestingEngine:
         self.mode = mode
         self.vt_symbol = vt_symbol
         self.interval = Interval(interval)
+        self.dir = direction
         self.rate = rate
         self.slippage = slippage
         self.size = size
@@ -524,6 +527,7 @@ class BacktestingEngine:
                 self.strategy_class,
                 setting,
                 self.vt_symbol,
+                self.dir,
                 self.interval,
                 self.start,
                 self.rate,
@@ -583,6 +587,7 @@ class BacktestingEngine:
         global ga_strategy_class
         global ga_setting
         global ga_vt_symbol
+        global ga_dir
         global ga_interval
         global ga_start
         global ga_rate
@@ -597,6 +602,7 @@ class BacktestingEngine:
         ga_strategy_class = self.strategy_class
         ga_setting = settings[0]
         ga_vt_symbol = self.vt_symbol
+        ga_dir = self.dir
         ga_interval = self.interval
         ga_start = self.start
         ga_rate = self.rate
@@ -891,6 +897,11 @@ class BacktestingEngine:
         lock: bool
     ):
         """"""
+        if offset == Offset.OPEN:
+            if self.dir == Direction.LONG and direction == Direction.SHORT:
+                return []
+            if self.dir == Direction.SHORT and direction == Direction.LONG:
+                return []
         price = round_to(price, self.pricetick)
         if stop:
             vt_orderid = self.send_stop_order(direction, offset, price, volume)
@@ -1112,6 +1123,7 @@ def optimize(
     strategy_class: CtaTemplate,
     setting: dict,
     vt_symbol: str,
+    direction: Direction,
     interval: Interval,
     start: datetime,
     rate: float,
@@ -1129,6 +1141,7 @@ def optimize(
     
     engine.set_parameters(
         vt_symbol=vt_symbol,
+        direction=direction,
         interval=interval,
         start=start,
         rate=rate,
@@ -1160,6 +1173,7 @@ def _ga_optimize(parameter_values: tuple):
         ga_strategy_class,
         setting,
         ga_vt_symbol,
+        ga_dir,
         ga_interval,
         ga_start,
         ga_rate,
@@ -1212,6 +1226,7 @@ ga_target_name = None
 ga_strategy_class = None
 ga_setting = None
 ga_vt_symbol = None
+ga_dir = None
 ga_interval = None
 ga_start = None
 ga_rate = None
