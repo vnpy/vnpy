@@ -21,6 +21,7 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TapAPIPositionQryReq, TapAPIPositionInfo,
     TapAPIOrderQryReq, TapAPIFillQryReq,
     TapAPIOrderInfo, TapAPIFillInfo,
+    TapAPINewOrder, TapAPIOrderCancelReq,
     TAPI_SIDE_NONE, TAPI_SIDE_BUY, TAPI_SIDE_SELL,
     TAPI_ORDER_STATE_QUEUED, TAPI_ORDER_STATE_PARTFINISHED,
     TAPI_ORDER_STATE_FINISHED, TAPI_ORDER_STATE_CANCELED,
@@ -76,6 +77,7 @@ DIRECTION_TAP2VT = {
     TAPI_SIDE_BUY: Direction.LONG,
     TAPI_SIDE_SELL: Direction.SHORT,
 }
+DIRECTION_VT2TAP = {v: k for k, v in DIRECTION_TAP2VT.items()}
 
 STATUS_TAP2VT = {
     TAPI_ORDER_STATE_SUBMIT: Status.SUBMITTING,
@@ -93,7 +95,7 @@ ORDERTYPE_VT2TAP = {v: k for k, v in ORDERTYPE_TAP2VT.items()}
 
 
 commodity_infos = {}
-extra_infos = {}
+contract_infos = {}
 
 
 class TapGateway(BaseGateway):
@@ -216,6 +218,7 @@ class QuoteApi(ITapQuoteAPINotify):
     def OnRspSubscribeQuote(
         self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteWhole
     ):
+        print("on rsp sub quote")
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log("订阅行情失败")
         else:
@@ -227,18 +230,24 @@ class QuoteApi(ITapQuoteAPINotify):
 
     def update_tick(self, info: TapAPIQuoteWhole):
         """"""
-        symbol = info.Contract.ContractNo1
+        print("--------------------------")
+        print(info.Contract.ContractNo1)
+        print(info.Contract.ContractNo2)
+        print(info.Contract.Commodity.CommodityNo)
+
+        symbol = info.Contract.Commodity.CommodityNo + info.Contract.ContractNo1
         exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
 
-        extra_info = extra_infos.get((symbol, exchange), None)
-        if not extra_info:
+        contract_info = contract_infos.get((symbol, exchange), None)
+        if not contract_info:
+            print("no contract info", symbol, exchange)
             return
 
         tick = TickData(
             symbol=symbol,
             exchange=exchange,
             datetime=parse_datetime(info.DateTimeStamp),
-            name=extra_info.name,
+            name=contract_info.name,
             volume=info.QTotalQty,
             last_price=info.QLastPrice,
             last_volume=info.QLastQty,
@@ -304,16 +313,16 @@ class QuoteApi(ITapQuoteAPINotify):
 
     def subscribe(self, req: SubscribeRequest):
         """"""
-        extra_info = extra_infos.get((req.symbol, req.exchange), None)
-        if not extra_info:
+        contract_info = contract_infos.get((req.symbol, req.exchange), None)
+        if not contract_info:
             self.gateway.write_log(
                 f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
             return
 
         tap_contract = TapAPIContract()
         tap_contract.Commodity.ExchangeNo = EXCHANGE_VT2TAP[req.exchange]
-        tap_contract.Commodity.CommodityType = extra_info.commodity_type
-        tap_contract.Commodity.CommodityNo = extra_info.commodity_no
+        tap_contract.Commodity.CommodityType = contract_info.commodity_type
+        tap_contract.Commodity.CommodityNo = contract_info.commodity_no
         tap_contract.ContractNo1 = req.symbol
         tap_contract.CallOrPutFlag1 = TAPI_CALLPUT_FLAG_NONE
         tap_contract.CallOrPutFlag2 = TAPI_CALLPUT_FLAG_NONE
@@ -407,12 +416,14 @@ class TradeApi(ITapTradeAPINotify):
         )
         self.gateway.on_contract(contract)
 
-        extra_info = ExtraInfo(
+        contract_info = ContractInfo(
             name=contract.name,
+            exchange_no=info.ExchangeNo,
+            contract_no=info.ContractNo1,
             commodity_type=info.CommodityType,
             commodity_no=info.CommodityNo,
         )
-        extra_infos[(contract.symbol, contract.exchange)] = extra_info
+        contract_infos[(contract.symbol, contract.exchange)] = contract_info
 
         if isLast == "Y":
             self.gateway.write_log("查询交易合约信息成功")
@@ -599,11 +610,35 @@ class TradeApi(ITapTradeAPINotify):
 
     def send_order(self, req: OrderRequest):
         """"""
-        pass
+        contract_info = contract_infos.get((req.symbol, req.exchange), None)
+        if not contract_info:
+            self.write_log(f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
+            return ""
+
+        order_req = TapAPINewOrder()
+        order_req.ExchangeNo = contract_info.ExchangeNo
+        order_req.CommodityNo = contract_info.CommodityNo
+        order_req.ContractNo = contract_info.ContractNo
+        order_req.OrderType = ORDERTYPE_VT2TAP.get(OrderRequest.type, "")
+        order_req.OrderSide = DIRECTION_VT2TAP.get(OrderRequest.direction, "")
+        order_req.OrderPrice = req.price
+        order_req.OrderQty = req.volume
+
+        session_id, order_id = self.api.InsertOrder(order_req)
+
+        order = req.create_order_data(
+            order_id,
+            self.gateway_name
+        )
+        self.gateway.on_order(order)
+
+        return order.vt_orderid
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        pass
+        cancel_req = TapAPIOrderCancelReq()
+
+        self.api.CancelOrder(cancel_req)
 
     def query_account(self):
         """"""
@@ -650,11 +685,13 @@ def error_to_str(err_code: int) -> str:
 
 
 @dataclass
-class ExtraInfo:
+class ContractInfo:
     """"""
     name: str
+    exchange_no: str
     commodity_type: int
     commodity_no: str
+    contract_no: str
 
 
 @dataclass
