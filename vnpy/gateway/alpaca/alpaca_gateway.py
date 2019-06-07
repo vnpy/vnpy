@@ -226,9 +226,13 @@ class AlpacaRestApi(RestClient):
         self.query_account()
         self.query_position()
 
-    def on_send_order(self, status_code: int, request: Request):
-        print("debug on send order: ", status_code, request)
+    def on_send_order(self, data, request: Request):
+        print("debug on send order: ", data, request)
         order = request.extra
+        lcoal_order_id= order.orderId
+        remote_order_id = data['id']
+        self.order_dict[local_order_id]=remote_order_id
+        print('debug on_send_order: ', local_order_id, remote_order_id)
         self.gateway.on_order(order)
 
     def on_failed_order(self, status_code: int, request: Request):
@@ -259,10 +263,30 @@ class AlpacaRestApi(RestClient):
             self.exception_detail(exception_type, exception_value, tb, request)
         )
 
+    # need debug 0608
     def cancel_order(self, req: CancelRequest):
         """"""
         order_id = req.orderid
+        remote_order_id = self.order_dict['order_id']
+        if remote_order_id is None:
+            print("[error]: can not get remote_order_id from local dict!")
+            return
+        path="/v1/orders/"+str(remote_order_id)
+        self.add_request(
+            "DELETE",
+            path,
+            callback=self.on_cancel_order,
+            on_error=self.on_cancel_order_error,
+            extra=req
+        )
         print("come to cancel_order", order_id)
+
+    def on_cancel_order(self, data, request):
+        """Websocket will push a new order status"""
+        pass
+    
+    def on_cancel_order_error(self, data, request):
+        pass
 
     def send_order(self, req: OrderRequest):
         orderid = str(self.connect_time + self._new_order_id())
