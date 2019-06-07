@@ -1,31 +1,30 @@
-import sys
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
 
 from vnpy.api.tap.vntap import (
     APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
-    FreeTapQuoteAPI, ITapQuoteAPI, ITapQuoteAPINotify,
+    FreeTapQuoteAPI, ITapQuoteAPINotify,
     TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
     TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
     TAPI_COMMODITY_TYPE_OPTION, TAPI_COMMODITY_TYPE_SPOT,
     TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
-    TapAPIQuotLoginRspInfo, TapAPIQuoteCommodityInfo,
-    TapAPIQuoteContractInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
+    TapAPIQuotLoginRspInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
     set_async_callback_exception_handler,
     CreateITapTradeAPI
 )
 from vnpy.api.tap.vntap.ITapTrade import (
-    ITapTradeAPINotify, ITapTradeAPI,
+    ITapTradeAPINotify,
     TapAPITradeLoginRspInfo, TapAPICommodityInfo, TapAPITradeContractInfo,
     TapAPIApplicationInfo as TapTradeAPIApplicationInfo,
     TapAPITradeLoginAuth, TapAPIAccQryReq, TapAPIFundReq,
-    TapAPIAccountInfo, TapAPIFundData
+    TapAPIAccountInfo, TapAPIFundData,
+    TapAPIPositionQryReq, TapAPIPositionInfo,
+    TAPI_SIDE_NONE, TAPI_SIDE_BUY, TAPI_SIDE_SELL
 )
 from vnpy.api.tap.error_codes import error_map
 
 from vnpy.event import EventEngine
-from vnpy.trader.constant import Exchange, Product
+from vnpy.trader.constant import Exchange, Product, Direction
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     CancelRequest,
@@ -66,6 +65,11 @@ EXCHANGE_TAP2VT = {
 }
 EXCHANGE_VT2TAP = {v: k for k, v in EXCHANGE_TAP2VT.items()}
 
+DIRECTION_TAP2VT = {
+    TAPI_SIDE_NONE: Direction.NET,
+    TAPI_SIDE_BUY: Direction.LONG,
+    TAPI_SIDE_SELL: Direction.SHOT,
+}
 
 commodity_infos = {}
 extra_infos = {}
@@ -170,6 +174,7 @@ class QuoteApi(ITapQuoteAPINotify):
         super().__init__()
 
         self.gateway = gateway
+        self.gateway_name = gateway.gateway_name
         self.api = None
 
     def OnRspLogin(self, errorCode: int, info: TapAPIQuotLoginRspInfo):
@@ -242,7 +247,7 @@ class QuoteApi(ITapQuoteAPINotify):
             ask_volume_3=info.QAskQty[2],
             ask_volume_4=info.QAskQty[3],
             ask_volume_5=info.QAskQty[4],
-            gateway_name=self.gateway.gateway_name,
+            gateway_name=self.gateway_name,
         )
         self.gateway.on_tick(tick)
 
@@ -303,6 +308,7 @@ class TradeApi(ITapTradeAPINotify):
         super().__init__()
 
         self.gateway = gateway
+        self.gateway_name = gateway.gateway_name
         self.api = None
 
     def OnConnect(self):
@@ -389,6 +395,8 @@ class TradeApi(ITapTradeAPINotify):
 
         if isLast == "Y":
             self.gateway.write_log("查询交易合约信息成功")
+            self.query_account()
+            self.query_position()
 
     def OnRspQryAccount(
         self,
@@ -422,14 +430,46 @@ class TradeApi(ITapTradeAPINotify):
         """"""
         self.update_account(info)
 
+    def OnRspQryPosition(
+        self,
+        sessionID: int,
+        errorCode: int,
+        isLast: str,
+        info: TapAPIPositionInfo
+    ):
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log(f"查询持仓信息失败")
+            return
+
+        if info:
+            self.update_position(info)
+
+    def OnRtnPosition(self, info: TapAPIPositionInfo):
+        """"""
+        self.update_position(info)
+
     def update_account(self, info: TapAPIAccountInfo):
         """"""
         account = AccountData(
             accountid=info.AccountNo,
             balance=info.Balance,
-            frozen=info.Balance - info.Available
+            frozen=info.Balance - info.Available,
+            gateway_name=self.gateway_name
         )
         self.gateway.on_account(account)
+
+    def update_position(self, info: TapAPIPositionInfo):
+        """"""
+        position = PositionData(
+            symbol=info.CommodityNo + info.ContractNo,
+            exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
+            direction=DIRECTION_TAP2VT[info.MatchSide],
+            volume=info.PositionQty,
+            price=info.PositionPrice,
+            pnl=info.PositionProfit,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_position(position)
 
     def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
         """"""
@@ -469,7 +509,8 @@ class TradeApi(ITapTradeAPINotify):
 
     def query_position(self):
         """"""
-        pass
+        req = TapAPIPositionQryReq()
+        self.api.QryPosition(req)
 
 
 def parse_datetime(dt_str: str):
