@@ -19,12 +19,18 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TapAPITradeLoginAuth, TapAPIAccQryReq, TapAPIFundReq,
     TapAPIAccountInfo, TapAPIFundData,
     TapAPIPositionQryReq, TapAPIPositionInfo,
-    TAPI_SIDE_NONE, TAPI_SIDE_BUY, TAPI_SIDE_SELL
+    TapAPIOrderQryReq, TapAPIFillQryReq,
+    TapAPIOrderInfo, TapAPIFillInfo,
+    TAPI_SIDE_NONE, TAPI_SIDE_BUY, TAPI_SIDE_SELL,
+    TAPI_ORDER_STATE_QUEUED, TAPI_ORDER_STATE_PARTFINISHED,
+    TAPI_ORDER_STATE_FINISHED, TAPI_ORDER_STATE_CANCELED,
+    TAPI_ORDER_STATE_SUBMIT, TAPI_ORDER_TYPE_MARKET,
+    TAPI_ORDER_TYPE_LIMIT
 )
 from vnpy.api.tap.error_codes import error_map
 
 from vnpy.event import EventEngine
-from vnpy.trader.constant import Exchange, Product, Direction
+from vnpy.trader.constant import Exchange, Product, Direction, Status, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
     CancelRequest,
@@ -68,8 +74,23 @@ EXCHANGE_VT2TAP = {v: k for k, v in EXCHANGE_TAP2VT.items()}
 DIRECTION_TAP2VT = {
     TAPI_SIDE_NONE: Direction.NET,
     TAPI_SIDE_BUY: Direction.LONG,
-    TAPI_SIDE_SELL: Direction.SHOT,
+    TAPI_SIDE_SELL: Direction.SHORT,
 }
+
+STATUS_TAP2VT = {
+    TAPI_ORDER_STATE_SUBMIT: Status.SUBMITTING,
+    TAPI_ORDER_STATE_QUEUED: Status.NOTTRADED,
+    TAPI_ORDER_STATE_PARTFINISHED: Status.PARTTRADED,
+    TAPI_ORDER_STATE_FINISHED: Status.ALLTRADED,
+    TAPI_ORDER_STATE_CANCELED: Status.CANCELLED
+}
+
+ORDERTYPE_TAP2VT = {
+    TAPI_ORDER_TYPE_LIMIT: OrderType.LIMIT,
+    TAPI_ORDER_TYPE_MARKET: OrderType.MARKET,
+}
+ORDERTYPE_VT2TAP = {v: k for k, v in ORDERTYPE_TAP2VT.items()}
+
 
 commodity_infos = {}
 extra_infos = {}
@@ -150,11 +171,11 @@ class TapGateway(BaseGateway):
 
     def query_account(self):
         """"""
-        self.trade_api.query_account()
+        pass
 
     def query_position(self):
         """"""
-        self.trade_api.query_position()
+        pass
 
     def _async_callback_exception_handler(self, e: AsyncDispatchException):
         """"""
@@ -396,7 +417,6 @@ class TradeApi(ITapTradeAPINotify):
         if isLast == "Y":
             self.gateway.write_log("查询交易合约信息成功")
             self.query_account()
-            self.query_position()
 
     def OnRspQryAccount(
         self,
@@ -426,6 +446,10 @@ class TradeApi(ITapTradeAPINotify):
 
         self.update_account(info)
 
+        if isLast == "Y":
+            self.gateway.write_log("查询资金信息成功")
+            self.query_position()
+
     def OnRtnFund(self, info: TapAPIFundData):
         """"""
         self.update_account(info)
@@ -444,9 +468,56 @@ class TradeApi(ITapTradeAPINotify):
         if info:
             self.update_position(info)
 
+        if isLast == "Y":
+            self.gateway.write_log(f"查询持仓信息成功")
+            self.query_order()
+
     def OnRtnPosition(self, info: TapAPIPositionInfo):
         """"""
         self.update_position(info)
+
+    def OnRspQryOrder(
+        self,
+        sessionID: int,
+        errorCode: int,
+        isLast: str,
+        info: TapAPIOrderInfo
+    ):
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log(f"查询委托信息失败")
+            return
+
+        if info:
+            self.update_order(info)
+
+        if isLast == "Y":
+            self.gateway.write_log(f"查询委托信息成功")
+            self.query_trade()
+
+    def OnRtnOrder(self, info: TapAPIOrderInfo):
+        """"""
+        self.update_order(info)
+
+    def OnRspQryFill(
+        self,
+        sessionID: int,
+        errorCode: int,
+        isLast: str,
+        info: TapAPIFillInfo
+    ):
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log(f"查询成交信息失败")
+            return
+
+        if info:
+            self.update_trade(info)
+
+        if isLast == "Y":
+            self.gateway.write_log(f"查询成交信息成功")
+
+    def OnRtnFill(self, info: TapAPIFillInfo):
+        """"""
+        self.update_trade(info)
 
     def update_account(self, info: TapAPIAccountInfo):
         """"""
@@ -470,6 +541,38 @@ class TradeApi(ITapTradeAPINotify):
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(position)
+
+    def update_order(self, info: TapAPIOrderInfo):
+        """"""
+        order = OrderData(
+            symbol=info.CommodityNo + info.ContractNo,
+            exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
+            orderid=info.OrderNo,
+            type=ORDERTYPE_TAP2VT[info.OrderType],
+            direction=DIRECTION_TAP2VT[info.OrderSide],
+            price=info.OrderPrice,
+            volume=info.OrderQty,
+            taded=info.OrderMatchQty,
+            status=STATUS_TAP2VT[info.State],
+            time=info.OrderInsertTime,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_order(order)
+
+    def update_trade(self, info: TapAPIFillInfo):
+        """"""
+        trade = TradeData(
+            symbol=info.CommodityNo + info.ContractNo,
+            exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
+            orderid=info.OrderNo,
+            tradeid=info.MatchNo,
+            direction=DIRECTION_TAP2VT[info.MatchSide],
+            price=info.MatchPrice,
+            volume=info.MatchQty,
+            time=info.MatchDateTime,
+            gateway_name=self.gateway_name
+        )
+        self.gateway.on_trade(trade)
 
     def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
         """"""
@@ -511,6 +614,22 @@ class TradeApi(ITapTradeAPINotify):
         """"""
         req = TapAPIPositionQryReq()
         self.api.QryPosition(req)
+
+    def query_order(self):
+        """"""
+        req = TapAPIOrderQryReq()
+        self.api.QryOrder(req)
+
+    def query_trade(self):
+        """"""
+        req = TapAPIFillQryReq()
+        self.api.QryFill(req)
+
+    def close(self):
+        """"""
+        self.api.SetAPINotify(None)
+        FreeTapQuoteAPI(self.api)
+        self.api = None
 
 
 def parse_datetime(dt_str: str):
