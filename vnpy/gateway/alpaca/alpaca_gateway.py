@@ -29,7 +29,7 @@ from vnpy.trader.object import (
     OrderData,
     TradeData,
     PositionData, AccountData,
-       ContractData,
+    ContractData,
     OrderRequest,
     CancelRequest,
     SubscribeRequest,
@@ -59,6 +59,7 @@ ORDERTYPE_VT2ALPACA = {
     OrderType.MARKET: "market"
 }
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
+
 
 class AlpacaGateway(BaseGateway):
     """
@@ -95,7 +96,7 @@ class AlpacaGateway(BaseGateway):
 
     def subscribe(self, req: SubscribeRequest):
         """"""
-        #self.ws_api.subscribe(req)
+        # self.ws_api.subscribe(req)
         pass
 
     def send_order(self, req: OrderRequest):
@@ -104,8 +105,7 @@ class AlpacaGateway(BaseGateway):
 
     def cancel_order(self, req: CancelRequest):
         """"""
-        #self.ws_api.cancel_order(req)
-        pass
+        self.rest_api.cancel_order(req)
 
     def query_account(self):
         """"""
@@ -139,12 +139,7 @@ class AlpacaRestApi(RestClient):
         self.order_count = 1_000_000
         self.order_count_lock = Lock()
         self.connect_time = 0
-        print(
-            self.gateway_name,
-            self.key,
-            self.secret,
-            self.order_count,
-            self.connect_time)
+        self.order_dict={}
 
     def query_account(self):
         print("call query_account")
@@ -154,7 +149,7 @@ class AlpacaRestApi(RestClient):
             path=path,
             callback=self.on_query_account
         )
-    
+
     def on_query_account(self, data, request):
         print("debug on_query_account: ", data, request)
         account = AccountData(
@@ -164,7 +159,7 @@ class AlpacaRestApi(RestClient):
             gateway_name=self.gateway_name
         )
         self.gateway.on_account(account)
-    
+
     def query_position(self):
         print("call query_position")
         path = f"/v1/positions"
@@ -175,7 +170,7 @@ class AlpacaRestApi(RestClient):
         )
 
     def on_query_position(self, data, request):
-        print("debug on_query_position: ", data,"!!!", request)
+        print("debug on_query_position: ", data, "!!!", request)
         for d in data:
             position = PositionData(
                 symbol=d['symbol'],
@@ -188,28 +183,24 @@ class AlpacaRestApi(RestClient):
             )
             self.gateway.on_position(position)
 
-
-
     def sign(self, request):
         """
         Generate Alpaca signature.
         """
-        #msg = request.method + \
-        #    "/api/v1/{}{}{}".format(path, nonce, request.data)
         headers = {
             "APCA-API-KEY-ID": self.key,
             "APCA-API-SECRET-KEY": self.secret,
         }
 
         request.headers = headers
-        request.allow_redirects=False
+        request.allow_redirects = False
         return request
 
     def _new_order_id(self):
         with self.order_count_lock:
             self.order_count += 1
             return self.order_count
-    
+
     def connect(
         self,
         key: str,
@@ -230,29 +221,36 @@ class AlpacaRestApi(RestClient):
         self.connect_time = (
             int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
         )
-        print("rest client connected",self.connect_time)
+        print("rest client connected", self.connect_time)
         self.gateway.write_log("ALPACA REST API启动成功")
         self.query_account()
         self.query_position()
 
     def on_send_order(self, status_code: int, request: Request):
         print("debug on send order: ", status_code, request)
-        pass
+        order = request.extra
+        self.gateway.on_order(order)
 
-    def on_failed(self, status_code: int, request: Request):
+    def on_failed_order(self, status_code: int, request: Request):
         """
         Callback to handle request failed.
         """
+        order = request.extra
+        order.status = Status.REJECTED
+        self.gateway.on_order(order)
         msg = f"请求失败，状态码：{status_code}，信息：{request.response.text}"
         print('debug on_failed', msg)
         self.gateway.write_log(msg)
 
-    def on_error(
+    def on_error_order(
         self, exception_type: type, exception_value: Exception, tb, request: Request
     ):
         """
         Callback to handler request exception.
         """
+        order = request.extra
+        order.status = Status.REJECTED
+        self.gateway.on_order(order)
         msg = f"触发异常，状态码：{exception_type}，信息：{exception_value}"
         print('debug on_error', msg)
         self.gateway.write_log(msg)
@@ -261,14 +259,19 @@ class AlpacaRestApi(RestClient):
             self.exception_detail(exception_type, exception_value, tb, request)
         )
 
+    def cancel_order(self, req: CancelRequest):
+        """"""
+        order_id = req.orderid
+        print("come to cancel_order", order_id)
+
     def send_order(self, req: OrderRequest):
         orderid = str(self.connect_time + self._new_order_id())
-        raw_dict={
+        raw_dict = {
             "symbol": req.symbol,
             "qty": int(req.volume),
             "side": DIRECTION_VT2ALPACA[req.direction],
             "type": ORDERTYPE_VT2ALPACA[req.type],
-            "time_in_force":'day',
+            "time_in_force": 'day',
         }
         if raw_dict['type'] == "limit":
             raw_dict['limit_price'] = float(req.price)
@@ -279,15 +282,14 @@ class AlpacaRestApi(RestClient):
             "POST",
             "/v1/orders",
             callback=self.on_send_order,
-            #data=data,
+            # data=data,
             extra=order,
-            on_failed=self.on_failed,
-            on_error=self.on_error,
+            on_failed=self.on_failed_order,
+            on_error=self.on_error_order,
             json_str=data,
         )
-        self.gateway.on_order(order)
         return order.vt_orderid
-        
+
 
 class AlpacaWebsocketApi(WebsocketClient):
     """"""
@@ -329,9 +331,7 @@ class AlpacaWebsocketApi(WebsocketClient):
         """"""
         self.key = key
         self.secret = secret.encode()
-
         self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
-
         self.start()
 
     def subscribe(self, req: SubscribeRequest):
@@ -357,13 +357,14 @@ class AlpacaWebsocketApi(WebsocketClient):
     # need debug 20190404
     def on_packet(self, packet: dict):
         """"""
-        print("debug on_packet: " , packet)
+        print("debug on_packet: ", packet)
 
     # ----------------------------------------------------------------------
     def on_response(self, data):
         """"""
         pass
     # ----------------------------------------------------------------------
+
     def on_update(self, data):
         """"""
         pass
@@ -380,7 +381,7 @@ class AlpacaWebsocketApi(WebsocketClient):
 
     def on_error(self, exception_type: type, exception_value: Exception, tb):
         """"""
-        print("on_error: " ,type,Exception,tb)
+        print("on_error: ", type, Exception, tb)
         pass
 
     # debug OK , 0405
