@@ -154,7 +154,7 @@ void generate_class_ITapTrade_TapAPINewOrder(pybind11::object & parent)
     if constexpr (std::is_constructible_v<
         ITapTrade::TapAPINewOrder
     >)
-        c.def(pybind11::init<ITapTrade::TapAPINewOrder>());
+        c.def(pybind11::init<>());
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPINewOrder, "AccountNo", AccountNo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPINewOrder, "ExchangeNo", ExchangeNo);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPINewOrder, "CommodityType", CommodityType);
@@ -293,7 +293,7 @@ void generate_class_ITapTrade_TapAPIAmendOrder(pybind11::object & parent)
     if constexpr (std::is_constructible_v<
         ITapTrade::TapAPIAmendOrder
     >)
-        c.def(pybind11::init<ITapTrade::TapAPIAmendOrder>());
+        c.def(pybind11::init<>());
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIAmendOrder, "ReqData", ReqData);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIAmendOrder, "ServerFlag", ServerFlag);
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIAmendOrder, "OrderNo", OrderNo);

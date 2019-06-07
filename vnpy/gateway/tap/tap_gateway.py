@@ -10,8 +10,8 @@ from vnpy.api.tap.vntap import (
     TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
     TapAPIQuotLoginRspInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
     set_async_callback_exception_handler,
-    CreateITapTradeAPI
-)
+    CreateITapTradeAPI,
+    Dict, Any, Tuple)
 from vnpy.api.tap.vntap.ITapTrade import (
     ITapTradeAPINotify,
     TapAPITradeLoginRspInfo, TapAPICommodityInfo, TapAPITradeContractInfo,
@@ -26,7 +26,7 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TAPI_ORDER_STATE_QUEUED, TAPI_ORDER_STATE_PARTFINISHED,
     TAPI_ORDER_STATE_FINISHED, TAPI_ORDER_STATE_CANCELED,
     TAPI_ORDER_STATE_SUBMIT, TAPI_ORDER_TYPE_MARKET,
-    TAPI_ORDER_TYPE_LIMIT
+    TAPI_ORDER_TYPE_LIMIT,
 )
 from vnpy.api.tap.error_codes import error_map
 
@@ -94,8 +94,8 @@ ORDERTYPE_TAP2VT = {
 ORDERTYPE_VT2TAP = {v: k for k, v in ORDERTYPE_TAP2VT.items()}
 
 
-commodity_infos = {}
-contract_infos = {}
+commodity_infos: Dict[str, "CommodityInfo"] = {}
+contract_infos: Dict[Tuple[str, "Exchange"], "ContractInfo"] = {}
 
 
 class TapGateway(BaseGateway):
@@ -186,7 +186,6 @@ class TapGateway(BaseGateway):
                      )
         print(error_str)
         self.write_log(error_str)
-        return True
 
 
 class QuoteApi(ITapQuoteAPINotify):
@@ -371,7 +370,7 @@ class TradeApi(ITapTradeAPINotify):
 
         commodity_info = CommodityInfo(
             name=info.CommodityEngName,
-            size=info.ContractSize,
+            size=info.ContractSize,  # fixme: int instead of float
             pricetick=info.CommodityTickSize
         )
         commodity_infos[info.CommodityNo] = commodity_info
@@ -616,9 +615,9 @@ class TradeApi(ITapTradeAPINotify):
             return ""
 
         order_req = TapAPINewOrder()
-        order_req.ExchangeNo = contract_info.ExchangeNo
-        order_req.CommodityNo = contract_info.CommodityNo
-        order_req.ContractNo = contract_info.ContractNo
+        order_req.ExchangeNo = contract_info.exchange_no
+        order_req.CommodityNo = contract_info.commodity_no
+        order_req.ContractNo = contract_info.contract_no
         order_req.OrderType = ORDERTYPE_VT2TAP.get(OrderRequest.type, "")
         order_req.OrderSide = DIRECTION_VT2TAP.get(OrderRequest.direction, "")
         order_req.OrderPrice = req.price

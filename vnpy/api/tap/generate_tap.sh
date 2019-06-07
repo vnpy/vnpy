@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# autocxxpy version: 0.2.5
+# autocxxpy version: 0.2.6
 python -m autocxxpy \
         vntap \
         iTapTradeAPI.h TapQuoteAPI.h TapAPIError.h iTapAPIError.h \
