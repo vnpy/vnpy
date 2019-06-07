@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
     from .vntap import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], bool]):
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
