@@ -3,17 +3,27 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 
-from vnpy.api.tap.vntap import (APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
-                                  FreeTapQuoteAPI, ITapQuoteAPI, ITapQuoteAPINotify,
-                                  TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
-                                  TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
-                                  TAPI_COMMODITY_TYPE_OPTION, TAPI_COMMODITY_TYPE_SPOT,
-                                  TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
-                                  TapAPIQuotLoginRspInfo, TapAPIQuoteCommodityInfo,
-                                  TapAPIQuoteContractInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
-                                  set_async_callback_exception_handler)
-
+from vnpy.api.tap.vntap import (
+    APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
+    FreeTapQuoteAPI, ITapQuoteAPI, ITapQuoteAPINotify,
+    TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
+    TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
+    TAPI_COMMODITY_TYPE_OPTION, TAPI_COMMODITY_TYPE_SPOT,
+    TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
+    TapAPIQuotLoginRspInfo, TapAPIQuoteCommodityInfo,
+    TapAPIQuoteContractInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
+    set_async_callback_exception_handler,
+    CreateITapTradeAPI
+)
+from vnpy.api.tap.vntap.ITapTrade import (
+    ITapTradeAPINotify, ITapTradeAPI,
+    TapAPITradeLoginRspInfo,
+    TapAPIApplicationInfo as TapTradeAPIApplicationInfo,
+    TapAPITradeLoginAuth, TapAPIAccQryReq, TapAPIFundReq,
+    TapAPIAccountInfo, TapAPIFundData
+)
 from vnpy.api.tap.error_codes import error_map
+
 from vnpy.event import EventEngine
 from vnpy.trader.constant import Exchange, Product
 from vnpy.trader.gateway import BaseGateway
@@ -38,124 +48,212 @@ EXCHANGE_TAP2VT = {
     'APEX': Exchange.APEX,
     'NYMEX': Exchange.NYMEX,
     'LME': Exchange.LME,
-    'COMEX': Exchange.COMEX,  # verify: I added this exchange in vnpy, is this correct?
+    'COMEX': Exchange.COMEX,
     'CBOT': Exchange.CBOT,
-    'HKEX': Exchange.HKFE,  # verify: is this correct?,
+    'HKEX': Exchange.HKFE,
     'CME': Exchange.CME,
 }
 EXCHANGE_VT2TAP = {v: k for k, v in EXCHANGE_TAP2VT.items()}
 
 
-def parse_datetime(dt_str: str):
-    # todo: 我不知道这个时间所用的是哪种时间
-    # yyyy-MM-dd hh:nn:ss.xxx
-    return datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S.%f")
+commodity_infos = {}
+extra_infos = {}
 
 
-def error_to_str(err_code: int) -> str:
-    try:
-        return error_map[err_code]
-    except KeyError:
-        return f"Unknown error({err_code})"
-
-
-@dataclass()
-class ContractExtraInfo:
+class TapGateway(BaseGateway):
     """
-    缓存一些ITAP API不直接提供的信息，而且仅仅保存这些信息。Symbol之类的作为键就不保存在这里面了
+    VN Trader gateway for Esunny 9.0.
     """
-    name: str
-    commodity_type: int
-    commodity_no: str
+
+    default_setting = {
+        "quote_username": "",
+        "quote_password": "",
+        "quote_host": "",
+        "quote_port": 0,
+        "trade_username": "",
+        "trade_password": "",
+        "trade_host": "",
+        "trade_port": 0,
+        "auth_code": ""
+    }
+
+    exchanges = list(EXCHANGE_VT2TAP.keys())
+
+    def __init__(self, event_engine: EventEngine):
+        """"""
+        super().__init__(event_engine, "TAP")
+
+        self.quote_api = QuoteApi(self)
+        self.trade_api = TradeApi(self)
+
+        set_async_callback_exception_handler(
+            self._async_callback_exception_handler)
+
+    def connect(self, setting: dict):
+        """"""
+        quote_username = setting["quote_username"]
+        quote_password = setting["quote_password"]
+        quote_host = setting["quote_host"]
+        quote_port = setting["quote_port"]
+        trade_username = setting["trade_username"]
+        trade_password = setting["trade_password"]
+        trade_host = setting["trade_host"]
+        trade_port = setting["trade_port"]
+        auth_code = setting["auth_code"]
+
+        self.trade_api.connect(
+            trade_username,
+            trade_password,
+            trade_host,
+            trade_port,
+            auth_code
+        )
+        self.quote_api.connect(
+            quote_username,
+            quote_password,
+            quote_host,
+            quote_port,
+            auth_code
+        )
+
+    def close(self):
+        """"""
+        self.trade_api.close()
+        self.quote_api.close()
+
+    def subscribe(self, req: SubscribeRequest):
+        """"""
+        self.quote_api.subscribe(req)
+
+    def send_order(self, req: OrderRequest) -> str:
+        """"""
+        return self.trade_api.send_order(req)
+
+    def cancel_order(self, req: CancelRequest):
+        """"""
+        self.trade_api.cancel_order(req)
+
+    def query_account(self):
+        """"""
+        self.trade_api.query_account()
+
+    def query_position(self):
+        """"""
+        self.trade_api.query_position()
+
+    def _async_callback_exception_handler(self, e: AsyncDispatchException):
+        """"""
+        error_str = (f"发生内部错误，位置：\n{e.instance}.{e.function_name}，详细信息：\n"
+                     f"{e.what}\n"
+                     )
+        print(error_str)
+        self.write_log(error_str)
+        return True
 
 
-class QuoteNotify(ITapQuoteAPINotify):
+class QuoteApi(ITapQuoteAPINotify):
+    """"""
 
-    def __init__(self, gateway: "TapGateway"):
+    def __init__(self, gateway: TapGateway):
+        """"""
         super().__init__()
+
         self.gateway = gateway
+        self.api = None
 
-    @property
-    def api(self) -> ITapQuoteAPI:
-        return self.gateway.api
-
-    def OnRspLogin(self, errorCode: int, info: TapAPIQuotLoginRspInfo) -> Any:
-        if self.gateway.if_error_write_log(errorCode, "OnRspQryCommodity"):
+    def OnRspLogin(self, errorCode: int, info: TapAPIQuotLoginRspInfo):
+        """"""
+        if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log("行情服务器登录失败")
-            return
-        self.gateway.write_log("行情服务器登录成功")
+        else:
+            self.gateway.write_log("行情服务器登录成功")
 
-    def OnAPIReady(self) -> Any:
-        print("OnApiReady")
-        error_code, sessionId = self.api.QryCommodity()
-        if self.gateway.if_error_write_log(error_code, "api.QryCommodity"):
-            return
+    def OnAPIReady(self):
+        """"""
+        self.api.QryCommodity()
 
-    def OnDisconnect(self, reasonCode: int) -> Any:
-        print(f"OnDisconnect : {error_to_str(reasonCode)}")
+    def OnDisconnect(self, reasonCode: int):
+        """"""
+        self.gateway.write_log(f"行情服务器连接断开，原因：{reasonCode}")
 
     def OnRspQryCommodity(
         self,
         sessionID: int,
         errorCode: int,
-        isLast: int,
+        isLast: str,
         info: TapAPIQuoteCommodityInfo,
-    ) -> Any:
-        if self.gateway.if_error_write_log(errorCode, "OnRspQryCommodity"):
+    ):
+        """"""
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log("查询交易品种信息失败")
             return
 
-        error_code, session_id = self.api.QryContract(info.Commodity)
-        if self.gateway.if_error_write_log(error_code, "api.QryContract"):
-            return
+        commodity_info = CommodityInfo(
+            name=info.CommodityName,
+            size=info.ContractSize,     # value is 0 in sim environment
+            pricetick=info.CommodityTickSize
+        )
+        commodity_infos[info.Commodity.CommodityNo] = commodity_info
+
+        self.api.QryContract(info.Commodity)
+
+        if isLast == "Y":
+            self.gateway.write_log("查询交易品种信息成功")
 
     def OnRspQryContract(
-        self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteContractInfo
-    ) -> Any:
-        if self.gateway.if_error_write_log(errorCode, "OnRspQryContract"):
+        self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteContractInfo
+    ):
+        """"""
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log("查询交易合约信息失败")
             return
-        if info is not None:  # isLast == True ==> info is None
-            symbol = info.Contract.ContractNo1  # what's the different between No1 and No2?
-            exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
-            name = info.ContractName
-            contract_data = ContractData(
-                gateway_name=self.gateway.gateway_name,
-                symbol=symbol,
-                exchange=exchange,
-                name=name,
-                product=PRODUCT_TYPE_TAP2VT.get(info.ContractType, Product.EQUITY),
-                size=1,  # verify: no key for this
-                pricetick=1,  # verify: no key for this
-                min_volume=1,  # verify: no key for this
-                # ...
-            )
-            contract_extra_info = ContractExtraInfo(
-                name=name,
-                commodity_type=info.Contract.Commodity.CommodityType,
-                commodity_no=info.Contract.Commodity.CommodityNo,
-            )
-            self.gateway.contract_extra_infos[(symbol, exchange)] = contract_extra_info
-            self.gateway.on_contract(contract_data)
+
+        if not info:
+            return
+
+        commodity_info = commodity_infos[info.Contract.Commodity.CommodityNo]
+        symbol = info.Contract.Commodity.CommodityNo + info.Contract.ContractNo1
+
+        contract = ContractData(
+            symbol=symbol,
+            exchange=EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo],
+            name=symbol,
+            product=Product.FUTURES,
+            size=commodity_info.size,
+            pricetick=commodity_info.pricetick,
+            gateway_name=self.gateway.gateway_name
+        )
+        self.gateway.on_contract(contract)
+
+        extra_info = ExtraInfo(
+            name=contract.name,
+            commodity_type=info.Contract.Commodity.CommodityType,
+            commodity_no=info.Contract.Commodity.CommodityNo,
+        )
+        extra_infos[(contract.symbol, contract.exchange)] = extra_info
 
     def OnRspSubscribeQuote(
-        self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteWhole
-    ) -> Any:
-        print("OnRspSubscribeQuote")
-        if self.gateway.if_error_write_log(errorCode, "OnRspSubscribeQuote"):
-            return
+        self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteWhole
+    ):
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log("订阅行情失败")
+        else:
+            self.update_tick(info)
 
-    def OnRspUnSubscribeQuote(
-        self, sessionID: int, errorCode: int, isLast: int, info: TapAPIContract
-    ) -> Any:
-        print("OnRspUnSubscribeQuote")
-        if self.gateway.if_error_write_log(errorCode, "OnRspUnSubscribeQuote"):
-            return
+    def OnRtnQuote(self, info: TapAPIQuoteWhole):
+        """"""
+        self.update_tick(info)
 
-    def OnRtnQuote(self, info: TapAPIQuoteWhole) -> Any:
+    def update_tick(self, info: TapAPIQuoteWhole):
+        """"""
         symbol = info.Contract.ContractNo1
         exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
-        extra_info = self.gateway.contract_extra_infos[(symbol, exchange)]
+
+        extra_info = extra_infos.get((symbol, exchange), None)
+        if not extra_info:
+            return
+
         tick = TickData(
-            gateway_name=self.gateway.gateway_name,
             symbol=symbol,
             exchange=exchange,
             datetime=parse_datetime(info.DateTimeStamp),
@@ -189,113 +287,174 @@ class QuoteNotify(ITapQuoteAPINotify):
             ask_volume_3=info.QAskQty[2],
             ask_volume_4=info.QAskQty[3],
             ask_volume_5=info.QAskQty[4],
+            gateway_name=self.gateway.gateway_name,
         )
-        self.gateway.on_tick(tick=tick)
+        self.gateway.on_tick(tick)
 
+    def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
+        """"""
+        # Create API object
+        info = TapAPIApplicationInfo()
+        info.AuthCode = auth_code
 
-class TapGateway(BaseGateway):
-    default_setting = {
-        "auth_code": "",
-        "quote_host": "123.15.58.21",
-        "quote_port": 7171,
-        "quote_username": "",
-        "quote_password": "",
-    }
-    exchanges = list(EXCHANGE_VT2TAP.keys())
-
-    def __init__(self, event_engine: EventEngine):
-        super().__init__(event_engine, "ITAP")
-        self.api: Optional[ITapQuoteAPI] = None
-        self.quote_notify = QuoteNotify(self)
-
-        # [symbol, exchange] : [CommodityType, CommodityNo]
-        self.contract_extra_infos: Dict[Tuple[str, Exchange], ContractExtraInfo] = {}
-        set_async_callback_exception_handler(self._async_callback_exception_handler)
-
-    def connect(self, setting: dict):
-        auth_code = setting["auth_code"]
-        quote_host = setting["quote_host"]
-        quote_port = setting["quote_port"]
-        quote_username = setting["quote_username"]
-        quote_password = setting["quote_password"]
-        # print("quote version:", GetTapQuoteAPIVersion())
-        # print("trade version:", GetITapTradeAPIVersion())
-
-        ai = TapAPIApplicationInfo()
-        ai.AuthCode = auth_code
-
-        # iResult是输出参数，Python中只能用返回值作为输出。
-        # 具体输出了哪些，可以看pyi的注释
-        api, iResult = CreateTapQuoteAPI(ai)
-        if api is None:
-            self.if_error_write_log(iResult, "CreateTapQuoteAPI")
+        self.api, iResult = CreateTapQuoteAPI(info)
+        if not self.api:
+            self.gateway.write_log("行情API初始化失败")
             return
 
-        assert self.api is None
-        self.api = api
+        # Set server address and port
+        self.api.SetAPINotify(self)
+        self.api.SetHostAddress(host, port)
 
-        api.SetAPINotify(self.quote_notify)
-        error_code: int = api.SetHostAddress(quote_host, quote_port)
-        if self.if_error_write_log(error_code, "SetHostAddress"):
-            return
+        # Start connection
+        login_auth = TapAPIQuoteLoginAuth()
+        login_auth.UserNo = username
+        login_auth.Password = password
+        login_auth.ISDDA = APIYNFLAG_NO
+        login_auth.ISModifyPassword = APIYNFLAG_NO
 
-        # login
-        la = TapAPIQuoteLoginAuth()
-        la.UserNo = quote_username
-        la.Password = quote_password
-        la.ISDDA = APIYNFLAG_NO
-        la.ISModifyPassword = APIYNFLAG_NO
-        error_code: int = api.Login(la)  # async
-        if self.if_error_write_log(error_code, "api.Login"):
-            return
+        self.api.Login(login_auth)
 
     def close(self):
+        """"""
         self.api.SetAPINotify(None)
-        self.quote_notify = None
         FreeTapQuoteAPI(self.api)
         self.api = None
-        pass
 
     def subscribe(self, req: SubscribeRequest):
-        contract = TapAPIContract()
-        extra_info = self.contract_extra_infos[(req.symbol, req.exchange)]
-        contract.Commodity.ExchangeNo = EXCHANGE_VT2TAP[req.exchange]
-        contract.Commodity.CommodityType = extra_info.commodity_type
-        contract.Commodity.CommodityNo = extra_info.commodity_no
-        contract.ContractNo1 = req.symbol
-        contract.CallOrPutFlag1 = TAPI_CALLPUT_FLAG_NONE
-        contract.CallOrPutFlag2 = TAPI_CALLPUT_FLAG_NONE
-        error_code, session_id = self.api.SubscribeQuote(contract)
-        if self.if_error_write_log(error_code, "api.SubscribeQuote"):
+        """"""
+        extra_info = extra_infos.get((req.symbol, req.exchange), None)
+        if not extra_info:
+            self.gateway.write_log(
+                f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
             return
 
-    def send_order(self, req: OrderRequest) -> str:
+        tap_contract = TapAPIContract()
+        tap_contract.Commodity.ExchangeNo = EXCHANGE_VT2TAP[req.exchange]
+        tap_contract.Commodity.CommodityType = extra_info.commodity_type
+        tap_contract.Commodity.CommodityNo = extra_info.commodity_no
+        tap_contract.ContractNo1 = req.symbol
+        tap_contract.CallOrPutFlag1 = TAPI_CALLPUT_FLAG_NONE
+        tap_contract.CallOrPutFlag2 = TAPI_CALLPUT_FLAG_NONE
+
+        self.api.SubscribeQuote(tap_contract)
+
+
+class TradeApi(ITapTradeAPINotify):
+    """"""
+
+    def __init__(self, gateway: TapGateway):
+        """"""
+        super().__init__()
+
+        self.gateway = gateway
+        self.api = None
+
+    def OnConnect(self):
+        """"""
+        self.gateway.write_log("交易服务器连接成功")
+
+    def OnRspLogin(self, errorCode: int, info: TapAPITradeLoginRspInfo):
+        """"""
+        if errorCode != TAPIERROR_SUCCEED:
+            error_msg = error_to_str(errorCode)
+            self.gateway.write_log(f"交易服务器登录失败：{error_msg}")
+        else:
+            self.gateway.write_log("交易服务器登录成功")
+
+    def OnRspQryAccount(
+        self,
+        sessionID: int,
+        errorCode: int,
+        isLast: str,
+        info: TapAPIFundData
+    ):
+        req = TapAPIFundReq()
+        req.AccountNo = info.AccountNo
+        self.api.QryFund(req)
+
+    def OnRspQryFund(
+        self,
+        sessionID: int,
+        errorCode: int,
+        isLast: str,
+        info: TapAPIAccountInfo
+    ):
+        self.update_account(info)
+
+    def update_account(self, info: TapAPIAccountInfo):
+        """"""
+        account = AccountData()
+
+    def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
+        """"""
+        # Create API object
+        info = TapTradeAPIApplicationInfo()
+        info.AuthCode = auth_code
+
+        self.api, iResult = CreateITapTradeAPI(info)
+        if not self.api:
+            self.gateway.write_log("交易API初始化失败")
+            return
+
+        # Set server address and port
+        self.api.SetAPINotify(self)
+        self.api.SetHostAddress(host, port, False)
+
+        # Start connection
+        login_auth = TapAPITradeLoginAuth()
+        login_auth.UserNo = username
+        login_auth.Password = password
+        login_auth.ISModifyPassword = APIYNFLAG_NO
+
+        self.api.Login(login_auth)
+
+    def send_order(self, req: OrderRequest):
+        """"""
         pass
 
     def cancel_order(self, req: CancelRequest):
+        """"""
         pass
 
     def query_account(self):
-        pass
+        """"""
+        req = TapAPIAccQryReq()
+        self.api.QryAccount(req)
 
     def query_position(self):
+        """"""
         pass
 
-    def _async_callback_exception_handler(self, e: AsyncDispatchException):
-        error_str = (f"发生内部错误，位置：\n{e.instance}.{e.function_name}，详细信息：\n"
-                     f"{e.what}\n"
-                     )
-        print(error_str, file=sys.stderr, flush=True)
-        self.write_log(error_str)
-        return True
 
-    def if_error_write_log(self, error_code: int, function: str):
-        """
-        检查返回值，如果发生错误，调用write_log报告该错误，并返回True
-        :return: 若有错误发生，返回True
-        """
-        if TAPIERROR_SUCCEED != error_code:
-            error_msg = f"调用{function}时出错：\n{error_to_str(error_code)}"
-            self.write_log(error_msg)
-            print(error_msg, file=sys.stderr)
-            return True
+def parse_datetime(dt_str: str):
+    """"""
+    try:
+        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S.%f")
+    except ValueError:
+        dt = datetime(1970, 1, 1)
+    return dt
+
+
+def error_to_str(err_code: int) -> str:
+    """"""
+    try:
+        return error_map[err_code]
+    except KeyError:
+        return f"Unknown error({err_code})"
+
+
+@dataclass
+class ExtraInfo:
+    """"""
+    name: str
+    commodity_type: int
+    commodity_no: str
+
+
+@dataclass
+class CommodityInfo:
+    """"""
+    name: str
+    size: int
+    pricetick: float
