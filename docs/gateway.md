@@ -74,13 +74,20 @@ def main():
 | 接口 |类型 | 
 | ------ | :------: | 
 | CTP | 期货 | 
+| FEMAS | 期货 | 
 | OES | 国内股票 |
+| XTP | 国内股票、指数、基金、债券、期权、融资融券 |
 | IB | 外盘股票、期货、期权 |
+| TAP | 外盘股票、期货、期权 |
 | FUTU | 国内股票、港股、美股 |
 | TIGER | 国内股票、港股、美股 |
+| BITFINEX | 数字货币 |
 | BITMEX | 数字货币 |
 | OKEX | 数字货币 |
+| OKEXF | 数字货币 |
 | HUOBI | 数字货币 |
+| HBDM | 数字货币 |
+| ONETOKEN | 数字货币 |
 
 
 
@@ -122,6 +129,39 @@ main_engine.add_gateway(CtpGateway)
 
 &nbsp;
 
+### 飞马（FEMAS）
+
+#### 如何加载
+
+先从gateway上调用FemasGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.femas import FemasGateway
+main_engine.add_gateway(FemasGateway)
+```
+
+&nbsp;
+
+#### 相关字段
+
+- 用户名：username
+- 密码：password：
+- 经纪商编号：brokerid
+- 交易服务器地址：td_address
+- 行情服务器地址：md_address
+- 产品名称：product_info
+- 授权编码：auth_code
+  
+&nbsp;
+
+#### 获取账号
+
+在期货公司开户，通过联系客户经理可以开通。用户名为纯数字，经纪商编号也是4位纯数字。（每个期货公司的经纪商编号都不同）另外，实盘账号也可以开通仿真交易功能，同样需要联系客户经理。
+
+
+&nbsp;
+
+
+
 ### 宽睿柜台(OES)
 
 #### 如何加载
@@ -161,13 +201,52 @@ main_engine.add_gateway(OesGateway)
 
 &nbsp;
 
+### 中泰柜台(XTP)
+
+#### 如何加载
+
+先从gateway上调用XtpGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.xtp import XtpGateway
+main_engine.add_gateway(XtpGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- 账号：
+- 密码：
+- 客户号": 1
+- 行情地址：
+- 行情端口": 0
+- 交易地址：
+- 交易端口": 0
+- 行情协议: ["TCP", "UDP"]
+- 授权码：
+
+&nbsp;
+
+
+#### 获取账号
+
+测试账号请联系中泰证券申请。
+
+#### 其他特点
+
+XTP是首家提供融资融券的极速柜台。
+
+&nbsp;
+
+
 ### 盈透证券(IB)
 
 #### 如何加载
 
 先从gateway上调用IbGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.oes import IbGateway
+from vnpy.gateway.ib import IbGateway
 main_engine.add_gateway(IbGateway)
 ```
 
@@ -195,13 +274,47 @@ main_engine.add_gateway(IbGateway)
 
 &nbsp;
 
+
+### TAP
+
+#### 如何加载
+
+先从gateway上调用TapGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.tap import TapGateway
+main_engine.add_gateway(TapGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- 授权码：auth code
+- 行情账号：quote username
+- 行情密码：quote password
+- 行情地址：123.15.58.21
+- 行情端口：7171
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在TAP开户并且入金后可以获得API接入权限。
+
+&nbsp;
+
+
 ### 富途证券(FUTU)
 
 #### 如何加载
 
 先从gateway上调用FutuGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.oes import FutuGateway
+from vnpy.gateway.futu import FutuGateway
 main_engine.add_gateway(FutuGateway)
 ```
 
@@ -238,7 +351,7 @@ main_engine.add_gateway(FutuGateway)
 
 先从gateway上调用TigerGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.oes import TigerGateway
+from vnpy.gateway.tiger import TigerGateway
 main_engine.add_gateway(TigerGateway)
 ```
 
@@ -271,7 +384,7 @@ main_engine.add_gateway(TigerGateway)
 
 先从gateway上调用BitmexGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.oes import BitmexGateway
+from vnpy.gateway.bitmex import BitmexGateway
 main_engine.add_gateway(BitmexGateway)
 ```
 
@@ -300,14 +413,14 @@ main_engine.add_gateway(BitmexGateway)
 
 &nbsp;
 
-### OKEX
+### OKEX现货（OKEX）
 
 
 #### 如何加载
 
 先从gateway上调用OkexGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.oes import OkexGateway
+from vnpy.gateway.okex import OkexGateway
 main_engine.add_gateway(OkexGateway)
 ```
 
@@ -336,13 +449,50 @@ main_engine.add_gateway(OkexGateway)
 
 &nbsp;
 
-### 火币
+
+### OKEX期货（OKEXF）
+
+
+#### 如何加载
+
+先从gateway上调用OkexfGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.okexf import OkexfGateway
+main_engine.add_gateway(OkexfGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- API秘钥：API Key
+- 密码秘钥：Secret Key
+- 会话数：3
+- 密码：passphrase
+- 杠杆：Leverage
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在OKEX官网开户并且入金后可以获得API接入权限。
+
+
+&nbsp;
+
+### 火币(HUOBI)
 
 #### 如何加载
 
 先从gateway上调用HuobiGateway类；然后通过add_gateway()函数添加到main_engine上。
 ```
-from vnpy.gateway.oes import HuobiGateway
+from vnpy.gateway.huobi import HuobiGateway
 main_engine.add_gateway(HuobiGateway)
 ```
 
@@ -365,3 +515,112 @@ main_engine.add_gateway(HuobiGateway)
 #### 获取账号
 
 在火币官网开户并且入金后可以获得API接入权限。
+
+
+&nbsp;
+
+
+
+### 火币合约(HBDM)
+
+#### 如何加载
+
+先从gateway上调用HbdmGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.hbdm import HbdmGateway
+main_engine.add_gateway(HbdmGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- API秘钥：API Key
+- 密码秘钥：Secret Key
+- 会话数：3
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在火币官网开户并且入金后可以获得API接入权限。
+
+
+&nbsp;
+
+### BITFINEX
+
+#### 如何加载
+
+先从gateway上调用BitFinexGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.bitfinex import BitfinexGateway
+main_engine.add_gateway(BitfinexGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- 用户ID：ID
+- 密码：Secret
+- 会话数：3
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在BITFINEX官网开户并且入金后可以获得API接入权限。
+
+
+
+&nbsp;
+
+
+### ONETOKEN
+
+#### 如何加载
+
+先从gateway上调用OnetokenGateway类；然后通过add_gateway()函数添加到main_engine上。
+```
+from vnpy.gateway.onetoken import OnetokenGateway
+main_engine.add_gateway(OnetokenGateway)
+```
+
+&nbsp;
+
+
+#### 相关字段
+
+- Key秘钥：OT Key
+- 密码秘钥：OT Secret
+- 会话数：3
+- 交易所：["BINANCE", "BITMEX", "OKEX", "OKEF", "HUOBIP", "HUOBIF"]
+- 账号：
+- 代理地址：
+- 代理端口：
+
+
+
+&nbsp;
+
+
+#### 获取账号
+
+在Onetoken官网开户并且入金后可以获得API接入权限。
+
+
+
+&nbsp;
