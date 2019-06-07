@@ -563,8 +563,8 @@ class TradeApi(ITapTradeAPINotify):
             direction=DIRECTION_TAP2VT[info.OrderSide],
             price=info.OrderPrice,
             volume=info.OrderQty,
-            taded=info.OrderMatchQty,
-            status=STATUS_TAP2VT[info.State],
+            traded=info.OrderMatchQty,
+            status=STATUS_TAP2VT[info.OrderState],
             time=info.OrderInsertTime,
             gateway_name=self.gateway_name
         )
