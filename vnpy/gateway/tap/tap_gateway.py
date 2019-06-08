@@ -19,7 +19,7 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TapAPIApplicationInfo as TapTradeAPIApplicationInfo,
     TapAPITradeLoginAuth, TapAPIAccQryReq, TapAPIFundReq,
     TapAPIAccountInfo, TapAPIFundData,
-    TapAPIPositionQryReq, TapAPIPositionInfo,
+    TapAPIPositionQryReq, TapAPIPositionSummary,
     TapAPIOrderQryReq, TapAPIFillQryReq,
     TapAPIOrderInfo, TapAPIFillInfo,
     TapAPINewOrder, TapAPIOrderCancelReq,
@@ -502,12 +502,12 @@ class TradeApi(ITapTradeAPINotify):
         """"""
         self.update_account(info)
 
-    def OnRspQryPosition(
+    def OnRspQryPositionSummary(
         self,
         sessionID: int,
         errorCode: int,
         isLast: str,
-        info: TapAPIPositionInfo
+        info: TapAPIPositionSummary
     ):
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"查询持仓信息失败")
@@ -520,7 +520,7 @@ class TradeApi(ITapTradeAPINotify):
             self.gateway.write_log(f"查询持仓信息成功")
             self.query_order()
 
-    def OnRtnPosition(self, info: TapAPIPositionInfo):
+    def OnRtnPositionSummary(self, info: TapAPIPositionSummary):
         """"""
         self.update_position(info)
 
@@ -581,7 +581,7 @@ class TradeApi(ITapTradeAPINotify):
         )
         self.gateway.on_account(account)
 
-    def update_position(self, info: TapAPIPositionInfo):
+    def update_position(self, info: TapAPIPositionSummary):
         """"""
         position = PositionData(
             symbol=info.CommodityNo + info.ContractNo,
@@ -589,7 +589,6 @@ class TradeApi(ITapTradeAPINotify):
             direction=DIRECTION_TAP2VT[info.MatchSide],
             volume=info.PositionQty,
             price=info.PositionPrice,
-            pnl=info.PositionProfit,
             gateway_name=self.gateway_name
         )
         self.gateway.on_position(position)
@@ -711,7 +710,7 @@ class TradeApi(ITapTradeAPINotify):
     def query_position(self):
         """"""
         req = TapAPIPositionQryReq()
-        self.api.QryPosition(req)
+        self.api.QryPositionSummary(req)
 
     def query_order(self):
         """"""
