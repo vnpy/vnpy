@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# autocxxpy version: 0.2.6
+# autocxxpy version: 0.3.1
 python -m autocxxpy \
         vntap \
         iTapTradeAPI.h TapQuoteAPI.h TapAPIError.h iTapAPIError.h \
@@ -15,6 +15,8 @@ python -m autocxxpy \
          "(.*API::.*(sessionID$|.*ClientBuyOrderNo$|.*ClientSellOrderNo$|.*ClientOrderNo$))|(.*Result)" \
          \
          --no-callback-pattern \
-         ".*API::.*"
+         ".*API::.*" \
+         --no-transform-pattern \
+         ".*Notify::On.*"
 
-python generate_error_map.py
+# python generate_error_map.py

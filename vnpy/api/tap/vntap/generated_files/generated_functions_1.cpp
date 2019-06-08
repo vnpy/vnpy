@@ -589,35 +589,3 @@ void generate_class_ITapTrade_TapAPIFundData(pybind11::object & parent)
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIFundData, c);
     module_vntap::objects.emplace("ITapTrade::TapAPIFundData", c);
 }
-void generate_class_ITapTrade_TapAPICommodityInfo(pybind11::object & parent)
-{
-    pybind11::class_<ITapTrade::TapAPICommodityInfo> c(parent, "TapAPICommodityInfo");
-    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPICommodityInfo>)
-        c.def(pybind11::init<>());
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "ExchangeNo", ExchangeNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityType", CommodityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityNo", CommodityNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityName", CommodityName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityEngName", CommodityEngName);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateExchangeNo", RelateExchangeNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityType", RelateCommodityType);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityNo", RelateCommodityNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateExchangeNo2", RelateExchangeNo2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityType2", RelateCommodityType2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "RelateCommodityNo2", RelateCommodityNo2);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CurrencyGroupNo", CurrencyGroupNo);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "TradeCurrency", TradeCurrency);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "ContractSize", ContractSize);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "OpenCloseMode", OpenCloseMode);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "StrikePriceTimes", StrikePriceTimes);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityTickSize", CommodityTickSize);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityDenominator", CommodityDenominator);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CmbDirect", CmbDirect);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "DeliveryMode", DeliveryMode);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "DeliveryDays", DeliveryDays);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "AddOneTime", AddOneTime);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "CommodityTimeZone", CommodityTimeZone);
-    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPICommodityInfo, "IsAddOne", IsAddOne);
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPICommodityInfo, c);
-    module_vntap::objects.emplace("ITapTrade::TapAPICommodityInfo", c);
-}

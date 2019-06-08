@@ -35,7 +35,7 @@ class TapAPICommodity():
     
     
     ExchangeNo: str
-    CommodityType: int
+    CommodityType: str
     CommodityNo: str
     
     
@@ -45,10 +45,10 @@ class TapAPIContract():
     Commodity: TapAPICommodity
     ContractNo1: str
     StrikePrice1: str
-    CallOrPutFlag1: int
+    CallOrPutFlag1: str
     ContractNo2: str
     StrikePrice2: str
-    CallOrPutFlag2: int
+    CallOrPutFlag2: str
     
     
 class TapAPIExchangeInfo():
@@ -69,11 +69,11 @@ class TapAPIQuoteLoginAuth():
     
     
     UserNo: str
-    ISModifyPassword: int
+    ISModifyPassword: str
     Password: str
     NewPassword: str
     QuoteTempPassword: str
-    ISDDA: int
+    ISDDA: str
     DDASerialNo: str
     
     
@@ -104,9 +104,9 @@ class TapAPIQuoteCommodityInfo():
     ContractSize: float
     CommodityTickSize: float
     CommodityDenominator: int
-    CmbDirect: int
+    CmbDirect: str
     CommodityContractLen: int
-    IsDST: int
+    IsDST: str
     RelateCommodity1: TapAPICommodity
     RelateCommodity2: TapAPICommodity
     
@@ -115,7 +115,7 @@ class TapAPIQuoteContractInfo():
     
     
     Contract: TapAPIContract
-    ContractType: int
+    ContractType: str
     QuoteUnderlyingContract: str
     ContractName: str
     ContractExpDate: str
@@ -128,7 +128,7 @@ class TapAPIQuoteWhole():
     
     Contract: TapAPIContract
     CurrencyNo: str
-    TradingState: int
+    TradingState: str
     DateTimeStamp: str
     QPreClosingPrice: float
     QPreSettlePrice: float
@@ -186,13 +186,13 @@ class ITapQuoteAPINotify():
         ...
     def OnDisconnect(self, reasonCode: int)->None:
         ...
-    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteCommodityInfo)->None:
+    def OnRspQryCommodity(self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteCommodityInfo)->None:
         ...
-    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteContractInfo)->None:
+    def OnRspQryContract(self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteContractInfo)->None:
         ...
-    def OnRspSubscribeQuote(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIQuoteWhole)->None:
+    def OnRspSubscribeQuote(self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteWhole)->None:
         ...
-    def OnRspUnSubscribeQuote(self, sessionID: int, errorCode: int, isLast: int, info: TapAPIContract)->None:
+    def OnRspUnSubscribeQuote(self, sessionID: int, errorCode: int, isLast: str, info: TapAPIContract)->None:
         ...
     def OnRtnQuote(self, info: TapAPIQuoteWhole)->None:
         ...
@@ -228,7 +228,7 @@ TAPISTR_300 = str
 TAPISTR_500 = str
 TAPISTR_2000 = str
 TAPIAUTHCODE = str
-TAPICHAR = int
+TAPICHAR = str
 TAPIINT32 = int
 TAPIUINT32 = int
 TAPIINT64 = int
@@ -236,47 +236,47 @@ TAPIUINT64 = int
 TAPIUINT16 = int
 TAPIUINT8 = int
 TAPIREAL64 = float
-TAPIYNFLAG = int
+TAPIYNFLAG = str
 TAPIDTSTAMP = str
 TAPIDATETIME = str
 TAPIDATE = str
 TAPITIME = str
-TAPILOGLEVEL = int
-TAPICommodityType = int
-TAPICallOrPutFlagType = int
+TAPILOGLEVEL = str
+TAPICommodityType = str
+TAPICallOrPutFlagType = str
 TAPIQPRICE = float
 TAPIQVOLUME = int
 TAPIQDIFF = int
-APIYNFLAG_YES: int
-APIYNFLAG_NO: int
-APILOGLEVEL_NONE: int
-APILOGLEVEL_ERROR: int
-APILOGLEVEL_WARNING: int
-APILOGLEVEL_DEBUG: int
-TAPI_COMMODITY_TYPE_NONE: int
-TAPI_COMMODITY_TYPE_SPOT: int
-TAPI_COMMODITY_TYPE_FUTURES: int
-TAPI_COMMODITY_TYPE_OPTION: int
-TAPI_COMMODITY_TYPE_SPREAD_MONTH: int
-TAPI_COMMODITY_TYPE_SPREAD_COMMODITY: int
-TAPI_COMMODITY_TYPE_BUL: int
-TAPI_COMMODITY_TYPE_BER: int
-TAPI_COMMODITY_TYPE_STD: int
-TAPI_COMMODITY_TYPE_STG: int
-TAPI_COMMODITY_TYPE_PRT: int
-TAPI_COMMODITY_TYPE_BLT: int
-TAPI_COMMODITY_TYPE_BRT: int
-TAPI_COMMODITY_TYPE_DIRECTFOREX: int
-TAPI_COMMODITY_TYPE_INDIRECTFOREX: int
-TAPI_COMMODITY_TYPE_CROSSFOREX: int
-TAPI_COMMODITY_TYPE_INDEX: int
-TAPI_COMMODITY_TYPE_STOCK: int
-TAPI_COMMODITY_TYPE_SPOT_TRADINGDEFER: int
-TAPI_COMMODITY_TYPE_FUTURE_LOCK: int
-TAPI_COMMODITY_TYPE_EFP: int
-TAPI_CALLPUT_FLAG_CALL: int
-TAPI_CALLPUT_FLAG_PUT: int
-TAPI_CALLPUT_FLAG_NONE: int
+APIYNFLAG_YES: str
+APIYNFLAG_NO: str
+APILOGLEVEL_NONE: str
+APILOGLEVEL_ERROR: str
+APILOGLEVEL_WARNING: str
+APILOGLEVEL_DEBUG: str
+TAPI_COMMODITY_TYPE_NONE: str
+TAPI_COMMODITY_TYPE_SPOT: str
+TAPI_COMMODITY_TYPE_FUTURES: str
+TAPI_COMMODITY_TYPE_OPTION: str
+TAPI_COMMODITY_TYPE_SPREAD_MONTH: str
+TAPI_COMMODITY_TYPE_SPREAD_COMMODITY: str
+TAPI_COMMODITY_TYPE_BUL: str
+TAPI_COMMODITY_TYPE_BER: str
+TAPI_COMMODITY_TYPE_STD: str
+TAPI_COMMODITY_TYPE_STG: str
+TAPI_COMMODITY_TYPE_PRT: str
+TAPI_COMMODITY_TYPE_BLT: str
+TAPI_COMMODITY_TYPE_BRT: str
+TAPI_COMMODITY_TYPE_DIRECTFOREX: str
+TAPI_COMMODITY_TYPE_INDIRECTFOREX: str
+TAPI_COMMODITY_TYPE_CROSSFOREX: str
+TAPI_COMMODITY_TYPE_INDEX: str
+TAPI_COMMODITY_TYPE_STOCK: str
+TAPI_COMMODITY_TYPE_SPOT_TRADINGDEFER: str
+TAPI_COMMODITY_TYPE_FUTURE_LOCK: str
+TAPI_COMMODITY_TYPE_EFP: str
+TAPI_CALLPUT_FLAG_CALL: str
+TAPI_CALLPUT_FLAG_PUT: str
+TAPI_CALLPUT_FLAG_NONE: str
 TAPIERROR_SUCCEED: int
 TAPIERROR_ConnectFail: int
 TAPIERROR_LinkAuthFail: int
@@ -445,7 +445,7 @@ def GetITapTradeAPIVersion()->str:
     ...
 def SetITapTradeAPIDataPath(path: str)->int:
     ...
-def SetITapTradeAPILogLevel(level: int)->int:
+def SetITapTradeAPILogLevel(level: str)->int:
     ...
 def GetITapErrorDescribe(errorCode: int)->str:
     ...
@@ -457,6 +457,6 @@ def GetTapQuoteAPIVersion()->str:
     ...
 def SetTapQuoteAPIDataPath(path: str)->int:
     ...
-def SetTapQuoteAPILogLevel(level: int)->int:
+def SetTapQuoteAPILogLevel(level: str)->int:
     ...
 

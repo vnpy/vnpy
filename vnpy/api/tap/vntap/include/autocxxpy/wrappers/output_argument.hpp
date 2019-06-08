@@ -17,28 +17,43 @@
 
 namespace autocxxpy
 {
+    template<class T>
+    struct is_string_type : std::false_type {};
+
+    template<>
+    struct is_string_type<char*> : std::true_type {};
+
+    template<size_t size>
+    struct is_string_type<literal_array<char, size>> : std::true_type {};
+
+    template <class T>
+    constexpr bool is_string_type_v = is_string_type<T>::value;
+
     template <class method_constant, class ret_t, class base_t, class ... Ls, class ... Rs>
     inline constexpr auto wrap_pointer_argument_as_output_impl(brigand::list<Ls...>, brigand::list <Rs...>)
     {
         namespace ct = boost::callable_traits;
         return [](Ls ... ls, Rs ... rs)
         {
-            base_t arg;
+            base_t arg{};
             constexpr auto method = method_constant::value;
             auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
+
+            using converted_arg_t = std::conditional_t<is_string_type_v<base_t>, std::string, base_t>;
             if constexpr (std::is_void_v<ret_t>)
             {
                 stdmethod(std::forward<Ls>(ls)..., &arg, std::forward<Rs>(rs)...);
-                return std::move(arg);
+                return converted_arg_t(std::move(arg));
             }
             else
             {
-                return append_as_tuple(stdmethod(
+                auto retv_left = stdmethod(
                     std::forward<Ls>(ls)...,
                     &arg,
                     std::forward<Rs>(rs)...
-                ), std::move(arg));
-
+                );
+                auto retv = append_as_tuple(std::move(retv_left), converted_arg_t(std::move(arg)));
+                return std::move(retv); // make debugging easier
             }
         };
     }
@@ -48,22 +63,26 @@ namespace autocxxpy
         namespace ct = boost::callable_traits;
         return [](Ls ... ls, Rs ... rs)
         {
-            base_t arg;
+            base_t arg{};
             constexpr auto method = method_constant::value;
             auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
+
+            using converted_arg_t = std::conditional_t<is_string_type_v<base_t>, std::string, base_t>;
             if constexpr (std::is_void_v<ret_t>)
             {
                 stdmethod(std::forward<Ls>(ls)..., arg, std::forward<Rs>(rs)...);
-                return arg;
+                return converted_arg_t(std::move(arg));
             }
             else
             {
-                return append_as_tuple(stdmethod(
+                auto retv_left = stdmethod(
                     std::forward<Ls>(ls)...,
                     arg,
                     std::forward<Rs>(rs)...
-                ), arg);
-
+                );
+                auto retv = append_as_tuple(std::move(retv_left), converted_arg_t(std::move(arg))
+                );
+                return std::move(retv); // make debugging easier
             }
         };
     }
