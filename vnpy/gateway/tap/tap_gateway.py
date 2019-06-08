@@ -254,9 +254,8 @@ class QuoteApi(ITapQuoteAPINotify):
     def OnRspSubscribeQuote(
         self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteWhole
     ):
-        print("on rsp sub quote")
         if errorCode != TAPIERROR_SUCCEED:
-            self.gateway.write_log("订阅行情失败")
+            self.gateway.write_log(f"订阅行情失败：{error_to_str(errorCode)}")
         else:
             self.update_tick(info)
 
@@ -266,17 +265,12 @@ class QuoteApi(ITapQuoteAPINotify):
 
     def update_tick(self, info: TapAPIQuoteWhole):
         """"""
-        print("--------------------------")
-        print(info.Contract.ContractNo1)
-        print(info.Contract.ContractNo2)
-        print(info.Contract.Commodity.CommodityNo)
-
         symbol = info.Contract.Commodity.CommodityNo + info.Contract.ContractNo1
         exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
 
         contract_info = contract_infos.get((symbol, exchange), None)
         if not contract_info:
-            print("no contract info", symbol, exchange)
+            self.gateway.write_log(f"行情合约信息无法匹配：{symbol}和{exchange}")
             return
 
         tick = TickData(
@@ -359,7 +353,7 @@ class QuoteApi(ITapQuoteAPINotify):
         tap_contract.Commodity.ExchangeNo = EXCHANGE_VT2TAP[req.exchange]
         tap_contract.Commodity.CommodityType = contract_info.commodity_type
         tap_contract.Commodity.CommodityNo = contract_info.commodity_no
-        tap_contract.ContractNo1 = req.symbol
+        tap_contract.ContractNo1 = contract_info.contract_no
         tap_contract.CallOrPutFlag1 = TAPI_CALLPUT_FLAG_NONE
         tap_contract.CallOrPutFlag2 = TAPI_CALLPUT_FLAG_NONE
 
