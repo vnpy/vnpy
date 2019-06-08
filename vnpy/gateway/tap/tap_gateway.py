@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Dict, Tuple
 
 from vnpy.api.tap.vntap import (
     APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
@@ -10,8 +11,8 @@ from vnpy.api.tap.vntap import (
     TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
     TapAPIQuotLoginRspInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
     set_async_callback_exception_handler,
-    CreateITapTradeAPI
-)
+    CreateITapTradeAPI,
+    )
 from vnpy.api.tap.vntap.ITapTrade import (
     ITapTradeAPINotify,
     TapAPITradeLoginRspInfo, TapAPICommodityInfo, TapAPITradeContractInfo,
@@ -26,8 +27,12 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TAPI_ORDER_STATE_QUEUED, TAPI_ORDER_STATE_PARTFINISHED,
     TAPI_ORDER_STATE_FINISHED, TAPI_ORDER_STATE_CANCELED,
     TAPI_ORDER_STATE_SUBMIT, TAPI_ORDER_TYPE_MARKET,
-    TAPI_ORDER_TYPE_LIMIT
-)
+    TAPI_ORDER_TYPE_LIMIT,
+    TapAPIOrderInfoNotice, TAPI_ORDER_STATE_ACCEPT, TAPI_ORDER_STATE_TRIGGERING,
+    TAPI_ORDER_STATE_EXCTRIGGERING, TAPI_ORDER_STATE_CANCELING, TAPI_ORDER_STATE_MODIFYING,
+    TAPI_ORDER_STATE_LEFTDELETED, TAPI_ORDER_STATE_FAIL, TAPI_ORDER_STATE_DELETED,
+    TAPI_ORDER_STATE_SUPPENDED, TAPI_ORDER_STATE_DELETEDFOREXPIRE, TAPI_ORDER_STATE_EFFECT,
+    TAPI_ORDER_STATE_APPLY)
 from vnpy.api.tap.error_codes import error_map
 
 from vnpy.event import EventEngine
@@ -80,11 +85,41 @@ DIRECTION_TAP2VT = {
 DIRECTION_VT2TAP = {v: k for k, v in DIRECTION_TAP2VT.items()}
 
 STATUS_TAP2VT = {
-    TAPI_ORDER_STATE_SUBMIT: Status.SUBMITTING,
-    TAPI_ORDER_STATE_QUEUED: Status.NOTTRADED,
-    TAPI_ORDER_STATE_PARTFINISHED: Status.PARTTRADED,
-    TAPI_ORDER_STATE_FINISHED: Status.ALLTRADED,
-    TAPI_ORDER_STATE_CANCELED: Status.CANCELLED
+# 终端提交
+TAPI_ORDER_STATE_SUBMIT:  Status.SUBMITTING,
+# 已受理
+TAPI_ORDER_STATE_ACCEPT:  Status.NOTTRADED,
+# 策略待触发
+TAPI_ORDER_STATE_TRIGGERING:  Status.NOTTRADED,
+# 交易所待触发
+TAPI_ORDER_STATE_EXCTRIGGERING:  Status.NOTTRADED,
+# 已排队
+TAPI_ORDER_STATE_QUEUED:  Status.NOTTRADED,
+# 部分成交
+TAPI_ORDER_STATE_PARTFINISHED:  Status.PARTTRADED,
+# 完全成交
+TAPI_ORDER_STATE_FINISHED:  Status.ALLTRADED,
+# 待撤消(排队临时状态)
+TAPI_ORDER_STATE_CANCELING:  0,  # todo: vnpy缺少本地canceling的状态，可能导致重复撤单
+# 待修改(排队临时状态)
+TAPI_ORDER_STATE_MODIFYING:  0,
+# 完全撤单
+TAPI_ORDER_STATE_CANCELED:  Status.CANCELLED,
+# 已撤余单
+TAPI_ORDER_STATE_LEFTDELETED:  0,
+# 指令失败
+TAPI_ORDER_STATE_FAIL:  Status.CANCELLED,
+# 策略删除
+TAPI_ORDER_STATE_DELETED:  0,
+# 已挂起
+TAPI_ORDER_STATE_SUPPENDED:  0,
+# 到期删除
+TAPI_ORDER_STATE_DELETEDFOREXPIRE:  0,
+# 已生效——询价成功
+TAPI_ORDER_STATE_EFFECT:  0,
+# 已申请——行权、弃权、套利等申请成功
+TAPI_ORDER_STATE_APPLY:  0,
+
 }
 
 ORDERTYPE_TAP2VT = {
@@ -94,9 +129,10 @@ ORDERTYPE_TAP2VT = {
 ORDERTYPE_VT2TAP = {v: k for k, v in ORDERTYPE_TAP2VT.items()}
 
 
-commodity_infos = {}
-contract_infos = {}
+commodity_infos: Dict[str, "CommodityInfo"] = {}
+contract_infos: Dict[Tuple[str, "Exchange"], "ContractInfo"] = {}
 
+primary_account_no: str = ""
 
 class TapGateway(BaseGateway):
     """
@@ -123,6 +159,7 @@ class TapGateway(BaseGateway):
 
         self.quote_api = QuoteApi(self)
         self.trade_api = TradeApi(self)
+
 
         set_async_callback_exception_handler(
             self._async_callback_exception_handler)
@@ -186,7 +223,6 @@ class TapGateway(BaseGateway):
                      )
         print(error_str)
         self.write_log(error_str)
-        return True
 
 
 class QuoteApi(ITapQuoteAPINotify):
@@ -365,7 +401,7 @@ class TradeApi(ITapTradeAPINotify):
 
         commodity_info = CommodityInfo(
             name=info.CommodityEngName,
-            size=info.ContractSize,
+            size=info.ContractSize,  # fixme: int instead of float
             pricetick=info.CommodityTickSize
         )
         commodity_infos[info.CommodityNo] = commodity_info
@@ -499,9 +535,11 @@ class TradeApi(ITapTradeAPINotify):
             self.gateway.write_log(f"查询委托信息成功")
             self.query_trade()
 
-    def OnRtnOrder(self, info: TapAPIOrderInfo):
+    def OnRtnOrder(self, info: TapAPIOrderInfoNotice):
         """"""
-        self.update_order(info)
+        # todo: error checking
+        if info.OrderInfo:
+            self.update_order(info.OrderInfo)
 
     def OnRspQryFill(
         self,
@@ -524,8 +562,10 @@ class TradeApi(ITapTradeAPINotify):
         """"""
         self.update_trade(info)
 
-    def update_account(self, info: TapAPIAccountInfo):
+    def update_account(self, info: TapAPIFundData):
         """"""
+        global primary_account_no
+        primary_account_no = info.AccountNo
         account = AccountData(
             accountid=info.AccountNo,
             balance=info.Balance,
@@ -610,15 +650,18 @@ class TradeApi(ITapTradeAPINotify):
             return ""
 
         order_req = TapAPINewOrder()
-        order_req.ExchangeNo = contract_info.ExchangeNo
-        order_req.CommodityNo = contract_info.CommodityNo
-        order_req.ContractNo = contract_info.ContractNo
-        order_req.OrderType = ORDERTYPE_VT2TAP.get(OrderRequest.type, "")
-        order_req.OrderSide = DIRECTION_VT2TAP.get(OrderRequest.direction, "")
+        order_req.ExchangeNo = contract_info.exchange_no
+        order_req.CommodityNo = contract_info.commodity_no
+        order_req.CommodityType = contract_info.commodity_type
+        order_req.AccountNo = primary_account_no
+        order_req.ContractNo = contract_info.contract_no
+        order_req.OrderType = ORDERTYPE_VT2TAP.get(req.type, "")
+        order_req.OrderSide = DIRECTION_VT2TAP.get(req.direction, "")
         order_req.OrderPrice = req.price
-        order_req.OrderQty = req.volume
+        order_req.OrderQty = int(req.volume)  # verify me: force float as int
 
-        session_id, order_id = self.api.InsertOrder(order_req)
+        retv, session_id, order_id = self.api.InsertOrder(order_req)
+        print(retv, session_id, order_id)
 
         order = req.create_order_data(
             order_id,
