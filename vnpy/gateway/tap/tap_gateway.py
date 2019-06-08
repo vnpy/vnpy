@@ -11,10 +11,10 @@ from vnpy.api.tap.vntap import (
     TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
     TapAPIQuotLoginRspInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
     set_async_callback_exception_handler,
-    CreateITapTradeAPI,
-    )
+    CreateITapTradeAPI, FreeITapTradeAPI
+)
 from vnpy.api.tap.vntap.ITapTrade import (
-    ITapTradeAPINotify,
+    ITapTradeAPINotify, 
     TapAPITradeLoginRspInfo, TapAPICommodityInfo, TapAPITradeContractInfo,
     TapAPIApplicationInfo as TapTradeAPIApplicationInfo,
     TapAPITradeLoginAuth, TapAPIAccQryReq, TapAPIFundReq,
@@ -132,7 +132,6 @@ ORDERTYPE_VT2TAP = {v: k for k, v in ORDERTYPE_TAP2VT.items()}
 commodity_infos: Dict[str, "CommodityInfo"] = {}
 contract_infos: Dict[Tuple[str, "Exchange"], "ContractInfo"] = {}
 
-primary_account_no: str = ""
 
 class TapGateway(BaseGateway):
     """
@@ -371,6 +370,14 @@ class TradeApi(ITapTradeAPINotify):
         self.gateway_name = gateway.gateway_name
         self.api = None
 
+        self.account_no = ""
+
+        self.sys_local_map = {}
+        self.local_sys_map = {}
+        self.sys_server_map = {}
+        self.cancel_reqs = {}
+        
+
     def OnConnect(self):
         """"""
         self.gateway.write_log("交易服务器连接成功")
@@ -564,8 +571,8 @@ class TradeApi(ITapTradeAPINotify):
 
     def update_account(self, info: TapAPIFundData):
         """"""
-        global primary_account_no
-        primary_account_no = info.AccountNo
+        self.account_no = info.AccountNo
+
         account = AccountData(
             accountid=info.AccountNo,
             balance=info.Balance,
@@ -589,10 +596,14 @@ class TradeApi(ITapTradeAPINotify):
 
     def update_order(self, info: TapAPIOrderInfo):
         """"""
+        self.local_sys_map[info.ClientOrderNo] = info.OrderNo
+        self.sys_local_map[info.OrderNo] = info.ClientOrderNo
+        self.sys_server_map[info.OrderNo] = info.ServerFlag
+
         order = OrderData(
             symbol=info.CommodityNo + info.ContractNo,
             exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
-            orderid=info.OrderNo,
+            orderid=info.ClientOrderNo,
             type=ORDERTYPE_TAP2VT[info.OrderType],
             direction=DIRECTION_TAP2VT[info.OrderSide],
             price=info.OrderPrice,
@@ -604,12 +615,19 @@ class TradeApi(ITapTradeAPINotify):
         )
         self.gateway.on_order(order)
 
+        # Send waiting cancel request to server
+        if info.ClientOrderNo in self.cancel_reqs:
+            req = self.cancel_reqs.pop(info.ClientOrderNo)
+            self.cancel_order(req)
+
     def update_trade(self, info: TapAPIFillInfo):
         """"""
+        orderid = self.sys_local_map[info.OrderNo]
+
         trade = TradeData(
             symbol=info.CommodityNo + info.ContractNo,
             exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
-            orderid=info.OrderNo,
+            orderid=orderid,
             tradeid=info.MatchNo,
             direction=DIRECTION_TAP2VT[info.MatchSide],
             price=info.MatchPrice,
@@ -653,7 +671,7 @@ class TradeApi(ITapTradeAPINotify):
         order_req.ExchangeNo = contract_info.exchange_no
         order_req.CommodityNo = contract_info.commodity_no
         order_req.CommodityType = contract_info.commodity_type
-        order_req.AccountNo = primary_account_no
+        order_req.AccountNo = self.account_no
         order_req.ContractNo = contract_info.contract_no
         order_req.OrderType = ORDERTYPE_VT2TAP.get(req.type, "")
         order_req.OrderSide = DIRECTION_VT2TAP.get(req.direction, "")
@@ -661,8 +679,7 @@ class TradeApi(ITapTradeAPINotify):
         order_req.OrderQty = int(req.volume)  # verify me: force float as int
 
         retv, session_id, order_id = self.api.InsertOrder(order_req)
-        print(retv, session_id, order_id)
-
+        
         order = req.create_order_data(
             order_id,
             self.gateway_name
@@ -673,7 +690,16 @@ class TradeApi(ITapTradeAPINotify):
 
     def cancel_order(self, req: CancelRequest):
         """"""
+        order_no = self.local_sys_map.get(req.orderid, "")
+        if not order_no:
+            self.cancel_reqs[req.orderid] = req
+            return
+
+        server_flag = self.sys_server_map[order_no]
+
         cancel_req = TapAPIOrderCancelReq()
+        cancel_req.OrderNo = order_no
+        cancel_req.ServerFlag = server_flag
 
         self.api.CancelOrder(cancel_req)
 
@@ -700,7 +726,7 @@ class TradeApi(ITapTradeAPINotify):
     def close(self):
         """"""
         self.api.SetAPINotify(None)
-        FreeTapQuoteAPI(self.api)
+        FreeITapTradeAPI(self.api)
         self.api = None
 
 
