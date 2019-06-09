@@ -9,7 +9,10 @@ from vnpy.api.tap.vntap import (
     TapAPIQuotLoginRspInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
     set_async_callback_exception_handler,
     CreateITapTradeAPI, FreeITapTradeAPI,
-    APIYNFLAG_NO, TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
+    SetTapQuoteAPILogLevel, SetITapTradeAPILogLevel,
+    SetTapQuoteAPIDataPath, SetITapTradeAPIDataPath,
+    APIYNFLAG_NO, APILOGLEVEL_NONE,
+    TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
     TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
     TAPI_COMMODITY_TYPE_OPTION, TAPI_COMMODITY_TYPE_SPOT,
     TAPI_COMMODITY_TYPE_STOCK
@@ -35,6 +38,7 @@ from vnpy.api.tap.vntap.ITapTrade import (
 from vnpy.api.tap.error_codes import error_map
 
 from vnpy.event import EventEngine
+from vnpy.trader.utility import get_folder_path
 from vnpy.trader.constant import Exchange, Product, Direction, Status, OrderType
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (
@@ -299,9 +303,16 @@ class QuoteApi(ITapQuoteAPINotify):
         """
         Starting connection to TAP server.
         """
+        # General API setting
+        path = get_folder_path(self.gateway_name.lower())
+        SetTapQuoteAPIDataPath(str(path))
+
+        SetTapQuoteAPILogLevel(APILOGLEVEL_NONE)
+
         # Create API object
         info = TapAPIApplicationInfo()
         info.AuthCode = auth_code
+        info.KeyOperationLogPath = str(path)
 
         self.api, iResult = CreateTapQuoteAPI(info)
         if not self.api:
@@ -688,9 +699,16 @@ class TradeApi(ITapTradeAPINotify):
         """
         Starting connection to TAP server.
         """
+        # General API setting
+        path = get_folder_path(self.gateway_name.lower())
+        SetITapTradeAPIDataPath(str(path))
+
+        SetITapTradeAPILogLevel(APILOGLEVEL_NONE)
+
         # Create API object
         info = TapTradeAPIApplicationInfo()
         info.AuthCode = auth_code
+        info.KeyOperationLogPath = str(path)
 
         self.api, iResult = CreateITapTradeAPI(info)
         if not self.api:
