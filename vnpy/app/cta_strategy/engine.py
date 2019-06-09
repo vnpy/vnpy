@@ -465,6 +465,7 @@ class CtaEngine(BaseEngine):
             self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
             return ""
         price = round_to(price,contract.pricetick)
+        volume = round_to(volume,contract.min_volume)
         if stop:
             if contract.stop_supported:
                 return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
