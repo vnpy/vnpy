@@ -138,7 +138,7 @@ class CtpGateway(BaseGateway):
     
     def __init__(self, event_engine):
         """Constructor"""
-        super(CtpGateway, self).__init__(event_engine, "CTP")
+        super().__init__(event_engine, "CTP")
 
         self.td_api = CtpTdApi(self)
         self.md_api = CtpMdApi(self)

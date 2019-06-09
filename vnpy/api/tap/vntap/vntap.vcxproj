@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="custom\custom_wrappers.hpp" />
+    <ClInclude Include="generated_files\generated_functions.h" />
     <ClInclude Include="generated_files\module.hpp" />
     <ClInclude Include="generated_files\wrappers.hpp" />
     <ClInclude Include="include\iTapAPICommDef.h" />
@@ -38,7 +39,6 @@
     <ClCompile Include="generated_files\generated_functions_2.cpp" />
     <ClCompile Include="generated_files\generated_functions_3.cpp" />
     <ClCompile Include="generated_files\generated_functions_4.cpp" />
-    <ClCompile Include="generated_files\generated_functions_5.cpp" />
     <ClCompile Include="generated_files\module.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -145,6 +145,7 @@
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,6 +165,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -186,6 +188,7 @@
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -210,6 +213,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
