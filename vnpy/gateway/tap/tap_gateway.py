@@ -14,7 +14,7 @@ from vnpy.api.tap.vntap import (
     CreateITapTradeAPI, FreeITapTradeAPI
 )
 from vnpy.api.tap.vntap.ITapTrade import (
-    ITapTradeAPINotify, 
+    ITapTradeAPINotify,
     TapAPITradeLoginRspInfo, TapAPICommodityInfo, TapAPITradeContractInfo,
     TapAPIApplicationInfo as TapTradeAPIApplicationInfo,
     TapAPITradeLoginAuth, TapAPIAccQryReq, TapAPIFundReq,
@@ -27,12 +27,9 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TAPI_ORDER_STATE_QUEUED, TAPI_ORDER_STATE_PARTFINISHED,
     TAPI_ORDER_STATE_FINISHED, TAPI_ORDER_STATE_CANCELED,
     TAPI_ORDER_STATE_SUBMIT, TAPI_ORDER_TYPE_MARKET,
-    TAPI_ORDER_TYPE_LIMIT,
-    TapAPIOrderInfoNotice, TAPI_ORDER_STATE_ACCEPT, TAPI_ORDER_STATE_TRIGGERING,
-    TAPI_ORDER_STATE_EXCTRIGGERING, TAPI_ORDER_STATE_CANCELING, TAPI_ORDER_STATE_MODIFYING,
-    TAPI_ORDER_STATE_LEFTDELETED, TAPI_ORDER_STATE_FAIL, TAPI_ORDER_STATE_DELETED,
-    TAPI_ORDER_STATE_SUPPENDED, TAPI_ORDER_STATE_DELETEDFOREXPIRE, TAPI_ORDER_STATE_EFFECT,
-    TAPI_ORDER_STATE_APPLY)
+    TAPI_ORDER_TYPE_LIMIT, TAPI_ORDER_STATE_FAIL,
+    TapAPIOrderInfoNotice
+)
 from vnpy.api.tap.error_codes import error_map
 
 from vnpy.event import EventEngine
@@ -85,41 +82,12 @@ DIRECTION_TAP2VT = {
 DIRECTION_VT2TAP = {v: k for k, v in DIRECTION_TAP2VT.items()}
 
 STATUS_TAP2VT = {
-# 终端提交
-TAPI_ORDER_STATE_SUBMIT:  Status.SUBMITTING,
-# 已受理
-TAPI_ORDER_STATE_ACCEPT:  Status.NOTTRADED,
-# 策略待触发
-TAPI_ORDER_STATE_TRIGGERING:  Status.NOTTRADED,
-# 交易所待触发
-TAPI_ORDER_STATE_EXCTRIGGERING:  Status.NOTTRADED,
-# 已排队
-TAPI_ORDER_STATE_QUEUED:  Status.NOTTRADED,
-# 部分成交
-TAPI_ORDER_STATE_PARTFINISHED:  Status.PARTTRADED,
-# 完全成交
-TAPI_ORDER_STATE_FINISHED:  Status.ALLTRADED,
-# 待撤消(排队临时状态)
-TAPI_ORDER_STATE_CANCELING:  0,  # todo: vnpy缺少本地canceling的状态，可能导致重复撤单
-# 待修改(排队临时状态)
-TAPI_ORDER_STATE_MODIFYING:  0,
-# 完全撤单
-TAPI_ORDER_STATE_CANCELED:  Status.CANCELLED,
-# 已撤余单
-TAPI_ORDER_STATE_LEFTDELETED:  0,
-# 指令失败
-TAPI_ORDER_STATE_FAIL:  Status.CANCELLED,
-# 策略删除
-TAPI_ORDER_STATE_DELETED:  0,
-# 已挂起
-TAPI_ORDER_STATE_SUPPENDED:  0,
-# 到期删除
-TAPI_ORDER_STATE_DELETEDFOREXPIRE:  0,
-# 已生效——询价成功
-TAPI_ORDER_STATE_EFFECT:  0,
-# 已申请——行权、弃权、套利等申请成功
-TAPI_ORDER_STATE_APPLY:  0,
-
+    TAPI_ORDER_STATE_SUBMIT: Status.SUBMITTING,
+    TAPI_ORDER_STATE_QUEUED: Status.NOTTRADED,
+    TAPI_ORDER_STATE_PARTFINISHED: Status.PARTTRADED,
+    TAPI_ORDER_STATE_FINISHED: Status.ALLTRADED,
+    TAPI_ORDER_STATE_CANCELED: Status.CANCELLED,
+    TAPI_ORDER_STATE_FAIL: Status.REJECTED,
 }
 
 ORDERTYPE_TAP2VT = {
@@ -158,7 +126,6 @@ class TapGateway(BaseGateway):
 
         self.quote_api = QuoteApi(self)
         self.trade_api = TradeApi(self)
-
 
         set_async_callback_exception_handler(
             self._async_callback_exception_handler)
@@ -376,7 +343,6 @@ class TradeApi(ITapTradeAPINotify):
         self.local_sys_map = {}
         self.sys_server_map = {}
         self.cancel_reqs = {}
-        
 
     def OnConnect(self):
         """"""
@@ -603,12 +569,12 @@ class TradeApi(ITapTradeAPINotify):
             symbol=info.CommodityNo + info.ContractNo,
             exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
             orderid=info.ClientOrderNo,
-            type=ORDERTYPE_TAP2VT[info.OrderType],
+            type=ORDERTYPE_TAP2VT.get(info.OrderType, info.OrderType),
             direction=DIRECTION_TAP2VT[info.OrderSide],
             price=info.OrderPrice,
             volume=info.OrderQty,
             traded=info.OrderMatchQty,
-            status=STATUS_TAP2VT[info.OrderState],
+            status=STATUS_TAP2VT.get(info.OrderState, info.OrderState),
             time=info.OrderInsertTime,
             gateway_name=self.gateway_name
         )
@@ -666,19 +632,23 @@ class TradeApi(ITapTradeAPINotify):
             self.write_log(f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
             return ""
 
+        if req.type not in ORDERTYPE_VT2TAP:
+            self.write_log(f"不支持的委托类型: {req.type.value}")
+            return ""
+
         order_req = TapAPINewOrder()
         order_req.ExchangeNo = contract_info.exchange_no
         order_req.CommodityNo = contract_info.commodity_no
         order_req.CommodityType = contract_info.commodity_type
         order_req.AccountNo = self.account_no
         order_req.ContractNo = contract_info.contract_no
-        order_req.OrderType = ORDERTYPE_VT2TAP.get(req.type, "")
-        order_req.OrderSide = DIRECTION_VT2TAP.get(req.direction, "")
+        order_req.OrderType = ORDERTYPE_VT2TAP.get[req.type]
+        order_req.OrderSide = DIRECTION_VT2TAP.get[req.direction]
         order_req.OrderPrice = req.price
         order_req.OrderQty = int(req.volume)  # verify me: force float as int
 
         retv, session_id, order_id = self.api.InsertOrder(order_req)
-        
+
         order = req.create_order_data(
             order_id,
             self.gateway_name
