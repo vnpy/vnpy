@@ -3,15 +3,16 @@ from datetime import datetime
 from typing import Dict, Tuple
 
 from vnpy.api.tap.vntap import (
-    APIYNFLAG_NO, AsyncDispatchException, CreateTapQuoteAPI,
+    AsyncDispatchException, CreateTapQuoteAPI,
     FreeTapQuoteAPI, ITapQuoteAPINotify,
-    TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
-    TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
-    TAPI_COMMODITY_TYPE_OPTION, TAPI_COMMODITY_TYPE_SPOT,
-    TAPI_COMMODITY_TYPE_STOCK, TapAPIApplicationInfo, TapAPIContract,
+    TapAPIApplicationInfo, TapAPIContract,
     TapAPIQuotLoginRspInfo, TapAPIQuoteLoginAuth, TapAPIQuoteWhole,
     set_async_callback_exception_handler,
-    CreateITapTradeAPI, FreeITapTradeAPI
+    CreateITapTradeAPI, FreeITapTradeAPI,
+    APIYNFLAG_NO, TAPIERROR_SUCCEED, TAPI_CALLPUT_FLAG_NONE,
+    TAPI_COMMODITY_TYPE_FUTURES, TAPI_COMMODITY_TYPE_INDEX,
+    TAPI_COMMODITY_TYPE_OPTION, TAPI_COMMODITY_TYPE_SPOT,
+    TAPI_COMMODITY_TYPE_STOCK
 )
 from vnpy.api.tap.vntap.ITapTrade import (
     ITapTradeAPINotify,
@@ -23,12 +24,13 @@ from vnpy.api.tap.vntap.ITapTrade import (
     TapAPIOrderQryReq, TapAPIFillQryReq,
     TapAPIOrderInfo, TapAPIFillInfo,
     TapAPINewOrder, TapAPIOrderCancelReq,
+    TapAPIOrderInfoNotice, TapAPIOrderActionRsp,
     TAPI_SIDE_NONE, TAPI_SIDE_BUY, TAPI_SIDE_SELL,
     TAPI_ORDER_STATE_QUEUED, TAPI_ORDER_STATE_PARTFINISHED,
     TAPI_ORDER_STATE_FINISHED, TAPI_ORDER_STATE_CANCELED,
     TAPI_ORDER_STATE_SUBMIT, TAPI_ORDER_TYPE_MARKET,
     TAPI_ORDER_TYPE_LIMIT, TAPI_ORDER_STATE_FAIL,
-    TapAPIOrderInfoNotice
+    TAPI_ORDER_STATE_ACCEPT
 )
 from vnpy.api.tap.error_codes import error_map
 
@@ -83,6 +85,7 @@ DIRECTION_VT2TAP = {v: k for k, v in DIRECTION_TAP2VT.items()}
 
 STATUS_TAP2VT = {
     TAPI_ORDER_STATE_SUBMIT: Status.SUBMITTING,
+    TAPI_ORDER_STATE_ACCEPT: Status.SUBMITTING,
     TAPI_ORDER_STATE_QUEUED: Status.NOTTRADED,
     TAPI_ORDER_STATE_PARTFINISHED: Status.PARTTRADED,
     TAPI_ORDER_STATE_FINISHED: Status.ALLTRADED,
@@ -192,7 +195,9 @@ class TapGateway(BaseGateway):
 
 
 class QuoteApi(ITapQuoteAPINotify):
-    """"""
+    """
+    Implementation of TAP quote api.
+    """
 
     def __init__(self, gateway: TapGateway):
         """"""
@@ -203,34 +208,47 @@ class QuoteApi(ITapQuoteAPINotify):
         self.api = None
 
     def OnRspLogin(self, errorCode: int, info: TapAPIQuotLoginRspInfo):
-        """"""
+        """
+        Callback of login request.
+        """
         if errorCode != TAPIERROR_SUCCEED:
-            self.gateway.write_log("行情服务器登录失败")
+            self.gateway.write_log(f"行情服务器登录失败：{error_to_str(errorCode)}")
         else:
             self.gateway.write_log("行情服务器登录成功")
 
     def OnAPIReady(self):
-        """"""
+        """
+        Callback when API is ready for sending requests or queries. 
+        """
         self.api.QryCommodity()
 
     def OnDisconnect(self, reasonCode: int):
-        """"""
+        """
+        Callback when connection to TAP server is lost.
+        """
         self.gateway.write_log(f"行情服务器连接断开，原因：{reasonCode}")
 
     def OnRspSubscribeQuote(
         self, sessionID: int, errorCode: int, isLast: str, info: TapAPIQuoteWhole
     ):
+        """
+        Callback of subscribe market data request.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"订阅行情失败：{error_to_str(errorCode)}")
         else:
             self.update_tick(info)
 
     def OnRtnQuote(self, info: TapAPIQuoteWhole):
-        """"""
+        """
+        Callback of new data update.
+        """
         self.update_tick(info)
 
     def update_tick(self, info: TapAPIQuoteWhole):
-        """"""
+        """
+        Convert TAP quote data structure into TickData event and push it.
+        """
         symbol = info.Contract.Commodity.CommodityNo + info.Contract.ContractNo1
         exchange = EXCHANGE_TAP2VT[info.Contract.Commodity.ExchangeNo]
 
@@ -278,7 +296,9 @@ class QuoteApi(ITapQuoteAPINotify):
         self.gateway.on_tick(tick)
 
     def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
-        """"""
+        """
+        Starting connection to TAP server.
+        """
         # Create API object
         info = TapAPIApplicationInfo()
         info.AuthCode = auth_code
@@ -302,13 +322,17 @@ class QuoteApi(ITapQuoteAPINotify):
         self.api.Login(login_auth)
 
     def close(self):
-        """"""
+        """
+        Release TAP API resources.
+        """
         self.api.SetAPINotify(None)
         FreeTapQuoteAPI(self.api)
         self.api = None
 
     def subscribe(self, req: SubscribeRequest):
-        """"""
+        """
+        Subscribe to new market data update.
+        """
         contract_info = contract_infos.get((req.symbol, req.exchange), None)
         if not contract_info:
             self.gateway.write_log(
@@ -327,7 +351,9 @@ class QuoteApi(ITapQuoteAPINotify):
 
 
 class TradeApi(ITapTradeAPINotify):
-    """"""
+    """
+    Implementation of TAP trade api.
+    """
 
     def __init__(self, gateway: TapGateway):
         """"""
@@ -337,27 +363,33 @@ class TradeApi(ITapTradeAPINotify):
         self.gateway_name = gateway.gateway_name
         self.api = None
 
-        self.account_no = ""
+        self.account_no = ""        # required when sending order request
+        self.cancel_reqs = {}       # waiting cancel order requests before OrderNo received
 
+        # for mapping relationship between TAP OrderNo and ClientOrderNo
         self.sys_local_map = {}
         self.local_sys_map = {}
         self.sys_server_map = {}
-        self.cancel_reqs = {}
 
     def OnConnect(self):
-        """"""
+        """
+        Callback when connection is established with TAP server.
+        """
         self.gateway.write_log("交易服务器连接成功")
 
     def OnRspLogin(self, errorCode: int, info: TapAPITradeLoginRspInfo):
-        """"""
+        """
+        Callback of login request.
+        """
         if errorCode != TAPIERROR_SUCCEED:
-            error_msg = error_to_str(errorCode)
-            self.gateway.write_log(f"交易服务器登录失败：{error_msg}")
+            self.gateway.write_log(f"交易服务器登录失败：{error_to_str(errorCode)}")
         else:
             self.gateway.write_log("交易服务器登录成功")
 
     def OnAPIReady(self, code: int):
-        """"""
+        """
+        Callback when API is ready for sending requests or queries. 
+        """
         self.api.QryCommodity()
 
     def OnRspQryCommodity(
@@ -367,14 +399,16 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPICommodityInfo,
     ):
-        """"""
+        """
+        Callback of commodity query with size and pricetick data.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log("查询交易品种信息失败")
             return
 
         commodity_info = CommodityInfo(
             name=info.CommodityEngName,
-            size=info.ContractSize,  # fixme: int instead of float
+            size=int(info.ContractSize),
             pricetick=info.CommodityTickSize
         )
         commodity_infos[info.CommodityNo] = commodity_info
@@ -390,7 +424,9 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPITradeContractInfo
     ):
-        """"""
+        """
+        Callback of contract query with detailed contract data.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log("查询交易合约信息失败")
             return
@@ -439,6 +475,9 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPIAccountInfo
     ):
+        """
+        Callback of account number query.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"查询账号信息失败")
             return
@@ -454,6 +493,7 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPIFundData
     ):
+        """Callback of account fund query"""
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"查询资金信息失败")
             return
@@ -465,7 +505,9 @@ class TradeApi(ITapTradeAPINotify):
             self.query_position()
 
     def OnRtnFund(self, info: TapAPIFundData):
-        """"""
+        """
+        Callback of account fund update.
+        """
         self.update_account(info)
 
     def OnRspQryPositionSummary(
@@ -475,6 +517,11 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPIPositionSummary
     ):
+        """
+        Callback of position summary query.
+
+        Position summary reflects the sum of positions on each contract.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"查询持仓信息失败")
             return
@@ -487,7 +534,9 @@ class TradeApi(ITapTradeAPINotify):
             self.query_order()
 
     def OnRtnPositionSummary(self, info: TapAPIPositionSummary):
-        """"""
+        """
+        Callback of position summary update.
+        """
         self.update_position(info)
 
     def OnRspQryOrder(
@@ -497,6 +546,9 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPIOrderInfo
     ):
+        """
+        Callback of today's order query.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"查询委托信息失败")
             return
@@ -509,8 +561,12 @@ class TradeApi(ITapTradeAPINotify):
             self.query_trade()
 
     def OnRtnOrder(self, info: TapAPIOrderInfoNotice):
-        """"""
-        # todo: error checking
+        """
+        Callback of order update.
+        """
+        if info.ErrorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log(f"委托下单失败：{error_to_str(info.ErrorCode)}")
+
         if info.OrderInfo:
             self.update_order(info.OrderInfo)
 
@@ -521,6 +577,9 @@ class TradeApi(ITapTradeAPINotify):
         isLast: str,
         info: TapAPIFillInfo
     ):
+        """
+        Callback of today's order fill (trade) query.
+        """
         if errorCode != TAPIERROR_SUCCEED:
             self.gateway.write_log(f"查询成交信息失败")
             return
@@ -532,11 +591,28 @@ class TradeApi(ITapTradeAPINotify):
             self.gateway.write_log(f"查询成交信息成功")
 
     def OnRtnFill(self, info: TapAPIFillInfo):
-        """"""
+        """
+        Callback of trade update.
+        """
         self.update_trade(info)
 
+    def OnRspOrderAction(
+        self,
+        sessionID: int,
+        errorCode: int,
+        info: TapAPIOrderActionRsp
+    ):
+        """
+        Callback of order action (cancel/amend) request.
+        """
+        if errorCode != TAPIERROR_SUCCEED:
+            self.gateway.write_log(f"委托操作失败：{error_to_str(errorCode)}")
+            return
+
     def update_account(self, info: TapAPIFundData):
-        """"""
+        """
+        Convert TAP fund data structure into AccountData event and push it.
+        """
         self.account_no = info.AccountNo
 
         account = AccountData(
@@ -548,7 +624,9 @@ class TradeApi(ITapTradeAPINotify):
         self.gateway.on_account(account)
 
     def update_position(self, info: TapAPIPositionSummary):
-        """"""
+        """
+        Convert TAP position summary structure into PositionData event and push it.
+        """
         position = PositionData(
             symbol=info.CommodityNo + info.ContractNo,
             exchange=EXCHANGE_TAP2VT.get(info.ExchangeNo, None),
@@ -560,7 +638,9 @@ class TradeApi(ITapTradeAPINotify):
         self.gateway.on_position(position)
 
     def update_order(self, info: TapAPIOrderInfo):
-        """"""
+        """
+        Convert TAP order data structure into OrderData event and push it.
+        """
         self.local_sys_map[info.ClientOrderNo] = info.OrderNo
         self.sys_local_map[info.OrderNo] = info.ClientOrderNo
         self.sys_server_map[info.OrderNo] = info.ServerFlag
@@ -574,7 +654,7 @@ class TradeApi(ITapTradeAPINotify):
             price=info.OrderPrice,
             volume=info.OrderQty,
             traded=info.OrderMatchQty,
-            status=STATUS_TAP2VT.get(info.OrderState, info.OrderState),
+            status=STATUS_TAP2VT.get(info.OrderState, Status.SUBMITTING),
             time=info.OrderInsertTime,
             gateway_name=self.gateway_name
         )
@@ -586,7 +666,9 @@ class TradeApi(ITapTradeAPINotify):
             self.cancel_order(req)
 
     def update_trade(self, info: TapAPIFillInfo):
-        """"""
+        """
+        Convert TAP fill data structure into TradeData event and push it.
+        """
         orderid = self.sys_local_map[info.OrderNo]
 
         trade = TradeData(
@@ -603,7 +685,9 @@ class TradeApi(ITapTradeAPINotify):
         self.gateway.on_trade(trade)
 
     def connect(self, username: str, password: str, host: str, port: int, auth_code: str):
-        """"""
+        """
+        Starting connection to TAP server.
+        """
         # Create API object
         info = TapTradeAPIApplicationInfo()
         info.AuthCode = auth_code
@@ -626,7 +710,9 @@ class TradeApi(ITapTradeAPINotify):
         self.api.Login(login_auth)
 
     def send_order(self, req: OrderRequest):
-        """"""
+        """
+        Send new order to TAP server.
+        """
         contract_info = contract_infos.get((req.symbol, req.exchange), None)
         if not contract_info:
             self.write_log(f"找不到匹配的合约：{req.symbol}和{req.exchange.value}")
@@ -640,12 +726,12 @@ class TradeApi(ITapTradeAPINotify):
         order_req.ExchangeNo = contract_info.exchange_no
         order_req.CommodityNo = contract_info.commodity_no
         order_req.CommodityType = contract_info.commodity_type
-        order_req.AccountNo = self.account_no
         order_req.ContractNo = contract_info.contract_no
-        order_req.OrderType = ORDERTYPE_VT2TAP.get[req.type]
-        order_req.OrderSide = DIRECTION_VT2TAP.get[req.direction]
+        order_req.OrderType = ORDERTYPE_VT2TAP[req.type]
+        order_req.OrderSide = DIRECTION_VT2TAP[req.direction]
         order_req.OrderPrice = req.price
-        order_req.OrderQty = int(req.volume)  # verify me: force float as int
+        order_req.OrderQty = int(req.volume)
+        order_req.AccountNo = self.account_no
 
         retv, session_id, order_id = self.api.InsertOrder(order_req)
 
@@ -658,7 +744,12 @@ class TradeApi(ITapTradeAPINotify):
         return order.vt_orderid
 
     def cancel_order(self, req: CancelRequest):
-        """"""
+        """
+        Cancel an existing order.
+
+        If LocalOrderNo/OrderNo map is not ready yet (from query or update callback),
+        the cancel request will be put into cancel_reqs dict waiting.
+        """
         order_no = self.local_sys_map.get(req.orderid, "")
         if not order_no:
             self.cancel_reqs[req.orderid] = req
@@ -673,34 +764,46 @@ class TradeApi(ITapTradeAPINotify):
         self.api.CancelOrder(cancel_req)
 
     def query_account(self):
-        """"""
+        """
+        Query account number data (and account fund data will be auto queried in callback).
+        """
         req = TapAPIAccQryReq()
         self.api.QryAccount(req)
 
     def query_position(self):
-        """"""
+        """
+        Query position summary.
+        """
         req = TapAPIPositionQryReq()
         self.api.QryPositionSummary(req)
 
     def query_order(self):
-        """"""
+        """
+        Query today order data.
+        """
         req = TapAPIOrderQryReq()
         self.api.QryOrder(req)
 
     def query_trade(self):
-        """"""
+        """
+        Query today trade data.
+        """
         req = TapAPIFillQryReq()
         self.api.QryFill(req)
 
     def close(self):
-        """"""
+        """
+        Release TAP API resources.
+        """
         self.api.SetAPINotify(None)
         FreeITapTradeAPI(self.api)
         self.api = None
 
 
 def parse_datetime(dt_str: str):
-    """"""
+    """
+    Convert timestamp string to datetime object.
+    """
     try:
         dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S.%f")
     except ValueError:
@@ -709,7 +812,9 @@ def parse_datetime(dt_str: str):
 
 
 def error_to_str(err_code: int) -> str:
-    """"""
+    """
+    Convert error code to error message string.
+    """
     try:
         return error_map[err_code]
     except KeyError:
@@ -718,7 +823,9 @@ def error_to_str(err_code: int) -> str:
 
 @dataclass
 class ContractInfo:
-    """"""
+    """
+    For storing extra info of contract from TAP trading server.
+    """
     name: str
     exchange_no: str
     commodity_type: int
@@ -728,7 +835,9 @@ class ContractInfo:
 
 @dataclass
 class CommodityInfo:
-    """"""
+    """
+    For storing extra info of commodity from TAP trading server.
+    """
     name: str
     size: int
     pricetick: float
