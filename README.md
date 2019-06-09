@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.1-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.3-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/travis/com/vnpy/vnpy/master.svg"/>
@@ -26,9 +26,9 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * 飞马(femas)：国内期货
 
-    * 宽睿(oes)：A股
+    * 宽睿(oes)：国内证券（A股）
 
-    * 中泰XTP(xtp)：A股
+    * 中泰XTP(xtp)：国内证券（A股）
 
     * 富途证券(futu)：港股、美股
 
@@ -40,7 +40,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
     * OKEX合约(okexf)：数字货币期货
 
-    * 火币合约(okexf)：数字货币期货
+    * 火币合约(hbdm)：数字货币期货
 
     * OKEX(okex)：数字货币现货
 
@@ -49,7 +49,6 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
     * Bitfinex(bitfinex)：数字货币现货
 
     * 1Token(onetoken)：数字货币券商（现货、期货）
-
 
 3. 开箱即用的各类量化策略交易应用（vnpy.app）：
 
@@ -73,7 +72,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 
 ## 环境准备
 
-* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNConda-2.0.1-Windows-x86_64](https://conda.vnpy.com/VNConda-2.0.1-Windows-x86_64.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
+* 推荐使用vn.py团队为量化交易专门打造的Python发行版[VNStudio-2.0.3](https://download.vnpy.com/vnstudio-2.0.3.exe)，内置了最新版的vn.py框架以及VN Station量化管理平台，无需手动安装
 * 支持的系统版本：Windows 7以上/Windows Server 2008以上/Ubuntu 18.04 LTS
 * 支持的Python版本：Python 3.7 64位（**注意必须是Python 3.7 64位版本**）
 
@@ -115,6 +114,7 @@ from vnpy.trader.engine import MainEngine
 from vnpy.trader.ui import MainWindow, create_qapp
 from vnpy.gateway.ctp import CtpGateway
 from vnpy.app.cta_strategy import CtaStrategyApp
+from vnpy.app.cta_backtester import CtaBacktesterApp
 
 def main():
     """Start VN Trader"""
@@ -125,6 +125,7 @@ def main():
     
     main_engine.add_gateway(CtpGateway)
     main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
@@ -187,6 +188,7 @@ vn.py使用Github托管其源代码，如果希望贡献代码请使用github的
 
 
 ## 版权说明
+
 MIT
   
 

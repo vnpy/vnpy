@@ -25,17 +25,18 @@ namespace autocxxpy
         {
             base_t arg;
             constexpr auto method = method_constant::value;
+            auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
             if constexpr (std::is_void_v<ret_t>)
             {
-                method(ls..., &arg, rs...);
+                stdmethod(std::forward<Ls>(ls)..., &arg, std::forward<Rs>(rs)...);
                 return std::move(arg);
             }
             else
             {
-                return append_as_tuple(method(
-                    ls...,
+                return append_as_tuple(stdmethod(
+                    std::forward<Ls>(ls)...,
                     &arg,
-                    rs...
+                    std::forward<Rs>(rs)...
                 ), std::move(arg));
 
             }
@@ -49,17 +50,18 @@ namespace autocxxpy
         {
             base_t arg;
             constexpr auto method = method_constant::value;
+            auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
             if constexpr (std::is_void_v<ret_t>)
             {
-                method(ls..., arg, rs...);
+                stdmethod(std::forward<Ls>(ls)..., arg, std::forward<Rs>(rs)...);
                 return arg;
             }
             else
             {
-                return append_as_tuple(method(
-                    ls...,
+                return append_as_tuple(stdmethod(
+                    std::forward<Ls>(ls)...,
                     arg,
-                    rs...
+                    std::forward<Rs>(rs)...
                 ), arg);
 
             }

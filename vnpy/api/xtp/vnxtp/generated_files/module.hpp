@@ -9,6 +9,8 @@ struct module_vnxtp{
     static inline void process_post_assign()
     {
         cross.process_assign(objects);
+        cross.clear();
+        objects.clear();
     }
 };
 using module_tag=tag_vnxtp;

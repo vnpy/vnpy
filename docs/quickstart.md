@@ -1,8 +1,9 @@
 # 基本使用
 
 
-## 启动VNTrader
-### VN Station模式
+## 启动程序
+
+### 图形模式
 登陆VN Station后，点击VN Trade Lite快速进入VN Trader（只有CTP接口）；或者点击VN Trader Pro先选择如下图的底层接口和上层应用，再进入VN Trader。
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/VnTrader_Pro.png "enter image title here")
@@ -132,44 +133,8 @@ python run.py
 &nbsp;
 
 ## 应用模块
-vnpy官方目前提供2个应用模块组件，分别是用于自动交易的“CTA策略”组件；把第三方数据文件导入到数据库的“CSV载入”组件。在菜单栏中点击“功能”，即显示应用模块，如下图：
+
+vn.py官方提供了开箱即用的量化交易应用模块，在菜单栏中点击“功能”，即显示应用模块，如下图：
 
 ![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/application.png "enter image title here")
 
-### CTA策略
-CTA策略组件默认使用RQData的数据进行自动交易，故需要配置好RQData相关数据。
-
-1） 在用户目录下.vntrader文件夹找到vt_setting.json，输入RQData的账号和密码，保存退出后启动CTA策略组件，会显示“RQData数据接口初始化成功”，如图：
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/RQData.png "enter image title here")
-
-
-2）在左上方的菜单栏选择策略，如“AtrRsiStrategy”，然后点击右边的“添加策略”按钮，用于策略实例创建，选择策略适用品种和修改该测试示例的参数，如图：
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/trader_2.PNG "enter image title here")
-
-
-3）每一个策略示例都有其“初始化”、“启动”、“停止”、“编辑”、“移除”按钮。注意在启动策略前必须先初始化，移除策略前需要先停止策略。右上方菜单栏有批量处理功能，方便用户快速启动、停止策略，如图：
-   
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/turtle_strategy.png "enter image title here")
-
-
-&nbsp;
-
-
-### CSV载入
-CSV文件是用户最主要的历史数据来源之一，用户只需根据CSV文件中的表头字段，以及时间格式灵活配置，即可实现一键载入历史数据。
-
-CSV载入操作分为3步：
-
-1）打开CSV文件，查看表头字段以及时间格式，如图：
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/csv_format.png "enter image title here")
-
-2）点击菜单栏的“功能”->“CSV载入”，进入界面后选择要载入的CSV文件，并且修改相关表头字段和时间格式（若有需要的话）。如下图：
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/csv_loader.png "enter image title here")
-
-3）点击“载入数据”后，成功界面如下图所示。
-
-![](https://vnpy-community.oss-cn-shanghai.aliyuncs.com/forum_experience/yazhang/quick_start/exito_csv_load.png "enter image title here")

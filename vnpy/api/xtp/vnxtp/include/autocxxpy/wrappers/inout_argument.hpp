@@ -2,6 +2,7 @@
 
 #include "../base/type.h"
 #include "../base/check.h"
+#include "../utils/type_traits.hpp"
 
 #include <boost/callable_traits.hpp>
 #include "../brigand.hpp"
@@ -14,6 +15,7 @@
 #include <type_traits>
 
 #include "./utils.hpp"
+#include <functional>
 
 namespace autocxxpy
 {
@@ -24,19 +26,22 @@ namespace autocxxpy
         return [](Ls ... ls, base_t &arg, Rs ... rs)
         {
             constexpr auto method = method_constant::value;
+            //using func_t = ct::function_type_t<decltype(method)>;
+            //using args_t = wrap<ct::args_t<func_t>, list>;
+            //using ret_t = ct::return_type_t<func_t>;
+            auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
             if constexpr (std::is_void_v<ret_t>)
             {
-                method(ls..., &arg, rs...);
+                stdmethod(std::forward<Ls>(ls)..., &arg, std::forward<Rs>(rs)...);
                 return std::move(arg);
             }
             else
             {
-                return append_as_tuple(method(
-                    ls...,
+                return append_as_tuple(stdmethod(
+                    std::forward<Ls>(ls)...,
                     &arg,
-                    rs...
+                    std::forward<Rs>(rs)...
                 ), std::move(arg));
-
             }
         };
     }
@@ -44,20 +49,21 @@ namespace autocxxpy
     inline constexpr auto wrap_reference_argument_as_inout_impl(brigand::list<Ls...>, brigand::list <Rs...>)
     {
         namespace ct = boost::callable_traits;
-        return [](Ls ... ls, base_t &arg, Rs ... rs)
+        return [](Ls ... ls, base_t arg, Rs ... rs)
         {
             constexpr auto method = method_constant::value;
+            auto stdmethod = std::function<ct::function_type_t<decltype(method)>>(method);
             if constexpr (std::is_void_v<ret_t>)
             {
-                method(ls..., arg, rs...);
+                stdmethod(std::forward<Ls>(ls)..., arg, std::forward<Rs>(rs)...);
                 return arg;
             }
             else
             {
-                return append_as_tuple(method(
-                    ls...,
+                return append_as_tuple(stdmethod(
+                    std::forward<Ls>(ls)...,
                     arg,
-                    rs...
+                    std::forward<Rs>(rs)...
                 ), arg);
 
             }
