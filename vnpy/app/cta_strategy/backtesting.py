@@ -1039,6 +1039,7 @@ class BacktestingEngine:
         """
         return list(self.daily_results.values())
 
+
 class DailyResult:
     """"""
 

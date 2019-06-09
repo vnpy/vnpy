@@ -130,7 +130,7 @@ class BacktesterManager(QtWidgets.QWidget):
         form.addRow("合约乘数", self.size_line)
         form.addRow("价格跳动", self.pricetick_line)
         form.addRow("回测资金", self.capital_line)
-        
+
         left_vbox = QtWidgets.QVBoxLayout()
         left_vbox.addLayout(form)
         left_vbox.addWidget(backtesting_button)
@@ -153,19 +153,19 @@ class BacktesterManager(QtWidgets.QWidget):
         self.chart.setMinimumWidth(1000)
 
         self.trade_dialog = BacktestingResultDialog(
-            self.main_engine, 
+            self.main_engine,
             self.event_engine,
             "回测成交记录",
             BacktestingTradeMonitor
         )
         self.order_dialog = BacktestingResultDialog(
-            self.main_engine, 
+            self.main_engine,
             self.event_engine,
             "回测委托记录",
             BacktestingOrderMonitor
         )
         self.daily_dialog = BacktestingResultDialog(
-            self.main_engine, 
+            self.main_engine,
             self.event_engine,
             "回测每日盈亏",
             DailyResultMonitor
@@ -263,7 +263,7 @@ class BacktesterManager(QtWidgets.QWidget):
         if result:
             self.statistics_monitor.clear_data()
             self.chart.clear_data()
-            
+
             self.trade_button.setEnabled(False)
             self.order_button.setEnabled(False)
             self.daily_button.setEnabled(False)
@@ -892,8 +892,8 @@ class BacktestingResultDialog(QtWidgets.QDialog):
     """
 
     def __init__(
-        self, 
-        main_engine: MainEngine, 
+        self,
+        main_engine: MainEngine,
         event_engine: EventEngine,
         title: str,
         table_class: QtWidgets.QTableWidget
@@ -930,7 +930,7 @@ class BacktestingResultDialog(QtWidgets.QDialog):
     def update_data(self, data: list):
         """"""
         self.updated = True
-        
+
         data.reverse()
         for obj in data:
             self.table.insert_new_row(obj)
@@ -938,4 +938,3 @@ class BacktestingResultDialog(QtWidgets.QDialog):
     def is_updated(self):
         """"""
         return self.updated
-
