@@ -5,7 +5,7 @@ from vnpy.trader.ui import MainWindow, create_qapp
 
 # from vnpy.gateway.bitmex import BitmexGateway
 # from vnpy.gateway.futu import FutuGateway
-from vnpy.gateway.ib import IbGateway
+# from vnpy.gateway.ib import IbGateway
 # from vnpy.gateway.ctp import CtpGateway
 # # from vnpy.gateway.ctptest import CtptestGateway
 # from vnpy.gateway.femas import FemasGateway
@@ -17,7 +17,7 @@ from vnpy.gateway.ib import IbGateway
 # from vnpy.gateway.onetoken import OnetokenGateway
 # from vnpy.gateway.okexf import OkexfGateway
 # from vnpy.gateway.xtp import XtpGateway
-# from vnpy.gateway.hbdm import HbdmGateway
+from vnpy.gateway.hbdm import HbdmGateway
 # from vnpy.gateway.tap import TapGateway
 
 # from vnpy.app.cta_strategy import CtaStrategyApp
@@ -39,7 +39,7 @@ def main():
     # main_engine.add_gateway(CtpGateway)
     # # main_engine.add_gateway(CtptestGateway)
     # main_engine.add_gateway(FemasGateway)
-    main_engine.add_gateway(IbGateway)
+    # main_engine.add_gateway(IbGateway)
     # main_engine.add_gateway(FutuGateway)
     # main_engine.add_gateway(BitmexGateway)
     # main_engine.add_gateway(TigerGateway)
@@ -49,7 +49,7 @@ def main():
     # main_engine.add_gateway(BitfinexGateway)
     # main_engine.add_gateway(OnetokenGateway)
     # main_engine.add_gateway(OkexfGateway)
-    # main_engine.add_gateway(HbdmGateway)
+    main_engine.add_gateway(HbdmGateway)
     # main_engine.add_gateway(TapGateway)
 
     # main_engine.add_app(CtaStrategyApp)
