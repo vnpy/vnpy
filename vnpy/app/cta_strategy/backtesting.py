@@ -328,9 +328,11 @@ class BacktestingEngine:
         """"""
         self.output("开始计算策略统计指标")
 
-        if not df:
+        # Check DataFrame input exterior
+        if df is None:
             df = self.daily_df
         
+        # Check for init DataFrame 
         if df is None:
             # Set all statistics to 0 if no trade.
             start_date = ""
@@ -474,9 +476,11 @@ class BacktestingEngine:
 
     def show_chart(self, df: DataFrame = None):
         """"""
-        if not df:
+        # Check DataFrame input exterior        
+        if df is None:
             df = self.daily_df
-        
+
+        # Check for init DataFrame        
         if df is None:
             return
 
