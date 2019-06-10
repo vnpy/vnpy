@@ -416,6 +416,9 @@ class IbApi(EWrapper):
             accountName,
         )
 
+        if not contract.exchange:
+            return
+
         ib_size = contract.multiplier
         if not ib_size:
             ib_size = 1
