@@ -36,7 +36,7 @@ from vnpy.trader.constant import (
     Offset, 
     Status
 )
-from vnpy.trader.utility import load_json, save_json, extract_vt_symbol
+from vnpy.trader.utility import load_json, save_json, extract_vt_symbol,round_to
 from vnpy.trader.database import database_manager
 from vnpy.trader.rqdata import rqdata_client
 
@@ -464,7 +464,8 @@ class CtaEngine(BaseEngine):
         if not contract:
             self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
             return ""
-
+        price = round_to(price,contract.pricetick)
+        volume = round_to(volume,contract.min_volume)
         if stop:
             if contract.stop_supported:
                 return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
