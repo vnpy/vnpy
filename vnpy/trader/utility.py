@@ -171,7 +171,7 @@ class BarGenerator:
                 symbol=tick.symbol,
                 exchange=tick.exchange,
                 interval=Interval.MINUTE,
-                datetime=tick.datetime,
+                datetime=tick.datetime.replace(second=0, microsecond=0),
                 gateway_name=tick.gateway_name,
                 open_price=tick.last_price,
                 high_price=tick.last_price,
@@ -182,7 +182,7 @@ class BarGenerator:
             self.bar.high_price = max(self.bar.high_price, tick.last_price)
             self.bar.low_price = min(self.bar.low_price, tick.last_price)
             self.bar.close_price = tick.last_price
-            self.bar.datetime = tick.datetime
+            self.bar.datetime = tick.datetime.replace(second=0, microsecond=0)
 
         if self.last_tick:
             volume_change = tick.volume - self.last_tick.volume
