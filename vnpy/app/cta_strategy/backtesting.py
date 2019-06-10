@@ -214,6 +214,8 @@ class BacktestingEngine:
         if not self.end:
             self.end = datetime.now()
 
+        self.history_data.clear()       # Clear previously loaded history data
+
         # Load 30 days of data each time and allow for progress update
         progress_delta = timedelta(days=30)
         total_delta = self.end - self.start
