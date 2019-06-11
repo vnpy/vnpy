@@ -1,20 +1,15 @@
-# encoding: UTF-8
-
 """
-币安交易接口
+Gateway for Binance Crypto Exchange.
 """
 
 import re
 import urllib
-import base64
 import json
-import zlib
 import hashlib
 import hmac
 import time
 from copy import copy
 from datetime import datetime
-from threading import Thread
 
 from vnpy.event import Event
 from vnpy.api.rest import RestClient, Request
@@ -57,15 +52,14 @@ ORDERTYPE_VT2BINANCE = {
     OrderType.MARKET: "MARKET",
     OrderType.STOP: "STOP_LOSS", 
 }
-
 ORDERTYPE_BINANCE2VT = {v: k for k, v in ORDERTYPE_VT2BINANCE.items()}
 
 DIRECTION_VT2BINANCE = {
     Direction.LONG: "BUY",
     Direction.SHORT: "SELL"
 }
-
 DIRECTION_BINANCE2VT = {v: k for k, v in DIRECTION_VT2BINANCE.items()}
+
 
 binance_symbols = set()
 symbol_name_map = {}
@@ -80,15 +74,15 @@ class BinanceGateway(BaseGateway):
         "key": "",
         "secret": "",
         "session_number": 3,
-        "proxy_host": "127.0.0.1",
-        "proxy_port": 2000,
+        "proxy_host": "",
+        "proxy_port": 0,
     }
 
     exchanges = [Exchange.BINANCE]
 
     def __init__(self, event_engine):
         """Constructor"""
-        super(BinanceGateway, self).__init__(event_engine, "BINANCE")
+        super().__init__(event_engine, "BINANCE")
 
         self.order_manager = LocalOrderManager(self)
 
@@ -106,15 +100,15 @@ class BinanceGateway(BaseGateway):
 
         self.rest_api.connect(key, secret, session_number,
                               proxy_host, proxy_port)
-        #self.trade_ws_api.connect(key, secret, proxy_host, proxy_port)
-        #self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
+        # self.trade_ws_api.connect(key, secret, proxy_host, proxy_port)
+        # self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
 
-        #self.init_query()
+        # self.init_query()
 
     def subscribe(self, req: SubscribeRequest):
         """"""
         self.market_ws_api.subscribe(req)
-        #self.trade_ws_api.subscribe(req)
+        # self.trade_ws_api.subscribe(req)
 
     def send_order(self, req: OrderRequest):
         """"""
@@ -150,6 +144,7 @@ class BinanceGateway(BaseGateway):
         """"""
         self.count = 0
         self.event_engine.register(EVENT_TIMER, self.process_timer_event)
+
 
 class BinanceRestApi(RestClient):
     """
@@ -448,7 +443,7 @@ class BinanceRestApi(RestClient):
                 gateway_name=self.gateway_name,
             )
 
-            print("委托查询--远端id：",sys_orderid, "本地Id：", local_orderid)
+            print("委托查询--远端id：", sys_orderid, "本地Id：", local_orderid)
             self.order_manager.on_order(order)
 
         self.gateway.write_log("委托信息查询成功")
@@ -578,7 +573,7 @@ class BinanceWebsocketApiBase(WebsocketClient):
 
         self.key = ""
         self.secret = ""
-        #self.sign_host = ""
+        # self.sign_host = ""
         self.path = ""
 
     def connect(
@@ -593,9 +588,9 @@ class BinanceWebsocketApiBase(WebsocketClient):
         self.key = key
         self.secret = secret
 
-        #host, path = _split_url(url)
-        #self.sign_host = host
-        #self.path = path
+        # host, path = _split_url(url)
+        # self.sign_host = host
+        # self.path = path
 
         self.init(url, proxy_host, proxy_port)
         self.start()
@@ -603,7 +598,7 @@ class BinanceWebsocketApiBase(WebsocketClient):
     def login(self):
         """"""
         params = {"op": "auth"}
-        #params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))        
+        # params.update(create_signature(self.key, "GET", self.sign_host, self.path, self.secret))        
         return self.send_packet(params)
 
     def on_login(self, packet):
@@ -616,14 +611,14 @@ class BinanceWebsocketApiBase(WebsocketClient):
         print("==============unpack_data============")
         print(data)
         return json.loads(data)
-        #return json.loads(zlib.decompress(data, zlib.Z_BEST_COMPRESSION))
+        # return json.loads(zlib.decompress(data, zlib.Z_BEST_COMPRESSION))
 
     def on_packet(self, packet):
         """"""
         print("=============on_packet=============")
-        print("event type:"+packet["e"])
+        print("event type:" + packet["e"])
         print(packet)
-        #if packet["e"] == "executionReport":
+        # if packet["e"] == "executionReport":
         if "ping" in packet:
             req = {"pong": packet["ping"]}
             self.send_packet(req)
@@ -731,7 +726,7 @@ class BinanceTradeWebsocketApi(BinanceWebsocketApiBase):
         # Push order event
 
         order.traded += traded_volume
-        order.status = STATUS_BINANCE2VT.get(packet["X"], None)
+        order.status = STATUS_BINANCE2VT.get(data["X"], None)
         order.price = float(data["L"])   
         order.time = data["O"]  
         order.symbol = data["s"]  
@@ -760,6 +755,7 @@ class BinanceTradeWebsocketApi(BinanceWebsocketApiBase):
         """"""
         self.gateway.on_account(data)
 
+
 class BinanceDataWebsocketApi(BinanceWebsocketApiBase):
     """"""
 
@@ -783,7 +779,7 @@ class BinanceDataWebsocketApi(BinanceWebsocketApiBase):
         """"""
         symbol = req.symbol
         print("============BinanceDataWebsocketApi.subscribe===========")
-        print("symbol"+symbol)
+        print("symbol" + symbol)
         # Create tick data buffer
         tick = TickData(
             symbol=symbol,
