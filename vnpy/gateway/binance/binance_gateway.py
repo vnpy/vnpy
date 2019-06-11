@@ -103,8 +103,6 @@ class BinanceGateway(BaseGateway):
         # self.trade_ws_api.connect(key, secret, proxy_host, proxy_port)
         # self.market_ws_api.connect(key, secret, proxy_host, proxy_port)
 
-        # self.init_query()
-
     def subscribe(self, req: SubscribeRequest):
         """"""
         self.market_ws_api.subscribe(req)
@@ -120,7 +118,7 @@ class BinanceGateway(BaseGateway):
 
     def query_account(self):
         """"""
-        self.rest_api.query_account()
+        pass
 
     def query_position(self):
         """"""
@@ -131,19 +129,6 @@ class BinanceGateway(BaseGateway):
         self.rest_api.stop()
         self.trade_ws_api.stop()
         self.market_ws_api.stop()
-
-    def process_timer_event(self, event: Event):
-        """"""
-        self.count += 1
-        if self.count < 3:
-            return
-
-        self.query_account()
-
-    def init_query(self):
-        """"""
-        self.count = 0
-        self.event_engine.register(EVENT_TIMER, self.process_timer_event)
 
 
 class BinanceRestApi(RestClient):
