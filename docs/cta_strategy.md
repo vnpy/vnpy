@@ -637,7 +637,7 @@ calculate_statistics函数是基于逐日盯市盈亏情况（DateFrame格式）
 
 &nbsp;
 
-### 回测引擎使用示例
+### 单策略回测示例
 
 - 导入回测引擎和CTA策略
 - 设置回测相关参数，如：品种、K线周期、回测开始和结束日期、手续费、滑点、合约规模、起始资金
@@ -671,6 +671,89 @@ engine.run_backtesting()
 df = engine.calculate_result()
 engine.calculate_statistics()
 engine.show_chart()
+```
+
+&nbsp;
+
+### 投资组合回测示例
+
+投资组合回测是基于单策略回测的，其关键是每个策略都对应着各自的BacktestingEngine对象，下面介绍具体流程：
+
+- 创建回测函数run_backtesting()，这样每添加一个策略就创建其BacktestingEngine对象。
+```
+from vnpy.app.cta_strategy.backtesting import BacktestingEngine, OptimizationSetting
+from vnpy.app.cta_strategy.strategies.atr_rsi_strategy import AtrRsiStrategy
+from vnpy.app.cta_strategy.strategies.boll_channel_strategy import BollChannelStrategy
+from datetime import datetime
+
+def run_backtesting(strategy_class, setting, vt_symbol, interval, start, end, rate, slippage, size, pricetick, capital):
+    engine = BacktestingEngine()
+    engine.set_parameters(
+        vt_symbol=vt_symbol,
+        interval=interval,
+        start=start,
+        end=end,
+        rate=rate,
+        slippage=slippage,
+        size=size,
+        pricetick=pricetick,
+        capital=capital    
+    )
+    engine.add_strategy(strategy_class, setting)
+    engine.load_data()
+    engine.run_backtesting()
+    df = engine.calculate_result()
+    return df
+```
+
+&nbsp;
+
+- 分别进行单策略回测，得到各自的DataFrame，(该DataFrame包含交易时间、今仓、昨仓、手续费、滑点、当日净盈亏、累计净盈亏等基本信息，但是不包括最大回撤，夏普比率等统计信息),然后把DataFrame相加并且去除空值后即得到投资组合的DataFrame。
+
+```
+df1 = run_backtesting(
+    strategy_class=AtrRsiStrategy, 
+    setting={}, 
+    vt_symbol="IF88.CFFEX",
+    interval="1m", 
+    start=datetime(2019, 1, 1), 
+    end=datetime(2019, 4, 30),
+    rate=0.3/10000,
+    slippage=0.2,
+    size=300,
+    pricetick=0.2,
+    capital=1_000_000,
+    )
+
+df2 = run_backtesting(
+    strategy_class=BollChannelStrategy, 
+    setting={'fixed_size': 16}, 
+    vt_symbol="RB88.SHFE",
+    interval="1m", 
+    start=datetime(2019, 1, 1), 
+    end=datetime(2019, 4, 30),
+    rate=1/10000,
+    slippage=1,
+    size=10,
+    pricetick=1,
+    capital=1_000_000,
+    )
+
+dfp = df1 + df2
+dfp =dfp.dropna() 
+```
+
+&nbsp;
+
+
+- 创建show_portafolio()函数，同样也是创建新的BacktestingEngine对象，对传入的DataFrame计算如夏普比率等统计指标，并且画图。故该函数不仅能显示单策略回测效果，也能展示投资组合回测效果。
+```
+def show_portafolio(df):
+    engine = BacktestingEngine()
+    engine.calculate_statistics(df)
+    engine.show_chart(df)
+
+show_portafolio(dfp)
 ```
 
 &nbsp;
