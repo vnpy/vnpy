@@ -348,6 +348,7 @@ class BinanceRestApi(RestClient):
             data=data,
             extra=req
         )
+
         print("撤单本地id：", req.orderid, "撤单远端id：", sys_orderid)
 
     def start_userStream(self):
@@ -446,6 +447,7 @@ class BinanceRestApi(RestClient):
                 time=time,
                 gateway_name=self.gateway_name,
             )
+
             print("委托查询--远端id：",sys_orderid, "本地Id：", local_orderid)
             self.order_manager.on_order(order)
 
@@ -704,7 +706,7 @@ class BinanceTradeWebsocketApi(BinanceWebsocketApiBase):
             #         gateway_name=self.gateway_name
             #     )
             # self.on_order(order)
-            
+        
         # push account data change
         if packet["e"] == "outboundAccountInfo":
             for account_data in packet["B"]:
@@ -718,8 +720,8 @@ class BinanceTradeWebsocketApi(BinanceWebsocketApiBase):
 
     def on_order(self, data: dict):
         """"""
-
         sys_orderid = str(data["i"])
+
         order = self.order_manager.get_order_with_sys_orderid(sys_orderid)
         if not order:
             self.order_manager.add_push_data(sys_orderid, data)
@@ -736,7 +738,6 @@ class BinanceTradeWebsocketApi(BinanceWebsocketApiBase):
 
         print("远端ID：", sys_orderid, "本地ID：", order) 
         self.order_manager.on_order(order)
-
 
         # Push trade event
         traded_volume = data.traded
