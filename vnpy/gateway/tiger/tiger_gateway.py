@@ -75,17 +75,6 @@ STATUS_TIGER2VT = {
     OrderStatus.EXPIRED: Status.NOTTRADED
 }
 
-PUSH_STATUS_TIGER2VT = {
-    "Invalid": Status.REJECTED,
-    "Initial": Status.SUBMITTING,
-    "PendingCancel": Status.CANCELLED,
-    "Cancelled": Status.CANCELLED,
-    "Submitted": Status.SUBMITTING,
-    "PendingSubmit": Status.SUBMITTING,
-    "Filled": Status.ALLTRADED,
-    "Inactive": Status.REJECTED
-}
-
 
 class TigerGateway(BaseGateway):
     """"""
@@ -303,7 +292,7 @@ class TigerGateway(BaseGateway):
         """"""
         data = dict(data)
         symbol, exchange = convert_symbol_tiger2vt(data["origin_symbol"])
-        status = PUSH_STATUS_TIGER2VT[data["status"]]
+        status = STATUS_TIGER2VT[data["status"]]
 
         order = OrderData(
             symbol=symbol,
@@ -319,6 +308,7 @@ class TigerGateway(BaseGateway):
                 data["order_time"] / 1000).strftime("%H:%M:%S"),
             gateway_name=self.gateway_name,
         )
+        self.ID_TIGER2VT[str(data["order_id"])] = order.orderid
         self.on_order(order)
 
         if status == Status.ALLTRADED:

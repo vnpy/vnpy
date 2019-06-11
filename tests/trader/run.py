@@ -1,4 +1,3 @@
-
 from vnpy.event import EventEngine
 
 from vnpy.trader.engine import MainEngine
@@ -36,6 +35,7 @@ def main():
     event_engine = EventEngine()
 
     main_engine = MainEngine(event_engine)
+
     main_engine.add_gateway(BinanceGateway)
     #main_engine.add_gateway(XtpGateway)
     #main_engine.add_gateway(CtpGateway)

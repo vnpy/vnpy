@@ -14,6 +14,81 @@
 #include "custom/custom_wrappers.hpp"
 
 
+void generate_class_ITapTrade_TapAPIOrderMarketDeleteReq(pybind11::object & parent)
+{
+    pybind11::class_<ITapTrade::TapAPIOrderMarketDeleteReq> c(parent, "TapAPIOrderMarketDeleteReq");
+    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderMarketDeleteReq>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, "ServerFlag", ServerFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, "OrderBuyNo", OrderBuyNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, "OrderSellNo", OrderSellNo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderMarketDeleteReq, c);
+    module_vntap::objects.emplace("ITapTrade::TapAPIOrderMarketDeleteReq", c);
+}
+void generate_class_ITapTrade_TapAPIOrderLocalRemoveReq(pybind11::object & parent)
+{
+    pybind11::class_<ITapTrade::TapAPIOrderLocalRemoveReq> c(parent, "TapAPIOrderLocalRemoveReq");
+    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderLocalRemoveReq>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveReq, "ServerFlag", ServerFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveReq, "OrderNo", OrderNo);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveReq, c);
+    module_vntap::objects.emplace("ITapTrade::TapAPIOrderLocalRemoveReq", c);
+}
+void generate_class_ITapTrade_TapAPIOrderLocalRemoveRsp(pybind11::object & parent)
+{
+    pybind11::class_<ITapTrade::TapAPIOrderLocalRemoveRsp> c(parent, "TapAPIOrderLocalRemoveRsp");
+    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderLocalRemoveRsp>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "req", req);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "ClientLocalIP", ClientLocalIP);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "ClientMac", ClientMac);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, "ClientIP", ClientIP);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderLocalRemoveRsp, c);
+    module_vntap::objects.emplace("ITapTrade::TapAPIOrderLocalRemoveRsp", c);
+}
+void generate_class_ITapTrade_TapAPIOrderLocalInputReq(pybind11::object & parent)
+{
+    pybind11::class_<ITapTrade::TapAPIOrderLocalInputReq> c(parent, "TapAPIOrderLocalInputReq");
+    if constexpr (std::is_default_constructible_v<ITapTrade::TapAPIOrderLocalInputReq>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "AccountNo", AccountNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ExchangeNo", ExchangeNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CommodityType", CommodityType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CommodityNo", CommodityNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ContractNo", ContractNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "StrikePrice", StrikePrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CallOrPutFlag", CallOrPutFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ContractNo2", ContractNo2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "StrikePrice2", StrikePrice2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "CallOrPutFlag2", CallOrPutFlag2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderType", OrderType);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderSource", OrderSource);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "TimeInForce", TimeInForce);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "ExpireTime", ExpireTime);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "IsRiskOrder", IsRiskOrder);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderSide", OrderSide);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "PositionEffect", PositionEffect);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "PositionEffect2", PositionEffect2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "InquiryNo", InquiryNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "HedgeFlag", HedgeFlag);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderPrice", OrderPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderPrice2", OrderPrice2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "StopPrice", StopPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderQty", OrderQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMinQty", OrderMinQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderSystemNo", OrderSystemNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderExchangeSystemNo", OrderExchangeSystemNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "UpperNo", UpperNo);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchPrice", OrderMatchPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchPrice2", OrderMatchPrice2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchQty", OrderMatchQty);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderMatchQty2", OrderMatchQty2);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "OrderState", OrderState);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, "IsAddOne", IsAddOne);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::TapAPIOrderLocalInputReq, c);
+    module_vntap::objects.emplace("ITapTrade::TapAPIOrderLocalInputReq", c);
+}
 void generate_class_ITapTrade_TapAPIOrderLocalModifyReq(pybind11::object & parent)
 {
     pybind11::class_<ITapTrade::TapAPIOrderLocalModifyReq> c(parent, "TapAPIOrderLocalModifyReq");
@@ -95,555 +170,752 @@ void generate_class_ITapTrade_ITapTradeAPINotify(pybind11::object & parent)
     if constexpr (std::is_default_constructible_v<PyITapTradeAPINotify>)
         c.def(pybind11::init<>());
     c.def("OnConnect",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnConnect
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnConnect,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspLogin",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspLogin
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspLogin,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnContactInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnContactInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnContactInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspRequestVertificateCode",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspRequestVertificateCode
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspRequestVertificateCode,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnExpriationDate",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnExpriationDate
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnExpriationDate,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnAPIReady",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnAPIReady
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnAPIReady,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnDisconnect",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnDisconnect
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnDisconnect,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspChangePassword",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspChangePassword
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspChangePassword,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspAuthPassword",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspAuthPassword
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspAuthPassword,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryTradingDate",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryTradingDate
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryTradingDate,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspSetReservedInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspSetReservedInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspSetReservedInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryAccount",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryAccount
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryAccount,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryExchange",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryExchange
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryExchange,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryCommodity",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryCommodity
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryCommodity,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryContract",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryContract
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryContract,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnContract",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnContract
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnContract,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryOrderProcess",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryOrderProcess
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryOrderProcess,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryFill",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryFill
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryFill,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnFill",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnFill
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnFill,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPositionSummary",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryPositionSummary
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryPositionSummary,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnPositionSummary",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnPositionSummary
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnPositionSummary,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnPositionProfit",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnPositionProfit
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnPositionProfit,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryCurrency",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryCurrency
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryCurrency,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryTradeMessage",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryTradeMessage
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryTradeMessage,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnTradeMessage",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRtnTradeMessage
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRtnTradeMessage,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryHisOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryHisOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryHisOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryHisOrderProcess",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryHisOrderProcess
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryHisOrderProcess,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryHisMatch",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryHisMatch
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryHisMatch,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryHisPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryHisPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryHisPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryHisDelivery",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryHisDelivery
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryHisDelivery,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryAccountCashAdjust",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryAccountCashAdjust
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryAccountCashAdjust,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryBill",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryBill
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryBill,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryAccountFeeRent",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryAccountFeeRent
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryAccountFeeRent,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryAccountMarginRent",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspQryAccountMarginRent
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspQryAccountMarginRent,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspHKMarketOrderInsert",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspHKMarketOrderInsert
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspHKMarketOrderInsert,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspHKMarketOrderDelete",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspHKMarketOrderDelete
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspHKMarketOrderDelete,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnHKMarketQuoteNotice",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnHKMarketQuoteNotice
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnHKMarketQuoteNotice,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderLocalRemove",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalRemove
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalRemove,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderLocalInput",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalInput
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalInput,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderLocalModify",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalModify
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalModify,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderLocalTransfer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalTransfer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspOrderLocalTransfer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspFillLocalInput",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspFillLocalInput
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspFillLocalInput,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspFillLocalRemove",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &ITapTrade::ITapTradeAPINotify::OnRspFillLocalRemove
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &ITapTrade::ITapTradeAPINotify::OnRspFillLocalRemove,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::ITapTradeAPINotify, c);
     module_vntap::objects.emplace("ITapTrade::ITapTradeAPINotify", c);
+}
+void generate_class_ITapTrade_ITapTradeAPI(pybind11::object & parent)
+{
+    pybind11::class_<ITapTrade::ITapTradeAPI, PyITapTradeAPI> c(parent, "ITapTradeAPI");
+    if constexpr (std::is_default_constructible_v<PyITapTradeAPI>)
+        c.def(pybind11::init<>());
+    c.def("SetAPINotify",
+        &ITapTrade::ITapTradeAPI::SetAPINotify,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("SetHostAddress",
+        &ITapTrade::ITapTradeAPI::SetHostAddress,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("Login",
+        &ITapTrade::ITapTradeAPI::Login,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("RequestVertificateCode",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::RequestVertificateCode
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("SetVertificateCode",
+        &ITapTrade::ITapTradeAPI::SetVertificateCode,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("Disconnect",
+        &ITapTrade::ITapTradeAPI::Disconnect,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("ChangePassword",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::ChangePassword
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("AuthPassword",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::AuthPassword
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("HaveCertainRight",
+        &ITapTrade::ITapTradeAPI::HaveCertainRight,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryTradingDate",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryTradingDate
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("SetReservedInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::SetReservedInfo
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryAccount",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryAccount
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryFund",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryFund
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryExchange",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryExchange
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryCommodity",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryCommodity
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryContract",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryContract
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("InsertOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::InsertOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>,
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("CancelOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::CancelOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("AmendOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::AmendOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("ActivateOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::ActivateOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryOrderProcess",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryOrderProcess
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryFill",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryFill
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryPosition",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryPosition
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryPositionSummary",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryPositionSummary
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryCurrency",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryCurrency
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryAccountCashAdjust",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryAccountCashAdjust
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryTradeMessage",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryTradeMessage
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryBill",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryBill
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryHisOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryHisOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryHisOrderProcess",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryHisOrderProcess
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryHisMatch",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryHisMatch
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryHisPosition",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryHisPosition
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryHisDelivery",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryHisDelivery
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryAccountFeeRent",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryAccountFeeRent
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QryAccountMarginRent",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::QryAccountMarginRent
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("InsertHKMarketOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::InsertHKMarketOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>,
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>,
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("CancelHKMarketOrder",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::CancelHKMarketOrder
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OrderLocalRemove",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::OrderLocalRemove
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OrderLocalInput",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::OrderLocalInput
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OrderLocalModify",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::OrderLocalModify
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OrderLocalTransfer",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::OrderLocalTransfer
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("FillLocalInput",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::FillLocalInput
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("FillLocalRemove",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &ITapTrade::ITapTradeAPI::FillLocalRemove
+            >, 
+            brigand::list<
+                autocxxpy::indexed_transform_holder<autocxxpy::output_argument_transform, 0 + 1/*self*/>
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntap, ITapTrade::ITapTradeAPI, c);
+    module_vntap::objects.emplace("ITapTrade::ITapTradeAPI", c);
 }
