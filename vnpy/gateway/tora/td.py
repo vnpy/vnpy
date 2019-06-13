@@ -505,7 +505,7 @@ class ToraTdApi:
         info.ActionFlag = TORA_TSTP_AF_ForceDelete  # (12368)：VIP:报单状态异常
 
         err = self._native_api.ReqOrderAction(info, self._get_new_req_id())
-        self._if_error_write_log(err, "send_order:ReqOrderInsert")
+        self._if_error_write_log(err, "cancel_order:ReqOrderAction")
 
     def query_initialize_status(self):
         self.query_contracts()
