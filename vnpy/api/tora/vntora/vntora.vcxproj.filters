@@ -39,9 +39,6 @@
     <ClCompile Include="generated_files\generated_functions_7.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated_files\generated_functions_8.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="generated_files\module.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,6 +66,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="custom\custom_wrappers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated_files\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

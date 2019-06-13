@@ -7,11 +7,12 @@ python -m autocxxpy \
         TORATstpUserApiDataType.h\
         TORATstpUserApiStruct.h\
         -I vntora/include \
-        -A custom/custom_wrappers.hpp\
         --copy-autocxxpy-includes vntora/include \
         --output-dir vntora/generated_files \
         --pyi-output-dir . \
         \
-        --no-clear-pyi-output\
+        --no-clear-pyi-output \
         --no-callback-pattern \
-        ".*Api::.*"
+        ".*Api::.*" \
+        --string-encoding-windows .936 \
+        --string-encoding-linux zh_CN.GB18030 \

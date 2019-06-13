@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -11,9 +13,96 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
+void generate_class_CTORATstpMdSpi(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpMdSpi, PyCTORATstpMdSpi> c(parent, "CTORATstpMdSpi");
+    if constexpr (std::is_default_constructible_v<PyCTORATstpMdSpi>)
+        c.def(pybind11::init<>());
+    c.def("OnFrontConnected",
+        &CTORATstpMdSpi::OnFrontConnected,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnFrontDisconnected",
+        &CTORATstpMdSpi::OnFrontDisconnected,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspError",
+        &CTORATstpMdSpi::OnRspError,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspUserLogin",
+        &CTORATstpMdSpi::OnRspUserLogin,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspUserLogout",
+        &CTORATstpMdSpi::OnRspUserLogout,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspSubMarketData",
+        &CTORATstpMdSpi::OnRspSubMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspUnSubMarketData",
+        &CTORATstpMdSpi::OnRspUnSubMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspSubSpecialMarketData",
+        &CTORATstpMdSpi::OnRspSubSpecialMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspUnSubSpecialMarketData",
+        &CTORATstpMdSpi::OnRspUnSubSpecialMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspSubFundsFlowMarketData",
+        &CTORATstpMdSpi::OnRspSubFundsFlowMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRspUnSubFundsFlowMarketData",
+        &CTORATstpMdSpi::OnRspUnSubFundsFlowMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRtnDepthMarketData",
+        &CTORATstpMdSpi::OnRtnDepthMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRtnSpecialMarketData",
+        &CTORATstpMdSpi::OnRtnSpecialMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRtnEffectPriceMarketData",
+        &CTORATstpMdSpi::OnRtnEffectPriceMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRtnEffectVolumeMarketData",
+        &CTORATstpMdSpi::OnRtnEffectVolumeMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnRtnFundsFlowMarketData",
+        &CTORATstpMdSpi::OnRtnFundsFlowMarketData,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpMdSpi, c);
+    module_vntora::objects.emplace("CTORATstpMdSpi", c);
+}
 void generate_class_CTORATstpMdApi(pybind11::object & parent)
 {
     pybind11::class_<
@@ -24,101 +113,47 @@ void generate_class_CTORATstpMdApi(pybind11::object & parent)
     if constexpr (std::is_default_constructible_v<PyCTORATstpMdApi>)
         c.def(pybind11::init<>());
     c.def_static("CreateTstpMdApi",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::CreateTstpMdApi
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::CreateTstpMdApi,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def_static("GetApiVersion",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::GetApiVersion
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::GetApiVersion,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Release",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::Release
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::Release,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Init",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::Init
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::Init,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("Join",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::Join
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::Join,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterFront",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::RegisterFront
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::RegisterFront,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterNameServer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::RegisterNameServer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::RegisterNameServer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterDeriveServer",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::RegisterDeriveServer
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::RegisterDeriveServer,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("RegisterSpi",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::RegisterSpi
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::RegisterSpi,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -195,24 +230,12 @@ void generate_class_CTORATstpMdApi(pybind11::object & parent)
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("ReqUserLogin",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::ReqUserLogin
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::ReqUserLogin,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("ReqUserLogout",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdApi::ReqUserLogout
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpMdApi::ReqUserLogout,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
@@ -225,772 +248,352 @@ void generate_class_CTORATstpTraderSpi(pybind11::object & parent)
     if constexpr (std::is_default_constructible_v<PyCTORATstpTraderSpi>)
         c.def(pybind11::init<>());
     c.def("OnFrontConnected",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnFrontConnected
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnFrontConnected,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnFrontDisconnected",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnFrontDisconnected
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnFrontDisconnected,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspError",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspError
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspError,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspUserLogin",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspUserLogin
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspUserLogin,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspUserLogout",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspUserLogout
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspUserLogout,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspUserPasswordUpdate",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspUserPasswordUpdate
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspUserPasswordUpdate,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInputDeviceSerial",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInputDeviceSerial
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInputDeviceSerial,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderInsert",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspOrderInsert
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspOrderInsert,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnErrRtnOrderInsert",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnErrRtnOrderInsert
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnErrRtnOrderInsert,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnErrRtnOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnErrRtnOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnErrRtnOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnTrade",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnTrade
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnTrade,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnMarketStatus",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnMarketStatus
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnMarketStatus,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspCondOrderInsert",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspCondOrderInsert
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspCondOrderInsert,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnCondOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnCondOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnCondOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnErrRtnCondOrderInsert",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnErrRtnCondOrderInsert
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnErrRtnCondOrderInsert,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspCondOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspCondOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspCondOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnErrRtnCondOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnErrRtnCondOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnErrRtnCondOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInquiryJZFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInquiryJZFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInquiryJZFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspTransferFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspTransferFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspTransferFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnTransferFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnTransferFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnTransferFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnErrRtnTransferFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnErrRtnTransferFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnErrRtnTransferFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnTransferPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnTransferPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnTransferPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnErrRtnTransferPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnErrRtnTransferPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnErrRtnTransferPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspTransferCollateral",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspTransferCollateral
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspTransferCollateral,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInquiryBankAccountFund",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInquiryBankAccountFund
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInquiryBankAccountFund,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInquiryTradeConcentration",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInquiryTradeConcentration
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInquiryTradeConcentration,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnTradingNotice",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnTradingNotice
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnTradingNotice,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInquiryMaxOrderVolume",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInquiryMaxOrderVolume
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInquiryMaxOrderVolume,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRtnPeripheryTransferPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRtnPeripheryTransferPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRtnPeripheryTransferPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInquiryHistoryOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInquiryHistoryOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInquiryHistoryOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspInquiryHistoryTrade",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspInquiryHistoryTrade
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspInquiryHistoryTrade,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryExchange",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryExchange
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryExchange,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryMarketData,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQrySecurity",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQrySecurity
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQrySecurity,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryETFFile",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryETFFile
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryETFFile,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryETFBasket",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryETFBasket
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryETFBasket,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryIPOInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryIPOInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryIPOInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryBUProxy",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryBUProxy
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryBUProxy,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryUser",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryUser
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryUser,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryInvestor",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryInvestor
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryInvestor,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryShareholderAccount",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryShareholderAccount
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryShareholderAccount,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryTrade",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryTrade
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryTrade,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryTradingAccount",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryTradingAccount
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryTradingAccount,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryTradingFee",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryTradingFee
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryTradingFee,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryInvestorTradingFee",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryInvestorTradingFee
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryInvestorTradingFee,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryIPOQuota",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryIPOQuota
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryIPOQuota,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryMarket",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryMarket
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryMarket,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryOrderFundDetail",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryOrderFundDetail
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryOrderFundDetail,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryFundTransferDetail",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryFundTransferDetail
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryFundTransferDetail,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPositionTransferDetail",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryPositionTransferDetail
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryPositionTransferDetail,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPledgePosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryPledgePosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryPledgePosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPledgeInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryPledgeInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryPledgeInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryConversionBondInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryConversionBondInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryConversionBondInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryBondPutbackInfo",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryBondPutbackInfo
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryBondPutbackInfo,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryStandardBondPosition",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryStandardBondPosition
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryStandardBondPosition,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQrySpecialMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQrySpecialMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQrySpecialMarketData,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPrematurityRepoOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryPrematurityRepoOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryPrematurityRepoOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryShareholderParam",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryShareholderParam
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryShareholderParam,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryPeripheryPositionTransferDetail",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryPeripheryPositionTransferDetail
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryPeripheryPositionTransferDetail,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryInvestorCondOrderLimitParam",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryInvestorCondOrderLimitParam
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryInvestorCondOrderLimitParam,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryCondOrder",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryCondOrder
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryCondOrder,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryCondOrderAction",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryCondOrderAction
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryCondOrderAction,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryTradingNotice",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryTradingNotice
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryTradingNotice,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryIPONumberResult",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryIPONumberResult
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryIPONumberResult,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );
     c.def("OnRspQryIPOMatchNumberResult",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpTraderSpi::OnRspQryIPOMatchNumberResult
-            >, 
-            brigand::list<
-            >
-        >::value,
+        &CTORATstpTraderSpi::OnRspQryIPOMatchNumberResult,
         pybind11::return_value_policy::reference,
         pybind11::call_guard<pybind11::gil_scoped_release>()
     );

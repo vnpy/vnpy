@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
     from .vntora import *
 
 
-def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], bool]):
+def set_async_callback_exception_handler(handler: Callable[[AsyncDispatchException], None]):
     """
     set a customize exception handler for async callback in this module(pyd)
     \a handler should return True if it handles that exception,
@@ -27,13 +27,13 @@ class CTORATstpFensUserInfoField():
     
     
     LogInAccount: str
-    LogInAccountType: int
+    LogInAccountType: str
     
     
 class CTORATstpEffectPriceMarketDataField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     LastPrice: float
     TotalVolume: int
@@ -45,7 +45,7 @@ class CTORATstpEffectPriceMarketDataField():
 class CTORATstpEffectVolumeMarketDataField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     LastPrice: float
     TotalVolume: int
@@ -57,7 +57,7 @@ class CTORATstpEffectVolumeMarketDataField():
 class CTORATstpFundsFlowMarketDataField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     UpdateTime: str
     UpdateMillisec: int
@@ -91,7 +91,7 @@ class CTORATstpReqUserLoginField():
     
     
     LogInAccount: str
-    LogInAccountType: int
+    LogInAccountType: str
     Password: str
     UserProductInfo: str
     InterfaceProductInfo: str
@@ -106,7 +106,7 @@ class CTORATstpReqUserLoginField():
     GWOuterIPAddress: str
     DepartmentID: str
     HDSerial: str
-    AuthMode: int
+    AuthMode: str
     DeviceID: str
     DeviceSerial: str
     
@@ -116,7 +116,7 @@ class CTORATstpRspUserLoginField():
     
     LoginTime: str
     LogInAccount: str
-    LogInAccountType: int
+    LogInAccountType: str
     SystemName: str
     FrontID: int
     SessionID: int
@@ -126,7 +126,7 @@ class CTORATstpRspUserLoginField():
     TradingDay: str
     UserID: str
     UserName: str
-    UserType: int
+    UserType: str
     DepartmentID: str
     ClientIPAddress: str
     MacAddress: str
@@ -195,34 +195,34 @@ class CTORATstpInputOrderField():
     SecurityID: str
     OrderRef: str
     UserID: str
-    OrderPriceType: int
-    Direction: int
+    OrderPriceType: str
+    Direction: str
     CombOffsetFlag: str
     CombHedgeFlag: str
     LimitPrice: float
     VolumeTotalOriginal: int
-    TimeCondition: int
-    VolumeCondition: int
+    TimeCondition: str
+    VolumeCondition: str
     MinVolume: int
-    ForceCloseReason: int
+    ForceCloseReason: str
     RequestID: int
     UserForceClose: int
     IsSwapOrder: int
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     BusinessUnitID: str
     AccountID: str
     IPAddress: str
     MacAddress: str
-    CreditPositionType: int
+    CreditPositionType: str
     OrderSysID: str
     TerminalInfo: str
     BInfo: str
     SInfo: str
     IInfo: int
     TransfereePbuID: str
-    Operway: int
-    CondCheck: int
+    Operway: str
+    CondCheck: str
     HDSerial: str
     
     
@@ -233,28 +233,28 @@ class CTORATstpOrderField():
     SecurityID: str
     OrderRef: str
     UserID: str
-    OrderPriceType: int
-    Direction: int
+    OrderPriceType: str
+    Direction: str
     CombOffsetFlag: str
     CombHedgeFlag: str
     LimitPrice: float
     VolumeTotalOriginal: int
-    TimeCondition: int
-    VolumeCondition: int
+    TimeCondition: str
+    VolumeCondition: str
     MinVolume: int
-    ForceCloseReason: int
+    ForceCloseReason: str
     RequestID: int
     OrderLocalID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     ExchangeInstID: str
     TraderID: str
-    OrderSubmitStatus: int
+    OrderSubmitStatus: str
     TradingDay: str
     OrderSysID: str
-    OrderStatus: int
-    OrderType: int
+    OrderStatus: str
+    OrderType: str
     VolumeTraded: int
     VolumeTotal: int
     InsertDate: str
@@ -271,16 +271,16 @@ class CTORATstpOrderField():
     AccountID: str
     IPAddress: str
     MacAddress: str
-    CreditPositionType: int
+    CreditPositionType: str
     BInfo: str
     SInfo: str
     IInfo: int
     TransfereePbuID: str
-    Operway: int
+    Operway: str
     DepartmentID: str
-    ProperCtrlBusinessType: int
-    ProperCtrlPassFlag: int
-    CondCheck: int
+    ProperCtrlBusinessType: str
+    ProperCtrlPassFlag: str
+    CondCheck: str
     IsCacheOrder: int
     Turnover: float
     RtnFloatInfo: float
@@ -302,9 +302,9 @@ class CTORATstpInputOrderActionField():
     RequestID: int
     FrontID: int
     SessionID: int
-    ExchangeID: int
+    ExchangeID: str
     OrderSysID: str
-    ActionFlag: int
+    ActionFlag: str
     LimitPrice: float
     VolumeChange: int
     UserID: str
@@ -316,7 +316,7 @@ class CTORATstpInputOrderActionField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
+    Operway: str
     HDSerial: str
     
     
@@ -329,9 +329,9 @@ class CTORATstpOrderActionField():
     RequestID: int
     FrontID: int
     SessionID: int
-    ExchangeID: int
+    ExchangeID: str
     OrderSysID: str
-    ActionFlag: int
+    ActionFlag: str
     LimitPrice: float
     VolumeChange: int
     ActionDate: str
@@ -340,7 +340,7 @@ class CTORATstpOrderActionField():
     OrderLocalID: str
     ActionLocalID: str
     ShareholderID: str
-    OrderActionStatus: int
+    OrderActionStatus: str
     UserID: str
     StatusMsg: str
     SecurityID: str
@@ -349,7 +349,7 @@ class CTORATstpOrderActionField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
+    Operway: str
     
     
 class CTORATstpTradeField():
@@ -358,15 +358,15 @@ class CTORATstpTradeField():
     InvestorID: str
     SecurityID: str
     UserID: str
-    ExchangeID: int
+    ExchangeID: str
     TradeID: str
-    Direction: int
+    Direction: str
     OrderSysID: str
-    MarketID: int
+    MarketID: str
     ShareholderID: str
     ExchangeInstID: str
-    OffsetFlag: int
-    HedgeFlag: int
+    OffsetFlag: str
+    HedgeFlag: str
     Price: float
     Volume: int
     TradeDate: str
@@ -383,23 +383,23 @@ class CTORATstpTradeField():
 class CTORATstpMarketStatusField():
     
     
-    MarketID: int
-    MarketStatus: int
+    MarketID: str
+    MarketStatus: str
     
     
 class CTORATstpInputCondOrderField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     InvestorID: str
     BusinessUnitID: str
     ShareholderID: str
     SecurityID: str
-    Direction: int
-    OrderPriceType: int
-    OrderVolumeType: int
-    TimeCondition: int
-    VolumeCondition: int
+    Direction: str
+    OrderPriceType: str
+    OrderVolumeType: str
+    TimeCondition: str
+    VolumeCondition: str
     LimitPrice: float
     VolumeTotalOriginal: int
     CombOffsetFlag: str
@@ -415,16 +415,16 @@ class CTORATstpInputCondOrderField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
-    CondCheck: int
-    ContingentCondition: int
+    Operway: str
+    CondCheck: str
+    ContingentCondition: str
     ConditionPrice: float
     PriceTicks: int
     VolumeMultiple: int
     RelativeFrontID: int
     RelativeSessionID: int
     RelativeParam: str
-    AppendContingentCondition: int
+    AppendContingentCondition: str
     AppendConditionPrice: float
     AppendRelativeFrontID: int
     AppendRelativeSessionID: int
@@ -435,16 +435,16 @@ class CTORATstpInputCondOrderField():
 class CTORATstpConditionOrderField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     InvestorID: str
     BusinessUnitID: str
     ShareholderID: str
     SecurityID: str
-    Direction: int
-    OrderPriceType: int
-    OrderVolumeType: int
-    TimeCondition: int
-    VolumeCondition: int
+    Direction: str
+    OrderPriceType: str
+    OrderVolumeType: str
+    TimeCondition: str
+    VolumeCondition: str
     LimitPrice: float
     VolumeTotalOriginal: int
     CombOffsetFlag: str
@@ -460,22 +460,22 @@ class CTORATstpConditionOrderField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
-    CondCheck: int
-    ContingentCondition: int
+    Operway: str
+    CondCheck: str
+    ContingentCondition: str
     ConditionPrice: float
     PriceTicks: int
     VolumeMultiple: int
     RelativeFrontID: int
     RelativeSessionID: int
     RelativeParam: str
-    AppendContingentCondition: int
+    AppendContingentCondition: str
     AppendConditionPrice: float
     AppendRelativeFrontID: int
     AppendRelativeSessionID: int
     AppendRelativeParam: str
     TradingDay: str
-    CondOrderStatus: int
+    CondOrderStatus: str
     InsertDate: str
     InsertTime: str
     CancelTime: str
@@ -485,8 +485,8 @@ class CTORATstpConditionOrderField():
     UserProductInfo: str
     StatusMsg: str
     DepartmentID: str
-    ProperCtrlBusinessType: int
-    ProperCtrlPassFlag: int
+    ProperCtrlBusinessType: str
+    ProperCtrlPassFlag: str
     ActiveDate: str
     ActiveTime: str
     
@@ -495,13 +495,13 @@ class CTORATstpInputCondOrderActionField():
     
     
     RequestID: int
-    ExchangeID: int
+    ExchangeID: str
     CondOrderActionRef: str
     CondOrderRef: str
     FrontID: int
     SessionID: int
     CondOrderID: int
-    ActionFlag: int
+    ActionFlag: str
     InvestorID: str
     SecurityID: str
     UserID: str
@@ -512,7 +512,7 @@ class CTORATstpInputCondOrderActionField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
+    Operway: str
     HDSerial: str
     
     
@@ -540,10 +540,10 @@ class CTORATstpInputTransferFundField():
     AccountID: str
     CurrencyID: str
     ApplySerial: str
-    TransferDirection: int
+    TransferDirection: str
     Amount: float
     DepartmentID: str
-    BankID: int
+    BankID: str
     AccountPassword: str
     BankPassword: str
     
@@ -553,14 +553,14 @@ class CTORATstpInputTransferPositionField():
     
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     SecurityID: str
     ApplySerial: str
-    TransferDirection: int
+    TransferDirection: str
     Volume: int
-    TransferPositionType: int
-    MarketID: int
+    TransferPositionType: str
+    MarketID: str
     
     
 class CTORATstpTransferFundField():
@@ -572,15 +572,15 @@ class CTORATstpTransferFundField():
     SessionID: int
     AccountID: str
     CurrencyID: str
-    TransferDirection: int
+    TransferDirection: str
     Amount: float
-    TransferStatus: int
+    TransferStatus: str
     OperatorID: str
     OperateDate: str
     OperateTime: str
     DepartmentID: str
     BankAccountID: str
-    BankID: int
+    BankID: str
     
     
 class CTORATstpTransferPositionField():
@@ -592,17 +592,17 @@ class CTORATstpTransferPositionField():
     SessionID: int
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
-    MarketID: int
+    MarketID: str
     SecurityID: str
     TradingDay: str
-    TransferDirection: int
-    TransferPositionType: int
+    TransferDirection: str
+    TransferPositionType: str
     HistoryVolume: int
     TodayBSVolume: int
     TodayPRVolume: int
-    TransferStatus: int
+    TransferStatus: str
     OperatorID: str
     OperateDate: str
     OperateTime: str
@@ -611,7 +611,7 @@ class CTORATstpTransferPositionField():
 class CTORATstpSpecificSecurityField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     
     
@@ -620,14 +620,14 @@ class CTORATstpInputTransferCollateralField():
     
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     SecurityID: str
     ApplySerial: str
-    CollateralDirection: int
+    CollateralDirection: str
     Volume: int
-    MarketID: int
-    Operway: int
+    MarketID: str
+    Operway: str
     
     
 class CTORATstpReqInquiryBankAccountFundField():
@@ -636,7 +636,7 @@ class CTORATstpReqInquiryBankAccountFundField():
     DepartmentID: str
     AccountID: str
     CurrencyID: str
-    BankID: int
+    BankID: str
     BankPassword: str
     
     
@@ -646,7 +646,7 @@ class CTORATstpRspInquiryBankAccountFundField():
     DepartmentID: str
     AccountID: str
     CurrencyID: str
-    BankID: int
+    BankID: str
     BankAccountID: str
     Balance: float
     
@@ -655,7 +655,7 @@ class CTORATstpLev2MarketDataField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     DataTimeStamp: int
     PreClosePrice: float
     OpenPrice: float
@@ -715,13 +715,13 @@ class CTORATstpLev2MarketDataField():
     UpperLimitPrice: float
     LowerLimitPrice: float
     ClosePrice: float
-    MDSecurityStat: int
+    MDSecurityStat: str
     
     
 class CTORATstpLev2IndexField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     DataTimeStamp: int
     PreCloseIndex: float
@@ -739,12 +739,12 @@ class CTORATstpLev2IndexField():
 class CTORATstpLev2TransactionField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     TradeTime: int
     TradePrice: float
     TradeVolume: int
-    ExecType: int
+    ExecType: str
     MainSeq: int
     SubSeq: int
     BuyNo: int
@@ -757,13 +757,13 @@ class CTORATstpLev2TransactionField():
 class CTORATstpLev2OrderDetailField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     OrderTime: int
     Price: float
     Volume: int
-    Side: int
-    OrderType: int
+    Side: str
+    OrderType: str
     MainSeq: int
     SubSeq: int
     Info1: int
@@ -774,7 +774,7 @@ class CTORATstpLev2OrderDetailField():
 class CTORATstpUploadTradeDataField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     TradingDay: str
     bForce: int
     
@@ -784,7 +784,7 @@ class CTORATstpInputDesignationRegistrationField():
     
     InvestorID: str
     UserID: str
-    DesignationType: int
+    DesignationType: str
     ShareholderID: str
     BusinessUnitID: str
     AccountID: str
@@ -800,7 +800,7 @@ class CTORATstpInputCustodyTransferField():
     
     InvestorID: str
     UserID: str
-    CustodyTransferType: int
+    CustodyTransferType: str
     ShareholderID: str
     BusinessUnitID: str
     AccountID: str
@@ -819,8 +819,8 @@ class CTORATstpInputCustodyTransferField():
 class CTORATstpInquiryTradeConcentrationField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     SecurityID: str
     InvestorID: str
     BusinessUnitID: str
@@ -833,34 +833,34 @@ class CTORATstpInquiryTradeConcentrationField():
 class CTORATstpInquiryFileOrderField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     InvestorID: str
     SecurityID: str
     OrderSerialBeg: int
     OrderSerialEnd: int
-    CommitStatus: int
+    CommitStatus: str
     
     
 class CTORATstpFileOrderField():
     
     
     RequestID: int
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     InvestorID: str
     SecurityID: str
     OrderRef: str
-    FileOrderType: int
-    Direction: int
+    FileOrderType: str
+    Direction: str
     LimitPrice: float
     VolumeTotalOriginal: int
-    Operway: int
+    Operway: str
     OrderActionRef: str
     OrderSysID: str
-    CondCheck: int
+    CondCheck: str
     OrderSerial: int
-    CommitStatus: int
+    CommitStatus: str
     StatusMsg: str
     TimeStamp: int
     
@@ -868,7 +868,7 @@ class CTORATstpFileOrderField():
 class CTORATstpQryRspInfoField():
     
     
-    EndFlag: int
+    EndFlag: str
     ErrorID: int
     ErrorMsg: str
     
@@ -876,7 +876,7 @@ class CTORATstpQryRspInfoField():
 class CTORATstpReviewFileOrderField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     InvestorID: str
     SecurityID: str
@@ -888,7 +888,7 @@ class CTORATstpCommitInfoField():
     
     
     OrderSerial: int
-    CommitStatus: int
+    CommitStatus: str
     StatusMsg: str
     
     
@@ -927,39 +927,39 @@ class CTORATstpFileOrderInfoField():
     
     
     RequestID: int
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     InvestorID: str
     SecurityID: str
     OrderRef: str
-    FileOrderType: int
-    Direction: int
+    FileOrderType: str
+    Direction: str
     LimitPrice: float
     VolumeTotalOriginal: int
-    Operway: int
+    Operway: str
     OrderActionRef: str
     OrderSysID: str
-    CondCheck: int
+    CondCheck: str
     OrderSerial: int
-    CommitStatus: int
+    CommitStatus: str
     StatusMsg: str
     
     
 class CTORATstpReqInquiryMaxOrderVolumeField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     InvestorID: str
     BusinessUnitID: str
     AccountID: str
     ShareholderID: str
-    Direction: int
-    OrderPriceType: int
+    Direction: str
+    OrderPriceType: str
     CombOffsetFlag: str
     CombHedgeFlag: str
-    TimeCondition: int
-    VolumeCondition: int
+    TimeCondition: str
+    VolumeCondition: str
     LimitPrice: float
     TransfereePbuID: str
     MaxVolume: int
@@ -968,18 +968,18 @@ class CTORATstpReqInquiryMaxOrderVolumeField():
 class CTORATstpRspInquiryMaxOrderVolumeField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     InvestorID: str
     BusinessUnitID: str
     AccountID: str
     ShareholderID: str
-    Direction: int
-    OrderPriceType: int
+    Direction: str
+    OrderPriceType: str
     CombOffsetFlag: str
     CombHedgeFlag: str
-    TimeCondition: int
-    VolumeCondition: int
+    TimeCondition: str
+    VolumeCondition: str
     LimitPrice: float
     TransfereePbuID: str
     MaxVolume: int
@@ -992,9 +992,9 @@ class CTORATstpPeripheryPositionTransferDetailField():
     ApplySerial: int
     FrontID: int
     SessionID: int
-    TransferDirection: int
-    ExchangeID: int
-    MarketID: int
+    TransferDirection: str
+    ExchangeID: str
+    MarketID: str
     InvestorID: str
     BusinessUnitID: str
     ShareholderID: str
@@ -1004,7 +1004,7 @@ class CTORATstpPeripheryPositionTransferDetailField():
     HistoryPos: int
     TradingDay: str
     TransferReason: str
-    TransferStatus: int
+    TransferStatus: str
     OperateDate: str
     OperateTime: str
     RepealDate: str
@@ -1016,7 +1016,7 @@ class CTORATstpPeripheryPositionTransferDetailField():
 class CTORATstpQryHistoryOrderField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     InvestorID: str
     BegDate: str
     EndDate: str
@@ -1040,28 +1040,28 @@ class CTORATstpHistoryOrderField():
     SecurityID: str
     OrderRef: str
     UserID: str
-    OrderPriceType: int
-    Direction: int
+    OrderPriceType: str
+    Direction: str
     CombOffsetFlag: str
     CombHedgeFlag: str
     LimitPrice: float
     VolumeTotalOriginal: int
-    TimeCondition: int
-    VolumeCondition: int
+    TimeCondition: str
+    VolumeCondition: str
     MinVolume: int
-    ForceCloseReason: int
+    ForceCloseReason: str
     RequestID: int
     OrderLocalID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     ExchangeInstID: str
     TraderID: str
-    OrderSubmitStatus: int
+    OrderSubmitStatus: str
     TradingDay: str
     OrderSysID: str
-    OrderStatus: int
-    OrderType: int
+    OrderStatus: str
+    OrderType: str
     VolumeTraded: int
     VolumeTotal: int
     InsertDate: str
@@ -1078,16 +1078,16 @@ class CTORATstpHistoryOrderField():
     AccountID: str
     IPAddress: str
     MacAddress: str
-    CreditPositionType: int
+    CreditPositionType: str
     BInfo: str
     SInfo: str
     IInfo: int
     TransfereePbuID: str
-    Operway: int
+    Operway: str
     DepartmentID: str
-    ProperCtrlBusinessType: int
-    ProperCtrlPassFlag: int
-    CondCheck: int
+    ProperCtrlBusinessType: str
+    ProperCtrlPassFlag: str
+    CondCheck: str
     IsCacheOrder: int
     Turnover: float
     RtnFloatInfo: float
@@ -1098,7 +1098,7 @@ class CTORATstpHistoryOrderField():
 class CTORATstpQryHistoryTradeField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     InvestorID: str
     BegDate: str
     EndDate: str
@@ -1113,15 +1113,15 @@ class CTORATstpHistoryTradeField():
     InvestorID: str
     SecurityID: str
     UserID: str
-    ExchangeID: int
+    ExchangeID: str
     TradeID: str
-    Direction: int
+    Direction: str
     OrderSysID: str
-    MarketID: int
+    MarketID: str
     ShareholderID: str
     ExchangeInstID: str
-    OffsetFlag: int
-    HedgeFlag: int
+    OffsetFlag: str
+    HedgeFlag: str
     Price: float
     Volume: int
     TradeDate: str
@@ -1139,13 +1139,13 @@ class CTORATstpHistoryTradeField():
 class CTORATstpQryExchangeField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     
     
 class CTORATstpExchangeField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     ExchangeName: str
     TradingDay: str
     
@@ -1154,8 +1154,8 @@ class CTORATstpQryPBUField():
     
     
     PbuID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     
     
 class CTORATstpPBUField():
@@ -1163,15 +1163,15 @@ class CTORATstpPBUField():
     
     PbuID: str
     PbuName: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     
     
 class CTORATstpQryMarketDataField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     
     
 class CTORATstpMarketDataField():
@@ -1179,7 +1179,7 @@ class CTORATstpMarketDataField():
     
     TradingDay: str
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     ExchangeInstID: str
     LastPrice: float
     PreClosePrice: float
@@ -1220,7 +1220,7 @@ class CTORATstpMarketDataField():
     PriceUpDown1: float
     PriceUpDown2: float
     ClosePrice: float
-    MDSecurityStat: int
+    MDSecurityStat: str
     HWFlag: int
     
     
@@ -1228,22 +1228,22 @@ class CTORATstpQrySecurityField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     ExchangeInstID: str
-    ProductID: int
+    ProductID: str
     
     
 class CTORATstpSecurityField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     SecurityName: str
     ExchangeInstID: str
-    MarketID: int
-    ProductID: int
-    SecurityType: int
-    OrderUnit: int
+    MarketID: str
+    ProductID: str
+    SecurityType: str
+    OrderUnit: str
     BuyTradingUnit: int
     SellTradingUnit: int
     MaxMarketOrderBuyVolume: int
@@ -1257,7 +1257,7 @@ class CTORATstpSecurityField():
     VolumeMultiple: int
     PriceTick: float
     OpenDate: str
-    PositionType: int
+    PositionType: str
     ParValue: float
     SecurityStatus: int
     BondInterest: float
@@ -1268,7 +1268,7 @@ class CTORATstpSecurityField():
 class CTORATstpQryETFFileField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     ETFSecurityID: str
     ETFCreRedSecurityID: str
     
@@ -1277,7 +1277,7 @@ class CTORATstpETFFileField():
     
     
     TradingDay: str
-    ExchangeID: int
+    ExchangeID: str
     ETFSecurityID: str
     ETFCreRedSecurityID: str
     CreationRedemptionUnit: int
@@ -1294,7 +1294,7 @@ class CTORATstpETFFileField():
 class CTORATstpQryETFBasketField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     ETFSecurityID: str
     SecurityID: str
     
@@ -1303,12 +1303,12 @@ class CTORATstpETFBasketField():
     
     
     TradingDay: str
-    ExchangeID: int
+    ExchangeID: str
     ETFSecurityID: str
     SecurityID: str
     SecurityName: str
     Volume: int
-    ETFCurrenceReplaceStatus: int
+    ETFCurrenceReplaceStatus: str
     Premium: float
     CreationReplaceAmount: float
     RedemptionReplaceAmount: float
@@ -1331,18 +1331,18 @@ class CTORATstpDepartmentInfoField():
 class CTORATstpQryIPOInfoField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     
     
 class CTORATstpIPOInfoField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
-    MarketID: int
-    ProductID: int
-    SecurityType: int
+    MarketID: str
+    ProductID: str
+    SecurityType: str
     OnlineLimit: int
     Price: float
     CurrencyID: str
@@ -1363,7 +1363,7 @@ class CTORATstpBrokerUserFunctionField():
     
     
     UserID: str
-    FunctionID: int
+    FunctionID: str
     
     
 class CTORATstpQryBUProxyField():
@@ -1386,7 +1386,7 @@ class CTORATstpQryUserField():
     
     
     UserID: str
-    UserType: int
+    UserType: str
     
     
 class CTORATstpUserField():
@@ -1394,7 +1394,7 @@ class CTORATstpUserField():
     
     UserID: str
     UserName: str
-    UserType: int
+    UserType: str
     IsActive: int
     LoginLimit: int
     
@@ -1410,35 +1410,35 @@ class CTORATstpInvestorField():
     
     InvestorID: str
     InvestorName: str
-    IdCardType: int
+    IdCardType: str
     IdCardNo: str
     Telephone: str
     Address: str
     OpenDate: str
     Mobile: str
     Operways: str
-    CRiskLevel: int
-    ProfInvestorType: int
+    CRiskLevel: str
+    ProfInvestorType: str
     
     
 class CTORATstpQryShareholderAccountField():
     
     
     InvestorID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
-    TradingCodeClass: int
+    TradingCodeClass: str
     
     
 class CTORATstpShareholderAccountField():
     
     
     InvestorID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
-    ClientIDType: int
-    MarketID: int
+    ClientIDType: str
+    MarketID: str
     
     
 class CTORATstpQryBusinessUnitField():
@@ -1460,7 +1460,7 @@ class CTORATstpQryBusinessUnitAndTradingAcctField():
     
     InvestorID: str
     BusinessUnitID: str
-    ProductID: int
+    ProductID: str
     AccountID: str
     CurrencyID: str
     
@@ -1470,10 +1470,10 @@ class CTORATstpBusinessUnitAndTradingAcctField():
     
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
-    ProductID: int
+    ProductID: str
     AccountID: str
     CurrencyID: str
     UserID: str
@@ -1484,8 +1484,8 @@ class CTORATstpQryOrderField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     OrderSysID: str
     InsertTimeStart: str
@@ -1501,8 +1501,8 @@ class CTORATstpQryOrderActionField():
     
     
     InvestorID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     BInfo: str
     SInfo: str
@@ -1514,8 +1514,8 @@ class CTORATstpQryTradeField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     TradeID: str
     TradeTimeStart: str
@@ -1529,7 +1529,7 @@ class CTORATstpQryTradingAccountField():
     InvestorID: str
     CurrencyID: str
     AccountID: str
-    AccountType: int
+    AccountType: str
     DepartmentID: str
     
     
@@ -1547,10 +1547,10 @@ class CTORATstpTradingAccountField():
     FrozenCommission: float
     CurrMargin: float
     Commission: float
-    AccountType: int
+    AccountType: str
     AccountOwner: str
     DepartmentID: str
-    BankID: int
+    BankID: str
     BankAccountID: str
     
     
@@ -1559,8 +1559,8 @@ class CTORATstpQryPositionField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     BusinessUnitID: str
     
@@ -1571,8 +1571,8 @@ class CTORATstpPositionField():
     SecurityID: str
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     TradingDay: str
     HistoryPos: int
@@ -1595,17 +1595,17 @@ class CTORATstpPositionField():
 class CTORATstpQryTradingFeeField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     
     
 class CTORATstpTradingFeeField():
     
     
-    ExchangeID: int
-    ProductID: int
-    SecurityType: int
+    ExchangeID: str
+    ProductID: str
+    SecurityType: str
     SecurityID: str
-    BizClass: int
+    BizClass: str
     StampTaxRatioByAmt: float
     StampTaxRatioByPar: float
     StampTaxFeePerOrder: float
@@ -1640,7 +1640,7 @@ class CTORATstpQryInvestorTradingFeeField():
     
     
     InvestorID: str
-    ExchangeID: int
+    ExchangeID: str
     DepartmentID: str
     
     
@@ -1648,12 +1648,12 @@ class CTORATstpInvestorTradingFeeField():
     
     
     InvestorID: str
-    ExchangeID: int
-    ProductID: int
-    SecurityType: int
+    ExchangeID: str
+    ProductID: str
+    SecurityType: str
     SecurityID: str
-    BizClass: int
-    BrokerageType: int
+    BizClass: str
+    BrokerageType: str
     RatioByAmt: float
     RatioByPar: float
     FeePerOrder: float
@@ -1667,8 +1667,8 @@ class CTORATstpQryIPOQuotaField():
     
     
     InvestorID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     
     
@@ -1676,8 +1676,8 @@ class CTORATstpIPOQuotaField():
     
     
     InvestorID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     MaxVolume: int
     
@@ -1685,16 +1685,16 @@ class CTORATstpIPOQuotaField():
 class CTORATstpQryMarketField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     
     
 class CTORATstpMarketField():
     
     
-    MarketID: int
+    MarketID: str
     MarketName: str
-    ExchangeID: int
+    ExchangeID: str
     
     
 class CTORATstpQryOrderFundDetailField():
@@ -1702,7 +1702,7 @@ class CTORATstpQryOrderFundDetailField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     OrderSysID: str
     InsertTimeStart: str
     InsertTimeEnd: str
@@ -1714,7 +1714,7 @@ class CTORATstpOrderFundDetailField():
     
     InvestorID: str
     InstrumentID: str
-    ExchangeID: int
+    ExchangeID: str
     TradingDay: str
     OrderSysID: str
     BusinessUnitID: str
@@ -1736,7 +1736,7 @@ class CTORATstpQryFundTransferDetailField():
     
     AccountID: str
     CurrencyID: str
-    TransferDirection: int
+    TransferDirection: str
     DepartmentID: str
     
     
@@ -1749,16 +1749,16 @@ class CTORATstpFundTransferDetailField():
     SessionID: int
     AccountID: str
     CurrencyID: str
-    TransferDirection: int
+    TransferDirection: str
     Amount: float
-    TransferStatus: int
-    OperateSource: int
+    TransferStatus: str
+    OperateSource: str
     OperatorID: str
     OperateDate: str
     OperateTime: str
     StatusMsg: str
     DepartmentID: str
-    BankID: int
+    BankID: str
     BankAccountID: str
     
     
@@ -1767,7 +1767,7 @@ class CTORATstpQryPositionTransferDetailField():
     
     ShareholderID: str
     SecurityID: str
-    TransferDirection: int
+    TransferDirection: str
     
     
 class CTORATstpPositionTransferDetailField():
@@ -1778,14 +1778,14 @@ class CTORATstpPositionTransferDetailField():
     FrontID: int
     SessionID: int
     InvestorID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
-    MarketID: int
+    MarketID: str
     SecurityID: str
     TradingDay: str
-    TransferDirection: int
-    TransferPositionType: int
-    TransferStatus: int
+    TransferDirection: str
+    TransferPositionType: str
+    TransferStatus: str
     HistoryVolume: int
     TodayBSVolume: int
     TodayPRVolume: int
@@ -1801,8 +1801,8 @@ class CTORATstpQryPledgePositionField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     BusinessUnitID: str
     
@@ -1813,8 +1813,8 @@ class CTORATstpPledgePositionField():
     SecurityID: str
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     TradingDay: str
     HisPledgePos: int
@@ -1828,15 +1828,15 @@ class CTORATstpPledgePositionField():
 class CTORATstpQryPledgeInfoField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     
     
 class CTORATstpPledgeInfoField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     SecurityID: str
     PledgeOrderID: str
     StandardBondID: str
@@ -1856,15 +1856,15 @@ class CTORATstpPledgeInfoField():
 class CTORATstpQryConversionBondInfoField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     
     
 class CTORATstpConversionBondInfoField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     SecurityID: str
     ConvertOrderID: str
     ConvertPrice: float
@@ -1879,15 +1879,15 @@ class CTORATstpConversionBondInfoField():
 class CTORATstpQryBondPutbackInfoField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     
     
 class CTORATstpBondPutbackInfoField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     SecurityID: str
     PutbackOrderID: str
     PutbackPrice: float
@@ -1904,8 +1904,8 @@ class CTORATstpQryStandardBondPositionField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     BusinessUnitID: str
     
@@ -1916,8 +1916,8 @@ class CTORATstpStandardBondPositionField():
     SecurityID: str
     InvestorID: str
     BusinessUnitID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     TradingDay: str
     AvailablePosition: float
@@ -1941,14 +1941,14 @@ class CTORATstpDesignationRegistrationField():
     
     InvestorID: str
     UserID: str
-    DesignationType: int
+    DesignationType: str
     OrderLocalID: str
     ShareholderID: str
     PbuID: str
-    OrderSubmitStatus: int
+    OrderSubmitStatus: str
     TradingDay: str
     OrderSysID: str
-    OrderStatus: int
+    OrderStatus: str
     InsertDate: str
     InsertTime: str
     StatusMsg: str
@@ -1975,14 +1975,14 @@ class CTORATstpCustodyTransferField():
     
     InvestorID: str
     UserID: str
-    CustodyTransferType: int
+    CustodyTransferType: str
     OrderLocalID: str
     ShareholderID: str
     PbuID: str
-    OrderSubmitStatus: int
+    OrderSubmitStatus: str
     TradingDay: str
     OrderSysID: str
-    OrderStatus: int
+    OrderStatus: str
     InsertDate: str
     InsertTime: str
     StatusMsg: str
@@ -2003,14 +2003,14 @@ class CTORATstpQrySpecialMarketDataField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     
     
 class CTORATstpSpecialMarketDataField():
     
     
     TradingDay: str
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     SecurityName: str
     MovingAvgPrice: float
@@ -2024,22 +2024,22 @@ class CTORATstpQryPrematurityRepoOrderField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
     BusinessUnitID: str
     OrderLocalID: str
-    ProductID: int
-    SecurityType: int
-    Direction: int
+    ProductID: str
+    SecurityType: str
+    Direction: str
     TradeID: str
     
     
 class CTORATstpPrematurityRepoOrderField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     InvestorID: str
     ShareholderID: str
     BusinessUnitID: str
@@ -2048,9 +2048,9 @@ class CTORATstpPrematurityRepoOrderField():
     OrderLocalID: str
     SecurityID: str
     SecurityName: str
-    ProductID: int
-    SecurityType: int
-    Direction: int
+    ProductID: str
+    SecurityType: str
+    Direction: str
     VolumeTraded: int
     Price: float
     Turnover: float
@@ -2062,27 +2062,27 @@ class CTORATstpPrematurityRepoOrderField():
 class CTORATstpQryShareholderParamField():
     
     
-    MarketID: int
+    MarketID: str
     ShareholderID: str
-    TradingCodeClass: int
-    ProductID: int
-    SecurityType: int
+    TradingCodeClass: str
+    ProductID: str
+    SecurityType: str
     SecurityID: str
-    ParamType: int
-    ExchangeID: int
+    ParamType: str
+    ExchangeID: str
     
     
 class CTORATstpShareholderParamField():
     
     
-    ExchangeID: int
-    MarketID: int
+    ExchangeID: str
+    MarketID: str
     ShareholderID: str
-    TradingCodeClass: int
-    ProductID: int
-    SecurityType: int
+    TradingCodeClass: str
+    ProductID: str
+    SecurityType: str
     SecurityID: str
-    ParamType: int
+    ParamType: str
     ParamValue: str
     
     
@@ -2092,7 +2092,7 @@ class CTORATstpQryPeripheryPositionTransferDetailField():
     InvestorID: str
     ShareholderID: str
     SecurityID: str
-    TransferDirection: int
+    TransferDirection: str
     BusinessUnitID: str
     
     
@@ -2115,7 +2115,7 @@ class CTORATstpQryCondOrderField():
     
     InvestorID: str
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     CondOrderID: int
     InsertTimeStart: str
@@ -2129,16 +2129,16 @@ class CTORATstpQryCondOrderField():
 class CTORATstpCondOrderField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     InvestorID: str
     BusinessUnitID: str
     ShareholderID: str
     SecurityID: str
-    Direction: int
-    OrderPriceType: int
-    OrderVolumeType: int
-    TimeCondition: int
-    VolumeCondition: int
+    Direction: str
+    OrderPriceType: str
+    OrderVolumeType: str
+    TimeCondition: str
+    VolumeCondition: str
     LimitPrice: float
     VolumeTotalOriginal: int
     CombOffsetFlag: str
@@ -2154,22 +2154,22 @@ class CTORATstpCondOrderField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
-    CondCheck: int
-    ContingentCondition: int
+    Operway: str
+    CondCheck: str
+    ContingentCondition: str
     ConditionPrice: float
     PriceTicks: int
     VolumeMultiple: int
     RelativeFrontID: int
     RelativeSessionID: int
     RelativeParam: str
-    AppendContingentCondition: int
+    AppendContingentCondition: str
     AppendConditionPrice: float
     AppendRelativeFrontID: int
     AppendRelativeSessionID: int
     AppendRelativeParam: str
     TradingDay: str
-    CondOrderStatus: int
+    CondOrderStatus: str
     InsertDate: str
     InsertTime: str
     CancelTime: str
@@ -2179,8 +2179,8 @@ class CTORATstpCondOrderField():
     UserProductInfo: str
     StatusMsg: str
     DepartmentID: str
-    ProperCtrlBusinessType: int
-    ProperCtrlPassFlag: int
+    ProperCtrlBusinessType: str
+    ProperCtrlPassFlag: str
     ActiveDate: str
     ActiveTime: str
     
@@ -2189,7 +2189,7 @@ class CTORATstpQryCondOrderActionField():
     
     
     InvestorID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     BInfo: str
     SInfo: str
@@ -2199,14 +2199,14 @@ class CTORATstpQryCondOrderActionField():
 class CTORATstpCondOrderActionField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     RequestID: int
     CondOrderActionRef: str
     CondOrderRef: str
     FrontID: int
     SessionID: int
     CondOrderID: int
-    ActionFlag: int
+    ActionFlag: str
     InvestorID: str
     SecurityID: str
     UserID: str
@@ -2217,7 +2217,7 @@ class CTORATstpCondOrderActionField():
     BInfo: str
     SInfo: str
     IInfo: int
-    Operway: int
+    Operway: str
     BusinessUnitID: str
     ShareholderID: str
     ActionDate: str
@@ -2266,19 +2266,19 @@ class CTORATstpQryIPONumberResultField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     
     
 class CTORATstpIPONumberResultField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     Day: str
     SecurityName: str
     ShareholderID: str
-    SecurityType: int
+    SecurityType: str
     BeginNumberID: str
     Volume: int
     
@@ -2287,7 +2287,7 @@ class CTORATstpQryIPOMatchNumberResultField():
     
     
     SecurityID: str
-    ExchangeID: int
+    ExchangeID: str
     ShareholderID: str
     MatchNumberID: str
     
@@ -2295,12 +2295,12 @@ class CTORATstpQryIPOMatchNumberResultField():
 class CTORATstpIPOMatchNumberResultField():
     
     
-    ExchangeID: int
+    ExchangeID: str
     SecurityID: str
     Day: str
     SecurityName: str
     ShareholderID: str
-    SecurityType: int
+    SecurityType: str
     MatchNumberID: str
     Volume: int
     Price: float
@@ -2312,37 +2312,37 @@ class CTORATstpMdSpi():
     
     
     
-    def OnFrontConnected(self, )->Any:
+    def OnFrontConnected(self, )->None:
         ...
-    def OnFrontDisconnected(self, nReason: int)->Any:
+    def OnFrontDisconnected(self, nReason: int)->None:
         ...
-    def OnRspError(self, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspError(self, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUserLogin(self, pRspUserLogin: CTORATstpRspUserLoginField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUserLogin(self, pRspUserLogin: CTORATstpRspUserLoginField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUserLogout(self, pUserLogout: CTORATstpUserLogoutField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUserLogout(self, pUserLogout: CTORATstpUserLogoutField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspSubMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspSubMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUnSubMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUnSubMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspSubSpecialMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspSubSpecialMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUnSubSpecialMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUnSubSpecialMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspSubFundsFlowMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspSubFundsFlowMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUnSubFundsFlowMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUnSubFundsFlowMarketData(self, pSpecificSecurity: CTORATstpSpecificSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRtnDepthMarketData(self, pDepthMarketData: CTORATstpMarketDataField)->Any:
+    def OnRtnDepthMarketData(self, pDepthMarketData: CTORATstpMarketDataField)->None:
         ...
-    def OnRtnSpecialMarketData(self, pSpecialMarketData: CTORATstpSpecialMarketDataField)->Any:
+    def OnRtnSpecialMarketData(self, pSpecialMarketData: CTORATstpSpecialMarketDataField)->None:
         ...
-    def OnRtnEffectPriceMarketData(self, pEffectPriceMarketData: CTORATstpEffectPriceMarketDataField)->Any:
+    def OnRtnEffectPriceMarketData(self, pEffectPriceMarketData: CTORATstpEffectPriceMarketDataField)->None:
         ...
-    def OnRtnEffectVolumeMarketData(self, pEffectVolumeMarketData: CTORATstpEffectVolumeMarketDataField)->Any:
+    def OnRtnEffectVolumeMarketData(self, pEffectVolumeMarketData: CTORATstpEffectVolumeMarketDataField)->None:
         ...
-    def OnRtnFundsFlowMarketData(self, pFundsFlowMarketData: CTORATstpFundsFlowMarketDataField)->Any:
+    def OnRtnFundsFlowMarketData(self, pFundsFlowMarketData: CTORATstpFundsFlowMarketDataField)->None:
         ...
 class CTORATstpMdApi():
     
@@ -2355,31 +2355,31 @@ class CTORATstpMdApi():
     @staticmethod
     def GetApiVersion()->str:
         ...
-    def Release(self, )->Any:
+    def Release(self, )->None:
         ...
-    def Init(self, )->Any:
+    def Init(self, )->None:
         ...
     def Join(self, )->int:
         ...
-    def RegisterFront(self, pszFrontAddress: str)->Any:
+    def RegisterFront(self, pszFrontAddress: str)->None:
         ...
-    def RegisterNameServer(self, pszNsAddress: str)->Any:
+    def RegisterNameServer(self, pszNsAddress: str)->None:
         ...
-    def RegisterDeriveServer(self, pszDeriveAddress: str)->Any:
+    def RegisterDeriveServer(self, pszDeriveAddress: str)->None:
         ...
-    def RegisterSpi(self, pSpi: CTORATstpMdSpi)->Any:
+    def RegisterSpi(self, pSpi: CTORATstpMdSpi)->None:
         ...
-    def SubscribeMarketData(self, ppSecurityID: List[str], ExchageID: int)->int:
+    def SubscribeMarketData(self, ppSecurityID: List[str], ExchageID: str)->int:
         ...
-    def UnSubscribeMarketData(self, ppSecurityID: List[str], ExchageID: int)->int:
+    def UnSubscribeMarketData(self, ppSecurityID: List[str], ExchageID: str)->int:
         ...
-    def SubscribeSpecialMarketData(self, ppSecurityID: List[str], ExchageID: int)->int:
+    def SubscribeSpecialMarketData(self, ppSecurityID: List[str], ExchageID: str)->int:
         ...
-    def UnSubscribeSpecialMarketData(self, ppSecurityID: List[str], ExchageID: int)->int:
+    def UnSubscribeSpecialMarketData(self, ppSecurityID: List[str], ExchageID: str)->int:
         ...
-    def SubscribeFundsFlowMarketData(self, ppInstrumentID: List[str], ExchageID: int)->int:
+    def SubscribeFundsFlowMarketData(self, ppInstrumentID: List[str], ExchageID: str)->int:
         ...
-    def UnSubscribeFundsFlowMarketData(self, ppInstrumentID: List[str], ExchageID: int)->int:
+    def UnSubscribeFundsFlowMarketData(self, ppInstrumentID: List[str], ExchageID: str)->int:
         ...
     def ReqUserLogin(self, pReqUserLoginField: CTORATstpReqUserLoginField, nRequestID: int)->int:
         ...
@@ -2390,145 +2390,145 @@ class CTORATstpTraderSpi():
     
     
     
-    def OnFrontConnected(self, )->Any:
+    def OnFrontConnected(self, )->None:
         ...
-    def OnFrontDisconnected(self, nReason: int)->Any:
+    def OnFrontDisconnected(self, nReason: int)->None:
         ...
-    def OnRspError(self, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspError(self, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUserLogin(self, pRspUserLoginField: CTORATstpRspUserLoginField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUserLogin(self, pRspUserLoginField: CTORATstpRspUserLoginField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUserLogout(self, pUserLogoutField: CTORATstpUserLogoutField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUserLogout(self, pUserLogoutField: CTORATstpUserLogoutField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspUserPasswordUpdate(self, pUserPasswordUpdateField: CTORATstpUserPasswordUpdateField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspUserPasswordUpdate(self, pUserPasswordUpdateField: CTORATstpUserPasswordUpdateField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspInputDeviceSerial(self, pRspInputDeviceSerialField: CTORATstpRspInputDeviceSerialField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInputDeviceSerial(self, pRspInputDeviceSerialField: CTORATstpRspInputDeviceSerialField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspOrderInsert(self, pInputOrderField: CTORATstpInputOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspOrderInsert(self, pInputOrderField: CTORATstpInputOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRtnOrder(self, pOrder: CTORATstpOrderField)->Any:
+    def OnRtnOrder(self, pOrder: CTORATstpOrderField)->None:
         ...
-    def OnErrRtnOrderInsert(self, pInputOrder: CTORATstpInputOrderField, pRspInfo: CTORATstpRspInfoField)->Any:
+    def OnErrRtnOrderInsert(self, pInputOrder: CTORATstpInputOrderField, pRspInfo: CTORATstpRspInfoField)->None:
         ...
-    def OnRspOrderAction(self, pInputOrderActionField: CTORATstpInputOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspOrderAction(self, pInputOrderActionField: CTORATstpInputOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnErrRtnOrderAction(self, pOrderAction: CTORATstpOrderActionField, pRspInfo: CTORATstpRspInfoField)->Any:
+    def OnErrRtnOrderAction(self, pOrderAction: CTORATstpOrderActionField, pRspInfo: CTORATstpRspInfoField)->None:
         ...
-    def OnRtnTrade(self, pTrade: CTORATstpTradeField)->Any:
+    def OnRtnTrade(self, pTrade: CTORATstpTradeField)->None:
         ...
-    def OnRtnMarketStatus(self, pMarketStatus: CTORATstpMarketStatusField)->Any:
+    def OnRtnMarketStatus(self, pMarketStatus: CTORATstpMarketStatusField)->None:
         ...
-    def OnRspCondOrderInsert(self, pInputCondOrderField: CTORATstpInputCondOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspCondOrderInsert(self, pInputCondOrderField: CTORATstpInputCondOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRtnCondOrder(self, pConditionOrder: CTORATstpConditionOrderField)->Any:
+    def OnRtnCondOrder(self, pConditionOrder: CTORATstpConditionOrderField)->None:
         ...
-    def OnErrRtnCondOrderInsert(self, pInputCondOrder: CTORATstpInputCondOrderField, pRspInfo: CTORATstpRspInfoField)->Any:
+    def OnErrRtnCondOrderInsert(self, pInputCondOrder: CTORATstpInputCondOrderField, pRspInfo: CTORATstpRspInfoField)->None:
         ...
-    def OnRspCondOrderAction(self, pInputCondOrderActionField: CTORATstpInputCondOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspCondOrderAction(self, pInputCondOrderActionField: CTORATstpInputCondOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnErrRtnCondOrderAction(self, pInputCondOrderAction: CTORATstpInputCondOrderActionField, pRspInfo: CTORATstpRspInfoField)->Any:
+    def OnErrRtnCondOrderAction(self, pInputCondOrderAction: CTORATstpInputCondOrderActionField, pRspInfo: CTORATstpRspInfoField)->None:
         ...
-    def OnRspInquiryJZFund(self, pRspInquiryJZFundField: CTORATstpRspInquiryJZFundField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInquiryJZFund(self, pRspInquiryJZFundField: CTORATstpRspInquiryJZFundField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspTransferFund(self, pInputTransferFundField: CTORATstpInputTransferFundField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspTransferFund(self, pInputTransferFundField: CTORATstpInputTransferFundField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRtnTransferFund(self, pTransferFund: CTORATstpTransferFundField)->Any:
+    def OnRtnTransferFund(self, pTransferFund: CTORATstpTransferFundField)->None:
         ...
-    def OnErrRtnTransferFund(self, pInputTransferFund: CTORATstpInputTransferFundField, pRspInfo: CTORATstpRspInfoField)->Any:
+    def OnErrRtnTransferFund(self, pInputTransferFund: CTORATstpInputTransferFundField, pRspInfo: CTORATstpRspInfoField)->None:
         ...
-    def OnRtnTransferPosition(self, pTransferPosition: CTORATstpTransferPositionField)->Any:
+    def OnRtnTransferPosition(self, pTransferPosition: CTORATstpTransferPositionField)->None:
         ...
-    def OnErrRtnTransferPosition(self, pInputTransferPosition: CTORATstpInputTransferPositionField, pRspInfo: CTORATstpRspInfoField)->Any:
+    def OnErrRtnTransferPosition(self, pInputTransferPosition: CTORATstpInputTransferPositionField, pRspInfo: CTORATstpRspInfoField)->None:
         ...
-    def OnRspTransferCollateral(self, pInputTransferCollateralField: CTORATstpInputTransferCollateralField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspTransferCollateral(self, pInputTransferCollateralField: CTORATstpInputTransferCollateralField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspInquiryBankAccountFund(self, pRspInquiryBankAccountFundField: CTORATstpRspInquiryBankAccountFundField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInquiryBankAccountFund(self, pRspInquiryBankAccountFundField: CTORATstpRspInquiryBankAccountFundField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspInquiryTradeConcentration(self, pInquiryTradeConcentrationField: CTORATstpInquiryTradeConcentrationField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInquiryTradeConcentration(self, pInquiryTradeConcentrationField: CTORATstpInquiryTradeConcentrationField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRtnTradingNotice(self, pTradingNotice: CTORATstpTradingNoticeField)->Any:
+    def OnRtnTradingNotice(self, pTradingNotice: CTORATstpTradingNoticeField)->None:
         ...
-    def OnRspInquiryMaxOrderVolume(self, pRspInquiryMaxOrderVolumeField: CTORATstpRspInquiryMaxOrderVolumeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInquiryMaxOrderVolume(self, pRspInquiryMaxOrderVolumeField: CTORATstpRspInquiryMaxOrderVolumeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRtnPeripheryTransferPosition(self, pPeripheryPositionTransferDetail: CTORATstpPeripheryPositionTransferDetailField)->Any:
+    def OnRtnPeripheryTransferPosition(self, pPeripheryPositionTransferDetail: CTORATstpPeripheryPositionTransferDetailField)->None:
         ...
-    def OnRspInquiryHistoryOrder(self, pHistoryOrderField: CTORATstpHistoryOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInquiryHistoryOrder(self, pHistoryOrderField: CTORATstpHistoryOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspInquiryHistoryTrade(self, pHistoryTradeField: CTORATstpHistoryTradeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspInquiryHistoryTrade(self, pHistoryTradeField: CTORATstpHistoryTradeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryExchange(self, pExchange: CTORATstpExchangeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryExchange(self, pExchange: CTORATstpExchangeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryMarketData(self, pMarketData: CTORATstpMarketDataField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryMarketData(self, pMarketData: CTORATstpMarketDataField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQrySecurity(self, pSecurity: CTORATstpSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQrySecurity(self, pSecurity: CTORATstpSecurityField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryETFFile(self, pETFFile: CTORATstpETFFileField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryETFFile(self, pETFFile: CTORATstpETFFileField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryETFBasket(self, pETFBasket: CTORATstpETFBasketField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryETFBasket(self, pETFBasket: CTORATstpETFBasketField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryIPOInfo(self, pIPOInfo: CTORATstpIPOInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryIPOInfo(self, pIPOInfo: CTORATstpIPOInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryBUProxy(self, pBUProxy: CTORATstpBUProxyField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryBUProxy(self, pBUProxy: CTORATstpBUProxyField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryUser(self, pUser: CTORATstpUserField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryUser(self, pUser: CTORATstpUserField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryInvestor(self, pInvestor: CTORATstpInvestorField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryInvestor(self, pInvestor: CTORATstpInvestorField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryShareholderAccount(self, pShareholderAccount: CTORATstpShareholderAccountField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryShareholderAccount(self, pShareholderAccount: CTORATstpShareholderAccountField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryOrder(self, pOrder: CTORATstpOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryOrder(self, pOrder: CTORATstpOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryOrderAction(self, pOrderAction: CTORATstpOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryOrderAction(self, pOrderAction: CTORATstpOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryTrade(self, pTrade: CTORATstpTradeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryTrade(self, pTrade: CTORATstpTradeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryTradingAccount(self, pTradingAccount: CTORATstpTradingAccountField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryTradingAccount(self, pTradingAccount: CTORATstpTradingAccountField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryPosition(self, pPosition: CTORATstpPositionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryPosition(self, pPosition: CTORATstpPositionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryTradingFee(self, pTradingFee: CTORATstpTradingFeeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryTradingFee(self, pTradingFee: CTORATstpTradingFeeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryInvestorTradingFee(self, pInvestorTradingFee: CTORATstpInvestorTradingFeeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryInvestorTradingFee(self, pInvestorTradingFee: CTORATstpInvestorTradingFeeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryIPOQuota(self, pIPOQuota: CTORATstpIPOQuotaField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryIPOQuota(self, pIPOQuota: CTORATstpIPOQuotaField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryMarket(self, pMarket: CTORATstpMarketField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryMarket(self, pMarket: CTORATstpMarketField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryOrderFundDetail(self, pOrderFundDetail: CTORATstpOrderFundDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryOrderFundDetail(self, pOrderFundDetail: CTORATstpOrderFundDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryFundTransferDetail(self, pFundTransferDetail: CTORATstpFundTransferDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryFundTransferDetail(self, pFundTransferDetail: CTORATstpFundTransferDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryPositionTransferDetail(self, pPositionTransferDetail: CTORATstpPositionTransferDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryPositionTransferDetail(self, pPositionTransferDetail: CTORATstpPositionTransferDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryPledgePosition(self, pPledgePosition: CTORATstpPledgePositionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryPledgePosition(self, pPledgePosition: CTORATstpPledgePositionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryPledgeInfo(self, pPledgeInfo: CTORATstpPledgeInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryPledgeInfo(self, pPledgeInfo: CTORATstpPledgeInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryConversionBondInfo(self, pConversionBondInfo: CTORATstpConversionBondInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryConversionBondInfo(self, pConversionBondInfo: CTORATstpConversionBondInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryBondPutbackInfo(self, pBondPutbackInfo: CTORATstpBondPutbackInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryBondPutbackInfo(self, pBondPutbackInfo: CTORATstpBondPutbackInfoField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryStandardBondPosition(self, pStandardBondPosition: CTORATstpStandardBondPositionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryStandardBondPosition(self, pStandardBondPosition: CTORATstpStandardBondPositionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQrySpecialMarketData(self, pSpecialMarketData: CTORATstpSpecialMarketDataField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQrySpecialMarketData(self, pSpecialMarketData: CTORATstpSpecialMarketDataField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryPrematurityRepoOrder(self, pPrematurityRepoOrder: CTORATstpPrematurityRepoOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryPrematurityRepoOrder(self, pPrematurityRepoOrder: CTORATstpPrematurityRepoOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryShareholderParam(self, pShareholderParam: CTORATstpShareholderParamField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryShareholderParam(self, pShareholderParam: CTORATstpShareholderParamField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryPeripheryPositionTransferDetail(self, pPeripheryPositionTransferDetail: CTORATstpPeripheryPositionTransferDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryPeripheryPositionTransferDetail(self, pPeripheryPositionTransferDetail: CTORATstpPeripheryPositionTransferDetailField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryInvestorCondOrderLimitParam(self, pInvestorCondOrderLimitParam: CTORATstpInvestorCondOrderLimitParamField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryInvestorCondOrderLimitParam(self, pInvestorCondOrderLimitParam: CTORATstpInvestorCondOrderLimitParamField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryCondOrder(self, pCondOrder: CTORATstpCondOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryCondOrder(self, pCondOrder: CTORATstpCondOrderField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryCondOrderAction(self, pCondOrderAction: CTORATstpCondOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryCondOrderAction(self, pCondOrderAction: CTORATstpCondOrderActionField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryTradingNotice(self, pTradingNotice: CTORATstpTradingNoticeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryTradingNotice(self, pTradingNotice: CTORATstpTradingNoticeField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryIPONumberResult(self, pIPONumberResult: CTORATstpIPONumberResultField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryIPONumberResult(self, pIPONumberResult: CTORATstpIPONumberResultField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
-    def OnRspQryIPOMatchNumberResult(self, pIPOMatchNumberResult: CTORATstpIPOMatchNumberResultField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->Any:
+    def OnRspQryIPOMatchNumberResult(self, pIPOMatchNumberResult: CTORATstpIPOMatchNumberResultField, pRspInfo: CTORATstpRspInfoField, nRequestID: int, bIsLast: bool)->None:
         ...
 class CTORATstpTraderApi():
     
@@ -2541,23 +2541,23 @@ class CTORATstpTraderApi():
     @staticmethod
     def GetApiVersion()->str:
         ...
-    def Release(self, )->Any:
+    def Release(self, )->None:
         ...
-    def Init(self, )->Any:
+    def Init(self, )->None:
         ...
     def Join(self, )->int:
         ...
-    def RegisterFront(self, pszFrontAddress: str)->Any:
+    def RegisterFront(self, pszFrontAddress: str)->None:
         ...
-    def RegisterNameServer(self, pszNsAddress: str)->Any:
+    def RegisterNameServer(self, pszNsAddress: str)->None:
         ...
-    def RegisterDeriveServer(self, pszDeriveAddress: str)->Any:
+    def RegisterDeriveServer(self, pszDeriveAddress: str)->None:
         ...
-    def RegisterSpi(self, pSpi: CTORATstpTraderSpi)->Any:
+    def RegisterSpi(self, pSpi: CTORATstpTraderSpi)->None:
         ...
-    def SubscribePrivateTopic(self, nResumeType: TORA_TE_RESUME_TYPE)->Any:
+    def SubscribePrivateTopic(self, nResumeType: TORA_TE_RESUME_TYPE)->None:
         ...
-    def SubscribePublicTopic(self, nResumeType: TORA_TE_RESUME_TYPE)->Any:
+    def SubscribePublicTopic(self, nResumeType: TORA_TE_RESUME_TYPE)->None:
         ...
     def ReqUserLogin(self, pReqUserLoginField: CTORATstpReqUserLoginField, nRequestID: int)->int:
         ...
@@ -2686,8 +2686,8 @@ TTORATstpRoleDescriptionType = str
 TTORATstpFunctionsType = str
 TTORATstpDeviceIDType = str
 TTORATstpDeviceSerialType = str
-TTORATstpExchangeIDType = int
-TTORATstpAuthModeType = int
+TTORATstpExchangeIDType = str
+TTORATstpAuthModeType = str
 TTORATstpVolumeMultipleType = int
 TTORATstpIdCardNoType = str
 TTORATstpUserIDType = str
@@ -2701,11 +2701,11 @@ TTORATstpProductInfoType = str
 TTORATstpProtocolInfoType = str
 TTORATstpErrorIDType = int
 TTORATstpErrorMsgType = str
-TTORATstpPositionTypeType = int
+TTORATstpPositionTypeType = str
 TTORATstpParameterCharValType = str
 TTORATstpNameType = str
 TTORATstpListingMarketType = str
-TTORATstpProductIDType = int
+TTORATstpProductIDType = str
 TTORATstpSecurityIDType = str
 TTORATstpParValueType = float
 TTORATstpPriceTickType = float
@@ -2737,7 +2737,7 @@ TTORATstpInvestorNameType = str
 TTORATstpUserNameType = str
 TTORATstpLoginLimitType = int
 TTORATstpCurrencyIDType = str
-TTORATstpBankIDType = int
+TTORATstpBankIDType = str
 TTORATstpBankAccountIDType = str
 TTORATstpTransferReasonType = str
 TTORATstpCombOffsetFlagType = str
@@ -2748,568 +2748,568 @@ TTORATstpMobileType = str
 TTORATstpTraderIDType = str
 TTORATstpLongVolumeType = int
 TTORATstpLongSequenceType = int
-TTORATstpOrderUnitType = int
-TTORATstpIdCardTypeType = int
-TTORATstpAccountTypeType = int
-TTORATstpDirectionType = int
-TTORATstpBrokerageTypeType = int
-TTORATstpUserTypeType = int
-TTORATstpContingentConditionType = int
-TTORATstpETFCurrenceReplaceStatusType = int
-TTORATstpOperateSourceType = int
-TTORATstpOperwayType = int
+TTORATstpOrderUnitType = str
+TTORATstpIdCardTypeType = str
+TTORATstpAccountTypeType = str
+TTORATstpDirectionType = str
+TTORATstpBrokerageTypeType = str
+TTORATstpUserTypeType = str
+TTORATstpContingentConditionType = str
+TTORATstpETFCurrenceReplaceStatusType = str
+TTORATstpOperateSourceType = str
+TTORATstpOperwayType = str
 TTORATstpOperwaysType = str
-TTORATstpOrderPriceTypeType = int
-TTORATstpOrderVolumeTypeType = int
-TTORATstpTimeConditionType = int
-TTORATstpVolumeConditionType = int
-TTORATstpForceCloseReasonType = int
-TTORATstpFileOrderTypeType = int
-TTORATstpTransferDirectionType = int
-TTORATstpCollateralDirectionType = int
-TTORATstpTransferStatusType = int
-TTORATstpTransferPositionTypeType = int
+TTORATstpOrderPriceTypeType = str
+TTORATstpOrderVolumeTypeType = str
+TTORATstpTimeConditionType = str
+TTORATstpVolumeConditionType = str
+TTORATstpForceCloseReasonType = str
+TTORATstpFileOrderTypeType = str
+TTORATstpTransferDirectionType = str
+TTORATstpCollateralDirectionType = str
+TTORATstpTransferStatusType = str
+TTORATstpTransferPositionTypeType = str
 TTORATstpSystemNameType = str
 TTORATstpRelativeCondParamType = str
-TTORATstpOrderStatusType = int
-TTORATstpCondOrderStatusType = int
-TTORATstpOrderSubmitStatusType = int
-TTORATstpOrderTypeType = int
-TTORATstpOffsetFlagType = int
-TTORATstpHedgeFlagType = int
-TTORATstpActionFlagType = int
-TTORATstpOrderActionStatusType = int
-TTORATstpClientIDTypeType = int
-TTORATstpBizClassType = int
-TTORATstpCreditPositionTypeType = int
-TTORATstpFunctionIDType = int
-TTORATstpSecurityTypeType = int
-TTORATstpEndFlagType = int
-TTORATstpMarketIDType = int
+TTORATstpOrderStatusType = str
+TTORATstpCondOrderStatusType = str
+TTORATstpOrderSubmitStatusType = str
+TTORATstpOrderTypeType = str
+TTORATstpOffsetFlagType = str
+TTORATstpHedgeFlagType = str
+TTORATstpActionFlagType = str
+TTORATstpOrderActionStatusType = str
+TTORATstpClientIDTypeType = str
+TTORATstpBizClassType = str
+TTORATstpCreditPositionTypeType = str
+TTORATstpFunctionIDType = str
+TTORATstpSecurityTypeType = str
+TTORATstpEndFlagType = str
+TTORATstpMarketIDType = str
 TTORATstpLogInAccountType = str
-TTORATstpLogInAccountTypeType = int
-TTORATstpMarketStatusType = int
+TTORATstpLogInAccountTypeType = str
+TTORATstpMarketStatusType = str
 TTORATstpBigsInfoType = str
 TTORATstpShortsInfoType = str
 TTORATstpIntInfoType = int
 TTORATstpFloatInfoType = float
 TTORATstpApiGroupIDType = int
-TTORATstpApiRunModeType = int
-TTORATstpDesignationTypeType = int
-TTORATstpCustodyTransferTypeType = int
-TTORATstpProperCtrlBusinessTypeType = int
-TTORATstpProperCtrlPassFlagType = int
-TTORATstpCRiskLevelType = int
-TTORATstpProfInvestorTypeType = int
-TTORATstpLOrderTypeType = int
-TTORATstpLSideType = int
-TTORATstpExecTypeType = int
-TTORATstpCondCheckType = int
+TTORATstpApiRunModeType = str
+TTORATstpDesignationTypeType = str
+TTORATstpCustodyTransferTypeType = str
+TTORATstpProperCtrlBusinessTypeType = str
+TTORATstpProperCtrlPassFlagType = str
+TTORATstpCRiskLevelType = str
+TTORATstpProfInvestorTypeType = str
+TTORATstpLOrderTypeType = str
+TTORATstpLSideType = str
+TTORATstpExecTypeType = str
+TTORATstpCondCheckType = str
 TTORATstpHDSerialType = str
-TTORATstpMDSubModeType = int
-TTORATstpMDSecurityStatType = int
-TTORATstpCommitStatusType = int
-TTORATstpParamTypeType = int
+TTORATstpMDSubModeType = str
+TTORATstpMDSecurityStatType = str
+TTORATstpCommitStatusType = str
+TTORATstpParamTypeType = str
 TTORATstpContentType = str
 TTORATstpStatusMsgType = str
 TTORATstpIPONumberIDType = str
 TTORATstpPageLocateType = int
 CHAR_NULL_VAL: int
-TORA_TSTP_EXD_SSE_FO: int
-TORA_TSTP_EXD_SZSE_FO: int
-TORA_TSTP_EXD_COMM: int
-TORA_TSTP_EXD_SSE: int
-TORA_TSTP_EXD_SZSE: int
-TORA_TSTP_EXD_HK: int
-TORA_TSTP_AM_Password: int
-TORA_TSTP_AM_FingerPrint: int
-TORA_TSTP_PT_Net: int
-TORA_TSTP_PT_Gross: int
-TORA_TSTP_PID_COMMON: int
-TORA_TSTP_PID_SHStock: int
-TORA_TSTP_PID_SHWarrant: int
-TORA_TSTP_PID_SHFund: int
-TORA_TSTP_PID_SHBond: int
-TORA_TSTP_PID_SHStandard: int
-TORA_TSTP_PID_SHRepurchase: int
-TORA_TSTP_PID_SZStock: int
-TORA_TSTP_PID_SZWarrant: int
-TORA_TSTP_PID_SZFund: int
-TORA_TSTP_PID_SZBond: int
-TORA_TSTP_PID_SZStandard: int
-TORA_TSTP_PID_SZRepurchase: int
-TORA_TSTP_BKID_CCB: int
-TORA_TSTP_BKID_ABC: int
-TORA_TSTP_BKID_ICBC: int
-TORA_TSTP_BKID_BOC: int
-TORA_TSTP_BKID_CMB: int
-TORA_TSTP_BKID_BC: int
-TORA_TSTP_BKID_SPDB: int
-TORA_TSTP_BKID_CIB: int
-TORA_TSTP_BKID_CEB: int
-TORA_TSTP_BKID_GDB: int
-TORA_TSTP_BKID_NJCB: int
-TORA_TSTP_BKID_SHCB: int
-TORA_TSTP_BKID_CITICB: int
-TORA_TSTP_BKID_HXB: int
-TORA_TSTP_BKID_CMBC: int
-TORA_TSTP_BKID_PACB: int
-TORA_TSTP_BKID_NBCB: int
-TORA_TSTP_OUT_Shou: int
-TORA_TSTP_OUT_Gu: int
-TORA_TSTP_OUT_Fen: int
-TORA_TSTP_OUT_Zhang: int
-TORA_TSTP_ICT_EID: int
-TORA_TSTP_ICT_IDCard: int
-TORA_TSTP_ICT_OfficerIDCard: int
-TORA_TSTP_ICT_PoliceIDCard: int
-TORA_TSTP_ICT_SoldierIDCard: int
-TORA_TSTP_ICT_HouseholdRegister: int
-TORA_TSTP_ICT_Passport: int
-TORA_TSTP_ICT_TaiwanCompatriotIDCard: int
-TORA_TSTP_ICT_HomeComingCard: int
-TORA_TSTP_ICT_LicenseNo: int
-TORA_TSTP_ICT_TaxNo: int
-TORA_TSTP_ICT_HMMainlandTravelPermit: int
-TORA_TSTP_ICT_TwMainlandTravelPermit: int
-TORA_TSTP_ICT_DrivingLicense: int
-TORA_TSTP_ICT_SocialID: int
-TORA_TSTP_ICT_LocalID: int
-TORA_TSTP_ICT_BusinessRegistration: int
-TORA_TSTP_ICT_HKMCIDCard: int
-TORA_TSTP_ICT_AccountsPermits: int
-TORA_TSTP_ICT_OtherCard: int
-TORA_TSTP_FAT_Normal: int
-TORA_TSTP_FAT_Credit: int
-TORA_TSTP_FAT_Derivatives: int
-TORA_TSTP_D_Buy: int
-TORA_TSTP_D_Sell: int
-TORA_TSTP_D_ETFPur: int
-TORA_TSTP_D_ETFRed: int
-TORA_TSTP_D_IPO: int
-TORA_TSTP_D_Repurchase: int
-TORA_TSTP_D_ReverseRepur: int
-TORA_TSTP_D_OeFundPur: int
-TORA_TSTP_D_OeFundRed: int
-TORA_TSTP_D_CollateralIn: int
-TORA_TSTP_D_CollateralOut: int
-TORA_TSTP_D_PledgeIn: int
-TORA_TSTP_D_PledgeOut: int
-TORA_TSTP_D_Rationed: int
-TORA_TSTP_D_Split: int
-TORA_TSTP_D_Merge: int
-TORA_TSTP_D_MarginBuy: int
-TORA_TSTP_D_ShortSell: int
-TORA_TSTP_D_SellRepayment: int
-TORA_TSTP_D_BuyRepayment: int
-TORA_TSTP_D_SecurityRepay: int
-TORA_TSTP_D_RemainTransfer: int
-TORA_TSTP_D_BondConvertStock: int
-TORA_TSTP_D_BondPutback: int
-TORA_TSTP_BT_Gross: int
-TORA_TSTP_BT_Net: int
-TORA_TSTP_UTYPE_BrokerUser: int
-TORA_TSTP_UTYPE_SuperUser: int
-TORA_TSTP_UTYPE_Investor: int
-TORA_TSTP_CC_TradeTouch: int
-TORA_TSTP_CC_CancelTouch: int
-TORA_TSTP_CC_TimeTouch: int
-TORA_TSTP_CC_SegmentTouch: int
-TORA_TSTP_CC_LastPriceGreaterThanStopPrice: int
-TORA_TSTP_CC_LastPriceLesserThanStopPrice: int
-TORA_TSTP_CC_AskPriceGreaterEqualStopPrice: int
-TORA_TSTP_CC_AskPriceLesserEqualStopPrice: int
-TORA_TSTP_CC_BidPriceGreaterEqualStopPrice: int
-TORA_TSTP_CC_BidPriceLesserEqualStopPrice: int
-TORA_TSTP_ETFCTSTAT_Forbidden: int
-TORA_TSTP_ETFCTSTAT_Allow: int
-TORA_TSTP_ETFCTSTAT_Force: int
-TORA_TSTP_ETFCTSTAT_CBAllow: int
-TORA_TSTP_ETFCTSTAT_CBForce: int
-TORA_TSTP_OPRTSRC_DBCommand: int
-TORA_TSTP_OPRTSRC_SyncAPI: int
-TORA_TSTP_OPERW_Telephone: int
-TORA_TSTP_OPERW_OTC: int
-TORA_TSTP_OPERW_MobileClient: int
-TORA_TSTP_OPERW_PCClient: int
-TORA_TSTP_OPERW_TY: int
-TORA_TSTP_OPT_AnyPrice: int
-TORA_TSTP_OPT_LimitPrice: int
-TORA_TSTP_OPT_BestPrice: int
-TORA_TSTP_OPT_LastPrice: int
-TORA_TSTP_OPT_AskPrice1: int
-TORA_TSTP_OPT_BidPrice1: int
-TORA_TSTP_OPT_Relative: int
-TORA_TSTP_OPT_FiveLevelPrice: int
-TORA_TSTP_OPT_HomeBestPrice: int
-TORA_TSTP_OVT_CustomVol: int
-TORA_TSTP_OVT_RelativeVol: int
-TORA_TSTP_TC_IOC: int
-TORA_TSTP_TC_GFS: int
-TORA_TSTP_TC_GFD: int
-TORA_TSTP_TC_GTD: int
-TORA_TSTP_TC_GTC: int
-TORA_TSTP_TC_GFA: int
-TORA_TSTP_VC_AV: int
-TORA_TSTP_VC_MV: int
-TORA_TSTP_VC_CV: int
-TORA_TSTP_FCC_NotForceClose: int
-TORA_TSTP_FCC_LackDeposit: int
-TORA_TSTP_FCC_ClientOverPositionLimit: int
-TORA_TSTP_FCC_MemberOverPositionLimit: int
-TORA_TSTP_FCC_NotMultiple: int
-TORA_TSTP_FCC_Violation: int
-TORA_TSTP_FCC_Other: int
-TORA_TSTP_EOT_Review: int
-TORA_TSTP_EOT_Cancel: int
-TORA_TSTP_EOT_Limit: int
-TORA_TSTP_EOT_FRC: int
-TORA_TSTP_EOT_FRL: int
-TORA_TSTP_EOT_BP: int
-TORA_TSTP_EOT_HP: int
-TORA_TSTP_EOT_FAK: int
-TORA_TSTP_EOT_FOK: int
-TORA_TSTP_TRNSD_In: int
-TORA_TSTP_TRNSD_Out: int
-TORA_TSTP_TRNSD_MoveIn: int
-TORA_TSTP_TRNSD_MoveOut: int
-TORA_TSTP_TRNSD_Freeze: int
-TORA_TSTP_TRNSD_UnFreeze: int
-TORA_TSTP_TRNSD_StockToBank: int
-TORA_TSTP_TRNSD_BankToStock: int
-TORA_TSTP_CLTD_CollateralIn: int
-TORA_TSTP_CLTD_CollateralOut: int
-TORA_TSTP_TRANST_TranferHandling: int
-TORA_TSTP_TRANST_TransferSuccess: int
-TORA_TSTP_TRANST_TransferFail: int
-TORA_TSTP_TRANST_RepealHandling: int
-TORA_TSTP_TRANST_RepealSuccess: int
-TORA_TSTP_TRANST_RepealFail: int
-TORA_TSTP_TRANST_ExternalAccepted: int
-TORA_TSTP_TPT_ALL: int
-TORA_TSTP_TPT_History: int
-TORA_TSTP_TPT_TodayBS: int
-TORA_TSTP_TPT_TodayPR: int
-TORA_TSTP_OST_AllTraded: int
-TORA_TSTP_OST_PartTradedQueueing: int
-TORA_TSTP_OST_PartTradedNotQueueing: int
-TORA_TSTP_OST_NoTradeQueueing: int
-TORA_TSTP_OST_NoTradeNotQueueing: int
-TORA_TSTP_OST_Canceled: int
-TORA_TSTP_OST_Unknown: int
-TORA_TSTP_OST_NotTouched: int
-TORA_TSTP_OST_Touched: int
-TORA_TSTP_OST_Cached: int
-TORA_TSTP_COST_Initial: int
-TORA_TSTP_COST_NotTouched: int
-TORA_TSTP_COST_Touched: int
-TORA_TSTP_COST_Finished: int
-TORA_TSTP_COST_Cancel: int
-TORA_TSTP_COST_Failed: int
-TORA_TSTP_OSS_UnSubmit: int
-TORA_TSTP_OSS_InsertSubmitted: int
-TORA_TSTP_OSS_CancelSubmitted: int
-TORA_TSTP_OSS_ModifySubmitted: int
-TORA_TSTP_OSS_Accepted: int
-TORA_TSTP_OSS_InsertRejected: int
-TORA_TSTP_OSS_CancelRejected: int
-TORA_TSTP_OSS_ModifyRejected: int
-TORA_TSTP_ORDT_Normal: int
-TORA_TSTP_ORDT_DeriveFromQuote: int
-TORA_TSTP_ORDT_DeriveFromCombination: int
-TORA_TSTP_ORDT_Combination: int
-TORA_TSTP_ORDT_ConditionalOrder: int
-TORA_TSTP_ORDT_Swap: int
-TORA_TSTP_OF_Open: int
-TORA_TSTP_OF_Close: int
-TORA_TSTP_OF_ForceClose: int
-TORA_TSTP_OF_CloseToday: int
-TORA_TSTP_OF_CloseYesterday: int
-TORA_TSTP_OF_ForceOff: int
-TORA_TSTP_OF_LocalForceClose: int
-TORA_TSTP_HF_Speculation: int
-TORA_TSTP_HF_Arbitrage: int
-TORA_TSTP_HF_Hedge: int
-TORA_TSTP_HF_Covered: int
-TORA_TSTP_AF_Delete: int
-TORA_TSTP_AF_Modify: int
-TORA_TSTP_AF_ForceDelete: int
-TORA_TSTP_OAS_Submitted: int
-TORA_TSTP_OAS_Accepted: int
-TORA_TSTP_OAS_Rejected: int
-TORA_TSTP_OAS_Cached: int
-TORA_TSTP_CIDT_Unknown: int
-TORA_TSTP_CIDT_Speculation: int
-TORA_TSTP_CIDT_Arbitrage: int
-TORA_TSTP_CIDT_Hedge: int
-TORA_TSTP_CIDT_Normal: int
-TORA_TSTP_CIDT_Credit: int
-TORA_TSTP_CIDT_Derivatives: int
-TORA_TSTP_BC_Buy: int
-TORA_TSTP_BC_Sell: int
-TORA_TSTP_BC_ETFPur: int
-TORA_TSTP_BC_ETFRed: int
-TORA_TSTP_BC_Repurchase: int
-TORA_TSTP_BC_ReverseRepur: int
-TORA_TSTP_BC_Rationed: int
-TORA_TSTP_BC_CustodyTransfer: int
-TORA_TSTP_BC_BuyOpen: int
-TORA_TSTP_BC_BuyClose: int
-TORA_TSTP_BC_SellOpen: int
-TORA_TSTP_BC_SellClose: int
-TORA_TSTP_BC_CoveredOpen: int
-TORA_TSTP_BC_CoveredClose: int
-TORA_TSTP_BC_ExecOrder: int
-TORA_TSTP_BC_AutoExecOrder: int
-TORA_TSTP_CPT_Normal: int
-TORA_TSTP_CPT_Special: int
-TORA_TSTP_FID_NAN: int
-TORA_TSTP_FID_SessionManager: int
-TORA_TSTP_FID_UserManager: int
-TORA_TSTP_FID_OrderInsert: int
-TORA_TSTP_FID_OrderAction: int
-TORA_TSTP_FID_AdjustTradingRight: int
-TORA_TSTP_FID_MoveFund: int
-TORA_TSTP_FID_AddFund: int
-TORA_TSTP_FID_SubFund: int
-TORA_TSTP_FID_ForceFreezeFund: int
-TORA_TSTP_FID_ForceUnFreezeFund: int
-TORA_TSTP_FID_AddPosition: int
-TORA_TSTP_FID_SubPosition: int
-TORA_TSTP_FID_RepealFund: int
-TORA_TSTP_FID_RepealPosition: int
-TORA_TSTP_FID_CollateralInJZ: int
-TORA_TSTP_FID_AdjustTradingFee: int
-TORA_TSTP_FID_AdjustSpecPrivilege: int
-TORA_TSTP_FID_AdjustShareholderAssociation: int
-TORA_TSTP_FID_AdjustSecurity: int
-TORA_TSTP_FID_MovePosition: int
-TORA_TSTP_FID_AdjustShareholderParam: int
-TORA_TSTP_FID_CondOrderInsert: int
-TORA_TSTP_FID_CondOrderAction: int
-TORA_TSTP_FID_QryCondOrder: int
-TORA_TSTP_FID_CondParamAdjust: int
-TORA_TSTP_FID_UserRoleManage: int
-TORA_TSTP_FID_TradingFeeTemplateManage: int
-TORA_TSTP_FID_TradingRightTemplateManage: int
-TORA_TSTP_FID_SecurityPriorAuthManage: int
-TORA_TSTP_FID_PosiParamManage: int
-TORA_TSTP_FID_OrderLocalSeqPrefixAdjust: int
-TORA_TSTP_FID_TraderManage: int
-TORA_TSTP_FID_IPOManage: int
-TORA_TSTP_FID_AppRunManage: int
-TORA_TSTP_FID_MarketStatusManage: int
-TORA_TSTP_FID_PlatformStatusManage: int
-TORA_TSTP_FID_QryTradingAccount: int
-TORA_TSTP_FID_QryPositon: int
-TORA_TSTP_FID_QryShareholderAccount: int
-TORA_TSTP_FID_QryOrder: int
-TORA_TSTP_FID_QryTrade: int
-TORA_TSTP_FID_QryFundSerial: int
-TORA_TSTP_FID_QryPositionSerial: int
-TORA_TSTP_FID_DumpTradingAccount: int
-TORA_TSTP_FID_DumpPositon: int
-TORA_TSTP_FID_DumpShareholderAccount: int
-TORA_TSTP_FID_DumpOrder: int
-TORA_TSTP_FID_DumpTrade: int
-TORA_TSTP_FID_DumpFundSerial: int
-TORA_TSTP_FID_DumpPositionSerial: int
-TORA_TSTP_FID_UploadTradeData: int
-TORA_TSTP_FID_ReviewFundAdjust: int
-TORA_TSTP_FID_ReviewPositionAdjust: int
-TORA_TSTP_FID_RecordOperateLog: int
-TORA_TSTP_FID_TerminalInfoManage: int
-TORA_TSTP_FID_QryTradingRight: int
-TORA_TSTP_FID_DesignationRegistration: int
-TORA_TSTP_FID_CustodyTransfer: int
-TORA_TSTP_FID_ForceDelete: int
-TORA_TSTP_FID_RiskMgr: int
-TORA_TSTP_FID_ReviewUserIPLimitAdjust: int
-TORA_TSTP_FID_AdjustUserIPLimit: int
-TORA_TSTP_FID_AdjustSystemParam: int
-TORA_TSTP_FID_DepartmentInfoManage: int
-TORA_TSTP_FID_IPONumberMatchManage: int
-TORA_TSTP_FID_CustomerInfoManage: int
-TORA_TSTP_FID_QryTradeEvent: int
-TORA_TSTP_FID_ExchRtnSeqManage: int
-TORA_TSTP_FID_TransferFund: int
-TORA_TSTP_STP_COMMON: int
-TORA_TSTP_STP_SHAShares: int
-TORA_TSTP_STP_SHSingleMarketStockETF: int
-TORA_TSTP_STP_SHSingleMarketBondETF: int
-TORA_TSTP_STP_SHGoldETF: int
-TORA_TSTP_STP_SHTradableMonetaryFund: int
-TORA_TSTP_STP_SHBondNation: int
-TORA_TSTP_STP_SHBondCorporation: int
-TORA_TSTP_STP_SHBondCompany: int
-TORA_TSTP_STP_SHBondConversion: int
-TORA_TSTP_STP_SHBondSeparation: int
-TORA_TSTP_STP_SHASharesOption: int
-TORA_TSTP_STP_SHETFOption: int
-TORA_TSTP_STP_SHAllotment: int
-TORA_TSTP_STP_SHDistributeDebt: int
-TORA_TSTP_STP_SHStandard: int
-TORA_TSTP_STP_SHRepo: int
-TORA_TSTP_STP_SHCEFund: int
-TORA_TSTP_STP_SHOEFund: int
-TORA_TSTP_STP_SHCrossMarketStockETF: int
-TORA_TSTP_STP_SHCrossBorderETF: int
-TORA_TSTP_STP_SHMontherStructFund: int
-TORA_TSTP_STP_SHSubStructFund: int
-TORA_TSTP_STP_SHRealTimeMonetaryFund: int
-TORA_TSTP_STP_SHExchangeableBond: int
-TORA_TSTP_STP_SHLOF: int
-TORA_TSTP_STP_SZMainAShares: int
-TORA_TSTP_STP_SZSME: int
-TORA_TSTP_STP_SZBondNation: int
-TORA_TSTP_STP_SZBondCorporation: int
-TORA_TSTP_STP_SZBondCompany: int
-TORA_TSTP_STP_SZBondConversion: int
-TORA_TSTP_STP_SZBondSeparation: int
-TORA_TSTP_STP_SZASharesOption: int
-TORA_TSTP_STP_SZETFOption: int
-TORA_TSTP_STP_SZCrossBorderETF: int
-TORA_TSTP_STP_SZGoldETF: int
-TORA_TSTP_STP_SZCashBondETF: int
-TORA_TSTP_STP_SZSingleMarketStockETF: int
-TORA_TSTP_STP_SZSingleMarketBondETF: int
-TORA_TSTP_STP_SZMonetaryFundETF: int
-TORA_TSTP_STP_SZGEM: int
-TORA_TSTP_STP_SZAllotment: int
-TORA_TSTP_STP_SZDistributeDebt: int
-TORA_TSTP_STP_SZStandard: int
-TORA_TSTP_STP_SZRepo: int
-TORA_TSTP_STP_SZCEFund: int
-TORA_TSTP_STP_SZOEFund: int
-TORA_TSTP_STP_SZCrossBorderOEFund: int
-TORA_TSTP_STP_SZCrossMarketStockETF: int
-TORA_TSTP_STP_SZLOF: int
-TORA_TSTP_STP_SZCrossBorderLOF: int
-TORA_TSTP_STP_SZMontherStructFund: int
-TORA_TSTP_STP_SZSubStructFund: int
-TORA_TSTP_STP_SZMontherCrossBorderStructFund: int
-TORA_TSTP_STP_SZSubCrossBorderStructFund: int
-TORA_TSTP_STP_SZExchangeableBond: int
-TORA_TSTP_STP_SZGEMConversionBond: int
-TORA_TSTP_EF_ToBeContinued: int
-TORA_TSTP_EF_BatchEnd: int
-TORA_TSTP_EF_Completed: int
-TORA_TSTP_EF_NOP: int
-TORA_TSTP_MKD_COMMON: int
-TORA_TSTP_MKD_SHA: int
-TORA_TSTP_MKD_SZA: int
-TORA_TSTP_MKD_SHB: int
-TORA_TSTP_MKD_SZB: int
-TORA_TSTP_MKD_SZThreeA: int
-TORA_TSTP_MKD_SZThreeB: int
-TORA_TSTP_MKD_Foreign: int
-TORA_TSTP_LACT_UserID: int
-TORA_TSTP_LACT_AccountID: int
-TORA_TSTP_LACT_SHAStock: int
-TORA_TSTP_LACT_SZAStock: int
-TORA_TSTP_LACT_SHBStock: int
-TORA_TSTP_LACT_SZBStock: int
-TORA_TSTP_LACT_ThreeNewBoardA: int
-TORA_TSTP_LACT_ThreeNewBoardB: int
-TORA_TSTP_LACT_HKStock: int
-TORA_TSTP_MST_UnKnown: int
-TORA_TSTP_MST_BeforeTrading: int
-TORA_TSTP_MST_Continous: int
-TORA_TSTP_MST_Closed: int
-TORA_TSTP_MST_OpenCallAuction: int
-TORA_TSTP_ARM_Single: int
-TORA_TSTP_ARM_Group: int
-TORA_TSTP_DT_Register: int
-TORA_TSTP_DT_Cancel: int
-TORA_TSTP_CT_Register: int
-TORA_TSTP_CT_Cancel: int
-TORA_TSTP_PCBT_None: int
-TORA_TSTP_PCBT_Other: int
-TORA_TSTP_PCBT_SHDelisting: int
-TORA_TSTP_PCBT_ST: int
-TORA_TSTP_PCBT_GEM: int
-TORA_TSTP_PCBT_StructFund: int
-TORA_TSTP_PCBT_BondQualified: int
-TORA_TSTP_PCBT_SuspendBond: int
-TORA_TSTP_PCBT_Repurchase: int
-TORA_TSTP_PCBT_ReverseRepur: int
-TORA_TSTP_PCBT_SZDelisting: int
-TORA_TSTP_PCBT_Stock: int
-TORA_TSTP_PCBT_CreditStock: int
-TORA_TSTP_PCPF_None: int
-TORA_TSTP_PCPF_AnywayPass: int
-TORA_TSTP_PCPF_MatchPass: int
-TORA_TSTP_PCPF_SelectPass: int
-TORA_TSTP_PCPF_ProfInvestorPass: int
-TORA_TSTP_RLV_Lowest: int
-TORA_TSTP_RLV_Conservative: int
-TORA_TSTP_RLV_Cautious: int
-TORA_TSTP_RLV_Steady: int
-TORA_TSTP_RLV_Positive: int
-TORA_TSTP_RLV_Aggressive: int
-TORA_TSTP_PIT_NotProf: int
-TORA_TSTP_PIT_OCInstiPro: int
-TORA_TSTP_PIT_InstiPro: int
-TORA_TSTP_PIT_PersonPro: int
-TORA_TSTP_PIT_ConfirmInstiPro: int
-TORA_TSTP_PIT_ConfirmPersonPro: int
-TORA_TSTP_LOT_Market: int
-TORA_TSTP_LOT_Limit: int
-TORA_TSTP_LOT_HomeBest: int
-TORA_TSTP_LSD_Buy: int
-TORA_TSTP_LSD_Sell: int
-TORA_TSTP_LSD_Borrow: int
-TORA_TSTP_LSD_Lend: int
-TORA_TSTP_ECT_Fill: int
-TORA_TSTP_ECT_Cancel: int
-TORA_TSTP_CCT_None: int
-TORA_TSTP_CCT_SelfDeal: int
-TORA_TSTP_MST_TCP: int
-TORA_TSTP_MST_UDP: int
-TORA_TSTP_MST_MCAST: int
-TORA_TSTP_MSST_PreOpen: int
-TORA_TSTP_MSST_CallAuction: int
-TORA_TSTP_MSST_Continous: int
-TORA_TSTP_MSST_Pause: int
-TORA_TSTP_MSST_Suspend: int
-TORA_TSTP_MSST_LongSuspend: int
-TORA_TSTP_MSST_UndulationInt: int
-TORA_TSTP_MSST_CircuitBreak: int
-TORA_TSTP_MSST_CircuitBreakU: int
-TORA_TSTP_MSST_Close: int
-TORA_TSTP_MSST_Other: int
-TORA_TSTP_MSST_CloseCallAuction: int
-TORA_TSTP_FOCS_Init: int
-TORA_TSTP_FOCS_Reviewed: int
-TORA_TSTP_FOCS_Failed: int
-TORA_TSTP_SPT_MaxBuyLimit: int
-TORA_TSTP_SPT_MaxSellLimit: int
-TORA_TSTP_SPT_LargeBuyLimitRatio: int
-TORA_TSTP_SPT_LargeSelLimitRatio: int
-TORA_TSTP_SPT_RiskWarnBoardLimitVol: int
-TORA_TSTP_SPT_SeriesDecInterval: int
-TORA_TSTP_SPT_SeriesLimitPerUnit: int
-TORA_TSTP_SPT_ClosePriceScopeRatio: int
-TORA_TSTP_SPT_OpenDateLimit: int
-TORA_TSTP_SPT_LimitBoardShamRatio: int
-TORA_TSTP_SPT_CancelOrderRatio: int
-def set_null(v: int)->Any:
+TORA_TSTP_EXD_SSE_FO: str
+TORA_TSTP_EXD_SZSE_FO: str
+TORA_TSTP_EXD_COMM: str
+TORA_TSTP_EXD_SSE: str
+TORA_TSTP_EXD_SZSE: str
+TORA_TSTP_EXD_HK: str
+TORA_TSTP_AM_Password: str
+TORA_TSTP_AM_FingerPrint: str
+TORA_TSTP_PT_Net: str
+TORA_TSTP_PT_Gross: str
+TORA_TSTP_PID_COMMON: str
+TORA_TSTP_PID_SHStock: str
+TORA_TSTP_PID_SHWarrant: str
+TORA_TSTP_PID_SHFund: str
+TORA_TSTP_PID_SHBond: str
+TORA_TSTP_PID_SHStandard: str
+TORA_TSTP_PID_SHRepurchase: str
+TORA_TSTP_PID_SZStock: str
+TORA_TSTP_PID_SZWarrant: str
+TORA_TSTP_PID_SZFund: str
+TORA_TSTP_PID_SZBond: str
+TORA_TSTP_PID_SZStandard: str
+TORA_TSTP_PID_SZRepurchase: str
+TORA_TSTP_BKID_CCB: str
+TORA_TSTP_BKID_ABC: str
+TORA_TSTP_BKID_ICBC: str
+TORA_TSTP_BKID_BOC: str
+TORA_TSTP_BKID_CMB: str
+TORA_TSTP_BKID_BC: str
+TORA_TSTP_BKID_SPDB: str
+TORA_TSTP_BKID_CIB: str
+TORA_TSTP_BKID_CEB: str
+TORA_TSTP_BKID_GDB: str
+TORA_TSTP_BKID_NJCB: str
+TORA_TSTP_BKID_SHCB: str
+TORA_TSTP_BKID_CITICB: str
+TORA_TSTP_BKID_HXB: str
+TORA_TSTP_BKID_CMBC: str
+TORA_TSTP_BKID_PACB: str
+TORA_TSTP_BKID_NBCB: str
+TORA_TSTP_OUT_Shou: str
+TORA_TSTP_OUT_Gu: str
+TORA_TSTP_OUT_Fen: str
+TORA_TSTP_OUT_Zhang: str
+TORA_TSTP_ICT_EID: str
+TORA_TSTP_ICT_IDCard: str
+TORA_TSTP_ICT_OfficerIDCard: str
+TORA_TSTP_ICT_PoliceIDCard: str
+TORA_TSTP_ICT_SoldierIDCard: str
+TORA_TSTP_ICT_HouseholdRegister: str
+TORA_TSTP_ICT_Passport: str
+TORA_TSTP_ICT_TaiwanCompatriotIDCard: str
+TORA_TSTP_ICT_HomeComingCard: str
+TORA_TSTP_ICT_LicenseNo: str
+TORA_TSTP_ICT_TaxNo: str
+TORA_TSTP_ICT_HMMainlandTravelPermit: str
+TORA_TSTP_ICT_TwMainlandTravelPermit: str
+TORA_TSTP_ICT_DrivingLicense: str
+TORA_TSTP_ICT_SocialID: str
+TORA_TSTP_ICT_LocalID: str
+TORA_TSTP_ICT_BusinessRegistration: str
+TORA_TSTP_ICT_HKMCIDCard: str
+TORA_TSTP_ICT_AccountsPermits: str
+TORA_TSTP_ICT_OtherCard: str
+TORA_TSTP_FAT_Normal: str
+TORA_TSTP_FAT_Credit: str
+TORA_TSTP_FAT_Derivatives: str
+TORA_TSTP_D_Buy: str
+TORA_TSTP_D_Sell: str
+TORA_TSTP_D_ETFPur: str
+TORA_TSTP_D_ETFRed: str
+TORA_TSTP_D_IPO: str
+TORA_TSTP_D_Repurchase: str
+TORA_TSTP_D_ReverseRepur: str
+TORA_TSTP_D_OeFundPur: str
+TORA_TSTP_D_OeFundRed: str
+TORA_TSTP_D_CollateralIn: str
+TORA_TSTP_D_CollateralOut: str
+TORA_TSTP_D_PledgeIn: str
+TORA_TSTP_D_PledgeOut: str
+TORA_TSTP_D_Rationed: str
+TORA_TSTP_D_Split: str
+TORA_TSTP_D_Merge: str
+TORA_TSTP_D_MarginBuy: str
+TORA_TSTP_D_ShortSell: str
+TORA_TSTP_D_SellRepayment: str
+TORA_TSTP_D_BuyRepayment: str
+TORA_TSTP_D_SecurityRepay: str
+TORA_TSTP_D_RemainTransfer: str
+TORA_TSTP_D_BondConvertStock: str
+TORA_TSTP_D_BondPutback: str
+TORA_TSTP_BT_Gross: str
+TORA_TSTP_BT_Net: str
+TORA_TSTP_UTYPE_BrokerUser: str
+TORA_TSTP_UTYPE_SuperUser: str
+TORA_TSTP_UTYPE_Investor: str
+TORA_TSTP_CC_TradeTouch: str
+TORA_TSTP_CC_CancelTouch: str
+TORA_TSTP_CC_TimeTouch: str
+TORA_TSTP_CC_SegmentTouch: str
+TORA_TSTP_CC_LastPriceGreaterThanStopPrice: str
+TORA_TSTP_CC_LastPriceLesserThanStopPrice: str
+TORA_TSTP_CC_AskPriceGreaterEqualStopPrice: str
+TORA_TSTP_CC_AskPriceLesserEqualStopPrice: str
+TORA_TSTP_CC_BidPriceGreaterEqualStopPrice: str
+TORA_TSTP_CC_BidPriceLesserEqualStopPrice: str
+TORA_TSTP_ETFCTSTAT_Forbidden: str
+TORA_TSTP_ETFCTSTAT_Allow: str
+TORA_TSTP_ETFCTSTAT_Force: str
+TORA_TSTP_ETFCTSTAT_CBAllow: str
+TORA_TSTP_ETFCTSTAT_CBForce: str
+TORA_TSTP_OPRTSRC_DBCommand: str
+TORA_TSTP_OPRTSRC_SyncAPI: str
+TORA_TSTP_OPERW_Telephone: str
+TORA_TSTP_OPERW_OTC: str
+TORA_TSTP_OPERW_MobileClient: str
+TORA_TSTP_OPERW_PCClient: str
+TORA_TSTP_OPERW_TY: str
+TORA_TSTP_OPT_AnyPrice: str
+TORA_TSTP_OPT_LimitPrice: str
+TORA_TSTP_OPT_BestPrice: str
+TORA_TSTP_OPT_LastPrice: str
+TORA_TSTP_OPT_AskPrice1: str
+TORA_TSTP_OPT_BidPrice1: str
+TORA_TSTP_OPT_Relative: str
+TORA_TSTP_OPT_FiveLevelPrice: str
+TORA_TSTP_OPT_HomeBestPrice: str
+TORA_TSTP_OVT_CustomVol: str
+TORA_TSTP_OVT_RelativeVol: str
+TORA_TSTP_TC_IOC: str
+TORA_TSTP_TC_GFS: str
+TORA_TSTP_TC_GFD: str
+TORA_TSTP_TC_GTD: str
+TORA_TSTP_TC_GTC: str
+TORA_TSTP_TC_GFA: str
+TORA_TSTP_VC_AV: str
+TORA_TSTP_VC_MV: str
+TORA_TSTP_VC_CV: str
+TORA_TSTP_FCC_NotForceClose: str
+TORA_TSTP_FCC_LackDeposit: str
+TORA_TSTP_FCC_ClientOverPositionLimit: str
+TORA_TSTP_FCC_MemberOverPositionLimit: str
+TORA_TSTP_FCC_NotMultiple: str
+TORA_TSTP_FCC_Violation: str
+TORA_TSTP_FCC_Other: str
+TORA_TSTP_EOT_Review: str
+TORA_TSTP_EOT_Cancel: str
+TORA_TSTP_EOT_Limit: str
+TORA_TSTP_EOT_FRC: str
+TORA_TSTP_EOT_FRL: str
+TORA_TSTP_EOT_BP: str
+TORA_TSTP_EOT_HP: str
+TORA_TSTP_EOT_FAK: str
+TORA_TSTP_EOT_FOK: str
+TORA_TSTP_TRNSD_In: str
+TORA_TSTP_TRNSD_Out: str
+TORA_TSTP_TRNSD_MoveIn: str
+TORA_TSTP_TRNSD_MoveOut: str
+TORA_TSTP_TRNSD_Freeze: str
+TORA_TSTP_TRNSD_UnFreeze: str
+TORA_TSTP_TRNSD_StockToBank: str
+TORA_TSTP_TRNSD_BankToStock: str
+TORA_TSTP_CLTD_CollateralIn: str
+TORA_TSTP_CLTD_CollateralOut: str
+TORA_TSTP_TRANST_TranferHandling: str
+TORA_TSTP_TRANST_TransferSuccess: str
+TORA_TSTP_TRANST_TransferFail: str
+TORA_TSTP_TRANST_RepealHandling: str
+TORA_TSTP_TRANST_RepealSuccess: str
+TORA_TSTP_TRANST_RepealFail: str
+TORA_TSTP_TRANST_ExternalAccepted: str
+TORA_TSTP_TPT_ALL: str
+TORA_TSTP_TPT_History: str
+TORA_TSTP_TPT_TodayBS: str
+TORA_TSTP_TPT_TodayPR: str
+TORA_TSTP_OST_AllTraded: str
+TORA_TSTP_OST_PartTradedQueueing: str
+TORA_TSTP_OST_PartTradedNotQueueing: str
+TORA_TSTP_OST_NoTradeQueueing: str
+TORA_TSTP_OST_NoTradeNotQueueing: str
+TORA_TSTP_OST_Canceled: str
+TORA_TSTP_OST_Unknown: str
+TORA_TSTP_OST_NotTouched: str
+TORA_TSTP_OST_Touched: str
+TORA_TSTP_OST_Cached: str
+TORA_TSTP_COST_Initial: str
+TORA_TSTP_COST_NotTouched: str
+TORA_TSTP_COST_Touched: str
+TORA_TSTP_COST_Finished: str
+TORA_TSTP_COST_Cancel: str
+TORA_TSTP_COST_Failed: str
+TORA_TSTP_OSS_UnSubmit: str
+TORA_TSTP_OSS_InsertSubmitted: str
+TORA_TSTP_OSS_CancelSubmitted: str
+TORA_TSTP_OSS_ModifySubmitted: str
+TORA_TSTP_OSS_Accepted: str
+TORA_TSTP_OSS_InsertRejected: str
+TORA_TSTP_OSS_CancelRejected: str
+TORA_TSTP_OSS_ModifyRejected: str
+TORA_TSTP_ORDT_Normal: str
+TORA_TSTP_ORDT_DeriveFromQuote: str
+TORA_TSTP_ORDT_DeriveFromCombination: str
+TORA_TSTP_ORDT_Combination: str
+TORA_TSTP_ORDT_ConditionalOrder: str
+TORA_TSTP_ORDT_Swap: str
+TORA_TSTP_OF_Open: str
+TORA_TSTP_OF_Close: str
+TORA_TSTP_OF_ForceClose: str
+TORA_TSTP_OF_CloseToday: str
+TORA_TSTP_OF_CloseYesterday: str
+TORA_TSTP_OF_ForceOff: str
+TORA_TSTP_OF_LocalForceClose: str
+TORA_TSTP_HF_Speculation: str
+TORA_TSTP_HF_Arbitrage: str
+TORA_TSTP_HF_Hedge: str
+TORA_TSTP_HF_Covered: str
+TORA_TSTP_AF_Delete: str
+TORA_TSTP_AF_Modify: str
+TORA_TSTP_AF_ForceDelete: str
+TORA_TSTP_OAS_Submitted: str
+TORA_TSTP_OAS_Accepted: str
+TORA_TSTP_OAS_Rejected: str
+TORA_TSTP_OAS_Cached: str
+TORA_TSTP_CIDT_Unknown: str
+TORA_TSTP_CIDT_Speculation: str
+TORA_TSTP_CIDT_Arbitrage: str
+TORA_TSTP_CIDT_Hedge: str
+TORA_TSTP_CIDT_Normal: str
+TORA_TSTP_CIDT_Credit: str
+TORA_TSTP_CIDT_Derivatives: str
+TORA_TSTP_BC_Buy: str
+TORA_TSTP_BC_Sell: str
+TORA_TSTP_BC_ETFPur: str
+TORA_TSTP_BC_ETFRed: str
+TORA_TSTP_BC_Repurchase: str
+TORA_TSTP_BC_ReverseRepur: str
+TORA_TSTP_BC_Rationed: str
+TORA_TSTP_BC_CustodyTransfer: str
+TORA_TSTP_BC_BuyOpen: str
+TORA_TSTP_BC_BuyClose: str
+TORA_TSTP_BC_SellOpen: str
+TORA_TSTP_BC_SellClose: str
+TORA_TSTP_BC_CoveredOpen: str
+TORA_TSTP_BC_CoveredClose: str
+TORA_TSTP_BC_ExecOrder: str
+TORA_TSTP_BC_AutoExecOrder: str
+TORA_TSTP_CPT_Normal: str
+TORA_TSTP_CPT_Special: str
+TORA_TSTP_FID_NAN: str
+TORA_TSTP_FID_SessionManager: str
+TORA_TSTP_FID_UserManager: str
+TORA_TSTP_FID_OrderInsert: str
+TORA_TSTP_FID_OrderAction: str
+TORA_TSTP_FID_AdjustTradingRight: str
+TORA_TSTP_FID_MoveFund: str
+TORA_TSTP_FID_AddFund: str
+TORA_TSTP_FID_SubFund: str
+TORA_TSTP_FID_ForceFreezeFund: str
+TORA_TSTP_FID_ForceUnFreezeFund: str
+TORA_TSTP_FID_AddPosition: str
+TORA_TSTP_FID_SubPosition: str
+TORA_TSTP_FID_RepealFund: str
+TORA_TSTP_FID_RepealPosition: str
+TORA_TSTP_FID_CollateralInJZ: str
+TORA_TSTP_FID_AdjustTradingFee: str
+TORA_TSTP_FID_AdjustSpecPrivilege: str
+TORA_TSTP_FID_AdjustShareholderAssociation: str
+TORA_TSTP_FID_AdjustSecurity: str
+TORA_TSTP_FID_MovePosition: str
+TORA_TSTP_FID_AdjustShareholderParam: str
+TORA_TSTP_FID_CondOrderInsert: str
+TORA_TSTP_FID_CondOrderAction: str
+TORA_TSTP_FID_QryCondOrder: str
+TORA_TSTP_FID_CondParamAdjust: str
+TORA_TSTP_FID_UserRoleManage: str
+TORA_TSTP_FID_TradingFeeTemplateManage: str
+TORA_TSTP_FID_TradingRightTemplateManage: str
+TORA_TSTP_FID_SecurityPriorAuthManage: str
+TORA_TSTP_FID_PosiParamManage: str
+TORA_TSTP_FID_OrderLocalSeqPrefixAdjust: str
+TORA_TSTP_FID_TraderManage: str
+TORA_TSTP_FID_IPOManage: str
+TORA_TSTP_FID_AppRunManage: str
+TORA_TSTP_FID_MarketStatusManage: str
+TORA_TSTP_FID_PlatformStatusManage: str
+TORA_TSTP_FID_QryTradingAccount: str
+TORA_TSTP_FID_QryPositon: str
+TORA_TSTP_FID_QryShareholderAccount: str
+TORA_TSTP_FID_QryOrder: str
+TORA_TSTP_FID_QryTrade: str
+TORA_TSTP_FID_QryFundSerial: str
+TORA_TSTP_FID_QryPositionSerial: str
+TORA_TSTP_FID_DumpTradingAccount: str
+TORA_TSTP_FID_DumpPositon: str
+TORA_TSTP_FID_DumpShareholderAccount: str
+TORA_TSTP_FID_DumpOrder: str
+TORA_TSTP_FID_DumpTrade: str
+TORA_TSTP_FID_DumpFundSerial: str
+TORA_TSTP_FID_DumpPositionSerial: str
+TORA_TSTP_FID_UploadTradeData: str
+TORA_TSTP_FID_ReviewFundAdjust: str
+TORA_TSTP_FID_ReviewPositionAdjust: str
+TORA_TSTP_FID_RecordOperateLog: str
+TORA_TSTP_FID_TerminalInfoManage: str
+TORA_TSTP_FID_QryTradingRight: str
+TORA_TSTP_FID_DesignationRegistration: str
+TORA_TSTP_FID_CustodyTransfer: str
+TORA_TSTP_FID_ForceDelete: str
+TORA_TSTP_FID_RiskMgr: str
+TORA_TSTP_FID_ReviewUserIPLimitAdjust: str
+TORA_TSTP_FID_AdjustUserIPLimit: str
+TORA_TSTP_FID_AdjustSystemParam: str
+TORA_TSTP_FID_DepartmentInfoManage: str
+TORA_TSTP_FID_IPONumberMatchManage: str
+TORA_TSTP_FID_CustomerInfoManage: str
+TORA_TSTP_FID_QryTradeEvent: str
+TORA_TSTP_FID_ExchRtnSeqManage: str
+TORA_TSTP_FID_TransferFund: str
+TORA_TSTP_STP_COMMON: str
+TORA_TSTP_STP_SHAShares: str
+TORA_TSTP_STP_SHSingleMarketStockETF: str
+TORA_TSTP_STP_SHSingleMarketBondETF: str
+TORA_TSTP_STP_SHGoldETF: str
+TORA_TSTP_STP_SHTradableMonetaryFund: str
+TORA_TSTP_STP_SHBondNation: str
+TORA_TSTP_STP_SHBondCorporation: str
+TORA_TSTP_STP_SHBondCompany: str
+TORA_TSTP_STP_SHBondConversion: str
+TORA_TSTP_STP_SHBondSeparation: str
+TORA_TSTP_STP_SHASharesOption: str
+TORA_TSTP_STP_SHETFOption: str
+TORA_TSTP_STP_SHAllotment: str
+TORA_TSTP_STP_SHDistributeDebt: str
+TORA_TSTP_STP_SHStandard: str
+TORA_TSTP_STP_SHRepo: str
+TORA_TSTP_STP_SHCEFund: str
+TORA_TSTP_STP_SHOEFund: str
+TORA_TSTP_STP_SHCrossMarketStockETF: str
+TORA_TSTP_STP_SHCrossBorderETF: str
+TORA_TSTP_STP_SHMontherStructFund: str
+TORA_TSTP_STP_SHSubStructFund: str
+TORA_TSTP_STP_SHRealTimeMonetaryFund: str
+TORA_TSTP_STP_SHExchangeableBond: str
+TORA_TSTP_STP_SHLOF: str
+TORA_TSTP_STP_SZMainAShares: str
+TORA_TSTP_STP_SZSME: str
+TORA_TSTP_STP_SZBondNation: str
+TORA_TSTP_STP_SZBondCorporation: str
+TORA_TSTP_STP_SZBondCompany: str
+TORA_TSTP_STP_SZBondConversion: str
+TORA_TSTP_STP_SZBondSeparation: str
+TORA_TSTP_STP_SZASharesOption: str
+TORA_TSTP_STP_SZETFOption: str
+TORA_TSTP_STP_SZCrossBorderETF: str
+TORA_TSTP_STP_SZGoldETF: str
+TORA_TSTP_STP_SZCashBondETF: str
+TORA_TSTP_STP_SZSingleMarketStockETF: str
+TORA_TSTP_STP_SZSingleMarketBondETF: str
+TORA_TSTP_STP_SZMonetaryFundETF: str
+TORA_TSTP_STP_SZGEM: str
+TORA_TSTP_STP_SZAllotment: str
+TORA_TSTP_STP_SZDistributeDebt: str
+TORA_TSTP_STP_SZStandard: str
+TORA_TSTP_STP_SZRepo: str
+TORA_TSTP_STP_SZCEFund: str
+TORA_TSTP_STP_SZOEFund: str
+TORA_TSTP_STP_SZCrossBorderOEFund: str
+TORA_TSTP_STP_SZCrossMarketStockETF: str
+TORA_TSTP_STP_SZLOF: str
+TORA_TSTP_STP_SZCrossBorderLOF: str
+TORA_TSTP_STP_SZMontherStructFund: str
+TORA_TSTP_STP_SZSubStructFund: str
+TORA_TSTP_STP_SZMontherCrossBorderStructFund: str
+TORA_TSTP_STP_SZSubCrossBorderStructFund: str
+TORA_TSTP_STP_SZExchangeableBond: str
+TORA_TSTP_STP_SZGEMConversionBond: str
+TORA_TSTP_EF_ToBeContinued: str
+TORA_TSTP_EF_BatchEnd: str
+TORA_TSTP_EF_Completed: str
+TORA_TSTP_EF_NOP: str
+TORA_TSTP_MKD_COMMON: str
+TORA_TSTP_MKD_SHA: str
+TORA_TSTP_MKD_SZA: str
+TORA_TSTP_MKD_SHB: str
+TORA_TSTP_MKD_SZB: str
+TORA_TSTP_MKD_SZThreeA: str
+TORA_TSTP_MKD_SZThreeB: str
+TORA_TSTP_MKD_Foreign: str
+TORA_TSTP_LACT_UserID: str
+TORA_TSTP_LACT_AccountID: str
+TORA_TSTP_LACT_SHAStock: str
+TORA_TSTP_LACT_SZAStock: str
+TORA_TSTP_LACT_SHBStock: str
+TORA_TSTP_LACT_SZBStock: str
+TORA_TSTP_LACT_ThreeNewBoardA: str
+TORA_TSTP_LACT_ThreeNewBoardB: str
+TORA_TSTP_LACT_HKStock: str
+TORA_TSTP_MST_UnKnown: str
+TORA_TSTP_MST_BeforeTrading: str
+TORA_TSTP_MST_Continous: str
+TORA_TSTP_MST_Closed: str
+TORA_TSTP_MST_OpenCallAuction: str
+TORA_TSTP_ARM_Single: str
+TORA_TSTP_ARM_Group: str
+TORA_TSTP_DT_Register: str
+TORA_TSTP_DT_Cancel: str
+TORA_TSTP_CT_Register: str
+TORA_TSTP_CT_Cancel: str
+TORA_TSTP_PCBT_None: str
+TORA_TSTP_PCBT_Other: str
+TORA_TSTP_PCBT_SHDelisting: str
+TORA_TSTP_PCBT_ST: str
+TORA_TSTP_PCBT_GEM: str
+TORA_TSTP_PCBT_StructFund: str
+TORA_TSTP_PCBT_BondQualified: str
+TORA_TSTP_PCBT_SuspendBond: str
+TORA_TSTP_PCBT_Repurchase: str
+TORA_TSTP_PCBT_ReverseRepur: str
+TORA_TSTP_PCBT_SZDelisting: str
+TORA_TSTP_PCBT_Stock: str
+TORA_TSTP_PCBT_CreditStock: str
+TORA_TSTP_PCPF_None: str
+TORA_TSTP_PCPF_AnywayPass: str
+TORA_TSTP_PCPF_MatchPass: str
+TORA_TSTP_PCPF_SelectPass: str
+TORA_TSTP_PCPF_ProfInvestorPass: str
+TORA_TSTP_RLV_Lowest: str
+TORA_TSTP_RLV_Conservative: str
+TORA_TSTP_RLV_Cautious: str
+TORA_TSTP_RLV_Steady: str
+TORA_TSTP_RLV_Positive: str
+TORA_TSTP_RLV_Aggressive: str
+TORA_TSTP_PIT_NotProf: str
+TORA_TSTP_PIT_OCInstiPro: str
+TORA_TSTP_PIT_InstiPro: str
+TORA_TSTP_PIT_PersonPro: str
+TORA_TSTP_PIT_ConfirmInstiPro: str
+TORA_TSTP_PIT_ConfirmPersonPro: str
+TORA_TSTP_LOT_Market: str
+TORA_TSTP_LOT_Limit: str
+TORA_TSTP_LOT_HomeBest: str
+TORA_TSTP_LSD_Buy: str
+TORA_TSTP_LSD_Sell: str
+TORA_TSTP_LSD_Borrow: str
+TORA_TSTP_LSD_Lend: str
+TORA_TSTP_ECT_Fill: str
+TORA_TSTP_ECT_Cancel: str
+TORA_TSTP_CCT_None: str
+TORA_TSTP_CCT_SelfDeal: str
+TORA_TSTP_MST_TCP: str
+TORA_TSTP_MST_UDP: str
+TORA_TSTP_MST_MCAST: str
+TORA_TSTP_MSST_PreOpen: str
+TORA_TSTP_MSST_CallAuction: str
+TORA_TSTP_MSST_Continous: str
+TORA_TSTP_MSST_Pause: str
+TORA_TSTP_MSST_Suspend: str
+TORA_TSTP_MSST_LongSuspend: str
+TORA_TSTP_MSST_UndulationInt: str
+TORA_TSTP_MSST_CircuitBreak: str
+TORA_TSTP_MSST_CircuitBreakU: str
+TORA_TSTP_MSST_Close: str
+TORA_TSTP_MSST_Other: str
+TORA_TSTP_MSST_CloseCallAuction: str
+TORA_TSTP_FOCS_Init: str
+TORA_TSTP_FOCS_Reviewed: str
+TORA_TSTP_FOCS_Failed: str
+TORA_TSTP_SPT_MaxBuyLimit: str
+TORA_TSTP_SPT_MaxSellLimit: str
+TORA_TSTP_SPT_LargeBuyLimitRatio: str
+TORA_TSTP_SPT_LargeSelLimitRatio: str
+TORA_TSTP_SPT_RiskWarnBoardLimitVol: str
+TORA_TSTP_SPT_SeriesDecInterval: str
+TORA_TSTP_SPT_SeriesLimitPerUnit: str
+TORA_TSTP_SPT_ClosePriceScopeRatio: str
+TORA_TSTP_SPT_OpenDateLimit: str
+TORA_TSTP_SPT_LimitBoardShamRatio: str
+TORA_TSTP_SPT_CancelOrderRatio: str
+def set_null(v: int)->None:
     ...
-def set_null(v: float)->Any:
+def set_null(v: float)->None:
     ...
-def set_null(v: int)->Any:
+def set_null(v: str)->None:
     ...
-def set_null(v: int)->Any:
+def set_null(v: int)->None:
     ...
-def set_null(v: int)->Any:
+def set_null(v: int)->None:
     ...
-def set_null(v: str)->Any:
+def set_null(v: str)->None:
     ...
 def is_null(v: int)->bool:
     ...
 def is_null(v: float)->bool:
     ...
-def is_null(v: int)->bool:
+def is_null(v: str)->bool:
     ...
 def is_null(v: int)->bool:
     ...

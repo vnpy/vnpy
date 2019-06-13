@@ -1,26 +1,11 @@
-from typing import Any, Sequence
-from datetime import datetime
-from threading import Thread
-from vnpy.event import EventEngine
-from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status, Offset
-from vnpy.trader.gateway import BaseGateway
-from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest,
-                                TickData, ContractData, OrderData, TradeData,
-                                PositionData, AccountData)
-from vnpy.trader.utility import get_folder_path
+from vnpy.api.tora.vntora import (AsyncDispatchException, set_async_callback_exception_handler)
 
-from vnpy.api.tora.vntora import (
-    set_async_callback_exception_handler,
-    AsyncDispatchException,
-CTORATstpTraderApi,
-    CTORATstpMdApi,
-CTORATstpMdSpi,
-CTORATstpTraderSpi,
-)
+from vnpy.event import EventEngine
+from vnpy.trader.gateway import BaseGateway
+from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest)
+from .constant import EXCHANGE_VT2TORA
 from .md import ToraMdApi
 from .td import ToraTdApi
-from .constant import EXCHANGE_VT2TORA
 
 
 def is_valid_front_address(address: str):
@@ -88,11 +73,11 @@ class ToraGateway(BaseGateway):
 
     def query_account(self):
         """"""
-        self._td_api.query_account()
+        self._td_api.query_accounts()
 
     def query_position(self):
         """"""
-        self._td_api.query_position()
+        self._td_api.query_positions()
 
     def write_log(self, msg: str):
         """

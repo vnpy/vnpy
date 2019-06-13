@@ -27,11 +27,11 @@
     <ClCompile Include="generated_files\generated_functions_5.cpp" />
     <ClCompile Include="generated_files\generated_functions_6.cpp" />
     <ClCompile Include="generated_files\generated_functions_7.cpp" />
-    <ClCompile Include="generated_files\generated_functions_8.cpp" />
     <ClCompile Include="generated_files\module.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="custom\custom_wrappers.hpp" />
+    <ClInclude Include="generated_files\config.h" />
     <ClInclude Include="generated_files\generated_functions.h" />
     <ClInclude Include="generated_files\module.hpp" />
     <ClInclude Include="generated_files\wrappers.hpp" />

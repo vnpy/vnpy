@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <iostream>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -11,9 +13,80 @@
 #include "TORATstpTraderApi.h"
 #include "TORATstpUserApiDataType.h"
 #include "TORATstpUserApiStruct.h"
-#include "custom/custom_wrappers.hpp"
 
 
+void generate_class_CTORATstpQryConversionBondInfoField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpQryConversionBondInfoField> c(parent, "CTORATstpQryConversionBondInfoField");
+    if constexpr (std::is_default_constructible_v<CTORATstpQryConversionBondInfoField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryConversionBondInfoField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryConversionBondInfoField, "SecurityID", SecurityID);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpQryConversionBondInfoField, c);
+    module_vntora::objects.emplace("CTORATstpQryConversionBondInfoField", c);
+}
+void generate_class_CTORATstpConversionBondInfoField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpConversionBondInfoField> c(parent, "CTORATstpConversionBondInfoField");
+    if constexpr (std::is_default_constructible_v<CTORATstpConversionBondInfoField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "MarketID", MarketID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "ConvertOrderID", ConvertOrderID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "ConvertPrice", ConvertPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "ConvertVolUnit", ConvertVolUnit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "ConvertVolMax", ConvertVolMax);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "ConvertVolMin", ConvertVolMin);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "BeginDate", BeginDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "EndDate", EndDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpConversionBondInfoField, "IsSupportCancel", IsSupportCancel);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpConversionBondInfoField, c);
+    module_vntora::objects.emplace("CTORATstpConversionBondInfoField", c);
+}
+void generate_class_CTORATstpQryBondPutbackInfoField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpQryBondPutbackInfoField> c(parent, "CTORATstpQryBondPutbackInfoField");
+    if constexpr (std::is_default_constructible_v<CTORATstpQryBondPutbackInfoField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryBondPutbackInfoField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryBondPutbackInfoField, "SecurityID", SecurityID);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpQryBondPutbackInfoField, c);
+    module_vntora::objects.emplace("CTORATstpQryBondPutbackInfoField", c);
+}
+void generate_class_CTORATstpBondPutbackInfoField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpBondPutbackInfoField> c(parent, "CTORATstpBondPutbackInfoField");
+    if constexpr (std::is_default_constructible_v<CTORATstpBondPutbackInfoField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "MarketID", MarketID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "PutbackOrderID", PutbackOrderID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "PutbackPrice", PutbackPrice);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "PutbackVolUnit", PutbackVolUnit);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "PutbackVolMax", PutbackVolMax);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "PutbackVolMin", PutbackVolMin);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "BeginDate", BeginDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "EndDate", EndDate);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpBondPutbackInfoField, "IsSupportCancel", IsSupportCancel);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpBondPutbackInfoField, c);
+    module_vntora::objects.emplace("CTORATstpBondPutbackInfoField", c);
+}
+void generate_class_CTORATstpQryStandardBondPositionField(pybind11::object & parent)
+{
+    pybind11::class_<CTORATstpQryStandardBondPositionField> c(parent, "CTORATstpQryStandardBondPositionField");
+    if constexpr (std::is_default_constructible_v<CTORATstpQryStandardBondPositionField>)
+        c.def(pybind11::init<>());
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryStandardBondPositionField, "InvestorID", InvestorID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryStandardBondPositionField, "SecurityID", SecurityID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryStandardBondPositionField, "ExchangeID", ExchangeID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryStandardBondPositionField, "MarketID", MarketID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryStandardBondPositionField, "ShareholderID", ShareholderID);
+    c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpQryStandardBondPositionField, "BusinessUnitID", BusinessUnitID);
+    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpQryStandardBondPositionField, c);
+    module_vntora::objects.emplace("CTORATstpQryStandardBondPositionField", c);
+}
 void generate_class_CTORATstpStandardBondPositionField(pybind11::object & parent)
 {
     pybind11::class_<CTORATstpStandardBondPositionField> c(parent, "CTORATstpStandardBondPositionField");
@@ -491,188 +564,4 @@ void generate_class_CTORATstpIPOMatchNumberResultField(pybind11::object & parent
     c.AUTOCXXPY_DEF_PROPERTY(tag_vntora, CTORATstpIPOMatchNumberResultField, "Amout", Amout);
     AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpIPOMatchNumberResultField, c);
     module_vntora::objects.emplace("CTORATstpIPOMatchNumberResultField", c);
-}
-void generate_class_CTORATstpMdSpi(pybind11::object & parent)
-{
-    pybind11::class_<CTORATstpMdSpi, PyCTORATstpMdSpi> c(parent, "CTORATstpMdSpi");
-    if constexpr (std::is_default_constructible_v<PyCTORATstpMdSpi>)
-        c.def(pybind11::init<>());
-    c.def("OnFrontConnected",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnFrontConnected
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnFrontDisconnected",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnFrontDisconnected
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspError",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspError
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspUserLogin",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspUserLogin
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspUserLogout",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspUserLogout
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspSubMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspSubMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspUnSubMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspUnSubMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspSubSpecialMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspSubSpecialMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspUnSubSpecialMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspUnSubSpecialMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspSubFundsFlowMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspSubFundsFlowMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRspUnSubFundsFlowMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRspUnSubFundsFlowMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRtnDepthMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRtnDepthMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRtnSpecialMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRtnSpecialMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRtnEffectPriceMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRtnEffectPriceMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRtnEffectVolumeMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRtnEffectVolumeMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    c.def("OnRtnFundsFlowMarketData",
-        autocxxpy::apply_function_transform<
-            autocxxpy::function_constant<
-                &CTORATstpMdSpi::OnRtnFundsFlowMarketData
-            >, 
-            brigand::list<
-            >
-        >::value,
-        pybind11::return_value_policy::reference,
-        pybind11::call_guard<pybind11::gil_scoped_release>()
-    );
-    AUTOCXXPY_POST_REGISTER_CLASS(tag_vntora, CTORATstpMdSpi, c);
-    module_vntora::objects.emplace("CTORATstpMdSpi", c);
 }
