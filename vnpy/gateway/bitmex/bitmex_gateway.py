@@ -661,6 +661,9 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_position(self, d):
         """"""
+        if not d["currentQty"]:
+            return
+
         position = PositionData(
             symbol=d["symbol"],
             exchange=Exchange.BITMEX,
