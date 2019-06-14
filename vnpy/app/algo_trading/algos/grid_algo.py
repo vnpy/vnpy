@@ -20,7 +20,7 @@ class GridAlgo(AlgoTemplate):
     }
 
     variables = [
-        "last_pos",       
+        "last_pos",
         "timer_count",
         "vt_orderid",
         "traded",
@@ -59,7 +59,7 @@ class GridAlgo(AlgoTemplate):
     def on_tick(self, tick: TickData):
         """"""
         self.last_tick = tick
-    
+
     def on_timer(self):
         """"""
         if not self.last_tick:
@@ -68,15 +68,17 @@ class GridAlgo(AlgoTemplate):
         self.timer_count += 1
         if self.timer_count < self.interval:
             self.put_variables_event()
-            return        
+            return
         self.timer_count = 0
-        
+
         if self.vt_orderid:
-            self.cancel_all()        
+            self.cancel_all()
 
         # Calculate target volume to buy
-        target_buy_distance = (self.price - self.last_tick.ask_price_1) / self.step_price
-        target_buy_position = math.floor(target_buy_distance) * self.step_volume
+        target_buy_distance = (
+            self.price - self.last_tick.ask_price_1) / self.step_price
+        target_buy_position = math.floor(
+            target_buy_distance) * self.step_volume
         target_buy_volume = target_buy_position - self.last_pos
 
         # Buy when price dropping
@@ -86,10 +88,12 @@ class GridAlgo(AlgoTemplate):
                 self.last_tick.ask_price_1,
                 min(target_buy_volume, self.last_tick.ask_volume_1)
             )
-        
+
         # Calculate target volume to sell
-        target_sell_distance = (self.price - self.last_tick.bid_price_1) / self.step_price
-        target_sell_position = math.ceil(target_sell_distance) * self.step_volume
+        target_sell_distance = (
+            self.price - self.last_tick.bid_price_1) / self.step_price
+        target_sell_position = math.ceil(
+            target_sell_distance) * self.step_volume
         target_sell_volume = self.last_pos - target_sell_position
 
         # Sell when price rising
@@ -117,7 +121,7 @@ class GridAlgo(AlgoTemplate):
             self.stop()
         else:
             self.put_variables_event()
-   
+
     def update_last_pos(self, pos, trade: TradeData):
         """"""
         if trade.direction == Direction.LONG:
