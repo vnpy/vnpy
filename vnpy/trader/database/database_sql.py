@@ -346,7 +346,7 @@ class SqlManager(BaseDatabaseManager):
                 & (self.class_bar.datetime >= start)
                 & (self.class_bar.datetime <= end)
             )
-                .order_by(self.class_bar.datetime)
+            .order_by(self.class_bar.datetime)
         )
         data = [db_bar.to_bar() for db_bar in s]
         return data
@@ -362,7 +362,7 @@ class SqlManager(BaseDatabaseManager):
                 & (self.class_tick.datetime >= start)
                 & (self.class_tick.datetime <= end)
             )
-                .order_by(self.class_tick.datetime)
+            .order_by(self.class_tick.datetime)
         )
 
         data = [db_tick.to_tick() for db_tick in s]
@@ -386,8 +386,8 @@ class SqlManager(BaseDatabaseManager):
                 & (self.class_bar.exchange == exchange.value)
                 & (self.class_bar.interval == interval.value)
             )
-                .order_by(self.class_bar.datetime.desc())
-                .first()
+            .order_by(self.class_bar.datetime.desc())
+            .first()
         )
         if s:
             return s.to_bar()
@@ -402,8 +402,8 @@ class SqlManager(BaseDatabaseManager):
                 (self.class_tick.symbol == symbol)
                 & (self.class_tick.exchange == exchange.value)
             )
-                .order_by(self.class_tick.datetime.desc())
-                .first()
+            .order_by(self.class_tick.datetime.desc())
+            .first()
         )
         if s:
             return s.to_tick()
