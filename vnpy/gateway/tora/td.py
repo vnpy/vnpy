@@ -65,8 +65,6 @@ def _check_error(none_return: bool = True,
             error_code = error_info.ErrorID
             if error_code != 0:
                 error_msg = error_info.ErrorMsg
-                if not error_msg:
-                    error_msg = get_error_msg(error_code)
                 msg = f'在 {function_name} 中收到错误({error_code})：{error_msg}'
                 if write_log:
                     self.gateway.write_log(msg)
