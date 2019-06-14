@@ -35,34 +35,30 @@ def run_child():
     """
     SETTINGS["log.file"] = True
 
-    print("-" * 20)
-
     event_engine = EventEngine()
     main_engine = MainEngine(event_engine)
-
-    log_engine = main_engine.get_engine("log")
-    log_engine.log("主引擎创建成功")
-
     main_engine.add_gateway(CtpGateway)
     cta_engine = main_engine.add_app(CtaStrategyApp)
+    main_engine.write_log("主引擎创建成功")
 
+    log_engine = main_engine.get_engine("log")
     event_engine.register(EVENT_CTA_LOG, log_engine.process_log_event)
-    log_engine.log("注册日志事件监听")
+    main_engine.write_log("注册日志事件监听")
 
     main_engine.connect(ctp_setting, "CTP")
-    log_engine.log("连接CTP接口")
+    main_engine.write_log("连接CTP接口")
 
     sleep(10)
 
     cta_engine.init_engine()
-    log_engine.log("CTA策略初始化完成")
+    main_engine.write_log("CTA策略初始化完成")
 
     cta_engine.init_all_strategies()
-    sleep(10)
-    log_engine.log("CTA策略全部初始化")
+    sleep(60)   # Leave enough time to complete strategy initialization
+    main_engine.write_log("CTA策略全部初始化")
 
     cta_engine.start_all_strategies()
-    log_engine.log("CTA策略全部启动")
+    main_engine.write_log("CTA策略全部启动")
 
     while True:
         sleep(1)
@@ -89,9 +85,9 @@ def run_parent():
 
         # Check whether in trading period
         if (
-            (current_time >= DAY_START and current_time <= DAY_END)
-            or (current_time >= NIGHT_START)
-            or (current_time <= NIGHT_END)
+            (current_time >= DAY_START and current_time <= DAY_END) or
+            (current_time >= NIGHT_START) or
+            (current_time <= NIGHT_END)
         ):
             trading = True
 

@@ -9,7 +9,6 @@ from email.message import EmailMessage
 from queue import Empty, Queue
 from threading import Thread
 from typing import Any, Sequence
-from logging import INFO
 
 from vnpy.event import Event, EventEngine
 from .app import BaseApp
@@ -315,13 +314,7 @@ class LogEngine(BaseEngine):
         Process log event.
         """
         log = event.data
-        self.log(log.msg, log.level)
-
-    def log(self, msg: str, level: int = INFO):
-        """
-        Output log event data with logging function.
-        """
-        self.logger.log(level, msg)
+        self.logger.log(log.level, log.msg)
 
 
 class OmsEngine(BaseEngine):
