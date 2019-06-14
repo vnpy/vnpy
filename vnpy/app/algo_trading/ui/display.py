@@ -15,7 +15,6 @@ NAME_DISPLAY_MAP = {
     "display_volume": "挂出数量",
     "stop_price": "触发价格",
     "price_add": "委托超价",
-    "trade_count": "交易次数限制",
     "step_price": "网格交易间距",
     "step_volume": "网格交易数量",
     "order_type": "类型",
