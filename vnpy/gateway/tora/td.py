@@ -4,6 +4,7 @@ author: nanoric
 TODOS:
  * market price order @ SSE
  * market price order @ SZSE
+ * send_order @ sell
  * cancel_order @ local submitted
  * cancel_order @ non-local submitted
  * test of reconnection(am i need re-login?)
