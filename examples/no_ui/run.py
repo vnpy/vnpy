@@ -85,9 +85,9 @@ def run_parent():
 
         # Check whether in trading period
         if (
-            (current_time >= DAY_START and current_time <= DAY_END) or
-            (current_time >= NIGHT_START) or
-            (current_time <= NIGHT_END)
+            (current_time >= DAY_START and current_time <= DAY_END)
+            or (current_time >= NIGHT_START)
+            or (current_time <= NIGHT_END)
         ):
             trading = True
 
