@@ -1485,7 +1485,7 @@ class CtpTdApi(TdApi):
         if orderReq.priceType == PRICETYPE_FOK:
             req['OrderPriceType'] = defineDict["THOST_FTDC_OPT_LimitPrice"]
             req['TimeCondition'] = defineDict['THOST_FTDC_TC_IOC']
-            req['VolumeCondition'] = int(defineDict['THOST_FTDC_VC_CV'])
+            req['VolumeCondition'] = defineDict['THOST_FTDC_VC_CV']
         
         self.reqOrderInsert(req, self.reqID)
         
