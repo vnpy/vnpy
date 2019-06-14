@@ -326,8 +326,8 @@ class MongoManager(BaseDatabaseManager):
     ) -> Optional["BarData"]:
         s = (
             DbBarData.objects(symbol=symbol, exchange=exchange.value)
-                .order_by("-datetime")
-                .first()
+            .order_by("-datetime")
+            .first()
         )
         if s:
             return s.to_bar()
@@ -338,8 +338,8 @@ class MongoManager(BaseDatabaseManager):
     ) -> Optional["TickData"]:
         s = (
             DbTickData.objects(symbol=symbol, exchange=exchange.value)
-                .order_by("-datetime")
-                .first()
+            .order_by("-datetime")
+            .first()
         )
         if s:
             return s.to_tick()

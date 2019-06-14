@@ -117,7 +117,7 @@ def is_psycopg2_exists():
 
 
 install_requires = [
-    "PyQt5<5.12",
+    "PyQt5",
     "qdarkstyle",
     "requests",
     "websocket-client",

@@ -1,4 +1,4 @@
-PyQt5<5.12
+PyQt5
 pyqtgraph
 dataclasses; python_version<="3.6"
 qdarkstyle
