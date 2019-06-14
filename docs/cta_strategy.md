@@ -1134,3 +1134,199 @@ def optimize(
 
         return True
 ```
+
+&nbsp;
+
+### 锁仓操作
+
+用户在编写策略时，可以通过填写lock字段来让策略完成锁仓操作，即禁止平今，通过反向开仓来代替。
+
+- 在cta策略模板template中，可以看到如下具体委托函数都有lock字段，并且默认为False。
+
+```
+    def buy(self, price: float, volume: float, stop: bool = False, lock: bool = False):
+        """
+        Send buy order to open a long position.
+        """
+        return self.send_order(Direction.LONG, Offset.OPEN, price, volume, stop, lock)
+
+    def sell(self, price: float, volume: float, stop: bool = False, lock: bool = False):
+        """
+        Send sell order to close a long position.
+        """
+        return self.send_order(Direction.SHORT, Offset.CLOSE, price, volume, stop, lock)
+
+    def short(self, price: float, volume: float, stop: bool = False, lock: bool = False):
+        """
+        Send short order to open as short position.
+        """
+        return self.send_order(Direction.SHORT, Offset.OPEN, price, volume, stop, lock)
+
+    def cover(self, price: float, volume: float, stop: bool = False, lock: bool = False):
+        """
+        Send cover order to close a short position.
+        """
+        return self.send_order(Direction.LONG, Offset.CLOSE, price, volume, stop, lock)
+
+    def send_order(
+        self,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: float,
+        stop: bool = False,
+        lock: bool = False
+    ):
+        """
+        Send a new order.
+        """
+        if self.trading:
+            vt_orderids = self.cta_engine.send_order(
+                self, direction, offset, price, volume, stop, lock
+            )
+            return vt_orderids
+        else:
+            return []
+```
+
+&nbsp;
+
+- 设置lock=True后，cta实盘引擎send_order()函数发生响应，并且调用其最根本的委托函数send_server_order()去处理锁仓委托转换。首先是创建原始委托original_req，然后调用converter文件里面OffsetConverter类的convert_order_request来进行相关转换。
+
+```
+    def send_order(
+        self,
+        strategy: CtaTemplate,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: float,
+        stop: bool,
+        lock: bool
+    ):
+        """
+        """
+        contract = self.main_engine.get_contract(strategy.vt_symbol)
+        if not contract:
+            self.write_log(f"委托失败，找不到合约：{strategy.vt_symbol}", strategy)
+            return ""
+
+        if stop:
+            if contract.stop_supported:
+                return self.send_server_stop_order(strategy, contract, direction, offset, price, volume, lock)
+            else:
+                return self.send_local_stop_order(strategy, direction, offset, price, volume, lock)
+        else:
+            return self.send_limit_order(strategy, contract, direction, offset, price, volume, lock)
+
+    def send_limit_order(
+        self,
+        strategy: CtaTemplate,
+        contract: ContractData,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: float,
+        lock: bool
+    ):
+        """
+        Send a limit order to server.
+        """
+        return self.send_server_order(
+            strategy,
+            contract,
+            direction,
+            offset,
+            price,
+            volume,
+            OrderType.LIMIT,
+            lock
+        )
+
+    def send_server_order(
+        self,
+        strategy: CtaTemplate,
+        contract: ContractData,
+        direction: Direction,
+        offset: Offset,
+        price: float,
+        volume: float,
+        type: OrderType,
+        lock: bool
+    ):
+        """
+        Send a new order to server.
+        """
+        # Create request and send order.
+        original_req = OrderRequest(
+            symbol=contract.symbol,
+            exchange=contract.exchange,
+            direction=direction,
+            offset=offset,
+            type=type,
+            price=price,
+            volume=volume,
+        )
+
+        # Convert with offset converter
+        req_list = self.offset_converter.convert_order_request(original_req, lock)
+
+        # Send Orders
+        vt_orderids = []
+
+        for req in req_list:
+            vt_orderid = self.main_engine.send_order(
+                req, contract.gateway_name)
+            vt_orderids.append(vt_orderid)
+
+            self.offset_converter.update_order_request(req, vt_orderid)
+            
+            # Save relationship between orderid and strategy.
+            self.orderid_strategy_map[vt_orderid] = strategy
+            self.strategy_orderid_map[strategy.strategy_name].add(vt_orderid)
+
+        return vt_orderids        
+```
+
+&nbsp;
+
+- 在convert_order_request_lock()函数中，先计算今仓的量和昨可用量；然后进行判断：若有今仓，只能开仓（锁仓）；无今仓时候，若平仓量小于等于昨可用，全部平昨，反之，先平昨，剩下的反向开仓。
+
+```
+    def convert_order_request_lock(self, req: OrderRequest):
+        """"""
+        if req.direction == Direction.LONG:
+            td_volume = self.short_td
+            yd_available = self.short_yd - self.short_yd_frozen
+        else:
+            td_volume = self.long_td
+            yd_available = self.long_yd - self.long_yd_frozen
+
+        # If there is td_volume, we can only lock position
+        if td_volume:
+            req_open = copy(req)
+            req_open.offset = Offset.OPEN
+            return [req_open]
+        # If no td_volume, we close opposite yd position first
+        # then open new position
+        else:
+            open_volume = max(0,  req.volume - yd_available)
+            req_list = []
+
+            if yd_available:
+                req_yd = copy(req)
+                if self.exchange == Exchange.SHFE:
+                    req_yd.offset = Offset.CLOSEYESTERDAY
+                else:
+                    req_yd.offset = Offset.CLOSE
+                req_list.append(req_yd)
+
+            if open_volume:
+                req_open = copy(req)
+                req_open.offset = Offset.OPEN
+                req_open.volume = open_volume
+                req_list.append(req_open)
+
+            return req_list
+
+```
