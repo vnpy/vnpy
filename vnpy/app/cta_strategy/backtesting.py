@@ -214,6 +214,10 @@ class BacktestingEngine:
         if not self.end:
             self.end = datetime.now()
 
+        if self.start >= self.end:
+            self.output("起始日期必须小于结束日期")    
+            return        
+
         self.history_data.clear()       # Clear previously loaded history data
 
         # Load 30 days of data each time and allow for progress update
