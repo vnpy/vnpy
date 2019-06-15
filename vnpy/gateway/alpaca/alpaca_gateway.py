@@ -392,7 +392,7 @@ class AlpacaWebsocketApi(WebsocketClient):
         self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
         self.start()
 
-    def login(self):
+    def authenticate(self):
         """"""
         params={"action":"authenticate", "data": {
                 "key_id":self.key,"secret_key":self.secret
@@ -400,12 +400,13 @@ class AlpacaWebsocketApi(WebsocketClient):
         print("string is {} ===".format(params))
         self.send_packet(params)
 
-    def on_login(self, packet):
+    def on_authenticate(self):
         """"""
-        print("websocket authenticate success!!! msg: ", packet)
+        print("websocket authenticate success!!! msg: " )
         params={"action":"listen", "data": {
             "streams":["account_updates", "trade_updates"]
         }}
+        print("on_authenticate func", params)
         self.send_packet(params)
     
     def subscribe(self, req: SubscribeRequest):
@@ -422,27 +423,45 @@ class AlpacaWebsocketApi(WebsocketClient):
     def on_connected(self):
         """"""
         self.gateway.write_log("Websocket API连接成功")
-        self.login()
+        self.authenticate()
 
     def on_disconnected(self):
         """"""
         self.gateway.write_log("Websocket API连接断开")
 
-    # need debug 20190404
     def on_packet(self, packet: dict):
         """"""
         print("debug on_packet: ", packet)
-        if "ping" in packet:
-            # has ping???
-            req = {"pong": packet["ping"]}
-            print("ping response: ", req)
-            self.send_packet(req)
-        elif "stream" in packet and "data" in packet:
-            # on_data
-            pass
+        if "stream" in packet and "data" in packet:
+            stream_ret = packet['stream']
+            data_ret = packet['data']
+            if(stream_ret  == "authorization"):
+                self.handle_auth(packet)
+            elif(stream_ret  == "listening"):
+                self.gateway.write_log("listening {}".format(data_ret))
+            else:
+                self.ondata(packet)
         else:
-            print("unrecognize mesg", packet)
-        #parse authenticate/trade/other data here
+            print("unrecognize msg", packet)
+
+    # ----------------------------------------------------------------------
+    def on_data(self, data):
+        pass
+
+    # ----------------------------------------------------------------------
+    def handle_auth(self, data):
+        stream_ret = data['stream']
+        data_ret = data['data']
+        print("stream is {}, data is {}".format(stream_ret,data_ret))
+        if (data_ret['status'] == "authorized"):
+            print("authorization success!!!")
+            self.gateway.write_log("authorization success!!!")
+            self.on_authenticate()
+        elif (data_ret['status'] == "unauthorized"):
+            print("authorization failed!!!")
+            self.gateway.write_log("authorization failed!!!")
+        else:
+            print("??unhandled status:  ",data)
 
     # ----------------------------------------------------------------------
     def on_response(self, data):
@@ -467,7 +486,9 @@ class AlpacaWebsocketApi(WebsocketClient):
     def on_error(self, exception_type: type, exception_value: Exception, tb):
         """"""
         print("on_error: ", type, Exception, tb)
-        pass
+        sys.stderr.write(
+            self.exception_detail(exception_type, exception_value, tb )
+        )
 
     def subscribe_topic(self):
         pass
