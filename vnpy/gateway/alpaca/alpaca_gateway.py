@@ -36,19 +36,19 @@ from vnpy.trader.object import (
 )
 
 REST_HOST = "https://api.alpaca.markets"
+WEBSOCKET_HOST = "wss://api.alpaca.markets/stream"               # Market Data
 PAPER_REST_HOST = "https://paper-api.alpaca.markets"
-WEBSOCKET_HOST = "wss://paper-api.alpaca.markets/stream"               # Market Data
+PAPER_WEBSOCKET_HOST = "wss://paper-api.alpaca.markets/stream"               # Market Data
 KEY = ""
 SECRET = ""
 
 STATUS_ALPACA2VT = {
     "new": Status.SUBMITTING,
-    "open": Status.NOTTRADED,
-    "part_filled": Status.PARTTRADED,
-    "filled": Status.ALLTRADED,
+    "partial_fill": Status.PARTTRADED,
+    "fill": Status.ALLTRADED,
     "cancelled": Status.CANCELLED,
-    "cancelling": Status.CANCELLED,
-    "failure": Status.REJECTED,
+    #"done_for_day": Status.CANCELLED,
+    "expired": Status.NOTTRADED
 }
 
 DIRECTION_VT2ALPACA = {Direction.LONG: "buy", Direction.SHORT: "sell"}
@@ -71,6 +71,7 @@ class AlpacaGateway(BaseGateway):
         "key": "",
         "secret": "",
         "session": 3,
+        "服务器": ["REAL", "PAPER"],
         "proxy_host": "127.0.0.1",
         "proxy_port": 1080,
     }
@@ -85,15 +86,17 @@ class AlpacaGateway(BaseGateway):
 
     def connect(self, setting: dict):
         """"""
+        print("[debug] gateway setting: ",setting)
         key = setting["key"]
         secret = setting["secret"]
         session = setting["session"]
         proxy_host = setting["proxy_host"]
         proxy_port = setting["proxy_port"]
-
-        self.rest_api.connect(key, secret, session, proxy_host, proxy_port)
-
-        self.ws_api.connect(key, secret, proxy_host, proxy_port)
+        env=setting['服务器']
+        rest_url = REST_HOST if env == "REAL" else  PAPER_REST_HOST
+        websocket_url = WEBSOCKET_HOST if env == "REAL" else  PAPER_WEBSOCKET_HOST
+        self.rest_api.connect(key, secret, session, proxy_host, proxy_port,rest_url)
+        self.ws_api.connect(key, secret, proxy_host, proxy_port,websocket_url)
 
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -152,6 +155,7 @@ class AlpacaRestApi(RestClient):
         )
 
     def on_query_account(self, data, request):
+        print("on_query_account debug: " , data)
         account = AccountData(
             accountid=data['id'],
             balance=float(data['cash']),
@@ -207,15 +211,15 @@ class AlpacaRestApi(RestClient):
         session_num: int,
         proxy_host: str,
         proxy_port: int,
+        url: str,
     ):
         """
                Initialize connection to REST server.
         """
         self.key = key
         self.secret = secret
-
-        self.init(PAPER_REST_HOST, proxy_host, proxy_port)
-        print("rest connect: ", PAPER_REST_HOST, proxy_host, proxy_port)
+        self.init(url, proxy_host, proxy_port)
+        print("rest connect: ", url, proxy_host, proxy_port)
         self.start(session_num)
         self.connect_time = (
             int(datetime.now().strftime("%y%m%d%H%M%S")) * self.order_count
@@ -227,7 +231,6 @@ class AlpacaRestApi(RestClient):
         #self.query_contracts()
 
     def on_send_order(self, data, request ):
-        print("debug on_send_order data is {}  request is {} ---".format( data, request))
         remote_order_id = data['id']
         order = request.extra
         self.order_list.append(remote_order_id)
@@ -384,12 +387,12 @@ class AlpacaWebsocketApi(WebsocketClient):
         self.channelDict = {}       # ChannelID : (Channel, Symbol)
 
     def connect(
-        self, key: str, secret: str, proxy_host: str, proxy_port: int
+        self, key: str, secret: str, proxy_host: str, proxy_port: int,url:str
     ):
         """"""
         self.key = key
         self.secret = secret
-        self.init(WEBSOCKET_HOST, proxy_host, proxy_port)
+        self.init(url, proxy_host, proxy_port)
         self.start()
 
     def authenticate(self):
@@ -397,16 +400,13 @@ class AlpacaWebsocketApi(WebsocketClient):
         params={"action":"authenticate", "data": {
                 "key_id":self.key,"secret_key":self.secret
         }}
-        print("string is {} ===".format(params))
         self.send_packet(params)
 
     def on_authenticate(self):
         """"""
-        print("websocket authenticate success!!! msg: " )
         params={"action":"listen", "data": {
             "streams":["account_updates", "trade_updates"]
         }}
-        print("on_authenticate func", params)
         self.send_packet(params)
     
     def subscribe(self, req: SubscribeRequest):
@@ -446,7 +446,36 @@ class AlpacaWebsocketApi(WebsocketClient):
 
     # ----------------------------------------------------------------------
     def on_data(self, data):
-        pass
+        print("on_data is {}".format(data))
+        stream_ret = data['stream']
+        data_ret = data['data']
+        if(stream_ret == "account_updates"):
+            #handle account
+            account = AccountData(
+                accountid=data_ret['id'],
+                balance=float(data_ret['cash']),
+                frozen=float(data_ret['cash']) - float(data_ret['cash_withdrawable']),
+                gateway_name=self.gateway_name
+            )
+            self.gateway.on_account(account)
+        elif(stream_ret == "trade_updates"):
+            d=data_ret['order']
+            trade = TradeData(
+                symbol=d["symbol"],
+                exchange=Exchange.ALPACA,
+                orderid=d['id'],
+                tradeid=None,
+                direction=DIRECTION_ALPACA2VT[d["side"]],
+                price=data_ret["price"],
+                volume=data_ret["qty"],
+                time=data_ret["timestamp"][11:19],
+                gateway_name=self.gateway_name,
+            )
+            self.gateway.on_trade(trade)
+            #self.gateway.on_order(order) # udpate order status
+        else:
+            pass
+
 
     # ----------------------------------------------------------------------
     def handle_auth(self, data):
