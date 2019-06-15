@@ -4,6 +4,7 @@ from typing import List
 from rqdatac import init as rqdata_init
 from rqdatac.services.basic import all_instruments as rqdata_all_instruments
 from rqdatac.services.get_price import get_price as rqdata_get_price
+from rqdatac.share.errors import AuthenticationFailed
 
 from .setting import SETTINGS
 from .constant import Exchange, Interval
@@ -55,7 +56,7 @@ class RqdataClient:
             df = rqdata_all_instruments(date=datetime.now())
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
-        except RuntimeError:
+        except (RuntimeError, AuthenticationFailed):
             return False
 
         self.inited = True
