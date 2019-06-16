@@ -661,14 +661,11 @@ class BitmexWebsocketApi(WebsocketClient):
 
     def on_position(self, d):
         """"""
-        if not d["currentQty"]:
-            return
-
         position = PositionData(
             symbol=d["symbol"],
             exchange=Exchange.BITMEX,
             direction=Direction.NET,
-            volume=d["currentQty"],
+            volume=d.get("currentQty", 0),
             gateway_name=self.gateway_name,
         )
 
