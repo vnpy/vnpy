@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <img src ="https://img.shields.io/badge/version-2.0.3-blueviolet.svg"/>
+    <img src ="https://img.shields.io/badge/version-2.0.4-blueviolet.svg"/>
     <img src ="https://img.shields.io/badge/platform-windows|linux|macos-yellow.svg"/>
     <img src ="https://img.shields.io/badge/python-3.7-blue.svg" />
     <img src ="https://img.shields.io/travis/com/vnpy/vnpy/master.svg"/>
@@ -14,7 +14,9 @@
 
 vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1月正式发布，在开源社区5年持续不断的贡献下一步步成长为全功能量化交易平台，目前国内外金融机构用户已经超过300家，包括：私募基金、证券自营和资管、期货资管和子公司、高校研究机构、自营交易公司、交易所、Token Fund等。
 
-2.0版本基于Python 3.7全新重构开发，目前功能还在逐步完善中。如需Python 2上的版本请点击：[长期支持版本v1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
+使用vn.py的过程中有任何疑问，请前往[**官方社区论坛**](https://www.vnpy.com/forum/)的【提问求助】板块寻求帮助，也欢迎在【经验分享】板块分享你的使用心得！
+
+2.0版本基于Python 3.7全新重构开发，如需Python 2上的版本请点击：[长期支持版本v1.9.2 LTS](https://github.com/vnpy/vnpy/tree/v1.9.2-LTS)。
 
 ## 功能特点
 
@@ -108,6 +110,7 @@ vn.py是一套基于Python的开源量化交易系统开发框架，于2015年1�
 4. 点击底部的**VN Trader Lite**按钮，开始你的交易！！！
 
 注意：
+
 * 在VN Trader的运行过程中请勿关闭VN Station（会自动退出）
 * 如需要灵活配置量化交易应用组件，请使用**VN Trader Pro**
 
