@@ -4,6 +4,7 @@ from typing import List
 from rqdatac import init as rqdata_init
 from rqdatac.services.basic import all_instruments as rqdata_all_instruments
 from rqdatac.services.get_price import get_price as rqdata_get_price
+from rqdatac.share.errors import AuthenticationFailed
 
 from .setting import SETTINGS
 from .constant import Exchange, Interval
@@ -36,10 +37,14 @@ class RqdataClient:
         self.inited = False
         self.symbols = set()
 
-    def init(self):
+    def init(self, username="", password=""):
         """"""
         if self.inited:
             return True
+
+        if username and password:
+            self.username = username
+            self.password = password
 
         if not self.username or not self.password:
             return False
@@ -51,7 +56,7 @@ class RqdataClient:
             df = rqdata_all_instruments(date=datetime.now())
             for ix, row in df.iterrows():
                 self.symbols.add(row['order_book_id'])
-        except RuntimeError:
+        except (RuntimeError, AuthenticationFailed):
             return False
 
         self.inited = True
@@ -74,6 +79,11 @@ class RqdataClient:
             for count, word in enumerate(symbol):
                 if word.isdigit():
                     break
+
+            # Check for index symbol
+            time_str = symbol[count:]
+            if time_str in ["88", "888", "99"]:
+                return symbol
 
             # noinspection PyUnboundLocalVariable
             product = symbol[:count]
@@ -118,24 +128,27 @@ class RqdataClient:
             frequency=rq_interval,
             fields=["open", "high", "low", "close", "volume"],
             start_date=start,
-            end_date=end
+            end_date=end,
+            adjust_type="none"
         )
 
         data: List[BarData] = []
-        for ix, row in df.iterrows():
-            bar = BarData(
-                symbol=symbol,
-                exchange=exchange,
-                interval=interval,
-                datetime=row.name.to_pydatetime() - adjustment,
-                open_price=row["open"],
-                high_price=row["high"],
-                low_price=row["low"],
-                close_price=row["close"],
-                volume=row["volume"],
-                gateway_name="RQ"
-            )
-            data.append(bar)
+
+        if df is not None:
+            for ix, row in df.iterrows():
+                bar = BarData(
+                    symbol=symbol,
+                    exchange=exchange,
+                    interval=interval,
+                    datetime=row.name.to_pydatetime() - adjustment,
+                    open_price=row["open"],
+                    high_price=row["high"],
+                    low_price=row["low"],
+                    close_price=row["close"],
+                    volume=row["volume"],
+                    gateway_name="RQ"
+                )
+                data.append(bar)
 
         return data
 

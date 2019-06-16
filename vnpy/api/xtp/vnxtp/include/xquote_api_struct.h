@@ -89,7 +89,7 @@ struct XTPMarketDataStockExData {
     int64_t r2;
 };
 
-// 期权额外数据
+/// 期权额外数据
 struct XTPMarketDataOptionExData {
     ///波段性中断参考价(SH)
     double  auction_price;
@@ -99,6 +99,9 @@ struct XTPMarketDataOptionExData {
     int64_t last_enquiry_time;
 };
 
+/////////////////////////////////////////////////////////////////////////
+///@brief XTP_MARKETDATA_TYPE是行情快照数据类型
+/////////////////////////////////////////////////////////////////////////
 enum XTP_MARKETDATA_TYPE {
     XTP_MARKETDATA_ACTUAL = 0, // 现货(股票/基金/债券等)
     XTP_MARKETDATA_OPTION = 1, // 期权

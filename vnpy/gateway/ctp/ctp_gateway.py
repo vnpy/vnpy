@@ -131,14 +131,15 @@ class CtpGateway(BaseGateway):
         "交易服务器": "",
         "行情服务器": "",
         "产品名称": "",
-        "授权编码": ""
+        "授权编码": "",
+        "产品信息": ""
     }
 
     exchanges = list(EXCHANGE_CTP2VT.values())
     
     def __init__(self, event_engine):
         """Constructor"""
-        super(CtpGateway, self).__init__(event_engine, "CTP")
+        super().__init__(event_engine, "CTP")
 
         self.td_api = CtpTdApi(self)
         self.md_api = CtpMdApi(self)
@@ -152,13 +153,14 @@ class CtpGateway(BaseGateway):
         md_address = setting["行情服务器"]
         appid = setting["产品名称"]
         auth_code = setting["授权编码"]
+        product_info = setting["产品信息"]
         
         if not td_address.startswith("tcp://"):
             td_address = "tcp://" + td_address
         if not md_address.startswith("tcp://"):
             md_address = "tcp://" + md_address
         
-        self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid)
+        self.td_api.connect(td_address, userid, password, brokerid, auth_code, appid, product_info)
         self.md_api.connect(md_address, userid, password, brokerid)
         
         self.init_query()
@@ -292,6 +294,7 @@ class CtpMdApi(MdApi):
             datetime=datetime.strptime(timestamp, "%Y%m%d %H:%M:%S.%f"),
             name=symbol_name_map[symbol],
             volume=data["Volume"],
+            open_interest=data["OpenInterest"],
             last_price=data["LastPrice"],
             limit_up=data["UpperLimitPrice"],
             limit_down=data["LowerLimitPrice"],
@@ -378,6 +381,7 @@ class CtpTdApi(TdApi):
         self.brokerid = 0
         self.auth_code = ""
         self.appid = ""
+        self.product_info = ""
         
         self.frontid = 0
         self.sessionid = 0
@@ -406,7 +410,7 @@ class CtpTdApi(TdApi):
     def onRspAuthenticate(self, data: dict, error: dict, reqid: int, last: bool):
         """"""
         if not error['ErrorID']:
-            self.authStatus = True
+            self.auth_staus = True
             self.gateway.write_log("交易服务器授权验证成功")
             self.login()
         else:
@@ -635,7 +639,16 @@ class CtpTdApi(TdApi):
         )
         self.gateway.on_trade(trade)        
     
-    def connect(self, address: str, userid: str, password: str, brokerid: int, auth_code: str, appid: str):
+    def connect(
+        self, 
+        address: str, 
+        userid: str, 
+        password: str, 
+        brokerid: int, 
+        auth_code: str, 
+        appid: str,
+        product_info
+    ):
         """
         Start connection to server.
         """
@@ -644,6 +657,7 @@ class CtpTdApi(TdApi):
         self.brokerid = brokerid
         self.auth_code = auth_code
         self.appid = appid
+        self.product_info = product_info
         
         if not self.connect_status:
             path = get_folder_path(self.gateway_name.lower())
@@ -667,6 +681,9 @@ class CtpTdApi(TdApi):
             "AuthCode": self.auth_code,
             "AppID": self.appid
         }
+
+        if self.product_info:
+            req["UserProductInfo"] = self.product_info
         
         self.reqid += 1
         self.reqAuthenticate(req, self.reqid)
@@ -684,6 +701,9 @@ class CtpTdApi(TdApi):
             "BrokerID": self.brokerid,
             "AppID": self.appid
         }
+
+        if self.product_info:
+            req["UserProductInfo"] = self.product_info
         
         self.reqid += 1
         self.reqUserLogin(req, self.reqid)
