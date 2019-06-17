@@ -437,14 +437,14 @@ class BinanceRestApi(RestClient):
             quote_currency = d["quoteAsset"]
             name = f"{base_currency.upper()}/{quote_currency.upper()}"
 
-            pricetick = 0
-            min_volume = 0
+            pricetick = 1
+            min_volume = 1
 
             for f in d["filters"]:
                 if f["filterType"] == "PRICE_FILTER":
-                    pricetick = f["tickSize"]
+                    pricetick = float(f["tickSize"])
                 elif f["filterType"] == "LOT_SIZE":
-                    min_volume = f["stepSize"]
+                    min_volume = float(f["stepSize"])
 
             contract = ContractData(
                 symbol=d["symbol"],
