@@ -25,4 +25,8 @@ dist
 *.iobj
 *.ipdb
 *.pdb
-/venv
+
+# Documents
+_build
+_static
+_templates

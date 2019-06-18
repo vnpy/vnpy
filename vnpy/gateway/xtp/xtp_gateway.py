@@ -17,6 +17,7 @@ from vnpy.api.xtp.vnxtp import (
     XTPOrderInfo,
     XTPTradeReport,
     XTPOrderCancelInfo,
+    XTPCrdDebtInfo,
     XTPQueryStkPositionRsp,
     XTPQueryAssetRsp,
     XTPStructuredFundInfo,
@@ -32,6 +33,11 @@ from vnpy.api.xtp.vnxtp import (
     XTP_TE_RESUME_TYPE,
     XTP_SIDE_BUY,
     XTP_SIDE_SELL,
+    XTP_SIDE_MARGIN_TRADE,
+    XTP_SIDE_SHORT_SELL,
+    XTP_SIDE_REPAY_MARGIN,
+    XTP_SIDE_REPAY_STOCK,
+    XTP_ACCOUNT_TYPE,
     XTP_BUSINESS_TYPE,
     XTP_TICKER_TYPE,
     XTP_MARKET_TYPE,
@@ -40,7 +46,7 @@ from vnpy.api.xtp.vnxtp import (
 )
 from vnpy.event import EventEngine
 from vnpy.trader.event import EVENT_TIMER
-from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status
+from vnpy.trader.constant import Exchange, Product, Direction, OrderType, Status, Offset
 from vnpy.trader.gateway import BaseGateway
 from vnpy.trader.object import (CancelRequest, OrderRequest, SubscribeRequest,
                                 TickData, ContractData, OrderData, TradeData,
@@ -71,9 +77,17 @@ PRODUCT_XTP2VT = {
     XTP_TICKER_TYPE.XTP_TICKER_TYPE_OPTION: Product.OPTION
 }
 
+# DIRECTION_VT2XTP = {
+#     Direction.LONG: XTP_SIDE_BUY,
+#     Direction.SHORT: XTP_SIDE_SELL
+# }
 DIRECTION_VT2XTP = {
-    Direction.LONG: XTP_SIDE_BUY,
-    Direction.SHORT: XTP_SIDE_SELL
+    (Direction.LONG, Offset.OPEN): XTP_SIDE_MARGIN_TRADE,
+    (Direction.SHORT, Offset.CLOSE): XTP_SIDE_REPAY_MARGIN,
+    (Direction.SHORT, Offset.OPEN): XTP_SIDE_SHORT_SELL,
+    (Direction.LONG, Offset.CLOSE): XTP_SIDE_REPAY_STOCK,
+    (Direction.SHORT, Offset.NONE): XTP_SIDE_BUY,
+    (Direction.LONG, Offset.NONE): XTP_SIDE_SELL,
 }
 DIRECTION_XTP2VT = {v: k for k, v in DIRECTION_VT2XTP.items()}
 
@@ -95,6 +109,7 @@ STATUS_XTP2VT = {
 
 
 symbol_name_map = {}
+symbol_exchange_map = {}
 
 
 class XtpGateway(BaseGateway):
@@ -291,6 +306,8 @@ class XtpQuoteApi(API.QuoteSpi):
         """"""
         self.gateway.write_log("行情服务器连接断开")
 
+        self.login()
+
     def OnError(self, error_info: XTPRspInfoStruct) -> Any:
         """"""
         self.check_error("行情接口", error_info)
@@ -428,6 +445,9 @@ class XtpQuoteApi(API.QuoteSpi):
 
         symbol_name_map[contract.vt_symbol] = contract.name
 
+        if contract.product != Product.INDEX:
+            symbol_exchange_map[contract.symbol] = contract.exchange
+
         if is_last:
             self.gateway.write_log(f"{contract.exchange.value}合约信息查询成功")
 
@@ -486,6 +506,13 @@ class XtpTraderApi(API.TraderSpi):
         self.api = None
         self.session_id = 0
         self.reqid = 0
+
+        # Whether current account supports margin or option
+        self.margin_trading = False
+        self.option_trading = False
+
+        # 
+        self.short_positions = {}
 
     def connect(
         self,
@@ -564,9 +591,13 @@ class XtpTraderApi(API.TraderSpi):
         xtp_req.market = MARKET_VT2XTP[req.exchange]
         xtp_req.price = req.price
         xtp_req.quantity = int(req.volume)
-        xtp_req.side = DIRECTION_VT2XTP[req.direction]
+        xtp_req.side = DIRECTION_VT2XTP.get((req.direction, req.offset), "")
         xtp_req.price_type = ORDERTYPE_VT2XTP[req.type]
-        xtp_req.business_type = XTP_BUSINESS_TYPE.XTP_BUSINESS_TYPE_CASH
+
+        if req.offset == Offset.NONE:
+            xtp_req.business_type = XTP_BUSINESS_TYPE.XTP_BUSINESS_TYPE_CASH
+        else:
+            xtp_req.business_type = XTP_BUSINESS_TYPE.XTP_BUSINESS_TYPE_MARGIN
 
         orderid = self.api.InsertOrder(xtp_req, self.session_id)
 
@@ -595,6 +626,10 @@ class XtpTraderApi(API.TraderSpi):
         self.reqid += 1
         self.api.QueryPosition("", self.session_id, self.reqid)
 
+        if self.margin_trading:
+            self.reqid += 1
+            self.api.QueryCreditDebtInfo(self.session_id, self.reqid)
+
     def check_error(self, func_name: str, error_info: XTPRspInfoStruct):
         """"""
         if error_info and error_info.error_id:
@@ -608,6 +643,8 @@ class XtpTraderApi(API.TraderSpi):
         """"""
         self.gateway.write_log("交易服务器连接断开")
 
+        self.login()
+
     def OnError(self, error_info: XTPRspInfoStruct) -> Any:
         """"""
         self.check_error("交易接口", error_info)
@@ -617,12 +654,15 @@ class XtpTraderApi(API.TraderSpi):
         """"""
         self.check_error("委托下单", error_info)
 
+        direction, offset = DIRECTION_XTP2VT[order_info.side]
+
         order = OrderData(
             symbol=order_info.ticker,
             exchange=MARKET_XTP2VT[order_info.market],
             orderid=str(order_info.order_xtp_id),
             type=ORDERTYPE_XTP2VT[order_info.price_type],
-            direction=DIRECTION_XTP2VT[order_info.side],
+            direction=direction,
+            offset=offset,
             price=order_info.price,
             volume=order_info.quantity,
             traded=order_info.qty_traded,
@@ -635,12 +675,15 @@ class XtpTraderApi(API.TraderSpi):
 
     def OnTradeEvent(self, trade_info: XTPTradeReport, session_id: int) -> Any:
         """"""
+        direction, offset = DIRECTION_XTP2VT[trade_info.side]
+
         trade = TradeData(
             symbol=trade_info.ticker,
             exchange=MARKET_XTP2VT[trade_info.market],
             orderid=str(trade_info.order_xtp_id),
             tradeid=str(trade_info.exec_id),
-            direction=DIRECTION_XTP2VT[trade_info.side],
+            direction=direction,
+            offset=offset,
             price=trade_info.price,
             volume=trade_info.quantity,
             time=trade_info.trade_time,
@@ -682,7 +725,7 @@ class XtpTraderApi(API.TraderSpi):
         position = PositionData(
             symbol=xtp_position.ticker,
             exchange=MARKET_XTP2VT[xtp_position.market],
-            direction=Direction.NET,
+            direction=Direction.LONG,
             volume=xtp_position.total_qty,
             frozen=xtp_position.locked_position,
             price=xtp_position.avg_price,
@@ -702,6 +745,11 @@ class XtpTraderApi(API.TraderSpi):
             gateway_name=self.gateway_name
         )
         self.gateway.on_account(account)
+
+        if asset.account_type == XTP_ACCOUNT_TYPE.XTP_ACCOUNT_CREDIT:
+            self.margin_trading = True
+        elif asset.account_type == XTP_ACCOUNT_TYPE.XTP_ACCOUNT_DERIVE:
+            self.option_trading = True
 
     def OnQueryStructuredFund(self, fund_info: XTPStructuredFundInfo, error_info: XTPRspInfoStruct,
                               is_last: bool, session_id: int) -> Any:
@@ -741,3 +789,28 @@ class XtpTraderApi(API.TraderSpi):
                                  is_last: bool, session_id: int) -> Any:
         """"""
         pass
+
+    def OnQueryCreditDebtInfo(self, debt_info: XTPCrdDebtInfo, error_info: XTPRspInfoStruct, 
+                              request_id: int, is_last: bool, session_id: int) -> Any:
+        """"""
+        if debt_info.debt_type == 1:
+            symbol = debt_info.ticker
+            exchange = MARKET_XTP2VT[debt_info.market]
+            
+            position = self.short_positions.get(symbol, None)
+            if not position:
+                position = PositionData(
+                    symbol=symbol,
+                    exchange=exchange,
+                    direction=Direction.SHORT,
+                    gateway_name=self.gateway_name
+                )
+                self.short_positions[symbol] = position
+
+            position.volume += debt_info.remain_qty
+        
+        if is_last:
+            for position in self.short_positions.values():
+                self.gateway.on_position(position)
+
+            self.short_positions.clear()

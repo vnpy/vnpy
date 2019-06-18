@@ -17,7 +17,8 @@ from vnpy.api.oes.vnoes import OesApiClientEnvT, OesApiSubscribeInfoT, OesApi_De
     OesQryOptionFilterT, OesQryOrdFilterT, OesQryStkHoldingFilterT, OesQryStockFilterT, \
     OesRspMsgBodyT, OesStockBaseInfoT, OesTrdCnfmT, SGeneralClientChannelT, SMSG_PROTO_BINARY, \
     SMsgHeadT, cast, eOesBuySellTypeT, eOesMarketIdT, eOesMsgTypeT, \
-    eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT, eOesSubscribeReportTypeT
+    eOesOrdStatusT, eOesOrdTypeShT, eOesOrdTypeSzT, eOesSubscribeReportTypeT, \
+    OesApi_SetCustomizedIpAndMac
 from vnpy.gateway.oes.error_code import error_to_str
 from vnpy.gateway.oes.utils import create_remote_config, is_disconnected
 from vnpy.trader.constant import Direction, Exchange, Offset, OrderType, Product, Status
@@ -310,6 +311,8 @@ class OesTdApi:
         self.username: str = ''
         self.password: str = ''
         self.hdd_serial: str = ''
+        self.customize_ip: str = ''
+        self.customize_mac: str = ''
 
         self.gateway = gateway
 
@@ -331,6 +334,8 @@ class OesTdApi:
         :note set config_path before calling this function
         """
         OesApi_InitLogger(self.config_path, 'log')
+
+        OesApi_SetCustomizedIpAndMac(self.customize_ip, self.customize_mac)
 
         OesApi_SetCustomizedDriverId(self.hdd_serial)
 
