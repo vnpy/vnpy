@@ -143,7 +143,7 @@ class AlpacaRestApi(RestClient):
         self.order_count = 1_000_000
         self.order_count_lock = Lock()
         self.connect_time = 0
-        self.order_list = []
+        self.order_dict ={} 
 
     def query_account(self):
         print("call query_account")
@@ -230,11 +230,14 @@ class AlpacaRestApi(RestClient):
         self.query_position()
         #self.query_contracts()
 
-    def on_send_order(self, data, request ):
+    def on_send_order(self, data, request: Request ):
+        print("debug on_send_order data: ", data)
+        print("debug on_send_order request: ", request)
+        print("***debug on_send_order request: ", request.extra)
         remote_order_id = data['id']
         order = request.extra
-        self.order_list.append(remote_order_id)
-        print('debug on_send_order:  local is {} ---'.format(self.order_list))
+        self.order_dict[order.orderid]=remote_order_id
+        print("+++debug on_send_order request: ", self.order_dict)
         self.gateway.on_order(order)
 
     def on_failed_order(self, status_code: int, request: Request):
@@ -268,9 +271,9 @@ class AlpacaRestApi(RestClient):
     # need debug 0608
     def cancel_order(self, req: CancelRequest):
         """"""
-        """
         order_id = req.orderid
-        remote_order_id = self.order_dict['order_id']
+        remote_order_id = self.order_dict[order_id]
+        print("debug cancel order: order id ", order_id, "---", remote_order_id)
         if remote_order_id is None:
             print("[error]: can not get remote_order_id from local dict!")
             return
@@ -283,7 +286,6 @@ class AlpacaRestApi(RestClient):
             extra=req
         )
         print("come to cancel_order", order_id)
-"""
         pass
 
     def on_cancel_order(self, data, request):
@@ -307,6 +309,7 @@ class AlpacaRestApi(RestClient):
 
         data = raw_dict
         order = req.create_order_data(orderid, self.gateway_name)
+        print("debug send_order orderBody extra: ",order)
         self.add_request(
             "POST",
             "/v1/orders",
@@ -440,7 +443,7 @@ class AlpacaWebsocketApi(WebsocketClient):
             elif(stream_ret  == "listening"):
                 self.gateway.write_log("listening {}".format(data_ret))
             else:
-                self.ondata(packet)
+                self.on_data(packet)
         else:
             print("unrecognize msg", packet)
 
@@ -460,22 +463,27 @@ class AlpacaWebsocketApi(WebsocketClient):
             self.gateway.on_account(account)
         elif(stream_ret == "trade_updates"):
             d=data_ret['order']
-            trade = TradeData(
-                symbol=d["symbol"],
-                exchange=Exchange.ALPACA,
-                orderid=d['id'],
-                tradeid=None,
-                direction=DIRECTION_ALPACA2VT[d["side"]],
-                price=data_ret["price"],
-                volume=data_ret["qty"],
-                time=data_ret["timestamp"][11:19],
-                gateway_name=self.gateway_name,
-            )
-            self.gateway.on_trade(trade)
+            if (data_ret['event'] == "fill"):
+                trade = TradeData(
+                    symbol=d["symbol"],
+                    exchange=Exchange.ALPACA,
+                    orderid=d['id'],
+                    tradeid=None,
+                    direction=DIRECTION_ALPACA2VT[d["side"]],
+                    price=d["filled_avg_price"],
+                    volume=d["filled_qty"],
+                    time=data_ret["timestamp"][11:19],
+                    gateway_name=self.gateway_name,
+                )
+                self.gateway.on_trade(trade)
+            elif (data_ret['event'] == "canceled"):
+                
+                self.gateway.on_order(order)
+            else:
+                print("unhandled trade_update msg, ", data_ret['event'])
             #self.gateway.on_order(order) # udpate order status
         else:
             pass
-
 
     # ----------------------------------------------------------------------
     def handle_auth(self, data):
