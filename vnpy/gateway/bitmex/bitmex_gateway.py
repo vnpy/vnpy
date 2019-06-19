@@ -233,6 +233,7 @@ class BitmexRestApi(RestClient):
         self.gateway.write_log("REST API启动成功")
 
     def _new_order_id(self):
+        """"""
         with self.order_count_lock:
             self.order_count += 1
             return self.order_count
@@ -664,7 +665,7 @@ class BitmexWebsocketApi(WebsocketClient):
             symbol=d["symbol"],
             exchange=Exchange.BITMEX,
             direction=Direction.NET,
-            volume=d["currentQty"],
+            volume=d.get("currentQty", 0),
             gateway_name=self.gateway_name,
         )
 

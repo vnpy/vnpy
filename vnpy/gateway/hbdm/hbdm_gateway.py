@@ -84,7 +84,7 @@ INTERVAL_VT2HBDM = {
 CONTRACT_TYPE_MAP = {
     "this_week": "CW",
     "next_week": "NW",
-    "this_quarter": "CQ"
+    "quarter": "CQ"
 }
 
 
@@ -104,7 +104,7 @@ class HbdmGateway(BaseGateway):
         "代理端口": "",
     }
 
-    exchagnes = [Exchange.HUOBI]
+    exchanges = [Exchange.HUOBI]
 
     def __init__(self, event_engine):
         """Constructor"""
@@ -654,7 +654,7 @@ class HbdmRestApi(RestClient):
             )
             self.gateway.on_contract(contract)
 
-            symbol_type_map[contract.symbol] = d['contract_type']
+            symbol_type_map[contract.symbol] = d["contract_type"]
 
         self.gateway.write_log("合约信息查询成功")
 
@@ -957,6 +957,9 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
     def on_connected(self):
         """"""
         self.gateway.write_log("行情Websocket API连接成功")
+
+        for ws_symbol in self.ticks.keys():
+            self.subscribe_data(ws_symbol)
         
     def subscribe(self, req: SubscribeRequest):
         """"""
@@ -979,7 +982,11 @@ class HbdmDataWebsocketApi(HbdmWebsocketApiBase):
             gateway_name=self.gateway_name,
         )
         self.ticks[ws_symbol] = tick            
-            
+
+        self.subscribe_data(ws_symbol)
+    
+    def subscribe_data(self, ws_symbol: str):
+        """"""
         # Subscribe to market depth update
         self.req_id += 1
         req = {
