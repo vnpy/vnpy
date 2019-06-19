@@ -102,7 +102,6 @@ ORDER_TYPE_VT2TORA: Dict[OrderType, Tuple[str, str, str]] = {
     OrderType.FOK: (TORA_TSTP_OPT_LimitPrice, TORA_TSTP_TC_IOC, TORA_TSTP_VC_AV),
     OrderType.FAK: (TORA_TSTP_OPT_LimitPrice, TORA_TSTP_TC_IOC, TORA_TSTP_VC_AV),
     OrderType.LIMIT: (TORA_TSTP_OPT_LimitPrice, TORA_TSTP_TC_GFD, TORA_TSTP_VC_AV),
-    OrderType.MARKET: (TORA_TSTP_OPT_AnyPrice, TORA_TSTP_TC_GFD, TORA_TSTP_VC_AV),
 }
 
 ORDER_TYPE_TORA2VT: Dict[Tuple[str, str, str], OrderType] = {
