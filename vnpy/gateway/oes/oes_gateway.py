@@ -37,6 +37,8 @@ class OesGateway(BaseGateway):
         "username": "",
         "password": "",
         "hdd_serial": "",
+        "customize_ip": "",
+        "customize_mac": "",
     }
 
     exchanges = list(EXCHANGE_VT2OES.keys())
@@ -90,6 +92,8 @@ class OesGateway(BaseGateway):
         self.td_api.rpt_server = setting['td_rpt_server']
         self.td_api.qry_server = setting['td_qry_server']
         self.td_api.hdd_serial = setting['hdd_serial']
+        self.td_api.customize_ip = setting['customize_ip']
+        self.td_api.customize_mac = setting['customize_mac']
         Thread(target=self._connect_td_sync, args=(
             config_path, username, password)).start()
 

@@ -91,6 +91,7 @@ class Exchange(Enum):
     # Global
     SMART = "SMART"         # Smart Router for US stocks
     NYMEX = "NYMEX"         # New York Mercantile Exchange
+    COMEX = "COMEX"         # a division of theNew York Mercantile Exchange
     GLOBEX = "GLOBEX"       # Globex of CME
     IDEALPRO = "IDEALPRO"   # Forex ECN of Interactive Brokers
     CME = "CME"             # Chicago Mercantile Exchange
@@ -106,12 +107,14 @@ class Exchange(Enum):
     BMD = "BMD"             # Bursa Malaysia Derivatives
     TOCOM = "TOCOM"         # Tokyo Commodity Exchange
     EUNX = "EUNX"           # Euronext Exchange
+    KRX = "KRX"             # Korean Exchange
 
     # CryptoCurrency
     BITMEX = "BITMEX"
     OKEX = "OKEX"
     HUOBI = "HUOBI"
     BITFINEX = "BITFINEX"
+    BINANCE = "BINANCE"
 
 
 class Currency(Enum):

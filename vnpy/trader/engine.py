@@ -299,7 +299,7 @@ class LogEngine(BaseEngine):
         file_path = log_path.joinpath(filename)
 
         file_handler = logging.FileHandler(
-            file_path, mode="w", encoding="utf8"
+            file_path, mode="a", encoding="utf8"
         )
         file_handler.setLevel(self.level)
         file_handler.setFormatter(self.formatter)
@@ -311,7 +311,7 @@ class LogEngine(BaseEngine):
 
     def process_log_event(self, event: Event):
         """
-        Output log event data with logging function.
+        Process log event.
         """
         log = event.data
         self.logger.log(log.level, log.msg)

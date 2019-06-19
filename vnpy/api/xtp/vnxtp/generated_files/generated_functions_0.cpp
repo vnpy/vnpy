@@ -49,6 +49,18 @@ void generate_vnxtp(pybind11::module & parent)
     generate_class_XTPQueryIPOQuotaRsp(parent);
     generate_class_XTPQueryOptionAuctionInfoReq(parent);
     generate_class_XTPQueryOptionAuctionInfoRsp(parent);
+    generate_class_XTPCrdCashRepayRsp(parent);
+    generate_class_XTPCrdCashRepayDebtInterestFeeRsp(parent);
+    generate_class_XTPCrdCashRepayInfo(parent);
+    generate_class_XTPCrdDebtInfo(parent);
+    generate_class_XTPCrdFundInfo(parent);
+    generate_class_XTPClientQueryCrdDebtStockReq(parent);
+    generate_class_XTPCrdDebtStockInfo(parent);
+    generate_class_XTPClientQueryCrdPositionStockReq(parent);
+    generate_class_XTPClientQueryCrdPositionStkInfo(parent);
+    generate_class_XTPClientQueryCrdSurplusStkReqInfo(parent);
+    generate_class_XTPClientQueryCrdSurplusStkRspInfo(parent);
+    generate_class_XTPClientCrdExtendDebtInfo(parent);
     generate_class_XTPFundTransferReq(parent);
     generate_enum_XTP_LOG_LEVEL(parent);
     generate_enum_XTP_PROTOCOL_TYPE(parent);
@@ -70,6 +82,7 @@ void generate_vnxtp(pybind11::module & parent)
     generate_enum_XTP_OPT_CALL_OR_PUT_TYPE(parent);
     generate_enum_XTP_OPT_EXERCISE_TYPE_TYPE(parent);
     generate_enum_XTP_POSITION_DIRECTION_TYPE(parent);
+    generate_enum_XTP_CRD_CR_STATUS(parent);
     generate_enum_XTP_MARKETDATA_TYPE(parent);
     parent.attr("XTP_VERSION_LEN") = XTP_VERSION_LEN;
     parent.attr("XTP_TRADING_DAY_LEN") = XTP_TRADING_DAY_LEN;
@@ -80,6 +93,7 @@ void generate_vnxtp(pybind11::module & parent)
     parent.attr("XTP_EXEC_ID_LEN") = XTP_EXEC_ID_LEN;
     parent.attr("XTP_BRANCH_PBU_LEN") = XTP_BRANCH_PBU_LEN;
     parent.attr("XTP_ACCOUNT_NAME_LEN") = XTP_ACCOUNT_NAME_LEN;
+    parent.attr("XTP_CREDIT_DEBT_ID_LEN") = XTP_CREDIT_DEBT_ID_LEN;
     parent.attr("XTP_SIDE_BUY") = XTP_SIDE_BUY;
     parent.attr("XTP_SIDE_SELL") = XTP_SIDE_SELL;
     parent.attr("XTP_SIDE_PURCHASE") = XTP_SIDE_PURCHASE;
@@ -92,8 +106,10 @@ void generate_vnxtp(pybind11::module & parent)
     parent.attr("XTP_SIDE_SHORT_SELL") = XTP_SIDE_SHORT_SELL;
     parent.attr("XTP_SIDE_REPAY_MARGIN") = XTP_SIDE_REPAY_MARGIN;
     parent.attr("XTP_SIDE_REPAY_STOCK") = XTP_SIDE_REPAY_STOCK;
-    parent.attr("XTP_SIDE_CASH_REPAY_MARGIN") = XTP_SIDE_CASH_REPAY_MARGIN;
     parent.attr("XTP_SIDE_STOCK_REPAY_STOCK") = XTP_SIDE_STOCK_REPAY_STOCK;
+    parent.attr("XTP_SIDE_SURSTK_TRANS") = XTP_SIDE_SURSTK_TRANS;
+    parent.attr("XTP_SIDE_GRTSTK_TRANSIN") = XTP_SIDE_GRTSTK_TRANSIN;
+    parent.attr("XTP_SIDE_GRTSTK_TRANSOUT") = XTP_SIDE_GRTSTK_TRANSOUT;
     parent.attr("XTP_SIDE_UNKNOWN") = XTP_SIDE_UNKNOWN;
     parent.attr("XTP_POSITION_EFFECT_INIT") = XTP_POSITION_EFFECT_INIT;
     parent.attr("XTP_POSITION_EFFECT_OPEN") = XTP_POSITION_EFFECT_OPEN;
@@ -103,10 +119,15 @@ void generate_vnxtp(pybind11::module & parent)
     parent.attr("XTP_POSITION_EFFECT_CLOSEYESTERDAY") = XTP_POSITION_EFFECT_CLOSEYESTERDAY;
     parent.attr("XTP_POSITION_EFFECT_FORCEOFF") = XTP_POSITION_EFFECT_FORCEOFF;
     parent.attr("XTP_POSITION_EFFECT_LOCALFORCECLOSE") = XTP_POSITION_EFFECT_LOCALFORCECLOSE;
+    parent.attr("XTP_POSITION_EFFECT_CREDIT_FORCE_COVER") = XTP_POSITION_EFFECT_CREDIT_FORCE_COVER;
+    parent.attr("XTP_POSITION_EFFECT_CREDIT_FORCE_CLEAR") = XTP_POSITION_EFFECT_CREDIT_FORCE_CLEAR;
+    parent.attr("XTP_POSITION_EFFECT_CREDIT_FORCE_DEBT") = XTP_POSITION_EFFECT_CREDIT_FORCE_DEBT;
+    parent.attr("XTP_POSITION_EFFECT_CREDIT_FORCE_UNCOND") = XTP_POSITION_EFFECT_CREDIT_FORCE_UNCOND;
     parent.attr("XTP_POSITION_EFFECT_UNKNOWN") = XTP_POSITION_EFFECT_UNKNOWN;
     parent.attr("XTP_TRDT_COMMON") = XTP_TRDT_COMMON;
     parent.attr("XTP_TRDT_CASH") = XTP_TRDT_CASH;
     parent.attr("XTP_TRDT_PRIMARY") = XTP_TRDT_PRIMARY;
+    parent.attr("XTP_TRDT_CROSS_MKT_CASH") = XTP_TRDT_CROSS_MKT_CASH;
     parent.attr("XTP_ORDT_Normal") = XTP_ORDT_Normal;
     parent.attr("XTP_ORDT_DeriveFromQuote") = XTP_ORDT_DeriveFromQuote;
     parent.attr("XTP_ORDT_DeriveFromCombination") = XTP_ORDT_DeriveFromCombination;
@@ -127,6 +148,15 @@ void generate_vnxtp(pybind11::module & parent)
     module_vnxtp::cross.record_assign(parent, "XTPFundTransferLog", "XTPFundTransferLog", "::XTPFundTransferNotice");
     module_vnxtp::cross.record_assign(parent, "XTPQueryETFBaseRsp", "XTPQueryETFBaseRsp", "::XTPQueryETFBaseRsp");
     module_vnxtp::cross.record_assign(parent, "XTPQueryETFComponentReq", "XTPQueryETFComponentReq", "::XTPQueryETFComponentReq");
+    module_vnxtp::cross.record_assign(parent, "XTPCrdDebtInfo", "XTPCrdDebtInfo", "::XTPCrdDebtInfo");
+    module_vnxtp::cross.record_assign(parent, "XTPCrdFundInfo", "XTPCrdFundInfo", "::XTPCrdFundInfo");
+    module_vnxtp::cross.record_assign(parent, "XTPClientQueryCrdDebtStockReq", "XTPClientQueryCrdDebtStockReq", "::XTPClientQueryCrdDebtStockReq");
+    module_vnxtp::cross.record_assign(parent, "XTPCrdDebtStockInfo", "XTPCrdDebtStockInfo", "::XTPCrdDebtStockInfo");
+    module_vnxtp::cross.record_assign(parent, "XTPClientQueryCrdPositionStockReq", "XTPClientQueryCrdPositionStockReq", "::XTPClientQueryCrdPositionStockReq");
+    module_vnxtp::cross.record_assign(parent, "XTPClientQueryCrdPositionStkInfo", "XTPClientQueryCrdPositionStkInfo", "::XTPClientQueryCrdPositionStkInfo");
+    module_vnxtp::cross.record_assign(parent, "XTPClientQueryCrdSurplusStkReqInfo", "XTPClientQueryCrdSurplusStkReqInfo", "::XTPClientQueryCrdSurplusStkReqInfo");
+    module_vnxtp::cross.record_assign(parent, "XTPClientQueryCrdSurplusStkRspInfo", "XTPClientQueryCrdSurplusStkRspInfo", "::XTPClientQueryCrdSurplusStkRspInfo");
+    module_vnxtp::cross.record_assign(parent, "XTPClientCrdExtendDebtInfo", "XTPClientCrdExtendDebtInfo", "::XTPClientCrdExtendDebtInfo");
     module_vnxtp::cross.record_assign(parent, "XTPFundTransferAck", "XTPFundTransferAck", "::XTPFundTransferNotice");
     generate_caster_(parent);
 }
@@ -331,6 +361,94 @@ void generate_class_XTP_API_TraderSpi(pybind11::object & parent)
         autocxxpy::apply_function_transform<
             autocxxpy::function_constant<
                 &XTP::API::TraderSpi::OnQueryOptionAuctionInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnCreditCashRepay",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnCreditCashRepay
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditCashRepayInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditCashRepayInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditFundInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditFundInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditDebtInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditDebtInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditTickerDebtInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditTickerDebtInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditAssetDebtInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditAssetDebtInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditTickerAssignInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditTickerAssignInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("OnQueryCreditExcessStock",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderSpi::OnQueryCreditExcessStock
             >, 
             brigand::list<
             >
@@ -673,6 +791,94 @@ void generate_class_XTP_API_TraderApi(pybind11::object & parent)
         autocxxpy::apply_function_transform<
             autocxxpy::function_constant<
                 &XTP::API::TraderApi::QueryOptionAuctionInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("CreditCashRepay",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::CreditCashRepay
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditCashRepayInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditCashRepayInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditFundInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditFundInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditDebtInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditDebtInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditTickerDebtInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditTickerDebtInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditAssetDebtInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditAssetDebtInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditTickerAssignInfo",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditTickerAssignInfo
+            >, 
+            brigand::list<
+            >
+        >::value,
+        pybind11::return_value_policy::reference,
+        pybind11::call_guard<pybind11::gil_scoped_release>()
+    );
+    c.def("QueryCreditExcessStock",
+        autocxxpy::apply_function_transform<
+            autocxxpy::function_constant<
+                &XTP::API::TraderApi::QueryCreditExcessStock
             >, 
             brigand::list<
             >

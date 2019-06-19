@@ -339,7 +339,7 @@ class BacktesterEngine(BaseEngine):
         self.write_log(f"{vt_symbol}-{interval}开始下载历史数据")
 
         symbol, exchange = extract_vt_symbol(vt_symbol)
-        
+
         req = HistoryRequest(
             symbol=symbol,
             exchange=exchange,
@@ -390,3 +390,15 @@ class BacktesterEngine(BaseEngine):
         self.thread.start()
 
         return True
+
+    def get_all_trades(self):
+        """"""
+        return self.backtesting_engine.get_all_trades()
+
+    def get_all_orders(self):
+        """"""
+        return self.backtesting_engine.get_all_orders()
+
+    def get_all_daily_results(self):
+        """"""
+        return self.backtesting_engine.get_all_daily_results()
