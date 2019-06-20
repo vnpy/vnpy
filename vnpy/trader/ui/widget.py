@@ -882,7 +882,7 @@ class ActiveOrderMonitor(OrderMonitor):
         if order.is_active():
             self.showRow(row)
         else:
-            self.hideRow(row)
+            self.removeRow(row)
 
 
 class ContractManager(QtWidgets.QWidget):
