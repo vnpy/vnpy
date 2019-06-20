@@ -60,7 +60,7 @@ ORDERTYPE_VT2ALPACA = {
     OrderType.MARKET: "market"
 }
 ORDERTYPE_ALPACA2VT = {v: k for k, v in ORDERTYPE_VT2ALPACA.items()}
-
+GLOBAL_ORDER={}
 
 class AlpacaGateway(BaseGateway):
     """
@@ -239,6 +239,8 @@ class AlpacaRestApi(RestClient):
         self.order_dict[order.orderid]=remote_order_id
         print("+++debug on_send_order request: ", self.order_dict)
         self.gateway.on_order(order)
+        GLOBAL_ORDER[remote_order_id]=order
+        print("===+++ debug update global_order_dict: ", GLOBAL_ORDER)
 
     def on_failed_order(self, status_code: int, request: Request):
         """
@@ -286,14 +288,15 @@ class AlpacaRestApi(RestClient):
             extra=req
         )
         print("come to cancel_order", order_id)
-        pass
 
     def on_cancel_order(self, data, request):
         """Websocket will push a new order status"""
         pass
 
-    def on_cancel_order_error(self, data, request):
-        pass
+    def on_cancel_order_error( self, exception_type: type, exception_value: Exception, tb, request: Request):
+        # Record exception if not ConnectionError
+        if not issubclass(exception_type, ConnectionError):
+            self.on_error(exception_type, exception_value, tb, request)
 
     def send_order(self, req: OrderRequest):
         orderid = str(self.connect_time + self._new_order_id())
@@ -320,6 +323,7 @@ class AlpacaRestApi(RestClient):
             on_error=self.on_error_order,
             json_str=data,
         )
+        print("debug send_order ret val : ", order.vt_orderid)
         return order.vt_orderid
 
     def on_query_contracts(self, data, request: Request):
@@ -341,7 +345,8 @@ class AlpacaRestApi(RestClient):
 
     def on_error_query_contracts(self, exception_type: type, exception_value: Exception, tb, request: Request):
         pass
-
+    
+    # need debug
     def query_contracts(self):
         params = {"status": "active"}
         self.add_request(
@@ -477,8 +482,11 @@ class AlpacaWebsocketApi(WebsocketClient):
                 )
                 self.gateway.on_trade(trade)
             elif (data_ret['event'] == "canceled"):
-                
+                order_id = d['id']
+                order=GLOBAL_ORDER[order_id]
+                order.status = Status.CANCELLED
                 self.gateway.on_order(order)
+                print("^^^^debug cancel order id, ",order_id," body: ",order)
             else:
                 print("unhandled trade_update msg, ", data_ret['event'])
             #self.gateway.on_order(order) # udpate order status
