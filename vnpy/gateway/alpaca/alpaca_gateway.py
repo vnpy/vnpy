@@ -36,9 +36,9 @@ from vnpy.trader.object import (
 )
 
 REST_HOST = "https://api.alpaca.markets"
-WEBSOCKET_HOST = "wss://api.alpaca.markets/stream"               # Market Data
+WEBSOCKET_HOST = "wss://api.alpaca.markets/stream"   # Market Data
 PAPER_REST_HOST = "https://paper-api.alpaca.markets"
-PAPER_WEBSOCKET_HOST = "wss://paper-api.alpaca.markets/stream"               # Market Data
+PAPER_WEBSOCKET_HOST = "wss://paper-api.alpaca.markets/stream"  # Market Data
 KEY = ""
 SECRET = ""
 
@@ -100,7 +100,7 @@ class AlpacaGateway(BaseGateway):
 
     def subscribe(self, req: SubscribeRequest):
         """"""
-        # self.ws_api.subscribe(req)
+        self.ws_api.subscribe(req)
         pass
 
     def send_order(self, req: OrderRequest):
@@ -393,6 +393,7 @@ class AlpacaWebsocketApi(WebsocketClient):
         self.askDict = {}
         self.orderLocalDict = {}
         self.channelDict = {}       # ChannelID : (Channel, Symbol)
+        self.channels=["account_updates", "trade_updates"]
 
     def connect(
         self, key: str, secret: str, proxy_host: str, proxy_port: int,url:str
@@ -413,12 +414,16 @@ class AlpacaWebsocketApi(WebsocketClient):
     def on_authenticate(self):
         """"""
         params={"action":"listen", "data": {
-            "streams":["account_updates", "trade_updates"]
+            "streams":self.channels
         }}
         self.send_packet(params)
     
     def subscribe(self, req: SubscribeRequest):
-        pass
+        self.channels.append(req.symbol)
+        params={"action":"listen", "data": {
+            "streams":self.channels
+        }}
+        self.send_packet(params)
 
     def send_order(self, req: OrderRequest):
         pass
@@ -468,6 +473,8 @@ class AlpacaWebsocketApi(WebsocketClient):
             self.gateway.on_account(account)
         elif(stream_ret == "trade_updates"):
             d=data_ret['order']
+            order_id = d['id']
+            order=GLOBAL_ORDER[order_id]
             if (data_ret['event'] == "fill"):
                 trade = TradeData(
                     symbol=d["symbol"],
@@ -481,9 +488,9 @@ class AlpacaWebsocketApi(WebsocketClient):
                     gateway_name=self.gateway_name,
                 )
                 self.gateway.on_trade(trade)
+                order.status = Status.ALLTRADED
+                self.gateway.on_order(order)
             elif (data_ret['event'] == "canceled"):
-                order_id = d['id']
-                order=GLOBAL_ORDER[order_id]
                 order.status = Status.CANCELLED
                 self.gateway.on_order(order)
                 print("^^^^debug cancel order id, ",order_id," body: ",order)
