@@ -37,6 +37,8 @@ from vnpy.trader.vtGateway import VtSubscribeReq, VtOrderReq, VtCancelOrderReq, 
 from vnpy.trader.app.ctaStrategy.ctaBase import *
 from vnpy.trader.setup_logger import setup_logger
 from vnpy.trader.vtFunction import todayDate, getJsonPath
+from vnpy.trader.vtObject import VtPositionData,PositionBuffer
+from vnpy.trader.app.ctaStrategy.fundKline import FundKline
 from vnpy.trader.util_mail import sendmail
 from vnpy.trader.vtGlobal import globalSetting
 # 加载 strategy目录下所有的策略
@@ -97,6 +99,9 @@ class CtaEngine(object):
         # key为vtSymbol，value为PositionBuffer对象
         self.posBufferDict = {}
 
+        # Strategy pos dict,key:strategy instance name, value: pos dict
+        self.strategy_pos_dict = {}
+
         # 成交号集合，用来过滤已经收到过的成交推送
         self.tradeSet = set()
 
@@ -109,6 +114,9 @@ class CtaEngine(object):
         # 未能订阅的symbols
         self.pendingSubcribeSymbols = {}
 
+        # 订阅的bar与strategy映射关系
+        self.barStrategyDict ={}
+
         # 注册事件监听
         self.registerEvent()
 
@@ -119,6 +127,49 @@ class CtaEngine(object):
         self.logger = None
         self.strategy_loggers = {}
         self.createLogger()
+
+        self.fund_kline_dict = {}
+
+        # 登记vtSymbol对应的最新价
+        self.price_dict = {}
+
+    def create_fund_kline(self, name,load_trade=False):
+        """
+        创建资金曲线
+        :param: name 账号的ID，或者策略的实例name
+        :return:
+        """
+        setting = {}
+        setting.update({'name':name})
+        setting['inputMa1Len'] = 5
+        setting['inputMa2Len'] = 10
+        setting['inputMa3Len'] = 20
+        setting['inputYb'] = True
+        setting['minDiff'] = 0.01
+        setting['shortSymbol'] = 'fund'
+
+        fund_kline = FundKline(cta_engine=self,setting=setting,load_trade=load_trade)
+        self.fund_kline_dict.update({name:fund_kline})
+        return fund_kline
+
+    def get_fund_kline(self, name=None):
+        """ 获取账号的资金k线对象"""
+        # 指定资金账号
+        if name:
+            kline = self.fund_kline_dict.get(name, None)
+            return kline
+
+        # 没有指定账号，并且存在一个或多个资金K线
+        if len(self.fund_kline_dict)>0:
+            # 优先找vt_setting中，配置了strategy_groud的资金K线
+            kline = self.fund_kline_dict.get(globalSetting.get('strategy_group'),None)
+
+            # 找不到，返回第一个
+            if kline is None:
+                kline = self.fund_kline_dict.values()[0]
+            return kline
+        else:
+            return None
 
     def analysis_vtSymbol(self, vtSymbol):
         """
@@ -165,8 +216,8 @@ class CtaEngine(object):
         req.volume = self.roundToVolumeTick(volumeTick=contract.volumeTick,volume=volume)  # 数量
 
         if strategy:
-            req.productClass = strategy.productClass
-            req.currency = strategy.currency
+            req.productClass = getattr(strategy,'productClass','')
+            req.currency = getattr(strategy,'currency','')
         else:
             req.productClass = ''
             req.currency = ''
@@ -183,7 +234,7 @@ class CtaEngine(object):
             req.direction = DIRECTION_SHORT
 
             # 只有上期所才要考虑平今平昨
-            if contract.exchange != EXCHANGE_SHFE:
+            if contract.exchange not in  [EXCHANGE_SHFE,EXCHANGE_SHFE]:
                 req.offset = OFFSET_CLOSE
             else:
                 # 获取持仓缓存数据
@@ -221,8 +272,8 @@ class CtaEngine(object):
         elif orderType == CTAORDER_COVER:
             req.direction = DIRECTION_LONG
 
-            # 只有上期所才要考虑平今平昨
-            if contract.exchange != EXCHANGE_SHFE:
+            # 只有上期所，能源所才要考虑平今平昨
+            if contract.exchange not in [EXCHANGE_SHFE,EXCHANGE_INE]:
                 req.offset = OFFSET_CLOSE
             else:
                 # 获取持仓缓存数据
@@ -251,16 +302,16 @@ class CtaEngine(object):
                 # 其他情况使用平昨
                 # else:
                 #    req.offset = OFFSET_CLOSE
-
-        vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName)  # 发单
+        strategy_name = getattr(strategy,'name') if strategy is not None else None
+        vtOrderID = self.mainEngine.sendOrder(req, contract.gatewayName, strategyName=strategy_name)  # 发单
 
         if vtOrderID is None or len(vtOrderID) == 0:
-            self.writeCtaError(u'{} 发送委托失败. {} {} {} {}'.format(strategy.name if strategy else 'CtaEngine', vtSymbol, req.offset, req.direction, volume, price))
+            self.writeCtaError(u'{} 发送委托失败. {} {} {} {}'.format(getattr(strategy,'name','') if strategy else 'CtaEngine', vtSymbol, req.offset, req.direction, volume, price))
             return ''
 
         if strategy:
             self.orderStrategyDict[vtOrderID] = strategy  # 保存vtOrderID和策略的映射关系
-            msg = u'策略%s发送委托，%s, %s，%s，%s@%s' % (strategy.name, vtSymbol, req.offset, req.direction, volume, price)
+            msg = u'策略%s发送委托，%s, %s，%s，%s@%s' % (getattr(strategy,'name',''), vtSymbol, req.offset, req.direction, volume, price)
             self.writeCtaLog(msg)
         else:
             msg = u'%s发送委托，%s, %s，%s，%s@%s' % ('CtaEngine', vtSymbol, req.offset, req.direction, volume, price)
@@ -457,12 +508,13 @@ class CtaEngine(object):
                         del self.workingStopOrderDict[so.stopOrderID]
 
     # ----------------------------------------------------------------------
-    def procecssTickEvent(self, event):
+    def processTickEvent(self, event):
         """处理行情推送事件"""
 
         # 1. 获取事件的Tick数据
         tick = event.dict_['data']
         tick = copy.copy(tick)
+
         # 移除待订阅的合约清单
         if '.' in tick.vtSymbol:
             symbol = tick.vtSymbol.split('.')[0]
@@ -478,6 +530,7 @@ class CtaEngine(object):
 
         # 缓存最新tick
         self.tickDict[tick.vtSymbol] = tick
+        self.setPrice(vtSymbol=tick.vtSymbol,price=tick.lastPrice)
 
         # 2.收到tick行情后，优先处理本地停止单（检查是否要立即发出）
         self.processStopOrder(tick)
@@ -501,6 +554,18 @@ class CtaEngine(object):
             l = self.tickStrategyDict[tick.vtSymbol]
             for strategy in l:
                 self.callStrategyFunc(strategy, strategy.onTick, ctaTick)
+
+    def processBarEvent(self,event):
+        # 1. 获取事件的Tick数据
+
+        bar = event.dict_['data']
+        # 3.推送tick到对应的策略对象进行处理
+        if bar.vtSymbol in self.barStrategyDict:
+            # 逐个推送到策略实例中
+            l = self.barStrategyDict[bar.vtSymbol]
+            for strategy in l:
+                self.writeCtaLog(u'推送{}bar到策略:{}'.format(bar.vtSymbol,strategy.name))
+                self.callStrategyFunc(strategy, strategy.onBar, copy.copy(bar))
 
     # ----------------------------------------------------------------------
     def processOrderEvent(self, event):
@@ -547,8 +612,10 @@ class CtaEngine(object):
             # else:
             #    strategy.pos -= trade.volume
 
+            copy_trade = copy.copy(trade)
+
             # 根据策略名称，写入 data\straetgy_name_trade.csv文件
-            strategy_name = getattr(strategy,'name',None)
+            strategy_name = getattr(strategy,'name','no_strategy_name')
             trade_fields = ['symbol','exchange','vtSymbol','tradeID','vtTradeID','orderID','vtOrderID','direction','offset','price','volume','tradeTime']
             trade_dict = OrderedDict()
             try:
@@ -567,10 +634,14 @@ class CtaEngine(object):
             # 推送到策略onTrade事件
             self.callStrategyFunc(strategy, strategy.onTrade, trade)
 
-            # 保存策略持仓到数据库
-            self.saveSyncData(strategy)
+            if globalSetting.get('activate_strategy_fund_kline',False):
+                kline = self.get_fund_kline(strategy_name)
+                if kline is not None:
+                    kline.update_trade(copy_trade)
+                else:
+                    self.writeCtaError(u'未能推送成交记录到{}资金曲线'.format(strategy_name))
 
-            # 更新持仓缓存数据
+        # 更新持仓缓存数据
         if trade.vtSymbol in self.tickStrategyDict:
             posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
             if not posBuffer:
@@ -580,26 +651,194 @@ class CtaEngine(object):
             posBuffer.updateTradeData(trade)
 
     # ----------------------------------------------------------------------
-
     def processPositionEvent(self, event):
         """处理持仓推送"""
         pos = event.dict_['data']
 
         # 更新持仓缓存数据
-        if True:  # pos.vtSymbol in self.tickStrategyDict:
-            posBuffer = self.posBufferDict.get(pos.vtSymbol, None)
-            if not posBuffer:
-                posBuffer = PositionBuffer()
-                posBuffer.vtSymbol = pos.vtSymbol
-                self.posBufferDict[pos.vtSymbol] = posBuffer
-            posBuffer.updatePositionData(pos)
+        posBuffer = self.posBufferDict.get(pos.vtSymbol, None)
+        if not posBuffer:
+            posBuffer = PositionBuffer()
+            posBuffer.vtSymbol = pos.vtSymbol
+            self.posBufferDict[pos.vtSymbol] = posBuffer
+        posBuffer.updatePositionData(pos)
+
+        if pos.vtSymbol.endswith('SPD'):
+            return
+
+        if not hasattr(self.mainEngine,'dataEngine'):
+            return
+
+         # 2、如果是普通合约持仓，则查询是否为自定义套利合约的更新部分
+        if pos.vtSymbol not in self.mainEngine.dataEngine.contract_spd_mapping:
+            return
+
+        # 找到对应的spd合约
+        spd_list = self.mainEngine.dataEngine.contract_spd_mapping.get(pos.vtSymbol, [])
+        for spd_name in spd_list:
+            spd_setting = self.mainEngine.dataEngine.custom_contract_setting.get(spd_name, None)
+            if spd_setting is None:
+                continue
+            leg1_symbol = spd_setting.get('leg1_symbol')
+            leg2_symbol = spd_setting.get('leg2_symbol')
+            leg1_ratio = spd_setting.get('leg1_ratio',1)
+            leg2_ratio = spd_setting.get('leg2_ratio',1)
+            leg1_pos = self.posBufferDict.get(leg1_symbol,None)
+            leg2_pos = self.posBufferDict.get(leg2_symbol,None)
+
+            # leg1或者leg2没有持仓
+            if leg1_pos is None or leg2_pos is None:
+                continue
+
+            spd_long_pos = 0
+            spd_short_pos = 0
+            if leg1_pos.longPosition > 0 and leg2_pos.shortPosition > 0 and leg2_pos.shortPrice >0:
+                # 正套持仓量
+                leg1_volume = int(leg1_pos.longPosition/leg1_ratio)
+                leg2_volume = int(leg2_pos.shortPosition/leg2_ratio)
+                spd_long_pos = min(leg1_volume,leg2_volume)
+                if spd_long_pos > 0:
+                    spd_pos = VtPositionData()
+                    spd_pos.vtSymbol = spd_name
+                    spd_pos.symbol = spd_name
+                    spd_pos.exchange = pos.exchange
+                    spd_pos.gatewayName = pos.gatewayName
+                    spd_pos.direction = DIRECTION_LONG
+                    spd_pos.position = spd_long_pos
+                    # 开仓均价
+                    if spd_setting.get('is_ratio', False):
+                        # 使用百分比
+                        spd_pos.price = 100 * leg1_pos.longPrice * leg1_ratio/(leg2_pos.shortPrice*leg2_ratio)
+                    elif spd_setting.get('is_spread', False):
+                        spd_pos.price = leg1_pos.longPrice * leg1_ratio - leg2_pos.shortPrice * leg2_ratio
+
+                    # 冻结仓位
+                    spd_pos.frozen = int(min(leg1_pos.longFrozen/leg1_ratio,leg2_pos.shortFrozen/leg2_ratio))
+
+                    # 持仓盈亏
+                    leg1_profit = leg1_pos.longProfit * spd_long_pos * leg1_ratio / leg1_pos.longPosition
+                    leg2_profit = leg2_pos.shortProfit * spd_long_pos * leg2_ratio / leg2_pos.shortPosition
+                    spd_pos.positionProfit = leg1_profit + leg2_profit
+                    spd_pos.vtPositionName = '.'.join([spd_pos.vtSymbol,spd_pos.direction,spd_pos.gatewayName])
+
+                    # 通用事件
+                    event1 = Event(type_=EVENT_POSITION)
+                    event1.dict_['data'] = spd_pos
+                    self.eventEngine.put(event1)
+            elif (leg1_pos.longPosition == 0 or leg2_pos.shortPosition == 0) and self.posBufferDict.get(spd_name,None) is not None:
+                # 没有持有正套单,单有套利合约得记录信息
+                spd_pos = VtPositionData()
+                spd_pos.vtSymbol = spd_name
+                spd_pos.symbol = spd_name
+                spd_pos.exchange = pos.exchange
+                spd_pos.gatewayName = pos.gatewayName
+                spd_pos.direction = DIRECTION_LONG
+                spd_pos.position = 0
+                spd_pos.price = 0
+                # 冻结仓位
+                spd_pos.frozen = 0
+                # 持仓盈亏
+                spd_pos.positionProfit = 0
+                spd_pos.vtPositionName = '.'.join([spd_pos.vtSymbol, spd_pos.direction, spd_pos.gatewayName])
+
+                # 通用事件
+                event1 = Event(type_=EVENT_POSITION)
+                event1.dict_['data'] = spd_pos
+                self.eventEngine.put(event1)
+
+            if leg1_pos.shortPosition > 0 and leg2_pos.longPosition > 0 and leg2_pos.longPrice > 0:
+                spd_short_pos = int(min(leg1_pos.shortPosition / leg1_ratio, leg2_pos.longPosition / leg2_ratio))
+                if spd_short_pos > 0:
+                    spd_pos = VtPositionData()
+                    spd_pos.vtSymbol = spd_name
+                    spd_pos.symbol = spd_name
+                    spd_pos.exchange = pos.exchange
+                    spd_pos.gatewayName = pos.gatewayName
+                    spd_pos.direction = DIRECTION_SHORT
+                    spd_pos.position = spd_short_pos
+                    # 开仓均价
+                    if spd_setting.get('is_ratio', False):
+                        # 使用百分比
+                        spd_pos.price = 100 * leg1_pos.shortPrice * leg1_ratio / (leg2_pos.longPrice * leg2_ratio)
+                    elif spd_setting.get('is_spread', False):
+                        spd_pos.price = leg1_pos.shortPrice * leg1_ratio - leg2_pos.longPrice * leg2_ratio
+
+                    # 冻结仓位
+                    spd_pos.frozen = int(min(leg1_pos.shortFrozen / leg1_ratio, leg2_pos.longFrozen / leg2_ratio))
+
+                    # 持仓盈亏
+                    leg1_profit = leg1_pos.shortProfit * spd_short_pos * leg1_ratio / leg1_pos.shortPosition
+                    leg2_profit = leg2_pos.longProfit * spd_short_pos * leg2_ratio / leg2_pos.longPosition
+                    spd_pos.positionProfit = leg1_profit + leg2_profit
+                    spd_pos.vtPositionName = '.'.join([spd_pos.vtSymbol, spd_pos.direction, spd_pos.gatewayName])
+
+                    # 通用事件
+                    event1 = Event(type_=EVENT_POSITION)
+                    event1.dict_['data'] = spd_pos
+                    self.eventEngine.put(event1)
+            elif (leg1_pos.shortPosition == 0 or leg2_pos.longPosition == 0) and self.posBufferDict.get(spd_name,None) is not None:
+                # 没有持有反套单,但有套利合约得记录信息
+                spd_pos = VtPositionData()
+                spd_pos.vtSymbol = spd_name
+                spd_pos.symbol = spd_name
+                spd_pos.exchange = pos.exchange
+                spd_pos.gatewayName = pos.gatewayName
+                spd_pos.direction = DIRECTION_SHORT
+                spd_pos.position = 0
+                spd_pos.price = 0
+                # 冻结仓位
+                spd_pos.frozen = 0
+                # 持仓盈亏
+                spd_pos.positionProfit = 0
+                spd_pos.vtPositionName = '.'.join([spd_pos.vtSymbol, spd_pos.direction, spd_pos.gatewayName])
+
+                # 通用事件
+                event1 = Event(type_=EVENT_POSITION)
+                event1.dict_['data'] = spd_pos
+                self.eventEngine.put(event1)
+
+    def processAccountEvent(self,event):
+        """
+        账号资金事件更新
+        :param event:
+        :return:
+        """
+        dt = datetime.now()
+        if dt.hour in [9, 10, 11, 13, 14, 15, 21, 22, 23, 0, 1, 2]:
+            account = event.dict_['data']
+            account_id = account.accountID
+
+            # 更新账号得资金曲线
+            if globalSetting.get('activate_account_fund_kline',False):
+                fund_kline = self.fund_kline_dict.get(account_id,None)
+                if fund_kline is None:
+                    fund_kline = self.create_fund_kline(account_id)
+
+                if fund_kline:
+                    balance = account.balance
+                    fund_kline.update_account(dt,balance)
+
+            # 更新各策略实例的资金曲线
+            if len(self.tickDict) > 0 and globalSetting.get('activate_strategy_fund_kline',False):
+                for strategy_name in self.strategy_pos_dict.keys():
+                    fund_kline = self.fund_kline_dict.get(strategy_name,None)
+                    if fund_kline is not None:
+                        hold_pnl = fund_kline.get_hold_pnl()
+                        if hold_pnl !=0:
+                            fund_kline.update_strategy(dt=dt,hold_pnl=hold_pnl)
+
+        # 检查未订阅信息
+        self.checkUnsubscribedSymbols()
 
     # ----------------------------------------------------------------------
     def registerEvent(self):
         """注册事件监听"""
 
         # 注册行情数据推送（Tick数据到达）的响应事件
-        self.eventEngine.register(EVENT_TICK, self.procecssTickEvent)
+        self.eventEngine.register(EVENT_TICK, self.processTickEvent)
+
+        # 注册bar行情数据推送（Bar数据到达）的响应事件
+        self.eventEngine.register(EVENT_BAR, self.processBarEvent)
 
         # 注册订单推送的响应事件
         self.eventEngine.register(EVENT_ORDER, self.processOrderEvent)
@@ -611,7 +850,7 @@ class CtaEngine(object):
         self.eventEngine.register(EVENT_POSITION, self.processPositionEvent)
 
         # 账号更新事件（借用账号更新事件，来检查是否有未订阅的合约信息）
-        self.eventEngine.register(EVENT_ACCOUNT, self.checkUnsubscribedSymbols)
+        self.eventEngine.register(EVENT_ACCOUNT, self.processAccountEvent)
 
         # 注册定时器事件
         self.eventEngine.register(EVENT_TIMER, self.processTimerEvent)
@@ -878,8 +1117,10 @@ class CtaEngine(object):
 
     # ----------------------------------------------------------------------
     # 订阅合约相关
-    def subscribe(self, strategy, symbol):
+    def subscribe(self, strategy, symbol,is_bar=False):
         """订阅合约，不成功时，加入到待订阅列表"""
+        if len(symbol)==0:
+            return
         contract = self.mainEngine.getContract(symbol)
 
         if contract:
@@ -887,7 +1128,7 @@ class CtaEngine(object):
             req = VtSubscribeReq()
             req.symbol = contract.symbol
             req.exchange = contract.exchange
-
+            req.is_bar = is_bar
             # 对于IB接口订阅行情时所需的货币和产品类型，从策略属性中获取
             if hasattr(strategy,'currency'):
                 req.currency = strategy.currency
@@ -900,9 +1141,11 @@ class CtaEngine(object):
             print(u'Warning, can not find {0} in contracts'.format(symbol))
             self.writeCtaLog(u'交易合约{}无法找到，添加到待订阅列表'.format(symbol))
             self.pendingSubcribeSymbols[symbol] = strategy
+
             try:
                 req = VtSubscribeReq()
                 req.symbol = symbol
+                req.is_bar = is_bar
 
                 self.mainEngine.subscribe(req,None)
 
@@ -919,10 +1162,19 @@ class CtaEngine(object):
                     strategies.append(strategy)
                     self.tickStrategyDict.update({symbol: strategies})
 
-    def checkUnsubscribedSymbols(self, event):
-        """持仓更新信息时，检查未提交的合约"""
+            if is_bar:
+                s_list = self.barStrategyDict.get(symbol,[])
+                if symbol not in s_list:
+                    self.writeCtaLog(u'添加:{} bar订阅映射到策略:{}'.format(symbol,strategy.name))
+                    s_list.append(strategy)
+                    self.barStrategyDict.update({symbol:s_list})
+
+    def checkUnsubscribedSymbols(self):
+        """检查未提交的合约"""
+
         for symbol in self.pendingSubcribeSymbols.keys():
             contract = self.mainEngine.getContract(symbol)
+            is_bar = True if symbol in self.barStrategyDict else False
             if contract:
                 # 获取合约的缩写号
                 s = self.getShortSymbol(symbol)
@@ -935,11 +1187,12 @@ class CtaEngine(object):
 
                 self.writeCtaLog(u'重新提交合约{0}订阅请求'.format(symbol))
                 strategy = self.pendingSubcribeSymbols[symbol]
-                self.subscribe(strategy=strategy, symbol=symbol)
+                self.subscribe(strategy=strategy, symbol=symbol,is_bar=is_bar)
             else:
                 try:
                     req = VtSubscribeReq()
                     req.symbol = symbol
+                    req.is_bar = is_bar
                     self.mainEngine.subscribe(req, None)
 
                 except Exception as ex:
@@ -1054,6 +1307,18 @@ class CtaEngine(object):
                 symbols.append(strategy.vtSymbol)
             else:
                 symbols.append(s[0])
+        elif strategy.vtSymbol.endswith('SPD'):
+            # 增加自定义套利合约
+            if strategy.vtSymbol not in symbols:
+                symbols.append(strategy.vtSymbol)
+            symbol = strategy.vtSymbol[0:-4]
+            lists = symbol.split('-')
+            leg1_symbol = lists[0]
+            leg2_symbol = lists[2]
+            if leg1_symbol not in symbols:
+                symbols.append(leg1_symbol)
+            if leg2_symbol not in symbols:
+                symbols.append(leg2_symbol)
         else:
             symbols = strategy.vtSymbol.split(';')
 
@@ -1070,6 +1335,19 @@ class CtaEngine(object):
         if hasattr(strategy, 'Leg2Symbol'):
             if strategy.Leg2Symbol not in symbols:
                 symbols.append(strategy.Leg2Symbol)
+        if hasattr(strategy, 'miSymbol'):
+            if strategy.miSymbol not in symbols:
+                symbols.append(strategy.miSymbol)
+            if strategy.miSymbol.endswith('SPD'):
+                # 增加自定义套利合约
+                symbol = strategy.miSymbol[0:-4]
+                lists = symbol.split('-')
+                leg1_symbol = lists[0]
+                leg2_symbol = lists[2]
+                if leg1_symbol not in symbols:
+                    symbols.append(leg1_symbol)
+                if leg2_symbol not in symbols:
+                    symbols.append(leg2_symbol)
 
         for symbol in symbols:
             self.writeCtaLog(u'添加合约{}与策略{}的匹配目录'.format(symbol,strategy.name))
@@ -1103,6 +1381,11 @@ class CtaEngine(object):
                 except Exception as ex:
                     self.writeCtaCritical(u'自动启动策略：{} 异常,{},{}'.format(name, str(ex), traceback.format_exc()))
                     return False
+
+        # 激活策略实例的资金曲线
+        if globalSetting.get('activate_strategy_fund_kline',False):
+            self.create_fund_kline(name, load_trade=True)
+
         return True
 
     def initStrategy(self, name, force=False):
@@ -1114,7 +1397,6 @@ class CtaEngine(object):
                 self.callStrategyFunc(strategy, strategy.onInit, force)
                 # strategy.onInit(force=force)
                 # strategy.inited = True
-                self.loadSyncData(strategy)         # 初始化完成后加载同步数据
             else:
                 self.writeCtaLog(u'请勿重复初始化策略实例：%s' % name)
             return True
@@ -1536,6 +1818,7 @@ class CtaEngine(object):
                          'volume': sell_longYd, 'action': 'clean',
                          'comment': 'sell_longYd',
                          'result': True if order_id else False, 'datetime': datetime.now()}
+
                     self.mainEngine.dbInsert(MATRIX_DB_NAME, POSITION_DISPATCH_HISTORY_COLL_NAME, h)
 
                 if sell_longToday > 0:
@@ -1906,9 +2189,10 @@ class CtaEngine(object):
                     except Exception as ex:
                         self.writeCtaCritical(u'加载策略配置{}:异常{}，{}'.format(setting, str(ex), traceback.format_exc()))
                         traceback.print_exc()
-
+            self.loadPosition()
         except Exception as ex:
             self.writeCtaCritical(u'加载策略配置异常:{},{}'.format(str(ex),traceback.format_exc()))
+
 
     # ----------------------------------------------------------------------
     # 策略运行监控相关
@@ -1944,11 +2228,11 @@ class CtaEngine(object):
             self.writeCtaLog(u'策略实例不存在：' + name)    
             return None
 
-    def getStategyPos(self, name,strategy=None):
+    def getStategyPos(self, name, strategy=None):
         """
         获取策略的持仓字典
         :param name:策略名
-        :return:
+        :return: [ {},{}]
         """
         # 兼容处理，如果strategy是None，通过name获取
         if strategy is None:
@@ -1961,13 +2245,14 @@ class CtaEngine(object):
         pos_list = []
 
         if strategy.inited:
+            # 如果策略具有getPositions得方法，则调用该方法
             if hasattr(strategy,'getPositions'):
                 pos_list=strategy.getPositions()
                 for pos in pos_list:
                     pos.update({'symbol':pos.get('vtSymbol')})
-                return pos_list
-            # 有 ctaPosition属性
-            if hasattr(strategy, 'position'):
+
+            # 如果策略有 ctaPosition属性
+            elif hasattr(strategy, 'position'):
                 # 多仓
                 long_pos = {}
                 long_pos['symbol'] = strategy.vtSymbol
@@ -1984,7 +2269,7 @@ class CtaEngine(object):
                 if short_pos['volume'] > 0:
                     pos_list.append(short_pos)
 
-            # 模板缺省pos属性
+            # 获取模板缺省pos属性
             elif hasattr(strategy, 'pos'):
                 if strategy.pos > 0:
                     long_pos = {}
@@ -2003,7 +2288,69 @@ class CtaEngine(object):
                     if short_pos['volume'] > 0:
                         pos_list.append(short_pos)
 
+            # 新增处理SPD结尾得特殊自定义套利合约
+            try:
+                if strategy.vtSymbol.endswith('SPD') and len(pos_list) > 0:
+                    old_pos_list = copy.copy(pos_list)
+                    pos_list = []
+                    for pos in old_pos_list:
+                        # SPD合约
+                        spd_symbol = pos.get('vtSymbol',  pos.get('symbol', None))
+                        if spd_symbol is not None and spd_symbol.endswith('SPD'):
+                            spd_setting = self.mainEngine.dataEngine.custom_contract_setting.get(spd_symbol,None)
+
+                            if spd_setting is None:
+                                self.writeCtaError(u'获取不到:{}得设置信息，检查自定义合约配置文件'.format(spd_symbol))
+                                pos_list.append(pos)
+                                continue
+
+                            leg1_direction = 'long' if pos.get('direction') in [DIRECTION_LONG,'long'] else 'short'
+                            leg2_direction = 'short' if leg1_direction == 'long' else 'long'
+                            spd_volume = pos.get('volume')
+
+                            leg1_pos = {}
+                            leg1_pos.update({'symbol': spd_setting.get('leg1_symbol')})
+                            leg1_pos.update({'vtSymbol': spd_setting.get('leg1_symbol')})
+                            leg1_pos.update({'direction': leg1_direction})
+                            leg1_pos.update({'volume': spd_setting.get('leg1_ratio',1)*spd_volume})
+
+                            leg2_pos = {}
+                            leg2_pos.update({'symbol': spd_setting.get('leg2_symbol')})
+                            leg2_pos.update({'vtSymbol': spd_setting.get('leg2_symbol')})
+                            leg2_pos.update({'direction': leg2_direction})
+                            leg2_pos.update({'volume': spd_setting.get('leg2_ratio', 1) * spd_volume})
+
+                            pos_list.append(leg1_pos)
+                            pos_list.append(leg2_pos)
+                            #pos_list.append(pos)
+                        else:
+                            pos_list.append(pos)
+
+            except Exception as ex:
+                self.writeCtaError(u'分解SPD失败')
+
+        # update local pos dict
+        self.strategy_pos_dict.update({name:pos_list})
+
         return pos_list
+
+    def get_pos_open_price(self,vtSymbol,direction):
+        """
+        get the open price from posbufferDict
+        :param vtSymbol:
+        :param direction:
+        :return:
+        """
+
+        pos = self.posBufferDict.get(vtSymbol,None)
+        if pos is None:
+            return 0
+
+        if direction in [DIRECTION_LONG, 'long']:
+            return pos.longPrice
+        else:
+            return pos.shortPrice
+
 
     def updateStrategySetting(self,strategy_name,setting_key,setting_value):
         """
@@ -2065,17 +2412,23 @@ class CtaEngine(object):
                 func(params)
             else:
                 func()
-        except Exception:
+        except Exception as ex:
             # 停止策略，修改状态为未初始化
             strategy.trading = False
             strategy.inited = False
 
             # 发出日志
-            content =u'策略{}触发异常已停止.{}'.format(strategy.name,traceback.format_exc())
-            self.writeCtaError(content)
+            content =u'策略{}触发异常已停止.{},{}'.format(strategy.name,str(ex),traceback.format_exc())
+            self.writeCtaCritical(content)
             self.mainEngine.writeCritical(content)
 
-            self.sendAlertToWechat(content=content,target=globalSetting.get('gateway_name',None))
+            self.sendAlertToWechat(content=content, target=globalSetting.get('gateway_name',None))
+            if globalSetting.get('activate_wx_ft', False):
+                try:
+                    from huafu.util.util_wx_ft import sendWxMsg
+                    sendWxMsg(text=u'策略{}触发异常停止', desp=content)
+                except Exception:
+                    pass
 
     # ----------------------------------------------------------------------
     # 仓位持久化相关
@@ -2107,38 +2460,6 @@ class CtaEngine(object):
                     strategy.pos = d['pos']
         except:
             self.writeCtaLog(u'loadPosition Exception from Mongodb')
-
-    # ----------------------------------------------------------------------
-    def saveSyncData(self, strategy):
-        """保存策略的持仓情况到数据库"""
-        flt = {'name': strategy.name,
-               'vtSymbol': strategy.vtSymbol}
-
-        d = copy.copy(flt)
-        for key in strategy.syncList:
-            d[key] = strategy.__getattribute__(key)
-
-        self.mainEngine.dbUpdate(POSITION_DB_NAME, strategy.className,
-                                 d, flt, True)
-
-        content = u'策略%s同步数据保存成功，当前持仓%s' % (strategy.name, strategy.pos)
-        self.writeCtaLog(content)
-
-    # ----------------------------------------------------------------------
-    def loadSyncData(self, strategy):
-        """从数据库载入策略的持仓情况"""
-        flt = {'name': strategy.name,
-               'vtSymbol': strategy.vtSymbol}
-        syncData = self.mainEngine.dbQuery(POSITION_DB_NAME, strategy.className, flt)
-
-        if not syncData:
-            return
-
-        d = syncData[0]
-
-        for key in strategy.syncList:
-            if key in d:
-                strategy.__setattr__(key, d[key])
 
     # ----------------------------------------------------------------------
     # 公共方法相关
@@ -2240,6 +2561,9 @@ class CtaEngine(object):
                 except:
                     traceback.print_exc()
 
+        for kline in self.fund_kline_dict.values():
+            kline.save()
+
     def clearData(self):
         """清空运行数据"""
         self.writeCtaLog(u'ctaEngine.clearData()清空运行数据')
@@ -2278,7 +2602,13 @@ class CtaEngine(object):
         else:
            return c.size
 
-    def qryMarginRate(self,vtSymbol):
+    def setPrice(self,vtSymbol, price):
+        self.price_dict.update({vtSymbol:price})
+
+    def qryPrice(self,vtSymbol):
+        return self.price_dict.get(vtSymbol, None)
+
+    def qryMarginRate(self, vtSymbol):
         """
         提供给策略查询品种的保证金比率
         :param vtSymbol: 
@@ -2365,7 +2695,7 @@ class CtaEngine(object):
                 return False
 
         # 上期，RB/HC/RU ：日盘，夜盘（21：00~23：00）
-        if short_symbol in NIGHT_MARKET_SQ3:
+        if short_symbol in NIGHT_MARKET_SQ3 or short_symbol in NIGHT_MARKET_DL:
             if morning_begin <= dt <= morning_break or \
                     morning_restart <= dt <= morning_close or \
                     afternoon_begin <= dt <= afternoon_close or \
@@ -2375,7 +2705,7 @@ class CtaEngine(object):
                 return False
 
         # 郑商、大连 21:00 ~ 23:30
-        if short_symbol in NIGHT_MARKET_ZZ or short_symbol in NIGHT_MARKET_DL:
+        if short_symbol in NIGHT_MARKET_ZZ :
             if morning_begin <= dt <= morning_break or \
                     morning_restart <= dt <= morning_close or \
                     afternoon_begin <= dt <= afternoon_close or \
@@ -2385,88 +2715,3 @@ class CtaEngine(object):
                 return False
 
         return True
-
-########################################################################
-class PositionBuffer(object):
-    """持仓缓存信息（本地维护的持仓数据）"""
-
-    # ----------------------------------------------------------------------
-    def __init__(self):
-        """Constructor"""
-        self.vtSymbol = EMPTY_STRING
-        
-        # 多头
-        self.longPosition = EMPTY_INT
-        self.longToday = EMPTY_INT
-        self.longYd = EMPTY_INT
-
-        # 空头
-        self.shortPosition = EMPTY_INT
-        self.shortToday = EMPTY_INT
-        self.shortYd = EMPTY_INT
-
-        self.frozen = EMPTY_FLOAT
-
-    # ----------------------------------------------------------------------
-    def toStr(self):
-        """更新显示信息"""
-        str = u'long:{},yd:{},td:{}, short:{},yd:{},td:{}, fz:{};' \
-            .format(self.longPosition, self.longYd, self.longToday,
-                    self.shortPosition, self.shortYd, self.shortToday,self.frozen)
-        return str
-    #----------------------------------------------------------------------
-    def updatePositionData(self, pos):
-        """更新持仓数据"""
-        if pos.direction == DIRECTION_SHORT:
-            self.shortPosition = pos.position  # >=0
-            self.shortYd = pos.ydPosition  # >=0
-            self.shortToday = self.shortPosition - self.shortYd  # >=0
-            self.frozen = pos.frozen
-        else:
-            self.longPosition = pos.position  # >=0
-            self.longYd = pos.ydPosition  # >=0
-            self.longToday = self.longPosition - self.longYd  # >=0
-            self.frozen = pos.frozen
-
-    #----------------------------------------------------------------------
-    def updateTradeData(self, trade):
-        """更新成交数据"""
-
-        if trade.direction == DIRECTION_SHORT:
-            # 空头和多头相同
-            if trade.offset == OFFSET_OPEN:
-                self.shortPosition += trade.volume
-                self.shortToday += trade.volume
-            elif trade.offset == OFFSET_CLOSETODAY:
-                self.longPosition -= trade.volume
-                self.longToday -= trade.volume
-            else:
-                self.longPosition -= trade.volume
-                self.longYd -= trade.volume
-
-            if self.longPosition <= 0:
-                self.longPosition = 0
-            if self.longToday <= 0:
-                self.longToday = 0
-            if self.longYd <= 0:
-                self.longYd = 0
-        else:
-            # 多方开仓，则对应多头的持仓和今仓增加
-            if trade.offset == OFFSET_OPEN:
-                self.longPosition += trade.volume
-                self.longToday += trade.volume
-            # 多方平今，对应空头的持仓和今仓减少
-            elif trade.offset == OFFSET_CLOSETODAY:
-                self.shortPosition -= trade.volume
-                self.shortToday -= trade.volume
-            else:
-                self.shortPosition -= trade.volume
-                self.shortYd -= trade.volume
-
-            if self.shortPosition <= 0:
-                self.shortPosition = 0
-            if self.shortToday <= 0:
-                self.shortToday = 0
-            if self.shortYd <= 0:
-                self.shortYd = 0
-            # 多方平昨，对应空头的持仓和昨仓减少

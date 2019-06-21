@@ -394,12 +394,12 @@ class CtaLineBar(object):
         self.lineUpperBandAtan = []
         self.lineMiddleBandAtan = []
         self.lineLowerBandAtan = []
-        self._rt_Upper = None
-        self._rt_Middle = None
-        self._rt_Lower = None
-        self._rt_UpperBandAtan = None
-        self._rt_MiddleBandAtan = None
-        self._rt_LowerBandAtan = None
+        self._rt_Upper = 0
+        self._rt_Middle = 0
+        self._rt_Lower = 0
+        self._rt_UpperBandAtan = 0
+        self._rt_MiddleBandAtan = 0
+        self._rt_LowerBandAtan = 0
 
         self.lastBollUpper = EMPTY_FLOAT  # 最后一根K的Boll上轨数值（与MinDiff取整）
         self.lastBollMiddle = EMPTY_FLOAT  # 最后一根K的Boll中轨数值（与MinDiff取整）
@@ -441,6 +441,10 @@ class CtaLineBar(object):
         self.lastK = EMPTY_FLOAT  # bar内计算时，最后一个未关闭的bar的实时K值
         self.lastD = EMPTY_FLOAT  # bar内计算时，最后一个未关闭的bar的实时值
         self.lastJ = EMPTY_FLOAT  # bar内计算时，最后一个未关闭的bar的实时J值
+
+        self.kd_count = 0           # > 0, 金叉， < 0 死叉
+        self.kd_last_cross = 0      # 最近一次金叉/死叉的点位
+        self.kd_cross_price = 0     # 最近一次发生金叉/死叉的价格
 
         # K线的MACD计算数据(26,12,9)
         self.inputMacdFastPeriodLen = EMPTY_INT
@@ -747,7 +751,7 @@ class CtaLineBar(object):
         根据实时计算得要求，执行实时指标计算
         :return:
         """
-        for func in self.rt_funcs:
+        for func in list(self.rt_funcs):
             try:
                 func()
             except Exception as ex:
@@ -1032,10 +1036,10 @@ class CtaLineBar(object):
                 endtick = True
 
             # 夜盘23:00收盘
-            if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
+            if self.shortSymbol in [NIGHT_MARKET_SQ3,NIGHT_MARKET_DL] and tick.datetime.hour == 23 and tick.datetime.minute == 00:
                 endtick = True
             # 夜盘23:30收盘
-            if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if self.shortSymbol in NIGHT_MARKET_ZZ:
                 if tick.datetime.hour == 23 and tick.datetime.minute == 30:
                     endtick = True
 
@@ -1123,7 +1127,7 @@ class CtaLineBar(object):
             lastBar.high = max(lastBar.high, tick.lastPrice)
             lastBar.low = min(lastBar.low, tick.lastPrice)
             lastBar.close = tick.lastPrice
-
+            lastBar.openInterest = tick.openInterest
             # 更新日内总交易量，和bar内交易量
             lastBar.dayVolume = tick.volume
             if l1 == 1:
@@ -1330,10 +1334,10 @@ class CtaLineBar(object):
             return
 
         # 1、lineBar满足长度才执行计算
-        if len(self.lineBar) < max(7, self.inputMa1Len, self.inputMa2Len, self.inputMa3Len) + 2:
+        if len(self.lineBar) < min(7, self.inputMa1Len, self.inputMa2Len, self.inputMa3Len) + 2:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算MA需要：{1}'.
                              format(len(self.lineBar),
-                                    max(7, self.inputMa1Len, self.inputMa2Len, self.inputMa3Len) + 2))
+                                    min(7, self.inputMa1Len, self.inputMa2Len, self.inputMa3Len) + 2))
             return
 
         # 计算第一条MA均线
@@ -1821,9 +1825,12 @@ class CtaLineBar(object):
         if maxAtrLen <= 0:  # 不计算
             return
 
-        if len(self.lineBar) < maxAtrLen + 1:
+        data_need_len = min(7, maxAtrLen)
+        line_bar_len = len(self.lineBar)
+
+        if line_bar_len < data_need_len:
             self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算ATR需要：{1}'.
-                             format(len(self.lineBar), maxAtrLen + 1))
+                             format(line_bar_len,data_need_len))
             return
 
         if self.mode == self.TICK_MODE:
@@ -1843,7 +1850,7 @@ class CtaLineBar(object):
 
             j = 0
 
-            for i in range(len(self.lineBar) - idx, len(self.lineBar) - idx - maxAtrLen, -1):  # 周期 inputP
+            for i in range(len(self.lineBar) - idx, len(self.lineBar) - idx - data_need_len, -1):  # 周期 inputP
                 # 3.1、计算TR
 
                 # 当前周期最高与最低的价差
@@ -1880,10 +1887,11 @@ class CtaLineBar(object):
 
         # 计算 ATR
         if self.inputAtr1Len > 0:
+            data_4_atr1 = min(line_bar_len,self.inputAtr1Len)
             if len(self.lineAtr1) < 1:
-                self.barAtr1 = round(barTr1 / self.inputAtr1Len, self.round_n)
+                self.barAtr1 = round(barTr1 / data_4_atr1, self.round_n)
             else:
-                self.barAtr1 = round((self.lineAtr1[-1] * (self.inputAtr1Len - 1) + barTr1) / self.inputAtr1Len,
+                self.barAtr1 = round((self.lineAtr1[-1] * (data_4_atr1 - 1) + barTr1) / data_4_atr1,
                                      self.round_n)
 
             if len(self.lineAtr1) > self.inputAtr1Len + 1:
@@ -1891,10 +1899,11 @@ class CtaLineBar(object):
             self.lineAtr1.append(self.barAtr1)
 
         if self.inputAtr2Len > 0:
+            data_4_atr2 = min(line_bar_len, self.inputAtr2Len)
             if len(self.lineAtr2) < 1:
-                self.barAtr2 = round(barTr2 / self.inputAtr2Len, self.round_n)
+                self.barAtr2 = round(barTr2 / data_4_atr2, self.round_n)
             else:
-                self.barAtr2 = round((self.lineAtr2[-1] * (self.inputAtr2Len - 1) + barTr2) / self.inputAtr2Len,
+                self.barAtr2 = round((self.lineAtr2[-1] * (data_4_atr2 - 1) + barTr2) / data_4_atr2,
                                      self.round_n)
 
             if len(self.lineAtr2) > self.inputAtr2Len + 1:
@@ -1902,10 +1911,11 @@ class CtaLineBar(object):
             self.lineAtr2.append(self.barAtr2)
 
         if self.inputAtr3Len > 0:
+            data_4_atr3 = min(line_bar_len, self.inputAtr3Len)
             if len(self.lineAtr3) < 1:
-                self.barAtr3 = round(barTr3 / self.inputAtr3Len, self.round_n)
+                self.barAtr3 = round(barTr3 / data_4_atr3, self.round_n)
             else:
-                self.barAtr3 = round((self.lineAtr3[-1] * (self.inputAtr3Len - 1) + barTr3) / self.inputAtr3Len,
+                self.barAtr3 = round((self.lineAtr3[-1] * (data_4_atr3 - 1) + barTr3) / data_4_atr3,
                                      self.round_n)
 
             if len(self.lineAtr3) > self.inputAtr3Len + 1:
@@ -2064,12 +2074,12 @@ class CtaLineBar(object):
         l = len(self.lineBar)
 
         if self.inputBollLen > EMPTY_INT:
-            if l < min(14, self.inputBollLen) + 1:
+            if l < min(7, self.inputBollLen) :
                 self.debugCtaLog(u'数据未充分,当前Bar数据数量：{0}，计算Boll需要：{1}'.
                                  format(len(self.lineBar), min(14, self.inputBollLen) + 1))
             else:
-                if l < self.inputBollLen + 2:
-                    bollLen = l - 1
+                if l < self.inputBollLen :
+                    bollLen = l
                 else:
                     bollLen = self.inputBollLen
 
@@ -2600,6 +2610,8 @@ class CtaLineBar(object):
                 self.lineKdjButtom.append(b)
                 self.lastKdjTopButtom = self.lineKdjButtom[-1]
 
+        self.update_kd_cross()
+
     def __recountKdj_TB(self, countInBar=False):
         """KDJ指标"""
         """
@@ -2622,7 +2634,7 @@ class CtaLineBar(object):
         if self.inputKdjTBLen <= EMPTY_INT: return
 
         if self.inputKdjTBLen + self.inputKdjSmoothLen > self.max_hold_bars:
-            self.max_hold_bars = self.inputKdjTBLen + self.inputKdjSmoothLen1 + 1
+            self.max_hold_bars = self.inputKdjTBLen + self.inputKdjSmoothLen + 1
 
         # if len(self.lineBar) < self.inputKdjTBLen + 1:
         #     if not countInBar:
@@ -2741,6 +2753,35 @@ class CtaLineBar(object):
                     del self.lineKdjButtom[0]
                 self.lineKdjButtom.append(b)
                 self.lastKdjTopButtom = self.lineKdjButtom[-1]
+
+        self.update_kd_cross()
+
+    def update_kd_cross(self):
+        """更新KDJ金叉死叉"""
+        if len(self.lineK) < 2 or len(self.lineD) < 2:
+            return
+
+        # K值大于D值
+        if self.lineK[-1] > self.lineD[-1]:
+            if self.lineK[-2] > self.lineD[-2]:
+                # 延续金叉
+                self.kd_count = max(1,self.kd_count) + 1
+            else:
+                # 发生金叉
+                self.kd_count = 1
+                self.kd_last_cross = round((self.lineK[-1] + self.lineK[-2])/2,2)
+                self.kd_cross_price = self.lineBar[-1].close
+
+        # K值小于D值
+        else:
+            if self.lineK[-2] < self.lineD[-2]:
+                # 延续死叉
+                self.kd_count = min(-1, self.kd_count) - 1
+            else:
+                # 发生死叉
+                self.kd_count = -1
+                self.kd_last_cross = round((self.lineK[-1] + self.lineK[-2]) / 2, 2)
+                self.kd_cross_price = self.lineBar[-1].close
 
     def __recountMacd(self):
         """
@@ -3174,7 +3215,12 @@ class CtaLineBar(object):
         if ma5 <= 0 or ma5_ref1 <= 0:
             self.writeCtaLog(u'boll中轨计算均线异常')
             return
-        self.atan = math.atan((ma5 / ma5_ref1 - 1) * 100) * 180 / math.pi
+        if self.inputKF:
+            self.atan = math.atan((ma5 / ma5_ref1 - 1) * 100) * 180 / math.pi
+        else:
+            # 当前均值,与前5均值得价差,除以标准差
+            self.atan = math.atan((ma5 - ma5_ref1)/self.lineBollStd[-1]) * 180 / math.pi
+
         # atan2 = math.atan((ma5 / ma5_ref1 - 1) * 100) * 180 / math.pi
         # atan3 = math.atan(ma5 / ma5_ref1 - 1)* 100
         self.atan = round(self.atan, 3)
@@ -4340,11 +4386,11 @@ class CtaLineBar(object):
             return True
 
         # 夜盘23:00收盘
-        if self.shortSymbol in NIGHT_MARKET_SQ3 and tick_dt.hour == 23 and tick_dt.minute == 00:
+        if self.shortSymbol in [NIGHT_MARKET_SQ3,NIGHT_MARKET_DL] and tick_dt.hour == 23 and tick_dt.minute == 00:
             return True
 
         # 夜盘23:30收盘
-        if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+        if self.shortSymbol in NIGHT_MARKET_ZZ :
             if tick_dt.hour == 23 and tick_dt.minute == 30:
                 return True
 
@@ -4584,10 +4630,10 @@ class CtaMinuteBar(CtaLineBar):
                 endtick = True
 
             # 夜盘23:00收盘
-            if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
+            if self.shortSymbol in [NIGHT_MARKET_SQ3,NIGHT_MARKET_DL] and tick.datetime.hour == 23 and tick.datetime.minute == 00:
                 endtick = True
             # 夜盘23:30收盘
-            if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if self.shortSymbol in NIGHT_MARKET_ZZ :
                 if tick.datetime.hour == 23 and tick.datetime.minute == 30:
                     endtick = True
 
@@ -4639,7 +4685,7 @@ class CtaMinuteBar(CtaLineBar):
             lastBar.high = max(lastBar.high, tick.lastPrice)
             lastBar.low = min(lastBar.low, tick.lastPrice)
             lastBar.close = tick.lastPrice
-
+            lastBar.openInterest = tick.openInterest
             # 更新日内总交易量，和bar内交易量
             lastBar.dayVolume = tick.volume
             if l1 == 1:
@@ -4848,10 +4894,10 @@ class CtaHourBar(CtaLineBar):
                 endtick = True
 
             # 夜盘23:00收盘
-            if self.shortSymbol in NIGHT_MARKET_SQ3 and tick.datetime.hour == 23 and tick.datetime.minute == 00:
+            if self.shortSymbol in [NIGHT_MARKET_SQ3,NIGHT_MARKET_DL] and tick.datetime.hour == 23 and tick.datetime.minute == 00:
                 endtick = True
             # 夜盘23:30收盘
-            if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+            if self.shortSymbol in NIGHT_MARKET_ZZ :
                 if tick.datetime.hour == 23 and tick.datetime.minute == 30:
                     endtick = True
 
@@ -4924,7 +4970,7 @@ class CtaHourBar(CtaLineBar):
             lastBar.high = max(lastBar.high, tick.lastPrice)
             lastBar.low = min(lastBar.low, tick.lastPrice)
             lastBar.close = tick.lastPrice
-
+            lastBar.openInterest = tick.openInterest
             # 更新日内总交易量，和bar内交易量
             lastBar.dayVolume = tick.volume
             if l1 == 1:
@@ -5136,7 +5182,7 @@ class CtaDayBar(CtaLineBar):
             lastBar.high = max(lastBar.high, tick.lastPrice)
             lastBar.low = min(lastBar.low, tick.lastPrice)
             lastBar.close = tick.lastPrice
-
+            lastBar.openInterest = tick.openInterest
             # 更新日内总交易量，和bar内交易量
             lastBar.dayVolume = tick.volume
             if l1 == 1:
@@ -5407,7 +5453,7 @@ class CtaWeekBar(CtaLineBar):
             lastBar.high = max(lastBar.high, tick.lastPrice)
             lastBar.low = min(lastBar.low, tick.lastPrice)
             lastBar.close = tick.lastPrice
-
+            lastBar.openInterest = tick.openInterest
             # 更新日内总交易量，和bar内交易量
             lastBar.dayVolume = tick.volume
             if l1 == 1:

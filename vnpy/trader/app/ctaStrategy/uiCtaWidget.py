@@ -289,12 +289,9 @@ class CtaEngineManager(QtWidgets.QWidget):
     #----------------------------------------------------------------------
     def updateCtaLog(self, event):
         """更新CTA相关日志"""
-        try:
-            log = event.dict_['data']
-            content = '{}\t{}'.format(log.logTime, log.logContent)
-            self.ctaLogMonitor.append(content)
-        except Exception as ex:
-            print(u'update exception:{},{}'.format(str(ex),traceback.format_exc()))
+        log = event.dict_['data']
+        content = '\t'.join([log.logTime, log.logContent])
+        self.ctaLogMonitor.append(content)
     
     #----------------------------------------------------------------------
     def registerEvent(self):

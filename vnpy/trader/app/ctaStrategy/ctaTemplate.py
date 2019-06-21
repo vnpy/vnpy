@@ -268,7 +268,6 @@ class CtaTemplate(object):
             content = self.name + ':' + content
             self.ctaEngine.writeCtaLog(content, strategy_name=self.name)
         except Exception as ex:
-
             self.ctaEngine.writeCtaLog(content)
 
     # ----------------------------------------------------------------------
@@ -333,6 +332,8 @@ class CtaTemplate(object):
 
     def getFullSymbol(self, symbol):
         """获取全路径得合约名称"""
+        if symbol.endswith('SPD'):
+            return symbol
         short_symbol = self.ctaEngine.getShortSymbol(symbol)
         if short_symbol == symbol:
             return symbol
@@ -353,7 +354,7 @@ class CtaTemplate(object):
         if dt is None:
             dt = datetime.now()
 
-        if dt.hour >= 21:
+        if dt.hour >= 20:
             if dt.isoweekday() == 5:
                 # 星期五=》星期一
                 return (dt + timedelta(days=3)).strftime('%Y-%m-%d')
@@ -456,7 +457,7 @@ class MatrixTemplate(CtaTemplate):
     def getPositions(self):
         """
         获取策略当前持仓
-        :return: [{'vtSymbol':symbol,'direction':direction,'volume':volume]
+        :return: [{'vtSymbol':symbol,'direction':direction,'volume':volume,'price':price]
         """
         if not self.position:
             return []
@@ -515,7 +516,7 @@ class MatrixTemplate(CtaTemplate):
             return
 
         if dt.hour == 14:
-            if dt.minute <= 59:
+            if dt.minute <= 55:
                 self.tradeWindow = True
                 return
 
@@ -556,7 +557,7 @@ class MatrixTemplate(CtaTemplate):
             return
 
         # 上期 天然橡胶  23:00
-        if self.shortSymbol in NIGHT_MARKET_SQ3:
+        if self.shortSymbol in [NIGHT_MARKET_SQ3,NIGHT_MARKET_DL]:
 
             if dt.hour == 22:
                 if dt.minute <= 59:  # 收市前29分钟
@@ -566,8 +567,9 @@ class MatrixTemplate(CtaTemplate):
                 if dt.minute > 54:  # 夜盘平仓
                     self.closeWindow = True
                     return
+
         # 郑商、大连 23:30
-        if self.shortSymbol in NIGHT_MARKET_ZZ or self.shortSymbol in NIGHT_MARKET_DL:
+        if self.shortSymbol in NIGHT_MARKET_ZZ:
             if dt.hour == 22:
                 self.tradeWindow = True
                 return

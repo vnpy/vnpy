@@ -35,6 +35,7 @@ from vnpy.trader.vtEvent import *
 from vnpy.trader.setup_logger import setup_logger
 from vnpy.trader.data_source import DataSource
 from vnpy.trader.app.ctaStrategy.ctaEngine import PositionBuffer
+from vnpy.trader.app.ctaStrategy.fundKline import FundKline
 
 ########################################################################
 class BacktestingEngine(object):
@@ -183,6 +184,35 @@ class BacktestingEngine(object):
 
         self.useBreakoutMode = False
 
+        self.logs_path = None
+        self.data_path = None
+
+        self.fund_kline = None
+        self.fund_renko = False
+
+        self.price_dict = {}
+
+    def create_fund_kline(self):
+        setting = {}
+        setting.update({'name': self.strategy_name})
+        setting['inputMa1Len'] = 5
+        setting['inputMa2Len'] = 10
+        setting['inputMa3Len'] = 20
+        setting['inputYb'] = True
+        setting['minDiff'] = 0.01
+        setting['shortSymbol'] = 'fund'
+        if self.fund_renko:
+            setting['height'] = self.initCapital * 0.001
+            setting['use_renko'] = True
+
+        self.fund_kline = FundKline(cta_engine=self, setting=setting)
+
+        return self.fund_kline
+
+    def get_fund_kline(self,name=None):
+        """获取资金曲线"""
+        return self.fund_kline
+
     def getAccountInfo(self):
         """返回账号的实时权益，可用资金，仓位比例,投资仓位比例上限"""
         if self.netCapital == EMPTY_FLOAT:
@@ -203,7 +233,7 @@ class BacktestingEngine(object):
 
         self.strategyStartDate = self.dataStartDate + initTimeDelta
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setEndDate(self, endDate=''):
         """设置回测的结束日期"""
         self.endDate = endDate
@@ -219,12 +249,12 @@ class BacktestingEngine(object):
         self.minDiff = minDiff
         self.priceTick = minDiff
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setBacktestingMode(self, mode):
         """设置回测模式"""
         self.mode = mode
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def setDatabase(self, dbName, symbol):
         """设置历史数据所用的数据库"""
         self.dbName = dbName
@@ -257,10 +287,26 @@ class BacktestingEngine(object):
         """查询合约的size"""
         return self.size
 
+    def setPrice(self,vtSymbol, price):
+        self.price_dict.update({vtSymbol:price})
+
+    def qryPrice(self,vtSymbol):
+        return self.price_dict.get(vtSymbol,None)
     # ----------------------------------------------------------------------
     def setRate(self, rate):
         """设置佣金比例"""
         self.rate = rate
+        if rate >=0.1:
+            self.fixCommission = rate
+
+    def setInitCapital(self,capital):
+        """设置期初资金"""
+        self.output(u'设置期初资金:{}'.format(capital))
+        self.capital = capital
+        self.initCapital = capital
+        self.netCapital = capital
+        self.maxCapital = capital
+        self.maxNetCapital = capital
 
     # ----------------------------------------------------------------------
     def setPriceTick(self, priceTick):
@@ -268,13 +314,14 @@ class BacktestingEngine(object):
         self.priceTick = priceTick
         self.minDiff = priceTick
 
-    def setStrategyName(self,strategy_name):
+    def setStrategyName(self, strategy_name):
         """
         设置策略的运行实例名称
         :param strategy_name: 
         :return: 
         """
         self.strategy_name = strategy_name
+
 
     def setDailyReportName(self, report_file):
         """
@@ -349,6 +396,47 @@ class BacktestingEngine(object):
         # 保存本地cache文件
         self.__saveDataHistoryToLocalCache(symbol, startDate, endDate)
 
+
+
+
+    #----------------------------------------------------------------------
+    def getMysqlDeltaDate(self,symbol, startDate, decreaseDays):
+        """从mysql库中获取交易日前若干天
+        added by IncenseLee
+        """
+        try:
+            if self.__mysqlConnected:
+
+                # 获取mysql指针
+                cur = self.__mysqlConnection.cursor()
+
+                sqlstring='select distinct ndate from TB_{0}MI where ndate < ' \
+                          'cast(\'{1}\' as date) order by ndate desc limit {2},1'.format(symbol, startDate, decreaseDays-1)
+
+                # self.writeCtaLog(sqlstring)
+
+                count = cur.execute(sqlstring)
+
+                if count > 0:
+
+                    # 提取第一条记录
+                    result = cur.fetchone()
+
+                    return result[0]
+
+                else:
+                    self.writeCtaLog(u'MysqlDB没有查询结果，请检查日期')
+
+            else:
+                self.writeCtaLog(u'MysqlDB未连接，请检查')
+
+        except MySQLdb.Error as e:
+            self.writeCtaLog(u'MysqlDB载入数据失败，请检查.Error {0}: {1}'.format(e.arg[0],e.arg[1]))
+
+        # 出错后缺省返回
+        return startDate-timedelta(days=3)
+
+    # ----------------------------------------------------------------------
     def runBackTestingWithMongoDBTicks(self, symbol):
         """
         根据测试的每一天，从MongoDB载入历史数据，并推送Tick至回测函数
@@ -385,8 +473,8 @@ class BacktestingEngine(object):
         self.strategy.onStart()
         self.output(u'策略启动完成')
 
-        # isOffline = False  # WJ
-        isOffline = True
+        isOffline = False  # WJ
+
         host, port, log = loadMongoSetting()
 
         self.dbClient = pymongo.MongoClient(host, port)
@@ -424,7 +512,7 @@ class BacktestingEngine(object):
 
                 query_time = datetime.now()
                 # 载入初始化需要用的数据
-                flt = {'tradingDay': testday.strftime('%Y%m%d')} # WJ: using TradingDay instead of calandar day
+                flt = {'tradingDay': testday.strftime('%Y-%m-%d')} # WJ: using TradingDay instead of calandar day
                 # flt = {'datetime': {'$gte': testday_monrning, '$lt': testday_midnight}}
                 initCursor = collection.find(flt).sort('datetime', pymongo.ASCENDING)
 
@@ -463,13 +551,844 @@ class BacktestingEngine(object):
             if len(rawTicks) > 1:
                 self.savingDailyData(testday, self.capital, self.maxCapital, self.totalCommission)
 
+    def runBackTestingWithArbTickFile(self,mainPath, arbSymbol):
+        """运行套利回测（使用本地tick TXT csv数据)
+        参数：套利代码 SP rb1610&rb1701
+        added by IncenseLee
+        原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
+        Z:\ticks\SHFE\201606\RB\0601\
+                                     RB1610.txt
+                                     RB1701.txt
+                                     ....
+        Z:\ticks\SHFE_night\201606\RB\0601
+                                     RB1610.txt
+                                     RB1701.txt
+                                     ....
+
+        夜盘目录为自然日，不是交易日。
+
+        按照回测的开始日期，到结束日期，循环每一天。
+        每天优先读取日盘数据，再读取夜盘数据。
+        读取eg1（如RB1610），读取Leg2（如RB701），合并成价差tick，灌输到策略的onTick中。
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if len(arbSymbol) < 1:
+            self.writeCtaLog(u'套利合约为空')
+            return
+
+        if not (arbSymbol.upper().index("SP") == 0 and arbSymbol.index(" ") > 0 and arbSymbol.index("&") > 0):
+            self.writeCtaLog(u'套利合约格式不符合')
+            return
+
+        # 获得Leg1，leg2
+        legs = arbSymbol[arbSymbol.index(" "):]
+        leg1 = legs[1:legs.index("&")]
+        leg2 = legs[legs.index("&") + 1:]
+        self.writeCtaLog(u'Leg1:{0},Leg2:{1}'.format(leg1, leg2))
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol)<1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        #首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+
+            testday = self.dataStartDate + timedelta(days = i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+
+            # 白天数据
+            self.__loadArbTicks(mainPath,testday,leg1,leg2)
+
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            # 更新持仓缓存
+            self.update_pos_buffer()
+            # 夜盘数据
+            self.__loadArbTicks(mainPath+'_night', testday, leg1, leg2)
+
+
+    # ----------------------------------------------------------------------
+    def runBackTestingWithTickFile(self, mainPath, symbol):
+        """运行Tick回测（使用本地tick TXT csv数据)
+        参数：代码 rb1610
+        added by WenjianDu
+        原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
+        Z:\ticks\SHFE\201606\RB\0601\
+                                     RB1610.txt
+                                     RB1701.txt
+                                     ....
+        Z:\ticks\SHFE_night\201606\RB\0601
+                                     RB1610.txt
+                                     RB1701.txt
+                                     ....
+
+        夜盘目录为自然日，不是交易日。
+
+        按照回测的开始日期，到结束日期，循环每一天。
+        每天优先读取日盘数据，再读取夜盘数据。
+        读取tick（如RB1610），灌输到策略的onTick中。
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if len(symbol) < 1:
+            self.writeCtaLog(u'合约为空')
+            return
+
+        # 获得tick
+        self.writeCtaLog(u'arbSymbol:{0}'.format(symbol))
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+            self.output(u'回测日期:{0}'.format(testday))
+            # 白天数据
+            self.__loadTxtTicks(mainPath, testday, symbol)
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            # 更新持仓缓存
+            self.update_pos_buffer()
+            # # 夜盘数据
+            # self.__loadTxtTicks(mainPath + '_night', testday, symbol)
+            self.savingDailyData(testday, self.capital, self.maxCapital, self.totalCommission)
+
+    # ----------------------------------------------------------------------
+    def runBackTestingWithArbTickFile2(self, leg1MainPath, leg2MainPath, arbSymbol):
+        """运行套利回测（使用本地tick csv数据)
+        参数：套利代码 SP rb1610&rb1701
+        added by IncenseLee
+        原始的tick，存放在相应市场下每天的目录中，目录包含市场各个合约的数据
+        E:\ticks\SQ\201606\20160601\
+                                     RB10.csv
+                                     RB01.csv
+                                     ....
+
+        目录为交易日。
+        按照回测的开始日期，到结束日期，循环每一天。
+
+        读取eg1（如RB1610），读取Leg2（如RB701），合并成价差tick，灌输到策略的onTick中。
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if len(arbSymbol) < 1:
+            self.writeCtaLog(u'套利合约为空')
+            return
+
+        if not (arbSymbol.upper().index("SP") == 0 and arbSymbol.index(" ") > 0 and arbSymbol.index("&") > 0):
+            self.writeCtaLog(u'套利合约格式不符合')
+            return
+
+        # 获得Leg1，leg2
+        legs = arbSymbol[arbSymbol.index(" "):]
+        leg1 = legs[1:legs.index("&")]
+        leg2 = legs[legs.index("&") + 1:]
+        self.writeCtaLog(u'Leg1:{0},Leg2:{1}'.format(leg1, leg2))
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+
+            # 白天数据
+            self.__loadArbTicks2(leg1MainPath, leg2MainPath, testday, leg1, leg2)
+
+
+    def runBackTestingWithNonStrArbTickFile(self, leg1MainPath, leg2MainPath, leg1Symbol,leg2Symbol):
+        """运行套利回测（使用本地tick txt数据)
+        参数：
+        leg1MainPath： leg1合约所在的市场路径
+        leg2MainPath： leg2合约所在的市场路径
+        leg1Symbol： leg1合约
+        Leg2Symbol：leg2合约
+        added by IncenseLee
+        原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
+        Z:\ticks\SHFE\201606\RB\0601\
+                                     RB1610.txt
+                                     RB1701.txt
+                                     ....
+        Z:\ticks\SHFE_night\201606\RB\0601
+                                     RB1610.txt
+                                     RB1701.txt
+                                     ....
+
+        夜盘目录为自然日，不是交易日。
+
+        按照回测的开始日期，到结束日期，循环每一天。
+        每天优先读取日盘数据，再读取夜盘数据。
+        读取eg1（如RB1610），读取Leg2（如RB701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol)<1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        #首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days = i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
+            # 更新持仓缓存
+            self.update_pos_buffer()
+            # 加载运行白天数据
+            self.__loadNotStdArbTicks(leg1MainPath, leg2MainPath, testday, leg1Symbol,leg2Symbol)
+
+            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
+
+            # 加载运行夜盘数据
+            self.__loadNotStdArbTicks(leg1MainPath+'_night', leg2MainPath+'_night', testday, leg1Symbol, leg2Symbol)
+
+        self.savingDailyData(self.dataEndDate, self.capital, self.maxCapital,self.totalCommission)
+
+    def runBackTestingWithNonStrArbTickFile2(self, leg1MainPath, leg2MainPath, leg1Symbol, leg2Symbol):
+        """运行套利回测（使用本地tickcsv数据，数据从taobao标普购买)
+        参数：
+        leg1MainPath： leg1合约所在的市场路径
+        leg2MainPath： leg2合约所在的市场路径
+        leg1Symbol： leg1合约
+        Leg2Symbol：leg2合约
+        added by IncenseLee
+        原始的tick，存放在相应市场下每天的目录中，目录包含市场各个合约的数据
+        E:\ticks\SQ\201606\20160601\
+                                     RB10.csv
+                                     RB01.csv
+                                     ....
+
+        目录为交易日。
+        按照回测的开始日期，到结束日期，循环每一天。
+
+        读取eg1（如RB1610），读取Leg2（如RB701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        self.writeCtaLog(u'开始回测:{} ~ {}'.format(self.dataStartDate,self.dataEndDate))
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
+            # 更新持仓缓存
+            self.update_pos_buffer()
+            # 加载运行每天得tick套利数据
+            self.__run_arbitrage_ticks2(leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol)
+
+            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
+
+    def runBackTestingWithNonStrArbTickFromMongoDB(self, leg1Symbol, leg2Symbol):
+        """运行套利回测（使用服务器数据，数据从taobao标普购买)
+        参数：
+        leg1Symbol： leg1合约
+        Leg2Symbol：leg2合约
+        added by IncenseLee
+
+        目录为交易日。
+        按照回测的开始日期，到结束日期，循环每一天。
+
+        读取eg1（如RB1610），读取Leg2（如RB1701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
+        """
+
+        # 连接数据库
+        host, port, log = loadMongoSetting()
+        self.dbClient = pymongo.MongoClient(host, port)
+
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
+            # 更新持仓缓存
+            self.update_pos_buffer()
+            # 加载运行每天数据
+            self.__loadNotStdArbTicksFromMongoDB(testday, leg1Symbol, leg2Symbol)
+
+            self.savingDailyData(testday, self.capital, self.maxCapital, self.totalCommission)
+
+    def runBackTestingWithRqTickFile(self,leg1_path,leg2_path,leg1_symbol, leg2_symbol):
+        """
+        运行套利回测,使用本地ricequant下载得tick数据
+        :param leg1_path:腿1路径
+        :param leg2_path:腿2路径
+        :param leg1_symbol:腿1合约
+        :param leg2_symbol:腿2合约
+        :return:
+        """
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+        # RB
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'本回测仅支持tick模式')
+            return
+
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        if testdays < 1:
+            self.writeCtaLog(u'回测时间不足')
+            return
+
+        self.writeCtaLog(u'开始回测:{} ~ {}'.format(self.dataStartDate, self.dataEndDate))
+        for i in range(0, testdays):
+            testday = self.dataStartDate + timedelta(days=i)
+
+            self.output(u'回测日期:{0}'.format(testday))
+            # 撤销所有之前的orders
+            if self.symbol:
+                self.cancelOrders(self.symbol)
+            if self.last_leg1_tick:
+                self.cancelOrders(self.last_leg1_tick.vtSymbol)
+            if self.last_leg2_tick:
+                self.cancelOrders(self.last_leg2_tick.vtSymbol)
+            # 更新持仓缓存
+            self.update_pos_buffer()
+            # 加载运行每天数据
+            print('{}'.format(testday))
+            if self.__run_rq_ticks(leg1_path, leg2_path, testday, leg1_symbol, leg2_symbol):
+                self.savingDailyData(testday, self.capital, self.maxCapital, self.totalCommission)
+
+    # ----------------------------------------------------------------------
+    def runBackTestingWithBarFile(self, filename):
+        """运行回测（使用本地csv数据)
+        added by IncenseLee
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+        if not filename:
+            self.writeCtaLog(u'请指定回测数据文件')
+            return
+
+        if not self.strategyStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        import os
+        if not os.path.isfile(filename):
+            self.writeCtaLog(u'{0}文件不存在'.format(filename))
+
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        # 首先根据回测模式，确认要使用的数据类
+        if not self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'注意:文件仅支持bar模式,请修改mode')
+            return
+
+        # self.output(u'开始回测')
+
+        self.strategy.onInit()
+        self.strategy.trading = False
+        self.output(u'策略初始化完成')
+
+        self.output(u'开始回放数据')
+
+        import csv
+        csvfile = open(filename, 'r', encoding='utf8')
+        reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
+        last_tradingDay = None
+        for row in reader:
+            try:
+                bar = CtaBarData()
+                bar.symbol = self.symbol
+                bar.vtSymbol = self.symbol
+
+                # 从tb导出的csv文件
+                # bar.open = float(row['Open'])
+                # bar.high = float(row['High'])
+                # bar.low = float(row['Low'])
+                # bar.close = float(row['Close'])
+                # bar.volume = float(row['TotalVolume'])#
+                # barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
+                if row.get('open', None) is None:
+                    continue
+                if row.get('high', None) is None:
+                    continue
+                if row.get('low', None) is None:
+                    continue
+                if row.get('close', None) is None:
+                    continue
+
+                if len(row['open']) == 0 or len(row['high']) == 0 or len(row['low']) == 0 or len(row['close']) == 0:
+                    continue
+                # 从ricequant导出的csv文件
+                bar.open = self.roundToPriceTick(float(row['open']))
+                bar.high = self.roundToPriceTick(float(row['high']))
+                bar.low = self.roundToPriceTick(float(row['low']))
+                bar.close = self.roundToPriceTick(float(row['close']))
+                bar.volume = float(row['volume']) if len(row['volume']) > 0 else 0
+                if '-' in row['index']:
+                    barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
+                elif '-' in row['datetime']:
+                    barEndTime = datetime.strptime(row['datetime'], '%Y-%m-%d %H:%M:%S')
+                else:
+                    barEndTime = datetime.strptime(row['datetime'], '%Y%m%d%H%M%S')
+
+                # 使用Bar的开始时间作为datetime
+                bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
+
+                bar.date = bar.datetime.strftime('%Y-%m-%d')
+                bar.time = bar.datetime.strftime('%H:%M:%S')
+                if 'trading_date' in row:
+                    if len(row['trading_date']) is 8:
+                        bar.tradingDay = row['trading_date'][0:4] + '-' \
+                                         + row['trading_date'][4:6] + '-' \
+                                         + row['trading_date'][6:]
+                    else:
+                        bar.tradingDay = row['trading_date']
+                else:
+                    if bar.datetime.hour >= 21 and not self.is_7x24:
+                        if bar.datetime.isoweekday() == 5:
+                            # 星期五=》星期一
+                            bar.tradingDay = (barEndTime + timedelta(days=3)).strftime('%Y-%m-%d')
+                        else:
+                            # 第二天
+                            bar.tradingDay = (barEndTime + timedelta(days=1)).strftime('%Y-%m-%d')
+                    elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6 and not self.is_7x24:
+                        # 星期六=>星期一
+                        bar.tradingDay = (barEndTime + timedelta(days=2)).strftime('%Y-%m-%d')
+                    else:
+                        bar.tradingDay = bar.date
+
+                if self.strategyStartDate <= bar.datetime <= self.dataEndDate:
+                    if last_tradingDay != bar.tradingDay:
+                        if last_tradingDay is not None:
+                            self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
+                                                 self.maxCapital, self.totalCommission, benchmark=bar.close)
+                        last_tradingDay = bar.tradingDay
+
+                        # 第二个交易日,撤单
+                        self.cancelOrders(self.symbol)
+                        # 更新持仓缓存
+                        self.update_pos_buffer()
+
+                if self.dataStartDate >= bar.datetime:
+                    continue
+
+                if bar.datetime > self.dataEndDate:
+                    continue
+
+                # Check the order triggers and deliver the bar to the Strategy
+                if self.useBreakoutMode is False:
+                    self.newBar(bar)
+                else:
+                    self.newBarForBreakout(bar)
+
+                if not self.strategy.trading and self.strategyStartDate < bar.datetime:
+                    self.strategy.trading = True
+                    self.strategy.onStart()
+                    self.output(u'策略启动交易')
+
+                if self.netCapital < 0:
+                    self.writeCtaError(u'净值低于0，回测停止')
+                    return
+
+            except Exception as ex:
+                self.writeCtaError(u'回测异常导致停止')
+                self.writeCtaError(u'{},{}'.format(str(ex), traceback.format_exc()))
+                return
+
+    # ----------------------------------------------------------------------
+    def runBackTestingWithDataSource(self, data_source_url=None):
+        """运行回测（使用数据源)
+        added by IncenseLee
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+        if not self.strategyStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        # 首先根据回测模式，确认要使用的数据类
+        if not self.mode == self.BAR_MODE:
+            self.writeCtaLog(u'文件仅支持bar模式，若扩展tick模式，需要修改本方法')
+            return
+
+        # self.output(u'开始回测')
+
+        # self.strategy.inited = True
+        self.strategy.onInit()
+        self.output(u'策略初始化完成')
+
+        # self.strategy.trading = True
+        # self.strategy.onStart()
+        # self.output(u'策略启动完成')
+
+        self.output(u'开始载入数据')
+
+        # 载入回测数据
+        testdays = (self.dataEndDate - self.dataStartDate).days
+
+        rawBars = []
+        # 看本地缓存是否存在
+        cachefilename = u'{0}_{1}_{2}'.format(self.symbol, self.dataStartDate.strftime('%Y%m%d'),
+                                              self.dataEndDate.strftime('%Y%m%d'))
+        rawBars = self.__loadTicksFromLocalCache(cachefilename)
+
+        if len(rawBars) < 1:
+            self.writeCtaLog(u'从数据库中读取数据')
+
+            query_time = datetime.now()
+            ds = DataSource(data_source_url)
+            start_date = self.dataStartDate.strftime('%Y-%m-%d')
+            end_date = self.dataEndDate.strftime('%Y-%m-%d')
+            fields = ['open', 'close', 'high', 'low', 'volume', 'open_interest', 'limit_up', 'limit_down',
+                      'trading_date']
+            last_bar_dt = None
+
+            df = ds.get_price(order_book_id=self.strategy.symbol, start_date=start_date,
+                              end_date=end_date, frequency='1m', fields=fields)
+
+            if df is None:
+                self.writeCtaLog(u'ERROR data_source拿不到数据，回测结束')
+                return
+            process_time = datetime.now()
+            # 将数据从查询指针中读取出，并生成列表
+            count_bars = 0
+            self.writeCtaLog(u'一共获取{}条{}分钟数据'.format(len(df), '1m'))
+            for idx in df.index:
+                row = df.loc[idx]
+                # self.writeCtaLog('{}: {}, o={}, h={}, l={}, c={}'.format(count_bars, datetime.strptime(str(idx), '%Y-%m-%d %H:%M:00'),
+                #                                                          row['open'], row['high'], row['low'], row['close']))
+                bar = CtaBarData()
+                bar.vtSymbol = self.symbol
+                bar.symbol = self.symbol
+                last_bar_dt = datetime.strptime(str(idx), '%Y-%m-%d %H:%M:00')
+                bar.datetime = last_bar_dt - timedelta(minutes=1)
+                bar.date = bar.datetime.strftime('%Y-%m-%d')
+                bar.time = bar.datetime.strftime('%H:%M:00')
+                bar.tradingDay = datetime.strptime(str(int(row['trading_date'])), '%Y%m%d')
+                bar.open = float(row['open'])
+                bar.high = float(row['high'])
+                bar.low = float(row['low'])
+                bar.close = float(row['close'])
+                bar.volume = int(row['volume'])
+                rawBars.append(bar)
+                count_bars += 1
+
+            self.writeCtaLog(u'回测日期{}-{}，数据量：{}，查询耗时:{},回测耗时:{}'
+                             .format(self.dataStartDate.strftime('%Y-%m-%d'), self.dataEndDate.strftime('%Y%m%d'),
+                                     count_bars, str(datetime.now() - query_time),
+                                     str(datetime.now() - process_time)))
+
+            # 保存本地cache文件
+            if count_bars > 0:
+                self.__saveTicksToLocalCache(cachefilename, rawBars)
+
+        if len(rawBars) < 1:
+            self.writeCtaLog(u'ERROR 拿不到指定日期的数据，结束')
+            return
+
+        self.output(u'开始回放数据')
+        last_tradingDay = 0
+        for bar in rawBars:
+            # self.writeCtaLog(u'{} o:{};h:{};l:{};c:{},v:{},tradingDay:{},H2_count:{}'
+            #                 .format(bar.date+' '+bar.time, bar.open, bar.high,
+            #                         bar.low, bar.close, bar.volume, bar.tradingDay, self.lineH2.m1_bars_count))
+
+            if self.strategyStartDate <= bar.datetime <= self.dataEndDate:
+                if last_tradingDay == 0:
+                    last_tradingDay = bar.tradingDay
+                elif last_tradingDay != bar.tradingDay:
+                    if last_tradingDay is not None:
+                        self.savingDailyData(last_tradingDay, self.capital, self.maxCapital, self.totalCommission)
+                    last_tradingDay = bar.tradingDay
+
+                    # 第二个交易日,撤单
+                    self.cancelOrders(self.symbol)
+                    # 更新持仓缓存
+                    self.update_pos_buffer()
+
+            # Simulate latest tick and send it to Strategy
+            # simTick = self.__barToTick(bar)
+            # self.tick = simTick
+            # self.strategy.curTick = simTick
+
+            # Check the order triggers and deliver the bar to the Strategy
+            if self.useBreakoutMode is False:
+                self.newBar(bar)
+            else:
+                self.newBarForBreakout(bar)
+
+            if not self.strategy.trading and self.strategyStartDate < bar.datetime:
+                self.strategy.trading = True
+                self.strategy.onStart()
+                self.output(u'策略启动完成')
+
+            if self.netCapital < 0:
+                self.writeCtaError(u'净值低于0，回测停止')
+                return
+
+    # ----------------------------------------------------------------------
+    def runBacktestingWithMysql(self):
+        """运行回测(使用Mysql数据）
+        added by IncenseLee
+        """
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        if not self.dataStartDate:
+            self.writeCtaLog(u'回测开始日期未设置。')
+            return
+
+        if not self.dataEndDate:
+            self.dataEndDate = datetime.today()
+
+        if len(self.symbol) < 1:
+            self.writeCtaLog(u'回测对象未设置。')
+            return
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            dataClass = CtaBarData
+            func = self.newBar
+        else:
+            dataClass = CtaTickData
+            func = self.newTick
+
+        self.output(u'开始回测')
+
+        # self.strategy.inited = True
+        self.strategy.onInit()
+        self.output(u'策略初始化完成')
+
+        self.strategy.trading = True
+        self.strategy.onStart()
+        self.output(u'策略启动完成')
+
+        self.output(u'开始回放数据')
+
+        # 每次获取日期周期
+        intervalDays = 10
+
+        for i in range(0, (self.dataEndDate - self.dataStartDate).days + 1, intervalDays):
+            d1 = self.dataStartDate + timedelta(days=i)
+
+            if (self.dataEndDate - d1).days > intervalDays:
+                d2 = self.dataStartDate + timedelta(days=i + intervalDays - 1)
+            else:
+                d2 = self.dataEndDate
+
+            # 提取历史数据
+            self.loadDataHistoryFromMysql(self.symbol, d1, d2)
+
+            self.output(u'数据日期:{0} => {1}'.format(d1, d2))
+            # 将逐笔数据推送
+            for data in self.historyData:
+                # 记录最新的TICK数据
+                self.tick = self.__dataToTick(data)
+                self.dt = self.tick.datetime
+
+                # 处理限价单
+                self.crossLimitOrder()
+                self.crossStopOrder()
+
+                # 推送到策略引擎中
+                self.strategy.onTick(self.tick)
+
+            # 清空历史数据
+            self.historyData = []
+
+        self.output(u'数据回放结束')
+
+    # ----------------------------------------------------------------------
+    def runBacktesting(self):
+        """运行回测"""
+
+        self.capital = self.initCapital  # 更新设置期初资金
+
+        # 首先根据回测模式，确认要使用的数据类
+        if self.mode == self.BAR_MODE:
+            dataClass = CtaBarData
+            func = self.newBar
+        else:
+            dataClass = CtaTickData
+            func = self.newTick
+
+        self.output(u'开始回测')
+
+        self.strategy.inited = True
+        self.strategy.onInit()
+        self.output(u'策略初始化完成')
+
+        self.strategy.trading = True
+        self.strategy.onStart()
+        self.output(u'策略启动完成')
+
+        self.output(u'开始回放数据')
+
+        # 循环加载回放数据
+        self.runHistoryDataFromMongo()
+
+        self.output(u'数据回放结束')
+
     def __loadDataHistoryFromLocalCache(self, symbol, startDate, endDate):
         """看本地缓存是否存在
         added by IncenseLee
         """
 
         # 运行路径下cache子目录
-        cacheFolder = os.getcwd()+'/cache'
+        cacheFolder = self.get_logs_path()+'/cache'
 
         # cache文件
         cacheFile = u'{0}/{1}_{2}_{3}.pickle'.\
@@ -495,7 +1414,7 @@ class BacktestingEngine(object):
         """
 
         # 运行路径下cache子目录
-        cacheFolder = os.getcwd()+'/cache'
+        cacheFolder = self.get_logs_path()+'/cache'
 
         # 创建cache子目录
         if not os.path.isdir(cacheFolder):
@@ -707,124 +1626,13 @@ class BacktestingEngine(object):
 
         return tick
 
-    #----------------------------------------------------------------------
-    def getMysqlDeltaDate(self,symbol, startDate, decreaseDays):
-        """从mysql库中获取交易日前若干天
-        added by IncenseLee
-        """
-        try:
-            if self.__mysqlConnected:
-
-                # 获取mysql指针
-                cur = self.__mysqlConnection.cursor()
-
-                sqlstring='select distinct ndate from TB_{0}MI where ndate < ' \
-                          'cast(\'{1}\' as date) order by ndate desc limit {2},1'.format(symbol, startDate, decreaseDays-1)
-
-                # self.writeCtaLog(sqlstring)
-
-                count = cur.execute(sqlstring)
-
-                if count > 0:
-
-                    # 提取第一条记录
-                    result = cur.fetchone()
-
-                    return result[0]
-
-                else:
-                    self.writeCtaLog(u'MysqlDB没有查询结果，请检查日期')
-
-            else:
-                self.writeCtaLog(u'MysqlDB未连接，请检查')
-
-        except MySQLdb.Error as e:
-            self.writeCtaLog(u'MysqlDB载入数据失败，请检查.Error {0}: {1}'.format(e.arg[0],e.arg[1]))
-
-        # 出错后缺省返回
-        return startDate-timedelta(days=3)
-
-    # ----------------------------------------------------------------------
-    def runBackTestingWithArbTickFile(self,mainPath, arbSymbol):
-        """运行套利回测（使用本地tick TXT csv数据)
-        参数：套利代码 SP rb1610&rb1701
-        added by IncenseLee
-        原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
-        Z:\ticks\SHFE\201606\RB\0601\
-                                     RB1610.txt
-                                     RB1701.txt
-                                     ....
-        Z:\ticks\SHFE_night\201606\RB\0601
-                                     RB1610.txt
-                                     RB1701.txt
-                                     ....
-
-        夜盘目录为自然日，不是交易日。
-
-        按照回测的开始日期，到结束日期，循环每一天。
-        每天优先读取日盘数据，再读取夜盘数据。
-        读取eg1（如RB1610），读取Leg2（如RB701），合并成价差tick，灌输到策略的onTick中。
-        """
-        self.capital = self.initCapital  # 更新设置期初资金
-
-        if len(arbSymbol) < 1:
-            self.writeCtaLog(u'套利合约为空')
-            return
-
-        if not (arbSymbol.upper().index("SP") == 0 and arbSymbol.index(" ") > 0 and arbSymbol.index("&") > 0):
-            self.writeCtaLog(u'套利合约格式不符合')
-            return
-
-        # 获得Leg1，leg2
-        legs = arbSymbol[arbSymbol.index(" "):]
-        leg1 = legs[1:legs.index("&")]
-        leg2 = legs[legs.index("&") + 1:]
-        self.writeCtaLog(u'Leg1:{0},Leg2:{1}'.format(leg1, leg2))
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-        # RB
-        if len(self.symbol)<1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        #首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'本回测仅支持tick模式')
-            return
-
-        testdays = (self.dataEndDate - self.dataStartDate).days
-
-        if testdays < 1:
-            self.writeCtaLog(u'回测时间不足')
-            return
-
-        for i in range(0, testdays):
-
-            testday = self.dataStartDate + timedelta(days = i)
-
-            self.output(u'回测日期:{0}'.format(testday))
-
-            # 白天数据
-            self.__loadArbTicks(mainPath,testday,leg1,leg2)
-
-            # 撤销所有之前的orders
-            if self.symbol:
-                self.cancelOrders(self.symbol)
-
-            # 夜盘数据
-            self.__loadArbTicks(mainPath+'_night', testday, leg1, leg2)
 
 
-    def __loadArbTicks(self,mainPath,testday,leg1,leg2):
+    def __loadArbTicks(self, mainPath, testday, leg1, leg2):
 
         self.writeCtaLog(u'加载回测日期:{0}\{1}的价差tick'.format(mainPath, testday))
 
-        cachefilename = u'{0}_{1}_{2}_{3}_{4}'.format(self.symbol,leg1,leg2, mainPath, testday.strftime('%Y%m%d'))
+        cachefilename = u'{0}_{1}_{2}_{3}_{4}'.format(self.symbol, leg1, leg2, mainPath, testday.strftime('%Y%m%d'))
 
         arbTicks = self.__loadArbTicksFromLocalCache(cachefilename)
 
@@ -848,7 +1656,7 @@ class BacktestingEngine(object):
             leg2Ticks = {}
 
             leg2CsvReadFile = open(leg2File, 'rb')
-            #reader = csv.DictReader((line.replace('\0',' ') for line in leg2CsvReadFile), delimiter=",")
+            # reader = csv.DictReader((line.replace('\0',' ') for line in leg2CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg2CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg2File))
             for row in reader:
@@ -868,9 +1676,9 @@ class BacktestingEngine(object):
                     continue
 
                 # 修正毫秒
-                if tick.datetime.replace(microsecond = 0) == dt:
+                if tick.datetime.replace(microsecond=0) == dt:
                     # 与上一个tick的时间（去除毫秒后）相同,修改为500毫秒
-                    tick.datetime=tick.datetime.replace(microsecond = 500)
+                    tick.datetime = tick.datetime.replace(microsecond=500)
                     tick.time = tick.datetime.strftime('%H:%M:%S.%f')
 
                 else:
@@ -888,18 +1696,18 @@ class BacktestingEngine(object):
 
                 # 排除涨停/跌停的数据
                 if (tick.bidPrice1 == float('1.79769E308') and tick.bidVolume1 == 0) \
-                    or (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0):
+                        or (tick.askPrice1 == float('1.79769E308') and tick.askVolume1 == 0):
                     continue
 
                 dtStr = tick.date + ' ' + tick.time
                 if dtStr in leg2Ticks:
                     pass
-                    #self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
+                    # self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
                 else:
                     leg2Ticks[dtStr] = tick
 
             leg1CsvReadFile = file(leg1File, 'rb')
-            #reader = csv.DictReader((line.replace('\0',' ') for line in leg1CsvReadFile), delimiter=",")
+            # reader = csv.DictReader((line.replace('\0',' ') for line in leg1CsvReadFile), delimiter=",")
             reader = csv.DictReader(leg1CsvReadFile, delimiter=",")
             self.writeCtaLog(u'加载{0}'.format(leg1File))
 
@@ -1011,71 +1819,6 @@ class BacktestingEngine(object):
             cache.close()
             return True
 
-    # ----------------------------------------------------------------------
-
-    def runBackTestingWithTickFile(self, mainPath, symbol):
-        """运行Tick回测（使用本地tick TXT csv数据)
-        参数：代码 rb1610
-        added by WenjianDu
-        原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
-        Z:\ticks\SHFE\201606\RB\0601\
-                                     RB1610.txt
-                                     RB1701.txt
-                                     ....
-        Z:\ticks\SHFE_night\201606\RB\0601
-                                     RB1610.txt
-                                     RB1701.txt
-                                     ....
-
-        夜盘目录为自然日，不是交易日。
-
-        按照回测的开始日期，到结束日期，循环每一天。
-        每天优先读取日盘数据，再读取夜盘数据。
-        读取tick（如RB1610），灌输到策略的onTick中。
-        """
-        self.capital = self.initCapital  # 更新设置期初资金
-
-        if len(symbol) < 1:
-            self.writeCtaLog(u'合约为空')
-            return
-
-        # 获得tick
-        self.writeCtaLog(u'arbSymbol:{0}'.format(symbol))
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-        # RB
-        if len(self.symbol) < 1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'本回测仅支持tick模式')
-            return
-
-        testdays = (self.dataEndDate - self.dataStartDate).days
-
-        if testdays < 1:
-            self.writeCtaLog(u'回测时间不足')
-            return
-
-        for i in range(0, testdays):
-            testday = self.dataStartDate + timedelta(days=i)
-            self.output(u'回测日期:{0}'.format(testday))
-            # 白天数据
-            self.__loadTxtTicks(mainPath, testday, symbol)
-            # 撤销所有之前的orders
-            if self.symbol:
-                self.cancelOrders(self.symbol)
-            # # 夜盘数据
-            # self.__loadTxtTicks(mainPath + '_night', testday, symbol)
-            self.savingDailyData(testday, self.capital, self.maxCapital, self.totalCommission)
-
     def __loadTxtTicks(self, mainPath, testday, symbol):
 
         self.writeCtaLog(u'加载回测日期:{0}\{1}的tick'.format(mainPath, testday))
@@ -1169,7 +1912,7 @@ class BacktestingEngine(object):
     def __loadTicksFromLocalCache(self, filename):
         """从本地缓存中，加载数据"""
         # 运行路径下cache子目录
-        cacheFolder = os.getcwd() + '/cache'
+        cacheFolder = self.get_logs_path() + '/cache'
         # cacheFolder = '/home/wenjiand/Workspaces/huafu-vnpy/vnpy/trader/app/ctaStrategy/strategy/cache'
 
         # cache文件
@@ -1188,7 +1931,7 @@ class BacktestingEngine(object):
     def __saveTicksToLocalCache(self, filename, arbticks):
         """保存价差tick到本地缓存目录"""
         # 运行路径下cache子目录
-        cacheFolder = os.getcwd() + '/cache'
+        cacheFolder = self.get_logs_path() + '/cache'
         # cacheFolder = '/home/wenjiand/Workspaces/huafu-vnpy/vnpy/trader/app/ctaStrategy/strategy/cache'
 
         # 创建cache子目录
@@ -1210,67 +1953,7 @@ class BacktestingEngine(object):
             cache.close()
             return True
 
-    # ----------------------------------------------------------------------
-    def runBackTestingWithArbTickFile2(self, leg1MainPath,leg2MainPath, arbSymbol):
-        """运行套利回测（使用本地tick csv数据)
-        参数：套利代码 SP rb1610&rb1701
-        added by IncenseLee
-        原始的tick，存放在相应市场下每天的目录中，目录包含市场各个合约的数据
-        E:\ticks\SQ\201606\20160601\
-                                     RB10.csv
-                                     RB01.csv
-                                     ....
 
-        目录为交易日。
-        按照回测的开始日期，到结束日期，循环每一天。
-
-        读取eg1（如RB1610），读取Leg2（如RB701），合并成价差tick，灌输到策略的onTick中。
-        """
-        self.capital = self.initCapital  # 更新设置期初资金
-
-        if len(arbSymbol) < 1:
-            self.writeCtaLog(u'套利合约为空')
-            return
-
-        if not (arbSymbol.upper().index("SP") == 0 and arbSymbol.index(" ") > 0 and arbSymbol.index("&") > 0):
-            self.writeCtaLog(u'套利合约格式不符合')
-            return
-
-        # 获得Leg1，leg2
-        legs = arbSymbol[arbSymbol.index(" "):]
-        leg1 = legs[1:legs.index("&")]
-        leg2 = legs[legs.index("&") + 1:]
-        self.writeCtaLog(u'Leg1:{0},Leg2:{1}'.format(leg1, leg2))
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-        # RB
-        if len(self.symbol) < 1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'本回测仅支持tick模式')
-            return
-
-        testdays = (self.dataEndDate - self.dataStartDate).days
-
-        if testdays < 1:
-            self.writeCtaLog(u'回测时间不足')
-            return
-
-        for i in range(0, testdays):
-            testday = self.dataStartDate + timedelta(days=i)
-
-            self.output(u'回测日期:{0}'.format(testday))
-
-            # 白天数据
-            self.__loadArbTicks2(leg1MainPath, leg2MainPath, testday, leg1, leg2)
 
     def __loadArbTicks2(self, leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol):
         """加载taobao csv格式tick产生的价差合约"""
@@ -1353,74 +2036,6 @@ class BacktestingEngine(object):
             # 推送到策略中
             self.newTick(t)
 
-    def runBackTestingWithNonStrArbTickFile(self, leg1MainPath, leg2MainPath, leg1Symbol,leg2Symbol):
-        """运行套利回测（使用本地tick txt数据)
-        参数：
-        leg1MainPath： leg1合约所在的市场路径
-        leg2MainPath： leg2合约所在的市场路径
-        leg1Symbol： leg1合约
-        Leg2Symbol：leg2合约
-        added by IncenseLee
-        原始的tick，分别存放在白天目录1和夜盘目录2中，每天都有各个合约的数据
-        Z:\ticks\SHFE\201606\RB\0601\
-                                     RB1610.txt
-                                     RB1701.txt
-                                     ....
-        Z:\ticks\SHFE_night\201606\RB\0601
-                                     RB1610.txt
-                                     RB1701.txt
-                                     ....
-
-        夜盘目录为自然日，不是交易日。
-
-        按照回测的开始日期，到结束日期，循环每一天。
-        每天优先读取日盘数据，再读取夜盘数据。
-        读取eg1（如RB1610），读取Leg2（如RB701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
-        """
-        self.capital = self.initCapital  # 更新设置期初资金
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-        # RB
-        if len(self.symbol)<1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        #首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'本回测仅支持tick模式')
-            return
-
-        testdays = (self.dataEndDate - self.dataStartDate).days
-
-        if testdays < 1:
-            self.writeCtaLog(u'回测时间不足')
-            return
-
-        for i in range(0, testdays):
-            testday = self.dataStartDate + timedelta(days = i)
-
-            self.output(u'回测日期:{0}'.format(testday))
-            # 撤销所有之前的orders
-            if self.symbol:
-                self.cancelOrders(self.symbol)
-            if self.last_leg1_tick:
-                self.cancelOrders(self.last_leg1_tick.vtSymbol)
-            if self.last_leg2_tick:
-                self.cancelOrders(self.last_leg2_tick.vtSymbol)
-            # 加载运行白天数据
-            self.__loadNotStdArbTicks(leg1MainPath, leg2MainPath, testday, leg1Symbol,leg2Symbol)
-
-            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
-
-            # 加载运行夜盘数据
-            self.__loadNotStdArbTicks(leg1MainPath+'_night', leg2MainPath+'_night', testday, leg1Symbol, leg2Symbol)
-
-        self.savingDailyData(self.dataEndDate, self.capital, self.maxCapital,self.totalCommission)
 
     def __loadTicksFromTxtFile(self, filepath, tickDate, vtSymbol):
         """从文件中读取tick"""
@@ -1554,66 +2169,6 @@ class BacktestingEngine(object):
                     self.newTick(leg2)
                     leg2_tick = None
 
-    def runBackTestingWithNonStrArbTickFile2(self, leg1MainPath, leg2MainPath, leg1Symbol, leg2Symbol):
-        """运行套利回测（使用本地tickcsv数据，数据从taobao标普购买)
-        参数：
-        leg1MainPath： leg1合约所在的市场路径
-        leg2MainPath： leg2合约所在的市场路径
-        leg1Symbol： leg1合约
-        Leg2Symbol：leg2合约
-        added by IncenseLee
-        原始的tick，存放在相应市场下每天的目录中，目录包含市场各个合约的数据
-        E:\ticks\SQ\201606\20160601\
-                                     RB10.csv
-                                     RB01.csv
-                                     ....
-
-        目录为交易日。
-        按照回测的开始日期，到结束日期，循环每一天。
-
-        读取eg1（如RB1610），读取Leg2（如RB701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
-        """
-        self.capital = self.initCapital  # 更新设置期初资金
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-        # RB
-        if len(self.symbol) < 1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'本回测仅支持tick模式')
-            return
-
-        testdays = (self.dataEndDate - self.dataStartDate).days
-
-        if testdays < 1:
-            self.writeCtaLog(u'回测时间不足')
-            return
-
-        for i in range(0, testdays):
-            testday = self.dataStartDate + timedelta(days=i)
-
-            self.output(u'回测日期:{0}'.format(testday))
-            # 撤销所有之前的orders
-            if self.symbol:
-                self.cancelOrders(self.symbol)
-            if self.last_leg1_tick:
-                self.cancelOrders(self.last_leg1_tick.vtSymbol)
-            if self.last_leg2_tick:
-                self.cancelOrders(self.last_leg2_tick.vtSymbol)
-
-            # 加载运行每天数据
-            self.__loadNotStdArbTicks2(leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol)
-
-            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
-
 
     def __loadTicksFromCsvFile(self, filepath, tickDate, vtSymbol):
         """从csv文件中UnicodeDictReader读取tick"""
@@ -1689,8 +2244,80 @@ class BacktestingEngine(object):
 
         return ticks
 
-    def __loadNotStdArbTicks2(self, leg1MainPath, leg2MainPath, testday,  leg1Symbol, leg2Symbol):
+    def __load_rq_ticks_from_csv(self, filepath, tickDate, vtSymbol):
+        """从rq csv文件中读取tick"""
+        # 先读取数据到Dict，以日期时间为key
+        ticks = OrderedDict()
+        trading_date = tickDate.strftime('%Y-%m-%d')
+        if not os.path.isfile(filepath):
+            self.writeCtaLog(u'{0}文件不存在'.format(filepath))
+            return ticks
+        dt = None
+        csvReadFile = open(filepath, 'rb')
+        df = pd.read_csv(filepath,parse_dates=False)
 
+        if df is None:
+            return ticks
+
+        self.writeCtaLog(u'加载{},共{}条数据'.format(filepath,len(df)))
+        dt1 = datetime.now()
+
+        for row in df.itertuples():
+            if trading_date!=row.trading_date:
+                continue
+            tick = CtaTickData()
+            tick.vtSymbol = vtSymbol
+            tick.symbol = vtSymbol
+
+            dt_str = row.index
+
+            if len(dt_str) == 0:
+                continue
+            tick.datetime = datetime.strptime(dt_str, '%Y-%m-%d %H:%M:%S.%f')
+
+            tick.date =  tick.datetime.strftime('%Y-%m-%d')
+            tick.tradingDay = row.trading_date
+            tick.time = tick.datetime.strftime('%H:%M:%S.%f')
+
+            dt = tick.datetime
+
+            tick.lastPrice = float(row.last)
+            tick.volume = int(float(row.volume))
+            tick.bidPrice1 = float(row.b1)  # 叫买价（价格低）
+            tick.bidVolume1 = int(float(row.b1_v))
+            tick.askPrice1 = float(row.a1)  # 叫卖价（价格高）
+            tick.askVolume1 = int(float(row.a1_v))
+            tick.upperLimit = float(row.limit_up)
+            tick.lowerLimit = float(row.limit_down)
+
+            # 排除涨停/跌停的数据
+            if (tick.bidPrice1 == tick.upperLimit) \
+                    or (tick.askPrice1 == tick.lowerLimit):
+                self.writeCtaLog(u'排除日内涨跌停数据:{}'.format(row))
+                continue
+
+            dtStr = tick.date + ' ' + tick.time
+            if dtStr in ticks:
+                pass
+
+                #self.writeCtaError(u'日内数据重复，异常,数据时间为:{0}'.format(dtStr))
+            else:
+                ticks[dtStr] = tick
+
+        load_seconds = (datetime.now()-dt1).total_seconds()
+        self.writeCtaLog(u'加载耗时:{}秒'.format(load_seconds))
+        return ticks
+
+    def __run_arbitrage_ticks2(self, leg1MainPath, leg2MainPath, testday, leg1Symbol, leg2Symbol):
+        """
+        运行tick套利
+        :param leg1MainPath: 腿1得路径
+        :param leg2MainPath: 腿2得路径
+        :param testday: 测试日期
+        :param leg1Symbol: 腿1合约
+        :param leg2Symbol: 腿2合约
+        :return:
+        """
         self.writeCtaLog(u'加载回测日期:{0}的价差tick'.format(testday))
         p = re.compile(r"([A-Z]+)[0-9]+",re.I)
         leg1_shortSymbol = p.match(leg1Symbol)
@@ -1703,29 +2330,25 @@ class BacktestingEngine(object):
         leg1_shortSymbol = leg1_shortSymbol.group(1)
         leg2_shortSymbol = leg2_shortSymbol.group(1)
 
-
         # E:\Ticks\SQ\2014\201401\20140102\ag01_20140102.csv
         #leg1File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
         #    .format(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'), leg1_shortSymbol, leg1Symbol[-2:])
 
         leg1File = os.path.abspath(
             os.path.join(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
-                         '{0}{1}_{2}.csv'.format(leg1_shortSymbol,leg1Symbol[-2:],testday.strftime('%Y%m%d'))))
+                         '{0}{1}_{2}.csv'.format(leg1_shortSymbol.upper(),leg1Symbol[-2:],testday.strftime('%Y%m%d'))))
 
         if not os.path.isfile(leg1File):
             self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
             return
 
-        #leg2File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
-        #    .format(leg2MainPath,testday.strftime('%Y'), testday.strftime('%Y%m'),  testday.strftime('%Y%m%d'), leg2_shortSymbol, leg2Symbol[-2:])
         leg2File = os.path.abspath(
             os.path.join(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
-                         '{0}{1}_{2}.csv'.format(leg2_shortSymbol, leg2Symbol[-2:], testday.strftime('%Y%m%d'))))
+                         '{0}{1}_{2}.csv'.format(leg2_shortSymbol.upper(), leg2Symbol[-2:], testday.strftime('%Y%m%d'))))
 
         if not os.path.isfile(leg2File):
             self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
             return
-
         leg1Ticks = self.__loadTicksFromCsvFile(filepath=leg1File, tickDate=testday, vtSymbol=leg1Symbol)
         if len(leg1Ticks) == 0:
             self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
@@ -1735,6 +2358,7 @@ class BacktestingEngine(object):
         if len(leg2Ticks) == 0:
             self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
             return
+
 
         leg1_tick = None
         leg2_tick = None
@@ -1764,64 +2388,6 @@ class BacktestingEngine(object):
                 else:
                     self.newTick(leg2)
                     leg2_tick = None
-
-    def runBackTestingWithNonStrArbTickFromMongoDB(self, leg1Symbol, leg2Symbol):
-        """运行套利回测（使用服务器数据，数据从taobao标普购买)
-        参数：        
-        leg1Symbol： leg1合约
-        Leg2Symbol：leg2合约
-        added by IncenseLee
-        
-        目录为交易日。
-        按照回测的开始日期，到结束日期，循环每一天。
-
-        读取eg1（如RB1610），读取Leg2（如RB1701），根据两者tick的时间优先顺序，逐一tick灌输到策略的onTick中。
-        """
-
-        # 连接数据库
-        host, port, log = loadMongoSetting()
-        self.dbClient = pymongo.MongoClient(host, port)
-
-        self.capital = self.initCapital  # 更新设置期初资金
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-        # RB
-        if len(self.symbol) < 1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'本回测仅支持tick模式')
-            return
-
-        testdays = (self.dataEndDate - self.dataStartDate).days
-
-        if testdays < 1:
-            self.writeCtaLog(u'回测时间不足')
-            return
-
-        for i in range(0, testdays):
-            testday = self.dataStartDate + timedelta(days=i)
-
-            self.output(u'回测日期:{0}'.format(testday))
-
-            # 撤销所有之前的orders
-            if self.symbol:
-                self.cancelOrders(self.symbol)
-            if self.last_leg1_tick:
-                self.cancelOrders(self.last_leg1_tick.vtSymbol)
-            if self.last_leg2_tick:
-                self.cancelOrders(self.last_leg2_tick.vtSymbol)
-            # 加载运行每天数据
-            self.__loadNotStdArbTicksFromMongoDB( testday, leg1Symbol, leg2Symbol)
-
-            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
 
     def __loadNotStdArbTicksFromMongoDB(self,testday, leg1Symbol, leg2Symbol):
         self.writeCtaLog(u'从MongoDB加载回测日期:{0}的{1}-{2}价差tick'.format(testday,leg1Symbol, leg2Symbol))
@@ -1910,379 +2476,98 @@ class BacktestingEngine(object):
 
         return ticks
 
-    #----------------------------------------------------------------------
-    def runBackTestingWithBarFile(self, filename):
-        """运行回测（使用本地csv数据)
-        added by IncenseLee
+        # ----------------------------------------------------------------------
+
+    def __run_rq_ticks(self, leg1_path, leg2_path, testday, leg1_symbol, leg2_symbol):
         """
-        self.capital = self.initCapital      # 更新设置期初资金
-        if not filename:
-            self.writeCtaLog(u'请指定回测数据文件')
-            return
-
-        if not self.strategyStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        import os
-        if not os.path.isfile(filename):
-            self.writeCtaLog(u'{0}文件不存在'.format(filename))
-
-        if len(self.symbol) < 1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        # 首先根据回测模式，确认要使用的数据类
-        if not self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'文件仅支持bar模式，若扩展tick模式，需要修改本方法')
-            return
-
-        #self.output(u'开始回测')
-
-        self.strategy.onInit()
-        self.strategy.trading = False
-        self.output(u'策略初始化完成')
-
-        self.output(u'开始回放数据')
-
-        import csv
-        csvfile = open(filename,'r',encoding='utf8')
-        reader = csv.DictReader((line.replace('\0', '') for line in csvfile), delimiter=",")
-        last_tradingDay = None
-        for row in reader:
-            try:
-                bar = CtaBarData()
-                bar.symbol = self.symbol
-                bar.vtSymbol = self.symbol
-
-                # 从tb导出的csv文件
-                #bar.open = float(row['Open'])
-                #bar.high = float(row['High'])
-                #bar.low = float(row['Low'])
-                #bar.close = float(row['Close'])
-                #bar.volume = float(row['TotalVolume'])#
-                #barEndTime = datetime.strptime(row['Date']+' ' + row['Time'], '%Y/%m/%d %H:%M:%S')
-                if row.get('open',None) is None:
-                    continue
-                if row.get('high', None) is None:
-                    continue
-                if row.get('low', None) is None:
-                    continue
-                if row.get('close', None) is None:
-                    continue
-
-                if len(row['open'])==0 or len(row['high'])==0 or len(row['low'])==0 or len(row['close'])==0:
-                    continue
-                # 从ricequant导出的csv文件
-                bar.open = self.roundToPriceTick(float(row['open']))
-                bar.high = self.roundToPriceTick(float(row['high']))
-                bar.low = self.roundToPriceTick(float(row['low']))
-                bar.close = self.roundToPriceTick(float(row['close']))
-                bar.volume = float(row['volume']) if len(row['volume'])>0 else 0
-                if '-' in row['index']:
-                    barEndTime = datetime.strptime(row['index'], '%Y-%m-%d %H:%M:%S')
-                elif '-' in row['datetime']:
-                    barEndTime = datetime.strptime(row['datetime'], '%Y-%m-%d %H:%M:%S')
-                else:
-                    barEndTime = datetime.strptime(row['datetime'], '%Y%m%d%H%M%S')
-
-                # 使用Bar的开始时间作为datetime
-                bar.datetime = barEndTime - timedelta(seconds=self.barTimeInterval)
-
-                bar.date = bar.datetime.strftime('%Y-%m-%d')
-                bar.time = bar.datetime.strftime('%H:%M:%S')
-                if 'trading_date' in row:
-                    if len(row['trading_date']) is 8:
-                        bar.tradingDay = row['trading_date'][0:4] + '-' + row['trading_date'][4:6] + '-' + row['trading_date'][6:]
-                    else:
-                        bar.tradingDay = row['trading_date']
-                else:
-                    if bar.datetime.hour >=21 and not self.is_7x24:
-                        if bar.datetime.isoweekday() == 5:
-                            # 星期五=》星期一
-                            bar.tradingDay = (barEndTime + timedelta(days=3)).strftime('%Y-%m-%d')
-                        else:
-                            # 第二天
-                            bar.tradingDay = (barEndTime + timedelta(days=1)).strftime('%Y-%m-%d')
-                    elif bar.datetime.hour < 8 and bar.datetime.isoweekday() == 6 and not self.is_7x24:
-                        # 星期六=>星期一
-                        bar.tradingDay = (barEndTime + timedelta(days=2)).strftime('%Y-%m-%d')
-                    else:
-                        bar.tradingDay = bar.date
-
-                if self.strategyStartDate <= bar.datetime <= self.dataEndDate:
-                    if last_tradingDay != bar.tradingDay:
-                        if last_tradingDay is not None:
-                            self.savingDailyData(datetime.strptime(last_tradingDay, '%Y-%m-%d'), self.capital,
-                                                 self.maxCapital,self.totalCommission,benchmark=bar.close)
-                        last_tradingDay = bar.tradingDay
-
-                if self.dataStartDate >= bar.datetime:
-                    continue
-
-                if bar.datetime > self.dataEndDate:
-                    continue
-
-                # Check the order triggers and deliver the bar to the Strategy
-                if self.useBreakoutMode is False:
-                    self.newBar(bar)
-                else:
-                    self.newBarForBreakout(bar)
-
-                if not self.strategy.trading and self.strategyStartDate < bar.datetime:
-                    self.strategy.trading = True
-                    self.strategy.onStart()
-                    self.output(u'策略启动完成')
-
-                if self.netCapital < 0:
-                    self.writeCtaError(u'净值低于0，回测停止')
-                    return
-
-            except Exception as ex:
-                self.writeCtaError(u'回测异常导致停止')
-                self.writeCtaError(u'{},{}'.format(str(ex),traceback.format_exc()))
-                return
-
-    #----------------------------------------------------------------------
-    def runBackTestingWithDataSource(self):
-        """运行回测（使用本地csv数据)
-        added by IncenseLee
+        运行ricequant得本地tick
+        :param leg1_path:
+        :param leg2_path:
+        :param testday:
+        :param leg1_symbol:
+        :param leg2_symbol:
+        :return:
         """
-        self.capital = self.initCapital  # 更新设置期初资金
-        if not self.strategyStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
+        self.writeCtaLog(u'加载回测日期:{0}的价差tick'.format(testday))
+        p = re.compile(r"([A-Z]+)[0-9]+", re.I)
+        leg1_shortSymbol = p.match(leg1_symbol)
+        leg2_shortSymbol = p.match(leg2_symbol)
 
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
+        if leg1_shortSymbol is None or leg2_shortSymbol is None:
+            self.writeCtaLog(u'{0},{1}不能正则分解'.format(leg1_symbol, leg2_symbol))
+            return False
 
-        if len(self.symbol) < 1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
+        leg1_shortSymbol = leg1_shortSymbol.group(1)
+        leg2_shortSymbol = leg2_shortSymbol.group(1)
 
-        # 首先根据回测模式，确认要使用的数据类
-        if not self.mode == self.BAR_MODE:
-            self.writeCtaLog(u'文件仅支持bar模式，若扩展tick模式，需要修改本方法')
-            return
+        # E:\Ticks\SQ\2014\201401\20140102\ag01_20140102.csv
+        # leg1File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
+        #    .format(leg1MainPath, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'), leg1_shortSymbol, leg1Symbol[-2:])
 
-        # self.output(u'开始回测')
+        leg1File = os.path.abspath(
+            os.path.join(leg1_path, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
+                         '{}_{}.csv'.format(leg1_symbol.upper(),testday.strftime('%Y%m%d'))))
 
-        # self.strategy.inited = True
-        self.strategy.onInit()
-        self.output(u'策略初始化完成')
+        if not os.path.isfile(leg1File):
+            self.writeCtaLog(u'{0}文件不存在'.format(leg1File))
+            return False
 
-        #self.strategy.trading = True
-        #self.strategy.onStart()
-        #self.output(u'策略启动完成')
+        # leg2File = u'e:\\ticks\\{0}\\{1}\\{2}\\{3}\\{4}{5}_{3}.csv' \
+        #    .format(leg2MainPath,testday.strftime('%Y'), testday.strftime('%Y%m'),  testday.strftime('%Y%m%d'), leg2_shortSymbol, leg2Symbol[-2:])
+        leg2File = os.path.abspath(
+            os.path.join(leg2_path, testday.strftime('%Y'), testday.strftime('%Y%m'), testday.strftime('%Y%m%d'),
+                         '{}_{}.csv'.format(leg2_symbol.upper(),testday.strftime('%Y%m%d'))))
 
-        self.output(u'开始载入数据')
+        if not os.path.isfile(leg2File):
+            self.writeCtaLog(u'{0}文件不存在'.format(leg2File))
+            return False
 
-        # 载入回测数据
-        testdays = (self.dataEndDate - self.dataStartDate).days
+        leg1Ticks = self.__load_rq_ticks_from_csv(filepath=leg1File, tickDate=testday, vtSymbol=leg1_symbol)
+        if len(leg1Ticks) == 0:
+            self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
+            return False
 
-        rawBars = []
-        # 看本地缓存是否存在
-        cachefilename = u'{0}_{1}_{2}'.format(self.symbol, self.dataStartDate.strftime('%Y%m%d'),
-                                              self.dataEndDate.strftime('%Y%m%d'))
-        rawBars = self.__loadTicksFromLocalCache(cachefilename)
+        leg2Ticks = self.__load_rq_ticks_from_csv(filepath=leg2File, tickDate=testday, vtSymbol=leg2_symbol)
+        if len(leg2Ticks) == 0:
+            self.writeCtaLog(u'{0}读取tick数为空'.format(leg1File))
+            return False
 
-        if len(rawBars) < 1:
-            self.writeCtaLog(u'从数据库中读取数据')
+        leg1_tick = None
+        leg2_tick = None
+        dt1 = datetime.now()
+        while not (len(leg1Ticks) == 0 or len(leg2Ticks) == 0):
+            if leg1_tick is None and len(leg1Ticks) > 0:
+                leg1_tick = leg1Ticks.popitem(last=False)
+            if leg2_tick is None and len(leg2Ticks) > 0:
+                leg2_tick = leg2Ticks.popitem(last=False)
 
-            query_time = datetime.now()
-            ds = DataSource()
-            start_date = self.dataStartDate.strftime('%Y-%m-%d')
-            end_date = self.dataEndDate.strftime('%Y-%m-%d')
-            fields = ['open', 'close', 'high', 'low', 'volume', 'open_interest', 'limit_up', 'limit_down',
-                      'trading_date']
-            last_bar_dt = None
+            if leg1_tick is None and leg2_tick is not None:
+                self.newTick(leg2_tick[1])
+                self.last_leg2_tick = leg2_tick[1]
+                leg2_tick = None
+            elif leg1_tick is not None and leg2_tick is None:
+                self.newTick(leg1_tick[1])
+                self.last_leg1_tick = leg1_tick[1]
+                leg1_tick = None
+            elif leg1_tick is not None and leg2_tick is not None:
+                leg1 = leg1_tick[1]
+                leg2 = leg2_tick[1]
+                self.last_leg1_tick = leg1_tick[1]
+                self.last_leg2_tick = leg2_tick[1]
+                if leg1.datetime <= leg2.datetime:
+                    self.newTick(leg1)
+                    leg1_tick = None
+                else:
+                    self.newTick(leg2)
+                    leg2_tick = None
+        process_seconds = (datetime.now()-dt1).total_seconds()
+        self.writeCtaLog(u'推送{}tick耗时:{}秒'.format(testday,process_seconds))
+        return True
 
-            df = ds.get_price(order_book_id=self.strategy.symbol, start_date=start_date,
-                              end_date=end_date, frequency='1m', fields=fields)
-
-            process_time = datetime.now()
-            # 将数据从查询指针中读取出，并生成列表
-            count_bars = 0
-            self.writeCtaLog(u'一共获取{}条{}分钟数据'.format(len(df), '1m'))
-            for idx in df.index:
-                row = df.loc[idx]
-                # self.writeCtaLog('{}: {}, o={}, h={}, l={}, c={}'.format(count_bars, datetime.strptime(str(idx), '%Y-%m-%d %H:%M:00'),
-                #                                                          row['open'], row['high'], row['low'], row['close']))
-                bar = CtaBarData()
-                bar.vtSymbol = self.symbol
-                bar.symbol = self.symbol
-                last_bar_dt = datetime.strptime(str(idx), '%Y-%m-%d %H:%M:00')
-                bar.datetime = last_bar_dt - timedelta(minutes=1)
-                bar.date = bar.datetime.strftime('%Y-%m-%d')
-                bar.time = bar.datetime.strftime('%H:%M:00')
-                bar.tradingDay = datetime.strptime(str(int(row['trading_date'])), '%Y%m%d')
-                bar.open = float(row['open'])
-                bar.high = float(row['high'])
-                bar.low = float(row['low'])
-                bar.close = float(row['close'])
-                bar.volume = int(row['volume'])
-                rawBars.append(bar)
-                count_bars += 1
-
-            self.writeCtaLog(u'回测日期{}-{}，数据量：{}，查询耗时:{},回测耗时:{}'
-                             .format(self.dataStartDate.strftime('%Y-%m-%d'), self.dataEndDate.strftime('%Y%m%d'),
-                                     count_bars, str(datetime.now() - query_time), str(datetime.now() - process_time)))
-
-            # 保存本地cache文件
-            if count_bars > 0:
-                self.__saveTicksToLocalCache(cachefilename, rawBars)
-
-        if len(rawBars) < 1:
-            self.writeCtaLog(u'ERROR 拿不到指定日期的数据，结束')
-            return
-
-        self.output(u'开始回放数据')
-        last_tradingDay = 0
-        for bar in rawBars:
-            # self.writeCtaLog(u'{} o:{};h:{};l:{};c:{},v:{},tradingDay:{},H2_count:{}'
-            #                 .format(bar.date+' '+bar.time, bar.open, bar.high,
-            #                         bar.low, bar.close, bar.volume, bar.tradingDay, self.lineH2.m1_bars_count))
-
-            if self.strategyStartDate <= bar.datetime <= self.dataEndDate:
-                if last_tradingDay == 0:
-                    last_tradingDay = bar.tradingDay
-                elif last_tradingDay != bar.tradingDay:
-                    if last_tradingDay is not None:
-                        self.savingDailyData(last_tradingDay, self.capital, self.maxCapital, self.totalCommission)
-                    last_tradingDay = bar.tradingDay
-
-            # Simulate latest tick and send it to Strategy
-            #simTick = self.__barToTick(bar)
-            # self.tick = simTick
-            #self.strategy.curTick = simTick
-
-            # Check the order triggers and deliver the bar to the Strategy
-            if self.useBreakoutMode is False:
-                self.newBar(bar)
-            else:
-                self.newBarForBreakout(bar)
-
-            if not self.strategy.trading and self.strategyStartDate < bar.datetime:
-                self.strategy.trading = True
-                self.strategy.onStart()
-                self.output(u'策略启动完成')
-
-            if self.netCapital < 0:
-                self.writeCtaError(u'净值低于0，回测停止')
-                return
-
-    #----------------------------------------------------------------------
-    def runBacktestingWithMysql(self):
-        """运行回测(使用Mysql数据）
-        added by IncenseLee
-        """
-        self.capital = self.initCapital      # 更新设置期初资金
-
-        if not self.dataStartDate:
-            self.writeCtaLog(u'回测开始日期未设置。')
-            return
-
-        if not self.dataEndDate:
-            self.dataEndDate = datetime.today()
-
-        if len(self.symbol)<1:
-            self.writeCtaLog(u'回测对象未设置。')
-            return
-
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            dataClass = CtaBarData
-            func = self.newBar
-        else:
-            dataClass = CtaTickData
-            func = self.newTick
-
-        self.output(u'开始回测')
-
-        #self.strategy.inited = True
-        self.strategy.onInit()
-        self.output(u'策略初始化完成')
-
-        self.strategy.trading = True
-        self.strategy.onStart()
-        self.output(u'策略启动完成')
-
-        self.output(u'开始回放数据')
-
-        # 每次获取日期周期
-        intervalDays = 10
-
-        for i in range (0,(self.dataEndDate - self.dataStartDate).days +1, intervalDays):
-            d1 = self.dataStartDate + timedelta(days = i )
-
-            if (self.dataEndDate - d1).days > intervalDays:
-                d2 = self.dataStartDate + timedelta(days = i + intervalDays -1 )
-            else:
-                d2 = self.dataEndDate
-
-            # 提取历史数据
-            self.loadDataHistoryFromMysql(self.symbol, d1, d2)
-
-            self.output(u'数据日期:{0} => {1}'.format(d1,d2))
-            # 将逐笔数据推送
-            for data in self.historyData:
-
-                # 记录最新的TICK数据
-                self.tick = self.__dataToTick(data)
-                self.dt = self.tick.datetime
-
-                # 处理限价单
-                self.crossLimitOrder()
-                self.crossStopOrder()
-
-                # 推送到策略引擎中
-                self.strategy.onTick(self.tick)
-
-            # 清空历史数据
-            self.historyData = []
-
-        self.output(u'数据回放结束')
-
-    #----------------------------------------------------------------------
-    def runBacktesting(self):
-        """运行回测"""
-
-        self.capital = self.initCapital      # 更新设置期初资金
-
-        # 首先根据回测模式，确认要使用的数据类
-        if self.mode == self.BAR_MODE:
-            dataClass = CtaBarData
-            func = self.newBar
-        else:
-            dataClass = CtaTickData
-            func = self.newTick
-
-        self.output(u'开始回测')
-        
-        self.strategy.inited = True
-        self.strategy.onInit()
-        self.output(u'策略初始化完成')
-        
-        self.strategy.trading = True
-        self.strategy.onStart()
-        self.output(u'策略启动完成')
-        
-        self.output(u'开始回放数据')
-
-        # 循环加载回放数据
-        self.runHistoryDataFromMongo()
-
-            
-        self.output(u'数据回放结束')
-
-    # ----------------------------------------------------------------------
     def runHistoryDataFromMongo(self):
         """
         根据测试的每一天，从MongoDB载入历史数据，并推送Tick至回测函数
-        :return: 
+        :return:
         """
 
         host, port, log = loadMongoSetting()
@@ -2313,8 +2598,9 @@ class BacktestingEngine(object):
         # 循环每一天
         for i in range(0, testdays):
             testday = self.dataStartDate + timedelta(days=i)
-            testday_monrning = testday  #testday.replace(hour=0, minute=0, second=0, microsecond=0)
-            testday_midnight = testday + timedelta(days=1) #testday.replace(hour=23, minute=59, second=59, microsecond=999999)
+            testday_monrning = testday  # testday.replace(hour=0, minute=0, second=0, microsecond=0)
+            testday_midnight = testday + timedelta(
+                days=1)  # testday.replace(hour=23, minute=59, second=59, microsecond=999999)
 
             query_time = datetime.now()
             # 载入初始化需要用的数据
@@ -2337,7 +2623,7 @@ class BacktestingEngine(object):
                         .format(testday.strftime('%Y-%m-%d'), count_ticks, str(datetime.now() - query_time),
                                 str(datetime.now() - process_time)))
             # 记录每日净值
-            self.savingDailyData(testday, self.capital, self.maxCapital,self.totalCommission)
+            self.savingDailyData(testday, self.capital, self.maxCapital, self.totalCommission)
 
     def __sendOnBarEvent(self, bar):
         """发送Bar的事件"""
@@ -2354,6 +2640,13 @@ class BacktestingEngine(object):
         self.dt = bar.datetime
         self.crossLimitOrder()      # 先撮合限价单
         self.crossStopOrder()       # 再撮合停止单
+
+        self.setPrice(bar.vtSymbol,bar.close)
+
+        # 更新资金曲线(只有持仓时，才更新)
+        if self.fund_kline and (len(self.longPosition)>0 or len(self.shortPosition) > 0) :
+            self.fund_kline.update_account(self.dt, self.netCapital)
+
         self.strategy.onBar(bar)    # 推送K线到策略中
         self.__sendOnBarEvent(bar)  # 推送K线到事件
         self.last_bar = bar
@@ -2363,6 +2656,12 @@ class BacktestingEngine(object):
         """新的K线"""
         self.bar = bar
         self.dt = bar.datetime
+        self.setPrice(bar.vtSymbol, bar.close)
+
+        # 更新资金曲线(只有持仓时，才更新)
+        if self.fund_kline and (len(self.longPosition)>0 or len(self.shortPosition) > 0):
+            self.fund_kline.update_account(self.dt, self.netCapital)
+
         self.strategy.onBar(bar)    # 推送K线到策略中
         self.crossLimitOrder()      # 先撮合限价单
         self.crossStopOrder()       # 再撮合停止单
@@ -2376,6 +2675,12 @@ class BacktestingEngine(object):
         self.dt = tick.datetime
         self.crossLimitOrder()
         self.crossStopOrder()
+        self.setPrice(tick.vtSymbol, tick.lastPrice)
+
+        # 更新资金曲线(只有持仓时，才更新)
+        if self.fund_kline and (len(self.longPosition)>0 or len(self.shortPosition) > 0):
+            self.fund_kline.update_account(self.dt, self.netCapital)
+
         self.strategy.onTick(tick)
 
     # ----------------------------------------------------------------------
@@ -2384,9 +2689,12 @@ class BacktestingEngine(object):
         初始化策略
         setting是策略的参数设置，如果使用类中写好的默认设置则可以不传该参数
         """
+        self.fund_renko = setting.pop('use_renko',False)
         self.strategy = strategyClass(self, setting)
         if not self.strategy.name:
             self.strategy.name = self.strategy.className
+
+        self.create_fund_kline()
 
         if setting.get('auto_init',False):
             self.strategy.onInit()
@@ -2456,7 +2764,9 @@ class BacktestingEngine(object):
         """撤销所有单"""
         # Symbol参数:指定合约的撤单；
         # OFFSET参数:指定Offset的撤单,缺省不填写时，为所有
-        self.writeCtaLog(u'从所有订单中撤销{0}\{1}'.format(offset, symbol))
+        if len(self.workingLimitOrderDict) > 0:
+            self.writeCtaLog(u'从所有订单中撤销{0}\{1}'.format(offset, symbol))
+
         for vtOrderID in self.workingLimitOrderDict.keys():
             order = self.workingLimitOrderDict[vtOrderID]
 
@@ -2584,7 +2894,7 @@ class BacktestingEngine(object):
                 self.tradeDict[tradeID] = trade
                 self.writeCtaLog(u'TradeId:{0}'.format(tradeID))
 
-                # 更新持仓缓存数据      # TODO: do we need this?
+                # 更新持仓缓存数据
                 posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
                 if not posBuffer:
                     posBuffer = PositionBuffer()
@@ -2664,7 +2974,7 @@ class BacktestingEngine(object):
                 
                 self.tradeDict[tradeID] = trade
                 
-                # 更新持仓缓存数据      # TODO: do we need this?
+                # 更新持仓缓存数据
                 posBuffer = self.posBufferDict.get(trade.vtSymbol, None)
                 if not posBuffer:
                     posBuffer = PositionBuffer()
@@ -2702,6 +3012,19 @@ class BacktestingEngine(object):
         if self.calculateMode == self.REALTIME_MODE:
             self.realtimeCalculate()
 
+    def update_pos_buffer(self):
+        """更新持仓信息,把今仓=>昨仓"""
+
+        for k,v in self.posBufferDict.items():
+            if v.longToday > 0:
+                self.writeCtaLog(u'调整多单持仓:今仓{}=> 0 昨仓{} => 昨仓:{}'.format(v.longToday,v.longYd,v.longPosition))
+                v.longToday = 0
+                v.longYd = v.longPosition
+
+            if v.shortToday > 0:
+                self.writeCtaLog(u'调整空单持仓:今仓{}=> 0 昨仓{} => 昨仓:{}'.format(v.shortToday, v.shortYd, v.shortPosition))
+                v.shortToday = 0
+                v.shortYd = v.shortPosition
 
     #----------------------------------------------------------------------
     def insertData(self, dbName, collectionName, data):
@@ -2723,9 +3046,13 @@ class BacktestingEngine(object):
         获取数据保存目录
         :return:
         """
-        logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'data'))
-        if os.path.exists(logs_folder):
-            return logs_folder
+        if self.data_path is not None:
+            data_folder = self.data_path
+        else:
+            data_folder = os.path.abspath(os.path.join(os.getcwd(), 'data'))
+            self.data_path = data_folder
+        if os.path.exists(data_folder):
+            return data_folder
         else:
             return os.path.abspath(os.path.join(cta_engine_path, 'data'))
 
@@ -2734,7 +3061,12 @@ class BacktestingEngine(object):
         获取日志保存目录
         :return:
         """
-        logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+        if self.logs_path is not None:
+            logs_folder = self.logs_path
+        else:
+            logs_folder = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+            self.logs_path = logs_folder
+
         if os.path.exists(logs_folder):
             return logs_folder
         else:
@@ -2780,6 +3112,10 @@ class BacktestingEngine(object):
     def writeCtaNotification(self,content,strategy_name=None):
         """记录通知"""
         #print content
+        self.output(u'Notify:{}'.format(content))
+        self.writeCtaLog(content)
+
+    def writeCtaCritical(self,content,strategy_name=None):
         self.output(u'Notify:{}'.format(content))
         self.writeCtaLog(content)
 
@@ -3186,7 +3522,7 @@ class BacktestingEngine(object):
             self.netCapital = max(self.netCapital, self.capital)
             self.maxNetCapital = max(self.netCapital,self.maxNetCapital)
             #self.maxVolume = max(self.maxVolume, result.volume)
-            drawdown = self.capital - self.maxCapital
+            drawdown = self.netCapital - self.maxCapital
             drawdownRate = round(float(drawdown*100/self.maxCapital),4)
 
             self.pnlList.append(result.pnl)
@@ -3298,6 +3634,8 @@ class BacktestingEngine(object):
         elif self.last_bar is not None:
             dict['lastPrice'] = self.last_bar.close
         else:
+            if len(self.dailyList) == 0:
+                return
             dict['lastPrice'] = self.dailyList[-1]['lastPrice']
 
         self.dailyList.append(dict)
@@ -3316,7 +3654,7 @@ class BacktestingEngine(object):
 
         self.writeCtaLog(u'DEBUG---: savingDailyData, {}: lastPrice={}, net={}, capital={} max={} margin={} commission={} longPos={} shortPos={}, {}'.format(
             dict['date'], dict['lastPrice'], dict['net'], c, m, today_margin, commission, len(long_list), len(short_list), positionMsg))
-
+        print(u'{} : {}'.format(dict['date'],dict['net']))
     # ----------------------------------------------------------------------
     def writeWenHuaSignal(self, filehandle, count, bardatetime, price, text, mask=52):
         """
@@ -3663,7 +4001,7 @@ class BacktestingEngine(object):
 
             self.pnlList.append(result.pnl*compounding)
             self.timeList.append(time)
-            self.capitalList.append(self.capningital)
+            self.capitalList.append(self.capital)
             self.drawdownList.append(drawdown)
             self.drawdownRateList.append(drawdownRate)
 
@@ -3679,8 +4017,10 @@ class BacktestingEngine(object):
         导出每日净值结果表
         :return:
         """
-        if not self.exportTradeList:
+        if len(self.exportTradeList)==0:
+            self.writeCtaLog('no traded records')
             return
+
         s = EMPTY_STRING
         s = self.strategy_name.replace('&','')
         s = s.replace(' ', '')
@@ -3724,66 +4064,6 @@ class BacktestingEngine(object):
                     self.writeWenHuaSignal(wenhuaSignalFile, wenhuaSingalCount, datetime.strptime(t['CloseTime'], '%Y-%m-%d %H:%M:%S'), t['ClosePrice'], msg)
                     wenhuaSingalCount += 1
             wenhuaSignalFile.close()
-#         wh_records = OrderedDict()
-#         for t in self.exportTradeList:
-#             if t['Direction'] is 'Long':
-#                 k = '{}_{}_{}'.format(t['OpenTime'], 'Buy', t['OpenPrice'])
-#                 # 生成文华用的指标信号
-#                 v = {'time': datetime.strptime(t['OpenTime'], '%Y-%m-%d %H:%M:%S'), 'price':t['OpenPrice'], 'action': 'Buy', 'volume':t['Volume']}
-#                 r = wh_records.get(k,None)
-#                 if r is not None:
-#                     r['volume'] += t['Volume']
-#                 else:
-#                     wh_records[k] = v
-#
-#                 k = '{}_{}_{}'.format(t['CloseTime'], 'Sell', t['ClosePrice'])
-#                 # 生成文华用的指标信号
-#                 v = {'time': datetime.strptime(t['CloseTime'], '%Y-%m-%d %H:%M:%S'), 'price': t['ClosePrice'], 'action': 'Sell', 'volume': t['Volume']}
-#                 r = wh_records.get(k, None)
-#                 if r is not None:
-#                     r['volume'] += t['Volume']
-#                 else:
-#                     wh_records[k] = v
-#
-#             else:
-#                 k = '{}_{}_{}'.format(t['OpenTime'], 'Short', t['OpenPrice'])
-#                 # 生成文华用的指标信号
-#                 v = {'time': datetime.strptime(t['OpenTime'], '%Y-%m-%d %H:%M:%S'), 'price': t['OpenPrice'], 'action': 'Short', 'volume': t['Volume']}
-#                 r = wh_records.get(k, None)
-#                 if r is not None:
-#                     r['volume'] += t['Volume']
-#                 else:
-#                     wh_records[k] = v
-#                 k = '{}_{}_{}'.format(t['CloseTime'], 'Cover', t['ClosePrice'])
-#                 # 生成文华用的指标信号
-#                 v = {'time': datetime.strptime(t['CloseTime'], '%Y-%m-%d %H:%M:%S'), 'price': t['ClosePrice'], 'action': 'Cover', 'volume': t['Volume']}
-#                 r = wh_records.get(k, None)
-#                 if r is not None:
-#                     r['volume'] += t['Volume']
-#                 else:
-#                     wh_records[k] = v
-#
-#         branchs =  0
-#         count = 0
-#         wh_signal_file = None
-#         for r in list(wh_records.values()):
-#             if count % 200 == 0:
-#                 if wh_signal_file is not None:
-#                     wh_signal_file.close()
-#
-#                 # 交易记录生成文华对应的公式
-#                 filename = os.path.abspath(os.path.join(self.get_logs_path(),
-#                                                         '{}_WenHua_{}_{}.csv'.format(s, datetime.now().strftime('%Y%m%d_%H%M'), branchs)))
-#                 branchs += 1
-#                 self.writeCtaLog(u'save trade records for WenHua:{}'.format(filename))
-#
-#                 wh_signal_file = open(filename, mode='w')
-#
-#             count += 1
-#             if wh_signal_file is not None:
-#                 self.writeWenHuaSignal(filehandle=wh_signal_file, count=count, bardatetime=r['time'],price=r['price'], text='{}({})'.format(r['action'],r['volume']))
-#         if wh_signal_file is not None:
-#             wh_signal_file.close()
 
         # 导出每日净值记录表
         if not self.dailyList:
@@ -3864,7 +4144,7 @@ class BacktestingEngine(object):
         return d, capitalNetList, capitalList
 
     # ----------------------------------------------------------------------
-    def showBacktestingResult(self):
+    def showBacktestingResult(self,is_plot_daily=False):
         """显示回测结果"""
         if self.calculateMode != self.REALTIME_MODE:
             self.calculateBacktestingResult()
@@ -3873,138 +4153,181 @@ class BacktestingEngine(object):
 
         if len(d) == 0:
             self.output(u'无交易结果')
-            return
+            return {},''
 
         # 导出交易清单
         self.exportTradeResult()
 
+        result_info = OrderedDict()
+
         # 输出
         self.writeCtaNotification('-' * 30)
+        result_info.update({u'第一笔交易': str(d['timeList'][0])})
         self.writeCtaNotification(u'第一笔交易：\t%s' % d['timeList'][0])
+
+        result_info.update({u'最后一笔交易': str(d['timeList'][-1])})
         self.writeCtaNotification(u'最后一笔交易：\t%s' % d['timeList'][-1])
 
+        result_info.update({u'总交易次数': d['totalResult']})
         self.writeCtaNotification(u'总交易次数：\t%s' % formatNumber(d['totalResult']))
+
+        result_info.update({u'期初资金': d['initCapital']})
         self.writeCtaNotification(u'期初资金：\t%s' % formatNumber(d['initCapital']))
+
+        result_info.update({u'总盈亏': d['capital']})
         self.writeCtaNotification(u'总盈亏：\t%s' % formatNumber(d['capital']))
+
+        result_info.update({u'资金最高净值': d['maxCapital']})
         self.writeCtaNotification(u'资金最高净值：\t%s' % formatNumber(d['maxCapital']))
+
+        result_info.update({u'资金最高净值时间': str(self.maxNetCapital_time)})
         self.writeCtaNotification(u'资金最高净值时间：\t%s' % self.maxNetCapital_time)
 
+        result_info.update({u'每笔最大盈利': d['maxPnl']})
         self.writeCtaNotification(u'每笔最大盈利：\t%s' % formatNumber(d['maxPnl']))
+
+        result_info.update({u'每笔最大亏损': d['minPnl']})
         self.writeCtaNotification(u'每笔最大亏损：\t%s' % formatNumber(d['minPnl']))
+
+        result_info.update({u'净值最大回撤': min(d['drawdownList'])})
         self.writeCtaNotification(u'净值最大回撤: \t%s' % formatNumber(min(d['drawdownList'])))
+
+        result_info.update({u'净值最大回撤率': self.daily_max_drawdown_rate})
         #self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(max(d['drawdownRateList'])))
         self.writeCtaNotification(u'净值最大回撤率: \t%s' % formatNumber(self.daily_max_drawdown_rate))
+
+        result_info.update({u'净值最大回撤时间': str(self.max_drowdown_rate_time)})
         self.writeCtaNotification(u'净值最大回撤时间：\t%s' % self.max_drowdown_rate_time)
+
+        result_info.update({u'胜率': d['winningRate']})
         self.writeCtaNotification(u'胜率：\t%s' % formatNumber(d['winningRate']))
 
+        result_info.update({u'盈利交易平均值':d['averageWinning']})
         self.writeCtaNotification(u'盈利交易平均值\t%s' % formatNumber(d['averageWinning']))
+
+        result_info.update({u'亏损交易平均值' : d['averageLosing']})
         self.writeCtaNotification(u'亏损交易平均值\t%s' % formatNumber(d['averageLosing']))
+
+        result_info.update({u'盈亏比': d['profitLossRatio']})
         self.writeCtaNotification(u'盈亏比：\t%s' % formatNumber(d['profitLossRatio']))
 
+        result_info.update({u'最大持仓': d['maxVolume']})
         self.writeCtaNotification(u'最大持仓：\t%s' % formatNumber(d['maxVolume']))
 
+        result_info.update({u'平均每笔盈利' : d['capital']/d['totalResult']})
         self.writeCtaNotification(u'平均每笔盈利：\t%s' %formatNumber(d['capital']/d['totalResult']))
 
+        result_info.update({u'平均每笔滑点成本': d['totalSlippage']/d['totalResult']})
         self.writeCtaNotification(u'平均每笔滑点成本：\t%s' %formatNumber(d['totalSlippage']/d['totalResult']))
+
+        result_info.update({u'平均每笔佣金': d['totalCommission']/d['totalResult']})
         self.writeCtaNotification(u'平均每笔佣金：\t%s' %formatNumber(d['totalCommission']/d['totalResult']))
+
+        result_info.update({u'Sharpe Ratio': d['sharpe']})
         self.writeCtaNotification(u'Sharpe Ratio：\t%s' % formatNumber(d['sharpe']))
 
         # 绘图
-        import matplotlib
-        import matplotlib.pyplot as plt
-        from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-        import numpy as np
-        matplotlib.rcParams['figure.figsize'] = (20.0, 10.0)
-
+        fig_file_name = EMPTY_STRING
         try:
-            import seaborn as sns       # 如果安装了seaborn则设置为白色风格
-            sns.set_style('whitegrid')
-        except ImportError:
-            pass
+            import matplotlib
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
 
-        # 是否显示每日资金曲线
-        isPlotDaily = False # DEBUG
-        #isPlotDaily = True
-        capitalStr = ''
-        if isPlotDaily == True:
-            daily_df = pd.DataFrame(self.dailyList)
-            daily_df = daily_df.set_index('date')
+            from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+            import numpy as np
+            matplotlib.rcParams['figure.figsize'] = (20.0, 10.0)
 
-            pCapital = plt.subplot(4, 1, 1)
-            pCapital.set_ylabel("trade capital")
-            pCapital.plot(d['capitalList'], color='r', lw=0.8)
-            plt.title(u'{}: {}~{}({}) NetCapital={}({}), #Trading={}({}/day), TotalCommission={}, MaxLots={}({}), MDD={}%'.format(
-                                                            self.symbol,
-                                                            self.startDate, self.endDate, len(dailyNetCapital),
-                                                            dailyNetCapital[-1], min(d['drawdownList']),
-                                                            d['totalResult'], int(d['totalResult']/len(dailyNetCapital)),
-                                                            d['totalCommission'],
-                                                            d['maxVolume'], max(daily_df['occupyMoney']),
-                                                            self.daily_max_drawdown_rate))
-            pCapital.grid()
-            capitalStr = '{}.{}'.format(round(dailyNetCapital[-1]), round(min(d['drawdownList'])))
+            try:
+                import seaborn as sns       # 如果安装了seaborn则设置为白色风格
+                sns.set_style('whitegrid')
+            except ImportError:
+                pass
 
-            pDailyCapital = plt.subplot(4, 1, 3)
-            pDailyCapital.set_ylabel("daily capital")
-            pDailyCapital.plot(dailyCapital, color='b', lw=0.8, label='Capital')
-            pDailyCapital.plot(dailyNetCapital, color='r', lw=1, label='NetCapital')
-            # Change the label of X-Axes to date
-            xt = pDailyCapital.get_xticks()
-            interval = len(dailyNetCapital) / 10
-            interval = round(interval) -1
-            xt3 = list(range(-10, len(dailyNetCapital), interval))
-            xt2 = [daily_df.index[int(i)] for i in xt3[1:]]
-            xt2.insert(0,'')
-            xt2.append('')
-            pDailyCapital.set_xticks(xt3)
-            pDailyCapital.set_xticklabels(xt2)
-            pDailyCapital.grid()
-            pDailyCapital.legend()
+            # 是否显示每日资金曲线
+            capitalStr = ''
+            if is_plot_daily:
+                daily_df = pd.DataFrame(self.dailyList)
+                daily_df = daily_df.set_index('date')
 
-            pLastPrice = plt.subplot(4, 1, 2)
-            pLastPrice.set_ylabel("daily lastprice")
-            pLastPrice.plot(daily_df['lastPrice'], color='y', lw=1, label='Price')
-            pLastPrice.set_xticks(xt3)
-            pLastPrice.set_xticklabels(xt2)
-            pLastPrice.grid()
-            pLastPrice.legend()
+                pCapital = plt.subplot(4, 1, 1)
+                pCapital.set_ylabel("trade capital")
+                pCapital.plot(d['capitalList'], color='r', lw=0.8)
+                plt.title(u'{}: {}~{}({}) NetCapital={}({}), #Trading={}({}/day), TotalCommission={}, MaxLots={}({}), MDD={}%'.format(
+                                                                self.symbol,
+                                                                self.startDate, self.endDate, len(dailyNetCapital),
+                                                                dailyNetCapital[-1], min(d['drawdownList']),
+                                                                d['totalResult'], int(d['totalResult']/len(dailyNetCapital)),
+                                                                d['totalCommission'],
+                                                                d['maxVolume'], max(daily_df['occupyMoney']),
+                                                                self.daily_max_drawdown_rate))
+                pCapital.grid()
+                capitalStr = '{}.{}'.format(round(dailyNetCapital[-1]), round(min(d['drawdownList'])))
 
-            pOccupyRate = plt.subplot(4, 1, 4)
-            pOccupyRate.set_ylabel("occupyMoney")
-            index = np.arange(len(daily_df['occupyMoney']))
-            pOccupyRate.bar(index, daily_df['occupyMoney'], 0.4, color='b')
-            pOccupyRate.set_xticks(xt3)
-            pOccupyRate.set_xticklabels(xt2)
-            pOccupyRate.grid()
+                pDailyCapital = plt.subplot(4, 1, 3)
+                pDailyCapital.set_ylabel("daily capital")
+                pDailyCapital.plot(dailyCapital, color='b', lw=0.8, label='Capital')
+                pDailyCapital.plot(dailyNetCapital, color='r', lw=1, label='NetCapital')
+                # Change the label of X-Axes to date
+                xt = pDailyCapital.get_xticks()
+                interval = len(dailyNetCapital) / 10
+                interval = round(interval) -1
+                xt3 = list(range(-10, len(dailyNetCapital), interval))
+                xt2 = [daily_df.index[int(i)] for i in xt3[1:]]
+                xt2.insert(0,'')
+                xt2.append('')
+                pDailyCapital.set_xticks(xt3)
+                pDailyCapital.set_xticklabels(xt2)
+                pDailyCapital.grid()
+                pDailyCapital.legend()
 
-        else:
-            pCapital = plt.subplot(4, 1, 1)
-            pCapital.set_ylabel("capital")
-            pCapital.plot(d['capitalList'], color='r', lw=0.8)
+                pLastPrice = plt.subplot(4, 1, 2)
+                pLastPrice.set_ylabel("daily lastprice")
+                pLastPrice.plot(daily_df['lastPrice'], color='y', lw=1, label='Price')
+                pLastPrice.set_xticks(xt3)
+                pLastPrice.set_xticklabels(xt2)
+                pLastPrice.grid()
+                pLastPrice.legend()
 
-            plt.title(u'{}~{},{} backtest result '.format(self.startDate, self.endDate, self.strategy_name))
+                pOccupyRate = plt.subplot(4, 1, 4)
+                pOccupyRate.set_ylabel("occupyMoney")
+                index = np.arange(len(daily_df['occupyMoney']))
+                pOccupyRate.bar(index, daily_df['occupyMoney'], 0.4, color='b')
+                pOccupyRate.set_xticks(xt3)
+                pOccupyRate.set_xticklabels(xt2)
+                pOccupyRate.grid()
 
-            pDD = plt.subplot(4, 1, 2)
-            pDD.set_ylabel("DD")
-            pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
+            else:
+                pCapital = plt.subplot(4, 1, 1)
+                pCapital.set_ylabel("capital")
+                pCapital.plot(d['capitalList'], color='r', lw=0.8)
 
-            pPnl = plt.subplot(4, 1, 3)
-            pPnl.set_ylabel("pnl")
-            pPnl.hist(d['pnlList'], bins=50, color='c')
-       
-        plt.tight_layout()
-        #plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
+                plt.title(u'{}~{},{} backtest result '.format(self.startDate, self.endDate, self.strategy_name))
 
-        fig_file_name = os.path.abspath(os.path.join(self.get_logs_path(),
-                                                     '{}_plot_{}_{}.png'.format(self.strategy_name,
-                                                          datetime.now().strftime('%Y%m%d_%H%M'), capitalStr)))
+                pDD = plt.subplot(4, 1, 2)
+                pDD.set_ylabel("DD")
+                pDD.bar(range(len(d['drawdownList'])), d['drawdownList'], color='g')
+
+                pPnl = plt.subplot(4, 1, 3)
+                pPnl.set_ylabel("pnl")
+                pPnl.hist(d['pnlList'], bins=50, color='c')
+
+            plt.tight_layout()
+            #plt.xticks(xindex, tradeTimeIndex, rotation=30)  # 旋转15
+
+            fig_file_name = os.path.abspath(os.path.join(self.get_logs_path(),
+                                                         '{}_plot_{}_{}.png'.format(self.strategy_name,
+                                                              datetime.now().strftime('%Y%m%d_%H%M'), capitalStr)))
 
 
-        fig = plt.gcf()
-        fig.savefig(fig_file_name)
-        self.output (u'图表保存至：{0}'.format(fig_file_name))
-        #plt.show()
-        plt.close()
+            fig = plt.gcf()
+            fig.savefig(fig_file_name)
+            self.output (u'图表保存至：{0}'.format(fig_file_name))
+            #plt.show()
+            plt.close()
+        except Exception as ex:
+            self.writeCtaError(u'保存图表异常')
+
+        return result_info,fig_file_name
 
     #----------------------------------------------------------------------
     def putStrategyEvent(self, name):
