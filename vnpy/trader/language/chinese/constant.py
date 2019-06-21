@@ -53,6 +53,10 @@ OPTION_PUT = u'看跌期权'
 # 交易所类型
 EXCHANGE_SSE = 'SSE'       # 上交所
 EXCHANGE_SZSE = 'SZSE'     # 深交所
+
+EXCHANGE_XSHG = 'XSHG'     #  上交所(股票使用）
+EXCHANGE_XSHE = 'XSHE'     #  深交所(股票使用）
+
 EXCHANGE_CFFEX = 'CFFEX'   # 中金所
 EXCHANGE_SHFE = 'SHFE'     # 上期所
 EXCHANGE_CZCE = 'CZCE'     # 郑商所
