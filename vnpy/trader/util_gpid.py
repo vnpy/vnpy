@@ -6,6 +6,9 @@ import sys
 import platform
 import psutil
 
+# changelog
+# 记录gpid，修改为pid
+
 run_path = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 if not os.path.isdir(run_path):
     os.mkdir(run_path)
@@ -68,19 +71,23 @@ if _status():
     print( u'another service is already running...')
     exit(0)
 
-def _save_gpid():
+def _save_gpid(log=True):
 
     plat = str(platform.system())
     if plat == 'Windows':
         gpid = os.getpid()
     else:   # unix
         gpid = os.getpgrp() if USE_GPID else os.getpid()
-    print( 'gpid={}'.format(gpid))
+    if log:
+        print( 'gpid={}'.format(gpid))
 
     with open(gpid_file, 'w') as f:
         f.write(str(gpid))
+    if log:
+        print(u'wrote gpid file:{}'.format(gpid_file))
 
-    print(u'wrote gpid file:{}'.format(gpid_file))
+def update_gpid():
+    _save_gpid(log=False)
 
 _save_gpid()
 

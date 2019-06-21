@@ -274,6 +274,7 @@ class PositionMonitor(BasicMonitor):
         d['ydPosition'] = {'chinese': u'昨持仓', 'cellType': ""}
         d['frozen'] = {'chinese': u'冻结量', 'cellType': ""}
         d['price'] = {'chinese': u'价格', 'cellType': ""}
+        d['positionProfit'] = {'chinese': u'持仓盈亏', 'cellType': ""}
         d['gatewayName'] = {'chinese': u'接口', 'cellType': ""}
         self.setHeaderDict(d)
         self.createLogger(EVENT_POSITION)

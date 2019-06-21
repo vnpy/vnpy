@@ -101,13 +101,13 @@ def roundToVolumeTick(volumeTick,volume):
     if volumeTick == 0:
         return volume
     # 取整
-    newVolume = volume - volume % volumeTick
+    newVolume = round(volume / volumeTick, 0) * volumeTick
 
     if isinstance(volumeTick,float):
-        v_exponent = decimal.Decimal(str(newVolume))
+        v_exponent = decimal.Decimal(str(volume))
         vt_exponent = decimal.Decimal(str(volumeTick))
         if abs(v_exponent.as_tuple().exponent) > abs(vt_exponent.as_tuple().exponent):
-            newVolume = round(newVolume, ndigits=abs(vt_exponent.as_tuple().exponent))
+            newVolume = round(volume, ndigits=abs(vt_exponent.as_tuple().exponent))
             newVolume = float(str(newVolume))
 
     return newVolume

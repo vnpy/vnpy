@@ -348,14 +348,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         return openAppFunction
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def test(self):
         """测试按钮用的函数"""
         # 有需要使用手动触发的测试函数可以写在这里
         self.mainEngine.qryStatus()
+        self.mainEngine.saveData()
         pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def openAbout(self):
         """打开关于"""
         try:
@@ -424,7 +425,7 @@ class MainWindow(QtWidgets.QMainWindow):
         except:
             pass
 
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def closeEvent(self, event):
         """关闭事件"""
         reply = QtWidgets.QMessageBox.question(self, vtText.EXIT,
@@ -441,7 +442,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
             
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def createDock(self, widgetClass, widgetName, widgetArea):
         """创建停靠组件"""
         widget = widgetClass(self.mainEngine, self.eventEngine)
@@ -459,7 +460,7 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.setValue('state', self.saveState())
         settings.setValue('geometry', self.saveGeometry())
         
-    #----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
     def loadWindowSettings(self, settingName):
         """载入窗口设置"""
         settings = QtCore.QSettings('vn.trader', settingName)

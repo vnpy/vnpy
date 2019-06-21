@@ -176,10 +176,45 @@ class ClientEngine(object):
         self.client.initStrategy(name, force=force)
 
     def startStrategy(self,name):
-        self.client.startStrategy(name)
+        if hasattr(self.client,'startStrategy'):
+            self.writeLog(u'启动服务端策略:{}'.format(name))
+            self.client.startStrategy(name)
+        else:
+            self.writeLog(u'RPC客户端没有startStrategy得方法')
+            print(u'RPC客户端没有startStrategy得方法',file=sys.stderr)
 
     def stopStrategy(self,name):
-        self.client.stopStrategy(name)
+        if hasattr(self.client,'stopStrategy'):
+            self.writeLog(u'停止运行服务端策略:{}'.format(name))
+            self.client.stopStrategy(name)
+        else:
+            self.writeLog(u'RPC客户端没有stopStrategy得方法')
+            print(u'RPC客户端没有stopStrategy得方法',file=sys.stderr)
+
+    def removeStrategy(self,name):
+        if hasattr(self.client,'removeStrategy'):
+            self.writeLog(u'移除服务端策略:{}'.format(name))
+            self.client.removeStrategy(name)
+        else:
+            self.writeLog(u'RPC客户端没有removeStrategy得方法')
+            print(u'RPC客户端没有removeStrategy得方法',file=sys.stderr)
+
+    def addStrategy(self,cta_setting):
+        if hasattr(self.client,'addStrategy'):
+            self.writeLog(u'添加服务端策略:{}'.format(cta_setting.get('name')))
+            self.client.addStrategy(cta_setting)
+        else:
+            self.writeLog(u'RPC客户端没有addStrategy的方法')
+            print(u'RPC客户端没有addStrategy的方法', file=sys.stderr)
+
+    def forceClosePos(self,name):
+        if hasattr(self.client,'forceClosePos'):
+            self.writeLog(u'调用服务端策略强制清除仓位:{}'.format(name))
+            self.client.forceClosePos(name)
+        else:
+            self.writeLog(u'RPC客户端没有forceClosePos得方法')
+            print(u'RPC客户端没有forceClosePos得方法', file=sys.stderr)
+
 #----------------------------------------------------------------------
 def main():
     """客户端主程序入口"""

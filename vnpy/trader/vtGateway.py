@@ -36,7 +36,7 @@ class VtGateway(object):
         event1.dict_['data'] = tick
         self.eventEngine.put(event1)
 
-        if tick.lastPrice is not None or tick.lastPrice != 0:
+        if tick.lastPrice is not None and tick.lastPrice != 0:
             self.symbol_price_dict.update({tick.vtSymbol: tick.lastPrice})
         elif tick.askPrice1 is not None and tick.bidPrice1 is not None:
             self.symbol_price_dict.update({tick.vtSymbol: (tick.askPrice1 + tick.bidPrice1)/2})
@@ -147,7 +147,7 @@ class VtGateway(object):
 
         filename = os.path.abspath(os.path.join(path, 'Gateway'))
 
-        print(u'create logger:{}'.format(filename))
+        #print(u'create logger:{}'.format(filename))
         self.logger = setup_logger(filename=filename, name='vtGateway', debug=True)
 
     # ----------------------------------------------------------------------

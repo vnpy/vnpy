@@ -5,7 +5,10 @@ from datetime import datetime
 
 
 from vnpy.trader.vtConstant import (EMPTY_STRING, EMPTY_UNICODE,
-                                    EMPTY_FLOAT, EMPTY_INT)
+                                    EMPTY_FLOAT, EMPTY_INT, DIRECTION_LONG, DIRECTION_SHORT,
+                                    OFFSET_OPEN, OFFSET_CLOSE,
+                                    OFFSET_CLOSETODAY, OFFSET_CLOSEYESTERDAY)
+
 from vnpy.trader.language import constant
 
 ########################################################################
@@ -40,7 +43,7 @@ class VtTickData(VtBaseData):
         self.preOpenInterest = EMPTY_INT  # 昨持仓量
         self.openInterest = EMPTY_INT  # 持仓量
         self.time = EMPTY_STRING  # 时间 11:20:56.5
-        self.date = EMPTY_STRING  # 日期 20151009
+        self.date = EMPTY_STRING  # 日期 2015-10-09
         self.tradingDay = EMPTY_STRING  # 交易日期
 
         # 常规行情
@@ -96,7 +99,7 @@ class VtTickData(VtBaseData):
         tick.lastVolume = lastVolume
         tick.openInterest = openInterest
         tick.datetime = datetime.now()
-        tick.date = tick.datetime.strftime('%Y%m%d')
+        tick.date = tick.datetime.strftime('%Y-%m-%d')
         tick.time = tick.datetime.strftime('%H:%M:%S')
 
         tick.openPrice = openPrice
@@ -158,6 +161,9 @@ class VtTradeData(VtBaseData):
         self.price = EMPTY_FLOAT  # 成交价格
         self.volume = EMPTY_FLOAT  # 成交数量
         self.tradeTime = EMPTY_STRING  # 成交时间
+        self.dt = None              # 成交时间（datetime类型）
+
+        self.strategy = EMPTY_STRING  # 策略实例名
 
     #----------------------------------------------------------------------
     @staticmethod
@@ -473,6 +479,8 @@ class VtSubscribeReq(object):
         self.symbol = EMPTY_STRING  # 代码
         self.exchange = EMPTY_STRING  # 交易所
 
+        self.is_bar = False         # True：订阅1分钟bar行情；False:订阅tick行情，
+
         # 以下为IB相关
         self.productClass = EMPTY_UNICODE  # 合约类型
         self.currency = EMPTY_STRING  # 合约货币
@@ -556,3 +564,124 @@ class VtSingleton(type):
             cls._instances[cls] = super(VtSingleton, cls).__call__(*args, **kwargs)
 
         return cls._instances[cls]
+
+
+########################################################################
+class PositionBuffer(object):
+    """持仓缓存信息（本地维护的持仓数据）"""
+
+    # ----------------------------------------------------------------------
+    def __init__(self):
+        """Constructor"""
+        self.vtSymbol = EMPTY_STRING
+
+        # 多头
+        self.longPosition = EMPTY_INT
+        self.longToday = EMPTY_INT
+        self.longYd = EMPTY_INT
+
+        self.longPrice = EMPTY_FLOAT
+        self.longProfit = EMPTY_FLOAT
+        self.longFrozen = EMPTY_FLOAT
+
+        # 空头
+        self.shortPosition = EMPTY_INT
+        self.shortToday = EMPTY_INT
+        self.shortYd = EMPTY_INT
+
+        self.shortPrice = EMPTY_FLOAT
+        self.shortProfit = EMPTY_FLOAT
+
+        self.shortFrozen = EMPTY_FLOAT
+
+        self.frozen = EMPTY_FLOAT
+
+    # ----------------------------------------------------------------------
+    def toStr(self):
+        """更新显示信息"""
+        str = u'long:{},yd:{},td:{}, short:{},yd:{},td:{}, fz:{};' \
+            .format(self.longPosition, self.longYd, self.longToday,
+                    self.shortPosition, self.shortYd, self.shortToday, self.frozen)
+        return str
+
+    # ----------------------------------------------------------------------
+    def updatePositionData(self, pos):
+        """更新持仓数据"""
+        if pos.direction == DIRECTION_SHORT:
+            self.shortPosition = pos.position  # >=0
+            self.shortYd = pos.ydPosition  # >=0
+            self.shortToday = self.shortPosition - self.shortYd  # >=0
+
+            self.shortPrice = pos.price
+            self.shortProfit = pos.positionProfit
+            self.shortFrozen = pos.frozen
+
+        else:
+            self.longPosition = pos.position  # >=0
+            self.longYd = pos.ydPosition  # >=0
+            self.longToday = self.longPosition - self.longYd  # >=0
+
+            self.longPrice = pos.price
+            self.longProfit = pos.positionProfit
+            self.longFrozen = pos.frozen
+
+            self.frozen = self.shortFrozen + self.longFrozen
+
+    # ----------------------------------------------------------------------
+    def updateTradeData(self, trade):
+        """更新成交数据"""
+
+        if trade.direction == DIRECTION_SHORT:
+            # 空头和多头相同
+            if trade.offset == OFFSET_OPEN:  # 开仓
+                self.shortPosition += trade.volume
+                self.shortToday += trade.volume  # 增加的是今仓
+
+            elif trade.offset == OFFSET_CLOSETODAY:  # 平今
+                self.longPosition -= trade.volume
+                self.longToday -= trade.volume  # 减少今仓
+
+            elif trade.offset == OFFSET_CLOSEYESTERDAY:  # 平昨
+                self.longPosition -= trade.volume
+                self.longYd -= trade.volume  # 减少昨仓
+
+            else:  # 平仓
+                self.longPosition -= trade.volume
+                self.longToday -= trade.volume  # 优先减今仓
+                if self.longToday < 0:
+                    self.longYd += self.longToday
+                    self.longToday = 0
+
+            if self.longPosition <= 0:
+                self.longPosition = 0
+            if self.longToday <= 0:
+                self.longToday = 0
+            if self.longYd <= 0:
+                self.longYd = 0
+        else:
+            # 多方开仓，则对应多头的持仓和今仓增加
+            if trade.offset == OFFSET_OPEN:
+                self.longPosition += trade.volume
+                self.longToday += trade.volume
+            # 多方平今，对应空头的持仓和今仓减少
+            elif trade.offset == OFFSET_CLOSETODAY:
+                self.shortPosition -= trade.volume
+                self.shortToday -= trade.volume
+
+            elif trade.offset == OFFSET_CLOSEYESTERDAY:
+                self.shortPosition -= trade.volume
+                self.shortYd -= trade.volume
+            else:
+                self.shortPosition -= trade.volume
+                self.shortToday -= trade.volume
+                if self.shortToday <= 0:
+                    self.shortYd += self.shortToday
+                    self.shortToday = 0
+
+            if self.shortPosition <= 0:
+                self.shortPosition = 0
+            if self.shortToday <= 0:
+                self.shortToday = 0
+            if self.shortYd <= 0:
+                self.shortYd = 0
+            # 多方平昨，对应空头的持仓和昨仓减少

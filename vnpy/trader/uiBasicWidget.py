@@ -741,6 +741,8 @@ class TradingWidget(QtWidgets.QFrame):
                     EXCHANGE_CZCE,
                     EXCHANGE_SSE,
                     EXCHANGE_SZSE,
+                    EXCHANGE_XSHG,
+                    EXCHANGE_XSHE,
                     EXCHANGE_INE,
                     EXCHANGE_SGE,
                     EXCHANGE_HKEX,
@@ -984,22 +986,27 @@ class TradingWidget(QtWidgets.QFrame):
         currency = self.comboCurrency.currentText()
         productClass = self.comboProductClass.currentText()
         gatewayName = self.comboGateway.currentText()
-        
-        # 查询合约
-        if exchange:
-            vtSymbol = '.'.join([symbol, exchange])
-            contract = self.mainEngine.getContract(vtSymbol)
-        else:
-            vtSymbol = symbol
-            contract = self.mainEngine.getContract(symbol)   
-        
-        if contract:
-            vtSymbol = contract.vtSymbol
-            if len(gatewayName)==0 and len(contract.gatewayName) > 0:
-                gatewayName = contract.gatewayName
-            self.lineName.setText(contract.name)
-            exchange = contract.exchange    # 保证有交易所代码
-            
+
+        try:
+            # 查询合约
+            if exchange:
+                vtSymbol = '.'.join([symbol, exchange])
+                contract = self.mainEngine.getContract(vtSymbol)
+            else:
+                vtSymbol = symbol
+                contract = self.mainEngine.getContract(symbol)
+
+            if contract:
+                vtSymbol = contract.vtSymbol
+                if len(gatewayName)==0 and contract.gatewayName is not None and len(contract.gatewayName) > 0:
+                    gatewayName = contract.gatewayName
+                self.lineName.setText(contract.name)
+                exchange = contract.exchange    # 保证有交易所代码
+
+        except Exception as ex:
+            print(u'获取合约{}异常:{},{}'.format(symbol,str(ex),traceback.format_exc()),file=sys.stderr)
+            return
+
         # 清空价格数量
         self.spinPrice.setValue(0)
         #self.spinVolume.setValue(0)
@@ -1102,6 +1109,8 @@ class TradingWidget(QtWidgets.QFrame):
                 self.labelReturn.setText(('%.2f' %(rt*100))+'%')
             else:
                 self.labelReturn.setText('')
+
+            self.comboExchange.setCurrentText(tick.exchange)
 
     #----------------------------------------------------------------------
     def connectSignal(self):
@@ -1244,8 +1253,15 @@ class TradingWidget(QtWidgets.QFrame):
                 return
 
             if tick.vtSymbol:
+
                 # 更新交易组件的显示合约
-                self.lineSymbol.setText(tick.vtSymbol)
+                if '.' in tick.vtSymbol:
+                    symbol_pairs = tick.vtSymbol.split('.')
+                    if symbol_pairs[-1] != 'SPD':
+                        self.lineSymbol.setText(symbol_pairs[0])
+                        self.comboExchange.setCurrentText(symbol_pairs[-1])
+                else:
+                    self.lineSymbol.setText(tick.vtSymbol)
                 self.updateSymbol()
 
             # 自动填写信息
@@ -1302,8 +1318,7 @@ class ContractMonitor(BasicMonitor):
         d = {'.'.join([contract.exchange, contract.symbol]):contract for contract in l}
         l2 = d.keys()
         #l2.sort(reverse=True)
-        l2 = sorted(l2, reverse=True)
-
+        l2 = sorted(l2,reverse=True)
         self.setRowCount(len(l2))
         row = 0
         
@@ -1358,7 +1373,7 @@ class ContractMonitor(BasicMonitor):
 class ContractManager(QtWidgets.QWidget):
     """合约管理组件"""
 
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def __init__(self, mainEngine, parent=None):
         """Constructor"""
         super(ContractManager, self).__init__(parent=parent)
@@ -1367,7 +1382,7 @@ class ContractManager(QtWidgets.QWidget):
 
         self.initUi()
 
-    # ----------------------------------------------------------------------
+    #----------------------------------------------------------------------
     def initUi(self):
         """初始化界面"""
         self.setWindowTitle(vtText.CONTRACT_SEARCH)
@@ -1425,6 +1440,7 @@ class WorkingOrderMonitor(OrderMonitor):
                     cell = cellDict['status']
                     row = self.row(cell)
                     self.hideRow(row)
+
 
 ########################################################################
 class SettingEditor(QtWidgets.QWidget):
